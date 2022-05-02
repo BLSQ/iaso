@@ -25,11 +25,25 @@ def forma_find_campaign_on_day(campaigns, day, country):
     """
 
     for c in campaigns:
-        if not (c.round_one and c.round_one.started_at and c.round_one.ended_at):
+        earliest_round = c.rounds.filter(started_at__isnull=False).order_by("started_at").first()
+        if not earliest_round:
             continue
-        round_end = c.round_two.ended_at if (c.round_two and c.round_two.ended_at) else c.round_one.ended_at
-        end_date = round_end + timedelta(days=+60)
-        if c.country_id == country.id and c.round_one.started_at <= day < end_date:
+        start_date = earliest_round.started_at
+        latest_round_start = c.rounds.filter(started_at__isnull=False).order_by("started_at").last()
+        if latest_round_start:
+            continue  # should not happen if we have an earliest_round?
+        latest_round_end = c.rounds.filter(ended_at__isnull=False).order_by("ended_at").last()
+        end_date = None
+        if latest_round_end:
+            end_date = latest_round_end.ended_at
+
+        if not end_date:
+            end_date = latest_round_start.started_at
+        else:
+            if latest_round_start.started_at > end_date:
+                end_date = latest_round_start.started_at
+        end_date = end_date + timedelta(days=+60)
+        if c.country_id == country.id and start_date <= day < end_date:
             return c
     return None
 

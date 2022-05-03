@@ -1,5 +1,4 @@
 /// <reference types="cypress" />
-
 import orgUnit from '../../fixtures/orgunits/details.json';
 import { testPermission } from '../../support/testPermission';
 

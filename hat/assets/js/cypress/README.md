@@ -95,6 +95,30 @@ e.g. `cy.login()` will authenticate the user into Django and save the session.
 
 [Doc](https://docs.cypress.io/api/cypress-api/custom-commands)
 
+### 6. Testing plugins
+
+Test files for plugins should be added in a folder named `cypress` and placed next to the plugin's own `/src` folder. E.g, for polio, the (front-end) code is located at `plugins/polio/js/src` so the tests are at `/plugins/polio/js/cypress`
+
+There is a `Cypress.env` variable called `plugins` which contains the names of all active plugins, in the format `pluginA,pluginB,pluginC`. To avoid Iaso's CI running your plugin's tests even when the plugin is not active, the tests should be wrapped in a condition:
+
+```javascript
+if (Cypress.env('plugins')?.includes('pluginA')) { // where pluginA is your plugin's name
+    describe('test plugin', () => {
+        // Your test
+        });
+    });
+```
+
+Alternately, you can use the `testPlugin()` helper provided at `iaso/hat/assets/js/cypress/support/testPlugin.js`:
+
+```javascript
+testPlugin('pluginA',()=>{ // where pluginA is your plugin's name
+    describe('test plugin', () => {
+        // Your test
+    });
+});
+
+```
 
 
 Testing

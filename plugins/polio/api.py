@@ -279,7 +279,7 @@ Timeline tracker Automated message
                 campaign_date = datetime.strptime(campaigns_date, "%Y-%m-%d %H:%M:%S.%f")
                 c_date_list.append(make_aware(campaign_date))
                 for i in range(len(c_date_list)):
-                    if c_date_list[i] > cached_date:
+                    if c_date_list[i] or OrgUnit.objects.get(pk=c.country_id).updated_at > cached_date:
                         continue
             return JsonResponse(json.loads(cached_response))
 

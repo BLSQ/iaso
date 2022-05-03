@@ -303,7 +303,7 @@ where group_id = polio_campaign.group_id""",
             cache.set(
                 "{0}-geo_shapes".format(request.user.id),
                 json.dumps(res),
-                3600,
+                3600 * 24,
             )
         return JsonResponse(res)
 

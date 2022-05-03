@@ -270,6 +270,19 @@ Timeline tracker Automated message
         queryset = self.filter_queryset(self.get_queryset())
         # Remove deleted and campaign with missing group
         queryset = queryset.filter(deleted_at=None).exclude(group=None)
+
+        if not request.user.is_anonymous and cached_response:
+            c_date_list = []
+            cached_date = make_aware(datetime.utcfromtimestamp(json.loads(cached_response)["cache_creation_date"]))
+            for c in queryset:
+                campaigns_date = SmallCampaignSerializer(c).data["updated_at"].replace("T", " ").replace("Z", "")
+                campaign_date = datetime.strptime(campaigns_date, "%Y-%m-%d %H:%M:%S.%f")
+                c_date_list.append(make_aware(campaign_date))
+                for i in range(len(c_date_list)):
+                    if c_date_list[i] > cached_date:
+                        continue
+            return JsonResponse(json.loads(cached_response))
+
         queryset = queryset.annotate(
             geom=RawSQL(
                 """select st_asgeojson(st_simplify(st_union(st_buffer(iaso_orgunit.geom::geometry, 0)), 0.01)::geography)
@@ -280,18 +293,6 @@ where group_id = polio_campaign.group_id""",
             )
         )
         # Check if the campaigns have been updated since the response has been cached
-        if not request.user.is_anonymous and cached_response:
-            c_date_list = []
-            cached_date = make_aware(datetime.utcfromtimestamp(json.loads(cached_response)["cache_creation_date"]))
-            for c in queryset:
-                if c.geom:
-                    campaigns_date = SmallCampaignSerializer(c).data["updated_at"].replace("T", " ").replace("Z", "")
-                    campaign_date = datetime.strptime(campaigns_date, "%Y-%m-%d %H:%M:%S.%f")
-                    c_date_list.append(make_aware(campaign_date))
-                    for i in range(len(c_date_list)):
-                        if c_date_list[i] > cached_date:
-                            continue
-            return JsonResponse(json.loads(cached_response))
         for c in queryset:
             if c.geom:
                 s = SmallCampaignSerializer(c)

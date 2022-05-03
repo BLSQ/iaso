@@ -126,6 +126,7 @@ class InstanceDetails extends Component {
         props.setCurrentInstance(null);
         this.state = {
             orgUnitTypeIds: [],
+            showDial: true,
         };
     }
 
@@ -169,6 +170,12 @@ class InstanceDetails extends Component {
         }
     }
 
+    onLigthBoxToggled(open) {
+        this.setState({
+            showDial: !open,
+        });
+    }
+
     render() {
         const {
             classes,
@@ -181,6 +188,8 @@ class InstanceDetails extends Component {
             redirectToReplace,
             currentUser,
         } = this.props;
+
+        const { showDial } = this.state;
 
         const canEditEnketo = userHasPermission(
             'iaso_update_submission',
@@ -213,17 +222,19 @@ class InstanceDetails extends Component {
                 {fetching && <LoadingSpinner />}
                 {currentInstance && (
                     <Box className={classes.containerFullHeightNoTabPadded}>
-                        <SpeedDialInstanceActions
-                            actions={actions({
-                                currentInstance,
-                                reAssignInstance,
-                                orgUnitTypeIds: this.state.orgUnitTypeIds,
-                                canEditEnketo,
-                            })}
-                            onActionSelected={action =>
-                                this.onActionSelected(action)
-                            }
-                        />
+                        {showDial && (
+                            <SpeedDialInstanceActions
+                                actions={actions({
+                                    currentInstance,
+                                    reAssignInstance,
+                                    orgUnitTypeIds: this.state.orgUnitTypeIds,
+                                    canEditEnketo,
+                                })}
+                                onActionSelected={action =>
+                                    this.onActionSelected(action)
+                                }
+                            />
+                        )}
                         <Grid container spacing={4}>
                             <Grid xs={12} md={5} item>
                                 {currentInstance.deleted && (
@@ -278,6 +289,9 @@ class InstanceDetails extends Component {
                                             files={getInstancesFilesList([
                                                 currentInstance,
                                             ])}
+                                            onLigthBoxToggled={open =>
+                                                this.onLigthBoxToggled(open)
+                                            }
                                         />
                                     </WidgetPaper>
                                 )}

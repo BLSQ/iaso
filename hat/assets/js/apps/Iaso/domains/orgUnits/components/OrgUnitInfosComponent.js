@@ -60,7 +60,7 @@ const onActionSelected = (fetchEditUrl, action, instance) => {
     }
 };
 
-const initialFormState = (orgUnit, instance_defining_id) => {
+const initialFormState = (orgUnit, instanceDefiningId) => {
     return {
         id: orgUnit.id["value"],
         name: orgUnit.name["value"],
@@ -73,7 +73,7 @@ const initialFormState = (orgUnit, instance_defining_id) => {
         aliases: orgUnit.aliases["value"],
         parent_id: orgUnit.parent_id["value"],
         source_ref: orgUnit.source_ref["value"],
-        instance_defining_id: instance_defining_id,
+        instance_defining_id: instanceDefiningId,
     };
 };
 
@@ -85,9 +85,9 @@ const onError = () =>  {
   }
 }
 
-const linkOrgUnitToInstanceDefining = (org_unit, instance_defining_id, saveOu) => {
-  const currentOrgUnit = org_unit;
-  const newOrgUnit = initialFormState(org_unit, instance_defining_id);
+const linkOrgUnitToInstanceDefining = (orgUnit, instanceDefiningId, saveOu) => {
+  const currentOrgUnit = orgUnit;
+  const newOrgUnit = initialFormState(orgUnit, instanceDefiningId);
   let orgUnitPayload = omit({ ...currentOrgUnit, ...newOrgUnit });
 
   orgUnitPayload = {
@@ -107,7 +107,7 @@ const linkOrgUnitToInstanceDefining = (org_unit, instance_defining_id, saveOu) =
 
 const actions = (orgUnit, formId, formDefiningId, instanceId, saveOu) => {
   const instanceDefining = orgUnit.instance_defining;
-  const linkOrgUnit = ((formId === formDefiningId) && !instanceDefining);
+  const linkOrgUnit = ((formId !== formDefiningId) || instanceDefining);
   return [
 
       {
@@ -120,29 +120,29 @@ const actions = (orgUnit, formId, formDefiningId, instanceId, saveOu) => {
           icon: <LinkIcon
                   onClick={() => linkOrgUnitToInstanceDefining(orgUnit, instanceId, saveOu)}
                 />,
-          disabled: !linkOrgUnit,
+          disabled: linkOrgUnit,
       }
   ];
 }
 
 const OrgUnitCreationDetails = ({
-  org_unit
+  orgUnit
 }) => (
   <Fragment>
     <InputComponent
         keyValue="source"
-        value={org_unit.source}
+        value={orgUnit.source}
         disabled
         label={MESSAGES.source}
     />
     <InputComponent
         keyValue="created_at"
-        value={moment.unix(org_unit.created_at).format('LTS')}
+        value={moment.unix(orgUnit.created_at).format('LTS')}
         disabled
     />
     <InputComponent
         keyValue="updated_at"
-        value={moment.unix(org_unit.updated_at).format('LTS')}
+        value={moment.unix(orgUnit.updated_at).format('LTS')}
         disabled
     />
   </Fragment>
@@ -269,7 +269,7 @@ const OrgUnitInfosComponent = ({
                   />
               </FormControlComponent>
               {orgUnit.instance_defining && (
-                <OrgUnitCreationDetails org_unit={orgUnit}/>
+                <OrgUnitCreationDetails orgUnit={orgUnit}/>
               )}
               <InputComponent
                   keyValue="aliases"
@@ -280,7 +280,7 @@ const OrgUnitInfosComponent = ({
           </Grid>
           <Grid item xs={orgUnit.instance_defining ? 6 : 4}>
           {(orgUnit.id && !orgUnit.instance_defining) && (
-              <OrgUnitCreationDetails org_unit={orgUnit}/>
+              <OrgUnitCreationDetails orgUnit={orgUnit}/>
           )}
 
           {orgUnit.instance_defining && (

@@ -30,7 +30,7 @@ const ActionTableColumnComponent = ({
     user
 }) => {
     const dispatch = useDispatch();
-    const { mutateAsync: saveOu, isLoading: savingOu } = useSaveOrgUnit();
+    const { mutateAsync: saveOu } = useSaveOrgUnit();
     const onError = () =>  {
       if (onError.status === 400) {
         onError.details.forEach(entry => {

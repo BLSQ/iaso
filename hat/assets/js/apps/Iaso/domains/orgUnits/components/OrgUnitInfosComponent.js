@@ -64,9 +64,7 @@ const initialFormState = (orgUnit, instanceDefiningId) => {
     return {
         id: orgUnit.id["value"],
         name: orgUnit.name["value"],
-        org_unit_type_id: orgUnit.org_unit_type_id["value"]
-            ? `${orgUnit.org_unit_type_id["value"]}`
-            : null,
+        org_unit_type_id: orgUnit?.org_unit_type_id["value"]?.toString()??undefined,
         groups: orgUnit.groups["value"]?.map(g => g) ?? [],
         sub_source: orgUnit.sub_source["value"],
         validation_status: orgUnit.validation_status["value"],
@@ -107,7 +105,7 @@ const linkOrgUnitToInstanceDefining = (orgUnit, instanceDefiningId, saveOu) => {
 
 const actions = (orgUnit, formId, formDefiningId, instanceId, saveOu) => {
   const instanceDefining = orgUnit.instance_defining;
-  const linkOrgUnit = ((formId !== formDefiningId) || instanceDefining);
+  const linkOrgUnit = ((formId !== formDefiningId) || instanceDefining) ? true : false;
   return [
 
       {

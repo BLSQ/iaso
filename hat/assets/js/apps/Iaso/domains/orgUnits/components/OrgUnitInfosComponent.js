@@ -319,6 +319,7 @@ OrgUnitInfosComponent.propTypes = {
     onChangeInfo: PropTypes.func.isRequired,
     resetTrigger: PropTypes.bool,
     fetchEditUrl: PropTypes.func.isRequired,
+    params: PropTypes.object.isRequired,
 };
 OrgUnitInfosComponent.defaultProps = {
     resetTrigger: false,

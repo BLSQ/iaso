@@ -32,7 +32,10 @@ export const RoundsForm = () => {
 
     const handleAddRound = roundIndex => {
         const newRounds = [...rounds];
-        newRounds.splice(roundIndex - 1, 0, { number: roundIndex });
+        newRounds.splice(roundIndex === 0 ? 0 : roundIndex - 1, 0, {
+            number: roundIndex,
+        });
+        console.log('newRounds', newRounds);
         setFieldValue('rounds', newRounds);
         setLastRound(newRounds[newRounds.length - 1]);
         setCurrentRoundNumber(roundIndex);

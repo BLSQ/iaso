@@ -30,6 +30,7 @@ export const PreparednessConfig = ({ roundNumber }) => {
     const { values, setFieldValue, dirty } = useFormikContext();
     const { rounds = [], id: campaignId } = values;
     const currentRound = rounds.find(r => r.number === roundNumber);
+    const roundIndex = rounds.findIndex(r => r.number === roundNumber);
     const roundStartDate = currentRound?.started_at;
     const isLockedForEdition = roundStartDate
         ? moment().isAfter(moment(roundStartDate, 'YYYY-MM-DD', 'day'))
@@ -50,8 +51,8 @@ export const PreparednessConfig = ({ roundNumber }) => {
 
     const preparednessData = preparednessForm ?? lastPreparedness;
 
-    const key = `rounds[${roundNumber}].preparedness_spreadsheet_url`;
-    const lastKey = `rounds[${roundNumber}].last_preparedness`;
+    const key = `rounds[${roundIndex}].preparedness_spreadsheet_url`;
+    const lastKey = `rounds[${roundIndex}].last_preparedness`;
 
     const previewMutation = useFetchPreparedness();
 

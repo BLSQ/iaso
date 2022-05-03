@@ -24,7 +24,10 @@ export const RoundsForm = () => {
     const newRoundNumber = lastRound?.number + 1 || 1;
 
     const displayAddZeroRound =
-        rounds.length === 0 || (rounds.length > 0 && rounds[0].number === 1);
+        rounds.length === 0 ||
+        (rounds.length > 0 &&
+            rounds[0].number === 1 &&
+            rounds.filter(rnd => rnd.number === 0).length === 0);
 
     const [currentRoundNumber, setCurrentRoundNumber] = useState(
         rounds.length > 0 ? rounds[0].number : undefined,
@@ -35,9 +38,9 @@ export const RoundsForm = () => {
         newRounds.splice(roundIndex === 0 ? 0 : roundIndex - 1, 0, {
             number: roundIndex,
         });
-        console.log('newRounds', newRounds);
-        setFieldValue('rounds', newRounds);
-        setLastRound(newRounds[newRounds.length - 1]);
+        const sortedRounds = newRounds.sort((a, b) => a.number - b.number);
+        setFieldValue('rounds', sortedRounds);
+        setLastRound(newRounds[sortedRounds.length - 1]);
         setCurrentRoundNumber(roundIndex);
     };
     const handleDeleteRound = roundIndex => {

@@ -9,6 +9,7 @@ import MESSAGES from '../messages';
 import omit from 'lodash/omit';
 import { useDispatch } from 'react-redux';
 import { redirectTo as redirectToAction } from '../../../routing/actions';
+import { useFormState } from '../../../hooks/form';
 
 const initialFormState = (orgUnit, instance_defining_id) => {
     return {
@@ -29,6 +30,7 @@ const ActionTableColumnComponent = ({
     settings,
     user
 }) => {
+    const [setFieldErrors] = useFormState(initialFormState(settings.row.original.org_unit, settings.row.original.id));
     const dispatch = useDispatch();
     const { mutateAsync: saveOu } = useSaveOrgUnit();
     const onError = () =>  {

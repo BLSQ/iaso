@@ -89,7 +89,7 @@ const ActionTableColumnComponent = ({
                 )}
             {(settings.row.original.form_defining_id ==
                 settings.row.original.form_id &&  !settings.row.original.org_unit.instance_defining_id) &&
-                userHasPermission('iaso_org_units', user) && (
+                (userHasPermission('iaso_org_units', user) && userHasPermission('iaso_submissions', user)) && (
                     <IconButtonComponent
                         onClick={() =>
                             linkOrgUnitToInstanceDefining()

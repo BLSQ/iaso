@@ -5,7 +5,7 @@ import { withStyles, Grid } from '@material-ui/core';
 import PropTypes from 'prop-types';
 import moment from 'moment';
 
-import { connect } from 'react-redux';
+import { connect, useSelector } from 'react-redux';
 import { bindActionCreators } from 'redux';
 import { makeStyles } from '@material-ui/core/styles';
 
@@ -27,6 +27,7 @@ import EnketoIcon from '../../instances/components/EnketoIcon';
 import LinkIcon from '@material-ui/icons/Link';
 import queryString from "query-string"
 import omit from 'lodash/omit';
+import { userHasPermission } from '../../users/utils';
 // reformatting orgUnit name so the OU can be passed to the treeview modal
 // and selecting the parent for display
 const useStyles = makeStyles(theme => ({
@@ -104,8 +105,11 @@ const linkOrgUnitToInstanceDefining = (orgUnit, instanceDefiningId, saveOu) => {
 }
 
 const actions = (orgUnit, formId, formDefiningId, instanceId, saveOu) => {
+  const currentUser = useSelector(state => state.users.current);
   const instanceDefining = orgUnit.instance_defining;
   const linkOrgUnit = ((formId !== formDefiningId) || instanceDefining) ? true : false;
+  const has_submission_permission = userHasPermission('iaso_submissions', currentUser) && userHasPermission('iaso_org_units', currentUser);
+
   return [
 
       {
@@ -118,7 +122,7 @@ const actions = (orgUnit, formId, formDefiningId, instanceId, saveOu) => {
           icon: <LinkIcon
                   onClick={() => linkOrgUnitToInstanceDefining(orgUnit, instanceId, saveOu)}
                 />,
-          disabled: linkOrgUnit,
+          disabled: linkOrgUnit && has_submission_permission,
       }
   ];
 }

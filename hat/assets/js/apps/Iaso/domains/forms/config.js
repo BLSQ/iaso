@@ -255,4 +255,26 @@ const formsTableColumns = ({
     return cols;
 };
 
+export const requiredFields = [
+    {
+        type: 'string',
+        key: 'name',
+    },
+    {
+        type: 'array',
+        key: 'project_ids',
+    },
+    {
+        type: 'string',
+        key: 'periods_before_allowed',
+    },
+    {
+        type: 'string',
+        key: 'periods_after_allowed',
+    },
+    {
+        type: 'boolean',
+        key: 'single_per_period',
+    },
+];
 export default formsTableColumns;

@@ -107,7 +107,7 @@ class OrgUnitMapComponent extends Component {
     async componentDidMount() {
         const {
             intl: { formatMessage },
-            orgUnit,
+            currentOrgUnit,
             onChangeShape,
             onChangeLocation,
         } = this.props;
@@ -119,7 +119,7 @@ class OrgUnitMapComponent extends Component {
             groupKey: 'location',
             onChangeShape: shape => onChangeShape('geo_json', shape),
             onChangeLocation,
-            geoJson: getleafletGeoJson(orgUnit.geo_json),
+            geoJson: getleafletGeoJson(currentOrgUnit.geo_json),
             classNames: 'primary',
             onAdd: () => this.toggleAddShape('location'),
         });
@@ -128,7 +128,7 @@ class OrgUnitMapComponent extends Component {
             groupKey: 'catchment',
             onChangeShape: shape => onChangeShape('catchment', shape),
             onChangeLocation,
-            geoJson: getleafletGeoJson(orgUnit.catchment),
+            geoJson: getleafletGeoJson(currentOrgUnit.catchment),
             classNames: 'secondary',
             tooltipMessage: formatMessage(MESSAGES.catchment),
             onAdd: () => this.toggleAddShape('catchment'),
@@ -139,7 +139,7 @@ class OrgUnitMapComponent extends Component {
         const { locationGroup, catchmentGroup } = this.state;
         const {
             intl: { formatMessage },
-            orgUnit,
+            currentOrgUnit,
             sourcesSelected,
         } = this.props;
         // When no linked org unit from other sources
@@ -151,15 +151,22 @@ class OrgUnitMapComponent extends Component {
         ) {
             this.fitToBounds();
             // When linked org unit from other sources, fetch shape first
-        } else if (!isEqual(prevProps.orgUnit.geo_json, orgUnit.geo_json)) {
+        } else if (
+            !isEqual(prevProps.currentOrgUnit.geo_json, currentOrgUnit.geo_json)
+        ) {
             locationGroup.updateShape(
-                getleafletGeoJson(orgUnit.geo_json),
+                getleafletGeoJson(currentOrgUnit.geo_json),
                 'primary',
             );
         }
-        if (!isEqual(prevProps.orgUnit.catchment, orgUnit.catchment)) {
+        if (
+            !isEqual(
+                prevProps.currentOrgUnit.catchment,
+                currentOrgUnit.catchment,
+            )
+        ) {
             catchmentGroup.updateShape(
-                getleafletGeoJson(orgUnit.catchment),
+                getleafletGeoJson(currentOrgUnit.catchment),
                 'secondary',
                 formatMessage(MESSAGES.catchment),
             );
@@ -197,7 +204,7 @@ class OrgUnitMapComponent extends Component {
     }
 
     fitToBounds() {
-        const { currentTile, orgUnit, sourcesSelected } = this.props;
+        const { currentTile, currentOrgUnit, sourcesSelected } = this.props;
         const {
             location,
             locationGroup,
@@ -208,7 +215,7 @@ class OrgUnitMapComponent extends Component {
         fitToBounds({
             padding,
             currentTile,
-            orgUnit,
+            orgUnit: currentOrgUnit,
             orgUnitTypesSelected,
             sourcesSelected,
             formsSelected,
@@ -308,7 +315,7 @@ class OrgUnitMapComponent extends Component {
 
     render() {
         const {
-            orgUnit,
+            currentOrgUnit,
             currentTile,
             saveOrgUnit,
             orgUnitLocationModified,
@@ -317,7 +324,6 @@ class OrgUnitMapComponent extends Component {
             setSourcesSelected,
             sourcesSelected,
             sources,
-            currentOrgUnit,
             loadingSelectedSources,
             intl: { formatMessage },
             theme,
@@ -334,7 +340,8 @@ class OrgUnitMapComponent extends Component {
             catchmentGroup,
         } = this.state;
         const hasMarker =
-            Boolean(orgUnit.latitude) && Boolean(orgUnit.longitude);
+            Boolean(currentOrgUnit.latitude) &&
+            Boolean(currentOrgUnit.longitude);
         if (this.map) {
             this.map.leafletElement.options.maxZoom = currentTile.maxZoom;
         }
@@ -353,7 +360,7 @@ class OrgUnitMapComponent extends Component {
             catchment.add;
         let ancestorWithGeoJson = null;
         for (
-            let ancestor = orgUnit.parent;
+            let ancestor = currentOrgUnit.parent;
             ancestor;
             ancestor = ancestor.parent
         ) {
@@ -391,7 +398,7 @@ class OrgUnitMapComponent extends Component {
                     commentsDisabled={actionBusy}
                     footerComponent={
                         <OrgunitOptionSaveComponent
-                            orgUnit={orgUnit}
+                            orgUnit={currentOrgUnit}
                             resetOrgUnit={() => this.handleReset()}
                             orgUnitLocationModified={orgUnitLocationModified}
                             saveOrgUnit={saveOrgUnit}
@@ -426,7 +433,7 @@ class OrgUnitMapComponent extends Component {
                                     fitToBounds({
                                         padding,
                                         currentTile,
-                                        orgUnit,
+                                        orgUnit: currentOrgUnit,
                                         orgUnitTypesSelected,
                                         sourcesSelected,
                                         formsSelected: forms,
@@ -441,7 +448,7 @@ class OrgUnitMapComponent extends Component {
                     }
                     editOptionComponent={
                         <EditOrgUnitOptionComponent
-                            orgUnit={orgUnit}
+                            orgUnit={currentOrgUnit}
                             canEditLocation={canEditLocation}
                             canEditCatchment={canEditCatchment}
                             locationState={location}
@@ -471,7 +478,7 @@ class OrgUnitMapComponent extends Component {
                     }
                     commentsOptionComponent={
                         <OrgUnitsMapComments
-                            orgUnit={orgUnit}
+                            orgUnit={currentOrgUnit}
                             className={classes.commentContainer}
                             maxPages={4}
                         />
@@ -492,6 +499,7 @@ class OrgUnitMapComponent extends Component {
                         ]}
                     />
                     <Map
+                        key={currentOrgUnit.id}
                         scrollWheelZoom={false}
                         maxZoom={currentTile.maxZoom}
                         style={{ height: '100%' }}
@@ -722,7 +730,7 @@ class OrgUnitMapComponent extends Component {
                                 style={{ zIndex: 699 }}
                             >
                                 <MarkerComponent
-                                    item={orgUnit}
+                                    item={currentOrgUnit}
                                     draggable={currentOption === 'edit'}
                                     onDragend={newMarker =>
                                         this.props.onChangeLocation(
@@ -738,7 +746,7 @@ class OrgUnitMapComponent extends Component {
                                 style={{ zIndex: 699 }}
                             >
                                 <MarkerComponent
-                                    item={orgUnit}
+                                    item={currentOrgUnit}
                                     draggable={currentOption === 'edit'}
                                     onDragend={newMarker =>
                                         this.props.onChangeLocation(
@@ -763,7 +771,6 @@ OrgUnitMapComponent.defaultProps = {
 OrgUnitMapComponent.propTypes = {
     intl: PropTypes.object.isRequired,
     dispatch: PropTypes.func.isRequired,
-    orgUnit: PropTypes.object.isRequired,
     onChangeShape: PropTypes.func.isRequired,
     onChangeLocation: PropTypes.func.isRequired,
     currentTile: PropTypes.object.isRequired,

@@ -4,7 +4,7 @@ import { alpha } from '@material-ui/core/styles/colorManipulator';
 import {
     commonStyles,
     LoadingSpinner,
-    useSafeIntl
+    useSafeIntl,
 } from 'bluesquare-components';
 import omit from 'lodash/omit';
 import PropTypes from 'prop-types';
@@ -17,7 +17,7 @@ import SingleTable from '../../components/tables/SingleTable';
 import {
     linksFiltersWithPrefix,
     onlyChildrenParams,
-    orgUnitFiltersWithPrefix
+    orgUnitFiltersWithPrefix,
 } from '../../constants/filters';
 import { baseUrls } from '../../constants/urls';
 import { redirectTo, redirectToReplace } from '../../routing/actions';
@@ -27,7 +27,7 @@ import {
     fetchForms,
     fetchLinks,
     fetchOrgUnitsList,
-    saveLink
+    saveLink,
 } from '../../utils/requests';
 import formsTableColumns from '../forms/config';
 import LinksDetails from '../links/components/LinksDetailsComponent';
@@ -40,13 +40,13 @@ import { orgUnitsTableColumns } from './config';
 import {
     useOrgUnitDetailData,
     useRefreshOrgUnit,
-    useSaveOrgUnit
+    useSaveOrgUnit,
 } from './hooks';
 import MESSAGES from './messages';
 import {
     getAliasesArrayFromString,
     getLinksSources,
-    getOrgUnitsTree
+    getOrgUnitsTree,
 } from './utils';
 
 const baseUrl = baseUrls.orgUnitDetails;
@@ -138,9 +138,10 @@ const OrgUnitDetail = ({ params, router }) => {
         }
         if (currentOrgUnit?.org_unit_type_name) {
             return (
-                `${currentOrgUnit?.name}${currentOrgUnit.org_unit_type_name
-                    ? ` - ${currentOrgUnit.org_unit_type_name}`
-                    : ''
+                `${currentOrgUnit?.name}${
+                    currentOrgUnit.org_unit_type_name
+                        ? ` - ${currentOrgUnit.org_unit_type_name}`
+                        : ''
                 }` ?? ''
             );
         }
@@ -267,7 +268,7 @@ const OrgUnitDetail = ({ params, router }) => {
                 ...orgUnitPayload,
                 groups:
                     orgUnitPayload.groups.length > 0 &&
-                        !orgUnitPayload.groups[0].id
+                    !orgUnitPayload.groups[0].id
                         ? orgUnitPayload.groups
                         : orgUnitPayload.groups.map(g => g.id),
             };
@@ -427,31 +428,34 @@ const OrgUnitDetail = ({ params, router }) => {
                     )}
                     <div className={tab === 'map' ? '' : classes.hiddenOpacity}>
                         <Box className={classes.containerFullHeight}>
-                            <OrgUnitMap
-                                loadingSelectedSources={loadingSelectedSources}
-                                currentOrgUnit={currentOrgUnit}
-                                sources={sources}
-                                orgUnitTypes={orgUnitTypes}
-                                sourcesSelected={sourcesSelected}
-                                setSourcesSelected={newSourcesSelected => {
-                                    setSourcesSelected(newSourcesSelected);
-                                }}
-                                setOrgUnitLocationModified={isModified =>
-                                    setOrgUnitLocationModified(isModified)
-                                }
-                                orgUnitLocationModified={
-                                    orgUnitLocationModified
-                                }
-                                orgUnit={currentOrgUnit}
-                                resetOrgUnit={() => handleResetOrgUnit()}
-                                saveOrgUnit={() => handleSaveOrgUnit()}
-                                onChangeLocation={location => {
-                                    handleChangeLocation(location);
-                                }}
-                                onChangeShape={(key, geoJson) =>
-                                    handleChangeShape(geoJson, key)
-                                }
-                            />
+                            {!isFetchingDetail && (
+                                <OrgUnitMap
+                                    loadingSelectedSources={
+                                        loadingSelectedSources
+                                    }
+                                    currentOrgUnit={currentOrgUnit}
+                                    sources={sources}
+                                    orgUnitTypes={orgUnitTypes}
+                                    sourcesSelected={sourcesSelected}
+                                    setSourcesSelected={newSourcesSelected => {
+                                        setSourcesSelected(newSourcesSelected);
+                                    }}
+                                    setOrgUnitLocationModified={isModified =>
+                                        setOrgUnitLocationModified(isModified)
+                                    }
+                                    orgUnitLocationModified={
+                                        orgUnitLocationModified
+                                    }
+                                    resetOrgUnit={() => handleResetOrgUnit()}
+                                    saveOrgUnit={() => handleSaveOrgUnit()}
+                                    onChangeLocation={location => {
+                                        handleChangeLocation(location);
+                                    }}
+                                    onChangeShape={(key, geoJson) =>
+                                        handleChangeShape(geoJson, key)
+                                    }
+                                />
+                            )}
                         </Box>
                     </div>
 

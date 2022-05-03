@@ -366,7 +366,6 @@ describe('children tab', () => {
                 testPageFilters(
                     newFilters,
                     '[data-test="children-tab"] [data-test="search-button"]',
-                    'childrenParams',
                 );
 
                 cy.wait('@getChildrenSearch').then(() => {
@@ -380,6 +379,7 @@ describe('children tab', () => {
         it('should download file via out own anchor click', () => {
             testDownloadButtons(
                 '[data-test="children-tab"] [data-test="download-buttons"]',
+                'orgunits',
             );
         });
     });

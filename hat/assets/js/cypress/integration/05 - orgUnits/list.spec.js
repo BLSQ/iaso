@@ -56,7 +56,7 @@ describe('OrgUnits', () => {
                 { fixture: 'orgunits/list.json' },
             );
             cy.visit(baseUrl);
-            cy.get('#searchButton').click();
+            cy.get('[data-test="search-button"]').click();
 
             const table = cy.get('table');
             table.should('have.length', 1);
@@ -98,7 +98,7 @@ describe('OrgUnits', () => {
                 { fixture: 'orgunits/list.json' },
             );
             cy.visit(baseUrl);
-            cy.get('#searchButton').click();
+            cy.get('[data-test="search-button"]').click();
         });
         it('click on next should display next page', () => {
             cy.get('.pagination-page-select input')
@@ -197,7 +197,7 @@ describe('OrgUnits', () => {
                     },
                     res,
                 ).as('getOrgUnitSearch');
-                cy.get('#searchButton').click();
+                cy.get('[data-test="search-button"]').click();
 
                 cy.wait('@getOrgUnitSearch').then(() => {
                     cy.get('@pageInput').should('have.value', 1);

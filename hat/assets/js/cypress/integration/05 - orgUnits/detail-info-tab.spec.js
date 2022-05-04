@@ -64,7 +64,7 @@ const testEditableInfos = (ou, validationStatus = 'New') => {
     cy.get('@ouTreeInput').should('contain', ou.parent.short_name);
 };
 
-describe.only('infos tab', () => {
+describe('infos tab', () => {
     beforeEach(() => {
         cy.login();
         cy.intercept('GET', '/api/profiles/**', {

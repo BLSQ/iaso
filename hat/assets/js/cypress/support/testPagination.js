@@ -22,52 +22,63 @@ export const testPagination = ({
                 fixture,
             ).as('query');
             cy.visit(baseUrl);
+            if (withSearch) {
+                cy.get(selector).find('[data-test="search-button"]').click();
+            }
+
             cy.wait('@query');
             cy.get(selector).as('selector');
-            if (withSearch)
-                cy.get('@selector').find('[data-test="search-button"]').click();
+            cy.get('@selector').should('exist');
         });
         it('click on next should display next page', () => {
             cy.get('@selector')
                 .find('.pagination-page-select input')
-                .as('pageInput')
                 .should('have.value', 1);
 
             cy.get('@selector')
                 .find('button.pagination-previous')
-                .as('previousButton')
                 .should('be.disabled');
             cy.get('@selector')
                 .find('button.pagination-first')
-                .as('firstButton')
                 .should('be.disabled');
             cy.get('@selector')
                 .find('.pagination-count')
                 .should('contain', `${formatThousand(fixture.count)}`);
 
-            cy.get('@selector').find('button.pagination-next').click();
-            cy.get('@pageInput').should('have.value', 2);
-            cy.get('@previousButton').should('not.be.disabled');
-            cy.get('@firstButton').should('not.be.disabled');
+            cy.get('@selector')
+                .find('button.pagination-next')
+                .should('exist')
+                .click();
+            cy.get('@selector')
+                .find('.pagination-page-select input')
+                .should('have.value', 2);
+            cy.get('@selector')
+                .find('button.pagination-previous')
+                .should('not.be.disabled');
+            cy.get('@selector')
+                .find('button.pagination-first')
+                .should('not.be.disabled');
         });
         it('click on last should display last page', () => {
             cy.get('@selector')
                 .find('.pagination-page-select input')
-                .as('pageInput')
                 .should('have.value', 1);
+
+            cy.get(selector)
+                .find('button.pagination-last')
+                .should('exist')
+                .click();
 
             cy.get('@selector')
                 .find('button.pagination-last')
-                .as('lastButton')
-                .click();
-
-            cy.get('@lastButton').should('be.disabled');
-            cy.get('@pageInput').should('have.value', fixture.pages);
+                .should('be.disabled');
+            cy.get('@selector')
+                .find('.pagination-page-select input')
+                .should('have.value', fixture.pages);
         });
         it('click on first should display first page', () => {
             cy.get('@selector')
                 .find('.pagination-page-select input')
-                .as('pageInput')
                 .should('have.value', 1);
 
             cy.intercept(
@@ -88,11 +99,16 @@ export const testPagination = ({
             cy.wait('@getData').then(() => {
                 cy.wait(100);
                 cy.get('@selector').find('button.pagination-first').click();
-                cy.get('@pageInput').should('have.value', 1);
+                cy.get('@selector')
+                    .find('.pagination-page-select input')
+                    .should('have.value', 1);
             });
         });
         it('changing rows count should display the correct ammount of rows', () => {
-            cy.get('@selector').find('.pagination-row-select').click();
+            cy.get(selector)
+                .find('.pagination-row-select')
+                .should('exist')
+                .click();
             const pageSize = 5;
             const res = { ...fixture };
             res[apiKey] = res[apiKey].slice(0, pageSize);

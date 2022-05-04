@@ -1,6 +1,6 @@
-import React, { Fragment } from 'react';
+import React from 'react';
 
-import { withStyles, Grid } from '@material-ui/core';
+import { Grid } from '@material-ui/core';
 
 import PropTypes from 'prop-types';
 import moment from 'moment';
@@ -15,7 +15,6 @@ import {
     IconButton as IconButtonComponent,
 } from 'bluesquare-components';
 import LinkIcon from '@material-ui/icons/Link';
-import queryString from 'query-string';
 import omit from 'lodash/omit';
 import { useSaveOrgUnit } from '../hooks';
 import InputComponent from '../../../components/forms/InputComponent';
@@ -95,7 +94,8 @@ const linkOrgUnitToInstanceDefining = (orgUnit, instanceDefiningId, saveOu) => {
                 : orgUnitPayload.groups.map(g => g.id),
     };
     saveOu(orgUnitPayload)
-        .then(ou => {
+        // eslint-disable-next-line no-unused-vars
+        .then(_ou => {
             window.location.reload(false);
         })
         .catch(onError);
@@ -171,7 +171,7 @@ const OrgUnitInfosComponent = ({
     params,
     ...props
 }) => {
-    const { mutateAsync: saveOu, isLoading: savingOu } = useSaveOrgUnit();
+    const { mutateAsync: saveOu } = useSaveOrgUnit();
     const classes = useStyles();
 
     const { formId } = params;

@@ -17,9 +17,8 @@ COPY package.json .
 COPY package-lock.json .
 
 
-# ci install the exact version of package, compared to install which might a bump minor version
-RUN npm config set registry http://registry.npmjs.org/
 RUN npm install -g npm@8.5
+# ci install the exact version of package, compared to install which might a bump minor version
 RUN npm ci
 
 COPY hat/ /opt/app/hat/

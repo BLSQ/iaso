@@ -33,6 +33,38 @@ const MESSAGES = defineMessages({
         id: 'iaso.label.dateTo',
         defaultMessage: 'To date',
     },
+    actions: {
+        defaultMessage: 'Action(s)',
+        id: 'iaso.label.actions',
+    },
+    name: {
+        defaultMessage: 'Name',
+        id: 'iaso.label.name',
+    },
+    startDate: {
+        id: 'iaso.label.dateFrom',
+        defaultMessage: 'Start date',
+    },
+    endDate: {
+        id: 'iaso.label.dateTo',
+        defaultMessage: 'End date',
+    },
+    yes: {
+        defaultMessage: 'Yes',
+        id: 'iaso.label.yes',
+    },
+    no: {
+        defaultMessage: 'No',
+        id: 'iaso.label.no',
+    },
+    team: {
+        defaultMessage: 'Team',
+        id: 'iaso.label.team',
+    },
+    viewPlanning: {
+        defaultMessage: 'View planning',
+        id: 'iaso.label.viewPlanning',
+    },
 });
 
 export default MESSAGES;

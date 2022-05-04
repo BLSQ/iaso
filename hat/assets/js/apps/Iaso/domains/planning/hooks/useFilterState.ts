@@ -1,7 +1,6 @@
 import { useState, useCallback, useMemo } from 'react';
 import { useDispatch } from 'react-redux';
 import { redirectTo } from '../../../routing/actions';
-import { baseUrl } from '../../entities/config';
 
 export type FilterState = {
     filters: Record<string, unknown>;
@@ -12,6 +11,7 @@ export type FilterState = {
 };
 
 export const useFilterState = (
+    baseUrl: string,
     params: Record<string, unknown>,
 ): FilterState => {
     const [filtersUpdated, setFiltersUpdated] = useState(false);

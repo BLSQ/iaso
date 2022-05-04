@@ -9,6 +9,7 @@ import { PlanningParams } from './types';
 import MESSAGES from './messages';
 import { IntlFormatMessage } from '../../types/intl';
 import { publishingStatuses } from './constants';
+import { baseUrls } from '../../constants/urls';
 
 type Props = {
     params: PlanningParams;
@@ -22,10 +23,10 @@ const statusOptions = (formatMessage: IntlFormatMessage) => {
         };
     });
 };
-
+const baseUrl = baseUrls.planning;
 export const PlanningFilters: FunctionComponent<Props> = ({ params }) => {
     const { filters, handleSearch, handleChange, filtersUpdated } =
-        useFilterState(params);
+        useFilterState(baseUrl, params);
     const { formatMessage } = useSafeIntl();
     return (
         <>

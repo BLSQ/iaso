@@ -8,6 +8,7 @@ export type FilterState = {
     handleSearch: () => void;
     // eslint-disable-next-line no-unused-vars
     handleChange: (keyValue: string, value: unknown) => void;
+    filtersUpdated: boolean;
 };
 
 export const useFilterState = (
@@ -47,6 +48,7 @@ export const useFilterState = (
             filters,
             handleChange,
             handleSearch,
+            filtersUpdated,
         };
-    }, [filters, handleChange, handleSearch]);
+    }, [filters, handleChange, handleSearch, filtersUpdated]);
 };

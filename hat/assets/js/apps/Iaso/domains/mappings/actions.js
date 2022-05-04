@@ -179,5 +179,4 @@ export const fetchSources = () => dispatch =>
                 ),
             );
             console.error('Error while fetching source list:', error);
-            throw error;
         });

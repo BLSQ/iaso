@@ -12,7 +12,7 @@
         "test": "NODE_PATH=hat/assets/js/apps mocha --require ./babel-register.js --require ./hat/assets/js/test/helpers.js --require ./hat/assets/js/test/dom.js './hat/assets/js/apps/**/*.spec.js'",
         "test-watch": "NODE_PATH=hat/assets/js/apps mocha --require ./babel-register.js --require ./hat/assets/js/test/helpers.js --require ./hat/assets/js/test/dom.js './hat/assets/js/apps/**/*.spec.js' --watch",
         "cypress:open": "cypress open",
-        "test:e2e": "cypress run",
+        "test:e2e": "cypress run --browser chrome",
         "build": "npm run webpack",
         "webpack": "webpack --config ./hat/webpack.dev.js",
         "webpack-prod": "webpack --config ./hat/webpack.prod.js",

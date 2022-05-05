@@ -48,7 +48,7 @@ export const testPagination = ({
             cy.get('@selector')
                 .find('button.pagination-next')
                 .should('exist')
-                .click();
+                .click({ force: true });
             cy.get('@selector')
                 .find('.pagination-page-select input')
                 .should('have.value', 2);
@@ -67,7 +67,7 @@ export const testPagination = ({
             cy.get(selector)
                 .find('button.pagination-last')
                 .should('exist')
-                .click();
+                .click({ force: true });
 
             cy.get('@selector')
                 .find('button.pagination-last')
@@ -95,20 +95,20 @@ export const testPagination = ({
                     page: 2,
                 },
             ).as('getData');
-            cy.get('@selector').find('button.pagination-last').click();
+            cy.get('@selector')
+                .find('button.pagination-last')
+                .click({ force: true });
             cy.wait('@getData').then(() => {
                 cy.wait(100);
-                cy.get('@selector').find('button.pagination-first').click();
+                cy.get('@selector')
+                    .find('button.pagination-first')
+                    .click({ force: true });
                 cy.get('@selector')
                     .find('.pagination-page-select input')
                     .should('have.value', 1);
             });
         });
         it('changing rows count should display the correct ammount of rows', () => {
-            cy.get(selector)
-                .find('.pagination-row-select')
-                .should('exist')
-                .click();
             const pageSize = 5;
             const res = { ...fixture };
             res[apiKey] = res[apiKey].slice(0, pageSize);
@@ -121,6 +121,10 @@ export const testPagination = ({
                 },
                 res,
             ).as('getData');
+            cy.wait(1000);
+            cy.get(`${selector} .pagination-row-select`)
+                .should('exist')
+                .click();
             cy.get(`.row-option-${pageSize}`).click();
 
             cy.wait('@getData').then(() => {
@@ -138,7 +142,9 @@ export const testPagination = ({
                     },
                     fixture,
                 ).as('getData');
-                cy.get('@selector').find('button.pagination-next').click();
+                cy.get('@selector')
+                    .find('button.pagination-next')
+                    .click({ force: true });
 
                 cy.wait('@getData').then(() => {
                     cy.get('@selector')

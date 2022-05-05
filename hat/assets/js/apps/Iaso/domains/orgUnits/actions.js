@@ -94,6 +94,5 @@ export const saveMultiEdit = data => dispatch => {
                 ),
             );
             dispatch(setOrgUnitsListFetching(false));
-            throw error;
         });
 };

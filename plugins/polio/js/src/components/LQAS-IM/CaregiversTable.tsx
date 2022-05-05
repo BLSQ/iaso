@@ -160,7 +160,6 @@ export const CaregiversTable: FunctionComponent<Props> = ({
         }),
         [rowsPerPage, page],
     );
-
     return (
         <>
             {!isLoading && campaign && (
@@ -179,7 +178,7 @@ export const CaregiversTable: FunctionComponent<Props> = ({
                             defaultSorted={defaultSorted}
                             columns={columns(formatMessage)}
                             marginTop={false}
-                            count={data?.length ?? 0}
+                            count={dataForTable?.length ?? 0}
                             params={params}
                             resetPageToOne={resetPageToOne}
                             onTableParamsChange={handleTableParamsChange}

@@ -517,6 +517,14 @@ const MESSAGES = defineMessages({
         id: 'iaso.orgUnits.formsHelperText',
         defaultMessage: 'Form submissions',
     },
+    downloadXml: {
+        id: 'iaso.label.downloadXml',
+        defaultMessage: 'Download XML',
+    },
+    requiredField: {
+        id: 'iaso.forms.error.fieldRequired',
+        defaultMessage: 'This field is required',
+    },
 });
 
 export default MESSAGES;

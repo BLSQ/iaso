@@ -1,1 +1,107 @@
-[]
+[
+    {
+        "algorithm_id": 2,
+        "algorithm_name": "iaso.matching.matching_on_external_id",
+        "destination": {
+            "data_source": {
+                "id": 1,
+                "name": "reference"
+            },
+            "id": 3,
+            "number": 1
+        },
+        "id": 4,
+        "source": {
+            "data_source": {
+                "id": 2,
+                "name": "ucla-pnltha"
+            },
+            "id": 2,
+            "number": 1
+        }
+    },
+    {
+        "algorithm_id": 2,
+        "algorithm_name": "iaso.matching.matching_on_external_id",
+        "destination": {
+            "data_source": {
+                "id": 1,
+                "name": "reference"
+            },
+            "id": 3,
+            "number": 1
+        },
+        "id": 5,
+        "source": {
+            "data_source": {
+                "id": 3,
+                "name": "snis"
+            },
+            "id": 4,
+            "number": 1
+        }
+    },
+    {
+        "algorithm_id": 2,
+        "algorithm_name": "iaso.matching.matching_on_external_id",
+        "destination": {
+            "data_source": {
+                "id": 4,
+                "name": "pdss"
+            },
+            "id": 5,
+            "number": 1
+        },
+        "id": 9,
+        "source": {
+            "data_source": {
+                "id": 1,
+                "name": "reference"
+            },
+            "id": 3,
+            "number": 1
+        }
+    },
+    {
+        "algorithm_id": 2,
+        "algorithm_name": "iaso.matching.matching_on_external_id",
+        "destination": {
+            "data_source": {
+                "id": 4,
+                "name": "pdss"
+            },
+            "id": 5,
+            "number": 1
+        },
+        "id": 12,
+        "source": {
+            "data_source": {
+                "id": 1,
+                "name": "reference"
+            },
+            "id": 3,
+            "number": 1
+        }
+    },
+    {
+        "algorithm_id": 2,
+        "algorithm_name": "iaso.matching.matching_on_external_id",
+        "destination": {
+            "data_source": {
+                "id": 4,
+                "name": "pdss"
+            },
+            "id": 5,
+            "number": 1
+        },
+        "id": 13,
+        "source": {
+            "data_source": {
+                "id": 1,
+                "name": "reference"
+            },
+            "id": 3,
+            "number": 1
+        }
+    }
+]

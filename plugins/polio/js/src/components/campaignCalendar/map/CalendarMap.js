@@ -54,6 +54,7 @@ const CalendarMap = ({ campaigns, loadingCampaigns }) => {
                     order: 'id',
                     page: 1,
                     limit: 1000,
+                    app_id: appId,
                     // eslint-disable-next-line max-len
                     searches: `[{"validation_status":"all","color":"f4511e","source":2,"levels":${campaign.country_id.toString()},"orgUnitTypeId":"6","orgUnitParentId":${campaign.country_id.toString()},"dateFrom":null,"dateTo":null}]`,
                 };

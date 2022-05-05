@@ -263,25 +263,23 @@ Timeline tracker Automated message
         permission_classes=[permissions.IsAuthenticated],
     )
     def shapes(self, request):
-
         cached_response = cache.get("{0}-geo_shapes".format(request.user.id))
-
-        features = []
         queryset = self.filter_queryset(self.get_queryset())
         # Remove deleted and campaign with missing group
         queryset = queryset.filter(deleted_at=None).exclude(group=None)
 
-        if not request.user.is_anonymous and cached_response:
-            c_date_list = []
-            cached_date = make_aware(datetime.utcfromtimestamp(json.loads(cached_response)["cache_creation_date"]))
-            for c in queryset:
-                campaigns_date = SmallCampaignSerializer(c).data["updated_at"].replace("T", " ").replace("Z", "")
-                campaign_date = datetime.strptime(campaigns_date, "%Y-%m-%d %H:%M:%S.%f")
-                c_date_list.append(make_aware(campaign_date))
-                for i in range(len(c_date_list)):
-                    if c_date_list[i] or OrgUnit.objects.get(pk=c.country_id).updated_at > cached_date:
-                        continue
-            return JsonResponse(json.loads(cached_response))
+        if not request.user.is_anonymous and cached_response and queryset:
+            parsed_cache_response = json.loads(cached_response)
+            cache_creation_date = make_aware(datetime.utcfromtimestamp(parsed_cache_response["cache_creation_date"]))
+            last_campaign_updated = queryset.order_by("updated_at").last()
+            last_org_unit_updated = OrgUnit.objects.filter(groups__campaigns__in=queryset).order_by("updated_at").last()
+            if (
+                last_org_unit_updated
+                and cache_creation_date > last_org_unit_updated.updated_at
+                and last_campaign_updated
+                and cache_creation_date > last_campaign_updated.updated_at
+            ):
+                return JsonResponse(json.loads(cached_response))
 
         queryset = queryset.annotate(
             geom=RawSQL(
@@ -293,6 +291,7 @@ where group_id = polio_campaign.group_id""",
             )
         )
         # Check if the campaigns have been updated since the response has been cached
+        features = []
         for c in queryset:
             if c.geom:
                 s = SmallCampaignSerializer(c)

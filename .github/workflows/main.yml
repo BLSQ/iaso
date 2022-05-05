@@ -163,12 +163,13 @@ jobs:
           - 03 - Users
           - 04 - tasks
           - 05 - orgUnits
-          - 06 - entities
-          - 07 - orgUnitTypes
-          - 08 - projects
-          - 09 - submissions
+          - 06 - orgUnits tabs
+          - 07 - entities
+          - 08 - orgUnitTypes
+          - 09 - projects
           - 10 - groups
-          - 11 - datasources
+          - 11 - submissions
+          - 12 - datasources
     services:
       postgres:
         image: mdillon/postgis:10
@@ -207,6 +208,8 @@ jobs:
       - name: Cypress run
         uses: cypress-io/github-action@v2
         with:
+          browser: chrome
+          headless: true
           wait-on: 'http://localhost:8081'
           spec: hat/assets/js/cypress/integration/${{ matrix.containers }}/*.spec.js
         env:

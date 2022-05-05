@@ -260,7 +260,6 @@ Timeline tracker Automated message
         methods=["GET", "HEAD"],
         detail=False,
         url_path="merged_shapes.geojson",
-        permission_classes=[permissions.IsAuthenticated],
     )
     def shapes(self, request):
         cached_response = cache.get("{0}-geo_shapes".format(request.user.id))

@@ -267,7 +267,7 @@ Timeline tracker Automated message
         # Remove deleted and campaign with missing group
         queryset = queryset.filter(deleted_at=None).exclude(group=None)
 
-        if not request.user.is_anonymous and cached_response and queryset:
+        if cached_response and queryset:
             parsed_cache_response = json.loads(cached_response)
             cache_creation_date = make_aware(datetime.utcfromtimestamp(parsed_cache_response["cache_creation_date"]))
             last_campaign_updated = queryset.order_by("updated_at").last()
@@ -297,12 +297,12 @@ where group_id = polio_campaign.group_id""",
                 feature = {"type": "Feature", "geometry": json.loads(c.geom), "properties": s.data}
                 features.append(feature)
         res = {"type": "FeatureCollection", "features": features, "cache_creation_date": datetime.utcnow().timestamp()}
-        if not request.user.is_anonymous:
-            cache.set(
-                "{0}-geo_shapes".format(request.user.id),
-                json.dumps(res),
-                3600 * 24,
-            )
+
+        cache.set(
+            "{0}-geo_shapes".format(request.user.id),
+            json.dumps(res),
+            3600 * 24,
+        )
         return JsonResponse(res)
 
 

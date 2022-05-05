@@ -108,7 +108,7 @@ export const testPagination = ({
                     .should('have.value', 1);
             });
         });
-        it.only('changing rows count should display the correct ammount of rows', () => {
+        it('changing rows count should display the correct ammount of rows', () => {
             const pageSize = 5;
             const res = { ...fixture };
             res[apiKey] = res[apiKey].slice(0, pageSize);

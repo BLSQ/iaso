@@ -1,6 +1,7 @@
 import { apiDateFormat } from 'Iaso/utils/dates';
 
 const colsCount = 16;
+const defaultCampaignLength = 6;
 const dateFormat = apiDateFormat;
 const colSpanTitle = 21;
 const defaultOrder = 'round_one__started_at';
@@ -21,4 +22,11 @@ const staticFields = [
     },
 ];
 
-export { colsCount, dateFormat, colSpanTitle, staticFields, defaultOrder };
+export {
+    colsCount,
+    dateFormat,
+    colSpanTitle,
+    staticFields,
+    defaultOrder,
+    defaultCampaignLength,
+};

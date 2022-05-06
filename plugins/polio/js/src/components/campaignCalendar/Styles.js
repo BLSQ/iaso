@@ -107,6 +107,9 @@ export const useStyles = makeStyles(theme => ({
         padding: theme.spacing(1),
         minWidth: 0,
     },
+    weeksCell: {
+        fontSize: 9,
+    },
     tableCellSpan: {
         position: 'absolute',
         display: 'flex',
@@ -125,6 +128,8 @@ export const useStyles = makeStyles(theme => ({
         paddingLeft: theme.spacing(2),
         paddingRight: theme.spacing(2),
         fontWeight: 'bold',
+        fontSize: 11,
+        lineHeight: '14px',
     },
     tableCellSpanWithPopOver: {
         cursor: 'pointer',

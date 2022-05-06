@@ -6,10 +6,10 @@ import { TableCell } from '@material-ui/core';
 import HelpOutlineIcon from '@material-ui/icons/HelpOutline';
 
 import { PolioCreateEditDialog as CreateEditDialog } from '../../CreateEditDialog';
-import { R1Popper } from '../popper/R1';
+import { RoundPopper } from '../popper/RoundPopper';
 import { useStyles } from '../Styles';
 
-const R1Cell = ({ colSpan, campaign }) => {
+const StartRoundCell = ({ colSpan, campaign, round }) => {
     const classes = useStyles();
     const [dialogOpen, setDialogOpen] = useState(false);
     const [anchorEl, setAnchorEl] = useState(null);
@@ -35,12 +35,13 @@ const R1Cell = ({ colSpan, campaign }) => {
                     classes.tableCellSpanWithPopOver,
                 )}
             >
-                {colSpan > 1 && 'R1'}
+                {colSpan > 1 && `R${round.number}`}
                 <HelpOutlineIcon className={classes.helpIcon} />
             </span>
             {open && (
-                <R1Popper
+                <RoundPopper
                     open={open}
+                    round={round}
                     anchorEl={anchorEl}
                     campaign={campaign}
                     handleClick={handleClick}
@@ -57,9 +58,10 @@ const R1Cell = ({ colSpan, campaign }) => {
     );
 };
 
-R1Cell.propTypes = {
+StartRoundCell.propTypes = {
     colSpan: PropTypes.number.isRequired,
     campaign: PropTypes.object.isRequired,
+    round: PropTypes.object.isRequired,
 };
 
-export { R1Cell };
+export { StartRoundCell };

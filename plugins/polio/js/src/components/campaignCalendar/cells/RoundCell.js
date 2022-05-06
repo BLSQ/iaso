@@ -5,7 +5,7 @@ import classnames from 'classnames';
 import { TableCell } from '@material-ui/core';
 import { useStyles } from '../Styles';
 
-const R2Cell = ({ colSpan, campaign }) => {
+const RoundCell = ({ colSpan, campaign, round }) => {
     const classes = useStyles();
     const defaultCellStyles = [classes.tableCell, classes.tableCellBordered];
     return (
@@ -14,14 +14,17 @@ const R2Cell = ({ colSpan, campaign }) => {
             style={{ backgroundColor: campaign.color }}
             colSpan={colSpan}
         >
-            {colSpan > 1 && <span className={classes.tableCellSpan}>R2</span>}
+            {colSpan > 1 && (
+                <span className={classes.tableCellSpan}>R{round.number}</span>
+            )}
         </TableCell>
     );
 };
 
-R2Cell.propTypes = {
+RoundCell.propTypes = {
     colSpan: PropTypes.number.isRequired,
     campaign: PropTypes.object.isRequired,
+    round: PropTypes.object.isRequired,
 };
 
-export { R2Cell };
+export { RoundCell };

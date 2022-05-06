@@ -93,3 +93,8 @@ export type GroupedCampaign =  {
 export type GroupedCampaigns = Pagination & {
     results:GroupedCampaign[]
 }
+
+export type ViewPort = {
+    zoom: number;
+    center: number[];
+};

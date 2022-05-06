@@ -1,7 +1,11 @@
 import { useSnackQuery } from 'Iaso/libs/apiHooks';
 import { getRequest } from 'Iaso/libs/Api';
 
-export const useGetCampaigns = (options = {}) => {
+export const useGetCampaigns = (
+    options = {},
+    url = '/api/polio/campaigns/',
+    queryKey = 'campaigns',
+) => {
     const params = {
         limit: options.pageSize,
         page: options.page,
@@ -28,7 +32,7 @@ export const useGetCampaigns = (options = {}) => {
             Object.fromEntries(filteredParams),
         );
 
-        return `/api/polio/campaigns/?${queryString.toString()}`;
+        return `${url}?${queryString.toString()}`;
     };
 
     // adding the params to the queryKey to make sure it fetches when the query changes
@@ -42,7 +46,7 @@ export const useGetCampaigns = (options = {}) => {
                 format: 'csv',
             })}`),
         query: useSnackQuery(
-            ['polio', 'campaigns', params],
+            ['polio', queryKey, params],
             () => getRequest(getURL(params)),
             undefined,
             {

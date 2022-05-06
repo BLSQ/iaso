@@ -408,7 +408,7 @@ const getCells = (campaign, currentWeekIndex, firstMonday, lastSunday) => {
         const endInRange = isDateInRange(round.end, firstMonday, lastSunday);
 
         const dateUntilNextRound = round.end
-            .clone()
+            ?.clone()
             .add(round.daysCount, 'days');
 
         const dateUntilNextRoundInRange = isDateInRange(

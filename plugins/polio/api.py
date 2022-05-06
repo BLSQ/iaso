@@ -1,4 +1,5 @@
 import csv
+import functools
 import json
 from datetime import timedelta, datetime, timezone
 from typing import Optional
@@ -915,6 +916,7 @@ def handle_ona_request_with_key(request, key):
     failure_count = 0
     campaigns = Campaign.objects.all()
     form_count = 0
+    find_campaign_on_day_cached = functools.lru_cache(None)(find_campaign_on_day)
     for config in config.content:
         forms = get_url_content(
             url=config["url"], login=config["login"], password=config["password"], minutes=config.get("minutes", 60)
@@ -923,7 +925,7 @@ def handle_ona_request_with_key(request, key):
         facilities = (
             OrgUnit.objects.hierarchy(country)
             .filter(org_unit_type_id__category="HF")
-            .only("name", "id", "parent")
+            .only("name", "id", "parent", "aliases")
             .prefetch_related("parent")
         )
         cache = make_orgunits_cache(facilities)
@@ -931,7 +933,7 @@ def handle_ona_request_with_key(request, key):
         for form in forms:
             try:
                 today = datetime.strptime(form["today"], "%Y-%m-%d").date()
-                campaign = find_campaign_on_day(campaigns, today, country)
+                campaign = find_campaign_on_day_cached(campaigns, today, country)
                 district_name = form.get("District", "")
                 facility_name = form.get("facility", None)
                 # some form version for Senegal had their facility column as Facility with an uppercase.

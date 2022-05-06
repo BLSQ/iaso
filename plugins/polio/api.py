@@ -260,13 +260,26 @@ Timeline tracker Automated message
         methods=["GET", "HEAD"],
         detail=False,
         url_path="merged_shapes.geojson",
-        permission_classes=[permissions.IsAuthenticated],
     )
     def shapes(self, request):
-        features = []
+        cached_response = cache.get("{0}-geo_shapes".format(request.user.id))
         queryset = self.filter_queryset(self.get_queryset())
         # Remove deleted and campaign with missing group
         queryset = queryset.filter(deleted_at=None).exclude(group=None)
+
+        if cached_response and queryset:
+            parsed_cache_response = json.loads(cached_response)
+            cache_creation_date = make_aware(datetime.utcfromtimestamp(parsed_cache_response["cache_creation_date"]))
+            last_campaign_updated = queryset.order_by("updated_at").last()
+            last_org_unit_updated = OrgUnit.objects.filter(groups__campaigns__in=queryset).order_by("updated_at").last()
+            if (
+                last_org_unit_updated
+                and cache_creation_date > last_org_unit_updated.updated_at
+                and last_campaign_updated
+                and cache_creation_date > last_campaign_updated.updated_at
+            ):
+                return JsonResponse(json.loads(cached_response))
+
         queryset = queryset.annotate(
             geom=RawSQL(
                 """select st_asgeojson(st_simplify(st_union(st_buffer(iaso_orgunit.geom::geometry, 0)), 0.01)::geography)
@@ -276,12 +289,20 @@ where group_id = polio_campaign.group_id""",
                 [],
             )
         )
+        # Check if the campaigns have been updated since the response has been cached
+        features = []
         for c in queryset:
             if c.geom:
                 s = SmallCampaignSerializer(c)
                 feature = {"type": "Feature", "geometry": json.loads(c.geom), "properties": s.data}
                 features.append(feature)
-        res = {"type": "FeatureCollection", "features": features}
+        res = {"type": "FeatureCollection", "features": features, "cache_creation_date": datetime.utcnow().timestamp()}
+
+        cache.set(
+            "{0}-geo_shapes".format(request.user.id),
+            json.dumps(res),
+            3600 * 24,
+        )
         return JsonResponse(res)
 
 

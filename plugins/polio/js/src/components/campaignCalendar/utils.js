@@ -11,11 +11,11 @@ import { EmptyCell } from './cells/Empty';
 const getEmptyCellsData = (endRoundDate, lastSunday) => {
     let sunday;
     if (endRoundDate.weekday() !== 7) {
-        sunday = endRoundDate.clone().endOf('isoWeek');
+        sunday = endRoundDate?.clone().endOf('isoWeek');
     } else {
-        sunday = endRoundDate.clone();
+        sunday = endRoundDate?.clone();
     }
-    const extraDays = sunday.clone().diff(endRoundDate, 'days');
+    const extraDays = sunday?.clone().diff(endRoundDate, 'days');
     const fullWeeks = lastSunday.diff(sunday, 'weeks');
     return {
         extraDays,
@@ -68,9 +68,9 @@ const getCalendarData = currentMonday => {
         month: todayMonday.format('MMM'),
         value: todayMonday.format('DD'),
     };
-    const firstMonday = currentMonday.clone().subtract(3, 'week');
+    const firstMonday = currentMonday?.clone().subtract(3, 'week');
     const lastSunday = currentMonday
-        .clone()
+        ?.clone()
         .add(colsCount - 4, 'week')
         .endOf('isoWeek');
     const headers = {
@@ -82,7 +82,7 @@ const getCalendarData = currentMonday => {
     Array(colsCount)
         .fill()
         .forEach((_, i) => {
-            const newMonday = firstMonday.clone().add(i, 'week');
+            const newMonday = firstMonday?.clone().add(i, 'week');
             const year = newMonday.format('YYYY');
             if (!headers.years.find(y => year === y.value))
                 if (!headers.years.includes(year)) {
@@ -119,7 +119,7 @@ const getCalendarData = currentMonday => {
                 year,
                 month,
                 value: week,
-                monday: newMonday.clone(),
+                monday: newMonday?.clone(),
             });
         });
     return {
@@ -220,11 +220,11 @@ const addCellsBeforeRound = ({
             if (!round.start.isSame(firstMonday, 'day')) {
                 let monday;
                 if (round.start.weekday() !== 1) {
-                    monday = round.start.clone().startOf('isoWeek');
+                    monday = round.start?.clone().startOf('isoWeek');
                 } else {
-                    monday = round.start.clone();
+                    monday = round.start?.clone();
                 }
-                const extraDays = round.start.clone().diff(monday, 'days');
+                const extraDays = round.start?.clone().diff(monday, 'days');
                 const fullWeeks = monday.diff(firstMonday, 'weeks');
                 Array(fullWeeks)
                     .fill()
@@ -294,13 +294,13 @@ const addRoundCell = ({
 
     if (startAndEndInRange) {
         // if both start and end date are in range use diff between dates for length of cells
-        colSpan = round.end.clone().add(1, 'day').diff(round.start, 'days');
+        colSpan = round.end?.clone().add(1, 'day').diff(round.start, 'days');
         // else if start is not in range calculate diff with firstmonday
     } else if (onlyEndInRange) {
-        colSpan = round.end.clone().add(1, 'day').diff(firstMonday, 'days');
+        colSpan = round.end?.clone().add(1, 'day').diff(firstMonday, 'days');
         // else if end is not in range calculate diff with lastSunday
     } else if (onlyStartInRange) {
-        colSpan = round.end.clone().add(2, 'day').diff(lastSunday, 'days');
+        colSpan = round.end?.clone().add(2, 'day').diff(lastSunday, 'days');
     }
 
     const roundCell =
@@ -341,12 +341,12 @@ const addBufferCell = ({
 
     // if campaign days count is not in range calculate diff with last sunday campaign
     if (!dateUntilNextRoundInRange) {
-        roundInterval = lastSunday.clone().diff(round.end, 'days');
+        roundInterval = lastSunday?.clone().diff(round.end, 'days');
     }
     // if last round end date is not in range calculate diff with first monday and campaign days
     if (!endInRange && dateUntilNextRoundInRange) {
         roundInterval = dateUntilNextRound
-            .clone()
+            ?.clone()
             .add(1, 'day')
             .diff(firstMonday, 'days');
     }

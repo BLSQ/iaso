@@ -5,6 +5,8 @@ line-length = 120
 exclude = '''
 /(
     \.git
+  | \.venv
+  | venv
   | node_modules
   | src/django-webpack-loader
 )/

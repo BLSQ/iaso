@@ -22,7 +22,6 @@ export const fetchOrgUnits = (dispatch, params) =>
                 ),
             );
             console.error('Error while fetching org unit list:', error);
-            throw error;
         });
 
 export const fetchSubOrgUnitsByType = (dispatch, params, orgUnitType) =>
@@ -38,7 +37,6 @@ export const fetchSubOrgUnitsByType = (dispatch, params, orgUnitType) =>
                 ),
             );
             console.error('Error while fetching org unit list:', error);
-            throw error;
         });
 
 export const fetchOrgUnitsTypes = dispatch =>
@@ -51,7 +49,6 @@ export const fetchOrgUnitsTypes = dispatch =>
                 ),
             );
             console.error('Error while fetching org unit types list:', error);
-            throw error;
         });
 
 export const fetchDevices = dispatch =>
@@ -64,7 +61,6 @@ export const fetchDevices = dispatch =>
                 ),
             );
             console.error('Error while fetching devices list:', error);
-            throw error;
         });
 
 export const fetchDevicesOwnerships = dispatch =>
@@ -80,7 +76,6 @@ export const fetchDevicesOwnerships = dispatch =>
                 'Error while fetching devices ownership list:',
                 error,
             );
-            throw error;
         });
 
 export const fetchOrgUnitsList = (dispatch, url) =>
@@ -93,7 +88,6 @@ export const fetchOrgUnitsList = (dispatch, url) =>
                 ),
             );
             console.error('Error while fetching org unit list:', error);
-            throw error;
         });
 
 export const fetchLogs = (dispatch, url) =>
@@ -104,7 +98,6 @@ export const fetchLogs = (dispatch, url) =>
                 enqueueSnackbar(errorSnackBar('fetchLogsError', null, error)),
             );
             console.error('Error while fetching logs list:', error);
-            throw error;
         });
 
 export const fetchAllDataSources = (dispatch, url) => {
@@ -119,7 +112,6 @@ export const fetchAllDataSources = (dispatch, url) => {
                 ),
             );
             console.error('Error while fetching data sources list:', error);
-            throw error;
         });
 };
 
@@ -148,7 +140,6 @@ export const fetchInstancesAsLocationsByForm = (
                 'Error while fetching instances locations list:',
                 error,
             );
-            throw error;
         });
 };
 
@@ -175,7 +166,6 @@ export const fetchAssociatedOrgUnits = (
                 ),
             );
             console.error('Error while fetching org unit list:', error);
-            throw error;
         });
 };
 
@@ -203,7 +193,6 @@ export const fetchForms = (dispatch, url = '/api/forms', signal) =>
                 enqueueSnackbar(errorSnackBar('fetchFormsError', null, error)),
             );
             console.error('Error while fetching forms list:', error);
-            throw error;
         });
 
 export const fetchFormDetail = (dispatch, formId) =>
@@ -214,7 +203,6 @@ export const fetchFormDetail = (dispatch, formId) =>
                 enqueueSnackbar(errorSnackBar('fetchFormError', null, error)),
             );
             console.error('Error while fetching form detail:', error);
-            throw error;
         });
 
 export const fetchFormOrgUnitTypes = (dispatch, formId) =>
@@ -240,7 +228,6 @@ export const fetchOrgUnitDetail = (dispatch, orgUnitId) =>
                 ),
             );
             console.error('Error while fetching org unit detail:', error);
-            throw error;
         });
 
 export const saveOrgUnit = (dispatch, orgUnit) =>
@@ -252,7 +239,6 @@ export const saveOrgUnit = (dispatch, orgUnit) =>
         .catch(error => {
             dispatch(enqueueSnackbar(errorSnackBar(null, null, error)));
             console.error('Error while saving org unit detail:', error);
-            throw error;
         });
 
 export const fetchLogDetail = (dispatch, logId) =>
@@ -265,7 +251,6 @@ export const fetchLogDetail = (dispatch, logId) =>
                 ),
             );
             console.error('Error while fetching log detail:', error);
-            throw error;
         });
 
 export const fetchInstanceDetail = (dispatch, instanceId) =>
@@ -278,7 +263,6 @@ export const fetchInstanceDetail = (dispatch, instanceId) =>
                 ),
             );
             console.error('Error while fetching instance detail:', error);
-            throw error;
         });
 
 export const saveLink = (dispatch, link) =>
@@ -292,7 +276,6 @@ export const saveLink = (dispatch, link) =>
                 enqueueSnackbar(errorSnackBar('saveLinkError', null, error)),
             );
             console.error('Error occured while saving link:', error);
-            throw error;
         });
 
 export const fetchProfiles = dispatch =>
@@ -305,7 +288,6 @@ export const fetchProfiles = dispatch =>
                 ),
             );
             console.error('Error while fetching profiles list:', error);
-            throw error;
         });
 
 export const fetchAlgorithms = dispatch =>
@@ -318,7 +300,6 @@ export const fetchAlgorithms = dispatch =>
                 ),
             );
             console.error('Error while fetching algorithms list:', error);
-            throw error;
         });
 
 export const fetchLinkDetail = (dispatch, linkId) =>
@@ -331,7 +312,6 @@ export const fetchLinkDetail = (dispatch, linkId) =>
                 ),
             );
             console.error('Error while fetching link detail:', error);
-            throw error;
         });
 
 export const fetchLinks = (dispatch, url = '/api/links/') =>
@@ -342,7 +322,6 @@ export const fetchLinks = (dispatch, url = '/api/links/') =>
                 enqueueSnackbar(errorSnackBar('fetchLinksError', null, error)),
             );
             console.error('Error while fetching links:', error);
-            throw error;
         });
 
 export const deleteAlgorithmRun = (dispatch, runId) =>
@@ -351,7 +330,6 @@ export const deleteAlgorithmRun = (dispatch, runId) =>
         .catch(error => {
             dispatch(enqueueSnackbar(errorSnackBar('deleteRun', null, error)));
             console.error('Error while delteing algorithms run:', error);
-            throw error;
         });
 
 export const runAlgorithm = (dispatch, runItem) =>
@@ -360,7 +338,6 @@ export const runAlgorithm = (dispatch, runItem) =>
         .catch(error => {
             dispatch(enqueueSnackbar(errorSnackBar('deleteRun', null, error)));
             console.error('Error while deleting algorithms run:', error);
-            throw error;
         });
 
 export const fetchPeriods = (dispatch, formId) =>
@@ -373,7 +350,6 @@ export const fetchPeriods = (dispatch, formId) =>
                 ),
             );
             console.error('Error while fetching periods list:', error);
-            throw error;
         });
 
 export const fetchProjects = dispatch =>
@@ -385,7 +361,6 @@ export const fetchProjects = dispatch =>
                     errorSnackBar('fetchProjectsError', null, error),
                 ),
             );
-            throw error;
         });
 
 export const createForm = (dispatch, formData) =>
@@ -393,7 +368,6 @@ export const createForm = (dispatch, formData) =>
         dispatch(
             enqueueSnackbar(errorSnackBar('createFormError', null, error)),
         );
-        throw error;
     });
 
 export const updateForm = (dispatch, formId, formData) =>
@@ -401,7 +375,6 @@ export const updateForm = (dispatch, formId, formData) =>
         dispatch(
             enqueueSnackbar(errorSnackBar('updateFormError', null, error)),
         );
-        throw error;
     });
 
 export const deleteForm = (dispatch, formId) =>
@@ -409,7 +382,6 @@ export const deleteForm = (dispatch, formId) =>
         dispatch(
             enqueueSnackbar(errorSnackBar('deleteFormError', null, error)),
         );
-        throw error;
     });
 
 export const restoreForm = (dispatch, formId) =>
@@ -417,7 +389,6 @@ export const restoreForm = (dispatch, formId) =>
         dispatch(
             enqueueSnackbar(errorSnackBar('archiveFormError', null, error)),
         );
-        throw error;
     });
 
 export const createFormVersion = formVersionData => {
@@ -430,7 +401,6 @@ export const createFormVersion = formVersionData => {
                 errorSnackBar('createFormVersionError', null, error),
             ),
         );
-        throw error;
     });
 };
 
@@ -442,7 +412,6 @@ export const updateFormVersion = formVersion =>
                     errorSnackBar('updateFormVersionError', null, error),
                 ),
             );
-            throw error;
         },
     );
 
@@ -460,7 +429,6 @@ export const fetchFormVersions = (dispatch, formId) => {
                 ),
             ),
         );
-        throw error;
     });
 };
 
@@ -477,7 +445,6 @@ export const fetchCompleteness = (dispatch, url) =>
                 'Error while fetching  while fetching completness:',
                 error,
             );
-            throw error;
         });
 
 export const fetchDevicesAsDict = (dispatch, url) =>
@@ -490,7 +457,6 @@ export const fetchDevicesAsDict = (dispatch, url) =>
                 ),
             );
             console.error('Error while fetching devices list:', error);
-            throw error;
         });
 
 export const createDataSource = (dispatch, dataSource) =>
@@ -500,7 +466,6 @@ export const createDataSource = (dispatch, dataSource) =>
                 errorSnackBar('createDataSourceError', null, error),
             ),
         );
-        throw error;
     });
 
 export const updateDataSource = (dispatch, dataSourceId, dataSource) =>
@@ -510,7 +475,6 @@ export const updateDataSource = (dispatch, dataSourceId, dataSource) =>
                 errorSnackBar('updateDataSourceError', null, error),
             ),
         );
-        throw error;
     });
 
 // eslint-disable-next-line camelcase
@@ -523,7 +487,6 @@ export const updateDefaultSource = (dispatch, accountId, default_version) =>
                 errorSnackBar('updateDefaultSourceError', null, error),
             ),
         );
-        throw error;
     });
 
 // TO-DO: replace all requests similar to this
@@ -541,7 +504,6 @@ export const fetchList = (
                 enqueueSnackbar(errorSnackBar(errorKeyMessage, null, error)),
             );
             console.error(`Error while fetching ${consoleError} list:`, error);
-            throw error;
         });
 
 export const useGetComments = params => {
@@ -571,5 +533,4 @@ export const fetchAlgorithmRuns = (dispatch, url = '/api/algorithmsruns/') =>
                 ),
             );
             console.error(`Error while fetching alogrithms:`, error);
-            throw error;
         });

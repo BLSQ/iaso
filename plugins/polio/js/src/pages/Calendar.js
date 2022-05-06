@@ -21,6 +21,7 @@ import {
     defaultOrder,
 } from '../components/campaignCalendar/constants';
 import { useGetCampaigns } from '../hooks/useGetCampaigns';
+// @ts-ignore
 import MESSAGES from '../constants/messages';
 import { Filters } from '../components/campaignCalendar/Filters';
 
@@ -33,15 +34,23 @@ const Calendar = ({ params }) => {
     const classes = useStyles();
     const isLogged = useSelector(state => Boolean(state.users.current));
     const orders = params.order || defaultOrder;
-    const { query } = useGetCampaigns({
-        order: orders,
-        countries: params.countries,
-        search: params.search,
-        campaignType: params.campaignType,
-        campaignGroups: params.campaignGroups,
-    });
-
-    const { data: campaigns = [], isLoading } = query;
+    const queryOptions = useMemo(() => {
+        return {
+            order: orders,
+            countries: params.countries,
+            search: params.search,
+            campaignType: params.campaignType,
+            campaignGroups: params.campaignGroups,
+        };
+    }, [
+        orders,
+        params.campaignGroups,
+        params.campaignType,
+        params.countries,
+        params.search,
+    ]);
+    const { data: campaigns = [], isLoading } =
+        useGetCampaigns(queryOptions).query;
 
     const currentDate = params.currentDate
         ? moment(params.currentDate, dateFormat)

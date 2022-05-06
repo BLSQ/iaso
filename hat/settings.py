@@ -387,7 +387,9 @@ else:
 
 # BEANSTALK_TASK_SERVICE = "beanstalk_worker.services.TaskService"
 
-SSL_ON = (not DEBUG) and (not BEANSTALK_WORKER)
+
+DISABLE_SSL_REDIRECT = bool(os.environ.get("DISABLE_SSL_REDIRECT", False))
+SSL_ON = not (DEBUG or BEANSTALK_WORKER or DISABLE_SSL_REDIRECT)
 if SSL_ON:
     SECURE_HSTS_SECONDS = 31_536_000  # 1 year
 SECURE_SSL_REDIRECT = SSL_ON

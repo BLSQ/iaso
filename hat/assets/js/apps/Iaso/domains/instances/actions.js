@@ -197,6 +197,5 @@ export const bulkDelete =
                     ),
                 );
                 dispatch(setInstancesFetching(false));
-                throw error;
             });
     };

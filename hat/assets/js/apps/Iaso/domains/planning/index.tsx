@@ -15,6 +15,7 @@ import { baseUrls } from '../../constants/urls';
 import { useGetPlannings } from './hooks/requests/useGetPlannings';
 import { redirectTo } from '../../routing/actions';
 import { planningColumns } from './config';
+import { CreateEditPlanning } from './CreateEditPlanning/CreateEditPlanning';
 
 const useStyles = makeStyles(theme => ({
     ...commonStyles(theme),
@@ -25,7 +26,7 @@ type Props = {
 };
 const baseUrl = baseUrls.planning;
 export const Planning: FunctionComponent<Props> = ({ params }) => {
-    console.log('params', params);
+    // console.log('params', params);
     const dispatch = useDispatch();
     const classes: Record<string, string> = useStyles();
     const { formatMessage } = useSafeIntl();
@@ -37,9 +38,11 @@ export const Planning: FunctionComponent<Props> = ({ params }) => {
                 title={formatMessage(MESSAGES.title)}
                 displayBackButton={false}
             />
+
             <Box className={classes.containerFullHeightNoTabPadded}>
                 {/* // Your code here */}
                 <PlanningFilters params={params} />
+                <CreateEditPlanning type="create" />
                 <TableWithDeepLink
                     baseUrl={baseUrl}
                     data={data?.plannings ?? []}

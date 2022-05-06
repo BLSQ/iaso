@@ -65,6 +65,30 @@ const MESSAGES = defineMessages({
         defaultMessage: 'View planning',
         id: 'iaso.label.viewPlanning',
     },
+    cancel: {
+        id: 'iaso.label.cancel',
+        defaultMessage: 'Cancel',
+    },
+    save: {
+        id: 'iaso.label.save',
+        defaultMessage: 'Save',
+    },
+    editPlanning: {
+        id: 'iaso.label.editPlanning',
+        defaultMessage: 'Edit planning',
+    },
+    createPlanning: {
+        id: 'iaso.label.createPlanning',
+        defaultMessage: 'Create planning',
+    },
+    forms: {
+        defaultMessage: 'Forms',
+        id: 'iaso.forms.title',
+    },
+    edit: {
+        id: 'iaso.label.edit',
+        defaultMessage: 'Edit',
+    },
 });
 
 export default MESSAGES;

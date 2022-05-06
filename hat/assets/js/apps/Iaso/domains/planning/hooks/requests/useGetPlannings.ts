@@ -18,11 +18,12 @@ type PlanningList = Pagination & {
     plannings: Planning[];
 };
 
-export const waitFor = (delay: number) =>
+export const waitFor = (delay: number): Promise<void> =>
     new Promise(resolve => setTimeout(resolve, delay));
 
 const getPlannings = async (options: PlanningParams): Promise<PlanningList> => {
     await waitFor(1500);
+    // eslint-disable-next-line no-console
     console.log('options', options);
     return list;
 };

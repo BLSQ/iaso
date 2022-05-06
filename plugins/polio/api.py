@@ -1,4 +1,5 @@
 import csv
+import functools
 import json
 from datetime import timedelta, datetime, timezone
 from typing import Optional
@@ -259,13 +260,26 @@ Timeline tracker Automated message
         methods=["GET", "HEAD"],
         detail=False,
         url_path="merged_shapes.geojson",
-        permission_classes=[permissions.IsAuthenticated],
     )
     def shapes(self, request):
-        features = []
+        cached_response = cache.get("{0}-geo_shapes".format(request.user.id))
         queryset = self.filter_queryset(self.get_queryset())
         # Remove deleted and campaign with missing group
         queryset = queryset.filter(deleted_at=None).exclude(group=None)
+
+        if cached_response and queryset:
+            parsed_cache_response = json.loads(cached_response)
+            cache_creation_date = make_aware(datetime.utcfromtimestamp(parsed_cache_response["cache_creation_date"]))
+            last_campaign_updated = queryset.order_by("updated_at").last()
+            last_org_unit_updated = OrgUnit.objects.filter(groups__campaigns__in=queryset).order_by("updated_at").last()
+            if (
+                last_org_unit_updated
+                and cache_creation_date > last_org_unit_updated.updated_at
+                and last_campaign_updated
+                and cache_creation_date > last_campaign_updated.updated_at
+            ):
+                return JsonResponse(json.loads(cached_response))
+
         queryset = queryset.annotate(
             geom=RawSQL(
                 """select st_asgeojson(st_simplify(st_union(st_buffer(iaso_orgunit.geom::geometry, 0)), 0.01)::geography)
@@ -274,12 +288,20 @@ where group_id = polio_campaign.group_id""",
                 [],
             )
         )
+        # Check if the campaigns have been updated since the response has been cached
+        features = []
         for c in queryset:
             if c.geom:
                 s = SmallCampaignSerializer(c)
                 feature = {"type": "Feature", "geometry": json.loads(c.geom), "properties": s.data}
                 features.append(feature)
-        res = {"type": "FeatureCollection", "features": features}
+        res = {"type": "FeatureCollection", "features": features, "cache_creation_date": datetime.utcnow().timestamp()}
+
+        cache.set(
+            "{0}-geo_shapes".format(request.user.id),
+            json.dumps(res),
+            3600 * 24,
+        )
         return JsonResponse(res)
 
 
@@ -878,6 +900,7 @@ def handle_ona_request_with_key(request, key):
     failure_count = 0
     campaigns = Campaign.objects.all()
     form_count = 0
+    find_campaign_on_day_cached = functools.lru_cache(None)(find_campaign_on_day)
     for config in config.content:
         forms = get_url_content(
             url=config["url"], login=config["login"], password=config["password"], minutes=config.get("minutes", 60)
@@ -886,7 +909,7 @@ def handle_ona_request_with_key(request, key):
         facilities = (
             OrgUnit.objects.hierarchy(country)
             .filter(org_unit_type_id__category="HF")
-            .only("name", "id", "parent")
+            .only("name", "id", "parent", "aliases")
             .prefetch_related("parent")
         )
         cache = make_orgunits_cache(facilities)
@@ -894,7 +917,7 @@ def handle_ona_request_with_key(request, key):
         for form in forms:
             try:
                 today = datetime.strptime(form["today"], "%Y-%m-%d").date()
-                campaign = find_campaign_on_day(campaigns, today, country)
+                campaign = find_campaign_on_day_cached(campaigns, today, country)
                 district_name = form.get("District", "")
                 facility_name = form.get("facility", None)
                 # some form version for Senegal had their facility column as Facility with an uppercase.

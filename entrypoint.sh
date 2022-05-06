@@ -22,6 +22,11 @@ export PYTHONPATH="/opt/app:$PYTHONPATH"
 export DJANGO_SETTINGS_MODULE=hat.settings
 
 case "$1" in
+  "start")
+    ./scripts/wait_for_dbs.sh
+    ./manage.py migrate --noinput
+    ./manage.py runserver 0.0.0.0:8081
+  ;;
   "test" )
     export TESTING=true
     # Linting tasks first

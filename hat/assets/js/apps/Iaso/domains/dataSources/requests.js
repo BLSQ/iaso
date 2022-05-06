@@ -151,7 +151,6 @@ export const csvPreview = async data => {
                 ),
             );
             console.error(`Error while fetching CSV:`, error);
-            throw error;
         });
 };
 
@@ -210,7 +209,6 @@ export const useSaveDataSource = setFieldErrors => {
                 );
             }
             setIsSaving(false);
-            throw error;
         }
 
         // eslint-disable-next-line camelcase

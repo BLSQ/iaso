@@ -51,8 +51,6 @@ module.exports = {
         }),
         // Minification
         new webpack.LoaderOptionsPlugin({ minimize: true }),
-        // XLSX
-        new webpack.IgnorePlugin(/cptable/),
         new webpack.WatchIgnorePlugin({
             paths: [/\.d\.ts$/],
         }),

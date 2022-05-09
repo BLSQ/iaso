@@ -217,7 +217,7 @@ const goToPage = () => {
         `orgunits/?&parent_id=${orgUnit.id}&limit=10&page=2&order=name&validation_status=all`,
         page2,
     );
-    cy.visit(baseUrl);
+    // cy.visit(baseUrl);
 };
 
 describe('links tab', () => {
@@ -228,7 +228,9 @@ describe('links tab', () => {
     testPermission(baseUrl);
 
     describe('Table', () => {
+        before(() => {});
         it('should render correct infos', () => {
+            cy.visit(baseUrl);
             cy.wait('@getOuDetail').then(() => {
                 cy.get('[data-test="links-tab"]').find('table').as('table');
                 cy.get('@table').should('have.length', 1);
@@ -258,12 +260,13 @@ describe('links tab', () => {
             columns: 9,
             apiPath: `links/?&orgUnitId=${orgUnit.id}&limit=10&order=similarity_score`,
             apiKey: `links`,
-            withVisit: false,
+            withVisit: true,
             selector: '[data-test="links-tab"] table',
             request: '@getOuDetail',
         });
 
         it('should render correct row infos', () => {
+            cy.visit(baseUrl);
             cy.wait('@getOuDetail').then(() => {
                 testRowContent(0);
             });
@@ -286,6 +289,7 @@ describe('links tab', () => {
 
     describe('Actions buttons', () => {
         it('should make call api with correct params', () => {
+            cy.visit(baseUrl);
             cy.wait('@getOuDetail').then(() => {
                 interceptFlag = false;
 
@@ -316,6 +320,7 @@ describe('links tab', () => {
 
     describe('Filters', () => {
         it('change filters should deep link and call api with correct params', () => {
+            cy.visit(baseUrl);
             cy.wait('@getOuDetail').then(() => {
                 interceptFlag = false;
                 cy.intercept(
@@ -360,6 +365,7 @@ describe('links tab', () => {
 
     describe('Export csv/xlsx/gpkg buttons', () => {
         it('should download file via out own anchor click', () => {
+            cy.visit(baseUrl);
             testDownloadButtons(
                 '[data-test="links-tab"] [data-test="download-buttons"]',
                 'links',

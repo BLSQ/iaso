@@ -44,6 +44,7 @@ const OrgUnitTreeviewModal = ({
     showStatusIconInPicker,
     clearable,
     allowedTypes,
+    enableErrors,
 }) => {
     const classes = useStyles();
     const [selectedOrgUnits, setSelectedOrgUnits] = useState(initialSelection);
@@ -171,6 +172,7 @@ const OrgUnitTreeviewModal = ({
                     disabled={disabled}
                     label={makeTreeviewLabel(classes, showStatusIconInPicker)}
                     clearable={clearable}
+                    enableErrors={enableErrors}
                 />
             )}
             titleMessage={titleMessage}
@@ -225,6 +227,7 @@ OrgUnitTreeviewModal.propTypes = {
     showStatusIconInPicker: bool,
     clearable: bool,
     allowedTypes: array,
+    enableErrors: bool,
 };
 
 OrgUnitTreeviewModal.defaultProps = {
@@ -242,6 +245,7 @@ OrgUnitTreeviewModal.defaultProps = {
     showStatusIconInPicker: true,
     clearable: true,
     allowedTypes: [],
+    enableErrors: false,
 };
 
 export { OrgUnitTreeviewModal };

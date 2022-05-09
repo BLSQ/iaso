@@ -1,5 +1,5 @@
+import React, { useState } from 'react';
 import { func, any, bool, object, oneOfType, string } from 'prop-types';
-import React from 'react';
 import classnames from 'classnames';
 import { Paper, InputLabel, Box } from '@material-ui/core';
 import { makeStyles } from '@material-ui/core/styles';
@@ -48,12 +48,20 @@ const styles = theme => ({
     clearButton: {
         marginRight: 5,
     },
+    error: {
+        border: '1px solid red',
+    },
+    errorLabel: {
+        color: 'red',
+    },
 });
 const formatPlaceholder = (placeholder, formatMessage) => {
     if (!placeholder) return null;
     if (typeof placeholder === 'string') return placeholder;
     return formatMessage(placeholder);
 };
+
+const noOp = () => null;
 
 const useStyles = makeStyles(styles);
 const OrgUnitTreeviewPicker = ({
@@ -66,22 +74,29 @@ const OrgUnitTreeviewPicker = ({
     disabled,
     label,
     clearable,
+    enableErrors,
 }) => {
     const intl = useSafeIntl();
     const classes = useStyles();
-    const className = disabled
-        ? classes.paper
-        : `${classes.paper} ${classes.enabled}`;
+
+    const [isReset, setIsReset] = useState(false);
+    const isError = isReset && selectedItems.size === 0;
+    const showError = enableErrors && isError;
+
+    const errorStyle = showError && !disabled ? classes.error : '';
+    const errorLabelStyle = showError && !disabled ? classes.errorLabel : '';
+
+    const enabledStyle = disabled ? '' : classes.enabled;
 
     const placeholderStyle = disabled
         ? classes.placeholder
         : `${classes.placeholder} ${classes.pointer}`;
+
     const formattedPlaceholder =
         formatPlaceholder(placeholder, intl.formatMessage) ??
         (multiselect
             ? intl.formatMessage(MESSAGES.selectMultiple)
             : intl.formatMessage(MESSAGES.selectSingle));
-    const noOp = () => null;
 
     const makeTruncatedTrees = treesData => {
         if (treesData.size === 0)
@@ -120,11 +135,18 @@ const OrgUnitTreeviewPicker = ({
             <InputLabel
                 shrink={selectedItems.size > 0}
                 required={required}
-                className={classnames(classes.inputLabel, 'input-label')}
+                className={`${classnames(
+                    classes.inputLabel,
+                    'input-label',
+                )} ${errorLabelStyle}`}
             >
                 {formattedPlaceholder}
             </InputLabel>
-            <Paper variant="outlined" elevation={0} className={className}>
+            <Paper
+                variant="outlined"
+                elevation={0}
+                className={`${classes.paper} ${enabledStyle} ${errorStyle}`}
+            >
                 {makeTruncatedTrees(selectedItems)}
                 {clearable && resetSelection && selectedItems.size > 0 && (
                     <Box
@@ -137,7 +159,10 @@ const OrgUnitTreeviewPicker = ({
                             icon="clear"
                             size="small"
                             tooltipMessage={MESSAGES.clear}
-                            onClick={resetSelection}
+                            onClick={() => {
+                                setIsReset(true);
+                                resetSelection();
+                            }}
                         />
                     </Box>
                 )}
@@ -167,6 +192,7 @@ OrgUnitTreeviewPicker.propTypes = {
     disabled: bool,
     label: func.isRequired,
     clearable: bool,
+    enableErrors: bool,
 };
 OrgUnitTreeviewPicker.defaultProps = {
     selectedItems: [],
@@ -176,6 +202,7 @@ OrgUnitTreeviewPicker.defaultProps = {
     required: false,
     disabled: false,
     clearable: true,
+    enableErrors: false,
 };
 
 export { OrgUnitTreeviewPicker };

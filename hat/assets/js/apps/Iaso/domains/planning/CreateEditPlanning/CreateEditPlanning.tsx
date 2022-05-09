@@ -97,9 +97,6 @@ export const CreateEditPlanning: FunctionComponent<Props> = ({
         resetForm,
     } = formik;
     const getErrors = k => (errors[k] ? [errors[k]] : []);
-    console.log('values', values);
-    // console.log('isValid', isValid);
-    console.log('errors', errors);
     const titleMessage =
         type === 'create'
             ? formatMessage(MESSAGES.createPlanning)
@@ -204,6 +201,7 @@ export const CreateEditPlanning: FunctionComponent<Props> = ({
                                 multiselect
                                 showStatusIconInTree={false}
                                 showStatusIconInPicker={false}
+                                enableErrors
                             />
                         </Grid>
                     </Grid>

@@ -1,9 +1,9 @@
 import React, { FunctionComponent, useMemo } from 'react';
 import { AddButton, useSafeIntl, IconButton } from 'bluesquare-components';
-import { useFormik, FormikProvider } from 'formik';
+import { useFormik, FormikProvider, Field } from 'formik';
 import { object, number, string, array, lazy } from 'yup';
 import { isEqual } from 'lodash';
-import { Box, Grid } from '@material-ui/core';
+import { Grid } from '@material-ui/core';
 import InputComponent from '../../../components/forms/InputComponent';
 import ConfirmCancelDialogComponent from '../../../components/dialogs/ConfirmCancelDialogComponent';
 
@@ -60,9 +60,9 @@ export const CreateEditPlanning: FunctionComponent<Props> = ({
             name: string(),
             startDate: string(),
             endDate: string(),
-            forms: string(), // this may be causiing bugs with multi select
+            forms: string(), // this may be causing bugs with multi select, or have to be reconverted into array before being sent to the api
             selectedOrgUnits: array().of(number()),
-            selectedTeam: number().optional(),
+            selectedTeam: number(),
             publishingStatus: string(),
         }),
     );
@@ -86,6 +86,7 @@ export const CreateEditPlanning: FunctionComponent<Props> = ({
         validationSchema: schema,
         onSubmit: (values: Partial<SavePlanningQuery>) => savePlanning(values), // TODO: convert forms string to Arry of IDs
     });
+
     const {
         values,
         setFieldValue,
@@ -96,6 +97,9 @@ export const CreateEditPlanning: FunctionComponent<Props> = ({
         resetForm,
     } = formik;
     const getErrors = k => (errors[k] ? [errors[k]] : []);
+    console.log('values', values);
+    // console.log('isValid', isValid);
+    console.log('errors', errors);
     const titleMessage =
         type === 'create'
             ? formatMessage(MESSAGES.createPlanning)
@@ -124,7 +128,11 @@ export const CreateEditPlanning: FunctionComponent<Props> = ({
                         <Grid xs={6} item>
                             <InputComponent
                                 keyValue="name"
-                                onChange={setFieldValue}
+                                onChange={(keyValue, value) => {
+                                    const errorableValue =
+                                        value !== '' ? value : null;
+                                    setFieldValue(keyValue, errorableValue);
+                                }}
                                 value={values.name}
                                 errors={getErrors('name')}
                                 type="text"
@@ -159,6 +167,7 @@ export const CreateEditPlanning: FunctionComponent<Props> = ({
                     </Grid>
                     <Grid container item spacing={2}>
                         <Grid xs={6} item>
+                            {/* <Field> */}
                             <InputComponent
                                 type="select"
                                 keyValue="forms"
@@ -171,6 +180,7 @@ export const CreateEditPlanning: FunctionComponent<Props> = ({
                                 options={formsDropdown}
                                 loading={isFetchingForms}
                             />
+                            {/* </Field> */}
                         </Grid>
                         <Grid xs={6} item>
                             <OrgUnitTreeviewModal
@@ -180,7 +190,9 @@ export const CreateEditPlanning: FunctionComponent<Props> = ({
                                     );
                                     setFieldValue(
                                         'selectedOrgUnits',
-                                        selectedIds,
+                                        selectedIds.length > 0
+                                            ? selectedIds
+                                            : null,
                                     );
                                 }}
                                 titleMessage={formatMessage(

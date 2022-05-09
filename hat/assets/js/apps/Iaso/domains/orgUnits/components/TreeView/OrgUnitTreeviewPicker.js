@@ -49,10 +49,10 @@ const styles = theme => ({
         marginRight: 5,
     },
     error: {
-        border: '1px solid red',
+        border: `1px solid ${theme.palette.error.main}`,
     },
     errorLabel: {
-        color: 'red',
+        color: theme.palette.error.main,
     },
 });
 const formatPlaceholder = (placeholder, formatMessage) => {

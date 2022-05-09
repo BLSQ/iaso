@@ -3,7 +3,7 @@ import { AddButton, useSafeIntl, IconButton } from 'bluesquare-components';
 import { useFormik, FormikProvider } from 'formik';
 import { object, number, string, array, lazy } from 'yup';
 import { isEqual } from 'lodash';
-import { Box } from '@material-ui/core';
+import { Box, Grid } from '@material-ui/core';
 import InputComponent from '../../../components/forms/InputComponent';
 import ConfirmCancelDialogComponent from '../../../components/dialogs/ConfirmCancelDialogComponent';
 
@@ -95,7 +95,6 @@ export const CreateEditPlanning: FunctionComponent<Props> = ({
         handleSubmit,
         resetForm,
     } = formik;
-    console.log('values', values, isValid);
     const getErrors = k => (errors[k] ? [errors[k]] : []);
     const titleMessage =
         type === 'create'
@@ -115,93 +114,109 @@ export const CreateEditPlanning: FunctionComponent<Props> = ({
                     closeDialog();
                     resetForm();
                 }}
+                maxWidth="md"
                 cancelMessage={MESSAGES.cancel}
                 confirmMessage={MESSAGES.save}
                 renderTrigger={renderTrigger}
-                maxWidth="xs"
-                // dialogProps={{
-                //     classNames: classes.dialog,
-                // }}
             >
-                <Box>
-                    <InputComponent
-                        keyValue="name"
-                        onChange={setFieldValue}
-                        value={values.name}
-                        errors={getErrors('name')}
-                        type="text"
-                        label={MESSAGES.name}
-                        required
-                    />
-                    <InputComponent
-                        type="select"
-                        keyValue="forms"
-                        onChange={setFieldValue}
-                        value={values.forms}
-                        errors={getErrors('forms')}
-                        label={MESSAGES.forms}
-                        required
-                        multi
-                        options={formsDropdown}
-                        loading={isFetchingForms}
-                    />
-                    <DatesRange
-                        onChangeDate={setFieldValue}
-                        dateFrom={values.startDate}
-                        dateTo={values.endDate}
-                        labelFrom={MESSAGES.from}
-                        labelTo={MESSAGES.to}
-                        keyDateFrom="startDate"
-                        keyDateTo="endDate"
-                    />
-                    <InputComponent
-                        type="select"
-                        keyValue="selectedTeam"
-                        onChange={setFieldValue}
-                        value={values.selectedTeam}
-                        errors={getErrors('selectedTeam')}
-                        label={MESSAGES.team}
-                        required
-                        options={teamsDropdown}
-                        loading={isFetchingTeams}
-                    />
-
-                    <OrgUnitTreeviewModal
-                        onConfirm={value => {
-                            console.log('tree value', value);
-                            const selectedIds = value.map(
-                                orgUnit => orgUnit.id,
-                            );
-                            setFieldValue('selectedOrgUnits', selectedIds);
-                        }}
-                        titleMessage={formatMessage(MESSAGES.selectTopOrgUnit)}
-                        required
-                        clearable
-                        hardReset
-                        multiselect
-                        showStatusIconInTree={false}
-                        showStatusIconInPicker={false}
-                    />
-                    <InputComponent
-                        type="radio"
-                        keyValue="publishingStatus"
-                        onChange={setFieldValue}
-                        value={values.publishingStatus}
-                        errors={getErrors('publishingStatus')}
-                        label={MESSAGES.publishingStatus}
-                        options={[
-                            {
-                                label: formatMessage(MESSAGES.published),
-                                value: 'published',
-                            },
-                            {
-                                label: formatMessage(MESSAGES.draft),
-                                value: 'draft',
-                            },
-                        ]}
-                        required
-                    />
-                </Box>
+                <Grid container spacing={2}>
+                    <Grid container item spacing={2}>
+                        <Grid xs={6} item>
+                            <InputComponent
+                                keyValue="name"
+                                onChange={setFieldValue}
+                                value={values.name}
+                                errors={getErrors('name')}
+                                type="text"
+                                label={MESSAGES.name}
+                                required
+                            />
+                        </Grid>
+                        <Grid xs={6} item>
+                            <InputComponent
+                                type="select"
+                                keyValue="selectedTeam"
+                                onChange={setFieldValue}
+                                value={values.selectedTeam}
+                                errors={getErrors('selectedTeam')}
+                                label={MESSAGES.team}
+                                required
+                                options={teamsDropdown}
+                                loading={isFetchingTeams}
+                            />
+                        </Grid>
+                    </Grid>
+                    <Grid item xs={12}>
+                        <DatesRange
+                            onChangeDate={setFieldValue}
+                            dateFrom={values.startDate}
+                            dateTo={values.endDate}
+                            labelFrom={MESSAGES.from}
+                            labelTo={MESSAGES.to}
+                            keyDateFrom="startDate"
+                            keyDateTo="endDate"
+                        />
+                    </Grid>
+                    <Grid container item spacing={2}>
+                        <Grid xs={6} item>
+                            <InputComponent
+                                type="select"
+                                keyValue="forms"
+                                onChange={setFieldValue}
+                                value={values.forms}
+                                errors={getErrors('forms')}
+                                label={MESSAGES.forms}
+                                required
+                                multi
+                                options={formsDropdown}
+                                loading={isFetchingForms}
+                            />
+                        </Grid>
+                        <Grid xs={6} item>
+                            <OrgUnitTreeviewModal
+                                onConfirm={value => {
+                                    const selectedIds = value.map(
+                                        orgUnit => orgUnit.id,
+                                    );
+                                    setFieldValue(
+                                        'selectedOrgUnits',
+                                        selectedIds,
+                                    );
+                                }}
+                                titleMessage={formatMessage(
+                                    MESSAGES.selectTopOrgUnit,
+                                )}
+                                required
+                                clearable
+                                hardReset
+                                multiselect
+                                showStatusIconInTree={false}
+                                showStatusIconInPicker={false}
+                            />
+                        </Grid>
+                    </Grid>
+                    <Grid item>
+                        <InputComponent
+                            type="radio"
+                            keyValue="publishingStatus"
+                            onChange={setFieldValue}
+                            value={values.publishingStatus}
+                            errors={getErrors('publishingStatus')}
+                            label={MESSAGES.publishingStatus}
+                            options={[
+                                {
+                                    label: formatMessage(MESSAGES.published),
+                                    value: 'published',
+                                },
+                                {
+                                    label: formatMessage(MESSAGES.draft),
+                                    value: 'draft',
+                                },
+                            ]}
+                            required
+                        />
+                    </Grid>
+                </Grid>
             </ConfirmCancelDialogComponent>
         </FormikProvider>
     );

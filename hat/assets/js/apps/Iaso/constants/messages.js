@@ -94,7 +94,7 @@ const MESSAGES = defineMessages({
         id: 'iaso.label.pages',
     },
     dhis2: {
-        defaultMessage: 'DHIS2',
+        defaultMessage: 'Go to DHIS2',
         id: 'iaso.label.dhis2Link',
     },
 });

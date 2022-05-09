@@ -22,6 +22,9 @@ class CorrelationAPITestCase(APITestCase):
         cls.coruscant = m.OrgUnit.objects.create(name="coruscant", org_unit_type=cls.jedi_council)
 
         cls.doku = cls.create_user_with_profile(username="doku", account=cls.the_empire, permissions=["iaso_forms"])
+        cls.grievous = cls.create_user_with_profile(
+            username="grievous", account=cls.the_empire, permissions=["iaso_forms"]
+        )
 
         cls.form_1 = m.Form.objects.create(name="Land Speeder", form_id="sample1")
         cls.form_2 = m.Form.objects.create(
@@ -137,22 +140,23 @@ class CorrelationAPITestCase(APITestCase):
             "/api/instances/?app_id=stars.empire.agriculture.hydroponics", data=instance_body, format="json"
         )
 
+        anonymous_uploaded_instance = Instance.objects.last()
+
         self.assertEqual(response.status_code, 200)
+        self.assertEqual(anonymous_uploaded_instance.created_by, None)
+        self.assertEqual(anonymous_uploaded_instance.last_modified_by, None)
 
         self.client.credentials(HTTP_AUTHORIZATION="Token: {0}".format(jwt_token.json()["access"]))
 
         with open("iaso/tests/fixtures/%s" % file_name) as fp:
             response_form = self.client.post("/sync/form_upload/", {"xml_submission_file": fp})
 
-        last_instance = Instance.objects.last()
+        updated_instance = Instance.objects.get(uuid=anonymous_uploaded_instance.uuid)
 
         self.assertEqual(response_form.status_code, 201)
-        self.assertEqual(last_instance.created_by, user)
-        self.assertEqual(last_instance.last_modified_by, user)
+        self.assertEqual(updated_instance.last_modified_by, user)
 
-    def test_upload_form(self):
-
-        self.client.force_authenticate(self.doku)
+    def test_upload_and_modify_form(self):
 
         file_name = "land_speeder_with_service.xml"
         uuid = "4b7c3954-f69a-4b92-43b1-df73957b3343"
@@ -184,5 +188,16 @@ class CorrelationAPITestCase(APITestCase):
         last_instance = Instance.objects.last()
 
         self.assertEqual(response_form.status_code, 201)
-        self.assertEqual(last_instance.created_by, self.doku)
-        self.assertEqual(last_instance.last_modified_by, self.doku)
+        self.assertEqual(last_instance.last_modified_by, None)
+
+        self.client.logout()
+
+        self.client.force_authenticate(self.doku)
+
+        with open("iaso/tests/fixtures/%s" % file_name) as fp:
+            response_form = self.client.post("/sync/form_upload/", {"xml_submission_file": fp})
+
+        updated_instance = Instance.objects.get(uuid=last_instance.uuid)
+
+        self.assertEqual(response_form.status_code, 201)
+        self.assertEqual(updated_instance.last_modified_by, self.doku)

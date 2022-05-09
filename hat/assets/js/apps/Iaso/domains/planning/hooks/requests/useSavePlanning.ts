@@ -10,14 +10,14 @@ export type SavePlanningQuery = {
     forms: number[];
     selectedOrgUnits: number[];
     selectedTeam: number;
-    publishingStatus: boolean;
+    publishingStatus: 'published' | 'draft';
 };
 
 export const waitFor = (delay: number): Promise<void> =>
     new Promise(resolve => setTimeout(resolve, delay));
 
 // TODO delete when backend available
-const makePlanning = (body: SavePlanningQuery) => {
+const makePlanning = (body: Partial<SavePlanningQuery>) => {
     return {
         id: body.id ?? Math.floor(Math.random() * 20), // TODO make the rnge from 9 to 20
         name: body.name,
@@ -30,7 +30,7 @@ const makePlanning = (body: SavePlanningQuery) => {
     };
 };
 
-const mockSavePlanning = async (body: SavePlanningQuery) => {
+const mockSavePlanning = async (body: Partial<SavePlanningQuery>) => {
     await waitFor(1500);
     return makePlanning(body);
 };
@@ -38,7 +38,7 @@ const mockSavePlanning = async (body: SavePlanningQuery) => {
 export const useSavePlanning = (type: 'create' | 'edit'): UseMutationResult => {
     // TODO replace with patch request
     const savePlanning = useSnackMutation(
-        (data: SavePlanningQuery) => mockSavePlanning(data),
+        (data: Partial<SavePlanningQuery>) => mockSavePlanning(data),
         undefined,
         undefined,
         ['planningsList'],

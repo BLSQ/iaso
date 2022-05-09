@@ -1,7 +1,7 @@
 import React, { FunctionComponent, useMemo } from 'react';
 import { AddButton, useSafeIntl, IconButton } from 'bluesquare-components';
-import { useFormik, FormikProvider, FormikProps } from 'formik';
-import { object, number, string, array, boolean, lazy } from 'yup';
+import { useFormik, FormikProvider } from 'formik';
+import { object, number, string, array, lazy } from 'yup';
 import { isEqual } from 'lodash';
 import { Box } from '@material-ui/core';
 import InputComponent from '../../../components/forms/InputComponent';
@@ -63,7 +63,7 @@ export const CreateEditPlanning: FunctionComponent<Props> = ({
             forms: string(), // this may be causiing bugs with multi select
             selectedOrgUnits: array().of(number()),
             selectedTeam: number().optional(),
-            publishingStatus: boolean(),
+            publishingStatus: string(),
         }),
     );
     const { mutateAsync: savePlanning } = useSavePlanning(type);
@@ -79,12 +79,12 @@ export const CreateEditPlanning: FunctionComponent<Props> = ({
             selectedOrgUnits,
             selectedTeam,
             forms,
-            publishingStatus: publishingStatus ?? false,
+            publishingStatus: publishingStatus ?? 'draft',
         },
         enableReinitialize: true,
         validateOnBlur: true,
         validationSchema: schema,
-        onSubmit: (values: SavePlanningQuery) => savePlanning(values), // TODO: convert forms string to Arry of IDs
+        onSubmit: (values: Partial<SavePlanningQuery>) => savePlanning(values), // TODO: convert forms string to Arry of IDs
     });
     const {
         values,
@@ -95,7 +95,7 @@ export const CreateEditPlanning: FunctionComponent<Props> = ({
         handleSubmit,
         resetForm,
     } = formik;
-
+    console.log('values', values, isValid);
     const getErrors = k => (errors[k] ? [errors[k]] : []);
     const titleMessage =
         type === 'create'
@@ -158,14 +158,30 @@ export const CreateEditPlanning: FunctionComponent<Props> = ({
                         type="select"
                         keyValue="selectedTeam"
                         onChange={setFieldValue}
-                        value={values.name}
+                        value={values.selectedTeam}
                         errors={getErrors('selectedTeam')}
                         label={MESSAGES.team}
                         required
                         options={teamsDropdown}
                         loading={isFetchingTeams}
                     />
-                    {/* <OrgUnitTreeviewModal /> */}
+
+                    <OrgUnitTreeviewModal
+                        onConfirm={value => {
+                            console.log('tree value', value);
+                            const selectedIds = value.map(
+                                orgUnit => orgUnit.id,
+                            );
+                            setFieldValue('selectedOrgUnits', selectedIds);
+                        }}
+                        titleMessage={formatMessage(MESSAGES.selectTopOrgUnit)}
+                        required
+                        clearable
+                        hardReset
+                        multiselect
+                        showStatusIconInTree={false}
+                        showStatusIconInPicker={false}
+                    />
                     <InputComponent
                         type="radio"
                         keyValue="publishingStatus"
@@ -173,6 +189,16 @@ export const CreateEditPlanning: FunctionComponent<Props> = ({
                         value={values.publishingStatus}
                         errors={getErrors('publishingStatus')}
                         label={MESSAGES.publishingStatus}
+                        options={[
+                            {
+                                label: formatMessage(MESSAGES.published),
+                                value: 'published',
+                            },
+                            {
+                                label: formatMessage(MESSAGES.draft),
+                                value: 'draft',
+                            },
+                        ]}
                         required
                     />
                 </Box>

@@ -29,7 +29,7 @@ export const useGetTeams = (): UseQueryResult<Teams, Error> => {
             if (!data?.teams) return [];
             return data.teams.map(team => {
                 return {
-                    value: team.id,
+                    value: team.id.toString(),
                     label: team.name,
                 };
             });

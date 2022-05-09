@@ -89,6 +89,10 @@ const MESSAGES = defineMessages({
         id: 'iaso.label.edit',
         defaultMessage: 'Edit',
     },
+    selectTopOrgUnit: {
+        id: 'iaso.datasources.label.selectTopOrgUnit',
+        defaultMessage: 'Please select top org unit',
+    },
 });
 
 export default MESSAGES;

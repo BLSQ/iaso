@@ -9,7 +9,7 @@ type Planning = {
     id: number;
     name: string;
     team: { name: string; id: number };
-    status: boolean;
+    status: 'published' | 'draft';
     start_date: string; // can this be null on the back end side?
     end_date: string;
 };
@@ -25,7 +25,7 @@ const getPlannings = async (options: PlanningParams): Promise<PlanningList> => {
     await waitFor(1500);
     // eslint-disable-next-line no-console
     console.log('options', options);
-    return list;
+    return list as PlanningList;
 };
 
 export const useGetPlannings = (

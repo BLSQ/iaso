@@ -15,7 +15,7 @@ export const list = {
                 id: 1,
                 name: 'Team1',
             },
-            status: true,
+            status: 'published',
         },
         {
             id: 2,
@@ -26,7 +26,7 @@ export const list = {
                 id: 2,
                 name: 'Team2',
             },
-            status: false,
+            status: 'draft',
         },
         {
             id: 3,
@@ -37,7 +37,7 @@ export const list = {
                 id: 3,
                 name: 'Team3',
             },
-            status: false,
+            status: 'draft',
         },
         {
             id: 4,
@@ -48,7 +48,7 @@ export const list = {
                 id: 4,
                 name: 'Team4',
             },
-            status: true,
+            status: 'published',
         },
         {
             id: 5,
@@ -59,7 +59,7 @@ export const list = {
                 id: 5,
                 name: 'Team5',
             },
-            status: true,
+            status: 'published',
         },
         {
             id: 6,
@@ -70,7 +70,7 @@ export const list = {
                 id: 6,
                 name: 'Team6',
             },
-            status: true,
+            status: 'published',
         },
     ],
 };

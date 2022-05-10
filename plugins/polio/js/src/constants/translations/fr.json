@@ -81,6 +81,7 @@
     "iaso.polio.import_file.label": "Excel Line File",
     "iaso.polio.import_line_list": "Importer Line List",
     "iaso.polio.import_line_list.successMessage": "Import réussi pour {amount} campagne(s)",
+    "iaso.instance.last_modified_by": "Modifié par",
     "iaso.polio.label.Com_Info_centre": "Centre d'information communautaire",
     "iaso.polio.label.Gong_gong": "Mégaphone / Audience criant",
     "iaso.polio.label.H2H_Mobilizer": "Mobilisateur social / CBV",

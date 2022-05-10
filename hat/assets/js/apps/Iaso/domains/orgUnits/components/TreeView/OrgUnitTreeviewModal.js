@@ -16,7 +16,6 @@ import ConfirmCancelDialogComponent from '../../../../components/dialogs/Confirm
 import { MESSAGES } from './messages';
 import { getRootData, getChildrenData, searchOrgUnits } from './requests';
 import { OrgUnitLabel, getOrgUnitAncestors } from '../../utils';
-
 import { OrgUnitTreeviewPicker } from './OrgUnitTreeviewPicker';
 import {
     formatInitialSelectedIds,
@@ -45,8 +44,10 @@ const OrgUnitTreeviewModal = ({
     clearable,
     allowedTypes,
     enableErrors,
+    errorMessage,
 }) => {
     const classes = useStyles();
+
     const [selectedOrgUnits, setSelectedOrgUnits] = useState(initialSelection);
 
     const [selectedOrgUnitsIds, setSelectedOrgUnitsIds] = useState(
@@ -173,6 +174,7 @@ const OrgUnitTreeviewModal = ({
                     label={makeTreeviewLabel(classes, showStatusIconInPicker)}
                     clearable={clearable}
                     enableErrors={enableErrors}
+                    errorMessage={errorMessage}
                 />
             )}
             titleMessage={titleMessage}
@@ -228,6 +230,7 @@ OrgUnitTreeviewModal.propTypes = {
     clearable: bool,
     allowedTypes: array,
     enableErrors: bool,
+    errorMessage: string,
 };
 
 OrgUnitTreeviewModal.defaultProps = {
@@ -246,6 +249,7 @@ OrgUnitTreeviewModal.defaultProps = {
     clearable: true,
     allowedTypes: [],
     enableErrors: false,
+    errorMessage: null,
 };
 
 export { OrgUnitTreeviewModal };

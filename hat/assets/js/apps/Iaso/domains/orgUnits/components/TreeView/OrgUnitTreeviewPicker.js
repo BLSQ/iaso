@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { func, any, bool, object, oneOfType, string } from 'prop-types';
 import classnames from 'classnames';
-import { Paper, InputLabel, Box } from '@material-ui/core';
+import { Paper, InputLabel, Box, Typography } from '@material-ui/core';
 import { makeStyles } from '@material-ui/core/styles';
 import {
     FormControl,
@@ -49,6 +49,7 @@ const styles = theme => ({
         marginRight: 5,
     },
     error: {
+        '&:hover': { border: `1px solid ${theme.palette.error.main}` },
         border: `1px solid ${theme.palette.error.main}`,
     },
     errorLabel: {
@@ -75,9 +76,12 @@ const OrgUnitTreeviewPicker = ({
     label,
     clearable,
     enableErrors,
+    errorMessage,
 }) => {
     const intl = useSafeIntl();
     const classes = useStyles();
+    const { formatMessage } = intl;
+    const defaultErrorMessaege = formatMessage(MESSAGES.error);
 
     const [isReset, setIsReset] = useState(false);
     const isError = isReset && selectedItems.size === 0;
@@ -177,6 +181,11 @@ const OrgUnitTreeviewPicker = ({
                     onClick={onClick}
                 />
             </Paper>
+            {enableErrors && showError && (
+                <Typography variant="body1" className={classes.errorLabel}>
+                    {errorMessage ?? defaultErrorMessaege}
+                </Typography>
+            )}
         </FormControl>
     );
 };
@@ -193,6 +202,7 @@ OrgUnitTreeviewPicker.propTypes = {
     label: func.isRequired,
     clearable: bool,
     enableErrors: bool,
+    errorMessage: string,
 };
 OrgUnitTreeviewPicker.defaultProps = {
     selectedItems: [],
@@ -203,6 +213,7 @@ OrgUnitTreeviewPicker.defaultProps = {
     disabled: false,
     clearable: true,
     enableErrors: false,
+    errorMessage: null,
 };
 
 export { OrgUnitTreeviewPicker };

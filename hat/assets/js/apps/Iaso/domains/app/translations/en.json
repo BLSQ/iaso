@@ -1,5 +1,6 @@
 {
     "PeriodSelectorComponent.label.apply": "Apply",
+    "blsq.treeview.error": "Please select an org unit",
     "blsq.treeview.label.selectMultiple": "Select org unit(s)",
     "blsq.treeview.label.selectSingle": "Select an org unit",
     "blsq.treeview.loading": "Loading",
@@ -230,6 +231,7 @@
     "iaso.label.config": "Admin",
     "iaso.label.confirm": "Confirm",
     "iaso.label.create": "Create",
+    "iaso.label.createPlanning": "Create planning",
     "iaso.label.created": "Creation",
     "iaso.label.created_at": "Created",
     "iaso.label.creationDateFrom": "Creation from",

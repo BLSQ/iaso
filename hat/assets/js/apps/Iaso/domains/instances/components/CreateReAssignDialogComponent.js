@@ -61,12 +61,9 @@ const CreateReAssignDialogComponent = ({
     );
 
     const onConfirm = closeDialog => {
-        const reference_instance = currentFormOrInstance.org_unit.instance_defining_id;
-        const previous_org_unit = currentFormOrInstance.org_unit.id;
         onCreateOrReAssign(currentFormOrInstance, {
             period: fieldValue.period.value,
             org_unit: fieldValue.orgUnit.value?.id,
-            previous_org_unit: reference_instance ? previous_org_unit : undefined,
         });
         orgUnitCopy.current = fieldValue.orgUnit.value;
         periodCopy.current = fieldValue.period.value;

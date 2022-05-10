@@ -443,7 +443,7 @@ class InstancesAPITestCase(APITestCase):
 
         response = self.client.patch(
             f"/api/instances/{instance_to_patch.id}/",
-            data={"org_unit": new_org_unit.id, "period": "2022Q1", "previous_org_unit": None},
+            data={"org_unit": new_org_unit.id, "period": "2022Q1"},
             format="json",
             HTTP_ACCEPT="application/json",
         )
@@ -473,7 +473,7 @@ class InstancesAPITestCase(APITestCase):
 
         response = self.client.patch(
             f"/api/instances/{instance_to_patch.id}/",
-            data={"org_unit": new_org_unit.id, "previous_org_unit": None},
+            data={"org_unit": new_org_unit.id},
             format="json",
             HTTP_ACCEPT="application/json",
         )
@@ -512,7 +512,7 @@ class InstancesAPITestCase(APITestCase):
 
         response = self.client.patch(
             f"/api/instances/{instance.id}/",
-            data={"org_unit": new_org_unit.id, "previous_org_unit": previous_org_unit.id},
+            data={"org_unit": new_org_unit.id},
             format="json",
             HTTP_ACCEPT="application/json",
         )
@@ -532,7 +532,7 @@ class InstancesAPITestCase(APITestCase):
         self.assertEqual(0, Modification.objects.count())
         response = self.client.patch(
             f"/api/instances/{instance_to_patch.id}/",
-            data={"deleted": False, "previous_org_unit": None},
+            data={"deleted": False},
             format="json",
             HTTP_ACCEPT="application/json",
         )

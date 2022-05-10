@@ -144,12 +144,20 @@ class InstancesViewSet(viewsets.ViewSet):
                     page_offset = paginator.num_pages
                 page = paginator.page(page_offset)
 
-                res["instances"] = map(lambda x: x.as_dict(), page.object_list)
+                def as_dict_formatter(x):
+                    dict = x.as_dict()
+                    form_defining_id = x.org_unit.org_unit_type.form_defining_id
+                    if form_defining_id:
+                        dict["form_defining_id"] = form_defining_id
+                    return dict
+
+                res["instances"] = map(as_dict_formatter, page.object_list)
                 res["has_next"] = page.has_next()
                 res["has_previous"] = page.has_previous()
                 res["page"] = page_offset
                 res["pages"] = paginator.num_pages
                 res["limit"] = limit
+
                 return Response(res)
             elif as_small_dict:
                 queryset = queryset.annotate(instancefile_count=Count("instancefile"))
@@ -307,6 +315,12 @@ class InstancesViewSet(viewsets.ViewSet):
             instance, data=request.data, partial=True, context={"request": self.request}
         )
         instance_serializer.is_valid(raise_exception=True)
+
+        if original.org_unit.instance_defining and original.org_unit_id != request.data["org_unit"]:
+            previousOrgUnit = original.org_unit
+            previousOrgUnit.instance_defining = None
+            previousOrgUnit.save()
+
         instance_serializer.save()
 
         log_modification(original, instance, INSTANCE_API, user=request.user)

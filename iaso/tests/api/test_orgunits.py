@@ -17,7 +17,7 @@ class OrgUnitAPITestCase(APITestCase):
         sw_source = m.DataSource.objects.create(name="Evil Empire")
         sw_source.projects.add(cls.project)
         cls.sw_source = sw_source
-        sw_version_1 = m.SourceVersion.objects.create(data_source=sw_source, number=1)
+        cls.sw_version_1 = sw_version_1 = m.SourceVersion.objects.create(data_source=sw_source, number=1)
         sw_version_2 = m.SourceVersion.objects.create(data_source=sw_source, number=1)
         star_wars.default_version = sw_version_1
         star_wars.save()
@@ -540,8 +540,10 @@ class OrgUnitAPITestCase(APITestCase):
         self.assertEqual(ou.instance_defining, self.instance_related_to_form_defining)
 
     def test_edit_org_unit_not_link_to_instance_defining(self):
-        """Retrieve a orgunit data and modify the instance_defining_id with a no form defining"""
+        """Retrieve a orgunit data and modify the instance_defining_id with a no form defining
+        Should return error"""
         old_ou = self.jedi_council_corruscant
+        old_modification_date = old_ou.updated_at
         self.client.force_authenticate(self.yoda)
         response = self.client.get(f"/api/orgunits/{old_ou.id}/")
         data = self.assertJSONResponse(response, 200)
@@ -553,12 +555,39 @@ class OrgUnitAPITestCase(APITestCase):
             format="json",
             data=data,
         )
+        jr = self.assertJSONResponse(response, 400)
+        self.assertTrue("form_defining" in (error["errorKey"] for error in jr))
+        old_ou.refresh_from_db()
+        # check the orgunit has not beee modified
+        self.assertEqual(old_modification_date, old_ou.updated_at)
+
+    def test_edit_org_unit_partial_update(self):
+        """Check tha we can only modify a part of the fille"""
+        ou = m.OrgUnit(version=self.sw_version_1)
+        ou.name = "test ou"
+        ou.source_ref = "b"
+        group_a = m.Group.objects.create(name="test group a")
+        group_b = m.Group.objects.create(name="test group b")
+        ou.geom = MultiPolygon(Polygon([(0, 0), (0, 1), (1, 1), (0, 0)]))
+        ou.save()
+        ou.groups.set([group_a, group_b])
+        ou.save()
+        old_modification_date = ou.updated_at
+        self.client.force_authenticate(self.yoda)
+        data = {"source_ref": "new source ref"}
+        response = self.client.patch(
+            f"/api/orgunits/{ou.id}/",
+            format="json",
+            data=data,
+        )
         jr = self.assertJSONResponse(response, 200)
-        self.assertValidOrgUnitData(jr)
-        self.assertCreated({Modification: 1})
-        ou = m.OrgUnit.objects.get(id=jr["id"])
-        self.assertEqual(ou.id, old_ou.id)
-        self.assertEqual(ou.instance_defining, None)
+        ou.refresh_from_db()
+        # check the orgunit has not beee modified
+        self.assertGreater(ou.updated_at, old_modification_date)
+        self.assertEqual(ou.name, "test ou")
+        self.assertEqual(ou.source_ref, "new source ref")
+        self.assertQuerysetEqual(ou.groups.all().order_by("name"), [group_a, group_b])
+        self.assertEqual(ou.geom.wkt, MultiPolygon(Polygon([(0, 0), (0, 1), (1, 1), (0, 0)])).wkt)
 
     def test_edit_org_unit_edit_bad_group_fail(self):
         """FIXME this test Document current behaviour but we want to change how to handle this

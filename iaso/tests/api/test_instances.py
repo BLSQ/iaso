@@ -518,9 +518,10 @@ class InstancesAPITestCase(APITestCase):
         )
 
         self.assertJSONResponse(response, 200)
+        previous_org_unit.refresh_from_db()
         instance.refresh_from_db()
         self.assertEqual(instance.org_unit, new_org_unit)
-        self.assertEqual(instance.period, None)
+        self.assertEqual(previous_org_unit.instance_defining, None)
 
     def test_instance_patch_restore(self):
         """PATCH /instances/:pk"""

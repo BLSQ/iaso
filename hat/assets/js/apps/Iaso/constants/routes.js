@@ -90,12 +90,6 @@ export const pagesPath = {
     component: props => <Pages {...props} />,
 };
 
-export const dhis2LinkPath = {
-    permissions: ['iaso_dhis2_link'],
-    featureFlag: SHOW_DHIS2_LINK,
-    params: [...paginationPathParams]
-};
-
 export const formDetailPath = {
     baseUrl: baseUrls.formDetail,
     permissions: ['iaso_forms', 'iaso_submissions'],
@@ -578,7 +572,6 @@ export const routeConfigs = [
     entitiesPath,
     entityTypesPath,
     pagesPath,
-    dhis2LinkPath,
     page401,
     page500,
 ];

@@ -194,13 +194,13 @@ const getMenuItems = (currentUser, enabledPlugins, defaultSourceVersion) => {
             permissions: paths.pagesPath.permissions,
         });
     }
-    if (hasFeatureFlag(currentUser, SHOW_DHIS2_LINK) && currentUser.account.default_version.data_source.url) {
+    if (hasFeatureFlag(currentUser, SHOW_DHIS2_LINK) && currentUser?.account?.default_version?.data_source.url) {
       basicItems.push({
         label: MESSAGES.dhis2,
         key: "dhis2",
         url: currentUser.account.default_version.data_source.url,
         icon: props => <DHIS2Svg {...props} />,
-        permissions: paths.dhis2LinkPath.permissions,
+        featureFlag: true,
       });
     }
     return [...basicItems, ...pluginsMenu];

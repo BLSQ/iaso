@@ -64,5 +64,4 @@ class CustomPermissionSupport(models.Model):
             ("iaso_polio_config", POLIO_CONFIG),
             ("iaso_submissions", SUBMISSIONS),
             ("iaso_update_submission", UPDATE_SUBMISSIONS),
-            ("iaso_dhis2_link", DHIS2_LINK),
         )

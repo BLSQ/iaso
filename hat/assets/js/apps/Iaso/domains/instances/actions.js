@@ -100,6 +100,7 @@ export const reAssignInstance = (currentInstance, payload) => dispatch => {
     dispatch(setInstancesFetching(true));
     const effectivePayload = { ...payload };
     if (!payload.period) delete effectivePayload.period;
+    if (!payload.previous_org_unit) delete effectivePayload.previous_org_unit;
     patchRequest(`/api/instances/${currentInstance.id}/`, effectivePayload)
         .then(() => {
             dispatch(fetchInstanceDetail(currentInstance.id));

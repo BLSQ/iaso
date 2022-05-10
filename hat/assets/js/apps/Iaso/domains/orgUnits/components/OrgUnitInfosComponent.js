@@ -104,7 +104,7 @@ const linkOrgUnitToInstanceDefining = (orgUnit, instanceDefiningId, saveOu) => {
 const Actions = (orgUnit, formId, formDefiningId, instanceId, saveOu) => {
     const currentUser = useSelector(state => state.users.current);
     const instanceDefining = orgUnit.instance_defining;
-    const linkOrgUnit = !!(formId !== formDefiningId || instanceDefining);
+    const linkOrgUnit = (formId !== formDefiningId || instanceDefining !== null);
     const hasSubmissionPermission = userHasPermission(
         'iaso_submissions',
         currentUser,
@@ -134,7 +134,7 @@ const Actions = (orgUnit, formId, formDefiningId, instanceId, saveOu) => {
                     }
                 />
             ),
-            disabled: linkOrgUnit && !hasSubmissionPermission,
+            disabled: linkOrgUnit,
         },
     ];
 };
@@ -301,7 +301,7 @@ const OrgUnitInfosComponent = ({
                     type="arrayInput"
                 />
             </Grid>
-            <Grid item xs={orgUnit.instance_defining ? 6 : 4}>
+            <Grid item xs={4}>
                 {orgUnit.id && !orgUnit.instance_defining && (
                     <OrgUnitCreationDetails orgUnit={orgUnit} />
                 )}

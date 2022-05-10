@@ -81,9 +81,8 @@ const ActionTableColumnComponent = ({ settings, user }) => {
 
     const showButton =
         settings.row.original.form_defining_id ===
-            settings.row.original.form_id &&
-        !settings.row.original.org_unit.instance_defining_id &&
-        userHasPermission('iaso_org_units', user);
+            settings.row.original.form_id && userHasPermission('iaso_org_units', user);
+    const notLinked =  !settings.row.original.org_unit.instance_defining_id && userHasPermission('iaso_org_units', user);
 
     return (
         <section>
@@ -105,6 +104,8 @@ const ActionTableColumnComponent = ({ settings, user }) => {
                     onClick={() => linkOrgUnitToInstanceDefining()}
                     overrideIcon={LinkIcon}
                     tooltipMessage={MESSAGES.linkOrgUnitInstanceDefining}
+                    color={notLinked ? "" : "primary"}
+                    disabled={!notLinked}
                 />
             )}
         </section>

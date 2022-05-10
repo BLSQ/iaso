@@ -397,6 +397,7 @@
     "iaso.label.videos": "Videos",
     "iaso.label.view": "View",
     "iaso.label.viewOrgUnit": "View OrgUnit",
+    "iaso.label.linkOrgUnitInstanceDefining": "Link OrgUnit to instance defining",
     "iaso.label.with": "With",
     "iaso.label.withLocation": "With point only",
     "iaso.label.without": "Without",

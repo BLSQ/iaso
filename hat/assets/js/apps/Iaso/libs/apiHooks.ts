@@ -1,9 +1,22 @@
 import { useRef } from 'react';
 import { useDispatch } from 'react-redux';
-import { useMutation, useQuery, useQueries, useQueryClient } from 'react-query';
+import {
+    MutationFunction,
+    QueryKey,
+    useMutation,
+    UseMutationOptions,
+    UseMutationResult,
+    useQueries,
+    useQuery,
+    useQueryClient,
+    UseQueryOptions,
+    UseQueryResult,
+    QueryFunction,
+} from 'react-query';
 import { defineMessages } from 'react-intl';
 import { enqueueSnackbar } from '../redux/snackBarsReducer';
 import { errorSnackBar, succesfullSnackBar } from '../constants/snackBars';
+import { IntlMessage } from '../types/intl';
 
 const MESSAGES = defineMessages({
     defaultMutationApiError: {
@@ -27,46 +40,58 @@ const MESSAGES = defineMessages({
  * Per default will display a message on success and on error.
  * Success message can be disabled
  *
- * @param {function(*): Promise<*>} mutationFn
- * @param {*}  snackSuccessMessage
- * @param {string} snackSuccessMessage.id
- *   Translatable Formatjs Message object.
+ * @param mutationFn
+ * @param snackSuccessMessage
+ *   Snack Message to display in case of success, optional
  *   pass null to suppress, undefined for default.
- * @param {*} snackErrorMsg
- * @param {string} snackErrorMsg.id
- *   idem
- * @param {InvalidateQueryFilters<*>|string|*[]} invalidateQueryKey
+ * @param snackErrorMsg
+ *  Snack Message to display in case of success, optional
+ *  pass null to suppress, undefined for default.
+ * @param invalidateQueryKey
  *   optional query key to invalidate
  * @param options
  *   standard useMutation Options
  * @returns {UseMutationResult<mutationFn, options, void, unknown>}
  */
-export const useSnackMutation = (
-    mutationFn,
-    snackSuccessMessage = MESSAGES.defaultMutationApiSuccess,
-    snackErrorMsg = MESSAGES.defaultMutationApiError,
-    invalidateQueryKey = undefined,
-    options = {},
-) => {
+export const useSnackMutation = <
+    Data = unknown,
+    Error = unknown,
+    Variables = void,
+    Context = unknown,
+>(
+    mutationFn: MutationFunction<Data, any>,
+    snackSuccessMessage: IntlMessage = MESSAGES.defaultMutationApiSuccess,
+    snackErrorMsg: IntlMessage = MESSAGES.defaultMutationApiError,
+    invalidateQueryKey: QueryKey | undefined = undefined,
+    options:
+        | Omit<
+              UseMutationOptions<Data, Error, Variables, Context>,
+              'mutationFn'
+          >
+        | undefined = {},
+): UseMutationResult<Data, Error, Variables, Context> => {
     const dispatch = useDispatch();
     const queryClient = useQueryClient();
 
-    const newOptions = {
+    const newOptions: Omit<
+        UseMutationOptions<any, any, any, any>,
+        'mutationFn'
+    > = {
         ...options,
         onError: (error, variables, context) => {
             dispatch(
-                enqueueSnackbar(errorSnackBar(null, snackErrorMsg, error)),
+                enqueueSnackbar(errorSnackBar(undefined, snackErrorMsg, error)),
             );
             if (options.onError) {
                 return options.onError(error, variables, context);
             }
-            return null;
+            return undefined;
         },
         onSuccess: (data, variables, context) => {
             if (snackSuccessMessage) {
                 dispatch(
                     enqueueSnackbar(
-                        succesfullSnackBar(null, snackSuccessMessage),
+                        succesfullSnackBar(undefined, snackSuccessMessage),
                     ),
                 );
             }
@@ -76,43 +101,48 @@ export const useSnackMutation = (
             if (options.onSuccess) {
                 return options.onSuccess(data, variables, context);
             }
-
-            return null;
+            return undefined;
         },
     };
     return useMutation(mutationFn, newOptions);
 };
 /**
  * Mix a useQuery from react-query and snackbar message in case of error
- * @param {string[]} queryKey
- * @param {((context: QueryFunctionContext<*>) => (Promise<TQueryFnData> | TQueryFnData))|UseQueryOptions<TQueryFnData, TError, TData, *>} queryFn
- * @param {Object|null} snackErrorMsg
- * @param {string} snackErrorMsg.id
+ * @param queryKey
+ * @param queryFn
+ * @param snackErrorMsg
  *  Translatable Formatjs Message object. null to suppress, undefined for default.
- * @param {UseQueryOptions<TQueryFnData, TError, TData, TQueryKey>)} options
+ * @param options
  * @param {boolean} dispatchOnError
- * @returns UseQueryResult<TData, TError>;
+ * @returns UseQueryResult<Data, Error>;
  */
 
-export const useSnackQuery = (
-    queryKey,
-    queryFn,
-    snackErrorMsg = MESSAGES.defaultQueryApiSuccess,
-    options = {},
+export const useSnackQuery = <
+    QueryFnData = unknown,
+    Error = unknown,
+    Data = QueryFnData,
+    QueryKeyExtended extends QueryKey = QueryKey,
+>(
+    queryKey: QueryKey,
+    queryFn: QueryFunction<QueryFnData>,
+    snackErrorMsg: IntlMessage | undefined = MESSAGES.defaultQueryApiSuccess,
+    options: UseQueryOptions<QueryFnData, Error, Data, QueryKeyExtended> = {},
     // Give the option to not dispatch onError, to avoid multiple snackbars when re-using the query with the same query key
     dispatchOnError = true,
-) => {
+): UseQueryResult<Data, Error> => {
     const dispatch = useDispatch();
     const newOptions = {
         ...options,
-        onError: (error, variables, context) => {
+        onError: error => {
             if (dispatchOnError) {
                 dispatch(
-                    enqueueSnackbar(errorSnackBar(null, snackErrorMsg, error)),
+                    enqueueSnackbar(
+                        errorSnackBar(undefined, snackErrorMsg, error),
+                    ),
                 );
             }
             if (options.onError) {
-                options.onError(error, variables, context);
+                options.onError(error);
             }
         },
     };
@@ -122,16 +152,18 @@ export const useSnackQuery = (
 
 /**
  * Mix a useQueries from react-query and snackbar message in case of error
- * @param {Array.<
- *      queryKey: string[],
- *      queryFn: {((context: QueryFunctionContext<*>) => (Promise<TQueryFnData> | TQueryFnData))|UseQueryOptions<TQueryFnData, TError, TData, *>},
- *      snackErrorMsg: {Object|null},
- *      options: {UseQueryOptions<TQueryFnData, TError, TData, TQueryKey>)}
- *      dispatchOnError: boolean
- * >} queries
+ * @param queries
  */
 
-export const useSnackQueries = queries => {
+export const useSnackQueries = <QueryFnData>(
+    queries: {
+        queryKey: QueryKey;
+        queryFn: QueryFunction<QueryFnData>;
+        snackErrorMsg: IntlMessage;
+        options: UseQueryOptions;
+        dispatchOnError: boolean;
+    }[],
+): UseQueryResult[] => {
     const dispatch = useDispatch();
     const newQueries = queries.map(query => {
         const {
@@ -141,16 +173,16 @@ export const useSnackQueries = queries => {
         } = query;
         const newOptions = {
             ...options,
-            onError: (error, variables, context) => {
+            onError: error => {
                 if (dispatchOnError) {
                     dispatch(
                         enqueueSnackbar(
-                            errorSnackBar(null, snackErrorMsg, error),
+                            errorSnackBar(undefined, snackErrorMsg, error),
                         ),
                     );
                 }
                 if (options.onError) {
-                    options.onError(error, variables, context);
+                    options.onError(error);
                 }
             },
         };
@@ -159,7 +191,9 @@ export const useSnackQueries = queries => {
     return useQueries(newQueries);
 };
 
-export const useAbortController = () => {
+export const useAbortController = ():
+    | AbortController
+    | Record<string, never> => {
     const abortController = useRef(new AbortController());
     return abortController?.current ?? {};
 };

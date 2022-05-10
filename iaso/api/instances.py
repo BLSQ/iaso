@@ -310,7 +310,7 @@ class InstancesViewSet(viewsets.ViewSet):
     def patch(self, request, pk=None):
         original = get_object_or_404(self.get_queryset(), pk=pk)
         instance = get_object_or_404(self.get_queryset(), pk=pk)
-        if request.data["previous_org_unit"]:
+        if request.data["previous_org_unit"] and request.data["previous_org_unit"] != request.data["org_unit"]:
             previousOrgUnit = OrgUnit.objects.get(pk=request.data["previous_org_unit"])
             if previousOrgUnit:
                 previousOrgUnit.instance_defining = None

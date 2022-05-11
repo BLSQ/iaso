@@ -104,7 +104,7 @@ const ActionTableColumnComponent = ({ settings, user }) => {
                     onClick={() => linkOrgUnitToInstanceDefining()}
                     overrideIcon={LinkIcon}
                     tooltipMessage={MESSAGES.linkOrgUnitInstanceDefining}
-                    color={notLinked ? "" : "primary"}
+                    color={notLinked ? "inherit" : "primary"}
                     disabled={!notLinked}
                 />
             )}

@@ -143,10 +143,16 @@ class InstancesViewSet(viewsets.ViewSet):
                 if page_offset > paginator.num_pages:
                     page_offset = paginator.num_pages
                 page = paginator.page(page_offset)
+                # It will check if the orgUnit is linked to an orgUnitType before getting the reference form id
+                def get_reference_form_id(org_unit_type):
+                    if org_unit_type:
+                        return org_unit_type.form_defining_id
+                    else:
+                        return None
 
                 def as_dict_formatter(x):
                     dict = x.as_dict()
-                    form_defining_id = x.org_unit.org_unit_type.form_defining_id
+                    form_defining_id = get_reference_form_id(x.org_unit.org_unit_type)
                     if form_defining_id:
                         dict["form_defining_id"] = form_defining_id
                     return dict

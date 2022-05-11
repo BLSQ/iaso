@@ -43,9 +43,22 @@ export default function OrgUnitsTypesDialog({
         project_ids: orgUnitType.projects.map(project => project.id),
     });
 
+    let projects;
+    if (formState.project_ids.value.length > 0) {
+        projects = formState.project_ids.value.join(',');
+    }
+
     const onChange = useCallback(
         (keyValue, value) => {
-            setFieldValue(keyValue, value);
+            if (
+                keyValue === 'sub_unit_type_ids' ||
+                keyValue === 'project_ids'
+            ) {
+                setFieldValue(keyValue, commaSeparatedIdsToArray(value));
+            } else {
+                setFieldValue(keyValue, value);
+            }
+
             if (!isFieldValid(keyValue, value, requiredFields)) {
                 setFieldErrors(keyValue, [
                     formatMessage(MESSAGES.requiredField),
@@ -87,7 +100,6 @@ export default function OrgUnitsTypesDialog({
             id="OuTypes-modal"
             titleMessage={titleMessage}
             onConfirm={onConfirm}
-            onChange={onChange}
             cancelMessage={MESSAGES.cancel}
             confirmMessage={MESSAGES.save}
             disableConfirm={!isFormValid(requiredFields, formState)}
@@ -155,13 +167,17 @@ export default function OrgUnitsTypesDialog({
                         //     setFieldValue(name, commaSeparatedIdsToArray(value))
                         // }
                         onChange={onChange}
-                        value={formState.project_ids.value}
+                        value={projects}
                         errors={formState.project_ids.errors}
                         type="select"
-                        options={allProjects.map(p => ({
-                            value: p.id,
-                            label: p.name,
-                        }))}
+                        options={
+                            allProjects
+                                ? allProjects.map(p => ({
+                                      label: p.name,
+                                      value: p.id,
+                                  }))
+                                : []
+                        }
                         label={MESSAGES.projects}
                         required
                     />

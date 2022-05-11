@@ -138,10 +138,6 @@ const SidebarMenu = ({
                     if (userHasOneOfPermissions(permissionsList, currentUser)) {
                       return getMenuItem(menuItem);
                     }
-                    if(menuItem.featureFlag)
-                    {
-                      return getMenuItem(menuItem);
-                    }
                     return null;
                 })}
             </List>

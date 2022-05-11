@@ -23,10 +23,11 @@ export const userHasPermission = (permission, user) => {
  * @param {Object} user
  * @return {Boolean}
  */
-export const userHasOneOfPermissions = (permissions, user) => {
+export const userHasOneOfPermissions = (permissions = [], user) => {
     if (!user) {
         return false;
     }
+    if (permissions.length === 0) return true;
     let isAuthorised = false;
     permissions.forEach(p => {
         if (!!p && userHasPermission(p, user)) {

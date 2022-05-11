@@ -200,7 +200,6 @@ const getMenuItems = (currentUser, enabledPlugins, defaultSourceVersion) => {
         key: "dhis2",
         url: currentUser.account.default_version.data_source.url,
         icon: props => <DHIS2Svg {...props} />,
-        featureFlag: true,
       });
     }
     return [...basicItems, ...pluginsMenu];

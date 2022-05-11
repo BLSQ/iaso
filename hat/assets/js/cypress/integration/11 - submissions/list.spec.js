@@ -247,7 +247,7 @@ describe('Submissions', () => {
                         .should(
                             'have.attr',
                             'href',
-                            '/dashboard/orgunits/detail/orgUnitId/1',
+                            '/dashboard/orgunits/detail/orgUnitId/1/formId/1/instanceId/1',
                         );
                 });
             });

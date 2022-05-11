@@ -2,9 +2,10 @@
 import React, { FunctionComponent } from 'react';
 import { Box, Typography, Paper, makeStyles } from '@material-ui/core';
 import { useSafeIntl } from 'bluesquare-components';
-import { ConvertedLqasImData, RoundString } from '../../constants/types';
+import { ConvertedLqasImData } from '../../constants/types';
 import MESSAGES from '../../constants/messages';
 import {
+    accessArrayRound,
     convertStatToPercent,
     totalCaregivers,
     totalCaregiversInformed,
@@ -12,7 +13,7 @@ import {
 
 type Props = {
     campaign?: string;
-    round: RoundString;
+    round: number;
     data: Record<string, ConvertedLqasImData>;
     paperElevation: number;
 };
@@ -33,7 +34,9 @@ export const CaregiversTableHeader: FunctionComponent<Props> = ({
     const { formatMessage } = useSafeIntl();
     const classes = useStyles();
     const dataForRound =
-        data && campaign && data[campaign] ? data[campaign][round] : [];
+        data && campaign && data[campaign]
+            ? accessArrayRound(data[campaign], round)
+            : [];
     return (
         <Paper elevation={paperElevation} className={classes.paper}>
             <Box p={2} display="flex" justifyContent="space-between">

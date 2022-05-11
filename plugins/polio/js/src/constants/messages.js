@@ -1061,15 +1061,15 @@ const MESSAGES = defineMessages({
     },
     testCampaigns: {
         id: 'iaso.polio.label.testCampaigns',
-        defaultMessage: 'iaso.polio.label.testCampaigns',
-    },
-    rounds: {
-        id: 'iaso.polio.form.label.rounds',
-        defaultMessage: 'Rounds',
+        defaultMessage: 'Test campaigns',
     },
     round: {
         id: 'iaso.polio.label.round',
         defaultMessage: 'Round',
+    },
+    rounds: {
+        id: 'iaso.polio.form.label.rounds',
+        defaultMessage: 'Rounds',
     },
     deleteRound: {
         id: 'iaso.polio.forms.deleteRound',

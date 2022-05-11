@@ -13,6 +13,7 @@ from iaso.models import Account, OrgUnit
 from iaso.test import APITestCase, TestCase
 
 from plugins.polio.management.commands.weekly_email import send_notification_email
+from ..api import CACHE_VERSION
 from ..models import Config
 
 from ..preparedness.calculator import get_preparedness_score
@@ -483,7 +484,7 @@ class LQASIMPolioTestCase(APITestCase):
 
         response = self.client.get("/api/polio/lqasstats/?country_id=29729".format(self.jedi_council_corruscant.pk))
 
-        is_cached = True if cache.get("{0}-{1}-LQAS".format(self.yoda.pk, 29729)) else False
+        is_cached = True if cache.get("{0}-{1}-LQAS".format(self.yoda.pk, 29729), version=CACHE_VERSION) else False
 
         self.assertEqual(response.status_code, 200)
         self.assertEqual(is_cached, True)
@@ -530,9 +531,11 @@ class LQASIMPolioTestCase(APITestCase):
                 version=self.star_wars.default_version,
             )
 
-        response = self.client.get("/api/polio/imstats/?country_id=29729".format(self.jedi_council_corruscant.pk))
+        response = self.client.get(
+            "/api/polio/imstats/?country_id=29729".format(self.jedi_council_corruscant.pk), version=CACHE_VERSION
+        )
 
-        is_cached = True if cache.get("{0}-{1}-IM".format(self.yoda.pk, 29729)) else False
+        is_cached = True if cache.get("{0}-{1}-IM".format(self.yoda.pk, 29729), version=CACHE_VERSION) else False
 
         self.assertEqual(response.status_code, 200)
         self.assertEqual(is_cached, True)

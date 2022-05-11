@@ -493,7 +493,7 @@ class InstancesAPITestCase(APITestCase):
         self.assertEqual(new_org_unit.id, modification.new_value[0]["fields"]["org_unit"])
         self.assertEqual(instance_to_patch, modification.content_object)
 
-    def test_instance_patch_org_unit_unlink_instance_defining_from_previous_org_unit(self):
+    def test_instance_patch_org_unit_unlink_reference_instance_from_previous_org_unit(self):
         """PATCH /instances/:pk"""
         self.client.force_authenticate(self.yoda)
 
@@ -503,7 +503,7 @@ class InstancesAPITestCase(APITestCase):
 
         instance = m.Instance.objects.create(org_unit=previous_org_unit, form=self.form_3, project=self.project)
 
-        previous_org_unit.instance_defining = instance
+        previous_org_unit.reference_instance = instance
         previous_org_unit.save()
 
         new_org_unit = m.OrgUnit.objects.create(
@@ -521,7 +521,7 @@ class InstancesAPITestCase(APITestCase):
         previous_org_unit.refresh_from_db()
         instance.refresh_from_db()
         self.assertEqual(instance.org_unit, new_org_unit)
-        self.assertEqual(previous_org_unit.instance_defining, None)
+        self.assertEqual(previous_org_unit.reference_instance, None)
 
     def test_instance_patch_restore(self):
         """PATCH /instances/:pk"""

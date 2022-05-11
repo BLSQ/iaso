@@ -54,7 +54,7 @@ class OrgUnitType(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
     category = models.CharField(max_length=8, choices=CATEGORIES, null=True, blank=True)
     sub_unit_types = models.ManyToManyField("OrgUnitType", related_name="super_types", blank=True)
-    form_defining = models.ForeignKey("Form", on_delete=models.DO_NOTHING, null=True, blank=True)
+    reference_form = models.ForeignKey("Form", on_delete=models.DO_NOTHING, null=True, blank=True)
     projects = models.ManyToManyField("Project", related_name="unit_types", blank=False)
     depth = models.PositiveSmallIntegerField(null=True, blank=True)
 
@@ -187,7 +187,7 @@ class OrgUnit(TreeModel):
     simplified_geom = MultiPolygonField(null=True, blank=True, srid=4326, geography=True)
     catchment = MultiPolygonField(null=True, blank=True, srid=4326, geography=True)
     geom_ref = models.IntegerField(null=True, blank=True)
-    instance_defining = models.ForeignKey("Instance", on_delete=models.DO_NOTHING, null=True, blank=True)
+    reference_instance = models.ForeignKey("Instance", on_delete=models.DO_NOTHING, null=True, blank=True)
 
     gps_source = models.TextField(null=True, blank=True)
     location = PointField(null=True, blank=True, geography=True, dim=3, srid=4326)
@@ -291,7 +291,7 @@ class OrgUnit(TreeModel):
             "latitude": self.location.y if self.location else None,
             "longitude": self.location.x if self.location else None,
             "altitude": self.location.z if self.location else None,
-            "instance_defining_id": self.instance_defining_id if self.instance_defining else None,
+            "reference_instance_id": self.reference_instance_id if self.reference_instance else None,
         }
 
     def as_dict(self, with_groups=True):
@@ -315,7 +315,7 @@ class OrgUnit(TreeModel):
             "altitude": self.location.z if self.location else None,
             "has_geo_json": True if self.simplified_geom else False,
             "version": self.version.number if self.version else None,
-            "instance_defining_id": self.instance_defining_id if self.instance_defining else None,
+            "reference_instance_id": self.reference_instance_id if self.reference_instance else None,
         }
 
         if hasattr(self, "search_index"):
@@ -347,7 +347,7 @@ class OrgUnit(TreeModel):
             "longitude": self.location.x if self.location else None,
             "altitude": self.location.z if self.location else None,
             "has_geo_json": True if self.simplified_geom else False,
-            "instance_defining_id": self.instance_defining_id,
+            "reference_instance_id": self.reference_instance_id,
         }
         if not light:  # avoiding joins here
             res["groups"] = [group.as_dict(with_counts=False) for group in self.groups.all()]

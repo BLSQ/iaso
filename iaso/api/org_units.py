@@ -361,22 +361,22 @@ class OrgUnitViewSet(viewsets.ViewSet):
             org_unit_type = get_object_or_404(OrgUnitType, id=org_unit_type_id)
             org_unit.org_unit_type = org_unit_type
 
-        if "instance_defining_id" in request.data:
-            instance_defining_id = request.data["instance_defining_id"]
-            if instance_defining_id:
-                instance = Instance.objects.get(pk=instance_defining_id)
-                # Check if the instance has as form the form_defining for the orgUnittype
-                # if the form_defining is the same as the form related to the instance one,
-                # assign the instance to the orgUnit as instance defining
-                if org_unit.org_unit_type.form_defining != instance.form:
+        if "reference_instance_id" in request.data:
+            reference_instance_id = request.data["reference_instance_id"]
+            if reference_instance_id:
+                instance = Instance.objects.get(pk=reference_instance_id)
+                # Check if the instance has as form the reference_form for the orgUnittype
+                # if the reference_form is the same as the form related to the instance one,
+                # assign the instance to the orgUnit as reference instance
+                if org_unit.org_unit_type.reference_form != instance.form:
                     errors.append(
                         {
-                            "errorKey": "form_defining",
+                            "errorKey": "reference_form",
                             "errorMessage": _("Form of submssion is not allowed on this type of org unit"),
                         }
                     )
                 else:
-                    org_unit.instance_defining = instance
+                    org_unit.reference_instance = instance
             else:
                 instance = None
 
@@ -490,7 +490,7 @@ class OrgUnitViewSet(viewsets.ViewSet):
 
         org_unit_type_id = request.data.get("org_unit_type_id", None)
 
-        instance_defining_id = request.data.get("instance_defining_id", None)
+        reference_instance_id = request.data.get("reference_instance_id", None)
 
         parent_id = request.data.get("parent_id", None)
         groups = request.data.get("groups", [])
@@ -542,13 +542,13 @@ class OrgUnitViewSet(viewsets.ViewSet):
         org_unit_type = get_object_or_404(OrgUnitType, id=org_unit_type_id)
         org_unit.org_unit_type = org_unit_type
 
-        if instance_defining_id and org_unit_type:
-            instance = Instance.objects.get(pk=instance_defining_id)
-            # Check if the instance has as form the form_defining for the orgUnittype
-            # if the form_defining is the same as the form related to the instance one,
-            # assign the instance to the orgUnit as instance defining
-            if org_unit_type.form_defining == instance.form:
-                org_unit.instance_defining = instance
+        if reference_instance_id and org_unit_type:
+            instance = Instance.objects.get(pk=reference_instance_id)
+            # Check if the instance has as form the reference_form for the orgUnittype
+            # if the reference_form is the same as the form related to the instance one,
+            # assign the instance to the orgUnit as a reference instance
+            if org_unit_type.reference_form == instance.form:
+                org_unit.reference_instance = instance
 
         org_unit.save()
         org_unit.groups.set(new_groups)
@@ -586,8 +586,8 @@ class OrgUnitViewSet(viewsets.ViewSet):
                 res["geo_json"] = geojson_queryset(geo_queryset, geometry_field="simplified_geom")
             if org_unit.catchment:
                 res["catchment"] = geojson_queryset(geo_queryset, geometry_field="catchment")
-        # add the instance defining in the dictiannary to return
-        res["instance_defining"] = org_unit.instance_defining.as_full_model() if org_unit.instance_defining else None
+        # add the reference instance in the dictiannary to return
+        res["reference_instance"] = org_unit.reference_instance.as_full_model() if org_unit.reference_instance else None
 
         return Response(res)
 

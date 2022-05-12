@@ -97,7 +97,7 @@ export default function OrgUnitsTypesDialog({
             onConfirm={onConfirm}
             cancelMessage={MESSAGES.cancel}
             confirmMessage={MESSAGES.save}
-            disableConfirm={!isFormValid(requiredFields, formState)}
+            allowConfirm={isFormValid(requiredFields, formState)}
             {...dialogProps}
         >
             <Grid container spacing={4} justifyContent="flex-start">

@@ -25,7 +25,6 @@ function RawConfirmCancelActions({
     additionalMessage,
     onAdditionalButtonClick,
     allowConfimAdditionalButton,
-    disableConfirm,
 }) {
     return (
         <DialogActions className={classes.action}>
@@ -39,8 +38,7 @@ function RawConfirmCancelActions({
             <Button
                 data-test="confirm-button"
                 onClick={() => onConfirm(closeDialog)}
-                // disabled={!allowConfirm || disableConfirm}
-                disabled={disableConfirm}
+                disabled={!allowConfirm}
                 color="primary"
                 autoFocus
             >
@@ -69,7 +67,6 @@ RawConfirmCancelActions.defaultProps = {
     additionalMessage: null,
     onAdditionalButtonClick: null,
     allowConfimAdditionalButton: null,
-    disableConfirm: true,
 };
 RawConfirmCancelActions.propTypes = {
     classes: PropTypes.object.isRequired,
@@ -83,7 +80,6 @@ RawConfirmCancelActions.propTypes = {
     additionalMessage: PropTypes.object || null,
     onAdditionalButtonClick: PropTypes.func || null,
     allowConfimAdditionalButton: PropTypes.bool,
-    disableConfirm: PropTypes.bool,
 };
 export const ConfirmCancelActions = withStyles(actionStyles)(
     RawConfirmCancelActions,
@@ -99,7 +95,6 @@ export default function ConfirmCancelDialogComponent({
     additionalMessage,
     onAdditionalButtonClick,
     allowConfimAdditionalButton,
-    disableConfirm,
     id,
     dataTestId,
     ...dialogProps
@@ -121,7 +116,6 @@ export default function ConfirmCancelDialogComponent({
                     additionalMessage={additionalMessage}
                     onAdditionalButtonClick={onAdditionalButtonClick}
                     allowConfimAdditionalButton={allowConfimAdditionalButton}
-                    disableConfirm={disableConfirm}
                 />
             )}
             {...dialogProps}
@@ -142,7 +136,6 @@ ConfirmCancelDialogComponent.defaultProps = {
     allowConfimAdditionalButton: null,
     id: undefined,
     dataTestId: '',
-    disableConfirm: true,
 };
 ConfirmCancelDialogComponent.propTypes = {
     allowConfirm: PropTypes.bool,
@@ -159,5 +152,4 @@ ConfirmCancelDialogComponent.propTypes = {
     allowConfimAdditionalButton: PropTypes.bool,
     id: PropTypes.string,
     dataTestId: PropTypes.string,
-    disableConfirm: PropTypes.bool,
 };

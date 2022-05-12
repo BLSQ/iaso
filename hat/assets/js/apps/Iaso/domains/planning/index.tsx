@@ -1,5 +1,5 @@
 import React, { FunctionComponent } from 'react';
-import { makeStyles, Box } from '@material-ui/core';
+import { makeStyles, Box, Grid } from '@material-ui/core';
 import {
     commonStyles,
     LoadingSpinner,
@@ -42,7 +42,11 @@ export const Planning: FunctionComponent<Props> = ({ params }) => {
             <Box className={classes.containerFullHeightNoTabPadded}>
                 {/* // Your code here */}
                 <PlanningFilters params={params} />
-                <CreateEditPlanning type="create" />
+                <Grid container justifyContent="flex-end">
+                    <Grid item>
+                        <CreateEditPlanning type="create" />
+                    </Grid>
+                </Grid>
                 <TableWithDeepLink
                     baseUrl={baseUrl}
                     data={data?.plannings ?? []}

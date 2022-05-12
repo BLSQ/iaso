@@ -20,7 +20,7 @@ type Props = {
     onSearch: () => void;
 };
 
-export const SerachButton: FunctionComponent<Props> = ({
+export const SearchButton: FunctionComponent<Props> = ({
     disabled,
     onSearch,
 }) => {

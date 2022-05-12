@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect } from 'react';
+import React, { useCallback } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import PropTypes from 'prop-types';
 import { Grid } from '@material-ui/core';
@@ -18,7 +18,7 @@ import {
     isFieldValid,
     isFormValid,
 } from '../../../../utils/forms';
-import { requiredFields } from '../config';
+import { requiredFields } from '../config/requiredFields';
 
 export default function OrgUnitsTypesDialog({
     orgUnitType,

@@ -3,10 +3,10 @@ import {
     IconButton as IconButtonComponent,
     formatThousand,
 } from 'bluesquare-components';
-import OrgUnitsTypesDialog from './components/OrgUnitsTypesDialog';
-import DeleteDialog from '../../../components/dialogs/DeleteDialogComponent';
-import MESSAGES from './messages';
-import { DateTimeCell } from '../../../components/Cells/DateTimeCell';
+import OrgUnitsTypesDialog from '../components/OrgUnitsTypesDialog';
+import DeleteDialog from '../../../../components/dialogs/DeleteDialogComponent';
+import MESSAGES from '../messages';
+import { DateTimeCell } from '../../../../components/Cells/DateTimeCell';
 
 const TableColumns = (formatMessage, component) => [
     {
@@ -87,25 +87,6 @@ const TableColumns = (formatMessage, component) => [
                 />
             </section>
         ),
-    },
-];
-
-export const requiredFields = [
-    {
-        type: 'string',
-        key: 'name',
-    },
-    {
-        type: 'string',
-        key: 'short_name',
-    },
-    {
-        type: 'string',
-        key: 'depth',
-    },
-    {
-        type: 'array',
-        key: 'project_ids',
     },
 ];
 

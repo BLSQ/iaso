@@ -105,10 +105,6 @@ export const requiredFields = [
     },
     {
         type: 'array',
-        key: 'sub_unit_type_ids',
-    },
-    {
-        type: 'array',
         key: 'project_ids',
     },
 ];

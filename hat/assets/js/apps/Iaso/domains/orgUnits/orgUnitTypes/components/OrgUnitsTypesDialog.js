@@ -1,4 +1,4 @@
-import React, { useCallback } from 'react';
+import React, { useCallback, useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import PropTypes from 'prop-types';
 import { Grid } from '@material-ui/core';
@@ -42,11 +42,6 @@ export default function OrgUnitsTypesDialog({
         sub_unit_type_ids: orgUnitType.sub_unit_types.map(unit => unit.id),
         project_ids: orgUnitType.projects.map(project => project.id),
     });
-
-    let projects;
-    if (formState.project_ids.value.length > 0) {
-        projects = formState.project_ids.value.join(',');
-    }
 
     const onChange = useCallback(
         (keyValue, value) => {
@@ -144,9 +139,6 @@ export default function OrgUnitsTypesDialog({
                         multi
                         clearable
                         keyValue="sub_unit_type_ids"
-                        // onChange={(name, value) =>
-                        //     setFieldValue(name, commaSeparatedIdsToArray(value))
-                        // }
                         onChange={onChange}
                         value={formState.sub_unit_type_ids.value}
                         errors={formState.sub_unit_type_ids.errors}
@@ -163,11 +155,8 @@ export default function OrgUnitsTypesDialog({
                         multi
                         clearable
                         keyValue="project_ids"
-                        // onChange={(name, value) =>
-                        //     setFieldValue(name, commaSeparatedIdsToArray(value))
-                        // }
                         onChange={onChange}
-                        value={projects}
+                        value={formState.project_ids.value}
                         errors={formState.project_ids.errors}
                         type="select"
                         options={

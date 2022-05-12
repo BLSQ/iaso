@@ -126,6 +126,10 @@ export const INSTANCE_METAS_FIELDS = [
         tableOrder: 6,
         type: 'info',
     },
+    {
+        key: 'last_modified_by',
+        type: 'info',
+    },
 ];
 
 export const filtersKeys = [

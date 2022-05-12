@@ -284,6 +284,12 @@ class EnketoSubmissionAPIView(APIView):
             original = Instance.objects.get(id=instanceid)
             instance = Instance.objects.get(id=instanceid)
 
+            # Prevent from rewriting created_by if modification
+            if not request.user.is_anonymous:
+                instance.last_modified_by = request.user
+                if not instance.file:
+                    instance.created_by = request.user
+
             instance.file = main_file
             instance.json = {}
             instance.save()
@@ -310,6 +316,6 @@ class EnketoSubmissionAPIView(APIView):
             log_modification(original, instance, source=INSTANCE_API, user=user)
             if instance.to_export:
                 instance.export(force_export=True)
-            return Response({"result": "success"}, status=status.HTTP_201_CREATED)
 
+            return Response({"result": "success"}, status=status.HTTP_201_CREATED)
         return Response()

@@ -1,3 +1,4 @@
+/* eslint-disable react/prop-types */
 import React from 'react';
 
 import { Grid } from '@material-ui/core';
@@ -17,6 +18,7 @@ import {
 import LinkIcon from '@material-ui/icons/Link';
 import omit from 'lodash/omit';
 import { useSaveOrgUnit } from '../hooks';
+import { useFormState } from '../../../hooks/form';
 import InputComponent from '../../../components/forms/InputComponent';
 import { commaSeparatedIdsToArray } from '../../../utils/forms';
 import { fetchEditUrl as fetchEditUrlAction } from '../../instances/actions';
@@ -73,7 +75,7 @@ const initialFormState = (orgUnit, referenceSubmissionId) => {
     };
 };
 
-const onError = () => {
+const onError = setFieldErrors => {
     if (onError.status === 400) {
         onError.details.forEach(entry => {
             setFieldErrors(entry.errorKey, [entry.errorMessage]);
@@ -81,7 +83,12 @@ const onError = () => {
     }
 };
 
-const linkOrgUnitToReferenceSubmission = (orgUnit, referenceSubmissionId, saveOu) => {
+const linkOrgUnitToReferenceSubmission = (
+    orgUnit,
+    referenceSubmissionId,
+    saveOu,
+    setFieldErrors,
+) => {
     const currentOrgUnit = orgUnit;
     const newOrgUnit = initialFormState(orgUnit, referenceSubmissionId);
     let orgUnitPayload = omit({ ...currentOrgUnit, ...newOrgUnit });
@@ -98,13 +105,21 @@ const linkOrgUnitToReferenceSubmission = (orgUnit, referenceSubmissionId, saveOu
         .then(_ou => {
             window.location.reload(false);
         })
-        .catch(onError);
+        .catch(onError(setFieldErrors));
 };
 
-const Actions = (orgUnit, formId, referenceFormId, instanceId, saveOu) => {
+const Actions = (
+    orgUnit,
+    formId,
+    referenceFormId,
+    instanceId,
+    saveOu,
+    setFieldErrors,
+) => {
     const currentUser = useSelector(state => state.users.current);
     const referenceSubmission = orgUnit.reference_instance;
-    const linkOrgUnit = (formId !== referenceFormId || referenceSubmission !== null);
+    const linkOrgUnit =
+        formId !== referenceFormId || referenceSubmission !== null;
     const hasSubmissionPermission = userHasPermission(
         'iaso_submissions',
         currentUser,
@@ -130,6 +145,7 @@ const Actions = (orgUnit, formId, referenceFormId, instanceId, saveOu) => {
                             orgUnit,
                             instanceId,
                             saveOu,
+                            setFieldErrors,
                         )
                     }
                 />
@@ -169,7 +185,6 @@ const OrgUnitInfosComponent = ({
     resetTrigger,
     fetchEditUrl,
     params,
-    ...props
 }) => {
     const { mutateAsync: saveOu } = useSaveOrgUnit();
     const classes = useStyles();
@@ -177,6 +192,10 @@ const OrgUnitInfosComponent = ({
     const { formId } = params;
     const { referenceFormId } = params;
     const { instanceId } = params;
+
+    const [setFieldErrors] = useFormState(
+        initialFormState(orgUnit, instanceId),
+    );
 
     return (
         <Grid container spacing={4}>
@@ -189,6 +208,7 @@ const OrgUnitInfosComponent = ({
                         referenceFormId,
                         instanceId,
                         saveOu,
+                        setFieldErrors,
                     )}
                     onActionSelected={action =>
                         onActionSelected(

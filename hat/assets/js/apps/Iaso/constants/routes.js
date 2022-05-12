@@ -535,7 +535,7 @@ export const entityTypesPath = {
 export const planningPath = {
     baseUrl: baseUrls.planning,
     // FIXME use planning permissions when they exist
-    permissions: ['iaso_entities'],
+    permissions: ['iaso_planning'],
     component: props => <Planning {...props} />,
     params: [
         {
@@ -563,7 +563,7 @@ export const planningPath = {
 export const assignmentsPath = {
     baseUrl: baseUrls.assignments,
     // FIXME use planning permissions when they exist
-    permissions: ['iaso_entities'],
+    permissions: ['iaso_assignments'],
     component: props => <Assignments {...props} />,
     params: [],
     // params: [
@@ -580,7 +580,7 @@ export const assignmentsPath = {
 export const teamsPath = {
     baseUrl: baseUrls.teams,
     // FIXME use planning permissions when they exist
-    permissions: ['iaso_entities'],
+    permissions: ['iaso_teams'],
     component: props => <Teams {...props} />,
     params: [],
     // params: [

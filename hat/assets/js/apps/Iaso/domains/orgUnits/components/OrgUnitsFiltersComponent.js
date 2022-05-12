@@ -195,6 +195,13 @@ const OrgUnitsFiltersComponent = ({
             ...params,
             locationLimit,
         };
+
+        const updatedSearch = {
+            ...searchParams,
+            locationLimit,
+        };
+
+        setSearchParams(updatedSearch);
         onSearch(tempParams);
     };
     const currentColor = searchParams.color

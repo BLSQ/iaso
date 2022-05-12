@@ -58,6 +58,7 @@ const InstancesTopBar = ({
                 cols,
                 params.showDeleted === 'true',
                 currentUser,
+                dispatch,
             ),
         );
         setVisibleColumns(cols);

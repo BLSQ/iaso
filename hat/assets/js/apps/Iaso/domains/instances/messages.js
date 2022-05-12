@@ -61,6 +61,10 @@ const MESSAGES = defineMessages({
         id: 'iaso.label.viewOrgUnit',
         defaultMessage: 'View Org Unit',
     },
+    linkOrgUnitReferenceSubmission: {
+        id: 'iaso.label.linkOrgUnitReferenceSubmission',
+        defaultMessage: 'Link reference submission to org unit',
+    },
     dhis2Mappings: {
         id: 'iaso.label.dhis2Mappings',
         defaultMessage: 'DHIS mappings',
@@ -112,6 +116,10 @@ const MESSAGES = defineMessages({
     updated_at: {
         id: 'iaso.instance.updated_at',
         defaultMessage: 'Updated',
+    },
+    last_modified_by: {
+        id: 'iaso.instance.last_modified_by',
+        defaultMessage: 'Modified By',
     },
     files: {
         id: 'iaso.instance.files',

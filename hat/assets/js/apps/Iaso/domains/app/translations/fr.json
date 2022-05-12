@@ -393,6 +393,7 @@
     "iaso.label.videos": "Vidéos",
     "iaso.label.view": "Visualiser",
     "iaso.label.viewOrgUnit": "Voir l'unité d'org.",
+    "iaso.label.linkOrgUnitReferenceSubmission": "Lier l'unité d'organisation à sa soumission de definition",
     "iaso.label.with": "Avec",
     "iaso.label.withLocation": "Uniquement les points",
     "iaso.label.without": "Sans",

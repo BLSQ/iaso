@@ -3,7 +3,6 @@ import moment from 'moment';
 import React from 'react';
 import { colsCount, dateFormat, defaultCampaignLength } from './constants';
 
-import { StartRoundCell } from './cells/StartRoundCell';
 import { RoundCell } from './cells/RoundCell';
 import { CampaignDurationCell } from './cells/CampaignDuration';
 import { EmptyCell } from './cells/Empty';
@@ -274,13 +273,11 @@ const addCellsBeforeRound = ({
 const addRoundCell = ({
     campaign,
     cells,
-    rounds,
     round,
     firstMonday,
     lastSunday,
     startInRange,
     endInRange,
-    index,
 }) => {
     let colSpan;
     const { id } = campaign;
@@ -302,24 +299,14 @@ const addRoundCell = ({
     } else if (onlyStartInRange) {
         colSpan = round.end?.clone().add(2, 'day').diff(lastSunday, 'days');
     }
-
-    const roundCell =
-        index === 0 ? (
-            <StartRoundCell
-                key={`${rounds[0].number}-campaign-${id}`}
-                colSpan={colSpan}
-                campaign={campaign}
-                round={rounds[0]}
-            />
-        ) : (
-            <RoundCell
-                key={`round${round.number}Cost-campaign-${id}`}
-                colSpan={colSpan}
-                campaign={campaign}
-                round={round}
-            />
-        );
-    result.push(roundCell);
+    result.push(
+        <RoundCell
+            key={`round${round.number}Cost-campaign-${id}`}
+            colSpan={colSpan}
+            campaign={campaign}
+            round={round}
+        />,
+    );
     return result;
 };
 
@@ -450,13 +437,11 @@ const getCells = (campaign, currentWeekIndex, firstMonday, lastSunday) => {
                 cells = addRoundCell({
                     campaign,
                     cells,
-                    rounds,
                     round,
                     firstMonday,
                     lastSunday,
                     startInRange,
                     endInRange,
-                    index,
                 });
             }
 

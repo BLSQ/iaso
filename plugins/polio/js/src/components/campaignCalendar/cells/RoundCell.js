@@ -1,22 +1,57 @@
-import React from 'react';
+import React, { useState } from 'react';
 import PropTypes from 'prop-types';
 import classnames from 'classnames';
 
 import { TableCell } from '@material-ui/core';
+
+import { PolioCreateEditDialog as CreateEditDialog } from '../../CreateEditDialog';
+import { RoundPopper } from '../popper/RoundPopper';
 import { useStyles } from '../Styles';
 
 const RoundCell = ({ colSpan, campaign, round }) => {
     const classes = useStyles();
+    const [dialogOpen, setDialogOpen] = useState(false);
+    const [anchorEl, setAnchorEl] = useState(null);
+
+    const handleClick = event => {
+        setAnchorEl(anchorEl ? null : event.currentTarget);
+    };
+
     const defaultCellStyles = [classes.tableCell, classes.tableCellBordered];
+    const open = Boolean(anchorEl);
     return (
         <TableCell
             className={classnames(defaultCellStyles, classes.round)}
             style={{ backgroundColor: campaign.color }}
             colSpan={colSpan}
         >
-            {colSpan > 1 && (
-                <span className={classes.tableCellSpan}>R{round.number}</span>
+            <span
+                onClick={handleClick}
+                role="button"
+                tabIndex="0"
+                className={classnames(
+                    classes.tableCellSpan,
+                    classes.tableCellSpanWithPopOver,
+                )}
+            >
+                {colSpan > 1 && `R${round.number}`}
+            </span>
+            {open && (
+                <RoundPopper
+                    open={open}
+                    round={round}
+                    anchorEl={anchorEl}
+                    campaign={campaign}
+                    handleClick={handleClick}
+                    setDialogOpen={setDialogOpen}
+                />
             )}
+
+            <CreateEditDialog
+                selectedCampaign={campaign.original}
+                isOpen={dialogOpen}
+                onClose={() => setDialogOpen(false)}
+            />
         </TableCell>
     );
 };

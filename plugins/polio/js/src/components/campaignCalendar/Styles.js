@@ -43,16 +43,12 @@ export const useStyles = makeStyles(theme => ({
         borderTop: `1px solid ${theme.palette.ligthGray.border}`,
     },
     tableCellTitle: {
-        width: '35px',
         padding: 0,
         margin: 0,
         position: 'sticky',
         height: cellHeight,
         borderLeft: `1px solid ${theme.palette.ligthGray.border}`,
         borderTop: `1px solid ${theme.palette.ligthGray.border}`,
-    },
-    tableCellTitleLarge: {
-        width: '45px',
     },
     tableCellTitleSmall: {
         width: '30px',
@@ -150,12 +146,6 @@ export const useStyles = makeStyles(theme => ({
         marginLeft: '85%',
         marginTop: theme.spacing(-1),
         marginBottom: theme.spacing(1),
-    },
-    helpIcon: {
-        position: 'absolute',
-        top: 4,
-        right: 4,
-        fontSize: 12,
     },
     mapLegend: {
         position: 'absolute',

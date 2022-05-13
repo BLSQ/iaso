@@ -180,7 +180,7 @@ class Paginator(pagination.PageNumberPagination):
 
 
 class ModelViewSet(BaseModelViewSet):
-    results_key = None
+    results_key = "results"
     # FIXME Contrary to name it remove result key if NOT paginated
     remove_results_key_if_paginated = False
 

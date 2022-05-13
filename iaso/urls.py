@@ -8,6 +8,7 @@ from hat.api.authentication import WfpLogin, wfp_callback
 from .api.comment import CommentViewSet
 from .api.entity import EntityViewSet, EntityTypeViewSet
 from .api.logs import LogsViewSet
+from .api.microplanning import TeamViewSet
 from .api.mobile.org_units import MobileOrgUnitViewSet
 from .api.org_units import OrgUnitViewSet
 from .api.org_unit_types import OrgUnitTypeViewSet
@@ -102,6 +103,7 @@ router.register(r"tasks", TaskSourceViewSet, basename="tasks")
 router.register(r"comments", CommentViewSet, basename="comments")
 router.register(r"entity", EntityViewSet, basename="entity")
 router.register(r"entitytype", EntityTypeViewSet, basename="entitytype")
+router.register(r"microplanning/teams", TeamViewSet, basename="teams")
 
 router.registry.extend(plugins_router.registry)
 

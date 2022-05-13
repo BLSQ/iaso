@@ -12,6 +12,7 @@ type Params = {
     // eslint-disable-next-line no-unused-vars
     formatter: (args: FormatForNFMArgs<string>) => BarChartData[];
     type: string;
+    selectedRounds: [number, number];
 };
 
 export const useVerticalChartData = ({
@@ -19,6 +20,7 @@ export const useVerticalChartData = ({
     campaign,
     formatter,
     type,
+    selectedRounds,
 }: Params): BarChartData[][] => {
     const { formatMessage } = useSafeIntl();
     return useMemo(() => {
@@ -26,17 +28,17 @@ export const useVerticalChartData = ({
             formatter({
                 data,
                 campaign,
-                round: 'round_1',
+                round: selectedRounds[0],
                 formatMessage,
                 type,
             }),
             formatter({
                 data,
                 campaign,
-                round: 'round_2',
+                round: selectedRounds[1],
                 formatMessage,
                 type,
             }),
         ];
-    }, [data, campaign, formatter, formatMessage, type]);
+    }, [formatter, data, campaign, selectedRounds, formatMessage, type]);
 };

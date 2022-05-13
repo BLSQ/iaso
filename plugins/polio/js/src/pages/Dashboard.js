@@ -206,14 +206,11 @@ const Dashboard = ({ router }) => {
                 accessor: 'cvdpv2_notified_at',
             },
             {
-                Header: formatMessage(MESSAGES.roundOne),
-                id: 'round_one__started_at',
-                accessor: row => row.round_one?.started_at,
-            },
-            {
-                Header: formatMessage(MESSAGES.roundTwo),
-                id: 'round_two__started_at',
-                accessor: row => row.round_two?.started_at,
+                Header: formatMessage(MESSAGES.lastRound),
+                id: `last_round_started_at`,
+                sortable: false, // TODO: make this column sortable with the api => POLIO-311
+                accessor: row =>
+                    row.rounds && row.rounds[row.rounds.length - 1]?.started_at,
             },
             {
                 Header: formatMessage(MESSAGES.status),
@@ -272,7 +269,6 @@ const Dashboard = ({ router }) => {
         formatMessage,
         params.showOnlyDeleted,
     ]);
-
     return (
         <>
             <TopBar
@@ -282,6 +278,7 @@ const Dashboard = ({ router }) => {
             <CreateEditDialog
                 selectedCampaign={selectedCampaign}
                 isOpen={isCreateEditDialogOpen}
+                isFetching={isFetching}
                 onClose={closeCreateEditDialog}
             />
             <ConfirmDialog

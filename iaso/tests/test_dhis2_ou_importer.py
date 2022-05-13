@@ -288,7 +288,12 @@ class TaskTests(TestCase, DHIS2TestMixin):
             ],
         )
         facility_type = groupsets_qs.get(name="Facility Type")
-        self.assertEquals([x.name for x in facility_type.groups.all()], ["CHP", "MCHP", "Clinic", "Hospital", "CHC"])
+        self.assertQuerysetEqual(
+            facility_type.groups.all(),
+            ["CHP", "MCHP", "Clinic", "Hospital", "CHC"],
+            transform=lambda x: x.name,
+            ordered=False,
+        )
 
         # assert that path has been generated for all org units
         self.assertEquals(0, OrgUnit.objects.filter(path=None).count())

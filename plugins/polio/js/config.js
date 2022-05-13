@@ -121,6 +121,10 @@ const routes = [
                 isRequired: false,
                 key: 'country',
             },
+            {
+                isRequired: false,
+                key: 'rounds',
+            },
         ],
     },
     {
@@ -140,6 +144,10 @@ const routes = [
                 isRequired: false,
                 key: 'country',
             },
+            {
+                isRequired: false,
+                key: 'rounds',
+            },
         ],
     },
     {
@@ -155,6 +163,10 @@ const routes = [
                 isRequired: false,
                 key: 'country',
             },
+            {
+                isRequired: false,
+                key: 'rounds',
+            },
         ],
     },
     {
@@ -169,6 +181,10 @@ const routes = [
             {
                 isRequired: false,
                 key: 'country',
+            },
+            {
+                isRequired: false,
+                key: 'rounds',
             },
         ],
     },

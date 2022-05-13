@@ -16,7 +16,14 @@ import { useSelector } from 'react-redux';
 import MESSAGES from '../../../constants/messages';
 import { useStyles } from '../Styles';
 
-const R1Popper = ({ campaign, handleClick, open, anchorEl, setDialogOpen }) => {
+const RoundPopper = ({
+    campaign,
+    handleClick,
+    open,
+    anchorEl,
+    setDialogOpen,
+    round,
+}) => {
     const classes = useStyles();
     // We don't want to show the edit button if there is no connected user
     const isLogged = useSelector(state => Boolean(state.users.current));
@@ -42,13 +49,13 @@ const R1Popper = ({ campaign, handleClick, open, anchorEl, setDialogOpen }) => {
                             <FormattedMessage {...MESSAGES.startDate} />:
                         </Grid>
                         <Grid item sm={6} container justifyContent="flex-start">
-                            {campaign.R1Start.format('L')}
+                            {round.start.format('L')}
                         </Grid>
                         <Grid item sm={6} container justifyContent="flex-end">
                             <FormattedMessage {...MESSAGES.endDate} />:
                         </Grid>
                         <Grid item sm={6} container justifyContent="flex-start">
-                            {campaign.R1End.format('L')}
+                            {round.end.format('L')}
                         </Grid>
                         <Grid item sm={6} container justifyContent="flex-end">
                             <FormattedMessage {...MESSAGES.raStatus} />:
@@ -96,12 +103,13 @@ const R1Popper = ({ campaign, handleClick, open, anchorEl, setDialogOpen }) => {
     );
 };
 
-R1Popper.propTypes = {
+RoundPopper.propTypes = {
     campaign: PropTypes.object.isRequired,
     handleClick: PropTypes.func.isRequired,
     setDialogOpen: PropTypes.func.isRequired,
     open: PropTypes.bool.isRequired,
     anchorEl: PropTypes.object.isRequired,
+    round: PropTypes.object.isRequired,
 };
 
-export { R1Popper };
+export { RoundPopper };

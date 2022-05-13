@@ -239,6 +239,8 @@ class ModelViewSet(BaseModelViewSet):
 
 class DeletionFilterBackend(filters.BaseFilterBackend):
     def filter_queryset(self, request, queryset, view):
+        if view.action != "list":
+            return queryset
         query_param = request.query_params.get("deletion_status", "active")
 
         if query_param == "deleted":

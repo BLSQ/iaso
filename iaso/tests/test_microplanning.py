@@ -95,7 +95,7 @@ class TeamAPITestCase(APITestCase):
         cls.user = user = User.objects.get(username="test")
         cls.project1 = project1 = account.project_set.create(name="project1")
         project2 = account.project_set.create(name="project2")
-        team1 = Team.objects.create(project=project1, name="team1", manager=user)
+        cls.team1 = Team.objects.create(project=project1, name="team1", manager=user)
         team2 = Team.objects.create(project=project2, name="team2", manager=user)
         other_account = Account.objects.create(name="other account")
         other_user = cls.create_user_with_profile(username="user", account=other_account)
@@ -153,3 +153,45 @@ class TeamAPITestCase(APITestCase):
         team = Team.objects.get(name="hello")
         self.assertQuerysetEqual(team.sub_teams.all(), [])
         self.assertQuerysetEqual(team.users.all(), [team_member])
+
+    def test_soft_delete(self):
+        self.client.force_authenticate(self.user)
+        team = self.team1
+        response = self.client.get("/api/microplanning/teams/", format="json")
+        r = self.assertJSONResponse(response, 200)
+        self.assertEqual(len(r), 2)
+
+        # DELETE IT
+        response = self.client.delete(f"/api/microplanning/teams/{team.id}/", format="json")
+        r = self.assertJSONResponse(response, 204)
+
+        team.refresh_from_db()
+        self.assertIsNotNone(team.deleted_at)
+
+        # we don't see it anymore
+        response = self.client.get("/api/microplanning/teams/", format="json")
+        r = self.assertJSONResponse(response, 200)
+        self.assertEqual(len(r), 1)
+
+        # we see deleted and not deleted
+        response = self.client.get("/api/microplanning/teams/?deletion_status=all", format="json")
+        r = self.assertJSONResponse(response, 200)
+        self.assertEqual(len(r), 2)
+
+        # see with deletion status
+        response = self.client.get("/api/microplanning/teams/?deletion_status=deleted", format="json")
+        r = self.assertJSONResponse(response, 200)
+        self.assertEqual(len(r), 1)
+        self.assertEqual(r[0]["id"], team.id)
+
+        # Undelete
+        response = self.client.patch(f"/api/microplanning/teams/{team.id}/", format="json", data={"deleted_at": None})
+        r = self.assertJSONResponse(response, 200)
+        team.refresh_from_db()
+        team = Team.objects.get(id=team.id)
+        self.assertIsNone(team.deleted_at)
+
+        # we see it again from the API
+        response = self.client.get("/api/microplanning/teams/", format="json")
+        r = self.assertJSONResponse(response, 200)
+        self.assertEqual(len(r), 2)

@@ -38,6 +38,7 @@ class TeamSerializer(serializers.ModelSerializer):
             "name",
             "description",
             "created_at",
+            "deleted_at",
             "users",
             "users_ids",
             "manager",

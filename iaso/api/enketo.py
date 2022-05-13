@@ -54,6 +54,8 @@ def enketo_create_url(request):
         org_unit_id=org_unit_id,
         project=form.projects.first(),
         file_name=str(uuid) + "xml",
+        created_by=request.user,
+        last_modified_by=request.user
     )  # warning for access rights here
     i.save()
 
@@ -284,11 +286,11 @@ class EnketoSubmissionAPIView(APIView):
             original = Instance.objects.get(id=instanceid)
             instance = Instance.objects.get(id=instanceid)
 
-            # Prevent from rewriting created_by if modification
-            if not request.user.is_anonymous:
-                instance.last_modified_by = request.user
+            if user:
+                instance.last_modified_by = user
                 if not instance.file:
-                    instance.created_by = request.user
+                    instance.created_by = user
+
 
             instance.file = main_file
             instance.json = {}

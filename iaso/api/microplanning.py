@@ -1,4 +1,5 @@
 from django.contrib.auth.models import User
+from django.db.models import Q
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import serializers, filters
 
@@ -111,11 +112,24 @@ class TeamSerializer(serializers.ModelSerializer):
         return validated_data
 
 
+class TeamSearchFilterBackend(filters.BaseFilterBackend):
+    def filter_queryset(self, request, queryset, view):
+        search = request.query_params.get("search")
+
+        if search:
+            queryset = queryset.filter(Q(name__icontains=search)).distinct()
+        return queryset
+
+
 class TeamViewSet(ModelViewSet):
     remove_results_key_if_paginated = True
-    filter_backends = [filters.OrderingFilter, DjangoFilterBackend]
+    filter_backends = [filters.OrderingFilter, DjangoFilterBackend, TeamSearchFilterBackend]
     serializer_class = TeamSerializer
     queryset = Team.objects.all()
+    ordering_fields = ["id", "name", "created_at", "updated_at"]
+    filterset_fields = {
+        "name": ["icontains"],
+    }
 
     def get_queryset(self):
         user = self.request.user

@@ -55,7 +55,7 @@ def enketo_create_url(request):
         project=form.projects.first(),
         file_name=str(uuid) + "xml",
         created_by=request.user,
-        last_modified_by=request.user
+        last_modified_by=request.user,
     )  # warning for access rights here
     i.save()
 
@@ -290,7 +290,6 @@ class EnketoSubmissionAPIView(APIView):
                 instance.last_modified_by = user
                 if not instance.file:
                     instance.created_by = user
-
 
             instance.file = main_file
             instance.json = {}

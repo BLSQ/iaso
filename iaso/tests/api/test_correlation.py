@@ -155,4 +155,3 @@ class CorrelationAPITestCase(APITestCase):
 
         self.assertEqual(response_form.status_code, 201)
         self.assertEqual(updated_instance.last_modified_by, user)
-

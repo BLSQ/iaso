@@ -121,8 +121,7 @@ class InstanceAdmin(admin.GeoModelAdmin):
     fieldsets = (
         (
             None,
-            {"fields": ("deleted", "form", "period", "uuid", "name", "org_unit", "device",
-                        "last_modified_by")},
+            {"fields": ("deleted", "form", "period", "uuid", "name", "org_unit", "device", "last_modified_by")},
         ),
         (
             "File",

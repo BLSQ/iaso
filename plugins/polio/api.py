@@ -1,13 +1,11 @@
 import csv
 import functools
 import json
-from datetime import timedelta, datetime, timezone
-from typing import Optional
+from datetime import timedelta, datetime
 
 import requests
 from django.conf import settings
 from django.core.cache import cache
-from django.core.exceptions import ObjectDoesNotExist
 from django.core.mail import send_mail
 from django.db.models import Q
 from django.db.models.expressions import RawSQL
@@ -23,9 +21,8 @@ from rest_framework.decorators import action
 from rest_framework.response import Response
 from django.db.models import Value, TextField, UUIDField
 from collections import defaultdict
-from django.contrib.gis.geos import GEOSGeometry, GeometryCollection, GEOSException
 
-from iaso.api.common import ModelViewSet
+from iaso.api.common import ModelViewSet, DeletionFilterBackend
 from iaso.models import OrgUnit
 from iaso.models.org_unit import OrgUnitType
 from plugins.polio.serializers import (
@@ -43,8 +40,6 @@ from plugins.polio.serializers import (
 )
 from plugins.polio.serializers import SurgePreviewSerializer, CampaignPreparednessSpreadsheetSerializer
 from .forma import (
-    get_forma_scope_df,
-    fetch_and_match_forma_data,
     FormAStocksViewSetV2,
     make_orgunits_cache,
     find_orgunit_in_cache,
@@ -78,23 +73,6 @@ class CustomFilterBackend(filters.BaseFilterBackend):
 
             return queryset.filter(query)
 
-        return queryset
-
-
-class DeletionFilterBackend(filters.BaseFilterBackend):
-    def filter_queryset(self, request, queryset, view):
-        query_param = request.query_params.get("deletion_status", "active")
-
-        if query_param == "deleted":
-            query = Q(deleted_at__isnull=False)
-            return queryset.filter(query)
-
-        if query_param == "active":
-            query = Q(deleted_at__isnull=True)
-            return queryset.filter(query)
-
-        if query_param == "all":
-            return queryset
         return queryset
 
 

@@ -4,9 +4,9 @@ from functools import wraps
 from traceback import format_exc
 
 from django.db import transaction
-from django.db.models import ProtectedError
+from django.db.models import ProtectedError, Q
 from django.utils.timezone import make_aware
-from rest_framework import serializers, pagination, exceptions, permissions
+from rest_framework import serializers, pagination, exceptions, permissions, filters
 from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework.viewsets import ModelViewSet as BaseModelViewSet
@@ -235,3 +235,20 @@ class ModelViewSet(BaseModelViewSet):
                 self.request.method,
                 f"Cannot delete {instance_model_name} as it is linked to one or more {linked_model_name}s",
             )
+
+
+class DeletionFilterBackend(filters.BaseFilterBackend):
+    def filter_queryset(self, request, queryset, view):
+        query_param = request.query_params.get("deletion_status", "active")
+
+        if query_param == "deleted":
+            query = Q(deleted_at__isnull=False)
+            return queryset.filter(query)
+
+        if query_param == "active":
+            query = Q(deleted_at__isnull=True)
+            return queryset.filter(query)
+
+        if query_param == "all":
+            return queryset
+        return queryset

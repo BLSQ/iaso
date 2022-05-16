@@ -370,7 +370,7 @@ const MESSAGES = defineMessages({
         defaultMessage: 'Device ownership',
     },
     showDeleted: {
-        id: 'iaso.forms.showDeleted',
+        id: 'iaso.instances.showDeleted',
         defaultMessage: 'Show deleted',
     },
     org_unit_type_id: {

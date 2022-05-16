@@ -45,7 +45,8 @@ const getEmptyCells = ({
             />,
         );
     }
-    Array(fullWeeks)
+    const weeks = fullWeeks >= 0 ? fullWeeks : 0;
+    Array(weeks)
         .fill()
         .forEach((_, i) => {
             spans += 1;
@@ -134,10 +135,24 @@ const isDateInRange = (date, firstMonday, lastSunday) =>
     date.isSameOrBefore(lastSunday, 'day') &&
     date.isSameOrAfter(firstMonday, 'day');
 
+const getLastRound = rounds => {
+    const lastRound = rounds[rounds.length - 1];
+    if (lastRound?.started_at && lastRound?.ended_at) {
+        return lastRound;
+    }
+    const lastRoundRemoved = [...rounds].filter((_rnd, index) => {
+        return index !== rounds.length - 1;
+    });
+    if (lastRoundRemoved.length >= 1) {
+        return getLastRound(lastRoundRemoved);
+    }
+    return lastRound;
+};
+
 const filterCampaigns = (allCampaigns, firstMonday, lastSunday) => {
     return allCampaigns.filter(campaign => {
         const { rounds } = campaign;
-        const lastRound = rounds[rounds.length - 1];
+        const lastRound = getLastRound(rounds);
         const endCampaignDate = lastRound?.end
             ?.clone()
             .add(lastRound.daysCount, 'days');
@@ -325,7 +340,6 @@ const addBufferCell = ({
     // draw campaign duration cells
     const result = [...cells];
     let roundInterval = round.daysCount > 0 ? round.daysCount - 1 : 0;
-
     // if campaign days count is not in range calculate diff with last sunday campaign
     if (!dateUntilNextRoundInRange) {
         roundInterval = lastSunday?.clone().diff(round.end, 'days');
@@ -337,11 +351,14 @@ const addBufferCell = ({
             .add(1, 'day')
             .diff(firstMonday, 'days');
     }
+    const nextRound = rounds[index + 1];
     result.push(
         <CampaignDurationCell
             key={`campaign-duration-${id}-round-${round.number}`}
             colSpan={roundInterval}
-            hasNextRound={Boolean(rounds[index + 1])}
+            hasNextRound={Boolean(
+                nextRound && nextRound.started_at && nextRound.ended_at,
+            )}
             round={round}
         />,
     );
@@ -394,11 +411,11 @@ const getCells = (campaign, currentWeekIndex, firstMonday, lastSunday) => {
         );
         const endInRange = isDateInRange(round.end, firstMonday, lastSunday);
 
-        const dateUntilNextRound = round.end
+        let dateUntilNextRound = round.end
             ?.clone()
             .add(round.daysCount, 'days');
 
-        const dateUntilNextRoundInRange = isDateInRange(
+        let dateUntilNextRoundInRange = isDateInRange(
             dateUntilNextRound,
             firstMonday,
             lastSunday,
@@ -475,6 +492,48 @@ const getCells = (campaign, currentWeekIndex, firstMonday, lastSunday) => {
                     currentWeekIndex,
                 });
             }
+        } else if (previousRound.end) {
+            dateUntilNextRound = previousRound.end
+                ?.clone()
+                .add(previousRound.daysCount - 1, 'days');
+
+            dateUntilNextRoundInRange = isDateInRange(
+                dateUntilNextRound,
+                firstMonday,
+                lastSunday,
+            );
+
+            const previousEndVisible = isDateInRange(
+                previousRound.end,
+                firstMonday,
+                lastSunday,
+            );
+            if (dateUntilNextRoundInRange && !previousEndVisible) {
+                cells = addBufferCell({
+                    id,
+                    cells,
+                    round: { ...round, end: dateUntilNextRound },
+                    isRoundIntervalVisible: true,
+                    isRoundVisible,
+                    dateUntilNextRoundInRange,
+                    lastSunday,
+                    endInRange: false,
+                    dateUntilNextRound,
+                    firstMonday,
+                    rounds,
+                    index,
+                });
+            }
+            cells = addRemainingEmptyCells({
+                cells,
+                dateUntilNextRound,
+                lastSunday,
+                nextRound: null,
+                round,
+                firstMonday,
+                campaign,
+                currentWeekIndex,
+            });
         }
     });
     return cells;

@@ -311,7 +311,7 @@ export const orgUnitsDetailsPath = {
         },
         {
           isRequired: false,
-          key: "formDefiningId"
+          key: "referenceFormId"
         },
         {
           isRequired: false,

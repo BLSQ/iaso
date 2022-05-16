@@ -7,6 +7,7 @@ const useRoundShape = () => {
     const { formatMessage } = useSafeIntl();
 
     return object().shape({
+        number: number().integer().min(0),
         started_at: date().nullable(),
         ended_at: date()
             .nullable()
@@ -108,8 +109,6 @@ export const useFormValidator = () => {
             .positive()
             .integer()
             .typeError(formatMessage(MESSAGES.positiveInteger)),
-
-        round_one: round_shape,
-        round_two: round_shape,
+        rounds: array(round_shape).nullable(),
     });
 };

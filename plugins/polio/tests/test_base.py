@@ -13,6 +13,7 @@ from iaso.models import Account, OrgUnit
 from iaso.test import APITestCase, TestCase
 
 from plugins.polio.management.commands.weekly_email import send_notification_email
+from ..api import CACHE_VERSION
 from ..models import Config
 
 from ..preparedness.calculator import get_preparedness_score
@@ -85,13 +86,9 @@ class PolioAPITestCase(APITestCase):
     def test_create_campaign(self):
         self.assertEqual(Campaign.objects.count(), 0)
 
-        payload = {
-            "obr_name": "obr_name",
-            "detection_status": "PENDING",
-            "round_one": {},
-            "round_two": {},
-        }
+        payload = {"obr_name": "obr_name", "detection_status": "PENDING", "rounds": []}
         response = self.client.post("/api/polio/campaigns/", payload, format="json")
+        self.assertJSONResponse(response, 201)
 
         self.assertEqual(response.status_code, 201)
         self.assertEqual(Campaign.objects.count(), 1)
@@ -102,8 +99,6 @@ class PolioAPITestCase(APITestCase):
         payload1 = {
             "obr_name": "obr_name",
             "detection_status": "PENDING",
-            "round_one": {},
-            "round_two": {},
             "is_test": True,
         }
         self.client.post("/api/polio/campaigns/", payload1, format="json")
@@ -111,8 +106,6 @@ class PolioAPITestCase(APITestCase):
         payload2 = {
             "obr_name": "obr_name_1",
             "detection_status": "PENDING",
-            "round_one": {},
-            "round_two": {},
             "is_test": False,
         }
         self.client.post("/api/polio/campaigns/", payload2, format="json")
@@ -131,8 +124,6 @@ class PolioAPITestCase(APITestCase):
         response = self.client.patch(
             f"/api/polio/campaigns/" + str(campaign.id) + "/",
             data={
-                "round_one": {},
-                "round_two": {},
                 "obr_name": "campaign with org units",
                 "group": {"name": "hidden group", "org_units": list(map(lambda org_unit: org_unit.id, self.org_units))},
             },
@@ -153,15 +144,13 @@ class PolioAPITestCase(APITestCase):
         response = self.client.post(
             f"/api/polio/campaigns/",
             data={
-                "round_one": {},
-                "round_two": {},
                 "obr_name": "campaign with org units",
                 "group": {"name": "hidden group", "org_units": [self.org_units[0].id]},
             },
             format="json",
         )
 
-        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertJSONResponse(response, status.HTTP_201_CREATED)
         self.assertEqual(Campaign.objects.count(), 1)
         self.assertEqual(Campaign.objects.get().obr_name, "campaign with org units")
         self.assertEqual(Campaign.objects.get().group.name, "hidden group")
@@ -170,8 +159,6 @@ class PolioAPITestCase(APITestCase):
         response = self.client.put(
             f"/api/polio/campaigns/" + str(Campaign.objects.get().id) + "/",
             data={
-                "round_one": {},
-                "round_two": {},
                 "obr_name": "campaign with org units",
                 "group": {"name": "hidden group", "org_units": list(map(lambda org_unit: org_unit.id, self.org_units))},
             },
@@ -191,8 +178,6 @@ class PolioAPITestCase(APITestCase):
             "obr_name": "obr_name a",
             "detection_status": "PENDING",
             "initial_org_unit": self.org_unit.pk,
-            "round_one": {},
-            "round_two": {},
         }
         response = self.client.post("/api/polio/campaigns/", payload, format="json")
         self.assertEqual(response.status_code, 201)
@@ -201,8 +186,6 @@ class PolioAPITestCase(APITestCase):
             "obr_name": "obr_name b",
             "detection_status": "PENDING",
             "initial_org_unit": self.child_org_unit.pk,
-            "round_one": {},
-            "round_two": {},
         }
         self.client.force_authenticate(self.luke)
         response = self.client.post("/api/polio/campaigns/", payload, format="json")
@@ -250,8 +233,6 @@ class PolioAPITestCase(APITestCase):
             payload = {
                 "obr_name": "campaign_{0}".format(n),
                 "detection_status": "PENDING",
-                "round_one": {},
-                "round_two": {},
             }
             self.client.post("/api/polio/campaigns/", payload, format="json")
 
@@ -503,7 +484,7 @@ class LQASIMPolioTestCase(APITestCase):
 
         response = self.client.get("/api/polio/lqasstats/?country_id=29729".format(self.jedi_council_corruscant.pk))
 
-        is_cached = True if cache.get("{0}-{1}-LQAS".format(self.yoda.pk, 29729)) else False
+        is_cached = True if cache.get("{0}-{1}-LQAS".format(self.yoda.pk, 29729), version=CACHE_VERSION) else False
 
         self.assertEqual(response.status_code, 200)
         self.assertEqual(is_cached, True)
@@ -550,9 +531,11 @@ class LQASIMPolioTestCase(APITestCase):
                 version=self.star_wars.default_version,
             )
 
-        response = self.client.get("/api/polio/imstats/?country_id=29729".format(self.jedi_council_corruscant.pk))
+        response = self.client.get(
+            "/api/polio/imstats/?country_id=29729".format(self.jedi_council_corruscant.pk), version=CACHE_VERSION
+        )
 
-        is_cached = True if cache.get("{0}-{1}-IM".format(self.yoda.pk, 29729)) else False
+        is_cached = True if cache.get("{0}-{1}-IM".format(self.yoda.pk, 29729), version=CACHE_VERSION) else False
 
         self.assertEqual(response.status_code, 200)
         self.assertEqual(is_cached, True)

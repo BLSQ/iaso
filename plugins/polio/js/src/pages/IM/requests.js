@@ -1,6 +1,10 @@
+/* eslint-disable no-unused-vars */
+/* eslint-disable no-console */
 import { useSnackQuery } from 'Iaso/libs/apiHooks';
 import { getRequest } from 'Iaso/libs/Api';
 import { IM_POC_URL, LQAS_POC_URL } from './constants.ts';
+// import mockLQASData from './mockLQASData.json';
+// import mockImData from './mockImData.json';
 
 export const getLqasIm = (type, countryId) => {
     switch (type) {
@@ -19,6 +23,14 @@ export const getLqasIm = (type, countryId) => {
     }
 };
 
+// export const getLqasIm = async (type, _countryId) => {
+//     console.log('USING MOCKED DATA');
+//     if (type === 'lqas') {
+//         return mockLQASData;
+//     }
+//     return mockImData;
+// };
+
 export const useLqasIm = (type, countryId) => {
     return useSnackQuery(
         [type, countryId, getLqasIm],
@@ -28,6 +40,7 @@ export const useLqasIm = (type, countryId) => {
             select: data => {
                 return data;
             },
+            retry: 0,
             keepPreviousData: false,
             initialData: { stats: {} },
             enabled: Boolean(countryId),

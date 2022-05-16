@@ -7,7 +7,7 @@ import { any } from 'lodash/fp';
 import { MapComponent } from '../MapComponent/MapComponent';
 import { MapLegend } from '../MapComponent/MapLegend';
 import { MapLegendContainer } from '../MapComponent/MapLegendContainer';
-import { makePopup } from '../../utils/LqasIm.tsx';
+import { makePopup } from './LqasImPopUp';
 import {
     determineStatusForDistrict as imDistrictStatus,
     makeImMapLegendItems,
@@ -156,7 +156,7 @@ export const LqasImMap = ({
 };
 
 LqasImMap.propTypes = {
-    round: oneOf(['round_1', 'round_2']).isRequired,
+    round: number.isRequired,
     campaigns: array,
     selectedCampaign: string,
     type: oneOf(['imGlobal', 'imOHH', 'imIHH', 'lqas']).isRequired,

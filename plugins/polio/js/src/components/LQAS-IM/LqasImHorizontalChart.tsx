@@ -3,7 +3,7 @@ import { useSafeIntl } from 'bluesquare-components';
 import { isEqual } from 'lodash';
 import { Box } from '@material-ui/core';
 
-import { ConvertedLqasImData, RoundString } from '../../constants/types';
+import { ConvertedLqasImData } from '../../constants/types';
 import { PercentageChartWithTitle } from './PercentageChartWithTitle';
 import { useGetRegions } from '../../hooks/useGetRegions';
 import { formatImDataForChart, imTooltipFormatter } from '../../pages/IM/utils';
@@ -19,7 +19,7 @@ import { NoData } from './NoData';
 
 type Props = {
     type: 'imGlobal' | 'imIHH' | 'imOHH' | 'lqas';
-    round: RoundString;
+    round: number;
     campaign: string;
     countryId: number;
     data: Record<string, ConvertedLqasImData>;

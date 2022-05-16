@@ -12,7 +12,7 @@ import { redirectTo as redirectToAction } from '../../../routing/actions';
 import { useFormState } from '../../../hooks/form';
 
 // eslint-disable-next-line camelcase
-const initialFormState = (orgUnit, instance_defining_id) => {
+const initialFormState = (orgUnit, referenceSubmissionId) => {
     return {
         id: orgUnit.id,
         name: orgUnit.name,
@@ -23,7 +23,7 @@ const initialFormState = (orgUnit, instance_defining_id) => {
         aliases: orgUnit.aliases,
         parent_id: orgUnit.parent_id,
         source_ref: orgUnit.source_ref,
-        instance_defining_id,
+        reference_instance_id: referenceSubmissionId,
     };
 };
 
@@ -48,15 +48,15 @@ const ActionTableColumnComponent = ({ settings, user }) => {
         const rowOriginal = data.row.original;
         // each instance should have a formId
         let initialUrl = `${baseUrls.orgUnitDetails}/orgUnitId/${rowOriginal.org_unit.id}/formId/${rowOriginal.form_id}`;
-        // there are some instances which don't have a form defining Id
-        if (rowOriginal.form_defining_id) {
-            initialUrl = `${initialUrl}/formDefiningId/${rowOriginal.form_defining_id}`;
+        // there are some instances which don't have a reference form Id
+        if (rowOriginal.reference_form_id) {
+            initialUrl = `${initialUrl}/referenceFormId/${rowOriginal.reference_form_id}`;
         }
         // each instance has an id
         return `${initialUrl}/instanceId/${rowOriginal.id}`;
     };
 
-    const linkOrgUnitToInstanceDefining = () => {
+    const linkOrgUnitToReferenceSubmission = () => {
         const currentOrgUnit = settings.row.original.org_unit;
         const newOrgUnit = initialFormState(
             settings.row.original.org_unit,
@@ -80,9 +80,9 @@ const ActionTableColumnComponent = ({ settings, user }) => {
     };
 
     const showButton =
-        settings.row.original.form_defining_id ===
+        settings.row.original.reference_form_id ===
             settings.row.original.form_id && userHasPermission('iaso_org_units', user);
-    const notLinked =  !settings.row.original.org_unit.instance_defining_id && userHasPermission('iaso_org_units', user);
+    const notLinked =  !settings.row.original.org_unit.reference_instance_id && userHasPermission('iaso_org_units', user);
 
     return (
         <section>
@@ -101,10 +101,10 @@ const ActionTableColumnComponent = ({ settings, user }) => {
                 )}
             {showButton && (
                 <IconButtonComponent
-                    onClick={() => linkOrgUnitToInstanceDefining()}
+                    onClick={() => linkOrgUnitToReferenceSubmission()}
                     overrideIcon={LinkIcon}
-                    tooltipMessage={MESSAGES.linkOrgUnitInstanceDefining}
-                    color={notLinked ? "" : "primary"}
+                    tooltipMessage={MESSAGES.linkOrgUnitReferenceSubmission}
+                    color={notLinked ? "inherit" : "primary"}
                     disabled={!notLinked}
                 />
             )}

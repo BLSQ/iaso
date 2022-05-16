@@ -54,7 +54,7 @@ const ColorPicker = ({ currentColor, onChangeColor }) => {
     };
     const open = Boolean(anchorEl);
     return (
-        <Box mt={2} mb="29px">
+        <Box mt={2} mb="37px">
             <Box mb={2}>
                 <FormLabel>
                     <FormattedMessage {...MESSAGES.color} />:

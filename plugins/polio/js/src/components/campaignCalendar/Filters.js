@@ -180,7 +180,7 @@ const Filters = ({ router, disableDates, disableOnlyDeleted, showTest }) => {
                         </Grid>
                         {!disableDates && (
                             <Grid item xs={12}>
-                                <Box mt={-10}>
+                                <Box mt="-89px">
                                     <DatesRange
                                         onChangeDate={(key, value) => {
                                             if (key === 'dateFrom') {

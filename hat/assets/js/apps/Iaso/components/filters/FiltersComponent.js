@@ -105,6 +105,7 @@ class FiltersComponent extends React.Component {
                                         value={filterValue}
                                         type="number"
                                         label={filter.label}
+                                        withMarginTop={filter.withMarginTop}
                                     />
                                 )}
                                 {filter.type === 'select' && (
@@ -131,6 +132,7 @@ class FiltersComponent extends React.Component {
                                         }
                                         getOptionLabel={filter.getOptionLabel}
                                         renderOption={filter.renderOption}
+                                        withMarginTop={filter.withMarginTop}
                                     />
                                 )}
 
@@ -157,6 +159,7 @@ class FiltersComponent extends React.Component {
 
                                 {filter.type === 'checkbox' && ( // TODO: check with team
                                     <InputComponent
+                                        withMarginTop={filter.withMarginTop}
                                         disabled={filter.isDisabled || false}
                                         keyValue={filter.urlKey}
                                         onChange={(key, checked) =>

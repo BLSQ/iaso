@@ -116,43 +116,45 @@ const OrgUnitTreeviewPicker = ({
         return <div className={classes.treeviews}>{treeviews}</div>;
     };
     return (
-        <FormControl withMarginTop>
-            <InputLabel
-                shrink={selectedItems.size > 0}
-                required={required}
-                className={classnames(classes.inputLabel, 'input-label')}
-            >
-                {formattedPlaceholder}
-            </InputLabel>
-            <Paper variant="outlined" elevation={0} className={className}>
-                {makeTruncatedTrees(selectedItems)}
-                {clearable && resetSelection && selectedItems.size > 0 && (
-                    <Box
-                        className={classnames(
-                            classes.clearButton,
-                            'clear-tree',
-                        )}
-                    >
-                        <IconButton
-                            icon="clear"
-                            size="small"
-                            tooltipMessage={MESSAGES.clear}
-                            onClick={resetSelection}
-                        />
-                    </Box>
-                )}
-                <IconButton
-                    size="small"
-                    tooltipMessage={
-                        multiselect
-                            ? MESSAGES.selectMultiple
-                            : MESSAGES.selectSingle
-                    }
-                    icon="orgUnit"
-                    onClick={onClick}
-                />
-            </Paper>
-        </FormControl>
+        <Box pt={1}>
+            <FormControl>
+                <InputLabel
+                    shrink={selectedItems.size > 0}
+                    required={required}
+                    className={classnames(classes.inputLabel, 'input-label')}
+                >
+                    {formattedPlaceholder}
+                </InputLabel>
+                <Paper variant="outlined" elevation={0} className={className}>
+                    {makeTruncatedTrees(selectedItems)}
+                    {clearable && resetSelection && selectedItems.size > 0 && (
+                        <Box
+                            className={classnames(
+                                classes.clearButton,
+                                'clear-tree',
+                            )}
+                        >
+                            <IconButton
+                                icon="clear"
+                                size="small"
+                                tooltipMessage={MESSAGES.clear}
+                                onClick={resetSelection}
+                            />
+                        </Box>
+                    )}
+                    <IconButton
+                        size="small"
+                        tooltipMessage={
+                            multiselect
+                                ? MESSAGES.selectMultiple
+                                : MESSAGES.selectSingle
+                        }
+                        icon="orgUnit"
+                        onClick={onClick}
+                    />
+                </Paper>
+            </FormControl>
+        </Box>
     );
 };
 

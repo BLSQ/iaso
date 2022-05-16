@@ -71,7 +71,6 @@ const Filters: FunctionComponent<Props> = ({
 
         setFilters(newFilters);
         const url = genUrl(router, newFilters);
-        console.log(url);
         dispatch(replace(url));
     };
     const campaignObj = campaigns.find(c => c.obr_name === campaign);

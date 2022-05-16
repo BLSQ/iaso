@@ -1,6 +1,10 @@
 /* eslint-disable react/no-array-index-key */
-import React, { useState, useCallback, useMemo, useEffect } from 'react';
-import { useSafeIntl, commonStyles } from 'bluesquare-components';
+import React, { useState, useCallback, useMemo } from 'react';
+import {
+    useSafeIntl,
+    commonStyles,
+    useSkipEffectOnMount,
+} from 'bluesquare-components';
 import { Grid, Box, makeStyles, Paper } from '@material-ui/core';
 import { DisplayIfUserHasPerm } from 'Iaso/components/DisplayIfUserHasPerm';
 import TopBar from 'Iaso/components/nav/TopBarComponent';
@@ -73,7 +77,7 @@ export const ImStats = ({ imType, router }) => {
         <HorizontalDivider mt={6} mb={4} ml={-4} mr={-4} displayTrigger />
     );
 
-    useEffect(() => {
+    useSkipEffectOnMount(() => {
         setSelectedRounds(defaultRounds);
     }, [campaign, country]);
     return (

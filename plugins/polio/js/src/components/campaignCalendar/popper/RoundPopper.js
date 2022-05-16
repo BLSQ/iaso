@@ -15,6 +15,7 @@ import CloseIcon from '@material-ui/icons/Close';
 import { useSelector } from 'react-redux';
 import MESSAGES from '../../../constants/messages';
 import { useStyles } from '../Styles';
+import { CsvButton } from '../../../../../../../hat/assets/js/apps/Iaso/components/Buttons/CsvButton.tsx';
 
 const RoundPopper = ({
     campaign,
@@ -28,6 +29,8 @@ const RoundPopper = ({
     // We don't want to show the edit button if there is no connected user
     const isLogged = useSelector(state => Boolean(state.users.current));
     const id = open ? `campaign-popover-${campaign.id}` : undefined;
+    const url = `/api/orgunits/?csv=true&group=${campaign.original?.group?.id}&app_id=com.poliooutbreaks.app`;
+
     return (
         <Popper
             id={id}
@@ -85,7 +88,17 @@ const RoundPopper = ({
                                 <FormattedMessage {...MESSAGES.no} />
                             )}
                         </Grid>
-                        <Grid item sm={12} container justifyContent="flex-end">
+                        <Grid
+                            item
+                            sm={12}
+                            container
+                            justifyContent={
+                                isLogged ? 'space-between' : 'flex-end'
+                            }
+                        >
+                            {campaign.original?.group?.id && (
+                                <CsvButton csvUrl={url} variant="text" />
+                            )}
                             {isLogged && (
                                 <Button
                                     onClick={() => setDialogOpen(true)}

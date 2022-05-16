@@ -37,12 +37,15 @@ export const RoundsForm = () => {
         const newRounds = [...rounds];
         newRounds.splice(roundIndex === 0 ? 0 : roundIndex - 1, 0, {
             number: roundIndex,
+            started_at: null,
+            ended_at: null,
         });
         const sortedRounds = newRounds.sort((a, b) => a.number - b.number);
         setFieldValue('rounds', sortedRounds);
         setLastRound(newRounds[sortedRounds.length - 1]);
         setCurrentRoundNumber(roundIndex);
     };
+
     const handleDeleteRound = roundIndex => {
         const newRounds = [...rounds];
         let newCurrentRoundNumber = roundIndex;

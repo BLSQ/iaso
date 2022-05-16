@@ -1,6 +1,7 @@
 /* eslint-disable camelcase */
 import React, { useEffect, useState } from 'react';
 import PropTypes from 'prop-types';
+import isEqual from 'lodash/isEqual';
 
 import { FormikProvider, useFormik } from 'formik';
 import { merge } from 'lodash';
@@ -15,6 +16,7 @@ import {
     Tabs,
     Typography,
 } from '@material-ui/core';
+
 import { useSafeIntl, LoadingSpinner } from 'bluesquare-components';
 import { convertEmptyStringToNull } from '../utils/convertEmptyStringToNull';
 import { PreparednessForm } from '../forms/PreparednessForm';
@@ -38,6 +40,7 @@ const CreateEditDialog = ({
     isFetching,
 }) => {
     const { mutate: saveCampaign } = useSaveCampaign();
+
     const schema = useFormValidator();
     const { formatMessage } = useSafeIntl();
 
@@ -46,7 +49,7 @@ const CreateEditDialog = ({
     const handleSubmit = async (values, helpers) => {
         saveCampaign(convertEmptyStringToNull(values), {
             onSuccess: () => {
-                helpers.resetForm();
+                // helpers.resetForm();
                 onClose();
             },
             onError: error => {
@@ -125,6 +128,15 @@ const CreateEditDialog = ({
     useEffect(() => {
         setSelectedTab(0);
     }, [isOpen]);
+
+    const [isFormChanged, setIsFormChanged] = useState(false);
+    useEffect(() => {
+        setIsFormChanged(!isEqual(formik.values, formik.initialValues));
+    }, [formik]);
+    const saveDisabled =
+        !isFormChanged ||
+        (isFormChanged && !formik.isValid) ||
+        formik.isSubmitting;
     return (
         <Dialog
             fullWidth
@@ -188,7 +200,7 @@ const CreateEditDialog = ({
                     color="primary"
                     variant="contained"
                     autoFocus
-                    disabled={!formik.isValid || formik.isSubmitting}
+                    disabled={saveDisabled}
                 >
                     {formatMessage(MESSAGES.confirm)}
                 </Button>

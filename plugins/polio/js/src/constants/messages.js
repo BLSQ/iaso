@@ -113,6 +113,20 @@ const MESSAGES = defineMessages({
         id: 'iaso.polio.form.validator.error.endDateBeforeStartDate',
         defaultMessage: "End date can't be before start date",
     },
+    startDateAfterEndDate: {
+        id: 'iaso.polio.form.validator.error.startDateAfterEndDate',
+        defaultMessage: "Start date can't be after end date",
+    },
+    startDateBeforePreviousEndDate: {
+        id: 'iaso.polio.form.validator.error.startDateBeforePreviousEndDate',
+        defaultMessage:
+            "Start date can't be before or equal previous round end date",
+    },
+    endDateAfterNextStartDate: {
+        id: 'iaso.polio.form.validator.error.endDateAfterNextStartDate',
+        defaultMessage:
+            "End date can't be after or equal next round start date",
+    },
     positiveInteger: {
         id: 'iaso.polio.form.validator.error.positiveInteger',
         defaultMessage: 'Please use a positive integer',
@@ -1078,6 +1092,14 @@ const MESSAGES = defineMessages({
     lastRound: {
         id: 'iaso.polio.label.lastRound',
         defaultMessage: 'Last round',
+    },
+    fieldRequired: {
+        id: 'iaso.polio.form.fieldRequired',
+        defaultMessage: 'This field is required',
+    },
+    invalidDate: {
+        id: 'iaso.polio.form.invalidDate',
+        defaultMessage: 'Date is invalid',
     },
 });
 

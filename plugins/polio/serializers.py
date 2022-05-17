@@ -172,12 +172,6 @@ class RoundAnonymousSerializer(RoundSerializer):
         exclude = ["preparedness_spreadsheet_url"]
 
 
-class PreparednessSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Preparedness
-        exclude = ["spreadsheet_url"]
-
-
 class SurgeSerializer(serializers.Serializer):
     created_at = serializers.DateTimeField()
     # surge_country_name = serializers.CharField()
@@ -213,13 +207,12 @@ def preparedness_from_url(spreadsheet_url, force_refresh=False):
 
 
 def get_current_preparedness(campaign, roundNumber):
-    if roundNumber == "round_one":
-        round = campaign.round_one
-    elif roundNumber == "round_two":
-        round = campaign.round_two
-    else:
-        raise serializers.ValidationError("Invalid round")
-    if not (round and round.preparedness_spreadsheet_url):
+    try:
+        round = campaign.rounds.get(number=roundNumber)
+    except Round.DoesNotExist:
+        return {"details": f"No round {roundNumber} on this campaign"}
+
+    if not round.preparedness_spreadsheet_url:
         return {}
     spreadsheet_url = round.preparedness_spreadsheet_url
     return preparedness_from_url(spreadsheet_url)
@@ -303,8 +296,24 @@ class CampaignPreparednessSpreadsheetSerializer(serializers.Serializer):
 
 
 class CampaignSerializer(serializers.ModelSerializer):
-    round_one = RoundSerializer()
-    round_two = RoundSerializer()
+    round_one = serializers.SerializerMethodField(read_only=True)
+    round_two = serializers.SerializerMethodField(read_only=True)
+
+    def get_round_one(self, campaign):
+        try:
+            round = campaign.rounds.get(number=1)
+            return RoundSerializer(round).data
+        except Round.DoesNotExist:
+            return None
+
+    def get_round_two(self, campaign):
+        try:
+            round = campaign.rounds.get(number=2)
+            return RoundSerializer(round).data
+        except Round.DoesNotExist:
+            return None
+
+    rounds = RoundSerializer(many=True, required=False)
     org_unit = OrgUnitSerializer(source="initial_org_unit", read_only=True)
     top_level_org_unit_name = serializers.SlugRelatedField(source="country", slug_field="name", read_only=True)
     top_level_org_unit_id = serializers.SlugRelatedField(source="country", slug_field="id", read_only=True)
@@ -350,11 +359,9 @@ class CampaignSerializer(serializers.ModelSerializer):
 
     @atomic
     def create(self, validated_data):
-        round_one_data = validated_data.pop("round_one")
-        round_two_data = validated_data.pop("round_two")
-
         group = validated_data.pop("group") if "group" in validated_data else None
         grouped_campaigns = validated_data.pop("grouped_campaigns", [])
+        rounds = validated_data.pop("rounds", [])
 
         if group:
             org_units = group.pop("org_units") if "org_units" in group else []
@@ -365,28 +372,38 @@ class CampaignSerializer(serializers.ModelSerializer):
 
         campaign = Campaign.objects.create(
             **validated_data,
-            round_one=Round.objects.create(**round_one_data),
-            round_two=Round.objects.create(**round_two_data),
             group=campaign_group,
         )
         campaign.grouped_campaigns.set(grouped_campaigns)
+        for round_data in rounds:
+            Round.objects.create(campaign=campaign, **round_data)
 
         return campaign
 
     @atomic
     def update(self, instance, validated_data):
-        round_one_data = validated_data.pop("round_one")
-        round_two_data = validated_data.pop("round_two")
         group = validated_data.pop("group") if "group" in validated_data else None
-
-        round_one_serializer = RoundSerializer(instance=instance.round_one, data=round_one_data)
-        round_one_serializer.is_valid(raise_exception=True)
-        instance.round_one = round_one_serializer.save()
-
-        round_two_serializer = RoundSerializer(instance=instance.round_two, data=round_two_data)
-        round_two_serializer.is_valid(raise_exception=True)
-        instance.round_two = round_two_serializer.save()
-
+        rounds = validated_data.pop("rounds", [])
+        round_instances = []
+        # find existing round either by id or number
+        for round_data in rounds:
+            round = None
+            if round_data.get("id"):
+                round_id = round_data["id"]
+                round = Round.objects.get(pk=round_id)
+                if round.campaign != instance:
+                    raise serializers.ValidationError({"rounds": "round is attached to a different campaign"})
+            elif round_data.get("number"):
+                try:
+                    round = instance.rounds.get(number=round_data.get("number"))
+                except Round.DoesNotExist:
+                    pass
+            # we pop the campaign since we use the set afterward which will also remove the deleted one
+            round_data.pop("campaign", None)
+            round_serializer = RoundSerializer(instance=round, data=round_data)
+            round_serializer.is_valid(raise_exception=True)
+            round_instances.append(round_serializer.save())
+        instance.rounds.set(round_instances)
         if group:
             org_units = group.pop("org_units") if "org_units" in group else []
             campaign_group, created = Group.domain_objects.get_or_create(
@@ -462,8 +479,23 @@ class SmallCampaignSerializer(CampaignSerializer):
 
 
 class AnonymousCampaignSerializer(CampaignSerializer):
-    round_one = RoundAnonymousSerializer()
-    round_two = RoundAnonymousSerializer()
+    rounds = RoundAnonymousSerializer(many=True)
+    round_one = serializers.SerializerMethodField(read_only=True)
+    round_two = serializers.SerializerMethodField(read_only=True)
+
+    def get_round_one(self, campaign):
+        try:
+            round = campaign.rounds.get(number=1)
+            return RoundAnonymousSerializer(round).data
+        except Round.DoesNotExist:
+            return None
+
+    def get_round_two(self, campaign):
+        try:
+            round = campaign.rounds.get(number=2)
+            return RoundAnonymousSerializer(round).data
+        except Round.DoesNotExist:
+            return None
 
     class Meta:
         model = Campaign
@@ -510,6 +542,7 @@ class AnonymousCampaignSerializer(CampaignSerializer):
             "payment_mode",
             "round_one",
             "round_two",
+            "rounds",
             "created_at",
             "updated_at",
             "district_count",

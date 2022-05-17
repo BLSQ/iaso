@@ -1,10 +1,11 @@
 import gspread.utils
 from django.contrib import admin
+from django.contrib.admin import widgets
+from django.db import models
 from django.utils.safestring import mark_safe
 
 from .models import (
     Campaign,
-    Preparedness,
     Surge,
     Round,
     Config,
@@ -17,12 +18,10 @@ from .models import (
 
 class CampaignAdmin(admin.ModelAdmin):
     raw_id_fields = ("initial_org_unit",)
+    formfield_overrides = {
+        models.ForeignKey: {"widget": widgets.AdminTextInputWidget},
+    }
     list_filter = ["virus", "vacine", "detection_status", "risk_assessment_status", "budget_status"]
-
-
-class PreparednessAdmin(admin.ModelAdmin):
-    list_filter = ["campaign"]
-    list_display = ["campaign", "created_at"]
 
 
 class SpreadSheetImportAdmin(admin.ModelAdmin):
@@ -76,7 +75,6 @@ class CampaignGroupAdmin(admin.ModelAdmin):
 
 admin.site.register(Campaign, CampaignAdmin)
 admin.site.register(CampaignGroup, CampaignGroupAdmin)
-admin.site.register(Preparedness, PreparednessAdmin)
 admin.site.register(Config)
 admin.site.register(Surge)
 admin.site.register(Round)

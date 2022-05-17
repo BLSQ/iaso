@@ -6,15 +6,17 @@ import { TableHead, TableRow, TableCell, Typography } from '@material-ui/core';
 
 import { useStyles } from './Styles';
 
-import { colSpanTitle, staticFields } from './constants';
+import { colSpanTitle } from './constants';
 import { HeadStaticFieldsCells } from './cells/HeadStaticFields';
+import { useStaticFields } from '../../hooks/useStaticFields';
 
-const Head = ({ headers, params, orders, currentWeekIndex }) => {
+const Head = ({ headers, orders, currentWeekIndex }) => {
     const classes = useStyles();
+    const fields = useStaticFields();
     return (
         <TableHead>
             <TableRow className={classes.tableRow}>
-                {staticFields.map(f => (
+                {fields.map(f => (
                     <TableCell
                         key={f.key}
                         className={classnames(
@@ -46,7 +48,7 @@ const Head = ({ headers, params, orders, currentWeekIndex }) => {
             <TableRow
                 className={classnames(classes.tableRow, classes.tableRowSmall)}
             >
-                {staticFields.map(f => (
+                {fields.map(f => (
                     <TableCell
                         key={f.key}
                         className={classnames(
@@ -101,7 +103,7 @@ const Head = ({ headers, params, orders, currentWeekIndex }) => {
             <TableRow
                 className={classnames(classes.tableRow, classes.tableRowHidden)}
             >
-                {staticFields.map(f => (
+                {fields.map(f => (
                     <TableCell
                         key={f.key}
                         className={classes.tableCellTitle}
@@ -130,7 +132,6 @@ const Head = ({ headers, params, orders, currentWeekIndex }) => {
 
 Head.propTypes = {
     headers: PropTypes.object.isRequired,
-    params: PropTypes.object.isRequired,
     orders: PropTypes.string.isRequired,
     currentWeekIndex: PropTypes.number.isRequired,
 };

@@ -4,6 +4,9 @@ import { TextField } from '@material-ui/core';
 import { get } from 'lodash';
 
 export const TextInput = ({ field = {}, form = {}, value, ...props } = {}) => {
+    const hasError =
+        form.errors &&
+        Boolean(get(form.errors, field.name) && get(form.touched, field.name));
     return (
         <TextField
             InputLabelProps={{
@@ -14,9 +17,10 @@ export const TextInput = ({ field = {}, form = {}, value, ...props } = {}) => {
             size="medium"
             {...props}
             {...field}
+            onFocus={() => form.setFieldTouched(field.name, true)}
             value={field.value ?? value ?? ''}
-            error={form.errors && Boolean(get(form.errors, field.name))}
-            helperText={form.errors && get(form.errors, field.name)}
+            error={hasError}
+            helperText={hasError ? get(form.errors, field.name) : undefined}
         />
     );
 };

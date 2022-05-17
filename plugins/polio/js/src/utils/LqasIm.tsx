@@ -1,17 +1,16 @@
 /* eslint-disable camelcase */
-import React from 'react';
 import {
     BarChartData,
+    ConvertedLqasImData,
     FormatForNFMArgs,
     IntlFormatMessage,
     LqasImCampaign,
+    LqasImDistrictData,
+    LqasImDistrictDataWithNameAndRegion,
     LqasImMapLegendData,
     LqasImParams,
-    NfmRoundString,
-    RfaRoundString,
-    RoundString,
+    LqasImRound,
 } from '../constants/types';
-import { LqasImPopup } from '../components/LQAS-IM/LqasImPopUp';
 import { sumChildrenCheckedLqas } from '../pages/LQAS/utils';
 import MESSAGES from '../constants/messages';
 import {
@@ -21,6 +20,40 @@ import {
     imRfaKeys,
 } from '../pages/IM/constants';
 import { sumChildrenCheckedIm } from '../pages/IM/utils';
+import { DropdownOptions } from '../../../../../hat/assets/js/apps/Iaso/types/utils';
+
+const accessFullRoundData = (
+    data: LqasImCampaign,
+    round: number,
+): LqasImRound =>
+    data.rounds.find(rnd => rnd.number === round) ?? ({} as LqasImRound);
+
+export const accessDictRound = (
+    data: LqasImCampaign,
+    round: number,
+): Record<string, LqasImDistrictData> => {
+    return accessFullRoundData(data, round)?.data ?? {};
+};
+export const accessArrayRound = (
+    data: ConvertedLqasImData,
+    round: number,
+): LqasImDistrictDataWithNameAndRegion[] => {
+    return data.rounds.find(rnd => rnd.number === round)?.data ?? [];
+};
+
+export const accessNfmStats = (
+    data: LqasImCampaign,
+    round: number,
+): Record<string, number> => {
+    return accessFullRoundData(data, round)?.nfm_stats ?? {};
+};
+
+export const accessNfmAbsStats = (
+    data: LqasImCampaign,
+    round: number,
+): Record<string, number> => {
+    return accessFullRoundData(data, round)?.nfm_abs_stats ?? {};
+};
 
 export const convertStatToPercent = (data = 0, total = 1): string => {
     if (data > total)
@@ -41,26 +74,13 @@ export const convertStatToPercentNumber = (data = 0, total = 1): number => {
     return ratio;
 };
 
-export const makePopup =
-    (LQASData, round, campaign = '') =>
-    shape => {
-        return (
-            <LqasImPopup
-                shape={shape}
-                data={LQASData}
-                round={round}
-                campaign={campaign}
-            />
-        );
-    };
-
-export const totalCaregiversInformed = (roundData: any[] = []) => {
+export const totalCaregiversInformed = (roundData: any[] = []): number => {
     return roundData
         .map(data => data.care_giver_stats.caregivers_informed)
         .reduce((total, current = 0) => total + current, 0);
 };
 
-export const totalCaregivers = (roundData: any[] = []) => {
+export const totalCaregivers = (roundData: any[] = []): number => {
     return roundData
         .map(data => data.total_child_checked)
         .reduce((total, current = 0) => total + current, 0);
@@ -74,7 +94,7 @@ const makeCollectionStats = ({
 }: LqasImParams): LqasImMapLegendData | Record<string, never> => {
     if (!data || !campaign || !data[campaign]) return {};
     if (type !== 'lqas') {
-        const aggregatedData = data[campaign][round].reduce(
+        const aggregatedData = accessArrayRound(data[campaign], round).reduce(
             (total, current) => {
                 return {
                     reportingDistricts: total.reportingDistricts + 1,
@@ -136,7 +156,10 @@ export const makeAccordionData = ({
     );
 };
 
-export const sortGraphKeys = (a, b) => b.absValue - a.absValue;
+export const sortGraphKeys = (
+    a: { absValue: number },
+    b: { absValue: number },
+): number => b.absValue - a.absValue;
 
 const childrenNotMarked = ({
     data,
@@ -145,11 +168,13 @@ const childrenNotMarked = ({
 }: {
     data?: Record<string, LqasImCampaign>;
     campaign?: string;
-    round: RoundString;
+    round: number;
 }): number => {
     if (!data || !campaign || !data[campaign]) return 0;
-    const roundString: string = NfmRoundString[round];
-    const campaignData: Record<string, number> = data[campaign][roundString];
+    const campaignData: Record<string, number> = accessNfmStats(
+        data[campaign],
+        round,
+    );
     return Object.values(campaignData).reduce(
         (total, current) => total + current,
         0,
@@ -160,33 +185,35 @@ export const makeRatioUnmarked = ({
     data,
     campaign,
     type,
+    selectedRounds,
 }: {
     data?: Record<string, LqasImCampaign>;
     campaign?: string;
     type: 'lqas' | 'im';
+    selectedRounds: [number, number];
 }): string[] => {
-    const childrenCheckedRound1 =
+    const childrenCheckedLeft =
         type === 'lqas'
-            ? sumChildrenCheckedLqas('round_1', data, campaign)
-            : sumChildrenCheckedIm('round_1', data, campaign);
-    const childrenCheckedRound2 =
+            ? sumChildrenCheckedLqas(selectedRounds[0], data, campaign)
+            : sumChildrenCheckedIm(selectedRounds[0], data, campaign);
+    const childrenCheckedRight =
         type === 'lqas'
-            ? sumChildrenCheckedLqas('round_2', data, campaign)
-            : sumChildrenCheckedIm('round_2', data, campaign);
-    const childrenNotMarkedRound1 = childrenNotMarked({
+            ? sumChildrenCheckedLqas(selectedRounds[1], data, campaign)
+            : sumChildrenCheckedIm(selectedRounds[1], data, campaign);
+    const childrenNotMarkedLeft = childrenNotMarked({
         data,
         campaign,
-        round: 'round_1',
+        round: selectedRounds[0],
     });
-    const childrenNotMarkedRound2 = childrenNotMarked({
+    const childrenNotMarkedRight = childrenNotMarked({
         data,
         campaign,
-        round: 'round_2',
+        round: selectedRounds[1],
     });
 
     return [
-        convertStatToPercent(childrenNotMarkedRound1, childrenCheckedRound1),
-        convertStatToPercent(childrenNotMarkedRound2, childrenCheckedRound2),
+        convertStatToPercent(childrenNotMarkedLeft, childrenCheckedLeft),
+        convertStatToPercent(childrenNotMarkedRight, childrenCheckedRight),
     ];
 };
 
@@ -235,8 +262,10 @@ export const formatForNfmChart = ({
     type,
 }: FormatForNFMArgs<'lqas' | 'im'>): BarChartData[] => {
     if (!data || !campaign || !data[campaign]) return [] as BarChartData[];
-    const roundString: string = NfmRoundString[round];
-    const campaignData: Record<string, number> = data[campaign][roundString];
+    const campaignData: Record<string, number> = accessNfmStats(
+        data[campaign],
+        round,
+    );
     const totalChildrenNotMarked = Object.values(campaignData).reduce(
         (total, current) => total + current,
         0,
@@ -274,17 +303,17 @@ export const formatForRfaChart = ({
     type,
 }: FormatForNFMArgs<'lqas' | 'im'>): BarChartData[] => {
     if (!data || !campaign || !data[campaign]) return [] as BarChartData[];
-    const nfmRoundString = NfmRoundString[round];
     const totalChildrenAbsent =
         type === 'lqas'
-            ? data[campaign][nfmRoundString].childabsent
-            : data[campaign][nfmRoundString].Tot_child_Absent_HH;
+            ? accessNfmStats(data[campaign], round).childabsent
+            : accessNfmStats(data[campaign], round).Tot_child_Absent_HH;
 
     if (!totalChildrenAbsent) return [] as BarChartData[];
 
-    // TODO this can be abstracted further
-    const roundString: string = RfaRoundString[round];
-    const campaignData: Record<string, number> = data[campaign][roundString];
+    const campaignData: Record<string, number> = accessNfmAbsStats(
+        data[campaign],
+        round,
+    );
     const convertedEntries = convertEntries(
         Object.entries(campaignData),
         totalChildrenAbsent,
@@ -316,4 +345,19 @@ export const verticalChartTooltipFormatter = (
 ): [string, string] => {
     // eslint-disable-next-line react/prop-types
     return [`${Math.round(value)}%`, props.payload.originalKey];
+};
+
+export const makeDropdownOptions = (
+    data: Record<string, LqasImCampaign>,
+    campaign: string,
+): DropdownOptions<number>[] => {
+    if (!campaign || !data[campaign]) return [];
+    return data[campaign].rounds
+        .sort((a, b) => a.number - b.number)
+        .map(round => {
+            return {
+                label: `Round ${round.number}`,
+                value: round.number,
+            };
+        });
 };

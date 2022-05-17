@@ -37,7 +37,7 @@ const styles = theme => ({
         marginLeft: theme.spacing(2),
     },
 });
-
+// @ts-ignore
 const useStyles = makeStyles(styles);
 
 export const LqasImDates: FunctionComponent<Props> = ({ type, date }) => {

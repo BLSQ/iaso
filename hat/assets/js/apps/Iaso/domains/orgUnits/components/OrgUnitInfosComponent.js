@@ -291,7 +291,6 @@ const OrgUnitInfosComponent = ({
                 />
                 <FormControlComponent
                     errors={orgUnit.parent_id.errors}
-                    marginTopZero
                     id="ou-tree-input"
                 >
                     <OrgUnitTreeviewModal

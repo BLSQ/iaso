@@ -24,7 +24,7 @@ type RenderTriggerProps = {
 
 type EmptyEntityType = {
     name?: string | null;
-    defining_form?: number | null;
+    reference_form?: number | null;
 };
 
 type Props = {
@@ -52,7 +52,7 @@ export const EntityTypesDialog: FunctionComponent<Props> = ({
     renderTrigger,
     initialData = {
         name: null,
-        defining_form: null,
+        reference_form: null,
     },
     saveEntityType,
 }) => {
@@ -107,10 +107,10 @@ export const EntityTypesDialog: FunctionComponent<Props> = ({
                     classNames: classes.dialog,
                 }}
             >
-                {values.defining_form && (
+                {values.reference_form && (
                     <Box className={classes.view}>
                         <IconButtonComponent
-                            url={`/${baseUrls.formDetail}/formId/${values.defining_form}`}
+                            url={`/${baseUrls.formDetail}/formId/${values.reference_form}`}
                             icon="remove-red-eye"
                             tooltipMessage={MESSAGES.viewForm}
                         />

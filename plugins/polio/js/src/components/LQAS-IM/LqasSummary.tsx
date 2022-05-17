@@ -3,19 +3,19 @@ import { Box, Typography, Grid, Divider } from '@material-ui/core';
 import { makeStyles } from '@material-ui/styles';
 import React, { FunctionComponent, useMemo } from 'react';
 import { useSafeIntl } from 'bluesquare-components';
-import { ConvertedLqasImData, RoundString } from '../../constants/types';
+import { ConvertedLqasImData } from '../../constants/types';
 
 import { FAIL_COLOR, OK_COLOR } from '../../styles/constants';
 import {
     getLqasStatsForRound,
     makeCaregiversRatio,
 } from '../../pages/LQAS/utils';
-import { convertStatToPercent } from '../../utils/LqasIm';
+import { accessArrayRound, convertStatToPercent } from '../../utils/LqasIm';
 import MESSAGES from '../../constants/messages';
 
 type Props = {
     campaign?: string;
-    round: RoundString;
+    round: number;
     data: Record<string, ConvertedLqasImData>;
 };
 
@@ -28,6 +28,7 @@ const style = {
     warning: { color: 'rgb(255,196,53)' },
 };
 
+// @ts-ignore
 const useStyles = makeStyles(style);
 
 const getRatePassedColors = (ratePassed, classes) => {
@@ -58,7 +59,7 @@ export const LqasSummary: FunctionComponent<Props> = ({
         );
         const caregiversRatio =
             data && campaign && data[campaign]
-                ? makeCaregiversRatio(data[campaign][round])
+                ? makeCaregiversRatio(accessArrayRound(data[campaign], round))
                 : '';
 
         return {

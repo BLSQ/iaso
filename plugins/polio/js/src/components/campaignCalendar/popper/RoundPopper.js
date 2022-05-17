@@ -15,12 +15,22 @@ import CloseIcon from '@material-ui/icons/Close';
 import { useSelector } from 'react-redux';
 import MESSAGES from '../../../constants/messages';
 import { useStyles } from '../Styles';
+import { CsvButton } from '../../../../../../../hat/assets/js/apps/Iaso/components/Buttons/CsvButton.tsx';
 
-const R1Popper = ({ campaign, handleClick, open, anchorEl, setDialogOpen }) => {
+const RoundPopper = ({
+    campaign,
+    handleClose,
+    open,
+    anchorEl,
+    setDialogOpen,
+    round,
+}) => {
     const classes = useStyles();
     // We don't want to show the edit button if there is no connected user
     const isLogged = useSelector(state => Boolean(state.users.current));
     const id = open ? `campaign-popover-${campaign.id}` : undefined;
+    const url = `/api/orgunits/?csv=true&group=${campaign.original?.group?.id}&app_id=com.poliooutbreaks.app`;
+
     return (
         <Popper
             id={id}
@@ -31,7 +41,7 @@ const R1Popper = ({ campaign, handleClick, open, anchorEl, setDialogOpen }) => {
             <Paper elevation={1}>
                 <Box p={2}>
                     <IconButton
-                        onClick={() => handleClick()}
+                        onClick={() => handleClose()}
                         className={classes.popperClose}
                         size="small"
                     >
@@ -42,13 +52,13 @@ const R1Popper = ({ campaign, handleClick, open, anchorEl, setDialogOpen }) => {
                             <FormattedMessage {...MESSAGES.startDate} />:
                         </Grid>
                         <Grid item sm={6} container justifyContent="flex-start">
-                            {campaign.R1Start.format('L')}
+                            {round.start.format('L')}
                         </Grid>
                         <Grid item sm={6} container justifyContent="flex-end">
                             <FormattedMessage {...MESSAGES.endDate} />:
                         </Grid>
                         <Grid item sm={6} container justifyContent="flex-start">
-                            {campaign.R1End.format('L')}
+                            {round.end.format('L')}
                         </Grid>
                         <Grid item sm={6} container justifyContent="flex-end">
                             <FormattedMessage {...MESSAGES.raStatus} />:
@@ -78,7 +88,17 @@ const R1Popper = ({ campaign, handleClick, open, anchorEl, setDialogOpen }) => {
                                 <FormattedMessage {...MESSAGES.no} />
                             )}
                         </Grid>
-                        <Grid item sm={12} container justifyContent="flex-end">
+                        <Grid
+                            item
+                            sm={12}
+                            container
+                            justifyContent={
+                                isLogged ? 'space-between' : 'flex-end'
+                            }
+                        >
+                            {campaign.original?.group?.id && (
+                                <CsvButton csvUrl={url} variant="text" />
+                            )}
                             {isLogged && (
                                 <Button
                                     onClick={() => setDialogOpen(true)}
@@ -96,12 +116,13 @@ const R1Popper = ({ campaign, handleClick, open, anchorEl, setDialogOpen }) => {
     );
 };
 
-R1Popper.propTypes = {
+RoundPopper.propTypes = {
     campaign: PropTypes.object.isRequired,
-    handleClick: PropTypes.func.isRequired,
+    handleClose: PropTypes.func.isRequired,
     setDialogOpen: PropTypes.func.isRequired,
     open: PropTypes.bool.isRequired,
     anchorEl: PropTypes.object.isRequired,
+    round: PropTypes.object.isRequired,
 };
 
-export { R1Popper };
+export { RoundPopper };

@@ -190,7 +190,6 @@ const mapCampaigns = allCampaigns => {
             const daysCount = hasNextRound
                 ? moment(nextRound.started_at, dateFormat).diff(end, 'days')
                 : defaultCampaignLength * 7;
-
             const mappedRound = {
                 ...round,
                 start,
@@ -198,7 +197,7 @@ const mapCampaigns = allCampaigns => {
                 weeksCount,
                 daysCount,
             };
-            if (c.is_preventive && !nextRound?.start) {
+            if (c.is_preventive && !nextRound?.started_at) {
                 return { ...mappedRound, weeksCount: 0, daysCount: 0 };
             }
             return mappedRound;

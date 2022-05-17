@@ -14,15 +14,15 @@ import { useFormState } from '../../../hooks/form';
 // eslint-disable-next-line camelcase
 const initialFormState = (orgUnit, referenceSubmissionId) => {
     return {
-        id: orgUnit.id,
-        name: orgUnit.name,
+        id: orgUnit?.id,
+        name: orgUnit?.name,
         org_unit_type_id: orgUnit?.org_unit_type_id?.toString() ?? undefined,
-        groups: orgUnit.groups?.map(g => g.id) ?? [],
-        sub_source: orgUnit.sub_source,
-        validation_status: orgUnit.validation_status,
-        aliases: orgUnit.aliases,
-        parent_id: orgUnit.parent_id,
-        source_ref: orgUnit.source_ref,
+        groups: orgUnit?.groups?.map(g => g.id) ?? [],
+        sub_source: orgUnit?.sub_source,
+        validation_status: orgUnit?.validation_status,
+        aliases: orgUnit?.aliases,
+        parent_id: orgUnit?.parent_id,
+        source_ref: orgUnit?.source_ref,
         reference_instance_id: referenceSubmissionId,
     };
 };
@@ -81,8 +81,11 @@ const ActionTableColumnComponent = ({ settings, user }) => {
 
     const showButton =
         settings.row.original.reference_form_id ===
-            settings.row.original.form_id && userHasPermission('iaso_org_units', user);
-    const notLinked =  !settings.row.original.org_unit.reference_instance_id && userHasPermission('iaso_org_units', user);
+            settings.row.original.form_id &&
+        userHasPermission('iaso_org_units', user);
+    const notLinked =
+        !settings.row.original?.org_unit?.reference_instance_id &&
+        userHasPermission('iaso_org_units', user);
 
     return (
         <section>
@@ -104,7 +107,7 @@ const ActionTableColumnComponent = ({ settings, user }) => {
                     onClick={() => linkOrgUnitToReferenceSubmission()}
                     overrideIcon={LinkIcon}
                     tooltipMessage={MESSAGES.linkOrgUnitReferenceSubmission}
-                    color={notLinked ? "inherit" : "primary"}
+                    color={notLinked ? 'inherit' : 'primary'}
                     disabled={!notLinked}
                 />
             )}

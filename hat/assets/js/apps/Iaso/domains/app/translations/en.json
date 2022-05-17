@@ -513,7 +513,6 @@
     "iaso.orgUnitsTypes.dialog.deleteText": "This operation cannot be undone.",
     "iaso.orgUnitsTypes.projects": "Projects",
     "iaso.orgUnitsTypes.update": "Update org unit type",
-    "iaso.orgUnitsTypes.error.fieldRequired": "This field is required",
     "iaso.page.deleteError": "Error removing page",
     "iaso.page.deleteSuccess": "Page successfully removed",
     "iaso.page.viewpages": "View page.{linebreak} New tab: ctrl + click",

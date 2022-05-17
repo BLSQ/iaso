@@ -1,7 +1,7 @@
 import React, { useCallback } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import PropTypes from 'prop-types';
-import { Grid } from '@material-ui/core';
+import { Box } from '@material-ui/core';
 
 import { useSafeIntl } from 'bluesquare-components';
 
@@ -100,78 +100,77 @@ export default function OrgUnitsTypesDialog({
             allowConfirm={isFormValid(requiredFields, formState)}
             {...dialogProps}
         >
-            <Grid container spacing={4} justifyContent="flex-start">
-                <Grid xs={12} item>
-                    <InputComponent
-                        keyValue="name"
-                        onChange={onChange}
-                        value={formState.name.value}
-                        errors={formState.name.errors}
-                        type="text"
-                        label={MESSAGES.name}
-                        required
-                    />
-                </Grid>
-                <Grid xs={12} item>
-                    <InputComponent
-                        keyValue="short_name"
-                        onChange={onChange}
-                        value={formState.short_name.value}
-                        errors={formState.short_name.errors}
-                        type="text"
-                        label={MESSAGES.shortName}
-                        required
-                    />
-                </Grid>
-                <Grid xs={12} item>
-                    <InputComponent
-                        keyValue="depth"
-                        onChange={onChange}
-                        value={formState.depth.value}
-                        errors={formState.depth.errors}
-                        type="number"
-                        label={MESSAGES.depth}
-                        required
-                    />
-                </Grid>
-                <Grid xs={12} item>
-                    <InputComponent
-                        multi
-                        clearable
-                        keyValue="sub_unit_type_ids"
-                        onChange={onChange}
-                        value={formState.sub_unit_type_ids.value}
-                        errors={formState.sub_unit_type_ids.errors}
-                        type="select"
-                        options={subUnitTypes.map(ot => ({
-                            value: ot.id,
-                            label: ot.name,
-                        }))}
-                        label={MESSAGES.subUnitTypes}
-                    />
-                </Grid>
-                <Grid xs={12} item>
-                    <InputComponent
-                        multi
-                        clearable
-                        keyValue="project_ids"
-                        onChange={onChange}
-                        value={formState.project_ids.value}
-                        errors={formState.project_ids.errors}
-                        type="select"
-                        options={
-                            allProjects
-                                ? allProjects.map(p => ({
-                                      label: p.name,
-                                      value: p.id,
-                                  }))
-                                : []
-                        }
-                        label={MESSAGES.projects}
-                        required
-                    />
-                </Grid>
-            </Grid>
+            <Box pt={2} pb={2}>
+                <InputComponent
+                    keyValue="name"
+                    onChange={onChange}
+                    value={formState.name.value}
+                    errors={formState.name.errors}
+                    type="text"
+                    label={MESSAGES.name}
+                    required
+                />
+            </Box>
+            <Box pt={2} pb={2}>
+                <InputComponent
+                    keyValue="short_name"
+                    onChange={onChange}
+                    value={formState.short_name.value}
+                    errors={formState.short_name.errors}
+                    type="text"
+                    label={MESSAGES.shortName}
+                    required
+                />
+            </Box>
+
+            <Box pt={2} pb={2}>
+                <InputComponent
+                    keyValue="depth"
+                    onChange={onChange}
+                    value={formState.depth.value}
+                    errors={formState.depth.errors}
+                    type="number"
+                    label={MESSAGES.depth}
+                    required
+                />
+            </Box>
+
+            <Box pt={2} pb={2}>
+                <InputComponent
+                    multi
+                    clearable
+                    keyValue="project_ids"
+                    onChange={onChange}
+                    value={formState.project_ids.value}
+                    errors={formState.project_ids.errors}
+                    type="select"
+                    options={
+                        allProjects?.map(p => ({
+                            label: p.name,
+                            value: p.id,
+                        })) ?? []
+                    }
+                    label={MESSAGES.projects}
+                    required
+                />
+            </Box>
+
+            <Box pt={2} pb={2}>
+                <InputComponent
+                    multi
+                    clearable
+                    keyValue="sub_unit_type_ids"
+                    onChange={onChange}
+                    value={formState.sub_unit_type_ids.value}
+                    errors={formState.sub_unit_type_ids.errors}
+                    type="select"
+                    options={subUnitTypes.map(ot => ({
+                        value: ot.id,
+                        label: ot.name,
+                    }))}
+                    label={MESSAGES.subUnitTypes}
+                />
+            </Box>
         </ConfirmCancelDialogComponent>
     );
 }

@@ -103,7 +103,6 @@ export default function ConfirmCancelDialogComponent({
         <DialogComponent
             dataTestId={dataTestId}
             id={id}
-            dataTestId={dataTestId}
             renderActions={({ closeDialog }) => (
                 <ConfirmCancelActions
                     allowConfirm={allowConfirm}

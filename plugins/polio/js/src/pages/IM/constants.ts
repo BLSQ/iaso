@@ -121,3 +121,5 @@ export const lqasBarColorTresholds = {
     ok: 80,
     warning: 50,
 };
+
+export const defaultRounds = [1, 2];

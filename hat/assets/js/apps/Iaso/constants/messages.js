@@ -105,6 +105,10 @@ const MESSAGES = defineMessages({
         defaultMessage: 'Assignments',
         id: 'iaso.label.assignments',
     },
+    dhis2: {
+        defaultMessage: 'Go to DHIS2',
+        id: 'iaso.label.dhis2Link',
+    },
 });
 
 export default MESSAGES;

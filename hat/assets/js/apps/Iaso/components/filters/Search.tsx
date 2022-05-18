@@ -4,6 +4,7 @@ import {
     useSafeIntl,
     useSkipEffectOnMount,
 } from 'bluesquare-components';
+import { Box } from '@material-ui/core';
 
 import { containsForbiddenCharacter } from '../../constants/filters';
 import { IntlFormatMessage } from '../../types/intl';
@@ -60,18 +61,19 @@ const SearchFilter: FunctionComponent<Props> = ({
     }, [hasError, onErrorChange]);
 
     return (
-        <SearchInput
-            uid={uid}
-            withMarginTop={withMarginTop}
-            keyValue={keyValue}
-            label={formatMessage(MESSAGES.textSearch)}
-            required={required}
-            errors={textSearchErrors}
-            disabled={disabled}
-            onEnterPressed={!hasError ? onEnterPressed : () => null}
-            onChange={newValue => setCurrentValue(newValue)}
-            value={value}
-        />
+        <Box mt={withMarginTop ? 2 : 0}>
+            <SearchInput
+                uid={uid}
+                keyValue={keyValue}
+                label={formatMessage(MESSAGES.textSearch)}
+                required={required}
+                errors={textSearchErrors}
+                disabled={disabled}
+                onEnterPressed={!hasError ? onEnterPressed : () => null}
+                onChange={newValue => setCurrentValue(newValue)}
+                value={value}
+            />
+        </Box>
     );
 };
 

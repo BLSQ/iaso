@@ -1,5 +1,6 @@
 from collections import defaultdict
 from datetime import timedelta
+from functools import lru_cache
 
 import pandas as pd
 from django.http import HttpResponse
@@ -25,11 +26,25 @@ def forma_find_campaign_on_day(campaigns, day, country):
     """
 
     for c in campaigns:
-        if not (c.round_one and c.round_one.started_at and c.round_one.ended_at):
+        earliest_round = c.rounds.filter(started_at__isnull=False).order_by("started_at").first()
+        if not earliest_round:
             continue
-        round_end = c.round_two.ended_at if (c.round_two and c.round_two.ended_at) else c.round_one.ended_at
-        end_date = round_end + timedelta(days=+60)
-        if c.country_id == country.id and c.round_one.started_at <= day < end_date:
+        start_date = earliest_round.started_at
+        latest_round_start = c.rounds.filter(started_at__isnull=False).order_by("started_at").last()
+        if latest_round_start:
+            continue  # should not happen if we have an earliest_round?
+        latest_round_end = c.rounds.filter(ended_at__isnull=False).order_by("ended_at").last()
+        end_date = None
+        if latest_round_end:
+            end_date = latest_round_end.ended_at
+
+        if not end_date:
+            end_date = latest_round_start.started_at
+        else:
+            if latest_round_start.started_at > end_date:
+                end_date = latest_round_start.started_at
+        end_date = end_date + timedelta(days=+60)
+        if c.country_id == country.id and start_date <= day < end_date:
             return c
     return None
 
@@ -159,7 +174,8 @@ def handle_country(forms, country, campaign_qs) -> DataFrame:
     df["country_config_name"] = country.name
     df["country_config"] = country
     print("Matching campaign")
-    df["campaign"] = df.apply(lambda r: forma_find_campaign_on_day(campaign_qs, r["today"], country), axis=1)
+    forma_find_campaign_on_day_cached = lru_cache(maxsize=None)(forma_find_campaign_on_day)
+    df["campaign"] = df.apply(lambda r: forma_find_campaign_on_day_cached(campaign_qs, r["today"], country), axis=1)
     df["campaign_id"] = df["campaign"].apply(lambda c: str(c.id) if c else None)
     df["campaign_obr_name"] = df["campaign"].apply(lambda c: c.obr_name if c else None)
 
@@ -208,13 +224,14 @@ def get_content_for_config(config):
 def fetch_and_match_forma_data():
 
     conf = Config.objects.get(slug="forma")
-    campaign_qs = Campaign.objects.all().prefetch_related("round_one").prefetch_related("round_two")
+    campaign_qs = Campaign.objects.all().prefetch_related("rounds").prefetch_related("country")
 
     dfs = []
     for config in conf.content:
         submissions = get_content_for_config(config)
         country = OrgUnit.objects.get(id=config["country_id"])
-        df = handle_country(submissions, country, campaign_qs)
+        compaigns_of_country = campaign_qs.filter(country_id=config["country_id"])
+        df = handle_country(submissions, country, compaigns_of_country)
         dfs.append(df)
 
     concatened_df = pd.concat(dfs)

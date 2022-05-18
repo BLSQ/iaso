@@ -1,4 +1,4 @@
-import React, { FunctionComponent, useMemo } from 'react';
+import React, { FunctionComponent, useCallback, useMemo } from 'react';
 import {
     AddButton,
     useSafeIntl,
@@ -112,13 +112,25 @@ export const CreateEditPlanning: FunctionComponent<Props> = ({
     const {
         values,
         setFieldValue,
+        touched,
+        setFieldTouched,
         errors,
         isValid,
         initialValues,
         handleSubmit,
         resetForm,
     } = formik;
-    const getErrors = k => (errors[k] ? [errors[k]] : []);
+    const onChange = (keyValue, value) => {
+        setFieldTouched(keyValue, true);
+        setFieldValue(keyValue, value);
+    };
+    const getErrors = useCallback(
+        keyValue => {
+            if (!touched[keyValue]) return [];
+            return errors[keyValue] ? [errors[keyValue]] : [];
+        },
+        [errors, touched],
+    );
     const titleMessage = formatTitle(type, formatMessage);
     return (
         <FormikProvider value={formik}>
@@ -145,6 +157,7 @@ export const CreateEditPlanning: FunctionComponent<Props> = ({
                             <InputComponent
                                 keyValue="name"
                                 onChange={(keyValue, value) => {
+                                    setFieldTouched(keyValue, true);
                                     const errorableValue =
                                         value !== '' ? value : null;
                                     setFieldValue(keyValue, errorableValue);
@@ -160,7 +173,7 @@ export const CreateEditPlanning: FunctionComponent<Props> = ({
                             <InputComponent
                                 type="select"
                                 keyValue="selectedTeam"
-                                onChange={setFieldValue}
+                                onChange={onChange}
                                 value={values.selectedTeam}
                                 errors={getErrors('selectedTeam')}
                                 label={MESSAGES.team}
@@ -172,7 +185,7 @@ export const CreateEditPlanning: FunctionComponent<Props> = ({
                     </Grid>
                     <Grid item xs={12}>
                         <DatesRange
-                            onChangeDate={setFieldValue}
+                            onChangeDate={onChange}
                             dateFrom={values.startDate}
                             dateTo={values.endDate}
                             labelFrom={MESSAGES.from}
@@ -187,6 +200,7 @@ export const CreateEditPlanning: FunctionComponent<Props> = ({
                                 type="select"
                                 keyValue="forms"
                                 onChange={(keyValue, value) => {
+                                    setFieldTouched(keyValue, true);
                                     setFieldValue(
                                         keyValue,
                                         commaSeparatedIdsToArray(value),
@@ -210,6 +224,10 @@ export const CreateEditPlanning: FunctionComponent<Props> = ({
                                         onConfirm={value => {
                                             const selectedIds = value.map(
                                                 orgUnit => orgUnit.id,
+                                            );
+                                            setFieldTouched(
+                                                'selectedOrgUnit',
+                                                true,
                                             );
                                             setFieldValue(
                                                 'selectedOrgUnit',
@@ -236,7 +254,7 @@ export const CreateEditPlanning: FunctionComponent<Props> = ({
                         <InputComponent
                             type="radio"
                             keyValue="publishingStatus"
-                            onChange={setFieldValue}
+                            onChange={onChange}
                             value={values.publishingStatus}
                             errors={getErrors('publishingStatus')}
                             label={MESSAGES.publishingStatus}

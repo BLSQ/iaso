@@ -26,7 +26,7 @@ import { baseUrls } from './urls';
 import { capitalize } from '../utils/index';
 import { linksFiltersWithPrefix, orgUnitFiltersWithPrefix } from './filters';
 import Pages from '../domains/pages';
-import { Planning } from '../domains/planning/index.tsx';
+import { Planning } from '../domains/plannings/index.tsx';
 import { Teams } from '../domains/teams/index.tsx';
 import { Assignments } from '../domains/assignments/index.tsx';
 

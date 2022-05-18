@@ -19,10 +19,7 @@ export const usePlanningValidation = () => {
         startDate: date().transform(parseStringTodate),
         endDate: date().transform(parseStringTodate),
         forms: array(number()).nullable().required(errorMessage), // this may be causing bugs with multi select, or have to be reconverted into array before being sent to the api
-        selectedOrgUnits: array()
-            .of(number())
-            .nullable()
-            .required(errorMessage),
+        selectedOrgUnit: array().of(number()).nullable().required(errorMessage),
         selectedTeam: number().nullable().required(errorMessage),
         publishingStatus: mixed()
             .oneOf(['draft', 'published'])

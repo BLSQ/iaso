@@ -125,18 +125,6 @@ export default function OrgUnitsTypesDialog({
 
             <Box pt={2} pb={2}>
                 <InputComponent
-                    keyValue="depth"
-                    onChange={onChange}
-                    value={formState.depth.value}
-                    errors={formState.depth.errors}
-                    type="number"
-                    label={MESSAGES.depth}
-                    required
-                />
-            </Box>
-
-            <Box pt={2} pb={2}>
-                <InputComponent
                     multi
                     clearable
                     keyValue="project_ids"
@@ -151,6 +139,18 @@ export default function OrgUnitsTypesDialog({
                         })) ?? []
                     }
                     label={MESSAGES.projects}
+                    required
+                />
+            </Box>
+
+            <Box pt={2} pb={2}>
+                <InputComponent
+                    keyValue="depth"
+                    onChange={onChange}
+                    value={formState.depth.value}
+                    errors={formState.depth.errors}
+                    type="number"
+                    label={MESSAGES.depth}
                     required
                 />
             </Box>

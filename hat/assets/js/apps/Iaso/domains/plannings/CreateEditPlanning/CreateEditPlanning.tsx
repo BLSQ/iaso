@@ -5,6 +5,7 @@ import {
     IconButton,
     FormControl,
 } from 'bluesquare-components';
+import FileCopyIcon from '@material-ui/icons/FileCopy';
 import { useFormik, FormikProvider } from 'formik';
 import { isEqual } from 'lodash';
 import { Grid, Box } from '@material-ui/core';
@@ -22,17 +23,30 @@ import {
 import DatesRange from '../../../components/filters/DatesRange';
 import { OrgUnitTreeviewModal } from '../../orgUnits/components/TreeView/OrgUnitTreeviewModal';
 import { usePlanningValidation } from '../validation';
+import { commaSeparatedIdsToArray } from '../../../utils/forms';
+import { IntlFormatMessage } from '../../../types/intl';
+
+type ModalMode = 'create' | 'edit' | 'copy';
 
 type Props = Partial<SavePlanningQuery> & {
-    type: 'create' | 'edit';
+    type: ModalMode;
 };
 
-const makeRenderTrigger = (type: 'create' | 'edit') => {
+const makeRenderTrigger = (type: 'create' | 'edit' | 'copy') => {
     if (type === 'create') {
         return ({ openDialog }) => (
             <AddButton
                 dataTestId="create-plannning-button"
                 onClick={openDialog}
+            />
+        );
+    }
+    if (type === 'copy') {
+        return ({ openDialog }) => (
+            <IconButton
+                onClick={openDialog}
+                overrideIcon={FileCopyIcon}
+                tooltipMessage={MESSAGES.edit}
             />
         );
     }
@@ -43,6 +57,19 @@ const makeRenderTrigger = (type: 'create' | 'edit') => {
             tooltipMessage={MESSAGES.edit}
         />
     );
+};
+
+const formatTitle = (type: ModalMode, formatMessage: IntlFormatMessage) => {
+    switch (type) {
+        case 'create':
+            return formatMessage(MESSAGES.createPlanning);
+        case 'edit':
+            return formatMessage(MESSAGES.editPlanning);
+        case 'copy':
+            return formatMessage(MESSAGES.duplicatePlanning);
+        default:
+            return formatMessage(MESSAGES.createPlanning);
+    }
 };
 
 export const CreateEditPlanning: FunctionComponent<Props> = ({
@@ -92,10 +119,7 @@ export const CreateEditPlanning: FunctionComponent<Props> = ({
         resetForm,
     } = formik;
     const getErrors = k => (errors[k] ? [errors[k]] : []);
-    const titleMessage =
-        type === 'create'
-            ? formatMessage(MESSAGES.createPlanning)
-            : formatMessage(MESSAGES.editPlanning);
+    const titleMessage = formatTitle(type, formatMessage);
     return (
         <FormikProvider value={formik}>
             {/* @ts-ignore */}
@@ -162,7 +186,12 @@ export const CreateEditPlanning: FunctionComponent<Props> = ({
                             <InputComponent
                                 type="select"
                                 keyValue="forms"
-                                onChange={setFieldValue}
+                                onChange={(keyValue, value) => {
+                                    setFieldValue(
+                                        keyValue,
+                                        commaSeparatedIdsToArray(value),
+                                    );
+                                }}
                                 value={values.forms}
                                 errors={getErrors('forms')}
                                 label={MESSAGES.forms}

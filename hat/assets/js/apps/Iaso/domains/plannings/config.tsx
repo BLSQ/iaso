@@ -1,6 +1,5 @@
 import React, { ReactElement } from 'react';
 import { IconButton as IconButtonComponent } from 'bluesquare-components';
-import FileCopyIcon from '@material-ui/icons/FileCopy';
 import MESSAGES from './messages';
 import { IntlFormatMessage } from '../../types/intl';
 import { Column } from '../../types/table';
@@ -58,10 +57,21 @@ export const planningColumns = (formatMessage: IntlFormatMessage): Column[] => {
                             icon="remove-red-eye"
                             tooltipMessage={MESSAGES.viewPlanning}
                         />
-                        <IconButtonComponent
-                            url="/"
-                            overrideIcon={FileCopyIcon}
-                            tooltipMessage={MESSAGES.duplicatePlanning}
+                        <CreateEditPlanning
+                            type="copy"
+                            name={settings.row.original?.name}
+                            selectedTeam={settings.row.original?.team?.id}
+                            selectedOrgUnit={
+                                settings.row.original?.org_unit?.id
+                            }
+                            startDate={settings.row.original?.start_date}
+                            endDate={settings.row.original?.end_date}
+                            forms={
+                                settings.row.original?.forms?.map(
+                                    form => form.id,
+                                ) ?? []
+                            }
+                            publishingStatus={settings.row.original?.status}
                         />
                         <CreateEditPlanning
                             type="edit"

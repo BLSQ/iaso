@@ -51,7 +51,7 @@ export const CreateEditPlanning: FunctionComponent<Props> = ({
     name,
     startDate,
     endDate,
-    selectedOrgUnits,
+    selectedOrgUnit,
     selectedTeam,
     forms,
     publishingStatus,
@@ -71,7 +71,7 @@ export const CreateEditPlanning: FunctionComponent<Props> = ({
             name,
             startDate,
             endDate,
-            selectedOrgUnits,
+            selectedOrgUnit,
             selectedTeam,
             forms,
             publishingStatus: publishingStatus ?? 'draft',
@@ -175,7 +175,7 @@ export const CreateEditPlanning: FunctionComponent<Props> = ({
                         <Grid xs={6} item>
                             <Box mt={1}>
                                 <FormControl
-                                    errors={getErrors('selectedOrgUnits')}
+                                    errors={getErrors('selectedOrgUnit')}
                                 >
                                     <OrgUnitTreeviewModal
                                         onConfirm={value => {
@@ -183,7 +183,7 @@ export const CreateEditPlanning: FunctionComponent<Props> = ({
                                                 orgUnit => orgUnit.id,
                                             );
                                             setFieldValue(
-                                                'selectedOrgUnits',
+                                                'selectedOrgUnit',
                                                 selectedIds.length > 0
                                                     ? selectedIds
                                                     : null,

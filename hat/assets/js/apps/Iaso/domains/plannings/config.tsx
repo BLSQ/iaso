@@ -4,6 +4,7 @@ import FileCopyIcon from '@material-ui/icons/FileCopy';
 import MESSAGES from './messages';
 import { IntlFormatMessage } from '../../types/intl';
 import { Column } from '../../types/table';
+import { CreateEditPlanning } from './CreateEditPlanning/CreateEditPlanning';
 
 export const planningColumns = (formatMessage: IntlFormatMessage): Column[] => {
     return [
@@ -48,26 +49,40 @@ export const planningColumns = (formatMessage: IntlFormatMessage): Column[] => {
             accessor: 'actions',
             resizable: false,
             sortable: false,
-            Cell: (settings): ReactElement => (
-                // TODO: limit to user permissions
-                <section>
-                    <IconButtonComponent
-                        url="/"
-                        icon="remove-red-eye"
-                        tooltipMessage={MESSAGES.viewPlanning}
-                    />
-                    <IconButtonComponent
-                        url="/"
-                        overrideIcon={FileCopyIcon}
-                        tooltipMessage={MESSAGES.duplicatePlanning}
-                    />
-                    <IconButtonComponent
-                        url="/"
-                        icon="edit"
-                        tooltipMessage={MESSAGES.edit}
-                    />
-                </section>
-            ),
+            Cell: (settings): ReactElement => {
+                return (
+                    // TODO: limit to user permissions
+                    <section>
+                        <IconButtonComponent
+                            url="/"
+                            icon="remove-red-eye"
+                            tooltipMessage={MESSAGES.viewPlanning}
+                        />
+                        <IconButtonComponent
+                            url="/"
+                            overrideIcon={FileCopyIcon}
+                            tooltipMessage={MESSAGES.duplicatePlanning}
+                        />
+                        <CreateEditPlanning
+                            type="edit"
+                            id={settings.row.original.id}
+                            name={settings.row.original?.name}
+                            selectedTeam={settings.row.original?.team?.id}
+                            selectedOrgUnit={
+                                settings.row.original?.org_unit?.id
+                            }
+                            startDate={settings.row.original?.start_date}
+                            endDate={settings.row.original?.end_date}
+                            forms={
+                                settings.row.original?.forms?.map(
+                                    form => form.id,
+                                ) ?? []
+                            }
+                            publishingStatus={settings.row.original?.status}
+                        />
+                    </section>
+                );
+            },
         },
     ];
 };

@@ -2,6 +2,7 @@
 import { UseQueryResult } from 'react-query';
 import { useSnackQuery } from '../../../../libs/apiHooks';
 import { Pagination } from '../../../../types/table';
+import { waitFor } from '../../../../utils/mockData';
 import { list } from '../../mockPlanningList.js';
 import { PlanningParams } from '../../types';
 
@@ -17,9 +18,6 @@ type Planning = {
 type PlanningList = Pagination & {
     plannings: Planning[];
 };
-
-export const waitFor = (delay: number): Promise<void> =>
-    new Promise(resolve => setTimeout(resolve, delay));
 
 const getPlannings = async (options: PlanningParams): Promise<PlanningList> => {
     await waitFor(1500);

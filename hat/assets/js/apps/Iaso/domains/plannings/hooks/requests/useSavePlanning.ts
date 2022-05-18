@@ -8,7 +8,7 @@ export type SavePlanningQuery = {
     startDate: string;
     endDate: string;
     forms: number[];
-    selectedOrgUnits: number[];
+    selectedOrgUnit: number[];
     selectedTeam: number;
     publishingStatus: 'published' | 'draft';
 };

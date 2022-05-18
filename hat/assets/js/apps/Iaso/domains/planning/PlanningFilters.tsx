@@ -63,7 +63,7 @@ export const PlanningFilters: FunctionComponent<Props> = ({ params }) => {
                     />
                 </Grid>
                 <Grid item xs={2} justifyContent="flex-end">
-                    <Box mt={1} mb={2} style={{ textAlign: 'end' }}>
+                    <Box mt={2} mb={2} style={{ textAlign: 'end' }}>
                         <FilterButton
                             disabled={!filtersUpdated}
                             onFilter={handleSearch}

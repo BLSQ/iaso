@@ -1,10 +1,6 @@
 import React, { FunctionComponent } from 'react';
 import { makeStyles, Box, Grid } from '@material-ui/core';
-import {
-    commonStyles,
-    LoadingSpinner,
-    useSafeIntl,
-} from 'bluesquare-components';
+import { commonStyles, useSafeIntl } from 'bluesquare-components';
 import { useDispatch } from 'react-redux';
 import TopBar from '../../components/nav/TopBarComponent';
 import MESSAGES from './messages';

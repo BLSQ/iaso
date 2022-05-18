@@ -1,9 +1,13 @@
 import React, { FunctionComponent, useMemo } from 'react';
-import { AddButton, useSafeIntl, IconButton } from 'bluesquare-components';
-import { useFormik, FormikProvider, Field } from 'formik';
-import { object, number, string, array, lazy } from 'yup';
+import {
+    AddButton,
+    useSafeIntl,
+    IconButton,
+    FormControl,
+} from 'bluesquare-components';
+import { useFormik, FormikProvider } from 'formik';
 import { isEqual } from 'lodash';
-import { Grid } from '@material-ui/core';
+import { Grid, Box } from '@material-ui/core';
 import InputComponent from '../../../components/forms/InputComponent';
 import ConfirmCancelDialogComponent from '../../../components/dialogs/ConfirmCancelDialogComponent';
 
@@ -17,6 +21,7 @@ import {
 } from '../hooks/requests/useSavePlanning';
 import DatesRange from '../../../components/filters/DatesRange';
 import { OrgUnitTreeviewModal } from '../../orgUnits/components/TreeView/OrgUnitTreeviewModal';
+import { usePlanningValidation } from '../validation';
 
 type Props = Partial<SavePlanningQuery> & {
     type: 'create' | 'edit';
@@ -55,17 +60,7 @@ export const CreateEditPlanning: FunctionComponent<Props> = ({
     const { data: formsDropdown, isFetching: isFetchingForms } = useGetForms();
     const { data: teamsDropdown, isFetching: isFetchingTeams } = useGetTeams();
     // Tried the typescript integration, but Type casting was crap
-    const schema = lazy(() =>
-        object().shape({
-            name: string(),
-            startDate: string(),
-            endDate: string(),
-            forms: string(), // this may be causing bugs with multi select, or have to be reconverted into array before being sent to the api
-            selectedOrgUnits: array().of(number()),
-            selectedTeam: number(),
-            publishingStatus: string(),
-        }),
-    );
+    const schema = usePlanningValidation();
     const { mutateAsync: savePlanning } = useSavePlanning(type);
 
     const renderTrigger = useMemo(() => makeRenderTrigger(type), [type]);
@@ -97,9 +92,6 @@ export const CreateEditPlanning: FunctionComponent<Props> = ({
         resetForm,
     } = formik;
     const getErrors = k => (errors[k] ? [errors[k]] : []);
-    console.log('values', values);
-    // console.log('isValid', isValid);
-    console.log('errors', errors);
     const titleMessage =
         type === 'create'
             ? formatMessage(MESSAGES.createPlanning)
@@ -167,7 +159,6 @@ export const CreateEditPlanning: FunctionComponent<Props> = ({
                     </Grid>
                     <Grid container item spacing={2}>
                         <Grid xs={6} item>
-                            {/* <Field> */}
                             <InputComponent
                                 type="select"
                                 keyValue="forms"
@@ -180,31 +171,36 @@ export const CreateEditPlanning: FunctionComponent<Props> = ({
                                 options={formsDropdown}
                                 loading={isFetchingForms}
                             />
-                            {/* </Field> */}
                         </Grid>
                         <Grid xs={6} item>
-                            <OrgUnitTreeviewModal
-                                onConfirm={value => {
-                                    const selectedIds = value.map(
-                                        orgUnit => orgUnit.id,
-                                    );
-                                    setFieldValue(
-                                        'selectedOrgUnits',
-                                        selectedIds.length > 0
-                                            ? selectedIds
-                                            : null,
-                                    );
-                                }}
-                                titleMessage={formatMessage(
-                                    MESSAGES.selectTopOrgUnit,
-                                )}
-                                required
-                                clearable
-                                hardReset
-                                multiselect
-                                showStatusIconInTree={false}
-                                showStatusIconInPicker={false}
-                            />
+                            <Box mt={1}>
+                                <FormControl
+                                    errors={getErrors('selectedOrgUnits')}
+                                >
+                                    <OrgUnitTreeviewModal
+                                        onConfirm={value => {
+                                            const selectedIds = value.map(
+                                                orgUnit => orgUnit.id,
+                                            );
+                                            setFieldValue(
+                                                'selectedOrgUnits',
+                                                selectedIds.length > 0
+                                                    ? selectedIds
+                                                    : null,
+                                            );
+                                        }}
+                                        titleMessage={formatMessage(
+                                            MESSAGES.selectOrgUnit,
+                                        )}
+                                        required
+                                        clearable
+                                        hardReset
+                                        multiselect
+                                        showStatusIconInTree={false}
+                                        showStatusIconInPicker={false}
+                                    />
+                                </FormControl>
+                            </Box>
                         </Grid>
                     </Grid>
                     <Grid item>

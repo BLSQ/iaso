@@ -89,9 +89,17 @@ const MESSAGES = defineMessages({
         id: 'iaso.label.edit',
         defaultMessage: 'Edit',
     },
-    selectTopOrgUnit: {
-        id: 'iaso.datasources.label.selectTopOrgUnit',
-        defaultMessage: 'Please select top org unit',
+    selectOrgUnit: {
+        id: 'iaso.plannings.label.selectOrgUnit',
+        defaultMessage: 'Please select org unit',
+    },
+    duplicatePlanning: {
+        id: 'iaso.plannings.label.duplicatePlanning',
+        defaultMessage: 'Duplicate planning',
+    },
+    requiredField: {
+        id: 'iaso.forms.error.fieldRequired',
+        defaultMessage: 'This field is required',
     },
 });
 

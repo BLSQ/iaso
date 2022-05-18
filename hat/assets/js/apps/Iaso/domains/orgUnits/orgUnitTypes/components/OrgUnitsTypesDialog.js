@@ -34,14 +34,15 @@ export default function OrgUnitsTypesDialog({
         allProjects: state.projects.allProjects || [],
     }));
 
-    const [formState, setFieldValue, setFieldErrors] = useFormState({
-        id: orgUnitType.id,
-        name: orgUnitType.name,
-        short_name: orgUnitType.short_name,
-        depth: orgUnitType.depth,
-        sub_unit_type_ids: orgUnitType.sub_unit_types.map(unit => unit.id),
-        project_ids: orgUnitType.projects.map(project => project.id),
-    });
+    const [formState, setFieldValue, setFieldErrors, setFormState] =
+        useFormState({
+            id: orgUnitType.id,
+            name: orgUnitType.name,
+            short_name: orgUnitType.short_name,
+            project_ids: orgUnitType.projects.map(project => project.id),
+            depth: orgUnitType.depth,
+            sub_unit_type_ids: orgUnitType.sub_unit_types.map(unit => unit.id),
+        });
 
     const onChange = useCallback(
         (keyValue, value) => {
@@ -86,8 +87,19 @@ export default function OrgUnitsTypesDialog({
         [dispatch, setFieldErrors, formState],
     );
 
+    const resetForm = () => {
+        setFormState({
+            id: null,
+            name: '',
+            short_name: '',
+            project_ids: [],
+            depth: null,
+            sub_unit_type_ids: [],
+        });
+    };
+
     const subUnitTypes = allOrgUnitTypes.filter(
-        s => s.id !== formState.id.value,
+        subUnit => subUnit.id !== formState.id.value,
     );
 
     return (
@@ -95,6 +107,10 @@ export default function OrgUnitsTypesDialog({
             id="OuTypes-modal"
             titleMessage={titleMessage}
             onConfirm={onConfirm}
+            onCancel={closeDialog => {
+                closeDialog();
+                resetForm();
+            }}
             cancelMessage={MESSAGES.cancel}
             confirmMessage={MESSAGES.save}
             allowConfirm={isFormValid(requiredFields, formState)}
@@ -164,9 +180,9 @@ export default function OrgUnitsTypesDialog({
                     value={formState.sub_unit_type_ids.value}
                     errors={formState.sub_unit_type_ids.errors}
                     type="select"
-                    options={subUnitTypes.map(ot => ({
-                        value: ot.id,
-                        label: ot.name,
+                    options={subUnitTypes.map(orgunitType => ({
+                        value: orgunitType.id,
+                        label: orgunitType.name,
                     }))}
                     label={MESSAGES.subUnitTypes}
                 />
@@ -185,8 +201,8 @@ OrgUnitsTypesDialog.defaultProps = {
         id: null,
         name: '',
         short_name: '',
-        sub_unit_types: [],
         projects: [],
         depth: 0,
+        sub_unit_types: [],
     },
 };

@@ -25,6 +25,7 @@ import { OrgUnitTreeviewModal } from '../../orgUnits/components/TreeView/OrgUnit
 import { usePlanningValidation } from '../validation';
 import { commaSeparatedIdsToArray } from '../../../utils/forms';
 import { IntlFormatMessage } from '../../../types/intl';
+import { useGetProjectsDropDown } from '../hooks/requests/useGetProjectsDropDown';
 
 type ModalMode = 'create' | 'edit' | 'copy';
 
@@ -81,11 +82,15 @@ export const CreateEditPlanning: FunctionComponent<Props> = ({
     selectedOrgUnit,
     selectedTeam,
     forms,
+    project,
+    description,
     publishingStatus,
 }) => {
     const { formatMessage } = useSafeIntl();
     const { data: formsDropdown, isFetching: isFetchingForms } = useGetForms();
     const { data: teamsDropdown, isFetching: isFetchingTeams } = useGetTeams();
+    const { data: projectsDropdown, isFetching: isFetchingProjects } =
+        useGetProjectsDropDown();
     // Tried the typescript integration, but Type casting was crap
     const schema = usePlanningValidation();
     const { mutateAsync: savePlanning } = useSavePlanning(type);
@@ -101,6 +106,8 @@ export const CreateEditPlanning: FunctionComponent<Props> = ({
             selectedOrgUnit,
             selectedTeam,
             forms,
+            project,
+            description,
             publishingStatus: publishingStatus ?? 'draft',
         },
         enableReinitialize: true,
@@ -131,6 +138,8 @@ export const CreateEditPlanning: FunctionComponent<Props> = ({
         },
         [errors, touched],
     );
+    console.log('errors', getErrors('forms'), errors);
+    console.log('values', values.forms);
     const titleMessage = formatTitle(type, formatMessage);
     return (
         <FormikProvider value={formik}>
@@ -156,12 +165,7 @@ export const CreateEditPlanning: FunctionComponent<Props> = ({
                         <Grid xs={6} item>
                             <InputComponent
                                 keyValue="name"
-                                onChange={(keyValue, value) => {
-                                    setFieldTouched(keyValue, true);
-                                    const errorableValue =
-                                        value !== '' ? value : null;
-                                    setFieldValue(keyValue, errorableValue);
-                                }}
+                                onChange={onChange}
                                 value={values.name}
                                 errors={getErrors('name')}
                                 type="text"
@@ -183,6 +187,31 @@ export const CreateEditPlanning: FunctionComponent<Props> = ({
                             />
                         </Grid>
                     </Grid>
+                    <Grid container item spacing={2}>
+                        <Grid xs={6} item>
+                            <InputComponent
+                                keyValue="description"
+                                onChange={onChange}
+                                value={values.description}
+                                errors={getErrors('description')}
+                                type="text"
+                                label={MESSAGES.description}
+                            />
+                        </Grid>
+                        <Grid xs={6} item>
+                            <InputComponent
+                                type="select"
+                                keyValue="project"
+                                onChange={onChange}
+                                value={values.project}
+                                errors={getErrors('project')}
+                                label={MESSAGES.project}
+                                required
+                                options={projectsDropdown}
+                                loading={isFetchingProjects}
+                            />
+                        </Grid>
+                    </Grid>
                     <Grid item xs={12}>
                         <DatesRange
                             onChangeDate={onChange}
@@ -200,10 +229,13 @@ export const CreateEditPlanning: FunctionComponent<Props> = ({
                                 type="select"
                                 keyValue="forms"
                                 onChange={(keyValue, value) => {
+                                    // onChange(keyValue, value);
                                     setFieldTouched(keyValue, true);
                                     setFieldValue(
                                         keyValue,
-                                        commaSeparatedIdsToArray(value),
+                                        value
+                                            ? commaSeparatedIdsToArray(value)
+                                            : value,
                                     );
                                 }}
                                 value={values.forms}
@@ -225,11 +257,7 @@ export const CreateEditPlanning: FunctionComponent<Props> = ({
                                             const selectedIds = value.map(
                                                 orgUnit => orgUnit.id,
                                             );
-                                            setFieldTouched(
-                                                'selectedOrgUnit',
-                                                true,
-                                            );
-                                            setFieldValue(
+                                            onChange(
                                                 'selectedOrgUnit',
                                                 selectedIds.length > 0
                                                     ? selectedIds

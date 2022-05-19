@@ -10,6 +10,8 @@ export type SavePlanningQuery = {
     forms: number[];
     selectedOrgUnit: number[];
     selectedTeam: number;
+    description?: string;
+    project: number;
     publishingStatus: 'published' | 'draft';
 };
 

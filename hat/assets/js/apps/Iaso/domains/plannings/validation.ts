@@ -23,13 +23,9 @@ export const usePlanningValidation = () => {
                 endDate: date().transform(parseStringTodate),
                 description: string().nullable(),
                 project: number().nullable().required(errorMessage),
-                forms: array(number())
-                    .nullable()
-                    .min(1, errorMessage)
-                    .required(errorMessage), // this may be causing bugs with multi select, or have to be reconverted into array before being sent to the api
-                selectedOrgUnit: number()
-                    .nullable()
-                    .required(errorMessage),
+                // Specifying array().of(number()) will cause a bug where the error won't show until you ût another field in error
+                forms: array().min(1, errorMessage),
+                selectedOrgUnit: number().nullable().required(errorMessage),
                 selectedTeam: number().nullable().required(errorMessage),
                 publishingStatus: mixed()
                     .oneOf(['draft', 'published'])

@@ -1,10 +1,5 @@
 import React, { FunctionComponent, useCallback, useMemo } from 'react';
-import {
-    AddButton,
-    useSafeIntl,
-    IconButton,
-    FormControl,
-} from 'bluesquare-components';
+import { AddButton, useSafeIntl, IconButton } from 'bluesquare-components';
 import FileCopyIcon from '@material-ui/icons/FileCopy';
 import { useFormik, FormikProvider } from 'formik';
 import { isEqual } from 'lodash';
@@ -138,9 +133,6 @@ export const CreateEditPlanning: FunctionComponent<Props> = ({
         },
         [errors, touched],
     );
-    // console.log('errors', getErrors('forms'), errors);
-    console.log('values', values);
-    // console.log("passing down", getErrors("selectedOrgUnit"))
     const titleMessage = formatTitle(type, formatMessage);
     return (
         <FormikProvider value={formik}>
@@ -230,12 +222,9 @@ export const CreateEditPlanning: FunctionComponent<Props> = ({
                                 type="select"
                                 keyValue="forms"
                                 onChange={(keyValue, value) => {
-                                    setFieldTouched(keyValue, true);
-                                    setFieldValue(
+                                    onChange(
                                         keyValue,
-                                        value
-                                            ? commaSeparatedIdsToArray(value)
-                                            : value,
+                                        commaSeparatedIdsToArray(value),
                                     );
                                 }}
                                 value={values.forms}
@@ -249,21 +238,26 @@ export const CreateEditPlanning: FunctionComponent<Props> = ({
                         </Grid>
                         <Grid xs={6} item>
                             <Box mt={1}>
-                                    <OrgUnitTreeviewModal
-                                        onConfirm={value => {
-                                            const parsedValue = value?parseInt(value?.id,10):null
-                                            onChange('selectedOrgUnit',parsedValue);
-                                        }}
-                                        titleMessage={formatMessage(
-                                            MESSAGES.selectOrgUnit,
-                                        )}
-                                        required
-                                        clearable
-                                        hardReset
-                                        showStatusIconInTree={false}
-                                        showStatusIconInPicker={false}
-                                        errors={getErrors('selectedOrgUnit')}
-                                    />
+                                <OrgUnitTreeviewModal
+                                    onConfirm={value => {
+                                        const parsedValue = value
+                                            ? parseInt(value?.id, 10)
+                                            : null;
+                                        onChange(
+                                            'selectedOrgUnit',
+                                            parsedValue,
+                                        );
+                                    }}
+                                    titleMessage={formatMessage(
+                                        MESSAGES.selectOrgUnit,
+                                    )}
+                                    required
+                                    clearable
+                                    hardReset
+                                    showStatusIconInTree={false}
+                                    showStatusIconInPicker={false}
+                                    errors={getErrors('selectedOrgUnit')}
+                                />
                             </Box>
                         </Grid>
                     </Grid>

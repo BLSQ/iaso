@@ -93,6 +93,10 @@ const MESSAGES = defineMessages({
         defaultMessage: 'Pages',
         id: 'iaso.label.pages',
     },
+    dhis2: {
+        defaultMessage: 'Go to DHIS2',
+        id: 'iaso.label.dhis2Link',
+    },
 });
 
 export default MESSAGES;

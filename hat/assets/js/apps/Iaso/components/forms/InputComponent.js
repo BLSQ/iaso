@@ -12,7 +12,7 @@ import {
     injectIntl,
     Select,
 } from 'bluesquare-components';
-import { FormControl, FormLabel } from '@material-ui/core';
+import { FormControl, FormLabel, Box } from '@material-ui/core';
 import MESSAGES from '../../domains/forms/messages';
 
 class InputComponent extends Component {
@@ -56,141 +56,147 @@ class InputComponent extends Component {
         const inputValue =
             value === null || typeof value === 'undefined' ? '' : value;
 
-        switch (type) {
-            case 'email':
-            case 'text':
-                return (
-                    <TextInput
-                        value={inputValue}
-                        keyValue={keyValue}
-                        label={labelText}
-                        withMarginTop={withMarginTop}
-                        errors={errors}
-                        required={required}
-                        multiline={multiline}
-                        disabled={disabled}
-                        onChange={input => {
-                            onChange(keyValue, input);
-                        }}
-                    />
-                );
-            case 'password':
-                return (
-                    <PasswordInput
-                        withMarginTop={withMarginTop}
-                        value={inputValue}
-                        keyValue={keyValue}
-                        errors={errors}
-                        label={labelText}
-                        required={required}
-                        multiline={multiline}
-                        disabled={disabled}
-                        onChange={input => {
-                            onChange(keyValue, input);
-                        }}
-                        onClick={() => this.toggleDisplayPassword()}
-                        displayPassword={displayPassword}
-                        tooltipMessage={formatMessage(MESSAGES.displayPassword)}
-                    />
-                );
-            case 'number':
-                // TODO remove inputValue if not needed for number
-                return (
-                    <NumberInput
-                        value={inputValue}
-                        keyValue={keyValue}
-                        label={labelText}
-                        withMarginTop={withMarginTop}
-                        errors={errors}
-                        required={required}
-                        multiline={multiline}
-                        disabled={disabled}
-                        onChange={input => {
-                            onChange(keyValue, input);
-                        }}
-                    />
-                );
-            case 'select':
-                return (
-                    <Select
-                        errors={errors}
-                        keyValue={keyValue}
-                        label={labelText}
-                        required={required}
-                        disabled={disabled}
-                        loading={loading}
-                        clearable={clearable}
-                        multi={multi}
-                        value={value}
-                        renderOption={renderOption}
-                        getOptionLabel={getOptionLabel}
-                        getOptionSelected={getOptionSelected}
-                        options={translateOptions(options, formatMessage)}
-                        onChange={newValue => {
-                            onChange(keyValue, newValue);
-                        }}
-                    />
-                );
-            case 'arrayInput':
-                // TODO: implement required, errors...
-                return (
-                    <ArrayFieldInput
-                        label={labelText}
-                        fieldList={value}
-                        name={keyValue}
-                        baseId={keyValue}
-                        updateList={list => onChange(keyValue, list)}
-                    />
-                );
-            case 'search':
-                // TODO investigate isFocused prop. It doesn't seem tyo do anything
-                return (
-                    <SearchInput
-                        uid={uid}
-                        withMarginTop={withMarginTop}
-                        keyValue={keyValue}
-                        label={labelText}
-                        required={required}
-                        errors={errors}
-                        disabled={disabled}
-                        onEnterPressed={onEnterPressed}
-                        isFocused={isFocused}
-                        onChange={newValue => onChange(keyValue, newValue)}
-                        value={value}
-                    />
-                );
-            case 'checkbox':
-                return (
-                    <Checkbox
-                        keyValue={keyValue}
-                        disabled={disabled}
-                        onChange={newValue => onChange(keyValue, newValue)}
-                        value={value}
-                        label={labelText}
-                    />
-                );
-            case 'radio':
-                return (
-                    <FormControl
-                        component="fieldset"
-                        error={errors.length > 0}
-                        variant="outlined"
-                    >
-                        <FormLabel style={{ fontSize: 12 }} component="legend">
-                            {labelText}
-                        </FormLabel>
-                        <Radio
-                            className={className}
+        const renderInput = () => {
+            switch (type) {
+                case 'email':
+                case 'text':
+                    return (
+                        <TextInput
+                            value={inputValue}
+                            keyValue={keyValue}
+                            label={labelText}
+                            errors={errors}
+                            required={required}
+                            multiline={multiline}
+                            disabled={disabled}
+                            onChange={input => {
+                                onChange(keyValue, input);
+                            }}
+                        />
+                    );
+                case 'password':
+                    return (
+                        <PasswordInput
+                            value={inputValue}
+                            keyValue={keyValue}
+                            errors={errors}
+                            label={labelText}
+                            required={required}
+                            multiline={multiline}
+                            disabled={disabled}
+                            onChange={input => {
+                                onChange(keyValue, input);
+                            }}
+                            onClick={() => this.toggleDisplayPassword()}
+                            displayPassword={displayPassword}
+                            tooltipMessage={formatMessage(
+                                MESSAGES.displayPassword,
+                            )}
+                        />
+                    );
+                case 'number':
+                    // TODO remove inputValue if not needed for number
+                    return (
+                        <NumberInput
+                            value={inputValue}
+                            keyValue={keyValue}
+                            label={labelText}
+                            errors={errors}
+                            required={required}
+                            multiline={multiline}
+                            disabled={disabled}
+                            onChange={input => {
+                                onChange(keyValue, input);
+                            }}
+                        />
+                    );
+                case 'select':
+                    return (
+                        <Select
+                            errors={errors}
+                            keyValue={keyValue}
+                            label={labelText}
+                            required={required}
+                            disabled={disabled}
+                            loading={loading}
+                            clearable={clearable}
+                            multi={multi}
+                            value={value}
+                            renderOption={renderOption}
+                            getOptionLabel={getOptionLabel}
+                            getOptionSelected={getOptionSelected}
+                            options={translateOptions(options, formatMessage)}
+                            onChange={newValue => {
+                                onChange(keyValue, newValue);
+                            }}
+                        />
+                    );
+                case 'arrayInput':
+                    // TODO: implement required, errors...
+                    return (
+                        <ArrayFieldInput
+                            label={labelText}
+                            fieldList={value}
                             name={keyValue}
+                            baseId={keyValue}
+                            updateList={list => onChange(keyValue, list)}
+                        />
+                    );
+                case 'search':
+                    // TODO investigate isFocused prop. It doesn't seem tyo do anything
+                    return (
+                        <SearchInput
+                            uid={uid}
+                            keyValue={keyValue}
+                            label={labelText}
+                            required={required}
+                            errors={errors}
+                            disabled={disabled}
+                            onEnterPressed={onEnterPressed}
+                            isFocused={isFocused}
                             onChange={newValue => onChange(keyValue, newValue)}
-                            options={options}
                             value={value}
                         />
-                    </FormControl>
-                );
-            default:
-                return null;
-        }
+                    );
+                case 'checkbox':
+                    return (
+                        <Checkbox
+                            keyValue={keyValue}
+                            disabled={disabled}
+                            onChange={newValue => onChange(keyValue, newValue)}
+                            value={value}
+                            label={labelText}
+                        />
+                    );
+                case 'radio':
+                    return (
+                        <FormControl
+                            component="fieldset"
+                            error={errors.length > 0}
+                            variant="outlined"
+                        >
+                            <FormLabel
+                                style={{ fontSize: 12 }}
+                                component="legend"
+                            >
+                                {labelText}
+                            </FormLabel>
+                            <Radio
+                                className={className}
+                                name={keyValue}
+                                onChange={newValue =>
+                                    onChange(keyValue, newValue)
+                                }
+                                options={options}
+                                value={value}
+                            />
+                        </FormControl>
+                    );
+                default:
+                    return null;
+            }
+        };
+        return <Box mt={withMarginTop ? 2 : 0}>{renderInput()}</Box>;
     }
 }
 InputComponent.defaultProps = {

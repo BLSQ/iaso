@@ -14,7 +14,8 @@ import {
 export const RiskAssessmentForm = () => {
     const classes = useStyles();
     const { formatMessage } = useSafeIntl();
-    useFormikContext();
+    const { values } = useFormikContext();
+    const { rounds = [] } = values;
 
     return (
         <>
@@ -78,24 +79,28 @@ export const RiskAssessmentForm = () => {
                         component={DateInput}
                         fullWidth
                     />
-                    <Field
-                        label={formatMessage(MESSAGES.targetpopulationRoundOne)}
-                        name="round_one.target_population"
-                        component={TextInput}
-                        className={classes.input}
-                    />
-                    <Field
-                        label={formatMessage(MESSAGES.targetpopulationRoundTwo)}
-                        name="round_two.target_population"
-                        component={TextInput}
-                        className={classes.input}
-                    />
+
                     <Field
                         label={formatMessage(MESSAGES.dosesRequested)}
                         name="doses_requested"
                         component={TextInput}
                         className={classes.input}
                     />
+                </Grid>
+                <Grid item md={6}>
+                    {rounds.map((round, i) => {
+                        return (
+                            <Field
+                                key={round.number}
+                                label={`${formatMessage(
+                                    MESSAGES.targetpopulationRound,
+                                )} ${round.number}`}
+                                name={`rounds[${i}].target_population`}
+                                component={TextInput}
+                                className={classes.input}
+                            />
+                        );
+                    })}
                 </Grid>
             </Grid>
         </>

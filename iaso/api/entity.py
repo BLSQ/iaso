@@ -21,7 +21,7 @@ class EntityTypeSerializer(serializers.ModelSerializer):
             "name",
             "created_at",
             "updated_at",
-            "defining_form",
+            "reference_form",
             "entities_count",
         ]
 

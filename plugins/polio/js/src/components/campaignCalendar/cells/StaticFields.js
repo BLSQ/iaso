@@ -4,13 +4,15 @@ import classnames from 'classnames';
 
 import { TableCell } from '@material-ui/core';
 
-import { colSpanTitle, staticFields } from '../constants';
+import { colSpanTitle } from '../constants';
 import { useStyles } from '../Styles';
+import { useStaticFields } from '../../../hooks/useStaticFields';
 
 const StaticFieldsCells = ({ campaign }) => {
     const classes = useStyles();
     const defaultCellStyles = [classes.tableCell, classes.tableCellBordered];
-    return staticFields.map(field => (
+    const fields = useStaticFields();
+    return fields.map(field => (
         <TableCell
             key={field.key}
             colSpan={colSpanTitle}

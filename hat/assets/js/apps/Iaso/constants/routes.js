@@ -27,7 +27,7 @@ import { capitalize } from '../utils/index';
 import { linksFiltersWithPrefix, orgUnitFiltersWithPrefix } from './filters';
 import Pages from '../domains/pages';
 
-import { SHOW_PAGES } from '../utils/featureFlags';
+import { SHOW_PAGES, SHOW_DHIS2_LINK } from '../utils/featureFlags';
 import { paginationPathParams } from '../routing/common';
 
 const paginationPathParamsWithPrefix = prefix =>
@@ -311,7 +311,7 @@ export const orgUnitsDetailsPath = {
         },
         {
           isRequired: false,
-          key: "formDefiningId"
+          key: "referenceFormId"
         },
         {
           isRequired: false,

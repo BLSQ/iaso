@@ -104,7 +104,8 @@ const PeriodPicker = ({
                     label={title}
                     clearMessage={MESSAGES.clear}
                     currentDate={activePeriodString}
-                    hasError={hasError}
+                    errors={hasError ? [''] : []}
+                    hideError
                     onChange={date =>
                         handleChange(
                             'day',

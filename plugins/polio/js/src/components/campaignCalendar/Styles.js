@@ -43,16 +43,12 @@ export const useStyles = makeStyles(theme => ({
         borderTop: `1px solid ${theme.palette.ligthGray.border}`,
     },
     tableCellTitle: {
-        width: '35px',
         padding: 0,
         margin: 0,
         position: 'sticky',
         height: cellHeight,
         borderLeft: `1px solid ${theme.palette.ligthGray.border}`,
         borderTop: `1px solid ${theme.palette.ligthGray.border}`,
-    },
-    tableCellTitleLarge: {
-        width: '45px',
     },
     tableCellTitleSmall: {
         width: '30px',
@@ -107,6 +103,9 @@ export const useStyles = makeStyles(theme => ({
         padding: theme.spacing(1),
         minWidth: 0,
     },
+    weeksCell: {
+        fontSize: 9,
+    },
     tableCellSpan: {
         position: 'absolute',
         display: 'flex',
@@ -125,6 +124,8 @@ export const useStyles = makeStyles(theme => ({
         paddingLeft: theme.spacing(2),
         paddingRight: theme.spacing(2),
         fontWeight: 'bold',
+        fontSize: 11,
+        lineHeight: '14px',
     },
     tableCellSpanWithPopOver: {
         cursor: 'pointer',
@@ -145,12 +146,6 @@ export const useStyles = makeStyles(theme => ({
         marginLeft: '85%',
         marginTop: theme.spacing(-1),
         marginBottom: theme.spacing(1),
-    },
-    helpIcon: {
-        position: 'absolute',
-        top: 4,
-        right: 4,
-        fontSize: 12,
     },
     mapLegend: {
         position: 'absolute',

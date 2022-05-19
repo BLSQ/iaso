@@ -105,7 +105,7 @@ class EntitiesAPITestCase(APITestCase):
 
         payload = {
             "name": "New Entity Type",
-            "defining_form": self.form_1.id,
+            "reference_form": self.form_1.id,
         }
 
         response = self.client.post("/api/entitytype/", data=payload, format="json")
@@ -117,7 +117,7 @@ class EntitiesAPITestCase(APITestCase):
 
         payload = {
             "name": "New Entity Type",
-            "defining_form": self.form_1.id,
+            "reference_form": self.form_1.id,
         }
 
         self.client.post("/api/entitytype/", data=payload, format="json")
@@ -131,14 +131,14 @@ class EntitiesAPITestCase(APITestCase):
 
         post_payload = {
             "name": "New Entity Type",
-            "defining_form": self.form_1.id,
+            "reference_form": self.form_1.id,
         }
 
         self.client.post("/api/entitytype/", data=post_payload, format="json")
 
         post_payload = {
             "name": "New Entity Type-2",
-            "defining_form": self.form_1.id,
+            "reference_form": self.form_1.id,
         }
 
         response = self.client.patch(

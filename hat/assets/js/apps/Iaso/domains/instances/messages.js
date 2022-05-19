@@ -61,9 +61,9 @@ const MESSAGES = defineMessages({
         id: 'iaso.label.viewOrgUnit',
         defaultMessage: 'View Org Unit',
     },
-    linkOrgUnitInstanceDefining: {
-        id: 'iaso.label.linkOrgUnitInstanceDefining',
-        defaultMessage: 'Link instance defining to org unit',
+    linkOrgUnitReferenceSubmission: {
+        id: 'iaso.label.linkOrgUnitReferenceSubmission',
+        defaultMessage: 'Link reference submission to org unit',
     },
     dhis2Mappings: {
         id: 'iaso.label.dhis2Mappings',
@@ -370,7 +370,7 @@ const MESSAGES = defineMessages({
         defaultMessage: 'Device ownership',
     },
     showDeleted: {
-        id: 'iaso.forms.showDeleted',
+        id: 'iaso.instances.showDeleted',
         defaultMessage: 'Show deleted',
     },
     org_unit_type_id: {

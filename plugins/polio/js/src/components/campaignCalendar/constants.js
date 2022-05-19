@@ -1,10 +1,22 @@
+import React from 'react';
+import moment from 'moment';
 import { apiDateFormat } from 'Iaso/utils/dates';
 
+import { EditCampaignCell } from './cells/EditCampaignCell';
+
+const defaultStaticColWidth = 45;
 const colsCount = 16;
+const defaultCampaignLength = 6;
 const dateFormat = apiDateFormat;
 const colSpanTitle = 21;
 const defaultOrder = 'round_one__started_at';
 const staticFields = [
+    {
+        width: 16,
+        key: 'edit',
+        hideHeadTitle: true,
+        render: campaign => <EditCampaignCell campaign={campaign} />,
+    },
     {
         key: 'country',
         sortKey: 'country__name',
@@ -16,9 +28,24 @@ const staticFields = [
     {
         key: 'r1StartDate',
         sortKey: 'round_one__started_at',
-        render: campaign =>
-            campaign.R1Start ? campaign.R1Start.format('L') : '',
+        render: campaign => {
+            const roundOne =
+                campaign.rounds &&
+                campaign.rounds.find(round => round.number === 1);
+            if (roundOne && roundOne.started_at) {
+                return moment(roundOne.started_at).format('L');
+            }
+            return '-';
+        },
     },
 ];
 
-export { colsCount, dateFormat, colSpanTitle, staticFields, defaultOrder };
+export {
+    colsCount,
+    dateFormat,
+    colSpanTitle,
+    staticFields,
+    defaultOrder,
+    defaultCampaignLength,
+    defaultStaticColWidth,
+};

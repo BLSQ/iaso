@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { Grid, Typography, Box } from '@material-ui/core';
 import { Field, useFormikContext } from 'formik';
 import { useSafeIntl } from 'bluesquare-components';
@@ -13,50 +13,40 @@ import {
 } from '../components/Inputs';
 
 const defaultToZero = value => (value === '' ? 0 : value);
+const getRoundData = round => {
+    const cost = parseInt(defaultToZero(round.cost ?? 0), 10);
+    const population = parseInt(
+        defaultToZero(round.target_population ?? 0),
+        10,
+    );
+    const calculateRound = cost > 0 && population > 0;
+    return {
+        cost,
+        population,
+        calculateRound: cost > 0 && population > 0,
+        costRoundPerChild: calculateRound ? (cost / population).toFixed(2) : 0,
+    };
+};
 
 export const BudgetForm = () => {
     const classes = useStyles();
     const { formatMessage } = useSafeIntl();
 
     const { values } = useFormikContext();
+    const { rounds = [] } = values;
 
-    const round1Cost = parseInt(
-        defaultToZero(values?.round_one?.cost ?? 0),
-        10,
-    );
-    const round2Cost = parseInt(
-        defaultToZero(values?.round_two?.cost ?? 0),
-        10,
-    );
-
-    const round1Population = parseInt(
-        defaultToZero(values?.round_one?.target_population ?? 0),
-        10,
-    );
-    const round2Population = parseInt(
-        defaultToZero(values?.round_two?.target_population ?? 0),
-        10,
-    );
-
-    const calculateRound1 = round1Cost > 0 && round1Population > 0;
-    const calculateRound2 = round2Cost > 0 && round2Population > 0;
-
-    const totalCost =
-        (calculateRound1 ? round1Cost : 0) + (calculateRound2 ? round2Cost : 0);
-
-    const totalPopulation =
-        (calculateRound1 ? round1Population : 0) +
-        (calculateRound2 ? round2Population : 0);
-
-    const costRound1PerChild = calculateRound1
-        ? (round1Cost / round1Population).toFixed(2)
-        : 0;
-
-    const costRound2PerChild = calculateRound2
-        ? (round2Cost / round2Population).toFixed(2)
-        : 0;
-
-    const totalCostPerChild = (totalCost / totalPopulation).toFixed(2);
+    const totalCostPerChild = useMemo(() => {
+        let totalCost = 0;
+        let totalPopulation = 0;
+        rounds.forEach(r => {
+            const roundData = getRoundData(r);
+            totalCost += roundData.calculateRound ? roundData.cost : 0;
+            totalPopulation += roundData.calculateRound
+                ? roundData.population
+                : 0;
+        });
+        return totalPopulation ? (totalCost / totalPopulation).toFixed(2) : '-';
+    }, [rounds]);
 
     return (
         <>
@@ -146,33 +136,36 @@ export const BudgetForm = () => {
                         className={classes.input}
                     />
 
-                    <Field
-                        label={formatMessage(MESSAGES.costRoundOne)}
-                        name="round_one.cost"
-                        component={TextInput}
-                        className={classes.input}
-                    />
+                    {rounds.map((round, i) => {
+                        const roundData = getRoundData(round);
+                        return (
+                            <Box key={round.number}>
+                                <Field
+                                    label={`${formatMessage(
+                                        MESSAGES.costRound,
+                                    )} ${round.number}`}
+                                    name={`rounds[${i}].cost`}
+                                    component={TextInput}
+                                    className={classes.input}
+                                />
+                                <Box mb={2}>
+                                    <Typography>
+                                        {formatMessage(
+                                            MESSAGES.costPerChildRound,
+                                        )}
+                                        {` ${round.number}: $`}
+                                        {roundData.calculateRound
+                                            ? roundData.costRoundPerChild
+                                            : ' -'}
+                                    </Typography>
+                                </Box>
+                            </Box>
+                        );
+                    })}
 
-                    <Field
-                        label={formatMessage(MESSAGES.costRoundTwo)}
-                        name="round_two.cost"
-                        component={TextInput}
-                        className={classes.input}
-                    />
-
                     <Typography>
-                        {formatMessage(MESSAGES.costPerChildRoundOne)}
-                        {calculateRound1 ? costRound1PerChild : ' -'}
-                    </Typography>
-                    <Typography>
-                        {formatMessage(MESSAGES.costPerChildRoundTwo)}
-                        {calculateRound2 ? costRound2PerChild : ' -'}
-                    </Typography>
-                    <Typography>
-                        {formatMessage(MESSAGES.costPerChildTotal)}
-                        {calculateRound1 || calculateRound2
-                            ? totalCostPerChild
-                            : ' -'}
+                        {formatMessage(MESSAGES.costPerChildTotal)}: $
+                        {totalCostPerChild}
                     </Typography>
                 </Grid>
             </Grid>

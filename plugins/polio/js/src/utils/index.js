@@ -1,15 +1,11 @@
+import { accessArrayRound } from './LqasIm.tsx';
+
 export const findDataForShape = ({ shape, data, round, campaign }) => {
     if (!data || !data[campaign]) return null;
-    const dataForRound = data[campaign][round];
+    const dataForRound = accessArrayRound(data[campaign], round);
     const result = dataForRound.filter(d => d.district === shape.id)[0];
     return result;
 };
-// export const findShapeForData = ({ shape, data, round, campaign }) => {
-//     if (!data || !data[campaign]) return null;
-//     const dataForRound = data[campaign][round];
-//     const result = dataForRound.filter(d => d.district === shape.id)[0];
-//     return result;
-// };
 
 // TODO have exhaustive sorting function
 export const sortCampaignNames = (nameA, nameB) => {
@@ -120,3 +116,7 @@ export const convertObjectToString = value =>
     Object.entries(value)
         .map(([key, entry]) => `${key}-${String(entry)}`)
         .toString();
+
+export const findCampaignRound = (campaign, round) => {
+    return campaign.rounds.find(rnd => rnd.number === round);
+};

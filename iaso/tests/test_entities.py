@@ -85,7 +85,7 @@ class EntityAPITestCase(APITestCase):
     def test_create_single_entity(self):
         self.client.force_authenticate(self.yoda)
 
-        entity_type = EntityType.objects.create(name="Type 1", defining_form=self.form_1)
+        entity_type = EntityType.objects.create(name="Type 1", reference_form=self.form_1)
 
         instance = Instance.objects.create(
             org_unit=self.jedi_council_corruscant,
@@ -107,7 +107,7 @@ class EntityAPITestCase(APITestCase):
     def test_create_multiples_entity(self):
         self.client.force_authenticate(self.yoda)
 
-        entity_type = EntityType.objects.create(name="Type 1", defining_form=self.form_1)
+        entity_type = EntityType.objects.create(name="Type 1", reference_form=self.form_1)
 
         instance = Instance.objects.create(
             org_unit=self.jedi_council_corruscant, form=self.form_1, period="202002", uuid=uuid.uuid4()
@@ -137,7 +137,7 @@ class EntityAPITestCase(APITestCase):
     def test_create_entity_same_attributes(self):
         self.client.force_authenticate(self.yoda)
 
-        entity_type = EntityType.objects.create(name="Type 1", defining_form=self.form_1)
+        entity_type = EntityType.objects.create(name="Type 1", reference_form=self.form_1)
 
         instance = Instance.objects.create(
             org_unit=self.jedi_council_corruscant, form=self.form_1, period="202002", uuid=uuid.uuid4()
@@ -162,7 +162,7 @@ class EntityAPITestCase(APITestCase):
     def test_retrieve_entity(self):
         self.client.force_authenticate(self.yoda)
 
-        entity_type = EntityType.objects.create(name="Type 1", defining_form=self.form_1)
+        entity_type = EntityType.objects.create(name="Type 1", reference_form=self.form_1)
 
         instance = Instance.objects.create(
             org_unit=self.jedi_council_corruscant, form=self.form_1, period="202002", uuid=uuid.uuid4()
@@ -194,7 +194,7 @@ class EntityAPITestCase(APITestCase):
     def test_get_entity_by_id(self):
         self.client.force_authenticate(self.yoda)
 
-        entity_type = EntityType.objects.create(name="Type 1", defining_form=self.form_1)
+        entity_type = EntityType.objects.create(name="Type 1", reference_form=self.form_1)
 
         instance = Instance.objects.create(
             org_unit=self.jedi_council_corruscant,
@@ -218,7 +218,7 @@ class EntityAPITestCase(APITestCase):
 
     def test_handle_wrong_attributes(self):
         self.client.force_authenticate(self.yoda)
-        entity_type = EntityType.objects.create(name="Type 1", defining_form=self.form_1)
+        entity_type = EntityType.objects.create(name="Type 1", reference_form=self.form_1)
 
         payload = {
             "name": "New Client",
@@ -234,7 +234,7 @@ class EntityAPITestCase(APITestCase):
     def test_update_entity(self):
         self.client.force_authenticate(self.yoda)
 
-        entity_type = EntityType.objects.create(name="Type 1", defining_form=self.form_1)
+        entity_type = EntityType.objects.create(name="Type 1", reference_form=self.form_1)
 
         instance = Instance.objects.create(
             org_unit=self.jedi_council_corruscant, form=self.form_1, period="202002", uuid=uuid.uuid4()
@@ -258,7 +258,7 @@ class EntityAPITestCase(APITestCase):
     def test_retrieve_only_non_deleted_entity(self):
         self.client.force_authenticate(self.yoda)
 
-        entity_type = EntityType.objects.create(name="Type 1", defining_form=self.form_1)
+        entity_type = EntityType.objects.create(name="Type 1", reference_form=self.form_1)
 
         instance = Instance.objects.create(
             org_unit=self.jedi_council_corruscant, form=self.form_1, period="202002", uuid=uuid.uuid4()
@@ -291,7 +291,7 @@ class EntityAPITestCase(APITestCase):
     def test_cant_create_entity_without_attributes(self):
         self.client.force_authenticate(self.yoda)
 
-        entity_type = EntityType.objects.create(name="Type 1", defining_form=self.form_1)
+        entity_type = EntityType.objects.create(name="Type 1", reference_form=self.form_1)
 
         payload = {
             "name": "New Client",
@@ -307,7 +307,7 @@ class EntityAPITestCase(APITestCase):
     def test_retrieve_entity_only_same_account(self):
         self.client.force_authenticate(self.yoda)
 
-        entity_type = EntityType.objects.create(name="Type 1", defining_form=self.form_1)
+        entity_type = EntityType.objects.create(name="Type 1", reference_form=self.form_1)
 
         instance = Instance.objects.create(
             org_unit=self.jedi_council_corruscant,

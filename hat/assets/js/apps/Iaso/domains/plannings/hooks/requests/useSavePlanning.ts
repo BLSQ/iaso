@@ -8,8 +8,10 @@ export type SavePlanningQuery = {
     startDate: string;
     endDate: string;
     forms: number[];
-    selectedOrgUnits: number[];
+    selectedOrgUnit: number[];
     selectedTeam: number;
+    description?: string;
+    project: number;
     publishingStatus: 'published' | 'draft';
 };
 
@@ -35,7 +37,9 @@ const mockSavePlanning = async (body: Partial<SavePlanningQuery>) => {
     return makePlanning(body);
 };
 
-export const useSavePlanning = (type: 'create' | 'edit'): UseMutationResult => {
+export const useSavePlanning = (
+    type: 'create' | 'edit' | 'copy',
+): UseMutationResult => {
     // TODO replace with patch request
     const savePlanning = useSnackMutation(
         (data: Partial<SavePlanningQuery>) => mockSavePlanning(data),

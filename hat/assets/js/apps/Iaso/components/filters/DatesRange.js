@@ -99,7 +99,7 @@ const DatesRange = ({
                             onChange={date => {
                                 setFrom(date);
                                 onChangeDate(
-                                    'dateFrom',
+                                    keyDateFrom,
                                     date && date.isValid()
                                         ? date.format(dateFormat)
                                         : undefined,
@@ -114,7 +114,7 @@ const DatesRange = ({
                                     tooltipMessage={MESSAGES.clear}
                                     onClick={() => {
                                         setFrom('');
-                                        onChangeDate('dateFrom', undefined);
+                                        onChangeDate(keyDateFrom, undefined);
                                     }}
                                 />
                             </span>
@@ -156,7 +156,7 @@ const DatesRange = ({
                             onChange={date => {
                                 setTo(date);
                                 onChangeDate(
-                                    'dateTo',
+                                    keyDateTo,
                                     date && date.isValid()
                                         ? date.format(dateFormat)
                                         : undefined,
@@ -171,7 +171,7 @@ const DatesRange = ({
                                     tooltipMessage={MESSAGES.clear}
                                     onClick={() => {
                                         setTo('');
-                                        onChangeDate('dateTo', undefined);
+                                        onChangeDate(keyDateTo, undefined);
                                     }}
                                 />
                             </span>

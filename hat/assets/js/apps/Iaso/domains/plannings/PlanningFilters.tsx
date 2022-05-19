@@ -1,4 +1,4 @@
-import { Grid } from '@material-ui/core';
+import { Box, Grid } from '@material-ui/core';
 import React, { FunctionComponent } from 'react';
 import { useSafeIntl } from 'bluesquare-components';
 import { FilterButton } from '../../components/FilterButton';
@@ -41,7 +41,7 @@ export const PlanningFilters: FunctionComponent<Props> = ({ params }) => {
                         onEnterPressed={handleSearch}
                     />
                 </Grid>
-                <Grid item xs={3}>
+                <Grid item xs={4}>
                     <DatesRange
                         onChangeDate={handleChange}
                         dateFrom={filters.dateFrom}
@@ -62,11 +62,13 @@ export const PlanningFilters: FunctionComponent<Props> = ({ params }) => {
                         // loading={fetchingEntitytypes}
                     />
                 </Grid>
-                <Grid item xs={3}>
-                    <FilterButton
-                        disabled={!filtersUpdated}
-                        onFilter={handleSearch}
-                    />
+                <Grid container item xs={2} justifyContent="flex-end">
+                    <Box mt={2} mb={2} style={{ textAlign: 'end' }}>
+                        <FilterButton
+                            disabled={!filtersUpdated}
+                            onFilter={handleSearch}
+                        />
+                    </Box>
                 </Grid>
             </Grid>
         </>

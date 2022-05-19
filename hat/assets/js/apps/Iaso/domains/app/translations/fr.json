@@ -229,8 +229,19 @@
     "iaso.label.config": "Admin",
     "iaso.label.confirm": "Valider",
     "iaso.label.create": "Créer",
-    "iaso.label.createPlanning": "Créer un planning",
-    "iaso.label.created": "Création",
+    <<
+    <<
+    <<
+    <
+    HEAD "iaso.label.createPlanning": "Créer un planning",
+    ===
+    ===
+    =
+    "iaso.label.createPlanning": "Créer planning",
+    >>>
+    >>>
+    >
+    IA - 1209 _planning_creation "iaso.label.created": "Création",
     "iaso.label.created_at": "Création",
     "iaso.label.creationDateFrom": "Création à partir de",
     "iaso.label.creationDateTo": "Création jusqu'à",
@@ -249,6 +260,7 @@
     "iaso.label.deviceField": "Nom du champ \"device\"",
     "iaso.label.devices": "Appareils",
     "iaso.label.dhis2Id": "DHIS2 id",
+    "iaso.label.dhis2Link": "Aller sur DHIS2",
     "iaso.label.dhis2Mappings": "Correspondances avec DHIS2",
     "iaso.label.display": "Afficher",
     "iaso.label.displayPassword": "Afficher le mot de passe",
@@ -258,6 +270,7 @@
     "iaso.label.draft": "Ebauche",
     "iaso.label.duplicates": "Doublons",
     "iaso.label.edit": "Edition",
+    "iaso.label.editPlanning": "Editer planning",
     "iaso.label.email": "Email",
     "iaso.label.endPeriod": "Période de fin",
     "iaso.label.ended_at": "Fin",
@@ -299,6 +312,7 @@
     "iaso.label.launch": "Démarrer",
     "iaso.label.launched_at": "Exécution",
     "iaso.label.launcher": "Lanceur",
+    "iaso.label.linkOrgUnitReferenceSubmission": "Lier l'unité d'organisation à sa soumission de definition",
     "iaso.label.links": "Liens",
     "iaso.label.list": "Liste",
     "iaso.label.loading": "Chargement en cours",
@@ -336,7 +350,6 @@
     "iaso.label.origin": "Origine",
     "iaso.label.others": "Autres",
     "iaso.label.pages": "Pages",
-    "iaso.label.dhis2Link": "Aller sur DHIS2",
     "iaso.label.parent": "Parent direct",
     "iaso.label.parentOu": "Unité d'org. parent",
     "iaso.label.periodType": "Périodicité",
@@ -409,7 +422,6 @@
     "iaso.label.view": "Visualiser",
     "iaso.label.viewOrgUnit": "Voir l'unité d'org.",
     "iaso.label.viewPlanning": "Voir le planning",
-    "iaso.label.linkOrgUnitReferenceSubmission": "Lier l'unité d'organisation à sa soumission de definition",
     "iaso.label.with": "Avec",
     "iaso.label.withLocation": "Uniquement les points",
     "iaso.label.withShape": "Uniquement les territoires",
@@ -539,21 +551,27 @@
     "iaso.pages.title": "Pages",
     "iaso.periods.end": "Période de fin",
     "iaso.periods.start": "Période de début",
+    "iaso.permissions.assignments": "Attributions",
     "iaso.permissions.completeness": "Complétude des données",
     "iaso.permissions.dataTasks": "Tâches",
     "iaso.permissions.forms": "Formulaires",
+    "iaso.permissions.iaso_dhis2_link": "Lier avec DHIS2",
     "iaso.permissions.links": "Correspondances sources",
     "iaso.permissions.mappings": "Correspondances avec DHIS2",
     "iaso.permissions.orgUnits": "Unités d'org.",
     "iaso.permissions.pages": "Pages",
+    "iaso.permissions.planning": "Planning",
     "iaso.permissions.polio": "Gestion campagnes vaccination Polio",
     "iaso.permissions.polio_config": "Gestion campagnes vaccination Polio - configuration",
     "iaso.permissions.projects": "Projets",
     "iaso.permissions.sources": "Sources",
     "iaso.permissions.submissions": "Soumissions de formulaire",
+    "iaso.permissions.teams": "Equipes",
     "iaso.permissions.update_submission": "Editer soumissions",
     "iaso.permissions.users": "Utilisateurs",
     "iaso.planning.title": "Planning",
+    "iaso.plannings.label.duplicatePlanning": "Dupliquer planning",
+    "iaso.plannings.label.selectOrgUnit": "Sélectionner une unité d'org.",
     "iaso.projects.appId": "Identifiant de l'App",
     "iaso.projects.create": "Créer un projet",
     "iaso.projects.false": "L'utilisateur n'a pas besoin d'authentification",
@@ -727,11 +745,5 @@
     "map.draw.label.undo": "Revenir en arrière",
     "map.label.fitToBounds": "Centrer la carte",
     "map.label.zoom.box": "Dessiner un carré sur la carte pour agrandir une zone",
-    <<
-    << << < HEAD "map.label.zoom.info": "Niveau de zoom actuel"
-} ===
-=== =
-"map.label.zoom.info": "Niveau de zoom actuel",
-"PeriodSelectorComponent.label.apply": "Appliquer"
-} >>>
->>> > main
+    "map.label.zoom.info": "Niveau de zoom actuel"
+}

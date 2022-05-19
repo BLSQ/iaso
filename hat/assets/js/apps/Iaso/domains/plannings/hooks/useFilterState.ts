@@ -30,7 +30,7 @@ export const useFilterState = (
             tempParams.page = '1';
             dispatch(redirectTo(baseUrl, tempParams));
         }
-    }, [filtersUpdated, dispatch, filters, params]);
+    }, [filtersUpdated, params, filters, dispatch, baseUrl]);
 
     const handleChange = useCallback(
         (key, value) => {

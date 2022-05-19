@@ -143,12 +143,22 @@ class InstancesViewSet(viewsets.ViewSet):
                 if page_offset > paginator.num_pages:
                     page_offset = paginator.num_pages
                 page = paginator.page(page_offset)
+                # check if the instance is linked to an org unit
+                def has_org_unit(instance):
+                    return instance.org_unit if instance.org_unit else None
+
+                # It will check if the orgUnit is linked to an orgUnitType before getting the reference form id
+                def get_reference_form_id(org_unit):
+                    if org_unit.org_unit_type:
+                        return org_unit.org_unit_type.reference_form_id
+                    else:
+                        return None
 
                 def as_dict_formatter(x):
                     dict = x.as_dict()
-                    form_defining_id = x.org_unit.org_unit_type.form_defining_id
-                    if form_defining_id:
-                        dict["form_defining_id"] = form_defining_id
+                    reference_form_id = get_reference_form_id(x.org_unit) if has_org_unit(x) else None
+                    if reference_form_id:
+                        dict["reference_form_id"] = reference_form_id
                     return dict
 
                 res["instances"] = map(as_dict_formatter, page.object_list)
@@ -316,9 +326,9 @@ class InstancesViewSet(viewsets.ViewSet):
         )
         instance_serializer.is_valid(raise_exception=True)
 
-        if original.org_unit.instance_defining and original.org_unit_id != request.data["org_unit"]:
+        if original.org_unit.reference_instance and original.org_unit_id != request.data["org_unit"]:
             previousOrgUnit = original.org_unit
-            previousOrgUnit.instance_defining = None
+            previousOrgUnit.reference_instance = None
             previousOrgUnit.save()
 
         instance_serializer.save()

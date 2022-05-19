@@ -22,7 +22,7 @@ const style = theme => ({
     boldText: { fontWeight: 'bold' },
     alignTextLeft: { textAlign: 'left' },
 });
-
+// @ts-ignore
 const useStyles = makeStyles(style);
 
 export const ScopeAndDNFDisclaimer: FunctionComponent<Props> = ({

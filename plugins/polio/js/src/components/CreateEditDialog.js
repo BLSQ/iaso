@@ -1,5 +1,7 @@
 /* eslint-disable camelcase */
 import React, { useEffect, useState } from 'react';
+import PropTypes from 'prop-types';
+import isEqual from 'lodash/isEqual';
 
 import { FormikProvider, useFormik } from 'formik';
 import { merge } from 'lodash';
@@ -14,7 +16,8 @@ import {
     Tabs,
     Typography,
 } from '@material-ui/core';
-import { useSafeIntl } from 'bluesquare-components';
+
+import { useSafeIntl, LoadingSpinner } from 'bluesquare-components';
 import { convertEmptyStringToNull } from '../utils/convertEmptyStringToNull';
 import { PreparednessForm } from '../forms/PreparednessForm';
 import { useFormValidator } from '../hooks/useFormValidator';
@@ -23,16 +26,21 @@ import { DetectionForm } from '../forms/DetectionForm';
 import { RiskAssessmentForm } from '../forms/RiskAssessmentForm';
 import { ScopeForm } from '../forms/ScopeForm';
 import { BudgetForm } from '../forms/BudgetForm';
-import { Round1Form } from '../forms/Round1Form';
-import { Round2Form } from '../forms/Round2Form';
 import { Form } from '../forms/Form';
+import { RoundsForm } from '../forms/RoundsForm';
 import { useSaveCampaign } from '../hooks/useSaveCampaign';
 
 import { useStyles } from '../styles/theme';
 import MESSAGES from '../constants/messages';
 
-const CreateEditDialog = ({ isOpen, onClose, selectedCampaign }) => {
+const CreateEditDialog = ({
+    isOpen,
+    onClose,
+    selectedCampaign,
+    isFetching,
+}) => {
     const { mutate: saveCampaign } = useSaveCampaign();
+
     const schema = useFormValidator();
     const { formatMessage } = useSafeIntl();
 
@@ -41,7 +49,7 @@ const CreateEditDialog = ({ isOpen, onClose, selectedCampaign }) => {
     const handleSubmit = async (values, helpers) => {
         saveCampaign(convertEmptyStringToNull(values), {
             onSuccess: () => {
-                helpers.resetForm();
+                // helpers.resetForm();
                 onClose();
             },
             onError: error => {
@@ -51,8 +59,7 @@ const CreateEditDialog = ({ isOpen, onClose, selectedCampaign }) => {
     };
 
     const initialValues = {
-        round_one: {},
-        round_two: {},
+        rounds: [],
         group: {
             name: 'hidden group',
             org_units: [],
@@ -63,7 +70,12 @@ const CreateEditDialog = ({ isOpen, onClose, selectedCampaign }) => {
     };
 
     // Merge inplace default values with the one we get from the campaign.
-    merge(initialValues, selectedCampaign);
+    merge(initialValues, {
+        ...selectedCampaign,
+        rounds: selectedCampaign?.rounds
+            ? [...selectedCampaign.rounds].sort((a, b) => a.number - b.number)
+            : [],
+    });
 
     const formik = useFormik({
         initialValues,
@@ -99,12 +111,8 @@ const CreateEditDialog = ({ isOpen, onClose, selectedCampaign }) => {
             form: PreparednessForm,
         },
         {
-            title: formatMessage(MESSAGES.roundOne),
-            form: Round1Form,
-        },
-        {
-            title: formatMessage(MESSAGES.roundTwo),
-            form: Round2Form,
+            title: formatMessage(MESSAGES.rounds),
+            form: RoundsForm,
         },
     ];
 
@@ -120,6 +128,15 @@ const CreateEditDialog = ({ isOpen, onClose, selectedCampaign }) => {
     useEffect(() => {
         setSelectedTab(0);
     }, [isOpen]);
+
+    const [isFormChanged, setIsFormChanged] = useState(false);
+    useEffect(() => {
+        setIsFormChanged(!isEqual(formik.values, formik.initialValues));
+    }, [formik]);
+    const saveDisabled =
+        !isFormChanged ||
+        (isFormChanged && !formik.isValid) ||
+        formik.isSubmitting;
     return (
         <Dialog
             fullWidth
@@ -133,6 +150,7 @@ const CreateEditDialog = ({ isOpen, onClose, selectedCampaign }) => {
             scroll="body"
             className={classes.mainModal}
         >
+            {isFetching && <LoadingSpinner absolute />}
             <DialogTitle className={classes.title}>
                 {selectedCampaign?.id
                     ? formatMessage(MESSAGES.editCampaign)
@@ -182,7 +200,7 @@ const CreateEditDialog = ({ isOpen, onClose, selectedCampaign }) => {
                     color="primary"
                     variant="contained"
                     autoFocus
-                    disabled={!formik.isValid || formik.isSubmitting}
+                    disabled={saveDisabled}
                 >
                     {formatMessage(MESSAGES.confirm)}
                 </Button>
@@ -190,5 +208,18 @@ const CreateEditDialog = ({ isOpen, onClose, selectedCampaign }) => {
         </Dialog>
     );
 };
+
+CreateEditDialog.defaultProps = {
+    isFetching: false,
+    selectedCampaign: undefined,
+};
+
+CreateEditDialog.propTypes = {
+    isOpen: PropTypes.bool.isRequired,
+    onClose: PropTypes.func.isRequired,
+    selectedCampaign: PropTypes.object,
+    isFetching: PropTypes.bool,
+};
+
 // There's naming conflict with component in Iaso
 export { CreateEditDialog as PolioCreateEditDialog };

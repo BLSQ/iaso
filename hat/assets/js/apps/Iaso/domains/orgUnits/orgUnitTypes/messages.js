@@ -81,6 +81,10 @@ const MESSAGES = defineMessages({
         id: 'iaso.orgUnits.depthInfos',
         defaultMessage: 'Depth of the type in the hierarchy',
     },
+    requiredField: {
+        id: 'iaso.forms.error.fieldRequired',
+        defaultMessage: 'This field is required',
+    },
 });
 
 export default MESSAGES;

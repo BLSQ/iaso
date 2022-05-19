@@ -16,11 +16,14 @@ import ImportantDevicesRoundedIcon from '@material-ui/icons/ImportantDevicesRoun
 import BookIcon from '@material-ui/icons/Book';
 import AssessmentIcon from '@material-ui/icons/Assessment';
 import EnityIcon from '@material-ui/icons/Domain';
+import GroupIcon from '@material-ui/icons/Group';
+import AssignmentIcon from '@material-ui/icons/Assignment';
+import AssignmentIndIcon from '@material-ui/icons/AssignmentInd';
 
 import OrgUnitSvg from '../components/svg/OrgUnitSvgComponent';
 import DHIS2Svg from '../components/svg/DHIS2SvgComponent';
 import * as paths from './routes';
-import { hasFeatureFlag, SHOW_PAGES } from '../utils/featureFlags';
+import { hasFeatureFlag, SHOW_PAGES, SHOW_DHIS2_LINK } from '../utils/featureFlags';
 import { locationLimitMax } from '../domains/orgUnits/constants/orgUnitConstants';
 import { getChipColors } from './chipColors';
 
@@ -150,6 +153,31 @@ const menuItems = defaultSourceId => [
         ],
     },
     {
+        label: MESSAGES.planning,
+        key: 'planning',
+        icon: props => <AssignmentIcon {...props} />,
+        subMenu: [
+            {
+                label: MESSAGES.list,
+                permissions: paths.planningPath.permissions,
+                key: 'list',
+                icon: props => <FormatListBulleted {...props} />,
+            },
+            {
+                label: MESSAGES.teams,
+                permissions: paths.teamsPath.permissions,
+                key: 'teams',
+                icon: props => <GroupIcon {...props} />,
+            },
+            {
+                label: MESSAGES.assignments,
+                permissions: paths.assignmentsPath.permissions,
+                key: 'assignments',
+                icon: props => <AssignmentIndIcon {...props} />,
+            },
+        ],
+    },
+    {
         label: MESSAGES.config,
         key: 'settings',
         icon: props => <Settings {...props} />,
@@ -185,6 +213,7 @@ const menuItems = defaultSourceId => [
 const getMenuItems = (currentUser, enabledPlugins, defaultSourceVersion) => {
     const pluginsMenu = enabledPlugins.map(plugin => plugin.menu).flat();
     const basicItems = [...menuItems(defaultSourceVersion?.source?.id)];
+
     if (hasFeatureFlag(currentUser, SHOW_PAGES)) {
         basicItems.push({
             label: MESSAGES.pages,
@@ -192,6 +221,14 @@ const getMenuItems = (currentUser, enabledPlugins, defaultSourceVersion) => {
             icon: props => <BookIcon {...props} />,
             permissions: paths.pagesPath.permissions,
         });
+    }
+    if (hasFeatureFlag(currentUser, SHOW_DHIS2_LINK) && currentUser?.account?.default_version?.data_source.url) {
+      basicItems.push({
+        label: MESSAGES.dhis2,
+        key: "dhis2",
+        url: currentUser.account.default_version.data_source.url,
+        icon: props => <DHIS2Svg {...props} />,
+      });
     }
     return [...basicItems, ...pluginsMenu];
 };

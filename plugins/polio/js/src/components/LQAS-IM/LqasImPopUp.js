@@ -7,7 +7,7 @@ import {
 import { Popup } from 'react-leaflet';
 import PopupItemComponent from 'Iaso/components/maps/popups/PopupItemComponent';
 import { makeStyles, Card, CardContent } from '@material-ui/core';
-import { object, string } from 'prop-types';
+import { number, object, string } from 'prop-types';
 import MESSAGES from '../../constants/messages';
 import { findDataForShape } from '../../utils/index';
 
@@ -62,10 +62,22 @@ export const LqasImPopup = ({ shape, data, round, campaign }) => {
 LqasImPopup.propTypes = {
     shape: object.isRequired,
     data: object.isRequired,
-    round: string.isRequired,
+    round: number.isRequired,
     campaign: string,
 };
 
 LqasImPopup.defaultProps = {
     campaign: '',
 };
+export const makePopup =
+    (LQASData, round, campaign = '') =>
+    shape => {
+        return (
+            <LqasImPopup
+                shape={shape}
+                data={LQASData}
+                round={round}
+                campaign={campaign}
+            />
+        );
+    };

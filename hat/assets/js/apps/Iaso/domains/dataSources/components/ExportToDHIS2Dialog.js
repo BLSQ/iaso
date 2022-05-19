@@ -201,7 +201,7 @@ export const ExportToDHIS2Dialog = ({
                             />
                         </Grid>
                         <Grid xs={6} item>
-                            <Box mb={2}>
+                            <Box mb={2} mt={1}>
                                 <OrgUnitTreeviewModal
                                     onConfirm={value => {
                                         setExportDataField(
@@ -301,7 +301,7 @@ export const ExportToDHIS2Dialog = ({
                         />
                     </Grid>
                     <Grid xs={6} item>
-                        <Box mb={2}>
+                        <Box mb={2} mt={1}>
                             <OrgUnitTreeviewModal
                                 onConfirm={value => {
                                     setExportDataField(

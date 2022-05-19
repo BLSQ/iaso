@@ -113,7 +113,7 @@ const OrgUnitTreeviewModal = ({
 
     const searchOrgUnitsWithSource = useCallback(
         async (value, count) => {
-            return searchOrgUnits({value, count, source, version});
+            return searchOrgUnits({ value, count, source, version });
         },
         [source, version],
     );
@@ -200,7 +200,8 @@ const OrgUnitTreeviewModal = ({
                 onUpdate={onUpdate}
                 allowSelection={item => {
                     if (allowedTypes.length === 0) return true;
-                    if (allowedTypes.includes(item.org_unit_type_id)) return true;
+                    if (allowedTypes.includes(item.org_unit_type_id))
+                        return true;
                     return false;
                 }}
             />

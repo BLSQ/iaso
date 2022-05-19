@@ -1,6 +1,6 @@
 import React from 'react';
 import { IconButton } from 'bluesquare-components';
-import tableColumns from './config';
+import tableColumns from './config/tableColumns';
 import DeleteDialog from '../../../components/dialogs/DeleteDialogComponent';
 
 import OrgUnitsTypesDialog from './components/OrgUnitsTypesDialog';

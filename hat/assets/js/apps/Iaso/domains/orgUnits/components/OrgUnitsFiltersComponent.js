@@ -68,6 +68,16 @@ const extendFilter = (searchParams, filter, onChange, searchIndex) => ({
     callback: (value, urlKey) => onChange(value, urlKey),
 });
 
+const retrieveSourceFromVersionId = (versionId, sources) => {
+    const idAsNumber = parseInt(versionId, 10);
+    const result = sources.find(
+        src =>
+            src.versions.filter(srcVersion => srcVersion.id === idAsNumber)
+                .length > 0,
+    );
+    return result?.id;
+};
+
 const OrgUnitsFiltersComponent = ({
     params,
     baseUrl,
@@ -76,7 +86,10 @@ const OrgUnitsFiltersComponent = ({
     onSearch,
 }) => {
     const { formatMessage } = useSafeIntl();
-    const decodedSearches = [...decodeSearch(decodeURI(params.searches))];
+    const decodedSearches = useMemo(
+        () => [...decodeSearch(decodeURI(params.searches))],
+        [params.searches],
+    );
     const [searchParams, setSearchParams] = useState(
         decodedSearches[searchIndex] ?? {},
     );
@@ -91,6 +104,7 @@ const OrgUnitsFiltersComponent = ({
     const [initialOrgUnitId, setInitialOrgUnitId] = useState(
         searchParams?.levels,
     );
+
     const { data: initialOrgUnit } = useGetOrgUnit(initialOrgUnitId);
     const intl = useSafeIntl();
     const classes = useStyles();
@@ -105,6 +119,7 @@ const OrgUnitsFiltersComponent = ({
     const isClusterActive = useSelector(state => state.map.isClusterActive);
     // not replacing with useQuery as it creates a double call, and the redux state value is used elsewhere
     const sources = useSelector(state => state.orgUnits.sources);
+
     const orgUnitTypes = useSelector(state => state.orgUnits.orgUnitTypes);
     const isFetchingOrgUnitTypes = useSelector(
         state => state.orgUnits.fetchingOrgUnitTypes,
@@ -172,6 +187,10 @@ const OrgUnitsFiltersComponent = ({
             [urlKey]: value,
         };
 
+        if (urlKey === 'source') {
+            delete updatedSearch.version;
+        }
+
         if (urlKey === 'hasInstances' && value === 'false') {
             delete updatedSearch.dateFrom;
             delete updatedSearch.dateTo;
@@ -185,7 +204,12 @@ const OrgUnitsFiltersComponent = ({
     };
 
     const handleSearch = () => {
-        const searches = formatSearchParams(searchParams);
+        const formattedParams = { ...searchParams };
+        if (searchParams.source && searchParams.version) {
+            delete formattedParams.source;
+        }
+        const searches = formatSearchParams(formattedParams);
+
         onSearch(searches);
     };
 
@@ -208,18 +232,34 @@ const OrgUnitsFiltersComponent = ({
         ? `#${searchParams.color}`
         : getChipColors(searchIndex);
 
-    const sourceFilter = extendFilter(
-        searchParams,
-        {
-            ...source(sources ?? [], false),
-            loading: !sources,
-        },
-        (value, urlKey) => onChange(value, urlKey),
-        searchIndex,
-    );
+    const sourceFilter = {
+        ...source(sources ?? [], false),
+        loading: !sources,
+        uid: `source-${searchIndex}`,
+        value: dataSourceId,
+        callback: (value, urlKey) => onChange(value, urlKey),
+    };
+
+    // Splitting this effect from the one below, so we can use the deps array
     useEffect(() => {
+        // we may have a sourceVersionId but no dataSourceId if using deep linking
+        // in that case we retrieve the dataSourceId so we can display it
+        if (!dataSourceId && !sourceVersionId && searchParams?.version) {
+            const id = retrieveSourceFromVersionId(
+                searchParams.version,
+                sources,
+            );
+            setDataSourceId(id);
+            setSourceVersionId(parseInt(searchParams.version, 10));
+        }
+    }, [dataSourceId, searchParams.version, sourceVersionId, sources]);
+
+    useEffect(() => {
+        // if no dataSourceId or sourceVersionId are provided, use the default from user
         if (
             !dataSourceId &&
+            !sourceVersionId &&
+            !searchParams?.version &&
             currentUser?.account?.default_version?.data_source?.id
         ) {
             setDataSourceId(
@@ -233,6 +273,22 @@ const OrgUnitsFiltersComponent = ({
         }
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
+
+    // Set the version to the sources default version when changing source
+    useEffect(() => {
+        if (dataSourceId) {
+            const dataSource = sources?.find(src => src.id === dataSourceId);
+            if (
+                dataSource &&
+                !dataSource.versions.find(
+                    version => version.id === parseInt(sourceVersionId, 10),
+                )
+            ) {
+                const selectedVersion = dataSource?.default_version?.id;
+                setSourceVersionId(selectedVersion);
+            }
+        }
+    }, [dataSourceId, sourceVersionId, sources]);
     return (
         <div className={classes.root}>
             <Grid container spacing={4}>
@@ -242,7 +298,6 @@ const OrgUnitsFiltersComponent = ({
                         onChangeColor={color => onChange(color, 'color')}
                     />
                     <SearchFilter
-                        // FIXME withMarginTop: this logic is inverted in bluesquare-component in FormControl.js
                         withMarginTop
                         uid={`search-${searchIndex}`}
                         onEnterPressed={handleSearch}
@@ -310,6 +365,7 @@ const OrgUnitsFiltersComponent = ({
                                     {
                                         ...orgUnitType(orgUnitTypes ?? []),
                                         loading: isFetchingOrgUnitTypes,
+                                        withMarginTop: false,
                                     },
                                     (value, urlKey) => onChange(value, urlKey),
                                     searchIndex,

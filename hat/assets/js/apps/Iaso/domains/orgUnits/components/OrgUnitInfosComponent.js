@@ -1,3 +1,4 @@
+/* eslint-disable react/prop-types */
 import React from 'react';
 
 import { Grid } from '@material-ui/core';
@@ -17,6 +18,7 @@ import {
 import LinkIcon from '@material-ui/icons/Link';
 import omit from 'lodash/omit';
 import { useSaveOrgUnit } from '../hooks';
+import { useFormState } from '../../../hooks/form';
 import InputComponent from '../../../components/forms/InputComponent';
 import { commaSeparatedIdsToArray } from '../../../utils/forms';
 import { fetchEditUrl as fetchEditUrlAction } from '../../instances/actions';
@@ -57,7 +59,7 @@ const onActionSelected = (fetchEditUrl, action, instance) => {
     }
 };
 
-const initialFormState = (orgUnit, instanceDefiningId) => {
+const initialFormState = (orgUnit, referenceSubmissionId) => {
     return {
         id: orgUnit.id.value,
         name: orgUnit.name.value,
@@ -69,11 +71,11 @@ const initialFormState = (orgUnit, instanceDefiningId) => {
         aliases: orgUnit.aliases.value,
         parent_id: orgUnit.parent_id.value,
         source_ref: orgUnit.source_ref.value,
-        instance_defining_id: instanceDefiningId,
+        reference_instance_id: referenceSubmissionId,
     };
 };
 
-const onError = () => {
+const onError = setFieldErrors => {
     if (onError.status === 400) {
         onError.details.forEach(entry => {
             setFieldErrors(entry.errorKey, [entry.errorMessage]);
@@ -81,9 +83,14 @@ const onError = () => {
     }
 };
 
-const linkOrgUnitToInstanceDefining = (orgUnit, instanceDefiningId, saveOu) => {
+const linkOrgUnitToReferenceSubmission = (
+    orgUnit,
+    referenceSubmissionId,
+    saveOu,
+    setFieldErrors,
+) => {
     const currentOrgUnit = orgUnit;
-    const newOrgUnit = initialFormState(orgUnit, instanceDefiningId);
+    const newOrgUnit = initialFormState(orgUnit, referenceSubmissionId);
     let orgUnitPayload = omit({ ...currentOrgUnit, ...newOrgUnit });
 
     orgUnitPayload = {
@@ -98,13 +105,21 @@ const linkOrgUnitToInstanceDefining = (orgUnit, instanceDefiningId, saveOu) => {
         .then(_ou => {
             window.location.reload(false);
         })
-        .catch(onError);
+        .catch(onError(setFieldErrors));
 };
 
-const Actions = (orgUnit, formId, formDefiningId, instanceId, saveOu) => {
+const Actions = (
+    orgUnit,
+    formId,
+    referenceFormId,
+    instanceId,
+    saveOu,
+    setFieldErrors,
+) => {
     const currentUser = useSelector(state => state.users.current);
-    const instanceDefining = orgUnit.instance_defining;
-    const linkOrgUnit = (formId !== formDefiningId || instanceDefining !== null);
+    const referenceSubmission = orgUnit.reference_instance;
+    const linkOrgUnit =
+        formId !== referenceFormId || referenceSubmission !== null;
     const hasSubmissionPermission = userHasPermission(
         'iaso_submissions',
         currentUser,
@@ -114,7 +129,7 @@ const Actions = (orgUnit, formId, formDefiningId, instanceId, saveOu) => {
         {
             id: 'instanceEditAction',
             icon: <EnketoIcon />,
-            disabled: !instanceDefining,
+            disabled: !referenceSubmission,
         },
     ];
 
@@ -122,14 +137,15 @@ const Actions = (orgUnit, formId, formDefiningId, instanceId, saveOu) => {
     return [
         ...actions,
         {
-            id: 'linkOrgUnitInstanceDefining',
+            id: 'linkOrgUnitReferenceSubmission',
             icon: (
                 <LinkIcon
                     onClick={() =>
-                        linkOrgUnitToInstanceDefining(
+                        linkOrgUnitToReferenceSubmission(
                             orgUnit,
                             instanceId,
                             saveOu,
+                            setFieldErrors,
                         )
                     }
                 />
@@ -169,32 +185,36 @@ const OrgUnitInfosComponent = ({
     resetTrigger,
     fetchEditUrl,
     params,
-    ...props
 }) => {
     const { mutateAsync: saveOu } = useSaveOrgUnit();
     const classes = useStyles();
 
     const { formId } = params;
-    const { formDefiningId } = params;
+    const { referenceFormId } = params;
     const { instanceId } = params;
+
+    const [setFieldErrors] = useFormState(
+        initialFormState(orgUnit, instanceId),
+    );
 
     return (
         <Grid container spacing={4}>
-            {(orgUnit.instance_defining || formId === formDefiningId) && (
+            {(orgUnit.reference_instance || formId === referenceFormId) && (
                 <SpeedDialInstanceActions
                     speedDialClasses={classes.speedDialTop}
                     actions={Actions(
                         orgUnit,
                         formId,
-                        formDefiningId,
+                        referenceFormId,
                         instanceId,
                         saveOu,
+                        setFieldErrors,
                     )}
                     onActionSelected={action =>
                         onActionSelected(
                             fetchEditUrl,
                             action,
-                            orgUnit.instance_defining,
+                            orgUnit.reference_instance,
                         )
                     }
                 />
@@ -271,7 +291,6 @@ const OrgUnitInfosComponent = ({
                 />
                 <FormControlComponent
                     errors={orgUnit.parent_id.errors}
-                    marginTopZero
                     id="ou-tree-input"
                 >
                     <OrgUnitTreeviewModal
@@ -291,7 +310,7 @@ const OrgUnitInfosComponent = ({
                         resetTrigger={resetTrigger}
                     />
                 </FormControlComponent>
-                {orgUnit.instance_defining && (
+                {orgUnit.reference_instance && (
                     <OrgUnitCreationDetails orgUnit={orgUnit} />
                 )}
                 <InputComponent
@@ -302,11 +321,11 @@ const OrgUnitInfosComponent = ({
                 />
             </Grid>
             <Grid item xs={4}>
-                {orgUnit.id && !orgUnit.instance_defining && (
+                {orgUnit.id && !orgUnit.reference_instance && (
                     <OrgUnitCreationDetails orgUnit={orgUnit} />
                 )}
 
-                {orgUnit.instance_defining && (
+                {orgUnit.reference_instance && (
                     <WidgetPaper
                         id="form-contents"
                         title={formatMessage(MESSAGES.detailTitle)}
@@ -314,7 +333,7 @@ const OrgUnitInfosComponent = ({
                         iconButtonProps={{
                             onClick: () =>
                                 window.open(
-                                    orgUnit.instance_defining.file_url,
+                                    orgUnit.reference_instance.file_url,
                                     '_blank',
                                 ),
                             icon: 'xml',
@@ -323,7 +342,7 @@ const OrgUnitInfosComponent = ({
                         }}
                     >
                         <InstanceFileContent
-                            instance={orgUnit.instance_defining}
+                            instance={orgUnit.reference_instance}
                         />
                     </WidgetPaper>
                 )}

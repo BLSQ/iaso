@@ -200,7 +200,6 @@ class EnketoAPITestCase(APITestCase):
             self.assertEqual("application/xml", response["Content-Type"])
 
     def test_save_last_user_modified_submission(self):
-        self.client.force_authenticate(self.yoda)
 
         with open("iaso/tests/fixtures/hydroponics_test_upload_modified.xml") as modified_xml:
             instance = self.form_1.instances.first()

@@ -3,5 +3,5 @@ export type EntityType = {
     name: string;
     created_at: number;
     updated_at: number;
-    defining_form?: number;
+    reference_form?: number;
 };

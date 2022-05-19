@@ -1,25 +1,41 @@
-import React, { useState } from 'react';
+import React, { useState, useContext, useCallback } from 'react';
 import PropTypes from 'prop-types';
 import classnames from 'classnames';
 
 import { TableCell } from '@material-ui/core';
-import HelpOutlineIcon from '@material-ui/icons/HelpOutline';
 
+import { isEqual } from 'lodash';
 import { PolioCreateEditDialog as CreateEditDialog } from '../../CreateEditDialog';
-import { R1Popper } from '../popper/R1';
+import { RoundPopper } from '../popper/RoundPopper';
 import { useStyles } from '../Styles';
+import { RoundPopperContext } from '../contexts/RoundPopperContext.tsx';
 
-const R1Cell = ({ colSpan, campaign }) => {
+const RoundCell = ({ colSpan, campaign, round }) => {
     const classes = useStyles();
     const [dialogOpen, setDialogOpen] = useState(false);
-    const [anchorEl, setAnchorEl] = useState(null);
+    const { anchorEl, setAnchorEl } = useContext(RoundPopperContext);
+    const [self, setSelf] = useState(null);
 
-    const handleClick = event => {
-        setAnchorEl(anchorEl ? null : event.currentTarget);
+    const handleClick = useCallback(
+        event => {
+            if (!self) {
+                setSelf(event.currentTarget);
+            }
+            setAnchorEl(
+                isEqual(event.currentTarget, anchorEl)
+                    ? null
+                    : event.currentTarget,
+            );
+        },
+        [anchorEl, self, setAnchorEl],
+    );
+
+    const handleClose = () => {
+        setAnchorEl(null);
     };
 
     const defaultCellStyles = [classes.tableCell, classes.tableCellBordered];
-    const open = Boolean(anchorEl);
+    const open = self && isEqual(self, anchorEl);
     return (
         <TableCell
             className={classnames(defaultCellStyles, classes.round)}
@@ -35,15 +51,15 @@ const R1Cell = ({ colSpan, campaign }) => {
                     classes.tableCellSpanWithPopOver,
                 )}
             >
-                {colSpan > 1 && 'R1'}
-                <HelpOutlineIcon className={classes.helpIcon} />
+                {colSpan > 1 && `R${round.number}`}
             </span>
             {open && (
-                <R1Popper
+                <RoundPopper
                     open={open}
+                    round={round}
                     anchorEl={anchorEl}
                     campaign={campaign}
-                    handleClick={handleClick}
+                    handleClose={handleClose}
                     setDialogOpen={setDialogOpen}
                 />
             )}
@@ -57,9 +73,10 @@ const R1Cell = ({ colSpan, campaign }) => {
     );
 };
 
-R1Cell.propTypes = {
+RoundCell.propTypes = {
     colSpan: PropTypes.number.isRequired,
     campaign: PropTypes.object.isRequired,
+    round: PropTypes.object.isRequired,
 };
 
-export { R1Cell };
+export { RoundCell };

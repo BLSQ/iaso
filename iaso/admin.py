@@ -40,6 +40,7 @@ from .models import (
     AccountFeatureFlag,
     EntityType,
     Entity,
+    BulkCreateUserCsvFile,
 )
 
 
@@ -303,3 +304,4 @@ admin.site.register(Page)
 admin.site.register(Task, TaskAdmin)
 admin.site.register(EntityType)
 admin.site.register(Entity, EntityAdmin)
+admin.site.register(BulkCreateUserCsvFile)

@@ -6,7 +6,6 @@ import {
     object,
     oneOfType,
     string,
-    array,
     arrayOf,
 } from 'prop-types';
 import classnames from 'classnames';

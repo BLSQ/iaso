@@ -95,6 +95,33 @@ class HasPermission:
         return self._permission_class()
 
 
+class ReadOnlyOrHasPermission:
+    """
+    Permission class factory for simple permission checks.
+
+    Grant read only access to all and need permission to edit
+
+    Usage:
+
+    > class SomeViewSet(viewsets.ViewSet):
+    >     permission_classes=[HasPermission("perm_1", "perm_2)]
+    >     ...
+    """
+
+    def __init__(self, *perms):
+        class PermissionClass(permissions.BasePermission):
+            def has_permission(self, request, view):
+                if request.method in permissions.SAFE_METHODS:
+                    return True
+
+                return request.user and any(request.user.has_perm(perm) for perm in perms)
+
+        self._permission_class = PermissionClass
+
+    def __call__(self, *args, **kwargs):
+        return self._permission_class()
+
+
 class DynamicFieldsModelSerializer(serializers.ModelSerializer):
     """A ModelSerializer that
     - inspects the request to check if a specific field set has been requested through the "fields" query param

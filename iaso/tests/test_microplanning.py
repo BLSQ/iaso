@@ -108,7 +108,10 @@ class TeamAPITestCase(APITestCase):
         self.assertEqual(len(r), 2)
 
     def test_create(self):
-        self.client.force_authenticate(self.user)
+        user_with_perms = self.create_user_with_profile(
+            username="user_with_perms", account=self.account, permissions=["iaso_teams"]
+        )
+        self.client.force_authenticate(user_with_perms)
         data = {
             "name": "hello",
             "project": self.project1.id,
@@ -118,9 +121,26 @@ class TeamAPITestCase(APITestCase):
         response = self.client.post("/api/microplanning/teams/", data=data, format="json")
         r = self.assertJSONResponse(response, 201)
         self.assertTrue(Team.objects.filter(name="hello").exists())
+        team = Team.objects.get(name="hello")
+        self.assertEqual(team.created_by, user_with_perms)
+
+    def test_create_no_perms(self):
+        self.client.force_authenticate(self.user)
+        data = {
+            "name": "hello",
+            "project": self.project1.id,
+            "manager": self.user.id,
+        }
+
+        response = self.client.post("/api/microplanning/teams/", data=data, format="json")
+        r = self.assertJSONResponse(response, 403)
+        self.assertFalse(Team.objects.filter(name="hello").exists())
 
     def test_patch(self):
-        self.client.force_authenticate(self.user)
+        user_with_perms = self.create_user_with_profile(
+            username="user_with_perms", account=self.account, permissions=["iaso_teams"]
+        )
+        self.client.force_authenticate(user_with_perms)
         data = {
             "name": "hello",
             "project": self.project1.id,
@@ -154,8 +174,22 @@ class TeamAPITestCase(APITestCase):
         self.assertQuerysetEqual(team.sub_teams.all(), [])
         self.assertQuerysetEqual(team.users.all(), [team_member])
 
+    def test_patch_no_perms(self):
+        def test_query_happy_path(self):
+            self.client.force_authenticate(self.user)
+            # can read
+            response = self.client.get(f"/api/microplanning/teams/{self.team1.pk}/", format="json")
+            r = self.assertJSONResponse(response, 200)
+            data = {"name": "test2"}
+            # cannot edit
+            response = self.client.patch(f"/api/microplanning/teams/{self.team1.pk}/", data=data, format="json")
+            r = self.assertJSONResponse(response, 403)
+
     def test_soft_delete(self):
-        self.client.force_authenticate(self.user)
+        user_with_perms = self.create_user_with_profile(
+            username="user_with_perms", account=self.account, permissions=["iaso_teams"]
+        )
+        self.client.force_authenticate(user_with_perms)
         team = self.team1
         response = self.client.get("/api/microplanning/teams/", format="json")
         r = self.assertJSONResponse(response, 200)

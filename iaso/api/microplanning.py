@@ -3,7 +3,7 @@ from django.db.models import Q
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import serializers, filters
 
-from iaso.api.common import ModelViewSet, DeletionFilterBackend
+from iaso.api.common import ModelViewSet, DeletionFilterBackend, ReadOnlyOrHasPermission
 from iaso.models import Project
 from iaso.models.microplanning import Team, TeamType
 
@@ -125,6 +125,7 @@ class TeamSearchFilterBackend(filters.BaseFilterBackend):
 class TeamViewSet(ModelViewSet):
     remove_results_key_if_paginated = True
     filter_backends = [filters.OrderingFilter, DjangoFilterBackend, TeamSearchFilterBackend, DeletionFilterBackend]
+    permission_classes = [ReadOnlyOrHasPermission("menupermissions.iaso_teams")]
     serializer_class = TeamSerializer
     queryset = Team.objects.all()
     ordering_fields = ["id", "name", "created_at", "updated_at"]

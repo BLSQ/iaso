@@ -224,7 +224,7 @@ def get_content_for_config(config):
 def fetch_and_match_forma_data():
 
     conf = Config.objects.get(slug="forma")
-    campaign_qs = Campaign.objects.all().prefetch_related("rounds").prefetch_related("country")
+    campaign_qs = Campaign.objects.filter(deleted_at=None).all().prefetch_related("rounds").prefetch_related("country")
 
     dfs = []
     for config in conf.content:
@@ -294,7 +294,7 @@ class FormAStocksViewSetV2(viewsets.ViewSet):
 
     @action(detail=False)
     def scopes(self, request):
-        campaigns = Campaign.objects.all()
+        campaigns = Campaign.objects.filter(deleted_at=None).all()
         r = get_forma_scope_df(campaigns).to_json(orient="table")
         return HttpResponse(r, content_type="application/json")
 

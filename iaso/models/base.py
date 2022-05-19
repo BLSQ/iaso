@@ -812,6 +812,10 @@ class Instance(models.Model):
     STATUS_EXPORTED = "EXPORTED"
 
     created_at = models.DateTimeField(auto_now_add=True)
+    created_by = models.ForeignKey(User, on_delete=models.PROTECT, blank=True, null=True)
+    last_modified_by = models.ForeignKey(
+        User, on_delete=models.PROTECT, blank=True, null=True, related_name="last_modified_by"
+    )
     updated_at = models.DateTimeField(auto_now=True)
     uuid = models.TextField(null=True, blank=True)
     export_id = models.TextField(null=True, blank=True, default=generate_id_for_dhis_2)
@@ -987,8 +991,14 @@ class Instance(models.Model):
         file_content = self.get_and_save_json_of_xml()
         form_version = self.get_form_version()
 
+        last_modified_by = None
+
+        if self.last_modified_by is not None:
+            last_modified_by = self.last_modified_by.username
+
         return {
             "uuid": self.uuid,
+            "last_modified_by": last_modified_by,
             "id": self.id,
             "device_id": self.device.imei if self.device else None,
             "file_name": self.file_name,

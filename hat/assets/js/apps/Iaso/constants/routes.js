@@ -30,7 +30,7 @@ import { Planning } from '../domains/planning/index.tsx';
 import { Teams } from '../domains/teams/index.tsx';
 import { Assignments } from '../domains/assignments/index.tsx';
 
-import { SHOW_PAGES } from '../utils/featureFlags';
+import { SHOW_PAGES, SHOW_DHIS2_LINK } from '../utils/featureFlags';
 import { paginationPathParams } from '../routing/common';
 
 const paginationPathParamsWithPrefix = prefix =>
@@ -307,6 +307,18 @@ export const orgUnitsDetailsPath = {
         {
             isRequired: false,
             key: 'tab',
+        },
+        {
+          isRequired: false,
+          key: "formId"
+        },
+        {
+          isRequired: false,
+          key: "referenceFormId"
+        },
+        {
+          isRequired: false,
+          key: "instanceId"
         },
         ...orgUnitsFiltersPathParamsWithPrefix('childrenParams', true),
         ...paginationPathParamsWithPrefix('childrenParams'),

@@ -138,7 +138,7 @@
     "iaso.forms.rejected": "Rejeté",
     "iaso.forms.restore.tooltip": "Récupérer le formulaire",
     "iaso.forms.shape": "Forme",
-    "iaso.forms.showDeleted": "Montrer seulement les soumissions effacées",
+    "iaso.forms.showDeleted": "Montrer seulement les formulaires effacés",
     "iaso.forms.source": "Source",
     "iaso.forms.source.derivated": "Dérivé des données actuelles",
     "iaso.forms.source.pnltha": "PNLTHA",
@@ -205,6 +205,7 @@
     "iaso.instance.warningSoftDeletedDerived": "Si ce formulaire sert à générer des soumissions dérivées, celle-ci prendra toujours en compte cette soumission, c'est à vous de décider si vous les regénérez.",
     "iaso.instance.warningSoftDeletedExport": "Si l'soumission a été exportée précédemment, les données dans dhis2 sont sans doute toujours présentes.",
     "iaso.instances.forceExport": "Forcer l'export des soumissions déjà exportées",
+    "iaso.instances.showDeleted": "Montrer seulement les soumissions effacées",
     "iaso.label.actions": "Action(s)",
     "iaso.label.add": "Ajouter",
     "iaso.label.address": "Adresse",
@@ -335,6 +336,7 @@
     "iaso.label.origin": "Origine",
     "iaso.label.others": "Autres",
     "iaso.label.pages": "Pages",
+    "iaso.label.dhis2Link": "Aller sur DHIS2",
     "iaso.label.parent": "Parent direct",
     "iaso.label.parentOu": "Unité d'org. parent",
     "iaso.label.periodType": "Périodicité",
@@ -407,6 +409,7 @@
     "iaso.label.view": "Visualiser",
     "iaso.label.viewOrgUnit": "Voir l'unité d'org.",
     "iaso.label.viewPlanning": "Voir le planning",
+    "iaso.label.linkOrgUnitReferenceSubmission": "Lier l'unité d'organisation à sa soumission de definition",
     "iaso.label.with": "Avec",
     "iaso.label.withLocation": "Uniquement les points",
     "iaso.label.withShape": "Uniquement les territoires",
@@ -724,5 +727,11 @@
     "map.draw.label.undo": "Revenir en arrière",
     "map.label.fitToBounds": "Centrer la carte",
     "map.label.zoom.box": "Dessiner un carré sur la carte pour agrandir une zone",
-    "map.label.zoom.info": "Niveau de zoom actuel"
-}
+    <<
+    << << < HEAD "map.label.zoom.info": "Niveau de zoom actuel"
+} ===
+=== =
+"map.label.zoom.info": "Niveau de zoom actuel",
+"PeriodSelectorComponent.label.apply": "Appliquer"
+} >>>
+>>> > main

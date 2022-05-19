@@ -73,9 +73,9 @@ class ProfileAPITestCase(APITestCase):
             "dhis2_id": "",
         }
 
-        response = self.client.patch("/api/profiles/{0}/".format(self.jim.id), data=data, format="json")
+        response = self.client.patch("/api/profiles/{0}/".format(jim.id), data=data, format="json")
 
-        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.status_code, 200, response)
 
     def test_profile_me_without_auth(self):
         """GET /profiles/me/ without auth should result in a 403"""

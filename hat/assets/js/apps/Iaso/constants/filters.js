@@ -16,11 +16,10 @@ export const containsForbiddenCharacter = value => {
     return false;
 };
 
-export const search = (urlKey = 'search', withMarginTop = true) => ({
+export const search = (urlKey = 'search') => ({
     urlKey,
     label: MESSAGES.textSearch,
     type: 'search',
-    withMarginTop,
 });
 
 // CAUTION: value ALL has to be converted to empty string before being sent to API

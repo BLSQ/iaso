@@ -13,7 +13,7 @@ class EntityType(models.Model):
     name = models.CharField(max_length=255)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
-    defining_form = models.ForeignKey(Form, blank=True, null=True, on_delete=models.PROTECT)
+    reference_form = models.ForeignKey(Form, blank=True, null=True, on_delete=models.PROTECT)
 
     def __str__(self):
         return f"{self.name}"

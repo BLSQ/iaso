@@ -17,18 +17,18 @@ class OrgUnitAPITestCase(APITestCase):
         sw_source = m.DataSource.objects.create(name="Evil Empire")
         sw_source.projects.add(cls.project)
         cls.sw_source = sw_source
-        sw_version_1 = m.SourceVersion.objects.create(data_source=sw_source, number=1)
+        cls.sw_version_1 = sw_version_1 = m.SourceVersion.objects.create(data_source=sw_source, number=1)
         sw_version_2 = m.SourceVersion.objects.create(data_source=sw_source, number=1)
         star_wars.default_version = sw_version_1
         star_wars.save()
 
         cls.jedi_squad = m.OrgUnitType.objects.create(name="Jedi Squad", short_name="Jds")
-        cls.form_defining = m.Form.objects.create(name="Form defining", period_type=m.MONTH, single_per_period=True)
-        cls.form_not_defining = m.Form.objects.create(
-            name="Form not defining", period_type=m.MONTH, single_per_period=True
+        cls.reference_form = m.Form.objects.create(name="Reference form", period_type=m.MONTH, single_per_period=True)
+        cls.not_a_reference_form = m.Form.objects.create(
+            name="Not a reference form", period_type=m.MONTH, single_per_period=True
         )
         cls.jedi_council = m.OrgUnitType.objects.create(
-            name="Jedi Council", short_name="Cnc", form_defining=cls.form_defining
+            name="Jedi Council", short_name="Cnc", reference_form=cls.reference_form
         )
         cls.jedi_council.sub_unit_types.add(cls.jedi_squad)
 
@@ -51,12 +51,12 @@ class OrgUnitAPITestCase(APITestCase):
             source_ref="PvtAI4RUMkr",
         )
 
-        cls.instance_related_to_form_defining = cls.create_form_instance(
-            form=cls.form_defining, period="202003", org_unit=cls.jedi_council_corruscant, project=cls.project
+        cls.instance_related_to_reference_form = cls.create_form_instance(
+            form=cls.reference_form, period="202003", org_unit=cls.jedi_council_corruscant, project=cls.project
         )
 
-        cls.instance_not_related_to_form_defining = cls.create_form_instance(
-            form=cls.form_not_defining, period="202003", org_unit=cls.jedi_council_corruscant, project=cls.project
+        cls.instance_not_related_to_reference_form = cls.create_form_instance(
+            form=cls.not_a_reference_form, period="202003", org_unit=cls.jedi_council_corruscant, project=cls.project
         )
 
         cls.jedi_council_corruscant.groups.set([cls.elite_group])
@@ -441,16 +441,16 @@ class OrgUnitAPITestCase(APITestCase):
             ou.groups.all().order_by("name"), ["<Group: bla | Evil Empire  1 >", "<Group: bla2 | Evil Empire  1 >"]
         )
 
-    def test_create_org_unit_with_instance_defining(self):
+    def test_create_org_unit_with_reference_instance(self):
         self.client.force_authenticate(self.yoda)
         response = self.client.post(
             f"/api/orgunits/create_org_unit/",
             format="json",
             data={
                 "id": None,
-                "name": "Test ou with defining instance",
+                "name": "Test ou with the reference instance",
                 "org_unit_type_id": self.jedi_council.pk,
-                "instance_defining_id": self.instance_related_to_form_defining.id,
+                "reference_instance_id": self.instance_related_to_reference_form.id,
                 "groups": [],
                 "sub_source": "",
                 "status": False,
@@ -464,18 +464,18 @@ class OrgUnitAPITestCase(APITestCase):
         jr = self.assertJSONResponse(response, 200)
         self.assertValidOrgUnitData(jr)
         ou = m.OrgUnit.objects.get(id=jr["id"])
-        self.assertEqual(ou.instance_defining, self.instance_related_to_form_defining)
+        self.assertEqual(ou.reference_instance, self.instance_related_to_reference_form)
 
-    def test_create_org_unit_with_not_linked_instance_defining(self):
+    def test_create_org_unit_with_not_linked_reference_instance(self):
         self.client.force_authenticate(self.yoda)
         response = self.client.post(
             f"/api/orgunits/create_org_unit/",
             format="json",
             data={
                 "id": None,
-                "name": "Test ou with no defining instance",
+                "name": "Test ou with no reference instance",
                 "org_unit_type_id": self.jedi_council.pk,
-                "instance_defining_id": self.instance_not_related_to_form_defining.id,
+                "reference_instance_id": self.instance_not_related_to_reference_form.id,
                 "groups": [],
                 "sub_source": "",
                 "status": False,
@@ -489,7 +489,7 @@ class OrgUnitAPITestCase(APITestCase):
         jr = self.assertJSONResponse(response, 200)
         self.assertValidOrgUnitData(jr)
         ou = m.OrgUnit.objects.get(id=jr["id"])
-        self.assertEqual(ou.instance_defining, None)
+        self.assertEqual(ou.reference_instance, None)
 
     def test_edit_org_unit_retrieve_put(self):
         """Retrieve a orgunit data and then resend back mostly unmodified and ensure that nothing burn
@@ -518,15 +518,15 @@ class OrgUnitAPITestCase(APITestCase):
         self.assertEqual(ou.created_at, old_ou.created_at)
         self.assertNotEqual(ou.updated_at, old_ou.updated_at)
 
-    def test_edit_org_unit_link_to_instance_defining(self):
-        """Retrieve a orgunit data and modify the instance_defining_id"""
+    def test_edit_org_unit_link_to_reference_instance(self):
+        """Retrieve a orgunit data and modify the reference_instance_id"""
         old_ou = self.jedi_council_corruscant
         self.client.force_authenticate(self.yoda)
         response = self.client.get(f"/api/orgunits/{old_ou.id}/")
         data = self.assertJSONResponse(response, 200)
         group_ids = [g["id"] for g in data["groups"]]
         data["groups"] = group_ids
-        data["instance_defining_id"] = self.instance_related_to_form_defining.id
+        data["reference_instance_id"] = self.instance_related_to_reference_form.id
         response = self.client.patch(
             f"/api/orgunits/{old_ou.id}/",
             format="json",
@@ -537,28 +537,56 @@ class OrgUnitAPITestCase(APITestCase):
         self.assertCreated({Modification: 1})
         ou = m.OrgUnit.objects.get(id=jr["id"])
         self.assertEqual(ou.id, old_ou.id)
-        self.assertEqual(ou.instance_defining, self.instance_related_to_form_defining)
+        self.assertEqual(ou.reference_instance, self.instance_related_to_reference_form)
 
-    def test_edit_org_unit_not_link_to_instance_defining(self):
-        """Retrieve a orgunit data and modify the instance_defining_id with a no form defining"""
+    def test_edit_org_unit_not_link_to_reference_instance(self):
+        """Retrieve a orgunit data and modify the reference_instance_id with a no reference form"""
         old_ou = self.jedi_council_corruscant
+        old_modification_date = old_ou.updated_at
         self.client.force_authenticate(self.yoda)
         response = self.client.get(f"/api/orgunits/{old_ou.id}/")
         data = self.assertJSONResponse(response, 200)
         group_ids = [g["id"] for g in data["groups"]]
         data["groups"] = group_ids
-        data["instance_defining_id"] = self.instance_not_related_to_form_defining.id
+        data["reference_instance_id"] = self.instance_not_related_to_reference_form.id
         response = self.client.patch(
             f"/api/orgunits/{old_ou.id}/",
             format="json",
             data=data,
         )
+        jr = self.assertJSONResponse(response, 400)
+        self.assertTrue("reference_form" in (error["errorKey"] for error in jr))
+        old_ou.refresh_from_db()
+        # check the orgunit has not beee modified
+        self.assertEqual(old_modification_date, old_ou.updated_at)
+
+    def test_edit_org_unit_partial_update(self):
+        """Check tha we can only modify a part of the fille"""
+        ou = m.OrgUnit(version=self.sw_version_1)
+        ou.name = "test ou"
+        ou.source_ref = "b"
+        group_a = m.Group.objects.create(name="test group a")
+        group_b = m.Group.objects.create(name="test group b")
+        ou.geom = MultiPolygon(Polygon([(0, 0), (0, 1), (1, 1), (0, 0)]))
+        ou.save()
+        ou.groups.set([group_a, group_b])
+        ou.save()
+        old_modification_date = ou.updated_at
+        self.client.force_authenticate(self.yoda)
+        data = {"source_ref": "new source ref"}
+        response = self.client.patch(
+            f"/api/orgunits/{ou.id}/",
+            format="json",
+            data=data,
+        )
         jr = self.assertJSONResponse(response, 200)
-        self.assertValidOrgUnitData(jr)
-        self.assertCreated({Modification: 1})
-        ou = m.OrgUnit.objects.get(id=jr["id"])
-        self.assertEqual(ou.id, old_ou.id)
-        self.assertEqual(ou.instance_defining, None)
+        ou.refresh_from_db()
+        # check the orgunit has not beee modified
+        self.assertGreater(ou.updated_at, old_modification_date)
+        self.assertEqual(ou.name, "test ou")
+        self.assertEqual(ou.source_ref, "new source ref")
+        self.assertQuerysetEqual(ou.groups.all().order_by("name"), [group_a, group_b])
+        self.assertEqual(ou.geom.wkt, MultiPolygon(Polygon([(0, 0), (0, 1), (1, 1), (0, 0)])).wkt)
 
     def test_edit_org_unit_edit_bad_group_fail(self):
         """FIXME this test Document current behaviour but we want to change how to handle this

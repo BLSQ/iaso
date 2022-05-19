@@ -1,10 +1,9 @@
 import React, { FunctionComponent } from 'react';
-import { FormattedMessage } from 'react-intl';
-import { GeoJSON, Pane, Tooltip } from 'react-leaflet';
+import { GeoJSON, Pane } from 'react-leaflet';
 import { findRegion } from '../../../utils';
-import MESSAGES from '../../../constants/messages';
 import { ViewPort } from '../../../constants/types';
 import { getGeoJsonStyle } from './utils';
+import { CalendarMapTooltip } from './CalendarMapTooltip';
 
 type Props = {
     campaignsShapes: any[];
@@ -37,38 +36,14 @@ export const CalendarMapPanesRegular: FunctionComponent<Props> = ({
                                     )
                                 }
                             >
-                                <Tooltip>
-                                    <div>
-                                        <FormattedMessage
-                                            {...MESSAGES.campaign}
-                                        />
-                                        {`: ${cs.campaign.name}`}
-                                    </div>
-                                    <div>
-                                        <FormattedMessage
-                                            {...MESSAGES.country}
-                                        />
-                                        {`: ${cs.campaign.country}`}
-                                    </div>
-                                    <div>
-                                        <FormattedMessage
-                                            {...MESSAGES.region}
-                                        />
-                                        {`: ${findRegion(shape, regions)}`}
-                                    </div>
-                                    <div>
-                                        <FormattedMessage
-                                            {...MESSAGES.district}
-                                        />
-                                        {`: ${shape.name}`}
-                                    </div>
-                                    <div>
-                                        <FormattedMessage
-                                            {...MESSAGES.vaccine}
-                                        />
-                                        {`: ${cs.campaign.original.vacine}`}
-                                    </div>
-                                </Tooltip>
+                                <CalendarMapTooltip
+                                    type="regular"
+                                    campaign={cs.campaign.name}
+                                    country={cs.campaign.country}
+                                    region={findRegion(shape, regions)}
+                                    district={shape.name}
+                                    vaccine={cs.campaign.original.vacine}
+                                />
                             </GeoJSON>
                         ))}
                     </Pane>

@@ -36,14 +36,14 @@ export default function iasoApp(element, enabledPluginsName, themeConfig) {
                 routeConfig.allowAnonymous
                     ? routeConfig.component
                     : props => (
-                          <ProtectedRoute
-                            {...props}
-                            featureFlag={routeConfig.featureFlag}
-                            permissions={routeConfig.permissions}
-                            component={routeConfig.component(props)}
-                            isRootUrl={routeConfig.isRootUrl}
-                            allRoutes={allRoutesConfigs}
-                        />
+                        <ProtectedRoute
+                              {...props}
+                              featureFlag={routeConfig.featureFlag}
+                              permissions={routeConfig.permissions}
+                              component={routeConfig.component(props)}
+                              isRootUrl={routeConfig.isRootUrl}
+                              allRoutes={allRoutesConfigs}
+                          />
                       )
             }
         />
@@ -66,7 +66,11 @@ export default function iasoApp(element, enabledPluginsName, themeConfig) {
                         theme={getOverriddenTheme(theme, themeConfig)}
                     >
                         <CssBaseline />
-                        <App store={store} routes={routes} history={history} />
+                        <App
+                          store={store}
+                          routes={routes}
+                          history={history}
+                        />
                     </MuiThemeProvider>
                 </ThemeConfigContext.Provider>
             </PluginsContext.Provider>

@@ -4,6 +4,8 @@ import urllib
 
 from django.test import tag
 from django.core.files.uploadedfile import UploadedFile
+
+from iaso.models import Instance
 from iaso.test import APITestCase
 from iaso import models as m
 from django.contrib.gis.geos import Point
@@ -196,3 +198,23 @@ class EnketoAPITestCase(APITestCase):
         self.assertEqual(expected_status_code, response.status_code)
         if expected_status_code != 204:
             self.assertEqual("application/xml", response["Content-Type"])
+
+    def test_save_last_user_modified_submission(self):
+
+        with open("iaso/tests/fixtures/hydroponics_test_upload_modified.xml") as modified_xml:
+            instance = self.form_1.instances.first()
+            f = SimpleUploadedFile(
+                "file.txt",
+                modified_xml.read()
+                .replace("replaceInstanceId", str(instance.id))
+                .replace("REPLACEuserID", str(self.yoda.id))
+                .encode(),
+            )
+            response = self.client.post(
+                f"/api/enketo/submission", {"name": "xml_submission_file", "xml_submission_file": f}
+            )
+
+            instance = self.form_1.instances.first()
+
+            self.assertEqual(response.status_code, 201)
+            self.assertEqual(self.yoda, instance.last_modified_by)

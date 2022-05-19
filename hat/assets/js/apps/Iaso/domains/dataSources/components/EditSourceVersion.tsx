@@ -93,21 +93,18 @@ export const EditSourceVersion: FunctionComponent<Props> = ({
                 <Box mb={2}>
                     <Divider />
                 </Box>
-                <Grid
-                    container
-                    spacing={2}
-                    direction="row"
-                    justifyContent="space-around"
-                >
-                    <InputComponent
-                        type="text"
-                        keyValue="description"
-                        labelString={formatMessage(
-                            MESSAGES.dataSourceDescription,
-                        )}
-                        value={updatedDescription ?? ''}
-                        onChange={onChange}
-                    />
+                <Grid container spacing={2} direction="row">
+                    <Grid item xs={12}>
+                        <InputComponent
+                            type="text"
+                            keyValue="description"
+                            labelString={formatMessage(
+                                MESSAGES.dataSourceDescription,
+                            )}
+                            value={updatedDescription ?? ''}
+                            onChange={onChange}
+                        />
+                    </Grid>
                 </Grid>
             </>
         </ConfirmCancelDialogComponent>

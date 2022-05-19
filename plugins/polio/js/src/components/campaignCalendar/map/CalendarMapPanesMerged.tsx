@@ -1,9 +1,8 @@
 import React, { FunctionComponent } from 'react';
-import { FormattedMessage } from 'react-intl';
-import { GeoJSON, Pane, Tooltip } from 'react-leaflet';
+import { GeoJSON, Pane } from 'react-leaflet';
 
-import MESSAGES from '../../../constants/messages';
 import { ViewPort } from '../../../constants/types';
+import { CalendarMapTooltip } from './CalendarMapTooltip';
 import { getGeoJsonStyle } from './utils';
 
 type Props = {
@@ -34,20 +33,15 @@ export const CalendarMapPanesMerged: FunctionComponent<Props> = ({
                                 )
                             }
                         >
-                            <Tooltip>
-                                <div>
-                                    <FormattedMessage {...MESSAGES.campaign} />
-                                    {`: ${mergedShape.properties.obr_name}`}
-                                </div>
-                                <div>
-                                    <FormattedMessage {...MESSAGES.country} />
-                                    {`: ${mergedShape.properties.top_level_org_unit_name}`}
-                                </div>
-                                <div>
-                                    <FormattedMessage {...MESSAGES.vaccine} />
-                                    {`: ${mergedShape.properties.vacine}`}
-                                </div>
-                            </Tooltip>
+                            <CalendarMapTooltip
+                                type="merged"
+                                campaign={mergedShape.properties.obr_name}
+                                country={
+                                    mergedShape.properties
+                                        .top_level_org_unit_name
+                                }
+                                vaccine={mergedShape.properties.vacine}
+                            />
                         </GeoJSON>
                     </Pane>
                 );

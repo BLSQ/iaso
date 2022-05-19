@@ -135,58 +135,60 @@ const OrgUnitTreeviewPicker = ({
         return <div className={classes.treeviews}>{treeviews}</div>;
     };
     return (
-        <FormControl withMarginTop>
-            <InputLabel
-                shrink={selectedItems.size > 0}
-                required={required}
-                className={`${classnames(
-                    classes.inputLabel,
-                    'input-label',
-                )} ${errorLabelStyle}`}
-            >
-                {formattedPlaceholder}
-            </InputLabel>
-            <Paper
-                variant="outlined"
-                elevation={0}
-                className={`${classes.paper} ${enabledStyle} ${errorStyle}`}
-            >
-                {makeTruncatedTrees(selectedItems)}
-                {clearable && resetSelection && selectedItems.size > 0 && (
-                    <Box
-                        className={classnames(
-                            classes.clearButton,
-                            'clear-tree',
-                        )}
-                    >
-                        <IconButton
-                            icon="clear"
-                            size="small"
-                            tooltipMessage={MESSAGES.clear}
-                            onClick={() => {
-                                setIsReset(true);
-                                resetSelection();
-                            }}
-                        />
-                    </Box>
+        <Box mt={1}>
+            <FormControl>
+                <InputLabel
+                    shrink={selectedItems.size > 0}
+                    required={required}
+                    className={`${classnames(
+                        classes.inputLabel,
+                        'input-label',
+                    )} ${errorLabelStyle}`}
+                >
+                    {formattedPlaceholder}
+                </InputLabel>
+                <Paper
+                    variant="outlined"
+                    elevation={0}
+                    className={`${classes.paper} ${enabledStyle} ${errorStyle}`}
+                >
+                    {makeTruncatedTrees(selectedItems)}
+                    {clearable && resetSelection && selectedItems.size > 0 && (
+                        <Box
+                            className={classnames(
+                                classes.clearButton,
+                                'clear-tree',
+                            )}
+                        >
+                            <IconButton
+                                icon="clear"
+                                size="small"
+                                tooltipMessage={MESSAGES.clear}
+                                onClick={() => {
+                                    setIsReset(true);
+                                    resetSelection();
+                                }}
+                            />
+                        </Box>
+                    )}
+                    <IconButton
+                        size="small"
+                        tooltipMessage={
+                            multiselect
+                                ? MESSAGES.selectMultiple
+                                : MESSAGES.selectSingle
+                        }
+                        icon="orgUnit"
+                        onClick={onClick}
+                    />
+                </Paper>
+                {enableErrors && showError && (
+                    <Typography variant="body1" className={classes.errorLabel}>
+                        {errorMessage ?? defaultErrorMessaege}
+                    </Typography>
                 )}
-                <IconButton
-                    size="small"
-                    tooltipMessage={
-                        multiselect
-                            ? MESSAGES.selectMultiple
-                            : MESSAGES.selectSingle
-                    }
-                    icon="orgUnit"
-                    onClick={onClick}
-                />
-            </Paper>
-            {enableErrors && showError && (
-                <Typography variant="body1" className={classes.errorLabel}>
-                    {errorMessage ?? defaultErrorMessaege}
-                </Typography>
-            )}
-        </FormControl>
+            </FormControl>
+        </Box>
     );
 };
 

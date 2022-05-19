@@ -138,8 +138,9 @@ export const CreateEditPlanning: FunctionComponent<Props> = ({
         },
         [errors, touched],
     );
-    console.log('errors', getErrors('forms'), errors);
-    console.log('values', values.forms);
+    // console.log('errors', getErrors('forms'), errors);
+    console.log('values', values);
+    // console.log("passing down", getErrors("selectedOrgUnit"))
     const titleMessage = formatTitle(type, formatMessage);
     return (
         <FormikProvider value={formik}>
@@ -229,7 +230,6 @@ export const CreateEditPlanning: FunctionComponent<Props> = ({
                                 type="select"
                                 keyValue="forms"
                                 onChange={(keyValue, value) => {
-                                    // onChange(keyValue, value);
                                     setFieldTouched(keyValue, true);
                                     setFieldValue(
                                         keyValue,
@@ -249,20 +249,10 @@ export const CreateEditPlanning: FunctionComponent<Props> = ({
                         </Grid>
                         <Grid xs={6} item>
                             <Box mt={1}>
-                                <FormControl
-                                    errors={getErrors('selectedOrgUnit')}
-                                >
                                     <OrgUnitTreeviewModal
                                         onConfirm={value => {
-                                            const selectedIds = value.map(
-                                                orgUnit => orgUnit.id,
-                                            );
-                                            onChange(
-                                                'selectedOrgUnit',
-                                                selectedIds.length > 0
-                                                    ? selectedIds
-                                                    : null,
-                                            );
+                                            const parsedValue = value?parseInt(value?.id,10):null
+                                            onChange('selectedOrgUnit',parsedValue);
                                         }}
                                         titleMessage={formatMessage(
                                             MESSAGES.selectOrgUnit,
@@ -270,11 +260,10 @@ export const CreateEditPlanning: FunctionComponent<Props> = ({
                                         required
                                         clearable
                                         hardReset
-                                        multiselect
                                         showStatusIconInTree={false}
                                         showStatusIconInPicker={false}
+                                        errors={getErrors('selectedOrgUnit')}
                                     />
-                                </FormControl>
                             </Box>
                         </Grid>
                     </Grid>

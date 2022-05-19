@@ -1,7 +1,16 @@
-import React, { useState } from 'react';
-import { func, any, bool, object, oneOfType, string } from 'prop-types';
+import React from 'react';
+import {
+    func,
+    any,
+    bool,
+    object,
+    oneOfType,
+    string,
+    array,
+    arrayOf,
+} from 'prop-types';
 import classnames from 'classnames';
-import { Paper, InputLabel, Box, Typography } from '@material-ui/core';
+import { Paper, InputLabel, Box } from '@material-ui/core';
 import { makeStyles } from '@material-ui/core/styles';
 import {
     FormControl,
@@ -75,21 +84,14 @@ const OrgUnitTreeviewPicker = ({
     disabled,
     label,
     clearable,
-    enableErrors,
-    errorMessage,
+    errors,
 }) => {
     const intl = useSafeIntl();
     const classes = useStyles();
-    const { formatMessage } = intl;
-    const defaultErrorMessaege = formatMessage(MESSAGES.error);
+    const hasError = errors.length > 0;
 
-    const [isReset, setIsReset] = useState(false);
-    const isError = isReset && selectedItems.size === 0;
-    const showError = enableErrors && isError;
-
-    const errorStyle = showError && !disabled ? classes.error : '';
-    const errorLabelStyle = showError && !disabled ? classes.errorLabel : '';
-
+    const errorStyle = hasError && !disabled ? classes.error : '';
+    const errorLabelStyle = hasError && !disabled ? classes.errorLabel : '';
     const enabledStyle = disabled ? '' : classes.enabled;
 
     const placeholderStyle = disabled
@@ -135,8 +137,8 @@ const OrgUnitTreeviewPicker = ({
         return <div className={classes.treeviews}>{treeviews}</div>;
     };
     return (
-        <Box mt={1}>
-            <FormControl>
+        <Box mt={2}>
+            <FormControl errors={errors}>
                 <InputLabel
                     shrink={selectedItems.size > 0}
                     required={required}
@@ -165,7 +167,6 @@ const OrgUnitTreeviewPicker = ({
                                 size="small"
                                 tooltipMessage={MESSAGES.clear}
                                 onClick={() => {
-                                    setIsReset(true);
                                     resetSelection();
                                 }}
                             />
@@ -182,11 +183,6 @@ const OrgUnitTreeviewPicker = ({
                         onClick={onClick}
                     />
                 </Paper>
-                {enableErrors && showError && (
-                    <Typography variant="body1" className={classes.errorLabel}>
-                        {errorMessage ?? defaultErrorMessaege}
-                    </Typography>
-                )}
             </FormControl>
         </Box>
     );
@@ -203,8 +199,7 @@ OrgUnitTreeviewPicker.propTypes = {
     disabled: bool,
     label: func.isRequired,
     clearable: bool,
-    enableErrors: bool,
-    errorMessage: string,
+    errors: arrayOf(string),
 };
 OrgUnitTreeviewPicker.defaultProps = {
     selectedItems: [],
@@ -214,8 +209,7 @@ OrgUnitTreeviewPicker.defaultProps = {
     required: false,
     disabled: false,
     clearable: true,
-    enableErrors: false,
-    errorMessage: null,
+    errors: [],
 };
 
 export { OrgUnitTreeviewPicker };

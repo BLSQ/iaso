@@ -229,19 +229,8 @@
     "iaso.label.config": "Admin",
     "iaso.label.confirm": "Valider",
     "iaso.label.create": "Créer",
-    <<
-    <<
-    <<
-    <
-    HEAD "iaso.label.createPlanning": "Créer un planning",
-    ===
-    ===
-    =
-    "iaso.label.createPlanning": "Créer planning",
-    >>>
-    >>>
-    >
-    IA - 1209 _planning_creation "iaso.label.created": "Création",
+    "iaso.label.createPlanning": "Créer un planning",
+    "iaso.label.created": "Création",
     "iaso.label.created_at": "Création",
     "iaso.label.creationDateFrom": "Création à partir de",
     "iaso.label.creationDateTo": "Création jusqu'à",

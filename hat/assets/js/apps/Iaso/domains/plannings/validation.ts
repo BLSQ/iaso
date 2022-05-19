@@ -27,7 +27,7 @@ export const usePlanningValidation = () => {
                     .nullable()
                     .min(1, errorMessage)
                     .required(errorMessage), // this may be causing bugs with multi select, or have to be reconverted into array before being sent to the api
-                selectedOrgUnit: array(number())
+                selectedOrgUnit: number()
                     .nullable()
                     .required(errorMessage),
                 selectedTeam: number().nullable().required(errorMessage),

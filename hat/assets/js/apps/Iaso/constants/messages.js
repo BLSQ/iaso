@@ -93,6 +93,18 @@ const MESSAGES = defineMessages({
         defaultMessage: 'Pages',
         id: 'iaso.label.pages',
     },
+    planning: {
+        defaultMessage: 'Planning',
+        id: 'iaso.label.planning',
+    },
+    teams: {
+        defaultMessage: 'Teams',
+        id: 'iaso.label.teams',
+    },
+    assignments: {
+        defaultMessage: 'Assignments',
+        id: 'iaso.label.assignments',
+    },
     dhis2: {
         defaultMessage: 'Go to DHIS2',
         id: 'iaso.label.dhis2Link',

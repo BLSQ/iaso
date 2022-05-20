@@ -62,7 +62,7 @@ export const PlanningFilters: FunctionComponent<Props> = ({ params }) => {
                         // loading={fetchingEntitytypes}
                     />
                 </Grid>
-                <Grid item xs={2} justifyContent="flex-end">
+                <Grid container item xs={2} justifyContent="flex-end">
                     <Box mt={2} mb={2} style={{ textAlign: 'end' }}>
                         <FilterButton
                             disabled={!filtersUpdated}

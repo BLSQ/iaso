@@ -119,6 +119,7 @@ class PlanningSerializer(serializers.ModelSerializer):
         fields = [
             "id",
             "name",
+            "team_details",
             "team",
             "org_unit",
             "forms",
@@ -130,6 +131,7 @@ class PlanningSerializer(serializers.ModelSerializer):
         ]
         read_only_fields = ["created_at", "parent"]
 
+    team_details = NestedTeamSerializer(source="team", read_only=True)
     def validate(self, attrs):
         validated_data = super().validate(attrs)
 
@@ -173,6 +175,7 @@ class PlanningSerializer(serializers.ModelSerializer):
             if form not in forms:
                 raise serializers.ValidationError(f"Invalid Form {form.name}")
         return values
+
 
 
 class PlanningViewSet(ModelViewSet):

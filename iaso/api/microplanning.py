@@ -38,22 +38,16 @@ class TeamSerializer(serializers.ModelSerializer):
             "created_at",
             "deleted_at",
             "users",
-            "users_ids",
+            "users_details",
             "manager",
             "parent",
             "sub_teams",
-            "sub_teams_ids",
+            "sub_teams_details",
         ]
         read_only_fields = ["created_at", "parent"]
 
-    users = NestedUserSerializer(many=True, read_only=True)
-    users_ids = serializers.PrimaryKeyRelatedField(
-        required=False, many=True, source="users", queryset=User.objects.all()
-    )
-    sub_teams = NestedTeamSerializer(many=True, read_only=True)
-    sub_teams_ids = serializers.PrimaryKeyRelatedField(
-        required=False, many=True, source="sub_teams", queryset=Team.objects.all()
-    )
+    users_details = NestedUserSerializer(many=True, read_only=True, source="users")
+    sub_teams_details = NestedTeamSerializer(many=True, read_only=True, source="sub_teams")
 
     def validate_project(self, value):
         """
@@ -72,7 +66,7 @@ class TeamSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError("Invalid manager")
         return value
 
-    def validate_users_ids(self, values):
+    def validate_users(self, values):
         user = self.context["request"].user
         account = user.iaso_profile.account
         users = User.objects.filter(iaso_profile__account=account)

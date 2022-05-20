@@ -29,7 +29,7 @@ class TeamTestCase(TransactionTestCase, IasoTestCaseMixin):
         user = User.objects.get(username="test")
         request = mock.Mock(user=user)
         project = account.project_set.create(name="project1")
-        data = {"name": "hello", "project": project.id, "users_ids": [], "manager": user.id, "sub_teams_ids": []}
+        data = {"name": "hello", "project": project.id, "users": [], "manager": user.id, "sub_teams": []}
 
         serializer = TeamSerializer(context={"request": request}, data=data)
         self.assertTrue(serializer.is_valid(()), serializer.errors)
@@ -46,9 +46,9 @@ class TeamTestCase(TransactionTestCase, IasoTestCaseMixin):
         data = {
             "name": "hello",
             "project": project.id,
-            "users_ids": [user1.id, user2.id],
+            "users": [user1.id, user2.id],
             "manager": user.id,
-            "sub_teams_ids": [],
+            "sub_teams": [],
         }
 
         serializer = TeamSerializer(context={"request": request}, data=data)
@@ -59,7 +59,7 @@ class TeamTestCase(TransactionTestCase, IasoTestCaseMixin):
         # update the team
 
         serializer = TeamSerializer(
-            context={"request": request}, instance=new_team, data={"users_ids": [user1.id]}, partial=True
+            context={"request": request}, instance=new_team, data={"users": [user1.id]}, partial=True
         )
         self.assertTrue(serializer.is_valid(()), serializer.errors)
         serializer.save()
@@ -77,9 +77,9 @@ class TeamTestCase(TransactionTestCase, IasoTestCaseMixin):
         data = {
             "name": "hello",
             "project": project.id,
-            "users_ids": [user1.id, user2.id, other_user.id],
+            "users": [user1.id, user2.id, other_user.id],
             "manager": user.id,
-            "sub_teams_ids": [],
+            "sub_teams": [],
         }
 
         serializer = TeamSerializer(context={"request": request}, data=data)
@@ -116,6 +116,7 @@ class TeamAPITestCase(APITestCase):
             "name": "hello",
             "project": self.project1.id,
             "manager": self.user.id,
+            "sub_teams": [],
         }
 
         response = self.client.post("/api/microplanning/teams/", data=data, format="json")
@@ -144,9 +145,9 @@ class TeamAPITestCase(APITestCase):
         data = {
             "name": "hello",
             "project": self.project1.id,
-            "users_ids": [],
+            "users": [],
             "manager": self.user.id,
-            "sub_teams_ids": [],
+            "sub_teams": [],
         }
 
         response = self.client.post("/api/microplanning/teams/", data=data, format="json")
@@ -156,7 +157,7 @@ class TeamAPITestCase(APITestCase):
 
         sub_team1 = Team.objects.create(manager=self.user, project=self.project1, name="subteam")
 
-        update_data = {"sub_teams_ids": [sub_team1.pk]}
+        update_data = {"sub_teams": [sub_team1.pk]}
 
         response = self.client.patch(f"/api/microplanning/teams/{team_id}/", data=update_data, format="json")
         r = self.assertJSONResponse(response, 200)
@@ -165,7 +166,7 @@ class TeamAPITestCase(APITestCase):
 
         team_member = self.create_user_with_profile(account=self.account, username="t")
 
-        update_data = {"sub_teams_ids": [], "users_ids": [team_member.pk]}
+        update_data = {"sub_teams": [], "users": [team_member.pk]}
 
         response = self.client.patch(f"/api/microplanning/teams/{team_id}/", data=update_data, format="json")
         r = self.assertJSONResponse(response, 200)

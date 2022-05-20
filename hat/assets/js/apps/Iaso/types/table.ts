@@ -7,6 +7,7 @@ export type Column = {
     accessor: string;
     sortable?: boolean;
     resizable?: boolean;
+    width?: number;
     // eslint-disable-next-line no-unused-vars
     Cell?: (s: any) => ReactElement;
 };

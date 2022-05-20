@@ -148,6 +148,22 @@ const MESSAGES = defineMessages({
         id: 'iaso.permissions.users',
         defaultMessage: 'Users',
     },
+    iaso_teams: {
+        id: 'iaso.permissions.teams',
+        defaultMessage: 'Teams',
+    },
+    iaso_planning: {
+        id: 'iaso.permissions.planning',
+        defaultMessage: 'Planning',
+    },
+    iaso_assignments: {
+        id: 'iaso.permissions.assignments',
+        defaultMessage: 'Assignments',
+    },
+    iaso_dhis2_link: {
+        id: 'iaso.permissions.iaso_dhis2_link',
+        defaultMessage: 'Link with DHIS2',
+    },
     deleteError: {
         id: 'iaso.snackBar.deleteUserError',
         defaultMessage: 'An error occurred while deleting user profile',

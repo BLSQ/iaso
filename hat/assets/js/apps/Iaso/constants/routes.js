@@ -26,8 +26,11 @@ import { baseUrls } from './urls';
 import { capitalize } from '../utils/index';
 import { linksFiltersWithPrefix, orgUnitFiltersWithPrefix } from './filters';
 import Pages from '../domains/pages';
+import { Planning } from '../domains/plannings/index.tsx';
+import { Teams } from '../domains/teams/index.tsx';
+import { Assignments } from '../domains/assignments/index.tsx';
 
-import { SHOW_PAGES, SHOW_DHIS2_LINK } from '../utils/featureFlags';
+import { SHOW_PAGES } from '../utils/featureFlags';
 import { paginationPathParams } from '../routing/common';
 
 const paginationPathParamsWithPrefix = prefix =>
@@ -306,16 +309,16 @@ export const orgUnitsDetailsPath = {
             key: 'tab',
         },
         {
-          isRequired: false,
-          key: "formId"
+            isRequired: false,
+            key: 'formId',
         },
         {
-          isRequired: false,
-          key: "referenceFormId"
+            isRequired: false,
+            key: 'referenceFormId',
         },
         {
-          isRequired: false,
-          key: "instanceId"
+            isRequired: false,
+            key: 'instanceId',
         },
         ...orgUnitsFiltersPathParamsWithPrefix('childrenParams', true),
         ...paginationPathParamsWithPrefix('childrenParams'),
@@ -541,6 +544,68 @@ export const entityTypesPath = {
         })),
     ],
 };
+export const planningPath = {
+    baseUrl: baseUrls.planning,
+    // FIXME use planning permissions when they exist
+    permissions: ['iaso_planning'],
+    component: props => <Planning {...props} />,
+    params: [
+        {
+            isRequired: false,
+            key: 'search',
+        },
+        {
+            isRequired: false,
+            key: 'dateFrom',
+        },
+        {
+            isRequired: false,
+            key: 'dateTo',
+        },
+        {
+            isRequired: true,
+            key: 'publishingStatus',
+        },
+        ...paginationPathParams.map(p => ({
+            ...p,
+            isRequired: true,
+        })),
+    ],
+};
+export const assignmentsPath = {
+    baseUrl: baseUrls.assignments,
+    // FIXME use planning permissions when they exist
+    permissions: ['iaso_assignments'],
+    component: props => <Assignments {...props} />,
+    params: [],
+    // params: [
+    //     {
+    //         isRequired: false,
+    //         key: 'search',
+    //     },
+    //     ...paginationPathParams.map(p => ({
+    //         ...p,
+    //         isRequired: true,
+    //     })),
+    // ],
+};
+export const teamsPath = {
+    baseUrl: baseUrls.teams,
+    // FIXME use planning permissions when they exist
+    permissions: ['iaso_teams'],
+    component: props => <Teams {...props} />,
+    params: [],
+    // params: [
+    //     {
+    //         isRequired: false,
+    //         key: 'search',
+    //     },
+    //     ...paginationPathParams.map(p => ({
+    //         ...p,
+    //         isRequired: true,
+    //     })),
+    // ],
+};
 
 export const page401 = {
     baseUrl: baseUrls.error401,
@@ -586,4 +651,7 @@ export const routeConfigs = [
     pagesPath,
     page401,
     page500,
+    teamsPath,
+    planningPath,
+    assignmentsPath,
 ];

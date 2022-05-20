@@ -56,6 +56,8 @@ const DatesRange = ({
     sm,
     md,
     lg,
+    keyDateFrom = 'dateFrom',
+    keyDateTo = 'dateTo',
 }) => {
     const classes = useStyles();
     const [from, setFrom] = useState(dateFrom);
@@ -97,7 +99,7 @@ const DatesRange = ({
                             onChange={date => {
                                 setFrom(date);
                                 onChangeDate(
-                                    'dateFrom',
+                                    keyDateFrom,
                                     date && date.isValid()
                                         ? date.format(dateFormat)
                                         : undefined,
@@ -112,7 +114,7 @@ const DatesRange = ({
                                     tooltipMessage={MESSAGES.clear}
                                     onClick={() => {
                                         setFrom('');
-                                        onChangeDate('dateFrom', undefined);
+                                        onChangeDate(keyDateFrom, undefined);
                                     }}
                                 />
                             </span>
@@ -154,7 +156,7 @@ const DatesRange = ({
                             onChange={date => {
                                 setTo(date);
                                 onChangeDate(
-                                    'dateTo',
+                                    keyDateTo,
                                     date && date.isValid()
                                         ? date.format(dateFormat)
                                         : undefined,
@@ -169,7 +171,7 @@ const DatesRange = ({
                                     tooltipMessage={MESSAGES.clear}
                                     onClick={() => {
                                         setTo('');
-                                        onChangeDate('dateTo', undefined);
+                                        onChangeDate(keyDateTo, undefined);
                                     }}
                                 />
                             </span>
@@ -191,6 +193,8 @@ DatesRange.defaultProps = {
     sm: 6,
     md: 6,
     lg: 6,
+    keyDateFrom: 'dateFrom',
+    keyDateTo: 'dateTo',
 };
 
 DatesRange.propTypes = {
@@ -204,6 +208,8 @@ DatesRange.propTypes = {
     sm: PropTypes.number,
     md: PropTypes.number,
     lg: PropTypes.number,
+    keyDateFrom: PropTypes.string,
+    keyDateTo: PropTypes.string,
 };
 
 const DatesRangeIntl = injectIntl(DatesRange);

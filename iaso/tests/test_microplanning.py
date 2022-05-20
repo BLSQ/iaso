@@ -176,15 +176,14 @@ class TeamAPITestCase(APITestCase):
         self.assertQuerysetEqual(team.users.all(), [team_member])
 
     def test_patch_no_perms(self):
-        def test_query_happy_path(self):
-            self.client.force_authenticate(self.user)
-            # can read
-            response = self.client.get(f"/api/microplanning/teams/{self.team1.pk}/", format="json")
-            r = self.assertJSONResponse(response, 200)
-            data = {"name": "test2"}
-            # cannot edit
-            response = self.client.patch(f"/api/microplanning/teams/{self.team1.pk}/", data=data, format="json")
-            r = self.assertJSONResponse(response, 403)
+        self.client.force_authenticate(self.user)
+        # can read
+        response = self.client.get(f"/api/microplanning/teams/{self.team1.pk}/", format="json")
+        r = self.assertJSONResponse(response, 200)
+        data = {"name": "test2"}
+        # cannot edit
+        response = self.client.patch(f"/api/microplanning/teams/{self.team1.pk}/", data=data, format="json")
+        r = self.assertJSONResponse(response, 403)
 
     def test_soft_delete(self):
         user_with_perms = self.create_user_with_profile(

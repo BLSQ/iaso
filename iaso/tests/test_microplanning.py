@@ -346,8 +346,8 @@ class PlanningTestCase(APITestCase):
                 "team": self.team1.id,
                 "team_details": {"id": self.team1.id, "name": self.team1.name},
                 "project": self.project1.id,
-                "started_at": "2022-02-02 02:02:02",
-                "ended_at": "2022-03-03 03:03:03",
+                "started_at": "2022-02-02",
+                "ended_at": "2022-03-03",
             },
         )
         self.assertTrue(planning_serializer.is_valid(), planning_serializer.errors)
@@ -359,8 +359,8 @@ class PlanningTestCase(APITestCase):
                 "forms": [self.form1.id, self.form2.id],
                 "team": self.team1.id,
                 "project": self.project1.id,
-                "started_at": "2022-03-03 03:03:03",
-                "ended_at": "2022-02-02 02:02:02",
+                "started_at": "2022-03-03",
+                "ended_at": "2022-02-02",
             },
         )
         self.assertFalse(failing_dates.is_valid(), failing_dates.errors)
@@ -372,8 +372,8 @@ class PlanningTestCase(APITestCase):
                 "forms": [self.form1.id, self.form2.id],
                 "team": self.other_team.id,
                 "project": self.project1.id,
-                "started_at": "2022-02-02 02:02:02",
-                "ended_at": "2022-03-03 03:03:03",
+                "started_at": "2022-02-02",
+                "ended_at": "2022-03-03",
             },
         )
         self.assertFalse(failing_teams.is_valid(), failing_teams.errors)

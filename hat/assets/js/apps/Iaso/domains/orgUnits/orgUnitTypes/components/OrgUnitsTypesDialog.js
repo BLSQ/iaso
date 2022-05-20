@@ -111,79 +111,71 @@ const OrgUnitsTypesDialog = ({
             cancelMessage={MESSAGES.cancel}
             confirmMessage={MESSAGES.save}
             allowConfirm={isFormValid(requiredFields, formState)}
+            maxWidth="xs"
             {...dialogProps}
         >
-            <Box pt={2} pb={2}>
-                <InputComponent
-                    keyValue="name"
-                    onChange={onChange}
-                    value={formState.name.value}
-                    errors={formState.name.errors}
-                    type="text"
-                    label={MESSAGES.name}
-                    required
-                />
-            </Box>
-            <Box pt={2} pb={2}>
-                <InputComponent
-                    keyValue="short_name"
-                    onChange={onChange}
-                    value={formState.short_name.value}
-                    errors={formState.short_name.errors}
-                    type="text"
-                    label={MESSAGES.shortName}
-                    required
-                />
-            </Box>
+            <InputComponent
+                keyValue="name"
+                onChange={onChange}
+                value={formState.name.value}
+                errors={formState.name.errors}
+                type="text"
+                label={MESSAGES.name}
+                required
+            />
 
-            <Box pt={2} pb={2}>
-                <InputComponent
-                    multi
-                    clearable
-                    keyValue="project_ids"
-                    onChange={onChange}
-                    value={formState.project_ids.value}
-                    errors={formState.project_ids.errors}
-                    type="select"
-                    options={
-                        allProjects?.map(p => ({
-                            label: p.name,
-                            value: p.id,
-                        })) ?? []
-                    }
-                    label={MESSAGES.projects}
-                    required
-                />
-            </Box>
+            <InputComponent
+                keyValue="short_name"
+                onChange={onChange}
+                value={formState.short_name.value}
+                errors={formState.short_name.errors}
+                type="text"
+                label={MESSAGES.shortName}
+                required
+            />
 
-            <Box pt={2} pb={2}>
-                <InputComponent
-                    keyValue="depth"
-                    onChange={onChange}
-                    value={formState.depth.value}
-                    errors={formState.depth.errors}
-                    type="number"
-                    label={MESSAGES.depth}
-                    required
-                />
-            </Box>
+            <InputComponent
+                multi
+                clearable
+                keyValue="project_ids"
+                onChange={onChange}
+                value={formState.project_ids.value}
+                errors={formState.project_ids.errors}
+                type="select"
+                options={
+                    allProjects?.map(p => ({
+                        label: p.name,
+                        value: p.id,
+                    })) ?? []
+                }
+                label={MESSAGES.projects}
+                required
+            />
 
-            <Box pt={2} pb={2}>
-                <InputComponent
-                    multi
-                    clearable
-                    keyValue="sub_unit_type_ids"
-                    onChange={onChange}
-                    value={formState.sub_unit_type_ids.value}
-                    errors={formState.sub_unit_type_ids.errors}
-                    type="select"
-                    options={subUnitTypes.map(orgunitType => ({
-                        value: orgunitType.id,
-                        label: orgunitType.name,
-                    }))}
-                    label={MESSAGES.subUnitTypes}
-                />
-            </Box>
+            <InputComponent
+                keyValue="depth"
+                onChange={onChange}
+                value={formState.depth.value}
+                errors={formState.depth.errors}
+                type="number"
+                label={MESSAGES.depth}
+                required
+            />
+
+            <InputComponent
+                multi
+                clearable
+                keyValue="sub_unit_type_ids"
+                onChange={onChange}
+                value={formState.sub_unit_type_ids.value}
+                errors={formState.sub_unit_type_ids.errors}
+                type="select"
+                options={subUnitTypes.map(orgunitType => ({
+                    value: orgunitType.id,
+                    label: orgunitType.name,
+                }))}
+                label={MESSAGES.subUnitTypes}
+            />
         </ConfirmCancelDialogComponent>
     );
 };

@@ -31,7 +31,7 @@ def forma_find_campaign_on_day(campaigns, day, country):
             continue
         start_date = earliest_round.started_at
         latest_round_start = c.rounds.filter(started_at__isnull=False).order_by("started_at").last()
-        if latest_round_start:
+        if not latest_round_start:
             continue  # should not happen if we have an earliest_round?
         latest_round_end = c.rounds.filter(ended_at__isnull=False).order_by("ended_at").last()
         end_date = None
@@ -173,7 +173,7 @@ def handle_country(forms, country, campaign_qs) -> DataFrame:
     df["country_config_id"] = country.id
     df["country_config_name"] = country.name
     df["country_config"] = country
-    print("Matching campaign")
+    print("Matching country", country)
     forma_find_campaign_on_day_cached = lru_cache(maxsize=None)(forma_find_campaign_on_day)
     df["campaign"] = df.apply(lambda r: forma_find_campaign_on_day_cached(campaign_qs, r["today"], country), axis=1)
     df["campaign_id"] = df["campaign"].apply(lambda c: str(c.id) if c else None)
@@ -224,7 +224,7 @@ def get_content_for_config(config):
 def fetch_and_match_forma_data():
 
     conf = Config.objects.get(slug="forma")
-    campaign_qs = Campaign.objects.all().prefetch_related("rounds").prefetch_related("country")
+    campaign_qs = Campaign.objects.filter(deleted_at=None).all().prefetch_related("rounds").prefetch_related("country")
 
     dfs = []
     for config in conf.content:
@@ -294,7 +294,7 @@ class FormAStocksViewSetV2(viewsets.ViewSet):
 
     @action(detail=False)
     def scopes(self, request):
-        campaigns = Campaign.objects.all()
+        campaigns = Campaign.objects.filter(deleted_at=None).all()
         r = get_forma_scope_df(campaigns).to_json(orient="table")
         return HttpResponse(r, content_type="application/json")
 

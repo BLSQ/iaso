@@ -1,5 +1,10 @@
 import React, { FunctionComponent, useCallback, useMemo } from 'react';
-import { AddButton, useSafeIntl, IconButton } from 'bluesquare-components';
+import {
+    AddButton,
+    useSafeIntl,
+    IconButton,
+    FormControl,
+} from 'bluesquare-components';
 import FileCopyIcon from '@material-ui/icons/FileCopy';
 import { useFormik, FormikProvider } from 'formik';
 import { isEqual } from 'lodash';
@@ -238,26 +243,32 @@ export const CreateEditPlanning: FunctionComponent<Props> = ({
                         </Grid>
                         <Grid xs={6} item>
                             <Box mt={1}>
-                                <OrgUnitTreeviewModal
-                                    onConfirm={value => {
-                                        const parsedValue = value
-                                            ? parseInt(value?.id, 10)
-                                            : null;
-                                        onChange(
-                                            'selectedOrgUnit',
-                                            parsedValue,
-                                        );
-                                    }}
-                                    titleMessage={formatMessage(
-                                        MESSAGES.selectOrgUnit,
-                                    )}
-                                    required
-                                    clearable
-                                    hardReset
-                                    showStatusIconInTree={false}
-                                    showStatusIconInPicker={false}
+                                <FormControl
                                     errors={getErrors('selectedOrgUnit')}
-                                />
+                                >
+                                    <OrgUnitTreeviewModal
+                                        onConfirm={value => {
+                                            const selectedIds = value.map(
+                                                orgUnit => orgUnit.id,
+                                            );
+                                            onChange(
+                                                'selectedOrgUnit',
+                                                selectedIds.length > 0
+                                                    ? selectedIds
+                                                    : null,
+                                            );
+                                        }}
+                                        titleMessage={formatMessage(
+                                            MESSAGES.selectOrgUnit,
+                                        )}
+                                        required
+                                        clearable
+                                        hardReset
+                                        multiselect
+                                        showStatusIconInTree={false}
+                                        showStatusIconInPicker={false}
+                                    />
+                                </FormControl>
                             </Box>
                         </Grid>
                     </Grid>

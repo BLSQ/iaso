@@ -57,6 +57,11 @@ const useStyles = makeStyles(theme => ({
     popupCardContentWithTitle: {
         marginTop: theme.spacing(1),
     },
+    linkButton: {
+        color: 'inherit',
+        textDecoration: 'none',
+        display: 'flex',
+    },
 }));
 
 const OrgUnitPopupComponent = ({

@@ -19,13 +19,13 @@ export const planningColumns = (formatMessage: IntlFormatMessage): Column[] => {
         },
         {
             Header: formatMessage(MESSAGES.startDate),
-            accessor: 'start_date',
-            id: 'start_date',
+            accessor: 'started_at',
+            id: 'started_at',
         },
         {
             Header: formatMessage(MESSAGES.endDate),
-            accessor: 'end_date',
-            id: 'end_date',
+            accessor: 'ended_at',
+            id: 'ended_at',
         },
         {
             Header: formatMessage(MESSAGES.team),
@@ -38,7 +38,7 @@ export const planningColumns = (formatMessage: IntlFormatMessage): Column[] => {
             accessor: 'status',
             id: 'status',
             Cell: settings => {
-                if (settings.row.original.status)
+                if (settings.row.original.status === 'published')
                     return formatMessage(MESSAGES.yes);
                 return formatMessage(MESSAGES.no);
             },
@@ -62,10 +62,12 @@ export const planningColumns = (formatMessage: IntlFormatMessage): Column[] => {
                             name={settings.row.original?.name}
                             selectedTeam={settings.row.original?.team}
                             selectedOrgUnit={settings.row.original?.org_unit}
-                            startDate={settings.row.original?.start_date}
-                            endDate={settings.row.original?.end_date}
+                            startDate={settings.row.original?.started_at}
+                            endDate={settings.row.original?.ended_at}
                             forms={settings.row.original?.forms ?? []}
                             publishingStatus={settings.row.original?.status}
+                            project={settings.row.original?.project}
+                            description={settings.row.original?.description}
                         />
                         <CreateEditPlanning
                             type="edit"
@@ -73,10 +75,12 @@ export const planningColumns = (formatMessage: IntlFormatMessage): Column[] => {
                             name={settings.row.original?.name}
                             selectedTeam={settings.row.original?.team}
                             selectedOrgUnit={settings.row.original?.org_unit}
-                            startDate={settings.row.original?.start_date}
-                            endDate={settings.row.original?.end_date}
+                            startDate={settings.row.original?.started_at}
+                            endDate={settings.row.original?.ended_at}
                             forms={settings.row.original?.forms ?? []}
                             publishingStatus={settings.row.original?.status}
+                            project={settings.row.original?.project}
+                            description={settings.row.original?.description}
                         />
                     </section>
                 );

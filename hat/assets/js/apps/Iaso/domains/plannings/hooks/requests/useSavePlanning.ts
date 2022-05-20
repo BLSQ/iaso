@@ -1,6 +1,11 @@
+import moment from 'moment';
 import { UseMutationResult } from 'react-query';
+import { patchRequest, postRequest } from '../../../../libs/Api';
 import { useSnackMutation } from '../../../../libs/apiHooks';
-import { teamsList } from '../../mockTeamsList';
+import {
+    dateRangePickerToDateApi,
+    getApiParamDateTimeString,
+} from '../../../../utils/dates';
 
 export type SavePlanningQuery = {
     id?: number;
@@ -15,45 +20,88 @@ export type SavePlanningQuery = {
     publishingStatus: 'published' | 'draft';
 };
 
-export const waitFor = (delay: number): Promise<void> =>
-    new Promise(resolve => setTimeout(resolve, delay));
+const endpoint = '/api/microplanning/planning/';
 
-// TODO delete when backend available
-const makePlanning = (body: Partial<SavePlanningQuery>) => {
-    return {
-        id: body.id ?? Math.floor(Math.random() * 20), // TODO make the rnge from 9 to 20
-        name: body.name,
-        start_date: body.startDate,
-        end_date: body.endDate,
-        team:
-            teamsList.teams.filter(team => team.id === body.selectedTeam)[0] ??
-            null,
-        status: body.publishingStatus,
-    };
+const convertToApi = data => {
+    const {
+        selectedTeam,
+        selectedOrgUnit,
+        endDate,
+        startDate,
+        publishingStatus,
+        ...converted
+    } = data;
+    if (selectedTeam !== undefined) {
+        converted.team = selectedTeam;
+    }
+    if (selectedTeam !== undefined) {
+        converted.org_unit = selectedOrgUnit;
+    }
+    if (startDate !== undefined) {
+        converted.started_at = dateRangePickerToDateApi(startDate);
+    }
+
+    if (endDate !== undefined) {
+        converted.ended_at = dateRangePickerToDateApi(endDate);
+    }
+    if (publishingStatus === 'published') {
+        converted.published_at = getApiParamDateTimeString(moment());
+    } else if (publishingStatus === 'draft') {
+        converted.published_at = null;
+    }
+
+    return converted;
 };
 
-const mockSavePlanning = async (body: Partial<SavePlanningQuery>) => {
-    await waitFor(1500);
-    return makePlanning(body);
+const patchPlanning = async (body: Partial<SavePlanningQuery>) => {
+    const url = `${endpoint}${body.id}/`;
+    return patchRequest(url, convertToApi(body));
+};
+
+const postPlanning = async (body: SavePlanningQuery) => {
+    return postRequest(endpoint, convertToApi(body));
+};
+
+const duplicatePlanning = async (body: SavePlanningQuery) => {
+    const duplicate = { ...body };
+    if (body.id) {
+        delete duplicate.id;
+    }
+    return postPlanning(duplicate);
 };
 
 export const useSavePlanning = (
     type: 'create' | 'edit' | 'copy',
 ): UseMutationResult => {
-    // TODO replace with patch request
-    const savePlanning = useSnackMutation(
-        (data: Partial<SavePlanningQuery>) => mockSavePlanning(data),
+    const editPlanning = useSnackMutation(
+        (data: Partial<SavePlanningQuery>) => patchPlanning(data),
         undefined,
         undefined,
         ['planningsList'],
     );
-    // TODO replace with post request
     const createPlanning = useSnackMutation(
-        (data: SavePlanningQuery) => mockSavePlanning(data),
+        (data: SavePlanningQuery) => postPlanning(data),
+        undefined,
+        undefined,
+        ['planningsList'],
+    );
+    const copyPlanning = useSnackMutation(
+        (data: SavePlanningQuery) => duplicatePlanning(data),
         undefined,
         undefined,
         ['planningsList'],
     );
 
-    return type === 'create' ? createPlanning : savePlanning;
+    switch (type) {
+        case 'create':
+            return createPlanning;
+        case 'edit':
+            return editPlanning;
+        case 'copy':
+            return copyPlanning;
+        default:
+            throw new Error(
+                `wrong type expected: create, copy or edit, got:  ${type} `,
+            );
+    }
 };

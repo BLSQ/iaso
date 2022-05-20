@@ -4,10 +4,11 @@ import { array, date, mixed, number, object, string } from 'yup';
 // @ts-ignore
 import { useSafeIntl } from 'bluesquare-components';
 import MESSAGES from './messages';
+import { getLocaleDateFormat } from '../../utils/dates';
 
 // parse DD-MM-YYYY string to Date object
 const parseStringTodate = (_yupValue, pickerValue) => {
-    const result = moment(pickerValue, 'DD-MM-YYYY').toDate();
+    const result = moment(pickerValue, getLocaleDateFormat('L')).toDate();
     return result;
 };
 

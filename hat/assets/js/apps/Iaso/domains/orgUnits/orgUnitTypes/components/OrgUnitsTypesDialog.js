@@ -31,12 +31,12 @@ const mapOrgUnitType = orgUnitType => {
     };
 };
 
-export default function OrgUnitsTypesDialog({
+const OrgUnitsTypesDialog = ({
     orgUnitType,
     titleMessage,
     onConfirmed,
     ...dialogProps
-}) {
+}) => {
     const dispatch = useDispatch();
     const { formatMessage } = useSafeIntl();
 
@@ -186,7 +186,7 @@ export default function OrgUnitsTypesDialog({
             </Box>
         </ConfirmCancelDialogComponent>
     );
-}
+};
 OrgUnitsTypesDialog.propTypes = {
     orgUnitType: PropTypes.object,
     titleMessage: PropTypes.object.isRequired,
@@ -203,3 +203,5 @@ OrgUnitsTypesDialog.defaultProps = {
         sub_unit_types: [],
     },
 };
+
+export default OrgUnitsTypesDialog;

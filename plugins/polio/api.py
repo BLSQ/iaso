@@ -896,7 +896,7 @@ def handle_ona_request_with_key(request, key):
     config = get_object_or_404(Config, slug=key)
     res = []
     failure_count = 0
-    campaigns = Campaign.objects.all()
+    campaigns = Campaign.objects.all().filter(deleted_at=None)
     form_count = 0
     find_campaign_on_day_cached = functools.lru_cache(None)(find_campaign_on_day)
     for config in config.content:

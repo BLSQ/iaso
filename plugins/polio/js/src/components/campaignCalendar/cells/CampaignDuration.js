@@ -8,16 +8,14 @@ import { useStyles } from '../Styles';
 
 import MESSAGES from '../../../constants/messages';
 
-const CampaignDurationCell = ({ colSpan, hasNextRound, round }) => {
+const CampaignDurationCell = ({ colSpan, weeksCount }) => {
     const classes = useStyles();
     const { formatMessage } = useSafeIntl();
     const defaultCellStyles = [classes.tableCell, classes.tableCellBordered];
     if (colSpan <= 0) return null;
     return (
         <TableCell
-            className={classnames(defaultCellStyles, classes.campaign, {
-                [classes.tableCellDashed]: !hasNextRound,
-            })}
+            className={classnames(defaultCellStyles, classes.campaign)}
             colSpan={colSpan}
         >
             {colSpan > 5 && (
@@ -27,7 +25,7 @@ const CampaignDurationCell = ({ colSpan, hasNextRound, round }) => {
                         classes.weeksCell,
                     )}
                 >
-                    {`${round.weeksCount} ${formatMessage(MESSAGES.weeks)}`}
+                    {`${weeksCount} ${formatMessage(MESSAGES.weeks)}`}
                 </span>
             )}
         </TableCell>
@@ -36,8 +34,7 @@ const CampaignDurationCell = ({ colSpan, hasNextRound, round }) => {
 
 CampaignDurationCell.propTypes = {
     colSpan: PropTypes.number.isRequired,
-    hasNextRound: PropTypes.bool.isRequired,
-    round: PropTypes.object.isRequired,
+    weeksCount: PropTypes.number.isRequired,
 };
 
 export { CampaignDurationCell };

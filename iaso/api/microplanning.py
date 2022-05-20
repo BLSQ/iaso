@@ -28,6 +28,15 @@ class NestedUserSerializer(serializers.ModelSerializer):
 
 
 class TeamSerializer(serializers.ModelSerializer):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        user = self.context["request"].user
+        account = user.iaso_profile.account
+        users_in_account = User.objects.filter(iaso_profile__account=account)
+        self.fields["project"].queryset = account.project_set.all()
+        self.fields["manager"].queryset = users_in_account
+        self.fields["users"].child_relation.queryset = users_in_account
+
     class Meta:
         model = Team
         fields = [
@@ -48,32 +57,6 @@ class TeamSerializer(serializers.ModelSerializer):
 
     users_details = NestedUserSerializer(many=True, read_only=True, source="users")
     sub_teams_details = NestedTeamSerializer(many=True, read_only=True, source="sub_teams")
-
-    def validate_project(self, value):
-        """
-        Check that project belongs to the user account
-        """
-        account = self.context["request"].user.iaso_profile.account
-        if value not in account.project_set.all():
-            raise serializers.ValidationError("Invalid project")
-        return value
-
-    def validate_manager(self, value):
-        user = self.context["request"].user
-        account = user.iaso_profile.account
-        users = User.objects.filter(iaso_profile__account=account)
-        if value not in users:
-            raise serializers.ValidationError("Invalid manager")
-        return value
-
-    def validate_users(self, values):
-        user = self.context["request"].user
-        account = user.iaso_profile.account
-        users = User.objects.filter(iaso_profile__account=account)
-        for user in values:
-            if user not in users:
-                raise serializers.ValidationError("Invalid user")
-        return values
 
     # TODO validate children
 

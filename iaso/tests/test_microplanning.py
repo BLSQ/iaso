@@ -64,7 +64,29 @@ class TeamTestCase(TransactionTestCase, IasoTestCaseMixin):
         self.assertTrue(serializer.is_valid(()), serializer.errors)
         serializer.save()
 
-    def test_serializer_other_users(self):
+    def test_serializer_invalid_user(self):
+        account = Account.objects.get(name="test")
+        user = User.objects.get(username="test")
+        request = mock.Mock(user=user)
+        project = account.project_set.create(name="project1")
+        user1 = self.create_user_with_profile(username="user1", account=account)
+        user2 = self.create_user_with_profile(username="user2", account=account)
+        other_account = Account.objects.create(name="other account")
+        other_user = self.create_user_with_profile(username="bad user", account=other_account)
+
+        data = {
+            "name": "hello",
+            "project": project.id,
+            "users": [user1.id, user2.id, other_user.id],
+            "manager": user.id,
+            "sub_teams": [],
+        }
+
+        serializer = TeamSerializer(context={"request": request}, data=data)
+        self.assertFalse(serializer.is_valid(()), serializer.validated_data)
+        self.assertIn("users", serializer.errors)
+
+    def test_serializer_invalid_manager(self):
         account = Account.objects.get(name="test")
         user = User.objects.get(username="test")
         request = mock.Mock(user=user)
@@ -77,13 +99,37 @@ class TeamTestCase(TransactionTestCase, IasoTestCaseMixin):
         data = {
             "name": "hello",
             "project": project.id,
-            "users": [user1.id, user2.id, other_user.id],
+            "users": [user1.id, user2.id],
+            "manager": other_user.id,
+            "sub_teams": [],
+        }
+
+        serializer = TeamSerializer(context={"request": request}, data=data)
+        self.assertFalse(serializer.is_valid(()), serializer.validated_data)
+        self.assertIn("manager", serializer.errors)
+
+    def test_serializer_invalid_project(self):
+        account = Account.objects.get(name="test")
+        user = User.objects.get(username="test")
+        request = mock.Mock(user=user)
+        project = account.project_set.create(name="project1")
+
+        user1 = self.create_user_with_profile(username="user1", account=account)
+        user2 = self.create_user_with_profile(username="user2", account=account)
+        other_account = Account.objects.create(name="other account")
+        other_project = other_account.project_set.create(name="bad project")
+
+        data = {
+            "name": "hello",
+            "project": other_project.id,
+            "users": [user1.id, user2.id],
             "manager": user.id,
             "sub_teams": [],
         }
 
         serializer = TeamSerializer(context={"request": request}, data=data)
-        self.assertFalse(serializer.is_valid(()), serializer.errors)
+        self.assertFalse(serializer.is_valid(()), serializer.validated_data)
+        self.assertIn("project", serializer.errors)
 
 
 class TeamAPITestCase(APITestCase):

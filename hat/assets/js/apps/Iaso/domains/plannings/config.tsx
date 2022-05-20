@@ -58,7 +58,8 @@ export const planningColumns = (formatMessage: IntlFormatMessage): Column[] => {
                             tooltipMessage={MESSAGES.viewPlanning}
                         />
                         <CreateEditPlanning
-                            type="copy"
+                            type="edit"
+                            id={settings.row.original.id}
                             name={settings.row.original?.name}
                             selectedTeam={settings.row.original?.team}
                             selectedOrgUnit={settings.row.original?.org_unit}
@@ -70,8 +71,7 @@ export const planningColumns = (formatMessage: IntlFormatMessage): Column[] => {
                             description={settings.row.original?.description}
                         />
                         <CreateEditPlanning
-                            type="edit"
-                            id={settings.row.original.id}
+                            type="copy"
                             name={settings.row.original?.name}
                             selectedTeam={settings.row.original?.team}
                             selectedOrgUnit={settings.row.original?.org_unit}

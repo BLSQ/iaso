@@ -291,24 +291,28 @@ class PlanningAdmin(admin.ModelAdmin):
 
     fieldsets = [
         (
-            None,{"fields":
-            (
-                "name",
-                "description",
-                "project",
-                "forms",
-                "org_unit",
-                "team",
-            ),}
+            None,
+            {
+                "fields": (
+                    "name",
+                    "description",
+                    "project",
+                    "forms",
+                    "org_unit",
+                    "team",
+                ),
+            },
         ),
-        ("other", {"fields":("type",)}),
+        ("other", {"fields": ("type",)}),
         (
             "update info",
-            {"fields":(
-                "created_at",
-                "created_by",
-                "updated_at",
-            )},
+            {
+                "fields": (
+                    "created_at",
+                    "created_by",
+                    "updated_at",
+                )
+            },
         ),
     ]
 

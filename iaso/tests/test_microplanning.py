@@ -320,9 +320,7 @@ class PlanningTestCase(APITestCase):
                 "id": self.planning.id,
                 "name": "planning1",
                 "team": self.planning.team_id,
-                "team_details": {
-                    "id": self.team1.id,
-                    "name":self.team1.name},
+                "team_details": {"id": self.team1.id, "name": self.team1.name},
                 "project": self.project1.id,
                 "project": self.planning.project.id,
                 "org_unit": self.planning.org_unit_id,
@@ -346,9 +344,7 @@ class PlanningTestCase(APITestCase):
                 "org_unit": org_unit.id,
                 "forms": [self.form1.id, self.form2.id],
                 "team": self.team1.id,
-                "team_details": {
-                    "id": self.team1.id,
-                    "name":self.team1.name},
+                "team_details": {"id": self.team1.id, "name": self.team1.name},
                 "project": self.project1.id,
                 "started_at": "2022-02-02 02:02:02",
                 "ended_at": "2022-03-03 03:03:03",

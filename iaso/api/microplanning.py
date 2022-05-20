@@ -132,6 +132,7 @@ class PlanningSerializer(serializers.ModelSerializer):
         read_only_fields = ["created_at", "parent"]
 
     team_details = NestedTeamSerializer(source="team", read_only=True)
+
     def validate(self, attrs):
         validated_data = super().validate(attrs)
 
@@ -176,6 +177,7 @@ class PlanningSerializer(serializers.ModelSerializer):
                 raise serializers.ValidationError(f"Invalid Form {form.name}")
         return values
 
+
 class PlanningSearchFilterBackend(filters.BaseFilterBackend):
     def filter_queryset(self, request, queryset, view):
         search = request.query_params.get("search")
@@ -183,6 +185,7 @@ class PlanningSearchFilterBackend(filters.BaseFilterBackend):
         if search:
             queryset = queryset.filter(Q(name__icontains=search)).distinct()
         return queryset
+
 
 class PublishingStatusFilterBackend(filters.BaseFilterBackend):
     def filter_queryset(self, request, queryset, view):
@@ -200,7 +203,13 @@ class PlanningViewSet(ModelViewSet):
     permission_classes = [ReadOnlyOrHasPermission("menupermissions.iaso_planning")]
     serializer_class = PlanningSerializer
     queryset = Planning.objects.all()
-    filter_backends = [filters.OrderingFilter, DjangoFilterBackend, PublishingStatusFilterBackend, PlanningSearchFilterBackend, DeletionFilterBackend]
+    filter_backends = [
+        filters.OrderingFilter,
+        DjangoFilterBackend,
+        PublishingStatusFilterBackend,
+        PlanningSearchFilterBackend,
+        DeletionFilterBackend,
+    ]
     ordering_fields = ["id", "name", "started_at", "ended_at"]
     filterset_fields = {
         "name": ["icontains"],

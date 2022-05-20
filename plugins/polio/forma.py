@@ -301,5 +301,10 @@ class FormAStocksViewSetV2(viewsets.ViewSet):
     def list(self, request):
         df = fetch_and_match_forma_data()
         # Need to drop all the Django orm object, since Panda can't serialize them
-        r = df.drop(["ou", "report_org_unit", "country_config", "campaign"], axis=1).to_json(orient="table")
-        return HttpResponse(r, content_type="application/json")
+        df = df.drop(["ou", "report_org_unit", "country_config", "campaign"], axis=1)
+        if request.GET.get("format", None) == "csv":
+            r = df.to_csv()
+            return HttpResponse(r, content_type="text/csv")
+        else:
+            r = df.to_json(orient="table")
+            return HttpResponse(r, content_type="application/json")

@@ -563,7 +563,7 @@ export const planningPath = {
             key: 'dateTo',
         },
         {
-            isRequired: true,
+            isRequired: false,
             key: 'publishingStatus',
         },
         ...paginationPathParams.map(p => ({

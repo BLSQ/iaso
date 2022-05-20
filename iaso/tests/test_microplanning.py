@@ -274,6 +274,7 @@ class PlanningTestCase(APITestCase):
                 "id": self.planning.id,
                 "name": "planning1",
                 "team": self.planning.team_id,
+                "project": self.planning.project.id,
                 "org_unit": self.planning.org_unit_id,
                 "forms": [],
                 "description": "",

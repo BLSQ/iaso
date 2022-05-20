@@ -31,7 +31,7 @@ export const planningColumns = (formatMessage: IntlFormatMessage): Column[] => {
             Header: formatMessage(MESSAGES.team),
             accessor: 'team',
             id: 'team',
-            Cell: settings => settings.row.original.name,
+            Cell: settings => settings.row.original.team_details.name,
         },
         {
             Header: formatMessage(MESSAGES.published),

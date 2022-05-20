@@ -30,18 +30,15 @@ type PlanningList = Pagination & {
 };
 
 const getPlannings = async (options: PlanningParams): Promise<PlanningList> => {
-    const params = {
-        ...options,
-        limit: options?.pageSize,
-        started_at__gte: dateRangePickerToDateApi(options.dateFrom),
-        ended_at__lte: dateRangePickerToDateApi(options.dateTo),
-        publishing_status: options.publishingStatus,
-        // page: options?.page ? parseInt(options.page, 10) - 1 : null,
-    } as Record<string, any>;
-    delete params.dateFrom;
-    delete params.dateTo;
-    delete params.pageSize;
-    delete params.publishingStatus;
+    // assigning the variables allows us to have a params object without the unwanted keys
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const { publishingStatus, dateTo, dateFrom, pageSize, ...params } =
+        options as Record<string, any>;
+    params.limit = options?.pageSize;
+    params.started_at__gte = dateRangePickerToDateApi(options.dateFrom);
+    params.ended_at__lte = dateRangePickerToDateApi(options.dateTo);
+    params.publishing_status = options.publishingStatus;
+
     const url = makeUrlWithParams('/api/microplanning/planning', params);
     return getRequest(url) as Promise<PlanningList>;
 };

@@ -41,6 +41,7 @@ from .models import (
     EntityType,
     Entity,
 )
+from .models.microplanning import Team, Planning
 
 
 class OrgUnitAdmin(admin.GeoModelAdmin):
@@ -274,6 +275,58 @@ class EntityAdmin(admin.ModelAdmin):
     raw_id_fields = ("attributes",)
 
 
+class PlanningAdmin(admin.ModelAdmin):
+    raw_id_fields = ("org_unit", "forms")
+    list_display = (
+        "id",
+        "name",
+        "description",
+        "project",
+        "org_unit",
+        # "forms",
+        "team",
+    )
+    list_filter = ("project", "org_unit")
+    date_hierarchy = "started_at"
+
+    fields = [
+        (
+            "",
+            (
+                "name",
+                "description",
+                "project",
+                "forms",
+                "org_unit",
+                "team",
+            ),
+        ),
+        ("type", ("type",)),
+        (
+            "update info",
+            (
+                "created_at",
+                "created_by",
+                "updated_at",
+            ),
+        ),
+    ]
+
+
+class TeamAdmin(admin.ModelAdmin):
+    list_display = (
+        "id",
+        "name",
+        "description",
+        "project",
+        "type",
+        "updated_at",
+        "parent",
+    )
+    list_filter = ("project", "type")
+    date_hierarchy = "created_at"
+
+
 admin.site.register(Link, LinkAdmin)
 admin.site.register(Form, FormAdmin)
 admin.site.register(Instance, InstanceAdmin)
@@ -303,3 +356,5 @@ admin.site.register(Page)
 admin.site.register(Task, TaskAdmin)
 admin.site.register(EntityType)
 admin.site.register(Entity, EntityAdmin)
+admin.site.register(Team, TeamAdmin)
+admin.site.register(Planning, PlanningAdmin)

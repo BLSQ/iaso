@@ -37,7 +37,7 @@ class FormQuerySet(models.QuerySet):
 
         return False
 
-    def filter_for_user_and_app_id(self, user: typing.Union[User, AnonymousUser], app_id: str):
+    def filter_for_user_and_app_id(self, user: typing.Union[User, AnonymousUser], app_id: typing.Optional[str] = None):
         if user.is_anonymous and app_id is None:
             return self.none()
 

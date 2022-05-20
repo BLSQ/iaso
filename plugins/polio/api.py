@@ -4,16 +4,20 @@ import json
 from datetime import timedelta, datetime, timezone
 from functools import lru_cache
 from typing import Optional, Union
+from collections import defaultdict
+from functools import lru_cache
+from logging import getLogger
 
 import requests
 from django.conf import settings
 from django.core.cache import cache
 from django.core.mail import send_mail
 from django.db.models import Q
+from django.db.models import Value, TextField, UUIDField
 from django.db.models.expressions import RawSQL
 from django.http import HttpResponse
-from django.http.response import HttpResponseBadRequest
 from django.http import JsonResponse
+from django.http.response import HttpResponseBadRequest
 from django.shortcuts import get_object_or_404
 from django.utils.timezone import now, make_aware
 from django_filters.rest_framework import DjangoFilterBackend
@@ -21,8 +25,6 @@ from gspread.utils import extract_id_from_url
 from rest_framework import routers, filters, viewsets, serializers, permissions, status
 from rest_framework.decorators import action
 from rest_framework.response import Response
-from django.db.models import Value, TextField, UUIDField
-from collections import defaultdict
 
 from iaso.api.common import ModelViewSet, DeletionFilterBackend
 from iaso.models import OrgUnit
@@ -48,11 +50,9 @@ from .forma import (
 from .helpers import get_url_content
 from .models import Campaign, Config, LineListImport, SpreadSheetImport, Round, CampaignGroup
 from .models import CountryUsersGroup
-from .models import URLCache, Preparedness
+from .models import URLCache
 from .preparedness.calculator import preparedness_summary
-from .preparedness.parser import get_preparedness, RoundNumber
-
-from logging import getLogger
+from .preparedness.parser import get_preparedness
 
 logger = getLogger(__name__)
 

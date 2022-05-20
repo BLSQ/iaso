@@ -42,7 +42,7 @@ export const isFieldValid = (keyValue, value, requiredFields) => {
                 return true;
             }
             case 'array': {
-                if (value.length === 0) {
+                if (!value || value.length === 0) {
                     return false;
                 }
                 return true;

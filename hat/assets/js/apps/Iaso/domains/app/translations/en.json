@@ -1,5 +1,6 @@
 {
     "PeriodSelectorComponent.label.apply": "Apply",
+    "blsq.treeview.error": "Please select an org unit",
     "blsq.treeview.label.selectMultiple": "Select org unit(s)",
     "blsq.treeview.label.selectSingle": "Select an org unit",
     "blsq.treeview.loading": "Loading",

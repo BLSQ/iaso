@@ -20,6 +20,17 @@ import {
 } from '../../../../utils/forms';
 import { requiredFields } from '../config/requiredFields';
 
+const mapOrgUnitType = orgUnitType => {
+    return {
+        id: orgUnitType.id,
+        name: orgUnitType.name,
+        short_name: orgUnitType.short_name,
+        project_ids: orgUnitType.projects.map(project => project.id),
+        depth: orgUnitType.depth,
+        sub_unit_type_ids: orgUnitType.sub_unit_types.map(unit => unit.id),
+    };
+};
+
 export default function OrgUnitsTypesDialog({
     orgUnitType,
     titleMessage,
@@ -35,14 +46,7 @@ export default function OrgUnitsTypesDialog({
     }));
 
     const [formState, setFieldValue, setFieldErrors, setFormState] =
-        useFormState({
-            id: orgUnitType.id,
-            name: orgUnitType.name,
-            short_name: orgUnitType.short_name,
-            project_ids: orgUnitType.projects.map(project => project.id),
-            depth: orgUnitType.depth,
-            sub_unit_type_ids: orgUnitType.sub_unit_types.map(unit => unit.id),
-        });
+        useFormState(mapOrgUnitType(orgUnitType));
 
     const onChange = useCallback(
         (keyValue, value) => {
@@ -88,14 +92,7 @@ export default function OrgUnitsTypesDialog({
     );
 
     const resetForm = () => {
-        setFormState({
-            id: null,
-            name: '',
-            short_name: '',
-            project_ids: [],
-            depth: null,
-            sub_unit_type_ids: [],
-        });
+        setFormState(mapOrgUnitType(orgUnitType));
     };
 
     const subUnitTypes = allOrgUnitTypes.filter(

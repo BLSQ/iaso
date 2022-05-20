@@ -295,6 +295,7 @@
     "iaso.label.instanceStatus.ready": "prêt(s)",
     "iaso.label.instanceStatus.readyMulti": "Prêts",
     "iaso.label.instanceStatus.readySingle": "prête",
+    "iaso.label.invalidDate": "Date invalide",
     "iaso.label.key": "Clé",
     "iaso.label.lastName": "Nom",
     "iaso.label.latitude": "Latitude",

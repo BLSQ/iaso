@@ -113,6 +113,10 @@ const MESSAGES = defineMessages({
         id: 'iaso.versionsDialog.label.description',
         defaultMessage: 'Description',
     },
+    invalidDate: {
+        id: 'iaso.label.invalidDate',
+        defaultMessage: 'iaso.label.invalidDate',
+    },
 });
 
 export default MESSAGES;

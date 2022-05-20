@@ -43,7 +43,7 @@ const makeRenderTrigger = (type: 'create' | 'edit' | 'copy') => {
             <IconButton
                 onClick={openDialog}
                 overrideIcon={FileCopyIcon}
-                tooltipMessage={MESSAGES.edit}
+                tooltipMessage={MESSAGES.duplicatePlanning}
             />
         );
     }
@@ -215,6 +215,11 @@ export const CreateEditPlanning: FunctionComponent<Props> = ({
                             labelTo={MESSAGES.to}
                             keyDateFrom="startDate"
                             keyDateTo="endDate"
+                            errors={[
+                                getErrors('startDate'),
+                                getErrors('endDate'),
+                            ]}
+                            blockInvalidDates={false}
                         />
                     </Grid>
                     <Grid container item spacing={2}>

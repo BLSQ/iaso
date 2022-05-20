@@ -15,16 +15,23 @@ const parseStringTodate = (_yupValue, pickerValue) => {
 export const usePlanningValidation = () => {
     const { formatMessage } = useSafeIntl();
     const errorMessage = formatMessage(MESSAGES.requiredField);
+    const datesError = formatMessage(MESSAGES.invalidDate);
     // Tried the typescript integration, but Type casting was crap
     const schema = useMemo(
         () =>
             object().shape({
                 name: string().nullable().required(errorMessage),
-                startDate: date().transform(parseStringTodate),
-                endDate: date().transform(parseStringTodate),
+                startDate: date()
+                    .transform(parseStringTodate)
+                    .nullable()
+                    .typeError(datesError),
+                endDate: date()
+                    .transform(parseStringTodate)
+                    .nullable()
+                    .typeError(datesError),
                 description: string().nullable(),
                 project: number().nullable().required(errorMessage),
-                // Specifying array().of(number()) will cause a bug where the error won't show until you ût another field in error
+                // Specifying array().of(number()) will cause a bug where the error won't show until you put another field in error
                 forms: array().min(1, errorMessage),
                 selectedOrgUnit: number().nullable().required(errorMessage),
                 selectedTeam: number().nullable().required(errorMessage),

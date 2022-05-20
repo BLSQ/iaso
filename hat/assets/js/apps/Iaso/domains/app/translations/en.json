@@ -298,6 +298,7 @@
     "iaso.label.instanceStatus.ready": "Ready",
     "iaso.label.instanceStatus.readyMulti": "Ready",
     "iaso.label.instanceStatus.readySingle": "ready",
+    "iaso.label.invalidDate": "Invalid date",
     "iaso.label.key": "Key",
     "iaso.label.lastName": "Last name",
     "iaso.label.latitude": "Latitude",

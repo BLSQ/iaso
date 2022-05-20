@@ -1,7 +1,7 @@
 import React, { FunctionComponent, useCallback, useMemo } from 'react';
 import { AddButton, useSafeIntl, IconButton } from 'bluesquare-components';
 import FileCopyIcon from '@material-ui/icons/FileCopy';
-import { useFormik, FormikProvider } from 'formik';
+import { useFormik, FormikProvider, Field } from 'formik';
 import { isEqual } from 'lodash';
 import { Grid, Box } from '@material-ui/core';
 import InputComponent from '../../../components/forms/InputComponent';
@@ -16,7 +16,8 @@ import {
     useSavePlanning,
 } from '../hooks/requests/useSavePlanning';
 import DatesRange from '../../../components/filters/DatesRange';
-import { OrgUnitTreeviewModal } from '../../orgUnits/components/TreeView/OrgUnitTreeviewModal';
+import { OrgUnitsLevels as OrgUnitSelect } from '../../../../../../../../plugins/polio/js/src/components/Inputs/OrgUnitsSelect';
+// import { OrgUnitTreeviewModal } from '../../orgUnits/components/TreeView/OrgUnitTreeviewModal';
 import { usePlanningValidation } from '../validation';
 import { commaSeparatedIdsToArray } from '../../../utils/forms';
 import { IntlFormatMessage } from '../../../types/intl';
@@ -238,25 +239,12 @@ export const CreateEditPlanning: FunctionComponent<Props> = ({
                         </Grid>
                         <Grid xs={6} item>
                             <Box mt={1}>
-                                <OrgUnitTreeviewModal
-                                    onConfirm={value => {
-                                        const parsedValue = value
-                                            ? parseInt(value?.id, 10)
-                                            : null;
-                                        onChange(
-                                            'selectedOrgUnit',
-                                            parsedValue,
-                                        );
-                                    }}
-                                    titleMessage={formatMessage(
+                                <Field
+                                    component={OrgUnitSelect}
+                                    label={formatMessage(
                                         MESSAGES.selectOrgUnit,
                                     )}
-                                    required
-                                    clearable
-                                    hardReset
-                                    showStatusIconInTree={false}
-                                    showStatusIconInPicker={false}
-                                    errors={getErrors('selectedOrgUnit')}
+                                    name="selectedOrgUnit"
                                 />
                             </Box>
                         </Grid>

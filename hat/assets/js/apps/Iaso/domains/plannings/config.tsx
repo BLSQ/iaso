@@ -60,34 +60,22 @@ export const planningColumns = (formatMessage: IntlFormatMessage): Column[] => {
                         <CreateEditPlanning
                             type="copy"
                             name={settings.row.original?.name}
-                            selectedTeam={settings.row.original?.team?.id}
-                            selectedOrgUnit={
-                                settings.row.original?.org_unit?.id
-                            }
+                            selectedTeam={settings.row.original?.team}
+                            selectedOrgUnit={settings.row.original?.org_unit}
                             startDate={settings.row.original?.start_date}
                             endDate={settings.row.original?.end_date}
-                            forms={
-                                settings.row.original?.forms?.map(
-                                    form => form.id,
-                                ) ?? []
-                            }
+                            forms={settings.row.original?.forms ?? []}
                             publishingStatus={settings.row.original?.status}
                         />
                         <CreateEditPlanning
                             type="edit"
                             id={settings.row.original.id}
                             name={settings.row.original?.name}
-                            selectedTeam={settings.row.original?.team?.id}
-                            selectedOrgUnit={
-                                settings.row.original?.org_unit?.id
-                            }
+                            selectedTeam={settings.row.original?.team}
+                            selectedOrgUnit={settings.row.original?.org_unit}
                             startDate={settings.row.original?.start_date}
                             endDate={settings.row.original?.end_date}
-                            forms={
-                                settings.row.original?.forms?.map(
-                                    form => form.id,
-                                ) ?? []
-                            }
+                            forms={settings.row.original?.forms ?? []}
                             publishingStatus={settings.row.original?.status}
                         />
                     </section>

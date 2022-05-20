@@ -6,10 +6,15 @@ import { useGetOrgUnit } from 'Iaso/domains/orgUnits/components/TreeView/request
 
 export const OrgUnitsLevels = ({ field, form, label }) => {
     const { name } = field;
+    const {
+        setFieldValue,
+        touched,
+        errors: formErrors,
+        setFieldTouched,
+    } = form;
     const initialOrgUnitId = form.initialValues[name];
-
+    const errors = touched[name] && formErrors[name] ? [formErrors[name]] : [];
     const { data: initialOrgUnit, isLoading } = useGetOrgUnit(initialOrgUnitId);
-    const { setFieldValue } = form;
 
     return (
         <>
@@ -18,11 +23,13 @@ export const OrgUnitsLevels = ({ field, form, label }) => {
                 titleMessage={label}
                 toggleOnLabelClick={false}
                 onConfirm={orgUnit => {
-                    setFieldValue(name, orgUnit.id);
+                    setFieldTouched(name, true);
+                    setFieldValue(name, orgUnit?.id);
                 }}
                 initialSelection={initialOrgUnit}
                 showStatusIconInTree={false}
                 showStatusIconInPicker={false}
+                errors={errors}
             />
         </>
     );
@@ -35,6 +42,9 @@ OrgUnitsLevels.propTypes = {
     form: PropTypes.shape({
         setFieldValue: PropTypes.func.isRequired,
         initialValues: PropTypes.object.isRequired,
+        errors: PropTypes.object.isRequired,
+        touched: PropTypes.object.isRequired,
+        setFieldTouched: PropTypes.func.isRequired,
     }).isRequired,
     label: PropTypes.string.isRequired,
 };

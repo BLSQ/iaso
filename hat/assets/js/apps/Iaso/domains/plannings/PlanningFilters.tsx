@@ -41,16 +41,16 @@ export const PlanningFilters: FunctionComponent<Props> = ({ params }) => {
                         onEnterPressed={handleSearch}
                     />
                 </Grid>
-                <Grid item xs={4}>
+                <Grid item xs={5}>
                     <DatesRange
                         onChangeDate={handleChange}
                         dateFrom={filters.dateFrom}
                         dateTo={filters.dateTo}
-                        labelFrom={MESSAGES.from}
-                        labelTo={MESSAGES.to}
+                        labelFrom={MESSAGES.startDatefrom}
+                        labelTo={MESSAGES.endDateUntil}
                     />
                 </Grid>
-                <Grid item xs={3}>
+                <Grid item xs={2}>
                     <InputComponent
                         type="select"
                         multi={false}
@@ -59,7 +59,6 @@ export const PlanningFilters: FunctionComponent<Props> = ({ params }) => {
                         value={filters.publishingStatus}
                         options={statusOptions(formatMessage)}
                         label={MESSAGES.publishingStatus}
-                        // loading={fetchingEntitytypes}
                     />
                 </Grid>
                 <Grid container item xs={2} justifyContent="flex-end">

@@ -75,6 +75,12 @@ class TeamSerializer(serializers.ModelSerializer):
         user = self.context["request"].user
         validated_data["created_by"] = user
 
+        project = validated_data.get("project", self.instance.project if self.instance else None)
+        sub_teams = validated_data.get("sub_teams", self.instance.sub_teams.all() if self.instance else [])
+        for sub_team in sub_teams:
+            if sub_team.project != project:
+                raise serializers.ValidationError("Sub teams mut be in the same project")
+
         # Check that we don't have both user and teams
         # this is written in this way to support partial update
         users = None

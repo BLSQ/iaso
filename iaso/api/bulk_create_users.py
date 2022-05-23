@@ -3,7 +3,7 @@ from django.core.exceptions import ValidationError, ObjectDoesNotExist
 from django.db import IntegrityError, transaction
 from rest_framework.response import Response
 from rest_framework.viewsets import ModelViewSet
-from rest_framework import serializers, status
+from rest_framework import serializers, status, permissions
 from django.core import validators
 import csv
 
@@ -13,7 +13,14 @@ from iaso.models import BulkCreateUserCsvFile, Profile, Account, OrgUnit
 class BulkCreateUserSerializer(serializers.ModelSerializer):
     class Meta:
         model = BulkCreateUserCsvFile
-        fields = ["file", "created_by", "created_at"]
+        fields = ["file", "created_by", "created_at", "account"]
+
+
+class HasUserPermission(permissions.BasePermission):
+    def has_permission(self, request, view):
+        if not request.user.has_perm("menupermissions.iaso_users"):
+            return False
+        return True
 
 
 class BulkCreateUserFromCsvViewSet(ModelViewSet):
@@ -21,12 +28,13 @@ class BulkCreateUserFromCsvViewSet(ModelViewSet):
 
     result_key = "file"
     remove_results_key_if_paginated = True
+    permission_classes = [HasUserPermission]
 
     def get_serializer_class(self):
         return BulkCreateUserSerializer
 
     def get_queryset(self):
-        queryset = BulkCreateUserCsvFile.objects.all()
+        queryset = BulkCreateUserCsvFile.objects.filter(account=self.request.user.iaso_profile.account)
 
         return queryset
 
@@ -35,8 +43,7 @@ class BulkCreateUserFromCsvViewSet(ModelViewSet):
         if request.FILES:
             user_csv = request.FILES["file"]
             file_instance = BulkCreateUserCsvFile.objects.create(
-                file=user_csv,
-                created_by=request.user,
+                file=user_csv, created_by=request.user, account=request.user.iaso_profile.account
             )
             file_instance.save()
             file = open(file_instance.file.path, "r")
@@ -125,11 +132,13 @@ class BulkCreateUserFromCsvViewSet(ModelViewSet):
                     if row[csv_indexes.index("profile_language")]:
                         language = row[csv_indexes.index("profile_language")].lower()
                         profile.language = language
+                    else:
+                        profile.language = "fr"
                     profile.org_units.set(org_units_list)
                     profile.save()
                 else:
                     csv_indexes = row
                 i += 1
-        csv_files = BulkCreateUserCsvFile.objects.all()
+        csv_files = BulkCreateUserCsvFile.objects.filter(account=self.request.user.iaso_profile.account)
         serializer = BulkCreateUserSerializer(csv_files, many=True)
         return Response(serializer.data)

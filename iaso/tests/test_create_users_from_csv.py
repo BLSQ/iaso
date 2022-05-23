@@ -24,10 +24,14 @@ class BulkCreateCsvTestCase(APITestCase):
         cls.sw_version = sw_version
 
         cls.han_solo = cls.create_user_with_profile(
-            username="han solo", account=space_balls, permissions=["iaso_submissions"]
+            username="han solo", account=space_balls, permissions=["iaso_submissions", "iaso_users"]
         )
 
-        cls.yoda = cls.create_user_with_profile(username="yoda", account=star_wars, permissions=["iaso_submissions"])
+        cls.yoda = cls.create_user_with_profile(
+            username="yoda", account=star_wars, permissions=["iaso_submissions", "iaso_users"]
+        )
+
+        cls.obi = cls.create_user_with_profile(username="obi", account=star_wars)
 
         cls.jedi_council = m.OrgUnitType.objects.create(name="Jedi Council", short_name="Cnc")
 
@@ -50,8 +54,8 @@ class BulkCreateCsvTestCase(APITestCase):
         users = User.objects.all()
         profiles = Profile.objects.all()
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(len(users), 5)
-        self.assertEqual(len(profiles), 5)
+        self.assertEqual(len(users), 6)
+        self.assertEqual(len(profiles), 6)
 
     def test_upload_invalid_mail_csv(self):
         self.client.force_authenticate(self.yoda)
@@ -102,12 +106,19 @@ class BulkCreateCsvTestCase(APITestCase):
 
         users = User.objects.all()
         profiles = Profile.objects.all()
-        print("USERS: ", users)
 
         self.assertEqual(response.status_code, 400)
         self.assertEqual(
             response.json()["error"],
             "Operation aborted. Invalid OrgUnit 99998 at row : 1. Fix the error " "and try again.",
         )
-        self.assertEqual(len(users), 3)
-        self.assertEqual(len(profiles), 2)
+        self.assertEqual(len(users), 4)
+        self.assertEqual(len(profiles), 3)
+
+    def test_user_cant_access_without_permission(self):
+
+        self.client.force_authenticate(self.obi)
+
+        response = self.client.get("/api/bulkcreateuser/")
+
+        self.assertEqual(response.status_code, 403)

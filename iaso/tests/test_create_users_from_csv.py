@@ -1,3 +1,4 @@
+import csv
 import uuid
 
 from django.contrib.auth.models import User
@@ -5,8 +6,9 @@ from django.core.files import File
 from unittest import mock
 
 from iaso import models as m
-from iaso.models import EntityType, Instance, Entity, Profile
+from iaso.models import Profile, BulkCreateUserCsvFile
 from iaso.test import APITestCase
+import pandas as pd
 
 
 class BulkCreateCsvTestCase(APITestCase):
@@ -122,3 +124,27 @@ class BulkCreateCsvTestCase(APITestCase):
         response = self.client.get("/api/bulkcreateuser/")
 
         self.assertEqual(response.status_code, 403)
+
+    def test_password_delete_after_import(self):
+        self.client.force_authenticate(self.yoda)
+
+        pswd_deleted = True
+
+        with open("iaso/tests/fixtures/test_user_bulk_create_valid.csv") as csv_users:
+            response = self.client.post(f"/api/bulkcreateuser/", {"file": csv_users})
+
+        csv_file = BulkCreateUserCsvFile.objects.last()
+
+        file = open(csv_file.file.path, "r")
+        reader = csv.reader(file)
+        i = 0
+        csv_indexes = []
+        for row in reader:
+            if i > 0:
+                pswd_deleted = True if row[csv_indexes.index("password")] == "" else False
+            else:
+                csv_indexes = row
+            i += 1
+
+        self.assertEqual(pswd_deleted, True)
+        self.assertEqual(response.status_code, 200)

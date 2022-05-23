@@ -6,6 +6,7 @@ from rest_framework.viewsets import ModelViewSet
 from rest_framework import serializers, status, permissions
 from django.core import validators
 import csv
+import pandas as pd
 
 from iaso.models import BulkCreateUserCsvFile, Profile, Account, OrgUnit
 
@@ -34,7 +35,7 @@ class BulkCreateUserFromCsvViewSet(ModelViewSet):
         return BulkCreateUserSerializer
 
     def get_queryset(self):
-        queryset = BulkCreateUserCsvFile.objects.filter(account=self.request.user.iaso_profile.account)
+        queryset = BulkCreateUserCsvFile.objects.none()
 
         return queryset
 
@@ -136,9 +137,13 @@ class BulkCreateUserFromCsvViewSet(ModelViewSet):
                         profile.language = "fr"
                     profile.org_units.set(org_units_list)
                     profile.save()
+                    csv_file = pd.read_csv(file_instance.file.path)
+                    csv_file.at[i - 1, "password"] = ""
+                    csv_file.to_csv(file_instance.file.path, index=False)
                 else:
                     csv_indexes = row
                 i += 1
-        csv_files = BulkCreateUserCsvFile.objects.filter(account=self.request.user.iaso_profile.account)
+            file.close()
+        csv_files = BulkCreateUserCsvFile.objects.none()
         serializer = BulkCreateUserSerializer(csv_files, many=True)
         return Response(serializer.data)

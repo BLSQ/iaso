@@ -177,7 +177,7 @@ const InstancesFiltersComponent = ({
                         label={MESSAGES.forms}
                         loading={fetchingForms}
                     />
-                    <Box mt={-1} id="ou-tree-input">
+                    <Box id="ou-tree-input">
                         <OrgUnitTreeviewModal
                             toggleOnLabelClick={false}
                             titleMessage={MESSAGES.org_unit}
@@ -259,8 +259,9 @@ const InstancesFiltersComponent = ({
                         type="select"
                         loading={fetchingDevicesOwnerships}
                         options={devicesOwnerships.map(o => ({
-                            label: `${getDisplayName(o.user)} - IMEI:${o.device.imei
-                                }`,
+                            label: `${getDisplayName(o.user)} - IMEI:${
+                                o.device.imei
+                            }`,
                             value: o.id,
                         }))}
                         label={MESSAGES.deviceOwnership}

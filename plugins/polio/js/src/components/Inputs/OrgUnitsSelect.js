@@ -1,10 +1,10 @@
 import React from 'react';
-import { CircularProgress } from '@material-ui/core';
+import { CircularProgress, Box } from '@material-ui/core';
 import PropTypes from 'prop-types';
 import { OrgUnitTreeviewModal } from 'Iaso/domains/orgUnits/components/TreeView/OrgUnitTreeviewModal';
 import { useGetOrgUnit } from 'Iaso/domains/orgUnits/components/TreeView/requests';
 
-export const OrgUnitsLevels = ({ field, form, label }) => {
+export const OrgUnitsLevels = ({ field, form, label, required }) => {
     const { name } = field;
     const {
         setFieldValue,
@@ -17,8 +17,7 @@ export const OrgUnitsLevels = ({ field, form, label }) => {
     const { data: initialOrgUnit, isLoading } = useGetOrgUnit(initialOrgUnitId);
 
     return (
-        <>
-            {isLoading && <CircularProgress />}
+        <Box position="relative">
             <OrgUnitTreeviewModal
                 titleMessage={label}
                 toggleOnLabelClick={false}
@@ -30,9 +29,28 @@ export const OrgUnitsLevels = ({ field, form, label }) => {
                 showStatusIconInTree={false}
                 showStatusIconInPicker={false}
                 errors={errors}
+                required={required}
             />
-        </>
+            {isLoading && (
+                <Box
+                    display="flex"
+                    justifyContent="center"
+                    position="absolute"
+                    width="100%"
+                    height="100%"
+                    alignItems="center"
+                    top="0"
+                    left="0"
+                >
+                    <CircularProgress size={20} />
+                </Box>
+            )}
+        </Box>
     );
+};
+
+OrgUnitsLevels.defaultProps = {
+    required: false,
 };
 
 OrgUnitsLevels.propTypes = {
@@ -47,4 +65,5 @@ OrgUnitsLevels.propTypes = {
         setFieldTouched: PropTypes.func.isRequired,
     }).isRequired,
     label: PropTypes.string.isRequired,
+    required: PropTypes.bool,
 };

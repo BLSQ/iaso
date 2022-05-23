@@ -58,7 +58,16 @@ class TeamSerializer(serializers.ModelSerializer):
     users_details = NestedUserSerializer(many=True, read_only=True, source="users")
     sub_teams_details = NestedTeamSerializer(many=True, read_only=True, source="sub_teams")
 
-    # TODO validate children
+    def validate_sub_teams(self, values):
+        def recursive_check(instance, children):
+            for child in children:
+                if instance == child:
+                    raise serializers.ValidationError("Cannot create loop in tree")
+                recursive_check(instance, child.sub_teams.all())
+
+        if self.instance:
+            recursive_check(self.instance, values)
+        return values
 
     def validate(self, attrs):
         validated_data = super(TeamSerializer, self).validate(attrs)
@@ -98,6 +107,14 @@ class TeamSearchFilterBackend(filters.BaseFilterBackend):
 
 
 class TeamViewSet(ModelViewSet):
+    """Api for teams
+
+    Read access for all auth users.
+    Write access necessitate iaso_teams permissions.
+
+    The tree assignation are handled by settings the child sub teams (parent is readonly)
+    """
+
     remove_results_key_if_paginated = True
     filter_backends = [filters.OrderingFilter, DjangoFilterBackend, TeamSearchFilterBackend, DeletionFilterBackend]
     permission_classes = [ReadOnlyOrHasPermission("menupermissions.iaso_teams")]

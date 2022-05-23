@@ -286,7 +286,7 @@ class PlanningAdmin(admin.ModelAdmin):
         # "forms",
         "team",
     )
-    list_filter = ("project", "org_unit")
+    list_filter = ("project",)
     date_hierarchy = "started_at"
 
     fieldsets = [
@@ -303,7 +303,6 @@ class PlanningAdmin(admin.ModelAdmin):
                 ),
             },
         ),
-        ("other", {"fields": ("type",)}),
         (
             "update info",
             {
@@ -315,6 +314,7 @@ class PlanningAdmin(admin.ModelAdmin):
             },
         ),
     ]
+    readonly_fields = ("updated_at", "created_at")
 
 
 class TeamAdmin(admin.ModelAdmin):

@@ -155,59 +155,77 @@ export const CreateEditPlanning: FunctionComponent<Props> = ({
                 renderTrigger={renderTrigger}
             >
                 <Grid container spacing={2}>
-                    <Grid container item spacing={2}>
-                        <Grid xs={6} item>
-                            <InputComponent
-                                keyValue="name"
-                                onChange={onChange}
-                                value={values.name}
-                                errors={getErrors('name')}
-                                type="text"
-                                label={MESSAGES.name}
-                                required
-                            />
-                        </Grid>
-                        <Grid xs={6} item>
-                            <InputComponent
-                                type="select"
-                                keyValue="selectedTeam"
-                                onChange={onChange}
-                                value={values.selectedTeam}
-                                errors={getErrors('selectedTeam')}
-                                label={MESSAGES.team}
-                                required
-                                options={teamsDropdown}
-                                loading={isFetchingTeams}
-                            />
-                        </Grid>
+                    <Grid xs={6} item>
+                        <InputComponent
+                            keyValue="name"
+                            onChange={onChange}
+                            value={values.name}
+                            errors={getErrors('name')}
+                            type="text"
+                            label={MESSAGES.name}
+                            required
+                        />
+                        <InputComponent
+                            keyValue="description"
+                            onChange={onChange}
+                            value={values.description}
+                            errors={getErrors('description')}
+                            type="text"
+                            label={MESSAGES.description}
+                        />
+                        <InputComponent
+                            type="select"
+                            keyValue="forms"
+                            onChange={(keyValue, value) => {
+                                onChange(
+                                    keyValue,
+                                    commaSeparatedIdsToArray(value),
+                                );
+                            }}
+                            value={values.forms}
+                            errors={getErrors('forms')}
+                            label={MESSAGES.forms}
+                            required
+                            multi
+                            options={formsDropdown}
+                            loading={isFetchingForms}
+                        />
                     </Grid>
-                    <Grid container item spacing={2}>
-                        <Grid xs={6} item>
-                            <InputComponent
-                                keyValue="description"
-                                onChange={onChange}
-                                value={values.description}
-                                errors={getErrors('description')}
-                                type="text"
-                                label={MESSAGES.description}
-                            />
-                        </Grid>
-                        <Grid xs={6} item>
-                            <InputComponent
-                                type="select"
-                                keyValue="project"
-                                onChange={onChange}
-                                value={values.project}
-                                errors={getErrors('project')}
-                                label={MESSAGES.project}
+                    <Grid xs={6} item>
+                        <InputComponent
+                            type="select"
+                            keyValue="selectedTeam"
+                            onChange={onChange}
+                            value={values.selectedTeam}
+                            errors={getErrors('selectedTeam')}
+                            label={MESSAGES.team}
+                            required
+                            options={teamsDropdown}
+                            loading={isFetchingTeams}
+                        />
+                        <InputComponent
+                            type="select"
+                            keyValue="project"
+                            onChange={onChange}
+                            value={values.project}
+                            errors={getErrors('project')}
+                            label={MESSAGES.project}
+                            required
+                            options={projectsDropdown}
+                            loading={isFetchingProjects}
+                        />
+                        <Box mt={1}>
+                            <Field
                                 required
-                                options={projectsDropdown}
-                                loading={isFetchingProjects}
+                                component={OrgUnitSelect}
+                                label={formatMessage(MESSAGES.selectOrgUnit)}
+                                name="selectedOrgUnit"
                             />
-                        </Grid>
+                        </Box>
                     </Grid>
                     <Grid item xs={12}>
                         <DatesRange
+                            marginTop={-2}
                             onChangeDate={onChange}
                             dateFrom={values.startDate}
                             dateTo={values.endDate}
@@ -221,38 +239,6 @@ export const CreateEditPlanning: FunctionComponent<Props> = ({
                             ]}
                             blockInvalidDates={false}
                         />
-                    </Grid>
-                    <Grid container item spacing={2}>
-                        <Grid xs={6} item>
-                            <InputComponent
-                                type="select"
-                                keyValue="forms"
-                                onChange={(keyValue, value) => {
-                                    onChange(
-                                        keyValue,
-                                        commaSeparatedIdsToArray(value),
-                                    );
-                                }}
-                                value={values.forms}
-                                errors={getErrors('forms')}
-                                label={MESSAGES.forms}
-                                required
-                                multi
-                                options={formsDropdown}
-                                loading={isFetchingForms}
-                            />
-                        </Grid>
-                        <Grid xs={6} item>
-                            <Box mt={1}>
-                                <Field
-                                    component={OrgUnitSelect}
-                                    label={formatMessage(
-                                        MESSAGES.selectOrgUnit,
-                                    )}
-                                    name="selectedOrgUnit"
-                                />
-                            </Box>
-                        </Grid>
                     </Grid>
                     <Grid item>
                         <InputComponent

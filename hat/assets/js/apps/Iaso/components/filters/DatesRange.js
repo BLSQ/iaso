@@ -60,6 +60,7 @@ const DatesRange = ({
     keyDateTo = 'dateTo',
     errors,
     blockInvalidDates,
+    marginTop,
 }) => {
     const classes = useStyles();
     const [from, setFrom] = useState(dateFrom);
@@ -84,7 +85,7 @@ const DatesRange = ({
     return (
         <Grid container spacing={useCurrentBreakPointSpacing(xs, sm, md, lg)}>
             <Grid item xs={xs} sm={sm} md={md} lg={lg}>
-                <Box mt={2}>
+                <Box mt={marginTop}>
                     <FormControl errors={errors[0]}>
                         <KeyboardDatePicker
                             autoOk
@@ -137,7 +138,7 @@ const DatesRange = ({
                 </Box>
             </Grid>
             <Grid item xs={xs} sm={sm} md={md} lg={lg}>
-                <Box mt={2}>
+                <Box mt={marginTop}>
                     <FormControl errors={errors[1]}>
                         <KeyboardDatePicker
                             autoOk
@@ -207,6 +208,7 @@ DatesRange.defaultProps = {
     keyDateTo: 'dateTo',
     errors: [[], []],
     blockInvalidDates: true,
+    marginTop: 2,
 };
 
 DatesRange.propTypes = {
@@ -224,6 +226,7 @@ DatesRange.propTypes = {
     keyDateTo: PropTypes.string,
     errors: PropTypes.array,
     blockInvalidDates: PropTypes.bool,
+    marginTop: PropTypes.number,
 };
 
 const DatesRangeIntl = injectIntl(DatesRange);

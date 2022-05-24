@@ -1254,7 +1254,7 @@ class LQASStatsViewSet(viewsets.ViewSet):
                 if not campaign:
                     campaign = find_lqas_im_campaign_cached(campaigns, today, country, None, "lqas")
                     if campaign:
-                        campaign_name = campaign_name
+                        campaign_name = campaign.obr_name
                         campaign_stats[campaign_name]["bad_round_number"] += 1
 
                 if not campaign:

@@ -264,15 +264,11 @@ const OrgUnits = props => {
     };
 
     useEffect(() => {
-        if (params.searchActive !== true) {
-            dispatch(setFiltersUpdated(true));
-            dispatch(resetOrgUnits());
-        }
         return () => {
             dispatch(setFiltersUpdated(false));
             dispatch(resetOrgUnits());
         };
-    }, [dispatch, params.searchActive]);
+    }, []);
 
     useSkipEffectOnMount(() => {
         if (!filtersUpdated) {
@@ -285,7 +281,7 @@ const OrgUnits = props => {
             fetchOrgUnits();
         }
     }, [searches]);
-
+    console.log('filtersUpdated', filtersUpdated);
     const handleChangeTab = newtab => {
         setTab(newtab);
         const newParams = {

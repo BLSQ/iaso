@@ -159,7 +159,7 @@ class BulkCreateCsvTestCase(APITestCase):
         self.assertEqual(
             response.json()["error"],
             "Operation aborted. Error at row 3. Password must contains 6 "
-            "characters at least. Fix the "
+            "characters at least and alpha numeric. Fix the "
             "error and try "
             "again.",
         )

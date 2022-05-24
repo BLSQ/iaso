@@ -1,4 +1,5 @@
 from django.contrib.auth.models import User
+from django.contrib.auth.password_validation import validate_password
 from django.core.exceptions import ValidationError, ObjectDoesNotExist
 from django.db import IntegrityError, transaction
 from rest_framework.response import Response
@@ -47,7 +48,7 @@ class BulkCreateUserFromCsvViewSet(ModelViewSet):
                 file=user_csv, created_by=request.user, account=request.user.iaso_profile.account
             )
             file_instance.save()
-            file = open(file_instance.file.path, "r")
+            file = open(file_instance.file.path, "r", encoding="utf-8")
             reader = csv.reader(file)
             i = 0
             csv_indexes = []
@@ -65,10 +66,13 @@ class BulkCreateUserFromCsvViewSet(ModelViewSet):
                             status=status.HTTP_400_BAD_REQUEST,
                         )
                     try:
-                        if len(row[csv_indexes.index("password")]) < 5:
+                        try:
+                            validate_password(row[csv_indexes.index("password")])
+                        except ValidationError:
                             return Response(
                                 {
-                                    "error": "Operation aborted. Error at row {0}. Password must contains 6 characters at least. Fix the "
+                                    "error": "Operation aborted. Error at row {0}. Password must contains 6 "
+                                    "characters at least and alpha numeric. Fix the "
                                     "error and try "
                                     "again.".format(i, row[csv_indexes.index("username")])
                                 },

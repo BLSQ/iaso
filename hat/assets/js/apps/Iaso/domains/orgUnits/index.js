@@ -281,7 +281,6 @@ const OrgUnits = props => {
             fetchOrgUnits();
         }
     }, [searches]);
-    console.log('filtersUpdated', filtersUpdated);
     const handleChangeTab = newtab => {
         setTab(newtab);
         const newParams = {

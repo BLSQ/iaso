@@ -148,3 +148,18 @@ class BulkCreateCsvTestCase(APITestCase):
 
         self.assertEqual(pswd_deleted, True)
         self.assertEqual(response.status_code, 200)
+
+    def test_upload_invalid_password(self):
+        self.client.force_authenticate(self.yoda)
+
+        with open("iaso/tests/fixtures/test_user_bulk_create_invalid_password.csv") as csv_users:
+            response = self.client.post(f"/api/bulkcreateuser/", {"file": csv_users})
+
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(
+            response.json()["error"],
+            "Operation aborted. Error at row 3. Password must contains 6 "
+            "characters at least. Fix the "
+            "error and try "
+            "again.",
+        )

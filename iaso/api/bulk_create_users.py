@@ -65,70 +65,66 @@ class BulkCreateUserFromCsvViewSet(ModelViewSet):
                             status=status.HTTP_400_BAD_REQUEST,
                         )
                     try:
+                        if len(row[csv_indexes.index("password")]) < 5:
+                            return Response(
+                                {
+                                    "error": "Operation aborted. Error at row {0}. Password must contains 6 characters at least. Fix the "
+                                             "error and try "
+                                             "again.".format(i, row[csv_indexes.index("username")])
+                                },
+                                status=status.HTTP_400_BAD_REQUEST,
+                            )
+
                         user = User.objects.create(
                             username=row[csv_indexes.index("username")],
                             first_name=row[csv_indexes.index("first_name")],
                             last_name=row[csv_indexes.index("last_name")],
                             email=row[csv_indexes.index("email")],
-                            password=row[csv_indexes.index("password")],
                         )
+                        user.set_password(row[csv_indexes.index("password")])
                         user.save()
                     except IntegrityError:
                         return Response(
                             {
                                 "error": "Operation aborted. Error at row {0} Account already exists : {1}. Fix the "
-                                "error and try "
-                                "again.".format(i, row[csv_indexes.index("username")])
+                                         "error and try "
+                                         "again.".format(i, row[csv_indexes.index("username")])
                             },
                             status=status.HTTP_400_BAD_REQUEST,
                         )
                     org_units = row[csv_indexes.index("orgunit")]
                     if org_units:
-                        if org_units.isdigit():
+                        org_units = org_units.split(",")
+                        for ou in org_units:
+                            ou = ou[1::] if ou[:1] == " " else ou
                             try:
-                                org_units_list.append(OrgUnit.objects.get(id=org_units))
-                            except ObjectDoesNotExist:
-                                return Response(
-                                    {
-                                        "error": "Operation aborted. Invalid OrgUnit {0} at row : {1}. Fix the error "
-                                        "and try "
-                                        "again.".format(org_units, i)
-                                    },
-                                    status=status.HTTP_400_BAD_REQUEST,
-                                )
-
-                        if "," in org_units:
-                            org_units = org_units.split(",")
-                            for ou in org_units:
-                                ou = ou[1::] if ou[:1] == " " else ou
-                                try:
-                                    if int(ou):
-                                        try:
-                                            ou = OrgUnit.objects.get(id=ou)
-                                            org_units_list.append(ou)
-                                        except ObjectDoesNotExist:
-                                            return Response(
-                                                {
-                                                    "error": "Operation aborted. Invalid OrgUnit {0} at row : {1}. "
-                                                    "Fix the error "
-                                                    "and try "
-                                                    "again.".format(ou, i)
-                                                },
-                                                status=status.HTTP_400_BAD_REQUEST,
-                                            )
-                                except ValueError:
+                                if int(ou):
                                     try:
-                                        org_units_list.append(OrgUnit.objects.get(name=ou))
+                                        ou = OrgUnit.objects.get(id=ou)
+                                        org_units_list.append(ou)
                                     except ObjectDoesNotExist:
                                         return Response(
                                             {
-                                                "error": "Operation aborted. Invalid OrgUnit {0} at row : {1}. Fix "
-                                                "the error "
-                                                "and try "
-                                                "again.".format(ou, i)
+                                                "error": "Operation aborted. Invalid OrgUnit {0} at row : {1}. "
+                                                         "Fix the error "
+                                                         "and try "
+                                                         "again.".format(ou, i)
                                             },
                                             status=status.HTTP_400_BAD_REQUEST,
                                         )
+                            except ValueError:
+                                try:
+                                    org_units_list.append(OrgUnit.objects.get(name=ou))
+                                except ObjectDoesNotExist:
+                                    return Response(
+                                        {
+                                            "error": "Operation aborted. Invalid OrgUnit {0} at row : {1}. Fix "
+                                                     "the error "
+                                                     "and try "
+                                                     "again.".format(ou, i)
+                                        },
+                                        status=status.HTTP_400_BAD_REQUEST,
+                                    )
                     profile = Profile.objects.create(account=request.user.iaso_profile.account, user=user)
                     if row[csv_indexes.index("profile_language")]:
                         language = row[csv_indexes.index("profile_language")].lower()

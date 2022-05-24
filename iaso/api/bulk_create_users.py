@@ -69,8 +69,8 @@ class BulkCreateUserFromCsvViewSet(ModelViewSet):
                             return Response(
                                 {
                                     "error": "Operation aborted. Error at row {0}. Password must contains 6 characters at least. Fix the "
-                                             "error and try "
-                                             "again.".format(i, row[csv_indexes.index("username")])
+                                    "error and try "
+                                    "again.".format(i, row[csv_indexes.index("username")])
                                 },
                                 status=status.HTTP_400_BAD_REQUEST,
                             )
@@ -87,8 +87,8 @@ class BulkCreateUserFromCsvViewSet(ModelViewSet):
                         return Response(
                             {
                                 "error": "Operation aborted. Error at row {0} Account already exists : {1}. Fix the "
-                                         "error and try "
-                                         "again.".format(i, row[csv_indexes.index("username")])
+                                "error and try "
+                                "again.".format(i, row[csv_indexes.index("username")])
                             },
                             status=status.HTTP_400_BAD_REQUEST,
                         )
@@ -106,9 +106,9 @@ class BulkCreateUserFromCsvViewSet(ModelViewSet):
                                         return Response(
                                             {
                                                 "error": "Operation aborted. Invalid OrgUnit {0} at row : {1}. "
-                                                         "Fix the error "
-                                                         "and try "
-                                                         "again.".format(ou, i)
+                                                "Fix the error "
+                                                "and try "
+                                                "again.".format(ou, i)
                                             },
                                             status=status.HTTP_400_BAD_REQUEST,
                                         )
@@ -119,9 +119,9 @@ class BulkCreateUserFromCsvViewSet(ModelViewSet):
                                     return Response(
                                         {
                                             "error": "Operation aborted. Invalid OrgUnit {0} at row : {1}. Fix "
-                                                     "the error "
-                                                     "and try "
-                                                     "again.".format(ou, i)
+                                            "the error "
+                                            "and try "
+                                            "again.".format(ou, i)
                                         },
                                         status=status.HTTP_400_BAD_REQUEST,
                                     )

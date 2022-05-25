@@ -594,6 +594,7 @@ class AssignmentAPITestCase(APITestCase):
             p2["assignments"],
             [{"org_unit": self.child1.id, "form_ids": []}, {"org_unit": self.child2.id, "form_ids": []}],
         )
+
         # Response look like
         # [
         #     {
@@ -611,6 +612,14 @@ class AssignmentAPITestCase(APITestCase):
         #         "assignments": [{"org_unit": 3557, "form_ids": []}, {"org_unit": 3558, "form_ids": []}],
         #     },
         # ]
+
+        # user without any assignement, should get no planning
+        user = self.create_user_with_profile(username="user2", account=self.account)
+        self.client.force_authenticate(user)
+
+        response = self.client.get(f"/api/mobile/plannings/", format="json")
+        r = self.assertJSONResponse(response, 200)
+        self.assertEqual(len(r), 0)
 
     def test_query_mobile_get(self):
         self.client.force_authenticate(self.user)

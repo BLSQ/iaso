@@ -137,6 +137,9 @@ const CreateEditDialog = ({
         !isFormChanged ||
         (isFormChanged && !formik.isValid) ||
         formik.isSubmitting;
+
+    const roundErrors = [];
+
     return (
         <Dialog
             fullWidth
@@ -185,6 +188,62 @@ const CreateEditDialog = ({
                             )}
                         </Grid>
                     </Grid>
+                    {formik.errors.rounds && (
+                        <Grid container justifyContent="flex-end">
+                            <Grid item md={6}>
+                                {formik.errors.rounds?.forEach(
+                                    (roundError, index) => {
+                                        if (
+                                            roundError &&
+                                            (roundError.started_at ||
+                                                roundError.ended_at)
+                                        ) {
+                                            const round =
+                                                formik.values.rounds[index];
+
+                                            if (round) {
+                                                if (roundError.started_at) {
+                                                    roundErrors.push(
+                                                        <Typography
+                                                            key={`round-${round.number}-start-date`}
+                                                            color="error"
+                                                        >
+                                                            {formatMessage(
+                                                                MESSAGES.roundEmptyStartDate,
+                                                                {
+                                                                    roundNumber:
+                                                                        round.number,
+                                                                },
+                                                            )}
+                                                        </Typography>,
+                                                    );
+                                                }
+
+                                                if (roundError.ended_at) {
+                                                    roundErrors.push(
+                                                        <Typography
+                                                            key={`round-${round.number}-end-date`}
+                                                            color="error"
+                                                        >
+                                                            {formatMessage(
+                                                                MESSAGES.roundEmptyEndDate,
+                                                                {
+                                                                    roundNumber:
+                                                                        round.number,
+                                                                },
+                                                            )}
+                                                        </Typography>,
+                                                    );
+                                                }
+                                            }
+                                        }
+                                        return roundErrors;
+                                    },
+                                )}
+                                {roundErrors}
+                            </Grid>
+                        </Grid>
+                    )}
                 </FormikProvider>
             </DialogContent>
             <DialogActions className={classes.action}>

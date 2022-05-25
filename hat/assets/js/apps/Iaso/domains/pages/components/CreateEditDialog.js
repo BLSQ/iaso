@@ -27,7 +27,7 @@ import { useSavePage } from '../hooks/useSavePage';
 import { useGetProfiles } from '../../users/hooks/useGetProfiles';
 import MESSAGES from '../messages';
 import { PAGES_TYPES, IFRAME, TEXT, RAW } from '../constants';
-import getDisplayName from '../../../utils/usersUtils';
+import getDisplayName, { useCurrentUser } from '../../../utils/usersUtils';
 
 const useStyles = makeStyles(theme => ({
     ...commonStyles(theme),
@@ -45,7 +45,7 @@ const CreateEditDialog = ({ isOpen, onClose, selectedPage }) => {
     const { data } = useGetProfiles();
     const profiles = data ? data.profiles : [];
 
-    const currentUser = useSelector(state => state.users.current);
+    const currentUser = useCurrentUser();
     const profilesList = profiles
         .filter(p => p.id !== currentUser.id)
         .map(p => ({

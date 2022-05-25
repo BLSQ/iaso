@@ -26,6 +26,7 @@ import MESSAGES from './messages';
 
 import { redirectTo } from '../../routing/actions';
 import { convertObjectToString } from '../../utils';
+import { useCurrentUser } from '../../utils/usersUtils';
 
 const baseUrl = baseUrls.users;
 
@@ -35,7 +36,7 @@ const useStyles = makeStyles(theme => ({
 
 const Users = ({ params }) => {
     const classes = useStyles();
-    const currentUser = useSelector(state => state.users.current);
+    const currentUser = useCurrentUser();
     const [resetPageToOne, setResetPageToOne] = useState(
         convertObjectToString({
             pageSize: params.pageSize,

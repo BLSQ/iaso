@@ -29,6 +29,7 @@ import WidgetPaper from '../../../components/papers/WidgetPaperComponent';
 import SpeedDialInstanceActions from '../../instances/components/SpeedDialInstanceActions';
 import EnketoIcon from '../../instances/components/EnketoIcon';
 import { userHasPermission } from '../../users/utils';
+import { useCurrentUser } from '../../../utils/usersUtils';
 // reformatting orgUnit name so the OU can be passed to the treeview modal
 // and selecting the parent for display
 const useStyles = makeStyles(theme => ({
@@ -116,7 +117,7 @@ const Actions = (
     saveOu,
     setFieldErrors,
 ) => {
-    const currentUser = useSelector(state => state.users.current);
+    const currentUser = useCurrentUser();
     const referenceSubmission = orgUnit.reference_instance;
     const linkOrgUnit =
         formId !== referenceFormId || referenceSubmission !== null;

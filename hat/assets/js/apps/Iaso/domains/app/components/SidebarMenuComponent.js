@@ -33,6 +33,7 @@ import MESSAGES from './messages';
 import { listMenuPermission, userHasOneOfPermissions } from '../../users/utils';
 import { getDefaultSourceVersion } from '../../dataSources/utils';
 import { PluginsContext } from '../../../utils';
+import { useCurrentUser } from '../../../utils/usersUtils';
 
 const styles = theme => ({
     ...commonStyles(theme),
@@ -89,7 +90,6 @@ const SidebarMenu = ({
     isOpen,
     toggleSidebar,
     location,
-    currentUser,
     intl,
     activeLocale,
 }) => {
@@ -99,6 +99,7 @@ const SidebarMenu = ({
           window.open(url);
         }
     };
+    const currentUser = useCurrentUser();
 
     const getMenuItem = (menuItem) => {
       return (
@@ -229,7 +230,6 @@ SidebarMenu.propTypes = {
 
 const MapStateToProps = state => ({
     isOpen: state.sidebar.isOpen,
-    currentUser: state.users.current,
     activeLocale: state.app.locale,
 });
 

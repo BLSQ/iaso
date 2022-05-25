@@ -48,6 +48,7 @@ import {
     getLinksSources,
     getOrgUnitsTree,
 } from './utils';
+import { useCurrentUser } from '../../utils/usersUtils';
 
 const baseUrl = baseUrls.orgUnitDetails;
 const useStyles = makeStyles(theme => ({
@@ -115,7 +116,7 @@ const OrgUnitDetail = ({ params, router }) => {
 
     const prevPathname =
         useSelector(state => state.routerCustom.prevPathname) || null;
-    const currentUser = useSelector(state => state.users.current);
+    const currentUser = useCurrentUser();
 
     const [currentOrgUnit, setCurrentOrgUnit] = useState(null);
     const [tab, setTab] = useState(params.tab ? params.tab : 'infos');

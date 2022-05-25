@@ -43,7 +43,6 @@ class BulkCreateUserFromCsvViewSet(ModelViewSet):
 
     @transaction.atomic
     def create(self, request, *args, **kwargs):
-        created_users = []
         if request.FILES:
             user_csv = request.FILES["file"]
             file_instance = BulkCreateUserCsvFile.objects.create(
@@ -86,7 +85,6 @@ class BulkCreateUserFromCsvViewSet(ModelViewSet):
                             email=row[csv_indexes.index("email")],
                         )
                         user.set_password(row[csv_indexes.index("password")])
-                        created_users.append(user)
                     except IntegrityError:
                         raise serializers.ValidationError(
                             {
@@ -126,6 +124,7 @@ class BulkCreateUserFromCsvViewSet(ModelViewSet):
                                             "again. Use Orgunit ID instead of name".format(ou, i)
                                         }
                                     )
+                    user.save()
                     profile = Profile.objects.create(account=request.user.iaso_profile.account, user=user)
                     if row[csv_indexes.index("profile_language")]:
                         language = row[csv_indexes.index("profile_language")].lower()
@@ -133,7 +132,6 @@ class BulkCreateUserFromCsvViewSet(ModelViewSet):
                     else:
                         profile.language = "fr"
                     profile.org_units.set(org_units_list)
-                    created_users.append(profile)
                     csv_file = pd.read_csv(file_instance.file.path)
                     csv_file.at[i - 1, "password"] = ""
                     csv_file.to_csv(file_instance.file.path, index=False)
@@ -141,8 +139,6 @@ class BulkCreateUserFromCsvViewSet(ModelViewSet):
                     csv_indexes = row
                 i += 1
             file.close()
-        for user in created_users:
-            user.save()
         csv_files = BulkCreateUserCsvFile.objects.none()
         serializer = BulkCreateUserSerializer(csv_files, many=True)
         return Response(serializer.data)

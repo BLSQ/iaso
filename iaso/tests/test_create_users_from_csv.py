@@ -232,5 +232,5 @@ class BulkCreateCsvTestCase(APITestCase):
         print(self.jedi_council.id, self.jedi_council.id, 9999, self.tatooine.id)
 
         self.assertEqual(ou_list, [9999])
-        self.assertEqual(ou_f_list, [1, 2, 9999])
+        self.assertEqual(ou_f_list, [self.jedi_council_corruscant.id, self.tatooine.id, 9999])
         self.assertEqual(response.status_code, 200)

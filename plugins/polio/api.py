@@ -869,10 +869,17 @@ def find_lqas_im_campaign(campaigns, today, country, round_number: Optional[int]
     return None
 
 
-def find_campaign_on_day(campaigns, day, country):
+def get_round_campaign(c, index):
+    if index == 0:
+        return c.get_round_one()
+    if index == 1:
+        return c.get_round_two()
+
+
+def find_campaign_on_day(campaigns, day, country, get_round_campaign_cached):
     for c in campaigns:
-        round_one = c.get_round_one()
-        round_two = c.get_round_two()
+        round_one = get_round_campaign_cached(c, 0)
+        round_two = get_round_campaign_cached(c, 1)
         if not (round_one and round_one.started_at):
             continue
         round_end = round_two.ended_at if (round_two and round_two.ended_at) else round_one.ended_at
@@ -909,7 +916,9 @@ def handle_ona_request_with_key(request, key):
     res = []
     failure_count = 0
     campaigns = Campaign.objects.all().filter(deleted_at=None)
+
     form_count = 0
+    get_round_campaign_cached = functools.lru_cache(None)(get_round_campaign)
     find_campaign_on_day_cached = functools.lru_cache(None)(find_campaign_on_day)
     for config in config.content:
         forms = get_url_content(
@@ -926,8 +935,9 @@ def handle_ona_request_with_key(request, key):
 
         for form in forms:
             try:
-                today = datetime.strptime(form["today"], "%Y-%m-%d").date()
-                campaign = find_campaign_on_day_cached(campaigns, today, country)
+                today_string = form["today"]
+                today = datetime.strptime(today_string, "%Y-%m-%d").date()
+                campaign = find_campaign_on_day_cached(campaigns, today, country, get_round_campaign_cached)
                 district_name = form.get("District", "")
                 facility_name = form.get("facility", None)
                 # some form version for Senegal had their facility column as Facility with an uppercase.

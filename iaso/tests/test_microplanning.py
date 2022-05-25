@@ -1,6 +1,7 @@
 import mock
 from django.contrib.auth.models import User
 from django.test import TransactionTestCase
+from django.utils.timezone import now
 
 from iaso.api.microplanning import TeamSerializer, PlanningSerializer, AssignmentSerializer
 from iaso.models import Account, DataSource, SourceVersion, OrgUnit, Form, OrgUnitType
@@ -574,6 +575,7 @@ class AssignmentAPITestCase(APITestCase):
         )
 
         plannings = Planning.objects.filter(assignment__user=self.user).distinct()
+        Planning.objects.update(published_at=now())
         self.assertEqual(plannings.count(), 2)
 
         self.client.force_authenticate(self.user)
@@ -612,12 +614,14 @@ class AssignmentAPITestCase(APITestCase):
 
     def test_query_mobile_get(self):
         self.client.force_authenticate(self.user)
+        Planning.objects.update(published_at=now())
         response = self.client.get(f"/api/mobile/plannings/{self.planning.id}/", format="json")
         self.assertEqual(response.status_code, 200)
 
     def test_query_mobile_no_modification(self):
         self.user.is_superuser = True
         self.user.save()
+        Planning.objects.update(published_at=now())
 
         self.client.force_authenticate(self.user)
         response = self.client.delete(f"/api/mobile/plannings/{self.planning.id}/", format="json")

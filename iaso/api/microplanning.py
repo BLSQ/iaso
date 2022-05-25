@@ -348,4 +348,12 @@ class MobilePlanningViewSet(ModelViewSet):
 
     def get_queryset(self):
         user = self.request.user
-        return Planning.objects.filter(assignment__user=user).distinct()
+        # Only return  planning which 1. contain assignment for user 2. are published 3. undeleted
+        # distinct is necessary otherwhise if a planning contain multiple assignment for the same user it got duplicated
+
+        return (
+            Planning.objects.filter(assignment__user=user)
+            .exclude(published_at__isnull=True)
+            .filter(deleted_at__isnull=True)
+            .distinct()
+        )

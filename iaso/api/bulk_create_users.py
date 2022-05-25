@@ -1,6 +1,6 @@
 from django.contrib.auth.models import User
 from django.contrib.auth.password_validation import validate_password
-from django.core.exceptions import ValidationError, ObjectDoesNotExist
+from django.core.exceptions import ValidationError, ObjectDoesNotExist, MultipleObjectsReturned
 from django.db import IntegrityError, transaction
 from rest_framework.response import Response
 from rest_framework.viewsets import ModelViewSet
@@ -15,7 +15,8 @@ from iaso.models import BulkCreateUserCsvFile, Profile, Account, OrgUnit
 class BulkCreateUserSerializer(serializers.ModelSerializer):
     class Meta:
         model = BulkCreateUserCsvFile
-        fields = ["file", "created_by", "created_at", "account"]
+        fields = ["file"]
+        read_only_fields = ["created_by", "created_at", "account"]
 
 
 class HasUserPermission(permissions.BasePermission):
@@ -59,25 +60,23 @@ class BulkCreateUserFromCsvViewSet(ModelViewSet):
                     try:
                         validators.validate_email(row[csv_indexes.index("email")])
                     except ValidationError:
-                        return Response(
+                        raise serializers.ValidationError(
                             {
-                                "Operation aborted. Invalid Email at row : {0}. Fix the error and try "
+                                "error": "Operation aborted. Invalid Email at row : {0}. Fix the error and try "
                                 "again.".format(i)
-                            },
-                            status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                            }
                         )
                     try:
                         try:
                             validate_password(row[csv_indexes.index("password")])
                         except ValidationError:
-                            return Response(
+                            raise serializers.ValidationError(
                                 {
                                     "error": "Operation aborted. Error at row {0}. Password must contains 6 "
                                     "characters at least and alpha numeric. Fix the "
                                     "error and try "
                                     "again.".format(i, row[csv_indexes.index("username")])
-                                },
-                                status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                                }
                             )
 
                         user = User.objects.create(
@@ -89,13 +88,12 @@ class BulkCreateUserFromCsvViewSet(ModelViewSet):
                         user.set_password(row[csv_indexes.index("password")])
                         created_users.append(user)
                     except IntegrityError:
-                        return Response(
+                        raise serializers.ValidationError(
                             {
                                 "error": "Operation aborted. Error at row {0} Account already exists : {1}. Fix the "
                                 "error and try "
                                 "again.".format(i, row[csv_indexes.index("username")])
-                            },
-                            status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                            }
                         )
                     org_units = row[csv_indexes.index("orgunit")]
                     if org_units:
@@ -108,27 +106,25 @@ class BulkCreateUserFromCsvViewSet(ModelViewSet):
                                         ou = OrgUnit.objects.get(id=ou)
                                         org_units_list.append(ou)
                                     except ObjectDoesNotExist:
-                                        return Response(
+                                        raise serializers.ValidationError(
                                             {
                                                 "error": "Operation aborted. Invalid OrgUnit {0} at row : {1}. "
                                                 "Fix the error "
                                                 "and try "
                                                 "again.".format(ou, i)
-                                            },
-                                            status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                                            }
                                         )
                             except ValueError:
                                 try:
                                     org_units_list.append(OrgUnit.objects.get(name=ou))
-                                except ObjectDoesNotExist:
-                                    return Response(
+                                except (ObjectDoesNotExist, MultipleObjectsReturned):
+                                    raise serializers.ValidationError(
                                         {
                                             "error": "Operation aborted. Invalid OrgUnit {0} at row : {1}. Fix "
                                             "the error "
                                             "and try "
-                                            "again.".format(ou, i)
-                                        },
-                                        status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                                            "again. Use Orgunit ID instead of name".format(ou, i)
+                                        }
                                     )
                     profile = Profile.objects.create(account=request.user.iaso_profile.account, user=user)
                     if row[csv_indexes.index("profile_language")]:

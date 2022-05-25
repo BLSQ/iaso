@@ -43,6 +43,9 @@ class BulkCreateCsvTestCase(APITestCase):
 
         cls.dagobah = m.OrgUnit.objects.create(name="Dagobah", id=9999)
 
+        cls.solana = m.OrgUnit.objects.create(name="Solana")
+        cls.solanaa = m.OrgUnit.objects.create(name="Solana")
+
         cls.project = m.Project.objects.create(
             name="Hydroponic gardens", app_id="stars.empire.agriculture.hydroponics", account=star_wars
         )
@@ -65,9 +68,9 @@ class BulkCreateCsvTestCase(APITestCase):
         with open("iaso/tests/fixtures/test_user_bulk_create_invalid_mail.csv") as csv_users:
             response = self.client.post(f"/api/bulkcreateuser/", {"file": csv_users})
 
-        self.assertEqual(response.status_code, 500)
+        self.assertEqual(response.status_code, 400)
         self.assertEqual(
-            response.json()[0], "Operation aborted. Invalid Email at row : 3. Fix the error and try again."
+            response.json()["error"], "Operation aborted. Invalid Email at row : 3. Fix the error and try again."
         )
 
     def test_upload_invalid_orgunit_id(self):
@@ -76,7 +79,7 @@ class BulkCreateCsvTestCase(APITestCase):
         with open("iaso/tests/fixtures/test_user_bulk_create_invalid_orgunit.csv") as csv_users:
             response = self.client.post(f"/api/bulkcreateuser/", {"file": csv_users})
 
-        self.assertEqual(response.status_code, 500)
+        self.assertEqual(response.status_code, 400)
         self.assertEqual(
             response.json()["error"],
             "Operation aborted. Invalid OrgUnit 99998 at row : 1. Fix the error " "and try again.",
@@ -94,7 +97,7 @@ class BulkCreateCsvTestCase(APITestCase):
         with open("iaso/tests/fixtures/test_user_bulk_create_invalid_orgunit.csv") as csv_users:
             response = self.client.post(f"/api/bulkcreateuser/", {"file": csv_users})
 
-        self.assertEqual(response.status_code, 500)
+        self.assertEqual(response.status_code, 400)
         self.assertEqual(
             response.json()["error"],
             "Operation aborted. Error at row 1 Account already exists : broly. " "Fix the error and try again.",
@@ -109,12 +112,12 @@ class BulkCreateCsvTestCase(APITestCase):
         users = User.objects.all()
         profiles = Profile.objects.all()
 
-        self.assertEqual(response.status_code, 500)
+        self.assertEqual(response.status_code, 400)
         self.assertEqual(
             response.json()["error"],
             "Operation aborted. Invalid OrgUnit 99998 at row : 1. Fix the error " "and try again.",
         )
-        self.assertEqual(len(users), 4)
+        self.assertEqual(len(users), 3)
         self.assertEqual(len(profiles), 3)
 
     def test_user_cant_access_without_permission(self):
@@ -155,7 +158,7 @@ class BulkCreateCsvTestCase(APITestCase):
         with open("iaso/tests/fixtures/test_user_bulk_create_invalid_password.csv") as csv_users:
             response = self.client.post(f"/api/bulkcreateuser/", {"file": csv_users})
 
-        self.assertEqual(response.status_code, 500)
+        self.assertEqual(response.status_code, 400)
         self.assertEqual(
             response.json()["error"],
             "Operation aborted. Error at row 3. Password must contains 6 "
@@ -177,3 +180,57 @@ class BulkCreateCsvTestCase(APITestCase):
         login_response = self.client.post("/api/token/", data=login_data, format="json")
 
         self.assertEqual(login_response.status_code, 200)
+
+    def test_upload_duplicate_ou_names(self):
+        self.client.force_authenticate(self.yoda)
+
+        with open("iaso/tests/fixtures/test_user_bulk_create_duplicated_ou_name.csv") as csv_users:
+            response = self.client.post(f"/api/bulkcreateuser/", {"file": csv_users})
+
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(
+            response.json()["error"],
+            "Operation aborted. Invalid OrgUnit Solana at row : 3. Fix "
+            "the error "
+            "and try "
+            "again. Use Orgunit ID instead of name",
+        )
+
+    def test_upload_invalid_orgunit_name(self):
+        self.client.force_authenticate(self.yoda)
+
+        with open("iaso/tests/fixtures/test_user_bulk_create_invalid_ou_name.csv") as csv_users:
+            response = self.client.post(f"/api/bulkcreateuser/", {"file": csv_users})
+
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(
+            response.json()["error"],
+            "Operation aborted. Invalid OrgUnit Bazarre at row : 3. Fix "
+            "the error "
+            "and try "
+            "again. Use Orgunit ID instead of name",
+        )
+
+    def test_users_profiles_have_right_ou(self):
+        self.client.force_authenticate(self.yoda)
+
+        with open("iaso/tests/fixtures/test_user_bulk_create_valid.csv") as csv_users:
+            response = self.client.post(f"/api/bulkcreateuser/", {"file": csv_users})
+
+        broly_ou = Profile.objects.get(user=User.objects.get(username="broly").id).org_units.all()
+        ou_list = []
+
+        for ou in broly_ou:
+            ou_list.append(ou.id)
+
+        ferdinand_ou = Profile.objects.get(user=User.objects.get(username="ferdinand").id).org_units.all()
+        ou_f_list = []
+
+        for ou in ferdinand_ou:
+            ou_f_list.append(ou.id)
+
+        print(self.jedi_council.id, self.jedi_council.id, 9999, self.tatooine.id)
+
+        self.assertEqual(ou_list, [9999])
+        self.assertEqual(ou_f_list, [1, 2, 9999])
+        self.assertEqual(response.status_code, 200)

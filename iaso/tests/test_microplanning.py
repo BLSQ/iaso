@@ -517,7 +517,6 @@ class AssignmentAPITestCase(APITestCase):
         r = self.assertJSONResponse(response, 403)
 
     def test_query_filtering(self):
-
         p = Planning.objects.create(
             project=self.project1, name="planning1", team=self.team1, org_unit=self.root_org_unit
         )
@@ -562,3 +561,70 @@ class AssignmentAPITestCase(APITestCase):
 
         response = self.client.post("/api/microplanning/assignments/", data=data, format="json")
         r = self.assertJSONResponse(response, 403)
+
+    def test_query_mobile(self):
+        p = Planning.objects.create(
+            project=self.project1, name="planning2", team=self.team1, org_unit=self.root_org_unit
+        )
+        p.assignment_set.create(org_unit=self.child1, user=self.user)
+        p.assignment_set.create(org_unit=self.child2, user=self.user)
+
+        p = Planning.objects.create(
+            project=self.project1, name="planning3", team=self.team1, org_unit=self.root_org_unit
+        )
+
+        plannings = Planning.objects.filter(assignment__user=self.user).distinct()
+        self.assertEqual(plannings.count(), 2)
+
+        self.client.force_authenticate(self.user)
+
+        response = self.client.get(f"/api/mobile/plannings/", format="json")
+        r = self.assertJSONResponse(response, 200)
+        self.assertEqual(len(r), 2)
+        # planning 1
+        p1 = r[0]
+        self.assertEqual(r[0]["name"], "planning1")
+        self.assertEqual(r[0]["assignments"], [{"org_unit": self.child1.id, "form_ids": []}])
+
+        p2 = r[1]
+        self.assertEqual(p2["name"], "planning2")
+        self.assertEqual(
+            p2["assignments"],
+            [{"org_unit": self.child1.id, "form_ids": []}, {"org_unit": self.child2.id, "form_ids": []}],
+        )
+        # Response look like
+        # [
+        #     {
+        #         "id": 161,
+        #         "name": "planning1",
+        #         "description": "",
+        #         "created_at": "2022-05-25T16:00:37.029707Z",
+        #         "assignments": [{"org_unit": 3557, "form_ids": []}],
+        #     },
+        #     {
+        #         "id": 162,
+        #         "name": "planning2",
+        #         "description": "",
+        #         "created_at": "2022-05-25T16:00:37.034614Z",
+        #         "assignments": [{"org_unit": 3557, "form_ids": []}, {"org_unit": 3558, "form_ids": []}],
+        #     },
+        # ]
+
+    def test_query_mobile_get(self):
+        self.client.force_authenticate(self.user)
+        response = self.client.get(f"/api/mobile/plannings/{self.planning.id}/", format="json")
+        self.assertEqual(response.status_code, 200)
+
+    def test_query_mobile_no_modification(self):
+        self.user.is_superuser = True
+        self.user.save()
+
+        self.client.force_authenticate(self.user)
+        response = self.client.delete(f"/api/mobile/plannings/{self.planning.id}/", format="json")
+        self.assertEqual(response.status_code, 403)
+
+        response = self.client.patch(f"/api/mobile/plannings/{self.planning.id}/", format="json")
+        self.assertEqual(response.status_code, 403)
+
+        response = self.client.post(f"/api/mobile/plannings/", data={}, format="json")
+        self.assertEqual(response.status_code, 403)

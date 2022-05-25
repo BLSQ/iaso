@@ -1,7 +1,7 @@
 from django.contrib.auth.models import User
 from django.db.models import Q
 from django_filters.rest_framework import DjangoFilterBackend
-from rest_framework import serializers, filters
+from rest_framework import serializers, filters, permissions
 from rest_framework.permissions import IsAuthenticated
 
 from iaso.api.common import ModelViewSet, DeletionFilterBackend, ReadOnlyOrHasPermission
@@ -298,3 +298,54 @@ class AssignmentViewSet(ModelViewSet):
     def get_queryset(self):
         user = self.request.user
         return self.queryset.filter_for_user(user)
+
+
+# noinspection PyMethodMayBeStatic
+class MobilePlanningSerializer(serializers.ModelSerializer):
+    "Only used to serialize for mobile"
+
+    def save(self):
+        # ensure that we can't save from here
+        raise NotImplemented
+
+    class Meta:
+        model = Planning
+        fields = [
+            "id",
+            "name",
+            "description",
+            "created_at",
+            "assignments",
+        ]
+
+    assignments = serializers.SerializerMethodField()
+
+    def get_assignments(self, planning: Planning):
+        user = self.context["request"].user
+        r = []
+        for a in planning.assignment_set.filter(user=user):
+            r.append({"org_unit": a.org_unit.id, "form_ids": [f.id for f in planning.forms.all()]})
+        return r
+
+
+class ReadOnly(permissions.BasePermission):
+    def has_permission(self, request, view):
+        if request.method in permissions.SAFE_METHODS:
+            return True
+        return False
+
+
+class MobilePlanningViewSet(ModelViewSet):
+    """Planning for mobile, contrary to the more general API.
+    it only returns the Planning where the user has assigned OrgUnit
+    and his assignments
+    """
+
+    remove_results_key_if_paginated = True
+    permission_classes = [IsAuthenticated, ReadOnly]
+    serializer_class = MobilePlanningSerializer
+    queryset = Assignment.objects.all()
+
+    def get_queryset(self):
+        user = self.request.user
+        return Planning.objects.filter(assignment__user=user).distinct()

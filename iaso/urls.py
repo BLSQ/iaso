@@ -9,7 +9,7 @@ from .api.bulk_create_users import BulkCreateUserFromCsvViewSet
 from .api.comment import CommentViewSet
 from .api.entity import EntityViewSet, EntityTypeViewSet
 from .api.logs import LogsViewSet
-from .api.microplanning import TeamViewSet, PlanningViewSet, AssignmentViewSet
+from .api.microplanning import TeamViewSet, PlanningViewSet, AssignmentViewSet, MobilePlanningViewSet
 from .api.mobile.org_units import MobileOrgUnitViewSet
 from .api.org_units import OrgUnitViewSet
 from .api.org_unit_types import OrgUnitTypeViewSet
@@ -108,6 +108,7 @@ router.register(r"bulkcreateuser", BulkCreateUserFromCsvViewSet, basename="bulkc
 router.register(r"microplanning/teams", TeamViewSet, basename="teams")
 router.register(r"microplanning/planning", PlanningViewSet, basename="planning")
 router.register(r"microplanning/assignments", AssignmentViewSet, basename="assignments")
+router.register(r"mobile/plannings", MobilePlanningViewSet, basename="mobileplanning")
 
 router.registry.extend(plugins_router.registry)
 

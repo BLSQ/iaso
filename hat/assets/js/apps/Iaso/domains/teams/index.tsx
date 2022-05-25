@@ -1,17 +1,17 @@
 import React, { FunctionComponent } from 'react';
-import { makeStyles, Box, Grid } from '@material-ui/core';
+import { makeStyles, Box } from '@material-ui/core';
 import { commonStyles, useSafeIntl } from 'bluesquare-components';
 import { useDispatch } from 'react-redux';
 import TopBar from '../../components/nav/TopBarComponent';
 import MESSAGES from './messages';
 import { TeamParams } from './types';
-// import { PlanningFilters } from './PlanningFilters';
+import { TeamFilters } from './TeamFilters';
 import { TableWithDeepLink } from '../../components/tables/TableWithDeepLink';
 import { baseUrls } from '../../constants/urls';
-// import { useGetPlannings } from './hooks/requests/useGetPlannings';
+import { useGetTeams } from './hooks/requests/useGetTeams';
 import { redirectTo } from '../../routing/actions';
-// import { planningColumns } from './config';
-// import { CreateEditPlanning } from './CreateEditPlanning/CreateEditPlanning';
+import { teamColumns } from './config';
+import { CreateEditTeam } from './CreateEditTeam';
 
 const useStyles = makeStyles(theme => ({
     ...commonStyles(theme),
@@ -21,14 +21,11 @@ type Props = {
     params: TeamParams;
 };
 const baseUrl = baseUrls.planning;
-export const Team: FunctionComponent<Props> = ({ params }) => {
-    // console.log('params', params);
+export const Teams: FunctionComponent<Props> = ({ params }) => {
     const dispatch = useDispatch();
     const classes: Record<string, string> = useStyles();
     const { formatMessage } = useSafeIntl();
-    return <div>TEAMs</div>;
-    // const { data, isFetching } = useGetPlannings(params);
-
+    const { data, isFetching } = useGetTeams(params);
     return (
         <>
             <TopBar
@@ -37,19 +34,17 @@ export const Team: FunctionComponent<Props> = ({ params }) => {
             />
 
             <Box className={classes.containerFullHeightNoTabPadded}>
-                {/* // Your code here */}
-                <PlanningFilters params={params} />
-                <Grid container justifyContent="flex-end">
-                    <Grid item>
-                        <CreateEditPlanning type="create" />
-                    </Grid>
-                </Grid>
+                <TeamFilters params={params} />
+
+                <Box display="flex" justifyContent="flex-end">
+                    <CreateEditTeam type="create" />
+                </Box>
                 <TableWithDeepLink
                     baseUrl={baseUrl}
                     data={data?.results ?? []}
                     pages={data?.pages ?? 1}
                     defaultSorted={[{ id: 'name', desc: false }]}
-                    columns={planningColumns(formatMessage)}
+                    columns={teamColumns(formatMessage)}
                     count={data?.count ?? 0}
                     params={params}
                     onTableParamsChange={p => dispatch(redirectTo(baseUrl, p))}

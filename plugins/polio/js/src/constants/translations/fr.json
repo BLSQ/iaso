@@ -51,7 +51,6 @@
     "iaso.polio.form.label.mopUpStart": "Date de début phase ratissage",
     "iaso.polio.form.label.noRegretFund": "No Regret Fund",
     "iaso.polio.form.label.obrName": "Nom OBR",
-    "iaso.polio.form.validator.error.startDateAfterEndDate": "La date de début ne peut pas être après la date de fin",
     "iaso.polio.form.label.pleaseSaveCampaign": "SVP enregistrer la campagne avant de sélectionner le périmètre",
     "iaso.polio.form.label.preventive": "Campagne préventive",
     "iaso.polio.form.label.preventive.short": "Préventive",
@@ -76,6 +75,7 @@
     "iaso.polio.form.validator.error.endDateBeforeStartDate": "La date de fin ne peut être avant la date de début",
     "iaso.polio.form.validator.error.positiveInteger": "Veuillez remplir avec un nombre entier positif",
     "iaso.polio.form.validator.error.positiveNumber": "Veuillez remplir avec un nombre positif",
+    "iaso.polio.form.validator.error.startDateAfterEndDate": "La date de début ne peut pas être après la date de fin",
     "iaso.polio.form.validator.error.startDateBeforePreviousEndDate": "La date de début ne peut être avant ou égal à la date de fin du round précédent",
     "iaso.polio.forms.deleteRound": "Effacer round",
     "iaso.polio.import_file.label": "Excel Line File",
@@ -260,5 +260,8 @@
     "iaso.polio.title.scope": "Périmètre",
     "iaso.polio.tooltip.label.lqasImDate": "Aucune date trouvée dans les données de la campagne, une date par défaut basée sur la date du round est utilisée",
     "iaso.polio.vaccine": "Vaccin",
-    "iaso.polio.vaccines": "Vaccins"
+    "iaso.polio.vaccines": "Vaccins",
+    "iaso.teams.title": "Equipes",
+    "iaso.teams.edit": "Editer une équipe",
+    "iaso.teams.create": "Créer une équipe"
 }

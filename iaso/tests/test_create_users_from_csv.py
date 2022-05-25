@@ -65,7 +65,7 @@ class BulkCreateCsvTestCase(APITestCase):
         with open("iaso/tests/fixtures/test_user_bulk_create_invalid_mail.csv") as csv_users:
             response = self.client.post(f"/api/bulkcreateuser/", {"file": csv_users})
 
-        self.assertEqual(response.status_code, 400)
+        self.assertEqual(response.status_code, 500)
         self.assertEqual(
             response.json()[0], "Operation aborted. Invalid Email at row : 3. Fix the error and try again."
         )
@@ -76,7 +76,7 @@ class BulkCreateCsvTestCase(APITestCase):
         with open("iaso/tests/fixtures/test_user_bulk_create_invalid_orgunit.csv") as csv_users:
             response = self.client.post(f"/api/bulkcreateuser/", {"file": csv_users})
 
-        self.assertEqual(response.status_code, 400)
+        self.assertEqual(response.status_code, 500)
         self.assertEqual(
             response.json()["error"],
             "Operation aborted. Invalid OrgUnit 99998 at row : 1. Fix the error " "and try again.",
@@ -94,7 +94,7 @@ class BulkCreateCsvTestCase(APITestCase):
         with open("iaso/tests/fixtures/test_user_bulk_create_invalid_orgunit.csv") as csv_users:
             response = self.client.post(f"/api/bulkcreateuser/", {"file": csv_users})
 
-        self.assertEqual(response.status_code, 400)
+        self.assertEqual(response.status_code, 500)
         self.assertEqual(
             response.json()["error"],
             "Operation aborted. Error at row 1 Account already exists : broly. " "Fix the error and try again.",
@@ -109,7 +109,7 @@ class BulkCreateCsvTestCase(APITestCase):
         users = User.objects.all()
         profiles = Profile.objects.all()
 
-        self.assertEqual(response.status_code, 400)
+        self.assertEqual(response.status_code, 500)
         self.assertEqual(
             response.json()["error"],
             "Operation aborted. Invalid OrgUnit 99998 at row : 1. Fix the error " "and try again.",
@@ -155,7 +155,7 @@ class BulkCreateCsvTestCase(APITestCase):
         with open("iaso/tests/fixtures/test_user_bulk_create_invalid_password.csv") as csv_users:
             response = self.client.post(f"/api/bulkcreateuser/", {"file": csv_users})
 
-        self.assertEqual(response.status_code, 400)
+        self.assertEqual(response.status_code, 500)
         self.assertEqual(
             response.json()["error"],
             "Operation aborted. Error at row 3. Password must contains 6 "
@@ -163,3 +163,17 @@ class BulkCreateCsvTestCase(APITestCase):
             "error and try "
             "again.",
         )
+
+    def test_created_users_can_login(self):
+        self.client.force_authenticate(self.yoda)
+
+        with open("iaso/tests/fixtures/test_user_bulk_create_valid.csv") as csv_users:
+            response = self.client.post(f"/api/bulkcreateuser/", {"file": csv_users})
+
+        self.assertEqual(response.status_code, 200)
+
+        login_data = {"username": "broly", "password": "yodnj!30dln"}
+
+        login_response = self.client.post("/api/token/", data=login_data, format="json")
+
+        self.assertEqual(login_response.status_code, 200)

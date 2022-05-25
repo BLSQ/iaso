@@ -42,6 +42,7 @@ class BulkCreateUserFromCsvViewSet(ModelViewSet):
 
     @transaction.atomic
     def create(self, request, *args, **kwargs):
+        created_users = []
         if request.FILES:
             user_csv = request.FILES["file"]
             file_instance = BulkCreateUserCsvFile.objects.create(
@@ -52,8 +53,8 @@ class BulkCreateUserFromCsvViewSet(ModelViewSet):
             reader = csv.reader(file)
             i = 0
             csv_indexes = []
-            org_units_list = []
             for row in reader:
+                org_units_list = []
                 if i > 0:
                     try:
                         validators.validate_email(row[csv_indexes.index("email")])
@@ -63,7 +64,7 @@ class BulkCreateUserFromCsvViewSet(ModelViewSet):
                                 "Operation aborted. Invalid Email at row : {0}. Fix the error and try "
                                 "again.".format(i)
                             },
-                            status=status.HTTP_400_BAD_REQUEST,
+                            status=status.HTTP_500_INTERNAL_SERVER_ERROR,
                         )
                     try:
                         try:
@@ -76,7 +77,7 @@ class BulkCreateUserFromCsvViewSet(ModelViewSet):
                                     "error and try "
                                     "again.".format(i, row[csv_indexes.index("username")])
                                 },
-                                status=status.HTTP_400_BAD_REQUEST,
+                                status=status.HTTP_500_INTERNAL_SERVER_ERROR,
                             )
 
                         user = User.objects.create(
@@ -86,7 +87,7 @@ class BulkCreateUserFromCsvViewSet(ModelViewSet):
                             email=row[csv_indexes.index("email")],
                         )
                         user.set_password(row[csv_indexes.index("password")])
-                        user.save()
+                        created_users.append(user)
                     except IntegrityError:
                         return Response(
                             {
@@ -94,7 +95,7 @@ class BulkCreateUserFromCsvViewSet(ModelViewSet):
                                 "error and try "
                                 "again.".format(i, row[csv_indexes.index("username")])
                             },
-                            status=status.HTTP_400_BAD_REQUEST,
+                            status=status.HTTP_500_INTERNAL_SERVER_ERROR,
                         )
                     org_units = row[csv_indexes.index("orgunit")]
                     if org_units:
@@ -114,7 +115,7 @@ class BulkCreateUserFromCsvViewSet(ModelViewSet):
                                                 "and try "
                                                 "again.".format(ou, i)
                                             },
-                                            status=status.HTTP_400_BAD_REQUEST,
+                                            status=status.HTTP_500_INTERNAL_SERVER_ERROR,
                                         )
                             except ValueError:
                                 try:
@@ -127,7 +128,7 @@ class BulkCreateUserFromCsvViewSet(ModelViewSet):
                                             "and try "
                                             "again.".format(ou, i)
                                         },
-                                        status=status.HTTP_400_BAD_REQUEST,
+                                        status=status.HTTP_500_INTERNAL_SERVER_ERROR,
                                     )
                     profile = Profile.objects.create(account=request.user.iaso_profile.account, user=user)
                     if row[csv_indexes.index("profile_language")]:
@@ -136,7 +137,7 @@ class BulkCreateUserFromCsvViewSet(ModelViewSet):
                     else:
                         profile.language = "fr"
                     profile.org_units.set(org_units_list)
-                    profile.save()
+                    created_users.append(profile)
                     csv_file = pd.read_csv(file_instance.file.path)
                     csv_file.at[i - 1, "password"] = ""
                     csv_file.to_csv(file_instance.file.path, index=False)
@@ -144,6 +145,8 @@ class BulkCreateUserFromCsvViewSet(ModelViewSet):
                     csv_indexes = row
                 i += 1
             file.close()
+        for user in created_users:
+            user.save()
         csv_files = BulkCreateUserCsvFile.objects.none()
         serializer = BulkCreateUserSerializer(csv_files, many=True)
         return Response(serializer.data)

@@ -27,7 +27,15 @@ class HasUserPermission(permissions.BasePermission):
 
 
 class BulkCreateUserFromCsvViewSet(ModelViewSet):
-    """Api endpoint to bulkcreate users and profiles from a CSV File."""
+    """Api endpoint to bulkcreate users and profiles from a CSV File.
+
+    Sample csv input:
+
+    username,password,email,first_name,last_name,orgunit,profile_language
+
+    simon,sim0nrule2,biobroly@bluesquarehub.com,Simon,D.,KINSHASA,fr
+
+    """
 
     result_key = "file"
     remove_results_key_if_paginated = True
@@ -77,9 +85,7 @@ class BulkCreateUserFromCsvViewSet(ModelViewSet):
                             user.set_password(row[csv_indexes.index("password")])
                         except ValidationError as e:
                             raise serializers.ValidationError(
-                                {
-                                    "error": "Operation aborted. Error at row %d. %s" % (i, '; '.join(e.messages))
-                                }
+                                {"error": "Operation aborted. Error at row %d. %s" % (i, "; ".join(e.messages))}
                             )
                     except IntegrityError:
                         raise serializers.ValidationError(

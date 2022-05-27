@@ -28,11 +28,6 @@ export const setIsFetching = fetching => ({
     payload: fetching,
 });
 
-export const setPermissions = permissions => ({
-    type: SET_PERMISSIONS,
-    payload: permissions,
-});
-
 const apiKey = 'profiles';
 export const fetchCurrentUser = () => dispatch =>
     retrieveAction(
@@ -41,15 +36,6 @@ export const fetchCurrentUser = () => dispatch =>
         'me',
         setCurrentUser,
         'fetchCurrentUser',
-    );
-
-export const fetchPermissions = () => dispatch =>
-    fetchAction(
-        dispatch,
-        'permissions',
-        setPermissions,
-        'fetchPermissions',
-        'permissions',
     );
 
 export const fetchUsersProfiles = params => dispatch =>

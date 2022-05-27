@@ -11,7 +11,6 @@ import { useSafeIntl, LoadingSpinner } from 'bluesquare-components';
 import MESSAGES from '../messages';
 import { useSnackQuery } from '../../../libs/apiHooks';
 import { getRequest } from '../../../libs/Api';
-import snackMessages from '../../../components/snackBars/messages';
 
 const styles = theme => ({
     admin: {
@@ -38,7 +37,7 @@ const PermissionsSwitches: React.FunctionComponent<Props> = ({
     const { data, isLoading } = useSnackQuery(
         ['permissions'],
         () => getRequest('/api/permissions/'),
-        snackMessages.fetchPermissions,
+        MESSAGES.fetchPermissionsError,
     );
 
     const setPermissions = (codeName: string, isChecked: boolean) => {

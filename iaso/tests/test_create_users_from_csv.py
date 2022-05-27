@@ -172,10 +172,7 @@ class BulkCreateCsvTestCase(APITestCase):
         self.assertEqual(response.status_code, 400)
         self.assertEqual(
             response.json()["error"],
-            "Operation aborted. Error at row 3. Password must contains 6 "
-            "characters at least and alpha numeric. Fix the "
-            "error and try "
-            "again.",
+            "Operation aborted. Error at row 3. This password is too short. It must contain at least 8 characters.",
         )
 
     def test_created_users_can_login(self):

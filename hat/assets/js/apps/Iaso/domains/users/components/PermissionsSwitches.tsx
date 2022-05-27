@@ -62,8 +62,8 @@ const PermissionsSwitches: React.FunctionComponent<Props> = ({
         handleChange(newUserPerms);
     };
 
-    // We need the intl object inside the component to be able to perform sort the strings
-    // as <FormattedMessage/> returns a span, not a string
+    // Get the translated label for the permission.
+    // or permission's codename if not translation exist
     const permissionLabel = permissionCodeName => {
         return MESSAGES[permissionCodeName]
             ? formatMessage(MESSAGES[permissionCodeName])

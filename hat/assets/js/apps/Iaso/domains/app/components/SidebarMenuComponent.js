@@ -223,7 +223,6 @@ SidebarMenu.propTypes = {
     isOpen: PropTypes.bool.isRequired,
     toggleSidebar: PropTypes.func.isRequired,
     location: PropTypes.object.isRequired,
-    currentUser: PropTypes.object.isRequired,
     intl: PropTypes.object.isRequired,
     activeLocale: PropTypes.object.isRequired,
 };

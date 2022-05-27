@@ -47,6 +47,8 @@ const PermissionsSwitches: React.FunctionComponent<Props> = ({
         ['permissions'],
         () => getRequest('/api/permissions/'),
         MESSAGES.fetchPermissionsError,
+        // Permission list is not displayed for superuser, no need to fetch it from server
+        { enabled: !isSuperUser },
     );
 
     const setPermissions = (codeName: string, isChecked: boolean) => {

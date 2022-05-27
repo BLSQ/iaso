@@ -14,7 +14,14 @@ import pandas as pd
 class BulkCreateCsvTestCase(APITestCase):
     @classmethod
     def setUpTestData(cls):
+
         star_wars = m.Account.objects.create(name="Star Wars")
+
+        cls.project = m.Project.objects.create(
+            name="Hydroponic gardens",
+            app_id="stars.empire.agriculture.hydroponics",
+            account=star_wars,
+        )
 
         space_balls = m.Account.objects.create(name="Space Balls")
 
@@ -37,21 +44,18 @@ class BulkCreateCsvTestCase(APITestCase):
 
         cls.jedi_council = m.OrgUnitType.objects.create(name="Jedi Council", short_name="Cnc")
 
-        cls.jedi_council_corruscant = m.OrgUnit.objects.create(name="Coruscant Jedi Council")
+        cls.jedi_council_corruscant = m.OrgUnit.objects.create(name="Coruscant Jedi Council", version=sw_version)
 
-        cls.tatooine = m.OrgUnit.objects.create(name="Tatooine")
+        cls.tatooine = m.OrgUnit.objects.create(name="Tatooine", version=sw_version)
 
-        cls.dagobah = m.OrgUnit.objects.create(name="Dagobah", id=9999)
+        cls.dagobah = m.OrgUnit.objects.create(name="Dagobah", id=9999, version=sw_version)
 
-        cls.solana = m.OrgUnit.objects.create(name="Solana")
-        cls.solanaa = m.OrgUnit.objects.create(name="Solana")
-
-        cls.project = m.Project.objects.create(
-            name="Hydroponic gardens", app_id="stars.empire.agriculture.hydroponics", account=star_wars
-        )
+        cls.solana = m.OrgUnit.objects.create(name="Solana", version=sw_version)
+        cls.solanaa = m.OrgUnit.objects.create(name="Solana", version=sw_version)
 
     def test_upload_valid_csv(self):
         self.client.force_authenticate(self.yoda)
+        self.sw_source.projects.set([self.project])
 
         with open("iaso/tests/fixtures/test_user_bulk_create_valid.csv") as csv_users:
             response = self.client.post(f"/api/bulkcreateuser/", {"file": csv_users})
@@ -64,6 +68,7 @@ class BulkCreateCsvTestCase(APITestCase):
 
     def test_upload_invalid_mail_csv(self):
         self.client.force_authenticate(self.yoda)
+        self.sw_source.projects.set([self.project])
 
         with open("iaso/tests/fixtures/test_user_bulk_create_invalid_mail.csv") as csv_users:
             response = self.client.post(f"/api/bulkcreateuser/", {"file": csv_users})
@@ -75,6 +80,7 @@ class BulkCreateCsvTestCase(APITestCase):
 
     def test_upload_invalid_orgunit_id(self):
         self.client.force_authenticate(self.yoda)
+        self.sw_source.projects.set([self.project])
 
         with open("iaso/tests/fixtures/test_user_bulk_create_invalid_orgunit.csv") as csv_users:
             response = self.client.post(f"/api/bulkcreateuser/", {"file": csv_users})
@@ -88,6 +94,7 @@ class BulkCreateCsvTestCase(APITestCase):
     def test_upload_user_already_exists(self):
 
         self.client.force_authenticate(self.yoda)
+        self.sw_source.projects.set([self.project])
 
         user = User.objects.create(
             username="broly", first_name="broly", last_name="Smith", email="broly-smith@bluesquarehub.com"
@@ -105,6 +112,7 @@ class BulkCreateCsvTestCase(APITestCase):
 
     def test_upload_invalid_csv_dont_create_entries(self):
         self.client.force_authenticate(self.yoda)
+        self.sw_source.projects.set([self.project])
 
         with open("iaso/tests/fixtures/test_user_bulk_create_invalid_orgunit.csv") as csv_users:
             response = self.client.post(f"/api/bulkcreateuser/", {"file": csv_users})
@@ -123,6 +131,7 @@ class BulkCreateCsvTestCase(APITestCase):
     def test_user_cant_access_without_permission(self):
 
         self.client.force_authenticate(self.obi)
+        self.sw_source.projects.set([self.project])
 
         response = self.client.get("/api/bulkcreateuser/")
 
@@ -130,6 +139,7 @@ class BulkCreateCsvTestCase(APITestCase):
 
     def test_password_delete_after_import(self):
         self.client.force_authenticate(self.yoda)
+        self.sw_source.projects.set([self.project])
 
         pswd_deleted = True
 
@@ -154,6 +164,7 @@ class BulkCreateCsvTestCase(APITestCase):
 
     def test_upload_invalid_password(self):
         self.client.force_authenticate(self.yoda)
+        self.sw_source.projects.set([self.project])
 
         with open("iaso/tests/fixtures/test_user_bulk_create_invalid_password.csv") as csv_users:
             response = self.client.post(f"/api/bulkcreateuser/", {"file": csv_users})
@@ -169,6 +180,7 @@ class BulkCreateCsvTestCase(APITestCase):
 
     def test_created_users_can_login(self):
         self.client.force_authenticate(self.yoda)
+        self.sw_source.projects.set([self.project])
 
         with open("iaso/tests/fixtures/test_user_bulk_create_valid.csv") as csv_users:
             response = self.client.post(f"/api/bulkcreateuser/", {"file": csv_users})
@@ -183,6 +195,7 @@ class BulkCreateCsvTestCase(APITestCase):
 
     def test_upload_duplicate_ou_names(self):
         self.client.force_authenticate(self.yoda)
+        self.sw_source.projects.set([self.project])
 
         with open("iaso/tests/fixtures/test_user_bulk_create_duplicated_ou_name.csv") as csv_users:
             response = self.client.post(f"/api/bulkcreateuser/", {"file": csv_users})
@@ -190,14 +203,12 @@ class BulkCreateCsvTestCase(APITestCase):
         self.assertEqual(response.status_code, 400)
         self.assertEqual(
             response.json()["error"],
-            "Operation aborted. Invalid OrgUnit Solana at row : 3. Fix "
-            "the error "
-            "and try "
-            "again. Use Orgunit ID instead of name",
+            "Operation aborted. Multiple OrgUnits with the name: Solana at row : 3." "Use Orgunit ID instead of name.",
         )
 
     def test_upload_invalid_orgunit_name(self):
         self.client.force_authenticate(self.yoda)
+        self.sw_source.projects.set([self.project])
 
         with open("iaso/tests/fixtures/test_user_bulk_create_invalid_ou_name.csv") as csv_users:
             response = self.client.post(f"/api/bulkcreateuser/", {"file": csv_users})
@@ -208,11 +219,12 @@ class BulkCreateCsvTestCase(APITestCase):
             "Operation aborted. Invalid OrgUnit Bazarre at row : 3. Fix "
             "the error "
             "and try "
-            "again. Use Orgunit ID instead of name",
+            "again. Use Orgunit ID instead of name.",
         )
 
     def test_users_profiles_have_right_ou(self):
         self.client.force_authenticate(self.yoda)
+        self.sw_source.projects.set([self.project])
 
         with open("iaso/tests/fixtures/test_user_bulk_create_valid.csv") as csv_users:
             response = self.client.post(f"/api/bulkcreateuser/", {"file": csv_users})
@@ -234,3 +246,11 @@ class BulkCreateCsvTestCase(APITestCase):
         self.assertEqual(ou_list, [9999])
         self.assertEqual(ou_f_list, [self.jedi_council_corruscant.id, self.tatooine.id, 9999])
         self.assertEqual(response.status_code, 200)
+
+    def test_cant_create_user_without_access_to_ou(self):
+        self.client.force_authenticate(self.yoda)
+
+        with open("iaso/tests/fixtures/test_user_bulk_create_valid.csv") as csv_users:
+            response = self.client.post(f"/api/bulkcreateuser/", {"file": csv_users})
+
+        self.assertEqual(response.status_code, 400)

@@ -102,6 +102,13 @@ class BulkCreateUserFromCsvViewSet(ModelViewSet):
                                 if int(ou):
                                     try:
                                         ou = OrgUnit.objects.get(id=ou)
+                                        if ou not in OrgUnit.objects.filter_for_user_and_app_id(request.user, None):
+                                            raise serializers.ValidationError(
+                                                {
+                                                    "error": "Operation aborted. Invalid OrgUnit {0} at row : {1}. "
+                                                    "You don't have access to this orgunit".format(ou, i)
+                                                }
+                                            )
                                         org_units_list.append(ou)
                                     except ObjectDoesNotExist:
                                         raise serializers.ValidationError(
@@ -114,14 +121,30 @@ class BulkCreateUserFromCsvViewSet(ModelViewSet):
                                         )
                             except ValueError:
                                 try:
-                                    org_units_list.append(OrgUnit.objects.get(name=ou))
-                                except (ObjectDoesNotExist, MultipleObjectsReturned):
+                                    org_unit = OrgUnit.objects.get(name=ou)
+                                    if org_unit not in OrgUnit.objects.filter_for_user_and_app_id(request.user, None):
+                                        raise serializers.ValidationError(
+                                            {
+                                                "error": "Operation aborted. Invalid OrgUnit {0} at row : {1}. "
+                                                "You don't have access to this orgunit".format(ou, i)
+                                            }
+                                        )
+                                    org_units_list.append(org_unit)
+                                except MultipleObjectsReturned:
+
+                                    raise serializers.ValidationError(
+                                        {
+                                            "error": "Operation aborted. Multiple OrgUnits with the name: {0} at row : {1}."
+                                            "Use Orgunit ID instead of name.".format(ou, i)
+                                        }
+                                    )
+                                except ObjectDoesNotExist:
                                     raise serializers.ValidationError(
                                         {
                                             "error": "Operation aborted. Invalid OrgUnit {0} at row : {1}. Fix "
                                             "the error "
                                             "and try "
-                                            "again. Use Orgunit ID instead of name".format(ou, i)
+                                            "again. Use Orgunit ID instead of name.".format(ou, i)
                                         }
                                     )
                     user.save()

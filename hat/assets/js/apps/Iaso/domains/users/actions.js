@@ -6,7 +6,6 @@ import {
 
 export const SET_USERS_PROFILES = 'SET_USERS_PROFILES';
 export const SET_CURRENT_USER = 'SET_CURRENT_USER';
-export const SET_PERMISSIONS = 'SET_PERMISSIONS';
 export const SET_IS_FETCHING_USERS = 'SET_IS_FETCHING_USERS';
 
 export const setUsersProfiles = (list, { count, pages }) => ({

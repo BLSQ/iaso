@@ -105,7 +105,7 @@ class Command(BaseCommand):
 
         for campaign in campaigns:
             latest_round_end = campaign.rounds.order_by("ended_at").last()
-            if latest_round_end and latest_round_end.ended_at > now().date():
+            if latest_round_end and latest_round_end.ended_at and latest_round_end.ended_at > now().date():
                 print(f"Campaign {campaign} is finished, skipping")
                 continue
             logger.info(f"Email for {campaign.obr_name}")

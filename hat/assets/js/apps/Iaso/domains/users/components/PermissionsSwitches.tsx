@@ -27,6 +27,15 @@ type Props = {
     handleChange: (newValue: any) => void;
 };
 
+type Permission = {
+    id: number;
+    codename: string;
+};
+
+type PermissionResult = {
+    permissions: Permission[];
+};
+
 const PermissionsSwitches: React.FunctionComponent<Props> = ({
     isSuperUser,
     currentUser,
@@ -34,7 +43,7 @@ const PermissionsSwitches: React.FunctionComponent<Props> = ({
 }) => {
     const { formatMessage } = useSafeIntl();
     const classes = useStyles();
-    const { data, isLoading } = useSnackQuery(
+    const { data, isLoading } = useSnackQuery<PermissionResult>(
         ['permissions'],
         () => getRequest('/api/permissions/'),
         MESSAGES.fetchPermissionsError,

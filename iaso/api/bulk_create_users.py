@@ -67,24 +67,20 @@ class BulkCreateUserFromCsvViewSet(ModelViewSet):
                         )
                     try:
                         try:
-                            validate_password(row[csv_indexes.index("password")])
-                        except ValidationError:
+                            user = User.objects.create(
+                                username=row[csv_indexes.index("username")],
+                                first_name=row[csv_indexes.index("first_name")],
+                                last_name=row[csv_indexes.index("last_name")],
+                                email=row[csv_indexes.index("email")],
+                            )
+                            validate_password(row[csv_indexes.index("password")], user)
+                            user.set_password(row[csv_indexes.index("password")])
+                        except ValidationError as e:
                             raise serializers.ValidationError(
                                 {
-                                    "error": "Operation aborted. Error at row {0}. Password must contains 6 "
-                                    "characters at least and alpha numeric. Fix the "
-                                    "error and try "
-                                    "again.".format(i, row[csv_indexes.index("username")])
+                                    "error": "Operation aborted. Error at row %d. %s" % (i, '; '.join(e.messages))
                                 }
                             )
-
-                        user = User.objects.create(
-                            username=row[csv_indexes.index("username")],
-                            first_name=row[csv_indexes.index("first_name")],
-                            last_name=row[csv_indexes.index("last_name")],
-                            email=row[csv_indexes.index("email")],
-                        )
-                        user.set_password(row[csv_indexes.index("password")])
                     except IntegrityError:
                         raise serializers.ValidationError(
                             {

@@ -257,5 +257,6 @@
     "iaso.teams.teamsOfTeams": "Teams of teams",
     "iaso.teams.teamsOfUsers": "Teams of users",
     "iaso.teams.title": "Teams",
-    "iaso.teams.users": "Users"
+    "iaso.teams.users": "Users",
+    "iaso.teams.usersTeams": "Users / teams"
 }

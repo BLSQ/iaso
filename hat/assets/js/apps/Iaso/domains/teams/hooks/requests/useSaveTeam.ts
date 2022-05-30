@@ -14,13 +14,9 @@ export type SaveTeamQuery = {
 };
 
 const convertToApi = data => {
-    const { subTeams, manager, ...converted } = data;
+    const { subTeams, ...converted } = data;
     if (subTeams !== undefined) {
         converted.sub_teams = subTeams;
-    }
-
-    if (manager !== undefined) {
-        converted.manager = parseInt(manager, 10);
     }
 
     return converted;

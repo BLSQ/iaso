@@ -8,11 +8,9 @@ import { AddButton, useSafeIntl, IconButton } from 'bluesquare-components';
 import { useCurrentUser } from 'Iaso/utils/usersUtils';
 import { useFormik, FormikProvider } from 'formik';
 import { isEqual } from 'lodash';
-import { Grid } from '@material-ui/core';
+
 import InputComponent from '../../components/forms/InputComponent';
 import ConfirmCancelDialogComponent from '../../components/dialogs/ConfirmCancelDialogComponent';
-
-import MESSAGES from './messages';
 
 import { commaSeparatedIdsToArray } from '../../utils/forms';
 import { usePlanningValidation } from './validation';
@@ -24,6 +22,7 @@ import { useGetProfilesDropdown } from './hooks/requests/useGetProfilesDropdown'
 import { useGetTeams } from './hooks/requests/useGetTeams';
 
 import { TEAM_OF_TEAMS, TEAM_OF_USERS } from './constants';
+import MESSAGES from './messages';
 
 type ModalMode = 'create' | 'edit';
 
@@ -165,111 +164,98 @@ export const CreateEditTeam: FunctionComponent<Props> = ({
                     closeDialog();
                     resetForm();
                 }}
-                maxWidth="md"
+                maxWidth="xs"
                 cancelMessage={MESSAGES.cancel}
                 confirmMessage={MESSAGES.save}
                 renderTrigger={renderTrigger}
             >
-                <Grid container spacing={2}>
-                    <Grid xs={6} item>
-                        <InputComponent
-                            keyValue="name"
-                            onChange={onChange}
-                            value={values.name}
-                            errors={getErrors('name')}
-                            type="text"
-                            label={MESSAGES.name}
-                            required
-                        />
-                        <InputComponent
-                            type="select"
-                            keyValue="manager"
-                            onChange={onChange}
-                            value={values.manager}
-                            errors={getErrors('manager')}
-                            label={MESSAGES.manager}
-                            required
-                            options={profliesDropdown}
-                            loading={isFetchingProfiles}
-                        />
-                        <InputComponent
-                            type="select"
-                            keyValue="project"
-                            onChange={onChange}
-                            value={values.project}
-                            errors={getErrors('project')}
-                            label={MESSAGES.project}
-                            required
-                            options={projectsDropdown}
-                            loading={isFetchingProjects}
-                        />
-                        <InputComponent
-                            keyValue="description"
-                            onChange={onChange}
-                            value={values.description}
-                            errors={getErrors('description')}
-                            type="text"
-                            label={MESSAGES.description}
-                        />
-                    </Grid>
-
-                    <Grid xs={6} item>
-                        <InputComponent
-                            type="select"
-                            keyValue="type"
-                            onChange={onChange}
-                            value={values.type}
-                            errors={getErrors('type')}
-                            label={MESSAGES.type}
-                            options={[
-                                {
-                                    label: formatMessage(MESSAGES.teamsOfTeams),
-                                    value: TEAM_OF_TEAMS,
-                                },
-                                {
-                                    label: formatMessage(MESSAGES.teamsOfUsers),
-                                    value: TEAM_OF_USERS,
-                                },
-                            ]}
-                        />
-                        {values.type === TEAM_OF_USERS && (
-                            <InputComponent
-                                type="select"
-                                keyValue="users"
-                                onChange={(key, value) =>
-                                    onChange(
-                                        key,
-                                        commaSeparatedIdsToArray(value),
-                                    )
-                                }
-                                value={values.users}
-                                errors={getErrors('users')}
-                                label={MESSAGES.users}
-                                options={profliesDropdown}
-                                loading={isFetchingProfiles}
-                                multi
-                            />
-                        )}
-                        {values.type === TEAM_OF_TEAMS && (
-                            <InputComponent
-                                type="select"
-                                keyValue="subTeams"
-                                onChange={(key, value) =>
-                                    onChange(
-                                        key,
-                                        commaSeparatedIdsToArray(value),
-                                    )
-                                }
-                                value={values.subTeams}
-                                errors={getErrors('subTeams')}
-                                label={MESSAGES.title}
-                                options={teamsDropdown}
-                                loading={isFetchingTeams}
-                                multi
-                            />
-                        )}
-                    </Grid>
-                </Grid>
+                <InputComponent
+                    keyValue="name"
+                    onChange={onChange}
+                    value={values.name}
+                    errors={getErrors('name')}
+                    type="text"
+                    label={MESSAGES.name}
+                    required
+                />
+                <InputComponent
+                    type="select"
+                    keyValue="manager"
+                    onChange={onChange}
+                    value={values.manager}
+                    errors={getErrors('manager')}
+                    label={MESSAGES.manager}
+                    required
+                    options={profliesDropdown}
+                    loading={isFetchingProfiles}
+                />
+                <InputComponent
+                    type="select"
+                    keyValue="project"
+                    onChange={onChange}
+                    value={values.project}
+                    errors={getErrors('project')}
+                    label={MESSAGES.project}
+                    required
+                    options={projectsDropdown}
+                    loading={isFetchingProjects}
+                />
+                <InputComponent
+                    keyValue="description"
+                    onChange={onChange}
+                    value={values.description}
+                    errors={getErrors('description')}
+                    type="text"
+                    label={MESSAGES.description}
+                />
+                <InputComponent
+                    type="select"
+                    keyValue="type"
+                    onChange={onChange}
+                    value={values.type}
+                    errors={getErrors('type')}
+                    label={MESSAGES.type}
+                    options={[
+                        {
+                            label: formatMessage(MESSAGES.teamsOfTeams),
+                            value: TEAM_OF_TEAMS,
+                        },
+                        {
+                            label: formatMessage(MESSAGES.teamsOfUsers),
+                            value: TEAM_OF_USERS,
+                        },
+                    ]}
+                />
+                {values.type === TEAM_OF_USERS && (
+                    <InputComponent
+                        type="select"
+                        keyValue="users"
+                        onChange={(key, value) =>
+                            onChange(key, commaSeparatedIdsToArray(value))
+                        }
+                        value={values.users}
+                        errors={getErrors('users')}
+                        label={MESSAGES.users}
+                        options={profliesDropdown}
+                        loading={isFetchingProfiles}
+                        multi
+                    />
+                )}
+                {values.type === TEAM_OF_TEAMS && (
+                    <InputComponent
+                        type="select"
+                        keyValue="subTeams"
+                        onChange={(key, value) =>
+                            onChange(key, commaSeparatedIdsToArray(value))
+                        }
+                        value={values.subTeams}
+                        errors={getErrors('subTeams')}
+                        label={MESSAGES.title}
+                        options={teamsDropdown}
+                        loading={isFetchingTeams}
+                        multi
+                    />
+                )}
             </ConfirmCancelDialogComponent>
         </FormikProvider>
     );

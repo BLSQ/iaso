@@ -268,5 +268,6 @@
     "iaso.teams.teamsOfTeams": "Equipe d'équipes",
     "iaso.teams.teamsOfUsers": "Equipe d'utilisateurs",
     "iaso.teams.title": "Equipes",
-    "iaso.teams.users": "Utilisateurs"
+    "iaso.teams.users": "Utilisateurs",
+    "iaso.teams.usersTeams": "Utilisateurs / équipes"
 }

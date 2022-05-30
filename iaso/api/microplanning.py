@@ -129,7 +129,7 @@ class TeamViewSet(ModelViewSet):
     permission_classes = [ReadOnlyOrHasPermission("menupermissions.iaso_teams")]
     serializer_class = TeamSerializer
     queryset = Team.objects.all()
-    ordering_fields = ["id", "name", "created_at", "updated_at"]
+    ordering_fields = ["id", "name", "created_at", "updated_at", "type"]
     filterset_fields = {
         "name": ["icontains"],
         "project": ["exact"],

@@ -1,4 +1,4 @@
-import { UrlParams, Pagination } from '../../types/table';
+import { UrlParams } from '../../types/table';
 
 type SubTeam = {
     id: number;
@@ -8,7 +8,7 @@ type Users = {
     id: number;
     username: string;
 };
-type Team = {
+export type Team = {
     id: number;
     name: string;
     description?: string;

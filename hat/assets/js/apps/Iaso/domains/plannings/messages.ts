@@ -25,13 +25,13 @@ const MESSAGES = defineMessages({
         defaultMessage: 'Published',
         id: 'iaso.label.published',
     },
-    from: {
-        id: 'iaso.label.dateFrom',
-        defaultMessage: 'From date',
+    startDatefrom: {
+        id: 'iaso.label.startDatefrom',
+        defaultMessage: 'Start date from',
     },
-    to: {
-        id: 'iaso.label.dateTo',
-        defaultMessage: 'To date',
+    endDateUntil: {
+        id: 'iaso.label.endDateUntil',
+        defaultMessage: 'End date until',
     },
     actions: {
         defaultMessage: 'Action(s)',
@@ -112,6 +112,10 @@ const MESSAGES = defineMessages({
     description: {
         id: 'iaso.versionsDialog.label.description',
         defaultMessage: 'Description',
+    },
+    invalidDate: {
+        id: 'iaso.label.invalidDate',
+        defaultMessage: 'iaso.label.invalidDate',
     },
 });
 

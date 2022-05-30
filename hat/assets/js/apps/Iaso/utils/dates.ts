@@ -98,3 +98,21 @@ export const getLocaleDateFormat = longType => {
     const locale = moment.locale();
     return longDateFormats[locale][longType];
 };
+
+// Convert from Api format to format expected by DateRange picker
+export const dateApiToDateRangePicker = (dateStr?: string): string | null => {
+    if (!dateStr) {
+        return null;
+    }
+    return moment(dateStr, apiDateFormat).format(getLocaleDateFormat('L'));
+};
+
+// Convert from Api format to format expected by DateRange picker
+export const dateRangePickerToDateApi = (
+    dateStr?: string,
+): string | undefined => {
+    if (!dateStr) {
+        return undefined;
+    }
+    return moment(dateStr, getLocaleDateFormat('L')).format(apiDateFormat);
+};

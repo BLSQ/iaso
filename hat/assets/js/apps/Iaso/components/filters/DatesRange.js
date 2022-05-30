@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useCallback } from 'react';
 import PropTypes from 'prop-types';
 import { makeStyles } from '@material-ui/core/styles';
 import { KeyboardDatePicker } from '@material-ui/pickers';
@@ -58,16 +58,35 @@ const DatesRange = ({
     lg,
     keyDateFrom = 'dateFrom',
     keyDateTo = 'dateTo',
+    errors,
+    blockInvalidDates,
+    marginTop,
 }) => {
     const classes = useStyles();
     const [from, setFrom] = useState(dateFrom);
     const [to, setTo] = useState(dateTo);
+
+    const handleChange = useCallback(
+        (keyValue, date) => {
+            if (blockInvalidDates) {
+                onChangeDate(
+                    keyValue,
+                    date && date.isValid()
+                        ? date.format(dateFormat)
+                        : undefined,
+                );
+            } else {
+                onChangeDate(keyValue, date?.format(dateFormat));
+            }
+        },
+        [blockInvalidDates, onChangeDate],
+    );
     // Converting the displayedDateFormat to this one onChange to avoid a nasty bug in Firefox
     return (
         <Grid container spacing={useCurrentBreakPointSpacing(xs, sm, md, lg)}>
             <Grid item xs={xs} sm={sm} md={md} lg={lg}>
-                <Box mt={2}>
-                    <FormControl>
+                <Box mt={marginTop}>
+                    <FormControl errors={errors[0]}>
                         <KeyboardDatePicker
                             autoOk
                             disableToolbar
@@ -98,13 +117,9 @@ const DatesRange = ({
                             }
                             onChange={date => {
                                 setFrom(date);
-                                onChangeDate(
-                                    keyDateFrom,
-                                    date && date.isValid()
-                                        ? date.format(dateFormat)
-                                        : undefined,
-                                );
+                                handleChange(keyDateFrom, date);
                             }}
+                            error={errors[0].length > 0}
                         />
                         {dateFrom && (
                             <span className={classes.clearDateButton}>
@@ -123,8 +138,8 @@ const DatesRange = ({
                 </Box>
             </Grid>
             <Grid item xs={xs} sm={sm} md={md} lg={lg}>
-                <Box mt={2}>
-                    <FormControl>
+                <Box mt={marginTop}>
+                    <FormControl errors={errors[1]}>
                         <KeyboardDatePicker
                             autoOk
                             disableToolbar
@@ -155,13 +170,9 @@ const DatesRange = ({
                             }
                             onChange={date => {
                                 setTo(date);
-                                onChangeDate(
-                                    keyDateTo,
-                                    date && date.isValid()
-                                        ? date.format(dateFormat)
-                                        : undefined,
-                                );
+                                handleChange(keyDateTo, date);
                             }}
+                            error={errors[1].length > 0}
                         />
                         {dateTo && (
                             <span className={classes.clearDateButton}>
@@ -195,6 +206,9 @@ DatesRange.defaultProps = {
     lg: 6,
     keyDateFrom: 'dateFrom',
     keyDateTo: 'dateTo',
+    errors: [[], []],
+    blockInvalidDates: true,
+    marginTop: 2,
 };
 
 DatesRange.propTypes = {
@@ -210,6 +224,9 @@ DatesRange.propTypes = {
     lg: PropTypes.number,
     keyDateFrom: PropTypes.string,
     keyDateTo: PropTypes.string,
+    errors: PropTypes.array,
+    blockInvalidDates: PropTypes.bool,
+    marginTop: PropTypes.number,
 };
 
 const DatesRangeIntl = injectIntl(DatesRange);

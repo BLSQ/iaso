@@ -1,14 +1,23 @@
+/**
+ * Get request with params passed as query params
+ * Remove undefined params
+ * @param {string} url
+ * @param {{[p: string]: T}} params
+ */
 export const makeUrlWithParams = (
     url: string,
     urlParams: Record<string, unknown>,
 ): string => {
-    const activeParams = Object.entries(urlParams).filter(
-        ([_key, value]) => value !== undefined,
-    );
     // @ts-ignore
-    const queryString = new URLSearchParams(
-        Object.fromEntries(activeParams),
-    ).toString();
+    const urlSearchParams = new URLSearchParams();
 
-    return queryString ? `${url}?${queryString}` : url;
+    Object.entries(urlParams).forEach(([k, v]) => {
+        if (Array.isArray(v)) {
+            v.forEach(p => urlSearchParams.append(k, p));
+        } else if (v !== undefined) {
+            urlSearchParams.append(k, v);
+        }
+    });
+
+    return `${url}/?${urlSearchParams.toString()}`;
 };

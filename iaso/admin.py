@@ -277,7 +277,7 @@ class EntityAdmin(admin.ModelAdmin):
 
 
 class PlanningAdmin(admin.ModelAdmin):
-    raw_id_fields = ("org_unit", "forms")
+    raw_id_fields = ("org_unit",)
     list_display = (
         "id",
         "name",
@@ -287,31 +287,35 @@ class PlanningAdmin(admin.ModelAdmin):
         # "forms",
         "team",
     )
-    list_filter = ("project", "org_unit")
+    list_filter = ("project",)
     date_hierarchy = "started_at"
 
-    fields = [
+    fieldsets = [
         (
-            "",
-            (
-                "name",
-                "description",
-                "project",
-                "forms",
-                "org_unit",
-                "team",
-            ),
+            None,
+            {
+                "fields": (
+                    "name",
+                    "description",
+                    "project",
+                    "forms",
+                    "org_unit",
+                    "team",
+                ),
+            },
         ),
-        ("type", ("type",)),
         (
             "update info",
-            (
-                "created_at",
-                "created_by",
-                "updated_at",
-            ),
+            {
+                "fields": (
+                    "created_at",
+                    "created_by",
+                    "updated_at",
+                )
+            },
         ),
     ]
+    readonly_fields = ("updated_at", "created_at")
 
 
 class TeamAdmin(admin.ModelAdmin):

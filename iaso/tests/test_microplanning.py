@@ -35,6 +35,73 @@ class TeamTestCase(TransactionTestCase, IasoTestCaseMixin):
         self.assertTrue(serializer.is_valid(()), serializer.errors)
         team = serializer.save()
 
+    def test_serializer_subteam(self):
+        "Edit teams to add subteams"
+        account = Account.objects.get(name="test")
+        user = User.objects.get(username="test")
+        request = mock.Mock(user=user)
+        project = account.project_set.create(name="project1")
+        team1 = Team.objects.create(project=project, name="team1", manager=user)
+        team2 = Team.objects.create(project=project, name="team2", manager=user)
+
+        data = {
+            "name": "team with subteams",
+            "project": project.id,
+            "users": [],
+            "manager": user.id,
+            "sub_teams": [team2.pk],
+        }
+
+        serializer = TeamSerializer(context={"request": request}, data=data, instance=team1)
+        self.assertTrue(serializer.is_valid(()), serializer.errors)
+        team = serializer.save()
+        team1.refresh_from_db()
+        team2.refresh_from_db()
+        self.assertQuerysetEqual(team1.sub_teams.all(), [team2])
+        self.assertEqual(team2.parent, team1)
+
+    def test_serializer_invalid_because_subteam_loop(self):
+        "Edit team 1 to add team2 as subteam. should fail since team1 is already a child of team2"
+        account = Account.objects.get(name="test")
+        user = User.objects.get(username="test")
+        request = mock.Mock(user=user)
+        project = account.project_set.create(name="project1")
+        team1 = Team.objects.create(project=project, name="team1", manager=user)
+        team2 = Team.objects.create(project=project, name="team2", manager=user)
+        team2.sub_teams.add(team1)
+
+        data = {
+            "name": "team with subteams",
+            "project": project.id,
+            "users": [],
+            "manager": user.id,
+            "sub_teams": [team2.pk],
+        }
+
+        serializer = TeamSerializer(context={"request": request}, data=data, instance=team1)
+        self.assertFalse(serializer.is_valid(()), serializer.validated_data)
+        self.assertIn("sub_teams", serializer.errors)
+
+    def test_serializer_invalid_because_subteam_loop2(self):
+        account = Account.objects.get(name="test")
+        user = User.objects.get(username="test")
+        request = mock.Mock(user=user)
+        project = account.project_set.create(name="project1")
+        root = Team.objects.create(project=project, name="root", manager=user)
+        sub_team = Team.objects.create(project=project, name="child", manager=user)
+        sub_team2 = Team.objects.create(project=project, name="child2", manager=user)
+        sub_sub_team = Team.objects.create(project=project, name="grand child", manager=user)
+
+        root.sub_teams.add(sub_team)
+        root.sub_teams.add(sub_team2)
+        sub_team2.sub_teams.add(sub_sub_team)
+
+        data = {"sub_teams": [root.pk]}
+
+        serializer = TeamSerializer(context={"request": request}, data=data, instance=sub_sub_team, partial=True)
+        self.assertFalse(serializer.is_valid(()), serializer.validated_data)
+        self.assertIn("sub_teams", serializer.errors)
+
     def test_serializer_team_users(self):
         account = Account.objects.get(name="test")
         user = User.objects.get(username="test")
@@ -320,6 +387,8 @@ class PlanningTestCase(APITestCase):
                 "id": self.planning.id,
                 "name": "planning1",
                 "team": self.planning.team_id,
+                "team_details": {"id": self.team1.id, "name": self.team1.name},
+                "project": self.project1.id,
                 "project": self.planning.project.id,
                 "org_unit": self.planning.org_unit_id,
                 "forms": [],
@@ -342,9 +411,10 @@ class PlanningTestCase(APITestCase):
                 "org_unit": org_unit.id,
                 "forms": [self.form1.id, self.form2.id],
                 "team": self.team1.id,
+                "team_details": {"id": self.team1.id, "name": self.team1.name},
                 "project": self.project1.id,
-                "started_at": "2022-02-02 02:02:02",
-                "ended_at": "2022-03-03 03:03:03",
+                "started_at": "2022-02-02",
+                "ended_at": "2022-03-03",
             },
         )
         self.assertTrue(planning_serializer.is_valid(), planning_serializer.errors)
@@ -356,8 +426,8 @@ class PlanningTestCase(APITestCase):
                 "forms": [self.form1.id, self.form2.id],
                 "team": self.team1.id,
                 "project": self.project1.id,
-                "started_at": "2022-03-03 03:03:03",
-                "ended_at": "2022-02-02 02:02:02",
+                "started_at": "2022-03-03",
+                "ended_at": "2022-02-02",
             },
         )
         self.assertFalse(failing_dates.is_valid(), failing_dates.errors)
@@ -369,8 +439,8 @@ class PlanningTestCase(APITestCase):
                 "forms": [self.form1.id, self.form2.id],
                 "team": self.other_team.id,
                 "project": self.project1.id,
-                "started_at": "2022-02-02 02:02:02",
-                "ended_at": "2022-03-03 03:03:03",
+                "started_at": "2022-02-02",
+                "ended_at": "2022-03-03",
             },
         )
         self.assertFalse(failing_teams.is_valid(), failing_teams.errors)

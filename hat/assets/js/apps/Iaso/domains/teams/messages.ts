@@ -57,6 +57,22 @@ const MESSAGES = defineMessages({
         id: 'iaso.teams.manager',
         defaultMessage: 'Manager',
     },
+    type: {
+        id: 'iaso.label.type',
+        defaultMessage: 'Type',
+    },
+    teamsOfTeams: {
+        id: 'iaso.teams.teamsOfTeams',
+        defaultMessage: 'Teams of teams',
+    },
+    teamsOfUsers: {
+        id: 'iaso.teams.teamsOfUsers',
+        defaultMessage: 'Teams of users',
+    },
+    users: {
+        id: 'iaso.teams.users',
+        defaultMessage: 'Users',
+    },
 });
 
 export default MESSAGES;

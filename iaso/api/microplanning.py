@@ -46,6 +46,7 @@ class TeamSerializer(serializers.ModelSerializer):
             "description",
             "created_at",
             "deleted_at",
+            "type",
             "users",
             "users_details",
             "manager",
@@ -94,12 +95,13 @@ class TeamSerializer(serializers.ModelSerializer):
             users = validated_data["users"]
         if teams and users:
             raise serializers.ValidationError("Teams cannot have both users and sub teams")
-        elif users:
-            validated_data["type"] = TeamType.TEAM_OF_USERS
-        elif teams:
-            validated_data["type"] = TeamType.TEAM_OF_TEAMS
-        else:
-            validated_data["type"] = None
+        elif validated_data["type"] is None:
+            if users:
+                validated_data["type"] = TeamType.TEAM_OF_USERS
+            elif teams:
+                validated_data["type"] = TeamType.TEAM_OF_TEAMS
+            else:
+                validated_data["type"] = None
         return validated_data
 
 
@@ -109,6 +111,7 @@ class TeamSearchFilterBackend(filters.BaseFilterBackend):
 
         if search:
             queryset = queryset.filter(Q(name__icontains=search)).distinct()
+
         return queryset
 
 
@@ -129,6 +132,7 @@ class TeamViewSet(ModelViewSet):
     ordering_fields = ["id", "name", "created_at", "updated_at"]
     filterset_fields = {
         "name": ["icontains"],
+        "project": ["exact"],
     }
 
     def get_queryset(self):

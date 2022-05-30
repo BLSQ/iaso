@@ -9,6 +9,8 @@ export type SaveTeamQuery = {
     manager: number;
     subTeams: Array<number>;
     project: number;
+    type?: 'TEAM_OF_TEAMS' | 'TEAM_OF_USERS';
+    users: Array<number>;
 };
 
 const convertToApi = data => {

@@ -20,7 +20,7 @@ const useStyles = makeStyles(theme => ({
 type Props = {
     params: TeamParams;
 };
-const baseUrl = baseUrls.planning;
+const baseUrl = baseUrls.teams;
 export const Teams: FunctionComponent<Props> = ({ params }) => {
     const dispatch = useDispatch();
     const classes: Record<string, string> = useStyles();
@@ -37,7 +37,7 @@ export const Teams: FunctionComponent<Props> = ({ params }) => {
                 <TeamFilters params={params} />
 
                 <Box display="flex" justifyContent="flex-end">
-                    <CreateEditTeam type="create" />
+                    <CreateEditTeam dialogType="create" />
                 </Box>
                 <TableWithDeepLink
                     baseUrl={baseUrl}

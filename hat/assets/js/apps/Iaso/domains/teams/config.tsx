@@ -25,13 +25,15 @@ export const teamColumns = (formatMessage: IntlFormatMessage): Column[] => {
                 return (
                     // TODO: limit to user permissions
                     <CreateEditTeam
-                        type="edit"
+                        dialogType="edit"
                         id={settings.row.original.id}
                         name={settings.row.original?.name}
                         description={settings.row.original?.description}
                         manager={settings.row.original?.manager}
                         subTeams={settings.row.original?.sub_teams}
                         project={settings.row.original?.project}
+                        type={settings.row.original?.type}
+                        users={settings.row.original?.users}
                     />
                 );
             },

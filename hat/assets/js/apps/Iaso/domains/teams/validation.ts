@@ -16,6 +16,8 @@ export const usePlanningValidation = () => {
                 project: number().nullable().required(errorMessage),
                 subTeams: array().of(number()),
                 manager: number().nullable().required(errorMessage),
+                type: string().nullable(),
+                users: array().of(number()),
             }),
         [errorMessage],
     );

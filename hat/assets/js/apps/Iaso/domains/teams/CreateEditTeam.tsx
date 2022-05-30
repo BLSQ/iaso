@@ -1,4 +1,9 @@
-import React, { FunctionComponent, useCallback, useMemo } from 'react';
+import React, {
+    FunctionComponent,
+    useCallback,
+    useMemo,
+    useEffect,
+} from 'react';
 import { AddButton, useSafeIntl, IconButton } from 'bluesquare-components';
 import { useCurrentUser } from 'Iaso/utils/usersUtils';
 import { useFormik, FormikProvider } from 'formik';
@@ -9,21 +14,25 @@ import ConfirmCancelDialogComponent from '../../components/dialogs/ConfirmCancel
 
 import MESSAGES from './messages';
 
-import { SaveTeamQuery, useSaveTeam } from './hooks/requests/useSaveTeam';
-import { useGetProfiles } from '../users/hooks/useGetProfiles';
+import { commaSeparatedIdsToArray } from '../../utils/forms';
 import { usePlanningValidation } from './validation';
 import { IntlFormatMessage } from '../../types/intl';
+
+import { SaveTeamQuery, useSaveTeam } from './hooks/requests/useSaveTeam';
 import { useGetProjectsDropDown } from './hooks/requests/useGetProjectsDropDown';
 import { useGetProfilesDropdown } from './hooks/requests/useGetProfilesDropdown';
+import { useGetTeams } from './hooks/requests/useGetTeams';
+
+import { TEAM_OF_TEAMS, TEAM_OF_USERS } from './constants';
 
 type ModalMode = 'create' | 'edit';
 
 type Props = Partial<SaveTeamQuery> & {
-    type: ModalMode;
+    dialogType: ModalMode;
 };
 
-const makeRenderTrigger = (type: 'create' | 'edit') => {
-    if (type === 'create') {
+const makeRenderTrigger = (dialogType: 'create' | 'edit') => {
+    if (dialogType === 'create') {
         return ({ openDialog }) => (
             <AddButton
                 dataTestId="create-plannning-button"
@@ -40,8 +49,11 @@ const makeRenderTrigger = (type: 'create' | 'edit') => {
     );
 };
 
-const formatTitle = (type: ModalMode, formatMessage: IntlFormatMessage) => {
-    switch (type) {
+const formatTitle = (
+    dialogType: ModalMode,
+    formatMessage: IntlFormatMessage,
+) => {
+    switch (dialogType) {
         case 'create':
             return formatMessage(MESSAGES.createTeam);
         case 'edit':
@@ -52,13 +64,15 @@ const formatTitle = (type: ModalMode, formatMessage: IntlFormatMessage) => {
 };
 
 export const CreateEditTeam: FunctionComponent<Props> = ({
-    type,
+    dialogType,
     id,
     name,
     description,
     project,
     manager,
     subTeams,
+    type,
+    users,
 }) => {
     const { formatMessage } = useSafeIntl();
     const currentUser = useCurrentUser();
@@ -66,10 +80,27 @@ export const CreateEditTeam: FunctionComponent<Props> = ({
         useGetProjectsDropDown();
     const { data: profliesDropdown, isFetching: isFetchingProfiles } =
         useGetProfilesDropdown();
-    const schema = usePlanningValidation();
-    const { mutateAsync: savePlanning } = useSaveTeam(type);
+    const { data: teamsDropdown, isFetching: isFetchingTeams } = useGetTeams({
+        project,
+        select: teams => {
+            if (!teams) return [];
+            const filteredTeams = teams.filter(team => team.id !== id);
+            return filteredTeams.map(team => {
+                return {
+                    value: team.id.toString(),
+                    label: team.name,
+                };
+            });
+        },
+    });
 
-    const renderTrigger = useMemo(() => makeRenderTrigger(type), [type]);
+    const schema = usePlanningValidation();
+    const { mutateAsync: savePlanning } = useSaveTeam(dialogType);
+
+    const renderTrigger = useMemo(
+        () => makeRenderTrigger(dialogType),
+        [dialogType],
+    );
     const formik = useFormik({
         initialValues: {
             id,
@@ -78,6 +109,8 @@ export const CreateEditTeam: FunctionComponent<Props> = ({
             project,
             manager: manager || currentUser.user_id,
             subTeams: subTeams || [],
+            type,
+            users: users || [],
         },
         enableReinitialize: true,
         validateOnBlur: true,
@@ -107,7 +140,17 @@ export const CreateEditTeam: FunctionComponent<Props> = ({
         },
         [errors, touched],
     );
-    const titleMessage = formatTitle(type, formatMessage);
+    const titleMessage = formatTitle(dialogType, formatMessage);
+
+    useEffect(() => {
+        if (values.type === TEAM_OF_USERS) {
+            setFieldValue('subTeams', []);
+        }
+        if (values.type === TEAM_OF_TEAMS) {
+            setFieldValue('users', []);
+        }
+    }, [setFieldValue, values.type]);
+
     return (
         <FormikProvider value={formik}>
             {/* @ts-ignore */}
@@ -122,7 +165,7 @@ export const CreateEditTeam: FunctionComponent<Props> = ({
                     closeDialog();
                     resetForm();
                 }}
-                maxWidth="xs"
+                maxWidth="md"
                 cancelMessage={MESSAGES.cancel}
                 confirmMessage={MESSAGES.save}
                 renderTrigger={renderTrigger}
@@ -150,14 +193,6 @@ export const CreateEditTeam: FunctionComponent<Props> = ({
                             loading={isFetchingProfiles}
                         />
                         <InputComponent
-                            keyValue="description"
-                            onChange={onChange}
-                            value={values.description}
-                            errors={getErrors('description')}
-                            type="text"
-                            label={MESSAGES.description}
-                        />
-                        <InputComponent
                             type="select"
                             keyValue="project"
                             onChange={onChange}
@@ -168,6 +203,71 @@ export const CreateEditTeam: FunctionComponent<Props> = ({
                             options={projectsDropdown}
                             loading={isFetchingProjects}
                         />
+                        <InputComponent
+                            keyValue="description"
+                            onChange={onChange}
+                            value={values.description}
+                            errors={getErrors('description')}
+                            type="text"
+                            label={MESSAGES.description}
+                        />
+                    </Grid>
+
+                    <Grid xs={6} item>
+                        <InputComponent
+                            type="select"
+                            keyValue="type"
+                            onChange={onChange}
+                            value={values.type}
+                            errors={getErrors('type')}
+                            label={MESSAGES.type}
+                            options={[
+                                {
+                                    label: formatMessage(MESSAGES.teamsOfTeams),
+                                    value: TEAM_OF_TEAMS,
+                                },
+                                {
+                                    label: formatMessage(MESSAGES.teamsOfUsers),
+                                    value: TEAM_OF_USERS,
+                                },
+                            ]}
+                        />
+                        {values.type === TEAM_OF_USERS && (
+                            <InputComponent
+                                type="select"
+                                keyValue="users"
+                                onChange={(key, value) =>
+                                    onChange(
+                                        key,
+                                        commaSeparatedIdsToArray(value),
+                                    )
+                                }
+                                value={values.users}
+                                errors={getErrors('users')}
+                                label={MESSAGES.users}
+                                options={profliesDropdown}
+                                loading={isFetchingProfiles}
+                                multi
+                            />
+                        )}
+                        {values.type === TEAM_OF_TEAMS && (
+                            <InputComponent
+                                type="select"
+                                keyValue="subTeams"
+                                onChange={(key, value) =>
+                                    onChange(
+                                        key,
+                                        commaSeparatedIdsToArray(value),
+                                    )
+                                }
+                                value={values.subTeams}
+                                errors={getErrors('subTeams')}
+                                label={MESSAGES.title}
+                                options={teamsDropdown}
+                                loading={isFetchingTeams}
+                                multi
+                            />
+                        )}
                     </Grid>
                 </Grid>
             </ConfirmCancelDialogComponent>

@@ -6,6 +6,7 @@ import {
     dateRangePickerToDateApi,
     getApiParamDateTimeString,
 } from '../../../../utils/dates';
+import { endpoint } from '../../constants';
 
 export type SavePlanningQuery = {
     id?: number;
@@ -19,8 +20,6 @@ export type SavePlanningQuery = {
     project: number;
     publishingStatus: 'published' | 'draft';
 };
-
-const endpoint = '/api/microplanning/planning/';
 
 const convertToApi = data => {
     const {

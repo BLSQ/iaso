@@ -19,7 +19,7 @@ import { CsvButton } from '../../../../../../../hat/assets/js/apps/Iaso/componen
 
 const RoundPopper = ({
     campaign,
-    handleClick,
+    handleClose,
     open,
     anchorEl,
     setDialogOpen,
@@ -41,7 +41,7 @@ const RoundPopper = ({
             <Paper elevation={1}>
                 <Box p={2}>
                     <IconButton
-                        onClick={() => handleClick()}
+                        onClick={() => handleClose()}
                         className={classes.popperClose}
                         size="small"
                     >
@@ -118,7 +118,7 @@ const RoundPopper = ({
 
 RoundPopper.propTypes = {
     campaign: PropTypes.object.isRequired,
-    handleClick: PropTypes.func.isRequired,
+    handleClose: PropTypes.func.isRequired,
     setDialogOpen: PropTypes.func.isRequired,
     open: PropTypes.bool.isRequired,
     anchorEl: PropTypes.object.isRequired,

@@ -23,6 +23,9 @@ export const baseUrls = {
     entityTypes: 'entities/types',
     polio: 'polio/list',
     pages: 'pages',
+    planning: 'planning/list',
+    assignments: 'planning/assignments',
+    teams: 'planning/teams',
     error401: '401',
     error500: '500',
 };

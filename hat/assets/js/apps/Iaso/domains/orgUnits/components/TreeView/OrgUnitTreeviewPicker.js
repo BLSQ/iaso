@@ -1,5 +1,13 @@
-import { func, any, bool, object, oneOfType, string } from 'prop-types';
 import React from 'react';
+import {
+    func,
+    any,
+    bool,
+    object,
+    oneOfType,
+    string,
+    arrayOf,
+} from 'prop-types';
 import classnames from 'classnames';
 import { Paper, InputLabel, Box } from '@material-ui/core';
 import { makeStyles } from '@material-ui/core/styles';
@@ -48,12 +56,21 @@ const styles = theme => ({
     clearButton: {
         marginRight: 5,
     },
+    error: {
+        '&:hover': { border: `1px solid ${theme.palette.error.main}` },
+        border: `1px solid ${theme.palette.error.main}`,
+    },
+    errorLabel: {
+        color: theme.palette.error.main,
+    },
 });
 const formatPlaceholder = (placeholder, formatMessage) => {
     if (!placeholder) return null;
     if (typeof placeholder === 'string') return placeholder;
     return formatMessage(placeholder);
 };
+
+const noOp = () => null;
 
 const useStyles = makeStyles(styles);
 const OrgUnitTreeviewPicker = ({
@@ -66,22 +83,25 @@ const OrgUnitTreeviewPicker = ({
     disabled,
     label,
     clearable,
+    errors,
 }) => {
     const intl = useSafeIntl();
     const classes = useStyles();
-    const className = disabled
-        ? classes.paper
-        : `${classes.paper} ${classes.enabled}`;
+    const hasError = errors.length > 0;
+
+    const errorStyle = hasError && !disabled ? classes.error : '';
+    const errorLabelStyle = hasError && !disabled ? classes.errorLabel : '';
+    const enabledStyle = disabled ? '' : classes.enabled;
 
     const placeholderStyle = disabled
         ? classes.placeholder
         : `${classes.placeholder} ${classes.pointer}`;
+
     const formattedPlaceholder =
         formatPlaceholder(placeholder, intl.formatMessage) ??
         (multiselect
             ? intl.formatMessage(MESSAGES.selectMultiple)
             : intl.formatMessage(MESSAGES.selectSingle));
-    const noOp = () => null;
 
     const makeTruncatedTrees = treesData => {
         if (treesData.size === 0)
@@ -116,16 +136,23 @@ const OrgUnitTreeviewPicker = ({
         return <div className={classes.treeviews}>{treeviews}</div>;
     };
     return (
-        <Box pt={1}>
-            <FormControl>
+        <Box mt={2}>
+            <FormControl errors={errors}>
                 <InputLabel
                     shrink={selectedItems.size > 0}
                     required={required}
-                    className={classnames(classes.inputLabel, 'input-label')}
+                    className={`${classnames(
+                        classes.inputLabel,
+                        'input-label',
+                    )} ${errorLabelStyle}`}
                 >
                     {formattedPlaceholder}
                 </InputLabel>
-                <Paper variant="outlined" elevation={0} className={className}>
+                <Paper
+                    variant="outlined"
+                    elevation={0}
+                    className={`${classes.paper} ${enabledStyle} ${errorStyle}`}
+                >
                     {makeTruncatedTrees(selectedItems)}
                     {clearable && resetSelection && selectedItems.size > 0 && (
                         <Box
@@ -138,7 +165,9 @@ const OrgUnitTreeviewPicker = ({
                                 icon="clear"
                                 size="small"
                                 tooltipMessage={MESSAGES.clear}
-                                onClick={resetSelection}
+                                onClick={() => {
+                                    resetSelection();
+                                }}
                             />
                         </Box>
                     )}
@@ -169,6 +198,7 @@ OrgUnitTreeviewPicker.propTypes = {
     disabled: bool,
     label: func.isRequired,
     clearable: bool,
+    errors: arrayOf(string),
 };
 OrgUnitTreeviewPicker.defaultProps = {
     selectedItems: [],
@@ -178,6 +208,7 @@ OrgUnitTreeviewPicker.defaultProps = {
     required: false,
     disabled: false,
     clearable: true,
+    errors: [],
 };
 
 export { OrgUnitTreeviewPicker };

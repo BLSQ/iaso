@@ -1,5 +1,5 @@
 import logging
-from datetime import datetime, timezone
+from datetime import datetime
 
 import pandas as pd
 from django.contrib.auth.models import User
@@ -9,18 +9,14 @@ from gspread.exceptions import APIError
 from gspread.exceptions import NoValidUrlKeyFound
 from rest_framework import serializers
 from rest_framework.validators import UniqueValidator
+from django.utils.translation import gettext as _
+from django.utils import timezone
 
 from iaso.models import Group, OrgUnit
 from .models import (
-    Preparedness,
     Round,
     LineListImport,
     VIRUSES,
-    PREPARING,
-    ROUND1START,
-    ROUND1DONE,
-    ROUND2START,
-    ROUND2DONE,
     SpreadSheetImport,
     CampaignGroup,
 )
@@ -333,19 +329,13 @@ class CampaignSerializer(serializers.ModelSerializer):
         return ""
 
     def get_general_status(self, campaign):
-        now_utc = datetime.now(timezone.utc).date()
-        if campaign.round_two:
-            if campaign.round_two.ended_at and now_utc > campaign.round_two.ended_at:
-                return ROUND2DONE
-            if campaign.round_two.started_at and now_utc >= campaign.round_two.started_at:
-                return ROUND2START
-        if campaign.round_one:
-            if campaign.round_one.ended_at and now_utc > campaign.round_one.ended_at:
-                return ROUND1DONE
-            if campaign.round_one.started_at and now_utc >= campaign.round_one.started_at:
-                return ROUND1START
-
-        return PREPARING
+        now_utc = timezone.now().date()
+        for round in campaign.rounds.all().order_by("-number"):
+            if round.ended_at and now_utc > round.ended_at:
+                return _("Round {} ended").format(round.number)
+            elif round.started_at and now_utc >= round.started_at:
+                return _("Round {} started").format(round.number)
+        return _("Preparing")
 
     group = GroupSerializer(required=False, allow_null=True)
 

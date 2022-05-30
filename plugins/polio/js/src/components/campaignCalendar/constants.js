@@ -1,12 +1,11 @@
 import React from 'react';
 import moment from 'moment';
-import { apiDateFormat } from 'Iaso/utils/dates';
+import { apiDateFormat } from 'Iaso/utils/dates.ts';
 
 import { EditCampaignCell } from './cells/EditCampaignCell';
 
 const defaultStaticColWidth = 45;
 const colsCount = 16;
-const defaultCampaignLength = 6;
 const dateFormat = apiDateFormat;
 const colSpanTitle = 21;
 const defaultOrder = 'round_one__started_at';
@@ -46,6 +45,5 @@ export {
     colSpanTitle,
     staticFields,
     defaultOrder,
-    defaultCampaignLength,
     defaultStaticColWidth,
 };

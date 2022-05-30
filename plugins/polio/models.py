@@ -347,6 +347,20 @@ class Campaign(SoftDeletableModel):
 
         super().save(*args, **kwargs)
 
+    def get_round_one(self):
+        try:
+            round = self.rounds.get(number=1)
+            return round
+        except Round.DoesNotExist:
+            return None
+
+    def get_round_two(self):
+        try:
+            round = self.rounds.get(number=2)
+            return round
+        except Round.DoesNotExist:
+            return None
+
 
 # Deprecated
 class Preparedness(models.Model):

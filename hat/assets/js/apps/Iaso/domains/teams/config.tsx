@@ -6,8 +6,12 @@ import { IntlFormatMessage } from '../../types/intl';
 import { Column } from '../../types/table';
 import { CreateEditTeam } from './CreateEditTeam';
 import { TEAM_OF_TEAMS, TEAM_OF_USERS } from './constants';
+import DeleteDialog from '../../components/dialogs/DeleteDialogComponent';
 
-export const teamColumns = (formatMessage: IntlFormatMessage): Column[] => {
+export const teamColumns = (
+    formatMessage: IntlFormatMessage,
+    deleteTeam: () => void,
+): Column[] => {
     return [
         {
             Header: 'Id',
@@ -66,17 +70,25 @@ export const teamColumns = (formatMessage: IntlFormatMessage): Column[] => {
             Cell: (settings): ReactElement => {
                 return (
                     // TODO: limit to user permissions
-                    <CreateEditTeam
-                        dialogType="edit"
-                        id={settings.row.original.id}
-                        name={settings.row.original.name}
-                        description={settings.row.original.description}
-                        manager={settings.row.original.manager}
-                        subTeams={settings.row.original.sub_teams}
-                        project={settings.row.original.project}
-                        type={settings.row.original.type}
-                        users={settings.row.original.users}
-                    />
+                    <>
+                        <CreateEditTeam
+                            dialogType="edit"
+                            id={settings.row.original.id}
+                            name={settings.row.original.name}
+                            description={settings.row.original.description}
+                            manager={settings.row.original.manager}
+                            subTeams={settings.row.original.sub_teams}
+                            project={settings.row.original.project}
+                            type={settings.row.original.type}
+                            users={settings.row.original.users}
+                        />
+
+                        <DeleteDialog
+                            keyName="team"
+                            titleMessage={MESSAGES.delete}
+                            onConfirm={() => deleteTeam(settings.row.original)}
+                        />
+                    </>
                 );
             },
         },

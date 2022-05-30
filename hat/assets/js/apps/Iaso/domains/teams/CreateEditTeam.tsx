@@ -94,12 +94,7 @@ export const CreateEditTeam: FunctionComponent<Props> = ({
     });
 
     const schema = usePlanningValidation();
-    const { mutateAsync: savePlanning } = useSaveTeam(dialogType);
 
-    const renderTrigger = useMemo(
-        () => makeRenderTrigger(dialogType),
-        [dialogType],
-    );
     const formik = useFormik({
         initialValues: {
             id,
@@ -114,7 +109,7 @@ export const CreateEditTeam: FunctionComponent<Props> = ({
         enableReinitialize: true,
         validateOnBlur: true,
         validationSchema: schema,
-        onSubmit: (values: Partial<SaveTeamQuery>) => savePlanning(values), // TODO: convert forms string to Arry of IDs
+        onSubmit: (values: Partial<SaveTeamQuery>) => savePlanning(values), // TODO: convert forms string to Array of IDs
     });
 
     const {
@@ -128,6 +123,13 @@ export const CreateEditTeam: FunctionComponent<Props> = ({
         handleSubmit,
         resetForm,
     } = formik;
+
+    const { mutateAsync: savePlanning } = useSaveTeam(dialogType, resetForm);
+
+    const renderTrigger = useMemo(
+        () => makeRenderTrigger(dialogType),
+        [dialogType],
+    );
     const onChange = (keyValue, value) => {
         setFieldTouched(keyValue, true);
         setFieldValue(keyValue, value);

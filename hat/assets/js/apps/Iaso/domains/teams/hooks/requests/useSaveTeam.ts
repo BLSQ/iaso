@@ -33,18 +33,24 @@ const postTeam = async (body: SaveTeamQuery) => {
     return postRequest(endpoint, convertToApi(body));
 };
 
-export const useSaveTeam = (type: 'create' | 'edit'): UseMutationResult => {
+export const useSaveTeam = (
+    type: 'create' | 'edit',
+    callback: () => void,
+): UseMutationResult => {
+    const onSuccess = () => callback();
     const editTeam = useSnackMutation(
         (data: Partial<SaveTeamQuery>) => patchTeam(data),
         undefined,
         undefined,
         ['teamsList'],
+        { onSuccess },
     );
     const createTeam = useSnackMutation(
         (data: SaveTeamQuery) => postTeam(data),
         undefined,
         undefined,
         ['teamsList'],
+        { onSuccess },
     );
 
     switch (type) {

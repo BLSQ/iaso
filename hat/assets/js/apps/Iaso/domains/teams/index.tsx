@@ -2,16 +2,20 @@ import React, { FunctionComponent } from 'react';
 import { makeStyles, Box } from '@material-ui/core';
 import { commonStyles, useSafeIntl } from 'bluesquare-components';
 import { useDispatch } from 'react-redux';
+
 import TopBar from '../../components/nav/TopBarComponent';
-import MESSAGES from './messages';
+import { TableWithDeepLink } from '../../components/tables/TableWithDeepLink';
+import { CreateEditTeam } from './CreateEditTeam';
+
 import { TeamParams } from './types';
 import { TeamFilters } from './TeamFilters';
-import { TableWithDeepLink } from '../../components/tables/TableWithDeepLink';
-import { baseUrls } from '../../constants/urls';
 import { useGetTeams } from './hooks/requests/useGetTeams';
+import { useDeleteTeam } from './hooks/requests/useDeleteTeam';
 import { redirectTo } from '../../routing/actions';
+
+import { baseUrls } from '../../constants/urls';
+import MESSAGES from './messages';
 import { teamColumns } from './config';
-import { CreateEditTeam } from './CreateEditTeam';
 
 const useStyles = makeStyles(theme => ({
     ...commonStyles(theme),
@@ -26,6 +30,7 @@ export const Teams: FunctionComponent<Props> = ({ params }) => {
     const classes: Record<string, string> = useStyles();
     const { formatMessage } = useSafeIntl();
     const { data, isFetching } = useGetTeams(params);
+    const { mutate: deleteTeam } = useDeleteTeam();
     return (
         <>
             <TopBar
@@ -44,7 +49,7 @@ export const Teams: FunctionComponent<Props> = ({ params }) => {
                     data={data?.results ?? []}
                     pages={data?.pages ?? 1}
                     defaultSorted={[{ id: 'name', desc: false }]}
-                    columns={teamColumns(formatMessage)}
+                    columns={teamColumns(formatMessage, deleteTeam)}
                     count={data?.count ?? 0}
                     params={params}
                     onTableParamsChange={p => dispatch(redirectTo(baseUrl, p))}

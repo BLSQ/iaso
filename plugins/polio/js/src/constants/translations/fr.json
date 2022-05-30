@@ -261,13 +261,5 @@
     "iaso.polio.title.scope": "Périmètre",
     "iaso.polio.tooltip.label.lqasImDate": "Aucune date trouvée dans les données de la campagne, une date par défaut basée sur la date du round est utilisée",
     "iaso.polio.vaccine": "Vaccin",
-    "iaso.polio.vaccines": "Vaccins",
-    "iaso.teams.create": "Créer une équipe",
-    "iaso.teams.edit": "Editer une équipe",
-    "iaso.teams.manager": "Responsable",
-    "iaso.teams.teamsOfTeams": "Equipe d'équipes",
-    "iaso.teams.teamsOfUsers": "Equipe d'utilisateurs",
-    "iaso.teams.title": "Equipes",
-    "iaso.teams.users": "Utilisateurs",
-    "iaso.teams.usersTeams": "Utilisateurs / équipes"
+    "iaso.polio.vaccines": "Vaccins"
 }

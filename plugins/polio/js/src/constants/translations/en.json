@@ -250,13 +250,5 @@
     "iaso.polio.title.scope": "Scope",
     "iaso.polio.tooltip.label.lqasImDate": "No date found in campaign data, using default value based on round date",
     "iaso.polio.vaccine": "Vaccine",
-    "iaso.polio.vaccines": "Vaccines",
-    "iaso.teams.create": "Create team",
-    "iaso.teams.edit": "Edit team",
-    "iaso.teams.manager": "Manager",
-    "iaso.teams.teamsOfTeams": "Teams of teams",
-    "iaso.teams.teamsOfUsers": "Teams of users",
-    "iaso.teams.title": "Teams",
-    "iaso.teams.users": "Users",
-    "iaso.teams.usersTeams": "Users / teams"
+    "iaso.polio.vaccines": "Vaccines"
 }

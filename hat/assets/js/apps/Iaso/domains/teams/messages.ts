@@ -77,6 +77,18 @@ const MESSAGES = defineMessages({
         id: 'iaso.teams.usersTeams',
         defaultMessage: 'Users / teams',
     },
+    delete: {
+        id: 'iaso.teams.delete',
+        defaultMessage: 'Are you sure you want to delete this team?',
+    },
+    deleteError: {
+        id: 'iaso.snackBar.deleteTeamError',
+        defaultMessage: 'An error occurred while deleting team',
+    },
+    deleteSuccess: {
+        id: 'iaso.snackBar.delete_successful',
+        defaultMessage: 'Deleted successfully',
+    },
 });
 
 export default MESSAGES;

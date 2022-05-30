@@ -6,17 +6,33 @@ export type SaveTeamQuery = {
     id?: number;
     name: string;
     description?: string;
+    manager: number;
+    subTeams: Array<number>;
+    project: number;
+};
+
+const convertToApi = data => {
+    const { subTeams, manager, ...converted } = data;
+    if (subTeams !== undefined) {
+        converted.sub_teams = subTeams;
+    }
+
+    if (manager !== undefined) {
+        converted.manager = parseInt(manager, 10);
+    }
+
+    return converted;
 };
 
 const endpoint = '/api/microplanning/teams/';
 
 const patchTeam = async (body: Partial<SaveTeamQuery>) => {
     const url = `${endpoint}${body.id}/`;
-    return patchRequest(url, body);
+    return patchRequest(url, convertToApi(body));
 };
 
 const postTeam = async (body: SaveTeamQuery) => {
-    return postRequest(endpoint, body);
+    return postRequest(endpoint, convertToApi(body));
 };
 
 export const useSaveTeam = (type: 'create' | 'edit'): UseMutationResult => {
@@ -24,13 +40,13 @@ export const useSaveTeam = (type: 'create' | 'edit'): UseMutationResult => {
         (data: Partial<SaveTeamQuery>) => patchTeam(data),
         undefined,
         undefined,
-        ['teamssList'],
+        ['teamsList'],
     );
     const createTeam = useSnackMutation(
         (data: SaveTeamQuery) => postTeam(data),
         undefined,
         undefined,
-        ['teamssList'],
+        ['teamsList'],
     );
 
     switch (type) {

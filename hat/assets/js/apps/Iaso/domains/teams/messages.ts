@@ -45,6 +45,18 @@ const MESSAGES = defineMessages({
         id: 'iaso.versionsDialog.label.description',
         defaultMessage: 'Description',
     },
+    projectsError: {
+        id: 'iaso.snackBar.fetchProjectsError',
+        defaultMessage: 'An error occurred while fetching projects list',
+    },
+    project: {
+        id: 'iaso.datasources.label.project',
+        defaultMessage: 'Project',
+    },
+    manager: {
+        id: 'iaso.teams.manager',
+        defaultMessage: 'Manager',
+    },
 });
 
 export default MESSAGES;

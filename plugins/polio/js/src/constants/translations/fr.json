@@ -261,7 +261,8 @@
     "iaso.polio.tooltip.label.lqasImDate": "Aucune date trouvée dans les données de la campagne, une date par défaut basée sur la date du round est utilisée",
     "iaso.polio.vaccine": "Vaccin",
     "iaso.polio.vaccines": "Vaccins",
-    "iaso.teams.title": "Equipes",
+    "iaso.teams.create": "Créer une équipe",
     "iaso.teams.edit": "Editer une équipe",
-    "iaso.teams.create": "Créer une équipe"
+    "iaso.teams.manager": "Responsable",
+    "iaso.teams.title": "Equipes"
 }

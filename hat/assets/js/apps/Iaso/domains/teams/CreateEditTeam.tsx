@@ -1,5 +1,6 @@
 import React, { FunctionComponent, useCallback, useMemo } from 'react';
 import { AddButton, useSafeIntl, IconButton } from 'bluesquare-components';
+import { useCurrentUser } from 'Iaso/utils/usersUtils';
 import { useFormik, FormikProvider } from 'formik';
 import { isEqual } from 'lodash';
 import { Grid } from '@material-ui/core';
@@ -9,8 +10,11 @@ import ConfirmCancelDialogComponent from '../../components/dialogs/ConfirmCancel
 import MESSAGES from './messages';
 
 import { SaveTeamQuery, useSaveTeam } from './hooks/requests/useSaveTeam';
+import { useGetProfiles } from '../users/hooks/useGetProfiles';
 import { usePlanningValidation } from './validation';
 import { IntlFormatMessage } from '../../types/intl';
+import { useGetProjectsDropDown } from './hooks/requests/useGetProjectsDropDown';
+import { useGetProfilesDropdown } from './hooks/requests/useGetProfilesDropdown';
 
 type ModalMode = 'create' | 'edit';
 
@@ -52,18 +56,28 @@ export const CreateEditTeam: FunctionComponent<Props> = ({
     id,
     name,
     description,
+    project,
+    manager,
+    subTeams,
 }) => {
     const { formatMessage } = useSafeIntl();
+    const currentUser = useCurrentUser();
+    const { data: projectsDropdown, isFetching: isFetchingProjects } =
+        useGetProjectsDropDown();
+    const { data: profliesDropdown, isFetching: isFetchingProfiles } =
+        useGetProfilesDropdown();
     const schema = usePlanningValidation();
     const { mutateAsync: savePlanning } = useSaveTeam(type);
 
     const renderTrigger = useMemo(() => makeRenderTrigger(type), [type]);
-
     const formik = useFormik({
         initialValues: {
             id,
             name,
             description,
+            project,
+            manager: manager || currentUser.user_id,
+            subTeams: subTeams || [],
         },
         enableReinitialize: true,
         validateOnBlur: true,
@@ -108,7 +122,7 @@ export const CreateEditTeam: FunctionComponent<Props> = ({
                     closeDialog();
                     resetForm();
                 }}
-                maxWidth="md"
+                maxWidth="xs"
                 cancelMessage={MESSAGES.cancel}
                 confirmMessage={MESSAGES.save}
                 renderTrigger={renderTrigger}
@@ -125,12 +139,34 @@ export const CreateEditTeam: FunctionComponent<Props> = ({
                             required
                         />
                         <InputComponent
+                            type="select"
+                            keyValue="manager"
+                            onChange={onChange}
+                            value={values.manager}
+                            errors={getErrors('manager')}
+                            label={MESSAGES.manager}
+                            required
+                            options={profliesDropdown}
+                            loading={isFetchingProfiles}
+                        />
+                        <InputComponent
                             keyValue="description"
                             onChange={onChange}
                             value={values.description}
                             errors={getErrors('description')}
                             type="text"
                             label={MESSAGES.description}
+                        />
+                        <InputComponent
+                            type="select"
+                            keyValue="project"
+                            onChange={onChange}
+                            value={values.project}
+                            errors={getErrors('project')}
+                            label={MESSAGES.project}
+                            required
+                            options={projectsDropdown}
+                            loading={isFetchingProjects}
                         />
                     </Grid>
                 </Grid>

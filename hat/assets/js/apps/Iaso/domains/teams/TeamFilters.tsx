@@ -11,7 +11,7 @@ type Props = {
     params: TeamParams;
 };
 
-const baseUrl = baseUrls.team;
+const baseUrl = baseUrls.teams;
 export const TeamFilters: FunctionComponent<Props> = ({ params }) => {
     const { filters, handleSearch, handleChange, filtersUpdated } =
         useFilterState(baseUrl, params);

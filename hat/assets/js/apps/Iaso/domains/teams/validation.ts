@@ -1,5 +1,5 @@
 import { useMemo } from 'react';
-import { object, string } from 'yup';
+import { object, string, number, array } from 'yup';
 // @ts-ignore
 import { useSafeIntl } from 'bluesquare-components';
 import MESSAGES from './messages';
@@ -13,6 +13,9 @@ export const usePlanningValidation = () => {
             object().shape({
                 name: string().nullable().required(errorMessage),
                 description: string().nullable(),
+                project: number().nullable().required(errorMessage),
+                subTeams: array().of(number()),
+                manager: number().nullable().required(errorMessage),
             }),
         [errorMessage],
     );

@@ -29,6 +29,9 @@ export const teamColumns = (formatMessage: IntlFormatMessage): Column[] => {
                         id={settings.row.original.id}
                         name={settings.row.original?.name}
                         description={settings.row.original?.description}
+                        manager={settings.row.original?.manager}
+                        subTeams={settings.row.original?.sub_teams}
+                        project={settings.row.original?.project}
                     />
                 );
             },

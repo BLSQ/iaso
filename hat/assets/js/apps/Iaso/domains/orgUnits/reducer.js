@@ -30,7 +30,7 @@ export const orgUnitsInitialState = {
         locations: [],
         shapes: [],
     },
-    filtersUpdated: true,
+    filtersUpdated: false,
     groups: [],
 };
 

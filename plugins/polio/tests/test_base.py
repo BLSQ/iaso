@@ -1,5 +1,7 @@
+import datetime
 import json
 from unittest import mock
+from unittest.mock import patch
 
 from django.contrib.auth.models import User
 from django.core.cache import cache
@@ -19,6 +21,7 @@ from ..models import Config
 from ..preparedness.calculator import get_preparedness_score
 from ..preparedness.exceptions import InvalidFormatError
 from ..preparedness.spreadsheet_manager import *
+from ..serializers import CampaignSerializer
 
 
 class PolioAPITestCase(APITestCase):
@@ -550,3 +553,22 @@ class LQASIMPolioTestCase(APITestCase):
 
         self.assertEqual(response.status_code, 200)
         self.assertEqual(is_cached, True)
+
+    def test_general_status(self):
+        c = Campaign.objects.create()
+        c.rounds.create(number=1, started_at=datetime.date(2021, 1, 1), ended_at=datetime.date(2021, 1, 2))
+        c.rounds.create(number=2, started_at=datetime.date(2021, 3, 1), ended_at=datetime.date(2021, 3, 2))
+        c.rounds.create(number=3, started_at=datetime.date(2021, 4, 1), ended_at=datetime.date(2021, 4, 20))
+
+        with patch("django.utils.timezone.now", lambda: datetime.datetime(2020, 2, 2, 2, 2, 2)):
+            d = CampaignSerializer(instance=c).data
+            self.assertEqual(d["general_status"], "Preparing")
+        with patch("django.utils.timezone.now", lambda: datetime.datetime(2021, 1, 1, 2, 2, 2)):
+            d = CampaignSerializer(instance=c).data
+            self.assertEqual(d["general_status"], "Round 1 started")
+        with patch("django.utils.timezone.now", lambda: datetime.datetime(2021, 1, 3, 10, 2, 2)):
+            d = CampaignSerializer(instance=c).data
+            self.assertEqual(d["general_status"], "Round 1 ended")
+        with patch("django.utils.timezone.now", lambda: datetime.datetime(2021, 4, 20, 10, 2, 2)):
+            d = CampaignSerializer(instance=c).data
+            self.assertEqual(d["general_status"], "Round 3 started")

@@ -8,7 +8,6 @@ from iaso.models import Project, OrgUnit, Form
 from iaso.models.microplanning import Team, TeamType, Planning
 
 
-# TODO Perms: Add a permission, filter on it
 class NestedProjectSerializer(serializers.ModelSerializer):
     class Meta:
         model = Project
@@ -36,6 +35,7 @@ class TeamSerializer(serializers.ModelSerializer):
         self.fields["project"].queryset = account.project_set.all()
         self.fields["manager"].queryset = users_in_account
         self.fields["users"].child_relation.queryset = users_in_account
+        self.fields["sub_teams"].child_relation.queryset = Team.objects.filter_for_user(user)
 
     class Meta:
         model = Team
@@ -141,6 +141,15 @@ class TeamViewSet(ModelViewSet):
 
 
 class PlanningSerializer(serializers.ModelSerializer):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        user = self.context["request"].user
+        account = user.iaso_profile.account
+        self.fields["project"].queryset = account.project_set.all()
+        self.fields["team"].queryset = Team.objects.filter_for_user(user)
+        self.fields["org_unit"].queryset = OrgUnit.objects.filter_for_user_and_app_id(user, None)
+        self.fields["forms"].child_relation.queryset = Form.objects.filter_for_user_and_app_id(user)
+
     class Meta:
         model = Planning
         fields = [
@@ -165,6 +174,7 @@ class PlanningSerializer(serializers.ModelSerializer):
 
         user = self.context["request"].user
         validated_data["created_by"] = user
+        # Todo validate that project from org unit , teams and form are the same.
         if (
             validated_data.get("started_at")
             and validated_data.get("ended_at")
@@ -173,36 +183,6 @@ class PlanningSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError({"started_at": "Start date cannot be after end date"})
 
         return validated_data
-
-    # Todo validate that project from org unit , teams and form are the same.
-    def validate_project(self, value):
-        """
-        Check that project belongs to the user account
-        """
-        account = self.context["request"].user.iaso_profile.account
-        if value not in account.project_set.all():
-            raise serializers.ValidationError("Invalid project")
-        return value
-
-    def validate_team(self, value: Team):
-        account = self.context["request"].user.iaso_profile.account
-        if value.project not in account.project_set.all():
-            raise serializers.ValidationError("Invalid team")
-        return value
-
-    def validate_org_unit(self, value):
-        user = self.context["request"].user
-        if value not in OrgUnit.objects.filter_for_user_and_app_id(user, None):
-            raise serializers.ValidationError("Invalid OrgUnit")
-        return value
-
-    def validate_forms(self, values):
-        user = self.context["request"].user
-        forms = Form.objects.filter_for_user_and_app_id(user)
-        for form in values:
-            if form not in forms:
-                raise serializers.ValidationError(f"Invalid Form {form.name}")
-        return values
 
 
 class PlanningSearchFilterBackend(filters.BaseFilterBackend):

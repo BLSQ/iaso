@@ -5,6 +5,7 @@ from rest_framework import routers
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 
 from hat.api.authentication import WfpLogin, wfp_callback
+from .api.bulk_create_users import BulkCreateUserFromCsvViewSet
 from .api.comment import CommentViewSet
 from .api.entity import EntityViewSet, EntityTypeViewSet
 from .api.logs import LogsViewSet
@@ -105,6 +106,8 @@ router.register(r"entity", EntityViewSet, basename="entity")
 router.register(r"entitytype", EntityTypeViewSet, basename="entitytype")
 router.register(r"microplanning/teams", TeamViewSet, basename="teams")
 router.register(r"microplanning/planning", PlanningViewSet, basename="planning")
+router.register(r"bulkcreateuser", BulkCreateUserFromCsvViewSet, basename="bulkcreateuser")
+
 
 router.registry.extend(plugins_router.registry)
 

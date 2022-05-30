@@ -24,7 +24,6 @@ type Props = {
 };
 const baseUrl = baseUrls.planning;
 export const Planning: FunctionComponent<Props> = ({ params }) => {
-    // console.log('params', params);
     const dispatch = useDispatch();
     const classes: Record<string, string> = useStyles();
     const { formatMessage } = useSafeIntl();
@@ -39,7 +38,6 @@ export const Planning: FunctionComponent<Props> = ({ params }) => {
             />
 
             <Box className={classes.containerFullHeightNoTabPadded}>
-                {/* // Your code here */}
                 <PlanningFilters params={params} />
                 <Grid container justifyContent="flex-end">
                     <Grid item>

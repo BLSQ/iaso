@@ -3,7 +3,7 @@ import {
     useSnackQuery,
     useSnackMutation,
     useSnackQueries,
-} from 'Iaso/libs/apiHooks';
+} from 'Iaso/libs/apiHooks.ts';
 import { getRequest, patchRequest, postRequest } from 'Iaso/libs/Api';
 import { useQuery, useQueryClient } from 'react-query';
 import MESSAGES from './messages';

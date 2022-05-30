@@ -45,7 +45,7 @@ export const Planning: FunctionComponent<Props> = ({ params }) => {
                 </Grid>
                 <TableWithDeepLink
                     baseUrl={baseUrl}
-                    data={data?.plannings ?? []}
+                    data={data?.results ?? []}
                     pages={data?.pages ?? 1}
                     defaultSorted={[{ id: 'name', desc: false }]}
                     columns={planningColumns(formatMessage)}

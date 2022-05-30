@@ -19,26 +19,26 @@ export const planningColumns = (formatMessage: IntlFormatMessage): Column[] => {
         },
         {
             Header: formatMessage(MESSAGES.startDate),
-            accessor: 'start_date',
-            id: 'start_date',
+            accessor: 'started_at',
+            id: 'started_at',
         },
         {
             Header: formatMessage(MESSAGES.endDate),
-            accessor: 'end_date',
-            id: 'end_date',
+            accessor: 'ended_at',
+            id: 'ended_at',
         },
         {
             Header: formatMessage(MESSAGES.team),
             accessor: 'team',
             id: 'team',
-            Cell: settings => settings.row.original.name,
+            Cell: settings => settings.row.original.team_details.name,
         },
         {
             Header: formatMessage(MESSAGES.published),
             accessor: 'status',
             id: 'status',
             Cell: settings => {
-                if (settings.row.original.status)
+                if (settings.row.original.status === 'published')
                     return formatMessage(MESSAGES.yes);
                 return formatMessage(MESSAGES.no);
             },
@@ -58,37 +58,29 @@ export const planningColumns = (formatMessage: IntlFormatMessage): Column[] => {
                             tooltipMessage={MESSAGES.viewPlanning}
                         />
                         <CreateEditPlanning
-                            type="copy"
-                            name={settings.row.original?.name}
-                            selectedTeam={settings.row.original?.team?.id}
-                            selectedOrgUnit={
-                                settings.row.original?.org_unit?.id
-                            }
-                            startDate={settings.row.original?.start_date}
-                            endDate={settings.row.original?.end_date}
-                            forms={
-                                settings.row.original?.forms?.map(
-                                    form => form.id,
-                                ) ?? []
-                            }
-                            publishingStatus={settings.row.original?.status}
-                        />
-                        <CreateEditPlanning
                             type="edit"
                             id={settings.row.original.id}
                             name={settings.row.original?.name}
-                            selectedTeam={settings.row.original?.team?.id}
-                            selectedOrgUnit={
-                                settings.row.original?.org_unit?.id
-                            }
-                            startDate={settings.row.original?.start_date}
-                            endDate={settings.row.original?.end_date}
-                            forms={
-                                settings.row.original?.forms?.map(
-                                    form => form.id,
-                                ) ?? []
-                            }
+                            selectedTeam={settings.row.original?.team}
+                            selectedOrgUnit={settings.row.original?.org_unit}
+                            startDate={settings.row.original?.started_at}
+                            endDate={settings.row.original?.ended_at}
+                            forms={settings.row.original?.forms ?? []}
                             publishingStatus={settings.row.original?.status}
+                            project={settings.row.original?.project}
+                            description={settings.row.original?.description}
+                        />
+                        <CreateEditPlanning
+                            type="copy"
+                            name={settings.row.original?.name}
+                            selectedTeam={settings.row.original?.team}
+                            selectedOrgUnit={settings.row.original?.org_unit}
+                            startDate={settings.row.original?.started_at}
+                            endDate={settings.row.original?.ended_at}
+                            forms={settings.row.original?.forms ?? []}
+                            publishingStatus={settings.row.original?.status}
+                            project={settings.row.original?.project}
+                            description={settings.row.original?.description}
                         />
                     </section>
                 );

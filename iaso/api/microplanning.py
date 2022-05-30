@@ -58,13 +58,28 @@ class TeamSerializer(serializers.ModelSerializer):
     users_details = NestedUserSerializer(many=True, read_only=True, source="users")
     sub_teams_details = NestedTeamSerializer(many=True, read_only=True, source="sub_teams")
 
-    # TODO validate children
+    def validate_sub_teams(self, values):
+        def recursive_check(instance, children):
+            for child in children:
+                if instance == child:
+                    raise serializers.ValidationError("Cannot create loop in tree")
+                recursive_check(instance, child.sub_teams.all())
+
+        if self.instance:
+            recursive_check(self.instance, values)
+        return values
 
     def validate(self, attrs):
         validated_data = super(TeamSerializer, self).validate(attrs)
 
         user = self.context["request"].user
         validated_data["created_by"] = user
+
+        project = validated_data.get("project", self.instance.project if self.instance else None)
+        sub_teams = validated_data.get("sub_teams", self.instance.sub_teams.all() if self.instance else [])
+        for sub_team in sub_teams:
+            if sub_team.project != project:
+                raise serializers.ValidationError("Sub teams mut be in the same project")
 
         # Check that we don't have both user and teams
         # this is written in this way to support partial update
@@ -98,6 +113,14 @@ class TeamSearchFilterBackend(filters.BaseFilterBackend):
 
 
 class TeamViewSet(ModelViewSet):
+    """Api for teams
+
+    Read access for all auth users.
+    Write access necessitate iaso_teams permissions.
+
+    The tree assignation are handled by settings the child sub teams (parent is readonly)
+    """
+
     remove_results_key_if_paginated = True
     filter_backends = [filters.OrderingFilter, DjangoFilterBackend, TeamSearchFilterBackend, DeletionFilterBackend]
     permission_classes = [ReadOnlyOrHasPermission("menupermissions.iaso_teams")]
@@ -128,6 +151,7 @@ class PlanningSerializer(serializers.ModelSerializer):
         fields = [
             "id",
             "name",
+            "team_details",
             "team",
             "org_unit",
             "forms",
@@ -138,6 +162,8 @@ class PlanningSerializer(serializers.ModelSerializer):
             "ended_at",
         ]
         read_only_fields = ["created_at", "parent"]
+
+    team_details = NestedTeamSerializer(source="team", read_only=True)
 
     def validate(self, attrs):
         validated_data = super().validate(attrs)
@@ -155,14 +181,43 @@ class PlanningSerializer(serializers.ModelSerializer):
         return validated_data
 
 
+class PlanningSearchFilterBackend(filters.BaseFilterBackend):
+    def filter_queryset(self, request, queryset, view):
+        search = request.query_params.get("search")
+
+        if search:
+            queryset = queryset.filter(Q(name__icontains=search)).distinct()
+        return queryset
+
+
+class PublishingStatusFilterBackend(filters.BaseFilterBackend):
+    def filter_queryset(self, request, queryset, view):
+        status = request.query_params.get("publishing_status", "all")
+
+        if status == "draft":
+            queryset = queryset.filter(published_at__isnull=True)
+        if status == "published":
+            queryset = queryset.exclude(published_at__isnull=True)
+        return queryset
+
+
 class PlanningViewSet(ModelViewSet):
     remove_results_key_if_paginated = True
     permission_classes = [ReadOnlyOrHasPermission("menupermissions.iaso_planning")]
     serializer_class = PlanningSerializer
     queryset = Planning.objects.all()
+    filter_backends = [
+        filters.OrderingFilter,
+        DjangoFilterBackend,
+        PublishingStatusFilterBackend,
+        PlanningSearchFilterBackend,
+        DeletionFilterBackend,
+    ]
     ordering_fields = ["id", "name", "started_at", "ended_at"]
     filterset_fields = {
         "name": ["icontains"],
+        "started_at": ["gte", "lte"],
+        "ended_at": ["gte", "lte"],
     }
 
     def get_queryset(self):

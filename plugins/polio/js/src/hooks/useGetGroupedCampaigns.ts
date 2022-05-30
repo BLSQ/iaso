@@ -8,7 +8,7 @@ const getGroupedCampaigns = async (
     params: Record<string, unknown>,
     signal: any,
 ) => {
-    const endpoint = '/api/polio/campaignsgroup/';
+    const endpoint = '/api/polio/campaignsgroup';
     const url = makeUrlWithParams(endpoint, params);
     return getRequest(url, signal);
 };

@@ -40,6 +40,7 @@ from .models import (
     AccountFeatureFlag,
     EntityType,
     Entity,
+    BulkCreateUserCsvFile,
 )
 from .models.microplanning import Team, Planning
 
@@ -358,3 +359,4 @@ admin.site.register(EntityType)
 admin.site.register(Entity, EntityAdmin)
 admin.site.register(Team, TeamAdmin)
 admin.site.register(Planning, PlanningAdmin)
+admin.site.register(BulkCreateUserCsvFile)

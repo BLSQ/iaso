@@ -1,5 +1,6 @@
 {
     "PeriodSelectorComponent.label.apply": "Appliquer",
+    "blsq.treeview.error": "Veuillez sélectionner une unité d'org.",
     "blsq.treeview.label.selectMultiple": "Sélectionner des unité(s) d'organisation",
     "blsq.treeview.label.selectSingle": "Sélectionner une unités d'organisation",
     "blsq.treeview.loading": "Chargement",
@@ -228,6 +229,7 @@
     "iaso.label.config": "Admin",
     "iaso.label.confirm": "Valider",
     "iaso.label.create": "Créer",
+    "iaso.label.createPlanning": "Créer un planning",
     "iaso.label.created": "Création",
     "iaso.label.created_at": "Création",
     "iaso.label.creationDateFrom": "Création à partir de",
@@ -257,6 +259,7 @@
     "iaso.label.draft": "Ebauche",
     "iaso.label.duplicates": "Doublons",
     "iaso.label.edit": "Edition",
+    "iaso.label.editPlanning": "Editer planning",
     "iaso.label.email": "Email",
     "iaso.label.endPeriod": "Période de fin",
     "iaso.label.ended_at": "Fin",

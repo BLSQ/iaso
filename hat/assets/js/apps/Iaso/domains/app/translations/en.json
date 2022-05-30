@@ -1,5 +1,6 @@
 {
     "PeriodSelectorComponent.label.apply": "Apply",
+    "blsq.treeview.error": "Please select an org unit",
     "blsq.treeview.label.selectMultiple": "Select org unit(s)",
     "blsq.treeview.label.selectSingle": "Select an org unit",
     "blsq.treeview.loading": "Loading",
@@ -231,6 +232,7 @@
     "iaso.label.config": "Admin",
     "iaso.label.confirm": "Confirm",
     "iaso.label.create": "Create",
+    "iaso.label.createPlanning": "Create planning",
     "iaso.label.created": "Creation",
     "iaso.label.created_at": "Created",
     "iaso.label.creationDateFrom": "Creation from",
@@ -260,6 +262,7 @@
     "iaso.label.draft": "Draft",
     "iaso.label.duplicates": "Duplicates",
     "iaso.label.edit": "Edit",
+    "iaso.label.editPlanning": "Edit planning",
     "iaso.label.email": "Email",
     "iaso.label.endPeriod": "End period",
     "iaso.label.ended_at": "Stopped at",

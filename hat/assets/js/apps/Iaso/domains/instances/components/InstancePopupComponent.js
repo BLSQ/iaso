@@ -37,6 +37,11 @@ const styles = theme => ({
     actionBox: {
         padding: theme.spacing(1, 0, 0, 0),
     },
+    linkButton: {
+        color: 'inherit',
+        textDecoration: 'none',
+        display: 'flex',
+    },
 });
 
 class InstancePopupComponent extends Component {

@@ -1,3 +1,4 @@
+import { useMemo } from 'react';
 import moment from 'moment';
 import { array, date, mixed, number, object, string } from 'yup';
 // @ts-ignore
@@ -14,19 +15,23 @@ export const usePlanningValidation = () => {
     const { formatMessage } = useSafeIntl();
     const errorMessage = formatMessage(MESSAGES.requiredField);
     // Tried the typescript integration, but Type casting was crap
-    const schema = object().shape({
-        name: string().nullable().required(errorMessage),
-        startDate: date().transform(parseStringTodate),
-        endDate: date().transform(parseStringTodate),
-        forms: array(number()).nullable().required(errorMessage), // this may be causing bugs with multi select, or have to be reconverted into array before being sent to the api
-        selectedOrgUnits: array()
-            .of(number())
-            .nullable()
-            .required(errorMessage),
-        selectedTeam: number().nullable().required(errorMessage),
-        publishingStatus: mixed()
-            .oneOf(['draft', 'published'])
-            .required(errorMessage),
-    });
+    const schema = useMemo(
+        () =>
+            object().shape({
+                name: string().nullable().required(errorMessage),
+                startDate: date().transform(parseStringTodate),
+                endDate: date().transform(parseStringTodate),
+                description: string().nullable(),
+                project: number().nullable().required(errorMessage),
+                // Specifying array().of(number()) will cause a bug where the error won't show until you ût another field in error
+                forms: array().min(1, errorMessage),
+                selectedOrgUnit: number().nullable().required(errorMessage),
+                selectedTeam: number().nullable().required(errorMessage),
+                publishingStatus: mixed()
+                    .oneOf(['draft', 'published'])
+                    .required(errorMessage),
+            }),
+        [errorMessage],
+    );
     return schema;
 };

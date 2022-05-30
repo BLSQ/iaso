@@ -101,6 +101,18 @@ const MESSAGES = defineMessages({
         id: 'iaso.forms.error.fieldRequired',
         defaultMessage: 'This field is required',
     },
+    projectsError: {
+        id: 'iaso.snackBar.fetchProjectsError',
+        defaultMessage: 'An error occurred while fetching projects list',
+    },
+    project: {
+        id: 'iaso.datasources.label.project',
+        defaultMessage: 'Project',
+    },
+    description: {
+        id: 'iaso.versionsDialog.label.description',
+        defaultMessage: 'Description',
+    },
 });
 
 export default MESSAGES;

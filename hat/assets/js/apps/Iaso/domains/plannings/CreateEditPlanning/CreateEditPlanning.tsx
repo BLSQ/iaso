@@ -1,10 +1,6 @@
-import React, { FunctionComponent, useMemo } from 'react';
-import {
-    AddButton,
-    useSafeIntl,
-    IconButton,
-    FormControl,
-} from 'bluesquare-components';
+import React, { FunctionComponent, useCallback, useMemo } from 'react';
+import { AddButton, useSafeIntl, IconButton } from 'bluesquare-components';
+import FileCopyIcon from '@material-ui/icons/FileCopy';
 import { useFormik, FormikProvider } from 'formik';
 import { isEqual } from 'lodash';
 import { Grid, Box } from '@material-ui/core';
@@ -22,17 +18,31 @@ import {
 import DatesRange from '../../../components/filters/DatesRange';
 import { OrgUnitTreeviewModal } from '../../orgUnits/components/TreeView/OrgUnitTreeviewModal';
 import { usePlanningValidation } from '../validation';
+import { commaSeparatedIdsToArray } from '../../../utils/forms';
+import { IntlFormatMessage } from '../../../types/intl';
+import { useGetProjectsDropDown } from '../hooks/requests/useGetProjectsDropDown';
+
+type ModalMode = 'create' | 'edit' | 'copy';
 
 type Props = Partial<SavePlanningQuery> & {
-    type: 'create' | 'edit';
+    type: ModalMode;
 };
 
-const makeRenderTrigger = (type: 'create' | 'edit') => {
+const makeRenderTrigger = (type: 'create' | 'edit' | 'copy') => {
     if (type === 'create') {
         return ({ openDialog }) => (
             <AddButton
                 dataTestId="create-plannning-button"
                 onClick={openDialog}
+            />
+        );
+    }
+    if (type === 'copy') {
+        return ({ openDialog }) => (
+            <IconButton
+                onClick={openDialog}
+                overrideIcon={FileCopyIcon}
+                tooltipMessage={MESSAGES.edit}
             />
         );
     }
@@ -45,20 +55,37 @@ const makeRenderTrigger = (type: 'create' | 'edit') => {
     );
 };
 
+const formatTitle = (type: ModalMode, formatMessage: IntlFormatMessage) => {
+    switch (type) {
+        case 'create':
+            return formatMessage(MESSAGES.createPlanning);
+        case 'edit':
+            return formatMessage(MESSAGES.editPlanning);
+        case 'copy':
+            return formatMessage(MESSAGES.duplicatePlanning);
+        default:
+            return formatMessage(MESSAGES.createPlanning);
+    }
+};
+
 export const CreateEditPlanning: FunctionComponent<Props> = ({
     type,
     id,
     name,
     startDate,
     endDate,
-    selectedOrgUnits,
+    selectedOrgUnit,
     selectedTeam,
     forms,
+    project,
+    description,
     publishingStatus,
 }) => {
     const { formatMessage } = useSafeIntl();
     const { data: formsDropdown, isFetching: isFetchingForms } = useGetForms();
     const { data: teamsDropdown, isFetching: isFetchingTeams } = useGetTeams();
+    const { data: projectsDropdown, isFetching: isFetchingProjects } =
+        useGetProjectsDropDown();
     // Tried the typescript integration, but Type casting was crap
     const schema = usePlanningValidation();
     const { mutateAsync: savePlanning } = useSavePlanning(type);
@@ -71,9 +98,11 @@ export const CreateEditPlanning: FunctionComponent<Props> = ({
             name,
             startDate,
             endDate,
-            selectedOrgUnits,
+            selectedOrgUnit,
             selectedTeam,
             forms,
+            project,
+            description,
             publishingStatus: publishingStatus ?? 'draft',
         },
         enableReinitialize: true,
@@ -85,17 +114,26 @@ export const CreateEditPlanning: FunctionComponent<Props> = ({
     const {
         values,
         setFieldValue,
+        touched,
+        setFieldTouched,
         errors,
         isValid,
         initialValues,
         handleSubmit,
         resetForm,
     } = formik;
-    const getErrors = k => (errors[k] ? [errors[k]] : []);
-    const titleMessage =
-        type === 'create'
-            ? formatMessage(MESSAGES.createPlanning)
-            : formatMessage(MESSAGES.editPlanning);
+    const onChange = (keyValue, value) => {
+        setFieldTouched(keyValue, true);
+        setFieldValue(keyValue, value);
+    };
+    const getErrors = useCallback(
+        keyValue => {
+            if (!touched[keyValue]) return [];
+            return errors[keyValue] ? [errors[keyValue]] : [];
+        },
+        [errors, touched],
+    );
+    const titleMessage = formatTitle(type, formatMessage);
     return (
         <FormikProvider value={formik}>
             {/* @ts-ignore */}
@@ -120,11 +158,7 @@ export const CreateEditPlanning: FunctionComponent<Props> = ({
                         <Grid xs={6} item>
                             <InputComponent
                                 keyValue="name"
-                                onChange={(keyValue, value) => {
-                                    const errorableValue =
-                                        value !== '' ? value : null;
-                                    setFieldValue(keyValue, errorableValue);
-                                }}
+                                onChange={onChange}
                                 value={values.name}
                                 errors={getErrors('name')}
                                 type="text"
@@ -136,7 +170,7 @@ export const CreateEditPlanning: FunctionComponent<Props> = ({
                             <InputComponent
                                 type="select"
                                 keyValue="selectedTeam"
-                                onChange={setFieldValue}
+                                onChange={onChange}
                                 value={values.selectedTeam}
                                 errors={getErrors('selectedTeam')}
                                 label={MESSAGES.team}
@@ -146,9 +180,34 @@ export const CreateEditPlanning: FunctionComponent<Props> = ({
                             />
                         </Grid>
                     </Grid>
+                    <Grid container item spacing={2}>
+                        <Grid xs={6} item>
+                            <InputComponent
+                                keyValue="description"
+                                onChange={onChange}
+                                value={values.description}
+                                errors={getErrors('description')}
+                                type="text"
+                                label={MESSAGES.description}
+                            />
+                        </Grid>
+                        <Grid xs={6} item>
+                            <InputComponent
+                                type="select"
+                                keyValue="project"
+                                onChange={onChange}
+                                value={values.project}
+                                errors={getErrors('project')}
+                                label={MESSAGES.project}
+                                required
+                                options={projectsDropdown}
+                                loading={isFetchingProjects}
+                            />
+                        </Grid>
+                    </Grid>
                     <Grid item xs={12}>
                         <DatesRange
-                            onChangeDate={setFieldValue}
+                            onChangeDate={onChange}
                             dateFrom={values.startDate}
                             dateTo={values.endDate}
                             labelFrom={MESSAGES.from}
@@ -162,7 +221,12 @@ export const CreateEditPlanning: FunctionComponent<Props> = ({
                             <InputComponent
                                 type="select"
                                 keyValue="forms"
-                                onChange={setFieldValue}
+                                onChange={(keyValue, value) => {
+                                    onChange(
+                                        keyValue,
+                                        commaSeparatedIdsToArray(value),
+                                    );
+                                }}
                                 value={values.forms}
                                 errors={getErrors('forms')}
                                 label={MESSAGES.forms}
@@ -174,32 +238,26 @@ export const CreateEditPlanning: FunctionComponent<Props> = ({
                         </Grid>
                         <Grid xs={6} item>
                             <Box mt={1}>
-                                <FormControl
-                                    errors={getErrors('selectedOrgUnits')}
-                                >
-                                    <OrgUnitTreeviewModal
-                                        onConfirm={value => {
-                                            const selectedIds = value.map(
-                                                orgUnit => orgUnit.id,
-                                            );
-                                            setFieldValue(
-                                                'selectedOrgUnits',
-                                                selectedIds.length > 0
-                                                    ? selectedIds
-                                                    : null,
-                                            );
-                                        }}
-                                        titleMessage={formatMessage(
-                                            MESSAGES.selectOrgUnit,
-                                        )}
-                                        required
-                                        clearable
-                                        hardReset
-                                        multiselect
-                                        showStatusIconInTree={false}
-                                        showStatusIconInPicker={false}
-                                    />
-                                </FormControl>
+                                <OrgUnitTreeviewModal
+                                    onConfirm={value => {
+                                        const parsedValue = value
+                                            ? parseInt(value?.id, 10)
+                                            : null;
+                                        onChange(
+                                            'selectedOrgUnit',
+                                            parsedValue,
+                                        );
+                                    }}
+                                    titleMessage={formatMessage(
+                                        MESSAGES.selectOrgUnit,
+                                    )}
+                                    required
+                                    clearable
+                                    hardReset
+                                    showStatusIconInTree={false}
+                                    showStatusIconInPicker={false}
+                                    errors={getErrors('selectedOrgUnit')}
+                                />
                             </Box>
                         </Grid>
                     </Grid>
@@ -207,7 +265,7 @@ export const CreateEditPlanning: FunctionComponent<Props> = ({
                         <InputComponent
                             type="radio"
                             keyValue="publishingStatus"
-                            onChange={setFieldValue}
+                            onChange={onChange}
                             value={values.publishingStatus}
                             errors={getErrors('publishingStatus')}
                             label={MESSAGES.publishingStatus}

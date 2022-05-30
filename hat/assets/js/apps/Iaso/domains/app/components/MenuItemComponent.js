@@ -29,6 +29,11 @@ const styles = theme => ({
     listItemIcon: {
         minWidth: 35,
     },
+    linkButton: {
+        color: 'inherit',
+        textDecoration: 'none',
+        display: 'flex',
+    },
 });
 
 function MenuItem(props) {

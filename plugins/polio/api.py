@@ -811,17 +811,6 @@ class IMStatsViewSet(viewsets.ViewSet):
         return JsonResponse(response, safe=False)
 
 
-def find_campaign(campaigns, today, country):
-    for c in campaigns:
-        if not (c.round_one and c.round_one.started_at):
-            continue
-        if c.country_id == country.id and c.round_one.started_at <= today < c.round_one.started_at + timedelta(
-            days=+28
-        ):
-            return c
-    return None
-
-
 def lqasim_day_in_round(current_round, today, kind, campaign, country):
     lqas_im_start = kind + "_started_at"
     lqas_im_end = kind + "_ended_at"
@@ -859,17 +848,26 @@ def find_lqas_im_campaign(campaigns, today, country, round_number: Optional[int]
     return None
 
 
-def find_campaign_on_day(campaigns, day, country):
+def get_round_campaign(c, index):
+    if index == 0:
+        return c.get_round_one()
+    if index == 1:
+        return c.get_round_two()
+
+
+def find_campaign_on_day(campaigns, day, country, get_round_campaign_cached):
     for c in campaigns:
-        if not (c.round_one and c.round_one.started_at):
+        round_one = get_round_campaign_cached(c, 0)
+        round_two = get_round_campaign_cached(c, 1)
+        if not (round_one and round_one.started_at):
             continue
-        round_end = c.round_two.ended_at if (c.round_two and c.round_two.ended_at) else c.round_one.ended_at
+        round_end = round_two.ended_at if (round_two and round_two.ended_at) else round_one.ended_at
         if round_end:
             end_date = round_end + timedelta(days=+10)
         else:
-            end_date = c.round_one.started_at + timedelta(days=+28)
+            end_date = round_one.started_at + timedelta(days=+28)
 
-        if c.country_id == country.id and c.round_one.started_at <= day < end_date:
+        if c.country_id == country.id and round_one.started_at <= day < end_date:
             return c
     return None
 
@@ -897,7 +895,9 @@ def handle_ona_request_with_key(request, key):
     res = []
     failure_count = 0
     campaigns = Campaign.objects.all().filter(deleted_at=None)
+
     form_count = 0
+    get_round_campaign_cached = functools.lru_cache(None)(get_round_campaign)
     find_campaign_on_day_cached = functools.lru_cache(None)(find_campaign_on_day)
     for config in config.content:
         forms = get_url_content(
@@ -914,8 +914,9 @@ def handle_ona_request_with_key(request, key):
 
         for form in forms:
             try:
-                today = datetime.strptime(form["today"], "%Y-%m-%d").date()
-                campaign = find_campaign_on_day_cached(campaigns, today, country)
+                today_string = form["today"]
+                today = datetime.strptime(today_string, "%Y-%m-%d").date()
+                campaign = find_campaign_on_day_cached(campaigns, today, country, get_round_campaign_cached)
                 district_name = form.get("District", "")
                 facility_name = form.get("facility", None)
                 # some form version for Senegal had their facility column as Facility with an uppercase.
@@ -940,8 +941,8 @@ def handle_ona_request_with_key(request, key):
                     form["obr"] = None
                 res.append(form)
                 form_count += 1
-            except:
-                print("failed parsing of ", form)
+            except Exception as e:
+                logger.exception(f"failed parsing of {form}", exc_info=e)
                 failure_count += 1
     print("parsed:", len(res), "failed:", failure_count)
     # print("all_keys", all_keys)
@@ -1233,7 +1234,7 @@ class LQASStatsViewSet(viewsets.ViewSet):
                 if not campaign:
                     campaign = find_lqas_im_campaign_cached(campaigns, today, country, None, "lqas")
                     if campaign:
-                        campaign_name = campaign_name
+                        campaign_name = campaign.obr_name
                         campaign_stats[campaign_name]["bad_round_number"] += 1
 
                 if not campaign:

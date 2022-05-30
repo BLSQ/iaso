@@ -9,7 +9,7 @@ import {
     setTableSelection,
     Table,
     useSafeIntl,
-    useSkipEffectOnMount
+    useSkipEffectOnMount,
 } from 'bluesquare-components';
 import PropTypes from 'prop-types';
 import React, { useEffect, useMemo, useState } from 'react';
@@ -21,7 +21,7 @@ import { warningSnackBar } from '../../constants/snackBars';
 import { baseUrls } from '../../constants/urls';
 import {
     closeFixedSnackbar,
-    enqueueSnackbar
+    enqueueSnackbar,
 } from '../../redux/snackBarsReducer';
 import { redirectTo } from '../../routing/actions';
 import { convertObjectToString } from '../../utils';
@@ -33,7 +33,7 @@ import {
     setOrgUnits,
     setOrgUnitsListFetching,
     setOrgUnitsLocations,
-    setSources
+    setSources,
 } from './actions';
 import OrgUnitsFiltersComponent from './components/OrgUnitsFiltersComponent';
 import OrgunitsMap from './components/OrgunitsMapComponent';
@@ -264,7 +264,10 @@ const OrgUnits = props => {
     };
 
     useEffect(() => {
-        dispatch(setFiltersUpdated(false));
+        return () => {
+            dispatch(setFiltersUpdated(false));
+            dispatch(resetOrgUnits());
+        };
     }, []);
 
     useSkipEffectOnMount(() => {
@@ -278,7 +281,6 @@ const OrgUnits = props => {
             fetchOrgUnits();
         }
     }, [searches]);
-
     const handleChangeTab = newtab => {
         setTab(newtab);
         const newParams = {
@@ -355,6 +357,7 @@ const OrgUnits = props => {
             dispatch(enqueueSnackbar(warningSnackBar('locationLimitWarning')));
         }
     }, [warningDisplayed, params.locationLimit, tab]);
+
     return (
         <>
             <OrgUnitsMultiActionsDialog
@@ -414,7 +417,7 @@ const OrgUnits = props => {
                                             key={searchIndex}
                                             className={
                                                 searchIndex !==
-                                                    currentSearchIndex
+                                                currentSearchIndex
                                                     ? classes.hiddenOpacity
                                                     : null
                                             }

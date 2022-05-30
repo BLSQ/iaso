@@ -1,5 +1,6 @@
 import { Box, Grid } from '@material-ui/core';
 import React, { FunctionComponent } from 'react';
+// @ts-ignore
 import { useSafeIntl } from 'bluesquare-components';
 import { FilterButton } from '../../components/FilterButton';
 import DatesRange from '../../components/filters/DatesRange';

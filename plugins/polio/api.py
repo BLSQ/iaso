@@ -1,20 +1,22 @@
 import csv
 import functools
 import json
-from datetime import timedelta, datetime, timezone
+from collections import defaultdict
+from datetime import timedelta, datetime
 from functools import lru_cache
-from typing import Optional, Union
+from logging import getLogger
+from typing import Optional
 
 import requests
 from django.conf import settings
 from django.core.cache import cache
-from django.core.exceptions import ObjectDoesNotExist
 from django.core.mail import send_mail
 from django.db.models import Q
+from django.db.models import Value, TextField, UUIDField
 from django.db.models.expressions import RawSQL
 from django.http import HttpResponse
-from django.http.response import HttpResponseBadRequest
 from django.http import JsonResponse
+from django.http.response import HttpResponseBadRequest
 from django.shortcuts import get_object_or_404
 from django.utils.timezone import now, make_aware
 from django_filters.rest_framework import DjangoFilterBackend
@@ -22,11 +24,8 @@ from gspread.utils import extract_id_from_url
 from rest_framework import routers, filters, viewsets, serializers, permissions, status
 from rest_framework.decorators import action
 from rest_framework.response import Response
-from django.db.models import Value, TextField, UUIDField
-from collections import defaultdict
-from django.contrib.gis.geos import GEOSGeometry, GeometryCollection, GEOSException
 
-from iaso.api.common import ModelViewSet
+from iaso.api.common import ModelViewSet, DeletionFilterBackend
 from iaso.models import OrgUnit
 from iaso.models.org_unit import OrgUnitType
 from plugins.polio.serializers import (
@@ -43,8 +42,6 @@ from plugins.polio.serializers import (
 )
 from plugins.polio.serializers import SurgePreviewSerializer, CampaignPreparednessSpreadsheetSerializer
 from .forma import (
-    get_forma_scope_df,
-    fetch_and_match_forma_data,
     FormAStocksViewSetV2,
     make_orgunits_cache,
     find_orgunit_in_cache,
@@ -52,11 +49,9 @@ from .forma import (
 from .helpers import get_url_content
 from .models import Campaign, Config, LineListImport, SpreadSheetImport, Round, CampaignGroup
 from .models import CountryUsersGroup
-from .models import URLCache, Preparedness
+from .models import URLCache
 from .preparedness.calculator import preparedness_summary
-from .preparedness.parser import get_preparedness, RoundNumber
-
-from logging import getLogger
+from .preparedness.parser import get_preparedness
 
 logger = getLogger(__name__)
 
@@ -80,23 +75,6 @@ class CustomFilterBackend(filters.BaseFilterBackend):
 
             return queryset.filter(query)
 
-        return queryset
-
-
-class DeletionFilterBackend(filters.BaseFilterBackend):
-    def filter_queryset(self, request, queryset, view):
-        query_param = request.query_params.get("deletion_status", "active")
-
-        if query_param == "deleted":
-            query = Q(deleted_at__isnull=False)
-            return queryset.filter(query)
-
-        if query_param == "active":
-            query = Q(deleted_at__isnull=True)
-            return queryset.filter(query)
-
-        if query_param == "all":
-            return queryset
         return queryset
 
 

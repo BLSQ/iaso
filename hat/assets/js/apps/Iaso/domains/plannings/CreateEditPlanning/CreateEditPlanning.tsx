@@ -1,4 +1,5 @@
 import React, { FunctionComponent, useCallback, useMemo } from 'react';
+// @ts-ignore
 import { AddButton, useSafeIntl, IconButton } from 'bluesquare-components';
 import FileCopyIcon from '@material-ui/icons/FileCopy';
 import { useFormik, FormikProvider, Field } from 'formik';
@@ -89,9 +90,6 @@ export const CreateEditPlanning: FunctionComponent<Props> = ({
         useGetProjectsDropDown();
     // Tried the typescript integration, but Type casting was crap
     const schema = usePlanningValidation();
-    const { mutateAsync: savePlanning } = useSavePlanning(type);
-
-    const renderTrigger = useMemo(() => makeRenderTrigger(type), [type]);
 
     const formik = useFormik({
         initialValues: {
@@ -109,7 +107,7 @@ export const CreateEditPlanning: FunctionComponent<Props> = ({
         enableReinitialize: true,
         validateOnBlur: true,
         validationSchema: schema,
-        onSubmit: (values: Partial<SavePlanningQuery>) => savePlanning(values), // TODO: convert forms string to Arry of IDs
+        onSubmit: (values: Partial<SavePlanningQuery>) => savePlanning(values), // TODO: convert forms string to Array of IDs
     });
 
     const {
@@ -123,6 +121,11 @@ export const CreateEditPlanning: FunctionComponent<Props> = ({
         handleSubmit,
         resetForm,
     } = formik;
+
+    const { mutateAsync: savePlanning } = useSavePlanning(type, resetForm);
+
+    const renderTrigger = useMemo(() => makeRenderTrigger(type), [type]);
+
     const onChange = (keyValue, value) => {
         setFieldTouched(keyValue, true);
         setFieldValue(keyValue, value);

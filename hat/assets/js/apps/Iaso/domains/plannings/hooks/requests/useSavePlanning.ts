@@ -72,24 +72,31 @@ const duplicatePlanning = async (body: SavePlanningQuery) => {
 
 export const useSavePlanning = (
     type: 'create' | 'edit' | 'copy',
+    callback: () => void,
 ): UseMutationResult => {
+    const onSuccess = () => callback();
     const editPlanning = useSnackMutation(
         (data: Partial<SavePlanningQuery>) => patchPlanning(data),
         undefined,
         undefined,
         ['planningsList'],
+        { onSuccess },
     );
     const createPlanning = useSnackMutation(
-        (data: SavePlanningQuery) => postPlanning(data),
+        (data: SavePlanningQuery) => {
+            return postPlanning(data);
+        },
         undefined,
         undefined,
         ['planningsList'],
+        { onSuccess },
     );
     const copyPlanning = useSnackMutation(
         (data: SavePlanningQuery) => duplicatePlanning(data),
         undefined,
         undefined,
         ['planningsList'],
+        { onSuccess },
     );
 
     switch (type) {

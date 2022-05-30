@@ -2,9 +2,9 @@ import mock
 from django.contrib.auth.models import User
 from django.test import TransactionTestCase
 
-from iaso.api.microplanning import TeamSerializer, PlanningSerializer
-from iaso.models import Account, DataSource, SourceVersion, OrgUnit, Form
-from iaso.models.microplanning import TeamType, Team, Planning
+from iaso.api.microplanning import TeamSerializer, PlanningSerializer, AssignmentSerializer
+from iaso.models import Account, DataSource, SourceVersion, OrgUnit, Form, OrgUnitType
+from iaso.models.microplanning import TeamType, Team, Planning, Assignment
 from iaso.test import IasoTestCaseMixin, APITestCase
 
 
@@ -445,3 +445,120 @@ class PlanningTestCase(APITestCase):
         )
         self.assertFalse(failing_teams.is_valid(), failing_teams.errors)
         self.assertIn("team", failing_teams.errors)
+
+
+class AssignmentAPITestCase(APITestCase):
+    fixtures = ["user.yaml"]
+
+    @classmethod
+    def setUpTestData(cls):
+        cls.account = account = Account.objects.get(name="test")
+        cls.user = user = User.objects.get(username="test")
+        cls.project1 = project1 = account.project_set.create(name="project1")
+        project2 = account.project_set.create(name="project2")
+        cls.team1 = Team.objects.create(project=project1, name="team1", manager=user)
+
+        source = DataSource.objects.create(name="Source de test")
+        source.projects.add(project1)
+        version = SourceVersion.objects.create(data_source=source, number=1)
+        org_unit_type = OrgUnitType.objects.create(name="test type")
+        cls.root_org_unit = root_org_unit = OrgUnit.objects.create(version=version, org_unit_type=org_unit_type)
+        cls.child1 = OrgUnit.objects.create(
+            version=version, parent=root_org_unit, name="child1", org_unit_type=org_unit_type
+        )
+        cls.child2 = OrgUnit.objects.create(
+            version=version, parent=root_org_unit, name="child2", org_unit_type=org_unit_type
+        )
+        OrgUnit.objects.create(version=version, parent=root_org_unit, name="child2")
+
+        cls.planning = Planning.objects.create(
+            project=project1, name="planning1", team=cls.team1, org_unit=root_org_unit
+        )
+        assignment = Assignment.objects.create(
+            planning=cls.planning,
+            user=cls.user,
+            org_unit=cls.child1,
+        )
+
+    def test_serializer(self):
+        request = mock.Mock(user=self.user)
+        serializer = AssignmentSerializer(
+            context={"request": request},
+            data=dict(
+                planning=self.planning.id,
+                user=self.user.id,
+                org_unit=self.child2.id,
+            ),
+        )
+        self.assertTrue(serializer.is_valid(), serializer.errors)
+        serializer.save()
+
+        # cannot create a second Assignment for the same org unit in the same planning
+        serializer = AssignmentSerializer(
+            context={"request": request},
+            data=dict(
+                planning=self.planning.id,
+                user=self.user.id,
+                org_unit=self.child2.id,
+            ),
+        )
+        self.assertFalse(serializer.is_valid(), serializer.validated_data)
+        # errors should be : {'non_field_errors': [ErrorDetail(string='The fields planning, org_unit must make a unique set.', code='unique')]}
+        self.assertIn("non_field_errors", serializer.errors)
+
+    def test_query_happy_path(self):
+        self.client.force_authenticate(self.user)
+        response = self.client.get("/api/microplanning/assignments/", format="json")
+        r = self.assertJSONResponse(response, 200)
+        self.assertEqual(len(r), 1)
+
+    def test_query_fail_no_auth(self):
+        response = self.client.get(f"/api/microplanning/assignments/?planning={self.planning.id}", format="json")
+        r = self.assertJSONResponse(response, 403)
+
+    def test_query_filtering(self):
+
+        p = Planning.objects.create(
+            project=self.project1, name="planning1", team=self.team1, org_unit=self.root_org_unit
+        )
+        p.assignment_set.create(org_unit=self.child1, user=self.user)
+        p.assignment_set.create(org_unit=self.child2, user=self.user)
+        self.client.force_authenticate(self.user)
+        response = self.client.get(f"/api/microplanning/assignments/?planning={self.planning.id}", format="json")
+        r = self.assertJSONResponse(response, 200)
+        self.assertEqual(len(r), 1)
+
+        response = self.client.get(f"/api/microplanning/assignments/?planning={p.id}", format="json")
+        r = self.assertJSONResponse(response, 200)
+        self.assertEqual(len(r), 2)
+
+    def test_create(self):
+        user_with_perms = self.create_user_with_profile(
+            username="user_with_perms", account=self.account, permissions=["iaso_planning"]
+        )
+        self.client.force_authenticate(user_with_perms)
+        data = {
+            "planning": self.planning.id,
+            "user": self.user.id,
+            "org_unit": self.child2.id,
+        }
+
+        response = self.client.post("/api/microplanning/assignments/", data=data, format="json")
+        r = self.assertJSONResponse(response, 201)
+        self.assertTrue(Assignment.objects.filter(id=r["id"]).exists())
+        a = Assignment.objects.get(id=r["id"])
+        self.assertEqual(a.created_by, user_with_perms)
+        self.assertEqual(a.planning, self.planning)
+        self.assertEqual(a.user, self.user)
+        self.assertEqual(a.org_unit, self.child2)
+
+    def test_no_perm_create(self):
+        self.client.force_authenticate(self.user)
+        data = {
+            "planning": self.planning.id,
+            "user": self.user.id,
+            "org_unit": self.child2.id,
+        }
+
+        response = self.client.post("/api/microplanning/assignments/", data=data, format="json")
+        r = self.assertJSONResponse(response, 403)

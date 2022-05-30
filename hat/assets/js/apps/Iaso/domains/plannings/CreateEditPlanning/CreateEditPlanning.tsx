@@ -84,10 +84,7 @@ export const CreateEditPlanning: FunctionComponent<Props> = ({
     publishingStatus,
 }) => {
     const { formatMessage } = useSafeIntl();
-    const { data: formsDropdown, isFetching: isFetchingForms } = useGetForms();
-    const { data: teamsDropdown, isFetching: isFetchingTeams } = useGetTeams();
-    const { data: projectsDropdown, isFetching: isFetchingProjects } =
-        useGetProjectsDropDown();
+
     // Tried the typescript integration, but Type casting was crap
     const schema = usePlanningValidation();
 
@@ -121,8 +118,16 @@ export const CreateEditPlanning: FunctionComponent<Props> = ({
         handleSubmit,
         resetForm,
     } = formik;
-
     const { mutateAsync: savePlanning } = useSavePlanning(type, resetForm);
+    const { data: formsDropdown, isFetching: isFetchingForms } = useGetForms(
+        values?.project,
+    );
+    const { data: teamsDropdown, isFetching: isFetchingTeams } = useGetTeams(
+        values?.project,
+    );
+    // TODO filter out by team and forms
+    const { data: projectsDropdown, isFetching: isFetchingProjects } =
+        useGetProjectsDropDown();
 
     const renderTrigger = useMemo(() => makeRenderTrigger(type), [type]);
 

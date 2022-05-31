@@ -1,13 +1,15 @@
-import React, { useCallback } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import PropTypes from 'prop-types';
-import { Box } from '@material-ui/core';
-
-import { useSafeIntl } from 'bluesquare-components';
-
+import { useSafeIntl, useSkipEffectOnMount } from 'bluesquare-components';
+import intersection from 'lodash/intersection';
+import isEmpty from 'lodash/isEmpty';
+import { isUndefined } from 'lodash';
+import { useGetFormsByProjects } from '../../../instances/hooks';
 import ConfirmCancelDialogComponent from '../../../../components/dialogs/ConfirmCancelDialogComponent';
 import InputComponent from '../../../../components/forms/InputComponent';
 import MESSAGES from '../messages';
+import { userHasPermission } from '../../../users/utils';
 import {
     saveOrgUnitType as saveOrgUnitTypeAction,
     createOrgUnitType as createOrgUnitTypeAction,
@@ -28,6 +30,7 @@ const mapOrgUnitType = orgUnitType => {
         project_ids: orgUnitType.projects.map(project => project.id),
         depth: orgUnitType.depth,
         sub_unit_type_ids: orgUnitType.sub_unit_types.map(unit => unit.id),
+        reference_form_id: orgUnitType?.reference_form?.id,
     };
 };
 
@@ -37,16 +40,92 @@ const OrgUnitsTypesDialog = ({
     onConfirmed,
     ...dialogProps
 }) => {
+    const [formState, setFieldValue, setFieldErrors, setFormState] =
+        useFormState(mapOrgUnitType(orgUnitType));
+
+    const [allForms, setAllForms] = useState();
+    const { data } = useGetFormsByProjects();
+    const dataForms = data && data.forms;
+
+    const formStateUpdated = useRef(null);
+    const projectsEmptyUpdated = useRef(null);
     const dispatch = useDispatch();
     const { formatMessage } = useSafeIntl();
+
+    const [referenceFormMessage, setReferenceFormMessage] = useState(
+        isEmpty(formState.project_ids.value)
+            ? MESSAGES.selectProjects
+            : MESSAGES.referenceForm,
+    );
+
+    const [projectsEmpty, setProjectsEmpty] = useState(
+        !!isEmpty(formState.project_ids.value),
+    );
 
     const { allOrgUnitTypes, allProjects } = useSelector(state => ({
         allOrgUnitTypes: state.orgUnitsTypes.allTypes || [],
         allProjects: state.projects.allProjects || [],
     }));
 
-    const [formState, setFieldValue, setFieldErrors, setFormState] =
-        useFormState(mapOrgUnitType(orgUnitType));
+    const getFilteredForms = (projects, forms) => {
+        return forms?.filter(form => {
+            const formProjects = form.projects.map(project => project.id);
+            const sameProjectsIds = intersection(projects, formProjects);
+            if (!isEmpty(sameProjectsIds)) {
+                return formProjects;
+            }
+            return null;
+        });
+    };
+
+    const getFormPerProjects = useCallback(
+        projects => {
+            let forms = [];
+            if (projects) {
+                forms = getFilteredForms(projects, dataForms);
+            }
+            setFieldValue('reference_form_id', null);
+            return forms;
+        },
+        [dataForms, setFieldValue],
+    );
+
+    const updateFormState = () => {
+        if (formStateUpdated.current !== formState) {
+            setAllForms(
+                getFilteredForms(formState.project_ids.value, dataForms),
+            );
+
+            formStateUpdated.current = formState;
+        }
+    };
+
+    const updateProjectsWhenEmpty = () => {
+        if (projectsEmptyUpdated.current !== formState.project_ids.value) {
+            if (isEmpty(formState.project_ids.value)) {
+                setProjectsEmpty(true);
+                setReferenceFormMessage(MESSAGES.selectProjects);
+            } else {
+                setProjectsEmpty(false);
+                setReferenceFormMessage(MESSAGES.referenceForm);
+            }
+        }
+    };
+
+    useSkipEffectOnMount(() => {
+        updateFormState();
+        updateProjectsWhenEmpty();
+    }, [allForms, formState, formState.project_ids.value]);
+
+    useEffect(() => {
+        if (isUndefined(allForms) && !isEmpty(formState.project_ids.value)) {
+            setAllForms(
+                getFilteredForms(formState.project_ids.value, dataForms),
+            );
+        }
+    }, [dataForms, formState.project_ids.value, allForms]);
+
+    const currentUser = useSelector(state => state.users.current);
 
     const onChange = useCallback(
         (keyValue, value) => {
@@ -55,6 +134,12 @@ const OrgUnitsTypesDialog = ({
                 keyValue === 'project_ids'
             ) {
                 setFieldValue(keyValue, commaSeparatedIdsToArray(value));
+                if (keyValue === 'project_ids') {
+                    const projectIds = value
+                        ?.split(',')
+                        .map(val => parseInt(val, 10));
+                    setAllForms(getFormPerProjects(projectIds));
+                }
             } else {
                 setFieldValue(keyValue, value);
             }
@@ -65,7 +150,7 @@ const OrgUnitsTypesDialog = ({
                 ]);
             }
         },
-        [setFieldValue, setFieldErrors, formatMessage],
+        [setFieldValue, setFieldErrors, formatMessage, getFormPerProjects],
     );
 
     const onConfirm = useCallback(
@@ -88,8 +173,12 @@ const OrgUnitsTypesDialog = ({
                     }
                 });
         },
+        // eslint-disable-next-line react-hooks/exhaustive-deps
         [dispatch, setFieldErrors, formState],
     );
+    const hasPermission =
+        userHasPermission('iaso_org_units', currentUser) &&
+        userHasPermission('iaso_forms', currentUser);
 
     const resetForm = () => {
         setFormState(mapOrgUnitType(orgUnitType));
@@ -110,8 +199,10 @@ const OrgUnitsTypesDialog = ({
             }}
             cancelMessage={MESSAGES.cancel}
             confirmMessage={MESSAGES.save}
+            // eslint-disable-next-line react/jsx-props-no-spreading
             allowConfirm={isFormValid(requiredFields, formState)}
             maxWidth="xs"
+            // eslint-disable-next-line react/jsx-props-no-spreading
             {...dialogProps}
         >
             <InputComponent
@@ -176,6 +267,25 @@ const OrgUnitsTypesDialog = ({
                 }))}
                 label={MESSAGES.subUnitTypes}
             />
+            {hasPermission && (
+                <InputComponent
+                    clearable
+                    keyValue="reference_form_id"
+                    onChange={onChange}
+                    value={formState.reference_form_id?.value}
+                    errors={formState.reference_form_id.errors}
+                    type="select"
+                    disabled={projectsEmpty}
+                    options={
+                        allForms &&
+                        allForms.map(form => ({
+                            value: form.id,
+                            label: form.name,
+                        }))
+                    }
+                    label={referenceFormMessage}
+                />
+            )}
         </ConfirmCancelDialogComponent>
     );
 };
@@ -193,6 +303,7 @@ OrgUnitsTypesDialog.defaultProps = {
         projects: [],
         depth: 0,
         sub_unit_types: [],
+        reference_form: null,
     },
 };
 

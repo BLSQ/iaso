@@ -13,7 +13,7 @@ const siteBaseUrl = Cypress.env('siteBaseUrl');
 const baseUrl = `${siteBaseUrl}/dashboard/orgunits/types/order/name/pageSize/20/page/1`;
 
 // TODO populate list
-const interceptList = ['profiles', 'projects'];
+const interceptList = ['profiles', 'projects', 'forms'];
 
 describe('Org unit types', () => {
     beforeEach(() => {
@@ -94,6 +94,7 @@ describe('Org unit types', () => {
                                 cy.testInputValue('#input-text-depth', '0');
                                 cy.testMultiSelect('#sub_unit_type_ids', []);
                                 cy.testMultiSelect('#project_ids', []);
+                                cy.testMultiSelect('#reference_form_id', []);
                             });
                     });
             });
@@ -144,6 +145,7 @@ describe('Org unit types', () => {
                                     '#project_ids',
                                     outypesList.orgUnitTypes[0].projects,
                                 );
+                                cy.fillSingleSelect('#reference_form_id', 1);
                             });
                     });
             });

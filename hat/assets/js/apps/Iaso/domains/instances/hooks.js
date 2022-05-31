@@ -53,6 +53,19 @@ export const useGetForms = () => {
     );
 };
 
+export const useGetFormsByProjects = () => {
+    const params = {
+        all: true,
+        order: 'name',
+        fields: 'name,period_type,label_keys,id,projects',
+    };
+    const queryString = new URLSearchParams(params);
+
+    return useSnackQuery(['forms', params], () =>
+        getRequest(`/api/forms/?${queryString.toString()}`),
+    );
+};
+
 export const useGetPeriods = formId => {
     const params = {
         form_id: formId,

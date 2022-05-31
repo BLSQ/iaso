@@ -58,7 +58,10 @@ const patchPlanning = async (body: Partial<SavePlanningQuery>) => {
 };
 
 const postPlanning = async (body: SavePlanningQuery) => {
-    return postRequest(endpoint, convertToApi(body));
+    return postRequest({
+        url: endpoint,
+        data: convertToApi(body),
+    });
 };
 
 const duplicatePlanning = async (body: SavePlanningQuery) => {
@@ -74,12 +77,15 @@ export const useSavePlanning = (
     callback: () => void,
 ): UseMutationResult => {
     const onSuccess = () => callback();
+
+    const ignoreErrorCodes = [400];
     const editPlanning = useSnackMutation(
         (data: Partial<SavePlanningQuery>) => patchPlanning(data),
         undefined,
         undefined,
         ['planningsList'],
         { onSuccess },
+        ignoreErrorCodes,
     );
     const createPlanning = useSnackMutation(
         (data: SavePlanningQuery) => {
@@ -89,6 +95,7 @@ export const useSavePlanning = (
         undefined,
         ['planningsList'],
         { onSuccess },
+        ignoreErrorCodes,
     );
     const copyPlanning = useSnackMutation(
         (data: SavePlanningQuery) => duplicatePlanning(data),
@@ -96,6 +103,7 @@ export const useSavePlanning = (
         undefined,
         ['planningsList'],
         { onSuccess },
+        ignoreErrorCodes,
     );
 
     switch (type) {

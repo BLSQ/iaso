@@ -1,4 +1,9 @@
-import React, { FunctionComponent, useCallback, useMemo } from 'react';
+import React, {
+    FunctionComponent,
+    useCallback,
+    useMemo,
+    useState,
+} from 'react';
 // @ts-ignore
 import { AddButton, useSafeIntl, IconButton } from 'bluesquare-components';
 import FileCopyIcon from '@material-ui/icons/FileCopy';
@@ -57,6 +62,33 @@ const makeRenderTrigger = (type: 'create' | 'edit' | 'copy') => {
     );
 };
 
+// TODO move to utils
+export const makeResetTouched =
+    (
+        formValues: Record<string, any>,
+        setTouched: (
+            // eslint-disable-next-line no-unused-vars
+            fields: { [field: string]: boolean },
+            // eslint-disable-next-line no-unused-vars
+            shouldValidate?: boolean,
+        ) => void,
+    ) =>
+    (): void => {
+        const formKeys = Object.keys(formValues);
+        const fields = {};
+        formKeys.forEach(formKey => {
+            fields[formKey] = false;
+        });
+        setTouched(fields);
+    };
+
+// TODO move to utils
+const formHasBeenTouched = (touchedDict: Record<string, boolean>) => {
+    return Boolean(
+        Object.keys(touchedDict).find(dictKey => touchedDict[dictKey] === true),
+    );
+};
+
 const formatTitle = (type: ModalMode, formatMessage: IntlFormatMessage) => {
     switch (type) {
         case 'create':
@@ -84,9 +116,11 @@ export const CreateEditPlanning: FunctionComponent<Props> = ({
     publishingStatus,
 }) => {
     const { formatMessage } = useSafeIntl();
+    const [errorMessage, setErrorMessage] = useState(null);
+    const [closeModal, setCloseModal] = useState<any>();
 
     // Tried the typescript integration, but Type casting was crap
-    const schema = usePlanningValidation();
+    const schema = usePlanningValidation(errorMessage);
 
     const formik = useFormik({
         initialValues: {
@@ -104,7 +138,16 @@ export const CreateEditPlanning: FunctionComponent<Props> = ({
         enableReinitialize: true,
         validateOnBlur: true,
         validationSchema: schema,
-        onSubmit: (values: Partial<SavePlanningQuery>) => savePlanning(values), // TODO: convert forms string to Array of IDs
+        onSubmit: (values: Partial<SavePlanningQuery>) =>
+            savePlanning(values, {
+                onError: (e: any) => {
+                    setErrorMessage(e.details);
+                    resetTouched();
+                },
+                onSuccess: () => {
+                    closeModal.closeDialog();
+                },
+            }), // TODO: convert forms string to Array of IDs
     });
 
     const {
@@ -112,12 +155,16 @@ export const CreateEditPlanning: FunctionComponent<Props> = ({
         setFieldValue,
         touched,
         setFieldTouched,
+        setTouched,
         errors,
         isValid,
-        initialValues,
         handleSubmit,
         resetForm,
     } = formik;
+    // using this method to reset touched state after saving
+    const resetTouched = makeResetTouched(values, setTouched);
+    // console.log('errors formik', errors);
+
     const { mutateAsync: savePlanning } = useSavePlanning(type, resetForm);
     const { data: formsDropdown, isFetching: isFetchingForms } = useGetForms(
         values?.project,
@@ -129,6 +176,10 @@ export const CreateEditPlanning: FunctionComponent<Props> = ({
     const { data: projectsDropdown, isFetching: isFetchingProjects } =
         useGetProjectsDropDown();
 
+    // const onConfirm = useCallback(async closeDialog => {
+    //     await handleSubmit();
+    // });
+
     const renderTrigger = useMemo(() => makeRenderTrigger(type), [type]);
 
     const onChange = (keyValue, value) => {
@@ -137,6 +188,7 @@ export const CreateEditPlanning: FunctionComponent<Props> = ({
     };
     const getErrors = useCallback(
         keyValue => {
+            // HERE bug when handling errors
             if (!touched[keyValue]) return [];
             return errors[keyValue] ? [errors[keyValue]] : [];
         },
@@ -147,10 +199,11 @@ export const CreateEditPlanning: FunctionComponent<Props> = ({
         <FormikProvider value={formik}>
             {/* @ts-ignore */}
             <ConfirmCancelDialogComponent
-                allowConfirm={isValid && !isEqual(values, initialValues)}
+                // Using touched i.o initialValues to evaluate if form has been modified
+                allowConfirm={isValid && formHasBeenTouched(touched)}
                 titleMessage={titleMessage}
                 onConfirm={closeDialog => {
-                    closeDialog();
+                    setCloseModal({ closeDialog });
                     handleSubmit();
                 }}
                 onCancel={closeDialog => {

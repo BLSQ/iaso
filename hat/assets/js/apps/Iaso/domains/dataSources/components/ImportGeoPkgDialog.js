@@ -33,7 +33,11 @@ const ImportGeoPkgDialog = ({
     );
     const { formatMessage } = useSafeIntl();
     const dispatch = useDispatch();
-    const mutation = useSnackMutation(postGeoPkg);
+    const mutation = useSnackMutation(
+        postGeoPkg,
+        MESSAGES.importGpkgSuccess,
+        MESSAGES.importGpkgError,
+    );
     const reset = () => {
         setFormState(initialFormState());
     };

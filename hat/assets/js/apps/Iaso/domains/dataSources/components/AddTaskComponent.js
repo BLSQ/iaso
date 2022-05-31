@@ -42,7 +42,11 @@ const AddTask = ({
     );
 
     const dispatch = useDispatch();
-    const mutation = useSnackMutation(sendDhisOuImporterRequest);
+    const mutation = useSnackMutation(
+        sendDhisOuImporterRequest,
+        MESSAGES.importFromDhis2Success,
+        MESSAGES.importFromDhis2Error,
+    );
 
     const reset = () => {
         setFormState(initialFormState(sourceCredentials));

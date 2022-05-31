@@ -89,6 +89,10 @@ const MESSAGES = defineMessages({
         id: 'iaso.snackBar.delete_successful',
         defaultMessage: 'Deleted successfully',
     },
+    teamDeleted: {
+        id: 'iaso.teams.teamDeleted',
+        defaultMessage: 'Team deleted',
+    },
 });
 
 export default MESSAGES;

@@ -705,6 +705,7 @@
     "iaso.teams.delete": "Etes-vous sûr(e) de vouloir effacer cette équipe?",
     "iaso.teams.edit": "Edit team",
     "iaso.teams.manager": "Manager",
+    "iaso.teams.teamDeleted": "Team deleted",
     "iaso.teams.teamsOfTeams": "Teams of teams",
     "iaso.teams.teamsOfUsers": "Teams of users",
     "iaso.teams.title": "Teams",

@@ -4,6 +4,7 @@ import { UrlParams } from '../../../types/table';
 export type SubTeam = {
     id: number;
     name: string;
+    deleted_at?: string;
 };
 export type User = {
     id: number;

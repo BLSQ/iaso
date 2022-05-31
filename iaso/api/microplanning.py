@@ -17,7 +17,7 @@ class NestedProjectSerializer(serializers.ModelSerializer):
 class NestedTeamSerializer(serializers.ModelSerializer):
     class Meta:
         model = Team
-        fields = ["id", "name"]
+        fields = ["id", "name", "deleted_at"]
 
 
 class NestedUserSerializer(serializers.ModelSerializer):

@@ -1,7 +1,10 @@
 import React, { FunctionComponent } from 'react';
-import { Chip, Box } from '@material-ui/core';
+import { Chip, Box, Tooltip } from '@material-ui/core';
+// @ts-ignore
+import { useSafeIntl } from 'bluesquare-components';
 
 import { TEAM_OF_TEAMS, TEAM_OF_USERS } from '../constants';
+import MESSAGES from '../messages';
 
 import { SubTeam, User } from '../types/team';
 
@@ -16,13 +19,36 @@ export const UsersTeamsCell: FunctionComponent<Props> = ({
     subTeamsDetails,
     usersDetails,
 }) => {
+    const { formatMessage } = useSafeIntl();
     return (
         <>
             {type === TEAM_OF_TEAMS && (
                 <>
                     {subTeamsDetails.map(team => (
                         <Box key={team.id} ml={1} display="inline-block">
-                            <Chip label={team.name} color="primary" />
+                            {team.deleted_at && (
+                                <Tooltip
+                                    arrow
+                                    title={formatMessage(MESSAGES.teamDeleted)}
+                                    placement="bottom"
+                                >
+                                    <Box>
+                                        <Chip
+                                            label={team.name}
+                                            size="small"
+                                            color="primary"
+                                            disabled
+                                        />
+                                    </Box>
+                                </Tooltip>
+                            )}
+                            {!team.deleted_at && (
+                                <Chip
+                                    label={team.name}
+                                    size="small"
+                                    color="primary"
+                                />
+                            )}
                         </Box>
                     ))}
                 </>
@@ -31,7 +57,11 @@ export const UsersTeamsCell: FunctionComponent<Props> = ({
                 <>
                     {usersDetails.map(user => (
                         <Box ml={1} display="inline-block" key={user.id}>
-                            <Chip label={user.username} color="secondary" />
+                            <Chip
+                                size="small"
+                                label={user.username}
+                                color="secondary"
+                            />
                         </Box>
                     ))}
                 </>

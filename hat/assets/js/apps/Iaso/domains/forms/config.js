@@ -95,7 +95,7 @@ const formsTableColumns = ({
         {
             Header: formatMessage(MESSAGES.name),
             accessor: 'name',
-            style: { justifyContent: 'left' },
+            align: 'left',
         },
         {
             Header: formatMessage(MESSAGES.created_at),

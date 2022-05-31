@@ -39,10 +39,8 @@ export const Planning: FunctionComponent<Props> = ({ params }) => {
 
             <Box className={classes.containerFullHeightNoTabPadded}>
                 <PlanningFilters params={params} />
-                <Grid container justifyContent="flex-end">
-                    <Grid item>
-                        <CreateEditPlanning type="create" />
-                    </Grid>
+                <Grid container item justifyContent="flex-end">
+                    <CreateEditPlanning type="create" />
                 </Grid>
                 <TableWithDeepLink
                     baseUrl={baseUrl}

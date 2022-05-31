@@ -176,7 +176,7 @@ const CreateEditDialog = ({
                     </Form>
                     <Grid container justifyContent="flex-end">
                         <Grid item md={6}>
-                            {formik.errors.non_field_errors?.map(
+                            {formik.errors?.non_field_errors?.map(
                                 (error_msg, i) => (
                                     <Typography key={i} color="error">
                                         {error_msg}

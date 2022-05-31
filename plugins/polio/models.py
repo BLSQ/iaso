@@ -118,6 +118,9 @@ class Round(models.Model):
 
 
 class Campaign(SoftDeletableModel):
+    class Meta:
+        ordering = ["obr_name"]
+
     id = models.UUIDField(default=uuid4, primary_key=True, editable=False)
     epid = models.CharField(default=None, max_length=255, null=True, blank=True)
     obr_name = models.CharField(max_length=255, unique=True)
@@ -234,7 +237,7 @@ class Campaign(SoftDeletableModel):
     )
     verification_score = models.IntegerField(null=True, blank=True)
     doses_requested = models.IntegerField(null=True, blank=True)
-    # Preparedness
+    # Preparedness DEPRECATED -> Moved to round
     preperadness_spreadsheet_url = models.URLField(null=True, blank=True)
     preperadness_sync_status = models.CharField(max_length=10, default="FINISHED", choices=PREPAREDNESS_SYNC_STATUS)
     # Surge recruitment

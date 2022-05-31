@@ -95,7 +95,7 @@ class TeamSerializer(serializers.ModelSerializer):
             users = validated_data["users"]
         if teams and users:
             raise serializers.ValidationError("Teams cannot have both users and sub teams")
-        elif validated_data["type"] is None:
+        elif validated_data.get("type") is None:
             if users:
                 validated_data["type"] = TeamType.TEAM_OF_USERS
             elif teams:

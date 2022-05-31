@@ -18,7 +18,6 @@ const convertToApi = data => {
     if (subTeams !== undefined) {
         converted.sub_teams = subTeams;
     }
-
     return converted;
 };
 

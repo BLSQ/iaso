@@ -474,7 +474,7 @@ Redirect URIs is your iaso server followed by : ```/api/dhis2/{your_dhis2_client
 
 For example : https://myiaso.com/api/dhis2/dhis2_client_id/login/
 
-### 2 - Setup OAuth2 clients in DHIS2
+### 2 - Configure the OAuth2 connection in Iaso
 In iaso you must setup your dhis2 server credentials. 
 To do so, go to ```/admin``` and setup as follow :  
 
@@ -484,6 +484,32 @@ To do so, go to ```/admin``` and setup as follow :
 * Url: Your Iaso Url (Ex: https://myiaso.com/)
 
 Don't forget the ```/``` at the end of the urls.
+
+### Workflow for Single Sign On as a sequence diagram
+```mermaid
+sequenceDiagram
+    autonumber
+    Note right of Browser: user open url to login
+    Browser->>DHIS2: GET /uaa/oauth/authorize<br>?client_id={your_dhis2_client_id}
+    loop if not logged
+        DHIS2->>Browser: Login screen
+        Browser->>DHIS2: Enter credentials
+        DHIS2->>Browser: Login ok
+    end
+    DHIS2 -->> Browser: 200 Authorize Iaso? Authorize/Deny
+    Browser ->> DHIS2: POST /authorize
+    DHIS2 -->> Browser: 303  redirect
+    Browser ->> IASO: GET /api/dhis2/<dhis2_slug>/login/?code=
+    IASO ->> DHIS2: POST /uaa/oauth/token/
+    DHIS2 -->> IASO: access token
+    IASO ->> DHIS2 : GET /api/me
+    DHIS2 -->> IASO: credential info
+    Note right of IASO: find matching IASO user
+    Note right of IASO: Log in session
+    IASO -->> Browser: 303 Redirect & set cookies
+    Browser ->> IASO: Use iaso normally as logged user.
+```
+
 
 Live Bluesquare components
 --------------------------

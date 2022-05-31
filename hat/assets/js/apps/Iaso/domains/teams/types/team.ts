@@ -1,10 +1,11 @@
-import { UrlParams } from '../../types/table';
+/* eslint-disable camelcase */
+import { UrlParams } from '../../../types/table';
 
-type SubTeam = {
+export type SubTeam = {
     id: number;
     name: string;
 };
-type Users = {
+export type User = {
     id: number;
     username: string;
 };
@@ -18,7 +19,7 @@ export type Team = {
     project: number;
     type?: 'TEAM_OF_TEAMS' | 'TEAM_OF_USERS';
     users: Array<number>;
-    users_details: Array<Users>;
+    users_details: Array<User>;
     created_at: string;
     deleted_at?: string;
     parent?: number;

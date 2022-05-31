@@ -1,16 +1,20 @@
 import React, { ReactElement } from 'react';
-import { Chip, Box } from '@material-ui/core';
 
 import MESSAGES from './messages';
+
 import { IntlFormatMessage } from '../../types/intl';
 import { Column } from '../../types/table';
-import { CreateEditTeam } from './CreateEditTeam';
-import { TEAM_OF_TEAMS, TEAM_OF_USERS } from './constants';
+import { Team } from './types/team';
+
 import DeleteDialog from '../../components/dialogs/DeleteDialogComponent';
+import { CreateEditTeam } from './components/CreateEditTeam';
+import { TypeCell } from './components/TypeCell';
+import { UsersTeamsCell } from './components/UsersTeamsCell';
 
 export const teamColumns = (
     formatMessage: IntlFormatMessage,
-    deleteTeam: () => void,
+    // eslint-disable-next-line no-unused-vars
+    deleteTeam: (team: Team) => void,
 ): Column[] => {
     return [
         {
@@ -27,40 +31,21 @@ export const teamColumns = (
             Header: formatMessage(MESSAGES.type),
             accessor: 'type',
             id: 'type',
-            Cell: (settings): ReactElement => {
-                const { type } = settings.row.original;
-                if (type === TEAM_OF_TEAMS) {
-                    return <span>{formatMessage(MESSAGES.teamsOfTeams)}</span>;
-                }
-                if (type === TEAM_OF_USERS) {
-                    return <span>{formatMessage(MESSAGES.teamsOfUsers)}</span>;
-                }
-                return <span>-</span>;
-            },
+            Cell: (settings): ReactElement => (
+                <TypeCell type={settings.row.original.type} />
+            ),
         },
         {
             Header: formatMessage(MESSAGES.usersTeams),
             accessor: 'users_details',
             sortable: false,
-            Cell: (settings): ReactElement => {
-                const { type, sub_teams_details, users_details } =
-                    settings.row.original;
-                if (type === TEAM_OF_TEAMS) {
-                    return sub_teams_details.map(team => (
-                        <Box key={team.id} ml={1} display="inline-block">
-                            <Chip label={team.name} color="primary" />
-                        </Box>
-                    ));
-                }
-                if (type === TEAM_OF_USERS) {
-                    return users_details.map(user => (
-                        <Box ml={1} display="inline-block" key={user.id}>
-                            <Chip label={user.username} color="secondary" />
-                        </Box>
-                    ));
-                }
-                return <span>-</span>;
-            },
+            Cell: (settings): ReactElement => (
+                <UsersTeamsCell
+                    type={settings.row.original.type}
+                    subTeamsDetails={settings.row.original.sub_teams_details}
+                    usersDetails={settings.row.original.users_details}
+                />
+            ),
         },
         {
             Header: formatMessage(MESSAGES.actions),
@@ -82,7 +67,6 @@ export const teamColumns = (
                             type={settings.row.original.type}
                             users={settings.row.original.users}
                         />
-
                         <DeleteDialog
                             keyName="team"
                             titleMessage={MESSAGES.delete}

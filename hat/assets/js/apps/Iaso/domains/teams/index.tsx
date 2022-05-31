@@ -1,14 +1,15 @@
 import React, { FunctionComponent } from 'react';
 import { makeStyles, Box } from '@material-ui/core';
+// @ts-ignore
 import { commonStyles, useSafeIntl } from 'bluesquare-components';
 import { useDispatch } from 'react-redux';
 
 import TopBar from '../../components/nav/TopBarComponent';
 import { TableWithDeepLink } from '../../components/tables/TableWithDeepLink';
-import { CreateEditTeam } from './CreateEditTeam';
+import { CreateEditTeam } from './components/CreateEditTeam';
 
-import { TeamParams } from './types';
-import { TeamFilters } from './TeamFilters';
+import { TeamParams } from './types/team';
+import { TeamFilters } from './components/TeamFilters';
 import { useGetTeams } from './hooks/requests/useGetTeams';
 import { useDeleteTeam } from './hooks/requests/useDeleteTeam';
 import { redirectTo } from '../../routing/actions';
@@ -24,6 +25,7 @@ const useStyles = makeStyles(theme => ({
 type Props = {
     params: TeamParams;
 };
+
 const baseUrl = baseUrls.teams;
 export const Teams: FunctionComponent<Props> = ({ params }) => {
     const dispatch = useDispatch();
@@ -37,10 +39,8 @@ export const Teams: FunctionComponent<Props> = ({ params }) => {
                 title={formatMessage(MESSAGES.title)}
                 displayBackButton={false}
             />
-
             <Box className={classes.containerFullHeightNoTabPadded}>
                 <TeamFilters params={params} />
-
                 <Box display="flex" justifyContent="flex-end">
                     <CreateEditTeam dialogType="create" />
                 </Box>

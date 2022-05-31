@@ -4,25 +4,27 @@ import React, {
     useMemo,
     useEffect,
 } from 'react';
+// @ts-ignore
 import { AddButton, useSafeIntl, IconButton } from 'bluesquare-components';
+// @ts-ignore
 import { useCurrentUser } from 'Iaso/utils/usersUtils';
 import { useFormik, FormikProvider } from 'formik';
 import { isEqual } from 'lodash';
 
-import InputComponent from '../../components/forms/InputComponent';
-import ConfirmCancelDialogComponent from '../../components/dialogs/ConfirmCancelDialogComponent';
+import InputComponent from '../../../components/forms/InputComponent';
+import ConfirmCancelDialogComponent from '../../../components/dialogs/ConfirmCancelDialogComponent';
 
-import { commaSeparatedIdsToArray } from '../../utils/forms';
-import { usePlanningValidation } from './validation';
-import { IntlFormatMessage } from '../../types/intl';
+import { commaSeparatedIdsToArray } from '../../../utils/forms';
+import { useTeamValidation } from '../validation';
+import { IntlFormatMessage } from '../../../types/intl';
 
-import { SaveTeamQuery, useSaveTeam } from './hooks/requests/useSaveTeam';
-import { useGetProjectsDropDown } from './hooks/requests/useGetProjectsDropDown';
-import { useGetProfilesDropdown } from './hooks/requests/useGetProfilesDropdown';
-import { useGetTeams } from './hooks/requests/useGetTeams';
+import { SaveTeamQuery, useSaveTeam } from '../hooks/requests/useSaveTeam';
+import { useGetProjectsDropDown } from '../hooks/requests/useGetProjectsDropDown';
+import { useGetProfilesDropdown } from '../hooks/requests/useGetProfilesDropdown';
+import { useGetTeams } from '../hooks/requests/useGetTeams';
 
-import { TEAM_OF_TEAMS, TEAM_OF_USERS } from './constants';
-import MESSAGES from './messages';
+import { TEAM_OF_TEAMS, TEAM_OF_USERS } from '../constants';
+import MESSAGES from '../messages';
 
 type ModalMode = 'create' | 'edit';
 
@@ -93,7 +95,7 @@ export const CreateEditTeam: FunctionComponent<Props> = ({
         },
     });
 
-    const schema = usePlanningValidation();
+    const schema = useTeamValidation();
 
     const formik = useFormik({
         initialValues: {

@@ -4,7 +4,7 @@ import { getRequest } from '../../../../libs/Api';
 import { useSnackQuery } from '../../../../libs/apiHooks';
 import { makeUrlWithParams } from '../../../../libs/utils';
 import { Pagination } from '../../../../types/table';
-import { TeamParams, TeamFilterParams, Team } from '../../types';
+import { TeamParams, TeamFilterParams, Team } from '../../types/team';
 
 type TeamList = Pagination & {
     results: Team[];

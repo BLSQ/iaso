@@ -45,7 +45,12 @@ class OrgUnitTypeSerializer(DynamicFieldsModelSerializer):
     units_count = serializers.SerializerMethodField(read_only=True)
     reference_form = serializers.SerializerMethodField(read_only=True)
     reference_form_id = serializers.PrimaryKeyRelatedField(
-        source="reference_form", write_only=True, required=False, many=False, queryset=Form.objects.all()
+        source="reference_form",
+        write_only=True,
+        required=False,
+        many=False,
+        allow_null=True,
+        queryset=Form.objects.all(),
     )
 
     def get_units_count(self, obj: OrgUnitType):
@@ -56,8 +61,9 @@ class OrgUnitTypeSerializer(DynamicFieldsModelSerializer):
         return orgunits_count
 
     def get_reference_form(self, obj: Form):
-        app_id = self.context["request"].query_params.get("app_id")
-        form_def = Form.objects.filter(id=obj.reference_form_id, projects__app_id=app_id)
+        form_def = Form.objects.filter_for_user_and_app_id(
+            self.context["request"].user, self.context["request"].query_params.get("app_id")
+        ).filter(id=obj.reference_form_id)
         return FormSerializer(
             form_def.first(),
             fields=["id", "form_id", "created_at", "updated_at", "projects"],

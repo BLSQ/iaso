@@ -487,6 +487,8 @@
     "iaso.orgUnits.confirmMultiChange": "Confirm bulk changes ?",
     "iaso.orgUnits.dataSources": "Data Sources",
     "iaso.orgUnits.depth": "Level",
+    "iaso.orgUnits.referenceForm": "Reference form",
+    "iaso.orgUnits.selectProjects": "Select a project",
     "iaso.orgUnits.depthInfos": "Level of the type in the hierarchy: province (1)> zone (2)> aire (3)> village (4)",
     "iaso.orgUnits.editGroups": "Edit groups",
     "iaso.orgUnits.editOrgUnitType": "Edit org unit type",

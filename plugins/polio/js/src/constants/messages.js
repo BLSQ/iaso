@@ -1003,6 +1003,10 @@ const MESSAGES = defineMessages({
         id: 'iaso.polio.label.all',
         defaultMessage: 'All',
     },
+    ALL: {
+        id: 'iaso.polio.label.all',
+        defaultMessage: 'All',
+    },
     regular: {
         id: 'iaso.polio.label.regular',
         defaultMessage: 'Regular',
@@ -1108,6 +1112,14 @@ const MESSAGES = defineMessages({
     invalidDate: {
         id: 'iaso.polio.form.invalidDate',
         defaultMessage: 'Date is invalid',
+    },
+    startDatefrom: {
+        id: 'iaso.label.startDatefrom',
+        defaultMessage: 'Start date from',
+    },
+    endDateUntil: {
+        id: 'iaso.label.endDateUntil',
+        defaultMessage: 'End date until',
     },
 });
 

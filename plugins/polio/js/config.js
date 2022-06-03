@@ -210,14 +210,14 @@ const routes = [
                 isRequired: false,
                 key: 'search',
             },
-            {
-                isRequired: false,
-                key: 'startDateFrom',
-            },
-            {
-                isRequired: false,
-                key: 'endDateUntil',
-            },
+            // {
+            //     isRequired: false,
+            //     key: 'startDateFrom',
+            // },
+            // {
+            //     isRequired: false,
+            //     key: 'endDateUntil',
+            // },
             {
                 isRequired: false,
                 key: 'showOnlyDeleted',
@@ -233,6 +233,18 @@ const routes = [
             {
                 isRequired: false,
                 key: 'show_test',
+            },
+            {
+                isRequired: false,
+                key: 'general_status',
+            },
+            {
+                isRequired: false,
+                key: 'r1StartFrom',
+            },
+            {
+                isRequired: false,
+                key: 'r1StartTo',
             },
         ],
     },

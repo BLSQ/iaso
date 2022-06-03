@@ -1,7 +1,8 @@
 import React, { FunctionComponent, useState } from 'react';
 // @ts-ignore
 import { useSafeIntl, useSkipEffectOnMount } from 'bluesquare-components';
-import { useDispatch } from 'react-redux';
+// @ts-ignore
+import TopBar from 'Iaso/components/nav/TopBarComponent';
 import { Box } from '@material-ui/core';
 import { TableWithDeepLink } from '../../../../../../hat/assets/js/apps/Iaso/components/tables/TableWithDeepLink';
 import {
@@ -12,6 +13,8 @@ import { useStyles } from '../../styles/theme';
 import { BUDGET } from '../../constants/routes';
 import { useBudgetColumns } from './config';
 import { convertObjectToString } from '../../utils';
+import MESSAGES from '../../constants/messages';
+import { BudgetFilters } from './BudgetFilters';
 
 type Props = {
     router: any;
@@ -19,8 +22,7 @@ type Props = {
 
 export const Budget: FunctionComponent<Props> = ({ router }) => {
     const { params } = router;
-    // const dispatch = useDispatch();
-    // const { formatMessage } = useSafeIntl();
+    const { formatMessage } = useSafeIntl();
     const classes = useStyles();
     const [resetPageToOne, setResetPageToOne] = useState('');
 
@@ -43,8 +45,13 @@ export const Budget: FunctionComponent<Props> = ({ router }) => {
 
     return (
         <>
+            <TopBar
+                title={formatMessage(MESSAGES.budget)}
+                displayBackButton={false}
+            />
             {/* @ts-ignore */}
             <Box className={classes.containerFullHeightNoTabPadded}>
+                <BudgetFilters params={params} />
                 <TableWithDeepLink
                     data={campaigns?.campaigns ?? []}
                     count={campaigns?.count}

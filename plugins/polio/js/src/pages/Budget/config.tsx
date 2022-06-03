@@ -27,6 +27,11 @@ export const useBudgetColumns = (showOnlyDeleted = false): Column[] => {
                 accessor: 'cvdpv2_notified_at',
             },
             {
+                Header: formatMessage(MESSAGES.status),
+                sortable: false,
+                accessor: 'general_status',
+            },
+            {
                 Header: formatMessage(MESSAGES.actions),
                 accessor: 'id',
                 sortable: false,
@@ -39,7 +44,10 @@ export const useBudgetColumns = (showOnlyDeleted = false): Column[] => {
                                         icon="edit"
                                         tooltipMessage={MESSAGES.edit}
                                         onClick={() =>
-                                            console.log('EDIT', settings.value)
+                                            console.log(
+                                                'EDIT',
+                                                settings.row.original,
+                                            )
                                         }
                                     />
                                     {/* TODO uncomment when deletion is implemented */}

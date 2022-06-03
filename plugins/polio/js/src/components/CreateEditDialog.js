@@ -28,6 +28,7 @@ import { ScopeForm } from '../forms/ScopeForm';
 import { BudgetForm } from '../forms/BudgetForm';
 import { Form } from '../forms/Form';
 import { RoundsForm } from '../forms/RoundsForm';
+import { RoundsEmptyDates } from './Rounds/RoundsEmptyDates.tsx';
 import { useSaveCampaign } from '../hooks/useSaveCampaign';
 
 import { useStyles } from '../styles/theme';
@@ -137,6 +138,7 @@ const CreateEditDialog = ({
         !isFormChanged ||
         (isFormChanged && !formik.isValid) ||
         formik.isSubmitting;
+
     return (
         <Dialog
             fullWidth
@@ -185,6 +187,12 @@ const CreateEditDialog = ({
                             )}
                         </Grid>
                     </Grid>
+                    {formik.errors.rounds && (
+                        <RoundsEmptyDates
+                            roundErrors={formik.errors.rounds}
+                            roundValues={formik.values.rounds}
+                        />
+                    )}
                 </FormikProvider>
             </DialogContent>
             <DialogActions className={classes.action}>

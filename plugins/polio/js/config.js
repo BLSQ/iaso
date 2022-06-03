@@ -218,6 +218,22 @@ const routes = [
                 isRequired: false,
                 key: 'endDateUntil',
             },
+            {
+                isRequired: false,
+                key: 'showOnlyDeleted',
+            },
+            {
+                isRequired: false,
+                key: 'campaignType',
+            },
+            {
+                isRequired: false,
+                key: 'campaignGroups',
+            },
+            {
+                isRequired: false,
+                key: 'show_test',
+            },
         ],
     },
     {

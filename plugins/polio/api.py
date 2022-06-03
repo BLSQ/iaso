@@ -79,10 +79,34 @@ class CustomFilterBackend(filters.BaseFilterBackend):
         return queryset
 
 
+class GeneralStatusFilterBackend(filters.BaseFilterBackend):
+    def filter_queryset(self, request, queryset, view):
+        status = request.query_params.get("general_status", "ALL")
+        if status == "ALL":
+            return queryset
+        # TODO add filters, make multi round
+        if status == "PREPARING":
+            return queryset
+        if status == "ROUND1START":
+            return queryset
+        if status == "ROUND1END":
+            return queryset
+        if status == "ROUND2START":
+            return queryset
+        if status == "ROUND2END":
+            return queryset
+
+
 class CampaignViewSet(ModelViewSet):
     results_key = "campaigns"
     remove_results_key_if_paginated = True
-    filter_backends = [filters.OrderingFilter, DjangoFilterBackend, CustomFilterBackend, DeletionFilterBackend]
+    filter_backends = [
+        filters.OrderingFilter,
+        DjangoFilterBackend,
+        CustomFilterBackend,
+        DeletionFilterBackend,
+        GeneralStatusFilterBackend,
+    ]
     ordering_fields = [
         "obr_name",
         "cvdpv2_notified_at",

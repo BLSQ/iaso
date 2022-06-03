@@ -1,5 +1,5 @@
 import { useSelector } from 'react-redux';
-import { staticFields } from '../components/campaignCalendar/constants';
+import { staticFields } from '../components/campaignCalendar/staticFields';
 
 const useStaticFields = () => {
     const isLogged = useSelector(state => Boolean(state.users.current));

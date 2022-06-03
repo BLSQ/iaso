@@ -12,13 +12,16 @@ from rest_framework.validators import UniqueValidator
 from django.utils.translation import gettext as _
 from django.utils import timezone
 
+from iaso.api.common import TimestampField
 from iaso.models import Group, OrgUnit
 from .models import (
     Round,
     LineListImport,
     VIRUSES,
     SpreadSheetImport,
-    CampaignGroup, BudgetEvent, BudgetFiles,
+    CampaignGroup,
+    BudgetEvent,
+    BudgetFiles,
 )
 from .preparedness.calculator import get_preparedness_score, preparedness_summary
 from .preparedness.parser import (
@@ -566,12 +569,12 @@ class CampaignGroupSerializer(serializers.ModelSerializer):
 class BudgetEventSerializer(serializers.ModelSerializer):
     class Meta:
         model = BudgetEvent
-        fields = ["type", "author", "target_teams", "status"]
-        read_only_fields = ["created_at", "updated_at"]
+        fields = "__all__"
+        read_only_fields = ["created_at", "updated_at", "author", "deleted_at"]
 
 
 class BudgetFilesSerializer(serializers.ModelSerializer):
     class Meta:
         model = BudgetFiles
-        fields = ["file", "cc_emails"]
-        read_only_fields = ["created_at", "updated_at", "event"]
+        fields = "__all__"
+        read_only_fields = ["created_at", "updated_at"]

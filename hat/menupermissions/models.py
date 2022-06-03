@@ -72,5 +72,5 @@ class CustomPermissionSupport(models.Model):
             ("iaso_planning", PLANNING),
             ("iaso_teams", TEAMS),
             ("iaso_assignments", ASSIGNMENTS),
-            ("iaso_polio_budget", POLIO_BUDGET)
+            ("iaso_polio_budget", POLIO_BUDGET),
         )

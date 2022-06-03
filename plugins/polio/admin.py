@@ -12,7 +12,9 @@ from .models import (
     CountryUsersGroup,
     URLCache,
     SpreadSheetImport,
-    CampaignGroup, BudgetEvent, BudgetFiles,
+    CampaignGroup,
+    BudgetEvent,
+    BudgetFiles,
 )
 
 

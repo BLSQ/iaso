@@ -492,16 +492,9 @@ class CampaignGroup(SoftDeletableModel):
 
 class BudgetEvent(SoftDeletableModel):
 
-    TYPES = (
-        ("submission", "Budget Submission"),
-        ("comments", "Comments")
-    )
+    TYPES = (("submission", "Budget Submission"), ("comments", "Comments"))
 
-    STATUS = (
-        ("validation_ongoing", "Validation Ongoing"),
-        ("validated", "Validated"),
-        ("refused", "Refused")
-    )
+    STATUS = (("validation_ongoing", "Validation Ongoing"), ("validated", "Validated"), ("refused", "Refused"))
 
     campaign = models.ForeignKey(Campaign, on_delete=models.PROTECT)
     type = models.CharField(choices=TYPES, max_length=200)

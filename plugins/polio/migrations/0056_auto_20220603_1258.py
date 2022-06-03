@@ -6,18 +6,18 @@ from django.db import migrations
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('polio', '0055_budgetevent_budgetfiles'),
+        ("polio", "0055_budgetevent_budgetfiles"),
     ]
 
     operations = [
         migrations.RemoveField(
-            model_name='budgetfiles',
-            name='event',
+            model_name="budgetfiles",
+            name="event",
         ),
         migrations.DeleteModel(
-            name='BudgetEvent',
+            name="BudgetEvent",
         ),
         migrations.DeleteModel(
-            name='BudgetFiles',
+            name="BudgetFiles",
         ),
     ]

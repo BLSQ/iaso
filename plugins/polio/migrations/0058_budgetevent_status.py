@@ -6,13 +6,21 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('polio', '0057_budgetevent_budgetfiles'),
+        ("polio", "0057_budgetevent_budgetfiles"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='budgetevent',
-            name='status',
-            field=models.CharField(choices=[('validation_ongoing', 'Validation Ongoing'), ('validated', 'Validated'), ('refused', 'Refused')], max_length=200, null=True),
+            model_name="budgetevent",
+            name="status",
+            field=models.CharField(
+                choices=[
+                    ("validation_ongoing", "Validation Ongoing"),
+                    ("validated", "Validated"),
+                    ("refused", "Refused"),
+                ],
+                max_length=200,
+                null=True,
+            ),
         ),
     ]

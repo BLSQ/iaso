@@ -1,3 +1,4 @@
+/* eslint-disable react/jsx-props-no-spreading */
 import React from 'react';
 import DataSourceIcon from '@material-ui/icons/ListAltTwoTone';
 import FormatListBulleted from '@material-ui/icons/FormatListBulleted';
@@ -9,6 +10,7 @@ import GroupWork from '@material-ui/icons/GroupWork';
 import HomeWorkIcon from '@material-ui/icons/HomeWork';
 import HomeIcon from '@material-ui/icons/Home';
 import StorefrontIcon from '@material-ui/icons/Storefront';
+import AccountBalanceWalletIcon from '@material-ui/icons/AccountBalanceWallet';
 import { Dashboard } from './src/pages/Dashboard';
 import { Calendar } from './src/pages/Calendar';
 import { CountryNotificationsConfig } from './src/components/CountryNotificationsConfig/CountryNotificationsConfig';
@@ -22,6 +24,7 @@ import {
     IM_GLOBAL,
     IM_IHH,
     IM_OHH,
+    BUDGET,
 } from './src/constants/routes';
 import fr from './src/constants/translations/fr.json';
 import en from './src/constants/translations/en.json';
@@ -29,6 +32,7 @@ import { Lqas } from './src/pages/LQAS';
 import { ImStats } from './src/pages/IM';
 import { paginationPathParams } from '../../../hat/assets/js/apps/Iaso/routing/common';
 import { GroupedCampaigns } from './src/pages/GroupedCampaigns/GroupedCampaigns.tsx';
+import { Budget } from './src/pages/Budget/index.tsx';
 
 const campaignsFilters = [
     {
@@ -189,6 +193,34 @@ const routes = [
         ],
     },
     {
+        baseUrl: BUDGET,
+        component: props => <Budget {...props} />,
+        permissions: ['iaso_polio_budget'],
+        params: [
+            ...paginationPathParams,
+            {
+                isRequired: false,
+                key: 'campaign',
+            },
+            {
+                isRequired: false,
+                key: 'country',
+            },
+            {
+                isRequired: false,
+                key: 'search',
+            },
+            {
+                isRequired: false,
+                key: 'startDateFrom',
+            },
+            {
+                isRequired: false,
+                key: 'endDateUntil',
+            },
+        ],
+    },
+    {
         baseUrl: CONFIG_BASE_URL,
         component: () => <CountryNotificationsConfig />,
         permissions: ['iaso_polio_config'],
@@ -280,6 +312,12 @@ const menu = [
                         icon: props => <StorefrontIcon {...props} />,
                     },
                 ],
+            },
+            {
+                label: MESSAGES.budget,
+                key: 'budget',
+                permissions: ['iaso_polio_budget'],
+                icon: props => <AccountBalanceWalletIcon {...props} />,
             },
             {
                 label: MESSAGES.configuration,

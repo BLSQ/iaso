@@ -77,17 +77,17 @@ export const makeResetTouched =
         const formKeys = Object.keys(formValues);
         const fields = {};
         formKeys.forEach(formKey => {
-            fields[formKey] = false;
+            fields[formKey] = true;
         });
         setTouched(fields);
     };
 
 // TODO move to utils
-const formHasBeenTouched = (touchedDict: Record<string, boolean>) => {
-    return Boolean(
-        Object.keys(touchedDict).find(dictKey => touchedDict[dictKey] === true),
-    );
-};
+// const formHasBeenTouched = (touchedDict: Record<string, boolean>) => {
+//     return Boolean(
+//         Object.keys(touchedDict).find(dictKey => touchedDict[dictKey] === true),
+//     );
+// };
 
 const formatTitle = (type: ModalMode, formatMessage: IntlFormatMessage) => {
     switch (type) {
@@ -116,7 +116,7 @@ export const CreateEditPlanning: FunctionComponent<Props> = ({
     publishingStatus,
 }) => {
     const { formatMessage } = useSafeIntl();
-    const [errorMessage, setErrorMessage] = useState(null);
+    const [errorMessage, setErrorMessage] = useState({});
     const [closeModal, setCloseModal] = useState<any>();
 
     // Tried the typescript integration, but Type casting was crap
@@ -138,10 +138,12 @@ export const CreateEditPlanning: FunctionComponent<Props> = ({
         enableReinitialize: true,
         validateOnBlur: true,
         validationSchema: schema,
-        onSubmit: (values: Partial<SavePlanningQuery>) =>
-            savePlanning(values, {
+        onSubmit: (formValues: Partial<SavePlanningQuery>, helpers) =>
+            savePlanning(formValues, {
                 onError: (e: any) => {
-                    setErrorMessage(e.details);
+                    helpers.setErrors(e.details.non_field_errors);
+                    console.log(e.details);
+                    // setErrorMessage(e.details);
                     resetTouched();
                 },
                 onSuccess: () => {
@@ -156,6 +158,7 @@ export const CreateEditPlanning: FunctionComponent<Props> = ({
         touched,
         setFieldTouched,
         setTouched,
+        initialValues,
         errors,
         isValid,
         handleSubmit,
@@ -164,6 +167,7 @@ export const CreateEditPlanning: FunctionComponent<Props> = ({
     // using this method to reset touched state after saving
     const resetTouched = makeResetTouched(values, setTouched);
     // console.log('errors formik', errors);
+    // console.log('initialValues', initialValues);
 
     const { mutateAsync: savePlanning } = useSavePlanning(type, resetForm);
     const { data: formsDropdown, isFetching: isFetchingForms } = useGetForms(
@@ -200,7 +204,7 @@ export const CreateEditPlanning: FunctionComponent<Props> = ({
             {/* @ts-ignore */}
             <ConfirmCancelDialogComponent
                 // Using touched i.o initialValues to evaluate if form has been modified
-                allowConfirm={isValid && formHasBeenTouched(touched)}
+                allowConfirm={isValid && !isEqual(values, initialValues)}
                 titleMessage={titleMessage}
                 onConfirm={closeDialog => {
                     setCloseModal({ closeDialog });

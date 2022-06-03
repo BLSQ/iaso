@@ -1,3 +1,5 @@
+import os
+
 from django.contrib.auth.models import User
 from django.contrib.auth.password_validation import validate_password
 from django.core.exceptions import ValidationError, ObjectDoesNotExist, MultipleObjectsReturned
@@ -9,6 +11,7 @@ from django.core import validators
 import csv
 import pandas as pd
 
+from hat.settings import BASE_DIR
 from iaso.models import BulkCreateUserCsvFile, Profile, Account, OrgUnit
 
 
@@ -57,7 +60,8 @@ class BulkCreateUserFromCsvViewSet(ModelViewSet):
                 file=user_csv, created_by=request.user, account=request.user.iaso_profile.account
             )
             file_instance.save()
-            file = open(file_instance.file.path, "r", encoding="utf-8")
+            file_path = os.path.join(BASE_DIR, file_instance.file.path)
+            file = open(file_path, "r", encoding="utf-8")
             reader = csv.reader(file)
             i = 0
             csv_indexes = []

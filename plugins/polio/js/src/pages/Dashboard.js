@@ -215,7 +215,7 @@ const Dashboard = ({ router }) => {
             {
                 Header: formatMessage(MESSAGES.status),
                 sortable: false,
-                accessor: row => formatMessage(MESSAGES[row.general_status]),
+                accessor: row => row.general_status,
             },
             {
                 Header: formatMessage(MESSAGES.actions),

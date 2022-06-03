@@ -95,7 +95,7 @@ const formsTableColumns = ({
         {
             Header: formatMessage(MESSAGES.name),
             accessor: 'name',
-            style: { justifyContent: 'left' },
+            align: 'left',
         },
         {
             Header: formatMessage(MESSAGES.created_at),
@@ -134,7 +134,6 @@ const formsTableColumns = ({
             Header: formatMessage(MESSAGES.form_id),
             accessor: 'form_id',
             sortable: false,
-            style: { justifyContent: 'left' },
         },
         {
             Header: formatMessage(MESSAGES.latest_version_files),

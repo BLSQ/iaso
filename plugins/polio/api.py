@@ -1453,8 +1453,8 @@ class BudgetFilesViewset(ModelViewSet):
                 except ValidationError:
                     raise serializers.ValidationError({"details": "Invalid e-mail : {0}".format(mail)})
 
-            budget_instance = BudgetFiles.objects.create(file=budget_file, event=event, cc_emails=cc_emails)
-            budget_instance.save()
+            budget_file = BudgetFiles.objects.create(file=budget_file, event=event, cc_emails=cc_emails)
+            budget_file.save()
 
         files = BudgetFiles.objects.filter(event__author__iaso_profile__account=self.request.user.iaso_profile.account)
         serializer = BudgetFilesSerializer(files, many=True)

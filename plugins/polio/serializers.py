@@ -18,7 +18,7 @@ from .models import (
     LineListImport,
     VIRUSES,
     SpreadSheetImport,
-    CampaignGroup,
+    CampaignGroup, BudgetEvent, BudgetFiles,
 )
 from .preparedness.calculator import get_preparedness_score, preparedness_summary
 from .preparedness.parser import (
@@ -411,6 +411,8 @@ class CampaignSerializer(serializers.ModelSerializer):
 
 
 class SmallCampaignSerializer(CampaignSerializer):
+    latest_event = serializers.CharField(source="budgetevent.author")
+
     class Meta:
         model = Campaign
         fields = [
@@ -464,6 +466,7 @@ class SmallCampaignSerializer(CampaignSerializer):
             "top_level_org_unit_name",
             "top_level_org_unit_id",
             "is_preventive",
+            "latest_event",
         ]
         read_only_fields = fields
 
@@ -558,3 +561,17 @@ class CampaignGroupSerializer(serializers.ModelSerializer):
 
     campaigns = CampaignNameSerializer(many=True, read_only=True)
     campaigns_ids = serializers.PrimaryKeyRelatedField(many=True, queryset=Campaign.objects.all(), source="campaigns")
+
+
+class BudgetEventSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = BudgetEvent
+        fields = ["type", "author", "target_teams", "status"]
+        read_only_fields = ["created_at", "updated_at"]
+
+
+class BudgetFilesSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = BudgetFiles
+        fields = ["file", "cc_emails"]
+        read_only_fields = ["created_at", "updated_at", "event"]

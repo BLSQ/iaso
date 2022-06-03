@@ -12,6 +12,7 @@ import requests
 from django.conf import settings
 from django.core.cache import cache
 from django.core.mail import send_mail
+from django.db import transaction
 from django.db.models import Q
 from django.db.models import Value, TextField, UUIDField
 from django.db.models.expressions import RawSQL
@@ -36,7 +37,7 @@ from plugins.polio.serializers import (
     AnonymousCampaignSerializer,
     SmallCampaignSerializer,
     get_current_preparedness,
-    CampaignGroupSerializer,
+    CampaignGroupSerializer, BudgetEventSerializer, BudgetFilesSerializer,
 )
 from plugins.polio.serializers import (
     CountryUsersGroupSerializer,
@@ -48,7 +49,7 @@ from .forma import (
     find_orgunit_in_cache,
 )
 from .helpers import get_url_content
-from .models import Campaign, Config, LineListImport, SpreadSheetImport, Round, CampaignGroup
+from .models import Campaign, Config, LineListImport, SpreadSheetImport, Round, CampaignGroup, BudgetEvent, BudgetFiles
 from .models import CountryUsersGroup
 from .models import URLCache
 from .preparedness.calculator import preparedness_summary
@@ -1383,6 +1384,39 @@ class CampaignGroupViewSet(ModelViewSet):
     }
 
 
+class BudgetEventViewset(ModelViewSet):
+    result_key = "campaign"
+    serializer_class = BudgetEventSerializer
+
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get_queryset(self):
+        queryset = BudgetEvent.objects.filter(author__iaso_profile__account=self.request.user.iaso_profile.account)
+        return queryset
+
+class BudgetFilesViewset(ModelViewSet):
+    results_key = "event"
+
+    serializer_class = BudgetFilesSerializer
+
+    def get_queryset(self):
+        queryset = BudgetFiles.objects.filter(event__author__iaso_profile__account=self.request.user.iaso_profile.account)
+        return queryset
+
+    @transaction.atomic()
+    def create(self, request, *args, **kwargs):
+        if request.FILES:
+            event = request.GET.get("budget_event", None)
+            event = get_object_or_404(BudgetEvent, id=event)
+            budget_file = request.FILES["file"]
+            budget_instance = BudgetFiles.objects.create(
+                file=budget_file, event_id=event
+            )
+            budget_instance.save()
+
+
+
+
 router = routers.SimpleRouter()
 router.register(r"polio/campaigns", CampaignViewSet, basename="Campaign")
 router.register(r"polio/campaignsgroup", CampaignGroupViewSet, basename="campaigngroup")
@@ -1396,3 +1430,5 @@ router.register(r"polio/v2/forma", FormAStocksViewSetV2, basename="forma")
 router.register(r"polio/countryusersgroup", CountryUsersGroupViewSet, basename="countryusersgroup")
 router.register(r"polio/linelistimport", LineListImportViewSet, basename="linelistimport")
 router.register(r"polio/orgunitspercampaign", OrgUnitsPerCampaignViewset, basename="orgunitspercampaign")
+router.register(r"polio/budgetevent", BudgetEventViewset, basename="budget")
+router.register(r"polio/budgetfiles", BudgetFilesViewset, basename="budgetfiles")

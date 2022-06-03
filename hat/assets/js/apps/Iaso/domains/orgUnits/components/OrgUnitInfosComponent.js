@@ -219,7 +219,7 @@ const OrgUnitInfosComponent = ({
                     }
                 />
             )}
-            <Grid item xs={4}>
+            <Grid item xs={12} md={4}>
                 <InputComponent
                     keyValue="name"
                     required
@@ -320,7 +320,7 @@ const OrgUnitInfosComponent = ({
                     type="arrayInput"
                 />
             </Grid>
-            <Grid item xs={4}>
+            <Grid item xs={12} md={8}>
                 {orgUnit.id && !orgUnit.reference_instance && (
                     <OrgUnitCreationDetails orgUnit={orgUnit} />
                 )}

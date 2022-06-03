@@ -6,7 +6,12 @@ import { APP_LOCALES } from '../../app/constants';
 
 import MESSAGES from '../messages';
 
-const UsersInfos = ({ setFieldValue, currentUser, initialData }) => (
+const UsersInfos = ({
+    setFieldValue,
+    currentUser,
+    initialData,
+    sendEmailInvitation,
+}) => (
     <>
         <InputComponent
             keyValue="user_name"
@@ -73,6 +78,15 @@ const UsersInfos = ({ setFieldValue, currentUser, initialData }) => (
                 };
             })}
         />
+        {sendEmailInvitation && (
+            <InputComponent
+                keyValue="send_email_invitation"
+                onChange={(key, value) => setFieldValue(key, value)}
+                value={currentUser.send_email_invitation.value}
+                type="checkbox"
+                label={MESSAGES.sent_email_invitation}
+            />
+        )}
     </>
 );
 

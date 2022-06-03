@@ -7,6 +7,8 @@ from django.core.paginator import Paginator
 from django.db.models import Q
 from django.http import JsonResponse
 from django.utils.translation import gettext as _
+from django.core.mail import send_mail
+from django.conf import settings
 
 from iaso.models import Profile, OrgUnit
 
@@ -138,6 +140,7 @@ class ProfilesViewSet(viewsets.ViewSet):
         if profile.dhis2_id == "":
             profile.dhis2_id = None
         profile.save()
+
         return Response(profile.as_dict())
 
     def create(self, request):
@@ -184,6 +187,17 @@ class ProfilesViewSet(viewsets.ViewSet):
             dhis2_id = None
         profile.dhis2_id = dhis2_id
         profile.save()
+
+        def send_email_invitation():
+            email_text = self.CREATE_PASSWORD_MESSAGE.format(
+                url=f"http://localhost:8081/create-password?user_id={profile.user.id}",
+            )
+            domain = settings.DNS_DOMAIN
+            send_mail("Create password for you Iaso account", email_text, "no-reply@%s" % domain, [user.email])
+
+        if request.data.get("send_email_invitation") and user.email:
+            send_email_invitation()
+
         return Response(user.profile.as_dict())
 
     def delete(self, request, pk=None):
@@ -192,3 +206,10 @@ class ProfilesViewSet(viewsets.ViewSet):
         user.delete()
         profile.delete()
         return Response(True)
+
+    CREATE_PASSWORD_MESSAGE = """Dear new user
+
+This is an automated email.
+
+Click on this link {url} so that you can create your password
+    """

@@ -86,6 +86,7 @@ const Users = ({ params }) => {
                         )}
                         params={params}
                         saveProfile={saveProfile}
+                        sendEmailInvitation
                     />
                 </Grid>
                 <Table

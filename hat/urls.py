@@ -4,6 +4,7 @@ from django.views.generic import RedirectView
 from django.conf import settings
 from django.conf.urls.static import static
 from iaso.views import page, health
+from hat.api.authentication import create_password
 import django_sql_dashboard
 
 admin.site.site_header = "Administration de Iaso"
@@ -21,6 +22,7 @@ urlpatterns = [
     path("i18n/", include("django.conf.urls.i18n")),
     path("login/", auth.views.LoginView.as_view(template_name="iaso/login.html"), name="login"),
     path("logout-iaso", auth.views.LogoutView.as_view(next_page="login"), name="logout-iaso"),
+    path("create-password/", create_password),
     path(
         "forgot-password/",
         auth.views.PasswordResetView.as_view(

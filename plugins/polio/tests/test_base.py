@@ -593,8 +593,9 @@ class BudgetPolioTestCase(APITestCase):
         second_account = Account.objects.create(name="WHO", default_version=cls.source_version_1)
 
         cls.yoda = cls.create_user_with_profile(username="yoda", account=account, permissions=["iaso_polio_budget"])
-        cls.grogu = cls.create_user_with_profile(username="Grogu", account=second_account,
-                                                 permissions=["iaso_polio_budget"])
+        cls.grogu = cls.create_user_with_profile(
+            username="Grogu", account=second_account, permissions=["iaso_polio_budget"]
+        )
 
         cls.org_unit = m.OrgUnit.objects.create(
             org_unit_type=m.OrgUnitType.objects.create(name="Jedi Council", short_name="Cnc"),
@@ -642,12 +643,10 @@ class BudgetPolioTestCase(APITestCase):
             "campaign": self.campaign_test.pk,
             "type": "submission",
             "target_teams": [self.team1.pk],
-            "status": "validation_ongoing"
+            "status": "validation_ongoing",
         }
 
-        response = self.client.post(
-            "/api/polio/budgetevent/", data=data, format="json"
-        )
+        response = self.client.post("/api/polio/budgetevent/", data=data, format="json")
 
         budget_events = BudgetEvent.objects.all()
 
@@ -664,18 +663,13 @@ class BudgetPolioTestCase(APITestCase):
         self.client.force_authenticate(self.yoda)
 
         budget = BudgetEvent.objects.create(
-            campaign=self.campaign_test,
-            type="submission",
-            author=self.grogu,
-            status="validation_ongoing"
+            campaign=self.campaign_test, type="submission", author=self.grogu, status="validation_ongoing"
         )
 
         budget.target_teams.set([self.team1])
         budget.save()
 
-        response = self.client.get(
-            "/api/polio/budgetevent/"
-        )
+        response = self.client.get("/api/polio/budgetevent/")
 
         budget_events = BudgetEvent.objects.all()
 
@@ -687,28 +681,28 @@ class BudgetPolioTestCase(APITestCase):
         self.client.force_authenticate(self.grogu)
 
         budget = BudgetEvent.objects.create(
-            campaign=self.campaign_test,
-            type="submission",
-            author=self.grogu,
-            status="validation_ongoing"
+            campaign=self.campaign_test, type="submission", author=self.grogu, status="validation_ongoing"
         )
 
         budget.target_teams.set([self.team1])
         budget.save()
 
-        data = File(open("iaso/tests/fixtures/test_user_bulk_create_valid.csv", 'rb'))
-        upload_file = SimpleUploadedFile("test_user_bulk_create_valid.csv", data.read(),
-                                         content_type='multipart/form-data')
+        data = File(open("iaso/tests/fixtures/test_user_bulk_create_valid.csv", "rb"))
+        upload_file = SimpleUploadedFile(
+            "test_user_bulk_create_valid.csv", data.read(), content_type="multipart/form-data"
+        )
 
         payload = {
             "event": budget.pk,
             "file": upload_file,
-            "cc_emails": "lil_grogu@mandalorians.com, master_yoda@jedi.force"
+            "cc_emails": "lil_grogu@mandalorians.com, master_yoda@jedi.force",
         }
 
-        response = self.client.post('/api/polio/budgetfiles/',
-                                    data=payload,
-                                    content_disposition="attachment; filename=test_user_bulk_create_valid.csv")
+        response = self.client.post(
+            "/api/polio/budgetfiles/",
+            data=payload,
+            content_disposition="attachment; filename=test_user_bulk_create_valid.csv",
+        )
 
         budget_files = BudgetFiles.objects.all()
         budget_event = BudgetEvent.objects.all()
@@ -721,29 +715,28 @@ class BudgetPolioTestCase(APITestCase):
         self.client.force_authenticate(self.grogu)
 
         budget = BudgetEvent.objects.create(
-            campaign=self.campaign_test,
-            type="submission",
-            author=self.grogu,
-            status="validation_ongoing"
+            campaign=self.campaign_test, type="submission", author=self.grogu, status="validation_ongoing"
         )
 
         budget.target_teams.set([self.team1])
         budget.save()
 
-        data = File(open("iaso/tests/fixtures/test_user_bulk_create_valid.csv", 'rb'))
-        upload_file = SimpleUploadedFile("test_user_bulk_create_valid.csv", data.read(),
-                                         content_type='multipart/form-data')
+        data = File(open("iaso/tests/fixtures/test_user_bulk_create_valid.csv", "rb"))
+        upload_file = SimpleUploadedFile(
+            "test_user_bulk_create_valid.csv", data.read(), content_type="multipart/form-data"
+        )
 
         payload = {
             "event": budget.pk,
             "file": upload_file,
-            "cc_emails": "lil_grogu@mandalorians.com, master_yodajedi.force"
+            "cc_emails": "lil_grogu@mandalorians.com, master_yodajedi.force",
         }
 
-        response = self.client.post('/api/polio/budgetfiles/',
-                                    data=payload,
-                                    content_disposition="attachment; filename=test_user_bulk_create_valid.csv")
-
+        response = self.client.post(
+            "/api/polio/budgetfiles/",
+            data=payload,
+            content_disposition="attachment; filename=test_user_bulk_create_valid.csv",
+        )
 
         self.assertEqual(response.status_code, 400)
         self.assertEqual(response.json(), {"details": "Invalid e-mail : master_yodajedi.force"})

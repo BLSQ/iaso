@@ -1413,10 +1413,9 @@ class BudgetEventViewset(ModelViewSet):
         event_type = request.data["type"]
         status = request.data["status"]
         author = request.user
-        teams = request.data["target_teams"]
         target_teams = request.data["target_teams"]
         budget = BudgetEvent.objects.create(campaign=campaign, type=event_type, author=author, status=status)
-        budget.target_teams.set(teams)
+        budget.target_teams.set(target_teams)
 
         budget.save()
 

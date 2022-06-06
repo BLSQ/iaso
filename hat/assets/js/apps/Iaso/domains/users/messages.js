@@ -176,9 +176,14 @@ const MESSAGES = defineMessages({
         id: 'iaso.label.dhis2Id',
         defaultMessage: 'DHIS2 id',
     },
-    sent_email_invitation: {
-        id: 'iaso.label.sent_email_invitation',
+    sentEmailInvitation: {
+        id: 'iaso.label.sentEmailInvitation',
         defaultMessage: 'Send an invitation email',
+    },
+    sentEmailInvitationWhenAdresseExist: {
+        id: 'iaso.label.sentEmailInvitationWhenAdresseExist',
+        defaultMessage:
+            'Enter email address before sending an invitation email',
     },
 });
 

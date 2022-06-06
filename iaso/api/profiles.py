@@ -9,11 +9,13 @@ from django.http import JsonResponse
 from django.utils.translation import gettext as _
 from django.core.mail import send_mail
 from django.conf import settings
-
+from django.contrib.auth.tokens import PasswordResetTokenGenerator
 from iaso.models import Profile, OrgUnit
-
+from django.utils.http import urlsafe_base64_encode
 from django.contrib.auth.models import Permission
 from django.contrib.auth.models import User
+from django.utils.encoding import force_bytes
+from django.urls import reverse
 
 
 class HasProfilePermission(permissions.BasePermission):
@@ -189,13 +191,24 @@ class ProfilesViewSet(viewsets.ViewSet):
         profile.save()
 
         def send_email_invitation():
-            email_text = self.CREATE_PASSWORD_MESSAGE.format(
-                url=f"http://localhost:8081/create-password?user_id={profile.user.id}",
-            )
             domain = settings.DNS_DOMAIN
-            send_mail("Create password for you Iaso account", email_text, "no-reply@%s" % domain, [user.email])
 
-        if request.data.get("send_email_invitation") and user.email:
+            token_generator = PasswordResetTokenGenerator()
+            token = token_generator.make_token(profile.user)
+
+            uid = urlsafe_base64_encode(force_bytes(profile.user.pk))
+            create_password_path = reverse("reset_password_confirmation", kwargs={"uidb64": uid, "token": token})
+
+            email_text = self.CREATE_PASSWORD_MESSAGE.format(
+                userName=profile.user.username,
+                url=f"https://{domain}{create_password_path}",
+            )
+
+            send_mail(
+                "Create password for your new Iaso account", email_text, "no-reply@%s" % domain, [profile.user.email]
+            )
+
+        if request.data.get("send_email_invitation") and profile.user.email:
             send_email_invitation()
 
         return Response(user.profile.as_dict())
@@ -207,9 +220,19 @@ class ProfilesViewSet(viewsets.ViewSet):
         profile.delete()
         return Response(True)
 
-    CREATE_PASSWORD_MESSAGE = """Dear new user
+    CREATE_PASSWORD_MESSAGE = """Hello, 
 
-This is an automated email.
+A password creation has been request for your new Iaso account {userName},
 
-Click on this link {url} so that you can create your password
+to proceed please click the link below:
+
+{url}
+
+If clicking the link above doesn't work, please copy and paste the URL in a new browser
+window instead.
+
+If you did not request a password creation, you can ignore this e-mail - no passwords will be created.
+
+Sincerely,
+The Iaso Team.
     """

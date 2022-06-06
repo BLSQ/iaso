@@ -62,7 +62,3 @@ def wfp_callback(request):
 
         return render(request, "iaso/pages/wfp_login.html", {"user": token_decode})
     return HttpResponse("OK")
-
-
-def create_password(request):
-    return render(request, "iaso/create_password.html")

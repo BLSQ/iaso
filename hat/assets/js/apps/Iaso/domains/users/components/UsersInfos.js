@@ -17,7 +17,7 @@ const UsersInfos = ({
     const sendEmailLabel = mailExist
         ? MESSAGES.sentEmailInvitationWhenAdresseExist
         : MESSAGES.sentEmailInvitation;
-    if (sendEmail) {
+    if (sendEmail && currentUser.send_email_invitation) {
         // eslint-disable-next-line no-param-reassign
         currentUser.send_email_invitation.value = false;
     }

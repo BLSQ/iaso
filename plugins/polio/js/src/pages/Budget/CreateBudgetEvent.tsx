@@ -87,7 +87,7 @@ export const CreateBudgetEvent: FunctionComponent<Props> = ({ campaignId }) => {
                     closeDialog();
                     resetForm();
                 }}
-                maxWidth="md"
+                maxWidth="sm"
                 cancelMessage={MESSAGES.cancel}
                 renderTrigger={renderTrigger}
             >

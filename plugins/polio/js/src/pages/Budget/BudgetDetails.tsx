@@ -5,7 +5,7 @@ import {
     // @ts-ignore
     useSkipEffectOnMount,
 } from 'bluesquare-components';
-import { Box } from '@material-ui/core';
+import { Box, Grid, Paper } from '@material-ui/core';
 import TopBar from '../../../../../../hat/assets/js/apps/Iaso/components/nav/TopBarComponent';
 import MESSAGES from '../../constants/messages';
 import { convertObjectToString } from '../../utils';
@@ -57,23 +57,37 @@ export const BudgetDetails: FunctionComponent<Props> = ({ router }) => {
             />
             {/* @ts-ignore */}
             <Box className={classes.containerFullHeightNoTabPadded}>
-                <BudgetStatus budgetDetails={budgetDetails} />
-                <CreateBudgetEvent campaignId={campaignId} />
-                <GraphTitle text="Steps" displayTrigger />
-                <TableWithDeepLink
-                    data={budgetDetails?.results ?? []}
-                    count={budgetDetails?.count}
-                    pages={budgetDetails?.pages}
-                    params={params}
-                    columns={columns}
-                    baseUrl={BUDGET_DETAILS}
-                    marginTop={false}
-                    extraProps={{
-                        loading:
-                            isFetching || isFetchingProfiles || isFetchingTeams,
-                    }}
-                    resetPageToOne={resetPageToOne}
-                />
+                <Box mb={2} ml={2} mr={2}>
+                    <Grid container justifyContent='space-between'>
+                        <Grid container item xs={6}>
+                            <BudgetStatus budgetDetails={budgetDetails} />
+                        </Grid>
+                        <Grid>
+                            <CreateBudgetEvent campaignId={campaignId} />
+                        </Grid>
+                    </Grid>
+                </Box>
+                <Paper elevation={2}>
+                    <Box ml={2} pt={2} mr={2}>
+                        <GraphTitle text="Steps" displayTrigger/>
+                    
+                        <TableWithDeepLink
+                            data={budgetDetails?.results ?? []}
+                            count={budgetDetails?.count}
+                            pages={budgetDetails?.pages}
+                            params={params}
+                            columns={columns}
+                            baseUrl={BUDGET_DETAILS}
+                            marginTop={false}
+                            extraProps={{
+                                loading:
+                                    isFetching || isFetchingProfiles || isFetchingTeams,
+                            }}
+                            resetPageToOne={resetPageToOne}
+                            elevation={0}
+                        />
+                    </Box>
+                </Paper>
             </Box>
         </>
     );

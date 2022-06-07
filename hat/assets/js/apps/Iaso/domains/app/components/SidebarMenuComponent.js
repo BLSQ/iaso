@@ -1,7 +1,6 @@
 import React, { useContext } from 'react';
 import { connect } from 'react-redux';
 import { FormattedMessage } from 'react-intl';
-import { redirectTo } from '../../../routing/actions';
 import ExitIcon from '@material-ui/icons/ExitToApp';
 import {
     withStyles,
@@ -19,6 +18,7 @@ import ArrowForwardIcon from '@material-ui/icons/ArrowForward';
 import PropTypes from 'prop-types';
 
 import { injectIntl, commonStyles } from 'bluesquare-components';
+import { redirectTo } from '../../../routing/actions';
 import { toggleSidebarMenu } from '../../../redux/sidebarMenuReducer';
 import { SIDEBAR_WIDTH } from '../../../constants/uiConstants';
 
@@ -83,8 +83,6 @@ const localizedManualUrl = (locale, account) => {
     return 'https://docs.google.com/document/d/1qHCRIiYgbZYAKMqxXYOjBGL_nzlSDPhOLykiKXaw8fw/edit';
 };
 
-
-
 const SidebarMenu = ({
     classes,
     isOpen,
@@ -93,27 +91,27 @@ const SidebarMenu = ({
     intl,
     activeLocale,
 }) => {
-    const onClick = (url) => {
+    const onClick = url => {
         toggleSidebar();
-        if(url) {
-          window.open(url);
+        if (url) {
+            window.open(url);
         }
     };
     const currentUser = useCurrentUser();
 
-    const getMenuItem = (menuItem) => {
-      return (
-          <MenuItem
-              location={location}
-              key={menuItem.key}
-              menuItem={menuItem}
-              onClick={(path,url) => onClick(url)}
-              currentUser={currentUser}
-              url={menuItem.url}
-              target="_blank"
-          />
-      );
-    }
+    const getMenuItem = menuItem => {
+        return (
+            <MenuItem
+                location={location}
+                key={menuItem.key}
+                menuItem={menuItem}
+                onClick={(path, url) => onClick(url)}
+                currentUser={currentUser}
+                url={menuItem.url}
+                target="_blank"
+            />
+        );
+    };
 
     const { plugins } = useContext(PluginsContext);
     const defaultSourceVersion = getDefaultSourceVersion(currentUser);
@@ -137,7 +135,7 @@ const SidebarMenu = ({
                 {menuItems.map(menuItem => {
                     const permissionsList = listMenuPermission(menuItem);
                     if (userHasOneOfPermissions(permissionsList, currentUser)) {
-                      return getMenuItem(menuItem);
+                        return getMenuItem(menuItem);
                     }
                     return null;
                 })}
@@ -223,7 +221,6 @@ SidebarMenu.propTypes = {
     isOpen: PropTypes.bool.isRequired,
     toggleSidebar: PropTypes.func.isRequired,
     location: PropTypes.object.isRequired,
-    currentUser: PropTypes.object.isRequired,
     intl: PropTypes.object.isRequired,
     activeLocale: PropTypes.object.isRequired,
 };

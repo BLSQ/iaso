@@ -1420,7 +1420,7 @@ class HasPoliobudgetPermission(permissions.BasePermission):
 
 
 class BudgetEventViewset(ModelViewSet):
-    result_key = "campaign"
+    result_key = "budgetEvent"
     remove_results_key_if_paginated = True
     serializer_class = BudgetEventSerializer
     permission_classes = [permissions.IsAuthenticated, HasPoliobudgetPermission]
@@ -1435,21 +1435,8 @@ class BudgetEventViewset(ModelViewSet):
             queryset = queryset.filter(campaign_id=campaign_id)
         return queryset
 
-    def create(self, request, *args, **kwargs):
-        campaign = get_object_or_404(Campaign, pk=request.data["campaign"])
-        event_type = request.data["type"]
-        status = request.data["status"]
-        author = request.user
-        target_teams = request.data["target_teams"]
-        budget = BudgetEvent.objects.create(campaign=campaign, type=event_type, author=author, status=status)
-        budget.target_teams.set(target_teams)
-
-        budget.save()
-
-        budgets = BudgetEvent.objects.filter(author__iaso_profile__account=self.request.user.iaso_profile.account)
-        serializer = BudgetEventSerializer(budgets, many=True)
-
-        return Response(serializer.data)
+    def perform_create(self, serializer):
+        serializer.save(author=self.request.user)
 
 
 class BudgetFilesViewset(ModelViewSet):
@@ -1465,6 +1452,9 @@ class BudgetFilesViewset(ModelViewSet):
         queryset = BudgetFiles.objects.filter(
             event__author__iaso_profile__account=self.request.user.iaso_profile.account
         )
+        event_id = self.request.query_params.get("event_id")
+        if event_id is not None:
+            queryset = queryset.filter(event_id=event_id)
         return queryset
 
     def create(self, request, *args, **kwargs):
@@ -1472,14 +1462,8 @@ class BudgetFilesViewset(ModelViewSet):
             event = request.data["event"]
             event = get_object_or_404(BudgetEvent, id=event)
             budget_file = request.FILES["file"]
-            cc_emails = request.data["cc_emails"].replace(" ", "").split(",")
-            for mail in cc_emails:
-                try:
-                    validators.validate_email(mail)
-                except ValidationError:
-                    raise serializers.ValidationError({"details": "Invalid e-mail : {0}".format(mail)})
 
-            budget_file = BudgetFiles.objects.create(file=budget_file, event=event, cc_emails=cc_emails)
+            budget_file = BudgetFiles.objects.create(file=budget_file, event=event)
             budget_file.save()
 
         files = BudgetFiles.objects.filter(event__author__iaso_profile__account=self.request.user.iaso_profile.account)

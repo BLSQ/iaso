@@ -15,6 +15,7 @@ const styles = theme => ({
     rejected: { color: theme.palette.error.main },
     validated: { color: theme.palette.success.main },
     validation_ongoing: { color: WARNING_COLOR },
+    spacer: { marginRight: '5px' },
 });
 
 // @ts-ignore
@@ -39,15 +40,19 @@ export const BudgetStatus: FunctionComponent<Props> = ({ budgetDetails }) => {
     const budgetStatus = findBudgetStatus(budgetDetails?.results);
     return (
         <>
-            <Typography variant="h6" className={classes.title} color="primary">
-                {`${formatMessage(MESSAGES.status)}: `}
+            <Typography
+                variant="h5"
+                className={`${classes.title} ${classes.spacer}`}
+                color="primary"
+            >
+                {`${formatMessage(MESSAGES.status)}:`}
             </Typography>
             <Typography
-                variant="h6"
+                variant="h5"
                 className={`${classes.title} ${classes[budgetStatus]}`}
                 color="primary"
             >
-                {formatMessage(MESSAGES[budgetStatus])}
+                {`${formatMessage(MESSAGES[budgetStatus])}`}
             </Typography>
         </>
     );

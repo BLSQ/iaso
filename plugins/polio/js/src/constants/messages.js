@@ -1206,7 +1206,7 @@ const MESSAGES = defineMessages({
         id: 'iaso.polio.label.steps',
     },
     files: {
-        defaultMessage: 'Files',
+        defaultMessage: 'Files for {type}, last updated {date}',
         id: 'iaso.polio.label.files',
     },
 });

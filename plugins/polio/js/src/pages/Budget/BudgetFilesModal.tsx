@@ -8,6 +8,7 @@ import {
 } from '@material-ui/core';
 // @ts-ignore
 import { IconButton, LoadingSpinner, useSafeIntl } from 'bluesquare-components';
+import moment from 'moment';
 import React, { FunctionComponent } from 'react';
 import { FormattedMessage } from 'react-intl';
 import { Link } from 'react-router';
@@ -18,6 +19,8 @@ import { useGetBudgetEventFiles } from '../../hooks/useGetBudgetEventFiles';
 type Props = {
     eventId: number;
     note?: string;
+    type: 'submission' | 'comments';
+    date: string;
 };
 
 const CloseDialog = ({
@@ -71,10 +74,16 @@ const makeLinks = files => {
 export const BudgetFilesModal: FunctionComponent<Props> = ({
     eventId,
     note,
+    type,
+    date,
 }) => {
     const { formatMessage } = useSafeIntl();
     const { data: budgetEventFiles, isFetching } =
         useGetBudgetEventFiles(eventId);
+    const titleMessage = {
+        ...MESSAGES.files,
+        values: { type, date: moment(date).format('LTS') },
+    };
     return (
         <DialogComponent
             dataTestId="budget-files-modal"
@@ -85,7 +94,7 @@ export const BudgetFilesModal: FunctionComponent<Props> = ({
                 );
             }}
             renderTrigger={renderTrigger}
-            titleMessage={MESSAGES.files}
+            titleMessage={titleMessage}
         >
             {isFetching && <LoadingSpinner />}
             {!isFetching && (

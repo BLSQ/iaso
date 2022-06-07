@@ -147,6 +147,8 @@ export const useBudgetDetailsColumns = ({ teams, profiles }): Column[] => {
                         <BudgetFilesModal
                             eventId={settings.row.original.id}
                             note={settings.row.original.comment}
+                            date={settings.row.original.updated_at}
+                            type={settings.row.original.type}
                         />
                     );
                 },

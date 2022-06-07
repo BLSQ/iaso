@@ -59,7 +59,7 @@ export const BudgetDetails: FunctionComponent<Props> = ({ router }) => {
             />
             {/* @ts-ignore */}
             <Box className={classes.containerFullHeightNoTabPadded}>
-                <Box mb={2} ml={2} mr={2}>
+                <Box mb={4} ml={2} mr={2}>
                     <Grid container justifyContent="space-between">
                         <Grid container item xs={6}>
                             <BudgetStatus budgetDetails={budgetDetails} />

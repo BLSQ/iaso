@@ -1,9 +1,15 @@
 import React, { FunctionComponent, useState } from 'react';
-// @ts-ignore
-import { useSafeIntl, useSkipEffectOnMount } from 'bluesquare-components';
+import {
+    // @ts-ignore
+    useSafeIntl,
+    // @ts-ignore
+    useSkipEffectOnMount,
+    // @ts-ignore
+    AddButton,
+} from 'bluesquare-components';
 // @ts-ignore
 import TopBar from 'Iaso/components/nav/TopBarComponent';
-import { Box } from '@material-ui/core';
+import { Box, Grid } from '@material-ui/core';
 import { TableWithDeepLink } from '../../../../../../hat/assets/js/apps/Iaso/components/tables/TableWithDeepLink';
 import {
     useCampaignParams,
@@ -15,6 +21,7 @@ import { useBudgetColumns } from './config';
 import { convertObjectToString } from '../../utils';
 import MESSAGES from '../../constants/messages';
 import { BudgetFilters } from './BudgetFilters';
+import { PolioCreateEditDialog } from '../../components/CreateEditDialog';
 
 type Props = {
     router: any;
@@ -25,6 +32,8 @@ export const Budget: FunctionComponent<Props> = ({ router }) => {
     const { formatMessage } = useSafeIntl();
     const classes = useStyles();
     const [resetPageToOne, setResetPageToOne] = useState('');
+    const [campaignDialogOpen, setCampaignDialogOpen] =
+        useState<boolean>(false);
 
     const apiParams = useCampaignParams({
         ...params,
@@ -52,6 +61,15 @@ export const Budget: FunctionComponent<Props> = ({ router }) => {
             {/* @ts-ignore */}
             <Box className={classes.containerFullHeightNoTabPadded}>
                 <BudgetFilters params={params} />
+                <Grid container item justifyContent="flex-end">
+                    <AddButton
+                        onClick={() => {
+                            setCampaignDialogOpen(true);
+                        }}
+                        dataTestId="create-campaign-button"
+                        message={MESSAGES.addCampaign}
+                    />
+                </Grid>
                 <TableWithDeepLink
                     data={campaigns?.campaigns ?? []}
                     count={campaigns?.count}
@@ -66,6 +84,10 @@ export const Budget: FunctionComponent<Props> = ({ router }) => {
                     resetPageToOne={resetPageToOne}
                 />
             </Box>
+            <PolioCreateEditDialog
+                isOpen={campaignDialogOpen}
+                onClose={() => setCampaignDialogOpen(false)}
+            />
         </>
     );
 };

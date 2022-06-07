@@ -32,7 +32,7 @@ export const usePlanningValidation = () => {
                 description: string().nullable(),
                 project: number().nullable().required(errorMessage),
                 // Specifying array().of(number()) will cause a bug where the error won't show until you put another field in error
-                forms: array().min(1, errorMessage),
+                forms: array().min(1, errorMessage).required(errorMessage),
                 selectedOrgUnit: number().nullable().required(errorMessage),
                 selectedTeam: number().nullable().required(errorMessage),
                 publishingStatus: mixed()

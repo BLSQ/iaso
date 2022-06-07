@@ -34,7 +34,7 @@ export const BudgetDetails: FunctionComponent<Props> = ({ router }) => {
         useGetBudgetDetails(paginationParams);
     // TODO make hook for table specific state and effects
     const [resetPageToOne, setResetPageToOne] = useState('');
- 
+
     useSkipEffectOnMount(() => {
         const newParams = {
             ...params,
@@ -58,7 +58,7 @@ export const BudgetDetails: FunctionComponent<Props> = ({ router }) => {
             {/* @ts-ignore */}
             <Box className={classes.containerFullHeightNoTabPadded}>
                 <Box mb={2} ml={2} mr={2}>
-                    <Grid container justifyContent='space-between'>
+                    <Grid container justifyContent="space-between">
                         <Grid container item xs={6}>
                             <BudgetStatus budgetDetails={budgetDetails} />
                         </Grid>
@@ -69,8 +69,7 @@ export const BudgetDetails: FunctionComponent<Props> = ({ router }) => {
                 </Box>
                 <Paper elevation={2}>
                     <Box ml={2} pt={2} mr={2}>
-                        <GraphTitle text="Steps" displayTrigger/>
-                    
+                        <GraphTitle text="Steps" displayTrigger />
                         <TableWithDeepLink
                             data={budgetDetails?.results ?? []}
                             count={budgetDetails?.count}
@@ -81,7 +80,9 @@ export const BudgetDetails: FunctionComponent<Props> = ({ router }) => {
                             marginTop={false}
                             extraProps={{
                                 loading:
-                                    isFetching || isFetchingProfiles || isFetchingTeams,
+                                    isFetching ||
+                                    isFetchingProfiles ||
+                                    isFetchingTeams,
                             }}
                             resetPageToOne={resetPageToOne}
                             elevation={0}

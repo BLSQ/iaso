@@ -89,6 +89,7 @@ export const CreateBudgetEvent: FunctionComponent<Props> = ({ campaignId }) => {
                 }}
                 maxWidth="sm"
                 cancelMessage={MESSAGES.cancel}
+                confirmMessage={MESSAGES.send}
                 renderTrigger={renderTrigger}
             >
                 <FileInputComponent
@@ -97,7 +98,7 @@ export const CreateBudgetEvent: FunctionComponent<Props> = ({ campaignId }) => {
                     onChange={onChange}
                     value={values.file}
                     errors={getErrors('file')}
-                    label={MESSAGES.eventType}
+                    label={MESSAGES.file}
                 />
                 <InputComponent
                     type="select"

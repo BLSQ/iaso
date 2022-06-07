@@ -1185,6 +1185,14 @@ const MESSAGES = defineMessages({
         defaultMessage: 'Cced emails',
         id: 'iaso.polio.label.cced_emails',
     },
+    file: {
+        defaultMessage: 'File',
+        id: 'iaso.polio.label.file',
+    },
+    viewFiles: {
+        defaultMessage: 'View files',
+        id: 'iaso.polio.label.viewFiles',
+    },
 });
 
 export default MESSAGES;

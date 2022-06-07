@@ -1,7 +1,8 @@
+/* eslint-disable react/jsx-props-no-spreading */
 /* eslint-disable react/prop-types */
 import React from 'react';
 
-import { Grid } from '@material-ui/core';
+import { Grid, DialogContentText } from '@material-ui/core';
 
 import PropTypes from 'prop-types';
 import moment from 'moment';
@@ -16,7 +17,9 @@ import {
     IconButton as IconButtonComponent,
 } from 'bluesquare-components';
 import LinkIcon from '@material-ui/icons/Link';
+import LinkOffIcon from '@material-ui/icons/LinkOff';
 import omit from 'lodash/omit';
+import { FormattedMessage } from 'react-intl';
 import { useSaveOrgUnit } from '../hooks';
 import { useFormState } from '../../../hooks/form';
 import InputComponent from '../../../components/forms/InputComponent';
@@ -29,6 +32,7 @@ import WidgetPaper from '../../../components/papers/WidgetPaperComponent';
 import SpeedDialInstanceActions from '../../instances/components/SpeedDialInstanceActions';
 import EnketoIcon from '../../instances/components/EnketoIcon';
 import { userHasPermission } from '../../users/utils';
+import ConfirmCancelDialogComponent from '../../../components/dialogs/ConfirmCancelDialogComponent';
 // reformatting orgUnit name so the OU can be passed to the treeview modal
 // and selecting the parent for display
 const useStyles = makeStyles(theme => ({
@@ -83,7 +87,7 @@ const onError = setFieldErrors => {
     }
 };
 
-const linkOrgUnitToReferenceSubmission = (
+const linkOrLinkOffOrgUnitToReferenceSubmission = (
     orgUnit,
     referenceSubmissionId,
     saveOu,
@@ -133,24 +137,57 @@ const Actions = (
         },
     ];
 
+    const orgUnitToReferenceSubmission = instance => {
+        return linkOrLinkOffOrgUnitToReferenceSubmission(
+            orgUnit,
+            instance,
+            saveOu,
+            setFieldErrors,
+        );
+    };
+
+    const confirmCancelTitleMessage = isItLinked => {
+        return !isItLinked
+            ? MESSAGES.linkOffOrgUnitToInstanceReferenceTitle
+            : MESSAGES.linkOrgUnitToInstanceReferenceTitle;
+    };
+
+    const renderTrigger = (isLinked, openDialog) => {
+        return isLinked ? (
+            <LinkOffIcon onClick={openDialog} />
+        ) : (
+            <LinkIcon onClick={openDialog} />
+        );
+    };
+
     if (!hasSubmissionPermission) return actions;
     return [
         ...actions,
         {
-            id: 'linkOrgUnitReferenceSubmission',
+            id: linkOrgUnit
+                ? 'linkOffOrgUnitReferenceSubmission'
+                : 'linkOrgUnitReferenceSubmission',
             icon: (
-                <LinkIcon
-                    onClick={() =>
-                        linkOrgUnitToReferenceSubmission(
-                            orgUnit,
-                            instanceId,
-                            saveOu,
-                            setFieldErrors,
-                        )
+                <ConfirmCancelDialogComponent
+                    titleMessage={confirmCancelTitleMessage(linkOrgUnit)}
+                    onConfirm={() =>
+                        linkOrgUnit
+                            ? orgUnitToReferenceSubmission(null)
+                            : orgUnitToReferenceSubmission(instanceId)
                     }
-                />
+                    renderTrigger={({ openDialog }) =>
+                        renderTrigger(linkOrgUnit, openDialog)
+                    }
+                >
+                    <DialogContentText id="alert-dialog-description">
+                        <FormattedMessage
+                            id="iaso.instance.linkOrgUnitToInstanceReferenceWarning"
+                            defaultMessage="This operation can still be undone"
+                            {...MESSAGES.linkOrgUnitToInstanceReferenceWarning}
+                        />
+                    </DialogContentText>
+                </ConfirmCancelDialogComponent>
             ),
-            disabled: linkOrgUnit,
         },
     ];
 };

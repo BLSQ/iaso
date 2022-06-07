@@ -1,16 +1,20 @@
+/* eslint-disable react/jsx-props-no-spreading */
 /* eslint-disable react/prop-types */
 import React from 'react';
 import { IconButton as IconButtonComponent } from 'bluesquare-components';
 import LinkIcon from '@material-ui/icons/Link';
+import LinkOffIcon from '@material-ui/icons/LinkOff';
 import omit from 'lodash/omit';
 import { useDispatch } from 'react-redux';
+import { DialogContentText } from '@material-ui/core';
+import { FormattedMessage } from 'react-intl';
 import { useSaveOrgUnit } from '../../orgUnits/hooks';
 import { baseUrls } from '../../../constants/urls';
 import { userHasPermission } from '../../users/utils';
 import MESSAGES from '../messages';
 import { redirectTo as redirectToAction } from '../../../routing/actions';
 import { useFormState } from '../../../hooks/form';
-
+import ConfirmCancelDialogComponent from '../../../components/dialogs/ConfirmCancelDialogComponent';
 // eslint-disable-next-line camelcase
 const initialFormState = (orgUnit, referenceSubmissionId) => {
     return {
@@ -56,11 +60,11 @@ const ActionTableColumnComponent = ({ settings, user }) => {
         return `${initialUrl}/instanceId/${rowOriginal.id}`;
     };
 
-    const linkOrgUnitToReferenceSubmission = () => {
+    const linkOrgUnitToReferenceSubmission = referenceSubmissionId => {
         const currentOrgUnit = settings.row.original.org_unit;
         const newOrgUnit = initialFormState(
             settings.row.original.org_unit,
-            settings.row.original.id,
+            referenceSubmissionId,
         );
         let orgUnitPayload = omit({ ...currentOrgUnit, ...newOrgUnit });
         orgUnitPayload = {
@@ -87,6 +91,24 @@ const ActionTableColumnComponent = ({ settings, user }) => {
         !settings.row.original?.org_unit?.reference_instance_id &&
         userHasPermission('iaso_org_units', user);
 
+    const confirmCancelTitleMessage = isItLinked => {
+        return !isItLinked
+            ? MESSAGES.linkOffOrgUnitToInstanceReferenceTitle
+            : MESSAGES.linkOrgUnitToInstanceReferenceTitle;
+    };
+
+    const confirmLinkOrUnlink = isItLinked => {
+        return !isItLinked
+            ? linkOrgUnitToReferenceSubmission(null)
+            : linkOrgUnitToReferenceSubmission(settings.row.original.id);
+    };
+
+    const confirmCancelToolTipMessage = isItLinked => {
+        return !isItLinked
+            ? MESSAGES.linkOffOrgUnitReferenceSubmission
+            : MESSAGES.linkOrgUnitReferenceSubmission;
+    };
+
     return (
         <section>
             <IconButtonComponent
@@ -103,13 +125,28 @@ const ActionTableColumnComponent = ({ settings, user }) => {
                     />
                 )}
             {showButton && (
-                <IconButtonComponent
-                    onClick={() => linkOrgUnitToReferenceSubmission()}
-                    overrideIcon={LinkIcon}
-                    tooltipMessage={MESSAGES.linkOrgUnitReferenceSubmission}
-                    color={notLinked ? 'inherit' : 'primary'}
-                    disabled={!notLinked}
-                />
+                <ConfirmCancelDialogComponent
+                    titleMessage={confirmCancelTitleMessage(notLinked)}
+                    onConfirm={() => confirmLinkOrUnlink(notLinked)}
+                    renderTrigger={({ openDialog }) => (
+                        <IconButtonComponent
+                            onClick={openDialog}
+                            overrideIcon={notLinked ? LinkIcon : LinkOffIcon}
+                            tooltipMessage={confirmCancelToolTipMessage(
+                                notLinked,
+                            )}
+                            color={notLinked ? 'inherit' : 'primary'}
+                        />
+                    )}
+                >
+                    <DialogContentText id="alert-dialog-description">
+                        <FormattedMessage
+                            id="iaso.instance.linkOrgUnitToInstanceReferenceWarning"
+                            defaultMessage="This operation can still be undone"
+                            {...MESSAGES.linkOrgUnitToInstanceReferenceWarning}
+                        />
+                    </DialogContentText>
+                </ConfirmCancelDialogComponent>
             )}
         </section>
     );

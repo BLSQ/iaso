@@ -2,7 +2,7 @@ import { Box, Grid } from '@material-ui/core';
 import React, { FunctionComponent } from 'react';
 import { FilterButton } from '../../../components/FilterButton';
 import InputComponent from '../../../components/forms/InputComponent';
-import { useFilterState } from '../hooks/useFilterState';
+import { useFilterState } from '../../../hooks/useFilterState';
 import { TeamParams } from '../types/team';
 import MESSAGES from '../messages';
 import { baseUrls } from '../../../constants/urls';

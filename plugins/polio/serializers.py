@@ -576,13 +576,13 @@ class BudgetEventSerializer(serializers.ModelSerializer):
 
     def validate(self, attrs):
         validated_data = super().validate(attrs)
-
-        cc_emails = validated_data["cc_emails"].replace(" ", "").split(",")
-        for mail in cc_emails:
-            try:
-                validators.validate_email(mail)
-            except ValidationError:
-                raise serializers.ValidationError({"details": "Invalid e-mail : {0}".format(mail)})
+        if validated_data.get("cc_emails", None):
+            cc_emails = validated_data["cc_emails"].replace(" ", "").split(",")
+            for mail in cc_emails:
+                try:
+                    validators.validate_email(mail)
+                except ValidationError:
+                    raise serializers.ValidationError({"details": "Invalid e-mail : {0}".format(mail)})
         return validated_data
 
 

@@ -1430,6 +1430,9 @@ class BudgetEventViewset(ModelViewSet):
 
     def get_queryset(self):
         queryset = BudgetEvent.objects.filter(author__iaso_profile__account=self.request.user.iaso_profile.account)
+        campaign_id = self.request.query_params.get("campaign_id")
+        if campaign_id is not None:
+            queryset = queryset.filter(campaign_id=campaign_id)
         return queryset
 
     def create(self, request, *args, **kwargs):

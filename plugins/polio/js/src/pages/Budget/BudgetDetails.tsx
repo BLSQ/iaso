@@ -27,11 +27,13 @@ type Props = {
 export const BudgetDetails: FunctionComponent<Props> = ({ router }) => {
     const { params } = router;
     const classes = useStyles();
-    const { campaignName, campaignId, ...paginationParams } = router.params;
+    const { campaignName, campaignId, ...apiParams } = router.params;
     const { formatMessage } = useSafeIntl();
 
-    const { data: budgetDetails, isFetching } =
-        useGetBudgetDetails(paginationParams);
+    const { data: budgetDetails, isFetching } = useGetBudgetDetails({
+        ...apiParams,
+        campaign_id: campaignId,
+    });
     // TODO make hook for table specific state and effects
     const [resetPageToOne, setResetPageToOne] = useState('');
 
@@ -69,7 +71,10 @@ export const BudgetDetails: FunctionComponent<Props> = ({ router }) => {
                 </Box>
                 <Paper elevation={2}>
                     <Box ml={2} pt={2} mr={2}>
-                        <GraphTitle text="Steps" displayTrigger />
+                        <GraphTitle
+                            text={formatMessage(MESSAGES.steps)}
+                            displayTrigger
+                        />
                         <TableWithDeepLink
                             data={budgetDetails?.results ?? []}
                             count={budgetDetails?.count}

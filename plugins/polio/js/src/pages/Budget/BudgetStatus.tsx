@@ -23,11 +23,14 @@ const useStyles = makeStyles(styles);
 // TODO store statuses in constant
 const findBudgetStatus = budgetEvents => {
     if (!budgetEvents) return 'validation_ongoing';
-    return budgetEvents
-        .sort((a, b) => {
-            return moment(a).isSameOrAfter(moment(b));
-        })
-        .filter(event => event.type === 'submission')[0].status;
+    return (
+        budgetEvents
+            .sort((a, b) => {
+                return moment(a).isSameOrAfter(moment(b));
+            })
+            .filter(event => event.type === 'submission')[0]?.status ??
+        'validation_ongoing'
+    );
 };
 
 export const BudgetStatus: FunctionComponent<Props> = ({ budgetDetails }) => {

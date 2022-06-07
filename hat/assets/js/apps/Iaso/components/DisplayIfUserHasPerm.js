@@ -1,9 +1,9 @@
-import { useSelector } from 'react-redux';
 import PropTypes from 'prop-types';
 import { userHasPermission } from '../domains/users/utils';
+import { useCurrentUser } from '../utils/usersUtils.ts';
 
 export const DisplayIfUserHasPerm = ({ permission, children }) => {
-    const currentUser = useSelector(state => state.users.current);
+    const currentUser = useCurrentUser();
     if (userHasPermission(permission, currentUser)) {
         return children;
     }

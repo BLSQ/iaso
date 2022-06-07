@@ -21,12 +21,13 @@ import dataSourcesTableColumns from './config';
 
 import { fetchAllProjects } from '../projects/actions';
 import MESSAGES from './messages';
+import { useCurrentUser } from '../../utils/usersUtils';
 
 const baseUrl = baseUrls.sources;
 const defaultOrder = 'name';
 const DataSources = () => {
     const [forceRefresh, setForceRefresh] = useState(false);
-    const currentUser = useSelector(state => state.users.current);
+    const currentUser = useCurrentUser();
     const dispatch = useDispatch();
     const intl = useSafeIntl();
     useEffect(() => {

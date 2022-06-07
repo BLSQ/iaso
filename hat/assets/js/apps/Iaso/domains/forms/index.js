@@ -21,12 +21,13 @@ import MESSAGES from './messages';
 import { baseUrls } from '../../constants/urls';
 import { formsFilters } from '../../constants/filters';
 import { userHasPermission } from '../users/utils';
+import { useCurrentUser } from '../../utils/usersUtils';
 
 const Forms = ({ params }) => {
     const baseUrl = baseUrls.forms;
     const intl = useSafeIntl();
     const dispatch = useDispatch();
-    const currentUser = useSelector(state => state.users.current);
+    const currentUser = useCurrentUser();
     const userHasFormsPermission = userHasPermission('iaso_forms', currentUser);
     const [forceRefresh, setForceRefresh] = useState(false);
     const [showDeleted, setShowDeleted] = useState(params.showDeleted);

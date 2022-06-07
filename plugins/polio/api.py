@@ -10,8 +10,11 @@ from logging import getLogger
 
 import requests
 from django.conf import settings
+from django.core import validators
 from django.core.cache import cache
+from django.core.exceptions import ValidationError
 from django.core.mail import send_mail
+from django.db import transaction
 from django.db.models import Q
 from django.db.models import Value, TextField, UUIDField
 from django.db.models.expressions import RawSQL
@@ -37,6 +40,8 @@ from plugins.polio.serializers import (
     SmallCampaignSerializer,
     get_current_preparedness,
     CampaignGroupSerializer,
+    BudgetEventSerializer,
+    BudgetFilesSerializer,
 )
 from plugins.polio.serializers import (
     CountryUsersGroupSerializer,
@@ -48,7 +53,7 @@ from .forma import (
     find_orgunit_in_cache,
 )
 from .helpers import get_url_content
-from .models import Campaign, Config, LineListImport, SpreadSheetImport, Round, CampaignGroup
+from .models import Campaign, Config, LineListImport, SpreadSheetImport, Round, CampaignGroup, BudgetEvent, BudgetFiles
 from .models import CountryUsersGroup
 from .models import URLCache
 from .preparedness.calculator import preparedness_summary
@@ -1407,6 +1412,78 @@ class CampaignGroupViewSet(ModelViewSet):
     }
 
 
+class HasPoliobudgetPermission(permissions.BasePermission):
+    def has_permission(self, request, view):
+        if not request.user.has_perm("menupermissions.iaso_polio_budget"):
+            return False
+        return True
+
+
+class BudgetEventViewset(ModelViewSet):
+    result_key = "campaign"
+    remove_results_key_if_paginated = True
+    serializer_class = BudgetEventSerializer
+    permission_classes = [permissions.IsAuthenticated, HasPoliobudgetPermission]
+
+    def get_serializer_class(self):
+        return BudgetEventSerializer
+
+    def get_queryset(self):
+        queryset = BudgetEvent.objects.filter(author__iaso_profile__account=self.request.user.iaso_profile.account)
+        return queryset
+
+    def create(self, request, *args, **kwargs):
+        campaign = get_object_or_404(Campaign, pk=request.data["campaign"])
+        event_type = request.data["type"]
+        status = request.data["status"]
+        author = request.user
+        target_teams = request.data["target_teams"]
+        budget = BudgetEvent.objects.create(campaign=campaign, type=event_type, author=author, status=status)
+        budget.target_teams.set(target_teams)
+
+        budget.save()
+
+        budgets = BudgetEvent.objects.filter(author__iaso_profile__account=self.request.user.iaso_profile.account)
+        serializer = BudgetEventSerializer(budgets, many=True)
+
+        return Response(serializer.data)
+
+
+class BudgetFilesViewset(ModelViewSet):
+    results_key = "event"
+    serializer_class = BudgetFilesSerializer
+    remove_results_key_if_paginated = True
+    permission_classes = [HasPoliobudgetPermission]
+
+    def get_serializer_class(self):
+        return BudgetFilesSerializer
+
+    def get_queryset(self):
+        queryset = BudgetFiles.objects.filter(
+            event__author__iaso_profile__account=self.request.user.iaso_profile.account
+        )
+        return queryset
+
+    def create(self, request, *args, **kwargs):
+        if request.FILES:
+            event = request.data["event"]
+            event = get_object_or_404(BudgetEvent, id=event)
+            budget_file = request.FILES["file"]
+            cc_emails = request.data["cc_emails"].replace(" ", "").split(",")
+            for mail in cc_emails:
+                try:
+                    validators.validate_email(mail)
+                except ValidationError:
+                    raise serializers.ValidationError({"details": "Invalid e-mail : {0}".format(mail)})
+
+            budget_file = BudgetFiles.objects.create(file=budget_file, event=event, cc_emails=cc_emails)
+            budget_file.save()
+
+        files = BudgetFiles.objects.filter(event__author__iaso_profile__account=self.request.user.iaso_profile.account)
+        serializer = BudgetFilesSerializer(files, many=True)
+        return Response(serializer.data)
+
+
 router = routers.SimpleRouter()
 router.register(r"polio/campaigns", CampaignViewSet, basename="Campaign")
 router.register(r"polio/campaignsgroup", CampaignGroupViewSet, basename="campaigngroup")
@@ -1420,3 +1497,5 @@ router.register(r"polio/v2/forma", FormAStocksViewSetV2, basename="forma")
 router.register(r"polio/countryusersgroup", CountryUsersGroupViewSet, basename="countryusersgroup")
 router.register(r"polio/linelistimport", LineListImportViewSet, basename="linelistimport")
 router.register(r"polio/orgunitspercampaign", OrgUnitsPerCampaignViewset, basename="orgunitspercampaign")
+router.register(r"polio/budgetevent", BudgetEventViewset, basename="budget")
+router.register(r"polio/budgetfiles", BudgetFilesViewset, basename="budgetfiles")

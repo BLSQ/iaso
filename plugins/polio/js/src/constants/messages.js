@@ -1145,9 +1145,9 @@ const MESSAGES = defineMessages({
         defaultMessage: 'Event',
         id: 'iaso.polio.label.event',
     },
-    comments: {
-        defaultMessage: 'Comments',
-        id: 'iaso.polio.label.comments',
+    note: {
+        defaultMessage: 'note',
+        id: 'iaso.polio.label.note',
     },
     submission: {
         defaultMessage: 'Submission',
@@ -1164,6 +1164,26 @@ const MESSAGES = defineMessages({
     rejected: {
         defaultMessage: 'Rejected',
         id: 'iaso.polio.label.rejected',
+    },
+    sendFiles: {
+        defaultMessage: 'Send files',
+        id: 'iaso.polio.label.sendFiles',
+    },
+    addStep: {
+        defaultMessage: 'Add step',
+        id: 'iaso.polio.label.addStep',
+    },
+    send: {
+        defaultMessage: 'Send',
+        id: 'iaso.polio.label.send',
+    },
+    eventType: {
+        defaultMessage: 'Type',
+        id: 'iaso.polio.label.eventType',
+    },
+    cced_emails: {
+        defaultMessage: 'Cced emails',
+        id: 'iaso.polio.label.cced_emails',
     },
 });
 

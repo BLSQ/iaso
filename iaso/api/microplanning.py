@@ -144,7 +144,7 @@ class PlanningSerializer(serializers.ModelSerializer):
         self.fields["project"].queryset = account.project_set.all()
         self.fields["team"].queryset = Team.objects.filter_for_user(user)
         self.fields["org_unit"].queryset = OrgUnit.objects.filter_for_user_and_app_id(user, None)
-        self.fields["forms"].child_relation.queryset = Form.objects.filter_for_user_and_app_id(user)
+        self.fields["forms"].child_relation.queryset = Form.objects.filter_for_user_and_app_id(user).distinct()
 
     class Meta:
         model = Planning

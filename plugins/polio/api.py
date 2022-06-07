@@ -1420,7 +1420,7 @@ class HasPoliobudgetPermission(permissions.BasePermission):
 
 
 class BudgetEventViewset(ModelViewSet):
-    result_key = "budgetEvent"
+    result_key = "results"
     remove_results_key_if_paginated = True
     serializer_class = BudgetEventSerializer
     permission_classes = [permissions.IsAuthenticated, HasPoliobudgetPermission]
@@ -1436,11 +1436,30 @@ class BudgetEventViewset(ModelViewSet):
         return queryset
 
     def perform_create(self, serializer):
-        serializer.save(author=self.request.user)
+        event = serializer.save(author=self.request.user)
+        emails = set()
+        for team in event.target_teams.all():
+            for user in team.users.all():
+                if user.email:
+                    emails.add(user.email)
+        if event.cc_emails:
+            emails.update(event.cc_emails.split(","))
+
+            send_mail(
+                "New Budget Submission for {}".format(event.campaign.obr_name),
+                """%s %s submitted a new budget.
+    
+    To approve or comment this budget, click here :
+    
+    poliooutbreaks.com/dashboard/polio/budget/details/campaignId/%s/campaignName/%s"""
+                % (event.author.first_name, event.author.last_name, event.campaign.id, event.campaign.obr_name),
+                "no-reply@poliooutbreaks.com",
+                emails,
+            )
 
 
 class BudgetFilesViewset(ModelViewSet):
-    results_key = "event"
+    results_key = "results"
     serializer_class = BudgetFilesSerializer
     remove_results_key_if_paginated = True
     permission_classes = [HasPoliobudgetPermission]

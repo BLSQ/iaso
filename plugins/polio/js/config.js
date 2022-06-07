@@ -25,6 +25,7 @@ import {
     IM_IHH,
     IM_OHH,
     BUDGET,
+    BUDGET_DETAILS,
 } from './src/constants/routes';
 import fr from './src/constants/translations/fr.json';
 import en from './src/constants/translations/en.json';
@@ -33,6 +34,7 @@ import { ImStats } from './src/pages/IM';
 import { paginationPathParams } from '../../../hat/assets/js/apps/Iaso/routing/common';
 import { GroupedCampaigns } from './src/pages/GroupedCampaigns/GroupedCampaigns.tsx';
 import { Budget } from './src/pages/Budget/index.tsx';
+import { BudgetDetails } from './src/pages/Budget/BudgetDetails.tsx';
 
 const campaignsFilters = [
     {
@@ -245,6 +247,22 @@ const routes = [
             {
                 isRequired: false,
                 key: 'r1StartTo',
+            },
+        ],
+    },
+    {
+        baseUrl: BUDGET_DETAILS,
+        component: props => <BudgetDetails {...props} />,
+        permissions: ['iaso_polio_budget'],
+        params: [
+            ...paginationPathParams,
+            {
+                isRequired: false,
+                key: 'campaignId',
+            },
+            {
+                isRequired: false,
+                key: 'campaignName',
             },
         ],
     },

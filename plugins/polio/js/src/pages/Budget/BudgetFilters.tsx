@@ -35,7 +35,6 @@ const statusOptions = (formatMessage: IntlFormatMessage) => {
 };
 const baseUrl = BUDGET;
 export const BudgetFilters: FunctionComponent<Props> = ({ params }) => {
-    console.log('filterParams', params);
     const { filters, handleSearch, handleChange, filtersUpdated } =
         useFilterState(baseUrl, params);
     const { formatMessage } = useSafeIntl();

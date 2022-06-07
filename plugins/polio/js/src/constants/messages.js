@@ -1121,6 +1121,50 @@ const MESSAGES = defineMessages({
         id: 'iaso.label.endDateUntil',
         defaultMessage: 'End date until',
     },
+    addCampaign: {
+        id: 'iaso.polio.budget.label.addCampaign',
+        defaultMessage: 'Add campaign',
+    },
+    budgetDetails: {
+        id: 'iaso.polio.budget.title.budgetDetails',
+        defaultMessage: 'Budget details: {campaignName}',
+    },
+    details: {
+        defaultMessage: 'Details',
+        id: 'iaso.label.details',
+    },
+    author: {
+        defaultMessage: 'Author',
+        id: 'iaso.polio.label.author',
+    },
+    destination: {
+        defaultMessage: 'Destination',
+        id: 'iaso.polio.label.destination',
+    },
+    event: {
+        defaultMessage: 'Event',
+        id: 'iaso.polio.label.event',
+    },
+    comments: {
+        defaultMessage: 'Comments',
+        id: 'iaso.polio.label.comments',
+    },
+    submission: {
+        defaultMessage: 'Submission',
+        id: 'iaso.polio.label.submission',
+    },
+    validation_ongoing: {
+        defaultMessage: 'Validation ongoing',
+        id: 'iaso.polio.label.validation_ongoing',
+    },
+    validated: {
+        defaultMessage: 'Validated',
+        id: 'iaso.polio.label.validated',
+    },
+    rejected: {
+        defaultMessage: 'Rejected',
+        id: 'iaso.polio.label.rejected',
+    },
 });
 
 export default MESSAGES;

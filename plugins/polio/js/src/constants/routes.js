@@ -7,3 +7,4 @@ export const IM_OHH = 'polio/im/ohh';
 export const IM_IHH = 'polio/im/ihh';
 export const GROUPED_CAMPAIGNS = 'polio/groupedcampaigns';
 export const BUDGET = 'polio/budget';
+export const BUDGET_DETAILS = 'polio/budget/details';

@@ -17,7 +17,7 @@ class NestedProjectSerializer(serializers.ModelSerializer):
 class NestedTeamSerializer(serializers.ModelSerializer):
     class Meta:
         model = Team
-        fields = ["id", "name"]
+        fields = ["id", "name", "deleted_at"]
 
 
 class NestedUserSerializer(serializers.ModelSerializer):
@@ -46,6 +46,7 @@ class TeamSerializer(serializers.ModelSerializer):
             "description",
             "created_at",
             "deleted_at",
+            "type",
             "users",
             "users_details",
             "manager",
@@ -94,12 +95,17 @@ class TeamSerializer(serializers.ModelSerializer):
             users = validated_data["users"]
         if teams and users:
             raise serializers.ValidationError("Teams cannot have both users and sub teams")
-        elif users:
-            validated_data["type"] = TeamType.TEAM_OF_USERS
+        if users:
+            expected_type = TeamType.TEAM_OF_USERS
         elif teams:
-            validated_data["type"] = TeamType.TEAM_OF_TEAMS
+            expected_type = TeamType.TEAM_OF_TEAMS
         else:
-            validated_data["type"] = None
+            expected_type = None
+        if validated_data.get("type") and expected_type and expected_type != validated_data.get("type"):
+            raise serializers.ValidationError("Incorrect type")
+        if validated_data.get("type") is None:
+            validated_data["type"] = expected_type
+
         return validated_data
 
 
@@ -109,6 +115,7 @@ class TeamSearchFilterBackend(filters.BaseFilterBackend):
 
         if search:
             queryset = queryset.filter(Q(name__icontains=search)).distinct()
+
         return queryset
 
 
@@ -126,9 +133,10 @@ class TeamViewSet(ModelViewSet):
     permission_classes = [ReadOnlyOrHasPermission("menupermissions.iaso_teams")]
     serializer_class = TeamSerializer
     queryset = Team.objects.all()
-    ordering_fields = ["id", "name", "created_at", "updated_at"]
+    ordering_fields = ["id", "name", "created_at", "updated_at", "type"]
     filterset_fields = {
         "name": ["icontains"],
+        "project": ["exact"],
     }
 
     def get_queryset(self):

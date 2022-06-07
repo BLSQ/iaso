@@ -1,5 +1,6 @@
 {
     "iaso.instance.last_modified_by": "Modified by",
+    "iaso.label.type": "Type",
     "iaso.polio.badRoundNumbers": "Forms with the wrong round number",
     "iaso.polio.budgetStatus": "Budget status",
     "iaso.polio.button.label.import": "Import",

@@ -1153,6 +1153,10 @@ const MESSAGES = defineMessages({
         defaultMessage: 'Submission',
         id: 'iaso.polio.label.submission',
     },
+    comments: {
+        defaultMessage: 'Comments',
+        id: 'iaso.polio.label.comments',
+    },
     validation_ongoing: {
         defaultMessage: 'Validation ongoing',
         id: 'iaso.polio.label.validation_ongoing',
@@ -1192,6 +1196,18 @@ const MESSAGES = defineMessages({
     viewFiles: {
         defaultMessage: 'View files',
         id: 'iaso.polio.label.viewFiles',
+    },
+    noFile: {
+        defaultMessage: 'No file found',
+        id: 'iaso.polio.label.noFile',
+    },
+    steps: {
+        defaultMessage: 'Steps',
+        id: 'iaso.polio.label.steps',
+    },
+    files: {
+        defaultMessage: 'Files',
+        id: 'iaso.polio.label.files',
     },
 });
 

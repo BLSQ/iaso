@@ -103,7 +103,7 @@ export const CreateEditTeam: FunctionComponent<Props> = ({
             name,
             description,
             project,
-            manager: manager || currentUser.id,
+            manager: manager || currentUser.user_id,
             subTeams: subTeams || [],
             type,
             users: users || [],

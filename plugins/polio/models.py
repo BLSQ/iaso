@@ -503,6 +503,8 @@ class BudgetEvent(SoftDeletableModel):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     status = models.CharField(choices=STATUS, max_length=200, null=True)
+    cc_emails = models.CharField(max_length=200, blank=True, null=True)
+    comment = models.TextField(blank=True, null=True)
 
     def __str__(self):
         return str(self.campaign)
@@ -513,7 +515,6 @@ class BudgetFiles(models.Model):
     file = models.FileField()
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
-    cc_emails = models.CharField(max_length=200, blank=True, null=True)
 
     class Meta:
         verbose_name = "Budget File"

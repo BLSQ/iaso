@@ -1,4 +1,4 @@
-import React, { FunctionComponent, useState } from 'react';
+import React, { FunctionComponent, useCallback, useState } from 'react';
 import {
     // @ts-ignore
     useSafeIntl,
@@ -12,7 +12,10 @@ import MESSAGES from '../../constants/messages';
 import { convertObjectToString } from '../../utils';
 import { useStyles } from '../../styles/theme';
 import { TableWithDeepLink } from '../../../../../../hat/assets/js/apps/Iaso/components/tables/TableWithDeepLink';
-import { useGetBudgetDetails } from '../../hooks/useGetBudgetDetails';
+import {
+    useGetAllBudgetDetails,
+    useGetBudgetDetails,
+} from '../../hooks/useGetBudgetDetails';
 import { BUDGET, BUDGET_DETAILS } from '../../constants/routes';
 import { useBudgetDetailsColumns } from './config';
 import { useGetTeams } from '../../hooks/useGetTeams';
@@ -21,10 +24,32 @@ import { GraphTitle } from '../../components/LQAS-IM/GraphTitle';
 import { BudgetStatus } from './BudgetStatus';
 import { CreateBudgetEvent } from './CreateBudgetEvent';
 import { redirectToReplace } from '../../../../../../hat/assets/js/apps/Iaso/routing/actions';
+// import { MapComponent } from '../../components/MapComponent/MapComponent';
+// import { useGetGeoJson } from '../../hooks/useGetGeoJson';
+// import { useGetCampaignScope } from '../../hooks/useGetCampaignScope';
 
 type Props = {
     router: any;
 };
+
+// const selectedPathOptions = {
+//     color: 'lime',
+//     weight: '1',
+//     opacity: '1',
+//     zIndex: '1',
+// };
+// const unselectedPathOptions = {
+//     color: 'gray',
+//     weight: '1',
+//     opacity: '1',
+//     zIndex: '1',
+// };
+// const initialDistrict = {
+//     color: '#FF695C',
+//     weight: '1',
+//     opacity: '1',
+//     zIndex: '1',
+// };
 
 export const BudgetDetails: FunctionComponent<Props> = ({ router }) => {
     const { params } = router;
@@ -38,7 +63,11 @@ export const BudgetDetails: FunctionComponent<Props> = ({ router }) => {
     const { data: budgetDetails, isFetching } = useGetBudgetDetails({
         ...apiParams,
         campaign_id: campaignId,
+        order: apiParams.order ?? '-created_at',
     });
+    const { data: allBudgetDetails, isFetching: isFetchingAll } =
+        useGetAllBudgetDetails(campaignId);
+
     // TODO make hook for table specific state and effects
     const [resetPageToOne, setResetPageToOne] = useState('');
 
@@ -55,6 +84,34 @@ export const BudgetDetails: FunctionComponent<Props> = ({ router }) => {
     const { data: profiles, isFetching: isFetchingProfiles } = useGetProfiles();
     const columns = useBudgetDetailsColumns({ teams, profiles });
 
+    // const { data: districtShapes, isFetching: isFetchingDistricts } =
+    //     useGetGeoJson(country, 'DISTRICT');
+
+    // const { data: regionShapes, isFetching: isFetchingRegions } = useGetGeoJson(
+    //     country,
+    //     'REGION',
+    // );
+
+    // const { data: scope, isFetching: isFetchingScope } = useGetCampaignScope({
+    //     country: parseInt(country, 10),
+    //     campaignId,
+    // });
+
+    // const getShapeStyle = useCallback(
+    //     shape => {
+    //         if (scope.includes(shape.id)) return selectedPathOptions;
+    //         return unselectedPathOptions;
+    //     },
+    //     [scope],
+    // );
+
+    // const getBackgroundLayerStyle = () => {
+    //     return {
+    //         color: 'grey',
+    //         opacity: '1',
+    //         fillColor: 'transparent',
+    //     };
+    // };
     return (
         <>
             <TopBar
@@ -73,8 +130,10 @@ export const BudgetDetails: FunctionComponent<Props> = ({ router }) => {
                 <Box mb={4} ml={2} mr={2}>
                     <Grid container justifyContent="space-between">
                         <Grid container item xs={6}>
-                            {!isFetching && (
-                                <BudgetStatus budgetDetails={budgetDetails} />
+                            {!isFetchingAll && (
+                                <BudgetStatus
+                                    budgetDetails={allBudgetDetails}
+                                />
                             )}
                         </Grid>
                         <Grid>
@@ -110,6 +169,15 @@ export const BudgetDetails: FunctionComponent<Props> = ({ router }) => {
                         />
                     </Box>
                 </Paper>
+                {/* <MapComponent
+                    name="BudgetScopeMap"
+                    mainLayer={districtShapes}
+                    backgroundLayer={regionShapes}
+                    onSelectShape={() => null}
+                    getMainLayerStyle={getShapeStyle}
+                    getBackgroundLayerStyle={getBackgroundLayerStyle}
+                    tooltipLabels={{ main: 'District', background: 'Region' }}
+                /> */}
             </Box>
         </>
     );

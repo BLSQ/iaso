@@ -47,7 +47,7 @@ export const findBudgetStatus = budgetEvents => {
 export const BudgetStatus: FunctionComponent<Props> = ({ budgetDetails }) => {
     const { formatMessage } = useSafeIntl();
     const classes = useStyles();
-    const budgetStatus = findBudgetStatus(budgetDetails?.results);
+    const budgetStatus = findBudgetStatus(budgetDetails);
     return (
         <>
             <Typography

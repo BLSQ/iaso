@@ -594,17 +594,16 @@ export const teamsPath = {
     // FIXME use planning permissions when they exist
     permissions: ['iaso_teams'],
     component: props => <Teams {...props} />,
-    params: [],
-    // params: [
-    //     {
-    //         isRequired: false,
-    //         key: 'search',
-    //     },
-    //     ...paginationPathParams.map(p => ({
-    //         ...p,
-    //         isRequired: true,
-    //     })),
-    // ],
+    params: [
+        {
+            isRequired: false,
+            key: 'search',
+        },
+        ...paginationPathParams.map(p => ({
+            ...p,
+            isRequired: true,
+        })),
+    ],
 };
 
 export const page401 = {

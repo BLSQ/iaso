@@ -1085,6 +1085,14 @@ const MESSAGES = defineMessages({
         id: 'iaso.polio.form.label.rounds',
         defaultMessage: 'Rounds',
     },
+    roundEmptyStartDate: {
+        id: 'iaso.polio.forms.emptyStartDate',
+        defaultMessage: 'Round {roundNumber} has no start date',
+    },
+    roundEmptyEndDate: {
+        id: 'iaso.polio.forms.emptyEndDate',
+        defaultMessage: 'Round {roundNumber} has no end date',
+    },
     deleteRound: {
         id: 'iaso.polio.forms.deleteRound',
         defaultMessage: 'Delete round',

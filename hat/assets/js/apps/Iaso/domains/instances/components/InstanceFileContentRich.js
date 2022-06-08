@@ -113,6 +113,7 @@ function getDisplayedValue(descriptor, data) {
 export default function InstanceFileContentRich({
     instanceData,
     formDescriptor,
+    showNote,
 }) {
     return (
         <Table>
@@ -124,6 +125,7 @@ export default function InstanceFileContentRich({
                             key={childDescriptor.name}
                             descriptor={childDescriptor}
                             data={instanceData}
+                            showNote={showNote}
                         />
                     ))}
             </TableBody>
@@ -134,9 +136,10 @@ export default function InstanceFileContentRich({
 InstanceFileContentRich.propTypes = {
     instanceData: PropTypes.object.isRequired,
     formDescriptor: PropTypes.object.isRequired,
+    showNote: PropTypes.bool,
 };
 
-function FormChild({ descriptor, data }) {
+function FormChild({ descriptor, data, showNote }) {
     switch (descriptor.type) {
         case 'repeat':
             return data[descriptor.name] ? (
@@ -161,7 +164,7 @@ function FormChild({ descriptor, data }) {
         case 'phonenumber':
             return <FormMetaField descriptor={descriptor} data={data} />;
         case 'note':
-            return <FormNoteField descriptor={descriptor} />;
+            return showNote ? <FormNoteField descriptor={descriptor} /> : null;
         case 'calculate':
             return <FormCalculatedField descriptor={descriptor} data={data} />;
         default:
@@ -171,6 +174,7 @@ function FormChild({ descriptor, data }) {
 FormChild.propTypes = {
     descriptor: PropTypes.object.isRequired,
     data: PropTypes.object.isRequired,
+    showNote: PropTypes.bool,
 };
 
 function FormGroup({ descriptor, data }) {

@@ -12,9 +12,16 @@ type QueryData = {
     status: 'validation_ongoing'; // forcing status value as we create an event
     file: any;
 };
-const postBudgetEvent = (data: QueryData) => {
+const postBudgetEvent = async (data: QueryData) => {
     const { file, ...body } = data;
-    return postRequest(`/api/polio/budgetevent/`, body, { file });
+    const newEvent = await postRequest(`/api/polio/budgetevent/`, body);
+    return postRequest(
+        `/api/polio/budgetfiles/`,
+        { event: newEvent.id },
+        {
+            file,
+        },
+    );
 };
 export const useSaveBudgetEvent = (): // type: 'create' | 'edit',
 UseMutationResult => {

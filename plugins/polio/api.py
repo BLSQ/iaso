@@ -1405,6 +1405,16 @@ class BudgetEventViewset(ModelViewSet):
     remove_results_key_if_paginated = True
     serializer_class = BudgetEventSerializer
     permission_classes = [permissions.IsAuthenticated, HasPoliobudgetPermission]
+    filter_backends = [
+        filters.OrderingFilter,
+        DjangoFilterBackend,
+    ]
+    ordering_fields = [
+        "created_at",
+        "updated_at",
+        "type",
+        "author",
+    ]
 
     def get_serializer_class(self):
         return BudgetEventSerializer

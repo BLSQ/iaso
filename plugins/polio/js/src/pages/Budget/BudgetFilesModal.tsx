@@ -65,11 +65,7 @@ const makeLinks = files => {
         return (
             // eslint-disable-next-line react/no-array-index-key
             <Link key={`${fileName}_${index}`} download href={file.file}>
-                <Typography
-                    style={{ fontWeight: 'bold', textDecoration: 'none' }}
-                >
-                    {fileName}
-                </Typography>
+                <Typography>{fileName}</Typography>
             </Link>
         );
     });

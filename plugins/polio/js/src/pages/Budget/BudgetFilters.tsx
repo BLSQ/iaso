@@ -39,42 +39,44 @@ export const BudgetFilters: FunctionComponent<Props> = ({ params }) => {
         useFilterState(baseUrl, params);
     const { formatMessage } = useSafeIntl();
     return (
-        <>
-            <Grid container spacing={4}>
-                <Grid item xs={3}>
-                    <InputComponent
-                        keyValue="search"
-                        onChange={handleChange}
-                        value={filters.search}
-                        type="search"
-                        label={MESSAGES.search}
-                        onEnterPressed={handleSearch}
-                    />
+        <Box mb={4}>
+            <Grid container spacing={0}>
+                <Grid container item spacing={2} xs={10} lg={11}>
+                    <Grid item xs={3}>
+                        <InputComponent
+                            keyValue="search"
+                            onChange={handleChange}
+                            value={filters.search}
+                            type="search"
+                            label={MESSAGES.search}
+                            onEnterPressed={handleSearch}
+                        />
+                    </Grid>
+                    <Grid item xs={6}>
+                        <DatesRange
+                            onChangeDate={handleChange}
+                            dateFrom={filters.startdateFrom}
+                            dateTo={filters.endDateUntil}
+                            labelFrom={MESSAGES.R1StartFrom}
+                            labelTo={MESSAGES.R1StartTo}
+                            keyDateFrom="r1StartFrom"
+                            keyDateTo="r1StartTo"
+                        />
+                    </Grid>
+                    <Grid item xs={3}>
+                        <InputComponent
+                            type="select"
+                            multi={false}
+                            keyValue="status"
+                            onChange={handleChange}
+                            value={filters.status}
+                            options={statusOptions(formatMessage)}
+                            label={MESSAGES.status}
+                        />
+                    </Grid>
                 </Grid>
-                <Grid item xs={5}>
-                    <DatesRange
-                        onChangeDate={handleChange}
-                        dateFrom={filters.startdateFrom}
-                        dateTo={filters.endDateUntil}
-                        labelFrom={MESSAGES.R1StartFrom}
-                        labelTo={MESSAGES.R1StartTo}
-                        keyDateFrom="r1StartFrom"
-                        keyDateTo="r1StartTo"
-                    />
-                </Grid>
-                <Grid item xs={2}>
-                    <InputComponent
-                        type="select"
-                        multi={false}
-                        keyValue="general_status"
-                        onChange={handleChange}
-                        value={filters.general_status}
-                        options={statusOptions(formatMessage)}
-                        label={MESSAGES.status}
-                    />
-                </Grid>
-                <Grid container item xs={2} justifyContent="flex-end">
-                    <Box mt={2} mb={2} style={{ textAlign: 'end' }}>
+                <Grid container item xs={2} lg={1} justifyContent="flex-end">
+                    <Box mt={2} mr={-2}>
                         <FilterButton
                             disabled={!filtersUpdated}
                             onFilter={handleSearch}
@@ -82,6 +84,6 @@ export const BudgetFilters: FunctionComponent<Props> = ({ params }) => {
                     </Box>
                 </Grid>
             </Grid>
-        </>
+        </Box>
     );
 };

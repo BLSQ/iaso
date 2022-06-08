@@ -41,16 +41,19 @@ const CloseDialog = ({
     );
 };
 
-const renderTrigger = ({ openDialog }) => {
-    return (
-        <IconButton
-            onClick={openDialog}
-            dataTestId="see-files-button"
-            tooltipMessage={MESSAGES.viewFiles}
-            icon="remove-red-eye"
-        />
-    );
-};
+const renderTrigger =
+    (disabled = false) =>
+    ({ openDialog }) => {
+        return (
+            <IconButton
+                onClick={openDialog}
+                dataTestId="see-files-button"
+                tooltipMessage={MESSAGES.viewFiles}
+                icon="remove-red-eye"
+                disabled={disabled}
+            />
+        );
+    };
 const onClose = closeDialog => {
     closeDialog();
 };
@@ -93,7 +96,7 @@ export const BudgetFilesModal: FunctionComponent<Props> = ({
                     <CloseDialog closeDialog={closeDialog} onCancel={onClose} />
                 );
             }}
-            renderTrigger={renderTrigger}
+            renderTrigger={renderTrigger(!(budgetEventFiles?.length > 0))}
             titleMessage={titleMessage}
         >
             {isFetching && <LoadingSpinner />}

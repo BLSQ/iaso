@@ -6,7 +6,7 @@ import { IntlFormatMessage } from '../../../../../../hat/assets/js/apps/Iaso/typ
 import { FilterButton } from '../../../../../../hat/assets/js/apps/Iaso/components/FilterButton';
 import DatesRange from '../../../../../../hat/assets/js/apps/Iaso/components/filters/DatesRange';
 import InputComponent from '../../../../../../hat/assets/js/apps/Iaso/components/forms/InputComponent';
-import { useFilterState } from '../../../../../../hat/assets/js/apps/Iaso/domains/plannings/hooks/useFilterState';
+import { useFilterState } from '../../../../../../hat/assets/js/apps/Iaso/hooks/useFilterState';
 import MESSAGES from '../../constants/messages';
 import { BUDGET } from '../../constants/routes';
 import { UrlParams } from '../../../../../../hat/assets/js/apps/Iaso/types/table';

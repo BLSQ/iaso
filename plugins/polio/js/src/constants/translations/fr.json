@@ -1,6 +1,7 @@
 {
     "iaso.instance.last_modified_by": "Modifié par",
     "iaso.instance.title": "Soumissions",
+    "iaso.label.type": "Type",
     "iaso.polio.PREPARING": "En préparation",
     "iaso.polio.ROUND1DONE": "Round 1 terminé",
     "iaso.polio.ROUND1START": "Round 1 commencé",

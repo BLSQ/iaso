@@ -1221,6 +1221,10 @@ const MESSAGES = defineMessages({
         defaultMessage: 'No budget submitted',
         id: 'iaso.polio.label.noBudgetSubmitted',
     },
+    requiredField: {
+        id: 'iaso.forms.error.fieldRequired',
+        defaultMessage: 'This field is required',
+    },
 });
 
 export default MESSAGES;

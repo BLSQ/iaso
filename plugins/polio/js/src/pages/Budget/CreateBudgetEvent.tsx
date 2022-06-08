@@ -1,4 +1,4 @@
-import React, { FunctionComponent, useCallback } from 'react';
+import React, { FunctionComponent, useCallback, useState } from 'react';
 import { useFormik, FormikProvider } from 'formik';
 import { isEqual } from 'lodash';
 // @ts-ignore
@@ -11,6 +11,7 @@ import { useCurrentUser } from '../../../../../../hat/assets/js/apps/Iaso/utils/
 import { commaSeparatedIdsToArray } from '../../../../../../hat/assets/js/apps/Iaso/utils/forms';
 import { useSaveBudgetEvent } from '../../hooks/useSaveBudgetEvent';
 import FileInputComponent from '../../../../../../hat/assets/js/apps/Iaso/components/forms/FileInputComponent';
+import { useBudgetEvenValidation } from './validation';
 
 type Props = {
     campaignId: string;
@@ -32,6 +33,8 @@ export const CreateBudgetEvent: FunctionComponent<Props> = ({ campaignId }) => {
     const currentUser = useCurrentUser();
     const { formatMessage } = useSafeIntl();
     const { mutateAsync: saveBudgetEvent } = useSaveBudgetEvent();
+    const [closeModal, setCloseModal] = useState<any>();
+    const validationSchema = useBudgetEvenValidation();
 
     const formik = useFormik({
         initialValues: {
@@ -46,8 +49,13 @@ export const CreateBudgetEvent: FunctionComponent<Props> = ({ campaignId }) => {
         },
         enableReinitialize: true,
         validateOnBlur: true,
-        // validationSchema: schema,
-        onSubmit: values => saveBudgetEvent(values),
+        validationSchema,
+        onSubmit: values =>
+            saveBudgetEvent(values, {
+                onSuccess: () => {
+                    closeModal.closeDialog();
+                },
+            }),
     });
     const {
         values,
@@ -80,7 +88,7 @@ export const CreateBudgetEvent: FunctionComponent<Props> = ({ campaignId }) => {
                 allowConfirm={isValid && !isEqual(values, initialValues)}
                 titleMessage={MESSAGES.sendFiles}
                 onConfirm={closeDialog => {
-                    closeDialog();
+                    setCloseModal({ closeDialog });
                     handleSubmit();
                 }}
                 onCancel={closeDialog => {

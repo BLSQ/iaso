@@ -268,6 +268,7 @@ def enketo_form_download(request):
 class EnketoSubmissionAPIView(APIView):
 
     permission_classes = [permissions.AllowAny]
+    http_method_names = ["post", "head", "get"]
 
     def head(self, request, format=None):
         """HEAD call to no max content size"""
@@ -276,6 +277,8 @@ class EnketoSubmissionAPIView(APIView):
         resp["x-openrosa-accept-content-length"] = 100000000
 
         return resp
+
+    get = head
 
     def post(self, request, format=None):
         """UPDATE"""

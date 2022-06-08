@@ -5,6 +5,7 @@ import {
     DialogActions,
     Grid,
     Typography,
+    Divider,
 } from '@material-ui/core';
 // @ts-ignore
 import { IconButton, LoadingSpinner, useSafeIntl } from 'bluesquare-components';
@@ -83,9 +84,10 @@ export const BudgetFilesModal: FunctionComponent<Props> = ({
     const { formatMessage } = useSafeIntl();
     const { data: budgetEventFiles, isFetching } =
         useGetBudgetEventFiles(eventId);
+    const typeTranslated = formatMessage(MESSAGES[type]).toLowerCase();
     const titleMessage = {
         ...MESSAGES.files,
-        values: { type, date: moment(date).format('LTS') },
+        values: { type: typeTranslated, date: moment(date).format('LTS') },
     };
     return (
         <DialogComponent
@@ -99,18 +101,24 @@ export const BudgetFilesModal: FunctionComponent<Props> = ({
             renderTrigger={renderTrigger(!(budgetEventFiles?.length > 0))}
             titleMessage={titleMessage}
         >
+            <Divider />
             {isFetching && <LoadingSpinner />}
             {!isFetching && (
-                <Box>
+                <Box mt={2}>
+                    {makeLinks(budgetEventFiles)}
                     {note && (
                         <>
-                            <Typography variant="h6">
-                                {formatMessage(MESSAGES.note)}
-                            </Typography>
-                            <Typography>{note}</Typography>
+                            <Box mt={4}>
+                                <Divider />
+                            </Box>
+                            <Box mb={2} mt={2}>
+                                <Typography>
+                                    {formatMessage(MESSAGES.notes)}
+                                </Typography>
+                            </Box>
+                            <Typography variant="body2">{note}</Typography>
                         </>
                     )}
-                    {makeLinks(budgetEventFiles)}
                     {budgetEventFiles?.length === 0 && (
                         <Grid container item>
                             <Typography>

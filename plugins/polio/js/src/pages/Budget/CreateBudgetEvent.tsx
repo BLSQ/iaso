@@ -42,8 +42,8 @@ export const CreateBudgetEvent: FunctionComponent<Props> = ({ campaignId }) => {
             author: currentUser.id,
             target_teams: [],
             type: null,
-            cced_emails: null,
-            comments: null,
+            cc_emails: null,
+            comment: null,
             file: null,
             status: 'validation_ongoing', // TODO status should be handled by backend
         },
@@ -143,20 +143,20 @@ export const CreateBudgetEvent: FunctionComponent<Props> = ({ campaignId }) => {
                 />
                 <InputComponent
                     type="text"
-                    keyValue="comments"
+                    keyValue="comment"
                     multiline
                     onChange={onChange}
-                    value={values.comments}
-                    errors={getErrors('comments')}
+                    value={values.comment}
+                    errors={getErrors('comment')}
                     label={MESSAGES.note}
                 />
                 <InputComponent
                     type="email"
-                    keyValue="cced_emails"
+                    keyValue="cc_emails"
                     onChange={onChange}
-                    value={values.cced_emails}
-                    errors={getErrors('cced_emails')}
-                    label={MESSAGES.cced_emails}
+                    value={values.cc_emails}
+                    errors={getErrors('cc_emails')}
+                    label={MESSAGES.cc_emails}
                 />
             </ConfirmCancelDialogComponent>
         </FormikProvider>

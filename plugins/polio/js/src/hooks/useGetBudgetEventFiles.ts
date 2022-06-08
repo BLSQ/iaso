@@ -8,7 +8,7 @@ const getBudgetEventFiles = (eventId: number) => {
 };
 
 export const useGetBudgetEventFiles = (eventId: number) => {
-    return useSnackQuery(['budget-event-details', eventId], () =>
+    return useSnackQuery(['budget-details', 'files', eventId], () =>
         getBudgetEventFiles(eventId),
     );
 };

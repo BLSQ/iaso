@@ -115,7 +115,7 @@ export const CreateBudgetEvent: FunctionComponent<Props> = ({ campaignId }) => {
                         },
                         {
                             value: 'comments',
-                            label: formatMessage(MESSAGES.note),
+                            label: formatMessage(MESSAGES.comments),
                         },
                     ]}
                 />

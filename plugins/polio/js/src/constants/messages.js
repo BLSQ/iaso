@@ -1209,6 +1209,18 @@ const MESSAGES = defineMessages({
         defaultMessage: 'Files for {type}, last updated {date}',
         id: 'iaso.polio.label.files',
     },
+    latestEventDate: {
+        defaultMessage: 'Latest event date',
+        id: 'iaso.polio.label.latestEventDate',
+    },
+    latestEvent: {
+        defaultMessage: 'Latest event',
+        id: 'iaso.polio.label.latestEvent',
+    },
+    noBudgetSubmitted: {
+        defaultMessage: 'No budget submitted',
+        id: 'iaso.polio.label.noBudgetSubmitted',
+    },
 });
 
 export default MESSAGES;

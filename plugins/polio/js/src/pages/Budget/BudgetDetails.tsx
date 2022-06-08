@@ -4,6 +4,8 @@ import {
     useSafeIntl,
     // @ts-ignore
     useSkipEffectOnMount,
+    // @ts-ignore
+    LoadingSpinner,
 } from 'bluesquare-components';
 import { Box, Divider, Grid, Paper } from '@material-ui/core';
 import { useDispatch, useSelector } from 'react-redux';
@@ -24,26 +26,26 @@ import { GraphTitle } from '../../components/LQAS-IM/GraphTitle';
 import { BudgetStatus } from './BudgetStatus';
 import { CreateBudgetEvent } from './CreateBudgetEvent';
 import { redirectToReplace } from '../../../../../../hat/assets/js/apps/Iaso/routing/actions';
-// import { MapComponent } from '../../components/MapComponent/MapComponent';
-// import { useGetGeoJson } from '../../hooks/useGetGeoJson';
-// import { useGetCampaignScope } from '../../hooks/useGetCampaignScope';
+import { MapComponent } from '../../components/MapComponent/MapComponent';
+import { useGetGeoJson } from '../../hooks/useGetGeoJson';
+import { useGetCampaignScope } from '../../hooks/useGetCampaignScope';
 
 type Props = {
     router: any;
 };
 
-// const selectedPathOptions = {
-//     color: 'lime',
-//     weight: '1',
-//     opacity: '1',
-//     zIndex: '1',
-// };
-// const unselectedPathOptions = {
-//     color: 'gray',
-//     weight: '1',
-//     opacity: '1',
-//     zIndex: '1',
-// };
+const selectedPathOptions = {
+    color: 'lime',
+    weight: '1',
+    opacity: '1',
+    zIndex: '1',
+};
+const unselectedPathOptions = {
+    color: 'gray',
+    weight: '1',
+    opacity: '1',
+    zIndex: '1',
+};
 // const initialDistrict = {
 //     color: '#FF695C',
 //     weight: '1',
@@ -54,7 +56,7 @@ type Props = {
 export const BudgetDetails: FunctionComponent<Props> = ({ router }) => {
     const { params } = router;
     const classes = useStyles();
-    const { campaignName, campaignId, ...apiParams } = router.params;
+    const { campaignName, campaignId, country, ...apiParams } = router.params;
     const { formatMessage } = useSafeIntl();
     // @ts-ignore
     const prevPathname = useSelector(state => state.routerCustom.prevPathname);
@@ -84,34 +86,34 @@ export const BudgetDetails: FunctionComponent<Props> = ({ router }) => {
     const { data: profiles, isFetching: isFetchingProfiles } = useGetProfiles();
     const columns = useBudgetDetailsColumns({ teams, profiles });
 
-    // const { data: districtShapes, isFetching: isFetchingDistricts } =
-    //     useGetGeoJson(country, 'DISTRICT');
+    const { data: districtShapes, isFetching: isFetchingDistricts } =
+        useGetGeoJson(country, 'DISTRICT');
 
-    // const { data: regionShapes, isFetching: isFetchingRegions } = useGetGeoJson(
-    //     country,
-    //     'REGION',
-    // );
+    const { data: regionShapes, isFetching: isFetchingRegions } = useGetGeoJson(
+        country,
+        'REGION',
+    );
 
-    // const { data: scope, isFetching: isFetchingScope } = useGetCampaignScope({
-    //     country: parseInt(country, 10),
-    //     campaignId,
-    // });
+    const { data: scope, isFetching: isFetchingScope } = useGetCampaignScope({
+        country: parseInt(country, 10),
+        campaignId,
+    });
 
-    // const getShapeStyle = useCallback(
-    //     shape => {
-    //         if (scope.includes(shape.id)) return selectedPathOptions;
-    //         return unselectedPathOptions;
-    //     },
-    //     [scope],
-    // );
+    const getShapeStyle = useCallback(
+        shape => {
+            if (scope.includes(shape.id)) return selectedPathOptions;
+            return unselectedPathOptions;
+        },
+        [scope],
+    );
 
-    // const getBackgroundLayerStyle = () => {
-    //     return {
-    //         color: 'grey',
-    //         opacity: '1',
-    //         fillColor: 'transparent',
-    //     };
-    // };
+    const getBackgroundLayerStyle = () => {
+        return {
+            color: 'grey',
+            opacity: '1',
+            fillColor: 'transparent',
+        };
+    };
     return (
         <>
             <TopBar
@@ -126,7 +128,10 @@ export const BudgetDetails: FunctionComponent<Props> = ({ router }) => {
                 }}
             />
             {/* @ts-ignore */}
-            <Box className={classes.containerFullHeightNoTabPadded}>
+            <Box
+                // @ts-ignore
+                className={`${classes.containerFullHeightNoTabPadded} ${classes.fullHeight}`}
+            >
                 <Box mb={4} ml={2} mr={2}>
                     <Grid container justifyContent="space-between">
                         <Grid container item xs={6}>
@@ -141,43 +146,57 @@ export const BudgetDetails: FunctionComponent<Props> = ({ router }) => {
                         </Grid>
                     </Grid>
                 </Box>
-                <Paper elevation={2}>
-                    <Box ml={2} pt={2} mr={2}>
-                        <GraphTitle
-                            text={formatMessage(MESSAGES.steps)}
-                            displayTrigger
-                        />
-                        <Box mt={2} mb={1}>
-                            <Divider />
-                        </Box>
-                        <TableWithDeepLink
-                            data={budgetDetails?.results ?? []}
-                            count={budgetDetails?.count}
-                            pages={budgetDetails?.pages}
-                            params={params}
-                            columns={columns}
-                            baseUrl={BUDGET_DETAILS}
-                            marginTop={false}
-                            extraProps={{
-                                loading:
-                                    isFetching ||
-                                    isFetchingProfiles ||
-                                    isFetchingTeams,
+                <Grid container spacing={2}>
+                    <Grid item xs={6}>
+                        <Paper elevation={2}>
+                            <Box ml={2} pt={2} mr={2}>
+                                <GraphTitle
+                                    text={formatMessage(MESSAGES.steps)}
+                                    displayTrigger
+                                />
+                                <Box mt={2} mb={1}>
+                                    <Divider />
+                                </Box>
+                                <TableWithDeepLink
+                                    data={budgetDetails?.results ?? []}
+                                    count={budgetDetails?.count}
+                                    pages={budgetDetails?.pages}
+                                    params={params}
+                                    columns={columns}
+                                    baseUrl={BUDGET_DETAILS}
+                                    marginTop={false}
+                                    extraProps={{
+                                        loading:
+                                            isFetching ||
+                                            isFetchingProfiles ||
+                                            isFetchingTeams,
+                                    }}
+                                    resetPageToOne={resetPageToOne}
+                                    elevation={0}
+                                />
+                            </Box>
+                        </Paper>
+                    </Grid>
+                    <Grid item xs={6}>
+                        {(isFetchingRegions ||
+                            isFetchingDistricts ||
+                            isFetchingScope) && (
+                            <LoadingSpinner fixed={false} />
+                        )}
+                        <MapComponent
+                            name="BudgetScopeMap"
+                            mainLayer={districtShapes}
+                            backgroundLayer={regionShapes}
+                            onSelectShape={() => null}
+                            getMainLayerStyle={getShapeStyle}
+                            getBackgroundLayerStyle={getBackgroundLayerStyle}
+                            tooltipLabels={{
+                                main: 'District',
+                                background: 'Region',
                             }}
-                            resetPageToOne={resetPageToOne}
-                            elevation={0}
                         />
-                    </Box>
-                </Paper>
-                {/* <MapComponent
-                    name="BudgetScopeMap"
-                    mainLayer={districtShapes}
-                    backgroundLayer={regionShapes}
-                    onSelectShape={() => null}
-                    getMainLayerStyle={getShapeStyle}
-                    getBackgroundLayerStyle={getBackgroundLayerStyle}
-                    tooltipLabels={{ main: 'District', background: 'Region' }}
-                /> */}
+                    </Grid>
+                </Grid>
             </Box>
         </>
     );

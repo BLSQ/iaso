@@ -47,6 +47,7 @@ export const Budget: FunctionComponent<Props> = ({ router }) => {
 
     const { data: campaigns, isFetching } = useGetCampaigns(apiParams).query;
     const columns = useBudgetColumns(budgetDetails);
+
     useSkipEffectOnMount(() => {
         const newParams = {
             ...apiParams,

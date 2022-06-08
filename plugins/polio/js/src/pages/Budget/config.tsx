@@ -102,7 +102,7 @@ export const useBudgetColumns = (
                                     <IconButtonComponent
                                         icon="remove-red-eye"
                                         tooltipMessage={MESSAGES.details}
-                                        url={`${baseUrl}/campaignId/${settings.row.original.id}/campaignName/${settings.row.original.obr_name}`}
+                                        url={`${baseUrl}/campaignId/${settings.row.original.id}/campaignName/${settings.row.original.obr_name}/country/${settings.row.original.country}`}
                                     />
                                     {/* TODO uncomment when deletion is implemented */}
                                     {/* <IconButtonComponent
@@ -180,7 +180,7 @@ export const useBudgetDetailsColumns = ({ teams, profiles }): Column[] => {
                 Header: formatMessage(MESSAGES.destination),
                 id: 'target_teams',
                 accessor: 'target_teams',
-                sortable: true,
+                sortable: false,
                 Cell: settings => {
                     const { target_teams } = settings.row.original;
                     if (target_teams?.length === 0) return target_teams;

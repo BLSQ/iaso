@@ -264,6 +264,10 @@ const routes = [
                 isRequired: false,
                 key: 'campaignName',
             },
+            {
+                isRequired: false,
+                key: 'country',
+            },
         ],
     },
     {

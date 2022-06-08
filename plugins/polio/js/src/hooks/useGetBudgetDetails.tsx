@@ -6,16 +6,19 @@ import { UrlParams } from '../../../../../hat/assets/js/apps/Iaso/types/table';
 
 const endpoint = '/api/polio/budgetevent';
 
-type Params = UrlParams & { campaign_id: string };
+type Params = Partial<UrlParams> & { campaign_id: string };
 
-const getBudgetDetails = (params: Params) => {
-    const { pageSize, ...otherParams } = params;
-    const urlParams = { ...otherParams, limit: pageSize ?? 10 };
-    const url = makeUrlWithParams(endpoint, urlParams);
-    return getRequest(url);
+const getBudgetDetails = (params?: Params) => {
+    if (params) {
+        const { pageSize, ...otherParams } = params;
+        const urlParams = { ...otherParams, limit: pageSize ?? 10 };
+        const url = makeUrlWithParams(endpoint, urlParams);
+        return getRequest(url);
+    }
+    return getRequest(endpoint);
 };
 
-export const useGetBudgetDetails = (params: Params) => {
+export const useGetBudgetDetails = (params?: Params) => {
     return useSnackQuery(['budget-details', params], () =>
         getBudgetDetails(params),
     );

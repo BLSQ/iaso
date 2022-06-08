@@ -11,7 +11,7 @@ import MESSAGES from '../../constants/messages';
 import { BUDGET } from '../../constants/routes';
 import { UrlParams } from '../../../../../../hat/assets/js/apps/Iaso/types/table';
 import { CampaignStatus } from '../../constants/types';
-import { campaignStatuses } from '../../constants/campaignStatuses';
+import { BUDGET_STATUSES } from '../../constants/statuses';
 
 type Props = {
     params: UrlParams & {
@@ -26,7 +26,7 @@ type Props = {
 };
 
 const statusOptions = (formatMessage: IntlFormatMessage) => {
-    return campaignStatuses.map(status => {
+    return BUDGET_STATUSES.map(status => {
         return {
             value: status,
             label: formatMessage(MESSAGES[status]),

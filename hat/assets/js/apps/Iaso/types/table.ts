@@ -4,7 +4,7 @@ import { ReactElement } from 'react';
 export type Column = {
     Header: string;
     id?: string;
-    accessor: string;
+    accessor?: string;
     sortable?: boolean;
     resizable?: boolean;
     width?: number;

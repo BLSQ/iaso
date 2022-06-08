@@ -6,15 +6,20 @@ import {
     // @ts-ignore
     IconButton as IconButtonComponent,
 } from 'bluesquare-components';
+import moment from 'moment';
 import MESSAGES from '../../constants/messages';
 import { Column } from '../../../../../../hat/assets/js/apps/Iaso/types/table';
 import { BUDGET_DETAILS } from '../../constants/routes';
 import { DateTimeCellRfc } from '../../../../../../hat/assets/js/apps/Iaso/components/Cells/DateTimeCell';
 import { BudgetFilesModal } from './BudgetFilesModal';
+import { findBudgetStatus, sortBudgetEventByUpdate } from './BudgetStatus';
 
 const baseUrl = BUDGET_DETAILS;
 
-export const useBudgetColumns = (showOnlyDeleted = false): Column[] => {
+export const useBudgetColumns = (
+    budgetEvents: any[],
+    showOnlyDeleted = false,
+): Column[] => {
     const { formatMessage } = useSafeIntl();
     return useMemo(() => {
         const cols = [
@@ -36,6 +41,54 @@ export const useBudgetColumns = (showOnlyDeleted = false): Column[] => {
                 Header: formatMessage(MESSAGES.status),
                 sortable: false,
                 accessor: 'general_status',
+                // TODO get the validation status from backend
+                Cell: settings => {
+                    const campaignId = settings.row.original.id;
+                    const eventsForCampaign = budgetEvents?.filter(
+                        budgetEvent => {
+                            return budgetEvent.campaign === campaignId;
+                        },
+                    );
+                    // if (eventsForCampaign.length > 0) {
+                    const status = findBudgetStatus(eventsForCampaign);
+                    return formatMessage(MESSAGES[status]);
+                    // }
+                    // return formatMessage(MESSAGES.noBudgetSubmitted)
+                },
+            },
+            {
+                Header: formatMessage(MESSAGES.latestEvent),
+                sortable: false,
+                // TODO get the validation status from backend
+                Cell: settings => {
+                    const campaignId = settings.row.original.id;
+                    const eventsForCampaign = budgetEvents?.filter(
+                        budgetEvent => budgetEvent.campaign === campaignId,
+                    );
+                    const latestEvent =
+                        sortBudgetEventByUpdate(eventsForCampaign)[0];
+                    if (latestEvent) {
+                        return formatMessage(MESSAGES[latestEvent.type]);
+                    }
+                    return '--';
+                },
+            },
+            {
+                Header: formatMessage(MESSAGES.latestEventDate),
+                sortable: false,
+                // TODO get the validation status from backend
+                Cell: settings => {
+                    const campaignId = settings.row.original.id;
+                    const eventsForCampaign = budgetEvents?.filter(
+                        budgetEvent => budgetEvent.campaign === campaignId,
+                    );
+                    const latestEvent =
+                        sortBudgetEventByUpdate(eventsForCampaign)[0];
+                    if (latestEvent) {
+                        return moment(latestEvent.updated_at).format('LTS');
+                    }
+                    return '--';
+                },
             },
             {
                 Header: formatMessage(MESSAGES.actions),
@@ -85,7 +138,7 @@ export const useBudgetColumns = (showOnlyDeleted = false): Column[] => {
         //     });
         // }
         return cols;
-    }, [formatMessage, showOnlyDeleted]);
+    }, [budgetEvents, formatMessage, showOnlyDeleted]);
 };
 
 export const useBudgetDetailsColumns = ({ teams, profiles }): Column[] => {
@@ -131,10 +184,13 @@ export const useBudgetDetailsColumns = ({ teams, profiles }): Column[] => {
                 Cell: settings => {
                     const { target_teams } = settings.row.original;
                     if (target_teams?.length === 0) return target_teams;
-                    return target_teams.map(
-                        (target_team: number) =>
-                            teams?.find(team => team.id === target_team)?.name,
-                    );
+                    return target_teams
+                        .map(
+                            (target_team: number) =>
+                                teams?.find(team => team.id === target_team)
+                                    ?.name,
+                        )
+                        .join(', ');
                 },
             },
             {

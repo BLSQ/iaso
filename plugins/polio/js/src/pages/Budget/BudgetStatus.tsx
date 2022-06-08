@@ -1,3 +1,4 @@
+/* eslint-disable camelcase */
 import React, { FunctionComponent } from 'react';
 import { makeStyles, Typography } from '@material-ui/core';
 // @ts-ignore
@@ -21,16 +22,25 @@ const styles = theme => ({
 // @ts-ignore
 const useStyles = makeStyles(styles);
 
+export const sortBudgetEventByUpdate = budgetEvents => {
+    if (!budgetEvents) return [];
+    return budgetEvents.sort(
+        (
+            a: { updated_at: moment.MomentInput },
+            b: { updated_at: moment.MomentInput },
+        ) => {
+            return moment(a.updated_at).isSameOrAfter(moment(b.updated_at));
+        },
+    );
+};
+
 // TODO store statuses in constant
-const findBudgetStatus = budgetEvents => {
-    if (!budgetEvents) return 'validation_ongoing';
+export const findBudgetStatus = budgetEvents => {
+    if (!budgetEvents) return 'noBudgetSubmitted';
     return (
-        budgetEvents
-            .sort((a, b) => {
-                return moment(a).isSameOrAfter(moment(b));
-            })
-            .filter(event => event.type === 'submission')[0]?.status ??
-        'validation_ongoing'
+        sortBudgetEventByUpdate(budgetEvents).filter(
+            event => event.type === 'submission',
+        )[0]?.status ?? 'noBudgetSubmitted'
     );
 };
 

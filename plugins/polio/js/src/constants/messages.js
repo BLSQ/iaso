@@ -1149,6 +1149,10 @@ const MESSAGES = defineMessages({
         defaultMessage: 'note',
         id: 'iaso.polio.label.note',
     },
+    notes: {
+        defaultMessage: 'notes',
+        id: 'iaso.polio.label.notes',
+    },
     submission: {
         defaultMessage: 'Submission',
         id: 'iaso.polio.label.submission',
@@ -1185,9 +1189,9 @@ const MESSAGES = defineMessages({
         defaultMessage: 'Type',
         id: 'iaso.polio.label.eventType',
     },
-    cced_emails: {
-        defaultMessage: 'Cced emails',
-        id: 'iaso.polio.label.cced_emails',
+    cc_emails: {
+        defaultMessage: 'Cc emails',
+        id: 'iaso.polio.label.cc_emails',
     },
     file: {
         defaultMessage: 'File',

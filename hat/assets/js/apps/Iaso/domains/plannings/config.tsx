@@ -1,5 +1,7 @@
 import React, { ReactElement } from 'react';
+// @ts-ignore
 import { IconButton as IconButtonComponent } from 'bluesquare-components';
+import { baseUrls } from '../../constants/urls';
 import MESSAGES from './messages';
 import { IntlFormatMessage } from '../../types/intl';
 import { Column } from '../../types/table';
@@ -53,7 +55,7 @@ export const planningColumns = (formatMessage: IntlFormatMessage): Column[] => {
                     // TODO: limit to user permissions
                     <section>
                         <IconButtonComponent
-                            url="/"
+                            url={`${baseUrls.assignments}/planningId/${settings.row.original.id}`}
                             icon="remove-red-eye"
                             tooltipMessage={MESSAGES.viewPlanning}
                         />

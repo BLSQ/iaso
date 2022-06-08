@@ -6,10 +6,12 @@ export type SubTeam = {
     name: string;
     deleted_at?: string;
 };
+
 export type User = {
     id: number;
     username: string;
 };
+
 export type Team = {
     id: number;
     name: string;

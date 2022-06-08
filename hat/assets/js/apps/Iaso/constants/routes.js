@@ -577,17 +577,12 @@ export const assignmentsPath = {
     // FIXME use planning permissions when they exist
     permissions: ['iaso_assignments'],
     component: props => <Assignments {...props} />,
-    params: [],
-    // params: [
-    //     {
-    //         isRequired: false,
-    //         key: 'search',
-    //     },
-    //     ...paginationPathParams.map(p => ({
-    //         ...p,
-    //         isRequired: true,
-    //     })),
-    // ],
+    params: [
+        {
+            isRequired: true,
+            key: 'planningId',
+        },
+    ],
 };
 export const teamsPath = {
     baseUrl: baseUrls.teams,

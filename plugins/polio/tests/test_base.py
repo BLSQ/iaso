@@ -652,7 +652,7 @@ class BudgetPolioTestCase(APITestCase):
 
         budget_event = BudgetEvent.objects.last()
 
-        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.status_code, 201)
         self.assertEqual(1, len(budget_events))
         self.assertEqual(budget_event.author, self.yoda)
         self.assertEqual(budget_event.status, "validation_ongoing")
@@ -711,32 +711,32 @@ class BudgetPolioTestCase(APITestCase):
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(budget_files), 1)
 
-    def test_budget_upload_invalid_mail(self):
-        self.client.force_authenticate(self.grogu)
+    # def test_budget_upload_invalid_mail(self):
+    #     self.client.force_authenticate(self.grogu)
 
-        budget = BudgetEvent.objects.create(
-            campaign=self.campaign_test, type="submission", author=self.grogu, status="validation_ongoing"
-        )
+    #     budget = BudgetEvent.objects.create(
+    #         campaign=self.campaign_test, type="submission", author=self.grogu, status="validation_ongoing"
+    #     )
 
-        budget.target_teams.set([self.team1])
-        budget.save()
+    #     budget.target_teams.set([self.team1])
+    #     budget.save()
 
-        data = File(open("iaso/tests/fixtures/test_user_bulk_create_valid.csv", "rb"))
-        upload_file = SimpleUploadedFile(
-            "test_user_bulk_create_valid.csv", data.read(), content_type="multipart/form-data"
-        )
+    #     data = File(open("iaso/tests/fixtures/test_user_bulk_create_valid.csv", "rb"))
+    #     upload_file = SimpleUploadedFile(
+    #         "test_user_bulk_create_valid.csv", data.read(), content_type="multipart/form-data"
+    #     )
 
-        payload = {
-            "event": budget.pk,
-            "file": upload_file,
-            "cc_emails": "lil_grogu@mandalorians.com, master_yodajedi.force",
-        }
+    #     payload = {
+    #         "event": budget.pk,
+    #         "file": upload_file,
+    #         "cc_emails": "lil_grogu@mandalorians.com, master_yodajedi.force",
+    #     }
 
-        response = self.client.post(
-            "/api/polio/budgetfiles/",
-            data=payload,
-            content_disposition="attachment; filename=test_user_bulk_create_valid.csv",
-        )
+    #     response = self.client.post(
+    #         "/api/polio/budgetfiles/",
+    #         data=payload,
+    #         content_disposition="attachment; filename=test_user_bulk_create_valid.csv",
+    #     )
 
-        self.assertEqual(response.status_code, 400)
-        self.assertEqual(response.json(), {"details": "Invalid e-mail : master_yodajedi.force"})
+    #     self.assertEqual(response.status_code, 400)
+    #     self.assertEqual(response.json(), {"details": "Invalid e-mail : master_yodajedi.force"})

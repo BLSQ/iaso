@@ -54,6 +54,7 @@ export const CreateBudgetEvent: FunctionComponent<Props> = ({ campaignId }) => {
             saveBudgetEvent(values, {
                 onSuccess: () => {
                     closeModal.closeDialog();
+                    resetForm();
                 },
             }),
     });

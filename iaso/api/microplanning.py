@@ -121,6 +121,17 @@ class TeamSearchFilterBackend(filters.BaseFilterBackend):
         return queryset
 
 
+class TeamAncestorFilterBackend(filters.BaseFilterBackend):
+    def filter_queryset(self, request, queryset, view):
+        ancestor_id = request.query_params.get("ancestor_id")
+
+        if ancestor_id:
+            ancestor = Team.objects.get(pk=ancestor_id)
+            queryset = queryset.filter(path__descendants=ancestor.path).exclude(id=ancestor.id)
+
+        return queryset
+
+
 class TeamViewSet(ModelViewSet):
     """Api for teams
 
@@ -131,7 +142,13 @@ class TeamViewSet(ModelViewSet):
     """
 
     remove_results_key_if_paginated = True
-    filter_backends = [filters.OrderingFilter, DjangoFilterBackend, TeamSearchFilterBackend, DeletionFilterBackend]
+    filter_backends = [
+        TeamAncestorFilterBackend,
+        filters.OrderingFilter,
+        DjangoFilterBackend,
+        TeamSearchFilterBackend,
+        DeletionFilterBackend,
+    ]
     permission_classes = [ReadOnlyOrHasPermission("menupermissions.iaso_teams")]
     serializer_class = TeamSerializer
     queryset = Team.objects.all()

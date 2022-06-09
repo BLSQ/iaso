@@ -323,6 +323,7 @@ class AssignmentViewSet(ModelViewSet):
     ordering_fields = ["id", "name", "started_at", "ended_at"]
     filterset_fields = {
         "planning": ["exact"],
+        "team": ["exact"],
     }
 
     def get_queryset(self):

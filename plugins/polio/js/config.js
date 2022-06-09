@@ -212,14 +212,6 @@ const routes = [
                 isRequired: false,
                 key: 'search',
             },
-            // {
-            //     isRequired: false,
-            //     key: 'startDateFrom',
-            // },
-            // {
-            //     isRequired: false,
-            //     key: 'endDateUntil',
-            // },
             {
                 isRequired: false,
                 key: 'showOnlyDeleted',

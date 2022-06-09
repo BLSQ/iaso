@@ -23,18 +23,8 @@ const postBudgetEvent = async (data: QueryData) => {
         },
     );
 };
-export const useSaveBudgetEvent = (): // type: 'create' | 'edit',
-UseMutationResult => {
-    // const edit = useSnackMutation(
-    //     (data: QueryData) =>
-    //         patchRequest(`/api/polio/campaignsgroup/${data.id}/`, data),
-    //     undefined,
-    //     undefined,
-    //     ['groupedCampaigns'],
-    // );
-    const create = useSnackMutation(postBudgetEvent, undefined, undefined, [
+export const useSaveBudgetEvent = (): UseMutationResult => {
+    return useSnackMutation(postBudgetEvent, undefined, undefined, [
         'budget-details',
     ]);
-    // return type === 'create' ? create : edit;
-    return create;
 };

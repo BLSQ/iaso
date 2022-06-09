@@ -49,11 +49,8 @@ export const useBudgetColumns = (
                             return budgetEvent.campaign === campaignId;
                         },
                     );
-                    // if (eventsForCampaign.length > 0) {
                     const status = findBudgetStatus(eventsForCampaign);
                     return formatMessage(MESSAGES[status]);
-                    // }
-                    // return formatMessage(MESSAGES.noBudgetSubmitted)
                 },
             },
             {

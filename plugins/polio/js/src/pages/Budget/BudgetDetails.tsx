@@ -147,9 +147,14 @@ export const BudgetDetails: FunctionComponent<Props> = ({ router }) => {
                     </Grid>
                 </Box>
                 <Grid container spacing={2}>
-                    <Grid item xs={6}>
+                    <Grid item xs={8}>
                         <Paper elevation={2}>
-                            <Box ml={2} pt={2} mr={2}>
+                            <Box
+                                ml={2}
+                                pt={2}
+                                mr={2}
+                                pb={budgetDetails?.results.length === 0 ? 1 : 0}
+                            >
                                 <GraphTitle
                                     text={formatMessage(MESSAGES.steps)}
                                     displayTrigger
@@ -177,24 +182,37 @@ export const BudgetDetails: FunctionComponent<Props> = ({ router }) => {
                             </Box>
                         </Paper>
                     </Grid>
-                    <Grid item xs={6}>
+                    <Grid item xs={4}>
                         {(isFetchingRegions ||
                             isFetchingDistricts ||
                             isFetchingScope) && (
                             <LoadingSpinner fixed={false} />
                         )}
-                        <MapComponent
-                            name="BudgetScopeMap"
-                            mainLayer={districtShapes}
-                            backgroundLayer={regionShapes}
-                            onSelectShape={() => null}
-                            getMainLayerStyle={getShapeStyle}
-                            getBackgroundLayerStyle={getBackgroundLayerStyle}
-                            tooltipLabels={{
-                                main: 'District',
-                                background: 'Region',
-                            }}
-                        />
+                        <Paper>
+                            <Box ml={2} pt={2} mr={2} pb={2}>
+                                <GraphTitle
+                                    text={formatMessage(MESSAGES.scope)}
+                                    displayTrigger
+                                />
+                                <Box mt={2} mb={1}>
+                                    <Divider />
+                                </Box>
+                                <MapComponent
+                                    name="BudgetScopeMap"
+                                    mainLayer={districtShapes}
+                                    backgroundLayer={regionShapes}
+                                    onSelectShape={() => null}
+                                    getMainLayerStyle={getShapeStyle}
+                                    getBackgroundLayerStyle={
+                                        getBackgroundLayerStyle
+                                    }
+                                    tooltipLabels={{
+                                        main: 'District',
+                                        background: 'Region',
+                                    }}
+                                />
+                            </Box>
+                        </Paper>
                     </Grid>
                 </Grid>
             </Box>

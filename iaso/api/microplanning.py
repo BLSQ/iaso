@@ -123,10 +123,15 @@ class TeamSearchFilterBackend(filters.BaseFilterBackend):
 
 class TeamAncestorFilterBackend(filters.BaseFilterBackend):
     def filter_queryset(self, request, queryset, view):
-        ancestor_id = request.query_params.get("ancestor_id")
+        ancestor_id = request.query_params.get("ancestor")
 
         if ancestor_id:
-            ancestor = Team.objects.get(pk=ancestor_id)
+            try:
+                ancestor = Team.objects.get(pk=ancestor_id)
+            except Team.DoesNotExist:
+                raise serializers.ValidationError(
+                    {"ancestor": "Select a valid choice. That choice is not one of the available choices."}
+                )
             queryset = queryset.filter(path__descendants=ancestor.path).exclude(id=ancestor.id)
 
         return queryset

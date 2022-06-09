@@ -9,7 +9,7 @@ export const useBudgetEvenValidation = () => {
     const fieldRequired = formatMessage(MESSAGES.requiredField);
     return useMemo(() => {
         return object().shape({
-            file: mixed().nullable().required(fieldRequired),
+            file: mixed().nullable(),
             cc_emails: string().email().nullable(),
             comments: string().nullable(),
             target_teams: array()

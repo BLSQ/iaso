@@ -1127,7 +1127,7 @@ const MESSAGES = defineMessages({
     },
     budgetDetails: {
         id: 'iaso.polio.budget.title.budgetDetails',
-        defaultMessage: 'Budget details: {campaignName}',
+        defaultMessage: 'Budget details',
     },
     details: {
         defaultMessage: 'Details',

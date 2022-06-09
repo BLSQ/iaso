@@ -7,7 +7,7 @@ import {
     // @ts-ignore
     LoadingSpinner,
 } from 'bluesquare-components';
-import { Box, Divider, Grid, Paper } from '@material-ui/core';
+import { Box, Divider, Grid, Paper, Typography } from '@material-ui/core';
 import { useDispatch, useSelector } from 'react-redux';
 import TopBar from '../../../../../../hat/assets/js/apps/Iaso/components/nav/TopBarComponent';
 import MESSAGES from '../../constants/messages';
@@ -23,7 +23,7 @@ import { useBudgetDetailsColumns } from './hooks/config';
 import { useGetTeams } from '../../hooks/useGetTeams';
 import { useGetProfiles } from '../../components/CountryNotificationsConfig/requests';
 import { GraphTitle } from '../../components/LQAS-IM/GraphTitle';
-import { BudgetStatus } from './BudgetStatus';
+import { BudgetStatus, findBudgetStatus } from './BudgetStatus';
 import { CreateBudgetEvent } from './CreateBudgetEvent';
 import { redirectToReplace } from '../../../../../../hat/assets/js/apps/Iaso/routing/actions';
 import { MapComponent } from '../../components/MapComponent/MapComponent';
@@ -46,12 +46,13 @@ const unselectedPathOptions = {
     opacity: '1',
     zIndex: '1',
 };
-// const initialDistrict = {
-//     color: '#FF695C',
-//     weight: '1',
-//     opacity: '1',
-//     zIndex: '1',
-// };
+const getBackgroundLayerStyle = () => {
+    return {
+        color: 'grey',
+        opacity: '1',
+        fillColor: 'transparent',
+    };
+};
 
 export const BudgetDetails: FunctionComponent<Props> = ({ router }) => {
     const { params } = router;
@@ -99,6 +100,8 @@ export const BudgetDetails: FunctionComponent<Props> = ({ router }) => {
         campaignId,
     });
 
+    const budgetStatus = findBudgetStatus(allBudgetDetails);
+
     const getShapeStyle = useCallback(
         shape => {
             if (scope.includes(shape.id)) return selectedPathOptions;
@@ -107,17 +110,10 @@ export const BudgetDetails: FunctionComponent<Props> = ({ router }) => {
         [scope],
     );
 
-    const getBackgroundLayerStyle = () => {
-        return {
-            color: 'grey',
-            opacity: '1',
-            fillColor: 'transparent',
-        };
-    };
     return (
         <>
             <TopBar
-                title={formatMessage(MESSAGES.budgetDetails, { campaignName })}
+                title={formatMessage(MESSAGES.budgetDetails)}
                 displayBackButton
                 goBack={() => {
                     if (prevPathname) {
@@ -130,20 +126,28 @@ export const BudgetDetails: FunctionComponent<Props> = ({ router }) => {
             {/* @ts-ignore */}
             <Box
                 // @ts-ignore
-                className={`${classes.containerFullHeightNoTabPadded} ${classes.fullHeight}`}
+                className={`${classes.containerFullHeightNoTabPadded}`}
             >
-                <Box mb={4} ml={2} mr={2}>
+                <Box mb={5} ml={2} mr={2}>
+                    <Box mb={4}>
+                        <Typography variant="h4" style={{ fontWeight: 'bold' }}>
+                            {`${formatMessage(
+                                MESSAGES.campaign,
+                            )}: ${campaignName}`}
+                        </Typography>
+                    </Box>
+
                     <Grid container justifyContent="space-between">
                         <Grid container item xs={6}>
                             {!isFetchingAll && (
-                                <BudgetStatus
-                                    budgetDetails={allBudgetDetails}
-                                />
+                                <BudgetStatus budgetStatus={budgetStatus} />
                             )}
                         </Grid>
-                        <Grid>
-                            <CreateBudgetEvent campaignId={campaignId} />
-                        </Grid>
+                        {budgetStatus !== 'validated' && (
+                            <Grid>
+                                <CreateBudgetEvent campaignId={campaignId} />
+                            </Grid>
+                        )}
                     </Grid>
                 </Box>
                 <Grid container spacing={2}>

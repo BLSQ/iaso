@@ -8,7 +8,7 @@ import MESSAGES from '../../constants/messages';
 import { WARNING_COLOR } from '../../styles/constants';
 
 type Props = {
-    budgetDetails: any;
+    budgetStatus: 'validation_ongoing' | 'validated' | 'noBudgetSubmitted';
 };
 
 const styles = theme => ({
@@ -34,7 +34,6 @@ export const sortBudgetEventByUpdate = budgetEvents => {
     );
 };
 
-// TODO store statuses in constant
 export const findBudgetStatus = budgetEvents => {
     if (!budgetEvents) return 'noBudgetSubmitted';
     return (
@@ -44,10 +43,9 @@ export const findBudgetStatus = budgetEvents => {
     );
 };
 
-export const BudgetStatus: FunctionComponent<Props> = ({ budgetDetails }) => {
+export const BudgetStatus: FunctionComponent<Props> = ({ budgetStatus }) => {
     const { formatMessage } = useSafeIntl();
     const classes = useStyles();
-    const budgetStatus = findBudgetStatus(budgetDetails);
     return (
         <>
             <Typography

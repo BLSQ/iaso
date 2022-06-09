@@ -100,14 +100,6 @@ export const CreateBudgetEvent: FunctionComponent<Props> = ({ campaignId }) => {
                 confirmMessage={MESSAGES.send}
                 renderTrigger={renderTrigger}
             >
-                <FileInputComponent
-                    keyValue="file"
-                    required
-                    onChange={onChange}
-                    value={values.file}
-                    errors={getErrors('file')}
-                    label={MESSAGES.file}
-                />
                 <InputComponent
                     type="select"
                     required
@@ -140,6 +132,13 @@ export const CreateBudgetEvent: FunctionComponent<Props> = ({ campaignId }) => {
                     label={MESSAGES.destination}
                     options={teamsDropdown}
                     loading={isFetchingTeams}
+                />
+                <FileInputComponent
+                    keyValue="file"
+                    onChange={onChange}
+                    value={values.file}
+                    errors={getErrors('file')}
+                    label={MESSAGES.file}
                 />
                 <InputComponent
                     type="text"

@@ -85,6 +85,7 @@ export const BudgetFilesModal: FunctionComponent<Props> = ({
         ...MESSAGES.files,
         values: { type: typeTranslated, date: moment(date).format('LTS') },
     };
+    const disableTrigger = budgetEventFiles?.length === 0 && !note;
     return (
         <DialogComponent
             dataTestId="budget-files-modal"
@@ -94,11 +95,20 @@ export const BudgetFilesModal: FunctionComponent<Props> = ({
                     <CloseDialog closeDialog={closeDialog} onCancel={onClose} />
                 );
             }}
-            renderTrigger={renderTrigger(!(budgetEventFiles?.length > 0))}
+            renderTrigger={renderTrigger(disableTrigger)}
             titleMessage={titleMessage}
         >
             <Divider />
             {isFetching && <LoadingSpinner />}
+            {budgetEventFiles?.length === 0 && !isFetching && (
+                <Grid container item>
+                    <Box mt={4}>
+                        <Typography>
+                            {formatMessage(MESSAGES.noFile)}
+                        </Typography>
+                    </Box>
+                </Grid>
+            )}
             {!isFetching && (
                 <Box mt={2}>
                     {makeLinks(budgetEventFiles)}
@@ -108,19 +118,17 @@ export const BudgetFilesModal: FunctionComponent<Props> = ({
                                 <Divider />
                             </Box>
                             <Box mb={2} mt={2}>
-                                <Typography>
+                                <Typography style={{ fontWeight: 'bold' }}>
                                     {formatMessage(MESSAGES.notes)}
                                 </Typography>
                             </Box>
-                            <Typography variant="body2">{note}</Typography>
-                        </>
-                    )}
-                    {budgetEventFiles?.length === 0 && (
-                        <Grid container item>
-                            <Typography>
-                                {formatMessage(MESSAGES.noFile)}
+                            <Typography
+                                variant="body2"
+                                style={{ whiteSpace: 'pre-line' }}
+                            >
+                                {note}
                             </Typography>
-                        </Grid>
+                        </>
                     )}
                 </Box>
             )}

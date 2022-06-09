@@ -69,6 +69,7 @@ export const useSnackMutation = <
               'mutationFn'
           >
         | undefined = {},
+    ignoreErrorCodes: number[] = [],
 ): UseMutationResult<Data, Error, Variables, Context> => {
     const dispatch = useDispatch();
     const queryClient = useQueryClient();
@@ -79,9 +80,13 @@ export const useSnackMutation = <
     > = {
         ...options,
         onError: (error, variables, context) => {
-            dispatch(
-                enqueueSnackbar(errorSnackBar(undefined, snackErrorMsg, error)),
-            );
+            if (!ignoreErrorCodes.includes(error.status)) {
+                dispatch(
+                    enqueueSnackbar(
+                        errorSnackBar(undefined, snackErrorMsg, error),
+                    ),
+                );
+            }
             if (options.onError) {
                 return options.onError(error, variables, context);
             }

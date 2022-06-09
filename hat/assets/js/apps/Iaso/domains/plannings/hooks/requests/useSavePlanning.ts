@@ -1,3 +1,4 @@
+/* eslint-disable camelcase */
 import moment from 'moment';
 import { UseMutationResult } from 'react-query';
 import { patchRequest, postRequest } from '../../../../libs/Api';
@@ -33,7 +34,7 @@ const convertToApi = data => {
     if (selectedTeam !== undefined) {
         converted.team = selectedTeam;
     }
-    if (selectedTeam !== undefined) {
+    if (selectedOrgUnit !== undefined) {
         converted.org_unit = selectedOrgUnit;
     }
     if (startDate !== undefined) {
@@ -47,6 +48,28 @@ const convertToApi = data => {
         converted.published_at = getApiParamDateTimeString(moment());
     } else if (publishingStatus === 'draft') {
         converted.published_at = null;
+    }
+
+    return converted;
+};
+export const convertAPIErrorsToState = data => {
+    const { team, org_unit, ended_at, started_at, published_at, ...converted } =
+        data;
+    if (team !== undefined) {
+        converted.selectedTeam = team;
+    }
+    if (org_unit !== undefined) {
+        converted.selectedOrgUnit = org_unit;
+    }
+    if (started_at !== undefined) {
+        converted.startDate = started_at;
+    }
+
+    if (ended_at !== undefined) {
+        converted.endDate = ended_at;
+    }
+    if (published_at !== undefined) {
+        converted.publishingStatus = published_at;
     }
 
     return converted;
@@ -74,9 +97,9 @@ const duplicatePlanning = async (body: SavePlanningQuery) => {
 
 export const useSavePlanning = (
     type: 'create' | 'edit' | 'copy',
-    callback: () => void,
+    // callback?: () => void,
 ): UseMutationResult => {
-    const onSuccess = () => callback();
+    // const onSuccess = () => callback();
 
     const ignoreErrorCodes = [400];
     const editPlanning = useSnackMutation(
@@ -84,7 +107,8 @@ export const useSavePlanning = (
         undefined,
         undefined,
         ['planningsList'],
-        { onSuccess },
+        undefined,
+        // { onSuccess },
         ignoreErrorCodes,
     );
     const createPlanning = useSnackMutation(
@@ -94,7 +118,7 @@ export const useSavePlanning = (
         undefined,
         undefined,
         ['planningsList'],
-        { onSuccess },
+        undefined,
         ignoreErrorCodes,
     );
     const copyPlanning = useSnackMutation(
@@ -102,7 +126,7 @@ export const useSavePlanning = (
         undefined,
         undefined,
         ['planningsList'],
-        { onSuccess },
+        undefined,
         ignoreErrorCodes,
     );
 

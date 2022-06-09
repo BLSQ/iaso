@@ -18,6 +18,7 @@ import MESSAGES from '../messages';
 import { useGetForms } from '../hooks/requests/useGetForms';
 import { useGetTeams } from '../hooks/requests/useGetTeams';
 import {
+    convertAPIErrorsToState,
     SavePlanningQuery,
     useSavePlanning,
 } from '../hooks/requests/useSavePlanning';
@@ -27,6 +28,7 @@ import { usePlanningValidation } from '../validation';
 import { commaSeparatedIdsToArray } from '../../../utils/forms';
 import { IntlFormatMessage } from '../../../types/intl';
 import { useGetProjectsDropDown } from '../hooks/requests/useGetProjectsDropDown';
+import { useApiErrorValidation } from '../hooks/useApiErrorValidation';
 
 type ModalMode = 'create' | 'edit' | 'copy';
 
@@ -115,11 +117,26 @@ export const CreateEditPlanning: FunctionComponent<Props> = ({
     publishingStatus,
 }) => {
     const { formatMessage } = useSafeIntl();
-    const [errorMessage, setErrorMessage] = useState({});
+    // const [apiErrors, setApiErrors] = useState();
+    // const [payload, setPayload] = useState<any>();
     const [closeModal, setCloseModal] = useState<any>();
+    const { mutateAsync: savePlanning } = useSavePlanning(type);
+    const {
+        apiErrors,
+        payload,
+        mutation: save,
+    } = useApiErrorValidation<Partial<SavePlanningQuery>>({
+        mutationFn: savePlanning,
+        onSuccess: () => {
+            closeModal.closeDialog();
+            formik.resetForm();
+        },
+
+        convertError: convertAPIErrorsToState,
+    });
 
     // Tried the typescript integration, but Type casting was crap
-    const schema = usePlanningValidation(errorMessage);
+    const schema = usePlanningValidation(apiErrors, payload);
 
     const formik = useFormik({
         initialValues: {
@@ -137,18 +154,7 @@ export const CreateEditPlanning: FunctionComponent<Props> = ({
         enableReinitialize: true,
         validateOnBlur: true,
         validationSchema: schema,
-        onSubmit: (formValues: Partial<SavePlanningQuery>, helpers) =>
-            savePlanning(formValues, {
-                onError: (e: any) => {
-                    helpers.setErrors(e.details.non_field_errors);
-                    console.log(e.details);
-                    // setErrorMessage(e.details);
-                    resetTouched();
-                },
-                onSuccess: () => {
-                    closeModal.closeDialog();
-                },
-            }), // TODO: convert forms string to Array of IDs
+        onSubmit: save,
     });
 
     const {
@@ -156,7 +162,7 @@ export const CreateEditPlanning: FunctionComponent<Props> = ({
         setFieldValue,
         touched,
         setFieldTouched,
-        setTouched,
+        // setTouched,
         initialValues,
         errors,
         isValid,
@@ -164,11 +170,11 @@ export const CreateEditPlanning: FunctionComponent<Props> = ({
         resetForm,
     } = formik;
     // using this method to reset touched state after saving
-    const resetTouched = makeResetTouched(values, setTouched);
+    // const resetTouched = makeResetTouched(values, setTouched); // not really needed apparently
     // console.log('errors formik', errors);
+    // console.log('payload', payload);
     // console.log('initialValues', initialValues);
 
-    const { mutateAsync: savePlanning } = useSavePlanning(type, resetForm);
     const { data: formsDropdown, isFetching: isFetchingForms } = useGetForms(
         values?.project,
     );
@@ -193,7 +199,7 @@ export const CreateEditPlanning: FunctionComponent<Props> = ({
         keyValue => {
             // HERE bug when handling errors
             if (!touched[keyValue]) return [];
-            return errors[keyValue] ? [errors[keyValue]] : [];
+            return errors?.[keyValue] ? [errors[keyValue]] : [];
         },
         [errors, touched],
     );

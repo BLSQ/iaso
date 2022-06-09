@@ -13,7 +13,8 @@ export const OrgUnitsLevels = ({ field, form, label, required }) => {
         setFieldTouched,
     } = form;
     const initialOrgUnitId = form.initialValues[name];
-    const errors = touched[name] && formErrors[name] ? [formErrors[name]] : [];
+    const errors =
+        touched[name] && formErrors?.[name] ? [formErrors[name]] : [];
     const { data: initialOrgUnit, isLoading } = useGetOrgUnit(initialOrgUnitId);
 
     return (
@@ -60,7 +61,7 @@ OrgUnitsLevels.propTypes = {
     form: PropTypes.shape({
         setFieldValue: PropTypes.func.isRequired,
         initialValues: PropTypes.object.isRequired,
-        errors: PropTypes.object.isRequired,
+        errors: PropTypes.object,
         touched: PropTypes.object.isRequired,
         setFieldTouched: PropTypes.func.isRequired,
     }).isRequired,

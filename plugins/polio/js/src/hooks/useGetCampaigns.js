@@ -1,5 +1,11 @@
-import { useSnackQuery } from 'Iaso/libs/apiHooks';
+import { useMemo } from 'react';
+import { useSnackQuery } from 'Iaso/libs/apiHooks.ts';
 import { getRequest } from 'Iaso/libs/Api';
+import { getApiParamDateString } from 'Iaso/utils/dates.ts';
+
+const DEFAULT_PAGE_SIZE = 40;
+const DEFAULT_PAGE = 1;
+const DEFAULT_ORDER = '-cvdpv2_notified_at';
 
 export const useGetCampaigns = (
     options = {},
@@ -57,4 +63,24 @@ export const useGetCampaigns = (
             },
         ),
     };
+};
+
+// Add the defaults. put in a memo for comparison.
+// Need a better way to handle default in the routing
+export const useCampaignParams = params => {
+    return useMemo(() => {
+        return {
+            order: params?.order ?? DEFAULT_ORDER,
+            pageSize: params?.pageSize ?? DEFAULT_PAGE_SIZE,
+            page: params?.page ?? DEFAULT_PAGE,
+            countries: params.countries,
+            search: params.search,
+            r1StartFrom: getApiParamDateString(params.r1StartFrom),
+            r1StartTo: getApiParamDateString(params.r1StartTo),
+            showOnlyDeleted: params.showOnlyDeleted,
+            campaignType: params.campaignType,
+            campaignGroups: params.campaignGroups,
+            show_test: params.show_test ?? true,
+        };
+    }, [params]);
 };

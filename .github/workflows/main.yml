@@ -6,7 +6,6 @@ on:
 env:
   REGISTRY: ghcr.io
   IMAGE_NAME: ${{ github.repository }}
-
 jobs:
   test_js:
     runs-on: ubuntu-latest
@@ -209,7 +208,6 @@ jobs:
         uses: cypress-io/github-action@v2
         with:
           browser: chrome
-          headless: true
           wait-on: 'http://localhost:8081'
           spec: hat/assets/js/cypress/integration/${{ matrix.containers }}/*.spec.js
         env:

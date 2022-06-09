@@ -1,3 +1,4 @@
+/* eslint-disable import/extensions */
 /* eslint-disable react/jsx-props-no-spreading */
 /* eslint-disable react/prop-types */
 import React from 'react';
@@ -33,6 +34,8 @@ import SpeedDialInstanceActions from '../../instances/components/SpeedDialInstan
 import EnketoIcon from '../../instances/components/EnketoIcon';
 import { userHasPermission } from '../../users/utils';
 import ConfirmCancelDialogComponent from '../../../components/dialogs/ConfirmCancelDialogComponent';
+import { useCurrentUser } from '../../../utils/usersUtils';
+
 // reformatting orgUnit name so the OU can be passed to the treeview modal
 // and selecting the parent for display
 const useStyles = makeStyles(theme => ({
@@ -120,7 +123,7 @@ const Actions = (
     saveOu,
     setFieldErrors,
 ) => {
-    const currentUser = useSelector(state => state.users.current);
+    const currentUser = useCurrentUser();
     const referenceSubmission = orgUnit.reference_instance;
     const linkOrgUnit =
         formId !== referenceFormId || referenceSubmission !== null;
@@ -256,7 +259,7 @@ const OrgUnitInfosComponent = ({
                     }
                 />
             )}
-            <Grid item xs={4}>
+            <Grid item xs={12} md={4}>
                 <InputComponent
                     keyValue="name"
                     required
@@ -357,7 +360,7 @@ const OrgUnitInfosComponent = ({
                     type="arrayInput"
                 />
             </Grid>
-            <Grid item xs={4}>
+            <Grid item xs={12} md={8}>
                 {orgUnit.id && !orgUnit.reference_instance && (
                     <OrgUnitCreationDetails orgUnit={orgUnit} />
                 )}

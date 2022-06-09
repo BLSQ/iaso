@@ -10,8 +10,11 @@ from logging import getLogger
 
 import requests
 from django.conf import settings
+from django.core import validators
 from django.core.cache import cache
+from django.core.exceptions import ValidationError
 from django.core.mail import send_mail
+from django.db import transaction
 from django.db.models import Q
 from django.db.models import Value, TextField, UUIDField
 from django.db.models.expressions import RawSQL
@@ -26,6 +29,7 @@ from rest_framework import routers, filters, viewsets, serializers, permissions,
 from rest_framework.decorators import action
 from rest_framework.response import Response
 
+from hat.audit.models import Modification, CAMPAIGN_API
 from iaso.api.common import ModelViewSet, DeletionFilterBackend
 from iaso.models import OrgUnit
 from iaso.models.org_unit import OrgUnitType
@@ -37,6 +41,10 @@ from plugins.polio.serializers import (
     SmallCampaignSerializer,
     get_current_preparedness,
     CampaignGroupSerializer,
+    BudgetEventSerializer,
+    BudgetFilesSerializer,
+    serialize_campaign,
+    log_campaign_modification,
 )
 from plugins.polio.serializers import (
     CountryUsersGroupSerializer,
@@ -48,7 +56,7 @@ from .forma import (
     find_orgunit_in_cache,
 )
 from .helpers import get_url_content
-from .models import Campaign, Config, LineListImport, SpreadSheetImport, Round, CampaignGroup
+from .models import Campaign, Config, LineListImport, SpreadSheetImport, Round, CampaignGroup, BudgetEvent, BudgetFiles
 from .models import CountryUsersGroup
 from .models import URLCache
 from .preparedness.calculator import preparedness_summary
@@ -82,7 +90,12 @@ class CustomFilterBackend(filters.BaseFilterBackend):
 class CampaignViewSet(ModelViewSet):
     results_key = "campaigns"
     remove_results_key_if_paginated = True
-    filter_backends = [filters.OrderingFilter, DjangoFilterBackend, CustomFilterBackend, DeletionFilterBackend]
+    filter_backends = [
+        filters.OrderingFilter,
+        DjangoFilterBackend,
+        CustomFilterBackend,
+        DeletionFilterBackend,
+    ]
     ordering_fields = [
         "obr_name",
         "cvdpv2_notified_at",
@@ -187,6 +200,7 @@ Timeline tracker Automated message
     @action(methods=["POST"], detail=True, serializer_class=serializers.Serializer)
     def send_notification_email(self, request, pk, **kwargs):
         campaign = get_object_or_404(Campaign, pk=pk)
+        old_campaign_dump = serialize_campaign(campaign)
         country = campaign.country
 
         domain = settings.DNS_DOMAIN
@@ -225,6 +239,8 @@ Timeline tracker Automated message
         )
         campaign.creation_email_send_at = now()
         campaign.save()
+        request_user = self.request.user
+        log_campaign_modification(campaign, old_campaign_dump, request_user)
 
         return Response({"message": "email sent"})
 
@@ -1383,6 +1399,94 @@ class CampaignGroupViewSet(ModelViewSet):
     }
 
 
+class HasPoliobudgetPermission(permissions.BasePermission):
+    def has_permission(self, request, view):
+        if not request.user.has_perm("menupermissions.iaso_polio_budget"):
+            return False
+        return True
+
+
+class BudgetEventViewset(ModelViewSet):
+    result_key = "results"
+    remove_results_key_if_paginated = True
+    serializer_class = BudgetEventSerializer
+    permission_classes = [permissions.IsAuthenticated, HasPoliobudgetPermission]
+    filter_backends = [
+        filters.OrderingFilter,
+        DjangoFilterBackend,
+    ]
+    ordering_fields = [
+        "created_at",
+        "updated_at",
+        "type",
+        "author",
+    ]
+
+    def get_serializer_class(self):
+        return BudgetEventSerializer
+
+    def get_queryset(self):
+        queryset = BudgetEvent.objects.filter(author__iaso_profile__account=self.request.user.iaso_profile.account)
+        campaign_id = self.request.query_params.get("campaign_id")
+        if campaign_id is not None:
+            queryset = queryset.filter(campaign_id=campaign_id)
+        return queryset
+
+    def perform_create(self, serializer):
+        event = serializer.save(author=self.request.user)
+        emails = set()
+        for team in event.target_teams.all():
+            for user in team.users.all():
+                if user.email:
+                    emails.add(user.email)
+        if event.cc_emails:
+            emails.update(event.cc_emails.split(","))
+
+            send_mail(
+                "New Budget Submission for {}".format(event.campaign.obr_name),
+                """%s %s submitted a new budget.
+    
+    To approve or comment this budget, click here :
+    
+    poliooutbreaks.com/dashboard/polio/budget/details/campaignId/%s/campaignName/%s"""
+                % (event.author.first_name, event.author.last_name, event.campaign.id, event.campaign.obr_name),
+                "no-reply@poliooutbreaks.com",
+                emails,
+            )
+
+
+class BudgetFilesViewset(ModelViewSet):
+    results_key = "results"
+    serializer_class = BudgetFilesSerializer
+    remove_results_key_if_paginated = True
+    permission_classes = [HasPoliobudgetPermission]
+
+    def get_serializer_class(self):
+        return BudgetFilesSerializer
+
+    def get_queryset(self):
+        queryset = BudgetFiles.objects.filter(
+            event__author__iaso_profile__account=self.request.user.iaso_profile.account
+        )
+        event_id = self.request.query_params.get("event_id")
+        if event_id is not None:
+            queryset = queryset.filter(event_id=event_id)
+        return queryset
+
+    def create(self, request, *args, **kwargs):
+        if request.FILES:
+            event = request.data["event"]
+            event = get_object_or_404(BudgetEvent, id=event)
+            budget_file = request.FILES["file"]
+
+            budget_file = BudgetFiles.objects.create(file=budget_file, event=event)
+            budget_file.save()
+
+        files = BudgetFiles.objects.filter(event__author__iaso_profile__account=self.request.user.iaso_profile.account)
+        serializer = BudgetFilesSerializer(files, many=True)
+        return Response(serializer.data)
+
+
 router = routers.SimpleRouter()
 router.register(r"polio/campaigns", CampaignViewSet, basename="Campaign")
 router.register(r"polio/campaignsgroup", CampaignGroupViewSet, basename="campaigngroup")
@@ -1396,3 +1500,5 @@ router.register(r"polio/v2/forma", FormAStocksViewSetV2, basename="forma")
 router.register(r"polio/countryusersgroup", CountryUsersGroupViewSet, basename="countryusersgroup")
 router.register(r"polio/linelistimport", LineListImportViewSet, basename="linelistimport")
 router.register(r"polio/orgunitspercampaign", OrgUnitsPerCampaignViewset, basename="orgunitspercampaign")
+router.register(r"polio/budgetevent", BudgetEventViewset, basename="budget")
+router.register(r"polio/budgetfiles", BudgetFilesViewset, basename="budgetfiles")

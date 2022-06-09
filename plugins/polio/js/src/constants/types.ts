@@ -81,10 +81,18 @@ export type GroupedCampaign = {
 };
 
 export type GroupedCampaigns = Pagination & {
-    results:GroupedCampaign[]
-}
+    results: GroupedCampaign[];
+};
 
 export type ViewPort = {
     zoom: number;
     center: number[];
 };
+
+export type CampaignStatus =
+    | 'ALL'
+    | 'PREPARING'
+    | 'ROUND1START'
+    | 'ROUND1DONE'
+    | 'ROUND2START'
+    | 'ROUND2DONE';

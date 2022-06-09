@@ -360,7 +360,7 @@ class InstanceDetails extends Component {
                             />
                         )}
                         <Grid container spacing={4}>
-                            <Grid xs={12} md={5} item>
+                            <Grid xs={12} md={4} item>
                                 {currentInstance.deleted && (
                                     <Alert
                                         severity="warning"
@@ -421,7 +421,7 @@ class InstanceDetails extends Component {
                                 )}
                             </Grid>
 
-                            <Grid xs={12} md={7} item>
+                            <Grid xs={12} md={8} item>
                                 <WidgetPaper
                                     id="form-contents"
                                     title={formatMessage(MESSAGES.form)}

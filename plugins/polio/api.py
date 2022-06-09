@@ -26,6 +26,7 @@ from rest_framework import routers, filters, viewsets, serializers, permissions,
 from rest_framework.decorators import action
 from rest_framework.response import Response
 
+from hat.audit.models import Modification, CAMPAIGN_API
 from iaso.api.common import ModelViewSet, DeletionFilterBackend
 from iaso.models import OrgUnit
 from iaso.models.org_unit import OrgUnitType
@@ -37,6 +38,8 @@ from plugins.polio.serializers import (
     SmallCampaignSerializer,
     get_current_preparedness,
     CampaignGroupSerializer,
+    serialize_campaign,
+    log_campaign_modification,
 )
 from plugins.polio.serializers import (
     CountryUsersGroupSerializer,
@@ -187,6 +190,7 @@ Timeline tracker Automated message
     @action(methods=["POST"], detail=True, serializer_class=serializers.Serializer)
     def send_notification_email(self, request, pk, **kwargs):
         campaign = get_object_or_404(Campaign, pk=pk)
+        old_campaign_dump = serialize_campaign(campaign)
         country = campaign.country
 
         domain = settings.DNS_DOMAIN
@@ -225,6 +229,8 @@ Timeline tracker Automated message
         )
         campaign.creation_email_send_at = now()
         campaign.save()
+        request_user = self.request.user
+        log_campaign_modification(campaign, old_campaign_dump, request_user)
 
         return Response({"message": "email sent"})
 

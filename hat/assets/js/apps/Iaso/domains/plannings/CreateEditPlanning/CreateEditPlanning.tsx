@@ -23,7 +23,6 @@ import {
 } from '../hooks/requests/useSavePlanning';
 import DatesRange from '../../../components/filters/DatesRange';
 import { OrgUnitsLevels as OrgUnitSelect } from '../../../../../../../../plugins/polio/js/src/components/Inputs/OrgUnitsSelect';
-// import { OrgUnitTreeviewModal } from '../../orgUnits/components/TreeView/OrgUnitTreeviewModal';
 import { usePlanningValidation } from '../validation';
 import { commaSeparatedIdsToArray } from '../../../utils/forms';
 import { IntlFormatMessage } from '../../../types/intl';
@@ -126,8 +125,8 @@ export const CreateEditPlanning: FunctionComponent<Props> = ({
         initialValues: {
             id,
             name,
-            startDate,
-            endDate,
+            startDate: startDate || undefined,
+            endDate: endDate || undefined,
             selectedOrgUnit,
             selectedTeam,
             forms,

@@ -28,6 +28,7 @@ import {
     SEMESTERS_RANGE,
 } from '../constants';
 import MESSAGES from '../messages';
+import { useCurrentUser } from '../../../utils/usersUtils';
 
 const useStyles = makeStyles(theme => ({
     ...commonStyles(theme),
@@ -54,7 +55,7 @@ const PeriodPicker = ({
             : null,
     );
     const [currentPeriodType, setCurrentPeriodType] = useState(periodType);
-    const currentUser = useSelector(state => state.users.current);
+    const currentUser = useCurrentUser();
 
     useEffect(() => {
         if (currentPeriodType !== periodType) {

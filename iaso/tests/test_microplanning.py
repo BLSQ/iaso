@@ -387,7 +387,7 @@ class PlanningTestCase(APITestCase):
                 "id": self.planning.id,
                 "name": "planning1",
                 "team": self.planning.team_id,
-                "team_details": {"id": self.team1.id, "name": self.team1.name},
+                "team_details": {"id": self.team1.id, "name": self.team1.name, "deleted_at": self.team1.deleted_at},
                 "project": self.project1.id,
                 "project": self.planning.project.id,
                 "org_unit": self.planning.org_unit_id,

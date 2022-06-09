@@ -1,6 +1,6 @@
 import { useState, useCallback, useMemo } from 'react';
 import { useDispatch } from 'react-redux';
-import { redirectTo } from '../../../routing/actions';
+import { redirectTo } from '../routing/actions';
 
 export type FilterState = {
     filters: Record<string, unknown>;
@@ -10,6 +10,18 @@ export type FilterState = {
     filtersUpdated: boolean;
 };
 
+const paginationParams = ['pageSize', 'page', 'order'];
+
+const removePaginationParams = params => {
+    const newParams = {
+        ...params,
+    };
+    paginationParams.forEach(paramKey => {
+        delete newParams[paramKey];
+    });
+    return newParams;
+};
+
 export const useFilterState = (
     baseUrl: string,
     params: Record<string, unknown>,
@@ -17,7 +29,7 @@ export const useFilterState = (
     const [filtersUpdated, setFiltersUpdated] = useState(false);
     const dispatch = useDispatch();
     const [filters, setFilters] = useState({
-        ...params,
+        ...removePaginationParams(params),
     });
 
     const handleSearch = useCallback(() => {

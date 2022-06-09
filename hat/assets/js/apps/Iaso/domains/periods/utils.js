@@ -16,6 +16,7 @@ import {
     hasFeatureFlag,
     HIDE_PERIOD_QUARTER_NAME,
 } from '../../utils/featureFlags';
+import { useCurrentUser } from '../../utils/usersUtils';
 
 export const getDefaultPeriodString = () => {
     const currentYear = new Date().getFullYear();
@@ -156,6 +157,6 @@ export const getPrettyPeriod = (period, formatMessage, currentUser) => {
 
 export const usePrettyPeriod = () => {
     const { formatMessage } = useSafeIntl();
-    const currentUser = useSelector(state => state.users.current);
+    const currentUser = useCurrentUser();
     return period => getPrettyPeriod(period, formatMessage, currentUser);
 };

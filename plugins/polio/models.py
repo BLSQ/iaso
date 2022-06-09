@@ -495,7 +495,7 @@ class CampaignGroup(SoftDeletableModel):
 
 class BudgetEvent(SoftDeletableModel):
 
-    TYPES = (("submission", "Budget Submission"), ("comments", "Comments"))
+    TYPES = (("submission", "Budget Submission"), ("comments", "Comments"), ("validation", "Validation"))
 
     STATUS = (("validation_ongoing", "Validation Ongoing"), ("validated", "Validated"), ("refused", "Refused"))
 

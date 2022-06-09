@@ -14,6 +14,7 @@ import React, { FunctionComponent } from 'react';
 import { FormattedMessage } from 'react-intl';
 import { Link } from 'react-router';
 import DialogComponent from '../../../../../../hat/assets/js/apps/Iaso/components/dialogs/DialogComponent';
+import { fileExtensions } from '../../constants/fileExtensions';
 import MESSAGES from '../../constants/messages';
 import { useGetBudgetEventFiles } from '../../hooks/useGetBudgetEventFiles';
 
@@ -59,9 +60,27 @@ const onClose = closeDialog => {
     closeDialog();
 };
 
+const extractFileName = (fileUrl: string) => {
+    let trimmedLeft = '';
+    let i = 0;
+    // find the end of file name by searching for the extension
+    while (trimmedLeft === '') {
+        const currentExtension = fileExtensions[i];
+        if (fileUrl.indexOf(currentExtension) !== -1) {
+            trimmedLeft = `${
+                fileUrl.split(currentExtension)[0]
+            }${currentExtension}`;
+        }
+        i += 1;
+    }
+    // The name is the behind the last slash, so we find it by splitting
+    const removedSlashes = trimmedLeft.split('/');
+    return removedSlashes[removedSlashes.length - 1];
+};
+
 const makeLinks = files => {
     return files.map((file, index) => {
-        const fileName = file.file.split('/media/')[1] ?? `file_${index}`;
+        const fileName = extractFileName(file.file) ?? `file_${index}`;
         return (
             // eslint-disable-next-line react/no-array-index-key
             <Link key={`${fileName}_${index}`} download href={file.file}>

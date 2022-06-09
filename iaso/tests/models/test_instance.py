@@ -384,7 +384,7 @@ class InstanceModelTestCase(TestCase):
         modification = Modification.objects.first()
         self.assertIsNone(modification.user)
         self.assertEqual(INSTANCE_API, modification.source)
-        self.assertEqual(instance.id, modification.object_id)
+        self.assertEqual(instance.id, int(modification.object_id))
         self.assertNotEqual(modification.past_value, modification.new_value)
         self.assertFalse(modification.past_value[0]["fields"]["deleted"])
         self.assertTrue(modification.new_value[0]["fields"]["deleted"])

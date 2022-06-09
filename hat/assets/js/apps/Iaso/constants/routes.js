@@ -207,6 +207,10 @@ export const instanceDetailPath = {
             isRequired: true,
             key: 'instanceId',
         },
+        {
+            isRequired: false,
+            key: 'referenceFormId',
+        },
     ],
 };
 

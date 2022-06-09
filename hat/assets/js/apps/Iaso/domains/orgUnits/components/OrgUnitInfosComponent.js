@@ -25,7 +25,7 @@ import { useFormState } from '../../../hooks/form';
 import InputComponent from '../../../components/forms/InputComponent';
 import { commaSeparatedIdsToArray } from '../../../utils/forms';
 import { fetchEditUrl as fetchEditUrlAction } from '../../instances/actions';
-import MESSAGES from '../../forms/messages';
+import MESSAGES from '../messages';
 import { OrgUnitTreeviewModal } from './TreeView/OrgUnitTreeviewModal';
 import InstanceFileContent from '../../instances/components/InstanceFileContent';
 import WidgetPaper from '../../../components/papers/WidgetPaperComponent';
@@ -147,7 +147,7 @@ const Actions = (
     };
 
     const confirmCancelTitleMessage = isItLinked => {
-        return !isItLinked
+        return isItLinked
             ? MESSAGES.linkOffOrgUnitToInstanceReferenceTitle
             : MESSAGES.linkOrgUnitToInstanceReferenceTitle;
     };

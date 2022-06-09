@@ -48,7 +48,7 @@ const ActionTableColumnComponent = ({ settings, user }) => {
         }
     };
 
-    const getUrl = data => {
+    const getUrlOrgUnit = data => {
         const rowOriginal = data.row.original;
         // each instance should have a formId
         let initialUrl = `${baseUrls.orgUnitDetails}/orgUnitId/${rowOriginal.org_unit.id}/formId/${rowOriginal.form_id}`;
@@ -58,6 +58,17 @@ const ActionTableColumnComponent = ({ settings, user }) => {
         }
         // each instance has an id
         return `${initialUrl}/instanceId/${rowOriginal.id}`;
+    };
+
+    const getUrlInstance = data => {
+        const rowOriginal = data.row.original;
+        // each instance should have a formId
+        let initialUrl = `${baseUrls.instanceDetail}/instanceId/${settings.row.original.id}`;
+        // there are some instances which don't have a reference form Id
+        if (rowOriginal.reference_form_id) {
+            initialUrl = `${initialUrl}/referenceFormId/${rowOriginal.reference_form_id}`;
+        }
+        return `${initialUrl}`;
     };
 
     const linkOrgUnitToReferenceSubmission = referenceSubmissionId => {
@@ -112,14 +123,14 @@ const ActionTableColumnComponent = ({ settings, user }) => {
     return (
         <section>
             <IconButtonComponent
-                url={`${baseUrls.instanceDetail}/instanceId/${settings.row.original.id}`}
+                url={getUrlInstance(settings)}
                 icon="remove-red-eye"
                 tooltipMessage={MESSAGES.view}
             />
             {settings.row.original.org_unit &&
                 userHasPermission('iaso_org_units', user) && (
                     <IconButtonComponent
-                        url={getUrl(settings)}
+                        url={getUrlOrgUnit(settings)}
                         icon="orgUnit"
                         tooltipMessage={MESSAGES.viewOrgUnit}
                     />

@@ -19,7 +19,7 @@ import {
     useGetBudgetDetails,
 } from '../../hooks/useGetBudgetDetails';
 import { BUDGET, BUDGET_DETAILS } from '../../constants/routes';
-import { useBudgetDetailsColumns } from './config';
+import { useBudgetDetailsColumns } from './hooks/config';
 import { useGetTeams } from '../../hooks/useGetTeams';
 import { useGetProfiles } from '../../components/CountryNotificationsConfig/requests';
 import { GraphTitle } from '../../components/LQAS-IM/GraphTitle';

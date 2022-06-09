@@ -11,7 +11,7 @@ import { useCurrentUser } from '../../../../../../hat/assets/js/apps/Iaso/utils/
 import { commaSeparatedIdsToArray } from '../../../../../../hat/assets/js/apps/Iaso/utils/forms';
 import { useSaveBudgetEvent } from '../../hooks/useSaveBudgetEvent';
 import FileInputComponent from '../../../../../../hat/assets/js/apps/Iaso/components/forms/FileInputComponent';
-import { useBudgetEvenValidation } from './validation';
+import { useBudgetEvenValidation } from './hooks/validation';
 
 type Props = {
     campaignId: string;

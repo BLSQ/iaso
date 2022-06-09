@@ -2,7 +2,7 @@ import { useMemo } from 'react';
 // @ts-ignore
 import { useSafeIntl } from 'bluesquare-components';
 import { array, mixed, object, string } from 'yup';
-import MESSAGES from '../../constants/messages';
+import MESSAGES from '../../../constants/messages';
 
 export const useBudgetEvenValidation = () => {
     const { formatMessage } = useSafeIntl();

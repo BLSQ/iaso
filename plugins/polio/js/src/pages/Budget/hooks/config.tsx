@@ -7,12 +7,12 @@ import {
     IconButton as IconButtonComponent,
 } from 'bluesquare-components';
 import moment from 'moment';
-import MESSAGES from '../../constants/messages';
-import { Column } from '../../../../../../hat/assets/js/apps/Iaso/types/table';
-import { BUDGET_DETAILS } from '../../constants/routes';
-import { DateTimeCellRfc } from '../../../../../../hat/assets/js/apps/Iaso/components/Cells/DateTimeCell';
-import { BudgetFilesModal } from './BudgetFilesModal';
-import { findBudgetStatus, sortBudgetEventByUpdate } from './BudgetStatus';
+import MESSAGES from '../../../constants/messages';
+import { Column } from '../../../../../../../hat/assets/js/apps/Iaso/types/table';
+import { BUDGET_DETAILS } from '../../../constants/routes';
+import { DateTimeCellRfc } from '../../../../../../../hat/assets/js/apps/Iaso/components/Cells/DateTimeCell';
+import { BudgetFilesModal } from '../BudgetFilesModal';
+import { findBudgetStatus, sortBudgetEventByUpdate } from '../BudgetStatus';
 
 const baseUrl = BUDGET_DETAILS;
 

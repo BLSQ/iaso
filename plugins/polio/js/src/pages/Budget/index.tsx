@@ -17,7 +17,7 @@ import {
 } from '../../hooks/useGetCampaigns';
 import { useStyles } from '../../styles/theme';
 import { BUDGET } from '../../constants/routes';
-import { useBudgetColumns } from './config';
+import { useBudgetColumns } from './hooks/config';
 import { convertObjectToString } from '../../utils';
 import MESSAGES from '../../constants/messages';
 import { BudgetFilters } from './BudgetFilters';

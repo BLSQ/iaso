@@ -117,6 +117,10 @@ export const CreateBudgetEvent: FunctionComponent<Props> = ({ campaignId }) => {
                             value: 'comments',
                             label: formatMessage(MESSAGES.comments),
                         },
+                        {
+                            value: 'validation',
+                            label: formatMessage(MESSAGES.validation),
+                        },
                     ]}
                 />
                 <InputComponent
@@ -135,6 +139,7 @@ export const CreateBudgetEvent: FunctionComponent<Props> = ({ campaignId }) => {
                 />
                 <FileInputComponent
                     keyValue="file"
+                    required
                     onChange={onChange}
                     value={values.file}
                     errors={getErrors('file')}

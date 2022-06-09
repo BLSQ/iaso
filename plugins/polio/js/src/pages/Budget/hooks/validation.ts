@@ -17,7 +17,7 @@ export const useBudgetEvenValidation = () => {
                 .nullable()
                 .required(fieldRequired),
             type: string()
-                .oneOf(['submission', 'comments']) // TODO add translation for this error
+                .oneOf(['submission', 'comments', 'validation']) // TODO add translation for this error
                 .nullable()
                 .required(fieldRequired),
         });

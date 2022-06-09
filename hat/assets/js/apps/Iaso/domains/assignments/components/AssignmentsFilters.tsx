@@ -1,6 +1,5 @@
 import { Box, Grid } from '@material-ui/core';
 import React, { FunctionComponent } from 'react';
-// import { useSafeIntl } from 'bluesquare-components';
 import { baseUrls } from '../../../constants/urls';
 import { FilterButton } from '../../../components/FilterButton';
 import InputComponent from '../../../components/forms/InputComponent';
@@ -24,6 +23,7 @@ export const AssignmentsFilters: FunctionComponent<Props> = ({ params }) => {
     // const { formatMessage } = useSafeIntl();
     // TODO: limit teams list to planning team or sub teams of it
     const { data: teamsDropdown, isFetching: isFetchingTeams } = useGetTeams();
+    // TODO: limit ou types list
     const { data: orgunitTypesDropdown, isFetching: isFetchingOrgUnitTypes } =
         useGetOrgUnitTypes();
     return (

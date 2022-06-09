@@ -590,6 +590,10 @@ export const assignmentsPath = {
             isRequired: false,
             key: 'orgunitType',
         },
+        {
+            isRequired: false,
+            key: 'tab',
+        },
     ],
 };
 export const teamsPath = {

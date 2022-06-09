@@ -2,6 +2,9 @@
 
 export type AssignmentParams = {
     planningId: string;
+    team?: string;
+    orgunitType?: string;
+    tab?: string;
 };
 
 export type AssignmentApi = {
@@ -14,3 +17,5 @@ export type AssignmentApi = {
     started_at?: string;
     ended_at?: string;
 };
+
+export type AssignmentsApi = AssignmentApi[];

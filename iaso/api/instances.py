@@ -367,15 +367,19 @@ class InstancesViewSet(viewsets.ViewSet):
         )
 
     QUERY = """
-    select DATE_TRUNC('month', created_at) as month,
-           (select name from iaso_form where id = iaso_instance.form_id),
+    select DATE_TRUNC('month', iaso_instance.created_at) as month,
+           (select name from iaso_form where id = iaso_instance.form_id) as form_name,
+           iaso_instance.form_id,
            count(*)                        as value
     from iaso_instance
-    where created_at > '2019-01-01'
+    left join iaso_form on (iaso_form.id = iaso_instance.form_id)
+    where iaso_instance.created_at > '2019-01-01'
       and project_id = ANY (%s)
-      and form_id is not null
-    group by DATE_TRUNC('month', created_at), form_id
-    order by DATE_TRUNC('month', created_at)"""
+      and iaso_instance.form_id is not null
+      and iaso_instance.deleted =  false
+      and iaso_form.deleted_at is null
+    group by DATE_TRUNC('month', iaso_instance.created_at), iaso_instance.form_id
+    order by DATE_TRUNC('month', iaso_instance.created_at)"""
 
     @action(detail=False)
     def stats(self, request):
@@ -383,12 +387,18 @@ class InstancesViewSet(viewsets.ViewSet):
         projects_ids = list(projects.values_list("id", flat=True))
 
         df = pd.read_sql_query(self.QUERY, connection, params=[projects_ids])
-        df = df.pivot(index="month", columns="name", values="value")
+        # Keep the form name
+        names = df[["form_id", "form_name"]].drop_duplicates().set_index("form_id")
+        names_dict = names["form_name"].to_dict()
+
+        # Pivot on the form_id because there might be form with duplicate name
+        df = df.pivot(index="month", columns="form_id", values="value")
         if not df.empty:
             df.index = df.index.to_period("M")
             df = df.sort_index()
             df = df.reindex(pd.period_range(df.index[0], df.index[-1], freq="M"))
-            df["name"] = df.index.astype(str)
+            df["name"] = df.index.astype(str)  # Name column is the month
+            df = df.rename(columns=names_dict)
         r = df.to_json(orient="table")
         return HttpResponse(r, content_type="application/json")
 
@@ -397,12 +407,15 @@ class InstancesViewSet(viewsets.ViewSet):
         projects = request.user.iaso_profile.account.project_set.all()
         projects_ids = list(projects.values_list("id", flat=True))
         QUERY = """
-        select DATE_TRUNC('day', created_at) as period,
+        select DATE_TRUNC('day', iaso_instance.created_at) as period,
         count(*)                        as value
         from iaso_instance
-        where created_at > now() - interval '2700 days'
+        left join iaso_form on (iaso_form.id = iaso_instance.form_id)
+        where iaso_instance.created_at > now() - interval '2700 days'
         and project_id = ANY (%s)
-        group by DATE_TRUNC('day', created_at)
+        and iaso_instance.deleted = false
+        and iaso_form.deleted_at is null
+        group by DATE_TRUNC('day', iaso_instance.created_at)
         order by 1"""
         df = pd.read_sql_query(QUERY, connection, params=[projects_ids])
         df["total"] = df["value"].cumsum()

@@ -1,4 +1,6 @@
 import React, { FunctionComponent, useCallback, useMemo } from 'react';
+
+// @ts-ignore
 import { AddButton, useSafeIntl, IconButton } from 'bluesquare-components';
 import FileCopyIcon from '@material-ui/icons/FileCopy';
 import { useFormik, FormikProvider, Field } from 'formik';
@@ -96,8 +98,8 @@ export const CreateEditPlanning: FunctionComponent<Props> = ({
         initialValues: {
             id,
             name,
-            startDate,
-            endDate,
+            startDate: startDate || undefined,
+            endDate: endDate || undefined,
             selectedOrgUnit,
             selectedTeam,
             forms,

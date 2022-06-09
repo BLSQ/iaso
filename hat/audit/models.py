@@ -1,3 +1,5 @@
+import uuid
+
 from django.contrib.contenttypes.fields import GenericForeignKey
 from django.contrib.contenttypes.models import ContentType
 
@@ -13,20 +15,32 @@ ORG_UNIT_API = "org_unit_api"
 ORG_UNIT_API_BULK = "org_unit_api_bulk"
 INSTANCE_API = "instance_api"
 GPKG_IMPORT = "gpkg_import"
+CAMPAIGN_API = "campaign_api"
+
+
+class IasoJsonEncoder(json.JSONEncoder):
+    """This Encoder is needed for object that use UUID as their primary id
+    e.g Campaign"""
+
+    def default(self, o):
+        if isinstance(o, uuid.UUID):
+            return str(o)
+        return json.JSONEncoder.default(self, o)
 
 
 class Modification(models.Model):
     content_type = models.ForeignKey(ContentType, on_delete=models.CASCADE)
-    object_id = models.PositiveIntegerField()
+    # This is a charField and not a number field so it can also fit uuid
+    object_id = models.CharField(max_length=40)
     content_object = GenericForeignKey("content_type", "object_id")
-    past_value = models.JSONField()
-    new_value = models.JSONField()
+    past_value = models.JSONField(encoder=IasoJsonEncoder)
+    new_value = models.JSONField(encoder=IasoJsonEncoder)
     source = models.TextField()
     user = models.ForeignKey(User, null=True, blank=True, on_delete=models.DO_NOTHING)
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
-        return "%s - %d - %s - %s" % (
+        return "%s - %s - %s - %s" % (
             self.content_type,
             self.object_id,
             self.user,

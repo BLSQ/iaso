@@ -36,11 +36,15 @@ export const sortBudgetEventByUpdate = budgetEvents => {
 
 export const findBudgetStatus = budgetEvents => {
     if (!budgetEvents) return 'noBudgetSubmitted';
-    return (
-        sortBudgetEventByUpdate(budgetEvents).filter(
-            event => event.type === 'submission',
-        )[0]?.status ?? 'noBudgetSubmitted'
+    const validated = budgetEvents.find(
+        budgetEvent => budgetEvent.type === 'validation',
     );
+    if (validated) return 'validated';
+    const submitted = sortBudgetEventByUpdate(budgetEvents).filter(
+        event => event.type === 'submission',
+    );
+    if (submitted.length > 0) return 'validation_ongoing';
+    return 'noBudgetSubmitted';
 };
 
 export const BudgetStatus: FunctionComponent<Props> = ({ budgetStatus }) => {

@@ -32,7 +32,7 @@ export const useGetBudgetDetails = (params?: Params) => {
 };
 
 const getAllBudgetDetails = campaignId => {
-    return getRequest(`${endpoint}/?campaign=${campaignId}`);
+    return getRequest(`${endpoint}/?campaign_id=${campaignId}`);
 };
 export const useGetAllBudgetDetails = campaignId => {
     return useSnackQuery(['all-budget-details'], () =>

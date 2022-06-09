@@ -28,6 +28,12 @@ class NestedUserSerializer(serializers.ModelSerializer):
         fields = ["id", "username"]
 
 
+class NestedOrgUnitSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = OrgUnit
+        fields = ["id", "name", "org_unit_type"]
+
+
 class TeamSerializer(serializers.ModelSerializer):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -164,6 +170,7 @@ class PlanningSerializer(serializers.ModelSerializer):
             "team_details",
             "team",
             "org_unit",
+            "org_unit_details",
             "forms",
             "project",
             "description",
@@ -174,6 +181,7 @@ class PlanningSerializer(serializers.ModelSerializer):
         read_only_fields = ["created_at", "parent"]
 
     team_details = NestedTeamSerializer(source="team", read_only=True)
+    org_unit_details = NestedOrgUnitSerializer(source="org_unit", read_only=True)
 
     def validate(self, attrs):
         validated_data = super().validate(attrs)

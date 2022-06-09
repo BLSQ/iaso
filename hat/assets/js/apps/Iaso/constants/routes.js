@@ -582,6 +582,14 @@ export const assignmentsPath = {
             isRequired: true,
             key: 'planningId',
         },
+        {
+            isRequired: false,
+            key: 'team',
+        },
+        {
+            isRequired: false,
+            key: 'orgunitType',
+        },
     ],
 };
 export const teamsPath = {

@@ -1,5 +1,5 @@
-import React, { FunctionComponent } from 'react';
-import { Box, makeStyles } from '@material-ui/core';
+import React, { FunctionComponent, useState } from 'react';
+import { Box, makeStyles, Tabs, Tab } from '@material-ui/core';
 import {
     // @ts-ignore
     commonStyles,
@@ -13,6 +13,9 @@ import { useGetPlanning } from './hooks/requests/useGetPlanning';
 import { useGetAssignments } from './hooks/requests/useGetAssignments';
 
 import TopBar from '../../components/nav/TopBarComponent';
+
+import { AssignmentsFilters } from './components/AssignmentsFilters';
+import { AssignmentsMap } from './components/AssignmentsMap';
 
 import { AssignmentParams, AssignmentApi } from './types/assigment';
 import { Planning } from './types/planning';
@@ -29,6 +32,7 @@ const useStyles = makeStyles(theme => ({
 
 export const Assignments: FunctionComponent<Props> = ({ params }) => {
     const { formatMessage } = useSafeIntl();
+    const [tab, setTab] = useState('map');
     const { planningId } = params;
     const classes: Record<string, string> = useStyles();
 
@@ -55,10 +59,24 @@ export const Assignments: FunctionComponent<Props> = ({ params }) => {
                     planning?.name ?? ''
                 }`}
                 displayBackButton={false}
-            />
+            >
+                <Tabs
+                    value={tab}
+                    classes={{
+                        root: classes.tabs,
+                        indicator: classes.indicator,
+                    }}
+                    onChange={(event, newtab) => setTab(newtab)}
+                >
+                    <Tab value="map" label={formatMessage(MESSAGES.map)} />
+                    <Tab value="list" label={formatMessage(MESSAGES.list)} />
+                </Tabs>
+            </TopBar>
             <Box className={classes.containerFullHeightNoTabPadded}>
                 {isLoading && <LoadingSpinner />}
-                {assignments.length} assignments
+                <AssignmentsFilters params={params} />
+                {tab === 'map' && <AssignmentsMap assignments={assignments} />}
+                {tab === 'list' && <Box>LIST</Box>}
             </Box>
         </>
     );

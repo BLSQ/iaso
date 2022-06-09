@@ -1,15 +1,12 @@
 /* eslint-disable camelcase */
 import { UseQueryResult } from 'react-query';
+
 import { getRequest } from '../../../../libs/Api';
 import { useSnackQuery } from '../../../../libs/apiHooks';
+
 import { DropdownOptions } from '../../../../types/utils';
 
-type Team = {
-    id: number;
-    name: string;
-};
-
-type Teams = Team[];
+import { Teams } from '../../types/team';
 
 const getTeams = (): Promise<Teams> => {
     return getRequest('/api/microplanning/teams/');

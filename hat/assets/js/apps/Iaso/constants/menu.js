@@ -18,12 +18,15 @@ import AssessmentIcon from '@material-ui/icons/Assessment';
 import EnityIcon from '@material-ui/icons/Domain';
 import GroupIcon from '@material-ui/icons/Group';
 import AssignmentIcon from '@material-ui/icons/Assignment';
-import AssignmentIndIcon from '@material-ui/icons/AssignmentInd';
 
 import OrgUnitSvg from '../components/svg/OrgUnitSvgComponent';
 import DHIS2Svg from '../components/svg/DHIS2SvgComponent';
 import * as paths from './routes';
-import { hasFeatureFlag, SHOW_PAGES, SHOW_DHIS2_LINK } from '../utils/featureFlags';
+import {
+    hasFeatureFlag,
+    SHOW_PAGES,
+    SHOW_DHIS2_LINK,
+} from '../utils/featureFlags';
 import { locationLimitMax } from '../domains/orgUnits/constants/orgUnitConstants';
 import { getChipColors } from './chipColors';
 
@@ -169,12 +172,6 @@ const menuItems = defaultSourceId => [
                 key: 'teams',
                 icon: props => <GroupIcon {...props} />,
             },
-            {
-                label: MESSAGES.assignments,
-                permissions: paths.assignmentsPath.permissions,
-                key: 'assignments',
-                icon: props => <AssignmentIndIcon {...props} />,
-            },
         ],
     },
     {
@@ -222,13 +219,16 @@ const getMenuItems = (currentUser, enabledPlugins, defaultSourceVersion) => {
             permissions: paths.pagesPath.permissions,
         });
     }
-    if (hasFeatureFlag(currentUser, SHOW_DHIS2_LINK) && currentUser?.account?.default_version?.data_source.url) {
-      basicItems.push({
-        label: MESSAGES.dhis2,
-        key: "dhis2",
-        url: currentUser.account.default_version.data_source.url,
-        icon: props => <DHIS2Svg {...props} />,
-      });
+    if (
+        hasFeatureFlag(currentUser, SHOW_DHIS2_LINK) &&
+        currentUser?.account?.default_version?.data_source.url
+    ) {
+        basicItems.push({
+            label: MESSAGES.dhis2,
+            key: 'dhis2',
+            url: currentUser.account.default_version.data_source.url,
+            icon: props => <DHIS2Svg {...props} />,
+        });
     }
     return [...basicItems, ...pluginsMenu];
 };

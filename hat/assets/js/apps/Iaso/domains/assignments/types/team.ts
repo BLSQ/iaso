@@ -1,0 +1,29 @@
+/* eslint-disable camelcase */
+type SubTeam = {
+    id: number;
+    name: string;
+    deleted_at?: string;
+};
+
+type User = {
+    id: number;
+    username: string;
+};
+
+type Team = {
+    id: number;
+    name: string;
+    description?: string;
+    manager: number;
+    sub_teams: Array<number>;
+    sub_teams_details: Array<SubTeam>;
+    project: number;
+    type?: 'TEAM_OF_TEAMS' | 'TEAM_OF_USERS';
+    users: Array<number>;
+    users_details: Array<User>;
+    created_at: string;
+    deleted_at?: string;
+    parent?: number;
+};
+
+export type Teams = Team[];

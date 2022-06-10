@@ -59,11 +59,11 @@ export const getLatLngBounds = items => {
     return bounds;
 };
 
-export const getShapesBounds = shapes => {
+export const getShapesBounds = (shapes, shapeKey = 'geo_json') => {
     const groups = [];
     shapes.forEach(s => {
         const shapeGroup = new L.FeatureGroup();
-        const shape = L.geoJSON(s.geo_json);
+        const shape = L.geoJSON(s[shapeKey]);
         shape.addTo(shapeGroup);
         groups.push(shapeGroup);
     });

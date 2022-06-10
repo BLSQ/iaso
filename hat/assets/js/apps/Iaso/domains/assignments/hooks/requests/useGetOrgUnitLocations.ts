@@ -43,14 +43,17 @@ const mapLocation = (orgUnits: OrgUnit[], baseOrgUnitId): Locations => {
 
 export const useGetOrgUnitLocations = (
     orgUnitParentId: number | undefined,
+    callback: (data: Locations) => void,
 ): UseQueryResult<Locations, Error> => {
     const params = {
         validation_status: 'all',
         asLocation: true,
         limit: 5000,
         order: 'id',
-        orgUnitParentId,
+        parent_id: orgUnitParentId,
         geography: 'any',
+        onlyDirectChildren: true,
+        page: 1,
     };
 
     const url = makeUrlWithParams('/api/orgunits', params);
@@ -65,6 +68,7 @@ export const useGetOrgUnitLocations = (
             cacheTime: 1000 * 60 * 5,
             select: (orgUnits: OrgUnit[]) =>
                 mapLocation(orgUnits, orgUnitParentId),
+            onSuccess: data => callback(data),
         },
     );
 };

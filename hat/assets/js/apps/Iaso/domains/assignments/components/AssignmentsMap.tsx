@@ -1,9 +1,8 @@
 import React, { FunctionComponent, useRef, useState } from 'react';
 import { Map, TileLayer, GeoJSON, Pane, Tooltip } from 'react-leaflet';
 import { Box } from '@material-ui/core';
+import { useTheme } from '@material-ui/core/styles';
 import {
-    // @ts-ignore
-    useSkipEffectOnMount,
     // @ts-ignore
     LoadingSpinner,
 } from 'bluesquare-components';
@@ -19,6 +18,7 @@ import tiles from '../../../constants/mapTiles';
 // types
 import { AssignmentsApi } from '../types/assigment';
 import { Planning } from '../types/planning';
+import { Locations } from '../types/locations';
 // requests
 import { useGetOrgUnitLocations } from '../hooks/requests/useGetOrgUnitLocations';
 // components
@@ -42,16 +42,16 @@ export const AssignmentsMap: FunctionComponent<Props> = ({
     planning,
 }) => {
     const map: any = useRef();
+    const theme = useTheme();
+    const unassignedColor = theme.palette.grey[500];
     const [currentTile, setCurrentTile] = useState<Tile>(tiles.osm);
-    const { data: locations, isFetching: isFetchingLocations } =
-        useGetOrgUnitLocations(planning?.org_unit);
 
-    const fitToBounds = () => {
-        const shapeBounds = locations
-            ? getShapesBounds(locations.shapes)
+    const fitToBounds = (newLocations: Locations) => {
+        const shapeBounds = newLocations
+            ? getShapesBounds(newLocations.shapes, 'geoJson')
             : null;
-        const locationsBounds = locations
-            ? getLatLngBounds(locations.markers)
+        const locationsBounds = newLocations
+            ? getLatLngBounds(newLocations.markers)
             : null;
         let bounds = null;
         if (locationsBounds && shapeBounds) {
@@ -69,12 +69,8 @@ export const AssignmentsMap: FunctionComponent<Props> = ({
             }
         }
     };
-
-    useSkipEffectOnMount(() => {
-        if (!isFetchingLocations) {
-            fitToBounds();
-        }
-    }, [isFetchingLocations]);
+    const { data: locations, isFetching: isFetchingLocations } =
+        useGetOrgUnitLocations(planning?.org_unit, fitToBounds);
     return (
         <Box position="relative">
             <TilesSwitch
@@ -99,29 +95,42 @@ export const AssignmentsMap: FunctionComponent<Props> = ({
                     }
                     url={currentTile.url}
                 />
-                <ZoomControl fitToBounds={fitToBounds} />
-                <Pane name="shapes">
-                    {locations?.shapes.map(shape => (
-                        <GeoJSON key={shape.id} data={shape.geoJson} />
-                    ))}
-                </Pane>
-                <Pane name="markers">
-                    <MarkersListComponent
-                        items={locations?.markers || []}
-                        onMarkerClick={() => console.log('click')}
-                        markerProps={() => ({
-                            ...circleColorMarkerOptions('#006699'),
-                        })}
-                        tooltipProps={orgUnit => ({
-                            children: [orgUnit.name],
-                        })}
-                        TooltipComponent={Tooltip}
-                        isCircle
-                        // PopupComponent={
-                        //     OrgUnitPopupComponent
-                        // }
-                    />
-                </Pane>
+                {locations && (
+                    <>
+                        <ZoomControl
+                            fitToBounds={() => fitToBounds(locations)}
+                        />
+                        <Pane name="shapes">
+                            {locations.shapes.map(shape => (
+                                <GeoJSON
+                                    key={shape.id}
+                                    data={shape.geoJson}
+                                    style={() => ({
+                                        color: unassignedColor,
+                                    })}
+                                >
+                                    <Tooltip>{shape.name}</Tooltip>
+                                </GeoJSON>
+                            ))}
+                        </Pane>
+                        <Pane name="markers">
+                            <MarkersListComponent
+                                items={locations.markers || []}
+                                onMarkerClick={() => console.log('click')}
+                                markerProps={() => ({
+                                    ...circleColorMarkerOptions(
+                                        unassignedColor,
+                                    ),
+                                })}
+                                tooltipProps={orgUnit => ({
+                                    children: [orgUnit.name],
+                                })}
+                                TooltipComponent={Tooltip}
+                                isCircle
+                            />
+                        </Pane>
+                    </>
+                )}
             </Map>
         </Box>
     );

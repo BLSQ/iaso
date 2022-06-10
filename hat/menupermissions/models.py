@@ -23,6 +23,7 @@ DHIS2_LINK = _("Show dhis2 link")
 PLANNING = _("Planning")
 TEAMS = _("Equipes")
 ASSIGNMENTS = _("Attributions")
+POLIO_BUDGET = _("Budget Polio")
 
 
 # When adding a new permissions, it also need to be added in
@@ -71,4 +72,5 @@ class CustomPermissionSupport(models.Model):
             ("iaso_planning", PLANNING),
             ("iaso_teams", TEAMS),
             ("iaso_assignments", ASSIGNMENTS),
+            ("iaso_polio_budget", POLIO_BUDGET),
         )

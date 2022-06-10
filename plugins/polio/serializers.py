@@ -11,8 +11,12 @@ from rest_framework import serializers
 from rest_framework.validators import UniqueValidator
 from django.utils.translation import gettext as _
 from django.utils import timezone
+from django.core import validators
+from django.core.exceptions import ValidationError
 
+from iaso.api.common import TimestampField
 from hat.audit.models import Modification, CAMPAIGN_API
+
 from iaso.models import Group, OrgUnit
 from .models import (
     Round,
@@ -20,6 +24,8 @@ from .models import (
     VIRUSES,
     SpreadSheetImport,
     CampaignGroup,
+    BudgetEvent,
+    BudgetFiles,
 )
 from .preparedness.calculator import get_preparedness_score, preparedness_summary
 from .preparedness.parser import (
@@ -457,6 +463,8 @@ class CampaignSerializer(serializers.ModelSerializer):
 
 
 class SmallCampaignSerializer(CampaignSerializer):
+    latest_event = serializers.CharField(source="budgetevent.author")
+
     class Meta:
         model = Campaign
         fields = [
@@ -510,6 +518,7 @@ class SmallCampaignSerializer(CampaignSerializer):
             "top_level_org_unit_name",
             "top_level_org_unit_id",
             "is_preventive",
+            "latest_event",
         ]
         read_only_fields = fields
 
@@ -604,3 +613,28 @@ class CampaignGroupSerializer(serializers.ModelSerializer):
 
     campaigns = CampaignNameSerializer(many=True, read_only=True)
     campaigns_ids = serializers.PrimaryKeyRelatedField(many=True, queryset=Campaign.objects.all(), source="campaigns")
+
+
+class BudgetEventSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = BudgetEvent
+        fields = "__all__"
+        read_only_fields = ["created_at", "updated_at", "author", "deleted_at"]
+
+    def validate(self, attrs):
+        validated_data = super().validate(attrs)
+        if validated_data.get("cc_emails", None):
+            cc_emails = validated_data["cc_emails"].replace(" ", "").split(",")
+            for mail in cc_emails:
+                try:
+                    validators.validate_email(mail)
+                except ValidationError:
+                    raise serializers.ValidationError({"details": "Invalid e-mail : {0}".format(mail)})
+        return validated_data
+
+
+class BudgetFilesSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = BudgetFiles
+        fields = "__all__"
+        read_only_fields = ["created_at", "updated_at"]

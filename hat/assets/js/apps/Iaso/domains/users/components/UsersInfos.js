@@ -1,3 +1,4 @@
+/* eslint-disable react/prop-types */
 import React from 'react';
 import PropTypes from 'prop-types';
 import isEmpty from 'lodash/isEmpty';
@@ -10,14 +11,14 @@ const UsersInfos = ({
     setFieldValue,
     currentUser,
     initialData,
-    sendEmailInvitation,
+    AllowSendEmailInvitation,
 }) => {
-    const mailExist = isEmpty(currentUser.email.value);
-    const sendEmail = !!mailExist;
-    const sendEmailLabel = mailExist
+    const isEmailAdressExist = isEmpty(currentUser.email.value);
+    const sendUserEmailInvitation = !!isEmailAdressExist;
+    const sendUserIEmailnvitationLabel = isEmailAdressExist
         ? MESSAGES.sentEmailInvitationWhenAdresseExist
         : MESSAGES.sentEmailInvitation;
-    if (sendEmail && currentUser.send_email_invitation) {
+    if (sendUserEmailInvitation && currentUser.send_email_invitation) {
         // eslint-disable-next-line no-param-reassign
         currentUser.send_email_invitation.value = false;
     }
@@ -89,14 +90,14 @@ const UsersInfos = ({
                     };
                 })}
             />
-            {sendEmailInvitation && (
+            {AllowSendEmailInvitation && (
                 <InputComponent
                     keyValue="send_email_invitation"
                     onChange={(key, value) => setFieldValue(key, value)}
                     value={currentUser.send_email_invitation.value}
                     type="checkbox"
-                    disabled={sendEmail}
-                    label={sendEmailLabel}
+                    disabled={sendUserEmailInvitation}
+                    label={sendUserIEmailnvitationLabel}
                 />
             )}
         </>

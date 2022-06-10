@@ -145,6 +145,35 @@ class ProfilesViewSet(viewsets.ViewSet):
 
         return Response(profile.as_dict())
 
+    @staticmethod
+    def send_email_invitation(self, profile, email_subject, email_message):
+        domain = settings.DNS_DOMAIN
+
+        token_generator = PasswordResetTokenGenerator()
+        token = token_generator.make_token(profile.user)
+
+        uid = urlsafe_base64_encode(force_bytes(profile.user.pk))
+        create_password_path = reverse("reset_password_confirmation", kwargs={"uidb64": uid, "token": token})
+
+        email_text = email_message.format(
+            userName=profile.user.username,
+            url=f"https://{domain}{create_password_path}",
+        )
+
+        send_mail(email_subject, email_text, "no-reply@%s" % domain, [profile.user.email])
+
+    @staticmethod
+    def get_message_by_language(self, request_languange):
+        if not request_languange:
+            return self.CREATE_PASSWORD_MESSAGE_EN
+        return self.CREATE_PASSWORD_MESSAGE_FR if request_languange == "fr" else self.CREATE_PASSWORD_MESSAGE_EN
+
+    @staticmethod
+    def get_subject_by_language(self, request_languange):
+        if not request_languange:
+            return self.EMAIL_SUBJECT_EN
+        return self.EMAIL_SUBJECT_FR if request_languange == "fr" else self.EMAIL_SUBJECT_EN
+
     def create(self, request):
         username = request.data.get("user_name")
         password = request.data.get("password", "")
@@ -190,26 +219,13 @@ class ProfilesViewSet(viewsets.ViewSet):
         profile.dhis2_id = dhis2_id
         profile.save()
 
-        def send_email_invitation():
-            domain = settings.DNS_DOMAIN
-
-            token_generator = PasswordResetTokenGenerator()
-            token = token_generator.make_token(profile.user)
-
-            uid = urlsafe_base64_encode(force_bytes(profile.user.pk))
-            create_password_path = reverse("reset_password_confirmation", kwargs={"uidb64": uid, "token": token})
-
-            email_text = self.CREATE_PASSWORD_MESSAGE.format(
-                userName=profile.user.username,
-                url=f"https://{domain}{create_password_path}",
-            )
-
-            send_mail(
-                "Create password for your new Iaso account", email_text, "no-reply@%s" % domain, [profile.user.email]
-            )
-
+        # send an email invitation to new user when the send_email_invitation checkbox has been checked
+        # and the email adresse has been given
         if request.data.get("send_email_invitation") and profile.user.email:
-            send_email_invitation()
+            email_subject = self.get_subject_by_language(self, request.data.get("language"))
+            email_message = self.get_message_by_language(self, request.data.get("language"))
+
+            self.send_email_invitation(self, profile, email_subject, email_message)
 
         return Response(user.profile.as_dict())
 
@@ -220,19 +236,47 @@ class ProfilesViewSet(viewsets.ViewSet):
         profile.delete()
         return Response(True)
 
-    CREATE_PASSWORD_MESSAGE = """Hello, 
+    CREATE_PASSWORD_MESSAGE_EN = """Hello,
 
-A password creation has been request for your new Iaso account {userName},
+You’ve been invited to access IASO, and a new account with the username {userName} has been created for you. 
 
-to proceed please click the link below:
+IASO serves as an offline data collection tool with a specific angle on spatial related data, that make it specifically
+useful for health facilities registry or any situation where multiple sources of spatial data needs to be coordinated.
+For more information visit: https://www.bluesquarehub.com/iaso
+
+To set up a password for your account, simply click on the link:
 
 {url}
 
 If clicking the link above doesn't work, please copy and paste the URL in a new browser
 window instead.
 
-If you did not request a password creation, you can ignore this e-mail - no passwords will be created.
+If you did not request a IASO account, you can ignore this e-mail - no passwords will be created.
 
 Sincerely,
 The Iaso Team.
     """
+
+    CREATE_PASSWORD_MESSAGE_FR = """Salut, 
+
+Vous avez été invité à accéder à IASO et un nouveau compte avec le nom d'utilisateur {userName} a été créé pour vous.
+
+IASO sert d'outil de collecte de données hors ligne avec un angle spécifique sur les données spatiales, ce qui le rend spécifiquement
+utile pour le registre des établissements de santé ou toute situation où plusieurs sources de données spatiales doivent être coordonnées.
+Pour plus d'informations, visitez : https://www.bluesquarehub.com/iaso
+
+Pour configurer un mot de passe pour votre compte, cliquez simplement sur le lien :
+
+{url}
+
+Si cliquer sur le lien ci-dessus ne fonctionne pas, veuillez copier et coller l'URL dans un nouveau navigateur
+fenêtre à la place.
+
+Si vous n'avez pas demandé de compte IASO, vous pouvez ignorer cet e-mail - aucun mot de passe ne sera créé.
+
+Sincèrement,
+L'équipe Iaso.
+    """
+
+    EMAIL_SUBJECT_FR = "Configurer un mot de passe pour votre nouveau compte Iaso"
+    EMAIL_SUBJECT_EN = "Set up a password for your new Iaso account"

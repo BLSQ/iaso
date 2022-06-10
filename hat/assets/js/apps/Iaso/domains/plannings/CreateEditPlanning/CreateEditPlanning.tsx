@@ -24,11 +24,11 @@ import {
 } from '../hooks/requests/useSavePlanning';
 import DatesRange from '../../../components/filters/DatesRange';
 import { OrgUnitsLevels as OrgUnitSelect } from '../../../../../../../../plugins/polio/js/src/components/Inputs/OrgUnitsSelect';
-import { usePlanningValidation } from '../validation';
+import { usePlanningValidation } from '../hooks/validation';
 import { commaSeparatedIdsToArray } from '../../../utils/forms';
 import { IntlFormatMessage } from '../../../types/intl';
 import { useGetProjectsDropDown } from '../hooks/requests/useGetProjectsDropDown';
-import { useApiErrorValidation } from '../hooks/useApiErrorValidation';
+import { useApiErrorValidation } from '../../../libs/validation';
 
 type ModalMode = 'create' | 'edit' | 'copy';
 
@@ -83,13 +83,6 @@ export const makeResetTouched =
         setTouched(fields);
     };
 
-// TODO move to utils
-// const formHasBeenTouched = (touchedDict: Record<string, boolean>) => {
-//     return Boolean(
-//         Object.keys(touchedDict).find(dictKey => touchedDict[dictKey] === true),
-//     );
-// };
-
 const formatTitle = (type: ModalMode, formatMessage: IntlFormatMessage) => {
     switch (type) {
         case 'create':
@@ -117,15 +110,13 @@ export const CreateEditPlanning: FunctionComponent<Props> = ({
     publishingStatus,
 }) => {
     const { formatMessage } = useSafeIntl();
-    // const [apiErrors, setApiErrors] = useState();
-    // const [payload, setPayload] = useState<any>();
     const [closeModal, setCloseModal] = useState<any>();
     const { mutateAsync: savePlanning } = useSavePlanning(type);
     const {
         apiErrors,
         payload,
         mutation: save,
-    } = useApiErrorValidation<Partial<SavePlanningQuery>>({
+    } = useApiErrorValidation<Partial<SavePlanningQuery>, any>({
         mutationFn: savePlanning,
         onSuccess: () => {
             closeModal.closeDialog();
@@ -135,7 +126,6 @@ export const CreateEditPlanning: FunctionComponent<Props> = ({
         convertError: convertAPIErrorsToState,
     });
 
-    // Tried the typescript integration, but Type casting was crap
     const schema = usePlanningValidation(apiErrors, payload);
 
     const formik = useFormik({
@@ -162,18 +152,12 @@ export const CreateEditPlanning: FunctionComponent<Props> = ({
         setFieldValue,
         touched,
         setFieldTouched,
-        // setTouched,
         initialValues,
         errors,
         isValid,
         handleSubmit,
         resetForm,
     } = formik;
-    // using this method to reset touched state after saving
-    // const resetTouched = makeResetTouched(values, setTouched); // not really needed apparently
-    // console.log('errors formik', errors);
-    // console.log('payload', payload);
-    // console.log('initialValues', initialValues);
 
     const { data: formsDropdown, isFetching: isFetchingForms } = useGetForms(
         values?.project,
@@ -185,10 +169,6 @@ export const CreateEditPlanning: FunctionComponent<Props> = ({
     const { data: projectsDropdown, isFetching: isFetchingProjects } =
         useGetProjectsDropDown();
 
-    // const onConfirm = useCallback(async closeDialog => {
-    //     await handleSubmit();
-    // });
-
     const renderTrigger = useMemo(() => makeRenderTrigger(type), [type]);
 
     const onChange = (keyValue, value) => {
@@ -197,7 +177,6 @@ export const CreateEditPlanning: FunctionComponent<Props> = ({
     };
     const getErrors = useCallback(
         keyValue => {
-            // HERE bug when handling errors
             if (!touched[keyValue]) return [];
             return errors?.[keyValue] ? [errors[keyValue]] : [];
         },
@@ -208,7 +187,6 @@ export const CreateEditPlanning: FunctionComponent<Props> = ({
         <FormikProvider value={formik}>
             {/* @ts-ignore */}
             <ConfirmCancelDialogComponent
-                // Using touched i.o initialValues to evaluate if form has been modified
                 allowConfirm={isValid && !isEqual(values, initialValues)}
                 titleMessage={titleMessage}
                 onConfirm={closeDialog => {

@@ -1,52 +1,19 @@
 import { useMemo } from 'react';
 import moment from 'moment';
-import {
-    array,
-    date,
-    mixed,
-    number,
-    object,
-    ObjectSchema,
-    string,
-    TestConfig,
-} from 'yup';
+import { array, date, mixed, number, object, ObjectSchema, string } from 'yup';
 // @ts-ignore
 import { useSafeIntl } from 'bluesquare-components';
-import MESSAGES from './messages';
-import { getLocaleDateFormat } from '../../utils/dates';
-import { SavePlanningQuery } from './hooks/requests/useSavePlanning';
-import { IntlFormatMessage } from '../../types/intl';
+import MESSAGES from '../messages';
+import { getLocaleDateFormat } from '../../../utils/dates';
+import { SavePlanningQuery } from './requests/useSavePlanning';
+import { ValidationError } from '../../../types/utils';
+import { makeAPIErrorValidator } from '../../../libs/validation';
 
 // parse DD-MM-YYYY string to Date object
 const parseStringTodate = (_yupValue, pickerValue) => {
     const result = moment(pickerValue, getLocaleDateFormat('L')).toDate();
     return result;
 };
-
-export type ValidationError = Record<string, string> | null | undefined;
-
-// TODO: check if this wouldn't cause too many renders
-export const makeAPIErrorValidator =
-    <T,>(
-        errors: ValidationError,
-        payload: T,
-        formatMessage: IntlFormatMessage,
-        messages: any,
-    ) =>
-    (fieldKey: string) => {
-        return {
-            name: `API Errors ${fieldKey}`,
-            test: value => {
-                if (errors?.[fieldKey] && value === payload?.[fieldKey])
-                    return false;
-                return true;
-            },
-            message: errors?.[fieldKey]
-                ? formatMessage(messages[errors?.[fieldKey]]) ??
-                  errors?.[fieldKey]
-                : null,
-        } as TestConfig<any, Record<string, any>>;
-    };
 
 export const usePlanningValidation = (
     errors: ValidationError = {},

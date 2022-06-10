@@ -83,9 +83,20 @@ def enketo_public_create_url(request):
     return_url = request.GET.get("return_url", None)
 
     external_user_id = request.GET.get("external_user_id")
-    project = get_object_or_404(Project, external_token=token)
-    form = get_object_or_404(Form, form_id=form_id, projects=project)
-    org_unit = get_object_or_404(OrgUnit, source_ref=source_ref, version=project.account.default_version)
+    try:
+        project = Project.objects.get(external_token=token)
+    except Project.DoesNotExist:
+        return JsonResponse({"error": "Not Found", "message": "Project not found"}, status=400)
+    try:
+        form = Form.objects.get(form_id=form_id, projects=project)
+    except Form.DoesNotExist:
+        return JsonResponse({"error": "Not Found", "message": f"Form not found in project {project.name}"}, status=400)
+    try:
+        org_unit = OrgUnit.objects.get(source_ref=source_ref, version=project.account.default_version)
+    except OrgUnit.DoesNotExist:
+        return JsonResponse(
+            {"error": "Not Found", "message": f"OrgUnit {source_ref} not found in project {project.name}"}, status=400
+        )
 
     if not form in project.forms.all():
         return JsonResponse({"error": _("Unauthorized")}, status=401)
@@ -257,6 +268,7 @@ def enketo_form_download(request):
 class EnketoSubmissionAPIView(APIView):
 
     permission_classes = [permissions.AllowAny]
+    http_method_names = ["post", "head", "get"]
 
     def head(self, request, format=None):
         """HEAD call to no max content size"""
@@ -265,6 +277,8 @@ class EnketoSubmissionAPIView(APIView):
         resp["x-openrosa-accept-content-length"] = 100000000
 
         return resp
+
+    get = head
 
     def post(self, request, format=None):
         """UPDATE"""

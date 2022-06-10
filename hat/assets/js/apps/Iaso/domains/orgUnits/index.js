@@ -43,6 +43,7 @@ import { locationLimitMax } from './constants/orgUnitConstants';
 import { useGetOrgUnitTypes } from './hooks';
 import MESSAGES from './messages';
 import { decodeSearch, encodeUriParams, mapOrgUnitByLocation } from './utils';
+import { useCurrentUser } from '../../utils/usersUtils';
 
 const baseUrl = baseUrls.orgUnits;
 
@@ -92,7 +93,7 @@ const OrgUnits = props => {
     //     state => state.orgUnits.fetchingOrgUnitTypes,
     // );
     const filtersUpdated = useSelector(state => state.orgUnits.filtersUpdated);
-    const currentUser = useSelector(state => state.users.current);
+    const currentUser = useCurrentUser();
 
     const [tab, setTab] = useState(params.tab ? params.tab : 'list');
     const [listUpdated, setListUpdated] = useState(false);

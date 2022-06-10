@@ -11,6 +11,11 @@ from rest_framework import serializers
 from rest_framework.validators import UniqueValidator
 from django.utils.translation import gettext as _
 from django.utils import timezone
+from django.core import validators
+from django.core.exceptions import ValidationError
+
+from iaso.api.common import TimestampField
+from hat.audit.models import Modification, CAMPAIGN_API
 
 from iaso.models import Group, OrgUnit
 from .models import (
@@ -19,6 +24,8 @@ from .models import (
     VIRUSES,
     SpreadSheetImport,
     CampaignGroup,
+    BudgetEvent,
+    BudgetFiles,
 )
 from .preparedness.calculator import get_preparedness_score, preparedness_summary
 from .preparedness.parser import (
@@ -62,6 +69,47 @@ def _error(message, exc=None):
     if exc:
         errors["debug"] = [str(exc)]
     return errors
+
+
+# the following serializer are used so we can audit the modification on a campaign.
+# The related Scope and Round can be modified in the same request but are modelised as separate ORM Object
+# and DjangoSerializer don't serialize relation, DRF Serializer is used
+class AuditRoundSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Round
+        fields = "__all__"
+
+
+class AuditGroupSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Group
+        fields = "__all__"
+
+
+class AuditCampaignSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Campaign
+        fields = "__all__"
+
+    group = AuditGroupSerializer()
+    rounds = AuditRoundSerializer(many=True)
+
+
+def serialize_campaign(campaign):
+    "Serialize campaign for audit"
+    return [AuditCampaignSerializer(campaign).data]
+
+
+def log_campaign_modification(campaign: Campaign, old_campaign_dump, request_user):
+    if not old_campaign_dump:
+        old_campaign_dump = []
+    Modification.objects.create(
+        user=request_user,
+        past_value=old_campaign_dump,
+        new_value=serialize_campaign(campaign),
+        content_object=campaign,
+        source=CAMPAIGN_API,
+    )
 
 
 @transaction.atomic
@@ -368,10 +416,12 @@ class CampaignSerializer(serializers.ModelSerializer):
         for round_data in rounds:
             Round.objects.create(campaign=campaign, **round_data)
 
+        log_campaign_modification(campaign, None, self.context["request"].user)
         return campaign
 
     @atomic
-    def update(self, instance, validated_data):
+    def update(self, instance: Campaign, validated_data):
+        old_campaign_dump = serialize_campaign(instance)
         group = validated_data.pop("group") if "group" in validated_data else None
         rounds = validated_data.pop("rounds", [])
         round_instances = []
@@ -402,7 +452,9 @@ class CampaignSerializer(serializers.ModelSerializer):
             campaign_group.org_units.set(OrgUnit.objects.filter(pk__in=map(lambda org_unit: org_unit.id, org_units)))
             instance.group = campaign_group
 
-        return super().update(instance, validated_data)
+        campaign = super().update(instance, validated_data)
+        log_campaign_modification(campaign, old_campaign_dump, self.context["request"].user)
+        return campaign
 
     class Meta:
         model = Campaign
@@ -411,6 +463,8 @@ class CampaignSerializer(serializers.ModelSerializer):
 
 
 class SmallCampaignSerializer(CampaignSerializer):
+    latest_event = serializers.CharField(source="budgetevent.author")
+
     class Meta:
         model = Campaign
         fields = [
@@ -464,6 +518,7 @@ class SmallCampaignSerializer(CampaignSerializer):
             "top_level_org_unit_name",
             "top_level_org_unit_id",
             "is_preventive",
+            "latest_event",
         ]
         read_only_fields = fields
 
@@ -558,3 +613,28 @@ class CampaignGroupSerializer(serializers.ModelSerializer):
 
     campaigns = CampaignNameSerializer(many=True, read_only=True)
     campaigns_ids = serializers.PrimaryKeyRelatedField(many=True, queryset=Campaign.objects.all(), source="campaigns")
+
+
+class BudgetEventSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = BudgetEvent
+        fields = "__all__"
+        read_only_fields = ["created_at", "updated_at", "author", "deleted_at"]
+
+    def validate(self, attrs):
+        validated_data = super().validate(attrs)
+        if validated_data.get("cc_emails", None):
+            cc_emails = validated_data["cc_emails"].replace(" ", "").split(",")
+            for mail in cc_emails:
+                try:
+                    validators.validate_email(mail)
+                except ValidationError:
+                    raise serializers.ValidationError({"details": "Invalid e-mail : {0}".format(mail)})
+        return validated_data
+
+
+class BudgetFilesSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = BudgetFiles
+        fields = "__all__"
+        read_only_fields = ["created_at", "updated_at"]

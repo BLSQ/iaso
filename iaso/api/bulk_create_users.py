@@ -8,6 +8,7 @@ from rest_framework.response import Response
 from rest_framework.viewsets import ModelViewSet
 from rest_framework import serializers, status, permissions
 from django.core import validators
+from django.core.files.storage import default_storage
 import csv
 import pandas as pd
 
@@ -60,8 +61,7 @@ class BulkCreateUserFromCsvViewSet(ModelViewSet):
                 file=user_csv, created_by=request.user, account=request.user.iaso_profile.account
             )
             file_instance.save()
-            file_path = os.path.join(BASE_DIR, file_instance.file.path)
-            file = open(file_path, "r", encoding="utf-8")
+            file = default_storage.open(file_instance.file.name, "r")
             reader = csv.reader(file)
             i = 0
             csv_indexes = []

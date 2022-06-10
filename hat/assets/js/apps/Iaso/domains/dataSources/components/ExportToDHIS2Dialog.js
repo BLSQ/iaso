@@ -5,7 +5,6 @@ import { LoadingSpinner, useSafeIntl } from 'bluesquare-components';
 import ConfirmCancelDialogComponent from '../../../components/dialogs/ConfirmCancelDialogComponent';
 import InputComponent from '../../../components/forms/InputComponent';
 import { useFormState } from '../../../hooks/form';
-import snackBarMessages from '../../../components/snackBars/messages';
 import MESSAGES from '../messages';
 import {
     useDataSourceVersions,
@@ -77,8 +76,8 @@ export const ExportToDHIS2Dialog = ({
 
     const { mutate: exportToDHIS2 } = useSnackMutation(
         postToDHIS2,
-        undefined,
-        snackBarMessages.exportToDHIS2Error,
+        MESSAGES.exportToDhis2Success,
+        MESSAGES.exportToDhis2Error,
     );
 
     const [isCSVLoading, setIsCsvLoading] = useState(false);

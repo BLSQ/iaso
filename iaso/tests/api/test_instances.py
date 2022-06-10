@@ -1,18 +1,26 @@
+import datetime
 import typing
 from uuid import uuid4
+
+import pytz
 from django.contrib.gis.geos import Point
 from django.test import tag
 from django.core.files import File
 from unittest import mock
+
+from django.utils.timezone import now
 
 from hat.api.export_utils import timestamp_to_utc_datetime
 from iaso import models as m
 from iaso.test import APITestCase
 from hat.audit.models import Modification
 
+MOCK_DATE = datetime.datetime(2020, 2, 2, 2, 2, 2, tzinfo=pytz.utc)
+
 
 class InstancesAPITestCase(APITestCase):
     @classmethod
+    @mock.patch("django.utils.timezone.now", lambda: MOCK_DATE)
     def setUpTestData(cls):
         cls.star_wars = star_wars = m.Account.objects.create(name="Star Wars")
 
@@ -608,3 +616,154 @@ class InstancesAPITestCase(APITestCase):
         response = self.client.get(f"/api/instances/")
         self.assertJSONResponse(response, 200)
         self.assertValidInstanceListData(response.json(), 0)
+
+    @mock.patch("django.utils.timezone.now", lambda: MOCK_DATE)
+    def test_stats(self):
+        self.client.force_authenticate(self.yoda)
+        response = self.client.get(f"/api/instances/stats/")
+        r = self.assertJSONResponse(response, 200)
+
+        self.assertEqual(
+            r["data"],
+            [
+                {
+                    "Hydroponic public survey": 1,
+                    "Hydroponic public survey III": 1,
+                    "Hydroponics study": 4,
+                    "index": "2020-02-01T00:00:00.000Z",
+                    "name": "2020-02",
+                }
+            ],
+        )
+
+        self.assertListEqual(
+            r["schema"]["fields"],
+            [
+                {"freq": "M", "name": "index", "type": "datetime"},
+                {"name": "Hydroponics study", "type": "integer"},
+                {"name": "Hydroponic public survey", "type": "integer"},
+                {"name": "Hydroponic public survey III", "type": "integer"},
+                {"name": "name", "type": "string"},
+            ],
+        )
+
+    @mock.patch("django.utils.timezone.now", lambda: MOCK_DATE)
+    def test_stats_sum(self):
+        self.client.force_authenticate(self.yoda)
+        response = self.client.get(f"/api/instances/stats_sum/")
+        r = self.assertJSONResponse(response, 200)
+        self.assertEqual(
+            r["data"],
+            [{"index": 0, "name": "2020-02-02", "period": "2020-02-02T00:00:00.000Z", "total": 6, "value": 6}],
+        )
+
+        self.assertEqual(
+            r["schema"]["fields"],
+            [
+                {"name": "index", "type": "integer"},
+                {"name": "period", "type": "datetime", "tz": "UTC"},
+                {"name": "value", "type": "integer"},
+                {"name": "total", "type": "integer"},
+                {"name": "name", "type": "string"},
+            ],
+        )
+
+    @mock.patch("django.utils.timezone.now", lambda: MOCK_DATE)
+    def test_stats_dup(self):
+        """Fix for regression on IA-940 endpoint was failing due to duplicate form name"""
+        self.client.force_authenticate(self.yoda)
+        duplicate_form_a = m.Form.objects.create(
+            name="Duplicate form",
+            form_id="sample2",
+            device_field="deviceid",
+            location_field="geoloc",
+            period_type="QUARTER",
+            single_per_period=True,
+        )
+        duplicate_form_b = m.Form.objects.create(
+            name="Duplicate form",
+            form_id="sample2",
+            device_field="deviceid",
+            location_field="geoloc",
+            period_type="QUARTER",
+            single_per_period=True,
+        )
+        self.create_form_instance(
+            form=duplicate_form_a, period="202001", org_unit=self.jedi_council_corruscant, project=self.project
+        )
+        self.create_form_instance(
+            form=duplicate_form_b, period="202001", org_unit=self.jedi_council_corruscant, project=self.project
+        )
+        self.create_form_instance(
+            form=duplicate_form_b, period="202001", org_unit=self.jedi_council_corruscant, project=self.project
+        )
+        self.client.force_authenticate(self.yoda)
+        response = self.client.get(f"/api/instances/stats/")
+        r = self.assertJSONResponse(response, 200)
+
+        self.assertEqual(
+            r["data"],
+            [
+                {
+                    "Duplicate form": 2,
+                    "Hydroponic public survey": 1,
+                    "Hydroponic public survey III": 1,
+                    "Hydroponics study": 4,
+                    "index": "2020-02-01T00:00:00.000Z",
+                    "name": "2020-02",
+                }
+            ],
+        )
+        response = self.client.get(f"/api/instances/stats_sum/")
+        r = self.assertJSONResponse(response, 200)
+
+    @mock.patch("django.utils.timezone.now", lambda: MOCK_DATE)
+    def test_stats_dup_deleted(self):
+        """Fix for regression on IA-940 endpoint was failing due to duplicate form name
+        of a deleted form"""
+        self.client.force_authenticate(self.yoda)
+        duplicate_form_a = m.Form.objects.create(
+            name="Duplicate form",
+            form_id="sample2",
+            device_field="deviceid",
+            location_field="geoloc",
+            period_type="QUARTER",
+            single_per_period=True,
+        )
+        duplicate_form_b = m.Form.objects.create(
+            name="Duplicate form",
+            form_id="sample2",
+            device_field="deviceid",
+            location_field="geoloc",
+            period_type="QUARTER",
+            single_per_period=True,
+            deleted_at=now(),
+        )
+        self.create_form_instance(
+            form=duplicate_form_a, period="202001", org_unit=self.jedi_council_corruscant, project=self.project
+        )
+        self.create_form_instance(
+            form=duplicate_form_b, period="202001", org_unit=self.jedi_council_corruscant, project=self.project
+        )
+        self.create_form_instance(
+            form=duplicate_form_b, period="202001", org_unit=self.jedi_council_corruscant, project=self.project
+        )
+        self.client.force_authenticate(self.yoda)
+        response = self.client.get(f"/api/instances/stats/")
+        r = self.assertJSONResponse(response, 200)
+        self.assertEqual(
+            r["data"],
+            [
+                {
+                    "Duplicate form": 1,
+                    "Hydroponic public survey": 1,
+                    "Hydroponic public survey III": 1,
+                    "Hydroponics study": 4,
+                    "index": "2020-02-01T00:00:00.000Z",
+                    "name": "2020-02",
+                }
+            ],
+        )
+
+        response = self.client.get(f"/api/instances/stats_sum/")
+        r = self.assertJSONResponse(response, 200)

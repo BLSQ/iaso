@@ -12,6 +12,7 @@ import { getInstancesColumns, getInstancesVisibleColumns } from '../utils';
 import { ColumnsSelectDrawer } from '../../../components/tables/ColumnSelectDrawer';
 import MESSAGES from '../messages';
 import { INSTANCE_METAS_FIELDS } from '../constants';
+import { useCurrentUser } from '../../../utils/usersUtils';
 
 const useStyles = makeStyles(theme => ({
     ...commonStyles(theme),
@@ -38,7 +39,7 @@ const InstancesTopBar = ({
 }) => {
     const classes = useStyles();
     const dispatch = useDispatch();
-    const currentUser = useSelector(state => state.users.current);
+    const currentUser = useCurrentUser();
     const [visibleColumns, setVisibleColumns] = useState([]);
     const { formatMessage } = useSafeIntl();
 

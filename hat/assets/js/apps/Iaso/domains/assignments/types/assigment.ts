@@ -1,4 +1,5 @@
 /* eslint-disable camelcase */
+import { Shape } from '../../orgUnits/types/shapes';
 
 export type AssignmentParams = {
     planningId: string;
@@ -7,15 +8,22 @@ export type AssignmentParams = {
     tab?: string;
 };
 
-export type AssignmentApi = {
+type OrgUnitDetails = {
     id: number;
     name: string;
-    description?: string;
+    org_unit_type?: number;
+    geo_json: Shape | null;
+    latitude: number | null;
+    longitude: number | null;
+};
+
+export type AssignmentApi = {
+    id: number;
+    planning: number;
+    user: number;
     team: number;
-    team_details: { name: string; id: number };
-    published_at?: string;
-    started_at?: string;
-    ended_at?: string;
+    org_unit: number;
+    org_unit_details: OrgUnitDetails;
 };
 
 export type AssignmentsApi = AssignmentApi[];

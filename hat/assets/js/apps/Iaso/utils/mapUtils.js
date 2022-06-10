@@ -118,7 +118,7 @@ export const circleColorMarkerOptions = color => ({
     fillOpacity: 1,
     weight: 2,
     color: Color(color).darken(0.5),
-    radius: 5,
+    radius: 8,
 });
 
 class ZoomControl_ extends MapControl {

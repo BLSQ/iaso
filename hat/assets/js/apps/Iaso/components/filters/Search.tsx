@@ -1,7 +1,10 @@
 import React, { FunctionComponent, useState, useEffect } from 'react';
 import {
+    // @ts-ignore
     SearchInput,
+    // @ts-ignore
     useSafeIntl,
+    // @ts-ignore
     useSkipEffectOnMount,
 } from 'bluesquare-components';
 import { Box } from '@material-ui/core';

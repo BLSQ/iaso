@@ -1,3 +1,6 @@
+import { Shape } from './shapes';
+
+/* eslint-disable camelcase */
 export type OrgUnit = {
     name: string;
     short_name: string;
@@ -17,6 +20,7 @@ export type OrgUnit = {
     latitude?: number;
     longitude?: number;
     altitude?: number;
+    geo_json?: Shape | undefined;
     has_geo_json: boolean;
     org_unit_type_name: string;
     source: string;

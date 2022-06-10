@@ -95,8 +95,11 @@ export const Assignments: FunctionComponent<Props> = ({ params }) => {
                 {isLoading && <LoadingSpinner />}
                 <AssignmentsFilters params={params} />
                 <Box mt={2}>
-                    {tab === 'map' && (
-                        <AssignmentsMapTab assignments={assignments} />
+                    {tab === 'map' && !isLoading && (
+                        <AssignmentsMapTab
+                            assignments={assignments}
+                            planning={planning}
+                        />
                     )}
                     {tab === 'list' && <Box>LIST</Box>}
                 </Box>

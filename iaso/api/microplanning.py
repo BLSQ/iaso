@@ -184,29 +184,29 @@ class PlanningSerializer(serializers.ModelSerializer):
             and validated_data.get("ended_at")
             and validated_data["started_at"] > validated_data["ended_at"]
         ):
-        #    raise serializers.ValidationError({"started_at": "Start date cannot be after end date"})
-            validation_errors["started_at"]= "Start date cannot be after end date"
-            validation_errors["ended_at"]= "End date cannot be before start date"
+            #    raise serializers.ValidationError({"started_at": "Start date cannot be after end date"})
+            validation_errors["started_at"] = "Start date cannot be after end date"
+            validation_errors["ended_at"] = "End date cannot be before start date"
         project = validated_data.get("project", self.instance.project if self.instance else None)
-        
+
         team = validated_data.get("team", self.instance.team if self.instance else None)
         if team.project != project:
-            validation_errors["team"]="Planning and team must be in the same project"
+            validation_errors["team"] = "Planning and team must be in the same project"
             # validation_errors.append({"team":"Planning and team must be in the same project"})
-        
+
         forms = validated_data.get("forms", self.instance.forms if self.instance else None)
         for form in forms:
             if not form in project.forms.all():
                 # validation_errors.append({"forms":"Planning and forms must be in the same project"})
-                validation_errors["forms"]="Planning and forms must be in the same project"
-        
+                validation_errors["forms"] = "Planning and forms must be in the same project"
+
         org_unit = validated_data.get("org_unit", self.instance.org_unit if self.instance else None)
         org_unit_projects = org_unit.org_unit_type.projects.all()
         if not project in org_unit_projects:
-            validation_errors["org_unit"]="Planning and org unit must be in the same project"
-        if validation_errors :
+            validation_errors["org_unit"] = "Planning and org unit must be in the same project"
+        if validation_errors:
             raise serializers.ValidationError(validation_errors)
-        
+
         return validated_data
 
 

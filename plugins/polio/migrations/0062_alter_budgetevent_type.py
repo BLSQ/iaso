@@ -6,13 +6,16 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('polio', '0061_merge_20220609_1404'),
+        ("polio", "0061_merge_20220609_1404"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='budgetevent',
-            name='type',
-            field=models.CharField(choices=[('submission', 'Budget Submission'), ('comments', 'Comments'), ('validation', 'Validation')], max_length=200),
+            model_name="budgetevent",
+            name="type",
+            field=models.CharField(
+                choices=[("submission", "Budget Submission"), ("comments", "Comments"), ("validation", "Validation")],
+                max_length=200,
+            ),
         ),
     ]

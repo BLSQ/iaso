@@ -29,7 +29,7 @@ export const sortBudgetEventByUpdate = budgetEvents => {
             a: { updated_at: moment.MomentInput },
             b: { updated_at: moment.MomentInput },
         ) => {
-            return moment(a.updated_at).isSameOrAfter(moment(b.updated_at));
+            return moment(a.updated_at).isSameOrBefore(moment(b.updated_at));
         },
     );
 };

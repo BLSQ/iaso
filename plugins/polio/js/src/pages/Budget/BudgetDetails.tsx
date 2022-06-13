@@ -187,11 +187,6 @@ export const BudgetDetails: FunctionComponent<Props> = ({ router }) => {
                         </Paper>
                     </Grid>
                     <Grid item xs={4}>
-                        {(isFetchingRegions ||
-                            isFetchingDistricts ||
-                            isFetchingScope) && (
-                            <LoadingSpinner fixed={false} />
-                        )}
                         <Paper>
                             <Box ml={2} pt={2} mr={2} pb={2}>
                                 <GraphTitle
@@ -201,20 +196,29 @@ export const BudgetDetails: FunctionComponent<Props> = ({ router }) => {
                                 <Box mt={2} mb={1}>
                                     <Divider />
                                 </Box>
-                                <MapComponent
-                                    name="BudgetScopeMap"
-                                    mainLayer={districtShapes}
-                                    backgroundLayer={regionShapes}
-                                    onSelectShape={() => null}
-                                    getMainLayerStyle={getShapeStyle}
-                                    getBackgroundLayerStyle={
-                                        getBackgroundLayerStyle
-                                    }
-                                    tooltipLabels={{
-                                        main: 'District',
-                                        background: 'Region',
-                                    }}
-                                />
+                                {(isFetchingRegions ||
+                                    isFetchingDistricts ||
+                                    isFetchingScope) && (
+                                    <LoadingSpinner fixed={false} />
+                                )}
+                                {!isFetchingRegions &&
+                                    !isFetchingDistricts &&
+                                    !isFetchingScope && (
+                                        <MapComponent
+                                            name="BudgetScopeMap"
+                                            mainLayer={districtShapes}
+                                            backgroundLayer={regionShapes}
+                                            onSelectShape={() => null}
+                                            getMainLayerStyle={getShapeStyle}
+                                            getBackgroundLayerStyle={
+                                                getBackgroundLayerStyle
+                                            }
+                                            tooltipLabels={{
+                                                main: 'District',
+                                                background: 'Region',
+                                            }}
+                                        />
+                                    )}
                             </Box>
                         </Paper>
                     </Grid>

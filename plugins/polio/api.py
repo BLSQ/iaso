@@ -1443,13 +1443,23 @@ class BudgetEventViewset(ModelViewSet):
             emails.update(event.cc_emails.split(","))
 
             send_mail(
-                "New Budget Submission for {}".format(event.campaign.obr_name),
-                """%s %s submitted a new budget.
+                "New Budget Event for {}".format(event.campaign.obr_name),
+                """%s by %s %s.
+                Comment: %s
+    you can access the history of this budget here: 
+    https://iaso-staging.bluesquare.org/dashboard/polio/budget/details/campaignId/%s/campaignName/%s/country/%d
     
-    To approve or comment this budget, click here :
-    
-    poliooutbreaks.com/dashboard/polio/budget/details/campaignId/%s/campaignName/%s"""
-                % (event.author.first_name, event.author.last_name, event.campaign.id, event.campaign.obr_name),
+    This is an automated email from poliooutbreaks.com
+"""
+                % (
+                    event.type,
+                    event.author.first_name,
+                    event.author.last_name,
+                    event.comment,
+                    event.campaign.id,
+                    event.campaign.obr_name,
+                    event.campaign.country.id,
+                ),
                 "no-reply@poliooutbreaks.com",
                 emails,
             )

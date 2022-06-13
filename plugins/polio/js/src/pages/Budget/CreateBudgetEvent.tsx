@@ -106,7 +106,9 @@ export const CreateBudgetEvent: FunctionComponent<Props> = ({ campaignId }) => {
                     required
                     keyValue="type"
                     onChange={(keyValue, value) => {
-                        setFieldValue('status', 'validated');
+                        if (value === 'validation') {
+                            setFieldValue('status', 'validated');
+                        }
                         onChange(keyValue, value);
                     }}
                     value={values.type}

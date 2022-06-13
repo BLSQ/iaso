@@ -60,6 +60,10 @@ class BulkCreateUserFromCsvViewSet(ModelViewSet):
             reader = csv.reader(csv_str)
             i = 0
             csv_indexes = []
+            file_instance = BulkCreateUserCsvFile.objects.create(
+                file=user_csv, created_by=request.user, account=request.user.iaso_profile.account
+            )
+            file_instance.save()
             for row in reader:
                 org_units_list = []
                 if i > 0:
@@ -155,10 +159,6 @@ class BulkCreateUserFromCsvViewSet(ModelViewSet):
                         profile.language = language
                     else:
                         profile.language = "fr"
-                    file_instance = BulkCreateUserCsvFile.objects.create(
-                        file=user_csv, created_by=request.user, account=request.user.iaso_profile.account
-                    )
-                    file_instance.save()
                     profile.org_units.set(org_units_list)
                     csv_file = pd.read_csv(file_instance.file.path)
                     csv_file.at[i - 1, "password"] = ""

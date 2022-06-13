@@ -76,6 +76,7 @@ const routes = [
         baseUrl: DASHBOARD_BASE_URL,
         component: props => <Dashboard {...props} />,
         permissions: ['iaso_polio'],
+        isRootUrl: true,
         params: [
             ...paginationPathParams,
             {

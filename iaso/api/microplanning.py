@@ -201,9 +201,10 @@ class PlanningSerializer(serializers.ModelSerializer):
                 validation_errors["forms"] = "Planning and forms must be in the same project"
 
         org_unit = validated_data.get("org_unit", self.instance.org_unit if self.instance else None)
-        org_unit_projects = org_unit.org_unit_type.projects.all()
-        if not project in org_unit_projects:
-            validation_errors["org_unit"] = "Planning and org unit must be in the same project"
+        if org_unit and org_unit.org_unit_type:
+            org_unit_projects = org_unit.org_unit_type.projects.all()
+            if not project in org_unit_projects:
+                validation_errors["org_unit"] = "Planning and org unit must be in the same project"
         if validation_errors:
             raise serializers.ValidationError(validation_errors)
 

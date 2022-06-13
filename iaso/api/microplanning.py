@@ -4,6 +4,7 @@ from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import serializers, filters, permissions
 from rest_framework.permissions import IsAuthenticated
 
+from hat.audit.models import Modification
 from iaso.api.common import ModelViewSet, DeletionFilterBackend, ReadOnlyOrHasPermission
 from iaso.models import Project, OrgUnit, Form
 from iaso.models.microplanning import Team, TeamType, Planning, Assignment
@@ -26,6 +27,12 @@ class NestedUserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = ["id", "username"]
+
+
+class AuditTeamSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Team
+        fields = "__all__"
 
 
 class TeamSerializer(serializers.ModelSerializer):
@@ -166,6 +173,48 @@ class TeamViewSet(ModelViewSet):
     def get_queryset(self):
         user = self.request.user
         return self.queryset.filter_for_user(user)
+
+    audit_serializer = AuditTeamSerializer
+
+    def perform_create(self, serializer):
+        super().perform_update(serializer)
+        instance = serializer.instance
+
+        serialized = [self.audit_serializer(instance).data]
+        Modification.objects.create(
+            user=self.request.user,
+            past_value=[],
+            new_value=serialized,
+            content_object=instance,
+            source="API " + self.request.path,
+        )
+
+    def perform_update(self, serializer):
+        instance = serializer.instance
+        old_value = [self.audit_serializer(instance).data]
+        super().perform_update(serializer)
+        instance = serializer.instance
+        new_value = [self.audit_serializer(instance).data]
+        Modification.objects.create(
+            user=self.request.user,
+            past_value=old_value,
+            new_value=new_value,
+            content_object=instance,
+            source="API " + self.request.path,
+        )
+
+    def perform_destroy(self, instance):
+        old_value = [self.audit_serializer(instance).data]
+        super().perform_destroy(instance)
+        # for soft delete, we still have an existing instance
+        new_value = [self.audit_serializer(instance).data]
+        Modification.objects.create(
+            user=self.request.user,
+            past_value=old_value,
+            new_value=new_value,
+            content_object=instance,
+            source="API " + self.request.path,
+        )
 
 
 class PlanningSerializer(serializers.ModelSerializer):

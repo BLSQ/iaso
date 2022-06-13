@@ -3,6 +3,7 @@ from django.contrib.auth.models import User
 from django.test import TransactionTestCase
 from django.utils.timezone import now
 
+from hat.audit.models import Modification
 from iaso.api.microplanning import TeamSerializer, PlanningSerializer, AssignmentSerializer
 from iaso.models import Account, DataSource, SourceVersion, OrgUnit, Form, OrgUnitType
 from iaso.models.microplanning import TeamType, Team, Planning, Assignment
@@ -273,6 +274,10 @@ class TeamAPITestCase(APITestCase):
         self.assertTrue(Team.objects.filter(name="hello").exists())
         team = Team.objects.get(name="hello")
         self.assertEqual(team.created_by, user_with_perms)
+        self.assertEqual(Modification.objects.all().count(), 1)
+        mod = Modification.objects.first()
+        self.assertEqual(mod.past_value, [])
+        self.assertEqual(mod.new_value[0]["name"], "hello")
 
     def test_create_no_perms(self):
         self.client.force_authenticate(self.user)
@@ -323,6 +328,9 @@ class TeamAPITestCase(APITestCase):
         team = Team.objects.get(name="hello")
         self.assertQuerysetEqual(team.sub_teams.all(), [])
         self.assertQuerysetEqual(team.users.all(), [team_member])
+        self.assertEqual(Modification.objects.count(), 3)
+        mod = Modification.objects.last()
+        self.assertEqual(mod.user, user_with_perms)
 
     def test_patch_no_perms(self):
         self.client.force_authenticate(self.user)
@@ -378,6 +386,8 @@ class TeamAPITestCase(APITestCase):
         response = self.client.get("/api/microplanning/teams/", format="json")
         r = self.assertJSONResponse(response, 200)
         self.assertEqual(len(r), 2)
+        # one for delete, one for undelete
+        self.assertEqual(Modification.objects.count(), 2)
 
 
 class PlanningTestCase(APITestCase):

@@ -26,7 +26,7 @@ export const useGetTeams = (): UseQueryResult<
                     value: team.id.toString(),
                     label: team.name,
                     original: team,
-                    color: getTeamColor(index - 1),
+                    color: getTeamColor(index),
                 };
             });
         },

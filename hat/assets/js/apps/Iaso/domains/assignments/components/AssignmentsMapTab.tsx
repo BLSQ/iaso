@@ -1,5 +1,6 @@
 import React, { FunctionComponent } from 'react';
-import { Grid } from '@material-ui/core';
+import { Grid, Box } from '@material-ui/core';
+import { useTheme, Theme } from '@material-ui/core/styles';
 
 import {
     // @ts-ignore
@@ -31,12 +32,13 @@ type Props = {
     setTeamColor: (color: string, teamId: number) => void;
 };
 
-const columns = (
+const getColumns = (
     formatMessage: IntlFormatMessage,
     assignments: AssignmentsApi,
     teams: DropdownTeamsOptions[],
     // eslint-disable-next-line no-unused-vars
     setTeamColor: (color: string, teamId: number) => void,
+    theme: Theme,
 ): Column[] => {
     return [
         {
@@ -54,21 +56,25 @@ const columns = (
                 );
                 return (
                     <>
-                        {fullTeam?.color ? (
+                        <Box display="flex" justifyContent="center">
                             <ColorPicker
-                                currentColor={fullTeam.color}
-                                colors={teamsColors}
+                                currentColor={
+                                    fullTeam?.color ?? theme.palette.grey[500]
+                                }
+                                colors={teamsColors.filter(
+                                    color =>
+                                        !fullTeam ||
+                                        (fullTeam && color !== fullTeam.color),
+                                )}
                                 displayLabel={false}
                                 onChangeColor={color =>
                                     setTeamColor(
-                                        `#${color}`,
+                                        color,
                                         settings.row.original.id,
                                     )
                                 }
                             />
-                        ) : (
-                            '-'
-                        )}
+                        </Box>
                     </>
                 );
             },
@@ -102,6 +108,7 @@ export const AssignmentsMapTab: FunctionComponent<Props> = ({
     setTeamColor,
 }) => {
     const { formatMessage } = useSafeIntl();
+    const theme: Theme = useTheme();
     return (
         <Grid container spacing={2}>
             <Grid item xs={5}>
@@ -111,11 +118,12 @@ export const AssignmentsMapTab: FunctionComponent<Props> = ({
                     defaultSorted={[{ id: 'name', desc: false }]}
                     countOnTop={false}
                     marginTop={false}
-                    columns={columns(
+                    columns={getColumns(
                         formatMessage,
                         assignments,
                         teams,
                         setTeamColor,
+                        theme,
                     )}
                     count={currentTeam?.sub_teams_details?.length ?? 0}
                     onTableParamsChange={p =>

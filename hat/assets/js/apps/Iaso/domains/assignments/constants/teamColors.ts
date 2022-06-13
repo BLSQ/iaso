@@ -12,7 +12,6 @@ import {
     amber,
     deepOrange,
     brown,
-    grey,
     blueGrey,
 } from '@material-ui/core/colors';
 
@@ -25,7 +24,6 @@ export const teamsColors = [
     lightBlue[500],
     lime[500],
     brown[500],
-    grey[500],
     cyan[500],
     blueGrey[500],
     pink[500],

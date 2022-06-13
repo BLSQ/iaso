@@ -71,6 +71,19 @@ export const Assignments: FunctionComponent<Props> = ({ params }) => {
     } = useGetAssignments({ planningId });
 
     const isLoading = isLoadingPlanning || isLoadingAssignments;
+
+    const setTeamColor = (color: string, teamId: number): void => {
+        const teamIndex = teams.findIndex(team => team.original.id === teamId);
+        if (teamIndex) {
+            const newTeams = [...teams];
+            newTeams[teamIndex] = {
+                ...newTeams[teamIndex],
+                color,
+            };
+            setTeams(newTeams);
+        }
+    };
+
     useSkipEffectOnMount(() => {
         const newParams = {
             ...params,
@@ -133,9 +146,7 @@ export const Assignments: FunctionComponent<Props> = ({ params }) => {
                             planning={planning}
                             currentTeam={currentTeam}
                             teams={teams}
-                            setTeamColor={(color, teamId) =>
-                                console.log('new team color', color, teamId)
-                            }
+                            setTeamColor={setTeamColor}
                         />
                     )}
                     {tab === 'list' && <Box>LIST</Box>}

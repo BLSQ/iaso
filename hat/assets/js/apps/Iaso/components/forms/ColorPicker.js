@@ -27,16 +27,13 @@ const useStyles = makeStyles(theme => ({
         height: theme.spacing(3),
         cursor: 'pointer',
         display: 'inline-block',
-        position: 'relative',
-        top: 6,
-        left: theme.spacing(1),
         outline: 'none !important',
     },
     popper: {
         zIndex: 500,
         width: 300,
         paddingTop: theme.spacing(2),
-        marginLeft: -5,
+        marginLeft: -10,
         '& .twitter-picker': {
             width: '350px !important',
             '& div div:nth-last-child(2), & div div:nth-last-child(3)': {
@@ -48,25 +45,34 @@ const useStyles = makeStyles(theme => ({
 
 const ColorPicker = ({ currentColor, onChangeColor, colors, displayLabel }) => {
     const [anchorEl, setAnchorEl] = useState(null);
+    const [color, setColor] = useState(currentColor);
     const classes = useStyles();
     const handleClick = event => {
         setAnchorEl(anchorEl ? null : event.currentTarget);
     };
     const open = Boolean(anchorEl);
+
+    const handleChangeColor = newColor => {
+        handleClick();
+        setColor(newColor.hex);
+        onChangeColor(newColor.hex);
+    };
     return (
         <Box>
-            <Box>
+            <Box display="flex" alignItems="center">
                 {displayLabel && (
-                    <FormLabel>
-                        <FormattedMessage {...MESSAGES.color} />:
-                    </FormLabel>
+                    <Box mr={1} display="inline-block">
+                        <FormLabel>
+                            <FormattedMessage {...MESSAGES.color} />:
+                        </FormLabel>
+                    </Box>
                 )}
                 <span
                     onClick={handleClick}
                     className={classes.button}
                     role="button"
                     tabIndex="0"
-                    style={{ backgroundColor: currentColor }}
+                    style={{ backgroundColor: color }}
                 >
                     {' '}
                 </span>
@@ -83,11 +89,8 @@ const ColorPicker = ({ currentColor, onChangeColor, colors, displayLabel }) => {
                         <TwitterPicker
                             width="100%"
                             colors={colors}
-                            color={currentColor}
-                            onChangeComplete={color => {
-                                handleClick();
-                                onChangeColor(color.hex.replace('#', ''));
-                            }}
+                            color={color}
+                            onChangeComplete={handleChangeColor}
                         />
                     </Popper>
                 </ClickAwayListener>

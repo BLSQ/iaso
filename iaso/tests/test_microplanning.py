@@ -361,6 +361,10 @@ class TeamAPITestCase(APITestCase):
         team.refresh_from_db()
         self.assertIsNotNone(team.deleted_at)
 
+        m = Modification.objects.filter(object_id=team.id, content_type__model="team").first()
+        self.assertEqual(m.past_value[0]["deleted_at"], None)
+        self.assertNotEqual(m.new_value[0]["deleted_at"], None)
+
         # we don't see it anymore
         response = self.client.get("/api/microplanning/teams/", format="json")
         r = self.assertJSONResponse(response, 200)

@@ -277,7 +277,9 @@ class TeamAPITestCase(APITestCase):
         self.assertEqual(Modification.objects.all().count(), 1)
         mod = Modification.objects.first()
         self.assertEqual(mod.past_value, [])
+        self.assertEqual(mod.user, user_with_perms)
         self.assertEqual(mod.new_value[0]["name"], "hello")
+        self.assertEqual(mod.source, "API POST/api/microplanning/teams/")
 
     def test_create_no_perms(self):
         self.client.force_authenticate(self.user)

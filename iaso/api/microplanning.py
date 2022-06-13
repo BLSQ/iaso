@@ -146,7 +146,52 @@ class TeamAncestorFilterBackend(filters.BaseFilterBackend):
         return queryset
 
 
-class TeamViewSet(ModelViewSet):
+class AuditMixin:
+    def perform_create(self, serializer):
+        # noinspection PyUnresolvedReferences
+        super().perform_update(serializer)
+        instance = serializer.instance
+
+        serialized = [self.audit_serializer(instance).data]
+        Modification.objects.create(
+            user=self.request.user,
+            past_value=[],
+            new_value=serialized,
+            content_object=instance,
+            source="API " + self.request.method + self.request.path,
+        )
+
+    def perform_update(self, serializer):
+        instance = serializer.instance
+        old_value = [self.audit_serializer(instance).data]
+        # noinspection PyUnresolvedReferences
+        super().perform_update(serializer)
+        instance = serializer.instance
+        new_value = [self.audit_serializer(instance).data]
+        Modification.objects.create(
+            user=self.request.user,
+            past_value=old_value,
+            new_value=new_value,
+            content_object=instance,
+            source="API " + self.request.method + self.request.path,
+        )
+
+    def perform_destroy(self, instance):
+        old_value = [self.audit_serializer(instance).data]
+        # noinspection PyUnresolvedReferences
+        super().perform_destroy(instance)
+        # for soft delete, we still have an existing instance
+        new_value = [self.audit_serializer(instance).data]
+        Modification.objects.create(
+            user=self.request.user,
+            past_value=old_value,
+            new_value=new_value,
+            content_object=instance,
+            source=f"API {self.request.method} {self.request.path}",
+        )
+
+
+class TeamViewSet(AuditMixin, ModelViewSet):
     """Api for teams
 
     Read access for all auth users.
@@ -172,51 +217,11 @@ class TeamViewSet(ModelViewSet):
         "project": ["exact"],
     }
 
+    audit_serializer = AuditTeamSerializer
+
     def get_queryset(self):
         user = self.request.user
         return self.queryset.filter_for_user(user)
-
-    audit_serializer = AuditTeamSerializer
-
-    def perform_create(self, serializer):
-        super().perform_update(serializer)
-        instance = serializer.instance
-
-        serialized = [self.audit_serializer(instance).data]
-        Modification.objects.create(
-            user=self.request.user,
-            past_value=[],
-            new_value=serialized,
-            content_object=instance,
-            source="API " + self.request.path,
-        )
-
-    def perform_update(self, serializer):
-        instance = serializer.instance
-        old_value = [self.audit_serializer(instance).data]
-        super().perform_update(serializer)
-        instance = serializer.instance
-        new_value = [self.audit_serializer(instance).data]
-        Modification.objects.create(
-            user=self.request.user,
-            past_value=old_value,
-            new_value=new_value,
-            content_object=instance,
-            source="API " + self.request.path,
-        )
-
-    def perform_destroy(self, instance):
-        old_value = [self.audit_serializer(instance).data]
-        super().perform_destroy(instance)
-        # for soft delete, we still have an existing instance
-        new_value = [self.audit_serializer(instance).data]
-        Modification.objects.create(
-            user=self.request.user,
-            past_value=old_value,
-            new_value=new_value,
-            content_object=instance,
-            source="API " + self.request.path,
-        )
 
 
 class PlanningSerializer(serializers.ModelSerializer):

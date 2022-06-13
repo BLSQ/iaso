@@ -494,6 +494,59 @@ class PlanningTestCase(APITestCase):
         self.assertFalse(failing_teams.is_valid(), failing_teams.errors)
         self.assertIn("team", failing_teams.errors)
 
+    def test_patch_api(self):
+        planning = Planning.objects.create(
+            name="Planning to modify",
+            project=self.project1,
+            org_unit=self.org_unit,
+            team=self.team1,
+        )
+        user_with_perms = self.create_user_with_profile(
+            username="user_with_perms", account=self.account, permissions=["iaso_planning"]
+        )
+        self.client.force_authenticate(user_with_perms)
+        data = {
+            "name": "My Planning",
+            "forms": [self.form1.id, self.form2.id],
+            "team": self.team1.id,
+            "team_details": {"id": self.team1.id, "name": self.team1.name},
+            "started_at": "2022-02-02",
+            "ended_at": "2022-03-03",
+        }
+        response = self.client.patch(f"/api/microplanning/planning/{planning.id}/", data=data, format="json")
+        r = self.assertJSONResponse(response, 200)
+        planning_id = r["id"]
+        self.assertTrue(Planning.objects.get(id=planning_id))
+        self.assertEqual(Modification.objects.all().count(), 1)
+        planning.refresh_from_db()
+        self.assertEqual(planning.name, "My Planning")
+        self.assertQuerysetEqual(planning.forms.all(), [self.form1, self.form2], ordered=False)
+
+        mod = Modification.objects.last()
+        self.assertEqual(mod.past_value[0]["forms"], [2])
+        self.assertEqual(mod.new_value[0]["forms"], [self.form1.id, self.form2.id])
+
+    def test_create_api(self):
+        user_with_perms = self.create_user_with_profile(
+            username="user_with_perms", account=self.account, permissions=["iaso_planning"]
+        )
+        self.client.force_authenticate(user_with_perms)
+        data = {
+            "name": "My Planning",
+            "org_unit": self.org_unit.id,
+            "forms": [self.form1.id, self.form2.id],
+            "team": self.team1.id,
+            "team_details": {"id": self.team1.id, "name": self.team1.name},
+            "project": self.project1.id,
+            "started_at": "2022-02-02",
+            "ended_at": "2022-03-03",
+        }
+        response = self.client.post("/api/microplanning/planning/", data=data, format="json")
+        r = self.assertJSONResponse(response, 201)
+        planning_id = r["id"]
+        self.assertTrue(Planning.objects.get(id=planning_id))
+        self.assertEqual(Modification.objects.all().count(), 1)
+
 
 class AssignmentAPITestCase(APITestCase):
     fixtures = ["user.yaml"]

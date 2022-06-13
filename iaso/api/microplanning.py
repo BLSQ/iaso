@@ -269,6 +269,12 @@ class PlanningSerializer(serializers.ModelSerializer):
         return validated_data
 
 
+class AuditPlanningSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Planning
+        fields = "__all__"
+
+
 class PlanningSearchFilterBackend(filters.BaseFilterBackend):
     def filter_queryset(self, request, queryset, view):
         search = request.query_params.get("search")
@@ -289,7 +295,7 @@ class PublishingStatusFilterBackend(filters.BaseFilterBackend):
         return queryset
 
 
-class PlanningViewSet(ModelViewSet):
+class PlanningViewSet(AuditMixin, ModelViewSet):
     remove_results_key_if_paginated = True
     permission_classes = [ReadOnlyOrHasPermission("menupermissions.iaso_planning")]
     serializer_class = PlanningSerializer
@@ -307,6 +313,7 @@ class PlanningViewSet(ModelViewSet):
         "started_at": ["gte", "lte"],
         "ended_at": ["gte", "lte"],
     }
+    audit_serializer = AuditPlanningSerializer
 
     def get_queryset(self):
         user = self.request.user

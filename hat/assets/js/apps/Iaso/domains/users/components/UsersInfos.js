@@ -1,3 +1,4 @@
+/* eslint-disable no-param-reassign */
 /* eslint-disable react/prop-types */
 import React from 'react';
 import PropTypes from 'prop-types';
@@ -18,10 +19,23 @@ const UsersInfos = ({
     const sendUserIEmailnvitationLabel = isEmailAdressExist
         ? MESSAGES.sentEmailInvitationWhenAdresseExist
         : MESSAGES.sentEmailInvitation;
-    if (sendUserEmailInvitation && currentUser.send_email_invitation) {
-        // eslint-disable-next-line no-param-reassign
-        currentUser.send_email_invitation.value = false;
+    let passwordDisabled = false;
+
+    if (currentUser.send_email_invitation) {
+        if (sendUserEmailInvitation) {
+            // eslint-disable-next-line no-param-reassign
+            currentUser.send_email_invitation.value = false;
+        }
+        if (currentUser.send_email_invitation.value) {
+            initialData = {};
+            currentUser.password.value = null;
+            passwordDisabled = true;
+        }
     }
+
+    const isInitialDataEmpty = isEmpty(initialData)
+        ? MESSAGES.password
+        : MESSAGES.newPassword;
 
     return (
         <>
@@ -64,8 +78,9 @@ const UsersInfos = ({
                 value={currentUser.password.value}
                 errors={currentUser.password.errors}
                 type="password"
-                label={initialData ? MESSAGES.newPassword : MESSAGES.password}
+                label={initialData ? isInitialDataEmpty : MESSAGES.password}
                 required={!initialData}
+                disabled={passwordDisabled}
             />
             <InputComponent
                 keyValue="dhis2_id"

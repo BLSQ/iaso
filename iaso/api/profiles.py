@@ -177,9 +177,11 @@ class ProfilesViewSet(viewsets.ViewSet):
     def create(self, request):
         username = request.data.get("user_name")
         password = request.data.get("password", "")
+        send_email_invitation = request.data.get("send_email_invitation")
+
         if not username:
             return JsonResponse({"errorKey": "user_name", "errorMessage": _("Nom d'utilisateur requis")}, status=400)
-        if not password:
+        if not password and not send_email_invitation:
             return JsonResponse({"errorKey": "password", "errorMessage": _("Mot de passe requis")}, status=400)
         existing_profile = User.objects.filter(username=username).first()
         if existing_profile:

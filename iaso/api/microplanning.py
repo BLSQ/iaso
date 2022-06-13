@@ -30,6 +30,8 @@ class NestedUserSerializer(serializers.ModelSerializer):
 
 
 class AuditTeamSerializer(serializers.ModelSerializer):
+    sub_teams = serializers.PrimaryKeyRelatedField(read_only=True, many=True)
+
     class Meta:
         model = Team
         fields = "__all__"

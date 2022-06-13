@@ -1,9 +1,9 @@
 export const fileExtensions: string[] = [
-    '.doc',
     '.docx',
+    '.xlsx',
+    '.doc',
     '.csv',
     '.xls',
-    '.xlsx',
     '.odt',
     '.pdf',
     '.jpg',

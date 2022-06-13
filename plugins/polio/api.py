@@ -151,6 +151,7 @@ class CampaignViewSet(ModelViewSet):
     def get_queryset(self):
         user = self.request.user
         campaigns = Campaign.objects.all()
+
         if user.is_authenticated and user.iaso_profile.org_units.count():
             org_units = OrgUnit.objects.hierarchy(user.iaso_profile.org_units.all())
             return campaigns.filter(initial_org_unit__in=org_units)

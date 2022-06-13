@@ -8,13 +8,17 @@ import {
     useSafeIntl,
 } from 'bluesquare-components';
 
+import { ColorPicker } from '../../../components/forms/ColorPicker';
+
 import { AssignmentsMap } from './AssignmentsMap';
 
 import { AssignmentsApi } from '../types/assigment';
 import { Planning } from '../types/planning';
-import { Team } from '../types/team';
+import { Team, DropdownTeamsOptions } from '../types/team';
 import { Column } from '../../../types/table';
 import { IntlFormatMessage } from '../../../types/intl';
+
+import { teamsColors } from '../constants/teamColors';
 
 import MESSAGES from '../messages';
 
@@ -22,17 +26,52 @@ type Props = {
     assignments: AssignmentsApi;
     planning: Planning | undefined;
     currentTeam: Team | undefined;
+    teams: DropdownTeamsOptions[];
+    // eslint-disable-next-line no-unused-vars
+    setTeamColor: (color: string, teamId: number) => void;
 };
 
 const columns = (
     formatMessage: IntlFormatMessage,
     assignments: AssignmentsApi,
+    teams: DropdownTeamsOptions[],
+    // eslint-disable-next-line no-unused-vars
+    setTeamColor: (color: string, teamId: number) => void,
 ): Column[] => {
     return [
         {
             Header: formatMessage(MESSAGES.name),
             id: 'name',
             accessor: 'name',
+        },
+        {
+            Header: formatMessage(MESSAGES.color),
+            id: 'color',
+            accessor: 'color',
+            Cell: settings => {
+                const fullTeam = teams.find(
+                    team => team.original.id === settings.row.original.id,
+                );
+                return (
+                    <>
+                        {fullTeam?.color ? (
+                            <ColorPicker
+                                currentColor={fullTeam.color}
+                                colors={teamsColors}
+                                displayLabel={false}
+                                onChangeColor={color =>
+                                    setTeamColor(
+                                        `#${color}`,
+                                        settings.row.original.id,
+                                    )
+                                }
+                            />
+                        ) : (
+                            '-'
+                        )}
+                    </>
+                );
+            },
         },
         {
             Header: formatMessage(MESSAGES.assignationsCount),
@@ -59,6 +98,8 @@ export const AssignmentsMapTab: FunctionComponent<Props> = ({
     assignments,
     planning,
     currentTeam,
+    teams,
+    setTeamColor,
 }) => {
     const { formatMessage } = useSafeIntl();
     return (
@@ -70,7 +111,12 @@ export const AssignmentsMapTab: FunctionComponent<Props> = ({
                     defaultSorted={[{ id: 'name', desc: false }]}
                     countOnTop={false}
                     marginTop={false}
-                    columns={columns(formatMessage, assignments)}
+                    columns={columns(
+                        formatMessage,
+                        assignments,
+                        teams,
+                        setTeamColor,
+                    )}
                     count={currentTeam?.sub_teams_details?.length ?? 0}
                     onTableParamsChange={p =>
                         console.log('onTableParamsChange', p)
@@ -78,7 +124,11 @@ export const AssignmentsMapTab: FunctionComponent<Props> = ({
                 />
             </Grid>
             <Grid item xs={7}>
-                <AssignmentsMap assignments={assignments} planning={planning} />
+                <AssignmentsMap
+                    assignments={assignments}
+                    planning={planning}
+                    teams={teams}
+                />
             </Grid>
         </Grid>
     );

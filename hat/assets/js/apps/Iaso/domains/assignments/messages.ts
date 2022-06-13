@@ -29,6 +29,10 @@ const MESSAGES = defineMessages({
         defaultMessage: 'Assignments count',
         id: 'iaso.assignment.count',
     },
+    color: {
+        defaultMessage: 'Color',
+        id: 'iaso.label.color',
+    },
 });
 
 export default MESSAGES;

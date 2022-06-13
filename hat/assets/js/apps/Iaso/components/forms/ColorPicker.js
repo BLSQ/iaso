@@ -46,7 +46,7 @@ const useStyles = makeStyles(theme => ({
     },
 }));
 
-const ColorPicker = ({ currentColor, onChangeColor }) => {
+const ColorPicker = ({ currentColor, onChangeColor, colors, displayLabel }) => {
     const [anchorEl, setAnchorEl] = useState(null);
     const classes = useStyles();
     const handleClick = event => {
@@ -54,11 +54,13 @@ const ColorPicker = ({ currentColor, onChangeColor }) => {
     };
     const open = Boolean(anchorEl);
     return (
-        <Box mt={2} mb="37px">
-            <Box mb={2}>
-                <FormLabel>
-                    <FormattedMessage {...MESSAGES.color} />:
-                </FormLabel>
+        <Box>
+            <Box>
+                {displayLabel && (
+                    <FormLabel>
+                        <FormattedMessage {...MESSAGES.color} />:
+                    </FormLabel>
+                )}
                 <span
                     onClick={handleClick}
                     className={classes.button}
@@ -80,7 +82,7 @@ const ColorPicker = ({ currentColor, onChangeColor }) => {
                     >
                         <TwitterPicker
                             width="100%"
-                            colors={chipColors}
+                            colors={colors}
                             color={currentColor}
                             onChangeComplete={color => {
                                 handleClick();
@@ -93,9 +95,15 @@ const ColorPicker = ({ currentColor, onChangeColor }) => {
         </Box>
     );
 };
+ColorPicker.defaultProps = {
+    colors: chipColors,
+    displayLabel: true,
+};
 
 ColorPicker.propTypes = {
     currentColor: PropTypes.string.isRequired,
     onChangeColor: PropTypes.func.isRequired,
+    colors: PropTypes.arrayOf(PropTypes.string),
+    displayLabel: PropTypes.bool,
 };
 export { ColorPicker };

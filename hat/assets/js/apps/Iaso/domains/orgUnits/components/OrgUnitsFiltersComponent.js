@@ -293,10 +293,12 @@ const OrgUnitsFiltersComponent = ({
         <div className={classes.root}>
             <Grid container spacing={4}>
                 <Grid item xs={4}>
-                    <ColorPicker
-                        currentColor={currentColor}
-                        onChangeColor={color => onChange(color, 'color')}
-                    />
+                    <Box mt={2} mb="37px">
+                        <ColorPicker
+                            currentColor={currentColor}
+                            onChangeColor={color => onChange(color, 'color')}
+                        />
+                    </Box>
                     <SearchFilter
                         withMarginTop
                         uid={`search-${searchIndex}`}

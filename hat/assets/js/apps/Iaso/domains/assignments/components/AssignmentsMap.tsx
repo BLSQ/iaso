@@ -19,6 +19,7 @@ import tiles from '../../../constants/mapTiles';
 import { AssignmentsApi } from '../types/assigment';
 import { Planning } from '../types/planning';
 import { Locations, OrgUnitMarker, OrgUnitShape } from '../types/locations';
+import { DropdownTeamsOptions } from '../types/team';
 // requests
 import { useGetOrgUnitLocations } from '../hooks/requests/useGetOrgUnitLocations';
 // components
@@ -33,6 +34,7 @@ const defaultViewport = {
 type Props = {
     assignments: AssignmentsApi;
     planning: Planning | undefined;
+    teams: DropdownTeamsOptions[];
 };
 const boundsOptions = {
     padding: [50, 50],
@@ -59,16 +61,26 @@ const getLocationsBounds = (locations: Locations) => {
 const getLocationColor = (
     assignments: AssignmentsApi,
     orgUnit: OrgUnitShape | OrgUnitMarker,
+    teams: DropdownTeamsOptions[],
     theme: Theme,
 ): string => {
-    if (assignments.some(assignment => assignment.org_unit === orgUnit.id)) {
-        return 'red';
-    }
-    return theme.palette.grey[500];
+    let color = theme.palette.grey[500];
+    assignments.forEach(assignment => {
+        if (assignment.org_unit === orgUnit.id) {
+            const assignedTeam = teams.find(
+                team => team.original.id === assignment.team,
+            );
+            if (assignedTeam) {
+                color = assignedTeam.color;
+            }
+        }
+    });
+    return color;
 };
 export const AssignmentsMap: FunctionComponent<Props> = ({
     assignments,
     planning,
+    teams,
 }) => {
     const map: any = useRef();
     const theme: Theme = useTheme();
@@ -122,6 +134,7 @@ export const AssignmentsMap: FunctionComponent<Props> = ({
                                         color: getLocationColor(
                                             assignments,
                                             shape,
+                                            teams,
                                             theme,
                                         ),
                                     })}
@@ -140,6 +153,7 @@ export const AssignmentsMap: FunctionComponent<Props> = ({
                                         getLocationColor(
                                             assignments,
                                             shape,
+                                            teams,
                                             theme,
                                         ),
                                     ),

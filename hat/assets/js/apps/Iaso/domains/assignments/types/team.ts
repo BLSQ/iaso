@@ -30,5 +30,6 @@ export type DropdownTeamsOptions = {
     label: string;
     value: string;
     original: Team;
+    color: string;
 };
 export type Teams = Team[];

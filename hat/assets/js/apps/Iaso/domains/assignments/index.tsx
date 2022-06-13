@@ -1,6 +1,7 @@
 import React, { FunctionComponent, useState, useEffect } from 'react';
 import { Box, makeStyles, Tabs, Tab } from '@material-ui/core';
 import { useDispatch } from 'react-redux';
+import isEqual from 'lodash/isEqual';
 
 import {
     // @ts-ignore
@@ -26,7 +27,7 @@ import { AssignmentsMapTab } from './components/AssignmentsMapTab';
 
 import { AssignmentParams, AssignmentApi } from './types/assigment';
 import { Planning } from './types/planning';
-import { Team } from './types/team';
+import { Team, DropdownTeamsOptions } from './types/team';
 
 import { useGetTeams } from './hooks/requests/useGetTeams';
 
@@ -48,9 +49,10 @@ export const Assignments: FunctionComponent<Props> = ({ params }) => {
     const { planningId, team: currentTeamId } = params;
 
     // TODO: limit teams list to planning team or sub teams of it
-    const { data: teams = [], isFetching: isFetchingTeams } = useGetTeams();
+    const { data: dataTeams = [], isFetching: isFetchingTeams } = useGetTeams();
     const [tab, setTab] = useState(params.tab ?? 'map');
     const [currentTeam, setCurrentTeam] = useState<Team>();
+    const [teams, setTeams] = useState<DropdownTeamsOptions[]>([]);
     const classes: Record<string, string> = useStyles();
 
     const {
@@ -89,6 +91,14 @@ export const Assignments: FunctionComponent<Props> = ({ params }) => {
             }
         }
     }, [currentTeamId, teams]);
+
+    useEffect(() => {
+        if (!isEqual(dataTeams, teams)) {
+            setTeams(dataTeams);
+        }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [dataTeams]);
+
     return (
         <>
             <TopBar
@@ -122,6 +132,10 @@ export const Assignments: FunctionComponent<Props> = ({ params }) => {
                             assignments={assignments}
                             planning={planning}
                             currentTeam={currentTeam}
+                            teams={teams}
+                            setTeamColor={(color, teamId) =>
+                                console.log('new team color', color, teamId)
+                            }
                         />
                     )}
                     {tab === 'list' && <Box>LIST</Box>}

@@ -21,6 +21,14 @@ const MESSAGES = defineMessages({
         id: 'iaso.assignment.baseOrgUnitsType',
         defaultMessage: 'Base organisation unit type',
     },
+    name: {
+        defaultMessage: 'Name',
+        id: 'iaso.label.name',
+    },
+    assignationsCount: {
+        defaultMessage: 'Assignments count',
+        id: 'iaso.assignment.count',
+    },
 });
 
 export default MESSAGES;

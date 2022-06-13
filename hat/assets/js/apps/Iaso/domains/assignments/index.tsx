@@ -1,4 +1,4 @@
-import React, { FunctionComponent, useState } from 'react';
+import React, { FunctionComponent, useState, useEffect } from 'react';
 import { Box, makeStyles, Tabs, Tab } from '@material-ui/core';
 import { useDispatch } from 'react-redux';
 
@@ -26,6 +26,9 @@ import { AssignmentsMapTab } from './components/AssignmentsMapTab';
 
 import { AssignmentParams, AssignmentApi } from './types/assigment';
 import { Planning } from './types/planning';
+import { Team } from './types/team';
+
+import { useGetTeams } from './hooks/requests/useGetTeams';
 
 import MESSAGES from './messages';
 
@@ -42,8 +45,12 @@ const baseUrl = baseUrls.assignments;
 export const Assignments: FunctionComponent<Props> = ({ params }) => {
     const { formatMessage } = useSafeIntl();
     const dispatch = useDispatch();
-    const { planningId } = params;
+    const { planningId, team: currentTeamId } = params;
+
+    // TODO: limit teams list to planning team or sub teams of it
+    const { data: teams = [], isFetching: isFetchingTeams } = useGetTeams();
     const [tab, setTab] = useState(params.tab ?? 'map');
+    const [currentTeam, setCurrentTeam] = useState<Team>();
     const classes: Record<string, string> = useStyles();
 
     const {
@@ -71,6 +78,17 @@ export const Assignments: FunctionComponent<Props> = ({ params }) => {
             dispatch(redirectTo(baseUrl, newParams));
         }
     }, [dispatch, params, tab]);
+
+    useEffect(() => {
+        if (currentTeamId) {
+            const newCurrentTeam = teams.find(
+                team => team.original?.id === parseInt(currentTeamId, 10),
+            );
+            if (newCurrentTeam && newCurrentTeam.original) {
+                setCurrentTeam(newCurrentTeam.original);
+            }
+        }
+    }, [currentTeamId, teams]);
     return (
         <>
             <TopBar
@@ -85,7 +103,7 @@ export const Assignments: FunctionComponent<Props> = ({ params }) => {
                         root: classes.tabs,
                         indicator: classes.indicator,
                     }}
-                    onChange={(event, newtab) => setTab(newtab)}
+                    onChange={(_, newtab) => setTab(newtab)}
                 >
                     <Tab value="map" label={formatMessage(MESSAGES.map)} />
                     <Tab value="list" label={formatMessage(MESSAGES.list)} />
@@ -93,12 +111,17 @@ export const Assignments: FunctionComponent<Props> = ({ params }) => {
             </TopBar>
             <Box className={classes.containerFullHeightNoTabPadded}>
                 {isLoading && <LoadingSpinner />}
-                <AssignmentsFilters params={params} />
+                <AssignmentsFilters
+                    params={params}
+                    teams={teams}
+                    isFetchingTeams={isFetchingTeams}
+                />
                 <Box mt={2}>
                     {tab === 'map' && !isLoading && (
                         <AssignmentsMapTab
                             assignments={assignments}
                             planning={planning}
+                            currentTeam={currentTeam}
                         />
                     )}
                     {tab === 'list' && <Box>LIST</Box>}

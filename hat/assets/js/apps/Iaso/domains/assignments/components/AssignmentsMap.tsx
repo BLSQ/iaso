@@ -1,7 +1,7 @@
 import React, { FunctionComponent, useRef, useState } from 'react';
 import { Map, TileLayer, GeoJSON, Pane, Tooltip } from 'react-leaflet';
 import { Box } from '@material-ui/core';
-import { useTheme } from '@material-ui/core/styles';
+import { useTheme, Theme } from '@material-ui/core/styles';
 import {
     // @ts-ignore
     LoadingSpinner,
@@ -18,7 +18,7 @@ import tiles from '../../../constants/mapTiles';
 // types
 import { AssignmentsApi } from '../types/assigment';
 import { Planning } from '../types/planning';
-import { Locations } from '../types/locations';
+import { Locations, OrgUnitMarker, OrgUnitShape } from '../types/locations';
 // requests
 import { useGetOrgUnitLocations } from '../hooks/requests/useGetOrgUnitLocations';
 // components
@@ -37,30 +37,45 @@ type Props = {
 const boundsOptions = {
     padding: [50, 50],
 };
+
+const getLocationsBounds = (locations: Locations) => {
+    const shapeBounds = locations
+        ? getShapesBounds(locations.shapes, 'geoJson')
+        : null;
+    const locationsBounds = locations
+        ? getLatLngBounds(locations.markers)
+        : null;
+    let bounds = null;
+    if (locationsBounds && shapeBounds) {
+        bounds = locationsBounds.extend(shapeBounds);
+    } else if (locationsBounds) {
+        bounds = locationsBounds;
+    } else if (shapeBounds) {
+        bounds = shapeBounds;
+    }
+    return bounds;
+};
+
+const getLocationColor = (
+    assignments: AssignmentsApi,
+    orgUnit: OrgUnitShape | OrgUnitMarker,
+    theme: Theme,
+): string => {
+    if (assignments.some(assignment => assignment.org_unit === orgUnit.id)) {
+        return 'red';
+    }
+    return theme.palette.grey[500];
+};
 export const AssignmentsMap: FunctionComponent<Props> = ({
     assignments,
     planning,
 }) => {
     const map: any = useRef();
-    const theme = useTheme();
-    const unassignedColor = theme.palette.grey[500];
+    const theme: Theme = useTheme();
     const [currentTile, setCurrentTile] = useState<Tile>(tiles.osm);
 
     const fitToBounds = (newLocations: Locations) => {
-        const shapeBounds = newLocations
-            ? getShapesBounds(newLocations.shapes, 'geoJson')
-            : null;
-        const locationsBounds = newLocations
-            ? getLatLngBounds(newLocations.markers)
-            : null;
-        let bounds = null;
-        if (locationsBounds && shapeBounds) {
-            bounds = locationsBounds.extend(shapeBounds);
-        } else if (locationsBounds) {
-            bounds = locationsBounds;
-        } else if (shapeBounds) {
-            bounds = shapeBounds;
-        }
+        const bounds = getLocationsBounds(newLocations);
         if (bounds && map?.current) {
             try {
                 map.current.leafletElement.fitBounds(bounds, boundsOptions);
@@ -90,9 +105,7 @@ export const AssignmentsMap: FunctionComponent<Props> = ({
                 zoomControl={false}
             >
                 <TileLayer
-                    attribution={
-                        currentTile.attribution ? currentTile.attribution : ''
-                    }
+                    attribution={currentTile.attribution ?? ''}
                     url={currentTile.url}
                 />
                 {locations && (
@@ -106,7 +119,11 @@ export const AssignmentsMap: FunctionComponent<Props> = ({
                                     key={shape.id}
                                     data={shape.geoJson}
                                     style={() => ({
-                                        color: unassignedColor,
+                                        color: getLocationColor(
+                                            assignments,
+                                            shape,
+                                            theme,
+                                        ),
                                     })}
                                 >
                                     <Tooltip>{shape.name}</Tooltip>
@@ -116,10 +133,15 @@ export const AssignmentsMap: FunctionComponent<Props> = ({
                         <Pane name="markers">
                             <MarkersListComponent
                                 items={locations.markers || []}
+                                // eslint-disable-next-line no-console
                                 onMarkerClick={() => console.log('click')}
-                                markerProps={() => ({
+                                markerProps={shape => ({
                                     ...circleColorMarkerOptions(
-                                        unassignedColor,
+                                        getLocationColor(
+                                            assignments,
+                                            shape,
+                                            theme,
+                                        ),
                                     ),
                                 })}
                                 tooltipProps={orgUnit => ({

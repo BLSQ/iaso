@@ -6,23 +6,27 @@ import InputComponent from '../../../components/forms/InputComponent';
 
 import { useFilterState } from '../../../hooks/useFilterState';
 
-import { useGetTeams } from '../hooks/requests/useGetTeams';
 import { useGetOrgUnitTypes } from '../hooks/requests/useGetOrgUnitTypes';
 
 import { AssignmentParams } from '../types/assigment';
+import { DropdownTeamsOptions } from '../types/team';
+
 import MESSAGES from '../messages';
 
 type Props = {
     params: AssignmentParams;
+    teams: Array<DropdownTeamsOptions>;
+    isFetchingTeams: boolean;
 };
 
 const baseUrl = baseUrls.assignments;
-export const AssignmentsFilters: FunctionComponent<Props> = ({ params }) => {
+export const AssignmentsFilters: FunctionComponent<Props> = ({
+    params,
+    teams,
+    isFetchingTeams,
+}) => {
     const { filters, handleSearch, handleChange, filtersUpdated } =
         useFilterState(baseUrl, params, false);
-    // const { formatMessage } = useSafeIntl();
-    // TODO: limit teams list to planning team or sub teams of it
-    const { data: teamsDropdown, isFetching: isFetchingTeams } = useGetTeams();
     // TODO: limit ou types list
     const { data: orgunitTypesDropdown, isFetching: isFetchingOrgUnitTypes } =
         useGetOrgUnitTypes();
@@ -35,9 +39,9 @@ export const AssignmentsFilters: FunctionComponent<Props> = ({ params }) => {
                             type="select"
                             keyValue="team"
                             onChange={handleChange}
-                            value={filters.team}
+                            value={isFetchingTeams ? undefined : filters.team}
                             label={MESSAGES.team}
-                            options={teamsDropdown}
+                            options={teams}
                             loading={isFetchingTeams}
                             disabled={isFetchingTeams}
                             clearable={false}

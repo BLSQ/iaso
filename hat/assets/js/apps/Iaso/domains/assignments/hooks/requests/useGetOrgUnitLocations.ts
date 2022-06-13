@@ -43,6 +43,7 @@ const mapLocation = (orgUnits: OrgUnit[], baseOrgUnitId): Locations => {
 
 export const useGetOrgUnitLocations = (
     orgUnitParentId: number | undefined,
+    // eslint-disable-next-line no-unused-vars
     callback: (data: Locations) => void,
 ): UseQueryResult<Locations, Error> => {
     const params = {

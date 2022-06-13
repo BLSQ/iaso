@@ -10,7 +10,7 @@ type User = {
     username: string;
 };
 
-type Team = {
+export type Team = {
     id: number;
     name: string;
     description?: string;
@@ -26,4 +26,9 @@ type Team = {
     parent?: number;
 };
 
+export type DropdownTeamsOptions = {
+    label: string;
+    value: string;
+    original: Team;
+};
 export type Teams = Team[];

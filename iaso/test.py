@@ -69,7 +69,7 @@ class APITestCase(BaseAPITestCase, IasoTestCaseMixin):
         self.client = APIClient()
 
     def assertJSONResponse(self, response: typing.Any, expected_status_code: int):
-        self.assertIsInstance(response, Response)
+        self.assertIsInstance(response, HttpResponse)
         self.assertEqual(expected_status_code, response.status_code, try_json(response))
 
         if expected_status_code != 204:

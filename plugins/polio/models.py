@@ -6,6 +6,7 @@ from django.utils.translation import gettext as _
 from gspread.utils import extract_id_from_url
 
 from iaso.models import Group, OrgUnit
+from iaso.models.microplanning import Team
 from iaso.utils.models.soft_deletable import SoftDeletableModel
 from plugins.polio.preparedness.parser import open_sheet_by_url, surge_indicator_for_country
 
@@ -118,6 +119,9 @@ class Round(models.Model):
 
 
 class Campaign(SoftDeletableModel):
+    class Meta:
+        ordering = ["obr_name"]
+
     id = models.UUIDField(default=uuid4, primary_key=True, editable=False)
     epid = models.CharField(default=None, max_length=255, null=True, blank=True)
     obr_name = models.CharField(max_length=255, unique=True)
@@ -234,7 +238,7 @@ class Campaign(SoftDeletableModel):
     )
     verification_score = models.IntegerField(null=True, blank=True)
     doses_requested = models.IntegerField(null=True, blank=True)
-    # Preparedness
+    # Preparedness DEPRECATED -> Moved to round
     preperadness_spreadsheet_url = models.URLField(null=True, blank=True)
     preperadness_sync_status = models.CharField(max_length=10, default="FINISHED", choices=PREPAREDNESS_SYNC_STATUS)
     # Surge recruitment
@@ -487,3 +491,37 @@ class CampaignGroup(SoftDeletableModel):
     updated_at = models.DateTimeField(auto_now=True)
     name = models.CharField(max_length=200)
     campaigns = models.ManyToManyField(Campaign, related_name="grouped_campaigns")
+
+
+class BudgetEvent(SoftDeletableModel):
+
+    TYPES = (("submission", "Budget Submission"), ("comments", "Comments"), ("validation", "Validation"))
+
+    STATUS = (("validation_ongoing", "Validation Ongoing"), ("validated", "Validated"), ("refused", "Refused"))
+
+    campaign = models.ForeignKey(Campaign, on_delete=models.PROTECT)
+    type = models.CharField(choices=TYPES, max_length=200)
+    author = models.ForeignKey(User, blank=False, null=False, on_delete=models.PROTECT)
+    target_teams = models.ManyToManyField(Team)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    status = models.CharField(choices=STATUS, max_length=200, null=True)
+    cc_emails = models.CharField(max_length=200, blank=True, null=True)
+    comment = models.TextField(blank=True, null=True)
+
+    def __str__(self):
+        return str(self.campaign)
+
+
+class BudgetFiles(models.Model):
+    event = models.ForeignKey(BudgetEvent, on_delete=models.PROTECT)
+    file = models.FileField()
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        verbose_name = "Budget File"
+        verbose_name_plural = "Budget Files"
+
+    def __str__(self):
+        return str(self.event)

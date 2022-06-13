@@ -13,6 +13,8 @@ from .models import (
     URLCache,
     SpreadSheetImport,
     CampaignGroup,
+    BudgetEvent,
+    BudgetFiles,
 )
 
 
@@ -81,3 +83,5 @@ admin.site.register(Round)
 admin.site.register(CountryUsersGroup)
 admin.site.register(URLCache)
 admin.site.register(SpreadSheetImport, SpreadSheetImportAdmin)
+admin.site.register(BudgetEvent)
+admin.site.register(BudgetFiles)

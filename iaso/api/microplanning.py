@@ -127,6 +127,22 @@ class TeamSearchFilterBackend(filters.BaseFilterBackend):
         return queryset
 
 
+class TeamAncestorFilterBackend(filters.BaseFilterBackend):
+    def filter_queryset(self, request, queryset, view):
+        ancestor_id = request.query_params.get("ancestor")
+
+        if ancestor_id:
+            try:
+                ancestor = Team.objects.get(pk=ancestor_id)
+            except Team.DoesNotExist:
+                raise serializers.ValidationError(
+                    {"ancestor": "Select a valid choice. That choice is not one of the available choices."}
+                )
+            queryset = queryset.filter(path__descendants=ancestor.path).exclude(id=ancestor.id)
+
+        return queryset
+
+
 class TeamViewSet(ModelViewSet):
     """Api for teams
 
@@ -137,7 +153,13 @@ class TeamViewSet(ModelViewSet):
     """
 
     remove_results_key_if_paginated = True
-    filter_backends = [filters.OrderingFilter, DjangoFilterBackend, TeamSearchFilterBackend, DeletionFilterBackend]
+    filter_backends = [
+        TeamAncestorFilterBackend,
+        filters.OrderingFilter,
+        DjangoFilterBackend,
+        TeamSearchFilterBackend,
+        DeletionFilterBackend,
+    ]
     permission_classes = [ReadOnlyOrHasPermission("menupermissions.iaso_teams")]
     serializer_class = TeamSerializer
     queryset = Team.objects.all()
@@ -309,6 +331,7 @@ class AssignmentViewSet(ModelViewSet):
     ordering_fields = ["id", "name", "started_at", "ended_at"]
     filterset_fields = {
         "planning": ["exact"],
+        "team": ["exact"],
     }
 
     def get_queryset(self):

@@ -1,7 +1,10 @@
-from django.contrib.auth.models import User
-from django.db import models
+import typing
 
-from iaso.models import Project, Account, Form, OrgUnit
+from django.contrib.auth.models import User
+from django.db import models, transaction
+from django_ltree.fields import PathField
+
+from iaso.models import Project, Form, OrgUnit
 from iaso.utils.models.soft_deletable import SoftDeletableModel
 
 
@@ -27,12 +30,61 @@ class Team(SoftDeletableModel):
     users = models.ManyToManyField(User, related_name="teams", blank=True)
     manager = models.ForeignKey(User, on_delete=models.PROTECT, related_name="managed_teams")
     parent = models.ForeignKey("self", on_delete=models.PROTECT, null=True, blank=True, related_name="sub_teams")
+    path = PathField(unique=True)
     # scope = models.ManyToManyField("OrgUnit", related_name="teams")
     type = models.CharField(choices=TeamType.choices, max_length=100, null=True, blank=True)
 
     created_by = models.ForeignKey(User, on_delete=models.PROTECT, null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+
+    # Path management logic, taken from org_unit.
+    def save(self, *args, skip_calculate_path: bool = False, force_recalculate: bool = False, **kwargs):
+        """Override default save() to make sure that the path property is calculated and saved,
+        for this org unit and its children.
+
+        :param skip_calculate_path: use with caution - can be useful in scripts where the extra transactions
+                                    would be a burden, but the path needs to be set afterwards
+        :param force_recalculate: use with caution - used to force recalculation of paths
+        """
+
+        if skip_calculate_path:
+            super().save(*args, **kwargs)
+        else:
+            with transaction.atomic():
+                super().save(*args, **kwargs)
+                Team.objects.bulk_update(self.calculate_paths(force_recalculate=force_recalculate), ["path"])
+
+    def calculate_paths(self, force_recalculate: bool = False) -> typing.List["Team"]:
+        """Calculate the path for this Team and all its children recursively.
+
+        This method will check if this instance path should change. If it is the case (or if force_recalculate is
+        True), it will update the path property for the instance and its children, and return all the modified
+        records.
+
+        Please note that this method does not save the modified records. Instead, they are updated in bulk in the
+        save() method.
+
+        :param force_recalculate: calculate path for all descendants, even if this instance path does not change
+        """
+
+        # keep track of updated records
+        updated_records = []
+
+        # noinspection PyUnresolvedReferences
+        base_path = [] if self.parent is None else list(self.parent.path)
+        new_path = [*base_path, str(self.pk)]
+        path_has_changed = new_path != self.path
+
+        if path_has_changed:
+            self.path = new_path
+            updated_records += [self]
+
+        if path_has_changed or force_recalculate:
+            for child in self.sub_teams.all():
+                updated_records += child.calculate_paths(force_recalculate)
+
+        return updated_records
 
     def __str__(self):
         return self.name

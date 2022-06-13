@@ -221,6 +221,41 @@ class TeamAPITestCase(APITestCase):
         r = self.assertJSONResponse(response, 200)
         self.assertEqual(len(r), 2)
 
+    def test_query_ancestor(self):
+        self.client.force_authenticate(self.user)
+
+        team_a = Team.objects.create(project=self.project1, name="team a", manager=self.user)
+        team_b = Team.objects.create(project=self.project1, name="team b", manager=self.user)
+        team_b_c = Team.objects.create(project=self.project1, name="team b_c", manager=self.user, parent=team_b)
+        team_b_d = Team.objects.create(project=self.project1, name="team b_d", manager=self.user, parent=team_b)
+        team_b_c_e = Team.objects.create(project=self.project1, name="team b_c_e", manager=self.user, parent=team_b_c)
+        team_b_c_f = Team.objects.create(
+            project=self.project1, name="team b_c_f hello", manager=self.user, parent=team_b_c
+        )
+
+        response = self.client.get("/api/microplanning/teams/", format="json")
+        r = self.assertJSONResponse(response, 200)
+        self.assertEqual(len(r), 8)
+
+        response = self.client.get(f"/api/microplanning/teams/?ancestor={team_a.id}", format="json")
+        r = self.assertJSONResponse(response, 200)
+        self.assertEqual(len(r), 0)
+        response = self.client.get(f"/api/microplanning/teams/?ancestor={team_b.id}", format="json")
+        r = self.assertJSONResponse(response, 200)
+        self.assertEqual(len(r), 4)
+        ids = sorted([row["id"] for row in r])
+        self.assertEqual(ids, [team_b_c.id, team_b_d.id, team_b_c_e.id, team_b_c_f.id])
+        response = self.client.get(f"/api/microplanning/teams/?ancestor={team_b.id}&search=hello", format="json")
+        r = self.assertJSONResponse(response, 200)
+        self.assertEqual(len(r), 1)
+        ids = sorted([row["id"] for row in r])
+        self.assertEqual(ids, [team_b_c_f.id])
+        response = self.client.get(f"/api/microplanning/teams/?ancestor={team_b_c.id}", format="json")
+        r = self.assertJSONResponse(response, 200)
+        self.assertEqual(len(r), 2)
+        ids = sorted([row["id"] for row in r])
+        self.assertEqual(ids, [team_b_c_e.id, team_b_c_f.id])
+
     def test_create(self):
         user_with_perms = self.create_user_with_profile(
             username="user_with_perms", account=self.account, permissions=["iaso_teams"]

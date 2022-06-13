@@ -223,7 +223,7 @@ class ProfilesViewSet(viewsets.ViewSet):
 
         # send an email invitation to new user when the send_email_invitation checkbox has been checked
         # and the email adresse has been given
-        if request.data.get("send_email_invitation") and profile.user.email:
+        if send_email_invitation and profile.user.email:
             email_subject = self.get_subject_by_language(self, request.data.get("language"))
             email_message = self.get_message_by_language(self, request.data.get("language"))
 

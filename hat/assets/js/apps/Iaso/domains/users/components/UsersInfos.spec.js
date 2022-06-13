@@ -59,11 +59,19 @@ describe('UsersInfos', () => {
         select.props().onChange();
         expect(setFieldValue).to.have.been.calledOnce;
     });
-    it('displays "new password" message if initialData is set', () => {
-        renderComponent({});
+    it('displays "new password" message if initialData is set and not empty', () => {
+        renderComponent({ notEmpty: true });
         const password = component.find(PasswordInput).at(0);
         expect(password.props().label).to.equal(
             MESSAGES.newPassword.defaultMessage,
+        );
+    });
+
+    it('displays "new password" message if initialData is set but empty', () => {
+        renderComponent({});
+        const password = component.find(PasswordInput).at(0);
+        expect(password.props().label).to.equal(
+            MESSAGES.password.defaultMessage,
         );
     });
 });

@@ -88,6 +88,10 @@ const PermissionsSwitches: React.FunctionComponent<Props> = ({
                     .sort((a, b) =>
                         permissionLabel(a.codename).localeCompare(
                             permissionLabel(b.codename),
+                            undefined,
+                            {
+                                sensitivity: 'accent',
+                            },
                         ),
                     )
                     .map(p => (

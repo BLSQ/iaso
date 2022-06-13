@@ -655,6 +655,7 @@ class AssignmentAPITestCase(APITestCase):
         self.assertEqual(a.planning, self.planning)
         self.assertEqual(a.user, self.user)
         self.assertEqual(a.org_unit, self.child2)
+        self.assertEqual(Modification.objects.all().count(), 1)
 
     def test_no_perm_create(self):
         self.client.force_authenticate(self.user)

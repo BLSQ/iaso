@@ -147,6 +147,8 @@ class TeamAncestorFilterBackend(filters.BaseFilterBackend):
 
 
 class AuditMixin:
+    audit_serializer: serializers.ModelSerializer
+
     def perform_create(self, serializer):
         # noinspection PyUnresolvedReferences
         super().perform_update(serializer)
@@ -371,8 +373,16 @@ class AssignmentSerializer(serializers.ModelSerializer):
         return validated_data
 
 
-class AssignmentViewSet(ModelViewSet):
-    "Use the same permission as planning. Multi tenancy is done via the planning. An assignment don't make much sense outside of it's planning."
+class AuditAssignmentSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Assignment
+        fields = "__all__"
+
+
+class AssignmentViewSet(AuditMixin, ModelViewSet):
+    """Use the same permission as planning. Multi tenancy is done via the planning. An assignment don't make much
+    sense outside of it's planning."""
+
     remove_results_key_if_paginated = True
     permission_classes = [IsAuthenticated, ReadOnlyOrHasPermission("menupermissions.iaso_planning")]
     serializer_class = AssignmentSerializer
@@ -388,6 +398,7 @@ class AssignmentViewSet(ModelViewSet):
         "planning": ["exact"],
         "team": ["exact"],
     }
+    audit_serializer = AuditAssignmentSerializer
 
     def get_queryset(self):
         user = self.request.user

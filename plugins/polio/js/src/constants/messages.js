@@ -1003,6 +1003,10 @@ const MESSAGES = defineMessages({
         id: 'iaso.polio.label.all',
         defaultMessage: 'All',
     },
+    ALL: {
+        id: 'iaso.polio.label.all',
+        defaultMessage: 'All',
+    },
     regular: {
         id: 'iaso.polio.label.regular',
         defaultMessage: 'Regular',
@@ -1108,6 +1112,126 @@ const MESSAGES = defineMessages({
     invalidDate: {
         id: 'iaso.polio.form.invalidDate',
         defaultMessage: 'Date is invalid',
+    },
+    startDatefrom: {
+        id: 'iaso.label.startDatefrom',
+        defaultMessage: 'Start date from',
+    },
+    endDateUntil: {
+        id: 'iaso.label.endDateUntil',
+        defaultMessage: 'End date until',
+    },
+    addCampaign: {
+        id: 'iaso.polio.budget.label.addCampaign',
+        defaultMessage: 'Add campaign',
+    },
+    budgetDetails: {
+        id: 'iaso.polio.budget.title.budgetDetails',
+        defaultMessage: 'Budget details',
+    },
+    details: {
+        defaultMessage: 'Details',
+        id: 'iaso.label.details',
+    },
+    author: {
+        defaultMessage: 'Author',
+        id: 'iaso.polio.label.author',
+    },
+    destination: {
+        defaultMessage: 'Destination',
+        id: 'iaso.polio.label.destination',
+    },
+    event: {
+        defaultMessage: 'Event',
+        id: 'iaso.polio.label.event',
+    },
+    note: {
+        defaultMessage: 'note',
+        id: 'iaso.polio.label.note',
+    },
+    notes: {
+        defaultMessage: 'notes',
+        id: 'iaso.polio.label.notes',
+    },
+    submission: {
+        defaultMessage: 'Submission',
+        id: 'iaso.polio.label.submission',
+    },
+    comments: {
+        defaultMessage: 'Comments',
+        id: 'iaso.polio.label.comments',
+    },
+    validation_ongoing: {
+        defaultMessage: 'Validation ongoing',
+        id: 'iaso.polio.label.validation_ongoing',
+    },
+    validated: {
+        defaultMessage: 'Validated',
+        id: 'iaso.polio.label.validated',
+    },
+    rejected: {
+        defaultMessage: 'Rejected',
+        id: 'iaso.polio.label.rejected',
+    },
+    sendFiles: {
+        defaultMessage: 'Send files',
+        id: 'iaso.polio.label.sendFiles',
+    },
+    addStep: {
+        defaultMessage: 'Add step',
+        id: 'iaso.polio.label.addStep',
+    },
+    send: {
+        defaultMessage: 'Send',
+        id: 'iaso.polio.label.send',
+    },
+    eventType: {
+        defaultMessage: 'Type',
+        id: 'iaso.polio.label.eventType',
+    },
+    cc_emails: {
+        defaultMessage: 'Cc emails',
+        id: 'iaso.polio.label.cc_emails',
+    },
+    file: {
+        defaultMessage: 'File',
+        id: 'iaso.polio.label.file',
+    },
+    viewFiles: {
+        defaultMessage: 'View files',
+        id: 'iaso.polio.label.viewFiles',
+    },
+    noFile: {
+        defaultMessage: 'No file found',
+        id: 'iaso.polio.label.noFile',
+    },
+    steps: {
+        defaultMessage: 'Steps',
+        id: 'iaso.polio.label.steps',
+    },
+    files: {
+        defaultMessage: 'Files for {type}, last updated {date}',
+        id: 'iaso.polio.label.files',
+    },
+    latestEventDate: {
+        defaultMessage: 'Latest event date',
+        id: 'iaso.polio.label.latestEventDate',
+    },
+    latestEvent: {
+        defaultMessage: 'Latest event',
+        id: 'iaso.polio.label.latestEvent',
+    },
+    noBudgetSubmitted: {
+        defaultMessage: 'No budget submitted',
+        id: 'iaso.polio.label.noBudgetSubmitted',
+    },
+    requiredField: {
+        id: 'iaso.forms.error.fieldRequired',
+        defaultMessage: 'This field is required',
+    },
+    validation: {
+        id: 'iaso.forms.options.validation',
+        defaultMessage: 'Validation',
     },
 });
 

@@ -55,6 +55,11 @@ import {
     saveOrgUnitWithDispatch,
 } from '../../utils/requests';
 
+import {
+    hasFeatureFlag,
+    SHOW_LINK_INSTANCE_REFERENCE,
+} from '../../utils/featureFlags';
+
 const styles = theme => ({
     ...commonStyles(theme),
     alert: {
@@ -113,9 +118,15 @@ const actions = ({
     redirectToActionInstance,
 }) => {
     const hasSubmissionPermission = userHasPermission(
-        'iaso_submissions',
+        'iaso_org_units',
         currentUser,
     );
+
+    const hasfeatureFlag = hasFeatureFlag(
+        currentUser,
+        SHOW_LINK_INSTANCE_REFERENCE,
+    );
+
     const enketoAction = {
         id: 'instanceEditAction',
         icon: <EnketoIcon />,
@@ -204,7 +215,7 @@ const actions = ({
         defaultActions = [enketoAction, ...defaultActions];
     }
 
-    if (!hasSubmissionPermission) return defaultActions;
+    if (!hasSubmissionPermission || !hasfeatureFlag) return defaultActions;
 
     if (formId.toString() !== referenceFormId) return defaultActions;
 

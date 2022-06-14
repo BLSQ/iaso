@@ -8,7 +8,7 @@ import { Grid, DialogContentText } from '@material-ui/core';
 import PropTypes from 'prop-types';
 import moment from 'moment';
 
-import { connect, useSelector } from 'react-redux';
+import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 import { makeStyles } from '@material-ui/core/styles';
 
@@ -35,6 +35,10 @@ import EnketoIcon from '../../instances/components/EnketoIcon';
 import { userHasPermission } from '../../users/utils';
 import ConfirmCancelDialogComponent from '../../../components/dialogs/ConfirmCancelDialogComponent';
 import { useCurrentUser } from '../../../utils/usersUtils';
+import {
+    hasFeatureFlag,
+    SHOW_LINK_INSTANCE_REFERENCE,
+} from '../../../utils/featureFlags';
 
 // reformatting orgUnit name so the OU can be passed to the treeview modal
 // and selecting the parent for display
@@ -132,6 +136,11 @@ const Actions = (
         currentUser,
     );
 
+    const hasfeatureFlag = hasFeatureFlag(
+        currentUser,
+        SHOW_LINK_INSTANCE_REFERENCE,
+    );
+
     const actions = [
         {
             id: 'instanceEditAction',
@@ -163,7 +172,7 @@ const Actions = (
         );
     };
 
-    if (!hasSubmissionPermission) return actions;
+    if (!hasSubmissionPermission || !hasfeatureFlag) return actions;
     return [
         ...actions,
         {

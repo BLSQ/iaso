@@ -15,6 +15,10 @@ import MESSAGES from '../messages';
 import { redirectTo as redirectToAction } from '../../../routing/actions';
 import { useFormState } from '../../../hooks/form';
 import ConfirmCancelDialogComponent from '../../../components/dialogs/ConfirmCancelDialogComponent';
+import {
+    hasFeatureFlag,
+    SHOW_LINK_INSTANCE_REFERENCE,
+} from '../../../utils/featureFlags';
 // eslint-disable-next-line camelcase
 const initialFormState = (orgUnit, referenceSubmissionId) => {
     return {
@@ -97,7 +101,9 @@ const ActionTableColumnComponent = ({ settings, user }) => {
     const showButton =
         settings.row.original.reference_form_id ===
             settings.row.original.form_id &&
+        hasFeatureFlag(user, SHOW_LINK_INSTANCE_REFERENCE) &&
         userHasPermission('iaso_org_units', user);
+
     const notLinked =
         !settings.row.original?.org_unit?.reference_instance_id &&
         userHasPermission('iaso_org_units', user);

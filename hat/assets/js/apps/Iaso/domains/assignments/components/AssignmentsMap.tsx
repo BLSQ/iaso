@@ -1,5 +1,12 @@
 import React, { FunctionComponent, useRef, useState } from 'react';
-import { Map, TileLayer, GeoJSON, Pane, Tooltip } from 'react-leaflet';
+import {
+    Map,
+    TileLayer,
+    GeoJSON,
+    Pane,
+    Tooltip,
+    ScaleControl,
+} from 'react-leaflet';
 import { Box } from '@material-ui/core';
 import { useTheme, Theme } from '@material-ui/core/styles';
 import {
@@ -19,7 +26,7 @@ import tiles from '../../../constants/mapTiles';
 import { AssignmentsApi } from '../types/assigment';
 import { Planning } from '../types/planning';
 import { Locations, OrgUnitMarker, OrgUnitShape } from '../types/locations';
-import { DropdownTeamsOptions } from '../types/team';
+import { DropdownTeamsOptions, Team } from '../types/team';
 // requests
 import { useGetOrgUnitLocations } from '../hooks/requests/useGetOrgUnitLocations';
 // components
@@ -39,6 +46,7 @@ type Props = {
     teams: DropdownTeamsOptions[];
     // eslint-disable-next-line no-unused-vars
     handleClick: (shape: OrgUnitShape | OrgUnitMarker) => void;
+    currentTeam: Team | undefined;
 };
 const boundsOptions = {
     padding: [50, 50],
@@ -67,10 +75,16 @@ export const AssignmentsMap: FunctionComponent<Props> = ({
     planning,
     teams,
     handleClick,
+    currentTeam,
 }) => {
     const map: any = useRef();
     const theme: Theme = useTheme();
     const [currentTile, setCurrentTile] = useState<Tile>(tiles.osm);
+    const filteredAssignments = assignments.filter(assignment =>
+        currentTeam?.type === 'TEAM_OF_USERS'
+            ? assignment.user !== null
+            : assignment.team !== null,
+    );
 
     const fitToBounds = (newLocations: Locations) => {
         const bounds = getLocationsBounds(newLocations);
@@ -102,6 +116,7 @@ export const AssignmentsMap: FunctionComponent<Props> = ({
                 scrollWheelZoom={false}
                 zoomControl={false}
             >
+                <ScaleControl imperial={false} />
                 <TileLayer
                     attribution={currentTile.attribution ?? ''}
                     url={currentTile.url}
@@ -119,7 +134,7 @@ export const AssignmentsMap: FunctionComponent<Props> = ({
                                     data={shape.geoJson}
                                     style={() => ({
                                         color: getLocationColor(
-                                            assignments,
+                                            filteredAssignments,
                                             shape,
                                             teams,
                                             theme,
@@ -138,7 +153,7 @@ export const AssignmentsMap: FunctionComponent<Props> = ({
                                 markerProps={shape => ({
                                     ...circleColorMarkerOptions(
                                         getLocationColor(
-                                            assignments,
+                                            filteredAssignments,
                                             shape,
                                             teams,
                                             theme,

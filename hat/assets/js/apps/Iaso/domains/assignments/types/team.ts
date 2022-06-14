@@ -5,7 +5,7 @@ export type SubTeam = {
     deleted_at?: string;
 };
 
-type User = {
+export type User = {
     id: number;
     username: string;
 };

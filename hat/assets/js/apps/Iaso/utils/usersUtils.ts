@@ -9,6 +9,7 @@ export type Profile = {
     email: string;
     language?: null | undefined | string;
     user_id: string;
+    color?: string;
 };
 
 type User = {

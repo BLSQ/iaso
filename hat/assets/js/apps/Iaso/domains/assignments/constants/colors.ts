@@ -15,7 +15,7 @@ import {
     blueGrey,
 } from '@material-ui/core/colors';
 
-export const teamsColors = [
+export const colors = [
     teal[500],
     lightGreen[800],
     purple[800],
@@ -32,7 +32,7 @@ export const teamsColors = [
     deepOrange[700],
 ];
 
-export const getTeamColor = (i: number, reverse = false): string => {
-    const allColors = reverse ? teamsColors.reverse() : teamsColors;
+export const getColor = (i: number, reverse = false): string => {
+    const allColors = reverse ? colors.reverse() : colors;
     return allColors[i % allColors.length];
 };

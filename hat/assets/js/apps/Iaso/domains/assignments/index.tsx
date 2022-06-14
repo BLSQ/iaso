@@ -28,8 +28,11 @@ import { AssignmentsMapTab } from './components/AssignmentsMapTab';
 import { AssignmentParams, AssignmentApi } from './types/assigment';
 import { Planning } from './types/planning';
 import { Team, DropdownTeamsOptions } from './types/team';
+import { Profile } from '../../utils/usersUtils';
 
 import { useGetTeams } from './hooks/requests/useGetTeams';
+import { useGetProfiles } from './hooks/requests/useGetProfiles';
+import { useSaveAssignment } from './hooks/requests/useSaveAssignment';
 
 import MESSAGES from './messages';
 
@@ -48,11 +51,16 @@ export const Assignments: FunctionComponent<Props> = ({ params }) => {
     const dispatch = useDispatch();
     const { planningId, team: currentTeamId } = params;
 
-    // TODO: limit teams list to planning team or sub teams of it
+    // TODO: limit teams list to planning team or sub teams
     const { data: dataTeams = [], isFetching: isFetchingTeams } = useGetTeams();
+    // TODO: limit users list to planning users or sub team users
+    const { data: dataProfiles = [] } = useGetProfiles();
+    const { mutateAsync: saveAssignment, isLoading: isLoadingSaving } =
+        useSaveAssignment();
     const [tab, setTab] = useState(params.tab ?? 'map');
     const [currentTeam, setCurrentTeam] = useState<Team>();
     const [teams, setTeams] = useState<DropdownTeamsOptions[]>([]);
+    const [profiles, setProfiles] = useState<Profile[]>([]);
     const classes: Record<string, string> = useStyles();
 
     const {
@@ -70,17 +78,35 @@ export const Assignments: FunctionComponent<Props> = ({ params }) => {
         isLoading: boolean;
     } = useGetAssignments({ planningId });
 
-    const isLoading = isLoadingPlanning || isLoadingAssignments;
+    const isLoading =
+        isLoadingPlanning || isLoadingAssignments || isLoadingSaving;
 
-    const setTeamColor = (color: string, teamId: number): void => {
-        const teamIndex = teams.findIndex(team => team.original.id === teamId);
-        if (teamIndex) {
-            const newTeams = [...teams];
-            newTeams[teamIndex] = {
-                ...newTeams[teamIndex],
-                color,
-            };
-            setTeams(newTeams);
+    const setItemColor = (color: string, itemId: number): void => {
+        if (currentTeam?.type === 'TEAM_OF_USERS') {
+            const itemIndex = profiles.findIndex(
+                profile => parseInt(profile.user_id, 10) === itemId,
+            );
+            if (itemIndex) {
+                const newProfiles = [...profiles];
+                newProfiles[itemIndex] = {
+                    ...newProfiles[itemIndex],
+                    color,
+                };
+                setProfiles(newProfiles);
+            }
+        }
+        if (currentTeam?.type === 'TEAM_OF_TEAMS') {
+            const itemIndex = teams.findIndex(
+                team => team.original.id === itemId,
+            );
+            if (itemIndex) {
+                const newTeams = [...teams];
+                newTeams[itemIndex] = {
+                    ...newTeams[itemIndex],
+                    color,
+                };
+                setTeams(newTeams);
+            }
         }
     };
 
@@ -111,6 +137,13 @@ export const Assignments: FunctionComponent<Props> = ({ params }) => {
         }
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [dataTeams]);
+
+    useEffect(() => {
+        if (!isEqual(dataProfiles, profiles)) {
+            setProfiles(dataProfiles);
+        }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [dataProfiles]);
     return (
         <>
             <TopBar
@@ -139,13 +172,15 @@ export const Assignments: FunctionComponent<Props> = ({ params }) => {
                     isFetchingTeams={isFetchingTeams}
                 />
                 <Box mt={2}>
-                    {tab === 'map' && !isLoading && (
+                    {tab === 'map' && !isLoadingAssignments && (
                         <AssignmentsMapTab
                             assignments={assignments}
                             planning={planning}
                             currentTeam={currentTeam}
                             teams={teams}
-                            setTeamColor={setTeamColor}
+                            profiles={profiles}
+                            setItemColor={setItemColor}
+                            saveAssignment={saveAssignment}
                         />
                     )}
                     {tab === 'list' && <Box>LIST</Box>}

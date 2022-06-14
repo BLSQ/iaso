@@ -6,7 +6,7 @@ import { useSnackQuery } from '../../../../libs/apiHooks';
 
 import { Teams, DropdownTeamsOptions, Team } from '../../types/team';
 
-import { getTeamColor } from '../../constants/teamColors';
+import { getColor } from '../../constants/colors';
 
 const getTeams = (): Promise<Teams> => {
     return getRequest('/api/microplanning/teams/');
@@ -26,7 +26,7 @@ export const useGetTeams = (): UseQueryResult<
                     value: team.id.toString(),
                     label: team.name,
                     original: team,
-                    color: getTeamColor(index),
+                    color: getColor(index),
                 };
             });
         },

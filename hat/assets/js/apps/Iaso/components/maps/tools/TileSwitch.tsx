@@ -30,8 +30,8 @@ type Props = {
 export const useStyles = makeStyles(theme => ({
     root: {
         position: 'absolute',
-        bottom: theme.spacing(2),
-        left: theme.spacing(2),
+        top: theme.spacing(2),
+        right: theme.spacing(2),
         zIndex: 1000,
     },
     list: {

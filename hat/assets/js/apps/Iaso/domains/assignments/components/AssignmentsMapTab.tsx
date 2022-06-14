@@ -1,4 +1,4 @@
-import React, { FunctionComponent, useState } from 'react';
+import React, { FunctionComponent, useState, useEffect } from 'react';
 import { Grid } from '@material-ui/core';
 import { useTheme, Theme } from '@material-ui/core/styles';
 
@@ -14,20 +14,22 @@ import { AssignmentsMap } from './AssignmentsMap';
 
 import { AssignmentsApi, SaveAssignmentQuery } from '../types/assigment';
 import { Planning } from '../types/planning';
-import { Team, DropdownTeamsOptions, SubTeam } from '../types/team';
+import { Team, DropdownTeamsOptions, SubTeam, User } from '../types/team';
 import { OrgUnitMarker, OrgUnitShape } from '../types/locations';
+import { Profile } from '../../../utils/usersUtils';
 
 import { getColumns } from '../configs/AssignmentsMapTabColumns';
-
-import { useSaveAssignment } from '../hooks/requests/useSaveAssignment';
 
 type Props = {
     assignments: AssignmentsApi;
     planning: Planning | undefined;
     currentTeam: Team | undefined;
     teams: DropdownTeamsOptions[];
+    profiles: Profile[];
     // eslint-disable-next-line no-unused-vars
-    setTeamColor: (color: string, teamId: number) => void;
+    setItemColor: (color: string, teamId: number) => void;
+    // eslint-disable-next-line no-unused-vars
+    saveAssignment: (params: SaveAssignmentQuery) => void;
 };
 
 export const AssignmentsMapTab: FunctionComponent<Props> = ({
@@ -35,16 +37,16 @@ export const AssignmentsMapTab: FunctionComponent<Props> = ({
     planning,
     currentTeam,
     teams,
-    setTeamColor,
+    profiles,
+    setItemColor,
+    saveAssignment,
 }) => {
     const { formatMessage } = useSafeIntl();
     const theme: Theme = useTheme();
 
-    const { mutateAsync: createAssignment } = useSaveAssignment('create');
-    const { mutateAsync: editAssignment } = useSaveAssignment('edit');
-    const [selectedTeam, setSelectedTeam] = useState<SubTeam | undefined>(
-        currentTeam?.sub_teams_details[0],
-    );
+    const [selectedItem, setSelectedItem] = useState<
+        SubTeam | User | undefined
+    >();
     const handleClick = async (
         selectedOrgUnit: OrgUnitShape | OrgUnitMarker,
     ) => {
@@ -53,25 +55,26 @@ export const AssignmentsMapTab: FunctionComponent<Props> = ({
             selectedOrgUnit,
             teams,
         );
-        if (planning && selectedTeam) {
+        if (planning && selectedItem) {
             let saveParams: SaveAssignmentQuery = {
                 planning: planning.id,
                 org_unit: selectedOrgUnit.id,
-                team: selectedTeam.id,
+                team: selectedItem.id,
             };
             if (assignment) {
                 if (assignedTeam) {
-                    if (selectedTeam.id !== assignedTeam.original.id) {
+                    if (selectedItem.id !== assignedTeam.original.id) {
                         // update assignment
                         saveParams = {
                             id: assignment.id,
                             ...saveParams,
                         };
                     } else {
-                        // fake delete assignment, remove team
+                        // fake delete assignment, remove team / user
                         saveParams = {
                             ...saveParams,
                             team: null,
+                            user: null,
                             id: assignment.id,
                         };
                     }
@@ -82,18 +85,31 @@ export const AssignmentsMapTab: FunctionComponent<Props> = ({
                         ...saveParams,
                     };
                 }
-
-                editAssignment(saveParams);
-            } else {
-                createAssignment(saveParams);
             }
+            saveAssignment(saveParams);
         }
     };
+
+    useEffect(() => {
+        if (planning && !selectedItem && currentTeam) {
+            if (currentTeam.type === 'TEAM_OF_USERS') {
+                setSelectedItem(currentTeam.users_details[0]);
+            }
+            if (currentTeam.type === 'TEAM_OF_TEAMS') {
+                setSelectedItem(currentTeam.sub_teams_details[0]);
+            }
+        }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [planning]);
+    const data =
+        currentTeam?.type === 'TEAM_OF_USERS'
+            ? currentTeam.users_details
+            : currentTeam?.sub_teams_details;
     return (
         <Grid container spacing={2}>
             <Grid item xs={5}>
                 <Table
-                    data={currentTeam?.sub_teams_details || []}
+                    data={data || []}
                     showPagination={false}
                     defaultSorted={[{ id: 'name', desc: false }]}
                     countOnTop={false}
@@ -102,17 +118,20 @@ export const AssignmentsMapTab: FunctionComponent<Props> = ({
                         formatMessage,
                         assignments,
                         teams,
-                        setTeamColor,
+                        profiles,
+                        setItemColor,
                         theme,
-                        selectedTeam,
-                        setSelectedTeam,
+                        selectedItem,
+                        setSelectedItem,
+                        currentTeam,
                     })}
                     count={currentTeam?.sub_teams_details?.length ?? 0}
                     extraProps={{
                         // adding this will force table to
                         // re render while selecting a team, changing team color, changing assignments
-                        selectedTeamId: selectedTeam?.id,
+                        selectedItemId: selectedItem?.id,
                         teams,
+                        profiles,
                         assignments,
                     }}
                 />
@@ -123,6 +142,7 @@ export const AssignmentsMapTab: FunctionComponent<Props> = ({
                     planning={planning}
                     teams={teams}
                     handleClick={handleClick}
+                    currentTeam={currentTeam}
                 />
             </Grid>
         </Grid>

@@ -5,11 +5,12 @@ import { Theme } from '@material-ui/core/styles';
 import { ColorPicker } from '../../../components/forms/ColorPicker';
 
 import { AssignmentsApi } from '../types/assigment';
-import { DropdownTeamsOptions, SubTeam } from '../types/team';
+import { DropdownTeamsOptions, SubTeam, User, Team } from '../types/team';
 import { Column } from '../../../types/table';
 import { IntlFormatMessage } from '../../../types/intl';
+import { Profile } from '../../../utils/usersUtils';
 
-import { teamsColors } from '../constants/teamColors';
+import { colors } from '../constants/colors';
 
 import MESSAGES from '../messages';
 
@@ -17,22 +18,26 @@ type Props = {
     formatMessage: IntlFormatMessage;
     assignments: AssignmentsApi;
     teams: DropdownTeamsOptions[];
+    profiles: Profile[];
     // eslint-disable-next-line no-unused-vars
-    setTeamColor: (color: string, teamId: number) => void;
+    setItemColor: (color: string, teamId: number) => void;
     theme: Theme;
-    selectedTeam: SubTeam | undefined;
+    selectedItem: SubTeam | User | undefined;
     // eslint-disable-next-line no-unused-vars
-    setSelectedTeam: (newSelectedTeam: SubTeam) => void;
+    setSelectedItem: (newSelectedTeam: SubTeam) => void;
+    currentTeam: Team | undefined;
 };
 
 export const getColumns = ({
     formatMessage,
     assignments,
     teams,
-    setTeamColor,
+    profiles,
+    setItemColor,
     theme,
-    selectedTeam,
-    setSelectedTeam,
+    selectedItem,
+    setSelectedItem,
+    currentTeam,
 }: Props): Column[] => {
     return [
         {
@@ -47,11 +52,11 @@ export const getColumns = ({
                         <Box display="flex" justifyContent="center">
                             <Radio
                                 checked={
-                                    selectedTeam?.id ===
+                                    selectedItem?.id ===
                                     settings.row.original.id
                                 }
                                 onChange={() =>
-                                    setSelectedTeam(settings.row.original)
+                                    setSelectedItem(settings.row.original)
                                 }
                             />
                         </Box>
@@ -61,32 +66,41 @@ export const getColumns = ({
         },
         {
             Header: formatMessage(MESSAGES.name),
-            id: 'name',
-            accessor: 'name',
+            id: currentTeam?.type === 'TEAM_OF_USERS' ? 'username' : 'name',
+            accessor:
+                currentTeam?.type === 'TEAM_OF_USERS' ? 'username' : 'name',
         },
         {
             Header: formatMessage(MESSAGES.color),
             id: 'color',
             accessor: 'color',
             Cell: settings => {
-                const fullTeam = teams.find(
-                    team => team.original.id === settings.row.original.id,
-                );
+                let fullItem;
+                if (currentTeam?.type === 'TEAM_OF_USERS') {
+                    fullItem = profiles.find(
+                        profile => profile.user_id === settings.row.original.id,
+                    );
+                }
+                if (currentTeam?.type === 'TEAM_OF_TEAMS') {
+                    fullItem = teams.find(
+                        team => team.original.id === settings.row.original.id,
+                    );
+                }
                 return (
                     <>
                         <Box display="flex" justifyContent="center">
                             <ColorPicker
                                 currentColor={
-                                    fullTeam?.color ?? theme.palette.grey[500]
+                                    fullItem?.color ?? theme.palette.grey[500]
                                 }
-                                colors={teamsColors.filter(
+                                colors={colors.filter(
                                     color =>
-                                        !fullTeam ||
-                                        (fullTeam && color !== fullTeam.color),
+                                        !fullItem ||
+                                        (fullItem && color !== fullItem.color),
                                 )}
                                 displayLabel={false}
                                 onChangeColor={color =>
-                                    setTeamColor(
+                                    setItemColor(
                                         color,
                                         settings.row.original.id,
                                     )
@@ -106,11 +120,17 @@ export const getColumns = ({
                 return (
                     <div>
                         {
-                            assignments.filter(
-                                assignment =>
-                                    assignment.team ===
-                                    settings.row.original.id,
-                            ).length
+                            assignments.filter(assignment => {
+                                if (currentTeam?.type === 'TEAM_OF_TEAMS') {
+                                    return (
+                                        assignment.team ===
+                                        settings.row.original.id
+                                    );
+                                }
+                                return (
+                                    assignment.user === settings.row.original.id
+                                );
+                            }).length
                         }
                     </div>
                 );

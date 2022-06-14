@@ -31,6 +31,7 @@ export type SaveAssignmentQuery = {
     planning: number;
     org_unit: number;
     team?: number | null;
+    user?: number | null;
 };
 
 export type AssignmentsApi = AssignmentApi[];

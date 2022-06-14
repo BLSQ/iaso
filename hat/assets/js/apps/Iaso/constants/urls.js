@@ -25,7 +25,7 @@ export const baseUrls = {
     pages: 'pages',
     planning: 'planning/list',
     assignments: 'planning/assignments',
-    teams: 'planning/teams',
+    teams: 'settings/teams',
     error401: '401',
     error500: '500',
 };

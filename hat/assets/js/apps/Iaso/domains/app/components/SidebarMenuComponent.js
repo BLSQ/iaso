@@ -18,7 +18,6 @@ import ArrowForwardIcon from '@material-ui/icons/ArrowForward';
 import PropTypes from 'prop-types';
 
 import { injectIntl, commonStyles } from 'bluesquare-components';
-import { redirectTo } from '../../../routing/actions';
 import { toggleSidebarMenu } from '../../../redux/sidebarMenuReducer';
 import { SIDEBAR_WIDTH } from '../../../constants/uiConstants';
 
@@ -33,7 +32,7 @@ import MESSAGES from './messages';
 import { listMenuPermission, userHasOneOfPermissions } from '../../users/utils';
 import { getDefaultSourceVersion } from '../../dataSources/utils';
 import { PluginsContext } from '../../../utils';
-import { useCurrentUser } from '../../../utils/usersUtils';
+import { useCurrentUser } from '../../../utils/usersUtils.ts';
 
 const styles = theme => ({
     ...commonStyles(theme),

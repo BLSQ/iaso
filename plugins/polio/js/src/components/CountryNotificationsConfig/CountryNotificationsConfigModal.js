@@ -2,16 +2,20 @@ import React, { useCallback, useEffect } from 'react';
 import { isEqual } from 'lodash';
 import { arrayOf, func, number, object, string } from 'prop-types';
 import ConfirmCancelDialogComponent from 'Iaso/components/dialogs/ConfirmCancelDialogComponent';
-import MESSAGES from '../../constants/messages';
-import { usePutCountryMutation } from './requests';
 import InputComponent from 'Iaso/components/forms/InputComponent';
 import { commaSeparatedIdsToArray } from 'Iaso/utils/forms';
 import { useFormState } from 'Iaso/hooks/form';
+import { usePutCountryMutation } from './requests';
+import MESSAGES from '../../constants/messages';
 
 const makeDropDownListItem = user => {
+    const userName =
+        user.first_name && user.last_name
+            ? `${user.first_name} ${user.last_name}`
+            : user.user_name;
     return {
         value: user.user_id,
-        label: user.email,
+        label: `${userName} - ${user.email}`,
     };
 };
 

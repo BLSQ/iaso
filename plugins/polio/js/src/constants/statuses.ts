@@ -11,5 +11,5 @@ export const BUDGET_STATUSES = [
     'all',
     'validated',
     'validation_ongoing',
-    'rejected',
+    'noBudgetSubmitted',
 ];

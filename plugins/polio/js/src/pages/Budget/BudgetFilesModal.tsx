@@ -23,6 +23,7 @@ type Props = {
     note?: string;
     type: 'submission' | 'comments';
     date: string;
+    links: string;
 };
 
 const CloseDialog = ({
@@ -78,13 +79,26 @@ const extractFileName = (fileUrl: string) => {
     return removedSlashes[removedSlashes.length - 1];
 };
 
-const makeLinks = files => {
+const makeFileLinks = files => {
     return files.map((file, index) => {
-        const fileName = extractFileName(file.file) ?? `file_${index}`;
+        const fileName = extractFileName(file.file) || file.file;
         return (
             // eslint-disable-next-line react/no-array-index-key
             <Link key={`${fileName}_${index}`} download href={file.file}>
                 <Typography>{fileName}</Typography>
+            </Link>
+        );
+    });
+};
+
+const makeLinks = (links: string) => {
+    if (!links) return null;
+    const linksArray = links.split(', ');
+    return linksArray.map((link, index) => {
+        return (
+            // eslint-disable-next-line react/no-array-index-key
+            <Link key={`${link}_${index}`} download href={link}>
+                <Typography>{link}</Typography>
             </Link>
         );
     });
@@ -95,6 +109,7 @@ export const BudgetFilesModal: FunctionComponent<Props> = ({
     note,
     type,
     date,
+    links,
 }) => {
     const { formatMessage } = useSafeIntl();
     const { data: budgetEventFiles, isFetching } =
@@ -104,7 +119,7 @@ export const BudgetFilesModal: FunctionComponent<Props> = ({
         ...MESSAGES.files,
         values: { type: typeTranslated, date: moment(date).format('LTS') },
     };
-    const disableTrigger = budgetEventFiles?.length === 0 && !note;
+    const disableTrigger = budgetEventFiles?.length === 0 && !note && !links;
     const renderTrigger = useCallback(
         () => makeRenderTrigger(disableTrigger),
         [disableTrigger],
@@ -134,7 +149,8 @@ export const BudgetFilesModal: FunctionComponent<Props> = ({
             )}
             {!isFetching && (
                 <Box mt={2}>
-                    {makeLinks(budgetEventFiles)}
+                    {makeFileLinks(budgetEventFiles)}
+                    {makeLinks(links)}
                     {note && (
                         <>
                             <Box mt={4}>

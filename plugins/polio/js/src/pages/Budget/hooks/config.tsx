@@ -202,6 +202,7 @@ export const useBudgetDetailsColumns = ({ teams, profiles }): Column[] => {
                             note={settings.row.original.comment}
                             date={settings.row.original.updated_at}
                             type={settings.row.original.type}
+                            links={settings.row.original.links}
                         />
                     );
                 },

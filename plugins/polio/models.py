@@ -497,7 +497,7 @@ class BudgetEvent(SoftDeletableModel):
 
     TYPES = (("submission", "Budget Submission"), ("comments", "Comments"), ("validation", "Validation"))
 
-    STATUS = (("validation_ongoing", "Validation Ongoing"), ("validated", "Validated"), ("refused", "Refused"))
+    STATUS = (("validation_ongoing", "Validation Ongoing"), ("validated", "Validated"))
 
     campaign = models.ForeignKey(Campaign, on_delete=models.PROTECT)
     type = models.CharField(choices=TYPES, max_length=200)
@@ -508,6 +508,7 @@ class BudgetEvent(SoftDeletableModel):
     status = models.CharField(choices=STATUS, max_length=200, null=True)
     cc_emails = models.CharField(max_length=200, blank=True, null=True)
     comment = models.TextField(blank=True, null=True)
+    links = models.TextField(blank=True, null=True)
 
     def __str__(self):
         return str(self.campaign)

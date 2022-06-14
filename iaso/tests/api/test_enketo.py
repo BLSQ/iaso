@@ -1,15 +1,11 @@
-import typing
 import json
 import urllib
 
-from django.test import tag
 from django.core.files.uploadedfile import UploadedFile
 
 from iaso.models import Instance
 from iaso.test import APITestCase
 from iaso import models as m
-from django.contrib.gis.geos import Point
-from django.utils import timezone
 from django.core.files.uploadedfile import SimpleUploadedFile
 from hat.audit.models import Modification
 from django.test import override_settings

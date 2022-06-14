@@ -163,15 +163,11 @@ class ProfilesViewSet(viewsets.ViewSet):
         send_mail(email_subject, email_text, "no-reply@%s" % domain, [profile.user.email])
 
     @staticmethod
-    def get_message_by_language(self, request_languange):
-        if not request_languange:
-            return self.CREATE_PASSWORD_MESSAGE_EN
+    def get_message_by_language(self, request_languange="en"):
         return self.CREATE_PASSWORD_MESSAGE_FR if request_languange == "fr" else self.CREATE_PASSWORD_MESSAGE_EN
 
     @staticmethod
-    def get_subject_by_language(self, request_languange):
-        if not request_languange:
-            return self.EMAIL_SUBJECT_EN
+    def get_subject_by_language(self, request_languange="en"):
         return self.EMAIL_SUBJECT_FR if request_languange == "fr" else self.EMAIL_SUBJECT_EN
 
     def create(self, request):

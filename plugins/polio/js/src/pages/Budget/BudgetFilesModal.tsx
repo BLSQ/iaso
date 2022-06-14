@@ -10,7 +10,7 @@ import {
 // @ts-ignore
 import { IconButton, LoadingSpinner, useSafeIntl } from 'bluesquare-components';
 import moment from 'moment';
-import React, { FunctionComponent } from 'react';
+import React, { FunctionComponent, useCallback } from 'react';
 import { FormattedMessage } from 'react-intl';
 import { Link } from 'react-router';
 import DialogComponent from '../../../../../../hat/assets/js/apps/Iaso/components/dialogs/DialogComponent';
@@ -43,7 +43,7 @@ const CloseDialog = ({
     );
 };
 
-const renderTrigger =
+const makeRenderTrigger =
     (disabled = false) =>
     ({ openDialog }) => {
         return (
@@ -64,7 +64,7 @@ const extractFileName = (fileUrl: string) => {
     let trimmedLeft = '';
     let i = 0;
     // find the end of file name by searching for the extension
-    while (trimmedLeft === '') {
+    while (trimmedLeft === '' && i < fileExtensions.length) {
         const currentExtension = fileExtensions[i];
         if (fileUrl.indexOf(currentExtension) !== -1) {
             trimmedLeft = `${
@@ -105,16 +105,20 @@ export const BudgetFilesModal: FunctionComponent<Props> = ({
         values: { type: typeTranslated, date: moment(date).format('LTS') },
     };
     const disableTrigger = budgetEventFiles?.length === 0 && !note;
+    const renderTrigger = useCallback(
+        () => makeRenderTrigger(disableTrigger),
+        [disableTrigger],
+    );
     return (
         <DialogComponent
             dataTestId="budget-files-modal"
-            id="budget-files-modal"
+            id={`budget-files-modal ${eventId}`}
             renderActions={({ closeDialog }) => {
                 return (
                     <CloseDialog closeDialog={closeDialog} onCancel={onClose} />
                 );
             }}
-            renderTrigger={renderTrigger(disableTrigger)}
+            renderTrigger={renderTrigger()}
             titleMessage={titleMessage}
         >
             <Divider />

@@ -527,7 +527,7 @@ class PlanningTestCase(APITestCase):
         self.assertQuerysetEqual(planning.forms.all(), [self.form1, self.form2], ordered=False)
 
         mod = Modification.objects.last()
-        self.assertEqual(mod.past_value[0]["forms"], [2])
+        self.assertEqual(mod.past_value[0]["forms"], [])
         self.assertEqual(mod.new_value[0]["forms"], [self.form1.id, self.form2.id])
 
     def test_create_api(self):

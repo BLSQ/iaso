@@ -69,10 +69,10 @@ export const useSnackMutation = <
               'mutationFn'
           >
         | undefined = {},
+    hideSuccesfullSnackBar = false,
 ): UseMutationResult<Data, Error, Variables, Context> => {
     const dispatch = useDispatch();
     const queryClient = useQueryClient();
-
     const newOptions: Omit<
         UseMutationOptions<any, any, any, any>,
         'mutationFn'
@@ -88,7 +88,7 @@ export const useSnackMutation = <
             return undefined;
         },
         onSuccess: (data, variables, context) => {
-            if (snackSuccessMessage) {
+            if (snackSuccessMessage && !hideSuccesfullSnackBar) {
                 dispatch(
                     enqueueSnackbar(
                         succesfullSnackBar(undefined, snackSuccessMessage),

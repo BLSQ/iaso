@@ -30,7 +30,7 @@ const useStyles = makeStyles(theme => ({
         outline: 'none !important',
     },
     popper: {
-        zIndex: 500,
+        zIndex: 1001,
         width: 300,
         paddingTop: theme.spacing(2),
         marginLeft: -10,
@@ -45,7 +45,6 @@ const useStyles = makeStyles(theme => ({
 
 const ColorPicker = ({ currentColor, onChangeColor, colors, displayLabel }) => {
     const [anchorEl, setAnchorEl] = useState(null);
-    const [color, setColor] = useState(currentColor);
     const classes = useStyles();
     const handleClick = event => {
         setAnchorEl(anchorEl ? null : event.currentTarget);
@@ -54,7 +53,6 @@ const ColorPicker = ({ currentColor, onChangeColor, colors, displayLabel }) => {
 
     const handleChangeColor = newColor => {
         handleClick();
-        setColor(newColor.hex);
         onChangeColor(newColor.hex);
     };
     return (
@@ -72,7 +70,7 @@ const ColorPicker = ({ currentColor, onChangeColor, colors, displayLabel }) => {
                     className={classes.button}
                     role="button"
                     tabIndex="0"
-                    style={{ backgroundColor: color }}
+                    style={{ backgroundColor: currentColor }}
                 >
                     {' '}
                 </span>
@@ -89,7 +87,7 @@ const ColorPicker = ({ currentColor, onChangeColor, colors, displayLabel }) => {
                         <TwitterPicker
                             width="100%"
                             colors={colors}
-                            color={color}
+                            color={currentColor}
                             onChangeComplete={handleChangeColor}
                         />
                     </Popper>

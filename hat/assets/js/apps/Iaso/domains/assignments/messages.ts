@@ -33,6 +33,10 @@ const MESSAGES = defineMessages({
         defaultMessage: 'Color',
         id: 'iaso.label.color',
     },
+    selection: {
+        defaultMessage: 'Selection',
+        id: 'iaso.label.selection',
+    },
 });
 
 export default MESSAGES;

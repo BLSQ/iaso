@@ -298,8 +298,8 @@ class AssignmentSerializer(serializers.ModelSerializer):
         assigned_team = validated_data.get("team", self.instance.team if self.instance else None)
         if assigned_team and assigned_user:
             raise serializers.ValidationError("Cannot assign on both team and users")
-        if not assigned_team and not assigned_user:
-            raise serializers.ValidationError("Should be at least an assigned team or user")
+        # if not assigned_team and not assigned_user:
+        #     raise serializers.ValidationError("Should be at least an assigned team or user")
 
         planning = validated_data.get("planning", self.instance.planning if self.instance else None)
         org_unit: OrgUnit = validated_data.get("org_unit", self.instance.org_unit if self.instance else None)

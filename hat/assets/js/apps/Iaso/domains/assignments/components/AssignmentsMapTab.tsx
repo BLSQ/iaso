@@ -1,5 +1,5 @@
-import React, { FunctionComponent } from 'react';
-import { Grid, Box } from '@material-ui/core';
+import React, { FunctionComponent, useState } from 'react';
+import { Grid } from '@material-ui/core';
 import { useTheme, Theme } from '@material-ui/core/styles';
 
 import {
@@ -8,20 +8,18 @@ import {
     // @ts-ignore
     useSafeIntl,
 } from 'bluesquare-components';
-
-import { ColorPicker } from '../../../components/forms/ColorPicker';
+import { getOrgUnitAssignation } from '../utils';
 
 import { AssignmentsMap } from './AssignmentsMap';
 
-import { AssignmentsApi } from '../types/assigment';
+import { AssignmentsApi, SaveAssignmentQuery } from '../types/assigment';
 import { Planning } from '../types/planning';
-import { Team, DropdownTeamsOptions } from '../types/team';
-import { Column } from '../../../types/table';
-import { IntlFormatMessage } from '../../../types/intl';
+import { Team, DropdownTeamsOptions, SubTeam } from '../types/team';
+import { OrgUnitMarker, OrgUnitShape } from '../types/locations';
 
-import { teamsColors } from '../constants/teamColors';
+import { getColumns } from '../configs/AssignmentsMapTabColumns';
 
-import MESSAGES from '../messages';
+import { useSaveAssignment } from '../hooks/requests/useSaveAssignment';
 
 type Props = {
     assignments: AssignmentsApi;
@@ -30,74 +28,6 @@ type Props = {
     teams: DropdownTeamsOptions[];
     // eslint-disable-next-line no-unused-vars
     setTeamColor: (color: string, teamId: number) => void;
-};
-
-const getColumns = (
-    formatMessage: IntlFormatMessage,
-    assignments: AssignmentsApi,
-    teams: DropdownTeamsOptions[],
-    // eslint-disable-next-line no-unused-vars
-    setTeamColor: (color: string, teamId: number) => void,
-    theme: Theme,
-): Column[] => {
-    return [
-        {
-            Header: formatMessage(MESSAGES.name),
-            id: 'name',
-            accessor: 'name',
-        },
-        {
-            Header: formatMessage(MESSAGES.color),
-            id: 'color',
-            accessor: 'color',
-            Cell: settings => {
-                const fullTeam = teams.find(
-                    team => team.original.id === settings.row.original.id,
-                );
-                return (
-                    <>
-                        <Box display="flex" justifyContent="center">
-                            <ColorPicker
-                                currentColor={
-                                    fullTeam?.color ?? theme.palette.grey[500]
-                                }
-                                colors={teamsColors.filter(
-                                    color =>
-                                        !fullTeam ||
-                                        (fullTeam && color !== fullTeam.color),
-                                )}
-                                displayLabel={false}
-                                onChangeColor={color =>
-                                    setTeamColor(
-                                        color,
-                                        settings.row.original.id,
-                                    )
-                                }
-                            />
-                        </Box>
-                    </>
-                );
-            },
-        },
-        {
-            Header: formatMessage(MESSAGES.assignationsCount),
-            id: 'assignationsCount',
-            accessor: 'assignationsCount',
-            Cell: settings => {
-                return (
-                    <div>
-                        {
-                            assignments.filter(
-                                assignment =>
-                                    assignment.team ===
-                                    settings.row.original.id,
-                            ).length
-                        }
-                    </div>
-                );
-            },
-        },
-    ];
 };
 
 export const AssignmentsMapTab: FunctionComponent<Props> = ({
@@ -109,6 +39,56 @@ export const AssignmentsMapTab: FunctionComponent<Props> = ({
 }) => {
     const { formatMessage } = useSafeIntl();
     const theme: Theme = useTheme();
+
+    const { mutateAsync: createAssignment } = useSaveAssignment('create');
+    const { mutateAsync: editAssignment } = useSaveAssignment('edit');
+    const [selectedTeam, setSelectedTeam] = useState<SubTeam | undefined>(
+        currentTeam?.sub_teams_details[0],
+    );
+    const handleClick = async (
+        selectedOrgUnit: OrgUnitShape | OrgUnitMarker,
+    ) => {
+        const { assignment, assignedTeam } = getOrgUnitAssignation(
+            assignments,
+            selectedOrgUnit,
+            teams,
+        );
+        if (planning && selectedTeam) {
+            let saveParams: SaveAssignmentQuery = {
+                planning: planning.id,
+                org_unit: selectedOrgUnit.id,
+                team: selectedTeam.id,
+            };
+            if (assignment) {
+                if (assignedTeam) {
+                    if (selectedTeam.id !== assignedTeam.original.id) {
+                        // update assignment
+                        saveParams = {
+                            id: assignment.id,
+                            ...saveParams,
+                        };
+                    } else {
+                        // fake delete assignment, remove team
+                        saveParams = {
+                            ...saveParams,
+                            team: null,
+                            id: assignment.id,
+                        };
+                    }
+                } else {
+                    // update assignment after fake delete
+                    saveParams = {
+                        id: assignment.id,
+                        ...saveParams,
+                    };
+                }
+
+                editAssignment(saveParams);
+            } else {
+                createAssignment(saveParams);
+            }
+        }
+    };
     return (
         <Grid container spacing={2}>
             <Grid item xs={5}>
@@ -118,17 +98,23 @@ export const AssignmentsMapTab: FunctionComponent<Props> = ({
                     defaultSorted={[{ id: 'name', desc: false }]}
                     countOnTop={false}
                     marginTop={false}
-                    columns={getColumns(
+                    columns={getColumns({
                         formatMessage,
                         assignments,
                         teams,
                         setTeamColor,
                         theme,
-                    )}
+                        selectedTeam,
+                        setSelectedTeam,
+                    })}
                     count={currentTeam?.sub_teams_details?.length ?? 0}
-                    onTableParamsChange={p =>
-                        console.log('onTableParamsChange', p)
-                    }
+                    extraProps={{
+                        // adding this will force table to
+                        // re render while selecting a team, changing team color, changing assignments
+                        selectedTeamId: selectedTeam?.id,
+                        teams,
+                        assignments,
+                    }}
                 />
             </Grid>
             <Grid item xs={7}>
@@ -136,6 +122,7 @@ export const AssignmentsMapTab: FunctionComponent<Props> = ({
                     assignments={assignments}
                     planning={planning}
                     teams={teams}
+                    handleClick={handleClick}
                 />
             </Grid>
         </Grid>

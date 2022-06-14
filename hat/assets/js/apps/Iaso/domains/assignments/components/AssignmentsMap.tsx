@@ -25,6 +25,8 @@ import { useGetOrgUnitLocations } from '../hooks/requests/useGetOrgUnitLocations
 // components
 import { TilesSwitch, Tile } from '../../../components/maps/tools/TileSwitch';
 import MarkersListComponent from '../../../components/maps/markers/MarkersListComponent';
+// utils
+import { getLocationColor } from '../utils';
 
 const defaultViewport = {
     center: [1, 20],
@@ -35,6 +37,8 @@ type Props = {
     assignments: AssignmentsApi;
     planning: Planning | undefined;
     teams: DropdownTeamsOptions[];
+    // eslint-disable-next-line no-unused-vars
+    handleClick: (shape: OrgUnitShape | OrgUnitMarker) => void;
 };
 const boundsOptions = {
     padding: [50, 50],
@@ -58,29 +62,11 @@ const getLocationsBounds = (locations: Locations) => {
     return bounds;
 };
 
-const getLocationColor = (
-    assignments: AssignmentsApi,
-    orgUnit: OrgUnitShape | OrgUnitMarker,
-    teams: DropdownTeamsOptions[],
-    theme: Theme,
-): string => {
-    let color = theme.palette.grey[500];
-    assignments.forEach(assignment => {
-        if (assignment.org_unit === orgUnit.id) {
-            const assignedTeam = teams.find(
-                team => team.original.id === assignment.team,
-            );
-            if (assignedTeam) {
-                color = assignedTeam.color;
-            }
-        }
-    });
-    return color;
-};
 export const AssignmentsMap: FunctionComponent<Props> = ({
     assignments,
     planning,
     teams,
+    handleClick,
 }) => {
     const map: any = useRef();
     const theme: Theme = useTheme();
@@ -129,6 +115,7 @@ export const AssignmentsMap: FunctionComponent<Props> = ({
                             {locations.shapes.map(shape => (
                                 <GeoJSON
                                     key={shape.id}
+                                    onClick={() => handleClick(shape)}
                                     data={shape.geoJson}
                                     style={() => ({
                                         color: getLocationColor(
@@ -147,7 +134,7 @@ export const AssignmentsMap: FunctionComponent<Props> = ({
                             <MarkersListComponent
                                 items={locations.markers || []}
                                 // eslint-disable-next-line no-console
-                                onMarkerClick={() => console.log('click')}
+                                onMarkerClick={shape => handleClick(shape)}
                                 markerProps={shape => ({
                                     ...circleColorMarkerOptions(
                                         getLocationColor(

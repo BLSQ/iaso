@@ -1,5 +1,5 @@
 /* eslint-disable camelcase */
-type SubTeam = {
+export type SubTeam = {
     id: number;
     name: string;
     deleted_at?: string;

@@ -111,7 +111,6 @@ export const Assignments: FunctionComponent<Props> = ({ params }) => {
         }
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [dataTeams]);
-
     return (
         <>
             <TopBar

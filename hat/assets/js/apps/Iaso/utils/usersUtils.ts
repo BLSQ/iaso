@@ -8,8 +8,7 @@ export type Profile = {
     last_name: string;
     email: string;
     language?: null | undefined | string;
-    user_id: string;
-    color?: string;
+    user_id: number;
 };
 
 type User = {

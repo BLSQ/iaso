@@ -27,6 +27,7 @@ import { AssignmentsApi } from '../types/assigment';
 import { Planning } from '../types/planning';
 import { Locations, OrgUnitMarker, OrgUnitShape } from '../types/locations';
 import { DropdownTeamsOptions, Team } from '../types/team';
+import { Profile } from '../../../utils/usersUtils';
 // requests
 import { useGetOrgUnitLocations } from '../hooks/requests/useGetOrgUnitLocations';
 // components
@@ -44,6 +45,7 @@ type Props = {
     assignments: AssignmentsApi;
     planning: Planning | undefined;
     teams: DropdownTeamsOptions[];
+    profiles: Profile[];
     // eslint-disable-next-line no-unused-vars
     handleClick: (shape: OrgUnitShape | OrgUnitMarker) => void;
     currentTeam: Team | undefined;
@@ -74,6 +76,7 @@ export const AssignmentsMap: FunctionComponent<Props> = ({
     assignments,
     planning,
     teams,
+    profiles,
     handleClick,
     currentTeam,
 }) => {
@@ -85,7 +88,6 @@ export const AssignmentsMap: FunctionComponent<Props> = ({
             ? assignment.user !== null
             : assignment.team !== null,
     );
-
     const fitToBounds = (newLocations: Locations) => {
         const bounds = getLocationsBounds(newLocations);
         if (bounds && map?.current) {
@@ -138,6 +140,8 @@ export const AssignmentsMap: FunctionComponent<Props> = ({
                                             shape,
                                             teams,
                                             theme,
+                                            profiles,
+                                            currentTeam?.type,
                                         ),
                                     })}
                                 >
@@ -157,6 +161,8 @@ export const AssignmentsMap: FunctionComponent<Props> = ({
                                             shape,
                                             teams,
                                             theme,
+                                            profiles,
+                                            currentTeam?.type,
                                         ),
                                     ),
                                 })}

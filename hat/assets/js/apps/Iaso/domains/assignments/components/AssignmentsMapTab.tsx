@@ -50,12 +50,16 @@ export const AssignmentsMapTab: FunctionComponent<Props> = ({
     const handleClick = async (
         selectedOrgUnit: OrgUnitShape | OrgUnitMarker,
     ) => {
-        const { assignment, assignedTeam } = getOrgUnitAssignation(
-            assignments,
-            selectedOrgUnit,
-            teams,
-        );
-        if (planning && selectedItem) {
+        const { assignment, assignedTeam, assignedUser } =
+            getOrgUnitAssignation(
+                assignments,
+                selectedOrgUnit,
+                teams,
+                profiles,
+                currentTeam?.type,
+            );
+        // TODO: make it better, copy paste for now...
+        if (planning && selectedItem && currentTeam?.type === 'TEAM_OF_TEAMS') {
             let saveParams: SaveAssignmentQuery = {
                 planning: planning.id,
                 org_unit: selectedOrgUnit.id,
@@ -64,6 +68,39 @@ export const AssignmentsMapTab: FunctionComponent<Props> = ({
             if (assignment) {
                 if (assignedTeam) {
                     if (selectedItem.id !== assignedTeam.original.id) {
+                        // update assignment
+                        saveParams = {
+                            id: assignment.id,
+                            ...saveParams,
+                        };
+                    } else {
+                        // fake delete assignment, remove team / user
+                        saveParams = {
+                            ...saveParams,
+                            team: null,
+                            user: null,
+                            id: assignment.id,
+                        };
+                    }
+                } else {
+                    // update assignment after fake delete
+                    saveParams = {
+                        id: assignment.id,
+                        ...saveParams,
+                    };
+                }
+            }
+            saveAssignment(saveParams);
+        }
+        if (planning && selectedItem && currentTeam?.type === 'TEAM_OF_USERS') {
+            let saveParams: SaveAssignmentQuery = {
+                planning: planning.id,
+                org_unit: selectedOrgUnit.id,
+                user: selectedItem.id,
+            };
+            if (assignment) {
+                if (assignedUser) {
+                    if (selectedItem.id !== assignedUser.user_id) {
                         // update assignment
                         saveParams = {
                             id: assignment.id,
@@ -143,6 +180,7 @@ export const AssignmentsMapTab: FunctionComponent<Props> = ({
                     teams={teams}
                     handleClick={handleClick}
                     currentTeam={currentTeam}
+                    profiles={profiles}
                 />
             </Grid>
         </Grid>

@@ -84,7 +84,7 @@ export const Assignments: FunctionComponent<Props> = ({ params }) => {
     const setItemColor = (color: string, itemId: number): void => {
         if (currentTeam?.type === 'TEAM_OF_USERS') {
             const itemIndex = profiles.findIndex(
-                profile => parseInt(profile.user_id, 10) === itemId,
+                profile => profile.user_id === itemId,
             );
             if (itemIndex) {
                 const newProfiles = [...profiles];

@@ -3,7 +3,6 @@ import {
     SET_USERS_PROFILES,
     SET_CURRENT_USER,
     SET_IS_FETCHING_USERS,
-    SET_PERMISSIONS,
 } from './actions';
 
 describe('Users reducer', () => {
@@ -45,17 +44,6 @@ describe('Users reducer', () => {
         };
         const expectedState = {
             fetching: payload,
-        };
-        expect(usersReducer({}, action)).to.eql(expectedState);
-    });
-    it('should respond to SET_PERMISSIONS', () => {
-        const payload = 'KOKIRI';
-        const action = {
-            type: SET_PERMISSIONS,
-            payload,
-        };
-        const expectedState = {
-            permissions: payload,
         };
         expect(usersReducer({}, action)).to.eql(expectedState);
     });

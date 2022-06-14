@@ -113,7 +113,7 @@ function getDisplayedValue(descriptor, data) {
 export default function InstanceFileContentRich({
     instanceData,
     formDescriptor,
-    showLabelKey,
+    showQuestionKey,
     showNote,
 }) {
     return (
@@ -126,7 +126,7 @@ export default function InstanceFileContentRich({
                             key={childDescriptor.name}
                             descriptor={childDescriptor}
                             data={instanceData}
-                            showLabelKey={showLabelKey}
+                            showQuestionKey={showQuestionKey}
                             showNote={showNote}
                         />
                     ))}
@@ -135,14 +135,19 @@ export default function InstanceFileContentRich({
     );
 }
 
+InstanceFileContentRich.defaultProps = {
+    showQuestionKey: true,
+    showNote: true,
+};
+
 InstanceFileContentRich.propTypes = {
     instanceData: PropTypes.object.isRequired,
     formDescriptor: PropTypes.object.isRequired,
-    showLabelKey: PropTypes.bool,
+    showQuestionKey: PropTypes.bool,
     showNote: PropTypes.bool,
 };
 
-function FormChild({ descriptor, data, showLabelKey, showNote }) {
+function FormChild({ descriptor, data, showQuestionKey, showNote }) {
     switch (descriptor.type) {
         case 'repeat':
             return data[descriptor.name] ? (
@@ -151,7 +156,7 @@ function FormChild({ descriptor, data, showLabelKey, showNote }) {
                         key={`repeat-${index}`}
                         descriptor={descriptor}
                         data={subdata}
-                        showLabelKey={showLabelKey}
+                        showQuestionKey={showQuestionKey}
                     />
                 ))
             ) : (
@@ -162,7 +167,7 @@ function FormChild({ descriptor, data, showLabelKey, showNote }) {
                 <FormGroup
                     descriptor={descriptor}
                     data={data}
-                    showLabelKey={showLabelKey}
+                    showQuestionKey={showQuestionKey}
                 />
             );
         case 'start':
@@ -176,14 +181,14 @@ function FormChild({ descriptor, data, showLabelKey, showNote }) {
                 <FormMetaField
                     descriptor={descriptor}
                     data={data}
-                    showLabelKey={showLabelKey}
+                    showQuestionKey={showQuestionKey}
                 />
             );
         case 'note':
             return showNote ? (
                 <FormNoteField
                     descriptor={descriptor}
-                    showLabelKey={showLabelKey}
+                    showQuestionKey={showQuestionKey}
                 />
             ) : null;
         case 'calculate':
@@ -191,7 +196,7 @@ function FormChild({ descriptor, data, showLabelKey, showNote }) {
                 <FormCalculatedField
                     descriptor={descriptor}
                     data={data}
-                    showLabelKey={showLabelKey}
+                    showQuestionKey={showQuestionKey}
                 />
             );
         default:
@@ -199,19 +204,25 @@ function FormChild({ descriptor, data, showLabelKey, showNote }) {
                 <FormField
                     descriptor={descriptor}
                     data={data}
-                    showLabelKey={showLabelKey}
+                    showQuestionKey={showQuestionKey}
                 />
             );
     }
 }
+
+FormChild.defaultProps = {
+    showQuestionKey: true,
+    showNote: true,
+};
+
 FormChild.propTypes = {
     descriptor: PropTypes.object.isRequired,
     data: PropTypes.object.isRequired,
-    showLabelKey: PropTypes.bool,
+    showQuestionKey: PropTypes.bool,
     showNote: PropTypes.bool,
 };
 
-function FormGroup({ descriptor, data, showLabelKey }) {
+function FormGroup({ descriptor, data, showQuestionKey }) {
     const classes = useStyle();
 
     return (
@@ -224,7 +235,7 @@ function FormGroup({ descriptor, data, showLabelKey }) {
                 >
                     <Label
                         descriptor={descriptor}
-                        showLabelKey={showLabelKey}
+                        showQuestionKey={showQuestionKey}
                     />
                 </TableCell>
             </TableRow>
@@ -238,19 +249,27 @@ function FormGroup({ descriptor, data, showLabelKey }) {
         </>
     );
 }
+
+FormGroup.defaultProps = {
+    showQuestionKey: true,
+};
+
 FormGroup.propTypes = {
     descriptor: PropTypes.object.isRequired,
     data: PropTypes.object.isRequired,
-    showLabelKey: PropTypes.bool,
+    showQuestionKey: PropTypes.bool,
 };
 
-function FormField({ descriptor, data, showLabelKey }) {
+function FormField({ descriptor, data, showQuestionKey }) {
     const classes = useStyle();
 
     return (
         <TableRow>
             <TableCell className={classes.tableCell}>
-                <Label descriptor={descriptor} showLabelKey={showLabelKey} />
+                <Label
+                    descriptor={descriptor}
+                    showQuestionKey={showQuestionKey}
+                />
             </TableCell>
             <TableCell
                 className={classes.tableCell}
@@ -262,13 +281,18 @@ function FormField({ descriptor, data, showLabelKey }) {
         </TableRow>
     );
 }
+
+FormField.defaultProps = {
+    showQuestionKey: true,
+};
+
 FormField.propTypes = {
     descriptor: PropTypes.object.isRequired,
     data: PropTypes.object.isRequired,
-    showLabelKey: PropTypes.bool,
+    showQuestionKey: PropTypes.bool,
 };
 
-function FormCalculatedField({ descriptor, data, showLabelKey }) {
+function FormCalculatedField({ descriptor, data, showQuestionKey }) {
     const classes = useStyle();
 
     return (
@@ -282,7 +306,7 @@ function FormCalculatedField({ descriptor, data, showLabelKey }) {
                     <Label
                         descriptor={descriptor}
                         tooltip={descriptor.bind.calculate}
-                        showLabelKey={showLabelKey}
+                        showQuestionKey={showQuestionKey}
                     />
                 </div>
             </TableCell>
@@ -292,13 +316,18 @@ function FormCalculatedField({ descriptor, data, showLabelKey }) {
         </TableRow>
     );
 }
+
+FormCalculatedField.defaultProps = {
+    showQuestionKey: true,
+};
+
 FormCalculatedField.propTypes = {
     descriptor: PropTypes.object.isRequired,
     data: PropTypes.object.isRequired,
-    showLabelKey: PropTypes.bool,
+    showQuestionKey: PropTypes.bool,
 };
 
-function FormMetaField({ descriptor, data, showLabelKey }) {
+function FormMetaField({ descriptor, data, showQuestionKey }) {
     const classes = useStyle();
 
     return (
@@ -307,19 +336,24 @@ function FormMetaField({ descriptor, data, showLabelKey }) {
                 <Label
                     descriptor={descriptor}
                     value={getDisplayedValue(descriptor, data)}
-                    showLabelKey={showLabelKey}
+                    showQuestionKey={showQuestionKey}
                 />
             </TableCell>
         </TableRow>
     );
 }
+
+FormMetaField.defaultProps = {
+    showQuestionKey: true,
+};
+
 FormMetaField.propTypes = {
     descriptor: PropTypes.object.isRequired,
     data: PropTypes.object.isRequired,
-    showLabelKey: PropTypes.bool,
+    showQuestionKey: PropTypes.bool,
 };
 
-function FormNoteField({ descriptor, showLabelKey }) {
+function FormNoteField({ descriptor, showQuestionKey }) {
     const classes = useStyle();
 
     return (
@@ -332,19 +366,24 @@ function FormNoteField({ descriptor, showLabelKey }) {
                     />
                     <Label
                         descriptor={descriptor}
-                        showLabelKey={showLabelKey}
+                        showQuestionKey={showQuestionKey}
                     />
                 </div>
             </TableCell>
         </TableRow>
     );
 }
-FormNoteField.propTypes = {
-    descriptor: PropTypes.object.isRequired,
-    showLabelKey: PropTypes.bool,
+
+FormNoteField.defaultProps = {
+    showQuestionKey: true,
 };
 
-function Label({ descriptor, value, tooltip, showLabelKey }) {
+FormNoteField.propTypes = {
+    descriptor: PropTypes.object.isRequired,
+    showQuestionKey: PropTypes.bool,
+};
+
+function Label({ descriptor, value, tooltip, showQuestionKey }) {
     const classes = useStyle();
 
     let label = descriptor.name;
@@ -363,7 +402,7 @@ function Label({ descriptor, value, tooltip, showLabelKey }) {
     const labelElement = (
         <div className={classes.tableCellLabel}>
             {label.replace(/(<([^>]+)>)/gi, '')}
-            {showLabelKey
+            {showQuestionKey
                 ? showNameHint && (
                       <div className={classes.tableCellLabelName}>
                           {descriptor.name}
@@ -381,13 +420,16 @@ function Label({ descriptor, value, tooltip, showLabelKey }) {
         </Tooltip>
     );
 }
+
 Label.defaultProps = {
     value: null,
     tooltip: null,
+    showQuestionKey: true,
 };
+
 Label.propTypes = {
     descriptor: PropTypes.object.isRequired,
     value: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
     tooltip: PropTypes.string,
-    showLabelKey: PropTypes.bool,
+    showQuestionKey: PropTypes.bool,
 };

@@ -55,6 +55,7 @@ const WidgetPaper = ({
     expandable,
     isExpanded,
     id,
+    showHeader,
 }) => {
     const [open, setOpen] = useState(isExpanded);
     const handleClick = () => {
@@ -64,41 +65,48 @@ const WidgetPaper = ({
     };
     return (
         <Paper elevation={1} className={classes.root} id={id}>
-            <div className={classes.paperTitle}>
-                <Grid xs={IconButton ? 10 : 12} item>
-                    <Box
-                        onClick={handleClick}
-                        className={
-                            expandable && classes.clickable
-                                ? classes.clickable
-                                : ''
-                        }
-                    >
-                        <Typography color="primary" variant="h5">
-                            {title}
-                        </Typography>
-                        {expandable &&
-                            (open ? (
-                                <ExpandLess className={classes.clickableIcon} />
-                            ) : (
-                                <ExpandMore className={classes.clickableIcon} />
-                            ))}
-                    </Box>
-                </Grid>
-                {IconButton && (
-                    <Grid
-                        xs={2}
-                        item
-                        container
-                        justifyContent="flex-end"
-                        className={classes.paperTitleButtonContainer}
-                    >
-                        <div className={classes.paperTitleButton}>
-                            <IconButton {...iconButtonProps} />
-                        </div>
+            {showHeader && (
+                <div className={classes.paperTitle}>
+                    <Grid xs={IconButton ? 10 : 12} item>
+                        <Box
+                            onClick={handleClick}
+                            className={
+                                expandable && classes.clickable
+                                    ? classes.clickable
+                                    : ''
+                            }
+                        >
+                            <Typography color="primary" variant="h5">
+                                {title}
+                            </Typography>
+                            {expandable &&
+                                (open ? (
+                                    <ExpandLess
+                                        className={classes.clickableIcon}
+                                    />
+                                ) : (
+                                    <ExpandMore
+                                        className={classes.clickableIcon}
+                                    />
+                                ))}
+                        </Box>
                     </Grid>
-                )}
-            </div>
+                    {IconButton && (
+                        <Grid
+                            xs={2}
+                            item
+                            container
+                            justifyContent="flex-end"
+                            className={classes.paperTitleButtonContainer}
+                        >
+                            <div className={classes.paperTitleButton}>
+                                <IconButton {...iconButtonProps} />
+                            </div>
+                        </Grid>
+                    )}
+                </div>
+            )}
+
             <Divider />
 
             <Collapse in={open} timeout="auto" unmountOnExit>
@@ -120,6 +128,7 @@ WidgetPaper.defaultProps = {
     expandable: false,
     isExpanded: true,
     id: undefined,
+    showHeader: true,
 };
 
 WidgetPaper.propTypes = {
@@ -132,6 +141,7 @@ WidgetPaper.propTypes = {
     expandable: PropTypes.bool,
     isExpanded: PropTypes.bool,
     id: PropTypes.string,
+    showHeader: PropTypes.bool,
 };
 
 export default withStyles(styles)(WidgetPaper);

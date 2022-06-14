@@ -45,6 +45,7 @@ export const CreateBudgetEvent: FunctionComponent<Props> = ({ campaignId }) => {
             cc_emails: null,
             comment: null,
             files: null,
+            links: null,
             status: 'validation_ongoing', // TODO status should be handled by backend
         },
         enableReinitialize: true,
@@ -81,7 +82,6 @@ export const CreateBudgetEvent: FunctionComponent<Props> = ({ campaignId }) => {
         },
         [errors, touched],
     );
-
     return (
         <FormikProvider value={formik}>
             {/* @ts-ignore */}
@@ -168,6 +168,15 @@ export const CreateBudgetEvent: FunctionComponent<Props> = ({ campaignId }) => {
                     value={values.cc_emails}
                     errors={getErrors('cc_emails')}
                     label={MESSAGES.cc_emails}
+                />
+                <InputComponent
+                    type="text"
+                    keyValue="links"
+                    multiline
+                    onChange={onChange}
+                    value={values.links}
+                    errors={getErrors('links')}
+                    label={MESSAGES.links}
                 />
             </ConfirmCancelDialogComponent>
         </FormikProvider>

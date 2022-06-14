@@ -1237,10 +1237,18 @@ const MESSAGES = defineMessages({
         id: 'iaso.forms.options.emailFormat',
         defaultMessage: 'Please use correctly formatted email addresses',
     },
+    urlFormat: {
+        id: 'iaso.forms.options.urlFormat',
+        defaultMessage: 'Please use correctly formatted URL',
+    },
     budgetTypeError: {
         id: 'iaso.forms.options.budgetTypeError',
         defaultMessage:
             'Value should be one of "submission", "comments" or "validation"',
+    },
+    links: {
+        defaultMessage: 'Links',
+        id: 'iaso.label.links',
     },
 });
 

@@ -15,19 +15,22 @@ type QueryData = {
 const postBudgetEvent = async (data: QueryData) => {
     const { files, ...body } = data;
     const newEvent = await postRequest(`/api/polio/budgetevent/`, body);
-    const filesToUpload = Array.from(files).map(file => {
-        return postRequest(
-            `/api/polio/budgetfiles/`,
-            { event: newEvent.id },
-            {
-                file,
-            },
-        );
-    });
-    const uploadStatuses = await Promise.allSettled(filesToUpload);
-    // TODO add error handling when a file does not upload
-    console.log('promises', filesToUpload);
-    console.log('statuses', uploadStatuses);
+    if (files) {
+        const filesToUpload = Array.from(files).map(file => {
+            return postRequest(
+                `/api/polio/budgetfiles/`,
+                { event: newEvent.id },
+                {
+                    file,
+                },
+            );
+        });
+        const uploadStatuses = await Promise.allSettled(filesToUpload);
+        // TODO add error handling when a file does not upload
+        console.log('promises', filesToUpload);
+        console.log('statuses', uploadStatuses);
+    }
+    return newEvent;
 };
 export const useSaveBudgetEvent = (): UseMutationResult => {
     return useSnackMutation(postBudgetEvent, undefined, undefined, [

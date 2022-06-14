@@ -1,7 +1,6 @@
 from bs4 import BeautifulSoup as Soup
 from django.http import HttpResponse, JsonResponse, HttpResponseRedirect
 from django.shortcuts import get_object_or_404
-from rest_framework.request import Request
 from rest_framework.views import APIView
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework import permissions
@@ -19,7 +18,6 @@ from iaso.enketo import (
     inject_instance_id_in_form,
     inject_instance_id_in_instance,
     EnketoError,
-    ENKETO_FORM_ID_SEPARATOR,
 )
 from iaso.enketo import calculate_file_md5
 from iaso.models import Form, Instance, InstanceFile, OrgUnit, Project, Profile
@@ -75,6 +73,19 @@ def enketo_create_url(request):
 @api_view(["GET"])
 @permission_classes([permissions.AllowAny])
 def enketo_public_create_url(request):
+    """This endpoint is used by web page outside of IASO to fill a form for an org unit and period.
+
+    Different behaviours:
+
+    * form is single per period:
+        1. No submission exist for period and org unit: Create a new one
+        2. 1 submission exists, open Enketo to edit it.
+        3. 2 or more for exist: Error state
+    * form !single_per_period
+        1. Always create a new submssion
+
+    It contacts enketo to generate a Form url and return that url"""
+
     token = request.GET.get("token")
     form_id = request.GET.get("form_id")
     period = request.GET.get("period", None)
@@ -122,7 +133,7 @@ def enketo_public_create_url(request):
         .exclude(file="")
         .exclude(deleted=True)
     )
-    if instances.count() > 1:
+    if instances.count() > 1 and form.single_per_period:
         return JsonResponse(
             {
                 "error": "Ambiguous request",
@@ -133,7 +144,7 @@ def enketo_public_create_url(request):
             status=400,
         )
 
-    if instances.count() == 1:  # edition
+    if instances.count() == 1 and form.single_per_period:  # edition
         instance = instances.first()
 
         instance.to_export = to_export == "true"

@@ -1,11 +1,13 @@
 from django.contrib.auth.models import User
 from django.db.models import Q
 from django_filters.rest_framework import DjangoFilterBackend
-from rest_framework import serializers, filters
+from rest_framework import serializers, filters, permissions
+from rest_framework.permissions import IsAuthenticated
 
 from iaso.api.common import ModelViewSet, DeletionFilterBackend, ReadOnlyOrHasPermission
 from iaso.models import Project, OrgUnit, Form
-from iaso.models.microplanning import Team, TeamType, Planning
+from iaso.models.microplanning import Team, TeamType, Planning, Assignment
+from iaso.models.org_unit import OrgUnitQuerySet
 
 
 class NestedProjectSerializer(serializers.ModelSerializer):
@@ -119,6 +121,22 @@ class TeamSearchFilterBackend(filters.BaseFilterBackend):
         return queryset
 
 
+class TeamAncestorFilterBackend(filters.BaseFilterBackend):
+    def filter_queryset(self, request, queryset, view):
+        ancestor_id = request.query_params.get("ancestor")
+
+        if ancestor_id:
+            try:
+                ancestor = Team.objects.get(pk=ancestor_id)
+            except Team.DoesNotExist:
+                raise serializers.ValidationError(
+                    {"ancestor": "Select a valid choice. That choice is not one of the available choices."}
+                )
+            queryset = queryset.filter(path__descendants=ancestor.path).exclude(id=ancestor.id)
+
+        return queryset
+
+
 class TeamViewSet(ModelViewSet):
     """Api for teams
 
@@ -129,7 +147,13 @@ class TeamViewSet(ModelViewSet):
     """
 
     remove_results_key_if_paginated = True
-    filter_backends = [filters.OrderingFilter, DjangoFilterBackend, TeamSearchFilterBackend, DeletionFilterBackend]
+    filter_backends = [
+        TeamAncestorFilterBackend,
+        filters.OrderingFilter,
+        DjangoFilterBackend,
+        TeamSearchFilterBackend,
+        DeletionFilterBackend,
+    ]
     permission_classes = [ReadOnlyOrHasPermission("menupermissions.iaso_teams")]
     serializer_class = TeamSerializer
     queryset = Team.objects.all()
@@ -231,3 +255,136 @@ class PlanningViewSet(ModelViewSet):
     def get_queryset(self):
         user = self.request.user
         return self.queryset.filter_for_user(user)
+
+
+class AssignmentSerializer(serializers.ModelSerializer):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        user = self.context["request"].user
+        account = user.iaso_profile.account
+        users_in_account = User.objects.filter(iaso_profile__account=account)
+
+        self.fields["user"].queryset = users_in_account
+        self.fields["planning"].queryset = Planning.objects.filter_for_user(user)
+        self.fields["team"].queryset = Team.objects.filter_for_user(user)
+        self.fields["org_unit"].queryset = OrgUnit.objects.filter_for_user_and_app_id(user, None)
+
+    class Meta:
+        model = Assignment
+        fields = [
+            "id",
+            "planning",
+            "user",
+            "team",
+            "org_unit",
+        ]
+        read_only_fields = ["created_at"]
+
+    def validate(self, attrs):
+        validated_data = super().validate(attrs)
+
+        user = self.context["request"].user
+        validated_data["created_by"] = user
+
+        assigned_user = validated_data.get("user", self.instance.user if self.instance else None)
+        assigned_team = validated_data.get("team", self.instance.team if self.instance else None)
+        if assigned_team and assigned_user:
+            raise serializers.ValidationError("Cannot assign on both team and users")
+        if not assigned_team and not assigned_user:
+            raise serializers.ValidationError("Should be at least an assigned team or user")
+
+        planning = validated_data.get("planning", self.instance.planning if self.instance else None)
+        org_unit: OrgUnit = validated_data.get("org_unit", self.instance.org_unit if self.instance else None)
+
+        org_units_available: OrgUnitQuerySet = self.fields["org_unit"].queryset
+        org_units_available = org_units_available.descendants(planning.org_unit)
+        if org_unit not in org_units_available:
+            raise serializers.ValidationError({"org_unit": "OrgUnit is not in planning scope"})
+        # TODO More complex check possible:
+        # - Team or user should be under the root planning team
+        # - check that the hierarchy of the planning assignement is respected
+        # - one of the parent org unit should be assigned to a parent team of the assigned user or team
+        # - type  of org unit is valid for this form
+        return validated_data
+
+
+class AssignmentViewSet(ModelViewSet):
+    "Use the same permission as planning. Multi tenancy is done via the planning. An assignment don't make much sense outside of it's planning."
+    remove_results_key_if_paginated = True
+    permission_classes = [IsAuthenticated, ReadOnlyOrHasPermission("menupermissions.iaso_planning")]
+    serializer_class = AssignmentSerializer
+    queryset = Assignment.objects.all()
+    filter_backends = [
+        filters.OrderingFilter,
+        DjangoFilterBackend,
+        PublishingStatusFilterBackend,
+        DeletionFilterBackend,
+    ]
+    ordering_fields = ["id", "name", "started_at", "ended_at"]
+    filterset_fields = {
+        "planning": ["exact"],
+        "team": ["exact"],
+    }
+
+    def get_queryset(self):
+        user = self.request.user
+        return self.queryset.filter_for_user(user)
+
+
+# noinspection PyMethodMayBeStatic
+class MobilePlanningSerializer(serializers.ModelSerializer):
+    "Only used to serialize for mobile"
+
+    def save(self):
+        # ensure that we can't save from here
+        raise NotImplemented
+
+    class Meta:
+        model = Planning
+        fields = [
+            "id",
+            "name",
+            "description",
+            "created_at",
+            "assignments",
+        ]
+
+    assignments = serializers.SerializerMethodField()
+
+    def get_assignments(self, planning: Planning):
+        user = self.context["request"].user
+        r = []
+        for a in planning.assignment_set.filter(user=user):
+            r.append({"org_unit": a.org_unit.id, "form_ids": [f.id for f in planning.forms.all()]})
+        return r
+
+
+class ReadOnly(permissions.BasePermission):
+    def has_permission(self, request, view):
+        if request.method in permissions.SAFE_METHODS:
+            return True
+        return False
+
+
+class MobilePlanningViewSet(ModelViewSet):
+    """Planning for mobile, contrary to the more general API.
+    it only returns the Planning where the user has assigned OrgUnit
+    and his assignments
+    """
+
+    remove_results_key_if_paginated = True
+    permission_classes = [IsAuthenticated, ReadOnly]
+    serializer_class = MobilePlanningSerializer
+    queryset = Assignment.objects.all()
+
+    def get_queryset(self):
+        user = self.request.user
+        # Only return  planning which 1. contain assignment for user 2. are published 3. undeleted
+        # distinct is necessary otherwise if a planning contain multiple assignment for the same user it got duplicated
+
+        return (
+            Planning.objects.filter(assignment__user=user)
+            .exclude(published_at__isnull=True)
+            .filter(deleted_at__isnull=True)
+            .distinct()
+        )

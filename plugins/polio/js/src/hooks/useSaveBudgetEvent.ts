@@ -10,18 +10,24 @@ type QueryData = {
     cced_emails?: string;
     comments?: string;
     status: 'validation_ongoing'; // forcing status value as we create an event
-    file: any;
+    files: any;
 };
 const postBudgetEvent = async (data: QueryData) => {
-    const { file, ...body } = data;
+    const { files, ...body } = data;
     const newEvent = await postRequest(`/api/polio/budgetevent/`, body);
-    return postRequest(
-        `/api/polio/budgetfiles/`,
-        { event: newEvent.id },
-        {
-            file,
-        },
-    );
+    const filesToUpload = Array.from(files).map(file => {
+        return postRequest(
+            `/api/polio/budgetfiles/`,
+            { event: newEvent.id },
+            {
+                file,
+            },
+        );
+    });
+    const uploadStatuses = await Promise.allSettled(filesToUpload);
+    // TODO add error handling when a file does not upload
+    console.log('promises', filesToUpload);
+    console.log('statuses', uploadStatuses);
 };
 export const useSaveBudgetEvent = (): UseMutationResult => {
     return useSnackMutation(postBudgetEvent, undefined, undefined, [

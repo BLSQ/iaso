@@ -4,6 +4,7 @@ from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import serializers, filters, permissions
 from rest_framework.permissions import IsAuthenticated
 
+from hat.audit.models import Modification
 from iaso.api.common import ModelViewSet, DeletionFilterBackend, ReadOnlyOrHasPermission
 from iaso.models import Project, OrgUnit, Form
 from iaso.models.microplanning import Team, TeamType, Planning, Assignment
@@ -26,6 +27,14 @@ class NestedUserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = ["id", "username"]
+
+
+class AuditTeamSerializer(serializers.ModelSerializer):
+    sub_teams = serializers.PrimaryKeyRelatedField(read_only=True, many=True)
+
+    class Meta:
+        model = Team
+        fields = "__all__"
 
 
 class TeamSerializer(serializers.ModelSerializer):
@@ -137,7 +146,54 @@ class TeamAncestorFilterBackend(filters.BaseFilterBackend):
         return queryset
 
 
-class TeamViewSet(ModelViewSet):
+class AuditMixin:
+    audit_serializer: serializers.ModelSerializer
+
+    def perform_create(self, serializer):
+        # noinspection PyUnresolvedReferences
+        super().perform_update(serializer)
+        instance = serializer.instance
+
+        serialized = [self.audit_serializer(instance).data]
+        Modification.objects.create(
+            user=self.request.user,
+            past_value=[],
+            new_value=serialized,
+            content_object=instance,
+            source="API " + self.request.method + self.request.path,
+        )
+
+    def perform_update(self, serializer):
+        instance = serializer.instance
+        old_value = [self.audit_serializer(instance).data]
+        # noinspection PyUnresolvedReferences
+        super().perform_update(serializer)
+        instance = serializer.instance
+        new_value = [self.audit_serializer(instance).data]
+        Modification.objects.create(
+            user=self.request.user,
+            past_value=old_value,
+            new_value=new_value,
+            content_object=instance,
+            source="API " + self.request.method + self.request.path,
+        )
+
+    def perform_destroy(self, instance):
+        old_value = [self.audit_serializer(instance).data]
+        # noinspection PyUnresolvedReferences
+        super().perform_destroy(instance)
+        # for soft delete, we still have an existing instance
+        new_value = [self.audit_serializer(instance).data]
+        Modification.objects.create(
+            user=self.request.user,
+            past_value=old_value,
+            new_value=new_value,
+            content_object=instance,
+            source=f"API {self.request.method} {self.request.path}",
+        )
+
+
+class TeamViewSet(AuditMixin, ModelViewSet):
     """Api for teams
 
     Read access for all auth users.
@@ -162,6 +218,8 @@ class TeamViewSet(ModelViewSet):
         "name": ["icontains"],
         "project": ["exact"],
     }
+
+    audit_serializer = AuditTeamSerializer
 
     def get_queryset(self):
         user = self.request.user
@@ -213,6 +271,12 @@ class PlanningSerializer(serializers.ModelSerializer):
         return validated_data
 
 
+class AuditPlanningSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Planning
+        fields = "__all__"
+
+
 class PlanningSearchFilterBackend(filters.BaseFilterBackend):
     def filter_queryset(self, request, queryset, view):
         search = request.query_params.get("search")
@@ -233,7 +297,7 @@ class PublishingStatusFilterBackend(filters.BaseFilterBackend):
         return queryset
 
 
-class PlanningViewSet(ModelViewSet):
+class PlanningViewSet(AuditMixin, ModelViewSet):
     remove_results_key_if_paginated = True
     permission_classes = [ReadOnlyOrHasPermission("menupermissions.iaso_planning")]
     serializer_class = PlanningSerializer
@@ -251,6 +315,7 @@ class PlanningViewSet(ModelViewSet):
         "started_at": ["gte", "lte"],
         "ended_at": ["gte", "lte"],
     }
+    audit_serializer = AuditPlanningSerializer
 
     def get_queryset(self):
         user = self.request.user
@@ -308,8 +373,16 @@ class AssignmentSerializer(serializers.ModelSerializer):
         return validated_data
 
 
-class AssignmentViewSet(ModelViewSet):
-    "Use the same permission as planning. Multi tenancy is done via the planning. An assignment don't make much sense outside of it's planning."
+class AuditAssignmentSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Assignment
+        fields = "__all__"
+
+
+class AssignmentViewSet(AuditMixin, ModelViewSet):
+    """Use the same permission as planning. Multi tenancy is done via the planning. An assignment don't make much
+    sense outside of it's planning."""
+
     remove_results_key_if_paginated = True
     permission_classes = [IsAuthenticated, ReadOnlyOrHasPermission("menupermissions.iaso_planning")]
     serializer_class = AssignmentSerializer
@@ -325,6 +398,7 @@ class AssignmentViewSet(ModelViewSet):
         "planning": ["exact"],
         "team": ["exact"],
     }
+    audit_serializer = AuditAssignmentSerializer
 
     def get_queryset(self):
         user = self.request.user

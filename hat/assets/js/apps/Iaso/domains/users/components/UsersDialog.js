@@ -41,7 +41,7 @@ const UserDialogComponent = ({
     renderTrigger,
     initialData = {},
     saveProfile,
-    AllowSendEmailInvitation,
+    allowSendEmailInvitation,
 }) => {
     const connectedUser = useCurrentUser();
     const { formatMessage } = useSafeIntl();
@@ -196,7 +196,7 @@ const UserDialogComponent = ({
                         }
                         initialData={initialData}
                         currentUser={user}
-                        AllowSendEmailInvitation={AllowSendEmailInvitation}
+                        allowSendEmailInvitation={allowSendEmailInvitation}
                     />
                 )}
                 <div

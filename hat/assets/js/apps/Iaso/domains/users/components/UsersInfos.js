@@ -12,7 +12,7 @@ const UsersInfos = ({
     setFieldValue,
     currentUser,
     initialData,
-    AllowSendEmailInvitation,
+    allowSendEmailInvitation,
 }) => {
     const isEmailAdressExist = isEmpty(currentUser.email.value);
     const sendUserEmailInvitation = !!isEmailAdressExist;
@@ -105,7 +105,7 @@ const UsersInfos = ({
                     };
                 })}
             />
-            {AllowSendEmailInvitation && (
+            {allowSendEmailInvitation && (
                 <InputComponent
                     keyValue="send_email_invitation"
                     onChange={(key, value) => setFieldValue(key, value)}

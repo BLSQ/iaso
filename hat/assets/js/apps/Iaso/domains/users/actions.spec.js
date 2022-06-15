@@ -2,11 +2,9 @@ import {
     SET_USERS_PROFILES,
     SET_CURRENT_USER,
     SET_IS_FETCHING_USERS,
-    SET_PERMISSIONS,
     setUsersProfiles,
     setCurrentUser,
     setIsFetching,
-    setPermissions,
 } from './actions';
 
 describe('Users actions', () => {
@@ -40,15 +38,6 @@ describe('Users actions', () => {
             payload,
         };
         const action = setIsFetching(payload);
-        expect(action).to.eql(expectedAction);
-    });
-    it('should create an action to set permissions', () => {
-        const payload = 'MIDONA';
-        const expectedAction = {
-            type: SET_PERMISSIONS,
-            payload,
-        };
-        const action = setPermissions(payload);
         expect(action).to.eql(expectedAction);
     });
 });

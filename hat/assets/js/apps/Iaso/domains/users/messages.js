@@ -113,6 +113,10 @@ const MESSAGES = defineMessages({
         id: 'iaso.permissions.polio',
         defaultMessage: 'Polio campaign management',
     },
+    iaso_polio_budget: {
+        id: 'iaso.permissions.polio_budget',
+        defaultMessage: 'Polio budget validation',
+    },
     iaso_polio_config: {
         id: 'iaso.permissions.polio_config',
         defaultMessage: 'Polio campaign admin',
@@ -175,6 +179,10 @@ const MESSAGES = defineMessages({
     dhis2_id: {
         id: 'iaso.label.dhis2Id',
         defaultMessage: 'DHIS2 id',
+    },
+    fetchPermissionsError: {
+        defaultMessage: 'An error occurred while fetching permissions list',
+        id: 'iaso.snackBar.fetchPermissions',
     },
 });
 

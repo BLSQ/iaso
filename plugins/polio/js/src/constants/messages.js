@@ -1173,9 +1173,9 @@ const MESSAGES = defineMessages({
         defaultMessage: 'Rejected',
         id: 'iaso.polio.label.rejected',
     },
-    sendFiles: {
-        defaultMessage: 'Send files',
-        id: 'iaso.polio.label.sendFiles',
+    newBudgetStep: {
+        defaultMessage: 'New budget step',
+        id: 'iaso.polio.label.newBudgetStep',
     },
     addStep: {
         defaultMessage: 'Add step',
@@ -1193,9 +1193,9 @@ const MESSAGES = defineMessages({
         defaultMessage: 'Cc emails',
         id: 'iaso.polio.label.cc_emails',
     },
-    file: {
-        defaultMessage: 'File',
-        id: 'iaso.polio.label.file',
+    filesUpload: {
+        defaultMessage: 'Files',
+        id: 'iaso.polio.label.filesUpload',
     },
     viewFiles: {
         defaultMessage: 'View files',
@@ -1209,9 +1209,9 @@ const MESSAGES = defineMessages({
         defaultMessage: 'Steps',
         id: 'iaso.polio.label.steps',
     },
-    files: {
-        defaultMessage: 'Files for {type}, last updated {date}',
-        id: 'iaso.polio.label.files',
+    budgetFiles: {
+        defaultMessage: '{type} sent by {author} to {recipients} on {date}',
+        id: 'iaso.polio.label.budgetFiles',
     },
     latestEventDate: {
         defaultMessage: 'Latest event date',
@@ -1232,6 +1232,23 @@ const MESSAGES = defineMessages({
     validation: {
         id: 'iaso.forms.options.validation',
         defaultMessage: 'Validation',
+    },
+    emailFormat: {
+        id: 'iaso.forms.options.emailFormat',
+        defaultMessage: 'Please use correctly formatted email addresses',
+    },
+    urlFormat: {
+        id: 'iaso.forms.options.urlFormat',
+        defaultMessage: 'Please use correctly formatted URL',
+    },
+    budgetTypeError: {
+        id: 'iaso.forms.options.budgetTypeError',
+        defaultMessage:
+            'Value should be one of "submission", "comments" or "validation"',
+    },
+    links: {
+        defaultMessage: 'Links',
+        id: 'iaso.label.links',
     },
 });
 

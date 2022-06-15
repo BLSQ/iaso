@@ -3,14 +3,13 @@ import {
     Box,
     Button,
     DialogActions,
-    Grid,
     Typography,
     Divider,
 } from '@material-ui/core';
 // @ts-ignore
 import { IconButton, LoadingSpinner, useSafeIntl } from 'bluesquare-components';
 import moment from 'moment';
-import React, { FunctionComponent } from 'react';
+import React, { FunctionComponent, useCallback } from 'react';
 import { FormattedMessage } from 'react-intl';
 import { Link } from 'react-router';
 import DialogComponent from '../../../../../../hat/assets/js/apps/Iaso/components/dialogs/DialogComponent';
@@ -23,6 +22,9 @@ type Props = {
     note?: string;
     type: 'submission' | 'comments';
     date: string;
+    links: string;
+    author: string;
+    recipients: string;
 };
 
 const CloseDialog = ({
@@ -43,7 +45,7 @@ const CloseDialog = ({
     );
 };
 
-const renderTrigger =
+const makeRenderTrigger =
     (disabled = false) =>
     ({ openDialog }) => {
         return (
@@ -64,7 +66,7 @@ const extractFileName = (fileUrl: string) => {
     let trimmedLeft = '';
     let i = 0;
     // find the end of file name by searching for the extension
-    while (trimmedLeft === '') {
+    while (trimmedLeft === '' && i < fileExtensions.length) {
         const currentExtension = fileExtensions[i];
         if (fileUrl.indexOf(currentExtension) !== -1) {
             trimmedLeft = `${
@@ -78,13 +80,26 @@ const extractFileName = (fileUrl: string) => {
     return removedSlashes[removedSlashes.length - 1];
 };
 
-const makeLinks = files => {
+const makeFileLinks = files => {
     return files.map((file, index) => {
-        const fileName = extractFileName(file.file) ?? `file_${index}`;
+        const fileName = extractFileName(file.file) || file.file;
         return (
             // eslint-disable-next-line react/no-array-index-key
             <Link key={`${fileName}_${index}`} download href={file.file}>
                 <Typography>{fileName}</Typography>
+            </Link>
+        );
+    });
+};
+
+const makeLinks = (links: string) => {
+    if (!links) return null;
+    const linksArray = links.split(', ');
+    return linksArray.map((link, index) => {
+        return (
+            // eslint-disable-next-line react/no-array-index-key
+            <Link key={`${link}_${index}`} download href={link}>
+                <Typography>{link}</Typography>
             </Link>
         );
     });
@@ -95,47 +110,53 @@ export const BudgetFilesModal: FunctionComponent<Props> = ({
     note,
     type,
     date,
+    links,
+    author,
+    recipients = '',
 }) => {
     const { formatMessage } = useSafeIntl();
     const { data: budgetEventFiles, isFetching } =
         useGetBudgetEventFiles(eventId);
-    const typeTranslated = formatMessage(MESSAGES[type]).toLowerCase();
+    const typeTranslated = formatMessage(MESSAGES[type]);
     const titleMessage = {
-        ...MESSAGES.files,
-        values: { type: typeTranslated, date: moment(date).format('LTS') },
+        ...MESSAGES.budgetFiles,
+        values: {
+            type: typeTranslated,
+            date: moment(date).format('L'),
+            author,
+            recipients,
+        },
     };
-    const disableTrigger = budgetEventFiles?.length === 0 && !note;
+    const disableTrigger = budgetEventFiles?.length === 0 && !note && !links;
+    const renderTrigger = useCallback(
+        () => makeRenderTrigger(disableTrigger),
+        [disableTrigger],
+    );
     return (
         <DialogComponent
             dataTestId="budget-files-modal"
-            id="budget-files-modal"
+            id={`budget-files-modal ${eventId}`}
             renderActions={({ closeDialog }) => {
                 return (
                     <CloseDialog closeDialog={closeDialog} onCancel={onClose} />
                 );
             }}
-            renderTrigger={renderTrigger(disableTrigger)}
+            renderTrigger={renderTrigger()}
             titleMessage={titleMessage}
         >
             <Divider />
             {isFetching && <LoadingSpinner />}
-            {budgetEventFiles?.length === 0 && !isFetching && (
-                <Grid container item>
-                    <Box mt={4}>
-                        <Typography>
-                            {formatMessage(MESSAGES.noFile)}
-                        </Typography>
-                    </Box>
-                </Grid>
-            )}
             {!isFetching && (
                 <Box mt={2}>
-                    {makeLinks(budgetEventFiles)}
+                    {makeFileLinks(budgetEventFiles)}
+                    {makeLinks(links)}
                     {note && (
                         <>
-                            <Box mt={4}>
-                                <Divider />
-                            </Box>
+                            {(budgetEventFiles?.length > 0 || links) && (
+                                <Box mt={4}>
+                                    <Divider />
+                                </Box>
+                            )}
                             <Box mb={2} mt={2}>
                                 <Typography style={{ fontWeight: 'bold' }}>
                                     {formatMessage(MESSAGES.notes)}

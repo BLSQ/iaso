@@ -55,7 +55,7 @@ class ProjectsAPITestCase(APITestCase):
         self.client.force_authenticate(self.jane)
         response = self.client.get("/api/featureflags/", headers={"Content-Type": "application/json"})
         self.assertJSONResponse(response, 200)
-        self.assertValidFeatureFlagListData(response.json(), 3)
+        self.assertValidFeatureFlagListData(response.json(), m.FeatureFlag.objects.count())
 
     def test_projects_list_paginated(self):
         """GET /projects/ paginated happy path"""
@@ -81,7 +81,7 @@ class ProjectsAPITestCase(APITestCase):
         response_data = response.json()
         self.assertValidFeatureFlagListData(response_data, 1, True)
         self.assertEqual(response_data["page"], 1)
-        self.assertEqual(response_data["pages"], 3)
+        self.assertEqual(response_data["pages"], m.FeatureFlag.objects.count())
         self.assertEqual(response_data["limit"], 1)
         self.assertEqual(response_data["count"], 3)
 

@@ -42,7 +42,7 @@ from .models import (
     Entity,
     BulkCreateUserCsvFile,
 )
-from .models.microplanning import Team, Planning
+from .models.microplanning import Team, Planning, Assignment
 
 
 class OrgUnitAdmin(admin.GeoModelAdmin):
@@ -332,6 +332,16 @@ class TeamAdmin(admin.ModelAdmin):
     date_hierarchy = "created_at"
 
 
+class AssignmentAdmin(admin.ModelAdmin):
+    raw_id_fields = ("org_unit",)
+    list_display = (
+        "id",
+        "planning",
+    )
+    list_filter = ("planning",)
+    date_hierarchy = "created_at"
+
+
 admin.site.register(Link, LinkAdmin)
 admin.site.register(Form, FormAdmin)
 admin.site.register(Instance, InstanceAdmin)
@@ -364,3 +374,4 @@ admin.site.register(Entity, EntityAdmin)
 admin.site.register(Team, TeamAdmin)
 admin.site.register(Planning, PlanningAdmin)
 admin.site.register(BulkCreateUserCsvFile)
+admin.site.register(Assignment, AssignmentAdmin)

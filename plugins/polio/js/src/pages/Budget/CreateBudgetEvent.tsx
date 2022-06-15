@@ -3,6 +3,7 @@ import { useFormik, FormikProvider } from 'formik';
 import { isEqual } from 'lodash';
 // @ts-ignore
 import { AddButton, useSafeIntl } from 'bluesquare-components';
+import { Box } from '@material-ui/core';
 import ConfirmCancelDialogComponent from '../../../../../../hat/assets/js/apps/Iaso/components/dialogs/ConfirmCancelDialogComponent';
 import { useGetTeams as useGetTeamsOptions } from '../../../../../../hat/assets/js/apps/Iaso/domains/plannings/hooks/requests/useGetTeams';
 import MESSAGES from '../../constants/messages';
@@ -87,7 +88,7 @@ export const CreateBudgetEvent: FunctionComponent<Props> = ({ campaignId }) => {
             {/* @ts-ignore */}
             <ConfirmCancelDialogComponent
                 allowConfirm={isValid && !isEqual(values, initialValues)}
-                titleMessage={MESSAGES.sendFiles}
+                titleMessage={MESSAGES.newBudgetStep}
                 onConfirm={closeDialog => {
                     setCloseModal({ closeDialog });
                     handleSubmit();
@@ -101,6 +102,29 @@ export const CreateBudgetEvent: FunctionComponent<Props> = ({ campaignId }) => {
                 confirmMessage={MESSAGES.send}
                 renderTrigger={renderTrigger}
             >
+                <InputComponent
+                    type="select"
+                    required
+                    keyValue="target_teams"
+                    multi
+                    onChange={(keyValue, value) => {
+                        onChange(keyValue, commaSeparatedIdsToArray(value));
+                    }}
+                    value={values.target_teams}
+                    errors={getErrors('target_teams')}
+                    label={MESSAGES.destination}
+                    options={teamsDropdown}
+                    loading={isFetchingTeams}
+                />
+                <InputComponent
+                    type="email"
+                    keyValue="cc_emails"
+                    onChange={onChange}
+                    value={values.cc_emails}
+                    errors={getErrors('cc_emails')}
+                    label={MESSAGES.cc_emails}
+                />
+
                 <InputComponent
                     type="select"
                     required
@@ -129,29 +153,7 @@ export const CreateBudgetEvent: FunctionComponent<Props> = ({ campaignId }) => {
                         },
                     ]}
                 />
-                <InputComponent
-                    type="select"
-                    required
-                    keyValue="target_teams"
-                    multi
-                    onChange={(keyValue, value) => {
-                        onChange(keyValue, commaSeparatedIdsToArray(value));
-                    }}
-                    value={values.target_teams}
-                    errors={getErrors('target_teams')}
-                    label={MESSAGES.destination}
-                    options={teamsDropdown}
-                    loading={isFetchingTeams}
-                />
-                <FileInputComponent
-                    keyValue="files"
-                    required
-                    multiple
-                    onChange={onChange}
-                    value={values.files}
-                    errors={getErrors('files')}
-                    label={MESSAGES.filesUpload}
-                />
+
                 <InputComponent
                     type="text"
                     keyValue="comment"
@@ -159,16 +161,19 @@ export const CreateBudgetEvent: FunctionComponent<Props> = ({ campaignId }) => {
                     onChange={onChange}
                     value={values.comment}
                     errors={getErrors('comment')}
-                    label={MESSAGES.note}
+                    label={MESSAGES.notes}
                 />
-                <InputComponent
-                    type="email"
-                    keyValue="cc_emails"
-                    onChange={onChange}
-                    value={values.cc_emails}
-                    errors={getErrors('cc_emails')}
-                    label={MESSAGES.cc_emails}
-                />
+                <Box mt={2}>
+                    <FileInputComponent
+                        keyValue="files"
+                        required
+                        multiple
+                        onChange={onChange}
+                        value={values.files}
+                        errors={getErrors('files')}
+                        label={MESSAGES.filesUpload}
+                    />
+                </Box>
                 <InputComponent
                     type="text"
                     keyValue="links"

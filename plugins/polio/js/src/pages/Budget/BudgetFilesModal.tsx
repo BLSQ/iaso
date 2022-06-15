@@ -3,7 +3,6 @@ import {
     Box,
     Button,
     DialogActions,
-    Grid,
     Typography,
     Divider,
 } from '@material-ui/core';
@@ -24,6 +23,8 @@ type Props = {
     type: 'submission' | 'comments';
     date: string;
     links: string;
+    author: string;
+    recipients: string;
 };
 
 const CloseDialog = ({
@@ -110,14 +111,21 @@ export const BudgetFilesModal: FunctionComponent<Props> = ({
     type,
     date,
     links,
+    author,
+    recipients = '',
 }) => {
     const { formatMessage } = useSafeIntl();
     const { data: budgetEventFiles, isFetching } =
         useGetBudgetEventFiles(eventId);
-    const typeTranslated = formatMessage(MESSAGES[type]).toLowerCase();
+    const typeTranslated = formatMessage(MESSAGES[type]);
     const titleMessage = {
-        ...MESSAGES.files,
-        values: { type: typeTranslated, date: moment(date).format('LTS') },
+        ...MESSAGES.budgetFiles,
+        values: {
+            type: typeTranslated,
+            date: moment(date).format('L'),
+            author,
+            recipients,
+        },
     };
     const disableTrigger = budgetEventFiles?.length === 0 && !note && !links;
     const renderTrigger = useCallback(
@@ -138,24 +146,17 @@ export const BudgetFilesModal: FunctionComponent<Props> = ({
         >
             <Divider />
             {isFetching && <LoadingSpinner />}
-            {budgetEventFiles?.length === 0 && !isFetching && (
-                <Grid container item>
-                    <Box mt={4}>
-                        <Typography>
-                            {formatMessage(MESSAGES.noFile)}
-                        </Typography>
-                    </Box>
-                </Grid>
-            )}
             {!isFetching && (
                 <Box mt={2}>
                     {makeFileLinks(budgetEventFiles)}
                     {makeLinks(links)}
                     {note && (
                         <>
-                            <Box mt={4}>
-                                <Divider />
-                            </Box>
+                            {(budgetEventFiles?.length > 0 || links) && (
+                                <Box mt={4}>
+                                    <Divider />
+                                </Box>
+                            )}
                             <Box mb={2} mt={2}>
                                 <Typography style={{ fontWeight: 'bold' }}>
                                     {formatMessage(MESSAGES.notes)}

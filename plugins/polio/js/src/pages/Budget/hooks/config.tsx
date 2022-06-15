@@ -196,13 +196,28 @@ export const useBudgetDetailsColumns = ({ teams, profiles }): Column[] => {
                 accessor: 'id',
                 sortable: false,
                 Cell: settings => {
+                    const { author } = settings.row.original;
+                    const authorProfile = profiles?.profiles?.find(
+                        profile => profile.user_id === author,
+                    );
+                    const authorName =
+                        authorProfile?.first_name && authorProfile?.last_name
+                            ? `${authorProfile.first_name} ${authorProfile.last_name}`
+                            : authorProfile?.user_name ?? '';
+                    const { target_teams } = settings.row.original;
+                    const teamNames = teams
+                        ?.filter(team => target_teams.includes(team.id))
+                        .map(team => team.name)
+                        .join(', ');
                     return (
                         <BudgetFilesModal
                             eventId={settings.row.original.id}
                             note={settings.row.original.comment}
-                            date={settings.row.original.updated_at}
+                            date={settings.row.original.created_at}
                             type={settings.row.original.type}
                             links={settings.row.original.links}
+                            author={authorName}
+                            recipients={teamNames}
                         />
                     );
                 },

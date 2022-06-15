@@ -1173,9 +1173,9 @@ const MESSAGES = defineMessages({
         defaultMessage: 'Rejected',
         id: 'iaso.polio.label.rejected',
     },
-    sendFiles: {
-        defaultMessage: 'Send files',
-        id: 'iaso.polio.label.sendFiles',
+    newBudgetStep: {
+        defaultMessage: 'New budget step',
+        id: 'iaso.polio.label.newBudgetStep',
     },
     addStep: {
         defaultMessage: 'Add step',
@@ -1209,9 +1209,9 @@ const MESSAGES = defineMessages({
         defaultMessage: 'Steps',
         id: 'iaso.polio.label.steps',
     },
-    files: {
-        defaultMessage: 'Files for {type}, last updated {date}',
-        id: 'iaso.polio.label.files',
+    budgetFiles: {
+        defaultMessage: '{type} sent by {author} to {recipients} on {date}',
+        id: 'iaso.polio.label.budgetFiles',
     },
     latestEventDate: {
         defaultMessage: 'Latest event date',

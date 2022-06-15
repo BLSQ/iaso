@@ -588,7 +588,7 @@ export const assignmentsPath = {
         },
         {
             isRequired: false,
-            key: 'orgunitType',
+            key: 'baseOrgunitType',
         },
         {
             isRequired: false,

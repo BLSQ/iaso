@@ -14,11 +14,7 @@ import MESSAGES from './messages';
 import { PlanningApi } from './hooks/requests/useGetPlannings';
 
 const getAssignmentUrl = (planning: PlanningApi): string => {
-    let url = `${baseUrls.assignments}/planningId/${planning.id}/team/${planning.team}`;
-    if (planning.org_unit_details?.org_unit_type) {
-        url += `/orgunitType/${planning.org_unit_details.org_unit_type}`;
-    }
-    return url;
+    return `${baseUrls.assignments}/planningId/${planning.id}/team/${planning.team}`;
 };
 
 export const planningColumns = (formatMessage: IntlFormatMessage): Column[] => {

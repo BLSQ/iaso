@@ -6,10 +6,9 @@ import InputComponent from '../../../components/forms/InputComponent';
 
 import { useFilterState } from '../../../hooks/useFilterState';
 
-import { useGetOrgUnitTypes } from '../hooks/requests/useGetOrgUnitTypes';
-
 import { AssignmentParams } from '../types/assigment';
 import { DropdownTeamsOptions } from '../types/team';
+import { DropdownOptions } from '../../../types/utils';
 
 import MESSAGES from '../messages';
 
@@ -17,6 +16,8 @@ type Props = {
     params: AssignmentParams;
     teams: Array<DropdownTeamsOptions>;
     isFetchingTeams: boolean;
+    orgunitTypes: Array<DropdownOptions<string>>;
+    isFetchingOrgUnitTypes: boolean;
 };
 
 const baseUrl = baseUrls.assignments;
@@ -24,12 +25,11 @@ export const AssignmentsFilters: FunctionComponent<Props> = ({
     params,
     teams,
     isFetchingTeams,
+    orgunitTypes,
+    isFetchingOrgUnitTypes,
 }) => {
     const { filters, handleSearch, handleChange, filtersUpdated } =
         useFilterState(baseUrl, params, false);
-    // TODO: limit ou types list
-    const { data: orgunitTypesDropdown, isFetching: isFetchingOrgUnitTypes } =
-        useGetOrgUnitTypes();
     return (
         <>
             <Grid container spacing={0}>
@@ -51,15 +51,15 @@ export const AssignmentsFilters: FunctionComponent<Props> = ({
                         <InputComponent
                             type="select"
                             disabled={isFetchingOrgUnitTypes}
-                            keyValue="orgunitType"
+                            keyValue="baseOrgunitType"
                             onChange={handleChange}
                             value={
                                 isFetchingOrgUnitTypes
                                     ? undefined
-                                    : filters.orgunitType
+                                    : filters.baseOrgunitType
                             }
                             label={MESSAGES.baseOrgUnitsType}
-                            options={orgunitTypesDropdown}
+                            options={orgunitTypes}
                             loading={isFetchingOrgUnitTypes}
                             clearable={false}
                         />

@@ -204,7 +204,6 @@ class TeamViewSet(AuditMixin, ModelViewSet):
 
     Read access for all auth users.
     Write access necessitate iaso_teams permissions.
-
     The tree assignation are handled by settings the child sub teams (parent is readonly)
     """
 
@@ -344,14 +343,10 @@ class AssignmentSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Assignment
-        fields = [
-            "id",
-            "planning",
-            "user",
-            "team",
-            "org_unit",
-        ]
+        fields = ["id", "planning", "user", "team", "org_unit", "org_unit_details"]
         read_only_fields = ["created_at"]
+
+    org_unit_details = NestedOrgUnitSerializer(source="org_unit", read_only=True)
 
     def validate(self, attrs):
         validated_data = super().validate(attrs)

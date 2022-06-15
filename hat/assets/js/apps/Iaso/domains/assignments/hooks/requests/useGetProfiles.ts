@@ -6,7 +6,13 @@ import { Profile } from '../../../../utils/usersUtils';
 
 import { getColor } from '../../constants/colors';
 
-export const useGetProfiles = (): UseQueryResult<Array<Profile>, Error> => {
+type ProfileWithColor = Profile & {
+    color: string;
+};
+export const useGetProfiles = (): UseQueryResult<
+    Array<ProfileWithColor>,
+    Error
+> => {
     return useSnackQuery(
         ['profiles'],
         () => getRequest(`/api/profiles/`),

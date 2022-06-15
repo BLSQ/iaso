@@ -7,6 +7,12 @@ type Team = {
     deleted_at?: string;
 };
 
+type OrgUnitDetail = {
+    id: number;
+    name: string;
+    org_unit_type: number | null;
+};
+
 export type Planning = {
     id: number;
     name: string;
@@ -19,4 +25,5 @@ export type Planning = {
     published_at?: string;
     started_at?: string;
     ended_at?: string;
+    org_unit_details: OrgUnitDetail;
 };

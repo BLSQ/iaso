@@ -28,16 +28,22 @@ import { AssignmentsMapTab } from './components/AssignmentsMapTab';
 import { AssignmentParams, AssignmentApi } from './types/assigment';
 import { Planning } from './types/planning';
 import { Team, DropdownTeamsOptions } from './types/team';
+import { DropdownOptions } from '../../types/utils';
 import { Profile } from '../../utils/usersUtils';
 
 import { useGetTeams } from './hooks/requests/useGetTeams';
 import { useGetProfiles } from './hooks/requests/useGetProfiles';
 import { useSaveAssignment } from './hooks/requests/useSaveAssignment';
+import { useGetOrgUnitType } from './hooks/requests/useGetOrgUnitType';
 
 import MESSAGES from './messages';
 
 type Props = {
     params: AssignmentParams;
+};
+
+type ProfilesWithColor = Profile & {
+    color: string;
 };
 
 const useStyles = makeStyles(theme => ({
@@ -49,20 +55,14 @@ const baseUrl = baseUrls.assignments;
 export const Assignments: FunctionComponent<Props> = ({ params }) => {
     const { formatMessage } = useSafeIntl();
     const dispatch = useDispatch();
-    const { planningId, team: currentTeamId } = params;
+    const classes: Record<string, string> = useStyles();
+
+    const { planningId, team: currentTeamId, baseOrgunitType } = params;
 
     // TODO: limit teams list to planning team or sub teams
     const { data: dataTeams = [], isFetching: isFetchingTeams } = useGetTeams();
     // TODO: limit users list to planning users or sub team users
     const { data: dataProfiles = [] } = useGetProfiles();
-    const { mutateAsync: saveAssignment, isLoading: isLoadingSaving } =
-        useSaveAssignment();
-    const [tab, setTab] = useState(params.tab ?? 'map');
-    const [currentTeam, setCurrentTeam] = useState<Team>();
-    const [teams, setTeams] = useState<DropdownTeamsOptions[]>([]);
-    const [profiles, setProfiles] = useState<Profile[]>([]);
-    const classes: Record<string, string> = useStyles();
-
     const {
         data: planning,
         isLoading: isLoadingPlanning,
@@ -77,11 +77,27 @@ export const Assignments: FunctionComponent<Props> = ({ params }) => {
         data?: AssignmentApi[];
         isLoading: boolean;
     } = useGetAssignments({ planningId });
+    const [isFetchingCurrentOrgUnitType, setIsFetchingCurrentOrgUnitType] =
+        useState<boolean>(true);
+    const { data: currentOrgUnitType } = useGetOrgUnitType(
+        planning?.org_unit_details?.org_unit_type,
+    );
+    const { mutateAsync: saveAssignment, isLoading: isLoadingSaving } =
+        useSaveAssignment();
+
+    const [tab, setTab] = useState(params.tab ?? 'map');
+    const [currentTeam, setCurrentTeam] = useState<Team>();
+    const [teams, setTeams] = useState<DropdownTeamsOptions[]>([]);
+    const [profiles, setProfiles] = useState<ProfilesWithColor[]>([]);
+    const [orgunitTypesDropdown, setOrgunitTypesDropdown] = useState<
+        DropdownOptions<string>[]
+    >([]);
 
     const isLoading =
         isLoadingPlanning || isLoadingAssignments || isLoadingSaving;
 
     const setItemColor = (color: string, itemId: number): void => {
+        // TODO: improve this
         if (currentTeam?.type === 'TEAM_OF_USERS') {
             const itemIndex = profiles.findIndex(
                 profile => profile.user_id === itemId,
@@ -144,6 +160,29 @@ export const Assignments: FunctionComponent<Props> = ({ params }) => {
         }
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [dataProfiles]);
+
+    useEffect(() => {
+        if (currentOrgUnitType) {
+            setOrgunitTypesDropdown(
+                currentOrgUnitType.sub_unit_types.map(unitType => {
+                    return {
+                        value: unitType.id.toString(),
+                        label: unitType.name,
+                    };
+                }),
+            );
+            setIsFetchingCurrentOrgUnitType(false);
+            if (!baseOrgunitType && currentOrgUnitType.sub_unit_types[0]) {
+                const newParams = {
+                    ...params,
+                    baseOrgunitType: currentOrgUnitType.sub_unit_types[0].id,
+                };
+                dispatch(redirectTo(baseUrl, newParams));
+            }
+        }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [currentOrgUnitType]);
+
     return (
         <>
             <TopBar
@@ -170,6 +209,8 @@ export const Assignments: FunctionComponent<Props> = ({ params }) => {
                     params={params}
                     teams={teams}
                     isFetchingTeams={isFetchingTeams}
+                    orgunitTypes={orgunitTypesDropdown || []}
+                    isFetchingOrgUnitTypes={isFetchingCurrentOrgUnitType}
                 />
                 <Box mt={2}>
                     {tab === 'map' && !isLoadingAssignments && (
@@ -181,6 +222,7 @@ export const Assignments: FunctionComponent<Props> = ({ params }) => {
                             profiles={profiles}
                             setItemColor={setItemColor}
                             saveAssignment={saveAssignment}
+                            baseOrgunitType={baseOrgunitType}
                         />
                     )}
                     {tab === 'list' && <Box>LIST</Box>}

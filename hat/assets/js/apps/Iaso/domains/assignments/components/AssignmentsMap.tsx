@@ -49,6 +49,7 @@ type Props = {
     // eslint-disable-next-line no-unused-vars
     handleClick: (shape: OrgUnitShape | OrgUnitMarker) => void;
     currentTeam: Team | undefined;
+    baseOrgunitType: string;
 };
 const boundsOptions = {
     padding: [50, 50],
@@ -79,15 +80,22 @@ export const AssignmentsMap: FunctionComponent<Props> = ({
     profiles,
     handleClick,
     currentTeam,
+    baseOrgunitType,
 }) => {
     const map: any = useRef();
     const theme: Theme = useTheme();
     const [currentTile, setCurrentTile] = useState<Tile>(tiles.osm);
-    const filteredAssignments = assignments.filter(assignment =>
-        currentTeam?.type === 'TEAM_OF_USERS'
-            ? assignment.user !== null
-            : assignment.team !== null,
-    );
+    const filteredAssignments = assignments
+        .filter(assignment =>
+            currentTeam?.type === 'TEAM_OF_USERS'
+                ? assignment.user !== null
+                : assignment.team !== null,
+        )
+        .filter(
+            assignment =>
+                assignment.org_unit_details.org_unit_type ===
+                parseInt(baseOrgunitType, 10),
+        );
     const fitToBounds = (newLocations: Locations) => {
         const bounds = getLocationsBounds(newLocations);
         if (bounds && map?.current) {
@@ -99,7 +107,11 @@ export const AssignmentsMap: FunctionComponent<Props> = ({
         }
     };
     const { data: locations, isFetching: isFetchingLocations } =
-        useGetOrgUnitLocations(planning?.org_unit, fitToBounds);
+        useGetOrgUnitLocations(
+            planning?.org_unit,
+            fitToBounds,
+            baseOrgunitType,
+        );
     return (
         <Box position="relative">
             <TilesSwitch

@@ -10,7 +10,11 @@ import { OrgUnit } from '../../../orgUnits/types/orgUnit';
 
 import { BaseLocation, Locations } from '../../types/locations';
 
-const mapLocation = (orgUnits: OrgUnit[], baseOrgUnitId): Locations => {
+const mapLocation = (
+    orgUnits: OrgUnit[],
+    orgUnitParentId,
+    baseOrgunitType,
+): Locations => {
     const locations: Locations = {
         shapes: [],
         markers: [],
@@ -22,18 +26,20 @@ const mapLocation = (orgUnits: OrgUnit[], baseOrgUnitId): Locations => {
             name: orgUnit.name,
             orgUnitTypeId: orgUnit.org_unit_type_id,
         };
-        if (baseOrgUnitId !== orgUnit.id) {
-            if (orgUnit.geo_json) {
-                locations.shapes.push({
-                    ...baseLocation,
-                    geoJson: orgUnit.geo_json,
-                });
-            } else if (orgUnit.latitude && orgUnit.longitude) {
-                locations.markers.push({
-                    ...baseLocation,
-                    latitude: orgUnit.latitude,
-                    longitude: orgUnit.longitude,
-                });
+        if (orgUnitParentId !== orgUnit.id) {
+            if (parseInt(baseOrgunitType, 10) === orgUnit.org_unit_type_id) {
+                if (orgUnit.geo_json) {
+                    locations.shapes.push({
+                        ...baseLocation,
+                        geoJson: orgUnit.geo_json,
+                    });
+                } else if (orgUnit.latitude && orgUnit.longitude) {
+                    locations.markers.push({
+                        ...baseLocation,
+                        latitude: orgUnit.latitude,
+                        longitude: orgUnit.longitude,
+                    });
+                }
             }
         }
     });
@@ -45,6 +51,7 @@ export const useGetOrgUnitLocations = (
     orgUnitParentId: number | undefined,
     // eslint-disable-next-line no-unused-vars
     callback: (data: Locations) => void,
+    baseOrgunitType: string,
 ): UseQueryResult<Locations, Error> => {
     const params = {
         validation_status: 'all',
@@ -68,7 +75,7 @@ export const useGetOrgUnitLocations = (
             staleTime: 1000 * 60 * 15, // in MS
             cacheTime: 1000 * 60 * 5,
             select: (orgUnits: OrgUnit[]) =>
-                mapLocation(orgUnits, orgUnitParentId),
+                mapLocation(orgUnits, orgUnitParentId, baseOrgunitType),
             onSuccess: data => callback(data),
         },
     );

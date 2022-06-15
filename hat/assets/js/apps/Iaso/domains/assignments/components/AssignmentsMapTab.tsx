@@ -30,6 +30,7 @@ type Props = {
     setItemColor: (color: string, teamId: number) => void;
     // eslint-disable-next-line no-unused-vars
     saveAssignment: (params: SaveAssignmentQuery) => void;
+    baseOrgunitType: string | undefined;
 };
 
 export const AssignmentsMapTab: FunctionComponent<Props> = ({
@@ -40,6 +41,7 @@ export const AssignmentsMapTab: FunctionComponent<Props> = ({
     profiles,
     setItemColor,
     saveAssignment,
+    baseOrgunitType,
 }) => {
     const { formatMessage } = useSafeIntl();
     const theme: Theme = useTheme();
@@ -174,14 +176,17 @@ export const AssignmentsMapTab: FunctionComponent<Props> = ({
                 />
             </Grid>
             <Grid item xs={7}>
-                <AssignmentsMap
-                    assignments={assignments}
-                    planning={planning}
-                    teams={teams}
-                    handleClick={handleClick}
-                    currentTeam={currentTeam}
-                    profiles={profiles}
-                />
+                {baseOrgunitType && (
+                    <AssignmentsMap
+                        assignments={assignments}
+                        planning={planning}
+                        teams={teams}
+                        handleClick={handleClick}
+                        currentTeam={currentTeam}
+                        profiles={profiles}
+                        baseOrgunitType={baseOrgunitType}
+                    />
+                )}
             </Grid>
         </Grid>
     );

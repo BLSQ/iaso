@@ -4,7 +4,7 @@ import { Shape } from '../../orgUnits/types/shapes';
 export type AssignmentParams = {
     planningId: string;
     team?: string;
-    orgunitType?: string;
+    baseOrgunitType?: string;
     tab?: string;
 };
 

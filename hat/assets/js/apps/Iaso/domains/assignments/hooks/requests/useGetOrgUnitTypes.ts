@@ -13,7 +13,7 @@ const getOrgunitTypes = (): Promise<OrgunitTypesApi> => {
 };
 
 export const useGetOrgUnitTypes = (): UseQueryResult<
-    DropdownOptions<string>,
+    DropdownOptions<string>[],
     Error
 > => {
     const queryKey: any[] = ['orgunittypes'];

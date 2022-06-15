@@ -76,6 +76,7 @@ class BudgetEventSerializer(serializers.ModelSerializer):
         model = BudgetEvent
         fields = "__all__"
         read_only_fields = ["created_at", "updated_at", "author", "deleted_at"]
+        ordering = ["type", "status", "updated_at"]
 
     def validate(self, attrs):
         validated_data = super().validate(attrs)
@@ -92,7 +93,7 @@ class BudgetEventSerializer(serializers.ModelSerializer):
 class BudgetStatusSerializer(serializers.ModelSerializer):
     class Meta:
         model = BudgetEvent
-        fields = ["updated_at", "status", "type"]
+        fields = ["created_at", "status", "type"]
 
 
 # the following serializer are used so we can audit the modification on a campaign.
@@ -389,36 +390,7 @@ class CampaignSerializer(serializers.ModelSerializer):
     grouped_campaigns = serializers.PrimaryKeyRelatedField(
         many=True, queryset=CampaignGroup.objects.all(), required=False
     )
-    last_budget_event_type = serializers.SerializerMethodField()
-    last_budget_event_status = serializers.SerializerMethodField()
-    last_budget_event_date = serializers.SerializerMethodField()
-
-    def get_last_budget_event(self, campaign):
-        try:
-            last_budget_event = BudgetEvent.objects.filter(campaign=campaign).last()
-            return BudgetStatusSerializer(last_budget_event).data
-        except BudgetEvent.DoesNotExist:
-            return None
-
-    def get_last_budget_event_type(self, campaign):
-        try:
-            return self.get_last_budget_event(campaign)["type"]
-        except KeyError:
-            return None
-
-    def get_last_budget_event_status(self, campaign):
-        try:
-            return self.get_last_budget_event(campaign)["status"]
-        except KeyError:
-            return None
-
-    def get_last_budget_event_date(self, campaign):
-        if self.get_last_budget_event(campaign):
-            try:
-                return self.get_last_budget_event(campaign)["updated_at"]
-            except KeyError:
-                return None
-        return None
+    last_budget_event = BudgetStatusSerializer(many=True, required=False)
 
     def get_top_level_org_unit_name(self, campaign):
         if campaign.country:

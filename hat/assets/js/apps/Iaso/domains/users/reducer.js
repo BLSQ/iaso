@@ -2,7 +2,6 @@ import {
     SET_USERS_PROFILES,
     SET_CURRENT_USER,
     SET_IS_FETCHING_USERS,
-    SET_PERMISSIONS,
 } from './actions';
 
 export const usersInitialState = {
@@ -11,7 +10,6 @@ export const usersInitialState = {
     fetching: false,
     count: 0,
     pages: 1,
-    permissions: [],
 };
 
 export const usersReducer = (state = usersInitialState, action = {}) => {
@@ -33,11 +31,6 @@ export const usersReducer = (state = usersInitialState, action = {}) => {
             const fetching = action.payload;
             return { ...state, fetching };
         }
-        case SET_PERMISSIONS: {
-            const permissions = action.payload;
-            return { ...state, permissions };
-        }
-
         default:
             return state;
     }

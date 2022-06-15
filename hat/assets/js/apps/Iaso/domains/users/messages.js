@@ -189,6 +189,10 @@ const MESSAGES = defineMessages({
         defaultMessage:
             'Enter email address before sending an invitation email',
     },
+    fetchPermissionsError: {
+        defaultMessage: 'An error occurred while fetching permissions list',
+        id: 'iaso.snackBar.fetchPermissions',
+    },
 });
 
 export default MESSAGES;

@@ -47,6 +47,9 @@ const styles = theme => ({
         backgroundColor: 'white',
         color: theme.palette.mediumGray.main,
     },
+    shrinkInputLabel: {
+        fontSize: '20px',
+    },
     enabled: {
         '&:hover': {
             border: '1px solid rgba(0,0,0,0.87)', // aligning with AutoSelect
@@ -143,6 +146,7 @@ const OrgUnitTreeviewPicker = ({
                     required={required}
                     className={`${classnames(
                         classes.inputLabel,
+                        selectedItems.size > 0 && classes.shrinkInputLabel,
                         'input-label',
                     )} ${errorLabelStyle}`}
                 >

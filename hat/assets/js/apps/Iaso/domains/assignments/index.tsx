@@ -28,13 +28,12 @@ import { AssignmentsMapTab } from './components/AssignmentsMapTab';
 import { AssignmentParams, AssignmentApi } from './types/assigment';
 import { Planning } from './types/planning';
 import { Team, DropdownTeamsOptions } from './types/team';
-import { DropdownOptions } from '../../types/utils';
 import { Profile } from '../../utils/usersUtils';
 
 import { useGetTeams } from './hooks/requests/useGetTeams';
 import { useGetProfiles } from './hooks/requests/useGetProfiles';
 import { useSaveAssignment } from './hooks/requests/useSaveAssignment';
-import { useGetOrgUnitType } from './hooks/requests/useGetOrgUnitType';
+import { useGetOrgUnitTypes } from './hooks/requests/useGetOrgUnitTypes';
 
 import MESSAGES from './messages';
 
@@ -59,8 +58,11 @@ export const Assignments: FunctionComponent<Props> = ({ params }) => {
 
     const { planningId, team: currentTeamId, baseOrgunitType } = params;
 
-    // TODO: limit teams list to planning team or sub teams
-    const { data: dataTeams = [], isFetching: isFetchingTeams } = useGetTeams();
+    const [tab, setTab] = useState(params.tab ?? 'map');
+    const [currentTeam, setCurrentTeam] = useState<Team>();
+    const [teams, setTeams] = useState<DropdownTeamsOptions[] | undefined>();
+    const [profiles, setProfiles] = useState<ProfilesWithColor[]>([]);
+
     // TODO: limit users list to planning users or sub team users
     const { data: dataProfiles = [] } = useGetProfiles();
     const {
@@ -70,6 +72,9 @@ export const Assignments: FunctionComponent<Props> = ({ params }) => {
         data?: Planning;
         isLoading: boolean;
     } = useGetPlanning(planningId);
+    const { data: dataTeams = [], isFetching: isFetchingTeams } = useGetTeams(
+        planning?.team,
+    );
     const {
         data: assignments = [],
         isLoading: isLoadingAssignments,
@@ -77,24 +82,12 @@ export const Assignments: FunctionComponent<Props> = ({ params }) => {
         data?: AssignmentApi[];
         isLoading: boolean;
     } = useGetAssignments({ planningId });
-    const [isFetchingCurrentOrgUnitType, setIsFetchingCurrentOrgUnitType] =
-        useState<boolean>(true);
-    const { data: currentOrgUnitType } = useGetOrgUnitType(
-        planning?.org_unit_details?.org_unit_type,
-    );
-    const { mutateAsync: saveAssignment, isLoading: isLoadingSaving } =
+    const { data: orgunitTypes, isFetching: isFetchingOrgunitTypes } =
+        useGetOrgUnitTypes();
+    const { mutateAsync: saveAssignment, isLoading: isSaving } =
         useSaveAssignment();
 
-    const [tab, setTab] = useState(params.tab ?? 'map');
-    const [currentTeam, setCurrentTeam] = useState<Team>();
-    const [teams, setTeams] = useState<DropdownTeamsOptions[]>([]);
-    const [profiles, setProfiles] = useState<ProfilesWithColor[]>([]);
-    const [orgunitTypesDropdown, setOrgunitTypesDropdown] = useState<
-        DropdownOptions<string>[]
-    >([]);
-
-    const isLoading =
-        isLoadingPlanning || isLoadingAssignments || isLoadingSaving;
+    const isLoading = isLoadingPlanning || isLoadingAssignments || isSaving;
 
     const setItemColor = (color: string, itemId: number): void => {
         // TODO: improve this
@@ -112,10 +105,10 @@ export const Assignments: FunctionComponent<Props> = ({ params }) => {
             }
         }
         if (currentTeam?.type === 'TEAM_OF_TEAMS') {
-            const itemIndex = teams.findIndex(
+            const itemIndex = teams?.findIndex(
                 team => team.original.id === itemId,
             );
-            if (itemIndex) {
+            if (itemIndex && teams) {
                 const newTeams = [...teams];
                 newTeams[itemIndex] = {
                     ...newTeams[itemIndex],
@@ -138,7 +131,7 @@ export const Assignments: FunctionComponent<Props> = ({ params }) => {
 
     useEffect(() => {
         if (currentTeamId) {
-            const newCurrentTeam = teams.find(
+            const newCurrentTeam = teams?.find(
                 team => team.original?.id === parseInt(currentTeamId, 10),
             );
             if (newCurrentTeam && newCurrentTeam.original) {
@@ -160,28 +153,6 @@ export const Assignments: FunctionComponent<Props> = ({ params }) => {
         }
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [dataProfiles]);
-
-    useEffect(() => {
-        if (currentOrgUnitType) {
-            setOrgunitTypesDropdown(
-                currentOrgUnitType.sub_unit_types.map(unitType => {
-                    return {
-                        value: unitType.id.toString(),
-                        label: unitType.name,
-                    };
-                }),
-            );
-            setIsFetchingCurrentOrgUnitType(false);
-            if (!baseOrgunitType && currentOrgUnitType.sub_unit_types[0]) {
-                const newParams = {
-                    ...params,
-                    baseOrgunitType: currentOrgUnitType.sub_unit_types[0].id,
-                };
-                dispatch(redirectTo(baseUrl, newParams));
-            }
-        }
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [currentOrgUnitType]);
 
     return (
         <>
@@ -207,10 +178,10 @@ export const Assignments: FunctionComponent<Props> = ({ params }) => {
                 {isLoading && <LoadingSpinner />}
                 <AssignmentsFilters
                     params={params}
-                    teams={teams}
-                    isFetchingTeams={isFetchingTeams}
-                    orgunitTypes={orgunitTypesDropdown || []}
-                    isFetchingOrgUnitTypes={isFetchingCurrentOrgUnitType}
+                    teams={teams || []}
+                    isFetchingTeams={isFetchingTeams || !teams}
+                    orgunitTypes={orgunitTypes || []}
+                    isFetchingOrgUnitTypes={isFetchingOrgunitTypes}
                 />
                 <Box mt={2}>
                     {tab === 'map' && !isLoadingAssignments && (
@@ -218,7 +189,7 @@ export const Assignments: FunctionComponent<Props> = ({ params }) => {
                             assignments={assignments}
                             planning={planning}
                             currentTeam={currentTeam}
-                            teams={teams}
+                            teams={teams || []}
                             profiles={profiles}
                             setItemColor={setItemColor}
                             saveAssignment={saveAssignment}

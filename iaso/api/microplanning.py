@@ -147,7 +147,7 @@ class TeamAncestorFilterBackend(filters.BaseFilterBackend):
                 raise serializers.ValidationError(
                     {"ancestor": "Select a valid choice. That choice is not one of the available choices."}
                 )
-            queryset = queryset.filter(path__descendants=ancestor.path).exclude(id=ancestor.id)
+            queryset = queryset.filter(path__descendants=ancestor.path)
 
         return queryset
 

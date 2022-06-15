@@ -67,7 +67,7 @@ export const useGetOrgUnitLocations = (
     const url = makeUrlWithParams('/api/orgunits', params);
 
     return useSnackQuery(
-        ['geo_json', params],
+        ['geo_json', params, baseOrgunitType],
         () => getRequest(url),
         undefined,
         {

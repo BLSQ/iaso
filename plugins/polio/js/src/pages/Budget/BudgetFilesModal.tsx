@@ -94,12 +94,13 @@ const makeFileLinks = files => {
 
 const makeLinks = (links: string) => {
     if (!links) return null;
-    const linksArray = links.split(', ');
+    const linksArray = links.split(',');
     return linksArray.map((link, index) => {
+        const trimmedLink = link.trim();
         return (
             // eslint-disable-next-line react/no-array-index-key
-            <Link key={`${link}_${index}`} download href={link}>
-                <Typography>{link}</Typography>
+            <Link key={`${trimmedLink}_${index}`} download href={trimmedLink}>
+                <Typography>{trimmedLink}</Typography>
             </Link>
         );
     });

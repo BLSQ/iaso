@@ -48,9 +48,9 @@ export const makeRegexValidator =
         message,
         test: (value: string) => {
             if (!value) return true;
-            const input = value.split(', ');
+            const input = value.split(',');
             for (let i = 0; i < input.length; i += 1) {
-                if (!input[i].match(regex)) {
+                if (!input[i].trim().match(regex)) {
                     return false;
                 }
             }

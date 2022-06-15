@@ -1,10 +1,12 @@
 import mock
 from django.contrib.auth.models import User
 from django.test import TransactionTestCase
+from django.utils.timezone import now
 
-from iaso.api.microplanning import TeamSerializer, PlanningSerializer
-from iaso.models import Account, DataSource, SourceVersion, OrgUnit, Form
-from iaso.models.microplanning import TeamType, Team, Planning
+from hat.audit.models import Modification
+from iaso.api.microplanning import TeamSerializer, PlanningSerializer, AssignmentSerializer
+from iaso.models import Account, DataSource, SourceVersion, OrgUnit, Form, OrgUnitType
+from iaso.models.microplanning import TeamType, Team, Planning, Assignment
 from iaso.test import IasoTestCaseMixin, APITestCase
 
 
@@ -220,6 +222,41 @@ class TeamAPITestCase(APITestCase):
         r = self.assertJSONResponse(response, 200)
         self.assertEqual(len(r), 2)
 
+    def test_query_ancestor(self):
+        self.client.force_authenticate(self.user)
+
+        team_a = Team.objects.create(project=self.project1, name="team a", manager=self.user)
+        team_b = Team.objects.create(project=self.project1, name="team b", manager=self.user)
+        team_b_c = Team.objects.create(project=self.project1, name="team b_c", manager=self.user, parent=team_b)
+        team_b_d = Team.objects.create(project=self.project1, name="team b_d", manager=self.user, parent=team_b)
+        team_b_c_e = Team.objects.create(project=self.project1, name="team b_c_e", manager=self.user, parent=team_b_c)
+        team_b_c_f = Team.objects.create(
+            project=self.project1, name="team b_c_f hello", manager=self.user, parent=team_b_c
+        )
+
+        response = self.client.get("/api/microplanning/teams/", format="json")
+        r = self.assertJSONResponse(response, 200)
+        self.assertEqual(len(r), 8)
+
+        response = self.client.get(f"/api/microplanning/teams/?ancestor={team_a.id}", format="json")
+        r = self.assertJSONResponse(response, 200)
+        self.assertEqual(len(r), 0)
+        response = self.client.get(f"/api/microplanning/teams/?ancestor={team_b.id}", format="json")
+        r = self.assertJSONResponse(response, 200)
+        self.assertEqual(len(r), 4)
+        ids = sorted([row["id"] for row in r])
+        self.assertEqual(ids, [team_b_c.id, team_b_d.id, team_b_c_e.id, team_b_c_f.id])
+        response = self.client.get(f"/api/microplanning/teams/?ancestor={team_b.id}&search=hello", format="json")
+        r = self.assertJSONResponse(response, 200)
+        self.assertEqual(len(r), 1)
+        ids = sorted([row["id"] for row in r])
+        self.assertEqual(ids, [team_b_c_f.id])
+        response = self.client.get(f"/api/microplanning/teams/?ancestor={team_b_c.id}", format="json")
+        r = self.assertJSONResponse(response, 200)
+        self.assertEqual(len(r), 2)
+        ids = sorted([row["id"] for row in r])
+        self.assertEqual(ids, [team_b_c_e.id, team_b_c_f.id])
+
     def test_create(self):
         user_with_perms = self.create_user_with_profile(
             username="user_with_perms", account=self.account, permissions=["iaso_teams"]
@@ -237,6 +274,12 @@ class TeamAPITestCase(APITestCase):
         self.assertTrue(Team.objects.filter(name="hello").exists())
         team = Team.objects.get(name="hello")
         self.assertEqual(team.created_by, user_with_perms)
+        self.assertEqual(Modification.objects.all().count(), 1)
+        mod = Modification.objects.first()
+        self.assertEqual(mod.past_value, [])
+        self.assertEqual(mod.user, user_with_perms)
+        self.assertEqual(mod.new_value[0]["name"], "hello")
+        self.assertEqual(mod.source, "API POST/api/microplanning/teams/")
 
     def test_create_no_perms(self):
         self.client.force_authenticate(self.user)
@@ -287,6 +330,9 @@ class TeamAPITestCase(APITestCase):
         team = Team.objects.get(name="hello")
         self.assertQuerysetEqual(team.sub_teams.all(), [])
         self.assertQuerysetEqual(team.users.all(), [team_member])
+        self.assertEqual(Modification.objects.count(), 3)
+        mod = Modification.objects.last()
+        self.assertEqual(mod.user, user_with_perms)
 
     def test_patch_no_perms(self):
         self.client.force_authenticate(self.user)
@@ -315,6 +361,10 @@ class TeamAPITestCase(APITestCase):
         team.refresh_from_db()
         self.assertIsNotNone(team.deleted_at)
 
+        m = Modification.objects.filter(object_id=team.id, content_type__model="team").first()
+        self.assertEqual(m.past_value[0]["deleted_at"], None)
+        self.assertNotEqual(m.new_value[0]["deleted_at"], None)
+
         # we don't see it anymore
         response = self.client.get("/api/microplanning/teams/", format="json")
         r = self.assertJSONResponse(response, 200)
@@ -342,6 +392,8 @@ class TeamAPITestCase(APITestCase):
         response = self.client.get("/api/microplanning/teams/", format="json")
         r = self.assertJSONResponse(response, 200)
         self.assertEqual(len(r), 2)
+        # one for delete, one for undelete
+        self.assertEqual(Modification.objects.count(), 2)
 
 
 class PlanningTestCase(APITestCase):
@@ -445,3 +497,252 @@ class PlanningTestCase(APITestCase):
         )
         self.assertFalse(failing_teams.is_valid(), failing_teams.errors)
         self.assertIn("team", failing_teams.errors)
+
+    def test_patch_api(self):
+        planning = Planning.objects.create(
+            name="Planning to modify",
+            project=self.project1,
+            org_unit=self.org_unit,
+            team=self.team1,
+        )
+        user_with_perms = self.create_user_with_profile(
+            username="user_with_perms", account=self.account, permissions=["iaso_planning"]
+        )
+        self.client.force_authenticate(user_with_perms)
+        data = {
+            "name": "My Planning",
+            "forms": [self.form1.id, self.form2.id],
+            "team": self.team1.id,
+            "team_details": {"id": self.team1.id, "name": self.team1.name},
+            "started_at": "2022-02-02",
+            "ended_at": "2022-03-03",
+        }
+        response = self.client.patch(f"/api/microplanning/planning/{planning.id}/", data=data, format="json")
+        r = self.assertJSONResponse(response, 200)
+        planning_id = r["id"]
+        self.assertTrue(Planning.objects.get(id=planning_id))
+        self.assertEqual(Modification.objects.all().count(), 1)
+        planning.refresh_from_db()
+        self.assertEqual(planning.name, "My Planning")
+        self.assertQuerysetEqual(planning.forms.all(), [self.form1, self.form2], ordered=False)
+
+        mod = Modification.objects.last()
+        self.assertEqual(mod.past_value[0]["forms"], [])
+        self.assertEqual(mod.new_value[0]["forms"], [self.form1.id, self.form2.id])
+
+    def test_create_api(self):
+        user_with_perms = self.create_user_with_profile(
+            username="user_with_perms", account=self.account, permissions=["iaso_planning"]
+        )
+        self.client.force_authenticate(user_with_perms)
+        data = {
+            "name": "My Planning",
+            "org_unit": self.org_unit.id,
+            "forms": [self.form1.id, self.form2.id],
+            "team": self.team1.id,
+            "team_details": {"id": self.team1.id, "name": self.team1.name},
+            "project": self.project1.id,
+            "started_at": "2022-02-02",
+            "ended_at": "2022-03-03",
+        }
+        response = self.client.post("/api/microplanning/planning/", data=data, format="json")
+        r = self.assertJSONResponse(response, 201)
+        planning_id = r["id"]
+        self.assertTrue(Planning.objects.get(id=planning_id))
+        self.assertEqual(Modification.objects.all().count(), 1)
+
+
+class AssignmentAPITestCase(APITestCase):
+    fixtures = ["user.yaml"]
+
+    @classmethod
+    def setUpTestData(cls):
+        cls.account = account = Account.objects.get(name="test")
+        cls.user = user = User.objects.get(username="test")
+        cls.project1 = project1 = account.project_set.create(name="project1")
+        project2 = account.project_set.create(name="project2")
+        cls.team1 = Team.objects.create(project=project1, name="team1", manager=user)
+
+        source = DataSource.objects.create(name="Source de test")
+        source.projects.add(project1)
+        version = SourceVersion.objects.create(data_source=source, number=1)
+        org_unit_type = OrgUnitType.objects.create(name="test type")
+        cls.root_org_unit = root_org_unit = OrgUnit.objects.create(version=version, org_unit_type=org_unit_type)
+        cls.child1 = OrgUnit.objects.create(
+            version=version, parent=root_org_unit, name="child1", org_unit_type=org_unit_type
+        )
+        cls.child2 = OrgUnit.objects.create(
+            version=version, parent=root_org_unit, name="child2", org_unit_type=org_unit_type
+        )
+        OrgUnit.objects.create(version=version, parent=root_org_unit, name="child2")
+
+        cls.planning = Planning.objects.create(
+            project=project1, name="planning1", team=cls.team1, org_unit=root_org_unit
+        )
+        assignment = Assignment.objects.create(
+            planning=cls.planning,
+            user=cls.user,
+            org_unit=cls.child1,
+        )
+
+    def test_serializer(self):
+        request = mock.Mock(user=self.user)
+        serializer = AssignmentSerializer(
+            context={"request": request},
+            data=dict(
+                planning=self.planning.id,
+                user=self.user.id,
+                org_unit=self.child2.id,
+            ),
+        )
+        self.assertTrue(serializer.is_valid(), serializer.errors)
+        serializer.save()
+
+        # cannot create a second Assignment for the same org unit in the same planning
+        serializer = AssignmentSerializer(
+            context={"request": request},
+            data=dict(
+                planning=self.planning.id,
+                user=self.user.id,
+                org_unit=self.child2.id,
+            ),
+        )
+        self.assertFalse(serializer.is_valid(), serializer.validated_data)
+        # errors should be : {'non_field_errors': [ErrorDetail(string='The fields planning, org_unit must make a unique set.', code='unique')]}
+        self.assertIn("non_field_errors", serializer.errors)
+
+    def test_query_happy_path(self):
+        self.client.force_authenticate(self.user)
+        response = self.client.get("/api/microplanning/assignments/", format="json")
+        r = self.assertJSONResponse(response, 200)
+        self.assertEqual(len(r), 1)
+
+    def test_query_fail_no_auth(self):
+        response = self.client.get(f"/api/microplanning/assignments/?planning={self.planning.id}", format="json")
+        r = self.assertJSONResponse(response, 403)
+
+    def test_query_filtering(self):
+        p = Planning.objects.create(
+            project=self.project1, name="planning1", team=self.team1, org_unit=self.root_org_unit
+        )
+        p.assignment_set.create(org_unit=self.child1, user=self.user)
+        p.assignment_set.create(org_unit=self.child2, user=self.user)
+        self.client.force_authenticate(self.user)
+        response = self.client.get(f"/api/microplanning/assignments/?planning={self.planning.id}", format="json")
+        r = self.assertJSONResponse(response, 200)
+        self.assertEqual(len(r), 1)
+
+        response = self.client.get(f"/api/microplanning/assignments/?planning={p.id}", format="json")
+        r = self.assertJSONResponse(response, 200)
+        self.assertEqual(len(r), 2)
+
+    def test_create(self):
+        user_with_perms = self.create_user_with_profile(
+            username="user_with_perms", account=self.account, permissions=["iaso_planning"]
+        )
+        self.client.force_authenticate(user_with_perms)
+        data = {
+            "planning": self.planning.id,
+            "user": self.user.id,
+            "org_unit": self.child2.id,
+        }
+
+        response = self.client.post("/api/microplanning/assignments/", data=data, format="json")
+        r = self.assertJSONResponse(response, 201)
+        self.assertTrue(Assignment.objects.filter(id=r["id"]).exists())
+        a = Assignment.objects.get(id=r["id"])
+        self.assertEqual(a.created_by, user_with_perms)
+        self.assertEqual(a.planning, self.planning)
+        self.assertEqual(a.user, self.user)
+        self.assertEqual(a.org_unit, self.child2)
+        self.assertEqual(Modification.objects.all().count(), 1)
+
+    def test_no_perm_create(self):
+        self.client.force_authenticate(self.user)
+        data = {
+            "planning": self.planning.id,
+            "user": self.user.id,
+            "org_unit": self.child2.id,
+        }
+
+        response = self.client.post("/api/microplanning/assignments/", data=data, format="json")
+        r = self.assertJSONResponse(response, 403)
+
+    def test_query_mobile(self):
+        p = Planning.objects.create(
+            project=self.project1, name="planning2", team=self.team1, org_unit=self.root_org_unit
+        )
+        p.assignment_set.create(org_unit=self.child1, user=self.user)
+        p.assignment_set.create(org_unit=self.child2, user=self.user)
+
+        p = Planning.objects.create(
+            project=self.project1, name="planning3", team=self.team1, org_unit=self.root_org_unit
+        )
+
+        plannings = Planning.objects.filter(assignment__user=self.user).distinct()
+        Planning.objects.update(published_at=now())
+        self.assertEqual(plannings.count(), 2)
+
+        self.client.force_authenticate(self.user)
+
+        response = self.client.get(f"/api/mobile/plannings/", format="json")
+        r = self.assertJSONResponse(response, 200)
+        self.assertEqual(len(r), 2)
+        # planning 1
+        p1 = r[0]
+        self.assertEqual(r[0]["name"], "planning1")
+        self.assertEqual(r[0]["assignments"], [{"org_unit": self.child1.id, "form_ids": []}])
+
+        p2 = r[1]
+        self.assertEqual(p2["name"], "planning2")
+        self.assertEqual(
+            p2["assignments"],
+            [{"org_unit": self.child1.id, "form_ids": []}, {"org_unit": self.child2.id, "form_ids": []}],
+        )
+
+        # Response look like
+        # [
+        #     {
+        #         "id": 161,
+        #         "name": "planning1",
+        #         "description": "",
+        #         "created_at": "2022-05-25T16:00:37.029707Z",
+        #         "assignments": [{"org_unit": 3557, "form_ids": []}],
+        #     },
+        #     {
+        #         "id": 162,
+        #         "name": "planning2",
+        #         "description": "",
+        #         "created_at": "2022-05-25T16:00:37.034614Z",
+        #         "assignments": [{"org_unit": 3557, "form_ids": []}, {"org_unit": 3558, "form_ids": []}],
+        #     },
+        # ]
+
+        # user without any assignment, should get no planning
+        user = self.create_user_with_profile(username="user2", account=self.account)
+        self.client.force_authenticate(user)
+
+        response = self.client.get(f"/api/mobile/plannings/", format="json")
+        r = self.assertJSONResponse(response, 200)
+        self.assertEqual(len(r), 0)
+
+    def test_query_mobile_get(self):
+        self.client.force_authenticate(self.user)
+        Planning.objects.update(published_at=now())
+        response = self.client.get(f"/api/mobile/plannings/{self.planning.id}/", format="json")
+        self.assertEqual(response.status_code, 200)
+
+    def test_query_mobile_no_modification(self):
+        self.user.is_superuser = True
+        self.user.save()
+        Planning.objects.update(published_at=now())
+
+        self.client.force_authenticate(self.user)
+        response = self.client.delete(f"/api/mobile/plannings/{self.planning.id}/", format="json")
+        self.assertEqual(response.status_code, 403)
+
+        response = self.client.patch(f"/api/mobile/plannings/{self.planning.id}/", format="json")
+        self.assertEqual(response.status_code, 403)
+
+        response = self.client.post(f"/api/mobile/plannings/", data={}, format="json")
+        self.assertEqual(response.status_code, 403)

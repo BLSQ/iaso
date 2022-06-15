@@ -562,6 +562,7 @@
     "iaso.permissions.pages": "Pages",
     "iaso.permissions.planning": "Planning",
     "iaso.permissions.polio": "Polio campaign management",
+    "iaso.permissions.polio_budget": "Polio budget validation",
     "iaso.permissions.polio_config": "Polio campaign admin",
     "iaso.permissions.projects": "Projects",
     "iaso.permissions.sources": "Sources",

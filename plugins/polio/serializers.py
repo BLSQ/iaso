@@ -389,7 +389,9 @@ class CampaignSerializer(serializers.ModelSerializer):
     grouped_campaigns = serializers.PrimaryKeyRelatedField(
         many=True, queryset=CampaignGroup.objects.all(), required=False
     )
-    last_budget_event = serializers.SerializerMethodField()
+    last_budget_event_type = serializers.SerializerMethodField()
+    last_budget_event_status = serializers.SerializerMethodField()
+    last_budget_event_date = serializers.SerializerMethodField()
 
     def get_last_budget_event(self, campaign):
         try:
@@ -397,6 +399,26 @@ class CampaignSerializer(serializers.ModelSerializer):
             return BudgetStatusSerializer(last_budget_event).data
         except BudgetEvent.DoesNotExist:
             return None
+
+    def get_last_budget_event_type(self, campaign):
+        try:
+            return self.get_last_budget_event(campaign)["type"]
+        except KeyError:
+            return None
+
+    def get_last_budget_event_status(self, campaign):
+        try:
+            return self.get_last_budget_event(campaign)["status"]
+        except KeyError:
+            return None
+
+    def get_last_budget_event_date(self, campaign):
+        if self.get_last_budget_event(campaign):
+            try:
+                return self.get_last_budget_event(campaign)["updated_at"]
+            except KeyError:
+                return None
+        return None
 
     def get_top_level_org_unit_name(self, campaign):
         if campaign.country:

@@ -1437,11 +1437,14 @@ class BudgetEventViewset(ModelViewSet):
     ]
     email_title_template = "New {} for {}"
     email_template = """%s by %s %s.
-                Comment: %s
-    you can access the history of this budget here: 
-   
-%s
     
+Comment: %s
+
+------------
+
+you can access the history of this budget here: %s
+
+------------    
 This is an automated email from %s
 """
 

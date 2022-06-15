@@ -86,6 +86,7 @@ class CustomFilterBackend(filters.BaseFilterBackend):
 
         return queryset
 
+
 class CampaignViewSet(ModelViewSet):
     results_key = "campaigns"
     remove_results_key_if_paginated = True
@@ -156,7 +157,6 @@ class CampaignViewSet(ModelViewSet):
             return campaigns.filter(initial_org_unit__in=org_units)
         else:
             return campaigns.filter()
-
 
     @action(methods=["POST"], detail=False, serializer_class=PreparednessPreviewSerializer)
     def preview_preparedness(self, request, **kwargs):

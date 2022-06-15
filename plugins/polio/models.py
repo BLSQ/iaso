@@ -519,7 +519,7 @@ class BudgetEvent(SoftDeletableModel):
     def save(self, *args, **kwargs):
         super().save(self, *args, **kwargs)
         self.campaign.last_budget_event = self
-        
+
         self.campaign.save()
 
 

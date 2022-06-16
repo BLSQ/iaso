@@ -4,12 +4,10 @@ import { useSafeIntl } from 'bluesquare-components';
 import { array, mixed, object, string } from 'yup';
 import MESSAGES from '../../../constants/messages';
 import {
-    emailRegex,
     makeRegexValidator,
     urlRegex,
 } from '../../../../../../../hat/assets/js/apps/Iaso/libs/utils';
 
-const multipleEmailsValidator = makeRegexValidator(emailRegex);
 const multipleUrlsValidator = makeRegexValidator(urlRegex);
 
 export const useBudgetEvenValidation = () => {
@@ -21,14 +19,6 @@ export const useBudgetEvenValidation = () => {
     return useMemo(() => {
         return object().shape({
             file: mixed().nullable(),
-            cc_emails: string()
-                .nullable()
-                .test(
-                    multipleEmailsValidator(
-                        emailFormat,
-                        'multiple email validation',
-                    ),
-                ),
             links: string()
                 .nullable()
                 .test(

@@ -8,7 +8,6 @@ type QueryData = {
     campaign: string;
     type: BudgetEventType;
     target_teams: number[];
-    cced_emails?: string;
     comments?: string;
     status: 'validation_ongoing'; // forcing status value as we create an event
     files: any;

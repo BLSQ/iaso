@@ -43,7 +43,6 @@ export const CreateBudgetEvent: FunctionComponent<Props> = ({ campaignId }) => {
             author: currentUser.id,
             target_teams: [],
             type: null,
-            cc_emails: null,
             comment: null,
             files: null,
             links: null,
@@ -115,14 +114,6 @@ export const CreateBudgetEvent: FunctionComponent<Props> = ({ campaignId }) => {
                     label={MESSAGES.destination}
                     options={teamsDropdown}
                     loading={isFetchingTeams}
-                />
-                <InputComponent
-                    type="email"
-                    keyValue="cc_emails"
-                    onChange={onChange}
-                    value={values.cc_emails}
-                    errors={getErrors('cc_emails')}
-                    label={MESSAGES.cc_emails}
                 />
 
                 <InputComponent

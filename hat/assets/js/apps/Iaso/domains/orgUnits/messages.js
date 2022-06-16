@@ -406,6 +406,36 @@ const MESSAGES = defineMessages({
         id: 'iaso.label.currentOu',
         defaultMessage: 'Current org unit',
     },
+    linkOrgUnitToInstanceReferenceTitle: {
+        id: 'iaso.instance.dialog.linkOrgUnitToInstanceReferenceTitle',
+        defaultMessage:
+            'Are you sure you want to link this submission to the orgUnit as a reference one ?',
+    },
+    linkOffOrgUnitToInstanceReferenceTitle: {
+        id: 'iaso.instance.dialog.linkOffOrgUnitToInstanceReferenceTitle',
+        defaultMessage:
+            'Are you sure you want to unlink this reference submission from the orgUnit ?',
+    },
+    linkOrgUnitToInstanceReferenceWarning: {
+        id: 'iaso.instance.linkOrgUnitToInstanceReferenceWarning',
+        defaultMessage: 'This operation can still be undone',
+    },
+    selectParentOrgUnit: {
+        defaultMessage: 'Select parent Org Unit',
+        id: 'iaso.label.selectParentOrgUnit',
+    },
+    org_unit_type_id: {
+        id: 'iaso.forms.org_unit_type_id',
+        defaultMessage: 'Org unit type',
+    },
+    detailTitle: {
+        defaultMessage: 'Form',
+        id: 'iaso.instance.formShort',
+    },
+    downloadXml: {
+        id: 'iaso.label.downloadXml',
+        defaultMessage: 'Download XML',
+    },
 });
 
 export default MESSAGES;

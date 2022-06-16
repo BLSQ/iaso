@@ -534,3 +534,15 @@ export const fetchAlgorithmRuns = (dispatch, url = '/api/algorithmsruns/') =>
             );
             console.error(`Error while fetching alogrithms:`, error);
         });
+const dispatchSaveOrgUnit = dispatch => orgUnit =>
+    patchRequest(`/api/orgunits/${orgUnit.id}/`, orgUnit)
+        .then(savedOrgUnit => {
+            dispatch(enqueueSnackbar(succesfullSnackBar()));
+            return savedOrgUnit;
+        })
+        .catch(error => {
+            dispatch(enqueueSnackbar(errorSnackBar(null, null, error)));
+            console.error('Error while saving org unit detail:', error);
+        });
+
+export const saveOrgUnitWithDispatch = dispatchSaveOrgUnit(storeDispatch);

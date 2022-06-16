@@ -413,10 +413,6 @@ const MESSAGES = defineMessages({
         defaultMessage: 'Search',
         id: 'iaso.label.search',
     },
-    selectParentOrgUnit: {
-        defaultMessage: 'Select parent Org Unit',
-        id: 'iaso.label.selectParentOrgUnit',
-    },
     from: {
         id: 'iaso.label.from',
         defaultMessage: 'From',

@@ -1517,10 +1517,9 @@ class BudgetFilesViewset(ModelViewSet):
         if request.FILES:
             event = request.data["event"]
             event = get_object_or_404(BudgetEvent, id=event)
-            budget_file = request.FILES["file"]
-
-            budget_file = BudgetFiles.objects.create(file=budget_file, event=event)
-            budget_file.save()
+            for file in request.FILES.getlist("file"):
+                budget_file = BudgetFiles.objects.create(file=file, event=event)
+                budget_file.save()
 
         files = BudgetFiles.objects.filter(event__author__iaso_profile__account=self.request.user.iaso_profile.account)
         serializer = BudgetFilesSerializer(files, many=True)

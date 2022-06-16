@@ -1193,9 +1193,9 @@ const MESSAGES = defineMessages({
         defaultMessage: 'Cc emails',
         id: 'iaso.polio.label.cc_emails',
     },
-    file: {
-        defaultMessage: 'File',
-        id: 'iaso.polio.label.file',
+    filesUpload: {
+        defaultMessage: 'Files',
+        id: 'iaso.polio.label.filesUpload',
     },
     viewFiles: {
         defaultMessage: 'View files',

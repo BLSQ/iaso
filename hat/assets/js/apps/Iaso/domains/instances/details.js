@@ -1,3 +1,4 @@
+/* eslint-disable react/jsx-props-no-spreading */
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
@@ -5,10 +6,11 @@ import DeleteIcon from '@material-ui/icons/Delete';
 import UpdateIcon from '@material-ui/icons/Update';
 import RestoreFromTrashIcon from '@material-ui/icons/RestoreFromTrash';
 import Alert from '@material-ui/lab/Alert';
-import { withStyles, Box, Grid } from '@material-ui/core';
+import { withStyles, Box, Grid, DialogContentText } from '@material-ui/core';
 
 import PropTypes from 'prop-types';
-
+import LinkIcon from '@material-ui/icons/Link';
+import LinkOffIcon from '@material-ui/icons/LinkOff';
 import {
     injectIntl,
     commonStyles,
@@ -16,6 +18,8 @@ import {
     IconButton as IconButtonComponent,
     ExportButton as ExportButtonComponent,
 } from 'bluesquare-components';
+import { FormattedMessage } from 'react-intl';
+import omit from 'lodash/omit';
 import TopBar from '../../components/nav/TopBarComponent';
 import {
     setCurrentInstance as setCurrentInstanceAction,
@@ -25,8 +29,10 @@ import {
     restoreInstance as restoreInstanceAction,
     reAssignInstance as reAssignInstanceAction,
 } from './actions';
-import { redirectToReplace as redirectToReplaceAction } from '../../routing/actions';
-
+import {
+    redirectToReplace as redirectToReplaceAction,
+    redirectTo as redirectToAction,
+} from '../../routing/actions';
 import WidgetPaper from '../../components/papers/WidgetPaperComponent';
 import CreateReAssignDialogComponent from './components/CreateReAssignDialogComponent';
 
@@ -37,14 +43,22 @@ import InstancesFilesList from './components/InstancesFilesListComponent';
 import InstanceFileContent from './components/InstanceFileContent';
 import SpeedDialInstanceActions from './components/SpeedDialInstanceActions';
 import ExportInstancesDialogComponent from './components/ExportInstancesDialogComponent';
+import ConfirmCancelDialogComponent from '../../components/dialogs/ConfirmCancelDialogComponent';
 import EnketoIcon from './components/EnketoIcon';
 import { getInstancesFilesList } from './utils';
 import { userHasPermission } from '../users/utils';
-
 import MESSAGES from './messages';
 
 import { baseUrls } from '../../constants/urls';
-import { fetchFormOrgUnitTypes } from '../../utils/requests';
+import {
+    fetchFormOrgUnitTypes,
+    saveOrgUnitWithDispatch,
+} from '../../utils/requests';
+
+import {
+    hasFeatureFlag,
+    SHOW_LINK_INSTANCE_REFERENCE,
+} from '../../utils/featureFlags';
 
 const styles = theme => ({
     ...commonStyles(theme),
@@ -53,18 +67,100 @@ const styles = theme => ({
     },
 });
 
+const initialFormState = (orgUnit, referenceSubmissionId) => {
+    return {
+        id: orgUnit.id,
+        name: orgUnit.name,
+        org_unit_type_id: orgUnit?.org_unit_type_id ?? undefined,
+        groups: orgUnit.groups.map(g => g) ?? [],
+        sub_source: orgUnit.sub_source,
+        validation_status: orgUnit.validation_status,
+        aliases: orgUnit.aliases,
+        parent_id: orgUnit.parent_id,
+        source_ref: orgUnit.source_ref,
+        reference_instance_id: referenceSubmissionId,
+    };
+};
+
+const linkOrLinkOffOrgUnitToReferenceSubmission = (
+    orgUnit,
+    referenceSubmissionId,
+    redirectToActionInstance,
+    formId,
+    instanceId,
+    referenceFormId,
+) => {
+    const currentOrgUnit = orgUnit;
+    const newOrgUnit = initialFormState(orgUnit, referenceSubmissionId);
+    let orgUnitPayload = omit({ ...currentOrgUnit, ...newOrgUnit });
+
+    orgUnitPayload = {
+        ...orgUnitPayload,
+        groups:
+            orgUnitPayload.groups.length > 0 && !orgUnitPayload.groups[0].id
+                ? orgUnitPayload.groups
+                : orgUnitPayload.groups.map(g => g.id),
+    };
+    saveOrgUnitWithDispatch(orgUnitPayload).then(ou => {
+        const url = `${baseUrls.orgUnitDetails}/orgUnitId/${ou.id}/formId/${formId}/referenceFormId/${referenceFormId}/instanceId/${instanceId}`;
+        redirectToActionInstance(url, {});
+    });
+};
+
 const actions = ({
     currentInstance,
     reAssignInstance,
     orgUnitTypes,
     canEditEnketo,
+    formId,
+    params,
+    currentUser,
+    redirectToActionInstance,
 }) => {
+    const hasSubmissionPermission = userHasPermission(
+        'iaso_org_units',
+        currentUser,
+    );
+
+    const hasfeatureFlag = hasFeatureFlag(
+        currentUser,
+        SHOW_LINK_INSTANCE_REFERENCE,
+    );
+
     const enketoAction = {
         id: 'instanceEditAction',
         icon: <EnketoIcon />,
         disabled: currentInstance && currentInstance.deleted,
     };
-    const defaultActions = [
+    const { referenceFormId } = params;
+    const referenceSubmission = currentInstance.org_unit.reference_instance_id;
+    const linkOrgUnit =
+        formId !== referenceFormId && referenceSubmission !== null;
+    const orgUnitToReferenceSubmission = instance => {
+        return linkOrLinkOffOrgUnitToReferenceSubmission(
+            currentInstance.org_unit,
+            instance,
+            redirectToActionInstance,
+            formId,
+            currentInstance.id,
+            referenceFormId,
+        );
+    };
+
+    const confirmCancelTitleMessage = isItLinked => {
+        return isItLinked
+            ? MESSAGES.linkOffOrgUnitToInstanceReferenceTitle
+            : MESSAGES.linkOrgUnitToInstanceReferenceTitle;
+    };
+
+    const renderTrigger = (isLinked, openDialog) => {
+        return isLinked ? (
+            <LinkOffIcon onClick={openDialog} />
+        ) : (
+            <LinkIcon onClick={openDialog} />
+        );
+    };
+    let defaultActions = [
         {
             id: 'instanceExportAction',
             icon: (
@@ -114,10 +210,44 @@ const actions = ({
             disabled: false,
         },
     ];
+
     if (canEditEnketo) {
-        return [enketoAction, ...defaultActions];
+        defaultActions = [enketoAction, ...defaultActions];
     }
-    return defaultActions;
+
+    if (!hasSubmissionPermission || !hasfeatureFlag) return defaultActions;
+
+    if (formId.toString() !== referenceFormId) return defaultActions;
+
+    return [
+        ...defaultActions,
+        {
+            id: linkOrgUnit
+                ? 'linkOffOrgUnitReferenceSubmission'
+                : 'linkOrgUnitReferenceSubmission',
+            icon: (
+                <ConfirmCancelDialogComponent
+                    titleMessage={confirmCancelTitleMessage(linkOrgUnit)}
+                    onConfirm={() =>
+                        linkOrgUnit
+                            ? orgUnitToReferenceSubmission(null)
+                            : orgUnitToReferenceSubmission(currentInstance.id)
+                    }
+                    renderTrigger={({ openDialog }) =>
+                        renderTrigger(linkOrgUnit, openDialog)
+                    }
+                >
+                    <DialogContentText id="alert-dialog-description">
+                        <FormattedMessage
+                            id="iaso.instance.linkOrgUnitToInstanceReferenceWarning"
+                            defaultMessage="This operation can still be undone"
+                            {...MESSAGES.linkOrgUnitToInstanceReferenceWarning}
+                        />
+                    </DialogContentText>
+                </ConfirmCancelDialogComponent>
+            ),
+        },
+    ];
 };
 
 class InstanceDetails extends Component {
@@ -187,10 +317,11 @@ class InstanceDetails extends Component {
             prevPathname,
             redirectToReplace,
             currentUser,
+            params,
+            redirectToActionInstance,
         } = this.props;
-
         const { showDial } = this.state;
-
+        const formId = currentInstance?.form_id;
         const canEditEnketo = userHasPermission(
             'iaso_update_submission',
             currentUser,
@@ -229,6 +360,10 @@ class InstanceDetails extends Component {
                                     reAssignInstance,
                                     orgUnitTypeIds: this.state.orgUnitTypeIds,
                                     canEditEnketo,
+                                    formId,
+                                    params,
+                                    currentUser,
+                                    redirectToActionInstance,
                                 })}
                                 onActionSelected={action =>
                                     this.onActionSelected(action)
@@ -367,6 +502,7 @@ const MapDispatchToProps = dispatch => ({
             redirectToReplace: redirectToReplaceAction,
             setCurrentInstance: setCurrentInstanceAction,
             reAssignInstance: reAssignInstanceAction,
+            redirectToActionInstance: redirectToAction,
         },
         dispatch,
     ),

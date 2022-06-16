@@ -83,7 +83,6 @@ class BudgetEventSerializer(serializers.ModelSerializer):
         return validated_data
 
 
-
 class BudgetStatusSerializer(serializers.ModelSerializer):
     class Meta:
         model = BudgetEvent

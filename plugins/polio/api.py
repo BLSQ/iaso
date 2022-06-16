@@ -11,6 +11,7 @@ from logging import getLogger
 import requests
 from django.conf import settings
 from django.core import validators
+from django.core.files import File
 from django.core.cache import cache
 from django.core.exceptions import ValidationError
 from django.core.mail import send_mail
@@ -1514,12 +1515,11 @@ class BudgetFilesViewset(ModelViewSet):
         return queryset
 
     def create(self, request, *args, **kwargs):
-        if request.FILES:
-            event = request.data["event"]
-            event = get_object_or_404(BudgetEvent, id=event)
-            for file in request.FILES.getlist("file"):
-                budget_file = BudgetFiles.objects.create(file=file, event=event)
-                budget_file.save()
+        event = request.data["event"]
+        event = get_object_or_404(BudgetEvent, id=event)
+        for file in request.FILES.items():
+            budget_file = BudgetFiles.objects.create(file=File(file[1]), event=event)
+            budget_file.save()
 
         files = BudgetFiles.objects.filter(event__author__iaso_profile__account=self.request.user.iaso_profile.account)
         serializer = BudgetFilesSerializer(files, many=True)

@@ -68,9 +68,9 @@ const extractFileName = (fileUrl: string) => {
     // find the end of file name by searching for the extension
     while (trimmedLeft === '' && i < fileExtensions.length) {
         const currentExtension = fileExtensions[i];
-        if (fileUrl.indexOf(currentExtension) !== -1) {
+        if (fileUrl?.indexOf(currentExtension) !== -1) {
             trimmedLeft = `${
-                fileUrl.split(currentExtension)[0]
+                fileUrl?.split(currentExtension)[0]
             }${currentExtension}`;
         }
         i += 1;

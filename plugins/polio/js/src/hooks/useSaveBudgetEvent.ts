@@ -10,25 +10,21 @@ type QueryData = {
     target_teams: number[];
     comments?: string;
     status: 'validation_ongoing'; // forcing status value as we create an event
-    files: any;
+    files: FileList;
 };
 const postBudgetEvent = async (data: QueryData) => {
     const { files, ...body } = data;
     const newEvent = await postRequest(`/api/polio/budgetevent/`, body);
     if (files) {
-        const filesToUpload = Array.from(files).map(file => {
-            return postRequest(
-                `/api/polio/budgetfiles/`,
-                { event: newEvent.id },
-                {
-                    file,
-                },
-            );
+        const filesData = {};
+        Array.from(files).forEach((file: File) => {
+            filesData[file.name] = file;
         });
-        const uploadStatuses = await Promise.allSettled(filesToUpload);
-        // TODO add error handling when a file does not upload
-        console.log('promises', filesToUpload);
-        console.log('statuses', uploadStatuses);
+        return postRequest(
+            `/api/polio/budgetfiles/`,
+            { event: newEvent.id },
+            filesData,
+        );
     }
     return newEvent;
 };

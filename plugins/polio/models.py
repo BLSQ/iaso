@@ -1,3 +1,4 @@
+from gc import is_finalized
 from uuid import uuid4
 
 from django.contrib.auth.models import User
@@ -512,6 +513,7 @@ class BudgetEvent(SoftDeletableModel):
     cc_emails = models.CharField(max_length=200, blank=True, null=True)
     comment = models.TextField(blank=True, null=True)
     links = models.TextField(blank=True, null=True)
+    is_finalized = models.BooleanField(default=False)
 
     def __str__(self):
         return str(self.campaign)

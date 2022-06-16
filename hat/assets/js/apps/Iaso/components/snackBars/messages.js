@@ -217,10 +217,6 @@ const MESSAGES = defineMessages({
         defaultMessage: 'Cannot find an instance with geolocation',
         id: 'iaso.instance.missingGeolocation',
     },
-    fetchPermissions: {
-        defaultMessage: 'An error occurred while fetching permissions list',
-        id: 'iaso.snackBar.fetchPermissions',
-    },
     saveUserSuccessful: {
         defaultMessage: 'User saved',
         id: 'iaso.snackBar.saveUserSuccessful',

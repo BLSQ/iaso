@@ -379,6 +379,7 @@ class OrgUnitViewSet(viewsets.ViewSet):
                     org_unit.reference_instance = instance
             else:
                 instance = None
+                org_unit.reference_instance = instance
 
         if "parent_id" in request.data:
             parent_id = request.data["parent_id"]

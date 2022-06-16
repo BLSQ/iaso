@@ -463,8 +463,6 @@ class CampaignSerializer(serializers.ModelSerializer):
 
 
 class SmallCampaignSerializer(CampaignSerializer):
-    latest_event = serializers.CharField(source="budgetevent.author")
-
     class Meta:
         model = Campaign
         fields = [
@@ -518,7 +516,6 @@ class SmallCampaignSerializer(CampaignSerializer):
             "top_level_org_unit_name",
             "top_level_org_unit_id",
             "is_preventive",
-            "latest_event",
         ]
         read_only_fields = fields
 

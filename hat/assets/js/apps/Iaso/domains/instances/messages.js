@@ -65,6 +65,10 @@ const MESSAGES = defineMessages({
         id: 'iaso.label.linkOrgUnitReferenceSubmission',
         defaultMessage: 'Link reference submission to org unit',
     },
+    linkOffOrgUnitReferenceSubmission: {
+        id: 'iaso.label.linkOffOrgUnitReferenceSubmission',
+        defaultMessage: 'Unlink reference submission from orgUnit',
+    },
     dhis2Mappings: {
         id: 'iaso.label.dhis2Mappings',
         defaultMessage: 'DHIS mappings',
@@ -393,6 +397,20 @@ const MESSAGES = defineMessages({
         id: 'iaso.restricted_submissions_by_orgunits',
         defaultMessage:
             'Your user can only see submissions for the following orgunits: ',
+    },
+    linkOrgUnitToInstanceReferenceWarning: {
+        id: 'iaso.instance.linkOrgUnitToInstanceReferenceWarning',
+        defaultMessage: 'This operation can still be undone',
+    },
+    linkOrgUnitToInstanceReferenceTitle: {
+        id: 'iaso.instance.dialog.linkOrgUnitToInstanceReferenceTitle',
+        defaultMessage:
+            'Are you sure you want to link this submission to the orgUnit as a reference one ?',
+    },
+    linkOffOrgUnitToInstanceReferenceTitle: {
+        id: 'iaso.instance.dialog.linkOffOrgUnitToInstanceReferenceTitle',
+        defaultMessage:
+            'Are you sure you want to unlink this reference submission from the orgUnit ?',
     },
 });
 

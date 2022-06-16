@@ -23,7 +23,11 @@ import AssignmentIndIcon from '@material-ui/icons/AssignmentInd';
 import OrgUnitSvg from '../components/svg/OrgUnitSvgComponent';
 import DHIS2Svg from '../components/svg/DHIS2SvgComponent';
 import * as paths from './routes';
-import { hasFeatureFlag, SHOW_PAGES, SHOW_DHIS2_LINK } from '../utils/featureFlags';
+import {
+    hasFeatureFlag,
+    SHOW_PAGES,
+    SHOW_DHIS2_LINK,
+} from '../utils/featureFlags';
 import { locationLimitMax } from '../domains/orgUnits/constants/orgUnitConstants';
 import { getChipColors } from './chipColors';
 
@@ -164,12 +168,6 @@ const menuItems = defaultSourceId => [
                 icon: props => <FormatListBulleted {...props} />,
             },
             {
-                label: MESSAGES.teams,
-                permissions: paths.teamsPath.permissions,
-                key: 'teams',
-                icon: props => <GroupIcon {...props} />,
-            },
-            {
                 label: MESSAGES.assignments,
                 permissions: paths.assignmentsPath.permissions,
                 key: 'assignments',
@@ -206,13 +204,22 @@ const menuItems = defaultSourceId => [
                 permissions: paths.usersPath.permissions,
                 icon: props => <SupervisorAccount {...props} />,
             },
+            {
+                label: MESSAGES.teams,
+                permissions: paths.teamsPath.permissions,
+                key: 'teams',
+                icon: props => <GroupIcon {...props} />,
+            },
         ],
     },
 ];
 
 const getMenuItems = (currentUser, enabledPlugins, defaultSourceVersion) => {
     const pluginsMenu = enabledPlugins.map(plugin => plugin.menu).flat();
-    const basicItems = [...menuItems(defaultSourceVersion?.source?.id)];
+    const allBasicItems = [...menuItems(defaultSourceVersion?.source?.id)];
+    // Find admin entry
+    const admin = allBasicItems.find(item => item.key === 'settings');
+    const basicItems = allBasicItems.filter(item => item.key !== 'settings');
 
     if (hasFeatureFlag(currentUser, SHOW_PAGES)) {
         basicItems.push({
@@ -222,15 +229,18 @@ const getMenuItems = (currentUser, enabledPlugins, defaultSourceVersion) => {
             permissions: paths.pagesPath.permissions,
         });
     }
-    if (hasFeatureFlag(currentUser, SHOW_DHIS2_LINK) && currentUser?.account?.default_version?.data_source.url) {
-      basicItems.push({
-        label: MESSAGES.dhis2,
-        key: "dhis2",
-        url: currentUser.account.default_version.data_source.url,
-        icon: props => <DHIS2Svg {...props} />,
-      });
+    if (
+        hasFeatureFlag(currentUser, SHOW_DHIS2_LINK) &&
+        currentUser?.account?.default_version?.data_source.url
+    ) {
+        basicItems.push({
+            label: MESSAGES.dhis2,
+            key: 'dhis2',
+            url: currentUser.account.default_version.data_source.url,
+            icon: props => <DHIS2Svg {...props} />,
+        });
     }
-    return [...basicItems, ...pluginsMenu];
+    return [...basicItems, ...pluginsMenu, admin];
 };
 
 export default getMenuItems;

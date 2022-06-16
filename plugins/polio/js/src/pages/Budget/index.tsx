@@ -22,7 +22,6 @@ import { convertObjectToString } from '../../utils';
 import MESSAGES from '../../constants/messages';
 import { BudgetFilters } from './BudgetFilters';
 import { PolioCreateEditDialog } from '../../components/CreateEditDialog';
-import { useGetBudgetDetails } from '../../hooks/useGetBudgetDetails';
 
 type Props = {
     router: any;
@@ -35,9 +34,6 @@ export const Budget: FunctionComponent<Props> = ({ router }) => {
     const [resetPageToOne, setResetPageToOne] = useState('');
     const [campaignDialogOpen, setCampaignDialogOpen] =
         useState<boolean>(false);
-    // TODO remove when backend sends status
-    const { data: budgetDetails, isFetching: isFetchingStatuses } =
-        useGetBudgetDetails();
 
     const apiParams = useCampaignParams({
         ...params,
@@ -46,7 +42,7 @@ export const Budget: FunctionComponent<Props> = ({ router }) => {
     });
 
     const { data: campaigns, isFetching } = useGetCampaigns(apiParams).query;
-    const columns = useBudgetColumns(budgetDetails);
+    const columns = useBudgetColumns();
 
     useSkipEffectOnMount(() => {
         const newParams = {
@@ -84,7 +80,7 @@ export const Budget: FunctionComponent<Props> = ({ router }) => {
                     baseUrl={BUDGET}
                     marginTop={false}
                     extraProps={{
-                        loading: isFetching || isFetchingStatuses,
+                        loading: isFetching,
                     }}
                     resetPageToOne={resetPageToOne}
                 />

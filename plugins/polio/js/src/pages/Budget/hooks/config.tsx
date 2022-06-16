@@ -12,14 +12,10 @@ import { Column } from '../../../../../../../hat/assets/js/apps/Iaso/types/table
 import { BUDGET_DETAILS } from '../../../constants/routes';
 import { DateTimeCellRfc } from '../../../../../../../hat/assets/js/apps/Iaso/components/Cells/DateTimeCell';
 import { BudgetFilesModal } from '../BudgetFilesModal';
-import { findBudgetStatus, sortBudgetEventByUpdate } from '../BudgetStatus';
 
 const baseUrl = BUDGET_DETAILS;
 
-export const useBudgetColumns = (
-    budgetEvents: any[],
-    showOnlyDeleted = false,
-): Column[] => {
+export const useBudgetColumns = (showOnlyDeleted = false): Column[] => {
     const { formatMessage } = useSafeIntl();
     return useMemo(() => {
         const cols = [
@@ -39,50 +35,38 @@ export const useBudgetColumns = (
             },
             {
                 Header: formatMessage(MESSAGES.status),
-                sortable: false,
-                accessor: 'general_status',
-                // TODO get the validation status from backend
+                sortable: true,
+                accessor: 'last_budget_event__status',
                 Cell: settings => {
-                    const campaignId = settings.row.original.id;
-                    const eventsForCampaign = budgetEvents?.filter(
-                        budgetEvent => {
-                            return budgetEvent.campaign === campaignId;
-                        },
-                    );
-                    const status = findBudgetStatus(eventsForCampaign);
-                    return formatMessage(MESSAGES[status]);
+                    const status =
+                        settings.row.original.last_budget_event?.status;
+                    if (status) {
+                        return formatMessage(MESSAGES[status]);
+                    }
+                    return formatMessage(MESSAGES.noBudgetSubmitted);
                 },
             },
             {
                 Header: formatMessage(MESSAGES.latestEvent),
-                sortable: false,
-                // TODO get the validation status from backend
+                sortable: true,
+                accessor: 'last_budget_event__type',
                 Cell: settings => {
-                    const campaignId = settings.row.original.id;
-                    const eventsForCampaign = budgetEvents?.filter(
-                        budgetEvent => budgetEvent.campaign === campaignId,
-                    );
-                    const latestEvent =
-                        sortBudgetEventByUpdate(eventsForCampaign)[0];
-                    if (latestEvent) {
-                        return formatMessage(MESSAGES[latestEvent.type]);
+                    const type = settings.row.original.last_budget_event?.type;
+                    if (type) {
+                        return formatMessage(MESSAGES[type]);
                     }
                     return '--';
                 },
             },
             {
                 Header: formatMessage(MESSAGES.latestEventDate),
-                sortable: false,
-                // TODO get the validation status from backend
+                sortable: true,
+                accessor: 'last_budget_event__created_at',
                 Cell: settings => {
-                    const campaignId = settings.row.original.id;
-                    const eventsForCampaign = budgetEvents?.filter(
-                        budgetEvent => budgetEvent.campaign === campaignId,
-                    );
-                    const latestEvent =
-                        sortBudgetEventByUpdate(eventsForCampaign)[0];
-                    if (latestEvent) {
-                        return moment(latestEvent.updated_at).format('LTS');
+                    const date =
+                        settings.row.original.last_budget_event?.created_at;
+                    if (date) {
+                        return moment(date).format('LTS');
                     }
                     return '--';
                 },
@@ -135,7 +119,7 @@ export const useBudgetColumns = (
         //     });
         // }
         return cols;
-    }, [budgetEvents, formatMessage, showOnlyDeleted]);
+    }, [formatMessage, showOnlyDeleted]);
 };
 
 export const useBudgetDetailsColumns = ({ teams, profiles }): Column[] => {

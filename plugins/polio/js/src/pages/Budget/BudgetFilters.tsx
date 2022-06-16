@@ -10,7 +10,7 @@ import { useFilterState } from '../../../../../../hat/assets/js/apps/Iaso/hooks/
 import MESSAGES from '../../constants/messages';
 import { BUDGET } from '../../constants/routes';
 import { UrlParams } from '../../../../../../hat/assets/js/apps/Iaso/types/table';
-import { CampaignStatus } from '../../constants/types';
+import { BudgetStatus } from '../../constants/types';
 import { BUDGET_STATUSES } from '../../constants/statuses';
 
 type Props = {
@@ -21,7 +21,8 @@ type Props = {
         r1StartFrom: string;
         country: any;
         campaign: string;
-        status: CampaignStatus;
+        // eslint-disable-next-line camelcase
+        last_budget_event__status: BudgetStatus;
     };
 };
 
@@ -67,9 +68,9 @@ export const BudgetFilters: FunctionComponent<Props> = ({ params }) => {
                         <InputComponent
                             type="select"
                             multi={false}
-                            keyValue="status"
+                            keyValue="last_budget_event__status"
                             onChange={handleChange}
-                            value={filters.status}
+                            value={filters.last_budget_event__status}
                             options={statusOptions(formatMessage)}
                             label={MESSAGES.status}
                         />

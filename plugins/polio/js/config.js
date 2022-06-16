@@ -231,7 +231,7 @@ const routes = [
             },
             {
                 isRequired: false,
-                key: 'general_status',
+                key: 'last_budget_event__status',
             },
             {
                 isRequired: false,

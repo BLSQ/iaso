@@ -106,8 +106,12 @@ class CampaignViewSet(ModelViewSet):
         "round_two__started_at",
         "vacine",
         "country__name",
+        "last_budget_event__created_at",
+        "last_budget_event__type",
+        "last_budget_event__status",
     ]
     filterset_fields = {
+        "last_budget_event__status": ["exact"],
         "country__name": ["exact"],
         "country__id": ["in"],
         "grouped_campaigns__id": ["in", "exact"],

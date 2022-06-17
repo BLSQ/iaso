@@ -214,6 +214,7 @@
     "iaso.polio.label.regular": "Regular",
     "iaso.polio.label.rejected": "Rejected",
     "iaso.polio.label.reportingDistricts": "Reporting districts",
+    "iaso.polio.label.resendFiles": "Retry sending files",
     "iaso.polio.label.responsible": "Responsible",
     "iaso.polio.label.restoreWarning": "Are you sure you want to restore this campaign?",
     "iaso.polio.label.reviewedByRrt": "Reviewed by RRT",

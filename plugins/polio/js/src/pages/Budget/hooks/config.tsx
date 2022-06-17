@@ -12,6 +12,7 @@ import { Column } from '../../../../../../../hat/assets/js/apps/Iaso/types/table
 import { BUDGET_DETAILS } from '../../../constants/routes';
 import { DateTimeCellRfc } from '../../../../../../../hat/assets/js/apps/Iaso/components/Cells/DateTimeCell';
 import { BudgetFilesModal } from '../BudgetFilesModal';
+import { CreateEditBudgetEvent } from '../CreateEditBudgetEvent';
 
 const baseUrl = BUDGET_DETAILS;
 
@@ -194,15 +195,22 @@ export const useBudgetDetailsColumns = ({ teams, profiles }): Column[] => {
                         .map(team => team.name)
                         .join(', ');
                     return (
-                        <BudgetFilesModal
-                            eventId={settings.row.original.id}
-                            note={settings.row.original.comment}
-                            date={settings.row.original.created_at}
-                            type={settings.row.original.type}
-                            links={settings.row.original.links}
-                            author={authorName}
-                            recipients={teamNames}
-                        />
+                        <section>
+                            <BudgetFilesModal
+                                eventId={settings.row.original.id}
+                                note={settings.row.original.comment}
+                                date={settings.row.original.created_at}
+                                type={settings.row.original.type}
+                                links={settings.row.original.links}
+                                author={authorName}
+                                recipients={teamNames}
+                            />
+                            <CreateEditBudgetEvent
+                                campaignId={settings.row.original.campaign}
+                                type="edit"
+                                budgetEvent={settings.row.original}
+                            />
+                        </section>
                     );
                 },
             },

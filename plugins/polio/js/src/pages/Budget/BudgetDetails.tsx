@@ -24,11 +24,12 @@ import { useGetTeams } from '../../hooks/useGetTeams';
 import { useGetProfiles } from '../../components/CountryNotificationsConfig/requests';
 import { GraphTitle } from '../../components/LQAS-IM/GraphTitle';
 import { BudgetStatus, findBudgetStatus } from './BudgetStatus';
-import { CreateBudgetEvent } from './CreateBudgetEvent';
+import { CreateEditBudgetEvent } from './CreateEditBudgetEvent';
 import { redirectToReplace } from '../../../../../../hat/assets/js/apps/Iaso/routing/actions';
 import { MapComponent } from '../../components/MapComponent/MapComponent';
 import { useGetGeoJson } from '../../hooks/useGetGeoJson';
 import { useGetCampaignScope } from '../../hooks/useGetCampaignScope';
+import { useCurrentUser } from '../../../../../../hat/assets/js/apps/Iaso/utils/usersUtils';
 
 type Props = {
     router: any;
@@ -62,12 +63,14 @@ export const BudgetDetails: FunctionComponent<Props> = ({ router }) => {
     // @ts-ignore
     const prevPathname = useSelector(state => state.routerCustom.prevPathname);
     const dispatch = useDispatch();
+    const { user_id: userId } = useCurrentUser();
 
-    const { data: budgetDetails, isFetching } = useGetBudgetDetails({
+    const { data: budgetDetails, isFetching } = useGetBudgetDetails(userId, {
         ...apiParams,
         campaign_id: campaignId,
         order: apiParams.order ?? '-created_at',
     });
+
     const { data: allBudgetDetails, isFetching: isFetchingAll } =
         useGetAllBudgetDetails(campaignId);
 
@@ -145,7 +148,9 @@ export const BudgetDetails: FunctionComponent<Props> = ({ router }) => {
                         </Grid>
                         {budgetStatus !== 'validated' && (
                             <Grid>
-                                <CreateBudgetEvent campaignId={campaignId} />
+                                <CreateEditBudgetEvent
+                                    campaignId={campaignId}
+                                />
                             </Grid>
                         )}
                     </Grid>

@@ -69,6 +69,7 @@ export const useSnackMutation = <
               'mutationFn'
           >
         | undefined = {},
+    showSucessSnackBar = true,
 ): UseMutationResult<Data, Error, Variables, Context> => {
     const dispatch = useDispatch();
     const queryClient = useQueryClient();
@@ -88,7 +89,7 @@ export const useSnackMutation = <
             return undefined;
         },
         onSuccess: (data, variables, context) => {
-            if (snackSuccessMessage) {
+            if (snackSuccessMessage && showSucessSnackBar) {
                 dispatch(
                     enqueueSnackbar(
                         succesfullSnackBar(undefined, snackSuccessMessage),

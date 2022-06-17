@@ -75,7 +75,7 @@ class BudgetEventSerializer(serializers.ModelSerializer):
     class Meta:
         model = BudgetEvent
         fields = "__all__"
-        read_only_fields = ["created_at", "updated_at", "author", "deleted_at"]
+        read_only_fields = ["created_at", "updated_at", "author"]
         ordering = ["type", "status", "updated_at"]
 
     def validate(self, attrs):

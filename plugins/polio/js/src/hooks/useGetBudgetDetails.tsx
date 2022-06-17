@@ -6,7 +6,10 @@ import { UrlParams } from '../../../../../hat/assets/js/apps/Iaso/types/table';
 
 const endpoint = '/api/polio/budgetevent';
 
-type Params = Partial<UrlParams> & { campaign_id: string };
+type Params = Partial<UrlParams> & {
+    campaign_id: string;
+    show_deleted: boolean;
+};
 
 const getBudgetDetails = async (params?: Params) => {
     if (params) {

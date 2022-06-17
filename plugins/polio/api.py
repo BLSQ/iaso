@@ -1466,34 +1466,52 @@ This is an automated email from %s
 
     def perform_create(self, serializer):
         event = serializer.save(author=self.request.user)
-        recipients = set()
-        for team in event.target_teams.all():
-            for user in team.users.all():
-                if user.email:
-                    recipients.add(user)
+        event.save()
 
-        link_to_send = "https://%s/dashboard/polio/budget/details/campaignId/%s/campaignName/%s/country/%d" % (
-            settings.DNS_DOMAIN,
-            event.campaign.id,
-            event.campaign.obr_name,
-            event.campaign.country.id,
-        )
+        serializer = BudgetEventSerializer(event, many=False)
+        return Response(serializer.data)
 
-        for user in recipients:
-            send_mail(
-                self.email_title_template.format(event.type, event.campaign.obr_name),
-                self.email_template
-                % (
-                    event.type,
-                    event.author.first_name,
-                    event.author.last_name,
-                    event.comment,
-                    _generate_auto_authentication_link(link_to_send, user),
-                    settings.DNS_DOMAIN,
-                ),
-                "no-reply@%s" % settings.DNS_DOMAIN,
-                [user.email],
+    @action(detail=True, methods=['put'])
+    def confirm_budget(self, request, event):
+        event = BudgetEvent.objects.get(pk=event)
+        event.is_finalized = True if request.GET.get["is_finalized", None] == "true" else False
+        event.save()
+
+        if event.is_finalized and not event.is_email_sent:
+            recipients = set()
+            for team in event.target_teams.all():
+                for user in team.users.all():
+                    if user.email:
+                        recipients.add(user)
+
+            link_to_send = "https://%s/dashboard/polio/budget/details/campaignId/%s/campaignName/%s/country/%d" % (
+                settings.DNS_DOMAIN,
+                event.campaign.id,
+                event.campaign.obr_name,
+                event.campaign.country.id,
             )
+
+            for user in recipients:
+                send_mail(
+                    self.email_title_template.format(event.type, event.campaign.obr_name),
+                    self.email_template
+                    % (
+                        event.type,
+                        event.author.first_name,
+                        event.author.last_name,
+                        event.comment,
+                        _generate_auto_authentication_link(link_to_send, user),
+                        settings.DNS_DOMAIN,
+                    ),
+                    "no-reply@%s" % settings.DNS_DOMAIN,
+                    [user.email],
+                )
+            event.is_email_sent = True
+            event.save()
+        serializer = BudgetEventSerializer(event, many=False)
+        return Response(serializer.data)
+
+
 
 
 class BudgetFilesViewset(ModelViewSet):

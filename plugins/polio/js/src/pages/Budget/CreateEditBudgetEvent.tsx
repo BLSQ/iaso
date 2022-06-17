@@ -10,20 +10,24 @@ import MESSAGES from '../../constants/messages';
 import InputComponent from '../../../../../../hat/assets/js/apps/Iaso/components/forms/InputComponent';
 import { useCurrentUser } from '../../../../../../hat/assets/js/apps/Iaso/utils/usersUtils';
 import { commaSeparatedIdsToArray } from '../../../../../../hat/assets/js/apps/Iaso/utils/forms';
-import { useSaveBudgetEvent } from '../../hooks/useSaveBudgetEvent';
+import {
+    useFinalizeBudgetEvent,
+    useSaveBudgetEvent,
+    useUploadBudgetFiles,
+} from '../../hooks/useSaveBudgetEvent';
 import FileInputComponent from '../../../../../../hat/assets/js/apps/Iaso/components/forms/FileInputComponent';
 import { useBudgetEvenValidation } from './hooks/validation';
 
 type Props = {
     campaignId: string;
     // eslint-disable-next-line react/require-default-props
-    type?: 'create' | 'edit';
+    type?: 'create' | 'edit' | 'retry';
     // eslint-disable-next-line react/require-default-props
     budgetEvent?: any;
 };
 
 const renderTrigger =
-    (type: 'create' | 'edit' = 'create') =>
+    (type: 'create' | 'edit' | 'retry' = 'create') =>
     ({ openDialog }) => {
         if (type === 'edit') {
             return (
@@ -50,9 +54,15 @@ export const CreateEditBudgetEvent: FunctionComponent<Props> = ({
 }) => {
     const { data: teamsDropdown, isFetching: isFetchingTeams } =
         useGetTeamsOptions();
+    const [currentType, setCurrentType] = useState<'create' | 'edit' | 'retry'>(
+        type,
+    );
+    console.log('currentType', currentType);
     const currentUser = useCurrentUser();
     const { formatMessage } = useSafeIntl();
     const { mutateAsync: saveBudgetEvent } = useSaveBudgetEvent(type);
+    const { mutateAsync: uploadFiles } = useUploadBudgetFiles();
+    const { mutateAsync: finalize } = useFinalizeBudgetEvent();
     const [closeModal, setCloseModal] = useState<any>();
     const validationSchema = useBudgetEvenValidation();
 
@@ -73,10 +83,72 @@ export const CreateEditBudgetEvent: FunctionComponent<Props> = ({
         validationSchema,
         onSubmit: values =>
             saveBudgetEvent(values, {
-                onSuccess: () => {
-                    closeModal.closeDialog();
-                    resetForm();
+                onSuccess: (result: any) => {
+                    if (type === 'create' || type === 'retry') {
+                        if (values.files) {
+                            uploadFiles(
+                                { ...values, id: result.id },
+                                {
+                                    onSuccess: () => {
+                                        finalize(result.id, {
+                                            onSuccess: () => {
+                                                closeModal.closeDialog();
+                                                resetForm();
+                                            },
+                                            onError: () =>
+                                                setCurrentType(value => {
+                                                    if (value === 'create')
+                                                        return 'retry';
+                                                    return value;
+                                                }),
+                                        });
+                                    },
+                                    onError: () => setCurrentType('retry'),
+                                },
+                            );
+                        } else {
+                            finalize(result.id, {
+                                onSuccess: () => {
+                                    closeModal.closeDialog();
+                                    resetForm();
+                                },
+                                onError: () =>
+                                    setCurrentType(value => {
+                                        if (value === 'create') return 'retry';
+                                        return value;
+                                    }),
+                            });
+                        }
+                    }
+                    if (type === 'edit') {
+                        uploadFiles(
+                            { ...values, id: result.id },
+                            {
+                                onSuccess: () => {
+                                    finalize(result.id, {
+                                        onSuccess: () => {
+                                            closeModal.closeDialog();
+                                            resetForm();
+                                        },
+                                        onError: () =>
+                                            setCurrentType(value => {
+                                                if (value === 'create')
+                                                    return 'retry';
+                                                return value;
+                                            }),
+                                    });
+                                },
+                            },
+                        );
+                    }
+                    // closeModal.closeDialog();
+                    // resetForm();
                 },
+                onError: () =>
+                    setCurrentType(value => {
+                        if (value === 'create') return 'retry';
+                        return value;
+                    }),
             }),
     });
     const {
@@ -103,7 +175,9 @@ export const CreateEditBudgetEvent: FunctionComponent<Props> = ({
         [errors, touched],
     );
     const titleMessage =
-        type === 'create' ? MESSAGES.newBudgetStep : MESSAGES.resendFiles;
+        currentType === 'create'
+            ? MESSAGES.newBudgetStep
+            : MESSAGES.resendFiles;
     return (
         <FormikProvider value={formik}>
             {/* @ts-ignore */}
@@ -123,14 +197,14 @@ export const CreateEditBudgetEvent: FunctionComponent<Props> = ({
                 confirmMessage={MESSAGES.send}
                 renderTrigger={renderTrigger(type)}
             >
-                {type === 'create' && (
+                {(currentType === 'create' || currentType === 'retry') && (
                     <>
                         <InputComponent
                             type="select"
                             required
                             keyValue="target_teams"
                             multi
-                            disabled={type === 'edit'}
+                            disabled={currentType !== 'create'}
                             onChange={(keyValue, value) => {
                                 onChange(
                                     keyValue,
@@ -147,7 +221,7 @@ export const CreateEditBudgetEvent: FunctionComponent<Props> = ({
                         <InputComponent
                             type="select"
                             required
-                            disabled={type === 'edit'}
+                            disabled={currentType !== 'create'}
                             keyValue="type"
                             onChange={(keyValue, value) => {
                                 if (value === 'validation') {
@@ -178,7 +252,7 @@ export const CreateEditBudgetEvent: FunctionComponent<Props> = ({
                             type="text"
                             keyValue="comment"
                             multiline
-                            disabled={type === 'edit'}
+                            disabled={currentType !== 'create'}
                             onChange={onChange}
                             value={values.comment}
                             errors={getErrors('comment')}
@@ -189,7 +263,7 @@ export const CreateEditBudgetEvent: FunctionComponent<Props> = ({
                 <Box mt={2}>
                     <FileInputComponent
                         keyValue="files"
-                        required={type === 'edit'}
+                        required={currentType === 'edit'}
                         multiple
                         onChange={onChange}
                         value={values.files}
@@ -197,12 +271,12 @@ export const CreateEditBudgetEvent: FunctionComponent<Props> = ({
                         label={MESSAGES.filesUpload}
                     />
                 </Box>
-                {type === 'create' && (
+                {(currentType === 'create' || currentType === 'retry') && (
                     <InputComponent
                         type="text"
                         keyValue="links"
                         multiline
-                        disabled={type === 'edit'}
+                        disabled={currentType !== 'create'}
                         onChange={onChange}
                         value={values.links}
                         errors={getErrors('links')}

@@ -1471,7 +1471,7 @@ This is an automated email from %s
         serializer = BudgetEventSerializer(event, many=False)
         return Response(serializer.data)
 
-    @action(detail=True, methods=['put'])
+    # @action(detail=True, methods=['put'])
     def confirm_budget(self, request, event):
         event = BudgetEvent.objects.get(pk=event)
         event.is_finalized = True if request.GET.get["is_finalized", None] == "true" else False

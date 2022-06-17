@@ -219,5 +219,8 @@ describe('history tab', () => {
         });
     });
 
-    describe('Changes', () => {});
+    // TO DO
+    // - test past value and next value are the good ones in LogCompareComponent
+    // - test actions in LogCompareComponent
+    describe.skip('Changes', () => {});
 });

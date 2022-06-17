@@ -7,6 +7,7 @@ import {
 } from '../../../../../hat/assets/js/apps/Iaso/libs/Api';
 import { useSnackMutation } from '../../../../../hat/assets/js/apps/Iaso/libs/apiHooks';
 import { BudgetEventType } from '../constants/types';
+import MESSAGES from '../constants/messages';
 
 type QueryData = {
     id?: number;
@@ -18,64 +19,16 @@ type QueryData = {
     files: FileList;
 };
 const createEvent = async (data: QueryData) => {
-    const { _files, ...body } = data;
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const { files, ...body } = data;
     // create new budget event
     return postRequest(`/api/polio/budgetevent/`, body);
 };
 const patchEvent = async (data: QueryData) => {
-    const { _files, ...body } = data;
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const { files, ...body } = data;
     // create new budget event
     return patchRequest(`/api/polio/budgetevent/${data.id}`, body);
-};
-
-const postBudgetEvent = async (data: QueryData) => {
-    const { files, ...body } = data;
-    // create new budget event
-    const newEvent = await postRequest(`/api/polio/budgetevent/`, body);
-
-    if (files) {
-        const filesData = {};
-        Array.from(files).forEach((file: File) => {
-            filesData[file.name] = file;
-        });
-        // sending files if any
-        await postRequest(
-            `/api/polio/budgetfiles/`,
-            { event: newEvent.id },
-            filesData,
-        );
-    }
-    // when event is created and files sent, finalize event so it can be shown
-    return putRequest(`api/polio/budgetevent/confirm_budget/${newEvent.id}`, {
-        is_finalized: true,
-    });
-};
-
-const pachBudgetEvent = async (data: QueryData) => {
-    if (!data.id) throw new Error('Budget event id required');
-    const { files, ...body } = data;
-    // create new budget event
-    const newEvent = await patchRequest(
-        `/api/polio/budgetevent/${data.id}`,
-        body,
-    );
-
-    if (files) {
-        const filesData = {};
-        Array.from(files).forEach((file: File) => {
-            filesData[file.name] = file;
-        });
-        // sending files if any
-        await patchRequest(
-            `/api/polio/budgetfiles/`,
-            { event: data.id },
-            filesData,
-        );
-    }
-    // when event is created and files sent, finalize event so it can be shown
-    return putRequest(`/api/polio/budgetevent/confirm_budget/${newEvent.id}`, {
-        is_finalized: true,
-    });
 };
 
 const postEventFiles = async (data: QueryData) => {
@@ -91,20 +44,19 @@ const postEventFiles = async (data: QueryData) => {
         { event: data.id },
         filesData,
     );
-    // return putRequest(`api/polio/budgetevent/confirm_budget/${data.id}`, {
-    //     is_finalized: true,
-    // });
 };
 
-const putBudgetFinalisation = async (id: number) =>
-    putRequest(`/api/polio/budgetevent/confirm_budget/${id}`, {
+const putBudgetFinalisation = async (id: number) => {
+    return putRequest(`/api/polio/budgetevent/confirm_budget/`, {
         is_finalized: true,
+        event: id,
     });
+};
 
 export const useCreateBudgetEvent = () =>
     useSnackMutation(
         createEvent,
-        undefined,
+        MESSAGES.budgetEventCreated,
         undefined,
         ['budget-details'],
         undefined,
@@ -114,7 +66,7 @@ export const useCreateBudgetEvent = () =>
 export const useUpdateBudgetEvent = () =>
     useSnackMutation(
         patchEvent,
-        undefined,
+        MESSAGES.budgetEventCreated,
         undefined,
         ['budget-details'],
         undefined,
@@ -122,28 +74,19 @@ export const useUpdateBudgetEvent = () =>
     );
 
 export const useUploadBudgetFiles = () =>
-    useSnackMutation(postEventFiles, undefined, undefined, ['budget-details']);
-
-export const useFinalizeBudgetEvent = () =>
-    useSnackMutation(putBudgetFinalisation, undefined, undefined, [
+    useSnackMutation(postEventFiles, MESSAGES.budgetFilesUploaded, undefined, [
         'budget-details',
     ]);
-// export const useSaveBudgetEvent = (
-//     type: 'create' | 'edit' | 'retry',
-// ): UseMutationResult => {
-//     const createBudgetEvent = useSnackMutation(
-//         postBudgetEvent,
-//         undefined,
-//         undefined,
-//         ['budget-details'],
-//     );
 
-//     const uploadFiles = useSnackMutation(postEventFiles, undefined, undefined, [
-//         'budget-details',
-//     ]);
+export const useFinalizeBudgetEvent = () =>
+    useSnackMutation(
+        putBudgetFinalisation,
+        MESSAGES.budgetEventFinalized,
+        undefined,
+        ['budget-details'],
+        undefined,
+    );
 
-//     return type === 'create' ? createBudgetEvent : uploadFiles;
-// };
 export const useSaveBudgetEvent = (
     type: 'create' | 'edit' | 'retry',
 ): UseMutationResult => {

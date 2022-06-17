@@ -118,7 +118,10 @@
     "iaso.polio.label.all": "All",
     "iaso.polio.label.approved": "Approved",
     "iaso.polio.label.author": "Author",
+    "iaso.polio.label.budgetEventCreated": "New budget step created",
+    "iaso.polio.label.budgetEventFinalized": "Budget event finalized",
     "iaso.polio.label.budgetFiles": "{type} sent by {author} to {recipients} on {date}",
+    "iaso.polio.label.budgetFilesUploaded": "Budget files uploaded",
     "iaso.polio.label.calendar.fastNext": "Next 4 weeks",
     "iaso.polio.label.calendar.fastPrevious": "Previous 4 weeks",
     "iaso.polio.label.calendar.next": "Next week",
@@ -281,6 +284,7 @@
     "iaso.polio.title.roundOne": "Round 1",
     "iaso.polio.title.roundTwo": "Round 2",
     "iaso.polio.title.scope": "Scope",
+    "iaso.polio.title.tryUpdateStep": "Resend data?",
     "iaso.polio.tooltip.label.lqasImDate": "No date found in campaign data, using default value based on round date",
     "iaso.polio.vaccine": "Vaccine",
     "iaso.polio.vaccines": "Vaccines"

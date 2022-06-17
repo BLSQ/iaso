@@ -1229,6 +1229,22 @@ const MESSAGES = defineMessages({
         defaultMessage: 'No budget submitted',
         id: 'iaso.polio.label.noBudgetSubmitted',
     },
+    budgetEventCreated: {
+        defaultMessage: 'New budget step created',
+        id: 'iaso.polio.label.budgetEventCreated',
+    },
+    tryUpdateStep: {
+        defaultMessage: 'Resend budget data?',
+        id: 'iaso.polio.title.tryUpdateStep',
+    },
+    budgetFilesUploaded: {
+        defaultMessage: 'Budget files uploaded',
+        id: 'iaso.polio.label.budgetFilesUploaded',
+    },
+    budgetEventFinalized: {
+        defaultMessage: 'Budget event finalized',
+        id: 'iaso.polio.label.budgetEventFinalized',
+    },
     requiredField: {
         id: 'iaso.forms.error.fieldRequired',
         defaultMessage: 'This field is required',

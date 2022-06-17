@@ -13,6 +13,7 @@ import { BUDGET_DETAILS } from '../../../constants/routes';
 import { DateTimeCellRfc } from '../../../../../../../hat/assets/js/apps/Iaso/components/Cells/DateTimeCell';
 import { BudgetFilesModal } from '../BudgetFilesModal';
 import { CreateEditBudgetEvent } from '../CreateEditBudgetEvent';
+import { useCurrentUser } from '../../../../../../../hat/assets/js/apps/Iaso/utils/usersUtils';
 
 const baseUrl = BUDGET_DETAILS;
 
@@ -125,6 +126,7 @@ export const useBudgetColumns = (showOnlyDeleted = false): Column[] => {
 
 export const useBudgetDetailsColumns = ({ teams, profiles }): Column[] => {
     const { formatMessage } = useSafeIntl();
+    const currentUser = useCurrentUser();
     return useMemo(() => {
         return [
             {
@@ -205,11 +207,17 @@ export const useBudgetDetailsColumns = ({ teams, profiles }): Column[] => {
                                 author={authorName}
                                 recipients={teamNames}
                             />
-                            <CreateEditBudgetEvent
-                                campaignId={settings.row.original.campaign}
-                                type="edit"
-                                budgetEvent={settings.row.original}
-                            />
+                            {!settings.row.original.is_finalized &&
+                                settings.row.original.author ===
+                                    currentUser.user_id && (
+                                    <CreateEditBudgetEvent
+                                        campaignId={
+                                            settings.row.original.campaign
+                                        }
+                                        type="edit"
+                                        budgetEvent={settings.row.original}
+                                    />
+                                )}
                         </section>
                     );
                 },

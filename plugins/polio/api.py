@@ -1548,19 +1548,20 @@ class BudgetFilesViewset(ModelViewSet):
             budget_file.save()
 
         if event.type == "validation":
-            val_team = event.target_teams.get(name="Validation Team")
+            val_team = event.target_teams.get(name="Validation team")
             is_validated = False
             if request.user in val_team:
                 for user in val_team:
                     try:
+                        print(user)
                         BudgetEvent.objects.get(author=user, campaign=event.campaign, type="validation")
                         is_validated = True
                     except ObjectDoesNotExist:
                         is_validated = False
-
             if is_validated:
-                event.status = "validation_ongoing"
+                event.status = "validated"
                 event.save()
+                print(event, event.status)
 
         files = BudgetFiles.objects.filter(event__author__iaso_profile__account=self.request.user.iaso_profile.account)
         serializer = BudgetFilesSerializer(files, many=True)

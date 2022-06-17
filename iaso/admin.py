@@ -1,7 +1,6 @@
 import json
 
 from django.contrib.admin import widgets
-from django.contrib.auth.models import User
 from django.contrib.gis import admin, forms
 from django.db import models
 from django.contrib.gis.db import models as geomodels
@@ -231,17 +230,11 @@ class ExportStatusAdmin(admin.GeoModelAdmin):
     def http_requests(self, instance):
         # Write a get-method for a list of module names in the class Profile
         # return HTML string which will be display in the form
-        return (
-            format_html_join(
-                mark_safe("<br/><br/>"),
-                "{} http status: {} url : {} <br/> <ul> <li>sent <pre>{}</pre> </li><li>received <pre>{}</pre></li></ul>",
-                (
-                    (line.id, line.http_status, line.url, line.sent, line.received)
-                    for line in instance.export_logs.all()
-                ),
-            )
-            or mark_safe("<span>no logs available.</span>")
-        )
+        return format_html_join(
+            mark_safe("<br/><br/>"),
+            "{} http status: {} url : {} <br/> <ul> <li>sent <pre>{}</pre> </li><li>received <pre>{}</pre></li></ul>",
+            ((line.id, line.http_status, line.url, line.sent, line.received) for line in instance.export_logs.all()),
+        ) or mark_safe("<span>no logs available.</span>")
 
 
 class TaskAdmin(admin.ModelAdmin):

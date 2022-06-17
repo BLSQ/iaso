@@ -1,27 +1,27 @@
-import random
 import operator
-import typing
+import random
 import re
+import typing
 from copy import copy
-from urllib.request import urlopen
 from functools import reduce
-from django.db import models, transaction
-from django.core.paginator import Paginator
-from django.contrib.gis.db.models.fields import PointField
-from django.contrib.postgres.aggregates import ArrayAgg
+from logging import getLogger
+from urllib.request import urlopen
+
 from django.contrib.auth.models import User
+from django.contrib.gis.db.models.fields import PointField
 from django.contrib.gis.geos import Point
+from django.contrib.postgres.aggregates import ArrayAgg
+from django.core.paginator import Paginator
+from django.db import models, transaction
+from django.db.models import Q
 from django.shortcuts import get_object_or_404
+from django.utils import timezone
 from django.utils.translation import ugettext_lazy as _
+
 from hat.audit.models import log_modification, INSTANCE_API
 from iaso.utils import flat_parse_xml_soup, as_soup, extract_form_version_id
-from django.db.models import Q
-from django.utils import timezone
-
 from .device import DeviceOwnership, Device
 from .forms import Form, FormVersion
-
-from logging import getLogger
 
 logger = getLogger(__name__)
 

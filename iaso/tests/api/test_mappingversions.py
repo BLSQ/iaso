@@ -1,6 +1,4 @@
-import typing
 import tempfile
-from django.test import tag
 from django.core.files import File
 from django.test import override_settings
 from unittest import mock

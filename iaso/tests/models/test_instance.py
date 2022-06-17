@@ -2,12 +2,9 @@ from hat.audit.models import Modification, INSTANCE_API
 from django.core.files import File
 from iaso.test import TestCase
 from django.utils.timezone import now
-from django.test import tag
 from django.core.files.uploadedfile import UploadedFile
 from iaso import models as m
 from iaso.odk import parsing
-
-import json
 
 
 class InstanceModelTestCase(TestCase):

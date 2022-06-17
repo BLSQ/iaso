@@ -1,7 +1,5 @@
-from uuid import uuid4
 from django.db import models
 import uuid
-from django.conf import settings
 
 
 ## Remove blank=True, null=True on FK once the modles are sets and validated

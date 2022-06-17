@@ -33,3 +33,14 @@ export const useGetTeams = (): UseQueryResult<
         },
     });
 };
+
+export const useGetValidationTeam = (): UseQueryResult<any, Error> => {
+    const queryKey: any[] = ['teams', 'validation team'];
+    // @ts-ignore
+    return useSnackQuery(queryKey, () => getTeams(), undefined, {
+        select: data => {
+            if (!data) return [];
+            return data.find(team => team.name === 'Validation team');
+        },
+    });
+};

@@ -36,14 +36,12 @@ export const sortBudgetEventByUpdate = budgetEvents => {
 
 export const findBudgetStatus = budgetEvents => {
     if (!budgetEvents) return 'noBudgetSubmitted';
-    const validated = budgetEvents.find(
-        budgetEvent => budgetEvent.type === 'validation',
-    );
-    if (validated) return 'validated';
-    const submitted = sortBudgetEventByUpdate(budgetEvents).filter(
-        event => event.type === 'submission',
-    );
-    if (submitted.length > 0) return 'validation_ongoing';
+    if (budgetEvents.length > 0) {
+        const orderedEvents = budgetEvents.sort((a, b) => {
+            return moment(a.updated_at).isBefore(moment(b.updated_at));
+        });
+        return orderedEvents[0].status;
+    }
     return 'noBudgetSubmitted';
 };
 

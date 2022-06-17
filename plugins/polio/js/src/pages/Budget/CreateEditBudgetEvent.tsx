@@ -10,7 +10,10 @@ import { isEqual } from 'lodash';
 import { AddButton, useSafeIntl, IconButton } from 'bluesquare-components';
 import { Box } from '@material-ui/core';
 import ConfirmCancelDialogComponent from '../../../../../../hat/assets/js/apps/Iaso/components/dialogs/ConfirmCancelDialogComponent';
-import { useGetTeams as useGetTeamsOptions } from '../../../../../../hat/assets/js/apps/Iaso/domains/plannings/hooks/requests/useGetTeams';
+import {
+    useGetTeams as useGetTeamsOptions,
+    useGetValidationTeam,
+} from '../../../../../../hat/assets/js/apps/Iaso/domains/plannings/hooks/requests/useGetTeams';
 import MESSAGES from '../../constants/messages';
 import InputComponent from '../../../../../../hat/assets/js/apps/Iaso/components/forms/InputComponent';
 import { useCurrentUser } from '../../../../../../hat/assets/js/apps/Iaso/utils/usersUtils';
@@ -61,6 +64,29 @@ const getTitleMessage = (type: 'create' | 'edit' | 'retry') => {
     );
 };
 
+const makeEventsDropdown = (user, validationTeam, formatMessage) => {
+    const baseOptions = [
+        {
+            value: 'submission',
+            label: formatMessage(MESSAGES.submission),
+        },
+        {
+            value: 'comments',
+            label: formatMessage(MESSAGES.comments),
+        },
+    ];
+    if (validationTeam?.users.includes(user.user_id)) {
+        return [
+            ...baseOptions,
+            {
+                value: 'validation',
+                label: formatMessage(MESSAGES.validation),
+            },
+        ];
+    }
+    return baseOptions;
+};
+
 export const CreateEditBudgetEvent: FunctionComponent<Props> = ({
     campaignId,
     budgetEvent,
@@ -68,6 +94,8 @@ export const CreateEditBudgetEvent: FunctionComponent<Props> = ({
 }) => {
     const { data: teamsDropdown, isFetching: isFetchingTeams } =
         useGetTeamsOptions();
+    const { data: validationTeam } = useGetValidationTeam();
+    const user = useCurrentUser();
     const [currentType, setCurrentType] = useState<'create' | 'edit' | 'retry'>(
         type,
     );
@@ -183,6 +211,11 @@ export const CreateEditBudgetEvent: FunctionComponent<Props> = ({
         [currentType],
     );
 
+    const eventOptions = useMemo(
+        () => makeEventsDropdown(user, validationTeam, formatMessage),
+        [formatMessage, user, validationTeam],
+    );
+
     return (
         <FormikProvider value={formik}>
             {/* @ts-ignore */}
@@ -237,20 +270,7 @@ export const CreateEditBudgetEvent: FunctionComponent<Props> = ({
                             value={values.type}
                             errors={getErrors('type')}
                             label={MESSAGES.eventType}
-                            options={[
-                                {
-                                    value: 'submission',
-                                    label: formatMessage(MESSAGES.submission),
-                                },
-                                {
-                                    value: 'comments',
-                                    label: formatMessage(MESSAGES.comments),
-                                },
-                                {
-                                    value: 'validation',
-                                    label: formatMessage(MESSAGES.validation),
-                                },
-                            ]}
+                            options={eventOptions}
                         />
 
                         <InputComponent

@@ -1468,7 +1468,8 @@ This is an automated email from %s
     def perform_create(self, serializer):
         event = serializer.save(author=self.request.user)
         event.save()
-
+        print("????")
+        print(event.type)
         if event.type == "validation":
             val_team = event.target_teams.get(name="Validation team")
             print(val_team.users)
@@ -1480,7 +1481,7 @@ This is an automated email from %s
                         for user in team.users.all():
                             try:
                                 print(user)
-                                BudgetEvent.objects.get(author=user, campaign=event.campaign, type="validation")
+                                BudgetEvent.objects.filter(author=user, campaign=event.campaign, type="validation").last()
                                 budget_count += 1
                             except ObjectDoesNotExist:
                                 event.status = "validation_ongoing"

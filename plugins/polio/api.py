@@ -1481,8 +1481,13 @@ This is an automated email from %s
                         for user in team.users.all():
                             try:
                                 print(user)
-                                BudgetEvent.objects.filter(author=user, campaign=event.campaign, type="validation").last()
+                                # TODO Handle errors in validation creation
+                                # Users can't have more than one validation event
+                                BudgetEvent.objects.get(
+                                    author=user, campaign=event.campaign, type="validation"
+                                )
                                 budget_count += 1
+
                             except ObjectDoesNotExist:
                                 event.status = "validation_ongoing"
                                 event.save()

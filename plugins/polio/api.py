@@ -13,7 +13,7 @@ from django.conf import settings
 from django.core import validators
 from django.core.files import File
 from django.core.cache import cache
-from django.core.exceptions import ValidationError
+from django.core.exceptions import ValidationError, ObjectDoesNotExist
 from django.core.mail import send_mail
 from django.db import transaction
 from django.db.models import Q
@@ -1543,6 +1543,21 @@ class BudgetFilesViewset(ModelViewSet):
         for file in request.FILES.items():
             budget_file = BudgetFiles.objects.create(file=File(file[1]), event=event)
             budget_file.save()
+
+        if event.type == "validation":
+            val_team = event.target_teams.get(name="Validation Team")
+            is_validated = False
+            if request.user in val_team:
+                for user in val_team:
+                    try:
+                        BudgetEvent.objects.get(author=user, campaign=event.campaign, type="validation")
+                        is_validated = True
+                    except ObjectDoesNotExist:
+                        is_validated = False
+
+            if is_validated:
+                event.status = "validation_ongoing"
+                event.save()
 
         files = BudgetFiles.objects.filter(event__author__iaso_profile__account=self.request.user.iaso_profile.account)
         serializer = BudgetFilesSerializer(files, many=True)

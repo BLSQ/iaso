@@ -2,7 +2,10 @@
 
 import moment from 'moment';
 import linkedLogsPaginated from '../../fixtures/logs/list-linked-paginated.json';
+import logsDetails from '../../fixtures/logs/logs-details.json';
+import page2 from '../../fixtures/logs/list-linked-paginated2.json';
 import orgUnit from '../../fixtures/orgunits/details.json';
+import { testPagination } from '../../support/testPagination';
 import { testPermission } from '../../support/testPermission';
 import { testTablerender } from '../../support/testTableRender';
 
@@ -17,6 +20,8 @@ const interceptList = [
     'groups',
     'orgunittypes',
 ];
+
+let interceptFlag = false;
 
 const testRowContent = (
     index,
@@ -99,6 +104,12 @@ const goToPage = () => {
     cy.intercept('GET', `/api/instances/?order=id&orgUnitId=${orgUnit.id}`, {
         instances: [],
     });
+
+    cy.intercept(
+        'GET',
+        `logs/?&objectId=1&contentType=iaso.orgunit&limit=10&page=2&order=-created_at`,
+        page2,
+    );
     cy.intercept('GET', '/sockjs-node/**');
     cy.intercept(
         'GET',
@@ -115,11 +126,6 @@ const goToPage = () => {
     );
     cy.visit(baseUrl);
 };
-
-/**
- * TODO;
- * - test actions buttons
- */
 
 describe('history tab', () => {
     beforeEach(() => {
@@ -153,8 +159,9 @@ describe('history tab', () => {
             baseUrl,
             rows: linkedLogsPaginated.list.length,
             columns: 4,
-            apiPath: `logs/?&objectId=1&contentType=iaso.orgunit&limit=10&order=-created_at`,
-            apiKey: `logs`,
+            apiPath:
+                'logs/?&objectId=1&contentType=iaso.orgunit&limit=10&order=-created_at',
+            apiKey: 'logs',
             withVisit: false,
             selector: '[data-test="logs-tab"] table',
             request: '@getOuDetail',
@@ -166,12 +173,51 @@ describe('history tab', () => {
             });
         });
 
-        // TO DO : testPagination
+        testPagination({
+            baseUrl,
+            apiPath: `/api/logs/**`,
+            query: {
+                objectId: '1',
+                contentType: 'iaso.orgunit',
+                limit: '10',
+                order: '-created_at',
+            },
+            apiKey: 'list',
+            withSearch: false,
+            fixture: linkedLogsPaginated,
+            selector: '[data-test="logs-tab"]',
+        });
     });
 
-    // TO DO : test action buttons
-    describe('Actions buttons', () => {});
+    describe('Actions buttons', () => {
+        it('should make call api with correct params', () => {
+            cy.wait('@getOuDetail').then(() => {
+                interceptFlag = false;
 
-    // TO DO : test compare changes
+                cy.intercept(
+                    {
+                        method: 'GET',
+                        pathname: `/api/logs/${linkedLogsPaginated.list[0].id}/`,
+                    },
+                    req => {
+                        interceptFlag = true;
+                        req.reply({
+                            statusCode: 200,
+                            body: logsDetails,
+                        });
+                    },
+                ).as('getLogDetails');
+
+                cy.get('[data-test="logs-tab"]').find('table').as('table');
+                cy.get('@table').find('tbody').find('tr').eq(0).as('row');
+                cy.get('@row').find('td').last().find('button').click();
+
+                cy.wait('@getLogDetails').then(() => {
+                    cy.wrap(interceptFlag).should('eq', true);
+                });
+            });
+        });
+    });
+
     describe('Changes', () => {});
 });

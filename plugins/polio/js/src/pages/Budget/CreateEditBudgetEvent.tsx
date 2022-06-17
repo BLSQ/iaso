@@ -30,7 +30,7 @@ const renderTrigger =
                 <IconButton
                     onClick={openDialog}
                     icon="edit"
-                    tooltipMessage={MESSAGES.edit}
+                    tooltipMessage={MESSAGES.resendFiles}
                 />
             );
         }

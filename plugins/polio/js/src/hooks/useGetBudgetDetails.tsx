@@ -21,13 +21,27 @@ const getBudgetDetails = async (params?: Params) => {
     return getRequest(endpoint);
 };
 
-export const useGetBudgetDetails = (params?: Params) => {
+export const useGetBudgetDetails = (userId: number, params?: Params) => {
     return useSnackQuery(
-        ['budget-details', params],
+        ['budget-details', userId, params],
         () => getBudgetDetails(params),
         undefined,
         // Had to add these options,  otherwise the data would not update, even though params would change
-        { staleTime: 1, keepPreviousData: true },
+        {
+            staleTime: 1,
+            keepPreviousData: true,
+            select: data => {
+                if (!data) return data;
+                const filteredResults = data.results.filter(budgetEvent => {
+                    return (
+                        budgetEvent?.author === userId ||
+                        budgetEvent?.is_finalized
+                    );
+                });
+
+                return { ...data, results: filteredResults };
+            },
+        },
     );
 };
 
@@ -35,7 +49,15 @@ const getAllBudgetDetails = campaignId => {
     return getRequest(`${endpoint}/?campaign_id=${campaignId}`);
 };
 export const useGetAllBudgetDetails = campaignId => {
-    return useSnackQuery(['budget-details'], () =>
-        getAllBudgetDetails(campaignId),
+    return useSnackQuery(
+        ['budget-details'],
+        () => getAllBudgetDetails(campaignId),
+        undefined,
+        {
+            select: data => {
+                if (!data) return data;
+                return data.filter(budgetEvent => budgetEvent.is_finalized);
+            },
+        },
     );
 };

@@ -1177,6 +1177,10 @@ const MESSAGES = defineMessages({
         defaultMessage: 'New budget step',
         id: 'iaso.polio.label.newBudgetStep',
     },
+    resendFiles: {
+        defaultMessage: 'Retry sending files',
+        id: 'iaso.polio.label.resendFiles',
+    },
     addStep: {
         defaultMessage: 'Add step',
         id: 'iaso.polio.label.addStep',

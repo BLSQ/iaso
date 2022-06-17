@@ -1543,25 +1543,32 @@ class BudgetFilesViewset(ModelViewSet):
     def create(self, request, *args, **kwargs):
         event = request.data["event"]
         event = get_object_or_404(BudgetEvent, id=event)
+        print(event.type)
+        print(event.status)
         for file in request.FILES.items():
             budget_file = BudgetFiles.objects.create(file=File(file[1]), event=event)
             budget_file.save()
 
         if event.type == "validation":
             val_team = event.target_teams.get(name="Validation team")
+            print(val_team.users)
             is_validated = False
-            if request.user in val_team:
-                for user in val_team:
-                    try:
-                        print(user)
-                        BudgetEvent.objects.get(author=user, campaign=event.campaign, type="validation")
-                        is_validated = True
-                    except ObjectDoesNotExist:
-                        is_validated = False
-            if is_validated:
-                event.status = "validated"
-                event.save()
-                print(event, event.status)
+            if request.user in val_team.users.all():
+                print("DANS LE IF")
+                for team in event.target_teams.all():
+                    if team.name == "Validation team":
+                        for user in team.users.all():
+                            try:
+                                print(user)
+                                BudgetEvent.objects.get(author=user, campaign=event.campaign, type="validation")
+                                is_validated = True
+                            except ObjectDoesNotExist:
+                                print("ERREUR")
+                                is_validated = False
+                    if is_validated:
+                        event.status = "validated"
+                        event.save()
+                        print(event, event.status)
 
         files = BudgetFiles.objects.filter(event__author__iaso_profile__account=self.request.user.iaso_profile.account)
         serializer = BudgetFilesSerializer(files, many=True)

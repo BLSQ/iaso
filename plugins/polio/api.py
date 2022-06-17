@@ -785,7 +785,6 @@ class IMStatsViewSet(viewsets.ViewSet):
                         for key in nfm_counts_dict:
                             round_stats["nfm_stats"][key] = round_stats["nfm_stats"][key] + nfm_counts_dict[key]
                         for key_abs in nfm_abs_counts_dict:
-
                             round_stats["nfm_abs_stats"][key_abs] = (
                                 round_stats["nfm_abs_stats"][key_abs] + nfm_abs_counts_dict[key_abs]
                             )
@@ -1415,7 +1414,6 @@ class HasPoliobudgetPermission(permissions.BasePermission):
 
 
 def _generate_auto_authentication_link(link, user):
-
     refresh = RefreshToken.for_user(user)
     access_token = str(refresh.access_token)
     domain = settings.DNS_DOMAIN
@@ -1476,7 +1474,7 @@ This is an automated email from %s
         if request.method == "PUT":
             event_pk = request.data["event"]
             event = BudgetEvent.objects.get(pk=event_pk)
-            event.is_finalized = True if request.data["is_finalized"] == "true" else False
+            event.is_finalized = True if request.data["is_finalized"] else False
             event.save()
 
             if event.is_finalized and not event.is_email_sent:
@@ -1516,6 +1514,9 @@ This is an automated email from %s
         event = BudgetEvent.objects.none()
         serializer = BudgetEventSerializer(event, many=False)
         return Response(serializer.data)
+
+    def team_budget_validation(self, request):
+        pass
 
 
 class BudgetFilesViewset(ModelViewSet):

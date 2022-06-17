@@ -261,6 +261,10 @@ const routes = [
                 isRequired: false,
                 key: 'country',
             },
+            {
+                isRequired: false,
+                key: 'show_deleted',
+            },
         ],
     },
     {

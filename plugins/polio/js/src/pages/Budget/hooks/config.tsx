@@ -14,10 +14,15 @@ import { DateTimeCellRfc } from '../../../../../../../hat/assets/js/apps/Iaso/co
 import { BudgetFilesModal } from '../BudgetFilesModal';
 import { CreateEditBudgetEvent } from '../CreateEditBudgetEvent';
 import { useCurrentUser } from '../../../../../../../hat/assets/js/apps/Iaso/utils/usersUtils';
+import DeleteDialog from '../../../../../../../hat/assets/js/apps/Iaso/components/dialogs/DeleteDialogComponent';
+import {
+    useDeleteBudgetEvent,
+    useRestoreBudgetEvent,
+} from '../../../hooks/useDeleteBudgetEvent';
 
 const baseUrl = BUDGET_DETAILS;
 
-export const useBudgetColumns = (showOnlyDeleted = false): Column[] => {
+export const useBudgetColumns = (): Column[] => {
     const { formatMessage } = useSafeIntl();
     return useMemo(() => {
         const cols = [
@@ -79,54 +84,24 @@ export const useBudgetColumns = (showOnlyDeleted = false): Column[] => {
                 sortable: false,
                 Cell: settings => {
                     return (
-                        <>
-                            {!showOnlyDeleted && (
-                                <>
-                                    <IconButtonComponent
-                                        icon="remove-red-eye"
-                                        tooltipMessage={MESSAGES.details}
-                                        url={`${baseUrl}/campaignId/${settings.row.original.id}/campaignName/${settings.row.original.obr_name}/country/${settings.row.original.country}`}
-                                    />
-                                    {/* TODO uncomment when deletion is implemented */}
-                                    {/* <IconButtonComponent
-                                    icon="delete"
-                                    tooltipMessage={MESSAGES.delete}
-                                    onClick={() =>
-                                        handleClickDeleteRow(settings.value)
-                                    }
-                                /> */}
-                                </>
-                            )}
-                            {/* TODO uncomment when deletion is implemented */}
-                            {/* {showOnlyDeleted && (
-                            <IconButtonComponent
-                                icon="restore-from-trash"
-                                tooltipMessage={MESSAGES.restoreCampaign}
-                                onClick={() =>
-                                    handleClickRestoreRow(settings.value)
-                                }
-                            />
-                        )} */}
-                        </>
+                        <IconButtonComponent
+                            icon="remove-red-eye"
+                            tooltipMessage={MESSAGES.details}
+                            url={`${baseUrl}/campaignId/${settings.row.original.id}/campaignName/${settings.row.original.obr_name}/country/${settings.row.original.country}`}
+                        />
                     );
                 },
             },
         ];
-        // if (showOnlyDeleted) {
-        //     cols.unshift({
-        //         Header: formatMessage(MESSAGES.deleted_at),
-        //         accessor: 'deleted_at',
-        //         Cell: settings =>
-        //             moment(settings.row.original.deleted_at).format('LTS'),
-        //     });
-        // }
         return cols;
-    }, [formatMessage, showOnlyDeleted]);
+    }, [formatMessage]);
 };
 
 export const useBudgetDetailsColumns = ({ teams, profiles }): Column[] => {
     const { formatMessage } = useSafeIntl();
     const currentUser = useCurrentUser();
+    const { mutateAsync: deleteBudgetEvent } = useDeleteBudgetEvent();
+    const { mutateAsync: restoreBudgetEvent } = useRestoreBudgetEvent();
     return useMemo(() => {
         return [
             {
@@ -218,10 +193,39 @@ export const useBudgetDetailsColumns = ({ teams, profiles }): Column[] => {
                                         budgetEvent={settings.row.original}
                                     />
                                 )}
+                            {!settings.row.original.deleted_at && (
+                                <DeleteDialog
+                                    titleMessage={MESSAGES.deleteBudgetEvent}
+                                    message={MESSAGES.deleteBudgetEvent}
+                                    onConfirm={() =>
+                                        deleteBudgetEvent(
+                                            settings.row.original.id,
+                                        )
+                                    }
+                                    keyName={`deleteBudgetEvent-${settings.row.original.id}`}
+                                />
+                            )}
+                            {settings.row.original.deleted_at && (
+                                <IconButtonComponent
+                                    icon="restore-from-trash"
+                                    tooltipMessage={MESSAGES.restore}
+                                    onClick={() =>
+                                        restoreBudgetEvent(
+                                            settings.row.original.id,
+                                        )
+                                    }
+                                />
+                            )}
                         </section>
                     );
                 },
             },
         ];
-    }, [formatMessage, teams, profiles]);
+    }, [
+        formatMessage,
+        profiles?.profiles,
+        teams,
+        currentUser.user_id,
+        deleteBudgetEvent,
+    ]);
 };

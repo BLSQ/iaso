@@ -1270,6 +1270,18 @@ const MESSAGES = defineMessages({
         defaultMessage: 'Links',
         id: 'iaso.label.links',
     },
+    deleteBudgetEvent: {
+        defaultMessage: 'Delete budget event',
+        id: 'iaso.polio.label.deleteBudgetEvent',
+    },
+    showDeleted: {
+        id: 'iaso.polio.label.showDeleted',
+        defaultMessage: 'Show deleted',
+    },
+    restore: {
+        id: 'iaso.polio.label.restore',
+        defaultMessage: 'Restore',
+    },
 });
 
 export default MESSAGES;

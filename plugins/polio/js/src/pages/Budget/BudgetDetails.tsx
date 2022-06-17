@@ -30,6 +30,7 @@ import { MapComponent } from '../../components/MapComponent/MapComponent';
 import { useGetGeoJson } from '../../hooks/useGetGeoJson';
 import { useGetCampaignScope } from '../../hooks/useGetCampaignScope';
 import { useCurrentUser } from '../../../../../../hat/assets/js/apps/Iaso/utils/usersUtils';
+import InputComponent from '../../../../../../hat/assets/js/apps/Iaso/components/forms/InputComponent';
 
 type Props = {
     router: any;
@@ -60,6 +61,10 @@ export const BudgetDetails: FunctionComponent<Props> = ({ router }) => {
     const classes = useStyles();
     const { campaignName, campaignId, country, ...apiParams } = router.params;
     const { formatMessage } = useSafeIntl();
+    const [showDeleted, setShowDeleted] = useState(
+        apiParams.show_deleted ?? false,
+    );
+    const checkBoxLabel = formatMessage(MESSAGES.showDeleted);
     // @ts-ignore
     const prevPathname = useSelector(state => state.routerCustom.prevPathname);
     const dispatch = useDispatch();
@@ -69,6 +74,7 @@ export const BudgetDetails: FunctionComponent<Props> = ({ router }) => {
         ...apiParams,
         campaign_id: campaignId,
         order: apiParams.order ?? '-created_at',
+        show_deleted: showDeleted,
     });
 
     const { data: allBudgetDetails, isFetching: isFetchingAll } =
@@ -154,6 +160,15 @@ export const BudgetDetails: FunctionComponent<Props> = ({ router }) => {
                             </Grid>
                         )}
                     </Grid>
+                    <InputComponent
+                        type="checkbox"
+                        keyValue="showDeleted"
+                        labelString={checkBoxLabel}
+                        onChange={(_keyValue, newValue) => {
+                            setShowDeleted(newValue);
+                        }}
+                        value={showDeleted}
+                    />
                 </Box>
                 <Grid container spacing={2}>
                     <Grid item xs={8}>

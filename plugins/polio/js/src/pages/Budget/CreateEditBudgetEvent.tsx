@@ -117,7 +117,7 @@ export const CreateEditBudgetEvent: FunctionComponent<Props> = ({
             comment: budgetEvent?.comment ?? null,
             files: budgetEvent?.files ?? null,
             links: budgetEvent?.links ?? null,
-            status: budgetEvent?.status ?? 'validation_ongoing',
+            // status: budgetEvent?.status ?? 'validation_ongoing',
         },
         enableReinitialize: true,
         validateOnBlur: true,
@@ -262,9 +262,9 @@ export const CreateEditBudgetEvent: FunctionComponent<Props> = ({
                             disabled={currentType !== 'create'}
                             keyValue="type"
                             onChange={(keyValue, value) => {
-                                if (value === 'validation') {
-                                    setFieldValue('status', 'validated');
-                                }
+                                // if (value === 'validation') {
+                                //     setFieldValue('status', 'validated');
+                                // }
                                 onChange(keyValue, value);
                             }}
                             value={values.type}

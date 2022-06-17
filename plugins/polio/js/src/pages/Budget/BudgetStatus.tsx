@@ -40,7 +40,7 @@ export const findBudgetStatus = budgetEvents => {
         const orderedEvents = budgetEvents.sort((a, b) => {
             return moment(a.updated_at).isBefore(moment(b.updated_at));
         });
-        return orderedEvents[0].status;
+        return orderedEvents[0].status ?? 'noBudgetSubmitted';
     }
     return 'noBudgetSubmitted';
 };

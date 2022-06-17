@@ -15,7 +15,7 @@ type QueryData = {
     type: BudgetEventType;
     target_teams: number[];
     comments?: string;
-    status: 'validation_ongoing'; // forcing status value as we create an event
+    // status: 'validation_ongoing'; // forcing status value as we create an event
     files: FileList;
 };
 const createEvent = async (data: QueryData) => {

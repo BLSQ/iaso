@@ -1,4 +1,9 @@
-import React, { FunctionComponent, useCallback, useState } from 'react';
+import React, {
+    FunctionComponent,
+    useCallback,
+    useMemo,
+    useState,
+} from 'react';
 import { useFormik, FormikProvider } from 'formik';
 import { isEqual } from 'lodash';
 // @ts-ignore
@@ -47,6 +52,15 @@ const renderTrigger =
         );
     };
 
+const getTitleMessage = (type: 'create' | 'edit' | 'retry') => {
+    if (type === 'create') return MESSAGES.newBudgetStep;
+    if (type === 'edit') return MESSAGES.resendFiles;
+    if (type === 'retry') return MESSAGES.tryUpdateStep;
+    throw new Error(
+        `expected type to be one of: create, edit,retry, got ${type}`,
+    );
+};
+
 export const CreateEditBudgetEvent: FunctionComponent<Props> = ({
     campaignId,
     budgetEvent,
@@ -57,7 +71,6 @@ export const CreateEditBudgetEvent: FunctionComponent<Props> = ({
     const [currentType, setCurrentType] = useState<'create' | 'edit' | 'retry'>(
         type,
     );
-    console.log('currentType', currentType);
     const currentUser = useCurrentUser();
     const { formatMessage } = useSafeIntl();
     const { mutateAsync: saveBudgetEvent } = useSaveBudgetEvent(type);
@@ -87,6 +100,7 @@ export const CreateEditBudgetEvent: FunctionComponent<Props> = ({
                     if (type === 'create' || type === 'retry') {
                         if (values.files) {
                             uploadFiles(
+                                // @ts-ignore
                                 { ...values, id: result.id },
                                 {
                                     onSuccess: () => {
@@ -121,28 +135,18 @@ export const CreateEditBudgetEvent: FunctionComponent<Props> = ({
                         }
                     }
                     if (type === 'edit') {
-                        uploadFiles(
-                            { ...values, id: result.id },
-                            {
-                                onSuccess: () => {
-                                    finalize(result.id, {
-                                        onSuccess: () => {
-                                            closeModal.closeDialog();
-                                            resetForm();
-                                        },
-                                        onError: () =>
-                                            setCurrentType(value => {
-                                                if (value === 'create')
-                                                    return 'retry';
-                                                return value;
-                                            }),
-                                    });
-                                },
+                        finalize(values.id, {
+                            onSuccess: () => {
+                                closeModal.closeDialog();
+                                resetForm();
                             },
-                        );
+                            onError: () =>
+                                setCurrentType(value => {
+                                    if (value === 'create') return 'retry';
+                                    return value;
+                                }),
+                        });
                     }
-                    // closeModal.closeDialog();
-                    // resetForm();
                 },
                 onError: () =>
                     setCurrentType(value => {
@@ -174,10 +178,11 @@ export const CreateEditBudgetEvent: FunctionComponent<Props> = ({
         },
         [errors, touched],
     );
-    const titleMessage =
-        currentType === 'create'
-            ? MESSAGES.newBudgetStep
-            : MESSAGES.resendFiles;
+    const titleMessage = useMemo(
+        () => getTitleMessage(currentType),
+        [currentType],
+    );
+
     return (
         <FormikProvider value={formik}>
             {/* @ts-ignore */}

@@ -1483,9 +1483,7 @@ This is an automated email from %s
                                 print(user)
                                 # TODO Handle errors in validation creation
                                 # Users can't have more than one validation event
-                                BudgetEvent.objects.get(
-                                    author=user, campaign=event.campaign, type="validation"
-                                )
+                                BudgetEvent.objects.get(author=user, campaign=event.campaign, type="validation")
                                 budget_count += 1
 
                             except ObjectDoesNotExist:

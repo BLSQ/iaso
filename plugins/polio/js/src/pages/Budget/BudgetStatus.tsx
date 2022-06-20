@@ -24,7 +24,7 @@ const useStyles = makeStyles(styles);
 
 export const sortBudgetEventByUpdate = budgetEvents => {
     if (!budgetEvents) return [];
-    return budgetEvents.sort(
+    const sorted = budgetEvents.sort(
         (
             a: { updated_at: moment.MomentInput },
             b: { updated_at: moment.MomentInput },
@@ -32,6 +32,8 @@ export const sortBudgetEventByUpdate = budgetEvents => {
             return moment(a.updated_at).isSameOrBefore(moment(b.updated_at));
         },
     );
+    console.log('sorted', sorted);
+    return sorted;
 };
 
 export const findBudgetStatus = budgetEvents => {

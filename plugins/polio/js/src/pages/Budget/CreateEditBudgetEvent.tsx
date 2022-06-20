@@ -105,7 +105,7 @@ export const CreateEditBudgetEvent: FunctionComponent<Props> = ({
     );
     const currentUser = useCurrentUser();
     const { formatMessage } = useSafeIntl();
-    const { mutateAsync: saveBudgetEvent } = useSaveBudgetEvent(type);
+    const { mutateAsync: saveBudgetEvent } = useSaveBudgetEvent(currentType);
     const { mutateAsync: uploadFiles } = useUploadBudgetFiles();
     const { mutateAsync: finalize } = useFinalizeBudgetEvent();
     const [closeModal, setCloseModal] = useState<any>();

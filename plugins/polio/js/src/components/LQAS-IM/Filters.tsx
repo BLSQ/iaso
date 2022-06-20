@@ -54,7 +54,7 @@ const Filters: FunctionComponent<Props> = ({
     const countriesList = (countriesData && countriesData.orgUnits) || [];
     const dropDownOptions = useMemo(() => {
         const displayedCampaigns = country
-            ? campaigns.filter(c => c.org_unit.id === country)
+            ? campaigns.filter(c => c.top_level_org_unit_id === country)
             : campaigns;
         return makeCampaignsDropDown(displayedCampaigns);
     }, [country, campaigns]);

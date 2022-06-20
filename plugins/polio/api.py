@@ -1478,45 +1478,46 @@ This is an automated email from %s
             val_team = Team.objects.get(name="Validation team")
             budget_count = 0
             if self.request.user in val_team.users.all():
-                for team in event.target_teams.all():
-                    if team.name == "Validation team":
-                        for user in team.users.all():
-                            try:
-                                # Test on count
-                                # TODO Handle errors in validation creation
-                                # Users can't have more than one validation event
-                                BudgetEvent.objects.get(author=user, campaign=event.campaign, type="validation")
-                                budget_count += 1
-                            except ObjectDoesNotExist:
-                                event.status = "validation_ongoing"
-                                event.save()
-                                print("ERREUR")
-
-                        if budget_count == len(team.users.all()):
-                            # modify campaign.budget_status instead of event.status
-                            event.status = "validated"
-                            event.save()
-                            link_to_send = "https://%s/dashboard/polio/budget/details/campaignId/%s/campaignName/%s/country/%d" % (
-                                settings.DNS_DOMAIN,
-                                event.campaign.id,
-                                event.campaign.obr_name,
-                                event.campaign.country.id,
-                            )
-                            send_mail(
-                                self.email_title_validation_template.format(event.campaign.obr_name),
-                                self.email_template
-                                % (
-                                    event.type,
-                                    event.author.first_name,
-                                    event.author.last_name,
-                                    event.comment,
-                                    _generate_auto_authentication_link(link_to_send, user),
-                                    settings.DNS_DOMAIN,
-                                ),
-                                "no-reply@%s" % settings.DNS_DOMAIN,
-                                [user.email],
-                            )
-                            print(event, event.status)
+                print("VALIDATION")
+                for user in val_team.users.all():
+                    try:
+                        print("VALIDATED BY:", user)
+                        # Test on count
+                        # TODO Handle errors in validation creation
+                        # Users can't have more than one validation event
+                        BudgetEvent.objects.get(author=user, campaign=event.campaign, type="validation")
+                        budget_count += 1
+                    except ObjectDoesNotExist:
+                        event.status = "validation_ongoing"
+                        event.save()
+                        print("ERREUR")
+                if budget_count == len(val_team.users.all()):
+                    print("IF BUDGET COUNT")
+                    # modify campaign.budget_status instead of event.status
+                    event.status = "validated"
+                    event.save()
+                    link_to_send = "https://%s/dashboard/polio/budget/details/campaignId/%s/campaignName/%s/country/%d" % (
+                        settings.DNS_DOMAIN,
+                        event.campaign.id,
+                        event.campaign.obr_name,
+                        event.campaign.country.id,
+                    )
+                    print("SEND MAIL")
+                    send_mail(
+                        self.email_title_validation_template.format(event.campaign.obr_name),
+                        self.email_template
+                        % (
+                            event.type,
+                            event.author.first_name,
+                            event.author.last_name,
+                            event.comment,
+                            _generate_auto_authentication_link(link_to_send, self.request.user),
+                            settings.DNS_DOMAIN,
+                        ),
+                        "no-reply@%s" % settings.DNS_DOMAIN,
+                        [self.request.user.email],
+                    )
+                    print(event, event.status)
         else:
             event.status = "validation_ongoing"
             event.save()

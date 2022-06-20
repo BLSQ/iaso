@@ -1441,6 +1441,7 @@ class BudgetEventViewset(ModelViewSet):
         "author",
     ]
     email_title_template = "New {} for {}"
+    email_title_validation_template = "Budget VALIDATED for {}"
     email_template = """%s by %s %s.
     
 Comment: %s
@@ -1495,6 +1496,26 @@ This is an automated email from %s
                             # modify campaign.budget_status instead of event.status
                             event.status = "validated"
                             event.save()
+                            link_to_send = "https://%s/dashboard/polio/budget/details/campaignId/%s/campaignName/%s/country/%d" % (
+                                settings.DNS_DOMAIN,
+                                event.campaign.id,
+                                event.campaign.obr_name,
+                                event.campaign.country.id,
+                            )
+                            send_mail(
+                                self.email_title_validation_template.format(event.campaign.obr_name),
+                                self.email_template
+                                % (
+                                    event.type,
+                                    event.author.first_name,
+                                    event.author.last_name,
+                                    event.comment,
+                                    _generate_auto_authentication_link(link_to_send, user),
+                                    settings.DNS_DOMAIN,
+                                ),
+                                "no-reply@%s" % settings.DNS_DOMAIN,
+                                [user.email],
+                            )
                             print(event, event.status)
         else:
             event.status = "validation_ongoing"

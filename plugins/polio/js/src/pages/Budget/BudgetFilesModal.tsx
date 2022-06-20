@@ -25,6 +25,7 @@ type Props = {
     links: string;
     author: string;
     recipients: string;
+    iconColor?: string;
 };
 
 const CloseDialog = ({
@@ -46,10 +47,11 @@ const CloseDialog = ({
 };
 
 const makeRenderTrigger =
-    (disabled = false) =>
+    (disabled = false, color = 'action') =>
     ({ openDialog }) => {
         return (
             <IconButton
+                color={color}
                 onClick={openDialog}
                 dataTestId="see-files-button"
                 tooltipMessage={MESSAGES.viewFiles}
@@ -114,6 +116,7 @@ export const BudgetFilesModal: FunctionComponent<Props> = ({
     links,
     author,
     recipients = '',
+    iconColor = 'action',
 }) => {
     const { formatMessage } = useSafeIntl();
     const { data: budgetEventFiles, isFetching } =
@@ -130,8 +133,8 @@ export const BudgetFilesModal: FunctionComponent<Props> = ({
     };
     const disableTrigger = budgetEventFiles?.length === 0 && !note && !links;
     const renderTrigger = useCallback(
-        () => makeRenderTrigger(disableTrigger),
-        [disableTrigger],
+        () => makeRenderTrigger(disableTrigger, iconColor),
+        [disableTrigger, iconColor],
     );
     return (
         <DialogComponent

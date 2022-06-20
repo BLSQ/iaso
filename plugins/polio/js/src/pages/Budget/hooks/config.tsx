@@ -7,6 +7,7 @@ import {
     IconButton as IconButtonComponent,
 } from 'bluesquare-components';
 import moment from 'moment';
+import { makeStyles } from '@material-ui/core';
 import MESSAGES from '../../../constants/messages';
 import { Column } from '../../../../../../../hat/assets/js/apps/Iaso/types/table';
 import { BUDGET_DETAILS } from '../../../constants/routes';
@@ -21,6 +22,21 @@ import {
 } from '../../../hooks/useDeleteBudgetEvent';
 
 const baseUrl = BUDGET_DETAILS;
+
+const styles = theme => {
+    return {
+        deletedRow: {
+            color: theme.palette.secondary.main,
+        },
+    };
+};
+
+// @ts-ignore
+const useStyles = makeStyles(styles);
+const getStyle = classes => settings => {
+    const isDeleted = Boolean(settings.row.original.deleted_at);
+    return isDeleted ? classes.deletedRow : '';
+};
 
 export const useBudgetColumns = (): Column[] => {
     const { formatMessage } = useSafeIntl();
@@ -47,10 +63,9 @@ export const useBudgetColumns = (): Column[] => {
                 Cell: settings => {
                     const status =
                         settings.row.original.last_budget_event?.status;
-                    if (status) {
-                        return formatMessage(MESSAGES[status]);
-                    }
-                    return formatMessage(MESSAGES.noBudgetSubmitted);
+                    return status
+                        ? formatMessage(MESSAGES[status])
+                        : formatMessage(MESSAGES.noBudgetSubmitted);
                 },
             },
             {
@@ -98,6 +113,8 @@ export const useBudgetColumns = (): Column[] => {
 };
 
 export const useBudgetDetailsColumns = ({ teams, profiles }): Column[] => {
+    const classes = useStyles();
+    const getRowColor = getStyle(classes);
     const { formatMessage } = useSafeIntl();
     const currentUser = useCurrentUser();
     const { mutateAsync: deleteBudgetEvent } = useDeleteBudgetEvent();
@@ -109,7 +126,13 @@ export const useBudgetDetailsColumns = ({ teams, profiles }): Column[] => {
                 id: 'created_at',
                 accessor: 'created_at',
                 sortable: true,
-                Cell: DateTimeCellRfc,
+                Cell: settings => {
+                    return (
+                        <span className={getRowColor(settings)}>
+                            {DateTimeCellRfc(settings)}
+                        </span>
+                    );
+                },
             },
             {
                 Header: formatMessage(MESSAGES.event),
@@ -117,7 +140,13 @@ export const useBudgetDetailsColumns = ({ teams, profiles }): Column[] => {
                 accessor: 'type',
                 sortable: true,
                 Cell: settings => {
-                    return formatMessage(MESSAGES[settings.row.original.type]);
+                    return (
+                        <span className={getRowColor(settings)}>
+                            {formatMessage(
+                                MESSAGES[settings.row.original.type],
+                            )}
+                        </span>
+                    );
                 },
             },
             {
@@ -130,9 +159,15 @@ export const useBudgetDetailsColumns = ({ teams, profiles }): Column[] => {
                     const authorProfile = profiles?.profiles?.find(
                         profile => profile.user_id === author,
                     );
-                    if (!authorProfile?.first_name && !authorProfile?.last_name)
-                        return authorProfile?.user_name ?? author;
-                    return `${authorProfile.first_name} ${authorProfile.last_name}`;
+                    const nameDisplayed =
+                        authorProfile?.first_name && authorProfile?.last_name
+                            ? `${authorProfile.first_name} ${authorProfile.last_name}`
+                            : authorProfile?.user_name ?? author;
+                    return (
+                        <span className={getRowColor(settings)}>
+                            {nameDisplayed}
+                        </span>
+                    );
                 },
             },
             {
@@ -142,14 +177,22 @@ export const useBudgetDetailsColumns = ({ teams, profiles }): Column[] => {
                 sortable: false,
                 Cell: settings => {
                     const { target_teams } = settings.row.original;
-                    if (target_teams?.length === 0) return target_teams;
-                    return target_teams
-                        .map(
-                            (target_team: number) =>
-                                teams?.find(team => team.id === target_team)
-                                    ?.name,
-                        )
-                        .join(', ');
+                    const teamsToDisplay =
+                        target_teams?.length === 0
+                            ? target_teams
+                            : target_teams
+                                  .map(
+                                      (target_team: number) =>
+                                          teams?.find(
+                                              team => team.id === target_team,
+                                          )?.name,
+                                  )
+                                  .join(', ');
+                    return (
+                        <span className={getRowColor(settings)}>
+                            {teamsToDisplay}
+                        </span>
+                    );
                 },
             },
             {
@@ -181,6 +224,11 @@ export const useBudgetDetailsColumns = ({ teams, profiles }): Column[] => {
                                 links={settings.row.original.links}
                                 author={authorName}
                                 recipients={teamNames}
+                                iconColor={
+                                    settings.row.original.deleted_at
+                                        ? 'secondary'
+                                        : 'action'
+                                }
                             />
                             {!settings.row.original.is_finalized &&
                                 settings.row.original.author ===
@@ -191,6 +239,11 @@ export const useBudgetDetailsColumns = ({ teams, profiles }): Column[] => {
                                         }
                                         type="edit"
                                         budgetEvent={settings.row.original}
+                                        iconColor={
+                                            settings.row.original.deleted_at
+                                                ? 'secondary'
+                                                : 'action'
+                                        }
                                     />
                                 )}
                             {!settings.row.original.deleted_at && (
@@ -207,6 +260,7 @@ export const useBudgetDetailsColumns = ({ teams, profiles }): Column[] => {
                             )}
                             {settings.row.original.deleted_at && (
                                 <IconButtonComponent
+                                    color="secondary"
                                     icon="restore-from-trash"
                                     tooltipMessage={MESSAGES.restore}
                                     onClick={() =>
@@ -223,9 +277,11 @@ export const useBudgetDetailsColumns = ({ teams, profiles }): Column[] => {
         ];
     }, [
         formatMessage,
+        getRowColor,
         profiles?.profiles,
         teams,
         currentUser.user_id,
         deleteBudgetEvent,
+        restoreBudgetEvent,
     ]);
 };

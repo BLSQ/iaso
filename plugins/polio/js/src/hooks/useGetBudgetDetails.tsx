@@ -50,7 +50,7 @@ export const useGetBudgetDetails = (userId: number, params?: Params) => {
 
 const getAllBudgetDetails = (campaignId, showDeleted = false) => {
     return getRequest(
-        `${endpoint}/?campaign_id=${campaignId}&show_deleted=${showDeleted}`,
+        `${endpoint}/?campaign_id=${campaignId}&show_deleted=${showDeleted}&order=-created_at`,
     );
 };
 export const useGetAllBudgetDetails = (campaignId, showDeleted) => {

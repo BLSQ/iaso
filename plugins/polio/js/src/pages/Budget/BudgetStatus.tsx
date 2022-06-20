@@ -32,19 +32,12 @@ export const sortBudgetEventByUpdate = budgetEvents => {
             return moment(a.updated_at).isSameOrBefore(moment(b.updated_at));
         },
     );
-    console.log('sorted', sorted);
     return sorted;
 };
 
 export const findBudgetStatus = budgetEvents => {
-    if (!budgetEvents) return 'noBudgetSubmitted';
-    if (budgetEvents.length > 0) {
-        const orderedEvents = budgetEvents.sort((a, b) => {
-            return moment(a.updated_at).isBefore(moment(b.updated_at));
-        });
-        return orderedEvents[0].status ?? 'noBudgetSubmitted';
-    }
-    return 'noBudgetSubmitted';
+    const orderedEvents = sortBudgetEventByUpdate([...(budgetEvents ?? [])]);
+    return orderedEvents[0]?.status ?? 'noBudgetSubmitted';
 };
 
 export const BudgetStatus: FunctionComponent<Props> = ({ budgetStatus }) => {

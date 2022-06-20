@@ -228,6 +228,7 @@ export const CreateEditBudgetEvent: FunctionComponent<Props> = ({
                 }}
                 onCancel={closeDialog => {
                     closeDialog();
+                    setCurrentType(type);
                     resetForm();
                 }}
                 maxWidth="sm"

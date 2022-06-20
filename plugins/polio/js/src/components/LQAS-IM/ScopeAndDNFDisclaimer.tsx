@@ -2,6 +2,7 @@
 /* eslint-disable react/require-default-props */
 import { Box, Grid, makeStyles, Typography } from '@material-ui/core';
 import React, { FunctionComponent } from 'react';
+// @ts-ignore
 import { useSafeIntl } from 'bluesquare-components';
 import MESSAGES from '../../constants/messages';
 
@@ -35,7 +36,7 @@ export const ScopeAndDNFDisclaimer: FunctionComponent<Props> = ({
     const allDistrictsFound = districtsNotFound?.length === 0;
     return (
         <Grid container direction="column" className={classes.centerText}>
-            {!hasScope && (
+            {hasScope !== undefined && !hasScope && (
                 <Grid container item direction="column">
                     <Grid item>
                         <Box mt={2}>
@@ -56,7 +57,7 @@ export const ScopeAndDNFDisclaimer: FunctionComponent<Props> = ({
                     </Grid>
                 </Grid>
             )}
-            {!allDistrictsFound && (
+            {districtsNotFound !== undefined && !allDistrictsFound && (
                 <Grid container item className={classes.justifyCenter}>
                     {' '}
                     <Grid item>

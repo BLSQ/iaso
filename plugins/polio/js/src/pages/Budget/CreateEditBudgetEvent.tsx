@@ -32,14 +32,17 @@ type Props = {
     type?: 'create' | 'edit' | 'retry';
     // eslint-disable-next-line react/require-default-props
     budgetEvent?: any;
+    // eslint-disable-next-line react/require-default-props
+    iconColor?: string;
 };
 
 const renderTrigger =
-    (type: 'create' | 'edit' | 'retry' = 'create') =>
+    (type: 'create' | 'edit' | 'retry' = 'create', color = 'action') =>
     ({ openDialog }) => {
         if (type === 'edit') {
             return (
                 <IconButton
+                    color={color}
                     onClick={openDialog}
                     icon="edit"
                     tooltipMessage={MESSAGES.resendFiles}
@@ -91,6 +94,7 @@ export const CreateEditBudgetEvent: FunctionComponent<Props> = ({
     campaignId,
     budgetEvent,
     type = 'create',
+    iconColor = 'action',
 }) => {
     const { data: teamsDropdown, isFetching: isFetchingTeams } =
         useGetTeamsOptions();
@@ -117,6 +121,7 @@ export const CreateEditBudgetEvent: FunctionComponent<Props> = ({
             comment: budgetEvent?.comment ?? null,
             files: budgetEvent?.files ?? null,
             links: budgetEvent?.links ?? null,
+            internal: budgetEvent?.internal ?? false,
             // status: budgetEvent?.status ?? 'validation_ongoing',
         },
         enableReinitialize: true,
@@ -234,7 +239,7 @@ export const CreateEditBudgetEvent: FunctionComponent<Props> = ({
                 maxWidth="sm"
                 cancelMessage={MESSAGES.cancel}
                 confirmMessage={MESSAGES.send}
-                renderTrigger={renderTrigger(type)}
+                renderTrigger={renderTrigger(type, iconColor)}
             >
                 {(currentType === 'create' || currentType === 'retry') && (
                     <>
@@ -307,6 +312,15 @@ export const CreateEditBudgetEvent: FunctionComponent<Props> = ({
                         value={values.links}
                         errors={getErrors('links')}
                         label={MESSAGES.links}
+                    />
+                )}
+                {values.type !== 'validation' && (
+                    <InputComponent
+                        type="checkbox"
+                        keyValue="internal"
+                        label={MESSAGES.internal}
+                        onChange={onChange}
+                        value={values.internal}
                     />
                 )}
             </ConfirmCancelDialogComponent>

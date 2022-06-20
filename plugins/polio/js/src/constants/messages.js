@@ -1282,6 +1282,10 @@ const MESSAGES = defineMessages({
         id: 'iaso.polio.label.restore',
         defaultMessage: 'Restore',
     },
+    internal: {
+        id: 'iaso.polio.label.internal',
+        defaultMessage: 'Internal',
+    },
 });
 
 export default MESSAGES;

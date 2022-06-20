@@ -1,7 +1,7 @@
 import { useMemo } from 'react';
 // @ts-ignore
 import { useSafeIntl } from 'bluesquare-components';
-import { array, mixed, object, string } from 'yup';
+import { array, mixed, object, string, bool } from 'yup';
 import MESSAGES from '../../../constants/messages';
 import {
     makeRegexValidator,
@@ -13,7 +13,6 @@ const multipleUrlsValidator = makeRegexValidator(urlRegex);
 export const useBudgetEvenValidation = () => {
     const { formatMessage } = useSafeIntl();
     const fieldRequired = formatMessage(MESSAGES.requiredField);
-    const emailFormat = formatMessage(MESSAGES.emailFormat);
     const urlFormat = formatMessage(MESSAGES.urlFormat);
     const typeError = formatMessage(MESSAGES.budgetTypeError);
     return useMemo(() => {
@@ -34,6 +33,7 @@ export const useBudgetEvenValidation = () => {
                 .nullable()
                 .required(fieldRequired)
                 .typeError(typeError),
+            internal: bool().nullable().required(fieldRequired),
         });
-    }, [emailFormat, fieldRequired, typeError]);
+    }, [fieldRequired, typeError, urlFormat]);
 };

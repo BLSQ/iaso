@@ -177,6 +177,7 @@
     "iaso.polio.label.imPerRegion": "Vaccination ratio per region (based on districts found)",
     "iaso.polio.label.imResults": "IM Results",
     "iaso.polio.label.imWarning": "90%-94%",
+    "iaso.polio.label.internal": "Internal",
     "iaso.polio.label.lastRound": "Last round",
     "iaso.polio.label.latestEvent": "Latest event",
     "iaso.polio.label.latestEventDate": "Latest event date",

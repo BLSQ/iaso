@@ -8,6 +8,7 @@ import {
 } from 'bluesquare-components';
 import moment from 'moment';
 import { makeStyles } from '@material-ui/core';
+import LockIcon from '@material-ui/icons/Lock';
 import MESSAGES from '../../../constants/messages';
 import { Column } from '../../../../../../../hat/assets/js/apps/Iaso/types/table';
 import { BUDGET_DETAILS } from '../../../constants/routes';
@@ -121,6 +122,21 @@ export const useBudgetDetailsColumns = ({ teams, profiles }): Column[] => {
     const { mutateAsync: restoreBudgetEvent } = useRestoreBudgetEvent();
     return useMemo(() => {
         return [
+            {
+                Header: '',
+                id: 'internal',
+                accessor: 'internal',
+                sortable: false,
+                width: 1,
+                Cell: settings => {
+                    const { internal } = settings.row.original;
+                    return internal ? (
+                        <LockIcon className={getRowColor(settings)} />
+                    ) : (
+                        <></>
+                    );
+                },
+            },
             {
                 Header: formatMessage(MESSAGES.created_at),
                 id: 'created_at',

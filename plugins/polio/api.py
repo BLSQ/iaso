@@ -1469,11 +1469,10 @@ This is an automated email from %s
         campaign_id = self.request.query_params.get("campaign_id")
         if campaign_id is not None:
             queryset = queryset.filter(campaign_id=campaign_id)
-        return queryset
+        return queryset.distinct()
 
     def perform_create(self, serializer):
         event = serializer.save(author=self.request.user)
-        event.save()
         if event.type == "validation":
             val_team = Team.objects.get(name="Validation team")
             budget_count = 0
@@ -1485,22 +1484,26 @@ This is an automated email from %s
                         # Test on count
                         # TODO Handle errors in validation creation
                         # Users can't have more than one validation event
-                        BudgetEvent.objects.get(author=user, campaign=event.campaign, type="validation")
-                        budget_count += 1
+                        count = BudgetEvent.objects.filter(
+                            author=user, campaign=event.campaign, type="validation"
+                        ).count()
+                        if count > 0:
+                            budget_count += 1
                     except ObjectDoesNotExist:
-                        event.status = "validation_ongoing"
-                        event.save()
                         print("ERREUR")
                 if budget_count == len(val_team.users.all()):
                     print("IF BUDGET COUNT")
                     # modify campaign.budget_status instead of event.status
                     event.status = "validated"
                     event.save()
-                    link_to_send = "https://%s/dashboard/polio/budget/details/campaignId/%s/campaignName/%s/country/%d" % (
-                        settings.DNS_DOMAIN,
-                        event.campaign.id,
-                        event.campaign.obr_name,
-                        event.campaign.country.id,
+                    link_to_send = (
+                        "https://%s/dashboard/polio/budget/details/campaignId/%s/campaignName/%s/country/%d"
+                        % (
+                            settings.DNS_DOMAIN,
+                            event.campaign.id,
+                            event.campaign.obr_name,
+                            event.campaign.country.id,
+                        )
                     )
                     print("SEND MAIL")
                     send_mail(
@@ -1518,9 +1521,6 @@ This is an automated email from %s
                         [self.request.user.email],
                     )
                     print(event, event.status)
-        else:
-            event.status = "validation_ongoing"
-            event.save()
 
         serializer = BudgetEventSerializer(event, many=False)
         return Response(serializer.data)

@@ -74,9 +74,14 @@ export const useUpdateBudgetEvent = () =>
     );
 
 export const useUploadBudgetFiles = () =>
-    useSnackMutation(postEventFiles, MESSAGES.budgetFilesUploaded, undefined, [
-        'budget-details',
-    ]);
+    useSnackMutation(
+        postEventFiles,
+        MESSAGES.budgetFilesUploaded,
+        undefined,
+        ['budget-details'],
+        undefined,
+        false,
+    );
 
 export const useFinalizeBudgetEvent = () =>
     useSnackMutation(

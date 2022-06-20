@@ -78,7 +78,7 @@ export const BudgetDetails: FunctionComponent<Props> = ({ router }) => {
     });
 
     const { data: allBudgetDetails, isFetching: isFetchingAll } =
-        useGetAllBudgetDetails(campaignId);
+        useGetAllBudgetDetails(campaignId, showDeleted);
 
     // TODO make hook for table specific state and effects
     const [resetPageToOne, setResetPageToOne] = useState('');

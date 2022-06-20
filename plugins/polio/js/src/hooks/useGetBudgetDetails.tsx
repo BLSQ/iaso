@@ -48,13 +48,15 @@ export const useGetBudgetDetails = (userId: number, params?: Params) => {
     );
 };
 
-const getAllBudgetDetails = campaignId => {
-    return getRequest(`${endpoint}/?campaign_id=${campaignId}`);
+const getAllBudgetDetails = (campaignId, showDeleted = false) => {
+    return getRequest(
+        `${endpoint}/?campaign_id=${campaignId}&show_deleted=${showDeleted}`,
+    );
 };
-export const useGetAllBudgetDetails = campaignId => {
+export const useGetAllBudgetDetails = (campaignId, showDeleted) => {
     return useSnackQuery(
-        ['budget-details'],
-        () => getAllBudgetDetails(campaignId),
+        ['budget-details', campaignId, showDeleted],
+        () => getAllBudgetDetails(campaignId, showDeleted),
         undefined,
         {
             select: data => {

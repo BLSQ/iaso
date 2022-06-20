@@ -35,6 +35,7 @@ import urllib.parse
 from hat.audit.models import Modification, CAMPAIGN_API
 from iaso.api.common import ModelViewSet, DeletionFilterBackend
 from iaso.models import OrgUnit
+from iaso.models.microplanning import Team
 from iaso.models.org_unit import OrgUnitType
 from plugins.polio.serializers import (
     CampaignSerializer,
@@ -1456,7 +1457,11 @@ This is an automated email from %s
         return BudgetEventSerializer
 
     def get_queryset(self):
+        user = self.request.user
         queryset = BudgetEvent.objects.filter(author__iaso_profile__account=self.request.user.iaso_profile.account)
+        show_non_internals = Q(internal=False)
+        show_internals = Q(internal=True) & (Q(author=user) | Q(target_teams__users=user))
+        queryset = queryset.filter(show_internals | show_non_internals)
         show_deleted = self.request.query_params.get("show_deleted")
         if show_deleted == "false":
             queryset = queryset.filter(deleted_at=None)
@@ -1468,30 +1473,26 @@ This is an automated email from %s
     def perform_create(self, serializer):
         event = serializer.save(author=self.request.user)
         event.save()
-        print("????")
-        print(event.type)
         if event.type == "validation":
-            val_team = event.target_teams.get(name="Validation team")
-            print(val_team.users)
+            val_team = Team.objects.get(name="Validation team")
             budget_count = 0
             if self.request.user in val_team.users.all():
-                print("DANS LE IF")
                 for team in event.target_teams.all():
                     if team.name == "Validation team":
                         for user in team.users.all():
                             try:
-                                print(user)
+                                # Test on count
                                 # TODO Handle errors in validation creation
                                 # Users can't have more than one validation event
                                 BudgetEvent.objects.get(author=user, campaign=event.campaign, type="validation")
                                 budget_count += 1
-
                             except ObjectDoesNotExist:
                                 event.status = "validation_ongoing"
                                 event.save()
                                 print("ERREUR")
 
                         if budget_count == len(team.users.all()):
+                            # modify campaign.budget_status instead of event.status
                             event.status = "validated"
                             event.save()
                             print(event, event.status)

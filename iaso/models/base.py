@@ -1,27 +1,27 @@
-import random
 import operator
-import typing
+import random
 import re
+import typing
 from copy import copy
-from urllib.request import urlopen
 from functools import reduce
-from django.db import models, transaction
-from django.core.paginator import Paginator
-from django.contrib.gis.db.models.fields import PointField
-from django.contrib.postgres.aggregates import ArrayAgg
+from logging import getLogger
+from urllib.request import urlopen
+
 from django.contrib.auth.models import User
+from django.contrib.gis.db.models.fields import PointField
 from django.contrib.gis.geos import Point
+from django.contrib.postgres.aggregates import ArrayAgg
+from django.core.paginator import Paginator
+from django.db import models, transaction
+from django.db.models import Q
 from django.shortcuts import get_object_or_404
+from django.utils import timezone
 from django.utils.translation import ugettext_lazy as _
+
 from hat.audit.models import log_modification, INSTANCE_API
 from iaso.utils import flat_parse_xml_soup, as_soup, extract_form_version_id
-from django.db.models import Q
-from django.utils import timezone
-
 from .device import DeviceOwnership, Device
 from .forms import Form, FormVersion
-
-from logging import getLogger
 
 logger = getLogger(__name__)
 
@@ -88,6 +88,8 @@ class AccountFeatureFlag(models.Model):
 
 
 class Account(models.Model):
+    """Account represent a tenant (=roughly a client organisation or a country)"""
+
     name = models.TextField(null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
@@ -110,6 +112,8 @@ class Account(models.Model):
 
 
 class DataSource(models.Model):
+    """DataSources allow linking multiple things imported from the same source (DHIS2, CSV, ...)"""
+
     name = models.CharField(max_length=255, unique=True)
     read_only = models.BooleanField(default=False)
     projects = models.ManyToManyField("Project", related_name="data_sources", blank=True)
@@ -285,6 +289,8 @@ class AlgorithmRun(models.Model):
 
 
 class Task(models.Model):
+    """Represents an asynchronous function that will be run by a background worker for things like a data import"""
+
     created_at = models.DateTimeField(auto_now_add=True)
     started_at = models.DateTimeField(null=True, blank=True)
     ended_at = models.DateTimeField(null=True, blank=True)
@@ -1079,6 +1085,7 @@ class Profile(models.Model):
     account = models.ForeignKey(Account, on_delete=models.CASCADE)
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name="iaso_profile")
     external_user_id = models.CharField(max_length=512, null=True, blank=True)
+    # Each profile/user has access to multiple orgunits. Having access to OU also give access to all its children
     org_units = models.ManyToManyField("OrgUnit", blank=True, related_name="iaso_profile")
     language = models.CharField(max_length=512, null=True, blank=True)
     dhis2_id = models.CharField(max_length=128, null=True, blank=True, help_text="Dhis2 user ID for SSO Auth")

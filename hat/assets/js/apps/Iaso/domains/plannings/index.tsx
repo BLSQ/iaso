@@ -1,5 +1,6 @@
 import React, { FunctionComponent } from 'react';
 import { makeStyles, Box, Grid } from '@material-ui/core';
+// @ts-ignore
 import { commonStyles, useSafeIntl } from 'bluesquare-components';
 import { useDispatch } from 'react-redux';
 import TopBar from '../../components/nav/TopBarComponent';
@@ -12,6 +13,7 @@ import { useGetPlannings } from './hooks/requests/useGetPlannings';
 import { redirectTo } from '../../routing/actions';
 import { planningColumns } from './config';
 import { CreateEditPlanning } from './CreateEditPlanning/CreateEditPlanning';
+import { useDeletePlanning } from './hooks/requests/useDeletePlanning';
 
 const useStyles = makeStyles(theme => ({
     ...commonStyles(theme),
@@ -22,11 +24,11 @@ type Props = {
 };
 const baseUrl = baseUrls.planning;
 export const Planning: FunctionComponent<Props> = ({ params }) => {
-    // console.log('params', params);
     const dispatch = useDispatch();
     const classes: Record<string, string> = useStyles();
     const { formatMessage } = useSafeIntl();
     const { data, isFetching } = useGetPlannings(params);
+    const { mutateAsync: deletePlanning } = useDeletePlanning();
 
     return (
         <>
@@ -36,19 +38,16 @@ export const Planning: FunctionComponent<Props> = ({ params }) => {
             />
 
             <Box className={classes.containerFullHeightNoTabPadded}>
-                {/* // Your code here */}
                 <PlanningFilters params={params} />
-                <Grid container justifyContent="flex-end">
-                    <Grid item>
-                        <CreateEditPlanning type="create" />
-                    </Grid>
+                <Grid container item justifyContent="flex-end">
+                    <CreateEditPlanning type="create" />
                 </Grid>
                 <TableWithDeepLink
                     baseUrl={baseUrl}
                     data={data?.results ?? []}
                     pages={data?.pages ?? 1}
                     defaultSorted={[{ id: 'name', desc: false }]}
-                    columns={planningColumns(formatMessage)}
+                    columns={planningColumns(formatMessage, deletePlanning)}
                     count={data?.count ?? 0}
                     params={params}
                     onTableParamsChange={p => dispatch(redirectTo(baseUrl, p))}

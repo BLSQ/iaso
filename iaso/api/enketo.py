@@ -236,7 +236,7 @@ def enketo_edit_url(request, instance_uuid):
 @permission_classes([permissions.AllowAny])
 def enketo_form_list(request):
     form_id_str = request.GET["formID"]
-    i = Instance.objects.get(uuid=form_id_str)
+    i = Instance.objects.exclude(deleted=True).get(uuid=form_id_str)
     latest_form_version = i.form.latest_version
     # will it work through s3, what about "signing" infos if they expires ?
     downloadurl = public_url_for_enketo(request, "/api/enketo/formDownload/?uuid=%s" % i.uuid)

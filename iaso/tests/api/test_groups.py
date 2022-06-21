@@ -1,6 +1,5 @@
 import typing
 
-from django.test import tag
 from django.utils.timezone import now
 
 from iaso import models as m

@@ -1,8 +1,5 @@
 import uuid
 
-from django.core.files import File
-from unittest import mock
-
 from iaso import models as m
 from iaso.models import EntityType, Instance, Entity
 from iaso.test import APITestCase

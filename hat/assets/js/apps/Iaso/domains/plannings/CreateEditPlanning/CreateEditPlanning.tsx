@@ -1,5 +1,9 @@
-import React, { FunctionComponent, useCallback, useMemo } from 'react';
-
+import React, {
+    FunctionComponent,
+    useCallback,
+    useMemo,
+    useState,
+} from 'react';
 // @ts-ignore
 import { AddButton, useSafeIntl, IconButton } from 'bluesquare-components';
 import FileCopyIcon from '@material-ui/icons/FileCopy';
@@ -14,15 +18,17 @@ import MESSAGES from '../messages';
 import { useGetForms } from '../hooks/requests/useGetForms';
 import { useGetTeams } from '../hooks/requests/useGetTeams';
 import {
+    convertAPIErrorsToState,
     SavePlanningQuery,
     useSavePlanning,
 } from '../hooks/requests/useSavePlanning';
 import DatesRange from '../../../components/filters/DatesRange';
 import { OrgUnitsLevels as OrgUnitSelect } from '../../../../../../../../plugins/polio/js/src/components/Inputs/OrgUnitsSelect';
-import { usePlanningValidation } from '../validation';
+import { usePlanningValidation } from '../hooks/validation';
 import { commaSeparatedIdsToArray } from '../../../utils/forms';
 import { IntlFormatMessage } from '../../../types/intl';
 import { useGetProjectsDropDown } from '../hooks/requests/useGetProjectsDropDown';
+import { useApiErrorValidation } from '../../../libs/validation';
 
 type ModalMode = 'create' | 'edit' | 'copy';
 
@@ -57,6 +63,26 @@ const makeRenderTrigger = (type: 'create' | 'edit' | 'copy') => {
     );
 };
 
+// TODO move to utils
+export const makeResetTouched =
+    (
+        formValues: Record<string, any>,
+        setTouched: (
+            // eslint-disable-next-line no-unused-vars
+            fields: { [field: string]: boolean },
+            // eslint-disable-next-line no-unused-vars
+            shouldValidate?: boolean,
+        ) => void,
+    ) =>
+    (): void => {
+        const formKeys = Object.keys(formValues);
+        const fields = {};
+        formKeys.forEach(formKey => {
+            fields[formKey] = true;
+        });
+        setTouched(fields);
+    };
+
 const formatTitle = (type: ModalMode, formatMessage: IntlFormatMessage) => {
     switch (type) {
         case 'create':
@@ -84,15 +110,23 @@ export const CreateEditPlanning: FunctionComponent<Props> = ({
     publishingStatus,
 }) => {
     const { formatMessage } = useSafeIntl();
-    const { data: formsDropdown, isFetching: isFetchingForms } = useGetForms();
-    const { data: teamsDropdown, isFetching: isFetchingTeams } = useGetTeams();
-    const { data: projectsDropdown, isFetching: isFetchingProjects } =
-        useGetProjectsDropDown();
-    // Tried the typescript integration, but Type casting was crap
-    const schema = usePlanningValidation();
+    const [closeModal, setCloseModal] = useState<any>();
     const { mutateAsync: savePlanning } = useSavePlanning(type);
+    const {
+        apiErrors,
+        payload,
+        mutation: save,
+    } = useApiErrorValidation<Partial<SavePlanningQuery>, any>({
+        mutationFn: savePlanning,
+        onSuccess: () => {
+            closeModal.closeDialog();
+            formik.resetForm();
+        },
 
-    const renderTrigger = useMemo(() => makeRenderTrigger(type), [type]);
+        convertError: convertAPIErrorsToState,
+    });
+
+    const schema = usePlanningValidation(apiErrors, payload);
 
     const formik = useFormik({
         initialValues: {
@@ -110,7 +144,7 @@ export const CreateEditPlanning: FunctionComponent<Props> = ({
         enableReinitialize: true,
         validateOnBlur: true,
         validationSchema: schema,
-        onSubmit: (values: Partial<SavePlanningQuery>) => savePlanning(values), // TODO: convert forms string to Arry of IDs
+        onSubmit: save,
     });
 
     const {
@@ -118,12 +152,25 @@ export const CreateEditPlanning: FunctionComponent<Props> = ({
         setFieldValue,
         touched,
         setFieldTouched,
+        initialValues,
         errors,
         isValid,
-        initialValues,
         handleSubmit,
         resetForm,
     } = formik;
+
+    const { data: formsDropdown, isFetching: isFetchingForms } = useGetForms(
+        values?.project,
+    );
+    const { data: teamsDropdown, isFetching: isFetchingTeams } = useGetTeams(
+        values?.project,
+    );
+    // TODO filter out by team and forms
+    const { data: projectsDropdown, isFetching: isFetchingProjects } =
+        useGetProjectsDropDown();
+
+    const renderTrigger = useMemo(() => makeRenderTrigger(type), [type]);
+
     const onChange = (keyValue, value) => {
         setFieldTouched(keyValue, true);
         setFieldValue(keyValue, value);
@@ -131,7 +178,7 @@ export const CreateEditPlanning: FunctionComponent<Props> = ({
     const getErrors = useCallback(
         keyValue => {
             if (!touched[keyValue]) return [];
-            return errors[keyValue] ? [errors[keyValue]] : [];
+            return errors?.[keyValue] ? [errors[keyValue]] : [];
         },
         [errors, touched],
     );
@@ -143,7 +190,7 @@ export const CreateEditPlanning: FunctionComponent<Props> = ({
                 allowConfirm={isValid && !isEqual(values, initialValues)}
                 titleMessage={titleMessage}
                 onConfirm={closeDialog => {
-                    closeDialog();
+                    setCloseModal({ closeDialog });
                     handleSubmit();
                 }}
                 onCancel={closeDialog => {

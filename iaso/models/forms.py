@@ -58,6 +58,11 @@ class FormQuerySet(models.QuerySet):
 
 
 class Form(SoftDeletableModel):
+    """Metadata about a form
+
+    Forms are versioned, see the FormVersion model
+    """
+
     PERIOD_TYPE_CHOICES = (
         (periods.PERIOD_TYPE_MONTH, _("Month")),
         (periods.PERIOD_TYPE_QUARTER, _("Quarter")),
@@ -204,6 +209,11 @@ class FormVersionManager(models.Manager):
 
 
 class FormVersion(models.Model):
+    """A version of a Form
+
+    The actual form definition (list of questions and their presentation) are kept in files (file/xls_file attribute)
+    """
+
     form = models.ForeignKey(Form, on_delete=models.CASCADE, related_name="form_versions")
     # xml file representation
     file = models.FileField(upload_to=_form_version_upload_to)

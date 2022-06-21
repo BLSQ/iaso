@@ -25,6 +25,7 @@ export const useLqasData = (
             countries: [country],
             enabled: Boolean(country),
         }).query;
+
     const debugData = useDebugData(LQASData, campaign);
 
     const hasScope = debugData[campaign]?.hasScope;

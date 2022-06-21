@@ -170,27 +170,15 @@ class InputComponent extends Component {
                     );
                 case 'radio':
                     return (
-                        <FormControl
-                            component="fieldset"
-                            error={errors.length > 0}
-                            variant="outlined"
-                        >
-                            <FormLabel
-                                style={{ fontSize: 12 }}
-                                component="legend"
-                            >
-                                {labelText}
-                            </FormLabel>
-                            <Radio
-                                className={className}
-                                name={keyValue}
-                                onChange={newValue =>
-                                    onChange(keyValue, newValue)
-                                }
-                                options={options}
-                                value={value}
-                            />
-                        </FormControl>
+                        <Radio
+                            className={className}
+                            name={keyValue}
+                            label={labelText}
+                            error={errors}
+                            onChange={newValue => onChange(keyValue, newValue)}
+                            options={options}
+                            value={value}
+                        />
                     );
                 default:
                     return null;

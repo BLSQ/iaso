@@ -1,7 +1,6 @@
 from django.db import InternalError, connections
 
 from iaso.test import TestCase
-from django.test import tag
 from iaso import models as m
 
 

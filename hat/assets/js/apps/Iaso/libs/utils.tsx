@@ -4,6 +4,7 @@
  * @param {string} url
  * @param {{[p: string]: T}} params
  */
+// url should include closing slash
 export const makeUrlWithParams = (
     url: string,
     urlParams: Record<string, unknown>,
@@ -19,7 +20,7 @@ export const makeUrlWithParams = (
         }
     });
 
-    return `${url}/?${urlSearchParams.toString()}`;
+    return `${url}?${urlSearchParams.toString()}`;
 };
 
 // Credit yup source code: https://github.com/jquense/yup/blob/master/src/string.ts

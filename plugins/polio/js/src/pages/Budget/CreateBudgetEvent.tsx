@@ -44,7 +44,7 @@ export const CreateBudgetEvent: FunctionComponent<Props> = ({ campaignId }) => {
             type: null,
             cc_emails: null,
             comment: null,
-            file: null,
+            files: null,
             status: 'validation_ongoing', // TODO status should be handled by backend
         },
         enableReinitialize: true,
@@ -144,12 +144,13 @@ export const CreateBudgetEvent: FunctionComponent<Props> = ({ campaignId }) => {
                     loading={isFetchingTeams}
                 />
                 <FileInputComponent
-                    keyValue="file"
+                    keyValue="files"
                     required
+                    multiple
                     onChange={onChange}
-                    value={values.file}
-                    errors={getErrors('file')}
-                    label={MESSAGES.file}
+                    value={values.files}
+                    errors={getErrors('files')}
+                    label={MESSAGES.filesUpload}
                 />
                 <InputComponent
                     type="text"

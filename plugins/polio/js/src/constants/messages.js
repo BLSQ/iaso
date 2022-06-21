@@ -1193,9 +1193,9 @@ const MESSAGES = defineMessages({
         defaultMessage: 'Cc emails',
         id: 'iaso.polio.label.cc_emails',
     },
-    file: {
-        defaultMessage: 'File',
-        id: 'iaso.polio.label.file',
+    filesUpload: {
+        defaultMessage: 'Files',
+        id: 'iaso.polio.label.filesUpload',
     },
     viewFiles: {
         defaultMessage: 'View files',
@@ -1232,6 +1232,15 @@ const MESSAGES = defineMessages({
     validation: {
         id: 'iaso.forms.options.validation',
         defaultMessage: 'Validation',
+    },
+    emailFormat: {
+        id: 'iaso.forms.options.emailFormat',
+        defaultMessage: 'Please use correctly formatted email addresses',
+    },
+    budgetTypeError: {
+        id: 'iaso.forms.options.budgetTypeError',
+        defaultMessage:
+            'Value should be one of "submission", "comments" or "validation"',
     },
 });
 

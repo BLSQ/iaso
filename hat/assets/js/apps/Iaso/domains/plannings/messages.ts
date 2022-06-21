@@ -115,7 +115,15 @@ const MESSAGES = defineMessages({
     },
     invalidDate: {
         id: 'iaso.label.invalidDate',
-        defaultMessage: 'iaso.label.invalidDate',
+        defaultMessage: 'Invalid date',
+    },
+    deletePlanning: {
+        id: 'iaso.label.deletePlanning',
+        defaultMessage: 'Delete planning : {planningName}',
+    },
+    deleteWarning: {
+        id: 'iaso.label.deleteWarning',
+        defaultMessage: 'Are you sure you want to delete {planningName}? ',
     },
 });
 

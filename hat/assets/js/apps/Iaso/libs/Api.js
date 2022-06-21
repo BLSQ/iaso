@@ -41,7 +41,6 @@ export const iasoFetch = async (resource, init = {}) => {
     } catch (error) {
         // ignoring errors from cancelled fetch
         if (error.name !== 'AbortError') {
-            console.error(error);
             throw new ApiError(error.message);
         }
         // Don't error on cancel fetch
@@ -51,7 +50,6 @@ export const iasoFetch = async (resource, init = {}) => {
         return emptyRes;
     }
     if (!response.ok) {
-        console.error(`Error on  ${method}  ${url}  status ${response.status}`);
         const json = await tryJson(response);
         throw new ApiError(`Error on ${method} ${url} `, response, json);
     }
@@ -64,7 +62,7 @@ export const getRequest = async (url, signal) => {
     });
 };
 
-export const postRequest = (url, data, fileData = {}, signal) => {
+export const basePostRequest = (url, data, fileData = {}, signal) => {
     // Send as form if files included else in JSON
     let init = {};
 
@@ -89,6 +87,13 @@ export const postRequest = (url, data, fileData = {}, signal) => {
     }
 
     return iasoFetch(url, init).then(response => response.json());
+};
+
+export const postRequest = (arg1, arg2, arg3, arg4) => {
+    if (typeof arg1 === 'string') {
+        return basePostRequest(arg1, arg2, arg3, arg4);
+    }
+    return basePostRequest(arg1.url, arg1.data, arg1.fileData, arg1.signal);
 };
 
 export const patchRequest = (url, data, signal) =>

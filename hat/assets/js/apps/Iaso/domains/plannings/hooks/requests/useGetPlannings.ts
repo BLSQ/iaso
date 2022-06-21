@@ -8,6 +8,7 @@ import {
     dateApiToDateRangePicker,
     dateRangePickerToDateApi,
 } from '../../../../utils/dates';
+import { endpoint } from '../../constants';
 import { PlanningParams } from '../../types';
 
 type PlanningApi = {
@@ -39,7 +40,7 @@ const getPlannings = async (options: PlanningParams): Promise<PlanningList> => {
     params.ended_at__lte = dateRangePickerToDateApi(options.dateTo);
     params.publishing_status = options.publishingStatus;
 
-    const url = makeUrlWithParams('/api/microplanning/planning', params);
+    const url = makeUrlWithParams(endpoint, params);
     return getRequest(url) as Promise<PlanningList>;
 };
 

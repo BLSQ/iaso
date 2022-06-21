@@ -1,11 +1,17 @@
 import React, { ReactElement } from 'react';
+// @ts-ignore
 import { IconButton as IconButtonComponent } from 'bluesquare-components';
 import MESSAGES from './messages';
 import { IntlFormatMessage } from '../../types/intl';
 import { Column } from '../../types/table';
 import { CreateEditPlanning } from './CreateEditPlanning/CreateEditPlanning';
+import DeleteDialog from '../../components/dialogs/DeleteDialogComponent';
 
-export const planningColumns = (formatMessage: IntlFormatMessage): Column[] => {
+export const planningColumns = (
+    formatMessage: IntlFormatMessage,
+    // eslint-disable-next-line no-unused-vars
+    deletePlanning: (id: number) => void,
+): Column[] => {
     return [
         {
             Header: 'Id',
@@ -81,6 +87,25 @@ export const planningColumns = (formatMessage: IntlFormatMessage): Column[] => {
                             publishingStatus={settings.row.original?.status}
                             project={settings.row.original?.project}
                             description={settings.row.original?.description}
+                        />
+                        <DeleteDialog
+                            titleMessage={{
+                                ...MESSAGES.deletePlanning,
+                                values: {
+                                    planningName: settings.row.original.name,
+                                },
+                            }}
+                            message={{
+                                ...MESSAGES.deleteWarning,
+                                values: {
+                                    planningName: settings.row.original.name,
+                                },
+                            }}
+                            disabled={false}
+                            onConfirm={() =>
+                                deletePlanning(settings.row.original.id)
+                            }
+                            keyName="delete-planning"
                         />
                     </section>
                 );

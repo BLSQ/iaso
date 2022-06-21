@@ -28,7 +28,9 @@ from gspread.utils import extract_id_from_url
 from rest_framework import routers, filters, viewsets, serializers, permissions, status
 from rest_framework.decorators import action
 from rest_framework.response import Response
-
+from rest_framework_simplejwt.tokens import RefreshToken
+from django.conf import settings
+import urllib.parse
 from hat.audit.models import Modification, CAMPAIGN_API
 from iaso.api.common import ModelViewSet, DeletionFilterBackend
 from iaso.models import OrgUnit
@@ -1406,6 +1408,18 @@ class HasPoliobudgetPermission(permissions.BasePermission):
         return True
 
 
+def _generate_auto_authentication_link(link, user):
+
+    refresh = RefreshToken.for_user(user)
+    access_token = str(refresh.access_token)
+    domain = settings.DNS_DOMAIN
+    encoded_link = urllib.parse.quote(link)
+
+    final_link = "https://%s/token_auth/?token=%s&next=%s" % (domain, access_token, encoded_link)
+
+    return final_link
+
+
 class BudgetEventViewset(ModelViewSet):
     result_key = "results"
     remove_results_key_if_paginated = True
@@ -1421,6 +1435,18 @@ class BudgetEventViewset(ModelViewSet):
         "type",
         "author",
     ]
+    email_title_template = "New {} for {}"
+    email_template = """%s by %s %s.
+    
+Comment: %s
+
+------------
+
+you can access the history of this budget here: %s
+
+------------    
+This is an automated email from %s
+"""
 
     def get_serializer_class(self):
         return BudgetEventSerializer
@@ -1434,34 +1460,33 @@ class BudgetEventViewset(ModelViewSet):
 
     def perform_create(self, serializer):
         event = serializer.save(author=self.request.user)
-        emails = set()
+        recipients = set()
         for team in event.target_teams.all():
             for user in team.users.all():
                 if user.email:
-                    emails.add(user.email)
-        if event.cc_emails:
-            emails.update(event.cc_emails.split(","))
+                    recipients.add(user)
 
+        link_to_send = "https://%s/dashboard/polio/budget/details/campaignId/%s/campaignName/%s/country/%d" % (
+            settings.DNS_DOMAIN,
+            event.campaign.id,
+            event.campaign.obr_name,
+            event.campaign.country.id,
+        )
+
+        for user in recipients:
             send_mail(
-                "New Budget Event for {}".format(event.campaign.obr_name),
-                """%s by %s %s.
-                Comment: %s
-    you can access the history of this budget here: 
-    https://iaso-staging.bluesquare.org/dashboard/polio/budget/details/campaignId/%s/campaignName/%s/country/%d
-    
-    This is an automated email from poliooutbreaks.com
-"""
+                self.email_title_template.format(event.type, event.campaign.obr_name),
+                self.email_template
                 % (
                     event.type,
                     event.author.first_name,
                     event.author.last_name,
                     event.comment,
-                    event.campaign.id,
-                    event.campaign.obr_name,
-                    event.campaign.country.id,
+                    _generate_auto_authentication_link(link_to_send, user),
+                    settings.DNS_DOMAIN,
                 ),
-                "no-reply@poliooutbreaks.com",
-                emails,
+                "no-reply@%s" % settings.DNS_DOMAIN,
+                [user.email],
             )
 
 

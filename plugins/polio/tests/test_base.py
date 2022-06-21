@@ -15,7 +15,7 @@ from django.contrib.gis.geos import Polygon, Point, MultiPolygon
 
 from hat.settings import BASE_DIR
 from iaso import models as m
-from iaso.models import Account, OrgUnit
+from iaso.models import Account, OrgUnit, org_unit
 from iaso.models.microplanning import Team
 from iaso.test import APITestCase, TestCase
 
@@ -630,7 +630,9 @@ class BudgetPolioTestCase(APITestCase):
             username="luke", account=account, permissions=["iaso_forms"], org_units=[cls.child_org_unit]
         )
 
-        cls.campaign_test = Campaign.objects.create(obr_name="obr_name", detection_status="PENDING")
+        cls.campaign_test = Campaign.objects.create(
+            obr_name="obr_name", detection_status="PENDING", country=cls.org_unit
+        )
 
         cls.project1 = project1 = account.project_set.create(name="project1")
         cls.team1 = Team.objects.create(project=project1, name="team1", manager=cls.yoda)

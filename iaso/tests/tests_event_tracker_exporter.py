@@ -1,7 +1,6 @@
 import json
 import responses
 from django.core.files.uploadedfile import UploadedFile
-from collections import namedtuple
 import logging
 
 logger = logging.getLogger(__name__)

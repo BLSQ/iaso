@@ -1,7 +1,7 @@
 import os
 
 import requests
-from django.http import HttpResponse, JsonResponse
+from django.http import HttpResponse
 from django.shortcuts import render
 from django.views.generic import TemplateView
 from rest_framework.authentication import SessionAuthentication

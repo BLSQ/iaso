@@ -1,5 +1,4 @@
 import typing
-from django.test import tag
 from uuid import uuid4
 
 from iaso import models as m

@@ -1,14 +1,10 @@
 import csv
-import uuid
 
 from django.contrib.auth.models import User
-from django.core.files import File
-from unittest import mock
 
 from iaso import models as m
 from iaso.models import Profile, BulkCreateUserCsvFile
 from iaso.test import APITestCase
-import pandas as pd
 
 
 class BulkCreateCsvTestCase(APITestCase):

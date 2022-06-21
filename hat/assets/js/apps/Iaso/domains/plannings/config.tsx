@@ -8,16 +8,18 @@ import { IntlFormatMessage } from '../../types/intl';
 import { Column } from '../../types/table';
 
 import { CreateEditPlanning } from './CreateEditPlanning/CreateEditPlanning';
+import DeleteDialog from '../../components/dialogs/DeleteDialogComponent';
 
-import MESSAGES from './messages';
 
 import { PlanningApi } from './hooks/requests/useGetPlannings';
-
 const getAssignmentUrl = (planning: PlanningApi): string => {
     return `${baseUrls.assignments}/planningId/${planning.id}/team/${planning.team}`;
 };
-
-export const planningColumns = (formatMessage: IntlFormatMessage): Column[] => {
+export const planningColumns = (
+    formatMessage: IntlFormatMessage,
+    // eslint-disable-next-line no-unused-vars
+    deletePlanning: (id: number) => void,
+): Column[] => {
     return [
         {
             Header: 'Id',
@@ -93,6 +95,25 @@ export const planningColumns = (formatMessage: IntlFormatMessage): Column[] => {
                             publishingStatus={settings.row.original?.status}
                             project={settings.row.original?.project}
                             description={settings.row.original?.description}
+                        />
+                        <DeleteDialog
+                            titleMessage={{
+                                ...MESSAGES.deletePlanning,
+                                values: {
+                                    planningName: settings.row.original.name,
+                                },
+                            }}
+                            message={{
+                                ...MESSAGES.deleteWarning,
+                                values: {
+                                    planningName: settings.row.original.name,
+                                },
+                            }}
+                            disabled={false}
+                            onConfirm={() =>
+                                deletePlanning(settings.row.original.id)
+                            }
+                            keyName="delete-planning"
                         />
                     </section>
                 );

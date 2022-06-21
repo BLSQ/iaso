@@ -15,26 +15,20 @@ import AddIcon from '@material-ui/icons/Add';
 import DownloadIcon from '@material-ui/icons/GetApp';
 import CloudUploadIcon from '@material-ui/icons/CloudUpload';
 import TopBar from 'Iaso/components/nav/TopBarComponent';
-import { getApiParamDateString } from 'Iaso/utils/dates.ts';
 import { TableWithDeepLink } from 'Iaso/components/tables/TableWithDeepLink';
 import { PolioCreateEditDialog as CreateEditDialog } from '../components/CreateEditDialog';
 import { PageAction } from '../components/Buttons/PageAction';
 import { PageActions } from '../components/Buttons/PageActions';
 import { ConfirmDialog } from '../components/ConfirmDialog';
-import { useGetCampaigns } from '../hooks/useGetCampaigns';
+import { useGetCampaigns, useCampaignParams } from '../hooks/useGetCampaigns';
 import { useRemoveCampaign } from '../hooks/useRemoveCampaign';
 import { useRestoreCampaign } from '../hooks/useRestoreCampaign';
 import { useStyles } from '../styles/theme';
 import MESSAGES from '../constants/messages';
-
 import ImportLineListDialog from '../components/ImportLineListDialog';
 import { genUrl } from '../utils/routing';
 import { convertObjectToString } from '../utils';
 import { DASHBOARD_BASE_URL } from '../constants/routes';
-
-const DEFAULT_PAGE_SIZE = 40;
-const DEFAULT_PAGE = 1;
-const DEFAULT_ORDER = '-cvdpv2_notified_at';
 
 const Dashboard = ({ router }) => {
     const { params } = router;
@@ -48,23 +42,7 @@ const Dashboard = ({ router }) => {
     const [selectedCampaignId, setSelectedCampaignId] = useState();
     const classes = useStyles();
 
-    // Add the defaults. put in a memo for comparison.
-    // Need a better way to handle default in the routing
-    const apiParams = useMemo(() => {
-        return {
-            order: params?.order ?? DEFAULT_ORDER,
-            pageSize: params?.pageSize ?? DEFAULT_PAGE_SIZE,
-            page: params?.page ?? DEFAULT_PAGE,
-            countries: params.countries,
-            search: params.search,
-            r1StartFrom: getApiParamDateString(params.r1StartFrom),
-            r1StartTo: getApiParamDateString(params.r1StartTo),
-            showOnlyDeleted: params.showOnlyDeleted,
-            campaignType: params.campaignType,
-            campaignGroups: params.campaignGroups,
-            show_test: params.show_test ?? true,
-        };
-    }, [params]);
+    const apiParams = useCampaignParams(params);
 
     const [resetPageToOne, setResetPageToOne] = useState('');
 

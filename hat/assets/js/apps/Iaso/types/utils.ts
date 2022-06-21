@@ -6,3 +6,5 @@ export type DropdownOptions<T> = {
     value: T;
     original?: Record<any, any>;
 };
+export type ValidationError = Record<string, string> | null | undefined;
+export type GenericObject = Record<string, any>;

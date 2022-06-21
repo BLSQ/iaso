@@ -12,19 +12,28 @@ const getForms = async (signal?: AbortSignal) =>
         return forms;
     });
 
-export const useGetForms = (): UseQueryResult<
-    DropdownOptions<string>,
-    Error
-> => {
-    return useSnackQuery(['forms'], () => getForms(), undefined, {
+export const useGetForms = (
+    projectId?: number,
+): UseQueryResult<DropdownOptions<string>, Error> => {
+    return useSnackQuery(['forms', projectId], () => getForms(), undefined, {
         select: data => {
             if (!data?.forms) return [];
-            return data.forms.map(forms => {
-                return {
-                    value: forms.id,
-                    label: forms.name,
-                };
-            });
+            return data.forms
+                .filter(form =>
+                    projectId
+                        ? Boolean(
+                              form.projects.find(
+                                  project => project.id === projectId,
+                              ),
+                          )
+                        : Boolean(form),
+                )
+                .map(forms => {
+                    return {
+                        value: forms.id,
+                        label: forms.name,
+                    };
+                });
         },
     });
 };

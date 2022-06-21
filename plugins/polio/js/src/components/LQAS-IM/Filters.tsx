@@ -1,4 +1,5 @@
 import React, { FunctionComponent, useMemo, useState } from 'react';
+// @ts-ignore
 import { Select, useSafeIntl } from 'bluesquare-components';
 import { withRouter } from 'react-router';
 import { useDispatch } from 'react-redux';
@@ -54,7 +55,7 @@ const Filters: FunctionComponent<Props> = ({
     const countriesList = (countriesData && countriesData.orgUnits) || [];
     const dropDownOptions = useMemo(() => {
         const displayedCampaigns = country
-            ? campaigns.filter(c => c.org_unit.id === country)
+            ? campaigns.filter(c => c.top_level_org_unit_id === country)
             : campaigns;
         return makeCampaignsDropDown(displayedCampaigns);
     }, [country, campaigns]);

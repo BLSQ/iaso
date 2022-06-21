@@ -1,10 +1,6 @@
-import typing
-from django.test import tag
-
 from iaso.test import APITestCase
 from iaso import models as m
 from django.contrib.gis.geos import Point
-from django.utils import timezone
 from iaso.dhis2.export_request_builder import ExportRequestBuilder
 from django.core.files.uploadedfile import UploadedFile
 

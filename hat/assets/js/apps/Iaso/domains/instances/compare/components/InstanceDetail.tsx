@@ -1,5 +1,5 @@
 import React, { FunctionComponent } from 'react';
-
+// @ts-ignore
 import { useSafeIntl, LoadingSpinner } from 'bluesquare-components';
 
 import { Box, Typography } from '@material-ui/core';

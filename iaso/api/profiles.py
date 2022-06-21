@@ -238,10 +238,6 @@ class ProfilesViewSet(viewsets.ViewSet):
 
 You’ve been invited to access IASO, and a new account with the username {userName} has been created for you. 
 
-IASO serves as an offline data collection tool with a specific angle on spatial related data, that make it specifically
-useful for health facilities registry or any situation where multiple sources of spatial data needs to be coordinated.
-For more information visit: https://www.bluesquarehub.com/iaso
-
 To set up a password for your account, simply click on the link:
 
 {url}
@@ -258,10 +254,6 @@ The Iaso Team.
     CREATE_PASSWORD_MESSAGE_FR = """Salut, 
 
 Vous avez été invité à accéder à IASO et un nouveau compte avec le nom d'utilisateur {userName} a été créé pour vous.
-
-IASO sert d'outil de collecte de données hors ligne avec un angle spécifique sur les données spatiales, ce qui le rend spécifiquement
-utile pour le registre des établissements de santé ou toute situation où plusieurs sources de données spatiales doivent être coordonnées.
-Pour plus d'informations, visitez : https://www.bluesquarehub.com/iaso
 
 Pour configurer un mot de passe pour votre compte, cliquez simplement sur le lien :
 

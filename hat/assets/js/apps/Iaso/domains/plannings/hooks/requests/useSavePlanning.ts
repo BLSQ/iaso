@@ -97,10 +97,7 @@ const duplicatePlanning = async (body: SavePlanningQuery) => {
 
 export const useSavePlanning = (
     type: 'create' | 'edit' | 'copy',
-    // callback?: () => void,
 ): UseMutationResult => {
-    // const onSuccess = () => callback();
-
     const ignoreErrorCodes = [400];
     const editPlanning = useSnackMutation(
         (data: Partial<SavePlanningQuery>) => patchPlanning(data),
@@ -108,7 +105,6 @@ export const useSavePlanning = (
         undefined,
         ['planningsList'],
         undefined,
-        // { onSuccess },
         ignoreErrorCodes,
     );
     const createPlanning = useSnackMutation(

@@ -36,7 +36,7 @@ export const ScopeAndDNFDisclaimer: FunctionComponent<Props> = ({
     const allDistrictsFound = districtsNotFound?.length === 0;
     return (
         <Grid container direction="column" className={classes.centerText}>
-            {hasScope !== undefined && !hasScope && (
+            {hasScope === false && (
                 <Grid container item direction="column">
                     <Grid item>
                         <Box mt={2}>

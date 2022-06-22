@@ -78,7 +78,7 @@ const makeEventsDropdown = (user, validationTeam, formatMessage) => {
             label: formatMessage(MESSAGES.comments),
         },
     ];
-    if (validationTeam?.users.includes(user.user_id)) {
+    if (validationTeam?.users?.includes(user.user_id)) {
         return [
             ...baseOptions,
             {

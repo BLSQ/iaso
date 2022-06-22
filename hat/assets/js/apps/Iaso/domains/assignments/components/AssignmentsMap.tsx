@@ -1,4 +1,5 @@
-import React, { FunctionComponent, useRef, useState } from 'react';
+import React, { FunctionComponent, useRef, useState, useEffect } from 'react';
+import { UseQueryResult } from 'react-query';
 import {
     Map,
     TileLayer,
@@ -8,33 +9,21 @@ import {
     ScaleControl,
 } from 'react-leaflet';
 import { Box } from '@material-ui/core';
-import { useTheme, Theme } from '@material-ui/core/styles';
 import {
     // @ts-ignore
     LoadingSpinner,
 } from 'bluesquare-components';
-// utils
+
 import {
     ZoomControl,
     circleColorMarkerOptions,
     getShapesBounds,
     getLatLngBounds,
 } from '../../../utils/mapUtils';
-// constants
 import tiles from '../../../constants/mapTiles';
-// types
-import { AssignmentsApi } from '../types/assigment';
-import { Planning } from '../types/planning';
 import { Locations, OrgUnitMarker, OrgUnitShape } from '../types/locations';
-import { DropdownTeamsOptions, Team } from '../types/team';
-import { Profile } from '../../../utils/usersUtils';
-// requests
-import { useGetOrgUnitLocations } from '../hooks/requests/useGetOrgUnitLocations';
-// components
 import { TilesSwitch, Tile } from '../../../components/maps/tools/TileSwitch';
 import MarkersListComponent from '../../../components/maps/markers/MarkersListComponent';
-// utils
-import { getLocationColor } from '../utils';
 
 const defaultViewport = {
     center: [1, 20],
@@ -42,15 +31,13 @@ const defaultViewport = {
 };
 
 type Props = {
-    assignments: AssignmentsApi;
-    planning: Planning | undefined;
-    teams: DropdownTeamsOptions[];
-    profiles: Profile[];
     // eslint-disable-next-line no-unused-vars
     handleClick: (shape: OrgUnitShape | OrgUnitMarker) => void;
-    currentTeam: Team | undefined;
-    baseOrgunitType: string;
+    // eslint-disable-next-line no-unused-vars
+    getLocationColor: (location: OrgUnitShape | OrgUnitMarker) => string;
+    getLocations: UseQueryResult<Locations, Error>;
 };
+
 const boundsOptions = {
     padding: [50, 50],
 };
@@ -74,28 +61,12 @@ const getLocationsBounds = (locations: Locations) => {
 };
 
 export const AssignmentsMap: FunctionComponent<Props> = ({
-    assignments,
-    planning,
-    teams,
-    profiles,
     handleClick,
-    currentTeam,
-    baseOrgunitType,
+    getLocationColor,
+    getLocations,
 }) => {
     const map: any = useRef();
-    const theme: Theme = useTheme();
     const [currentTile, setCurrentTile] = useState<Tile>(tiles.osm);
-    const filteredAssignments = assignments
-        .filter(assignment =>
-            currentTeam?.type === 'TEAM_OF_USERS'
-                ? assignment.user !== null
-                : assignment.team !== null,
-        )
-        .filter(
-            assignment =>
-                assignment.org_unit_details.org_unit_type ===
-                parseInt(baseOrgunitType, 10),
-        );
     const fitToBounds = (newLocations: Locations) => {
         const bounds = getLocationsBounds(newLocations);
         if (bounds && map?.current) {
@@ -106,12 +77,14 @@ export const AssignmentsMap: FunctionComponent<Props> = ({
             }
         }
     };
-    const { data: locations, isFetching: isFetchingLocations } =
-        useGetOrgUnitLocations(
-            planning?.org_unit,
-            fitToBounds,
-            baseOrgunitType,
-        );
+    const { data: locations, isFetching: isFetchingLocations } = getLocations;
+
+    useEffect(() => {
+        if (!isFetchingLocations && locations) {
+            fitToBounds(locations);
+        }
+    }, [isFetchingLocations, locations]);
+
     return (
         <Box position="relative">
             <TilesSwitch
@@ -147,14 +120,7 @@ export const AssignmentsMap: FunctionComponent<Props> = ({
                                     onClick={() => handleClick(shape)}
                                     data={shape.geoJson}
                                     style={() => ({
-                                        color: getLocationColor(
-                                            filteredAssignments,
-                                            shape,
-                                            teams,
-                                            theme,
-                                            profiles,
-                                            currentTeam?.type,
-                                        ),
+                                        color: getLocationColor(shape),
                                     })}
                                 >
                                     <Tooltip>{shape.name}</Tooltip>
@@ -164,18 +130,10 @@ export const AssignmentsMap: FunctionComponent<Props> = ({
                         <Pane name="markers">
                             <MarkersListComponent
                                 items={locations.markers || []}
-                                // eslint-disable-next-line no-console
                                 onMarkerClick={shape => handleClick(shape)}
                                 markerProps={shape => ({
                                     ...circleColorMarkerOptions(
-                                        getLocationColor(
-                                            filteredAssignments,
-                                            shape,
-                                            teams,
-                                            theme,
-                                            profiles,
-                                            currentTeam?.type,
-                                        ),
+                                        getLocationColor(shape),
                                     ),
                                 })}
                                 tooltipProps={orgUnit => ({

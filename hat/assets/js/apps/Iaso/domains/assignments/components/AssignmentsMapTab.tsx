@@ -8,7 +8,7 @@ import {
     // @ts-ignore
     useSafeIntl,
 } from 'bluesquare-components';
-import { getOrgUnitAssignation } from '../utils';
+import { getOrgUnitAssignation, getLocationColor } from '../utils';
 
 import { AssignmentsMap } from './AssignmentsMap';
 
@@ -16,7 +16,10 @@ import { AssignmentsApi, SaveAssignmentQuery } from '../types/assigment';
 import { Planning } from '../types/planning';
 import { Team, DropdownTeamsOptions, SubTeam, User } from '../types/team';
 import { OrgUnitMarker, OrgUnitShape } from '../types/locations';
+
 import { Profile } from '../../../utils/usersUtils';
+
+import { useGetOrgUnitLocations } from '../hooks/requests/useGetOrgUnitLocations';
 
 import { getColumns } from '../configs/AssignmentsMapTabColumns';
 
@@ -144,6 +147,32 @@ export const AssignmentsMapTab: FunctionComponent<Props> = ({
         currentTeam?.type === 'TEAM_OF_USERS'
             ? currentTeam.users_details
             : currentTeam?.sub_teams_details;
+
+    const filteredAssignments = assignments
+        .filter(assignment =>
+            currentTeam?.type === 'TEAM_OF_USERS'
+                ? assignment.user !== null
+                : assignment.team !== null,
+        )
+        .filter(
+            assignment =>
+                baseOrgunitType &&
+                assignment.org_unit_details.org_unit_type ===
+                    parseInt(baseOrgunitType, 10),
+        );
+    const getColor = location =>
+        getLocationColor(
+            filteredAssignments,
+            location,
+            teams,
+            theme,
+            profiles,
+            currentTeam?.type,
+        );
+    const geLocations = useGetOrgUnitLocations(
+        planning?.org_unit,
+        baseOrgunitType,
+    );
     return (
         <Grid container spacing={2}>
             <Grid item xs={5}>
@@ -176,17 +205,11 @@ export const AssignmentsMapTab: FunctionComponent<Props> = ({
                 />
             </Grid>
             <Grid item xs={7}>
-                {baseOrgunitType && (
-                    <AssignmentsMap
-                        assignments={assignments}
-                        planning={planning}
-                        teams={teams}
-                        handleClick={handleClick}
-                        currentTeam={currentTeam}
-                        profiles={profiles}
-                        baseOrgunitType={baseOrgunitType}
-                    />
-                )}
+                <AssignmentsMap
+                    handleClick={handleClick}
+                    getLocationColor={getColor}
+                    getLocations={geLocations}
+                />
             </Grid>
         </Grid>
     );

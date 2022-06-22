@@ -50,8 +50,7 @@ const mapLocation = (
 export const useGetOrgUnitLocations = (
     orgUnitParentId: number | undefined,
     // eslint-disable-next-line no-unused-vars
-    callback: (data: Locations) => void,
-    baseOrgunitType: string,
+    baseOrgunitType: string | undefined,
 ): UseQueryResult<Locations, Error> => {
     const params = {
         validation_status: 'all',
@@ -71,12 +70,11 @@ export const useGetOrgUnitLocations = (
         () => getRequest(url),
         undefined,
         {
-            enabled: Boolean(orgUnitParentId),
+            enabled: Boolean(orgUnitParentId) && Boolean(baseOrgunitType),
             staleTime: 1000 * 60 * 15, // in MS
             cacheTime: 1000 * 60 * 5,
             select: (orgUnits: OrgUnit[]) =>
                 mapLocation(orgUnits, orgUnitParentId, baseOrgunitType),
-            onSuccess: data => callback(data),
         },
     );
 };

@@ -57,10 +57,11 @@ export const useGetOrgUnitLocations = (
         asLocation: true,
         limit: 5000,
         order: 'id',
-        parent_id: orgUnitParentId,
+        orgUnitParentId,
         geography: 'any',
-        onlyDirectChildren: true,
+        onlyDirectChildren: false,
         page: 1,
+        orgUnitTypeId: baseOrgunitType,
     };
 
     const url = makeUrlWithParams('/api/orgunits', params);

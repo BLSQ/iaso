@@ -72,7 +72,7 @@ export const Assignments: FunctionComponent<Props> = ({ params }) => {
         data?: Planning;
         isLoading: boolean;
     } = useGetPlanning(planningId);
-    const { data: dataTeams = [], isFetching: isFetchingTeams } = useGetTeams(
+    const { data: dataTeams = [], isFetched: isTeamsFetched } = useGetTeams(
         planning?.team,
     );
     const {
@@ -81,7 +81,7 @@ export const Assignments: FunctionComponent<Props> = ({ params }) => {
     }: {
         data?: AssignmentApi[];
         isLoading: boolean;
-    } = useGetAssignments({ planningId });
+    } = useGetAssignments({ planningId }, currentTeam, baseOrgunitType);
     const { data: orgunitTypes, isFetching: isFetchingOrgunitTypes } =
         useGetOrgUnitTypes();
     const { mutateAsync: saveAssignment, isLoading: isSaving } =
@@ -179,7 +179,7 @@ export const Assignments: FunctionComponent<Props> = ({ params }) => {
                 <AssignmentsFilters
                     params={params}
                     teams={teams || []}
-                    isFetchingTeams={isFetchingTeams || !teams}
+                    isFetchingTeams={!isTeamsFetched}
                     orgunitTypes={orgunitTypes || []}
                     isFetchingOrgUnitTypes={isFetchingOrgunitTypes}
                 />

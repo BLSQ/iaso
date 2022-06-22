@@ -63,69 +63,66 @@ export const AssignmentsMapTab: FunctionComponent<Props> = ({
                 profiles,
                 currentTeam?.type,
             );
-        // TODO: make it better, copy paste for now...
-        if (planning && selectedItem && currentTeam?.type === 'TEAM_OF_TEAMS') {
+        if (planning && selectedItem) {
             let saveParams: SaveAssignmentQuery = {
                 planning: planning.id,
                 org_unit: selectedOrgUnit.id,
-                team: selectedItem.id,
             };
-            if (assignment) {
-                if (assignedTeam) {
-                    if (selectedItem.id !== assignedTeam.original.id) {
-                        // update assignment
-                        saveParams = {
-                            id: assignment.id,
-                            ...saveParams,
-                        };
+            // TODO: make it better, copy paste for now...
+            if (currentTeam?.type === 'TEAM_OF_TEAMS') {
+                saveParams.team = selectedItem.id;
+                if (assignment) {
+                    if (assignedTeam) {
+                        if (selectedItem.id !== assignedTeam.original.id) {
+                            // update assignment
+                            saveParams = {
+                                id: assignment.id,
+                                ...saveParams,
+                            };
+                        } else {
+                            // fake delete assignment, remove team / user
+                            saveParams = {
+                                ...saveParams,
+                                team: null,
+                                user: null,
+                                id: assignment.id,
+                            };
+                        }
                     } else {
-                        // fake delete assignment, remove team / user
+                        // update assignment after fake delete
                         saveParams = {
-                            ...saveParams,
-                            team: null,
-                            user: null,
                             id: assignment.id,
+                            ...saveParams,
                         };
                     }
-                } else {
-                    // update assignment after fake delete
-                    saveParams = {
-                        id: assignment.id,
-                        ...saveParams,
-                    };
                 }
             }
-            saveAssignment(saveParams);
-        }
-        if (planning && selectedItem && currentTeam?.type === 'TEAM_OF_USERS') {
-            let saveParams: SaveAssignmentQuery = {
-                planning: planning.id,
-                org_unit: selectedOrgUnit.id,
-                user: selectedItem.id,
-            };
-            if (assignment) {
-                if (assignedUser) {
-                    if (selectedItem.id !== assignedUser.user_id) {
-                        // update assignment
-                        saveParams = {
-                            id: assignment.id,
-                            ...saveParams,
-                        };
+            if (currentTeam?.type === 'TEAM_OF_USERS') {
+                saveParams.user = selectedItem.id;
+                if (assignment) {
+                    if (assignedUser) {
+                        if (selectedItem.id !== assignedUser.user_id) {
+                            // update assignment
+                            saveParams = {
+                                id: assignment.id,
+                                ...saveParams,
+                            };
+                        } else {
+                            // fake delete assignment, remove team / user
+                            saveParams = {
+                                ...saveParams,
+                                team: null,
+                                user: null,
+                                id: assignment.id,
+                            };
+                        }
                     } else {
-                        // fake delete assignment, remove team / user
+                        // update assignment after fake delete
                         saveParams = {
-                            ...saveParams,
-                            team: null,
-                            user: null,
                             id: assignment.id,
+                            ...saveParams,
                         };
                     }
-                } else {
-                    // update assignment after fake delete
-                    saveParams = {
-                        id: assignment.id,
-                        ...saveParams,
-                    };
                 }
             }
             saveAssignment(saveParams);
@@ -133,7 +130,7 @@ export const AssignmentsMapTab: FunctionComponent<Props> = ({
     };
 
     useEffect(() => {
-        if (planning && !selectedItem && currentTeam) {
+        if (planning && currentTeam) {
             if (currentTeam.type === 'TEAM_OF_USERS') {
                 setSelectedItem(currentTeam.users_details[0]);
             }
@@ -142,27 +139,15 @@ export const AssignmentsMapTab: FunctionComponent<Props> = ({
             }
         }
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [planning]);
+    }, [planning?.id, currentTeam?.id]);
     const data =
         currentTeam?.type === 'TEAM_OF_USERS'
             ? currentTeam.users_details
             : currentTeam?.sub_teams_details;
 
-    const filteredAssignments = assignments
-        .filter(assignment =>
-            currentTeam?.type === 'TEAM_OF_USERS'
-                ? assignment.user !== null
-                : assignment.team !== null,
-        )
-        .filter(
-            assignment =>
-                baseOrgunitType &&
-                assignment.org_unit_details.org_unit_type ===
-                    parseInt(baseOrgunitType, 10),
-        );
     const getColor = location =>
         getLocationColor(
-            filteredAssignments,
+            assignments,
             location,
             teams,
             theme,

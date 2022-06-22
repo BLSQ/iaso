@@ -1,20 +1,15 @@
 import csv
 import functools
 import json
-from datetime import timedelta, datetime, timezone
-from functools import lru_cache
-from typing import Optional, Union
+from datetime import timedelta, datetime
+from typing import Optional
 from collections import defaultdict
 from functools import lru_cache
 from logging import getLogger
 
 import requests
-from django.conf import settings
-from django.core import validators
 from django.core.cache import cache
-from django.core.exceptions import ValidationError
 from django.core.mail import send_mail
-from django.db import transaction
 from django.db.models import Q
 from django.db.models import Value, TextField, UUIDField
 from django.db.models.expressions import RawSQL
@@ -28,10 +23,9 @@ from gspread.utils import extract_id_from_url
 from rest_framework import routers, filters, viewsets, serializers, permissions, status
 from rest_framework.decorators import action
 from rest_framework.response import Response
-from rest_framework_simplejwt.tokens import RefreshToken
 from django.conf import settings
-import urllib.parse
-from hat.audit.models import Modification, CAMPAIGN_API
+
+from hat.api.token_authentication import generate_auto_authentication_link
 from iaso.api.common import ModelViewSet, DeletionFilterBackend
 from iaso.models import OrgUnit
 from iaso.models.org_unit import OrgUnitType
@@ -1408,18 +1402,6 @@ class HasPoliobudgetPermission(permissions.BasePermission):
         return True
 
 
-def _generate_auto_authentication_link(link, user):
-
-    refresh = RefreshToken.for_user(user)
-    access_token = str(refresh.access_token)
-    domain = settings.DNS_DOMAIN
-    encoded_link = urllib.parse.quote(link)
-
-    final_link = "https://%s/token_auth/?token=%s&next=%s" % (domain, access_token, encoded_link)
-
-    return final_link
-
-
 class BudgetEventViewset(ModelViewSet):
     result_key = "results"
     remove_results_key_if_paginated = True
@@ -1482,7 +1464,7 @@ This is an automated email from %s
                     event.author.first_name,
                     event.author.last_name,
                     event.comment,
-                    _generate_auto_authentication_link(link_to_send, user),
+                    generate_auto_authentication_link(link_to_send, user),
                     settings.DNS_DOMAIN,
                 ),
                 "no-reply@%s" % settings.DNS_DOMAIN,

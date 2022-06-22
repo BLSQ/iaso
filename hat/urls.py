@@ -3,7 +3,8 @@ from django.urls import path, include
 from django.views.generic import RedirectView
 from django.conf import settings
 from django.conf.urls.static import static
-from iaso.views import page, health, token_auth
+from iaso.views import page, health
+from hat.api.token_authentication import token_auth
 import django_sql_dashboard
 
 admin.site.site_header = "Administration de Iaso"

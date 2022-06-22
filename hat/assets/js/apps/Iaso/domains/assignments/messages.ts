@@ -21,6 +21,14 @@ const MESSAGES = defineMessages({
         id: 'iaso.assignment.baseOrgUnitsType',
         defaultMessage: 'Base organisation unit type',
     },
+    parentOrgunitType: {
+        id: 'iaso.assignment.parentOrgUnitsType',
+        defaultMessage: 'Parent organisation unit type',
+    },
+    parentPicking: {
+        id: 'iaso.assignment.parentPicking',
+        defaultMessage: 'Parent picking mode',
+    },
     name: {
         defaultMessage: 'Name',
         id: 'iaso.label.name',

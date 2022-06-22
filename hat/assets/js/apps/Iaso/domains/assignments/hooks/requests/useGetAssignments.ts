@@ -31,9 +31,10 @@ export const useGetAssignments = (
                 )
                 .filter(
                     assignment =>
-                        baseOrgunitType &&
-                        assignment.org_unit_details.org_unit_type ===
-                            parseInt(baseOrgunitType, 10),
+                        !baseOrgunitType ||
+                        (baseOrgunitType &&
+                            assignment.org_unit_details.org_unit_type ===
+                                parseInt(baseOrgunitType, 10)),
                 );
         },
     });

@@ -16,6 +16,7 @@
     "iaso.assignment.assignationsCount": "Nombre d'assignations",
     "iaso.assignment.baseOrgUnitsType": "Types d'unités d'org. de base",
     "iaso.assignment.parentOrgUnitsType": "Types d'unités d'org. parent",
+    "iaso.assignment.parentPicking": "Mode sélection de parent",
     "iaso.assignment.title": "Affectation pour le planning",
     "iaso.CDS": "Centre de Santé",
     "iaso.completeness.generateDerivedInstances": "Générer les instances dérivées",

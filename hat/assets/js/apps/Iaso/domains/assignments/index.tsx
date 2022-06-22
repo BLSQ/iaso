@@ -118,6 +118,31 @@ export const Assignments: FunctionComponent<Props> = ({ params }) => {
             }
         }
     };
+    useEffect(() => {
+        if (!baseOrgunitType && assignments.length > 0) {
+            const newBaseOrgUnitType =
+                assignments[0].org_unit_details.org_unit_type;
+            const newParams = {
+                ...params,
+                baseOrgunitType: newBaseOrgUnitType,
+            };
+            dispatch(redirectTo(baseUrl, newParams));
+        }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [assignments]);
+
+    useEffect(() => {
+        if (assignments.length > 0) {
+            const newBaseOrgUnitType =
+                assignments[0].org_unit_details.org_unit_type;
+            const newParams = {
+                ...params,
+                baseOrgunitType: newBaseOrgUnitType,
+            };
+            dispatch(redirectTo(baseUrl, newParams));
+        }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [currentTeamId]);
 
     useSkipEffectOnMount(() => {
         const newParams = {
@@ -127,7 +152,7 @@ export const Assignments: FunctionComponent<Props> = ({ params }) => {
         if (params.tab !== tab) {
             dispatch(redirectTo(baseUrl, newParams));
         }
-    }, [dispatch, params, tab]);
+    }, [dispatch, params]);
 
     useEffect(() => {
         if (currentTeamId) {
@@ -153,7 +178,6 @@ export const Assignments: FunctionComponent<Props> = ({ params }) => {
         }
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [dataProfiles]);
-
     return (
         <>
             <TopBar
@@ -194,6 +218,9 @@ export const Assignments: FunctionComponent<Props> = ({ params }) => {
                             setItemColor={setItemColor}
                             saveAssignment={saveAssignment}
                             baseOrgunitType={baseOrgunitType}
+                            params={params}
+                            orgunitTypes={orgunitTypes || []}
+                            isFetchingOrgUnitTypes={isFetchingOrgunitTypes}
                         />
                     )}
                     {tab === 'list' && <Box>LIST</Box>}

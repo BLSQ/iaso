@@ -596,6 +596,14 @@ export const assignmentsPath = {
         },
         {
             isRequired: false,
+            key: 'parentOrgunitType',
+        },
+        {
+            isRequired: false,
+            key: 'parentPicking',
+        },
+        {
+            isRequired: false,
             key: 'tab',
         },
     ],

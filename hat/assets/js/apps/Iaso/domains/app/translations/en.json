@@ -16,6 +16,7 @@
     "iaso.assignment.assignationsCount": "Assignments count",
     "iaso.assignment.baseOrgUnitsType": "Base organisation unit type",
     "iaso.assignment.parentOrgUnitsType": "Parent organisation unit type",
+    "iaso.assignment.parentPicking": "Parent picking mode",
     "iaso.assignment.title": "Assignments for planning",
     "iaso.CDS": "Health centre",
     "iaso.completeness.generateDerivedInstances": "Generate derived instances",

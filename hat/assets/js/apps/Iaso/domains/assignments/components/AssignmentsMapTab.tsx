@@ -1,5 +1,5 @@
 import React, { FunctionComponent, useState, useEffect } from 'react';
-import { Grid } from '@material-ui/core';
+import { Grid, Paper, Box } from '@material-ui/core';
 import { useTheme, Theme } from '@material-ui/core/styles';
 
 import {
@@ -11,11 +11,17 @@ import {
 import { getOrgUnitAssignation, getLocationColor } from '../utils';
 
 import { AssignmentsMap } from './AssignmentsMap';
+import { AssignmentsMapSelectors } from './AssignmentsMapSelectors';
 
-import { AssignmentsApi, SaveAssignmentQuery } from '../types/assigment';
+import {
+    AssignmentsApi,
+    SaveAssignmentQuery,
+    AssignmentParams,
+} from '../types/assigment';
 import { Planning } from '../types/planning';
 import { Team, DropdownTeamsOptions, SubTeam, User } from '../types/team';
 import { OrgUnitMarker, OrgUnitShape } from '../types/locations';
+import { DropdownOptions } from '../../../types/utils';
 
 import { Profile } from '../../../utils/usersUtils';
 
@@ -34,6 +40,9 @@ type Props = {
     // eslint-disable-next-line no-unused-vars
     saveAssignment: (params: SaveAssignmentQuery) => void;
     baseOrgunitType: string | undefined;
+    params: AssignmentParams;
+    orgunitTypes: Array<DropdownOptions<string>>;
+    isFetchingOrgUnitTypes: boolean;
 };
 
 export const AssignmentsMapTab: FunctionComponent<Props> = ({
@@ -45,6 +54,9 @@ export const AssignmentsMapTab: FunctionComponent<Props> = ({
     setItemColor,
     saveAssignment,
     baseOrgunitType,
+    params,
+    orgunitTypes,
+    isFetchingOrgUnitTypes,
 }) => {
     const { formatMessage } = useSafeIntl();
     const theme: Theme = useTheme();
@@ -161,33 +173,45 @@ export const AssignmentsMapTab: FunctionComponent<Props> = ({
     return (
         <Grid container spacing={2}>
             <Grid item xs={5}>
-                <Table
-                    data={data || []}
-                    showPagination={false}
-                    defaultSorted={[{ id: 'name', desc: false }]}
-                    countOnTop={false}
-                    marginTop={false}
-                    columns={getColumns({
-                        formatMessage,
-                        assignments,
-                        teams,
-                        profiles,
-                        setItemColor,
-                        theme,
-                        selectedItem,
-                        setSelectedItem,
-                        currentTeam,
-                    })}
-                    count={currentTeam?.sub_teams_details?.length ?? 0}
-                    extraProps={{
-                        // adding this will force table to
-                        // re render while selecting a team, changing team color, changing assignments
-                        selectedItemId: selectedItem?.id,
-                        teams,
-                        profiles,
-                        assignments,
-                    }}
-                />
+                <Paper>
+                    <Box maxHeight="60vh" overflow="auto">
+                        <Table
+                            data={data || []}
+                            showPagination={false}
+                            defaultSorted={[{ id: 'name', desc: false }]}
+                            countOnTop={false}
+                            marginTop={false}
+                            marginBottom={false}
+                            columns={getColumns({
+                                formatMessage,
+                                assignments,
+                                teams,
+                                profiles,
+                                setItemColor,
+                                theme,
+                                selectedItem,
+                                setSelectedItem,
+                                currentTeam,
+                            })}
+                            count={currentTeam?.sub_teams_details?.length ?? 0}
+                            extraProps={{
+                                // adding this will force table to
+                                // re render while selecting a team, changing team color, changing assignments
+                                selectedItemId: selectedItem?.id,
+                                teams,
+                                profiles,
+                                assignments,
+                            }}
+                        />
+                    </Box>
+                    <Box px={2}>
+                        <AssignmentsMapSelectors
+                            params={params}
+                            orgunitTypes={orgunitTypes}
+                            isFetchingOrgUnitTypes={isFetchingOrgUnitTypes}
+                        />
+                    </Box>
+                </Paper>
             </Grid>
             <Grid item xs={7}>
                 <AssignmentsMap

@@ -21,6 +21,7 @@ import {
     useDeleteBudgetEvent,
     useRestoreBudgetEvent,
 } from '../../../hooks/useDeleteBudgetEvent';
+import { useGetTeams } from '../../../hooks/useGetTeams';
 
 const baseUrl = BUDGET_DETAILS;
 
@@ -113,8 +114,9 @@ export const useBudgetColumns = (): Column[] => {
     }, [formatMessage]);
 };
 
-export const useBudgetDetailsColumns = ({ teams, profiles }): Column[] => {
+export const useBudgetDetailsColumns = ({ profiles }): Column[] => {
     const classes = useStyles();
+    const { data: teams } = useGetTeams();
     const getRowColor = getStyle(classes);
     const { formatMessage } = useSafeIntl();
     const currentUser = useCurrentUser();

@@ -29,10 +29,7 @@ export const useGetBudgetDetails = (userId: number, params?: Params) => {
         ['budget-details', userId, params],
         () => getBudgetDetails(params),
         undefined,
-        // Had to add these options,  otherwise the data would not update, even though params would change
         {
-            staleTime: 1,
-            keepPreviousData: true,
             select: data => {
                 if (!data) return data;
                 const filteredResults = data.results.filter(budgetEvent => {

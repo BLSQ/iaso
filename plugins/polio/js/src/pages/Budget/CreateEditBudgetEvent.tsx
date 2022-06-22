@@ -10,10 +10,6 @@ import { isEqual } from 'lodash';
 import { AddButton, useSafeIntl, IconButton } from 'bluesquare-components';
 import { Box } from '@material-ui/core';
 import ConfirmCancelDialogComponent from '../../../../../../hat/assets/js/apps/Iaso/components/dialogs/ConfirmCancelDialogComponent';
-import {
-    useGetTeams as useGetTeamsOptions,
-    useGetValidationTeam,
-} from '../../../../../../hat/assets/js/apps/Iaso/domains/plannings/hooks/requests/useGetTeams';
 import MESSAGES from '../../constants/messages';
 import InputComponent from '../../../../../../hat/assets/js/apps/Iaso/components/forms/InputComponent';
 import { useCurrentUser } from '../../../../../../hat/assets/js/apps/Iaso/utils/usersUtils';
@@ -25,6 +21,10 @@ import {
 } from '../../hooks/useSaveBudgetEvent';
 import FileInputComponent from '../../../../../../hat/assets/js/apps/Iaso/components/forms/FileInputComponent';
 import { useBudgetEvenValidation } from './hooks/validation';
+import {
+    useGetTeamsDropDown,
+    useGetValidationTeam,
+} from '../../hooks/useGetTeams';
 
 type Props = {
     campaignId: string;
@@ -97,8 +97,9 @@ export const CreateEditBudgetEvent: FunctionComponent<Props> = ({
     iconColor = 'action',
 }) => {
     const { data: teamsDropdown, isFetching: isFetchingTeams } =
-        useGetTeamsOptions();
+        useGetTeamsDropDown();
     const { data: validationTeam } = useGetValidationTeam();
+
     const user = useCurrentUser();
     const [currentType, setCurrentType] = useState<'create' | 'edit' | 'retry'>(
         type,
@@ -268,9 +269,6 @@ export const CreateEditBudgetEvent: FunctionComponent<Props> = ({
                             disabled={currentType !== 'create'}
                             keyValue="type"
                             onChange={(keyValue, value) => {
-                                // if (value === 'validation') {
-                                //     setFieldValue('status', 'validated');
-                                // }
                                 onChange(keyValue, value);
                             }}
                             value={values.type}

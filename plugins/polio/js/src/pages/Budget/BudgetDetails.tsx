@@ -20,7 +20,6 @@ import {
 } from '../../hooks/useGetBudgetDetails';
 import { BUDGET, BUDGET_DETAILS } from '../../constants/routes';
 import { useBudgetDetailsColumns } from './hooks/config';
-import { useGetTeams } from '../../hooks/useGetTeams';
 import { useGetProfiles } from '../../components/CountryNotificationsConfig/requests';
 import { GraphTitle } from '../../components/LQAS-IM/GraphTitle';
 import { BudgetStatus, findBudgetStatus } from './BudgetStatus';
@@ -92,9 +91,9 @@ export const BudgetDetails: FunctionComponent<Props> = ({ router }) => {
         setResetPageToOne(convertObjectToString(newParams));
     }, [params.pageSize, campaignId, campaignName]);
 
-    const { data: teams, isFetching: isFetchingTeams } = useGetTeams();
+    // const { data: teams, isFetching: isFetchingTeams } = useGetTeams();
     const { data: profiles, isFetching: isFetchingProfiles } = useGetProfiles();
-    const columns = useBudgetDetailsColumns({ teams, profiles });
+    const columns = useBudgetDetailsColumns({ profiles });
 
     const { data: districtShapes, isFetching: isFetchingDistricts } =
         useGetGeoJson(country, 'DISTRICT');
@@ -196,9 +195,7 @@ export const BudgetDetails: FunctionComponent<Props> = ({ router }) => {
                                     marginTop={false}
                                     extraProps={{
                                         loading:
-                                            isFetching ||
-                                            isFetchingProfiles ||
-                                            isFetchingTeams,
+                                            isFetching || isFetchingProfiles,
                                     }}
                                     resetPageToOne={resetPageToOne}
                                     elevation={0}

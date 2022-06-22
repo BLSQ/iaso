@@ -21,11 +21,11 @@ export const UsersTeamsCell: FunctionComponent<Props> = ({
 }) => {
     const { formatMessage } = useSafeIntl();
     return (
-        <>
+        <Box pt={1}>
             {type === TEAM_OF_TEAMS && (
                 <>
                     {subTeamsDetails.map(team => (
-                        <Box key={team.id} ml={1} display="inline-block">
+                        <Box key={team.id} pl={1} pb={1} display="inline-block">
                             {team.deleted_at && (
                                 <Tooltip
                                     arrow
@@ -56,7 +56,7 @@ export const UsersTeamsCell: FunctionComponent<Props> = ({
             {type === TEAM_OF_USERS && (
                 <>
                     {usersDetails.map(user => (
-                        <Box ml={1} display="inline-block" key={user.id}>
+                        <Box pl={1} pb={1} display="inline-block" key={user.id}>
                             <Chip
                                 size="small"
                                 label={user.username}
@@ -67,6 +67,6 @@ export const UsersTeamsCell: FunctionComponent<Props> = ({
                 </>
             )}
             {!type && '-'}
-        </>
+        </Box>
     );
 };

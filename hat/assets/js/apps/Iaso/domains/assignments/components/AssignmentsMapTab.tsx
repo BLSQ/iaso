@@ -29,6 +29,11 @@ import { useGetOrgUnitLocations } from '../hooks/requests/useGetOrgUnitLocations
 
 import { getColumns } from '../configs/AssignmentsMapTabColumns';
 
+export type Params = {
+    parentPicking: string;
+    parentOrgunitType: string;
+};
+
 type Props = {
     assignments: AssignmentsApi;
     planning: Planning | undefined;
@@ -40,7 +45,7 @@ type Props = {
     // eslint-disable-next-line no-unused-vars
     saveAssignment: (params: SaveAssignmentQuery) => void;
     baseOrgunitType: string | undefined;
-    params: AssignmentParams;
+    params: Params;
     orgunitTypes: Array<DropdownOptions<string>>;
     isFetchingOrgUnitTypes: boolean;
 };
@@ -166,10 +171,12 @@ export const AssignmentsMapTab: FunctionComponent<Props> = ({
             profiles,
             currentTeam?.type,
         );
+
     const geLocations = useGetOrgUnitLocations(
         planning?.org_unit,
         baseOrgunitType,
     );
+
     return (
         <Grid container spacing={2}>
             <Grid item xs={5}>
@@ -206,7 +213,10 @@ export const AssignmentsMapTab: FunctionComponent<Props> = ({
                     </Box>
                     <Box px={2}>
                         <AssignmentsMapSelectors
-                            params={params}
+                            params={{
+                                parentPicking: params.parentPicking,
+                                parentOrgunitType: params.parentOrgunitType,
+                            }}
                             orgunitTypes={orgunitTypes}
                             isFetchingOrgUnitTypes={isFetchingOrgUnitTypes}
                         />

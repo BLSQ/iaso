@@ -383,7 +383,7 @@ class CampaignSerializer(serializers.ModelSerializer):
     grouped_campaigns = serializers.PrimaryKeyRelatedField(
         many=True, queryset=CampaignGroup.objects.all(), required=False
     )
-    last_budget_event = BudgetStatusSerializer(many=False, required=False)
+    last_budget_event = BudgetStatusSerializer(many=False, required=False, allow_null=True)
 
     def get_top_level_org_unit_name(self, campaign):
         if campaign.country:

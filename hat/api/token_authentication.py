@@ -31,6 +31,6 @@ def generate_auto_authentication_link(link, user):
     domain = settings.DNS_DOMAIN
     encoded_link = urllib.parse.quote(link)
 
-    final_link = "https://%s/token_auth/?token=%s&next=%s" % (domain, access_token, encoded_link)
+    final_link = "https://%s/api/token_auth/?token=%s&next=%s" % (domain, access_token, encoded_link)
 
     return final_link

@@ -23,7 +23,7 @@ import FileInputComponent from '../../../../../../hat/assets/js/apps/Iaso/compon
 import { useBudgetEvenValidation } from './hooks/validation';
 import {
     useGetTeamsDropDown,
-    useGetValidationTeam,
+    useGetApprovalTeams,
 } from '../../hooks/useGetTeams';
 
 type Props = {
@@ -67,7 +67,13 @@ const getTitleMessage = (type: 'create' | 'edit' | 'retry') => {
     );
 };
 
-const makeEventsDropdown = (user, validationTeam, formatMessage) => {
+const makeEventsDropdown = (user, approvalTeams, formatMessage) => {
+    const isUserApprover = Boolean(
+        approvalTeams
+            ?.map(validationTeam => validationTeam.users)
+            .flat()
+            .find(userId => userId === user.user_id),
+    );
     const baseOptions = [
         {
             value: 'submission',
@@ -78,7 +84,7 @@ const makeEventsDropdown = (user, validationTeam, formatMessage) => {
             label: formatMessage(MESSAGES.comments),
         },
     ];
-    if (validationTeam?.users?.includes(user.user_id)) {
+    if (isUserApprover) {
         return [
             ...baseOptions,
             {
@@ -98,7 +104,7 @@ export const CreateEditBudgetEvent: FunctionComponent<Props> = ({
 }) => {
     const { data: teamsDropdown, isFetching: isFetchingTeams } =
         useGetTeamsDropDown();
-    const { data: validationTeam } = useGetValidationTeam();
+    const { data: approvalTeams } = useGetApprovalTeams();
 
     const user = useCurrentUser();
     const [currentType, setCurrentType] = useState<'create' | 'edit' | 'retry'>(
@@ -218,8 +224,8 @@ export const CreateEditBudgetEvent: FunctionComponent<Props> = ({
     );
 
     const eventOptions = useMemo(
-        () => makeEventsDropdown(user, validationTeam, formatMessage),
-        [formatMessage, user, validationTeam],
+        () => makeEventsDropdown(user, approvalTeams, formatMessage),
+        [formatMessage, user, approvalTeams],
     );
 
     return (

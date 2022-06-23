@@ -27,13 +27,15 @@ export const useGetTeamsDropDown = (): UseQueryResult<any, Error> => {
     });
 };
 
-export const useGetValidationTeam = (): UseQueryResult<any, Error> => {
+export const useGetApprovalTeams = (): UseQueryResult<any, Error> => {
     const queryKey: any[] = ['teams'];
     // @ts-ignore
     return useSnackQuery(queryKey, () => getTeams(), undefined, {
         select: data => {
-            if (!data) return {};
-            return data.find(team => team.name === 'Validation team') ?? {};
+            if (!data) return [];
+            return data.filter(team =>
+                team.name.toLowerCase().includes('approval'),
+            );
         },
     });
 };

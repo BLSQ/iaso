@@ -1166,8 +1166,8 @@ const MESSAGES = defineMessages({
         id: 'iaso.polio.label.validation_ongoing',
     },
     validated: {
-        defaultMessage: 'Validated',
-        id: 'iaso.polio.label.validated',
+        defaultMessage: 'Approved',
+        id: 'iaso.polio.label.approved',
     },
     rejected: {
         defaultMessage: 'Rejected',

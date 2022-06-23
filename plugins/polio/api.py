@@ -1516,8 +1516,10 @@ This is an automated email from %s
     def perform_create(self, serializer):
         event = serializer.save(author=self.request.user)
         if event.type == "validation":
-            val_teams = Team.objects.filter(name__icontains="approval").filter(
-                project__account=self.request.user.iaso_profile.account
+            val_teams = (
+                Team.objects.filter(name__icontains="approval")
+                .filter(project__account=self.request.user.iaso_profile.account)
+                .filter(deleted_at=None)
             )
             print("val_teams", val_teams)
             validation_count = 0

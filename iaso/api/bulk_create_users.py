@@ -54,10 +54,15 @@ class BulkCreateUserFromCsvViewSet(ModelViewSet):
     @transaction.atomic
     def create(self, request, *args, **kwargs):
         if request.FILES:
-            user_csv = request.FILES["file"]
-            user_csv_decoded = user_csv.read().decode("utf-8")
-            csv_str = io.StringIO(user_csv_decoded)
-            reader = csv.reader(csv_str)
+            try:
+                user_csv = request.FILES["file"]
+                user_csv_decoded = user_csv.read().decode("utf-8")
+                csv_str = io.StringIO(user_csv_decoded)
+                reader = csv.reader(csv_str)
+            except UnicodeDecodeError as e:
+                raise serializers.ValidationError(
+                    {"error": "Operation aborted. Error: {}".format(e)}
+                )
             i = 0
             csv_indexes = []
             file_instance = BulkCreateUserCsvFile.objects.create(

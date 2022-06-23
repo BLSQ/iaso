@@ -1427,7 +1427,6 @@ def _generate_auto_authentication_link(link, user):
 
 def send_approval_budget_mail(event):
     mails_list = list()
-
     events = BudgetEvent.objects.filter(campaign=event.campaign)
 
     for e in events:
@@ -1436,35 +1435,33 @@ def send_approval_budget_mail(event):
             for user in team.users.all():
                 if user.email not in mails_list:
                     mails_list.append(user.email)
+                    email_title_validation_template = "Budget Approval For Campaign {} "
+                    email_template = """
+            
+                    The budget for campaign {0} has been approved.
+                    Click here to see the details :
+                    {1}
+            
+                    ------------
+                    This is an automated email from {2}
+                    """
 
-    for mail in mails_list:
-        email_title_validation_template = "Budget Approval For Campaign {} "
-        email_template = """
-
-        The budget for campaign {0} has been approved.
-        Click here to see the details :
-        {1}
-
-        ------------
-        This is an automated email from {2}
-        """
-
-        link_to_send = "https://%s/dashboard/polio/budget/details/campaignId/%s/campaignName/%s/country/%d" % (
-            settings.DNS_DOMAIN,
-            event.campaign.id,
-            event.campaign.obr_name,
-            event.campaign.country.id,
-        )
-        send_mail(
-            email_title_validation_template.format(event.campaign.obr_name),
-            email_template.format(
-                event.campaign.obr_name,
-                _generate_auto_authentication_link(link_to_send, user),
-                settings.DNS_DOMAIN,
-            ),
-            "no-reply@%s" % settings.DNS_DOMAIN,
-            [mail],
-        )
+                    link_to_send = "https://%s/dashboard/polio/budget/details/campaignId/%s/campaignName/%s/country/%d" % (
+                        settings.DNS_DOMAIN,
+                        event.campaign.id,
+                        event.campaign.obr_name,
+                        event.campaign.country.id,
+                    )
+                    send_mail(
+                        email_title_validation_template.format(event.campaign.obr_name),
+                        email_template.format(
+                            event.campaign.obr_name,
+                            _generate_auto_authentication_link(link_to_send, user),
+                            settings.DNS_DOMAIN,
+                        ),
+                        "no-reply@%s" % settings.DNS_DOMAIN,
+                        [user.email],
+                    )
 
 
 class BudgetEventViewset(ModelViewSet):

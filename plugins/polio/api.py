@@ -1479,10 +1479,8 @@ This is an automated email from %s
             )  # we should filter on the account here ...
             validation_count = 0
             for val_team in val_teams:
-                print("VALIDATION")
                 for user in val_team.users.all():
                     try:
-                        print("VALIDATED BY:", user)
                         # Test on count
                         # TODO Handle errors in validation creation
                         # Users can't have more than one validation event
@@ -1493,9 +1491,8 @@ This is an automated email from %s
                             validation_count += 1
                             break
                     except ObjectDoesNotExist:
-                        print("ERREUR")
+                        pass
                 if validation_count == val_teams.count():
-                    print("IF BUDGET COUNT")
                     # modify campaign.budget_status instead of event.status
                     event.status = "validated"
                     event.save()
@@ -1508,7 +1505,6 @@ This is an automated email from %s
                             event.campaign.country.id,
                         )
                     )
-                    print("SEND MAIL")
                     send_mail(
                         self.email_title_validation_template.format(event.campaign.obr_name),
                         self.email_template
@@ -1523,7 +1519,6 @@ This is an automated email from %s
                         "no-reply@%s" % settings.DNS_DOMAIN,
                         [self.request.user.email],
                     )
-                    print(event, event.status)
 
         serializer = BudgetEventSerializer(event, many=False)
         return Response(serializer.data)

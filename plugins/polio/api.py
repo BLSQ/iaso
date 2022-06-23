@@ -1426,7 +1426,6 @@ def _generate_auto_authentication_link(link, user):
 
 
 def send_approval_budget_mail(event):
-    user = event.author
     mails_list = list()
 
     events = BudgetEvent.objects.filter(campaign=event.campaign)

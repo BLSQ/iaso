@@ -60,9 +60,7 @@ class BulkCreateUserFromCsvViewSet(ModelViewSet):
                 csv_str = io.StringIO(user_csv_decoded)
                 reader = csv.reader(csv_str)
             except UnicodeDecodeError as e:
-                raise serializers.ValidationError(
-                    {"error": "Operation aborted. Error: {}".format(e)}
-                )
+                raise serializers.ValidationError({"error": "Operation aborted. Error: {}".format(e)})
             i = 0
             csv_indexes = []
             file_instance = BulkCreateUserCsvFile.objects.create(

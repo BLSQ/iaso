@@ -11,7 +11,7 @@ import {
     displayDateFromTimestamp,
 } from 'bluesquare-components';
 
-import getDisplayName from '../../utils/usersUtils';
+import getDisplayName from '../../utils/usersUtils.ts';
 
 import DeleteDialog from '../../components/dialogs/DeleteDialogComponent';
 import StarsComponent from '../../components/stars/StarsComponent';

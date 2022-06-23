@@ -69,6 +69,7 @@ export const useSnackMutation = <
               'mutationFn'
           >
         | undefined = {},
+    showSucessSnackBar = true,
     ignoreErrorCodes: number[] = [],
 ): UseMutationResult<Data, Error, Variables, Context> => {
     const dispatch = useDispatch();
@@ -93,7 +94,7 @@ export const useSnackMutation = <
             return undefined;
         },
         onSuccess: (data, variables, context) => {
-            if (snackSuccessMessage) {
+            if (snackSuccessMessage && showSucessSnackBar) {
                 dispatch(
                     enqueueSnackbar(
                         succesfullSnackBar(undefined, snackSuccessMessage),

@@ -105,6 +105,7 @@ export const useSavePlanning = (
         undefined,
         ['planningsList'],
         undefined,
+        true,
         ignoreErrorCodes,
     );
     const createPlanning = useSnackMutation(
@@ -115,6 +116,7 @@ export const useSavePlanning = (
         undefined,
         ['planningsList'],
         undefined,
+        true,
         ignoreErrorCodes,
     );
     const copyPlanning = useSnackMutation(
@@ -123,6 +125,7 @@ export const useSavePlanning = (
         undefined,
         ['planningsList'],
         undefined,
+        true,
         ignoreErrorCodes,
     );
 

@@ -26,6 +26,7 @@ export const useGetCampaigns = (
         show_test: options.show_test ?? false,
         // Ugly fix to prevent the full list of campaigns showing when waiting for the value of countries
         enabled: options.enabled ?? true,
+        last_budget_event__status: options.last_budget_event__status,
     };
 
     const getURL = urlParams => {
@@ -81,6 +82,7 @@ export const useCampaignParams = params => {
             campaignType: params.campaignType,
             campaignGroups: params.campaignGroups,
             show_test: params.show_test ?? true,
+            last_budget_event__status: params.last_budget_event__status,
         };
     }, [params]);
 };

@@ -3,7 +3,6 @@ import {
     Box,
     Button,
     DialogActions,
-    Grid,
     Typography,
     Divider,
 } from '@material-ui/core';
@@ -23,6 +22,10 @@ type Props = {
     note?: string;
     type: 'submission' | 'comments';
     date: string;
+    links: string;
+    author: string;
+    recipients: string;
+    iconColor?: string;
 };
 
 const CloseDialog = ({
@@ -44,10 +47,11 @@ const CloseDialog = ({
 };
 
 const makeRenderTrigger =
-    (disabled = false) =>
+    (disabled = false, color = 'action') =>
     ({ openDialog }) => {
         return (
             <IconButton
+                color={color}
                 onClick={openDialog}
                 dataTestId="see-files-button"
                 tooltipMessage={MESSAGES.viewFiles}
@@ -66,9 +70,9 @@ const extractFileName = (fileUrl: string) => {
     // find the end of file name by searching for the extension
     while (trimmedLeft === '' && i < fileExtensions.length) {
         const currentExtension = fileExtensions[i];
-        if (fileUrl.indexOf(currentExtension) !== -1) {
+        if (fileUrl?.indexOf(currentExtension) !== -1) {
             trimmedLeft = `${
-                fileUrl.split(currentExtension)[0]
+                fileUrl?.split(currentExtension)[0]
             }${currentExtension}`;
         }
         i += 1;
@@ -78,13 +82,27 @@ const extractFileName = (fileUrl: string) => {
     return removedSlashes[removedSlashes.length - 1];
 };
 
-const makeLinks = files => {
+const makeFileLinks = files => {
     return files.map((file, index) => {
-        const fileName = extractFileName(file.file) ?? `file_${index}`;
+        const fileName = extractFileName(file.file) || file.file;
         return (
             // eslint-disable-next-line react/no-array-index-key
             <Link key={`${fileName}_${index}`} download href={file.file}>
                 <Typography>{fileName}</Typography>
+            </Link>
+        );
+    });
+};
+
+const makeLinks = (links: string) => {
+    if (!links) return null;
+    const linksArray = links.split(',');
+    return linksArray.map((link, index) => {
+        const trimmedLink = link.trim();
+        return (
+            // eslint-disable-next-line react/no-array-index-key
+            <Link key={`${trimmedLink}_${index}`} download href={trimmedLink}>
+                <Typography>{trimmedLink}</Typography>
             </Link>
         );
     });
@@ -95,19 +113,28 @@ export const BudgetFilesModal: FunctionComponent<Props> = ({
     note,
     type,
     date,
+    links,
+    author,
+    recipients = '',
+    iconColor = 'action',
 }) => {
     const { formatMessage } = useSafeIntl();
     const { data: budgetEventFiles, isFetching } =
         useGetBudgetEventFiles(eventId);
-    const typeTranslated = formatMessage(MESSAGES[type]).toLowerCase();
+    const typeTranslated = formatMessage(MESSAGES[type]);
     const titleMessage = {
-        ...MESSAGES.files,
-        values: { type: typeTranslated, date: moment(date).format('LTS') },
+        ...MESSAGES.budgetFiles,
+        values: {
+            type: typeTranslated,
+            date: moment(date).format('L'),
+            author,
+            recipients,
+        },
     };
-    const disableTrigger = budgetEventFiles?.length === 0 && !note;
+    const disableTrigger = budgetEventFiles?.length === 0 && !note && !links;
     const renderTrigger = useCallback(
-        () => makeRenderTrigger(disableTrigger),
-        [disableTrigger],
+        () => makeRenderTrigger(disableTrigger, iconColor),
+        [disableTrigger, iconColor],
     );
     return (
         <DialogComponent
@@ -123,23 +150,17 @@ export const BudgetFilesModal: FunctionComponent<Props> = ({
         >
             <Divider />
             {isFetching && <LoadingSpinner />}
-            {budgetEventFiles?.length === 0 && !isFetching && (
-                <Grid container item>
-                    <Box mt={4}>
-                        <Typography>
-                            {formatMessage(MESSAGES.noFile)}
-                        </Typography>
-                    </Box>
-                </Grid>
-            )}
             {!isFetching && (
                 <Box mt={2}>
-                    {makeLinks(budgetEventFiles)}
+                    {makeFileLinks(budgetEventFiles)}
+                    {makeLinks(links)}
                     {note && (
                         <>
-                            <Box mt={4}>
-                                <Divider />
-                            </Box>
+                            {(budgetEventFiles?.length > 0 || links) && (
+                                <Box mt={4}>
+                                    <Divider />
+                                </Box>
+                            )}
                             <Box mb={2} mt={2}>
                                 <Typography style={{ fontWeight: 'bold' }}>
                                     {formatMessage(MESSAGES.notes)}

@@ -11,8 +11,9 @@ from logging import getLogger
 import requests
 from django.conf import settings
 from django.core import validators
+from django.core.files import File
 from django.core.cache import cache
-from django.core.exceptions import ValidationError
+from django.core.exceptions import ValidationError, ObjectDoesNotExist
 from django.core.mail import send_mail
 from django.db import transaction
 from django.db.models import Q
@@ -28,10 +29,13 @@ from gspread.utils import extract_id_from_url
 from rest_framework import routers, filters, viewsets, serializers, permissions, status
 from rest_framework.decorators import action
 from rest_framework.response import Response
-
+from rest_framework_simplejwt.tokens import RefreshToken
+from django.conf import settings
+import urllib.parse
 from hat.audit.models import Modification, CAMPAIGN_API
 from iaso.api.common import ModelViewSet, DeletionFilterBackend
 from iaso.models import OrgUnit
+from iaso.models.microplanning import Team
 from iaso.models.org_unit import OrgUnitType
 from plugins.polio.serializers import (
     CampaignSerializer,
@@ -104,8 +108,12 @@ class CampaignViewSet(ModelViewSet):
         "round_two__started_at",
         "vacine",
         "country__name",
+        "last_budget_event__created_at",
+        "last_budget_event__type",
+        "last_budget_event__status",
     ]
     filterset_fields = {
+        "last_budget_event__status": ["exact"],
         "country__name": ["exact"],
         "country__id": ["in"],
         "grouped_campaigns__id": ["in", "exact"],
@@ -151,6 +159,7 @@ class CampaignViewSet(ModelViewSet):
     def get_queryset(self):
         user = self.request.user
         campaigns = Campaign.objects.all()
+
         if user.is_authenticated and user.iaso_profile.org_units.count():
             org_units = OrgUnit.objects.hierarchy(user.iaso_profile.org_units.all())
             return campaigns.filter(initial_org_unit__in=org_units)
@@ -777,7 +786,6 @@ class IMStatsViewSet(viewsets.ViewSet):
                         for key in nfm_counts_dict:
                             round_stats["nfm_stats"][key] = round_stats["nfm_stats"][key] + nfm_counts_dict[key]
                         for key_abs in nfm_abs_counts_dict:
-
                             round_stats["nfm_abs_stats"][key_abs] = (
                                 round_stats["nfm_abs_stats"][key_abs] + nfm_abs_counts_dict[key_abs]
                             )
@@ -1406,6 +1414,59 @@ class HasPoliobudgetPermission(permissions.BasePermission):
         return True
 
 
+def _generate_auto_authentication_link(link, user):
+    refresh = RefreshToken.for_user(user)
+    access_token = str(refresh.access_token)
+    domain = settings.DNS_DOMAIN
+    encoded_link = urllib.parse.quote(link)
+
+    final_link = "https://%s/token_auth/?token=%s&next=%s" % (domain, access_token, encoded_link)
+
+    return final_link
+
+
+def send_approval_budget_mail(event):
+    mails_list = list()
+    events = BudgetEvent.objects.filter(campaign=event.campaign)
+
+    for e in events:
+        teams = e.target_teams.all()
+        for team in teams:
+            for user in team.users.all():
+                if user.email not in mails_list:
+                    mails_list.append(user.email)
+                    email_title_validation_template = "Budget Approval For Campaign {} "
+                    email_template = """
+            
+                    The budget for campaign {0} has been approved.
+                    Click here to see the details :
+                    {1}
+            
+                    ------------
+                    This is an automated email from {2}
+                    """
+
+                    link_to_send = (
+                        "https://%s/dashboard/polio/budget/details/campaignId/%s/campaignName/%s/country/%d"
+                        % (
+                            settings.DNS_DOMAIN,
+                            event.campaign.id,
+                            event.campaign.obr_name,
+                            event.campaign.country.id,
+                        )
+                    )
+                    send_mail(
+                        email_title_validation_template.format(event.campaign.obr_name),
+                        email_template.format(
+                            event.campaign.obr_name,
+                            _generate_auto_authentication_link(link_to_send, user),
+                            settings.DNS_DOMAIN,
+                        ),
+                        "no-reply@%s" % settings.DNS_DOMAIN,
+                        [user.email],
+                    )
+
+
 class BudgetEventViewset(ModelViewSet):
     result_key = "results"
     remove_results_key_if_paginated = True
@@ -1421,48 +1482,117 @@ class BudgetEventViewset(ModelViewSet):
         "type",
         "author",
     ]
+    email_title_template = "New {} for {}"
+    email_title_validation_template = "Budget VALIDATED for {}"
+    email_template = """%s by %s %s.
+
+Comment: %s
+
+------------
+
+you can access the history of this budget here: %s
+
+------------    
+This is an automated email from %s
+"""
 
     def get_serializer_class(self):
         return BudgetEventSerializer
 
     def get_queryset(self):
+        user = self.request.user
         queryset = BudgetEvent.objects.filter(author__iaso_profile__account=self.request.user.iaso_profile.account)
+        show_non_internals = Q(internal=False)
+        show_internals = Q(internal=True) & (Q(author=user) | Q(target_teams__users=user))
+        queryset = queryset.filter(show_internals | show_non_internals)
+        show_deleted = self.request.query_params.get("show_deleted")
+        if show_deleted == "false":
+            queryset = queryset.filter(deleted_at=None)
         campaign_id = self.request.query_params.get("campaign_id")
         if campaign_id is not None:
             queryset = queryset.filter(campaign_id=campaign_id)
-        return queryset
+        return queryset.distinct()
 
     def perform_create(self, serializer):
         event = serializer.save(author=self.request.user)
-        emails = set()
-        for team in event.target_teams.all():
-            for user in team.users.all():
-                if user.email:
-                    emails.add(user.email)
-        if event.cc_emails:
-            emails.update(event.cc_emails.split(","))
+        if event.type == "validation":
+            val_teams = Team.objects.filter(name__icontains="approval").filter(
+                project__account=self.request.user.iaso_profile.account
+            )  # we should filter on the account here ...
+            validation_count = 0
+            for val_team in val_teams:
+                for user in val_team.users.all():
+                    try:
+                        # Test on count
+                        # TODO Handle errors in validation creation
+                        # Users can't have more than one validation event
+                        count = BudgetEvent.objects.filter(
+                            author=user, campaign=event.campaign, type="validation"
+                        ).count()
+                        if count > 0:
+                            validation_count += 1
+                            break
+                    except ObjectDoesNotExist:
+                        pass
+                if validation_count == val_teams.count():
+                    # modify campaign.budget_status instead of event.status
+                    event.status = "validated"
+                    event.save()
+                    send_approval_budget_mail(event)
 
-            send_mail(
-                "New Budget Event for {}".format(event.campaign.obr_name),
-                """%s by %s %s.
-                Comment: %s
-    you can access the history of this budget here: 
-    https://iaso-staging.bluesquare.org/dashboard/polio/budget/details/campaignId/%s/campaignName/%s/country/%d
-    
-    This is an automated email from poliooutbreaks.com
-"""
-                % (
-                    event.type,
-                    event.author.first_name,
-                    event.author.last_name,
-                    event.comment,
+        serializer = BudgetEventSerializer(event, many=False)
+        return Response(serializer.data)
+
+    @action(methods=["PUT"], detail=False, serializer_class=BudgetEventSerializer)
+    def confirm_budget(self, request):
+        if request.method == "PUT":
+            event_pk = request.data["event"]
+            event = BudgetEvent.objects.get(pk=event_pk)
+            event.is_finalized = True if request.data["is_finalized"] else False
+            event.save()
+
+            if event.is_finalized and not event.is_email_sent:
+                recipients = set()
+                for team in event.target_teams.all():
+                    for user in team.users.all():
+                        if user.email:
+                            recipients.add(user)
+
+                link_to_send = "https://%s/dashboard/polio/budget/details/campaignId/%s/campaignName/%s/country/%d" % (
+                    settings.DNS_DOMAIN,
                     event.campaign.id,
                     event.campaign.obr_name,
                     event.campaign.country.id,
-                ),
-                "no-reply@poliooutbreaks.com",
-                emails,
-            )
+                )
+
+                event_type = "Approval" if event.type == "validation" else event.type
+
+                for user in recipients:
+                    send_mail(
+                        self.email_title_template.format(event_type, event.campaign.obr_name),
+                        self.email_template
+                        % (
+                            event.type,
+                            event.author.first_name,
+                            event.author.last_name,
+                            event.comment,
+                            _generate_auto_authentication_link(link_to_send, user),
+                            settings.DNS_DOMAIN,
+                        ),
+                        "no-reply@%s" % settings.DNS_DOMAIN,
+                        [user.email],
+                    )
+                event.is_email_sent = True
+                event.save()
+            serializer = BudgetEventSerializer(event, many=False)
+            return Response(serializer.data)
+
+        event = BudgetEvent.objects.none()
+        serializer = BudgetEventSerializer(event, many=False)
+        return Response(serializer.data)
+
+    def team_budget_validation(self, request):
+        pass
 
 
 class BudgetFilesViewset(ModelViewSet):
@@ -1484,12 +1614,10 @@ class BudgetFilesViewset(ModelViewSet):
         return queryset
 
     def create(self, request, *args, **kwargs):
-        if request.FILES:
-            event = request.data["event"]
-            event = get_object_or_404(BudgetEvent, id=event)
-            budget_file = request.FILES["file"]
-
-            budget_file = BudgetFiles.objects.create(file=budget_file, event=event)
+        event = request.data["event"]
+        event = get_object_or_404(BudgetEvent, id=event)
+        for file in request.FILES.items():
+            budget_file = BudgetFiles.objects.create(file=File(file[1]), event=event)
             budget_file.save()
 
         files = BudgetFiles.objects.filter(event__author__iaso_profile__account=self.request.user.iaso_profile.account)

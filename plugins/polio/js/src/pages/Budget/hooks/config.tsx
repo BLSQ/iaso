@@ -7,19 +7,40 @@ import {
     IconButton as IconButtonComponent,
 } from 'bluesquare-components';
 import moment from 'moment';
+import { makeStyles } from '@material-ui/core';
+import LockIcon from '@material-ui/icons/Lock';
 import MESSAGES from '../../../constants/messages';
 import { Column } from '../../../../../../../hat/assets/js/apps/Iaso/types/table';
 import { BUDGET_DETAILS } from '../../../constants/routes';
 import { DateTimeCellRfc } from '../../../../../../../hat/assets/js/apps/Iaso/components/Cells/DateTimeCell';
 import { BudgetFilesModal } from '../BudgetFilesModal';
-import { findBudgetStatus, sortBudgetEventByUpdate } from '../BudgetStatus';
+import { CreateEditBudgetEvent } from '../CreateEditBudgetEvent';
+import { useCurrentUser } from '../../../../../../../hat/assets/js/apps/Iaso/utils/usersUtils';
+import DeleteDialog from '../../../../../../../hat/assets/js/apps/Iaso/components/dialogs/DeleteDialogComponent';
+import {
+    useDeleteBudgetEvent,
+    useRestoreBudgetEvent,
+} from '../../../hooks/useDeleteBudgetEvent';
+import { useGetTeams } from '../../../hooks/useGetTeams';
 
 const baseUrl = BUDGET_DETAILS;
 
-export const useBudgetColumns = (
-    budgetEvents: any[],
-    showOnlyDeleted = false,
-): Column[] => {
+const styles = theme => {
+    return {
+        deletedRow: {
+            color: theme.palette.secondary.main,
+        },
+    };
+};
+
+// @ts-ignore
+const useStyles = makeStyles(styles);
+const getStyle = classes => settings => {
+    const isDeleted = Boolean(settings.row.original.deleted_at);
+    return isDeleted ? classes.deletedRow : '';
+};
+
+export const useBudgetColumns = (): Column[] => {
     const { formatMessage } = useSafeIntl();
     return useMemo(() => {
         const cols = [
@@ -39,50 +60,37 @@ export const useBudgetColumns = (
             },
             {
                 Header: formatMessage(MESSAGES.status),
-                sortable: false,
-                accessor: 'general_status',
-                // TODO get the validation status from backend
+                sortable: true,
+                accessor: 'last_budget_event__status',
                 Cell: settings => {
-                    const campaignId = settings.row.original.id;
-                    const eventsForCampaign = budgetEvents?.filter(
-                        budgetEvent => {
-                            return budgetEvent.campaign === campaignId;
-                        },
-                    );
-                    const status = findBudgetStatus(eventsForCampaign);
-                    return formatMessage(MESSAGES[status]);
+                    const status =
+                        settings.row.original.last_budget_event?.status;
+                    return status
+                        ? formatMessage(MESSAGES[status])
+                        : formatMessage(MESSAGES.noBudgetSubmitted);
                 },
             },
             {
                 Header: formatMessage(MESSAGES.latestEvent),
-                sortable: false,
-                // TODO get the validation status from backend
+                sortable: true,
+                accessor: 'last_budget_event__type',
                 Cell: settings => {
-                    const campaignId = settings.row.original.id;
-                    const eventsForCampaign = budgetEvents?.filter(
-                        budgetEvent => budgetEvent.campaign === campaignId,
-                    );
-                    const latestEvent =
-                        sortBudgetEventByUpdate(eventsForCampaign)[0];
-                    if (latestEvent) {
-                        return formatMessage(MESSAGES[latestEvent.type]);
+                    const type = settings.row.original.last_budget_event?.type;
+                    if (type) {
+                        return formatMessage(MESSAGES[type]);
                     }
                     return '--';
                 },
             },
             {
                 Header: formatMessage(MESSAGES.latestEventDate),
-                sortable: false,
-                // TODO get the validation status from backend
+                sortable: true,
+                accessor: 'last_budget_event__created_at',
                 Cell: settings => {
-                    const campaignId = settings.row.original.id;
-                    const eventsForCampaign = budgetEvents?.filter(
-                        budgetEvent => budgetEvent.campaign === campaignId,
-                    );
-                    const latestEvent =
-                        sortBudgetEventByUpdate(eventsForCampaign)[0];
-                    if (latestEvent) {
-                        return moment(latestEvent.updated_at).format('LTS');
+                    const date =
+                        settings.row.original.last_budget_event?.created_at;
+                    if (date) {
+                        return moment(date).format('LTS');
                     }
                     return '--';
                 },
@@ -93,61 +101,56 @@ export const useBudgetColumns = (
                 sortable: false,
                 Cell: settings => {
                     return (
-                        <>
-                            {!showOnlyDeleted && (
-                                <>
-                                    <IconButtonComponent
-                                        icon="remove-red-eye"
-                                        tooltipMessage={MESSAGES.details}
-                                        url={`${baseUrl}/campaignId/${settings.row.original.id}/campaignName/${settings.row.original.obr_name}/country/${settings.row.original.country}`}
-                                    />
-                                    {/* TODO uncomment when deletion is implemented */}
-                                    {/* <IconButtonComponent
-                                    icon="delete"
-                                    tooltipMessage={MESSAGES.delete}
-                                    onClick={() =>
-                                        handleClickDeleteRow(settings.value)
-                                    }
-                                /> */}
-                                </>
-                            )}
-                            {/* TODO uncomment when deletion is implemented */}
-                            {/* {showOnlyDeleted && (
-                            <IconButtonComponent
-                                icon="restore-from-trash"
-                                tooltipMessage={MESSAGES.restoreCampaign}
-                                onClick={() =>
-                                    handleClickRestoreRow(settings.value)
-                                }
-                            />
-                        )} */}
-                        </>
+                        <IconButtonComponent
+                            icon="remove-red-eye"
+                            tooltipMessage={MESSAGES.details}
+                            url={`${baseUrl}/campaignId/${settings.row.original.id}/campaignName/${settings.row.original.obr_name}/country/${settings.row.original.country}`}
+                        />
                     );
                 },
             },
         ];
-        // if (showOnlyDeleted) {
-        //     cols.unshift({
-        //         Header: formatMessage(MESSAGES.deleted_at),
-        //         accessor: 'deleted_at',
-        //         Cell: settings =>
-        //             moment(settings.row.original.deleted_at).format('LTS'),
-        //     });
-        // }
         return cols;
-    }, [budgetEvents, formatMessage, showOnlyDeleted]);
+    }, [formatMessage]);
 };
 
-export const useBudgetDetailsColumns = ({ teams, profiles }): Column[] => {
+export const useBudgetDetailsColumns = ({ profiles }): Column[] => {
+    const classes = useStyles();
+    const { data: teams } = useGetTeams();
+    const getRowColor = getStyle(classes);
     const { formatMessage } = useSafeIntl();
+    const currentUser = useCurrentUser();
+    const { mutateAsync: deleteBudgetEvent } = useDeleteBudgetEvent();
+    const { mutateAsync: restoreBudgetEvent } = useRestoreBudgetEvent();
     return useMemo(() => {
         return [
+            {
+                Header: '',
+                id: 'internal',
+                accessor: 'internal',
+                sortable: false,
+                width: 1,
+                Cell: settings => {
+                    const { internal } = settings.row.original;
+                    return internal ? (
+                        <LockIcon className={getRowColor(settings)} />
+                    ) : (
+                        <></>
+                    );
+                },
+            },
             {
                 Header: formatMessage(MESSAGES.created_at),
                 id: 'created_at',
                 accessor: 'created_at',
                 sortable: true,
-                Cell: DateTimeCellRfc,
+                Cell: settings => {
+                    return (
+                        <span className={getRowColor(settings)}>
+                            {DateTimeCellRfc(settings)}
+                        </span>
+                    );
+                },
             },
             {
                 Header: formatMessage(MESSAGES.event),
@@ -155,7 +158,13 @@ export const useBudgetDetailsColumns = ({ teams, profiles }): Column[] => {
                 accessor: 'type',
                 sortable: true,
                 Cell: settings => {
-                    return formatMessage(MESSAGES[settings.row.original.type]);
+                    return (
+                        <span className={getRowColor(settings)}>
+                            {formatMessage(
+                                MESSAGES[settings.row.original.type],
+                            )}
+                        </span>
+                    );
                 },
             },
             {
@@ -168,9 +177,15 @@ export const useBudgetDetailsColumns = ({ teams, profiles }): Column[] => {
                     const authorProfile = profiles?.profiles?.find(
                         profile => profile.user_id === author,
                     );
-                    if (!authorProfile?.first_name && !authorProfile?.last_name)
-                        return authorProfile?.user_name ?? author;
-                    return `${authorProfile.first_name} ${authorProfile.last_name}`;
+                    const nameDisplayed =
+                        authorProfile?.first_name && authorProfile?.last_name
+                            ? `${authorProfile.first_name} ${authorProfile.last_name}`
+                            : authorProfile?.user_name ?? author;
+                    return (
+                        <span className={getRowColor(settings)}>
+                            {nameDisplayed}
+                        </span>
+                    );
                 },
             },
             {
@@ -180,14 +195,22 @@ export const useBudgetDetailsColumns = ({ teams, profiles }): Column[] => {
                 sortable: false,
                 Cell: settings => {
                     const { target_teams } = settings.row.original;
-                    if (target_teams?.length === 0) return target_teams;
-                    return target_teams
-                        .map(
-                            (target_team: number) =>
-                                teams?.find(team => team.id === target_team)
-                                    ?.name,
-                        )
-                        .join(', ');
+                    const teamsToDisplay =
+                        target_teams?.length === 0
+                            ? target_teams
+                            : target_teams
+                                  .map(
+                                      (target_team: number) =>
+                                          teams?.find(
+                                              team => team.id === target_team,
+                                          )?.name,
+                                  )
+                                  .join(', ');
+                    return (
+                        <span className={getRowColor(settings)}>
+                            {teamsToDisplay}
+                        </span>
+                    );
                 },
             },
             {
@@ -196,16 +219,87 @@ export const useBudgetDetailsColumns = ({ teams, profiles }): Column[] => {
                 accessor: 'id',
                 sortable: false,
                 Cell: settings => {
+                    const { author } = settings.row.original;
+                    const authorProfile = profiles?.profiles?.find(
+                        profile => profile.user_id === author,
+                    );
+                    const authorName =
+                        authorProfile?.first_name && authorProfile?.last_name
+                            ? `${authorProfile.first_name} ${authorProfile.last_name}`
+                            : authorProfile?.user_name ?? '';
+                    const { target_teams } = settings.row.original;
+                    const teamNames = teams
+                        ?.filter(team => target_teams.includes(team.id))
+                        .map(team => team.name)
+                        .join(', ');
                     return (
-                        <BudgetFilesModal
-                            eventId={settings.row.original.id}
-                            note={settings.row.original.comment}
-                            date={settings.row.original.updated_at}
-                            type={settings.row.original.type}
-                        />
+                        <section>
+                            <BudgetFilesModal
+                                eventId={settings.row.original.id}
+                                note={settings.row.original.comment}
+                                date={settings.row.original.created_at}
+                                type={settings.row.original.type}
+                                links={settings.row.original.links}
+                                author={authorName}
+                                recipients={teamNames}
+                                iconColor={
+                                    settings.row.original.deleted_at
+                                        ? 'secondary'
+                                        : 'action'
+                                }
+                            />
+                            {!settings.row.original.is_finalized &&
+                                settings.row.original.author ===
+                                    currentUser.user_id && (
+                                    <CreateEditBudgetEvent
+                                        campaignId={
+                                            settings.row.original.campaign
+                                        }
+                                        type="edit"
+                                        budgetEvent={settings.row.original}
+                                        iconColor={
+                                            settings.row.original.deleted_at
+                                                ? 'secondary'
+                                                : 'action'
+                                        }
+                                    />
+                                )}
+                            {!settings.row.original.deleted_at && (
+                                <DeleteDialog
+                                    titleMessage={MESSAGES.deleteBudgetEvent}
+                                    message={MESSAGES.deleteBudgetEvent}
+                                    onConfirm={() =>
+                                        deleteBudgetEvent(
+                                            settings.row.original.id,
+                                        )
+                                    }
+                                    keyName={`deleteBudgetEvent-${settings.row.original.id}`}
+                                />
+                            )}
+                            {settings.row.original.deleted_at && (
+                                <IconButtonComponent
+                                    color="secondary"
+                                    icon="restore-from-trash"
+                                    tooltipMessage={MESSAGES.restore}
+                                    onClick={() =>
+                                        restoreBudgetEvent(
+                                            settings.row.original.id,
+                                        )
+                                    }
+                                />
+                            )}
+                        </section>
                     );
                 },
             },
         ];
-    }, [formatMessage, teams, profiles]);
+    }, [
+        formatMessage,
+        getRowColor,
+        profiles?.profiles,
+        teams,
+        currentUser.user_id,
+        deleteBudgetEvent,
+        restoreBudgetEvent,
+    ]);
 };

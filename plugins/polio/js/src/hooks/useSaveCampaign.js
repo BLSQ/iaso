@@ -1,4 +1,4 @@
-import { useSnackMutation } from 'Iaso/libs/apiHooks';
+import { useSnackMutation } from 'Iaso/libs/apiHooks.ts';
 import { postRequest, putRequest } from 'Iaso/libs/Api';
 import { commaSeparatedIdsToStringArray } from '../../../../../hat/assets/js/apps/Iaso/utils/forms';
 

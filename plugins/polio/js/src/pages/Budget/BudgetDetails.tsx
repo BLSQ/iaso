@@ -20,15 +20,16 @@ import {
 } from '../../hooks/useGetBudgetDetails';
 import { BUDGET, BUDGET_DETAILS } from '../../constants/routes';
 import { useBudgetDetailsColumns } from './hooks/config';
-import { useGetTeams } from '../../hooks/useGetTeams';
 import { useGetProfiles } from '../../components/CountryNotificationsConfig/requests';
 import { GraphTitle } from '../../components/LQAS-IM/GraphTitle';
 import { BudgetStatus, findBudgetStatus } from './BudgetStatus';
-import { CreateBudgetEvent } from './CreateBudgetEvent';
+import { CreateEditBudgetEvent } from './CreateEditBudgetEvent';
 import { redirectToReplace } from '../../../../../../hat/assets/js/apps/Iaso/routing/actions';
 import { MapComponent } from '../../components/MapComponent/MapComponent';
 import { useGetGeoJson } from '../../hooks/useGetGeoJson';
 import { useGetCampaignScope } from '../../hooks/useGetCampaignScope';
+import { useCurrentUser } from '../../../../../../hat/assets/js/apps/Iaso/utils/usersUtils';
+import InputComponent from '../../../../../../hat/assets/js/apps/Iaso/components/forms/InputComponent';
 
 type Props = {
     router: any;
@@ -59,17 +60,24 @@ export const BudgetDetails: FunctionComponent<Props> = ({ router }) => {
     const classes = useStyles();
     const { campaignName, campaignId, country, ...apiParams } = router.params;
     const { formatMessage } = useSafeIntl();
+    const [showDeleted, setShowDeleted] = useState(
+        apiParams.show_deleted ?? false,
+    );
+    const checkBoxLabel = formatMessage(MESSAGES.showDeleted);
     // @ts-ignore
     const prevPathname = useSelector(state => state.routerCustom.prevPathname);
     const dispatch = useDispatch();
+    const { user_id: userId } = useCurrentUser();
 
-    const { data: budgetDetails, isFetching } = useGetBudgetDetails({
+    const { data: budgetDetails, isFetching } = useGetBudgetDetails(userId, {
         ...apiParams,
         campaign_id: campaignId,
         order: apiParams.order ?? '-created_at',
+        show_deleted: showDeleted,
     });
+
     const { data: allBudgetDetails, isFetching: isFetchingAll } =
-        useGetAllBudgetDetails(campaignId);
+        useGetAllBudgetDetails(campaignId, showDeleted);
 
     // TODO make hook for table specific state and effects
     const [resetPageToOne, setResetPageToOne] = useState('');
@@ -83,9 +91,9 @@ export const BudgetDetails: FunctionComponent<Props> = ({ router }) => {
         setResetPageToOne(convertObjectToString(newParams));
     }, [params.pageSize, campaignId, campaignName]);
 
-    const { data: teams, isFetching: isFetchingTeams } = useGetTeams();
+    // const { data: teams, isFetching: isFetchingTeams } = useGetTeams();
     const { data: profiles, isFetching: isFetchingProfiles } = useGetProfiles();
-    const columns = useBudgetDetailsColumns({ teams, profiles });
+    const columns = useBudgetDetailsColumns({ profiles });
 
     const { data: districtShapes, isFetching: isFetchingDistricts } =
         useGetGeoJson(country, 'DISTRICT');
@@ -145,10 +153,21 @@ export const BudgetDetails: FunctionComponent<Props> = ({ router }) => {
                         </Grid>
                         {budgetStatus !== 'validated' && (
                             <Grid>
-                                <CreateBudgetEvent campaignId={campaignId} />
+                                <CreateEditBudgetEvent
+                                    campaignId={campaignId}
+                                />
                             </Grid>
                         )}
                     </Grid>
+                    <InputComponent
+                        type="checkbox"
+                        keyValue="showDeleted"
+                        labelString={checkBoxLabel}
+                        onChange={(_keyValue, newValue) => {
+                            setShowDeleted(newValue);
+                        }}
+                        value={showDeleted}
+                    />
                 </Box>
                 <Grid container spacing={2}>
                     <Grid item xs={8}>
@@ -176,9 +195,8 @@ export const BudgetDetails: FunctionComponent<Props> = ({ router }) => {
                                     marginTop={false}
                                     extraProps={{
                                         loading:
-                                            isFetching ||
-                                            isFetchingProfiles ||
-                                            isFetchingTeams,
+                                            isFetching || isFetchingProfiles,
+                                        columns,
                                     }}
                                     resetPageToOne={resetPageToOne}
                                     elevation={0}

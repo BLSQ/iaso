@@ -21,7 +21,7 @@ import MESSAGES from './messages';
 import { baseUrls } from '../../constants/urls';
 import { formsFilters } from '../../constants/filters';
 import { userHasPermission } from '../users/utils';
-import { useCurrentUser } from '../../utils/usersUtils';
+import { useCurrentUser } from '../../utils/usersUtils.ts';
 
 const Forms = ({ params }) => {
     const baseUrl = baseUrls.forms;

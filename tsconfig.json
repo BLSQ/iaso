@@ -13,7 +13,7 @@
         "esModuleInterop": true,              // allow import syntax with default exports (2/2)
         "skipLibCheck": true,                 // don't typecheck dependencies
         "noEmit": true,                       // don't emit files as babel will do it
-        "lib":["ES2020"]                      // prevent some linter errors
+        "lib":["ES2020", "DOM"]                      // prevent some linter errors
 
     },
     "exclude":["node_modules"],

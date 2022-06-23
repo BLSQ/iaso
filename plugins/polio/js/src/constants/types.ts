@@ -96,3 +96,11 @@ export type CampaignStatus =
     | 'ROUND1DONE'
     | 'ROUND2START'
     | 'ROUND2DONE';
+
+export type BudgetStatus =
+    | 'all'
+    | 'validated'
+    | 'validation_ongoing'
+    | 'noBudgetSubmitted';
+
+export type BudgetEventType = 'submission' | 'validation' | 'comments';

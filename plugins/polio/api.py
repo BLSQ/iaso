@@ -1566,9 +1566,11 @@ This is an automated email from %s
                     event.campaign.country.id,
                 )
 
+                event_type = "Approval" if event.type == "validation" else event.type
+
                 for user in recipients:
                     send_mail(
-                        self.email_title_template.format(event.type, event.campaign.obr_name),
+                        self.email_title_template.format(event_type, event.campaign.obr_name),
                         self.email_template
                         % (
                             event.type,

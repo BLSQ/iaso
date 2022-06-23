@@ -441,3 +441,5 @@ SOCIALACCOUNT_PROVIDERS = {
 }
 
 CACHES = {"default": {"BACKEND": "django.core.cache.backends.db.DatabaseCache", "LOCATION": "django_cache_table"}}
+
+DASHBOARD_ENABLE_FULL_EXPORT = True  # allow csv export on /explore

@@ -1425,6 +1425,49 @@ def _generate_auto_authentication_link(link, user):
     return final_link
 
 
+def send_approval_budget_mail(event):
+    user = event.author
+    mails_list = list()
+
+    events = BudgetEvent.objects.filter(campaign=event.campaign)
+
+    for e in events:
+        teams = e.target_teams.all()
+        for team in teams:
+            for user in team.users.all():
+                if user.email not in mails_list:
+                    mails_list.append(user.email)
+
+    for mail in mails_list:
+        email_title_validation_template = "Budget Approval For Campaign {} "
+        email_template = """
+
+        The budget for campaign {0} has been approved.
+        Click here to see the details :
+        {1}
+
+        ------------
+        This is an automated email from {2}
+        """
+
+        link_to_send = "https://%s/dashboard/polio/budget/details/campaignId/%s/campaignName/%s/country/%d" % (
+            settings.DNS_DOMAIN,
+            event.campaign.id,
+            event.campaign.obr_name,
+            event.campaign.country.id,
+        )
+        send_mail(
+            email_title_validation_template.format(event.campaign.obr_name),
+            email_template.format(
+                event.campaign.obr_name,
+                _generate_auto_authentication_link(link_to_send, user),
+                settings.DNS_DOMAIN,
+            ),
+            "no-reply@%s" % settings.DNS_DOMAIN,
+            [mail],
+        )
+
+
 class BudgetEventViewset(ModelViewSet):
     result_key = "results"
     remove_results_key_if_paginated = True
@@ -1443,7 +1486,7 @@ class BudgetEventViewset(ModelViewSet):
     email_title_template = "New {} for {}"
     email_title_validation_template = "Budget VALIDATED for {}"
     email_template = """%s by %s %s.
-    
+
 Comment: %s
 
 ------------
@@ -1496,29 +1539,7 @@ This is an automated email from %s
                     # modify campaign.budget_status instead of event.status
                     event.status = "validated"
                     event.save()
-                    link_to_send = (
-                        "https://%s/dashboard/polio/budget/details/campaignId/%s/campaignName/%s/country/%d"
-                        % (
-                            settings.DNS_DOMAIN,
-                            event.campaign.id,
-                            event.campaign.obr_name,
-                            event.campaign.country.id,
-                        )
-                    )
-                    send_mail(
-                        self.email_title_validation_template.format(event.campaign.obr_name),
-                        self.email_template
-                        % (
-                            event.type,
-                            event.author.first_name,
-                            event.author.last_name,
-                            event.comment,
-                            _generate_auto_authentication_link(link_to_send, self.request.user),
-                            settings.DNS_DOMAIN,
-                        ),
-                        "no-reply@%s" % settings.DNS_DOMAIN,
-                        [self.request.user.email],
-                    )
+                    send_approval_budget_mail(event)
 
         serializer = BudgetEventSerializer(event, many=False)
         return Response(serializer.data)
@@ -1593,9 +1614,7 @@ class BudgetFilesViewset(ModelViewSet):
 
     def create(self, request, *args, **kwargs):
         event = request.data["event"]
-        event = get_object_or_404(BudgetEvent, id=event)
-        print(event.type)
-        print(event.status)
+        event = get_object_or_404(BudgetEvent, id=event))
         for file in request.FILES.items():
             budget_file = BudgetFiles.objects.create(file=File(file[1]), event=event)
             budget_file.save()

@@ -1162,8 +1162,8 @@ const MESSAGES = defineMessages({
         id: 'iaso.polio.label.comments',
     },
     validation_ongoing: {
-        defaultMessage: 'Validation ongoing',
-        id: 'iaso.polio.label.validation_ongoing',
+        defaultMessage: 'Approval ongoing',
+        id: 'iaso.polio.label.approval_ongoing',
     },
     validated: {
         defaultMessage: 'Approved',
@@ -1250,8 +1250,8 @@ const MESSAGES = defineMessages({
         defaultMessage: 'This field is required',
     },
     validation: {
-        id: 'iaso.forms.options.validation',
-        defaultMessage: 'Validation',
+        id: 'iaso.polio.forms.options.approval',
+        defaultMessage: 'Approval',
     },
     emailFormat: {
         id: 'iaso.forms.options.emailFormat',

@@ -1518,27 +1518,26 @@ This is an automated email from %s
         if event.type == "validation":
             val_teams = Team.objects.filter(name__icontains="approval").filter(
                 project__account=self.request.user.iaso_profile.account
-            )  # we should filter on the account here ...
+            )
+            print("val_teams", val_teams)
             validation_count = 0
             for val_team in val_teams:
                 for user in val_team.users.all():
                     try:
-                        # Test on count
-                        # TODO Handle errors in validation creation
-                        # Users can't have more than one validation event
                         count = BudgetEvent.objects.filter(
                             author=user, campaign=event.campaign, type="validation"
                         ).count()
+                        print("user", user, " count", count)
                         if count > 0:
                             validation_count += 1
                             break
                     except ObjectDoesNotExist:
                         pass
-                if validation_count == val_teams.count():
-                    # modify campaign.budget_status instead of event.status
-                    event.status = "validated"
-                    event.save()
-                    send_approval_budget_mail(event)
+            if validation_count == val_teams.count():
+                # modify campaign.budget_status instead of event.status
+                event.status = "validated"
+                event.save()
+                send_approval_budget_mail(event)
 
         serializer = BudgetEventSerializer(event, many=False)
         return Response(serializer.data)

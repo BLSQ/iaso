@@ -1474,9 +1474,11 @@ This is an automated email from %s
     def perform_create(self, serializer):
         event = serializer.save(author=self.request.user)
         if event.type == "validation":
-            val_team = Team.objects.get(name="Validation team")
-            budget_count = 0
-            if self.request.user in val_team.users.all():
+            val_teams = Team.objects.filter(name__icontains="approval").filter(
+                project__account=self.request.user.iaso_profile.account
+            )  # we should filter on the account here ...
+            validation_count = 0
+            for val_team in val_teams:
                 print("VALIDATION")
                 for user in val_team.users.all():
                     try:
@@ -1488,10 +1490,11 @@ This is an automated email from %s
                             author=user, campaign=event.campaign, type="validation"
                         ).count()
                         if count > 0:
-                            budget_count += 1
+                            validation_count += 1
+                            break
                     except ObjectDoesNotExist:
                         print("ERREUR")
-                if budget_count == len(val_team.users.all()):
+                if validation_count == val_teams.count():
                     print("IF BUDGET COUNT")
                     # modify campaign.budget_status instead of event.status
                     event.status = "validated"

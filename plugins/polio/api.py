@@ -1,20 +1,15 @@
 import csv
 import functools
 import json
-from datetime import timedelta, datetime, timezone
-from functools import lru_cache
-from typing import Optional, Union
+from datetime import timedelta, datetime
+from typing import Optional
 from collections import defaultdict
 from functools import lru_cache
 from logging import getLogger
 
 import requests
-from django.conf import settings
-from django.core import validators
 from django.core.cache import cache
-from django.core.exceptions import ValidationError
 from django.core.mail import send_mail
-from django.db import transaction
 from django.db.models import Q
 from django.db.models import Value, TextField, UUIDField
 from django.db.models.expressions import RawSQL
@@ -28,8 +23,9 @@ from gspread.utils import extract_id_from_url
 from rest_framework import routers, filters, viewsets, serializers, permissions, status
 from rest_framework.decorators import action
 from rest_framework.response import Response
+from django.conf import settings
 
-from hat.audit.models import Modification, CAMPAIGN_API
+from hat.api.token_authentication import generate_auto_authentication_link
 from iaso.api.common import ModelViewSet, DeletionFilterBackend
 from iaso.models import OrgUnit
 from iaso.models.org_unit import OrgUnitType
@@ -1421,6 +1417,18 @@ class BudgetEventViewset(ModelViewSet):
         "type",
         "author",
     ]
+    email_title_template = "New {} for {}"
+    email_template = """%s by %s %s.
+    
+Comment: %s
+
+------------
+
+you can access the history of this budget here: %s
+
+------------    
+This is an automated email from %s
+"""
 
     def get_serializer_class(self):
         return BudgetEventSerializer
@@ -1434,34 +1442,33 @@ class BudgetEventViewset(ModelViewSet):
 
     def perform_create(self, serializer):
         event = serializer.save(author=self.request.user)
-        emails = set()
+        recipients = set()
         for team in event.target_teams.all():
             for user in team.users.all():
                 if user.email:
-                    emails.add(user.email)
-        if event.cc_emails:
-            emails.update(event.cc_emails.split(","))
+                    recipients.add(user)
 
+        link_to_send = "https://%s/dashboard/polio/budget/details/campaignId/%s/campaignName/%s/country/%d" % (
+            settings.DNS_DOMAIN,
+            event.campaign.id,
+            event.campaign.obr_name,
+            event.campaign.country.id,
+        )
+
+        for user in recipients:
             send_mail(
-                "New Budget Event for {}".format(event.campaign.obr_name),
-                """%s by %s %s.
-                Comment: %s
-    you can access the history of this budget here: 
-    https://iaso-staging.bluesquare.org/dashboard/polio/budget/details/campaignId/%s/campaignName/%s/country/%d
-    
-    This is an automated email from poliooutbreaks.com
-"""
+                self.email_title_template.format(event.type, event.campaign.obr_name),
+                self.email_template
                 % (
                     event.type,
                     event.author.first_name,
                     event.author.last_name,
                     event.comment,
-                    event.campaign.id,
-                    event.campaign.obr_name,
-                    event.campaign.country.id,
+                    generate_auto_authentication_link(link_to_send, user),
+                    settings.DNS_DOMAIN,
                 ),
-                "no-reply@poliooutbreaks.com",
-                emails,
+                "no-reply@%s" % settings.DNS_DOMAIN,
+                [user.email],
             )
 
 

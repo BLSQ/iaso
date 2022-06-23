@@ -196,6 +196,7 @@ export const BudgetDetails: FunctionComponent<Props> = ({ router }) => {
                                     extraProps={{
                                         loading:
                                             isFetching || isFetchingProfiles,
+                                        columns,
                                     }}
                                     resetPageToOne={resetPageToOne}
                                     elevation={0}

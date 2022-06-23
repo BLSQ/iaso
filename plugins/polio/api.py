@@ -1446,11 +1446,14 @@ def send_approval_budget_mail(event):
                     This is an automated email from {2}
                     """
 
-                    link_to_send = "https://%s/dashboard/polio/budget/details/campaignId/%s/campaignName/%s/country/%d" % (
-                        settings.DNS_DOMAIN,
-                        event.campaign.id,
-                        event.campaign.obr_name,
-                        event.campaign.country.id,
+                    link_to_send = (
+                        "https://%s/dashboard/polio/budget/details/campaignId/%s/campaignName/%s/country/%d"
+                        % (
+                            settings.DNS_DOMAIN,
+                            event.campaign.id,
+                            event.campaign.obr_name,
+                            event.campaign.country.id,
+                        )
                     )
                     send_mail(
                         email_title_validation_template.format(event.campaign.obr_name),

@@ -1614,7 +1614,7 @@ class BudgetFilesViewset(ModelViewSet):
 
     def create(self, request, *args, **kwargs):
         event = request.data["event"]
-        event = get_object_or_404(BudgetEvent, id=event))
+        event = get_object_or_404(BudgetEvent, id=event)
         for file in request.FILES.items():
             budget_file = BudgetFiles.objects.create(file=File(file[1]), event=event)
             budget_file.save()

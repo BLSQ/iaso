@@ -86,16 +86,16 @@ export const Assignments: FunctionComponent<Props> = ({ params }) => {
         useGetOrgUnitTypes();
     const { mutateAsync: saveAssignment, isLoading: isSaving } =
         useSaveAssignment();
-
     const isLoading = isLoadingPlanning || isLoadingAssignments || isSaving;
 
     const setItemColor = (color: string, itemId: number): void => {
+        console.log('setItemColor', color);
         // TODO: improve this
         if (currentTeam?.type === 'TEAM_OF_USERS') {
             const itemIndex = profiles.findIndex(
                 profile => profile.user_id === itemId,
             );
-            if (itemIndex) {
+            if (itemIndex !== undefined) {
                 const newProfiles = [...profiles];
                 newProfiles[itemIndex] = {
                     ...newProfiles[itemIndex],
@@ -108,7 +108,7 @@ export const Assignments: FunctionComponent<Props> = ({ params }) => {
             const itemIndex = teams?.findIndex(
                 team => team.original.id === itemId,
             );
-            if (itemIndex && teams) {
+            if (itemIndex !== undefined && teams) {
                 const newTeams = [...teams];
                 newTeams[itemIndex] = {
                     ...newTeams[itemIndex],
@@ -175,6 +175,7 @@ export const Assignments: FunctionComponent<Props> = ({ params }) => {
         }
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [dataProfiles]);
+    console.log('teams', teams);
     return (
         <>
             <TopBar
@@ -215,7 +216,10 @@ export const Assignments: FunctionComponent<Props> = ({ params }) => {
                             setItemColor={setItemColor}
                             saveAssignment={saveAssignment}
                             baseOrgunitType={baseOrgunitType}
-                            params={params}
+                            params={{
+                                parentPicking: params.parentPicking,
+                                parentOrgunitType: params.parentOrgunitType,
+                            }}
                             orgunitTypes={orgunitTypes || []}
                             isFetchingOrgUnitTypes={isFetchingOrgunitTypes}
                         />

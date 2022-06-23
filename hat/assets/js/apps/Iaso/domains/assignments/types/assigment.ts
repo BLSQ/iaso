@@ -5,6 +5,8 @@ export type AssignmentParams = {
     planningId: string;
     team?: string;
     baseOrgunitType?: string;
+    parentOrgunitType?: string;
+    parentPicking?: string;
     tab?: string;
 };
 

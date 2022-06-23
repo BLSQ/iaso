@@ -4,6 +4,7 @@ export type BaseLocation = {
     id: number;
     name: string;
     orgUnitTypeId: number;
+    color?: string;
 };
 
 export type OrgUnitShape = BaseLocation & {
@@ -15,7 +16,13 @@ export type OrgUnitMarker = BaseLocation & {
     longitude: number;
 };
 
+type Selection<T> = {
+    selected: T[];
+    unselected: T[];
+    all: T[];
+};
+
 export type Locations = {
-    shapes: OrgUnitShape[];
-    markers: OrgUnitMarker[];
+    shapes: Selection<OrgUnitShape>;
+    markers: Selection<OrgUnitMarker>;
 };

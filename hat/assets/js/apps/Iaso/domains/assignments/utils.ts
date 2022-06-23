@@ -1,4 +1,3 @@
-import { Theme } from '@material-ui/core/styles';
 // types
 import { AssignmentsApi, AssignmentApi } from './types/assigment';
 import { OrgUnitMarker, OrgUnitShape } from './types/locations';
@@ -38,29 +37,4 @@ export const getOrgUnitAssignation = (
         assignedTeam,
         assignedUser,
     };
-};
-
-export const getLocationColor = (
-    assignments: AssignmentsApi,
-    orgUnit: OrgUnitShape | OrgUnitMarker,
-    teams: DropdownTeamsOptions[],
-    theme: Theme,
-    profiles: Profile[],
-    currentType: 'TEAM_OF_TEAMS' | 'TEAM_OF_USERS' | undefined,
-): string => {
-    let color = theme.palette.grey[500];
-    const orgUnitAssignation = getOrgUnitAssignation(
-        assignments,
-        orgUnit,
-        teams,
-        profiles,
-        currentType,
-    );
-    if (orgUnitAssignation.assignedTeam && currentType === 'TEAM_OF_TEAMS') {
-        color = orgUnitAssignation.assignedTeam.color;
-    }
-    if (orgUnitAssignation.assignedUser && currentType === 'TEAM_OF_USERS') {
-        color = orgUnitAssignation.assignedUser.color;
-    }
-    return color;
 };

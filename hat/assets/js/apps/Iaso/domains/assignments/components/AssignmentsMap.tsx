@@ -9,6 +9,7 @@ import {
     ScaleControl,
 } from 'react-leaflet';
 import { Box } from '@material-ui/core';
+import { grey } from '@material-ui/core/colors';
 import {
     // @ts-ignore
     LoadingSpinner,
@@ -33,8 +34,6 @@ const defaultViewport = {
 type Props = {
     // eslint-disable-next-line no-unused-vars
     handleClick: (shape: OrgUnitShape | OrgUnitMarker) => void;
-    // eslint-disable-next-line no-unused-vars
-    getLocationColor: (location: OrgUnitShape | OrgUnitMarker) => string;
     getLocations: UseQueryResult<Locations, Error>;
 };
 
@@ -44,10 +43,10 @@ const boundsOptions = {
 
 const getLocationsBounds = (locations: Locations) => {
     const shapeBounds = locations
-        ? getShapesBounds(locations.shapes, 'geoJson')
+        ? getShapesBounds(locations.shapes.all, 'geoJson')
         : null;
     const locationsBounds = locations
-        ? getLatLngBounds(locations.markers)
+        ? getLatLngBounds(locations.markers.all)
         : null;
     let bounds = null;
     if (locationsBounds && shapeBounds) {
@@ -62,7 +61,6 @@ const getLocationsBounds = (locations: Locations) => {
 
 export const AssignmentsMap: FunctionComponent<Props> = ({
     handleClick,
-    getLocationColor,
     getLocations,
 }) => {
     const map: any = useRef();
@@ -84,7 +82,6 @@ export const AssignmentsMap: FunctionComponent<Props> = ({
             fitToBounds(locations);
         }
     }, [isFetchingLocations, locations]);
-
     return (
         <Box position="relative">
             <TilesSwitch
@@ -113,28 +110,55 @@ export const AssignmentsMap: FunctionComponent<Props> = ({
                         <ZoomControl
                             fitToBounds={() => fitToBounds(locations)}
                         />
-                        <Pane name="shapes">
-                            {locations.shapes.map(shape => (
+                        <Pane name="shapes-unselected">
+                            {locations.shapes.unselected.map(shape => (
                                 <GeoJSON
                                     key={shape.id}
                                     onClick={() => handleClick(shape)}
                                     data={shape.geoJson}
                                     style={() => ({
-                                        color: getLocationColor(shape),
+                                        color: grey[500],
                                     })}
                                 >
                                     <Tooltip>{shape.name}</Tooltip>
                                 </GeoJSON>
                             ))}
                         </Pane>
-                        <Pane name="markers">
+                        <Pane name="shapes-selected">
+                            {locations.shapes.selected.map(shape => (
+                                <GeoJSON
+                                    key={shape.id}
+                                    onClick={() => handleClick(shape)}
+                                    data={shape.geoJson}
+                                    style={() => ({
+                                        color: shape.color,
+                                        fillOpacity: 0.4,
+                                    })}
+                                >
+                                    <Tooltip>{shape.name}</Tooltip>
+                                </GeoJSON>
+                            ))}
+                        </Pane>
+                        <Pane name="markers-unselected">
                             <MarkersListComponent
-                                items={locations.markers || []}
+                                items={locations.markers.unselected || []}
                                 onMarkerClick={shape => handleClick(shape)}
                                 markerProps={shape => ({
-                                    ...circleColorMarkerOptions(
-                                        getLocationColor(shape),
-                                    ),
+                                    ...circleColorMarkerOptions(shape.color),
+                                })}
+                                tooltipProps={orgUnit => ({
+                                    children: [orgUnit.name],
+                                })}
+                                TooltipComponent={Tooltip}
+                                isCircle
+                            />
+                        </Pane>
+                        <Pane name="markers-selected">
+                            <MarkersListComponent
+                                items={locations.markers.selected || []}
+                                onMarkerClick={shape => handleClick(shape)}
+                                markerProps={shape => ({
+                                    ...circleColorMarkerOptions(shape.color),
                                 })}
                                 tooltipProps={orgUnit => ({
                                     children: [orgUnit.name],

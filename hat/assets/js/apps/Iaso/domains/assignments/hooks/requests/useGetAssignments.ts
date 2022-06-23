@@ -24,11 +24,21 @@ export const useGetAssignments = (
     return useSnackQuery(queryKey, () => getAssignments(options), undefined, {
         select: data => {
             return data
-                .filter(assignment =>
-                    currentTeam?.type === 'TEAM_OF_USERS'
-                        ? assignment.user !== null
-                        : assignment.team !== null,
-                )
+                .filter(assignment => {
+                    if (currentTeam?.type) {
+                        if (currentTeam.type === 'TEAM_OF_TEAMS') {
+                            return currentTeam.sub_teams.some(
+                                subTeam => assignment.team === subTeam,
+                            );
+                        }
+                        if (currentTeam.type === 'TEAM_OF_USERS') {
+                            return currentTeam.users.some(
+                                user => assignment.user === user,
+                            );
+                        }
+                    }
+                    return false;
+                })
                 .filter(
                     assignment =>
                         !baseOrgunitType ||

@@ -8,16 +8,12 @@ import {
     // @ts-ignore
     useSafeIntl,
 } from 'bluesquare-components';
-import { getOrgUnitAssignation, getLocationColor } from '../utils';
+import { getOrgUnitAssignation } from '../utils';
 
 import { AssignmentsMap } from './AssignmentsMap';
 import { AssignmentsMapSelectors } from './AssignmentsMapSelectors';
 
-import {
-    AssignmentsApi,
-    SaveAssignmentQuery,
-    AssignmentParams,
-} from '../types/assigment';
+import { AssignmentsApi, SaveAssignmentQuery } from '../types/assigment';
 import { Planning } from '../types/planning';
 import { Team, DropdownTeamsOptions, SubTeam, User } from '../types/team';
 import { OrgUnitMarker, OrgUnitShape } from '../types/locations';
@@ -30,8 +26,8 @@ import { useGetOrgUnitLocations } from '../hooks/requests/useGetOrgUnitLocations
 import { getColumns } from '../configs/AssignmentsMapTabColumns';
 
 export type Params = {
-    parentPicking: string;
-    parentOrgunitType: string;
+    parentPicking?: string;
+    parentOrgunitType?: string;
 };
 
 type Props = {
@@ -162,19 +158,13 @@ export const AssignmentsMapTab: FunctionComponent<Props> = ({
             ? currentTeam.users_details
             : currentTeam?.sub_teams_details;
 
-    const getColor = location =>
-        getLocationColor(
-            assignments,
-            location,
-            teams,
-            theme,
-            profiles,
-            currentTeam?.type,
-        );
-
     const geLocations = useGetOrgUnitLocations(
         planning?.org_unit,
         baseOrgunitType,
+        assignments,
+        teams,
+        profiles,
+        currentTeam?.type,
     );
 
     return (
@@ -226,7 +216,6 @@ export const AssignmentsMapTab: FunctionComponent<Props> = ({
             <Grid item xs={7}>
                 <AssignmentsMap
                     handleClick={handleClick}
-                    getLocationColor={getColor}
                     getLocations={geLocations}
                 />
             </Grid>

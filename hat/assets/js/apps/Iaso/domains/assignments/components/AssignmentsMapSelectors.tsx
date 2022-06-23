@@ -19,8 +19,8 @@ import MESSAGES from '../messages';
 import { redirectTo } from '../../../routing/actions';
 
 export type Params = {
-    parentPicking: string;
-    parentOrgunitType: string;
+    parentPicking?: string;
+    parentOrgunitType?: string;
 };
 
 type Props = {

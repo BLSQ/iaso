@@ -1566,9 +1566,11 @@ This is an automated email from %s
                     event.campaign.country.id,
                 )
 
+                event_type = "Approval" if event.type == "validation" else event.type
+
                 for user in recipients:
                     send_mail(
-                        self.email_title_template.format(event.type, event.campaign.obr_name),
+                        self.email_title_template.format(event_type, event.campaign.obr_name),
                         self.email_template
                         % (
                             event.type,
@@ -1614,7 +1616,7 @@ class BudgetFilesViewset(ModelViewSet):
 
     def create(self, request, *args, **kwargs):
         event = request.data["event"]
-        event = get_object_or_404(BudgetEvent, id=event))
+        event = get_object_or_404(BudgetEvent, id=event)
         for file in request.FILES.items():
             budget_file = BudgetFiles.objects.create(file=File(file[1]), event=event)
             budget_file.save()

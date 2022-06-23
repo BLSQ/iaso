@@ -18,14 +18,17 @@ import { redirectTo } from '../../routing/actions';
 import { baseUrls } from '../../constants/urls';
 
 import { useGetPlanning } from './hooks/requests/useGetPlanning';
-import { useGetAssignments } from './hooks/requests/useGetAssignments';
+import {
+    useGetAssignments,
+    AssignmentsResult,
+} from './hooks/requests/useGetAssignments';
 
 import TopBar from '../../components/nav/TopBarComponent';
 
 import { AssignmentsFilters } from './components/AssignmentsFilters';
 import { AssignmentsMapTab } from './components/AssignmentsMapTab';
 
-import { AssignmentParams, AssignmentApi } from './types/assigment';
+import { AssignmentParams } from './types/assigment';
 import { Planning } from './types/planning';
 import { Team, DropdownTeamsOptions } from './types/team';
 import { Profile } from '../../utils/usersUtils';
@@ -76,12 +79,14 @@ export const Assignments: FunctionComponent<Props> = ({ params }) => {
         planning?.team,
     );
     const {
-        data: assignments = [],
+        data,
         isLoading: isLoadingAssignments,
     }: {
-        data?: AssignmentApi[];
+        data?: AssignmentsResult;
         isLoading: boolean;
     } = useGetAssignments({ planningId }, currentTeam, baseOrgunitType);
+    const assignments = data ? data.assignments : [];
+    const allAssignments = data ? data.allAssignments : [];
     const { data: orgunitTypes, isFetching: isFetchingOrgunitTypes } =
         useGetOrgUnitTypes();
     const { mutateAsync: saveAssignment, isLoading: isSaving } =
@@ -89,7 +94,6 @@ export const Assignments: FunctionComponent<Props> = ({ params }) => {
     const isLoading = isLoadingPlanning || isLoadingAssignments || isSaving;
 
     const setItemColor = (color: string, itemId: number): void => {
-        console.log('setItemColor', color);
         // TODO: improve this
         if (currentTeam?.type === 'TEAM_OF_USERS') {
             const itemIndex = profiles.findIndex(
@@ -175,7 +179,7 @@ export const Assignments: FunctionComponent<Props> = ({ params }) => {
         }
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [dataProfiles]);
-    console.log('teams', teams);
+
     return (
         <>
             <TopBar
@@ -222,6 +226,7 @@ export const Assignments: FunctionComponent<Props> = ({ params }) => {
                             }}
                             orgunitTypes={orgunitTypes || []}
                             isFetchingOrgUnitTypes={isFetchingOrgunitTypes}
+                            allAssignments={allAssignments}
                         />
                     )}
                     {tab === 'list' && <Box>LIST</Box>}

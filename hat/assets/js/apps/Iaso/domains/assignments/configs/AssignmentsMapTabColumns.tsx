@@ -8,7 +8,8 @@ import { AssignmentsApi } from '../types/assigment';
 import { DropdownTeamsOptions, SubTeam, User, Team } from '../types/team';
 import { Column } from '../../../types/table';
 import { IntlFormatMessage } from '../../../types/intl';
-import { Profile } from '../../../utils/usersUtils';
+
+import { Profile, getDisplayName } from '../../../utils/usersUtils';
 
 import { colors } from '../constants/colors';
 
@@ -69,6 +70,23 @@ export const getColumns = ({
             id: currentTeam?.type === 'TEAM_OF_USERS' ? 'username' : 'name',
             accessor:
                 currentTeam?.type === 'TEAM_OF_USERS' ? 'username' : 'name',
+            Cell: settings => {
+                let fullItem;
+                let displayString = '';
+                if (currentTeam?.type === 'TEAM_OF_USERS') {
+                    fullItem = profiles.find(
+                        profile => profile.user_id === settings.row.original.id,
+                    );
+                    displayString = getDisplayName(fullItem);
+                }
+                if (currentTeam?.type === 'TEAM_OF_TEAMS') {
+                    fullItem = teams.find(
+                        team => team.original.id === settings.row.original.id,
+                    );
+                    displayString = fullItem.label;
+                }
+                return <>{displayString}</>;
+            },
         },
         {
             Header: formatMessage(MESSAGES.color),

@@ -5,6 +5,7 @@ export type BaseLocation = {
     name: string;
     orgUnitTypeId: number;
     color?: string;
+    otherAssignation?: any | undefined;
 };
 
 export type OrgUnitShape = BaseLocation & {

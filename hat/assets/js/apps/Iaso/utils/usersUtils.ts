@@ -55,7 +55,7 @@ type User = {
     dhis2_id?: string;
 };
 
-const getDisplayName = (user: User | Profile): string => {
+export const getDisplayName = (user: User | Profile): string => {
     if (!user.first_name && !user.last_name) {
         return user.user_name;
     }

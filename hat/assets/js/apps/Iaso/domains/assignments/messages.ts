@@ -45,6 +45,14 @@ const MESSAGES = defineMessages({
         defaultMessage: 'Selection',
         id: 'iaso.label.selection',
     },
+    alreadyAssignedTo: {
+        defaultMessage: 'already assigned to',
+        id: 'iaso.assignment.alreadyAssignedTo',
+    },
+    inAnotherTeam: {
+        defaultMessage: 'in another team',
+        id: 'iaso.assignment.inAnotherTeam',
+    },
 });
 
 export default MESSAGES;

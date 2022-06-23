@@ -9,6 +9,11 @@ type Option = {
     planningId: string;
 };
 
+export type AssignmentsResult = {
+    assignments: AssignmentApi[];
+    allAssignments: AssignmentApi[];
+};
+
 const getAssignments = async (options: Option): Promise<AssignmentApi[]> => {
     const url = makeUrlWithParams('/api/microplanning/assignments', options);
     return getRequest(url) as Promise<AssignmentApi[]>;
@@ -18,12 +23,12 @@ export const useGetAssignments = (
     options: Option,
     currentTeam: Team | undefined,
     baseOrgunitType: string | undefined,
-): UseQueryResult<AssignmentApi[], Error> => {
+): UseQueryResult<AssignmentsResult, Error> => {
     const queryKey: any[] = ['assignmentsList'];
     // @ts-ignore
     return useSnackQuery(queryKey, () => getAssignments(options), undefined, {
         select: data => {
-            return data
+            const filteredAssignments = data
                 .filter(assignment => {
                     if (currentTeam?.type) {
                         if (currentTeam.type === 'TEAM_OF_TEAMS') {
@@ -46,6 +51,10 @@ export const useGetAssignments = (
                             assignment.org_unit_details.org_unit_type ===
                                 parseInt(baseOrgunitType, 10)),
                 );
+            return {
+                assignments: filteredAssignments,
+                allAssignments: data,
+            };
         },
     });
 };

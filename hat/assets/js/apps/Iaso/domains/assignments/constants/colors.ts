@@ -46,3 +46,5 @@ export const getColor = (i: number, reverse = false): string => {
     const allColors = reverse ? colors.reverse() : colors;
     return allColors[i % allColors.length];
 };
+
+export const disabledColor = grey[400];

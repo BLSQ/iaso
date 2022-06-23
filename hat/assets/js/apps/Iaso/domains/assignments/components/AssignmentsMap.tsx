@@ -13,7 +13,16 @@ import { grey } from '@material-ui/core/colors';
 import {
     // @ts-ignore
     LoadingSpinner,
+    // @ts-ignore
+    useSafeIntl,
 } from 'bluesquare-components';
+
+import { Locations, OrgUnitMarker, OrgUnitShape } from '../types/locations';
+
+import { TilesSwitch, Tile } from '../../../components/maps/tools/TileSwitch';
+import MarkersListComponent from '../../../components/maps/markers/MarkersListComponent';
+import { disabledColor } from '../constants/colors';
+import tiles from '../../../constants/mapTiles';
 
 import {
     ZoomControl,
@@ -21,10 +30,9 @@ import {
     getShapesBounds,
     getLatLngBounds,
 } from '../../../utils/mapUtils';
-import tiles from '../../../constants/mapTiles';
-import { Locations, OrgUnitMarker, OrgUnitShape } from '../types/locations';
-import { TilesSwitch, Tile } from '../../../components/maps/tools/TileSwitch';
-import MarkersListComponent from '../../../components/maps/markers/MarkersListComponent';
+import { getDisplayName } from '../../../utils/usersUtils';
+
+import MESSAGES from '../messages';
 
 const defaultViewport = {
     center: [1, 20],
@@ -59,10 +67,27 @@ const getLocationsBounds = (locations: Locations) => {
     return bounds;
 };
 
+const getAlreadyAssignedText = (item, formatMessage) => {
+    let otherAssignString = '';
+    if (item.otherAssignation.assignedTeam) {
+        otherAssignString = item.otherAssignation.assignedTeam.label;
+    }
+    if (item.otherAssignation.assignedUser) {
+        otherAssignString = getDisplayName(item.otherAssignation.assignedUser);
+    }
+    return (
+        <>
+            {item.name} {formatMessage(MESSAGES.alreadyAssignedTo)}{' '}
+            {otherAssignString} {formatMessage(MESSAGES.inAnotherTeam)}
+        </>
+    );
+};
+
 export const AssignmentsMap: FunctionComponent<Props> = ({
     handleClick,
     getLocations,
 }) => {
+    const { formatMessage } = useSafeIntl();
     const map: any = useRef();
     const [currentTile, setCurrentTile] = useState<Tile>(tiles.osm);
     const fitToBounds = (newLocations: Locations) => {
@@ -110,19 +135,47 @@ export const AssignmentsMap: FunctionComponent<Props> = ({
                         <ZoomControl
                             fitToBounds={() => fitToBounds(locations)}
                         />
+                        <Pane name="shapes-unselected-already-assigned">
+                            {locations.shapes.unselected
+                                .filter(
+                                    shape => shape.otherAssignation.assignment,
+                                )
+                                .map(shape => {
+                                    return (
+                                        <GeoJSON
+                                            key={shape.id}
+                                            data={shape.geoJson}
+                                            style={() => ({
+                                                color: disabledColor,
+                                            })}
+                                        >
+                                            <Tooltip>
+                                                {getAlreadyAssignedText(
+                                                    shape,
+                                                    formatMessage,
+                                                )}
+                                            </Tooltip>
+                                        </GeoJSON>
+                                    );
+                                })}
+                        </Pane>
                         <Pane name="shapes-unselected">
-                            {locations.shapes.unselected.map(shape => (
-                                <GeoJSON
-                                    key={shape.id}
-                                    onClick={() => handleClick(shape)}
-                                    data={shape.geoJson}
-                                    style={() => ({
-                                        color: grey[500],
-                                    })}
-                                >
-                                    <Tooltip>{shape.name}</Tooltip>
-                                </GeoJSON>
-                            ))}
+                            {locations.shapes.unselected
+                                .filter(
+                                    shape => !shape.otherAssignation.assignment,
+                                )
+                                .map(shape => (
+                                    <GeoJSON
+                                        key={shape.id}
+                                        onClick={() => handleClick(shape)}
+                                        data={shape.geoJson}
+                                        style={() => ({
+                                            color: grey[500],
+                                        })}
+                                    >
+                                        <Tooltip>{shape.name}</Tooltip>
+                                    </GeoJSON>
+                                ))}
                         </Pane>
                         <Pane name="shapes-selected">
                             {locations.shapes.selected.map(shape => (
@@ -139,15 +192,48 @@ export const AssignmentsMap: FunctionComponent<Props> = ({
                                 </GeoJSON>
                             ))}
                         </Pane>
+                        <Pane name="markers-unselected-already-assigned">
+                            <MarkersListComponent
+                                items={
+                                    locations.markers.unselected.filter(
+                                        marker =>
+                                            marker.otherAssignation.assignment,
+                                    ) || []
+                                }
+                                onMarkerClick={() => null}
+                                markerProps={() => ({
+                                    ...circleColorMarkerOptions(disabledColor),
+                                })}
+                                tooltipProps={orgUnit => {
+                                    return {
+                                        children: (
+                                            <>
+                                                {getAlreadyAssignedText(
+                                                    orgUnit,
+                                                    formatMessage,
+                                                )}
+                                            </>
+                                        ),
+                                    };
+                                }}
+                                TooltipComponent={Tooltip}
+                                isCircle
+                            />
+                        </Pane>
                         <Pane name="markers-unselected">
                             <MarkersListComponent
-                                items={locations.markers.unselected || []}
+                                items={
+                                    locations.markers.unselected.filter(
+                                        marker =>
+                                            !marker.otherAssignation.assignment,
+                                    ) || []
+                                }
                                 onMarkerClick={shape => handleClick(shape)}
-                                markerProps={shape => ({
-                                    ...circleColorMarkerOptions(shape.color),
+                                markerProps={() => ({
+                                    ...circleColorMarkerOptions(grey[500]),
                                 })}
                                 tooltipProps={orgUnit => ({
-                                    children: [orgUnit.name],
+                                    children: [orgUnit.name, 'sa mere'],
                                 })}
                                 TooltipComponent={Tooltip}
                                 isCircle

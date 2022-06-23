@@ -32,6 +32,7 @@ export type Params = {
 
 type Props = {
     assignments: AssignmentsApi;
+    allAssignments: AssignmentsApi;
     planning: Planning | undefined;
     currentTeam: Team | undefined;
     teams: DropdownTeamsOptions[];
@@ -48,6 +49,7 @@ type Props = {
 
 export const AssignmentsMapTab: FunctionComponent<Props> = ({
     assignments,
+    allAssignments,
     planning,
     currentTeam,
     teams,
@@ -158,14 +160,15 @@ export const AssignmentsMapTab: FunctionComponent<Props> = ({
             ? currentTeam.users_details
             : currentTeam?.sub_teams_details;
 
-    const geLocations = useGetOrgUnitLocations(
-        planning?.org_unit,
+    const geLocations = useGetOrgUnitLocations({
+        orgUnitParentId: planning?.org_unit,
         baseOrgunitType,
         assignments,
+        allAssignments,
         teams,
         profiles,
-        currentTeam?.type,
-    );
+        currentType: currentTeam?.type,
+    });
 
     return (
         <Grid container spacing={2}>

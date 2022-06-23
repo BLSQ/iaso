@@ -15,15 +15,27 @@ import { AssignmentsApi } from '../../types/assigment';
 
 import { getOrgUnitAssignation } from '../../utils';
 
-const mapLocation = (
-    orgUnits: OrgUnit[],
-    orgUnitParentId: number | undefined,
-    baseOrgunitType: string,
-    assignments: AssignmentsApi,
-    teams: DropdownTeamsOptions[],
-    profiles: Profile[],
-    currentType: 'TEAM_OF_TEAMS' | 'TEAM_OF_USERS' | undefined,
-): Locations => {
+type MapProps = {
+    orgUnits: OrgUnit[];
+    orgUnitParentId: number | undefined;
+    baseOrgunitType: string;
+    assignments: AssignmentsApi;
+    allAssignments: AssignmentsApi;
+    teams: DropdownTeamsOptions[];
+    profiles: Profile[];
+    currentType: 'TEAM_OF_TEAMS' | 'TEAM_OF_USERS' | undefined;
+};
+
+const mapLocation = ({
+    orgUnits,
+    orgUnitParentId,
+    baseOrgunitType,
+    assignments,
+    allAssignments,
+    teams,
+    profiles,
+    currentType,
+}: MapProps): Locations => {
     const locations: Locations = {
         shapes: {
             all: [],
@@ -58,12 +70,31 @@ const mapLocation = (
                         profiles,
                         currentType,
                     );
-                    if (orgUnitAssignation.assignedTeam) {
+                    if (
+                        orgUnitAssignation.assignedTeam &&
+                        currentType === 'TEAM_OF_TEAMS'
+                    ) {
                         locations.shapes.selected.push({
                             ...shape,
                             color: orgUnitAssignation.assignedTeam.color,
                         });
+                    } else if (
+                        orgUnitAssignation.assignedUser &&
+                        currentType === 'TEAM_OF_USERS'
+                    ) {
+                        locations.shapes.selected.push({
+                            ...shape,
+                            color: orgUnitAssignation.assignedUser.color,
+                        });
                     } else {
+                        // check if org unit has another assignation with another main team
+                        shape.otherAssignation = getOrgUnitAssignation(
+                            allAssignments,
+                            shape,
+                            teams,
+                            profiles,
+                            undefined,
+                        );
                         locations.shapes.unselected.push(shape);
                     }
                 } else if (orgUnit.latitude && orgUnit.longitude) {
@@ -80,9 +111,31 @@ const mapLocation = (
                         profiles,
                         currentType,
                     );
-                    if (orgUnitAssignation.assignedUser) {
-                        locations.markers.selected.push(marker);
+                    if (
+                        orgUnitAssignation.assignedTeam &&
+                        currentType === 'TEAM_OF_TEAMS'
+                    ) {
+                        locations.markers.selected.push({
+                            ...marker,
+                            color: orgUnitAssignation.assignedTeam.color,
+                        });
+                    } else if (
+                        orgUnitAssignation.assignedUser &&
+                        currentType === 'TEAM_OF_USERS'
+                    ) {
+                        locations.markers.selected.push({
+                            ...marker,
+                            color: orgUnitAssignation.assignedUser.color,
+                        });
                     } else {
+                        // check if org unit has another assignation with another main team
+                        marker.otherAssignation = getOrgUnitAssignation(
+                            allAssignments,
+                            marker,
+                            teams,
+                            profiles,
+                            undefined,
+                        );
                         locations.markers.unselected.push(marker);
                     }
                 }
@@ -93,14 +146,25 @@ const mapLocation = (
     return locations;
 };
 
-export const useGetOrgUnitLocations = (
-    orgUnitParentId: number | undefined,
-    baseOrgunitType: string | undefined,
-    assignments: AssignmentsApi,
-    teams: DropdownTeamsOptions[],
-    profiles: Profile[],
-    currentType: 'TEAM_OF_TEAMS' | 'TEAM_OF_USERS' | undefined,
-): UseQueryResult<Locations, Error> => {
+type Props = {
+    orgUnitParentId: number | undefined;
+    baseOrgunitType: string | undefined;
+    assignments: AssignmentsApi;
+    allAssignments: AssignmentsApi;
+    teams: DropdownTeamsOptions[];
+    profiles: Profile[];
+    currentType: 'TEAM_OF_TEAMS' | 'TEAM_OF_USERS' | undefined;
+};
+
+export const useGetOrgUnitLocations = ({
+    orgUnitParentId,
+    baseOrgunitType,
+    assignments,
+    allAssignments,
+    teams,
+    profiles,
+    currentType,
+}: Props): UseQueryResult<Locations, Error> => {
     const params = {
         validation_status: 'all',
         asLocation: true,
@@ -125,15 +189,16 @@ export const useGetOrgUnitLocations = (
             cacheTime: 1000 * 60 * 5,
             select: (orgUnits: OrgUnit[]) => {
                 if (baseOrgunitType) {
-                    return mapLocation(
+                    return mapLocation({
                         orgUnits,
                         orgUnitParentId,
                         baseOrgunitType,
                         assignments,
+                        allAssignments,
                         teams,
                         profiles,
                         currentType,
-                    );
+                    });
                 }
                 return [];
             },

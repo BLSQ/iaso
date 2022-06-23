@@ -6,7 +6,10 @@ def parse_instance_filters(req):
         periods = Period.range_string_with_sub_periods(req.get("startPeriod", None), req.get("endPeriod", None))
     else:
         periods = req.get("period_ids", req.get("periods", req.get("period", None)))
-
+    # the front end sends "true" or "false" so we need to check against the string values for the filter to work
+    show_deleted = req.get("showDeleted", "false")
+    if show_deleted == "false":
+        show_deleted = None
     return {
         "form_id": req.get("form_id", None),
         "form_ids": req.get("form_ids", None),
@@ -21,5 +24,5 @@ def parse_instance_filters(req):
         "status": req.get("status", None),
         "from_date": req.get("dateFrom", None),
         "to_date": req.get("dateTo", None),
-        "show_deleted": req.get("showDeleted", None),
+        "show_deleted": show_deleted,
     }

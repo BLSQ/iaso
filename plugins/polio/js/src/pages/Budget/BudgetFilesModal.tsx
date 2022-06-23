@@ -3,6 +3,7 @@ import {
     Box,
     Button,
     DialogActions,
+    Grid,
     Typography,
     Divider,
 } from '@material-ui/core';
@@ -22,9 +23,6 @@ type Props = {
     note?: string;
     type: 'submission' | 'comments';
     date: string;
-    links: string;
-    author: string;
-    recipients: string;
 };
 
 const CloseDialog = ({
@@ -80,27 +78,13 @@ const extractFileName = (fileUrl: string) => {
     return removedSlashes[removedSlashes.length - 1];
 };
 
-const makeFileLinks = files => {
+const makeLinks = files => {
     return files.map((file, index) => {
-        const fileName = extractFileName(file.file) || file.file;
+        const fileName = extractFileName(file.file) ?? `file_${index}`;
         return (
             // eslint-disable-next-line react/no-array-index-key
             <Link key={`${fileName}_${index}`} download href={file.file}>
                 <Typography>{fileName}</Typography>
-            </Link>
-        );
-    });
-};
-
-const makeLinks = (links: string) => {
-    if (!links) return null;
-    const linksArray = links.split(',');
-    return linksArray.map((link, index) => {
-        const trimmedLink = link.trim();
-        return (
-            // eslint-disable-next-line react/no-array-index-key
-            <Link key={`${trimmedLink}_${index}`} download href={trimmedLink}>
-                <Typography>{trimmedLink}</Typography>
             </Link>
         );
     });
@@ -111,24 +95,16 @@ export const BudgetFilesModal: FunctionComponent<Props> = ({
     note,
     type,
     date,
-    links,
-    author,
-    recipients = '',
 }) => {
     const { formatMessage } = useSafeIntl();
     const { data: budgetEventFiles, isFetching } =
         useGetBudgetEventFiles(eventId);
-    const typeTranslated = formatMessage(MESSAGES[type]);
+    const typeTranslated = formatMessage(MESSAGES[type]).toLowerCase();
     const titleMessage = {
-        ...MESSAGES.budgetFiles,
-        values: {
-            type: typeTranslated,
-            date: moment(date).format('L'),
-            author,
-            recipients,
-        },
+        ...MESSAGES.files,
+        values: { type: typeTranslated, date: moment(date).format('LTS') },
     };
-    const disableTrigger = budgetEventFiles?.length === 0 && !note && !links;
+    const disableTrigger = budgetEventFiles?.length === 0 && !note;
     const renderTrigger = useCallback(
         () => makeRenderTrigger(disableTrigger),
         [disableTrigger],
@@ -147,17 +123,23 @@ export const BudgetFilesModal: FunctionComponent<Props> = ({
         >
             <Divider />
             {isFetching && <LoadingSpinner />}
+            {budgetEventFiles?.length === 0 && !isFetching && (
+                <Grid container item>
+                    <Box mt={4}>
+                        <Typography>
+                            {formatMessage(MESSAGES.noFile)}
+                        </Typography>
+                    </Box>
+                </Grid>
+            )}
             {!isFetching && (
                 <Box mt={2}>
-                    {makeFileLinks(budgetEventFiles)}
-                    {makeLinks(links)}
+                    {makeLinks(budgetEventFiles)}
                     {note && (
                         <>
-                            {(budgetEventFiles?.length > 0 || links) && (
-                                <Box mt={4}>
-                                    <Divider />
-                                </Box>
-                            )}
+                            <Box mt={4}>
+                                <Divider />
+                            </Box>
                             <Box mb={2} mt={2}>
                                 <Typography style={{ fontWeight: 'bold' }}>
                                     {formatMessage(MESSAGES.notes)}

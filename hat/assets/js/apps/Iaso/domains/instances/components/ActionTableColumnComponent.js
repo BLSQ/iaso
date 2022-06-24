@@ -5,14 +5,12 @@ import { IconButton as IconButtonComponent } from 'bluesquare-components';
 import LinkIcon from '@material-ui/icons/Link';
 import LinkOffIcon from '@material-ui/icons/LinkOff';
 import omit from 'lodash/omit';
-import { useDispatch } from 'react-redux';
 import { DialogContentText } from '@material-ui/core';
 import { FormattedMessage } from 'react-intl';
 import { useSaveOrgUnit } from '../../orgUnits/hooks';
 import { baseUrls } from '../../../constants/urls';
 import { userHasPermission } from '../../users/utils';
 import MESSAGES from '../messages';
-import { redirectTo as redirectToAction } from '../../../routing/actions';
 import { useFormState } from '../../../hooks/form';
 import ConfirmCancelDialogComponent from '../../../components/dialogs/ConfirmCancelDialogComponent';
 import {
@@ -36,14 +34,15 @@ const initialFormState = (orgUnit, referenceSubmissionId) => {
 };
 
 const ActionTableColumnComponent = ({ settings, user }) => {
-    const [setFieldErrors] = useFormState(
+    const [_formState, _setFieldValue, setFieldErrors] = useFormState(
         initialFormState(
             settings.row.original.org_unit,
             settings.row.original.id,
         ),
     );
-    const dispatch = useDispatch();
-    const { mutateAsync: saveOu } = useSaveOrgUnit();
+
+    const { mutateAsync: saveOu } = useSaveOrgUnit(null, ['instances']);
+
     const onError = () => {
         if (onError.status === 400) {
             onError.details.forEach(entry => {
@@ -90,12 +89,7 @@ const ActionTableColumnComponent = ({ settings, user }) => {
                     : orgUnitPayload.groups.map(g => g.id),
         };
 
-        saveOu(orgUnitPayload)
-            .then(ou => {
-                const url = `${baseUrls.orgUnitDetails}/orgUnitId/${ou.id}`;
-                dispatch(redirectToAction(url, {}));
-            })
-            .catch(onError);
+        saveOu(orgUnitPayload).catch(onError);
     };
 
     const showButton =
@@ -144,7 +138,10 @@ const ActionTableColumnComponent = ({ settings, user }) => {
             {showButton && (
                 <ConfirmCancelDialogComponent
                     titleMessage={confirmCancelTitleMessage(notLinked)}
-                    onConfirm={() => confirmLinkOrUnlink(notLinked)}
+                    onConfirm={closeDialog => {
+                        confirmLinkOrUnlink(notLinked);
+                        closeDialog();
+                    }}
                     renderTrigger={({ openDialog }) => (
                         <IconButtonComponent
                             onClick={openDialog}

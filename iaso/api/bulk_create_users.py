@@ -3,6 +3,7 @@ import io
 from django.contrib.auth.models import User
 from django.contrib.auth.password_validation import validate_password
 from django.core.exceptions import ValidationError, ObjectDoesNotExist, MultipleObjectsReturned
+from django.core.files.base import ContentFile
 from django.db import IntegrityError, transaction
 from rest_framework.response import Response
 from rest_framework.viewsets import ModelViewSet
@@ -165,7 +166,9 @@ class BulkCreateUserFromCsvViewSet(ModelViewSet):
                     profile.org_units.set(org_units_list)
                     csv_file = pd.read_csv(file_instance.file.path)
                     csv_file.at[i - 1, "password"] = ""
-                    csv_file.to_csv(file_instance.file.path, index=False)
+                    csv_file = csv_file.to_csv(path_or_buf=None, index=False)
+                    content_file = ContentFile(csv_file.encode("utf-8"))
+                    file_instance.file.save(f'{file_instance.id}.csv', content_file)
                 else:
                     csv_indexes = row
                 i += 1

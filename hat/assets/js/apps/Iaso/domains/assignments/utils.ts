@@ -40,3 +40,28 @@ export const getOrgUnitAssignation = (
         assignedUser,
     };
 };
+
+type OrguniParentProps = {
+    currentTeam?: DropdownTeamsOptions;
+    currentUser?: AssignedUser;
+    teams?: DropdownTeamsOptions[];
+    users?: Profile[];
+};
+
+export const getParentTeam = ({
+    currentTeam,
+    currentUser,
+    teams,
+}: OrguniParentProps): DropdownTeamsOptions | undefined => {
+    if (currentTeam && teams) {
+        return teams.find(team =>
+            team.original.sub_teams.includes(currentTeam.original.id),
+        );
+    }
+    if (currentUser && teams) {
+        return teams.find(team =>
+            team.original.users.includes(currentUser.user_id),
+        );
+    }
+    return undefined;
+};

@@ -20,6 +20,7 @@ import { Locations, OrgUnitMarker, OrgUnitShape } from '../types/locations';
 
 import { TilesSwitch, Tile } from '../../../components/maps/tools/TileSwitch';
 import MarkersListComponent from '../../../components/maps/markers/MarkersListComponent';
+
 import { disabledColor, unSelectedColor } from '../constants/colors';
 import tiles from '../../../constants/mapTiles';
 
@@ -30,6 +31,10 @@ import {
     getLatLngBounds,
 } from '../../../utils/mapUtils';
 import { getDisplayName } from '../../../utils/usersUtils';
+import { getParentTeam } from '../utils';
+
+import { DropdownTeamsOptions } from '../types/team';
+import { IntlFormatMessage } from '../../../types/intl';
 
 import MESSAGES from '../messages';
 
@@ -42,6 +47,7 @@ type Props = {
     // eslint-disable-next-line no-unused-vars
     handleClick: (shape: OrgUnitShape | OrgUnitMarker) => void;
     getLocations: UseQueryResult<Locations, Error>;
+    teams: DropdownTeamsOptions[];
 };
 
 const boundsOptions = {
@@ -66,18 +72,34 @@ const getLocationsBounds = (locations: Locations) => {
     return bounds;
 };
 
-const getAlreadyAssignedText = (item, formatMessage) => {
+const getAlreadyAssignedText = (
+    item: OrgUnitShape | OrgUnitMarker,
+    formatMessage: IntlFormatMessage,
+    teams: DropdownTeamsOptions[],
+) => {
     let otherAssignString = '';
+    let parentTeam;
     if (item.otherAssignation.assignedTeam) {
+        parentTeam = getParentTeam({
+            currentTeam: item.otherAssignation.assignedTeam,
+            teams,
+        });
         otherAssignString = item.otherAssignation.assignedTeam.label;
     }
     if (item.otherAssignation.assignedUser) {
+        parentTeam = getParentTeam({
+            currentUser: item.otherAssignation.assignedUser,
+            teams,
+        });
         otherAssignString = getDisplayName(item.otherAssignation.assignedUser);
     }
     return (
         <>
-            {item.name} {formatMessage(MESSAGES.alreadyAssignedTo)}{' '}
-            {otherAssignString} {formatMessage(MESSAGES.inAnotherTeam)}
+            {`${item.name} ${formatMessage(
+                MESSAGES.alreadyAssignedTo,
+            )} ${otherAssignString} ${formatMessage(MESSAGES.inAnotherTeam)}${
+                parentTeam && ` (${parentTeam.label})`
+            }`}
         </>
     );
 };
@@ -85,8 +107,10 @@ const getAlreadyAssignedText = (item, formatMessage) => {
 export const AssignmentsMap: FunctionComponent<Props> = ({
     handleClick,
     getLocations,
+    teams,
 }) => {
-    const { formatMessage } = useSafeIntl();
+    const { formatMessage }: { formatMessage: IntlFormatMessage } =
+        useSafeIntl();
     const map: any = useRef();
     const [currentTile, setCurrentTile] = useState<Tile>(tiles.osm);
     const fitToBounds = (newLocations: Locations) => {
@@ -152,6 +176,7 @@ export const AssignmentsMap: FunctionComponent<Props> = ({
                                                 {getAlreadyAssignedText(
                                                     shape,
                                                     formatMessage,
+                                                    teams,
                                                 )}
                                             </Tooltip>
                                         </GeoJSON>
@@ -210,6 +235,7 @@ export const AssignmentsMap: FunctionComponent<Props> = ({
                                                 {getAlreadyAssignedText(
                                                     orgUnit,
                                                     formatMessage,
+                                                    teams,
                                                 )}
                                             </>
                                         ),

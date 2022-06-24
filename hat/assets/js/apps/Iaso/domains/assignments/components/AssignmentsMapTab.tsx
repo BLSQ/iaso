@@ -62,14 +62,13 @@ export const AssignmentsMapTab: FunctionComponent<Props> = ({
     isFetchingOrgUnitTypes,
 }) => {
     const { formatMessage } = useSafeIntl();
+    // const { parentPicking, parentOrgunitType } = params;
     const theme: Theme = useTheme();
 
     const [selectedItem, setSelectedItem] = useState<
         SubTeam | User | undefined
     >();
-    const handleClick = async (
-        selectedOrgUnit: OrgUnitShape | OrgUnitMarker,
-    ) => {
+    const handleClick = (selectedOrgUnit: OrgUnitShape | OrgUnitMarker) => {
         const { assignment, assignedTeam, assignedUser } =
             getOrgUnitAssignation(
                 assignments,
@@ -155,6 +154,7 @@ export const AssignmentsMapTab: FunctionComponent<Props> = ({
         }
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [planning?.id, currentTeam?.id]);
+
     const data =
         currentTeam?.type === 'TEAM_OF_USERS'
             ? currentTeam.users_details
@@ -220,6 +220,7 @@ export const AssignmentsMapTab: FunctionComponent<Props> = ({
                 <AssignmentsMap
                     handleClick={handleClick}
                     getLocations={geLocations}
+                    teams={teams}
                 />
             </Grid>
         </Grid>

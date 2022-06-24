@@ -9,7 +9,6 @@ import {
     ScaleControl,
 } from 'react-leaflet';
 import { Box } from '@material-ui/core';
-import { grey } from '@material-ui/core/colors';
 import {
     // @ts-ignore
     LoadingSpinner,
@@ -21,7 +20,7 @@ import { Locations, OrgUnitMarker, OrgUnitShape } from '../types/locations';
 
 import { TilesSwitch, Tile } from '../../../components/maps/tools/TileSwitch';
 import MarkersListComponent from '../../../components/maps/markers/MarkersListComponent';
-import { disabledColor } from '../constants/colors';
+import { disabledColor, unSelectedColor } from '../constants/colors';
 import tiles from '../../../constants/mapTiles';
 
 import {
@@ -170,7 +169,7 @@ export const AssignmentsMap: FunctionComponent<Props> = ({
                                         onClick={() => handleClick(shape)}
                                         data={shape.geoJson}
                                         style={() => ({
-                                            color: grey[500],
+                                            color: unSelectedColor,
                                         })}
                                     >
                                         <Tooltip>{shape.name}</Tooltip>
@@ -230,7 +229,9 @@ export const AssignmentsMap: FunctionComponent<Props> = ({
                                 }
                                 onMarkerClick={shape => handleClick(shape)}
                                 markerProps={() => ({
-                                    ...circleColorMarkerOptions(grey[500]),
+                                    ...circleColorMarkerOptions(
+                                        unSelectedColor,
+                                    ),
                                 })}
                                 tooltipProps={orgUnit => ({
                                     children: [orgUnit.name, 'sa mere'],

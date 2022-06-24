@@ -14,7 +14,7 @@ import {
     Tooltip,
 } from '@material-ui/core';
 
-import ArrowForwardIcon from '@material-ui/icons/ArrowForward';
+import ArrowBackIcon from '@material-ui/icons/ArrowBack';
 import PropTypes from 'prop-types';
 
 import { injectIntl, commonStyles } from 'bluesquare-components';
@@ -126,7 +126,7 @@ const SidebarMenu = ({
                     aria-label="Menu"
                     onClick={toggleSidebar}
                 >
-                    <ArrowForwardIcon />
+                    <ArrowBackIcon />
                 </IconButton>
             </div>
             <Divider />

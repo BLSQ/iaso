@@ -266,7 +266,7 @@ class ProfileAPITestCase(APITestCase):
 
         domain = settings.DNS_DOMAIN
         self.assertEqual(len(mail.outbox), 1)
-        self.assertEqual(mail.outbox[0].subject, "Set up a password for your new Iaso account")
+        self.assertEqual(mail.outbox[0].subject, "Set up a password for your new {domain} account")
         self.assertEqual(mail.outbox[0].from_email, "no-reply@%s" % domain)
         self.assertEqual(mail.outbox[0].to, ["test@test.com"])
 

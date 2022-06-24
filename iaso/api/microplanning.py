@@ -87,6 +87,21 @@ class TeamSerializer(serializers.ModelSerializer):
             recursive_check(self.instance, values)
         return values
 
+    def create(self, validated_data):
+        users = validated_data.pop("users")
+        sub_teams = validated_data.pop("sub_teams")
+
+        team = Team.objects.create(**validated_data)
+        for sub_team in sub_teams:
+            team.sub_teams.add(sub_team)
+
+        team.save(force_recalculate=True)
+
+        for user in users:
+            team.users.add(user)
+
+        return team
+
     def validate(self, attrs):
         validated_data = super(TeamSerializer, self).validate(attrs)
 
@@ -157,7 +172,7 @@ class AuditMixin:
 
     def perform_create(self, serializer):
         # noinspection PyUnresolvedReferences
-        super().perform_update(serializer)
+        super().perform_create(serializer)
         instance = serializer.instance
 
         serialized = [self.audit_serializer(instance).data]

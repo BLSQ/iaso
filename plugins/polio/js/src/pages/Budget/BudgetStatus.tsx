@@ -24,7 +24,7 @@ const useStyles = makeStyles(styles);
 
 export const sortBudgetEventByUpdate = budgetEvents => {
     if (!budgetEvents) return [];
-    return budgetEvents.sort(
+    const sorted = budgetEvents.sort(
         (
             a: { updated_at: moment.MomentInput },
             b: { updated_at: moment.MomentInput },
@@ -32,19 +32,12 @@ export const sortBudgetEventByUpdate = budgetEvents => {
             return moment(a.updated_at).isSameOrBefore(moment(b.updated_at));
         },
     );
+    return sorted;
 };
 
 export const findBudgetStatus = budgetEvents => {
-    if (!budgetEvents) return 'noBudgetSubmitted';
-    const validated = budgetEvents.find(
-        budgetEvent => budgetEvent.type === 'validation',
-    );
-    if (validated) return 'validated';
-    const submitted = sortBudgetEventByUpdate(budgetEvents).filter(
-        event => event.type === 'submission',
-    );
-    if (submitted.length > 0) return 'validation_ongoing';
-    return 'noBudgetSubmitted';
+    const orderedEvents = sortBudgetEventByUpdate([...(budgetEvents ?? [])]);
+    return orderedEvents[0]?.status ?? 'noBudgetSubmitted';
 };
 
 export const BudgetStatus: FunctionComponent<Props> = ({ budgetStatus }) => {

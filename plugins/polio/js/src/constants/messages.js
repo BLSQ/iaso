@@ -1162,20 +1162,24 @@ const MESSAGES = defineMessages({
         id: 'iaso.polio.label.comments',
     },
     validation_ongoing: {
-        defaultMessage: 'Validation ongoing',
-        id: 'iaso.polio.label.validation_ongoing',
+        defaultMessage: 'Approval ongoing',
+        id: 'iaso.polio.label.approval_ongoing',
     },
     validated: {
-        defaultMessage: 'Validated',
-        id: 'iaso.polio.label.validated',
+        defaultMessage: 'Approved',
+        id: 'iaso.polio.label.approved',
     },
     rejected: {
         defaultMessage: 'Rejected',
         id: 'iaso.polio.label.rejected',
     },
-    sendFiles: {
-        defaultMessage: 'Send files',
-        id: 'iaso.polio.label.sendFiles',
+    newBudgetStep: {
+        defaultMessage: 'New budget step',
+        id: 'iaso.polio.label.newBudgetStep',
+    },
+    resendFiles: {
+        defaultMessage: 'Retry sending files',
+        id: 'iaso.polio.label.resendFiles',
     },
     addStep: {
         defaultMessage: 'Add step',
@@ -1209,9 +1213,9 @@ const MESSAGES = defineMessages({
         defaultMessage: 'Steps',
         id: 'iaso.polio.label.steps',
     },
-    files: {
-        defaultMessage: 'Files for {type}, last updated {date}',
-        id: 'iaso.polio.label.files',
+    budgetFiles: {
+        defaultMessage: '{type} sent by {author} to {recipients} on {date}',
+        id: 'iaso.polio.label.budgetFiles',
     },
     latestEventDate: {
         defaultMessage: 'Latest event date',
@@ -1225,22 +1229,62 @@ const MESSAGES = defineMessages({
         defaultMessage: 'No budget submitted',
         id: 'iaso.polio.label.noBudgetSubmitted',
     },
+    budgetEventCreated: {
+        defaultMessage: 'New budget step created',
+        id: 'iaso.polio.label.budgetEventCreated',
+    },
+    tryUpdateStep: {
+        defaultMessage: 'Resend budget data?',
+        id: 'iaso.polio.title.tryUpdateStep',
+    },
+    budgetFilesUploaded: {
+        defaultMessage: 'Budget files uploaded',
+        id: 'iaso.polio.label.budgetFilesUploaded',
+    },
+    budgetEventFinalized: {
+        defaultMessage: 'Budget event finalized',
+        id: 'iaso.polio.label.budgetEventFinalized',
+    },
     requiredField: {
         id: 'iaso.forms.error.fieldRequired',
         defaultMessage: 'This field is required',
     },
     validation: {
-        id: 'iaso.forms.options.validation',
-        defaultMessage: 'Validation',
+        id: 'iaso.polio.forms.options.approval',
+        defaultMessage: 'Approval',
     },
     emailFormat: {
         id: 'iaso.forms.options.emailFormat',
         defaultMessage: 'Please use correctly formatted email addresses',
     },
+    urlFormat: {
+        id: 'iaso.forms.options.urlFormat',
+        defaultMessage: 'Please use correctly formatted URL',
+    },
     budgetTypeError: {
         id: 'iaso.forms.options.budgetTypeError',
         defaultMessage:
             'Value should be one of "submission", "comments" or "validation"',
+    },
+    links: {
+        defaultMessage: 'Links',
+        id: 'iaso.label.links',
+    },
+    deleteBudgetEvent: {
+        defaultMessage: 'Delete budget event',
+        id: 'iaso.polio.label.deleteBudgetEvent',
+    },
+    showDeleted: {
+        id: 'iaso.polio.label.showDeleted',
+        defaultMessage: 'Show deleted',
+    },
+    restore: {
+        id: 'iaso.polio.label.restore',
+        defaultMessage: 'Restore',
+    },
+    internal: {
+        id: 'iaso.polio.label.internal',
+        defaultMessage: 'Internal',
     },
 });
 

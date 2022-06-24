@@ -155,12 +155,13 @@ class ProfilesViewSet(viewsets.ViewSet):
         uid = urlsafe_base64_encode(force_bytes(profile.user.pk))
         create_password_path = reverse("reset_password_confirmation", kwargs={"uidb64": uid, "token": token})
 
-        email_text = email_message.format(
-            userName=profile.user.username,
-            url=f"https://{domain}{create_password_path}",
+        email_message_text = email_message.format(
+            userName=profile.user.username, url=f"https://{domain}{create_password_path}", dns_domain=f"{domain}"
         )
 
-        send_mail(email_subject, email_text, "no-reply@%s" % domain, [profile.user.email])
+        email_subject_text = email_subject.format(dns_domain=f"{domain}")
+
+        send_mail(email_subject_text, email_message_text, "no-reply@%s" % domain, [profile.user.email])
 
     @staticmethod
     def get_message_by_language(self, request_languange="en"):
@@ -236,7 +237,7 @@ class ProfilesViewSet(viewsets.ViewSet):
 
     CREATE_PASSWORD_MESSAGE_EN = """Hello,
 
-You’ve been invited to access IASO, and a new account with the username {userName} has been created for you. 
+You’ve been invited to access {dns_domain}, and a new account with the username {userName} has been created for you. 
 
 To set up a password for your account, simply click on the link:
 
@@ -245,15 +246,15 @@ To set up a password for your account, simply click on the link:
 If clicking the link above doesn't work, please copy and paste the URL in a new browser
 window instead.
 
-If you did not request a IASO account, you can ignore this e-mail - no passwords will be created.
+If you did not request an account on {dns_domain} , you can ignore this e-mail - no passwords will be created.
 
 Sincerely,
-The Iaso Team.
+The {dns_domain} Team.
     """
 
     CREATE_PASSWORD_MESSAGE_FR = """Salut, 
 
-Vous avez été invité à accéder à IASO et un nouveau compte avec le nom d'utilisateur {userName} a été créé pour vous.
+Vous avez été invité à accéder à {dns_domain} et un nouveau compte avec le nom d'utilisateur {userName} a été créé pour vous.
 
 Pour configurer un mot de passe pour votre compte, cliquez simplement sur le lien :
 
@@ -262,11 +263,11 @@ Pour configurer un mot de passe pour votre compte, cliquez simplement sur le lie
 Si cliquer sur le lien ci-dessus ne fonctionne pas, veuillez copier et coller l'URL dans un nouveau navigateur
 fenêtre à la place.
 
-Si vous n'avez pas demandé de compte IASO, vous pouvez ignorer cet e-mail - aucun mot de passe ne sera créé.
+Si vous n'avez pas demandé de compte sur {dns_domain}, vous pouvez ignorer cet e-mail - aucun mot de passe ne sera créé.
 
 Sincèrement,
-L'équipe Iaso.
+L'équipe {dns_domain}.
     """
 
-    EMAIL_SUBJECT_FR = "Configurer un mot de passe pour votre nouveau compte Iaso"
-    EMAIL_SUBJECT_EN = "Set up a password for your new Iaso account"
+    EMAIL_SUBJECT_FR = "Configurer un mot de passe pour votre nouveau compte sur {dns_domain}"
+    EMAIL_SUBJECT_EN = "Set up a password for your new account on {dns_domain}"

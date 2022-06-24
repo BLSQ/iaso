@@ -99,35 +99,23 @@ export const useSavePlanning = (
     type: 'create' | 'edit' | 'copy',
 ): UseMutationResult => {
     const ignoreErrorCodes = [400];
-    const editPlanning = useSnackMutation(
-        (data: Partial<SavePlanningQuery>) => patchPlanning(data),
-        undefined,
-        undefined,
-        ['planningsList'],
-        undefined,
-        true,
+    const editPlanning = useSnackMutation({
+        mutationFn: (data: Partial<SavePlanningQuery>) => patchPlanning(data),
+        invalidateQueryKey: ['planningsList'],
         ignoreErrorCodes,
-    );
-    const createPlanning = useSnackMutation(
-        (data: SavePlanningQuery) => {
+    });
+    const createPlanning = useSnackMutation({
+        mutationFn: (data: SavePlanningQuery) => {
             return postPlanning(data);
         },
-        undefined,
-        undefined,
-        ['planningsList'],
-        undefined,
-        true,
+        invalidateQueryKey: ['planningsList'],
         ignoreErrorCodes,
-    );
-    const copyPlanning = useSnackMutation(
-        (data: SavePlanningQuery) => duplicatePlanning(data),
-        undefined,
-        undefined,
-        ['planningsList'],
-        undefined,
-        true,
+    });
+    const copyPlanning = useSnackMutation({
+        mutationFn: (data: SavePlanningQuery) => duplicatePlanning(data),
+        invalidateQueryKey: ['planningsList'],
         ignoreErrorCodes,
-    );
+    });
 
     switch (type) {
         case 'create':

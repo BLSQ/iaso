@@ -168,7 +168,7 @@ class BulkCreateUserFromCsvViewSet(ModelViewSet):
                     csv_file.at[i - 1, "password"] = ""
                     csv_file = csv_file.to_csv(path_or_buf=None, index=False)
                     content_file = ContentFile(csv_file.encode("utf-8"))
-                    file_instance.file.save(f'{file_instance.id}.csv', content_file)
+                    file_instance.file.save(f"{file_instance.id}.csv", content_file)
                 else:
                     csv_indexes = row
                 i += 1

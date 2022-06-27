@@ -13,7 +13,11 @@ import { getOrgUnitAssignation } from '../utils';
 import { AssignmentsMap } from './AssignmentsMap';
 import { AssignmentsMapSelectors } from './AssignmentsMapSelectors';
 
-import { AssignmentsApi, SaveAssignmentQuery } from '../types/assigment';
+import {
+    AssignmentsApi,
+    SaveAssignmentQuery,
+    AssignmentParams,
+} from '../types/assigment';
 import { Planning } from '../types/planning';
 import { Team, DropdownTeamsOptions, SubTeam, User } from '../types/team';
 import { OrgUnitMarker, OrgUnitShape } from '../types/locations';
@@ -22,13 +26,9 @@ import { DropdownOptions } from '../../../types/utils';
 import { Profile } from '../../../utils/usersUtils';
 
 import { useGetOrgUnitLocations } from '../hooks/requests/useGetOrgUnitLocations';
+import { useGetOrgUnitParentLocations } from '../hooks/requests/useGetOrgUnitParentLocations';
 
 import { getColumns } from '../configs/AssignmentsMapTabColumns';
-
-export type Params = {
-    parentPicking?: string;
-    parentOrgunitType?: string;
-};
 
 type Props = {
     assignments: AssignmentsApi;
@@ -42,7 +42,7 @@ type Props = {
     // eslint-disable-next-line no-unused-vars
     saveAssignment: (params: SaveAssignmentQuery) => void;
     baseOrgunitType: string | undefined;
-    params: Params;
+    params: AssignmentParams;
     orgunitTypes: Array<DropdownOptions<string>>;
     isFetchingOrgUnitTypes: boolean;
 };
@@ -62,16 +62,17 @@ export const AssignmentsMapTab: FunctionComponent<Props> = ({
     isFetchingOrgUnitTypes,
 }) => {
     const { formatMessage } = useSafeIntl();
-    // const { parentPicking, parentOrgunitType } = params;
+    const { parentPicking, parentOrgunitType } = params;
     const theme: Theme = useTheme();
 
     const [selectedItem, setSelectedItem] = useState<
         SubTeam | User | undefined
     >();
+
     const handleClick = (selectedOrgUnit: OrgUnitShape | OrgUnitMarker) => {
-        const { assignment, assignedTeam, assignedUser } =
+        const { assignment, assignedTeam, assignedUser, emptyAssignment } =
             getOrgUnitAssignation(
-                assignments,
+                allAssignments,
                 selectedOrgUnit,
                 teams,
                 profiles,
@@ -85,12 +86,16 @@ export const AssignmentsMapTab: FunctionComponent<Props> = ({
             // TODO: make it better, copy paste for now...
             if (currentTeam?.type === 'TEAM_OF_TEAMS') {
                 saveParams.team = selectedItem.id;
-                if (assignment) {
+                let id = assignment?.id;
+                if (!id && emptyAssignment) {
+                    id = emptyAssignment.id;
+                }
+                if (id) {
                     if (assignedTeam) {
                         if (selectedItem.id !== assignedTeam.original.id) {
                             // update assignment
                             saveParams = {
-                                id: assignment.id,
+                                id,
                                 ...saveParams,
                             };
                         } else {
@@ -99,13 +104,13 @@ export const AssignmentsMapTab: FunctionComponent<Props> = ({
                                 ...saveParams,
                                 team: null,
                                 user: null,
-                                id: assignment.id,
+                                id,
                             };
                         }
                     } else {
                         // update assignment after fake delete
                         saveParams = {
-                            id: assignment.id,
+                            id,
                             ...saveParams,
                         };
                     }
@@ -113,12 +118,16 @@ export const AssignmentsMapTab: FunctionComponent<Props> = ({
             }
             if (currentTeam?.type === 'TEAM_OF_USERS') {
                 saveParams.user = selectedItem.id;
-                if (assignment) {
+                let id = assignment?.id;
+                if (!id && emptyAssignment) {
+                    id = emptyAssignment.id;
+                }
+                if (id) {
                     if (assignedUser) {
                         if (selectedItem.id !== assignedUser.user_id) {
                             // update assignment
                             saveParams = {
-                                id: assignment.id,
+                                id,
                                 ...saveParams,
                             };
                         } else {
@@ -127,13 +136,13 @@ export const AssignmentsMapTab: FunctionComponent<Props> = ({
                                 ...saveParams,
                                 team: null,
                                 user: null,
-                                id: assignment.id,
+                                id,
                             };
                         }
                     } else {
                         // update assignment after fake delete
                         saveParams = {
-                            id: assignment.id,
+                            id,
                             ...saveParams,
                         };
                     }
@@ -141,6 +150,14 @@ export const AssignmentsMapTab: FunctionComponent<Props> = ({
             }
             saveAssignment(saveParams);
         }
+    };
+
+    const handleParentClick = (selectedOrgUnit: OrgUnitShape) => {
+        // should assign all org unit of base org unit type inside the clicked parent to the selectedItem
+        // get all org unit of base org unit type inside this selectedOgUnitShape
+        // for each org unit assign it to selectedItem (team or user)
+        console.log('selectedOrgUnit', selectedOrgUnit);
+        console.log('selectedItem', selectedItem);
     };
 
     useEffect(() => {
@@ -160,7 +177,7 @@ export const AssignmentsMapTab: FunctionComponent<Props> = ({
             ? currentTeam.users_details
             : currentTeam?.sub_teams_details;
 
-    const geLocations = useGetOrgUnitLocations({
+    const getLocations = useGetOrgUnitLocations({
         orgUnitParentId: planning?.org_unit,
         baseOrgunitType,
         assignments,
@@ -168,6 +185,12 @@ export const AssignmentsMapTab: FunctionComponent<Props> = ({
         teams,
         profiles,
         currentType: currentTeam?.type,
+    });
+
+    const getParentLocations = useGetOrgUnitParentLocations({
+        orgUnitParentId: planning?.org_unit,
+        baseOrgunitType:
+            parentPicking === 'true' ? parentOrgunitType : undefined,
     });
 
     return (
@@ -206,10 +229,7 @@ export const AssignmentsMapTab: FunctionComponent<Props> = ({
                     </Box>
                     <Box px={2}>
                         <AssignmentsMapSelectors
-                            params={{
-                                parentPicking: params.parentPicking,
-                                parentOrgunitType: params.parentOrgunitType,
-                            }}
+                            params={params}
                             orgunitTypes={orgunitTypes}
                             isFetchingOrgUnitTypes={isFetchingOrgUnitTypes}
                         />
@@ -219,7 +239,9 @@ export const AssignmentsMapTab: FunctionComponent<Props> = ({
             <Grid item xs={7}>
                 <AssignmentsMap
                     handleClick={handleClick}
-                    getLocations={geLocations}
+                    handleParentClick={handleParentClick}
+                    getLocations={getLocations}
+                    getParentLocations={getParentLocations}
                     teams={teams}
                 />
             </Grid>

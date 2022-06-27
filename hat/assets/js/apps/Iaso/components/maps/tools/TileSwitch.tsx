@@ -2,16 +2,21 @@ import React, { FunctionComponent } from 'react';
 // @ts-ignore
 import { useSafeIntl } from 'bluesquare-components';
 import {
-    Box,
-    Paper,
     List,
     ListItem,
     ListItemText,
     makeStyles,
     Typography,
+    Accordion,
+    AccordionSummary,
+    AccordionDetails,
+    Box,
 } from '@material-ui/core';
 import RadioButtonChecked from '@material-ui/icons/RadioButtonChecked';
 import RadioButtonUnchecked from '@material-ui/icons/RadioButtonUnchecked';
+
+import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
+
 import tiles from '../../../constants/mapTiles';
 
 import MESSAGES from '../messages';
@@ -28,12 +33,6 @@ type Props = {
     setCurrentTile: (newTile: Tile) => void;
 };
 export const useStyles = makeStyles(theme => ({
-    root: {
-        position: 'absolute',
-        top: theme.spacing(2),
-        right: theme.spacing(2),
-        zIndex: 1000,
-    },
     list: {
         padding: 0,
     },
@@ -54,6 +53,20 @@ export const useStyles = makeStyles(theme => ({
     item: {
         fontSize: 12,
     },
+    mapLegend: {
+        position: 'absolute',
+        zIndex: 499,
+        fontSize: 10,
+        top: theme.spacing(2),
+        right: theme.spacing(2),
+    },
+    mapLegendCampaignTitle: {
+        fontSize: 14,
+        fontWeight: 'bold',
+    },
+    content: {
+        padding: 0,
+    },
 }));
 
 // Please use this component in a relative box container containing the map
@@ -65,45 +78,52 @@ export const TilesSwitch: FunctionComponent<Props> = ({
     const classes = useStyles();
     const { formatMessage } = useSafeIntl();
     return (
-        <Paper className={classes.root}>
-            <Typography variant="subtitle1" className={classes.title}>
-                {formatMessage(MESSAGES.layersTitle)}
-            </Typography>
-            <Box>
-                <List className={classes.list}>
-                    {Object.keys(tiles).map(key => {
-                        const tile = tiles[key];
-                        const isCurrentTile = currentTile.url === tile.url;
-                        return (
-                            <ListItem
-                                selected={isCurrentTile}
-                                className={classes.listItem}
-                                key={key}
-                                button
-                                onClick={() => setCurrentTile(tile)}
-                            >
-                                {isCurrentTile && (
-                                    <RadioButtonChecked
-                                        color="primary"
-                                        className={classes.icon}
+        <Accordion elevation={1} className={classes.mapLegend}>
+            <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+                <Typography
+                    variant="subtitle1"
+                    className={classes.mapLegendCampaignTitle}
+                >
+                    {formatMessage(MESSAGES.layersTitle)}
+                </Typography>
+            </AccordionSummary>
+            <AccordionDetails className={classes.content}>
+                <Box display="block">
+                    <List className={classes.list}>
+                        {Object.keys(tiles).map(key => {
+                            const tile = tiles[key];
+                            const isCurrentTile = currentTile.url === tile.url;
+                            return (
+                                <ListItem
+                                    selected={isCurrentTile}
+                                    className={classes.listItem}
+                                    key={key}
+                                    button
+                                    onClick={() => setCurrentTile(tile)}
+                                >
+                                    {isCurrentTile && (
+                                        <RadioButtonChecked
+                                            color="primary"
+                                            className={classes.icon}
+                                        />
+                                    )}
+                                    {!isCurrentTile && (
+                                        <RadioButtonUnchecked
+                                            className={classes.icon}
+                                        />
+                                    )}
+                                    <ListItemText
+                                        primary={formatMessage(MESSAGES[key])}
+                                        classes={{
+                                            primary: classes.item,
+                                        }}
                                     />
-                                )}
-                                {!isCurrentTile && (
-                                    <RadioButtonUnchecked
-                                        className={classes.icon}
-                                    />
-                                )}
-                                <ListItemText
-                                    primary={formatMessage(MESSAGES[key])}
-                                    classes={{
-                                        primary: classes.item,
-                                    }}
-                                />
-                            </ListItem>
-                        );
-                    })}
-                </List>
-            </Box>
-        </Paper>
+                                </ListItem>
+                            );
+                        })}
+                    </List>
+                </Box>
+            </AccordionDetails>
+        </Accordion>
     );
 };

@@ -19,9 +19,14 @@ import {
 import { Locations, OrgUnitMarker, OrgUnitShape } from '../types/locations';
 
 import { TilesSwitch, Tile } from '../../../components/maps/tools/TileSwitch';
+import { MapLegend } from './MapLegend';
 import MarkersListComponent from '../../../components/maps/markers/MarkersListComponent';
 
-import { disabledColor, unSelectedColor } from '../constants/colors';
+import {
+    disabledColor,
+    unSelectedColor,
+    parentColor,
+} from '../constants/colors';
 import tiles from '../../../constants/mapTiles';
 
 import {
@@ -46,7 +51,10 @@ const defaultViewport = {
 type Props = {
     // eslint-disable-next-line no-unused-vars
     handleClick: (shape: OrgUnitShape | OrgUnitMarker) => void;
+    // eslint-disable-next-line no-unused-vars
+    handleParentClick: (shape: OrgUnitShape) => void;
     getLocations: UseQueryResult<Locations, Error>;
+    getParentLocations: UseQueryResult<OrgUnitShape[], Error>;
     teams: DropdownTeamsOptions[];
 };
 
@@ -54,20 +62,30 @@ const boundsOptions = {
     padding: [50, 50],
 };
 
-const getLocationsBounds = (locations: Locations) => {
+const getLocationsBounds = (
+    locations: Locations,
+    parentLocations: OrgUnitShape[] | undefined,
+) => {
     const shapeBounds = locations
         ? getShapesBounds(locations.shapes.all, 'geoJson')
         : null;
     const locationsBounds = locations
         ? getLatLngBounds(locations.markers.all)
         : null;
-    let bounds = null;
+    let bounds;
+    let parentShapeBounds;
+    if (parentLocations) {
+        parentShapeBounds = getShapesBounds(parentLocations, 'geoJson');
+    }
     if (locationsBounds && shapeBounds) {
         bounds = locationsBounds.extend(shapeBounds);
     } else if (locationsBounds) {
         bounds = locationsBounds;
     } else if (shapeBounds) {
         bounds = shapeBounds;
+    }
+    if (parentShapeBounds && bounds) {
+        bounds = bounds.extend(parentShapeBounds);
     }
     return bounds;
 };
@@ -106,15 +124,20 @@ const getAlreadyAssignedText = (
 
 export const AssignmentsMap: FunctionComponent<Props> = ({
     handleClick,
+    handleParentClick,
     getLocations,
+    getParentLocations,
     teams,
 }) => {
     const { formatMessage }: { formatMessage: IntlFormatMessage } =
         useSafeIntl();
     const map: any = useRef();
     const [currentTile, setCurrentTile] = useState<Tile>(tiles.osm);
-    const fitToBounds = (newLocations: Locations) => {
-        const bounds = getLocationsBounds(newLocations);
+    const fitToBounds = (
+        newLocations: Locations,
+        newParentLocations: OrgUnitShape[] | undefined,
+    ) => {
+        const bounds = getLocationsBounds(newLocations, newParentLocations);
         if (bounds && map?.current) {
             try {
                 map.current.leafletElement.fitBounds(bounds, boundsOptions);
@@ -124,21 +147,27 @@ export const AssignmentsMap: FunctionComponent<Props> = ({
         }
     };
     const { data: locations, isFetching: isFetchingLocations } = getLocations;
+    const { data: parentLocations, isFetching: isFetchingParentLocations } =
+        getParentLocations;
 
     useEffect(() => {
-        if (!isFetchingLocations && locations) {
-            fitToBounds(locations);
+        if (!isFetchingLocations && !isFetchingParentLocations && locations) {
+            fitToBounds(locations, parentLocations);
         }
-    }, [isFetchingLocations, locations]);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [isFetchingLocations, locations, isFetchingParentLocations]);
+
+    const isLoading = isFetchingLocations || isFetchingParentLocations;
     return (
         <Box position="relative">
+            <MapLegend />
             <TilesSwitch
                 currentTile={currentTile}
                 setCurrentTile={setCurrentTile}
             />
-            {isFetchingLocations && <LoadingSpinner absolute />}
+            {isLoading && <LoadingSpinner absolute />}
             <Map
-                isLoading={isFetchingLocations}
+                isLoading={isLoading}
                 zoomSnap={0.25}
                 maxZoom={currentTile.maxZoom}
                 ref={map}
@@ -156,7 +185,9 @@ export const AssignmentsMap: FunctionComponent<Props> = ({
                 {locations && (
                     <>
                         <ZoomControl
-                            fitToBounds={() => fitToBounds(locations)}
+                            fitToBounds={() =>
+                                fitToBounds(locations, parentLocations)
+                            }
                         />
                         <Pane name="shapes-unselected-already-assigned">
                             {locations.shapes.unselected
@@ -170,6 +201,7 @@ export const AssignmentsMap: FunctionComponent<Props> = ({
                                             data={shape.geoJson}
                                             style={() => ({
                                                 color: disabledColor,
+                                                fillOpacity: 0.5,
                                             })}
                                         >
                                             <Tooltip>
@@ -260,7 +292,7 @@ export const AssignmentsMap: FunctionComponent<Props> = ({
                                     ),
                                 })}
                                 tooltipProps={orgUnit => ({
-                                    children: [orgUnit.name, 'sa mere'],
+                                    children: [orgUnit.name],
                                 })}
                                 TooltipComponent={Tooltip}
                                 isCircle
@@ -280,6 +312,23 @@ export const AssignmentsMap: FunctionComponent<Props> = ({
                                 isCircle
                             />
                         </Pane>
+                        {parentLocations && (
+                            <Pane name="parent-shapes">
+                                {parentLocations.map(shape => (
+                                    <GeoJSON
+                                        key={shape.id}
+                                        onClick={() => handleParentClick(shape)}
+                                        data={shape.geoJson}
+                                        style={() => ({
+                                            color: parentColor,
+                                            fillOpacity: '0',
+                                        })}
+                                    >
+                                        <Tooltip>{shape.name}</Tooltip>
+                                    </GeoJSON>
+                                ))}
+                            </Pane>
+                        )}
                     </>
                 )}
             </Map>

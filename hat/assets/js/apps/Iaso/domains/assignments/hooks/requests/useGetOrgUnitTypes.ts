@@ -21,12 +21,19 @@ export const useGetOrgUnitTypes = (): UseQueryResult<
     return useSnackQuery(queryKey, () => getOrgunitTypes(), undefined, {
         select: data => {
             if (!data) return [];
-            return data.orgUnitTypes.map(orgunitType => {
-                return {
-                    value: orgunitType.id.toString(),
-                    label: orgunitType.name,
-                };
-            });
+            return data.orgUnitTypes
+                .sort((orgunitType1, orgunitType2) => {
+                    if (orgunitType1.depth && orgunitType2.depth) {
+                        return orgunitType1.depth < orgunitType2.depth ? -1 : 1;
+                    }
+                    return 1;
+                })
+                .map(orgunitType => {
+                    return {
+                        value: orgunitType.id.toString(),
+                        label: orgunitType.name,
+                    };
+                });
         },
     });
 };

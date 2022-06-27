@@ -12,6 +12,7 @@ type OrgUnitAssignedTeamUser = {
     assignment: AssignmentApi | undefined;
     assignedTeam: DropdownTeamsOptions | undefined;
     assignedUser: AssignedUser | undefined;
+    emptyAssignment: AssignmentApi | undefined;
 };
 
 export const getOrgUnitAssignation = (
@@ -26,6 +27,9 @@ export const getOrgUnitAssignation = (
     const assignment = assignments.find(
         ass => ass.org_unit === orgUnit.id && Boolean(ass.team || ass.user),
     );
+    const emptyAssignment = assignments.find(
+        ass => ass.org_unit === orgUnit.id && !ass.team && !ass.user,
+    );
     if (assignment && (currentType === 'TEAM_OF_TEAMS' || !currentType)) {
         assignedTeam = teams.find(team => team.original.id === assignment.team);
     }
@@ -38,10 +42,11 @@ export const getOrgUnitAssignation = (
         assignment,
         assignedTeam,
         assignedUser,
+        emptyAssignment,
     };
 };
 
-type OrguniParentProps = {
+type OrgunitParentProps = {
     currentTeam?: DropdownTeamsOptions;
     currentUser?: AssignedUser;
     teams?: DropdownTeamsOptions[];
@@ -52,7 +57,7 @@ export const getParentTeam = ({
     currentTeam,
     currentUser,
     teams,
-}: OrguniParentProps): DropdownTeamsOptions | undefined => {
+}: OrgunitParentProps): DropdownTeamsOptions | undefined => {
     if (currentTeam && teams) {
         return teams.find(team =>
             team.original.sub_teams.includes(currentTeam.original.id),

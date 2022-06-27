@@ -109,6 +109,10 @@ const MESSAGES = defineMessages({
         defaultMessage: 'Go to DHIS2',
         id: 'iaso.label.dhis2Link',
     },
+    legend: {
+        defaultMessage: 'Legend',
+        id: 'iaso.label.map.legend',
+    },
 });
 
 export default MESSAGES;

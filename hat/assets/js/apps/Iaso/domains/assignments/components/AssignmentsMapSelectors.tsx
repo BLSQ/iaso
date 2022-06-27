@@ -13,18 +13,14 @@ import InputComponent from '../../../components/forms/InputComponent';
 import { useFilterState } from '../../../hooks/useFilterState';
 
 import { DropdownOptions } from '../../../types/utils';
+import { AssignmentParams } from '../types/assigment';
 
 import MESSAGES from '../messages';
 
 import { redirectTo } from '../../../routing/actions';
 
-export type Params = {
-    parentPicking?: string;
-    parentOrgunitType?: string;
-};
-
 type Props = {
-    params: Params;
+    params: AssignmentParams;
     orgunitTypes: Array<DropdownOptions<string>>;
     isFetchingOrgUnitTypes: boolean;
 };

@@ -220,10 +220,7 @@ export const Assignments: FunctionComponent<Props> = ({ params }) => {
                             setItemColor={setItemColor}
                             saveAssignment={saveAssignment}
                             baseOrgunitType={baseOrgunitType}
-                            params={{
-                                parentPicking: params.parentPicking,
-                                parentOrgunitType: params.parentOrgunitType,
-                            }}
+                            params={params}
                             orgunitTypes={orgunitTypes || []}
                             isFetchingOrgUnitTypes={isFetchingOrgunitTypes}
                             allAssignments={allAssignments}

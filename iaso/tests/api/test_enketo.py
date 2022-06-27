@@ -3,6 +3,7 @@ import urllib
 
 from django.core.files.uploadedfile import UploadedFile
 
+from iaso.models import Instance
 from iaso.test import APITestCase
 from iaso import models as m
 from django.core.files.uploadedfile import SimpleUploadedFile

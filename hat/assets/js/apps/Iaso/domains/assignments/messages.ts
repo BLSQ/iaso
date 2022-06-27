@@ -53,6 +53,22 @@ const MESSAGES = defineMessages({
         defaultMessage: 'in another team',
         id: 'iaso.assignment.inAnotherTeam',
     },
+    parentDialogTitle: {
+        defaultMessage: 'Assign {assignmentCount} to {parentOrgUnitName}',
+        id: 'iaso.assignment.parentDialog.title',
+    },
+    confirm: {
+        id: 'iaso.label.confirm',
+        defaultMessage: 'Confirm',
+    },
+    cancel: {
+        id: 'iaso.label.cancel',
+        defaultMessage: 'Cancel',
+    },
+    status: {
+        id: 'iaso.forms.status',
+        defaultMessage: 'Status',
+    },
 });
 
 export default MESSAGES;

@@ -32,11 +32,13 @@ import { AssignmentParams } from './types/assigment';
 import { Planning } from './types/planning';
 import { Team, DropdownTeamsOptions } from './types/team';
 import { Profile } from '../../utils/usersUtils';
+import { OrgUnitShape } from './types/locations';
 
 import { useGetTeams } from './hooks/requests/useGetTeams';
 import { useGetProfiles } from './hooks/requests/useGetProfiles';
 import { useSaveAssignment } from './hooks/requests/useSaveAssignment';
 import { useGetOrgUnitTypes } from './hooks/requests/useGetOrgUnitTypes';
+import { useGetOrgUnitsByParent } from './hooks/requests/useGetOrgUnitsByParent';
 
 import MESSAGES from './messages';
 
@@ -63,6 +65,9 @@ export const Assignments: FunctionComponent<Props> = ({ params }) => {
 
     const [tab, setTab] = useState(params.tab ?? 'map');
     const [currentTeam, setCurrentTeam] = useState<Team>();
+    const [parentSelected, setParentSelected] = useState<
+        OrgUnitShape | undefined
+    >();
     const [teams, setTeams] = useState<DropdownTeamsOptions[] | undefined>();
     const [profiles, setProfiles] = useState<ProfilesWithColor[]>([]);
 
@@ -89,9 +94,18 @@ export const Assignments: FunctionComponent<Props> = ({ params }) => {
     const allAssignments = data ? data.allAssignments : [];
     const { data: orgunitTypes, isFetching: isFetchingOrgunitTypes } =
         useGetOrgUnitTypes();
+    const { data: childrenOrgunits, isFetching: isFetchingChildrenOrgunits } =
+        useGetOrgUnitsByParent({
+            orgUnitParentId: parentSelected?.id,
+            baseOrgunitType,
+        });
     const { mutateAsync: saveAssignment, isLoading: isSaving } =
         useSaveAssignment();
-    const isLoading = isLoadingPlanning || isLoadingAssignments || isSaving;
+    const isLoading =
+        isLoadingPlanning ||
+        isLoadingAssignments ||
+        isSaving ||
+        isFetchingChildrenOrgunits;
 
     const setItemColor = (color: string, itemId: number): void => {
         // TODO: improve this
@@ -224,9 +238,12 @@ export const Assignments: FunctionComponent<Props> = ({ params }) => {
                             orgunitTypes={orgunitTypes || []}
                             isFetchingOrgUnitTypes={isFetchingOrgunitTypes}
                             allAssignments={allAssignments}
+                            setParentSelected={setParentSelected}
+                            childrenOrgunits={childrenOrgunits || []}
+                            parentSelected={parentSelected}
                         />
                     )}
-                    {tab === 'list' && <Box>LIST</Box>}
+                    {tab === 'list' && <Box>Coming soon</Box>}
                 </Box>
             </Box>
         </>

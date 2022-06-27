@@ -12,6 +12,7 @@ import { getOrgUnitAssignation } from '../utils';
 
 import { AssignmentsMap } from './AssignmentsMap';
 import { AssignmentsMapSelectors } from './AssignmentsMapSelectors';
+import { ParentDialog } from './ParentDialog';
 
 import {
     AssignmentsApi,
@@ -22,6 +23,7 @@ import { Planning } from '../types/planning';
 import { Team, DropdownTeamsOptions, SubTeam, User } from '../types/team';
 import { OrgUnitMarker, OrgUnitShape } from '../types/locations';
 import { DropdownOptions } from '../../../types/utils';
+import { OrgUnit } from '../../orgUnits/types/orgUnit';
 
 import { Profile } from '../../../utils/usersUtils';
 
@@ -45,6 +47,10 @@ type Props = {
     params: AssignmentParams;
     orgunitTypes: Array<DropdownOptions<string>>;
     isFetchingOrgUnitTypes: boolean;
+    // eslint-disable-next-line no-unused-vars
+    setParentSelected: (orgUnit: OrgUnitShape | undefined) => void;
+    childrenOrgunits: OrgUnit[];
+    parentSelected: OrgUnitShape | undefined;
 };
 
 export const AssignmentsMapTab: FunctionComponent<Props> = ({
@@ -60,6 +66,9 @@ export const AssignmentsMapTab: FunctionComponent<Props> = ({
     params,
     orgunitTypes,
     isFetchingOrgUnitTypes,
+    setParentSelected,
+    childrenOrgunits,
+    parentSelected,
 }) => {
     const { formatMessage } = useSafeIntl();
     const { parentPicking, parentOrgunitType } = params;
@@ -152,14 +161,6 @@ export const AssignmentsMapTab: FunctionComponent<Props> = ({
         }
     };
 
-    const handleParentClick = (selectedOrgUnit: OrgUnitShape) => {
-        // should assign all org unit of base org unit type inside the clicked parent to the selectedItem
-        // get all org unit of base org unit type inside this selectedOgUnitShape
-        // for each org unit assign it to selectedItem (team or user)
-        console.log('selectedOrgUnit', selectedOrgUnit);
-        console.log('selectedItem', selectedItem);
-    };
-
     useEffect(() => {
         if (planning && currentTeam) {
             if (currentTeam.type === 'TEAM_OF_USERS') {
@@ -177,74 +178,93 @@ export const AssignmentsMapTab: FunctionComponent<Props> = ({
             ? currentTeam.users_details
             : currentTeam?.sub_teams_details;
 
-    const getLocations = useGetOrgUnitLocations({
-        orgUnitParentId: planning?.org_unit,
-        baseOrgunitType,
-        assignments,
-        allAssignments,
-        teams,
-        profiles,
-        currentType: currentTeam?.type,
-    });
+    const { data: locations, isFetching: isFetchingLocations } =
+        useGetOrgUnitLocations({
+            orgUnitParentId: planning?.org_unit,
+            baseOrgunitType,
+            assignments,
+            allAssignments,
+            teams,
+            profiles,
+            currentType: currentTeam?.type,
+        });
 
-    const getParentLocations = useGetOrgUnitParentLocations({
-        orgUnitParentId: planning?.org_unit,
-        baseOrgunitType:
-            parentPicking === 'true' ? parentOrgunitType : undefined,
-    });
+    const { data: parentLocations, isFetching: isFetchingParentLocations } =
+        useGetOrgUnitParentLocations({
+            orgUnitParentId: planning?.org_unit,
+            baseOrgunitType:
+                parentPicking === 'true' ? parentOrgunitType : undefined,
+        });
 
     return (
-        <Grid container spacing={2}>
-            <Grid item xs={5}>
-                <Paper>
-                    <Box maxHeight="60vh" overflow="auto">
-                        <Table
-                            data={data || []}
-                            showPagination={false}
-                            defaultSorted={[{ id: 'name', desc: false }]}
-                            countOnTop={false}
-                            marginTop={false}
-                            marginBottom={false}
-                            columns={getColumns({
-                                formatMessage,
-                                assignments,
-                                teams,
-                                profiles,
-                                setItemColor,
-                                theme,
-                                selectedItem,
-                                setSelectedItem,
-                                currentTeam,
-                            })}
-                            count={currentTeam?.sub_teams_details?.length ?? 0}
-                            extraProps={{
-                                // adding this will force table to
-                                // re render while selecting a team, changing team color, changing assignments
-                                selectedItemId: selectedItem?.id,
-                                teams,
-                                profiles,
-                                assignments,
-                            }}
-                        />
-                    </Box>
-                    <Box px={2}>
-                        <AssignmentsMapSelectors
-                            params={params}
-                            orgunitTypes={orgunitTypes}
-                            isFetchingOrgUnitTypes={isFetchingOrgUnitTypes}
-                        />
-                    </Box>
-                </Paper>
+        <>
+            <ParentDialog
+                locations={locations}
+                childrenOrgunits={childrenOrgunits || []}
+                parentSelected={parentSelected}
+                setParentSelected={setParentSelected}
+                allAssignments={allAssignments}
+                selectedItem={selectedItem}
+                currentTeam={currentTeam}
+                teams={teams}
+                profiles={profiles}
+            />
+            <Grid container spacing={2}>
+                <Grid item xs={5}>
+                    <Paper>
+                        <Box maxHeight="60vh" overflow="auto">
+                            <Table
+                                data={data || []}
+                                showPagination={false}
+                                defaultSorted={[{ id: 'name', desc: false }]}
+                                countOnTop={false}
+                                marginTop={false}
+                                marginBottom={false}
+                                columns={getColumns({
+                                    formatMessage,
+                                    assignments,
+                                    teams,
+                                    profiles,
+                                    setItemColor,
+                                    theme,
+                                    selectedItem,
+                                    setSelectedItem,
+                                    currentTeam,
+                                })}
+                                count={
+                                    currentTeam?.sub_teams_details?.length ?? 0
+                                }
+                                extraProps={{
+                                    // adding this will force table to
+                                    // re render while selecting a team, changing team color, changing assignments
+                                    selectedItemId: selectedItem?.id,
+                                    teams,
+                                    profiles,
+                                    assignments,
+                                }}
+                            />
+                        </Box>
+                        <Box px={2}>
+                            <AssignmentsMapSelectors
+                                params={params}
+                                orgunitTypes={orgunitTypes}
+                                isFetchingOrgUnitTypes={isFetchingOrgUnitTypes}
+                            />
+                        </Box>
+                    </Paper>
+                </Grid>
+                <Grid item xs={7}>
+                    <AssignmentsMap
+                        locations={locations}
+                        isFetchingLocations={isFetchingLocations}
+                        handleClick={handleClick}
+                        handleParentClick={setParentSelected}
+                        parentLocations={parentLocations}
+                        isFetchingParentLocations={isFetchingParentLocations}
+                        teams={teams}
+                    />
+                </Grid>
             </Grid>
-            <Grid item xs={7}>
-                <AssignmentsMap
-                    handleClick={handleClick}
-                    handleParentClick={handleParentClick}
-                    getLocations={getLocations}
-                    getParentLocations={getParentLocations}
-                    teams={teams}
-                />
-            </Grid>
-        </Grid>
+        </>
     );
 };

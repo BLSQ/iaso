@@ -9,7 +9,9 @@ import { DropdownTeamsOptions, SubTeam, User, Team } from '../types/team';
 import { Column } from '../../../types/table';
 import { IntlFormatMessage } from '../../../types/intl';
 
-import { Profile, getDisplayName } from '../../../utils/usersUtils';
+import { Profile } from '../../../utils/usersUtils';
+
+import { getTeamName } from '../utils';
 
 import { colors } from '../constants/colors';
 
@@ -71,21 +73,16 @@ export const getColumns = ({
             accessor:
                 currentTeam?.type === 'TEAM_OF_USERS' ? 'username' : 'name',
             Cell: settings => {
-                let fullItem;
-                let displayString = '';
-                if (currentTeam?.type === 'TEAM_OF_USERS') {
-                    fullItem = profiles.find(
-                        profile => profile.user_id === settings.row.original.id,
-                    );
-                    displayString = getDisplayName(fullItem);
-                }
-                if (currentTeam?.type === 'TEAM_OF_TEAMS') {
-                    fullItem = teams.find(
-                        team => team.original.id === settings.row.original.id,
-                    );
-                    displayString = fullItem.label;
-                }
-                return <>{displayString}</>;
+                return (
+                    <>
+                        {getTeamName(
+                            settings.row.original,
+                            currentTeam,
+                            profiles,
+                            teams,
+                        )}
+                    </>
+                );
             },
         },
         {

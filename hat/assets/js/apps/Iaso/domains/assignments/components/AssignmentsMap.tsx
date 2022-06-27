@@ -1,5 +1,4 @@
 import React, { FunctionComponent, useRef, useState, useEffect } from 'react';
-import { UseQueryResult } from 'react-query';
 import {
     Map,
     TileLayer,
@@ -12,8 +11,6 @@ import { Box } from '@material-ui/core';
 import {
     // @ts-ignore
     LoadingSpinner,
-    // @ts-ignore
-    useSafeIntl,
 } from 'bluesquare-components';
 
 import { Locations, OrgUnitMarker, OrgUnitShape } from '../types/locations';
@@ -21,6 +18,8 @@ import { Locations, OrgUnitMarker, OrgUnitShape } from '../types/locations';
 import { TilesSwitch, Tile } from '../../../components/maps/tools/TileSwitch';
 import { MapLegend } from './MapLegend';
 import MarkersListComponent from '../../../components/maps/markers/MarkersListComponent';
+
+import { AlreadyAssigned } from './AlreadyAssigned';
 
 import {
     disabledColor,
@@ -35,13 +34,8 @@ import {
     getShapesBounds,
     getLatLngBounds,
 } from '../../../utils/mapUtils';
-import { getDisplayName } from '../../../utils/usersUtils';
-import { getParentTeam } from '../utils';
 
 import { DropdownTeamsOptions } from '../types/team';
-import { IntlFormatMessage } from '../../../types/intl';
-
-import MESSAGES from '../messages';
 
 const defaultViewport = {
     center: [1, 20],
@@ -53,9 +47,11 @@ type Props = {
     handleClick: (shape: OrgUnitShape | OrgUnitMarker) => void;
     // eslint-disable-next-line no-unused-vars
     handleParentClick: (shape: OrgUnitShape) => void;
-    getLocations: UseQueryResult<Locations, Error>;
-    getParentLocations: UseQueryResult<OrgUnitShape[], Error>;
     teams: DropdownTeamsOptions[];
+    locations: Locations | undefined;
+    isFetchingLocations: boolean;
+    parentLocations: OrgUnitShape[] | undefined;
+    isFetchingParentLocations: boolean;
 };
 
 const boundsOptions = {
@@ -90,47 +86,15 @@ const getLocationsBounds = (
     return bounds;
 };
 
-const getAlreadyAssignedText = (
-    item: OrgUnitShape | OrgUnitMarker,
-    formatMessage: IntlFormatMessage,
-    teams: DropdownTeamsOptions[],
-) => {
-    let otherAssignString = '';
-    let parentTeam;
-    if (item.otherAssignation.assignedTeam) {
-        parentTeam = getParentTeam({
-            currentTeam: item.otherAssignation.assignedTeam,
-            teams,
-        });
-        otherAssignString = item.otherAssignation.assignedTeam.label;
-    }
-    if (item.otherAssignation.assignedUser) {
-        parentTeam = getParentTeam({
-            currentUser: item.otherAssignation.assignedUser,
-            teams,
-        });
-        otherAssignString = getDisplayName(item.otherAssignation.assignedUser);
-    }
-    return (
-        <>
-            {`${item.name} ${formatMessage(
-                MESSAGES.alreadyAssignedTo,
-            )} ${otherAssignString} ${formatMessage(MESSAGES.inAnotherTeam)}${
-                parentTeam && ` (${parentTeam.label})`
-            }`}
-        </>
-    );
-};
-
 export const AssignmentsMap: FunctionComponent<Props> = ({
     handleClick,
     handleParentClick,
-    getLocations,
-    getParentLocations,
     teams,
+    locations,
+    isFetchingLocations,
+    parentLocations,
+    isFetchingParentLocations,
 }) => {
-    const { formatMessage }: { formatMessage: IntlFormatMessage } =
-        useSafeIntl();
     const map: any = useRef();
     const [currentTile, setCurrentTile] = useState<Tile>(tiles.osm);
     const fitToBounds = (
@@ -146,9 +110,6 @@ export const AssignmentsMap: FunctionComponent<Props> = ({
             }
         }
     };
-    const { data: locations, isFetching: isFetchingLocations } = getLocations;
-    const { data: parentLocations, isFetching: isFetchingParentLocations } =
-        getParentLocations;
 
     useEffect(() => {
         if (!isFetchingLocations && !isFetchingParentLocations && locations) {
@@ -205,11 +166,10 @@ export const AssignmentsMap: FunctionComponent<Props> = ({
                                             })}
                                         >
                                             <Tooltip>
-                                                {getAlreadyAssignedText(
-                                                    shape,
-                                                    formatMessage,
-                                                    teams,
-                                                )}
+                                                <AlreadyAssigned
+                                                    item={shape}
+                                                    teams={teams}
+                                                />
                                             </Tooltip>
                                         </GeoJSON>
                                     );
@@ -263,13 +223,10 @@ export const AssignmentsMap: FunctionComponent<Props> = ({
                                 tooltipProps={orgUnit => {
                                     return {
                                         children: (
-                                            <>
-                                                {getAlreadyAssignedText(
-                                                    orgUnit,
-                                                    formatMessage,
-                                                    teams,
-                                                )}
-                                            </>
+                                            <AlreadyAssigned
+                                                item={orgUnit}
+                                                teams={teams}
+                                            />
                                         ),
                                     };
                                 }}

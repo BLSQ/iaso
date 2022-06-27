@@ -113,6 +113,18 @@ const MESSAGES = defineMessages({
         defaultMessage: 'Legend',
         id: 'iaso.label.map.legend',
     },
+    unselected: {
+        defaultMessage: 'Not assigned',
+        id: 'iaso.assignment.map.unselected',
+    },
+    disabled: {
+        defaultMessage: 'Already assigned',
+        id: 'iaso.assignment..disabled',
+    },
+    parent: {
+        defaultMessage: 'Parent',
+        id: 'iaso.assignment.map.parent',
+    },
 });
 
 export default MESSAGES;

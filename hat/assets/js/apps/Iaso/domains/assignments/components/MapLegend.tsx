@@ -1,5 +1,6 @@
 import React, { FunctionComponent } from 'react';
-import { FormattedMessage } from 'react-intl';
+// @ts-ignore
+import { useSafeIntl } from 'bluesquare-components';
 import { Grid, Paper, Box, Typography, makeStyles } from '@material-ui/core';
 
 import {
@@ -10,20 +11,26 @@ import {
 
 import MESSAGES from '../../../constants/messages';
 
-const polioVacines = [
+type Legend = {
+    value: string;
+    labelKey: string;
+    color: string;
+};
+
+const legends: Legend[] = [
     {
         value: 'unselected',
-        label: 'unselected',
+        labelKey: 'unselected',
         color: unSelectedColor,
     },
     {
         value: 'disabled',
-        label: 'disabled',
+        labelKey: 'disabled',
         color: disabledColor,
     },
     {
         value: 'parent',
-        label: 'parent',
+        labelKey: 'parent',
         color: parentColor,
     },
 ];
@@ -51,6 +58,7 @@ export const useStyles = makeStyles(theme => ({
 
 export const MapLegend: FunctionComponent = () => {
     const classes = useStyles();
+    const { formatMessage } = useSafeIntl();
     return (
         <Paper elevation={1} className={classes.root}>
             <Box p={2}>
@@ -58,11 +66,11 @@ export const MapLegend: FunctionComponent = () => {
                     variant="subtitle1"
                     className={classes.mapLegendTitle}
                 >
-                    <FormattedMessage {...MESSAGES.legend} />
+                    {formatMessage(MESSAGES.legend)}
                 </Typography>
-                {polioVacines.map(vaccine => (
+                {legends.map(vaccine => (
                     <Grid container spacing={1} key={vaccine.value}>
-                        <Grid item sm={6} container justifyContent="flex-start">
+                        <Grid item sm={4} container justifyContent="flex-start">
                             <span
                                 className={classes.roundColor}
                                 style={{ backgroundColor: vaccine.color }}
@@ -70,12 +78,12 @@ export const MapLegend: FunctionComponent = () => {
                         </Grid>
                         <Grid
                             item
-                            sm={6}
+                            sm={8}
                             container
-                            justifyContent="flex-end"
+                            justifyContent="flex-start"
                             alignItems="center"
                         >
-                            {vaccine.label}
+                            {formatMessage(MESSAGES[vaccine.labelKey])}
                         </Grid>
                     </Grid>
                 ))}

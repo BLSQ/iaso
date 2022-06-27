@@ -1,8 +1,9 @@
 // types
 import { AssignmentsApi, AssignmentApi } from './types/assigment';
 import { OrgUnitMarker, OrgUnitShape } from './types/locations';
-import { DropdownTeamsOptions } from './types/team';
-import { Profile } from '../../utils/usersUtils';
+import { DropdownTeamsOptions, SubTeam, User, Team } from './types/team';
+
+import { Profile, getDisplayName } from '../../utils/usersUtils';
 
 export type AssignedUser = Profile & {
     color: string;
@@ -69,4 +70,27 @@ export const getParentTeam = ({
         );
     }
     return undefined;
+};
+
+export const getTeamName = (
+    selectedItem: SubTeam | User | undefined,
+    currentTeam: Team | undefined,
+    profiles: Profile[],
+    teams: DropdownTeamsOptions[],
+): string => {
+    let fullItem;
+    let displayString = '';
+    if (selectedItem) {
+        if (currentTeam?.type === 'TEAM_OF_USERS') {
+            fullItem = profiles.find(
+                profile => profile.user_id === selectedItem.id,
+            );
+            displayString = getDisplayName(fullItem);
+        }
+        if (currentTeam?.type === 'TEAM_OF_TEAMS') {
+            fullItem = teams.find(team => team.original.id === selectedItem.id);
+            displayString = fullItem.label;
+        }
+    }
+    return displayString;
 };

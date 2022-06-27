@@ -37,7 +37,9 @@ class EnketoAPITestCase(APITestCase):
 
         cls.jedi_council = m.OrgUnitType.objects.create(name="Jedi Council", short_name="Cnc")
 
-        cls.jedi_council_corruscant = m.OrgUnit.objects.create(name="Corruscant Jedi Council")
+        cls.jedi_council_corruscant = m.OrgUnit.objects.create(
+            name="Corruscant Jedi Council", source_ref="dw234q", version=sw_version
+        )
 
         cls.project = m.Project.objects.create(
             name="Hydroponic gardens", app_id="stars.empire.agriculture.hydroponics", account=star_wars
@@ -213,3 +215,174 @@ class EnketoAPITestCase(APITestCase):
 
             self.assertEqual(response.status_code, 201)
             self.assertEqual(self.yoda, instance.last_modified_by)
+
+    @override_settings(ENKETO=enketo_test_settings)
+    @responses.activate
+    def test_public_create_url(self):
+        self.setUpMockEnketo()
+        # usually passed to the external service when configuring
+        token = self.project.external_token
+        form_id = self.form_1.form_id
+        old_count = Instance.objects.count()
+
+        data = {
+            "period": "202301",
+            "form_id": form_id,
+            "external_org_unit_id": self.jedi_council_corruscant.source_ref,
+            "token": token,
+        }
+
+        response = self.client.get("/api/enketo/public_create_url/", data=data)
+        r = self.assertJSONResponse(response, 201)
+        self.assertEqual(r, {"url": "https://enketo_url.host.test/something"})
+        self.assertTrue(
+            responses.assert_call_count("https://enketo_url.host.test/api_v2/survey/single", 1),
+        )
+        self.assertEqual(len(responses.calls), 1)
+        self.assertEqual(old_count + 1, Instance.objects.count())
+
+    def setUpMockEnketo(self):
+        self.enketo_contents = []
+
+        def request_callback(request):
+            self.enketo_contents.append(urllib.parse.unquote(request.body))
+            return (200, {}, json.dumps({"edit_url": "https://enketo_url.host.test/something"}))
+
+        self.rsp_instance = responses.add_callback(
+            responses.POST,
+            "https://enketo_url.host.test/api_v2/instance",
+            callback=request_callback,
+            content_type="application/json",
+        )
+
+        self.rsp_survey = responses.add_callback(
+            responses.POST,
+            "https://enketo_url.host.test/api_v2/survey/single",
+            callback=request_callback,
+            content_type="application/json",
+        )
+
+    @override_settings(ENKETO=enketo_test_settings)
+    @responses.activate
+    def test_public_create_url_duplicate_fail(self):
+        """There is already more than two instance for the form/period and it is single_per_period so it fail"""
+        token = self.project.external_token
+        form_id = self.form_1.form_id
+        # Mark form as single per period and add a duplicate
+        self.setUpMockEnketo()
+        self.form_1.single_per_period = True
+        self.form_1.save()
+        instance = self.create_form_instance(form=self.form_1, period="202001", org_unit=self.jedi_council_corruscant)
+        instance = self.create_form_instance(form=self.form_1, period="202001", org_unit=self.jedi_council_corruscant)
+
+        data = {
+            "period": "202001",
+            "form_id": form_id,
+            "external_org_unit_id": self.jedi_council_corruscant.source_ref,
+            "token": token,
+        }
+
+        # test setup
+
+        response = self.client.get("/api/enketo/public_create_url/", data=data)
+        r = self.assertJSONResponse(response, 400)
+        self.assertEqual(
+            r,
+            {
+                "error": "Ambiguous request",
+                "message": "There are multiple submissions for this period and organizational unit, please log in the dashboard to fix.",
+            },
+        )
+        self.assertEqual(len(responses.calls), 0)
+
+    @override_settings(ENKETO=enketo_test_settings)
+    @responses.activate
+    def test_public_create_url_single_edit(self):
+        """There is an instance for Form/OrgUnit/Period and it is single per period, so we edit it"""
+        token = self.project.external_token
+        form_id = self.form_1.form_id
+        # Mark form as single per period and add a duplicate
+        self.setUpMockEnketo()
+        self.form_1.single_per_period = True
+        self.form_1.save()
+        instance = self.create_form_instance(form=self.form_1, period="20220201", org_unit=self.jedi_council_corruscant)
+        instance.file = UploadedFile(open("iaso/tests/fixtures/hydroponics_test_upload.xml"))
+        instance.save()
+
+        old_count = Instance.objects.count()
+        data = {
+            "period": "20220201",
+            "form_id": form_id,
+            "external_org_unit_id": self.jedi_council_corruscant.source_ref,
+            "token": token,
+        }
+
+        response = self.client.get("/api/enketo/public_create_url/", data=data)
+        r = self.assertJSONResponse(response, 201)
+        self.assertEqual(r, {"url": "https://enketo_url.host.test/something"})
+        self.assertEqual(len(responses.calls), 1)
+        self.assertTrue(responses.assert_call_count("https://enketo_url.host.test/api_v2/instance", 1), responses.calls)
+        self.assertEqual(old_count, Instance.objects.count())
+
+    @override_settings(ENKETO=enketo_test_settings)
+    @responses.activate
+    def test_public_create_url_non_single_create(self):
+        """There is an instance on the Form/OrgUnit/Period and it is NOT single per period, so we create a new one"""
+        token = self.project.external_token
+        form_id = self.form_1.form_id
+        # Mark form as single per period and add a duplicate
+        self.setUpMockEnketo()
+        self.form_1.single_per_period = False
+        self.form_1.save()
+        instance = self.create_form_instance(form=self.form_1, period="20220201", org_unit=self.jedi_council_corruscant)
+        instance.file = UploadedFile(open("iaso/tests/fixtures/hydroponics_test_upload.xml"))
+        instance.save()
+        old_count = Instance.objects.count()
+
+        data = {
+            "period": "20220201",
+            "form_id": form_id,
+            "external_org_unit_id": self.jedi_council_corruscant.source_ref,
+            "token": token,
+        }
+
+        response = self.client.get("/api/enketo/public_create_url/", data=data)
+        r = self.assertJSONResponse(response, 201)
+        self.assertEqual(r, {"url": "https://enketo_url.host.test/something"})
+        self.assertEqual(len(responses.calls), 1)
+        # self.assertEqual(responses.calls[0].request.url, 1)
+        self.assertTrue(responses.assert_call_count("https://enketo_url.host.test/api_v2/survey/single", 1))
+        self.assertEqual(old_count + 1, Instance.objects.count())
+
+    @override_settings(ENKETO=enketo_test_settings)
+    @responses.activate
+    def test_public_create_url_non_single_create(self):
+        """There is 2 instances on the Form/OrgUnit/Period and it is NOT single per period, so we create a new one"""
+        token = self.project.external_token
+        form_id = self.form_1.form_id
+        # Mark form as single per period and add a duplicate
+        self.setUpMockEnketo()
+        self.form_1.single_per_period = False
+        self.form_1.save()
+        instance = self.create_form_instance(form=self.form_1, period="20220201", org_unit=self.jedi_council_corruscant)
+        instance.file = UploadedFile(open("iaso/tests/fixtures/hydroponics_test_upload.xml"))
+        instance.save()
+        instance = self.create_form_instance(form=self.form_1, period="20220201", org_unit=self.jedi_council_corruscant)
+        instance.file = UploadedFile(open("iaso/tests/fixtures/hydroponics_test_upload.xml"))
+        instance.save()
+        old_count = Instance.objects.count()
+
+        data = {
+            "period": "20220201",
+            "form_id": form_id,
+            "external_org_unit_id": self.jedi_council_corruscant.source_ref,
+            "token": token,
+        }
+
+        response = self.client.get("/api/enketo/public_create_url/", data=data)
+        r = self.assertJSONResponse(response, 201)
+        self.assertEqual(r, {"url": "https://enketo_url.host.test/something"})
+        self.assertEqual(len(responses.calls), 1)
+        # self.assertEqual(responses.calls[0].request.url, 1)
+        self.assertTrue(responses.assert_call_count("https://enketo_url.host.test/api_v2/survey/single", 1))
+        self.assertEqual(old_count + 1, Instance.objects.count())

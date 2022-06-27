@@ -8,7 +8,6 @@ import {
     // @ts-ignore
     useSafeIntl,
 } from 'bluesquare-components';
-import { getOrgUnitAssignation } from '../utils';
 
 import { AssignmentsMap } from './AssignmentsMap';
 import { AssignmentsMapSelectors } from './AssignmentsMapSelectors';
@@ -26,6 +25,7 @@ import { DropdownOptions } from '../../../types/utils';
 import { OrgUnit } from '../../orgUnits/types/orgUnit';
 
 import { Profile } from '../../../utils/usersUtils';
+import { getSaveParams } from '../utils';
 
 import { useGetOrgUnitLocations } from '../hooks/requests/useGetOrgUnitLocations';
 import { useGetOrgUnitParentLocations } from '../hooks/requests/useGetOrgUnitParentLocations';
@@ -43,6 +43,8 @@ type Props = {
     setItemColor: (color: string, teamId: number) => void;
     // eslint-disable-next-line no-unused-vars
     saveAssignment: (params: SaveAssignmentQuery) => void;
+    // eslint-disable-next-line no-unused-vars
+    saveMultiAssignments: (params: SaveAssignmentQuery) => void;
     baseOrgunitType: string | undefined;
     params: AssignmentParams;
     orgunitTypes: Array<DropdownOptions<string>>;
@@ -62,6 +64,7 @@ export const AssignmentsMapTab: FunctionComponent<Props> = ({
     profiles,
     setItemColor,
     saveAssignment,
+    saveMultiAssignments,
     baseOrgunitType,
     params,
     orgunitTypes,
@@ -78,85 +81,17 @@ export const AssignmentsMapTab: FunctionComponent<Props> = ({
         SubTeam | User | undefined
     >();
 
-    const handleClick = (selectedOrgUnit: OrgUnitShape | OrgUnitMarker) => {
-        const { assignment, assignedTeam, assignedUser, emptyAssignment } =
-            getOrgUnitAssignation(
+    const handleSave = (selectedOrgUnit: OrgUnitShape | OrgUnitMarker) => {
+        if (planning && selectedItem) {
+            const saveParams = getSaveParams({
                 allAssignments,
                 selectedOrgUnit,
                 teams,
                 profiles,
-                currentTeam?.type,
-            );
-        if (planning && selectedItem) {
-            let saveParams: SaveAssignmentQuery = {
-                planning: planning.id,
-                org_unit: selectedOrgUnit.id,
-            };
-            // TODO: make it better, copy paste for now...
-            if (currentTeam?.type === 'TEAM_OF_TEAMS') {
-                saveParams.team = selectedItem.id;
-                let id = assignment?.id;
-                if (!id && emptyAssignment) {
-                    id = emptyAssignment.id;
-                }
-                if (id) {
-                    if (assignedTeam) {
-                        if (selectedItem.id !== assignedTeam.original.id) {
-                            // update assignment
-                            saveParams = {
-                                id,
-                                ...saveParams,
-                            };
-                        } else {
-                            // fake delete assignment, remove team / user
-                            saveParams = {
-                                ...saveParams,
-                                team: null,
-                                user: null,
-                                id,
-                            };
-                        }
-                    } else {
-                        // update assignment after fake delete
-                        saveParams = {
-                            id,
-                            ...saveParams,
-                        };
-                    }
-                }
-            }
-            if (currentTeam?.type === 'TEAM_OF_USERS') {
-                saveParams.user = selectedItem.id;
-                let id = assignment?.id;
-                if (!id && emptyAssignment) {
-                    id = emptyAssignment.id;
-                }
-                if (id) {
-                    if (assignedUser) {
-                        if (selectedItem.id !== assignedUser.user_id) {
-                            // update assignment
-                            saveParams = {
-                                id,
-                                ...saveParams,
-                            };
-                        } else {
-                            // fake delete assignment, remove team / user
-                            saveParams = {
-                                ...saveParams,
-                                team: null,
-                                user: null,
-                                id,
-                            };
-                        }
-                    } else {
-                        // update assignment after fake delete
-                        saveParams = {
-                            id,
-                            ...saveParams,
-                        };
-                    }
-                }
-            }
+                currentType: currentTeam?.type,
+                selectedItem,
+                planning,
+            });
             saveAssignment(saveParams);
         }
     };
@@ -208,6 +143,8 @@ export const AssignmentsMapTab: FunctionComponent<Props> = ({
                 currentTeam={currentTeam}
                 teams={teams}
                 profiles={profiles}
+                saveMultiAssignments={saveMultiAssignments}
+                planning={planning}
             />
             <Grid container spacing={2}>
                 <Grid item xs={5}>
@@ -257,7 +194,7 @@ export const AssignmentsMapTab: FunctionComponent<Props> = ({
                     <AssignmentsMap
                         locations={locations}
                         isFetchingLocations={isFetchingLocations}
-                        handleClick={handleClick}
+                        handleClick={handleSave}
                         handleParentClick={setParentSelected}
                         parentLocations={parentLocations}
                         isFetchingParentLocations={isFetchingParentLocations}

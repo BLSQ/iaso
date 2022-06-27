@@ -101,6 +101,9 @@ export const Assignments: FunctionComponent<Props> = ({ params }) => {
         });
     const { mutateAsync: saveAssignment, isLoading: isSaving } =
         useSaveAssignment();
+
+    const { mutateAsync: saveMultiAssignments } = useSaveAssignment(false);
+
     const isLoading =
         isLoadingPlanning ||
         isLoadingAssignments ||
@@ -241,6 +244,7 @@ export const Assignments: FunctionComponent<Props> = ({ params }) => {
                             setParentSelected={setParentSelected}
                             childrenOrgunits={childrenOrgunits || []}
                             parentSelected={parentSelected}
+                            saveMultiAssignments={saveMultiAssignments}
                         />
                     )}
                     {tab === 'list' && <Box>Coming soon</Box>}

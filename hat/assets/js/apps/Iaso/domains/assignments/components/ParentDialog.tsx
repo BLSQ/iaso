@@ -22,14 +22,20 @@ import React, {
 } from 'react';
 
 import { OrgUnit } from '../../orgUnits/types/orgUnit';
-import { OrgUnitShape, Locations, OrgUnitMarker } from '../types/locations';
+import {
+    OrgUnitShape,
+    Locations,
+    OrgUnitMarker,
+    BaseLocation,
+} from '../types/locations';
 import { SubTeam, User, DropdownTeamsOptions, Team } from '../types/team';
-import { AssignmentsApi } from '../types/assigment';
+import { AssignmentsApi, SaveAssignmentQuery } from '../types/assigment';
 import { Profile } from '../../../utils/usersUtils';
+import { Planning } from '../types/planning';
 
 import { getColumns } from '../configs/ParentDialogColumns';
 
-import { getTeamName } from '../utils';
+import { getTeamName, getSaveParams } from '../utils';
 
 import MESSAGES from '../messages';
 
@@ -44,6 +50,9 @@ type Props = {
     setParentSelected: (orgUnit: OrgUnitShape | undefined) => void;
     allAssignments: AssignmentsApi;
     selectedItem: SubTeam | User | undefined;
+    // eslint-disable-next-line no-unused-vars
+    saveMultiAssignments: (params: SaveAssignmentQuery) => void;
+    planning: Planning | undefined;
 };
 const useStyles = makeStyles(theme => ({
     ...commonStyles(theme),
@@ -66,18 +75,21 @@ export const ParentDialog: FunctionComponent<Props> = ({
     currentTeam,
     teams,
     profiles,
+    saveMultiAssignments,
+    planning,
 }) => {
     const { formatMessage } = useSafeIntl();
     const classes: Record<string, string> = useStyles();
     const [open, setOpen] = useState<boolean>(false);
     const [mappedOrgUnits, setMappedOrgUnits] = useState<
-        Array<OrgUnitShape | OrgUnitMarker | OrgUnit>
+        Array<OrgUnitShape | OrgUnitMarker | BaseLocation>
     >([]);
 
     useEffect(() => {
         if (childrenOrgunits.length > 0 && parentSelected && locations) {
-            const mapping: Array<OrgUnitShape | OrgUnitMarker | OrgUnit> = [];
-            childrenOrgunits.forEach(orgUnit => {
+            const mapping: Array<OrgUnitShape | OrgUnitMarker | BaseLocation> =
+                [];
+            childrenOrgunits.forEach((orgUnit: OrgUnit) => {
                 const shape: OrgUnitShape | undefined =
                     locations.shapes.all.find(
                         location => location.id === orgUnit.id,
@@ -91,7 +103,12 @@ export const ParentDialog: FunctionComponent<Props> = ({
                 } else if (marker) {
                     mapping.push(marker);
                 } else {
-                    mapping.push(orgUnit);
+                    mapping.push({
+                        id: orgUnit.id,
+                        name: orgUnit.name,
+                        orgUnitTypeId: orgUnit.org_unit_type_id,
+                        otherAssignation: undefined,
+                    });
                 }
             });
             setMappedOrgUnits(mapping);
@@ -104,11 +121,33 @@ export const ParentDialog: FunctionComponent<Props> = ({
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [childrenOrgunits, parentSelected, locations]);
 
-    const handleSave = () => {
-        // should assign all org unit of base org unit type inside the clicked parent to the selectedItem
-        // for each org unit assign it to selectedItem (team or user)
-        // console.log('save', childrenOrgunits, parentSelected);
+    const assignableOrgUnits = mappedOrgUnits.filter(
+        orgUnit =>
+            !orgUnit.otherAssignation ||
+            (orgUnit.otherAssignation &&
+                !orgUnit.otherAssignation?.assignedTeam &&
+                !orgUnit.otherAssignation?.assignedUser),
+    );
+    const handleSave = async () => {
+        // TODO: this should handle with only one call to api
         setParentSelected(undefined);
+        for (let i = 0; i < assignableOrgUnits.length; i += 1) {
+            const orgUnit = assignableOrgUnits[i];
+            if (selectedItem && planning) {
+                // eslint-disable-next-line no-await-in-loop
+                await saveMultiAssignments(
+                    getSaveParams({
+                        allAssignments,
+                        selectedOrgUnit: orgUnit,
+                        teams,
+                        profiles,
+                        currentType: currentTeam?.type,
+                        selectedItem,
+                        planning,
+                    }),
+                );
+            }
+        }
     };
 
     const closeDialog = useCallback(() => {
@@ -116,12 +155,6 @@ export const ParentDialog: FunctionComponent<Props> = ({
     }, [setOpen]);
     if (!open) return null;
 
-    const assignableOrgUnits = childrenOrgunits.filter(
-        orgUnit =>
-            !allAssignments.some(
-                assignment => assignment.org_unit === orgUnit.id,
-            ),
-    );
     return (
         <Dialog
             fullWidth

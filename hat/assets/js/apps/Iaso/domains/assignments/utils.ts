@@ -1,6 +1,11 @@
 // types
-import { AssignmentsApi, AssignmentApi } from './types/assigment';
-import { OrgUnitMarker, OrgUnitShape } from './types/locations';
+import {
+    AssignmentsApi,
+    AssignmentApi,
+    SaveAssignmentQuery,
+} from './types/assigment';
+import { OrgUnitMarker, OrgUnitShape, BaseLocation } from './types/locations';
+import { Planning } from './types/planning';
 import { DropdownTeamsOptions, SubTeam, User, Team } from './types/team';
 
 import { Profile, getDisplayName } from '../../utils/usersUtils';
@@ -18,7 +23,7 @@ type OrgUnitAssignedTeamUser = {
 
 export const getOrgUnitAssignation = (
     assignments: AssignmentsApi,
-    orgUnit: OrgUnitShape | OrgUnitMarker,
+    orgUnit: OrgUnitShape | OrgUnitMarker | BaseLocation,
     teams: DropdownTeamsOptions[],
     profiles: Profile[],
     currentType: 'TEAM_OF_TEAMS' | 'TEAM_OF_USERS' | undefined,
@@ -93,4 +98,103 @@ export const getTeamName = (
         }
     }
     return displayString;
+};
+
+type SaveParamsProps = {
+    allAssignments: AssignmentsApi;
+    selectedOrgUnit: OrgUnitShape | OrgUnitMarker | BaseLocation;
+    teams: DropdownTeamsOptions[];
+    profiles: Profile[];
+    currentType: 'TEAM_OF_TEAMS' | 'TEAM_OF_USERS' | undefined;
+    selectedItem: SubTeam | User;
+    planning: Planning;
+};
+
+export const getSaveParams = ({
+    allAssignments,
+    selectedOrgUnit,
+    teams,
+    profiles,
+    currentType,
+    selectedItem,
+    planning,
+}: SaveParamsProps): SaveAssignmentQuery => {
+    const { assignment, assignedTeam, assignedUser, emptyAssignment } =
+        getOrgUnitAssignation(
+            allAssignments,
+            selectedOrgUnit,
+            teams,
+            profiles,
+            currentType,
+        );
+    let saveParams: SaveAssignmentQuery = {
+        planning: planning.id,
+        org_unit: selectedOrgUnit.id,
+    };
+    // TODO: make it better, copy paste for now...
+    if (currentType === 'TEAM_OF_TEAMS') {
+        saveParams.team = selectedItem.id;
+        let id = assignment?.id;
+        if (!id && emptyAssignment) {
+            id = emptyAssignment.id;
+        }
+        if (id) {
+            if (assignedTeam) {
+                if (selectedItem.id !== assignedTeam.original.id) {
+                    // update assignment
+                    saveParams = {
+                        id,
+                        ...saveParams,
+                    };
+                } else {
+                    // fake delete assignment, remove team / user
+                    saveParams = {
+                        ...saveParams,
+                        team: null,
+                        user: null,
+                        id,
+                    };
+                }
+            } else {
+                // update assignment after fake delete
+                saveParams = {
+                    id,
+                    ...saveParams,
+                };
+            }
+        }
+    }
+    if (currentType === 'TEAM_OF_USERS') {
+        saveParams.user = selectedItem.id;
+        let id = assignment?.id;
+        if (!id && emptyAssignment) {
+            id = emptyAssignment.id;
+        }
+        if (id) {
+            if (assignedUser) {
+                if (selectedItem.id !== assignedUser.user_id) {
+                    // update assignment
+                    saveParams = {
+                        id,
+                        ...saveParams,
+                    };
+                } else {
+                    // fake delete assignment, remove team / user
+                    saveParams = {
+                        ...saveParams,
+                        team: null,
+                        user: null,
+                        id,
+                    };
+                }
+            } else {
+                // update assignment after fake delete
+                saveParams = {
+                    id,
+                    ...saveParams,
+                };
+            }
+        }
+    }
+    return saveParams;
 };

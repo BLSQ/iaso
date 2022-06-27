@@ -6,7 +6,9 @@ import { SaveAssignmentQuery } from '../../types/assigment';
 
 const endpoint = '/api/microplanning/assignments/';
 
-const save = async (body: SaveAssignmentQuery) => {
+export const saveAssignment = async (
+    body: SaveAssignmentQuery,
+): Promise<any> => {
     if (body.id) {
         const url = `${endpoint}${body.id}/`;
         return patchRequest(url, body);
@@ -15,15 +17,16 @@ const save = async (body: SaveAssignmentQuery) => {
 };
 
 export const useSaveAssignment = (
+    showSucessSnackBar = true,
     callback: () => void = () => null,
 ): UseMutationResult => {
     const onSuccess = () => callback();
     return useSnackMutation(
-        (data: SaveAssignmentQuery) => save(data),
+        (data: SaveAssignmentQuery) => saveAssignment(data),
         undefined,
         undefined,
         ['assignmentsList'],
         { onSuccess },
-        true,
+        showSucessSnackBar,
     );
 };

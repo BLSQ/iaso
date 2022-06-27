@@ -1,7 +1,6 @@
 import { Grid, FormControlLabel, Switch, Box } from '@material-ui/core';
 import { useDispatch } from 'react-redux';
 import React, { FunctionComponent, useEffect } from 'react';
-import isEqual from 'lodash/isEqual';
 import {
     // @ts-ignore
     useSafeIntl,
@@ -36,11 +35,14 @@ export const AssignmentsMapSelectors: FunctionComponent<Props> = ({
     const { formatMessage } = useSafeIntl();
 
     useEffect(() => {
-        const tempParams = {
-            ...params,
-            ...filters,
-        };
-        if (!isEqual(tempParams, params)) {
+        if (
+            filters.parentPicking !== params.parentPicking ||
+            filters.parentOrgunitType !== params.parentOrgunitType
+        ) {
+            const tempParams = {
+                ...params,
+                ...filters,
+            };
             dispatch(redirectTo(baseUrl, tempParams));
         }
         // eslint-disable-next-line react-hooks/exhaustive-deps

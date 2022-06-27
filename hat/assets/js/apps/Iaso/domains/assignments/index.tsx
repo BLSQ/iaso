@@ -171,6 +171,7 @@ export const Assignments: FunctionComponent<Props> = ({ params }) => {
                 setCurrentTeam(newCurrentTeam.original);
             }
         }
+        // TODO: while changing of team, check assignation for this team and take direct children as bes org unit type
         if (assignments.length > 0) {
             const newBaseOrgUnitType =
                 assignments[0].org_unit_details.org_unit_type;

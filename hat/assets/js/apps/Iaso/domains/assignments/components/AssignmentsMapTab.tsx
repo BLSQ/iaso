@@ -1,4 +1,9 @@
-import React, { FunctionComponent, useState, useEffect } from 'react';
+import React, {
+    FunctionComponent,
+    useState,
+    useEffect,
+    useCallback,
+} from 'react';
 import { Grid, Paper, Box } from '@material-ui/core';
 import { useTheme, Theme } from '@material-ui/core/styles';
 
@@ -113,9 +118,25 @@ export const AssignmentsMapTab: FunctionComponent<Props> = ({
             ? currentTeam.users_details
             : currentTeam?.sub_teams_details;
 
+    const getOrgUnitParentId = useCallback(() => {
+        let orgUnitParentId = planning?.org_unit;
+        if (currentTeam) {
+            const existingAssignmentForTeam = allAssignments.find(
+                assignment => assignment.team === currentTeam.id,
+            );
+            if (existingAssignmentForTeam) {
+                orgUnitParentId = existingAssignmentForTeam.org_unit;
+            }
+        }
+        return orgUnitParentId;
+    }, [allAssignments, currentTeam, planning?.org_unit]);
+
     const { data: locations, isFetching: isFetchingLocations } =
         useGetOrgUnitLocations({
-            orgUnitParentId: planning?.org_unit,
+            // change parent regarding the team selected
+            // if no assignation use planning?.org_unit,
+            // else use assignation
+            orgUnitParentId: getOrgUnitParentId(),
             baseOrgunitType,
             assignments,
             allAssignments,

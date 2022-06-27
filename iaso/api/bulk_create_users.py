@@ -1,19 +1,18 @@
-import os
+import io
 
 from django.contrib.auth.models import User
 from django.contrib.auth.password_validation import validate_password
 from django.core.exceptions import ValidationError, ObjectDoesNotExist, MultipleObjectsReturned
+from django.core.files.base import ContentFile
 from django.db import IntegrityError, transaction
 from rest_framework.response import Response
 from rest_framework.viewsets import ModelViewSet
-from rest_framework import serializers, status, permissions
+from rest_framework import serializers, permissions
 from django.core import validators
-from django.core.files.storage import default_storage
 import csv
 import pandas as pd
 
-from hat.settings import BASE_DIR
-from iaso.models import BulkCreateUserCsvFile, Profile, Account, OrgUnit
+from iaso.models import BulkCreateUserCsvFile, Profile, OrgUnit
 
 
 class BulkCreateUserSerializer(serializers.ModelSerializer):
@@ -56,15 +55,19 @@ class BulkCreateUserFromCsvViewSet(ModelViewSet):
     @transaction.atomic
     def create(self, request, *args, **kwargs):
         if request.FILES:
-            user_csv = request.FILES["file"]
+            try:
+                user_csv = request.FILES["file"]
+                user_csv_decoded = user_csv.read().decode("utf-8")
+                csv_str = io.StringIO(user_csv_decoded)
+                reader = csv.reader(csv_str)
+            except UnicodeDecodeError as e:
+                raise serializers.ValidationError({"error": "Operation aborted. Error: {}".format(e)})
+            i = 0
+            csv_indexes = []
             file_instance = BulkCreateUserCsvFile.objects.create(
                 file=user_csv, created_by=request.user, account=request.user.iaso_profile.account
             )
             file_instance.save()
-            file = default_storage.open(file_instance.file.name, "r")
-            reader = csv.reader(file)
-            i = 0
-            csv_indexes = []
             for row in reader:
                 org_units_list = []
                 if i > 0:
@@ -163,11 +166,12 @@ class BulkCreateUserFromCsvViewSet(ModelViewSet):
                     profile.org_units.set(org_units_list)
                     csv_file = pd.read_csv(file_instance.file.path)
                     csv_file.at[i - 1, "password"] = ""
-                    csv_file.to_csv(file_instance.file.path, index=False)
+                    csv_file = csv_file.to_csv(path_or_buf=None, index=False)
+                    content_file = ContentFile(csv_file.encode("utf-8"))
+                    file_instance.file.save(f"{file_instance.id}.csv", content_file)
                 else:
                     csv_indexes = row
                 i += 1
-            file.close()
         csv_files = BulkCreateUserCsvFile.objects.none()
         serializer = BulkCreateUserSerializer(csv_files, many=True)
         return Response(serializer.data)

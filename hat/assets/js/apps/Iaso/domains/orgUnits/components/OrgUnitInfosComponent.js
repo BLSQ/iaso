@@ -248,7 +248,10 @@ const OrgUnitInfosComponent = ({
 
     return (
         <Grid container spacing={4}>
-            {(orgUnit.reference_instance || formId === referenceFormId) && (
+            {(orgUnit.reference_instance ||
+                (formId === referenceFormId &&
+                    formId !== undefined &&
+                    referenceFormId !== undefined)) && (
                 <SpeedDialInstanceActions
                     speedDialClasses={classes.speedDialTop}
                     actions={Actions(

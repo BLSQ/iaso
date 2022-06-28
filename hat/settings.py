@@ -25,7 +25,7 @@ import urllib.parse
 
 from plugins.wfp.wfp_pkce_generator import generate_pkce
 
-DNS_DOMAIN = os.environ.get("DNS_DOMAIN", "bluesquare.org")
+DNS_DOMAIN = os.environ.get("DNS_DOMAIN", "localhost:8081")
 TESTING = os.environ.get("TESTING", "").lower() == "true"
 PLUGINS = os.environ["PLUGINS"].split(",") if os.environ.get("PLUGINS", "") else []
 

@@ -65,6 +65,7 @@ type SnackMutationDict<Data, Error, Variables, Context> = {
           >
         | undefined;
     ignoreErrorCodes?: number[];
+    showSucessSnackBar?: boolean;
 };
 
 const useBaseSnackMutation = <
@@ -146,6 +147,7 @@ export const useSnackMutation = <
               'mutationFn'
           >
         | undefined = {},
+    showSucessSnackBar = true,
     ignoreErrorCodes: number[] = [],
 ): UseMutationResult<Data, Error, Variables, Context> => {
     let arg1;
@@ -154,6 +156,7 @@ export const useSnackMutation = <
     let arg4;
     let arg5;
     let arg6;
+    let arg7;
     // Checking if the first argument passed is a dictionary
     const keys = Object.keys(mutationArg) ?? [];
     if (keys.length > 0 && keys.includes('mutationFn')) {
@@ -174,6 +177,9 @@ export const useSnackMutation = <
         ).options;
         arg6 = (
             mutationArg as SnackMutationDict<Data, Error, Variables, Context>
+        ).showSucessSnackBar;
+        arg7 = (
+            mutationArg as SnackMutationDict<Data, Error, Variables, Context>
         ).ignoreErrorCodes;
     } else {
         arg1 = mutationArg;
@@ -181,7 +187,8 @@ export const useSnackMutation = <
         arg3 = snackErrorMsg;
         arg4 = invalidateQueryKey;
         arg5 = options;
-        arg6 = ignoreErrorCodes;
+        arg6 = showSucessSnackBar;
+        arg7 = ignoreErrorCodes;
     }
     return useBaseSnackMutation<Data, Error, Variables, Context>(
         arg1,
@@ -190,6 +197,7 @@ export const useSnackMutation = <
         arg4,
         arg5,
         arg6,
+        arg7,
     );
 };
 
@@ -253,11 +261,11 @@ export const useSnackQuery = <
     QueryKeyExtended extends QueryKey = QueryKey,
 >(
     queryArg: QueryKey | SnackQueryDict<QueryFnData, Data, QueryKeyExtended>,
-    queryFn: QueryFunction<QueryFnData>,
-    snackErrorMsg: IntlMessage | undefined,
-    options: UseQueryOptions<QueryFnData, Error, Data, QueryKeyExtended>,
+    queryFn?: QueryFunction<QueryFnData>,
+    snackErrorMsg?: IntlMessage | undefined,
+    options?: UseQueryOptions<QueryFnData, Error, Data, QueryKeyExtended>,
     // Give the option to not dispatch onError, to avoid multiple snackbars when re-using the query with the same query key
-    dispatchOnError = true,
+    dispatchOnError?: boolean,
 ): UseQueryResult<Data, Error> => {
     let arg1;
     let arg2;

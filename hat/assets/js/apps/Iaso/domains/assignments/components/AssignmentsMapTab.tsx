@@ -5,13 +5,10 @@ import React, {
     useCallback,
 } from 'react';
 import { Grid, Paper, Box } from '@material-ui/core';
-import { useTheme, Theme } from '@material-ui/core/styles';
 
 import {
     // @ts-ignore
     Table,
-    // @ts-ignore
-    useSafeIntl,
 } from 'bluesquare-components';
 
 import { AssignmentsMap } from './AssignmentsMap';
@@ -35,7 +32,7 @@ import { getSaveParams } from '../utils';
 import { useGetOrgUnitLocations } from '../hooks/requests/useGetOrgUnitLocations';
 import { useGetOrgUnitParentLocations } from '../hooks/requests/useGetOrgUnitParentLocations';
 
-import { getColumns } from '../configs/AssignmentsMapTabColumns';
+import { useColumns } from '../configs/AssignmentsMapTabColumns';
 
 type Props = {
     assignments: AssignmentsApi;
@@ -78,9 +75,7 @@ export const AssignmentsMapTab: FunctionComponent<Props> = ({
     childrenOrgunits,
     parentSelected,
 }) => {
-    const { formatMessage } = useSafeIntl();
     const { parentPicking, parentOrgunitType } = params;
-    const theme: Theme = useTheme();
 
     const [selectedItem, setSelectedItem] = useState<
         SubTeam | User | undefined
@@ -158,6 +153,15 @@ export const AssignmentsMapTab: FunctionComponent<Props> = ({
                 parentPicking === 'true' ? parentOrgunitType : undefined,
         });
 
+    const columns = useColumns({
+        assignments,
+        teams,
+        profiles,
+        setItemColor,
+        selectedItem,
+        setSelectedItem,
+        currentTeam,
+    });
     return (
         <>
             <ParentDialog
@@ -184,17 +188,7 @@ export const AssignmentsMapTab: FunctionComponent<Props> = ({
                                 countOnTop={false}
                                 marginTop={false}
                                 marginBottom={false}
-                                columns={getColumns({
-                                    formatMessage,
-                                    assignments,
-                                    teams,
-                                    profiles,
-                                    setItemColor,
-                                    theme,
-                                    selectedItem,
-                                    setSelectedItem,
-                                    currentTeam,
-                                })}
+                                columns={columns}
                                 count={
                                     currentTeam?.sub_teams_details?.length ?? 0
                                 }

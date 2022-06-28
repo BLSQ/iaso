@@ -28,7 +28,7 @@ import TopBar from '../../components/nav/TopBarComponent';
 import { AssignmentsFilters } from './components/AssignmentsFilters';
 import { AssignmentsMapTab } from './components/AssignmentsMapTab';
 
-import { AssignmentParams } from './types/assigment';
+import { AssignmentParams, AssignmentApi } from './types/assigment';
 import { Planning } from './types/planning';
 import { Team, DropdownTeamsOptions } from './types/team';
 import { Profile } from '../../utils/usersUtils';
@@ -89,7 +89,7 @@ export const Assignments: FunctionComponent<Props> = ({ params }) => {
     }: {
         data?: AssignmentsResult;
         isLoading: boolean;
-    } = useGetAssignments({ planningId }, currentTeam, baseOrgunitType);
+    } = useGetAssignments({ planningId }, currentTeam);
     const assignments = data ? data.assignments : [];
     const allAssignments = data ? data.allAssignments : [];
     const { data: orgunitTypes, isFetching: isFetchingOrgunitTypes } =
@@ -163,23 +163,40 @@ export const Assignments: FunctionComponent<Props> = ({ params }) => {
     }, [dispatch, params.tab]);
 
     useEffect(() => {
+        let newCurrentTeam;
         if (currentTeamId) {
-            const newCurrentTeam = teams?.find(
+            newCurrentTeam = teams?.find(
                 team => team.original?.id === parseInt(currentTeamId, 10),
             );
             if (newCurrentTeam && newCurrentTeam.original) {
                 setCurrentTeam(newCurrentTeam.original);
+                if (allAssignments.length > 0) {
+                    let firstAssignment: AssignmentApi | undefined;
+                    if (newCurrentTeam.original.type === 'TEAM_OF_USERS') {
+                        firstAssignment = allAssignments.find(assignment =>
+                            newCurrentTeam.original.users.some(
+                                user => user === assignment.user,
+                            ),
+                        );
+                    }
+                    if (newCurrentTeam.original.type === 'TEAM_OF_TEAMS') {
+                        firstAssignment = allAssignments.find(assignment =>
+                            newCurrentTeam.original.sub_teams.some(
+                                team => team === assignment.team,
+                            ),
+                        );
+                    }
+                    const newBaseOrgUnitType =
+                        firstAssignment?.org_unit_details?.org_unit_type;
+                    if (newBaseOrgUnitType) {
+                        const newParams = {
+                            ...params,
+                            baseOrgunitType: newBaseOrgUnitType,
+                        };
+                        dispatch(redirectTo(baseUrl, newParams));
+                    }
+                }
             }
-        }
-        // TODO: while changing of team, check assignation for this team and take direct children as bes org unit type
-        if (assignments.length > 0) {
-            const newBaseOrgUnitType =
-                assignments[0].org_unit_details.org_unit_type;
-            const newParams = {
-                ...params,
-                baseOrgunitType: newBaseOrgUnitType,
-            };
-            dispatch(redirectTo(baseUrl, newParams));
         }
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [currentTeamId, teams]);

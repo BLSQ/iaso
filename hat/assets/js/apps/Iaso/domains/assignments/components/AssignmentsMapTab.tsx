@@ -119,24 +119,30 @@ export const AssignmentsMapTab: FunctionComponent<Props> = ({
             : currentTeam?.sub_teams_details;
 
     const getOrgUnitParentId = useCallback(() => {
-        let orgUnitParentId = planning?.org_unit;
+        // change parent regarding the team selected
+        // if no assignation use planning?.org_unit,
+        // else use assignation
+        let orgUnitParentIds: number[] = [];
         if (currentTeam) {
-            const existingAssignmentForTeam = allAssignments.find(
+            const existingAssignmentsForTeamOrUser = allAssignments.filter(
                 assignment => assignment.team === currentTeam.id,
             );
-            if (existingAssignmentForTeam) {
-                orgUnitParentId = existingAssignmentForTeam.org_unit;
+            if (existingAssignmentsForTeamOrUser) {
+                orgUnitParentIds = existingAssignmentsForTeamOrUser.map(
+                    assignment => assignment.org_unit,
+                );
             }
         }
-        return orgUnitParentId;
-    }, [allAssignments, currentTeam, planning?.org_unit]);
+        if (planning?.org_unit && orgUnitParentIds.length === 0) {
+            orgUnitParentIds = [planning?.org_unit];
+        }
+        return orgUnitParentIds;
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [currentTeam]);
 
     const { data: locations, isFetching: isFetchingLocations } =
         useGetOrgUnitLocations({
-            // change parent regarding the team selected
-            // if no assignation use planning?.org_unit,
-            // else use assignation
-            orgUnitParentId: getOrgUnitParentId(),
+            orgUnitParentIds: getOrgUnitParentId(),
             baseOrgunitType,
             assignments,
             allAssignments,

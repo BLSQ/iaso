@@ -22,35 +22,26 @@ const getAssignments = async (options: Option): Promise<AssignmentApi[]> => {
 export const useGetAssignments = (
     options: Option,
     currentTeam: Team | undefined,
-    baseOrgunitType: string | undefined,
 ): UseQueryResult<AssignmentsResult, Error> => {
     const queryKey: any[] = ['assignmentsList'];
     // @ts-ignore
     return useSnackQuery(queryKey, () => getAssignments(options), undefined, {
         select: data => {
-            const filteredAssignments = data
-                .filter(assignment => {
-                    if (currentTeam?.type) {
-                        if (currentTeam.type === 'TEAM_OF_TEAMS') {
-                            return currentTeam.sub_teams.some(
-                                subTeam => assignment.team === subTeam,
-                            );
-                        }
-                        if (currentTeam.type === 'TEAM_OF_USERS') {
-                            return currentTeam.users.some(
-                                user => assignment.user === user,
-                            );
-                        }
+            const filteredAssignments = data.filter(assignment => {
+                if (currentTeam?.type) {
+                    if (currentTeam.type === 'TEAM_OF_TEAMS') {
+                        return currentTeam.sub_teams.some(
+                            subTeam => assignment.team === subTeam,
+                        );
                     }
-                    return false;
-                })
-                .filter(
-                    assignment =>
-                        !baseOrgunitType ||
-                        (baseOrgunitType &&
-                            assignment.org_unit_details.org_unit_type ===
-                                parseInt(baseOrgunitType, 10)),
-                );
+                    if (currentTeam.type === 'TEAM_OF_USERS') {
+                        return currentTeam.users.some(
+                            user => assignment.user === user,
+                        );
+                    }
+                }
+                return false;
+            });
             return {
                 assignments: filteredAssignments,
                 allAssignments: data,

@@ -265,7 +265,7 @@ fenêtre à la place.
 
 Si vous n'avez pas demandé de compte sur {dns_domain}, vous pouvez ignorer cet e-mail - aucun mot de passe ne sera créé.
 
-Sincèrement,
+Cordialement,
 L'équipe {dns_domain}.
     """
 

@@ -1,5 +1,6 @@
 import React, { FunctionComponent } from 'react';
 import { Box, Typography } from '@material-ui/core';
+// @ts-ignore
 import { LoadingSpinner } from 'bluesquare-components';
 import { PercentageBarChart } from '../PercentageBarChart';
 

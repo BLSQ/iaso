@@ -589,11 +589,11 @@ class IMStatsViewSet(viewsets.ViewSet):
         else:
             latest_campaign_update = None
 
-        stats_types = request.GET.get("type", "OH,OHH")
+        stats_types = request.GET.get("type", "HH,OHH")
 
         im_request_type = stats_types
 
-        if stats_types == "OH,OHH":
+        if stats_types == "HH,OHH":
             im_request_type = ""
 
         cached_response = cache.get(
@@ -654,6 +654,9 @@ class IMStatsViewSet(viewsets.ViewSet):
             "Tot_child_Abs_Other",
             "Tot_child_Abs_Farm",
         ]
+        # Ugly fix to exclude forms known to have data so terrible it breaks the results
+        excluded_forms = ["2399548d-545e-4182-a3a0-54da841bc179", "59ca0419-798d-40ca-b690-460063329938"]
+
         if request.user.iaso_profile.org_units.count() == 0:
             authorized_countries = OrgUnit.objects.filter(org_unit_type_id__category="COUNTRY")
         else:
@@ -675,6 +678,7 @@ class IMStatsViewSet(viewsets.ViewSet):
 
             cached_response, created = URLCache.objects.get_or_create(url=country_config["url"])
             delta = now() - cached_response.updated_at
+            # if created or delta > timedelta(seconds=10):
             if created or delta > timedelta(minutes=60 * 24 * 10):
                 print("fetching", country_config["url"])
                 response = requests.get(
@@ -683,13 +687,12 @@ class IMStatsViewSet(viewsets.ViewSet):
                 print("fetched")
                 print(len(response.text))
                 cached_response.content = response.text
-
                 cached_response.save()
                 forms = response.json()
             else:
                 print("already cached", country_config["url"])
                 forms = json.loads(cached_response.content)
-
+            debug_response = set()
             for form in forms:
                 form_count += 1
                 total_sites_visited = 0
@@ -720,13 +723,12 @@ class IMStatsViewSet(viewsets.ViewSet):
                     )
                     unknown_round += 1
                     continue
-                if form.get("HH", None):
+                if form.get("HH", None) and (form.get("_uuid", None) not in excluded_forms):
                     if "HH" in stats_types:
                         for kid in form.get("HH", []):
                             total_sites_visited += 1
                             Child_FMD = kid.get("HH/U5_Vac_FM_HH", 0)
                             Child_Checked = kid.get("HH/Total_U5_Present_HH", 0)
-
                             total_Child_FMD += int(Child_FMD)
                             total_Child_Checked += int(Child_Checked)
                             for reason in nfm_reason_keys:
@@ -739,19 +741,21 @@ class IMStatsViewSet(viewsets.ViewSet):
                                 )
                             done_something = True
                 else:
-                    if "OHH" in stats_types:
+                    if "OHH" in stats_types and form.get("_uuid", None) not in excluded_forms:
                         for kid in form.get("OHH", []):
                             total_sites_visited += 1
                             Child_FMD = kid.get("OHH/Child_FMD", 0)
                             Child_Checked = kid.get("OHH/Child_Checked", 0)
-
                             total_Child_FMD += int(Child_FMD)
                             total_Child_Checked += int(Child_Checked)
                             done_something = True
                 if not done_something:
                     continue
-                today_string = form["today"]
-                today = datetime.strptime(today_string, "%Y-%m-%d").date()
+                today_string = form.get("today", None)
+                if today_string:
+                    today = datetime.strptime(today_string, "%Y-%m-%d").date()
+                else:
+                    today = None
                 campaign = find_lqas_im_campaign(campaigns, today, country, round_number, "im")
                 if not campaign:
                     campaign = find_lqas_im_campaign(campaigns, today, country, None, "im")
@@ -760,7 +764,8 @@ class IMStatsViewSet(viewsets.ViewSet):
                         campaign_stats[campaign_name]["bad_round_number"] += 1
                 region_name = form.get("Region")
                 district_name = form.get("District")
-
+                if form.get("Response", None) and campaign:
+                    debug_response.add((campaign.obr_name, form["Response"]))
                 if campaign:
                     campaign_name = campaign.obr_name
                     scope = campaign.group.org_units.values_list("id", flat=True) if campaign.group else []
@@ -794,20 +799,24 @@ class IMStatsViewSet(viewsets.ViewSet):
                 else:
                     day_country_not_found[country.name][today_string] += 1
                     form_campaign_not_found_count += 1
-
+            print("(----------------------------)")
+            print(country.name, debug_response)
+            print("(----------------------------)")
         skipped_forms.update(
             {"count": len(skipped_forms_list), "no_round": no_round_count, "unknown_round": unknown_round}
         )
         for campaign_stat in campaign_stats.values():
             # Ensure round that might not have data are present.
-            for round in campaign_stat["campaign"].rounds.all():
-                # this actually make an entry thanks to the defaultdict
-                # noinspection PyStatementEffect
-                campaign_stat["rounds"][str(round.number)]
+            campaign_stat_campaign = campaign_stat.get("campaign", None)
+            if campaign_stat_campaign:
+                for round in campaign_stat["campaign"].rounds.all():
+                    # this actually make an entry thanks to the defaultdict
+                    # noinspection PyStatementEffect
+                    campaign_stat["rounds"][str(round.number)]
+                del campaign_stat["campaign"]
             for round_number, round in campaign_stat["rounds"].items():
                 round["number"] = int(round_number)
             campaign_stat["rounds"] = list(campaign_stat["rounds"].values())
-            del campaign_stat["campaign"]
 
         response = {
             "stats": campaign_stats,
@@ -851,6 +860,8 @@ def lqasim_day_in_round(current_round, today, kind, campaign, country):
 
 
 def find_lqas_im_campaign(campaigns, today, country, round_number: Optional[int], kind):
+    if not today:
+        return None
     for campaign in campaigns:
         if round_number is not None:
             try:
@@ -1227,10 +1238,11 @@ class LQASStatsViewSet(viewsets.ViewSet):
                 password=country_config["password"],
                 minutes=country_config.get("minutes", 60 * 24 * 10),
             )
+            debug_response = set()
 
             for form in forms:
                 if "roundNumber" not in form:
-                    skipped_forms_list.append({form["_id"]: {"round": None, "date": form["Date_of_LQAS"]}})
+                    skipped_forms_list.append({form["_id"]: {"round": None, "date": form.get("Date_of_LQAS", None)}})
                     no_round_count += 1
                     continue
                 round_number_key = form["roundNumber"]
@@ -1240,7 +1252,7 @@ class LQASStatsViewSet(viewsets.ViewSet):
                     round_number = round_number_key[-1]
                 else:
                     skipped_forms_list.append(
-                        {form["_id"]: {"round": form["roundNumber"], "date": form["Date_of_LQAS"]}}
+                        {form["_id"]: {"round": form["roundNumber"], "date": form.get("Date_of_LQAS", None)}}
                     )
                     unknown_round += 1
                     continue
@@ -1260,7 +1272,9 @@ class LQASStatsViewSet(viewsets.ViewSet):
                     day_country_not_found[country.name][today_string] += 1
                     form_campaign_not_found_count += 1
                     continue
-
+                if form.get("Response", None) and campaign:
+                    debug_response.add((campaign.obr_name, form["Response"]))
+                    # print("response", form["Response"])
                 campaign_name = campaign.obr_name
                 total_sites_visited = 0
                 total_Child_FMD = 0
@@ -1333,7 +1347,8 @@ class LQASStatsViewSet(viewsets.ViewSet):
                     d["total_sites_visited"] = d["total_sites_visited"] + total_sites_visited
                     d["district"] = district.id
                     d["region_name"] = district.parent.name
-
+            print("(----------------------------)")
+            print(country.name, debug_response)
         add_nfm_stats_for_rounds(campaign_stats, nfm_reasons_per_district_per_campaign, "nfm_stats")
         add_nfm_stats_for_rounds(campaign_stats, nfm_abs_reasons_per_district_per_campaign, "nfm_abs_stats")
         format_caregiver_stats(campaign_stats)
@@ -1343,14 +1358,16 @@ class LQASStatsViewSet(viewsets.ViewSet):
         )
         for campaign_stat in campaign_stats.values():
             # Ensure round that might not have data are present.
-            for round in campaign_stat["campaign"].rounds.all():
-                # this actually make an entry thanks to the defaultdict
-                # noinspection PyStatementEffect
-                campaign_stat["rounds"][str(round.number)]
+            campaign_stat_campaign = campaign_stat.get("campaign", None)
+            if campaign_stat_campaign:
+                for round in campaign_stat["campaign"].rounds.all():
+                    # this actually make an entry thanks to the defaultdict
+                    # noinspection PyStatementEffect
+                    campaign_stat["rounds"][str(round.number)]
+                del campaign_stat["campaign"]
             for round_number, round in campaign_stat["rounds"].items():
                 round["number"] = int(round_number)
             campaign_stat["rounds"] = list(campaign_stat["rounds"].values())
-            del campaign_stat["campaign"]
 
         response = {
             "stats": campaign_stats,

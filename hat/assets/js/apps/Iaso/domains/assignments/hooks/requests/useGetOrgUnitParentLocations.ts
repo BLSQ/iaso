@@ -11,12 +11,12 @@ import { OrgUnit } from '../../../orgUnits/types/orgUnit';
 import { OrgUnitShape } from '../../types/locations';
 
 type Props = {
-    orgUnitParentId: number | undefined;
+    orgUnitParentIds: number[];
     baseOrgunitType: string | undefined;
 };
 
 export const useGetOrgUnitParentLocations = ({
-    orgUnitParentId,
+    orgUnitParentIds,
     baseOrgunitType,
 }: Props): UseQueryResult<OrgUnitShape[], Error> => {
     const params = {
@@ -24,7 +24,7 @@ export const useGetOrgUnitParentLocations = ({
         asLocation: true,
         limit: 5000,
         order: 'id',
-        orgUnitParentId,
+        orgUnitParentIds: orgUnitParentIds.join(','),
         geography: 'shape',
         onlyDirectChildren: false,
         page: 1,
@@ -38,7 +38,7 @@ export const useGetOrgUnitParentLocations = ({
         () => getRequest(url),
         undefined,
         {
-            enabled: Boolean(orgUnitParentId) && Boolean(baseOrgunitType),
+            enabled: orgUnitParentIds?.length > 0 && Boolean(baseOrgunitType),
             staleTime: 1000 * 60 * 15, // in MS
             cacheTime: 1000 * 60 * 5,
             select: (orgUnits: OrgUnit[]) => {

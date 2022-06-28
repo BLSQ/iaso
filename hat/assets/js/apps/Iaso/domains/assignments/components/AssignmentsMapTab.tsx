@@ -118,7 +118,7 @@ export const AssignmentsMapTab: FunctionComponent<Props> = ({
             ? currentTeam.users_details
             : currentTeam?.sub_teams_details;
 
-    const getOrgUnitParentId = useCallback(() => {
+    const getOrgUnitParentIds = useCallback(() => {
         // change parent regarding the team selected
         // if no assignation use planning?.org_unit,
         // else use assignation
@@ -142,7 +142,7 @@ export const AssignmentsMapTab: FunctionComponent<Props> = ({
 
     const { data: locations, isFetching: isFetchingLocations } =
         useGetOrgUnitLocations({
-            orgUnitParentIds: getOrgUnitParentId(),
+            orgUnitParentIds: getOrgUnitParentIds(),
             baseOrgunitType,
             assignments,
             allAssignments,
@@ -153,7 +153,7 @@ export const AssignmentsMapTab: FunctionComponent<Props> = ({
 
     const { data: parentLocations, isFetching: isFetchingParentLocations } =
         useGetOrgUnitParentLocations({
-            orgUnitParentId: planning?.org_unit,
+            orgUnitParentIds: getOrgUnitParentIds(),
             baseOrgunitType:
                 parentPicking === 'true' ? parentOrgunitType : undefined,
         });

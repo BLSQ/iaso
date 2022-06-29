@@ -1,8 +1,11 @@
 from django.contrib.auth.models import User
 from django.db.models import Q
+from django.shortcuts import get_object_or_404
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import serializers, filters, permissions
+from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated
+from rest_framework.response import Response
 
 from hat.audit.models import Modification
 from iaso.api.common import ModelViewSet, DeletionFilterBackend, ReadOnlyOrHasPermission
@@ -443,6 +446,23 @@ class AssignmentViewSet(AuditMixin, ModelViewSet):
     def get_queryset(self):
         user = self.request.user
         return self.queryset.filter_for_user(user)
+
+    @action(methods=["POST"], detail=False)
+    def bulk_create_assignments(self, request):
+        planning_id = request.data["planning"]
+        org_units_ids = request.data["org_units"]
+        team_id = request.data["team"]
+        author = request.user
+        assignments_list = []
+        for ou_id in org_units_ids:
+            ou = get_object_or_404(OrgUnit, pk=ou_id)
+            planning = get_object_or_404(Planning, pk=planning_id)
+            team = get_object_or_404(Team, pk=team_id)
+            assignment = Assignment.objects.create(planning=planning, org_unit=ou, team=team, created_by=author)
+            assignment.save()
+            assignments_list.append(assignment)
+        serializer = AssignmentSerializer(assignments_list, many=True, context={'request': request})
+        return Response(serializer.data)
 
 
 # noinspection PyMethodMayBeStatic

@@ -119,7 +119,7 @@ const MESSAGES = defineMessages({
     },
     disabled: {
         defaultMessage: 'Already assigned',
-        id: 'iaso.assignment..disabled',
+        id: 'iaso.assignment.map.disabled',
     },
     parent: {
         defaultMessage: 'Parent',

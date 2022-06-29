@@ -580,6 +580,9 @@ class AssignmentAPITestCase(APITestCase):
         cls.child4 = OrgUnit.objects.create(
             version=version, parent=root_org_unit, name="child4", org_unit_type=org_unit_type
         )
+        cls.child5 = OrgUnit.objects.create(
+            version=version, parent=root_org_unit, name="child4", org_unit_type=org_unit_type
+        )
         OrgUnit.objects.create(version=version, parent=root_org_unit, name="child2")
 
         cls.planning = Planning.objects.create(
@@ -677,6 +680,39 @@ class AssignmentAPITestCase(APITestCase):
 
         response = self.client.post("/api/microplanning/assignments/bulk_create_assignments/", data=data, format="json")
         self.assertJSONResponse(response, 200)
+
+    def test_restore_deleted_assignment(self):
+        """restore deleted assignment if we try to create a new assignment with a previously assigned OU"""
+
+        user_with_perms = self.create_user_with_profile(
+            username="user_with_perms", account=self.account, permissions=["iaso_planning"]
+        )
+        self.client.force_authenticate(user_with_perms)
+        data = {
+            "planning": self.planning.id,
+            "user": self.user.id,
+            "org_unit": self.child2.id,
+        }
+
+        self.client.post("/api/microplanning/assignments/", data=data, format="json")
+
+        deleted_assignment = Assignment.objects.last()
+
+        self.client.delete("/api/microplanning/assignments/{}".format(self.child2.id))
+
+        data = {
+            "planning": self.planning.id,
+            "user": self.user.id,
+            "org_units": [self.child2.id],
+            "team": self.team1.id,
+        }
+
+        response = self.client.post("/api/microplanning/assignments/bulk_create_assignments/", data=data, format="json")
+
+        last_created_assignment = Assignment.objects.last()
+
+        self.assertJSONResponse(response, 200)
+        self.assertEqual(last_created_assignment.id, deleted_assignment.id)
 
     def test_no_perm_create(self):
         self.client.force_authenticate(self.user)

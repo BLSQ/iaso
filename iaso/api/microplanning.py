@@ -458,9 +458,18 @@ class AssignmentViewSet(AuditMixin, ModelViewSet):
             ou = get_object_or_404(OrgUnit, pk=ou_id)
             planning = get_object_or_404(Planning, pk=planning_id)
             team = get_object_or_404(Team, pk=team_id)
-            assignment = Assignment.objects.create(planning=planning, org_unit=ou, team=team, created_by=author)
-            assignment.save()
-            assignments_list.append(assignment)
+            if Assignment.objects.filter(org_unit=ou).count() == 1:
+                deleted_assignment = Assignment.objects.get(org_unit=ou)
+                if deleted_assignment.deleted_at is not None:
+                    deleted_assignment.planning = planning
+                    deleted_assignment.org_unit = ou
+                    deleted_assignment.team = team
+                    deleted_assignment.created_by = author
+                    deleted_assignment.save()
+            else:
+                assignment = Assignment.objects.create(planning=planning, org_unit=ou, team=team, created_by=author)
+                assignment.save()
+                assignments_list.append(assignment)
         serializer = AssignmentSerializer(assignments_list, many=True, context={"request": request})
         return Response(serializer.data)
 

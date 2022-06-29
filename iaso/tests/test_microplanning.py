@@ -672,12 +672,11 @@ class AssignmentAPITestCase(APITestCase):
             "planning": self.planning.id,
             "user": self.user.id,
             "org_units": [self.child3.id, self.child4.id],
-            "team": self.team1.id
+            "team": self.team1.id,
         }
 
         response = self.client.post("/api/microplanning/assignments/bulk_create_assignments/", data=data, format="json")
         self.assertJSONResponse(response, 200)
-
 
     def test_no_perm_create(self):
         self.client.force_authenticate(self.user)

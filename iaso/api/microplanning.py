@@ -461,7 +461,7 @@ class AssignmentViewSet(AuditMixin, ModelViewSet):
             assignment = Assignment.objects.create(planning=planning, org_unit=ou, team=team, created_by=author)
             assignment.save()
             assignments_list.append(assignment)
-        serializer = AssignmentSerializer(assignments_list, many=True, context={'request': request})
+        serializer = AssignmentSerializer(assignments_list, many=True, context={"request": request})
         return Response(serializer.data)
 
 

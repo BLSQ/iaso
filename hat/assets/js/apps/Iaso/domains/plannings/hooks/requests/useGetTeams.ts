@@ -21,19 +21,23 @@ export const useGetTeams = (
 ): UseQueryResult<DropdownOptions<string>, Error> => {
     const queryKey: any[] = ['teams', projectId];
     // @ts-ignore
-    return useSnackQuery(queryKey, () => getTeams(), undefined, {
-        select: data => {
-            if (!data) return [];
-            return data
-                .filter(team =>
-                    projectId ? team.project === projectId : Boolean(team),
-                )
-                .map(team => {
-                    return {
-                        value: team.id.toString(),
-                        label: team.name,
-                    };
-                });
+    return useSnackQuery({
+        queryKey,
+        queryFn: () => getTeams(),
+        options: {
+            select: data => {
+                if (!data) return [];
+                return data
+                    .filter(team =>
+                        projectId ? team.project === projectId : Boolean(team),
+                    )
+                    .map(team => {
+                        return {
+                            value: team.id.toString(),
+                            label: team.name,
+                        };
+                    });
+            },
         },
     });
 };

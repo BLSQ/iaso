@@ -1,25 +1,30 @@
 import { useMemo } from 'react';
 import { object, string, number, array, ObjectSchema } from 'yup';
-// @ts-ignore
-import { useSafeIntl } from 'bluesquare-components';
-import MESSAGES from './messages';
+import { ValidationError } from '../../types/utils';
+import { SaveTeamQuery } from './hooks/requests/useSaveTeam';
+import { useAPIErrorValidator } from '../../libs/validation';
 
-export const useTeamValidation = (): ObjectSchema<any> => {
-    const { formatMessage } = useSafeIntl();
-    const errorMessage = formatMessage(MESSAGES.requiredField);
-    // Tried the typescript integration, but Type casting was crap
+export const useTeamValidation = (
+    errors: ValidationError = {},
+    payload: Partial<SaveTeamQuery>,
+): ObjectSchema<any> => {
+    const apiValidator = useAPIErrorValidator<Partial<SaveTeamQuery>>(
+        errors,
+        payload,
+    );
+
     const schema = useMemo(
         () =>
             object().shape({
-                name: string().nullable().required(errorMessage),
+                name: string().nullable().required('requiredField'),
                 description: string().nullable(),
-                project: number().nullable().required(errorMessage),
-                subTeams: array().of(number()),
-                manager: string().nullable().required(errorMessage),
+                project: number().nullable().required('requiredField'),
+                subTeams: array().of(number()).test(apiValidator('subTeams')),
+                manager: string().nullable().required('requiredField'),
                 type: string().nullable(),
                 users: array().of(number()),
             }),
-        [errorMessage],
+        [apiValidator],
     );
     return schema;
 };

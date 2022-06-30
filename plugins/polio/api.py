@@ -1148,11 +1148,11 @@ class LQASStatsViewSet(viewsets.ViewSet):
             "{0}-{1}-LQAS".format(request.user.id, request.query_params["country_id"]), version=CACHE_VERSION
         )
 
-        # if not request.user.is_anonymous and cached_response:
-        #     response = json.loads(cached_response)
-        #     cached_date = make_aware(datetime.utcfromtimestamp(response["cache_creation_date"]))
-        #     if latest_campaign_update and cached_date > latest_campaign_update:
-        #         return JsonResponse(response)
+        if not request.user.is_anonymous and cached_response:
+            response = json.loads(cached_response)
+            cached_date = make_aware(datetime.utcfromtimestamp(response["cache_creation_date"]))
+            if latest_campaign_update and cached_date > latest_campaign_update:
+                return JsonResponse(response)
 
         config = get_object_or_404(Config, slug="lqas-config")
         skipped_forms_list = []

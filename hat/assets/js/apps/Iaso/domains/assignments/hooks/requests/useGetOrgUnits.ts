@@ -156,7 +156,7 @@ type Props = {
     currentType: 'TEAM_OF_TEAMS' | 'TEAM_OF_USERS' | undefined;
 };
 
-export const useGetOrgUnitLocations = ({
+export const useGetOrgUnits = ({
     orgUnitParentIds,
     baseOrgunitType,
     assignments,

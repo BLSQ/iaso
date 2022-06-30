@@ -614,7 +614,7 @@ class IMStatsViewSet(viewsets.ViewSet):
         no_round_count = 0
         unknown_round = 0
         skipped_forms = {"count": 0, "no_round": 0, "unknown_round": unknown_round, "forms_id": skipped_forms_list}
-
+        find_lqas_im_campaign_cached = lru_cache(maxsize=None)(find_lqas_im_campaign)
         form_count = 0
         fully_mapped_form_count = 0
         base_stats = lambda: {"total_child_fmd": 0, "total_child_checked": 0, "total_sites_visited": 0}
@@ -754,9 +754,9 @@ class IMStatsViewSet(viewsets.ViewSet):
                     today = datetime.strptime(today_string, "%Y-%m-%d").date()
                 else:
                     today = None
-                campaign = find_lqas_im_campaign(campaigns, today, country, round_number, "im")
+                campaign = find_lqas_im_campaign_cached(campaigns, today, country, round_number, "im")
                 if not campaign:
-                    campaign = find_lqas_im_campaign(campaigns, today, country, None, "im")
+                    campaign = find_lqas_im_campaign_cached(campaigns, today, country, None, "im")
                     if campaign:
                         campaign_name = campaign.obr_name
                         campaign_stats[campaign_name]["bad_round_number"] += 1

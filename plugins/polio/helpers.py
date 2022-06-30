@@ -12,6 +12,7 @@ def get_url_content(url, login, password, minutes=60):
     delta = now() - cached_response.updated_at
     if created or delta > timedelta(minutes=minutes):
         response = requests.get(url, auth=(login, password))
+        response.raise_for_status()
         cached_response.content = response.text
         cached_response.save()
         j = response.json()

@@ -18,7 +18,14 @@ except ImportError:
 def get_or_create_org_unit_type(name: str, project: Project, depth: int):
     out = OrgUnitType.objects.filter(projects=project, name=name).first()
     if not out:
-        out, created = OrgUnitType.objects.get_or_create(name=name, short_name=name[:4], depth=depth)
+        count = OrgUnitType.objects.filter(name=name, short_name=name[:4], depth=depth).count()
+        if count == 0:
+            out = OrgUnitType.objects.create(name=name, short_name=name[:4], depth=depth)
+            out.save()
+        elif count > 1:
+            out = OrgUnitType.objects.filter(name=name, short_name=name[:4], depth=depth, projects=project).first()
+        else:
+            out = OrgUnitType.objects.get(name=name, short_name=name[:4], depth=depth)
         out.projects.add(project)
     return out
 

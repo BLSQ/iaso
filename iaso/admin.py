@@ -310,6 +310,7 @@ class PlanningAdmin(admin.ModelAdmin):
                     "created_at",
                     "created_by",
                     "updated_at",
+                    "deleted_at",
                 )
             },
         ),

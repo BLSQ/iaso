@@ -1,6 +1,6 @@
 import csv
 
-from django.contrib.auth.models import User
+from django.contrib.auth.models import User, Permission
 
 from iaso import models as m
 from iaso.models import Profile, BulkCreateUserCsvFile
@@ -61,6 +61,26 @@ class BulkCreateCsvTestCase(APITestCase):
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(users), 6)
         self.assertEqual(len(profiles), 6)
+
+    def test_upload_valid_csv_with_perms(self):
+        self.client.force_authenticate(self.yoda)
+        self.sw_source.projects.set([self.project])
+
+        iaso_forms = Permission.objects.get(codename='iaso_forms')
+        iaso_submissions = Permission.objects.get(codename='iaso_submissions')
+
+        with open("iaso/tests/fixtures/test_user_bulk_create_valid_with_perm.csv") as csv_users:
+            response = self.client.post(f"/api/bulkcreateuser/", {"file": csv_users})
+
+        pollux = User.objects.get(username="pollux")
+        pollux_perms = pollux.user_permissions.all()
+        has_perms = False
+        if iaso_forms and iaso_submissions in pollux_perms:
+            has_perms = True
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(has_perms, True)
+
 
     def test_upload_invalid_mail_csv(self):
         self.client.force_authenticate(self.yoda)

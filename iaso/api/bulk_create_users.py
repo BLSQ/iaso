@@ -1,6 +1,6 @@
 import io
 
-from django.contrib.auth.models import User
+from django.contrib.auth.models import User, Permission
 from django.contrib.auth.password_validation import validate_password
 from django.core.exceptions import ValidationError, ObjectDoesNotExist, MultipleObjectsReturned
 from django.core.files.base import ContentFile
@@ -55,6 +55,8 @@ class BulkCreateUserFromCsvViewSet(ModelViewSet):
     @transaction.atomic
     def create(self, request, *args, **kwargs):
         if request.FILES:
+            iaso_forms = Permission.objects.get(codename='iaso_forms')
+            iaso_submissions = Permission.objects.get(codename='iaso_submissions')
             try:
                 user_csv = request.FILES["file"]
                 user_csv_decoded = user_csv.read().decode("utf-8")
@@ -90,6 +92,7 @@ class BulkCreateUserFromCsvViewSet(ModelViewSet):
                             )
                             validate_password(row[csv_indexes.index("password")], user)
                             user.set_password(row[csv_indexes.index("password")])
+                            user.save()
                         except ValidationError as e:
                             raise serializers.ValidationError(
                                 {"error": "Operation aborted. Error at row %d. %s" % (i, "; ".join(e.messages))}
@@ -156,8 +159,14 @@ class BulkCreateUserFromCsvViewSet(ModelViewSet):
                                             "again. Use Orgunit ID instead of name.".format(ou, i)
                                         }
                                     )
-                    user.save()
                     profile = Profile.objects.create(account=request.user.iaso_profile.account, user=user)
+                    try:
+                        if row[csv_indexes.index("role")].upper() == "SUPERVISEUR":
+                            user.user_permissions.add(iaso_forms)
+                            user.user_permissions.add(iaso_submissions)
+                    except ValueError:
+                        pass
+                    user.save()
                     if row[csv_indexes.index("profile_language")]:
                         language = row[csv_indexes.index("profile_language")].lower()
                         profile.language = language
@@ -169,6 +178,7 @@ class BulkCreateUserFromCsvViewSet(ModelViewSet):
                     csv_file = csv_file.to_csv(path_or_buf=None, index=False)
                     content_file = ContentFile(csv_file.encode("utf-8"))
                     file_instance.file.save(f"{file_instance.id}.csv", content_file)
+                    profile.save()
                 else:
                     csv_indexes = row
                 i += 1

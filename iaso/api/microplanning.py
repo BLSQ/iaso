@@ -465,6 +465,7 @@ class AssignmentViewSet(AuditMixin, ModelViewSet):
                     deleted_assignment.org_unit = ou
                     deleted_assignment.team = team
                     deleted_assignment.created_by = author
+                    deleted_assignment.deleted_at = None
                     deleted_assignment.save()
             else:
                 assignment = Assignment.objects.create(planning=planning, org_unit=ou, team=team, created_by=author)

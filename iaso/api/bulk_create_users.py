@@ -55,6 +55,7 @@ class BulkCreateUserFromCsvViewSet(ModelViewSet):
     @transaction.atomic
     def create(self, request, *args, **kwargs):
         if request.FILES:
+            user_access_ou = OrgUnit.objects.filter_for_user_and_app_id(request.user, None)
             iaso_forms = Permission.objects.get(codename="iaso_forms")
             iaso_submissions = Permission.objects.get(codename="iaso_submissions")
             try:
@@ -114,7 +115,7 @@ class BulkCreateUserFromCsvViewSet(ModelViewSet):
                                 if int(ou):
                                     try:
                                         ou = OrgUnit.objects.get(id=ou)
-                                        if ou not in OrgUnit.objects.filter_for_user_and_app_id(request.user, None):
+                                        if ou not in user_access_ou:
                                             raise serializers.ValidationError(
                                                 {
                                                     "error": "Operation aborted. Invalid OrgUnit {0} at row : {1}. "

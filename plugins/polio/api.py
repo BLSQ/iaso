@@ -1148,11 +1148,11 @@ class LQASStatsViewSet(viewsets.ViewSet):
             "{0}-{1}-LQAS".format(request.user.id, request.query_params["country_id"]), version=CACHE_VERSION
         )
 
-        if not request.user.is_anonymous and cached_response:
-            response = json.loads(cached_response)
-            cached_date = make_aware(datetime.utcfromtimestamp(response["cache_creation_date"]))
-            if latest_campaign_update and cached_date > latest_campaign_update:
-                return JsonResponse(response)
+        # if not request.user.is_anonymous and cached_response:
+        #     response = json.loads(cached_response)
+        #     cached_date = make_aware(datetime.utcfromtimestamp(response["cache_creation_date"]))
+        #     if latest_campaign_update and cached_date > latest_campaign_update:
+        #         return JsonResponse(response)
 
         config = get_object_or_404(Config, slug="lqas-config")
         skipped_forms_list = []
@@ -1291,7 +1291,9 @@ class LQASStatsViewSet(viewsets.ViewSet):
                     total_sites_visited += 1
                     # check finger
                     Child_FMD = HH.get("Count_HH/FM_Child", 0)
-                    Child_Checked = HH.get("Count_HH/Child_Checked", 0)
+                    Child_Checked = HH.get("Count_HH/Child_Checked", None)
+                    if not Child_Checked:
+                        Child_Checked = HH.get("Count_HH/Children_seen", 0)
                     if Child_FMD == "Y":
                         total_Child_FMD += 1
                     else:

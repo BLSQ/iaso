@@ -679,14 +679,11 @@ class IMStatsViewSet(viewsets.ViewSet):
 
             cached_response, created = URLCache.objects.get_or_create(url=country_config["url"])
             delta = now() - cached_response.updated_at
-            # if created or delta > timedelta(seconds=10):
-            if created or delta > timedelta(minutes=60 * 24 * 10):
+            if created or delta > timedelta(minutes=60 * 24 * 10) or not cached_response.content:
                 print("fetching", country_config["url"])
                 response = requests.get(
                     country_config["url"], auth=(country_config["login"], country_config["password"])
                 )
-                print("fetched")
-                print(len(response.text))
                 cached_response.content = response.text
                 cached_response.save()
                 forms = response.json()

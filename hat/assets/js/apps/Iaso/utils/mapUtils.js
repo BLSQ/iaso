@@ -59,11 +59,11 @@ export const getLatLngBounds = items => {
     return bounds;
 };
 
-export const getShapesBounds = shapes => {
+export const getShapesBounds = (shapes, shapeKey = 'geo_json') => {
     const groups = [];
     shapes.forEach(s => {
         const shapeGroup = new L.FeatureGroup();
-        const shape = L.geoJSON(s.geo_json);
+        const shape = L.geoJSON(s[shapeKey]);
         shape.addTo(shapeGroup);
         groups.push(shapeGroup);
     });
@@ -118,7 +118,7 @@ export const circleColorMarkerOptions = color => ({
     fillOpacity: 1,
     weight: 2,
     color: Color(color).darken(0.5),
-    radius: 5,
+    radius: 8,
 });
 
 class ZoomControl_ extends MapControl {

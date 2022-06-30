@@ -1,4 +1,4 @@
-import { useState, useCallback, useMemo } from 'react';
+import { useState, useCallback, useMemo, useEffect } from 'react';
 import { useDispatch } from 'react-redux';
 import { redirectTo } from '../routing/actions';
 
@@ -25,6 +25,7 @@ const removePaginationParams = params => {
 export const useFilterState = (
     baseUrl: string,
     params: Record<string, unknown>,
+    withPagination = true,
 ): FilterState => {
     const [filtersUpdated, setFiltersUpdated] = useState(false);
     const dispatch = useDispatch();
@@ -39,10 +40,12 @@ export const useFilterState = (
                 ...params,
                 ...filters,
             };
-            tempParams.page = '1';
+            if (withPagination) {
+                tempParams.page = '1';
+            }
             dispatch(redirectTo(baseUrl, tempParams));
         }
-    }, [filtersUpdated, params, filters, dispatch, baseUrl]);
+    }, [filtersUpdated, params, filters, dispatch, baseUrl, withPagination]);
 
     const handleChange = useCallback(
         (key, value) => {
@@ -54,6 +57,10 @@ export const useFilterState = (
         },
         [filters],
     );
+
+    useEffect(() => {
+        setFilters(removePaginationParams(params));
+    }, [params]);
 
     return useMemo(() => {
         return {

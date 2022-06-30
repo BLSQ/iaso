@@ -89,7 +89,6 @@ const useBaseSnackMutation = <
 ): UseMutationResult<Data, Error, Variables, Context> => {
     const dispatch = useDispatch();
     const queryClient = useQueryClient();
-
     const newOptions: Omit<
         UseMutationOptions<any, any, any, any>,
         'mutationFn'

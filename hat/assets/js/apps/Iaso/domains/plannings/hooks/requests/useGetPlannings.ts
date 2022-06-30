@@ -11,7 +11,13 @@ import {
 import { endpoint } from '../../constants';
 import { PlanningParams } from '../../types';
 
-type PlanningApi = {
+export type OrgUnitDetails = {
+    id: number;
+    name: string;
+    org_unit_type?: number;
+};
+
+export type PlanningApi = {
     id: number;
     name: string;
     description?: string;
@@ -20,6 +26,7 @@ type PlanningApi = {
     published_at?: string;
     started_at?: string;
     ended_at?: string;
+    org_unit_details: OrgUnitDetails;
 };
 
 type Planning = PlanningApi & {

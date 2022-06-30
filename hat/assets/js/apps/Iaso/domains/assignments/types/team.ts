@@ -1,6 +1,4 @@
 /* eslint-disable camelcase */
-import { UrlParams } from '../../../types/table';
-
 export type SubTeam = {
     id: number;
     name: string;
@@ -27,16 +25,11 @@ export type Team = {
     deleted_at?: string;
     parent?: number;
 };
-export type TeamFilterParams = {
-    dateTo?: string;
-    dateFrom?: string;
-    project?: number;
-};
 
-export type TeamParams = UrlParams &
-    TeamFilterParams & {
-        select?: (
-            // eslint-disable-next-line no-unused-vars
-            data: Array<Team>,
-        ) => Array<any>;
-    };
+export type DropdownTeamsOptions = {
+    label: string;
+    value: string;
+    original: Team;
+    color: string;
+};
+export type Teams = Team[];

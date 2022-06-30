@@ -18,7 +18,6 @@ import AssessmentIcon from '@material-ui/icons/Assessment';
 import EnityIcon from '@material-ui/icons/Domain';
 import GroupIcon from '@material-ui/icons/Group';
 import AssignmentIcon from '@material-ui/icons/Assignment';
-import AssignmentIndIcon from '@material-ui/icons/AssignmentInd';
 
 import OrgUnitSvg from '../components/svg/OrgUnitSvgComponent';
 import DHIS2Svg from '../components/svg/DHIS2SvgComponent';
@@ -166,12 +165,6 @@ const menuItems = defaultSourceId => [
                 permissions: paths.planningPath.permissions,
                 key: 'list',
                 icon: props => <FormatListBulleted {...props} />,
-            },
-            {
-                label: MESSAGES.assignments,
-                permissions: paths.assignmentsPath.permissions,
-                key: 'assignments',
-                icon: props => <AssignmentIndIcon {...props} />,
             },
         ],
     },

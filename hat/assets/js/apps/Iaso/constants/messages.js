@@ -109,6 +109,22 @@ const MESSAGES = defineMessages({
         defaultMessage: 'Go to DHIS2',
         id: 'iaso.label.dhis2Link',
     },
+    legend: {
+        defaultMessage: 'Legend',
+        id: 'iaso.label.map.legend',
+    },
+    unselected: {
+        defaultMessage: 'Not assigned',
+        id: 'iaso.assignment.map.unselected',
+    },
+    disabled: {
+        defaultMessage: 'Already assigned',
+        id: 'iaso.assignment.map.disabled',
+    },
+    parent: {
+        defaultMessage: 'Parent',
+        id: 'iaso.assignment.map.parent',
+    },
 });
 
 export default MESSAGES;

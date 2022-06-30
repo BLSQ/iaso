@@ -37,6 +37,12 @@ class AuditTeamSerializer(serializers.ModelSerializer):
         fields = "__all__"
 
 
+class NestedOrgUnitSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = OrgUnit
+        fields = ["id", "name", "org_unit_type"]
+
+
 class TeamSerializer(serializers.ModelSerializer):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -80,6 +86,21 @@ class TeamSerializer(serializers.ModelSerializer):
         if self.instance:
             recursive_check(self.instance, values)
         return values
+
+    def create(self, validated_data):
+        users = validated_data.pop("users")
+        sub_teams = validated_data.pop("sub_teams")
+
+        team = Team.objects.create(**validated_data)
+        for sub_team in sub_teams:
+            team.sub_teams.add(sub_team)
+
+        team.save(force_recalculate=True)
+
+        for user in users:
+            team.users.add(user)
+
+        return team
 
     def validate(self, attrs):
         validated_data = super(TeamSerializer, self).validate(attrs)
@@ -141,7 +162,7 @@ class TeamAncestorFilterBackend(filters.BaseFilterBackend):
                 raise serializers.ValidationError(
                     {"ancestor": "Select a valid choice. That choice is not one of the available choices."}
                 )
-            queryset = queryset.filter(path__descendants=ancestor.path).exclude(id=ancestor.id)
+            queryset = queryset.filter(path__descendants=ancestor.path)
 
         return queryset
 
@@ -151,7 +172,7 @@ class AuditMixin:
 
     def perform_create(self, serializer):
         # noinspection PyUnresolvedReferences
-        super().perform_update(serializer)
+        super().perform_create(serializer)
         instance = serializer.instance
 
         serialized = [self.audit_serializer(instance).data]
@@ -198,7 +219,6 @@ class TeamViewSet(AuditMixin, ModelViewSet):
 
     Read access for all auth users.
     Write access necessitate iaso_teams permissions.
-
     The tree assignation are handled by settings the child sub teams (parent is readonly)
     """
 
@@ -244,6 +264,7 @@ class PlanningSerializer(serializers.ModelSerializer):
             "team_details",
             "team",
             "org_unit",
+            "org_unit_details",
             "forms",
             "project",
             "description",
@@ -254,6 +275,7 @@ class PlanningSerializer(serializers.ModelSerializer):
         read_only_fields = ["created_at", "parent"]
 
     team_details = NestedTeamSerializer(source="team", read_only=True)
+    org_unit_details = NestedOrgUnitSerializer(source="org_unit", read_only=True)
 
     def validate(self, attrs):
         validated_data = super().validate(attrs)
@@ -358,14 +380,10 @@ class AssignmentSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Assignment
-        fields = [
-            "id",
-            "planning",
-            "user",
-            "team",
-            "org_unit",
-        ]
+        fields = ["id", "planning", "user", "team", "org_unit", "org_unit_details"]
         read_only_fields = ["created_at"]
+
+    org_unit_details = NestedOrgUnitSerializer(source="org_unit", read_only=True)
 
     def validate(self, attrs):
         validated_data = super().validate(attrs)
@@ -377,8 +395,8 @@ class AssignmentSerializer(serializers.ModelSerializer):
         assigned_team = validated_data.get("team", self.instance.team if self.instance else None)
         if assigned_team and assigned_user:
             raise serializers.ValidationError("Cannot assign on both team and users")
-        if not assigned_team and not assigned_user:
-            raise serializers.ValidationError("Should be at least an assigned team or user")
+        # if not assigned_team and not assigned_user:
+        #     raise serializers.ValidationError("Should be at least an assigned team or user")
 
         planning = validated_data.get("planning", self.instance.planning if self.instance else None)
         org_unit: OrgUnit = validated_data.get("org_unit", self.instance.org_unit if self.instance else None)

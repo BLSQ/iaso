@@ -24,6 +24,7 @@ def build_org_units_queryset(queryset, params, profile):
     default_version = params.get("defaultVersion", None)
 
     org_unit_parent_id = params.get("orgUnitParentId", None)
+    org_unit_parent_ids = params.get("orgUnitParentIds", None)
 
     linked_to = params.get("linkedTo", None)
     link_validated = params.get("linkValidated", True)
@@ -150,6 +151,11 @@ def build_org_units_queryset(queryset, params, profile):
 
     if org_unit_parent_id:
         parent = OrgUnit.objects.get(id=org_unit_parent_id)
+        queryset = queryset.hierarchy(parent)
+
+    if org_unit_parent_ids:
+        parent_ids = org_unit_parent_ids.split(",")
+        parent = OrgUnit.objects.filter(id__in=parent_ids)
         queryset = queryset.hierarchy(parent)
 
     if linked_to:

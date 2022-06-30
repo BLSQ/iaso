@@ -8,7 +8,7 @@ export type Profile = {
     last_name: string;
     email: string;
     language?: null | undefined | string;
-    user_id: string;
+    user_id: number;
 };
 
 type User = {
@@ -55,7 +55,7 @@ type User = {
     dhis2_id?: string;
 };
 
-const getDisplayName = (user: User | Profile): string => {
+export const getDisplayName = (user: User | Profile): string => {
     if (!user.first_name && !user.last_name) {
         return user.user_name;
     }

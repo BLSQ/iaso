@@ -1,12 +1,21 @@
 import React, { ReactElement } from 'react';
 // @ts-ignore
 import { IconButton as IconButtonComponent } from 'bluesquare-components';
-import MESSAGES from './messages';
+
+import { baseUrls } from '../../constants/urls';
+
 import { IntlFormatMessage } from '../../types/intl';
 import { Column } from '../../types/table';
+
 import { CreateEditPlanning } from './CreateEditPlanning/CreateEditPlanning';
 import DeleteDialog from '../../components/dialogs/DeleteDialogComponent';
 
+import { PlanningApi } from './hooks/requests/useGetPlannings';
+import MESSAGES from './messages';
+
+const getAssignmentUrl = (planning: PlanningApi): string => {
+    return `${baseUrls.assignments}/planningId/${planning.id}/team/${planning.team}`;
+};
 export const planningColumns = (
     formatMessage: IntlFormatMessage,
     // eslint-disable-next-line no-unused-vars
@@ -59,7 +68,7 @@ export const planningColumns = (
                     // TODO: limit to user permissions
                     <section>
                         <IconButtonComponent
-                            url="/"
+                            url={getAssignmentUrl(settings.row.original)}
                             icon="remove-red-eye"
                             tooltipMessage={MESSAGES.viewPlanning}
                         />

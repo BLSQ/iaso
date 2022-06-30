@@ -663,11 +663,12 @@ class IMStatsViewSet(viewsets.ViewSet):
             authorized_countries = request.user.iaso_profile.org_units.filter(org_unit_type_id__category="COUNTRY")
 
         for country_config in config.content:
+            if country_config["country_id"] != requested_country:
+                continue
             country = OrgUnit.objects.get(id=country_config["country_id"])
             if country not in authorized_countries:
                 continue
-            if country.id != requested_country:
-                continue
+
             districts_qs = (
                 OrgUnit.objects.hierarchy(country)
                 .filter(org_unit_type_id__category="DISTRICT")

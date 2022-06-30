@@ -676,20 +676,7 @@ class IMStatsViewSet(viewsets.ViewSet):
                 .prefetch_related("parent")
             )
             district_dict = _build_district_cache(districts_qs)
-
-            cached_response, created = URLCache.objects.get_or_create(url=country_config["url"])
-            delta = now() - cached_response.updated_at
-            if created or delta > timedelta(minutes=60 * 24 * 10) or not cached_response.content:
-                print("fetching", country_config["url"])
-                response = requests.get(
-                    country_config["url"], auth=(country_config["login"], country_config["password"])
-                )
-                cached_response.content = response.text
-                cached_response.save()
-                forms = response.json()
-            else:
-                print("already cached", country_config["url"])
-                forms = json.loads(cached_response.content)
+            forms = get_url_content(country_config["url"], country_config["login"], country_config["password"])
             debug_response = set()
             for form in forms:
                 form_count += 1

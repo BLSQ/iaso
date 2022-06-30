@@ -34,9 +34,9 @@ class BulkCreateUserFromCsvViewSet(ModelViewSet):
 
     Sample csv input:
 
-    username,password,email,first_name,last_name,orgunit,profile_language
+    username,password,email,first_name,last_name,orgunit,profile_language,role
 
-    simon,sim0nrule2,biobroly@bluesquarehub.com,Simon,D.,KINSHASA,fr
+    simon,sim0nrule2,biobroly@bluesquarehub.com,Simon,D.,KINSHASA,fr,SUPERVISEUR
 
     """
 
@@ -55,8 +55,8 @@ class BulkCreateUserFromCsvViewSet(ModelViewSet):
     @transaction.atomic
     def create(self, request, *args, **kwargs):
         if request.FILES:
-            iaso_forms = Permission.objects.get(codename='iaso_forms')
-            iaso_submissions = Permission.objects.get(codename='iaso_submissions')
+            iaso_forms = Permission.objects.get(codename="iaso_forms")
+            iaso_submissions = Permission.objects.get(codename="iaso_submissions")
             try:
                 user_csv = request.FILES["file"]
                 user_csv_decoded = user_csv.read().decode("utf-8")

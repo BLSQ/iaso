@@ -66,8 +66,8 @@ class BulkCreateCsvTestCase(APITestCase):
         self.client.force_authenticate(self.yoda)
         self.sw_source.projects.set([self.project])
 
-        iaso_forms = Permission.objects.get(codename='iaso_forms')
-        iaso_submissions = Permission.objects.get(codename='iaso_submissions')
+        iaso_forms = Permission.objects.get(codename="iaso_forms")
+        iaso_submissions = Permission.objects.get(codename="iaso_submissions")
 
         with open("iaso/tests/fixtures/test_user_bulk_create_valid_with_perm.csv") as csv_users:
             response = self.client.post(f"/api/bulkcreateuser/", {"file": csv_users})
@@ -80,7 +80,6 @@ class BulkCreateCsvTestCase(APITestCase):
 
         self.assertEqual(response.status_code, 200)
         self.assertEqual(has_perms, True)
-
 
     def test_upload_invalid_mail_csv(self):
         self.client.force_authenticate(self.yoda)

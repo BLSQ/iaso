@@ -69,6 +69,14 @@ const MESSAGES = defineMessages({
         id: 'iaso.forms.status',
         defaultMessage: 'Status',
     },
+    orgUnits: {
+        id: 'iaso.label.orgUnit',
+        defaultMessage: 'Org units',
+    },
+    orgUnitsParent: {
+        id: 'iaso.label.orgUnitParent',
+        defaultMessage: 'Parent {index}',
+    },
 });
 
 export default MESSAGES;

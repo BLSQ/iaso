@@ -47,12 +47,12 @@ const mapLocation = ({
             selected: [],
             unselected: [],
         },
+        all: [],
     };
     if (!orgUnits) return locations;
     orgUnits.forEach((orgUnit: OrgUnit) => {
         const baseLocation: BaseLocation = {
-            id: orgUnit.id,
-            name: orgUnit.name,
+            ...orgUnit,
             orgUnitTypeId: orgUnit.org_unit_type_id,
         };
         if (!orgUnitParentIds.find(ou => ou === orgUnit.id)) {
@@ -62,6 +62,7 @@ const mapLocation = ({
                         ...baseLocation,
                         geoJson: orgUnit.geo_json,
                     };
+                    locations.all.push(shape);
                     locations.shapes.all.push(shape);
                     const orgUnitAssignation = getOrgUnitAssignation(
                         assignments,
@@ -103,6 +104,7 @@ const mapLocation = ({
                         latitude: orgUnit.latitude,
                         longitude: orgUnit.longitude,
                     };
+                    locations.all.push(marker);
                     locations.markers.all.push(marker);
                     const orgUnitAssignation = getOrgUnitAssignation(
                         assignments,
@@ -175,6 +177,7 @@ export const useGetOrgUnits = ({
         onlyDirectChildren: false,
         page: 1,
         orgUnitTypeId: baseOrgunitType,
+        withParents: true,
     };
 
     const url = makeUrlWithParams('/api/orgunits', params);

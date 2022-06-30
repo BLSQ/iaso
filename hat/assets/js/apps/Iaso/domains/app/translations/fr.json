@@ -352,6 +352,7 @@
     "iaso.label.notValid": "Non valide(s)",
     "iaso.label.ok": "OK",
     "iaso.label.orgUnit": "Unités d'org.",
+    "iaso.label.orgUnitParent": "Parent {index}",
     "iaso.label.orgUnitsTypes": "Types d'unités d'org.",
     "iaso.label.origin": "Origine",
     "iaso.label.others": "Autres",

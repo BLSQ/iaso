@@ -357,6 +357,7 @@
     "iaso.label.notValid": "Not valid(s)",
     "iaso.label.ok": "OK",
     "iaso.label.orgUnit": "Org units",
+    "iaso.label.orgUnitParent": "Parent {index}",
     "iaso.label.orgUnitsTypes": "Organisation unit types",
     "iaso.label.origin": "Origin",
     "iaso.label.others": "Others",

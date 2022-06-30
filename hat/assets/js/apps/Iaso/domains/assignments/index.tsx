@@ -9,8 +9,6 @@ import {
     useSafeIntl,
     // @ts-ignore
     LoadingSpinner,
-    // @ts-ignore
-    useSkipEffectOnMount,
 } from 'bluesquare-components';
 
 import { redirectTo } from '../../routing/actions';
@@ -21,7 +19,7 @@ import TopBar from '../../components/nav/TopBarComponent';
 import { AssignmentsFilters } from './components/AssignmentsFilters';
 import { AssignmentsMapTab } from './components/AssignmentsMapTab';
 import { AssignmentsListTab } from './components/AssignmentsListTab';
-import { Sidebar } from './components/Sidebar';
+import { Sidebar } from './components/AssignmentsSidebar';
 
 import { AssignmentParams, AssignmentApi } from './types/assigment';
 import { Team, SubTeam, User } from './types/team';
@@ -45,7 +43,6 @@ export const Assignments: FunctionComponent<Props> = ({ params }) => {
     const { formatMessage } = useSafeIntl();
     const dispatch = useDispatch();
     const classes: Record<string, string> = useStyles();
-
     const [tab, setTab] = useState(params.tab ?? 'map');
     const [currentTeam, setCurrentTeam] = useState<Team>();
     const [parentSelected, setParentSelected] = useState<
@@ -54,6 +51,15 @@ export const Assignments: FunctionComponent<Props> = ({ params }) => {
     const [selectedItem, setSelectedItem] = useState<
         SubTeam | User | undefined
     >();
+
+    const handleChangeTab = (newTab: string) => {
+        setTab(newTab);
+        const newParams = {
+            ...params,
+            tab: newTab,
+        };
+        dispatch(redirectTo(baseUrl, newParams));
+    };
 
     const { planningId, team: currentTeamId, baseOrgunitType } = params;
 
@@ -101,16 +107,6 @@ export const Assignments: FunctionComponent<Props> = ({ params }) => {
         }
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [assignments]);
-
-    useSkipEffectOnMount(() => {
-        const newParams = {
-            ...params,
-            tab,
-        };
-        if (params.tab !== tab) {
-            dispatch(redirectTo(baseUrl, newParams));
-        }
-    }, [dispatch, params.tab]);
 
     useEffect(() => {
         let newCurrentTeam;
@@ -176,7 +172,7 @@ export const Assignments: FunctionComponent<Props> = ({ params }) => {
                         root: classes.tabs,
                         indicator: classes.indicator,
                     }}
-                    onChange={(_, newtab) => setTab(newtab)}
+                    onChange={(_, newtab) => handleChangeTab(newtab)}
                 >
                     <Tab value="map" label={formatMessage(MESSAGES.map)} />
                     <Tab value="list" label={formatMessage(MESSAGES.list)} />
@@ -233,7 +229,11 @@ export const Assignments: FunctionComponent<Props> = ({ params }) => {
                                         isFetchingLocations={isFetchingOrgUnits}
                                     />
                                 )}
-                                {tab === 'list' && <AssignmentsListTab />}
+                                {tab === 'list' && (
+                                    <AssignmentsListTab
+                                        orgUnits={orgUnits?.all || []}
+                                    />
+                                )}
                             </Grid>
                         </Grid>
                     </>

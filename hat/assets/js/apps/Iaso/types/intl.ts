@@ -5,4 +5,4 @@ export type IntlMessage = {
 };
 
 // eslint-disable-next-line no-unused-vars
-export type IntlFormatMessage = (message: IntlMessage) => string;
+export type IntlFormatMessage = (message: IntlMessage, values?) => string;

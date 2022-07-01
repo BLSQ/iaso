@@ -655,7 +655,11 @@ class IMStatsViewSet(viewsets.ViewSet):
             "Tot_child_Abs_Farm",
         ]
         # Ugly fix to exclude forms known to have data so terrible it breaks the results
-        excluded_forms = ["2399548d-545e-4182-a3a0-54da841bc179", "59ca0419-798d-40ca-b690-460063329938","ec93a59a-b354-4f9d-8240-f2a05c24479e"]
+        excluded_forms = [
+            "2399548d-545e-4182-a3a0-54da841bc179",
+            "59ca0419-798d-40ca-b690-460063329938",
+            "ec93a59a-b354-4f9d-8240-f2a05c24479e",
+        ]
 
         if request.user.iaso_profile.org_units.count() == 0:
             authorized_countries = OrgUnit.objects.filter(org_unit_type_id__category="COUNTRY")
@@ -772,7 +776,7 @@ class IMStatsViewSet(viewsets.ViewSet):
 
                         for key in nfm_counts_dict:
                             round_stats["nfm_stats"][key] = round_stats["nfm_stats"][key] + nfm_counts_dict[key]
-                   
+
                         for key_abs in nfm_abs_counts_dict:
                             round_stats["nfm_abs_stats"][key_abs] = (
                                 round_stats["nfm_abs_stats"][key_abs] + nfm_abs_counts_dict[key_abs]
@@ -784,7 +788,7 @@ class IMStatsViewSet(viewsets.ViewSet):
                         d["district"] = district.id
                         d["region_name"] = district.parent.name
                         fully_mapped_form_count += 1
-                       
+
                 else:
                     day_country_not_found[country.name][today_string] += 1
                     form_campaign_not_found_count += 1

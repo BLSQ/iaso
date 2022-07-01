@@ -300,6 +300,8 @@ class PlanningAdmin(admin.ModelAdmin):
                     "forms",
                     "org_unit",
                     "team",
+                    "started_at",
+                    "ended_at",
                 ),
             },
         ),

@@ -233,58 +233,61 @@ export const Assignments: FunctionComponent<Props> = ({ params }) => {
                                 />
                             </Grid>
                             <Grid item xs={7}>
-                                <Box
-                                    width="90%"
-                                    className={
-                                        tab === 'map'
-                                            ? ''
-                                            : classes.hiddenOpacity
-                                    }
-                                >
-                                    {!isLoadingAssignments && (
-                                        <AssignmentsMapTab
-                                            planning={planning}
-                                            currentTeam={currentTeam}
+                                <Box position="relative" width="100%">
+                                    <Box
+                                        width="100%"
+                                        className={
+                                            tab === 'map'
+                                                ? ''
+                                                : classes.hiddenOpacity
+                                        }
+                                    >
+                                        {!isLoadingAssignments && (
+                                            <AssignmentsMapTab
+                                                planning={planning}
+                                                currentTeam={currentTeam}
+                                                teams={teams || []}
+                                                profiles={profiles}
+                                                params={params}
+                                                allAssignments={allAssignments}
+                                                setParentSelected={
+                                                    setParentSelected
+                                                }
+                                                childrenOrgunits={
+                                                    childrenOrgunits || []
+                                                }
+                                                parentSelected={parentSelected}
+                                                saveMultiAssignments={
+                                                    saveAssignment
+                                                }
+                                                selectedItem={selectedItem}
+                                                locations={orgUnits}
+                                                isFetchingLocations={
+                                                    isFetchingOrgUnits
+                                                }
+                                                handleSaveAssignment={
+                                                    handleSaveAssignment
+                                                }
+                                            />
+                                        )}
+                                    </Box>
+                                    {tab === 'list' && (
+                                        <AssignmentsListTab
+                                            assignments={allAssignments}
                                             teams={teams || []}
                                             profiles={profiles}
-                                            params={params}
-                                            allAssignments={allAssignments}
-                                            setParentSelected={
-                                                setParentSelected
-                                            }
-                                            childrenOrgunits={
-                                                childrenOrgunits || []
-                                            }
-                                            parentSelected={parentSelected}
-                                            saveMultiAssignments={
-                                                saveAssignment
-                                            }
-                                            selectedItem={selectedItem}
-                                            locations={orgUnits}
-                                            isFetchingLocations={
-                                                isFetchingOrgUnits
-                                            }
+                                            orgUnits={orgUnits?.all || []}
                                             handleSaveAssignment={
                                                 handleSaveAssignment
                                             }
+                                            isFetchingOrgUnits={
+                                                isLoadingAssignments ||
+                                                !orgUnits
+                                            }
+                                            selectedItem={selectedItem}
                                         />
                                     )}
                                 </Box>
-                                {tab === 'list' && (
-                                    <AssignmentsListTab
-                                        assignments={allAssignments}
-                                        teams={teams || []}
-                                        profiles={profiles}
-                                        orgUnits={orgUnits?.all || []}
-                                        handleSaveAssignment={
-                                            handleSaveAssignment
-                                        }
-                                        isFetchingOrgUnits={
-                                            isLoadingAssignments || !orgUnits
-                                        }
-                                        selectedItem={selectedItem}
-                                    />
-                                )}
                             </Grid>
                         </Grid>
                     </>

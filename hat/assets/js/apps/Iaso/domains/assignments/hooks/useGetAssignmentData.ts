@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import isEqual from 'lodash/isEqual';
 
 import { Planning } from '../types/planning';
@@ -78,8 +78,11 @@ export const useGetAssignmentData = ({
         data?: AssignmentsResult;
         isLoading: boolean;
     } = useGetAssignments({ planningId }, currentTeam);
-    const assignments = data ? data.assignments : [];
-    const allAssignments = data ? data.allAssignments : [];
+    const assignments = useMemo(() => (data ? data.assignments : []), [data]);
+    const allAssignments = useMemo(
+        () => (data ? data.allAssignments : []),
+        [data],
+    );
     const { data: orgunitTypes, isFetching: isFetchingOrgunitTypes } =
         useGetOrgUnitTypes();
     const { data: childrenOrgunits, isFetching: isFetchingChildrenOrgunits } =
@@ -88,7 +91,7 @@ export const useGetAssignmentData = ({
             baseOrgunitType,
         });
     const { mutateAsync: saveAssignment, isLoading: isSaving } =
-        useSaveAssignment(false);
+        useSaveAssignment();
     const { data: orgUnits, isFetching: isFetchingOrgUnits } = useGetOrgUnits({
         orgUnitParentIds: useGetOrgUnitParentIds({
             currentTeam,
@@ -119,54 +122,74 @@ export const useGetAssignmentData = ({
         }
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [dataProfiles]);
-
-    const setItemColor = (color, itemId) => {
-        // TODO: improve this
-        if (currentTeam?.type === 'TEAM_OF_USERS') {
-            const itemIndex = profiles.findIndex(
-                profile => profile.user_id === itemId,
-            );
-            if (itemIndex !== undefined) {
-                const newProfiles = [...profiles];
-                newProfiles[itemIndex] = {
-                    ...newProfiles[itemIndex],
-                    color,
-                };
-                setProfiles(newProfiles);
+    return useMemo(() => {
+        const setItemColor = (color, itemId) => {
+            // TODO: improve this
+            if (currentTeam?.type === 'TEAM_OF_USERS') {
+                const itemIndex = profiles.findIndex(
+                    profile => profile.user_id === itemId,
+                );
+                if (itemIndex !== undefined) {
+                    const newProfiles = [...profiles];
+                    newProfiles[itemIndex] = {
+                        ...newProfiles[itemIndex],
+                        color,
+                    };
+                    setProfiles(newProfiles);
+                }
             }
-        }
-        if (currentTeam?.type === 'TEAM_OF_TEAMS') {
-            const itemIndex = teams?.findIndex(
-                team => team.original.id === itemId,
-            );
-            if (itemIndex !== undefined && teams) {
-                const newTeams = [...teams];
-                newTeams[itemIndex] = {
-                    ...newTeams[itemIndex],
-                    color,
-                };
-                setTeams(newTeams);
+            if (currentTeam?.type === 'TEAM_OF_TEAMS') {
+                const itemIndex = teams?.findIndex(
+                    team => team.original.id === itemId,
+                );
+                if (itemIndex !== undefined && teams) {
+                    const newTeams = [...teams];
+                    newTeams[itemIndex] = {
+                        ...newTeams[itemIndex],
+                        color,
+                    };
+                    setTeams(newTeams);
+                }
             }
-        }
-    };
-    return {
-        planning,
-        assignments,
+        };
+        return {
+            planning,
+            assignments,
+            allAssignments,
+            saveAssignment,
+            teams,
+            profiles,
+            orgunitTypes,
+            childrenOrgunits,
+            orgUnits,
+            sidebarData,
+            isFetchingOrgUnits,
+            isLoadingPlanning,
+            isSaving,
+            isFetchingOrgunitTypes,
+            isFetchingChildrenOrgunits,
+            isLoadingAssignments,
+            isTeamsFetched,
+            setItemColor,
+        };
+    }, [
         allAssignments,
-        saveAssignment,
-        teams,
-        profiles,
-        orgunitTypes,
+        assignments,
         childrenOrgunits,
-        orgUnits,
-        sidebarData,
+        currentTeam?.type,
+        isFetchingChildrenOrgunits,
         isFetchingOrgUnits,
+        isFetchingOrgunitTypes,
+        isLoadingAssignments,
         isLoadingPlanning,
         isSaving,
-        isFetchingOrgunitTypes,
-        isFetchingChildrenOrgunits,
-        isLoadingAssignments,
         isTeamsFetched,
-        setItemColor,
-    };
+        orgUnits,
+        orgunitTypes,
+        planning,
+        profiles,
+        saveAssignment,
+        sidebarData,
+        teams,
+    ]);
 };

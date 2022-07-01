@@ -1,3 +1,4 @@
+import { useCallback } from 'react';
 import { UseQueryResult } from 'react-query';
 // @ts-ignore
 import { getRequest } from 'Iaso/libs/Api';
@@ -144,7 +145,6 @@ const mapLocation = ({
             }
         }
     });
-
     return locations;
 };
 
@@ -182,29 +182,37 @@ export const useGetOrgUnits = ({
 
     const url = makeUrlWithParams('/api/orgunits', params);
 
-    return useSnackQuery(
-        ['geo_json', params, baseOrgunitType],
-        () => getRequest(url),
-        undefined,
-        {
-            enabled: orgUnitParentIds?.length > 0 && Boolean(baseOrgunitType),
-            staleTime: 1000 * 60 * 15, // in MS
-            cacheTime: 1000 * 60 * 5,
-            select: (orgUnits: OrgUnit[]) => {
-                if (baseOrgunitType) {
-                    return mapLocation({
-                        orgUnits,
-                        orgUnitParentIds,
-                        baseOrgunitType,
-                        assignments,
-                        allAssignments,
-                        teams,
-                        profiles,
-                        currentType,
-                    });
-                }
-                return [];
-            },
+    const select = useCallback(
+        (orgUnits: OrgUnit[]) => {
+            if (baseOrgunitType) {
+                return mapLocation({
+                    orgUnits,
+                    orgUnitParentIds,
+                    baseOrgunitType,
+                    assignments,
+                    allAssignments,
+                    teams,
+                    profiles,
+                    currentType,
+                });
+            }
+            return [];
         },
+        [
+            baseOrgunitType,
+            orgUnitParentIds,
+            assignments,
+            allAssignments,
+            teams,
+            profiles,
+            currentType,
+        ],
     );
+
+    return useSnackQuery(['orgUnits'], () => getRequest(url), undefined, {
+        enabled: orgUnitParentIds?.length > 0 && Boolean(baseOrgunitType),
+        staleTime: 1000 * 60 * 15, // in MS
+        cacheTime: 1000 * 60 * 5,
+        select,
+    });
 };

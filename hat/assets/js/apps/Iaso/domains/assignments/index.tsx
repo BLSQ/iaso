@@ -90,10 +90,7 @@ export const Assignments: FunctionComponent<Props> = ({ params }) => {
     });
 
     const isLoading =
-        isLoadingPlanning ||
-        isLoadingAssignments ||
-        isSaving ||
-        isFetchingChildrenOrgunits;
+        isLoadingPlanning || isSaving || isFetchingChildrenOrgunits;
 
     useEffect(() => {
         if (!baseOrgunitType && assignments.length > 0) {
@@ -232,6 +229,9 @@ export const Assignments: FunctionComponent<Props> = ({ params }) => {
                                 {tab === 'list' && (
                                     <AssignmentsListTab
                                         orgUnits={orgUnits?.all || []}
+                                        isFetchingOrgUnits={
+                                            isLoadingAssignments || !orgUnits
+                                        }
                                     />
                                 )}
                             </Grid>

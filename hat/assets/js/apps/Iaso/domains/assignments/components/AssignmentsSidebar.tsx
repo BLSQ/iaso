@@ -58,7 +58,7 @@ export const Sidebar: FunctionComponent<Props> = ({
     });
     return (
         <Paper>
-            <Box maxHeight="60vh" overflow="auto">
+            <Box maxHeight="70vh" overflow="auto">
                 <Table
                     data={data}
                     showPagination={false}
@@ -75,6 +75,7 @@ export const Sidebar: FunctionComponent<Props> = ({
                         teams,
                         profiles,
                         assignments,
+                        loading: !currentTeam,
                     }}
                 />
             </Box>

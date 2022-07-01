@@ -23,9 +23,12 @@ import { Sidebar } from './components/AssignmentsSidebar';
 
 import { AssignmentParams, AssignmentApi } from './types/assigment';
 import { Team, SubTeam, User } from './types/team';
-import { OrgUnitShape } from './types/locations';
+import { OrgUnitShape, OrgUnitMarker } from './types/locations';
+import { OrgUnit } from '../orgUnits/types/orgUnit';
 
 import { useGetAssignmentData } from './hooks/useGetAssignmentData';
+
+import { getSaveParams } from './utils';
 
 import MESSAGES from './messages';
 
@@ -35,6 +38,13 @@ type Props = {
 
 const useStyles = makeStyles(theme => ({
     ...commonStyles(theme),
+    hiddenOpacity: {
+        position: 'absolute',
+        top: 0,
+        left: -5000,
+        zIndex: -10,
+        opacity: 0,
+    },
 }));
 
 const baseUrl = baseUrls.assignments;
@@ -91,6 +101,23 @@ export const Assignments: FunctionComponent<Props> = ({ params }) => {
 
     const isLoading =
         isLoadingPlanning || isSaving || isFetchingChildrenOrgunits;
+
+    const handleSaveAssignment = (
+        selectedOrgUnit: OrgUnitShape | OrgUnitMarker | OrgUnit,
+    ) => {
+        if (planning && selectedItem) {
+            const saveParams = getSaveParams({
+                allAssignments,
+                selectedOrgUnit,
+                teams: teams || [],
+                profiles,
+                currentType: currentTeam?.type,
+                selectedItem,
+                planning,
+            });
+            saveAssignment(saveParams);
+        }
+    };
 
     useEffect(() => {
         if (!baseOrgunitType && assignments.length > 0) {
@@ -206,32 +233,56 @@ export const Assignments: FunctionComponent<Props> = ({ params }) => {
                                 />
                             </Grid>
                             <Grid item xs={7}>
-                                {tab === 'map' && !isLoadingAssignments && (
-                                    <AssignmentsMapTab
-                                        planning={planning}
-                                        currentTeam={currentTeam}
-                                        teams={teams || []}
-                                        profiles={profiles}
-                                        saveAssignment={saveAssignment}
-                                        params={params}
-                                        allAssignments={allAssignments}
-                                        setParentSelected={setParentSelected}
-                                        childrenOrgunits={
-                                            childrenOrgunits || []
-                                        }
-                                        parentSelected={parentSelected}
-                                        saveMultiAssignments={saveAssignment}
-                                        selectedItem={selectedItem}
-                                        locations={orgUnits}
-                                        isFetchingLocations={isFetchingOrgUnits}
-                                    />
-                                )}
+                                <Box
+                                    width="90%"
+                                    className={
+                                        tab === 'map'
+                                            ? ''
+                                            : classes.hiddenOpacity
+                                    }
+                                >
+                                    {!isLoadingAssignments && (
+                                        <AssignmentsMapTab
+                                            planning={planning}
+                                            currentTeam={currentTeam}
+                                            teams={teams || []}
+                                            profiles={profiles}
+                                            params={params}
+                                            allAssignments={allAssignments}
+                                            setParentSelected={
+                                                setParentSelected
+                                            }
+                                            childrenOrgunits={
+                                                childrenOrgunits || []
+                                            }
+                                            parentSelected={parentSelected}
+                                            saveMultiAssignments={
+                                                saveAssignment
+                                            }
+                                            selectedItem={selectedItem}
+                                            locations={orgUnits}
+                                            isFetchingLocations={
+                                                isFetchingOrgUnits
+                                            }
+                                            handleSaveAssignment={
+                                                handleSaveAssignment
+                                            }
+                                        />
+                                    )}
+                                </Box>
                                 {tab === 'list' && (
                                     <AssignmentsListTab
+                                        assignments={allAssignments}
+                                        teams={teams || []}
+                                        profiles={profiles}
                                         orgUnits={orgUnits?.all || []}
+                                        handleSaveAssignment={
+                                            handleSaveAssignment
+                                        }
                                         isFetchingOrgUnits={
                                             isLoadingAssignments || !orgUnits
                                         }
+                                        selectedItem={selectedItem}
                                     />
                                 )}
                             </Grid>

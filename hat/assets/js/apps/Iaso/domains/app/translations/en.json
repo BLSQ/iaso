@@ -18,6 +18,7 @@
     "iaso.assignment.baseOrgUnitsType": "Base organisation unit type",
     "iaso.assignment.count": "Assignments count",
     "iaso.assignment.inAnotherTeam": "in another team",
+    "iaso.assignment.label": "Assignment",
     "iaso.assignment.map.disabled": "Already assigned",
     "iaso.assignment.map.parent": "Parent",
     "iaso.assignment.map.unselected": "Not assigned",

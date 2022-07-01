@@ -387,7 +387,6 @@ class OrgUnit(TreeModel):
         }
 
     def as_location(self, with_parents):
-        print("with_parents", with_parents)
         res = {
             "id": self.id,
             "name": self.name,

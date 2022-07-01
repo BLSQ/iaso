@@ -10,11 +10,10 @@ import {
 } from '../types/assigment';
 import { Planning } from '../types/planning';
 import { Team, DropdownTeamsOptions, SubTeam, User } from '../types/team';
-import { OrgUnitMarker, OrgUnitShape, Locations } from '../types/locations';
+import { OrgUnitShape, Locations, OrgUnitMarker } from '../types/locations';
 import { OrgUnit } from '../../orgUnits/types/orgUnit';
 
 import { Profile } from '../../../utils/usersUtils';
-import { getSaveParams } from '../utils';
 
 import { useGetOrgUnitParentLocations } from '../hooks/requests/useGetOrgUnitParentLocations';
 import { useGetOrgUnitParentIds } from '../hooks/useGetOrgUnitParentIds';
@@ -26,8 +25,6 @@ type Props = {
     teams: DropdownTeamsOptions[];
     profiles: Profile[];
     // eslint-disable-next-line no-unused-vars
-    saveAssignment: (params: SaveAssignmentQuery) => void;
-    // eslint-disable-next-line no-unused-vars
     saveMultiAssignments: (params: SaveAssignmentQuery) => void;
     params: AssignmentParams;
     // eslint-disable-next-line no-unused-vars
@@ -37,6 +34,10 @@ type Props = {
     selectedItem: SubTeam | User | undefined;
     locations: Locations | undefined;
     isFetchingLocations: boolean;
+    handleSaveAssignment: (
+        // eslint-disable-next-line no-unused-vars
+        selectedOrgUnit: OrgUnitShape | OrgUnitMarker,
+    ) => void;
 };
 
 export const AssignmentsMapTab: FunctionComponent<Props> = ({
@@ -45,7 +46,7 @@ export const AssignmentsMapTab: FunctionComponent<Props> = ({
     currentTeam,
     teams,
     profiles,
-    saveAssignment,
+    handleSaveAssignment,
     saveMultiAssignments,
     params,
     setParentSelected,
@@ -56,21 +57,6 @@ export const AssignmentsMapTab: FunctionComponent<Props> = ({
     isFetchingLocations,
 }) => {
     const { parentPicking, parentOrgunitType } = params;
-
-    const handleSave = (selectedOrgUnit: OrgUnitShape | OrgUnitMarker) => {
-        if (planning && selectedItem) {
-            const saveParams = getSaveParams({
-                allAssignments,
-                selectedOrgUnit,
-                teams,
-                profiles,
-                currentType: currentTeam?.type,
-                selectedItem,
-                planning,
-            });
-            saveAssignment(saveParams);
-        }
-    };
 
     const { data: parentLocations, isFetching: isFetchingParentLocations } =
         useGetOrgUnitParentLocations({
@@ -101,7 +87,7 @@ export const AssignmentsMapTab: FunctionComponent<Props> = ({
             <AssignmentsMap
                 locations={locations}
                 isFetchingLocations={isFetchingLocations}
-                handleClick={handleSave}
+                handleClick={handleSaveAssignment}
                 handleParentClick={setParentSelected}
                 parentLocations={parentLocations}
                 isFetchingParentLocations={isFetchingParentLocations}

@@ -37,6 +37,10 @@ const MESSAGES = defineMessages({
         defaultMessage: 'Assignments count',
         id: 'iaso.assignment.count',
     },
+    assignment: {
+        defaultMessage: 'Assignment',
+        id: 'iaso.assignment.label',
+    },
     color: {
         defaultMessage: 'Color',
         id: 'iaso.label.color',
@@ -76,6 +80,10 @@ const MESSAGES = defineMessages({
     orgUnitsParent: {
         id: 'iaso.label.orgUnitParent',
         defaultMessage: 'Parent {index}',
+    },
+    clickRowToUnAssign: {
+        id: 'iaso.assignment.clickRowToUnAssign',
+        defaultMessage: 'Click on the row to unassign',
     },
 });
 

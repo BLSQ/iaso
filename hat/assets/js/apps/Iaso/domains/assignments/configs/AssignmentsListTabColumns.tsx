@@ -1,17 +1,28 @@
-import { useMemo } from 'react';
+import React, { useMemo } from 'react';
 import {
     // @ts-ignore
     useSafeIntl,
 } from 'bluesquare-components';
 
+import { AssignmentsApi } from '../types/assigment';
 import { OrgUnit } from '../../orgUnits/types/orgUnit';
 import { OrgUnitShape, OrgUnitMarker } from '../types/locations';
+import { DropdownTeamsOptions } from '../types/team';
 import { Column } from '../../../types/table';
+
+import { getOrgUnitAssignation } from '../utils';
+
+import { Profile } from '../../../utils/usersUtils';
+
+import { UsersTeamsCell } from '../components/UsersTeamsCell';
 
 import MESSAGES from '../messages';
 
 type Props = {
-    orgUnits: Array<OrgUnitShape | OrgUnitMarker>;
+    orgUnits: Array<OrgUnitShape | OrgUnitMarker | OrgUnit>;
+    assignments: AssignmentsApi;
+    teams: DropdownTeamsOptions[] | undefined;
+    profiles: Profile[] | undefined;
 };
 
 const getParentCount = (
@@ -25,7 +36,12 @@ const getParentCount = (
     return newCount;
 };
 
-export const useColumns = ({ orgUnits }: Props): Column[] => {
+export const useColumns = ({
+    orgUnits,
+    assignments,
+    teams,
+    profiles,
+}: Props): Column[] => {
     const { formatMessage } = useSafeIntl();
 
     return useMemo(() => {
@@ -55,6 +71,24 @@ export const useColumns = ({ orgUnits }: Props): Column[] => {
                     align: 'center',
                 });
             });
+        const assignationColumn: Column = {
+            Header: formatMessage(MESSAGES.assignment),
+            id: 'assignment',
+            Cell: settings => {
+                return (
+                    <UsersTeamsCell
+                        assignmentObject={getOrgUnitAssignation(
+                            assignments,
+                            settings.row.original,
+                            teams || [],
+                            profiles || [],
+                            undefined,
+                        )}
+                    />
+                );
+            },
+        };
+        columns.push(assignationColumn);
         return columns;
-    }, [formatMessage, orgUnits]);
+    }, [assignments, formatMessage, orgUnits, profiles, teams]);
 };

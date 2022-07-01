@@ -1291,7 +1291,9 @@ class LQASStatsViewSet(viewsets.ViewSet):
                     total_sites_visited += 1
                     # check finger
                     Child_FMD = HH.get("Count_HH/FM_Child", 0)
-                    Child_Checked = HH.get("Count_HH/Child_Checked", 0)
+                    Child_Checked = HH.get("Count_HH/Child_Checked", None)
+                    if not Child_Checked:
+                        Child_Checked = HH.get("Count_HH/Children_seen", 0)
                     if Child_FMD == "Y":
                         total_Child_FMD += 1
                     else:

@@ -84,6 +84,57 @@ class TeamTestCase(TransactionTestCase, IasoTestCaseMixin):
         self.assertFalse(serializer.is_valid(()), serializer.validated_data)
         self.assertIn("sub_teams", serializer.errors)
 
+    def test_serializer_valid_parent_no_loop(self):
+        "Try a loop via the parents"
+        account = Account.objects.get(name="test")
+        user = User.objects.get(username="test")
+        request = mock.Mock(user=user)
+        project = account.project_set.create(name="project1")
+        grand_parent = Team.objects.create(project=project, name="grand_parent", manager=user)
+        parent = Team.objects.create(project=project, name="parent", manager=user)
+        team = Team.objects.create(project=project, name="team", manager=user)
+        grand_parent.sub_teams.add(parent)
+
+        data = {"parent": parent.id}
+
+        serializer = TeamSerializer(context={"request": request}, data=data, instance=team, partial=True)
+        self.assertTrue(serializer.is_valid(()), serializer.errors)
+        serializer.save()
+
+    def test_serializer_invalid_because_parent_loop(self):
+        "Try a loop via the parents"
+        account = Account.objects.get(name="test")
+        user = User.objects.get(username="test")
+        request = mock.Mock(user=user)
+        project = account.project_set.create(name="project1")
+        grand_parent = Team.objects.create(project=project, name="grand_parent", manager=user)
+        parent = Team.objects.create(project=project, name="parent", manager=user)
+        team = Team.objects.create(project=project, name="team", manager=user)
+        grand_parent.sub_teams.add(parent)
+        parent.sub_teams.add(team)
+
+        data = {"name": "team with subteams", "project": project.id, "users": [], "manager": user.id, "parent": team.id}
+
+        serializer = TeamSerializer(context={"request": request}, data=data, instance=grand_parent, partial=True)
+        self.assertFalse(serializer.is_valid(()), serializer.validated_data)
+        self.assertIn("parent", serializer.errors)
+
+    def test_serializer_invalid_because_parent_wrong_type(self):
+        "Invalid because parent is of type TEAM_OF_USERS"
+        account = Account.objects.get(name="test")
+        user = User.objects.get(username="test")
+        request = mock.Mock(user=user)
+        project = account.project_set.create(name="project1")
+        parent = Team.objects.create(project=project, name="parent", manager=user, type=TeamType.TEAM_OF_USERS)
+        parent.users.set([user])
+        team = Team.objects.create(project=project, name="team", manager=user)
+
+        data = {"parent": parent.id}
+
+        serializer = TeamSerializer(context={"request": request}, data=data, instance=team, partial=True)
+        self.assertFalse(serializer.is_valid(()), serializer.validated_data)
+        self.assertIn("parent", serializer.errors)
+
     def test_serializer_invalid_because_subteam_loop2(self):
         account = Account.objects.get(name="test")
         user = User.objects.get(username="test")

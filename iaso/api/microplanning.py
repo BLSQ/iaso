@@ -59,6 +59,7 @@ class TeamSerializer(serializers.ModelSerializer):
         self.fields["manager"].queryset = users_in_account
         self.fields["users"].child_relation.queryset = users_in_account
         self.fields["sub_teams"].child_relation.queryset = Team.objects.filter_for_user(user)
+        self.fields["parent"].queryset = Team.objects.filter_for_user(user)
 
     class Meta:
         model = Team
@@ -77,10 +78,21 @@ class TeamSerializer(serializers.ModelSerializer):
             "sub_teams",
             "sub_teams_details",
         ]
-        read_only_fields = ["created_at", "parent"]
+        read_only_fields = ["created_at"]
 
     users_details = NestedUserSerializer(many=True, read_only=True, source="users")
     sub_teams_details = NestedTeamSerializer(many=True, read_only=True, source="sub_teams")
+
+    def validate_parent(self, value: Team):
+        if value.type not in (None, TeamType.TEAM_OF_TEAMS):
+            raise serializers.ValidationError("Parent is not team of teams")
+        if self.instance:
+            p = value
+            while p:
+                if p == self.instance:
+                    raise serializers.ValidationError("Parent is one of our sub team")
+                p = p.parent
+        return value
 
     def validate_sub_teams(self, values):
         def recursive_check(instance, children):

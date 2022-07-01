@@ -703,7 +703,7 @@ class AssignmentAPITestCase(APITestCase):
         self.assertEqual(p2["name"], "planning2")
         self.assertEqual(
             p2["assignments"],
-            [{"org_unit": self.child1.id, "form_ids": []}, {"org_unit_id": self.child2.id, "form_ids": []}],
+            [{"org_unit_id": self.child1.id, "form_ids": []}, {"org_unit_id": self.child2.id, "form_ids": []}],
         )
 
         # Response look like

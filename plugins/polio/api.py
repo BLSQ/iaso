@@ -696,7 +696,7 @@ class IMStatsViewSet(viewsets.ViewSet):
                     if round_number.upper() == "MOPUP":
                         continue
                 except KeyError:
-                    skipped_forms_list.append({form["_id"]: {"round": None, "date": form["date_monitored"]}})
+                    skipped_forms_list.append({form["_id"]: {"round": None, "date": form.get("date_monitored", None)}})
                     no_round_count += 1
                     continue
                 round_number = form["roundNumber"]
@@ -704,7 +704,7 @@ class IMStatsViewSet(viewsets.ViewSet):
                     round_number = round_number[-1]
                 else:
                     skipped_forms_list.append(
-                        {form["_id"]: {"round": form["roundNumber"], "date": form["date_monitored"]}}
+                        {form["_id"]: {"round": form["roundNumber"], "date": form.get("date_monitored", None)}}
                     )
                     unknown_round += 1
                     continue
@@ -1104,7 +1104,7 @@ def format_caregiver_stats(campaign_stats):
                     if count == best_result:
                         caregivers_dict[reason] = count
                 ratio = (100 * best_result) / total_informed
-                caregivers_dict["ratio"] = ratio
+                caregivers_dict["ratio"]= ratio
                 children_checked = district["total_child_checked"]
                 caregivers_informed_ratio = (100 * total_informed) / children_checked
                 caregivers_dict["caregivers_informed_ratio"] = caregivers_informed_ratio
@@ -1242,8 +1242,14 @@ class LQASStatsViewSet(viewsets.ViewSet):
                     unknown_round += 1
                     continue
                 form_count += 1
-                today_string = form["today"]
-                today = datetime.strptime(today_string, "%Y-%m-%d").date()
+                try:
+                    today_string = form["today"]
+                    today = datetime.strptime(today_string, "%Y-%m-%d").date()
+                except KeyError:
+                    skipped_forms_list.append(
+                        {form["_id"]: {"round": form["roundNumber"], "date": form.get("Date_of_LQAS", None)}}
+                    )
+                    continue
 
                 campaign = find_lqas_im_campaign_cached(campaigns, today, country, round_number, "lqas")
 

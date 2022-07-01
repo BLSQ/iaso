@@ -5,7 +5,13 @@ from rest_framework import serializers, filters, permissions
 from rest_framework.permissions import IsAuthenticated
 
 from hat.audit.models import Modification
-from iaso.api.common import ModelViewSet, DeletionFilterBackend, ReadOnlyOrHasPermission, TimestampField
+from iaso.api.common import (
+    ModelViewSet,
+    DeletionFilterBackend,
+    ReadOnlyOrHasPermission,
+    TimestampField,
+    DateTimestampField,
+)
 from iaso.models import Project, OrgUnit, Form
 from iaso.models.microplanning import Team, TeamType, Planning, Assignment
 from iaso.models.org_unit import OrgUnitQuerySet
@@ -466,6 +472,8 @@ class MobilePlanningSerializer(serializers.ModelSerializer):
         ]
 
     created_at = TimestampField()
+    started_at = DateTimestampField()
+    ended_at = DateTimestampField()
 
     assignments = serializers.SerializerMethodField()
 
@@ -473,7 +481,7 @@ class MobilePlanningSerializer(serializers.ModelSerializer):
         user = self.context["request"].user
         r = []
         for a in planning.assignment_set.filter(deleted_at__isnull=True).filter(user=user):
-            r.append({"org_unit": a.org_unit.id, "form_ids": [f.id for f in planning.forms.all()]})
+            r.append({"org_unit_id": a.org_unit.id, "form_ids": [f.id for f in planning.forms.all()]})
         return r
 
 

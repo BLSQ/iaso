@@ -1,8 +1,9 @@
 import logging
-from datetime import datetime
+from datetime import datetime, date
 from functools import wraps
 from traceback import format_exc
 
+import pytz
 from django.db import transaction
 from django.db.models import ProtectedError, Q
 from django.utils.timezone import make_aware
@@ -184,6 +185,19 @@ class TimestampField(serializers.Field):
 
     def to_internal_value(self, data: float):
         return make_aware(datetime.utcfromtimestamp(data))
+
+
+class DateTimestampField(serializers.Field):
+    """Represent a date as a timestampfield
+
+    Use only for mobile APIs"""
+
+    def to_representation(self, value: date):
+        return datetime(value.year, value.month, value.day, 0, 0, 0, tzinfo=pytz.utc).timestamp()
+
+    def to_internal_value(self, data: float):
+
+        return make_aware(datetime.utcfromtimestamp(data)).date()
 
 
 class Paginator(pagination.PageNumberPagination):

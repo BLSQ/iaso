@@ -103,7 +103,7 @@ class BulkCreateCsvTestCase(APITestCase):
         self.assertEqual(response.status_code, 400)
         self.assertEqual(
             response.json()["error"],
-            "Operation aborted. Invalid OrgUnit 99998 at row : 1. Fix the error " "and try again.",
+            "Operation aborted. Invalid OrgUnit 99998 at row : 2. Fix the error " "and try again.",
         )
 
     def test_upload_user_already_exists(self):
@@ -138,7 +138,7 @@ class BulkCreateCsvTestCase(APITestCase):
         self.assertEqual(response.status_code, 400)
         self.assertEqual(
             response.json()["error"],
-            "Operation aborted. Invalid OrgUnit 99998 at row : 1. Fix the error " "and try again.",
+            "Operation aborted. Invalid OrgUnit 99998 at row : 2. Fix the error " "and try again.",
         )
         self.assertEqual(len(users), 3)
         self.assertEqual(len(profiles), 3)
@@ -187,7 +187,7 @@ class BulkCreateCsvTestCase(APITestCase):
         self.assertEqual(response.status_code, 400)
         self.assertEqual(
             response.json()["error"],
-            "Operation aborted. Error at row 3. This password is too short. It must contain at least 8 characters.",
+            "Operation aborted. Error at row 4. This password is too short. It must contain at least 8 characters.",
         )
 
     def test_created_users_can_login(self):
@@ -215,7 +215,7 @@ class BulkCreateCsvTestCase(APITestCase):
         self.assertEqual(response.status_code, 400)
         self.assertEqual(
             response.json()["error"],
-            "Operation aborted. Multiple OrgUnits with the name: Solana at row : 3." "Use Orgunit ID instead of name.",
+            "Operation aborted. Multiple OrgUnits with the name: Solana at row : 4." "Use Orgunit ID instead of name.",
         )
 
     def test_upload_invalid_orgunit_name(self):
@@ -228,7 +228,7 @@ class BulkCreateCsvTestCase(APITestCase):
         self.assertEqual(response.status_code, 400)
         self.assertEqual(
             response.json()["error"],
-            "Operation aborted. Invalid OrgUnit Bazarre at row : 3. Fix "
+            "Operation aborted. Invalid OrgUnit Bazarre at row : 4. Fix "
             "the error "
             "and try "
             "again. Use Orgunit ID instead of name.",

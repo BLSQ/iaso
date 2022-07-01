@@ -15,25 +15,29 @@ const getForms = async (signal?: AbortSignal) =>
 export const useGetForms = (
     projectId?: number,
 ): UseQueryResult<DropdownOptions<string>, Error> => {
-    return useSnackQuery(['forms', projectId], () => getForms(), undefined, {
-        select: data => {
-            if (!data?.forms) return [];
-            return data.forms
-                .filter(form =>
-                    projectId
-                        ? Boolean(
-                              form.projects.find(
-                                  project => project.id === projectId,
-                              ),
-                          )
-                        : Boolean(form),
-                )
-                .map(forms => {
-                    return {
-                        value: forms.id,
-                        label: forms.name,
-                    };
-                });
+    return useSnackQuery({
+        queryKey: ['forms', projectId],
+        queryFn: () => getForms(),
+        options: {
+            select: data => {
+                if (!data?.forms) return [];
+                return data.forms
+                    .filter(form =>
+                        projectId
+                            ? Boolean(
+                                  form.projects.find(
+                                      project => project.id === projectId,
+                                  ),
+                              )
+                            : Boolean(form),
+                    )
+                    .map(forms => {
+                        return {
+                            value: forms.id,
+                            label: forms.name,
+                        };
+                    });
+            },
         },
     });
 };

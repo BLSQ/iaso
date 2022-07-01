@@ -5,7 +5,13 @@ from rest_framework import serializers, filters, permissions
 from rest_framework.permissions import IsAuthenticated
 
 from hat.audit.models import Modification
-from iaso.api.common import ModelViewSet, DeletionFilterBackend, ReadOnlyOrHasPermission
+from iaso.api.common import (
+    ModelViewSet,
+    DeletionFilterBackend,
+    ReadOnlyOrHasPermission,
+    TimestampField,
+    DateTimestampField,
+)
 from iaso.models import Project, OrgUnit, Form
 from iaso.models.microplanning import Team, TeamType, Planning, Assignment
 from iaso.models.org_unit import OrgUnitQuerySet
@@ -80,7 +86,7 @@ class TeamSerializer(serializers.ModelSerializer):
         def recursive_check(instance, children):
             for child in children:
                 if instance == child:
-                    raise serializers.ValidationError("Cannot create loop in tree")
+                    raise serializers.ValidationError("noLoopInSubTree")
                 recursive_check(instance, child.sub_teams.all())
 
         if self.instance:
@@ -289,26 +295,26 @@ class PlanningSerializer(serializers.ModelSerializer):
             and validated_data["started_at"] > validated_data["ended_at"]
         ):
             #    raise serializers.ValidationError({"started_at": "Start date cannot be after end date"})
-            validation_errors["started_at"] = "Start date cannot be after end date"
-            validation_errors["ended_at"] = "End date cannot be before start date"
+            validation_errors["started_at"] = "startDateAfterEndDate"
+            validation_errors["ended_at"] = "EndDateBeforeStartDate"
         project = validated_data.get("project", self.instance.project if self.instance else None)
 
         team = validated_data.get("team", self.instance.team if self.instance else None)
         if team.project != project:
-            validation_errors["team"] = "Planning and team must be in the same project"
+            validation_errors["team"] = "planningAndTeams"
             # validation_errors.append({"team":"Planning and team must be in the same project"})
 
         forms = validated_data.get("forms", self.instance.forms if self.instance else None)
         for form in forms:
             if not form in project.forms.all():
                 # validation_errors.append({"forms":"Planning and forms must be in the same project"})
-                validation_errors["forms"] = "Planning and forms must be in the same project"
+                validation_errors["forms"] = "planningAndForms"
 
         org_unit = validated_data.get("org_unit", self.instance.org_unit if self.instance else None)
         if org_unit and org_unit.org_unit_type:
             org_unit_projects = org_unit.org_unit_type.projects.all()
             if not project in org_unit_projects:
-                validation_errors["org_unit"] = "Planning and org unit must be in the same project"
+                validation_errors["org_unit"] = "planningAndOrgUnit"
         if validation_errors:
             raise serializers.ValidationError(validation_errors)
 
@@ -460,16 +466,22 @@ class MobilePlanningSerializer(serializers.ModelSerializer):
             "name",
             "description",
             "created_at",
+            "started_at",
+            "ended_at",
             "assignments",
         ]
+
+    created_at = TimestampField()
+    started_at = DateTimestampField()
+    ended_at = DateTimestampField()
 
     assignments = serializers.SerializerMethodField()
 
     def get_assignments(self, planning: Planning):
         user = self.context["request"].user
         r = []
-        for a in planning.assignment_set.filter(user=user):
-            r.append({"org_unit": a.org_unit.id, "form_ids": [f.id for f in planning.forms.all()]})
+        for a in planning.assignment_set.filter(deleted_at__isnull=True).filter(user=user):
+            r.append({"org_unit_id": a.org_unit.id, "form_ids": [f.id for f in planning.forms.all()]})
         return r
 
 
@@ -486,10 +498,10 @@ class MobilePlanningViewSet(ModelViewSet):
     and his assignments
     """
 
-    remove_results_key_if_paginated = True
+    remove_results_key_if_paginated = False
+    results_key = "plannings"
     permission_classes = [IsAuthenticated, ReadOnly]
     serializer_class = MobilePlanningSerializer
-    queryset = Assignment.objects.all()
 
     def get_queryset(self):
         user = self.request.user

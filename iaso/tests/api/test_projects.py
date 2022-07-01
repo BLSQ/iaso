@@ -83,7 +83,7 @@ class ProjectsAPITestCase(APITestCase):
         self.assertEqual(response_data["page"], 1)
         self.assertEqual(response_data["pages"], m.FeatureFlag.objects.count())
         self.assertEqual(response_data["limit"], 1)
-        self.assertEqual(response_data["count"], 3)
+        self.assertEqual(response_data["count"], m.FeatureFlag.objects.count())
 
     def test_projects_retrieve_without_auth(self):
         """GET /projects/<project_id> without auth should result in a 403"""

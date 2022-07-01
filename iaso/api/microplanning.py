@@ -105,20 +105,18 @@ class TeamSerializer(serializers.ModelSerializer):
             recursive_check(self.instance, values)
         return values
 
-    def create(self, validated_data):
-        users = validated_data.pop("users")
-        sub_teams = validated_data.pop("sub_teams")
-
-        team = Team.objects.create(**validated_data)
-        for sub_team in sub_teams:
-            team.sub_teams.add(sub_team)
-
-        team.save(force_recalculate=True)
-
-        for user in users:
-            team.users.add(user)
-
-        return team
+    def save(self, **kwargs):
+        old_sub_teams_ids = []
+        if self.instance:
+            old_sub_teams_ids = list(self.instance.sub_teams.all().values_list("id", flat=True))
+        r = super().save(**kwargs)
+        new_sub_teams_ids = list(self.instance.sub_teams.all().values_list("id", flat=True))
+        team_changed_qs = Team.objects.filter(id__in=new_sub_teams_ids + old_sub_teams_ids)
+        teams_to_update = []
+        for team in team_changed_qs:
+            teams_to_update += team.calculate_paths(force_recalculate=True)
+        Team.objects.bulk_update(teams_to_update, ["path"])
+        return r
 
     def validate(self, attrs):
         validated_data = super(TeamSerializer, self).validate(attrs)

@@ -2,6 +2,7 @@ import mock
 from django.contrib.auth.models import User
 from django.test import TransactionTestCase
 from django.utils.timezone import now
+from django_ltree.fields import PathValue
 
 from hat.audit.models import Modification
 from iaso.api.microplanning import TeamSerializer, PlanningSerializer, AssignmentSerializer
@@ -362,6 +363,7 @@ class TeamAPITestCase(APITestCase):
         r = self.assertJSONResponse(response, 201)
         self.assertTrue(Team.objects.filter(name="hello").exists())
         team_id = r["id"]
+        self.assertEqual(Team.objects.get(id=team_id).path, PathValue((team_id,)))
 
         sub_team1 = Team.objects.create(manager=self.user, project=self.project1, name="subteam")
 
@@ -371,12 +373,15 @@ class TeamAPITestCase(APITestCase):
         r = self.assertJSONResponse(response, 200)
         self.assertTrue(Team.objects.filter(name="hello").exists())
         self.assertQuerysetEqual(Team.objects.get(name="hello").sub_teams.all(), [sub_team1])
+        sub_team1.refresh_from_db()
+        self.assertEqual(sub_team1.path, PathValue((team_id, sub_team1.id)))
 
         team_member = self.create_user_with_profile(account=self.account, username="t")
 
         update_data = {"sub_teams": [], "users": [team_member.pk]}
 
         response = self.client.patch(f"/api/microplanning/teams/{team_id}/", data=update_data, format="json")
+
         r = self.assertJSONResponse(response, 200)
         self.assertTrue(Team.objects.filter(name="hello").exists())
         team = Team.objects.get(name="hello")
@@ -385,6 +390,10 @@ class TeamAPITestCase(APITestCase):
         self.assertEqual(Modification.objects.count(), 3)
         mod = Modification.objects.last()
         self.assertEqual(mod.user, user_with_perms)
+
+        sub_team1.refresh_from_db()
+        self.assertEqual(sub_team1.parent, None)
+        self.assertEqual(sub_team1.path, PathValue((sub_team1.id,)))
 
     def test_patch_no_perms(self):
         self.client.force_authenticate(self.user)

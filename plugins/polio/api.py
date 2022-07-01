@@ -696,7 +696,7 @@ class IMStatsViewSet(viewsets.ViewSet):
                     if round_number.upper() == "MOPUP":
                         continue
                 except KeyError:
-                    skipped_forms_list.append({form["_id"]: {"round": None, "date": form["date_monitored"]}})
+                    skipped_forms_list.append({form["_id"]: {"round": None, "date": form.get("date_monitored", None)}})
                     no_round_count += 1
                     continue
                 round_number = form["roundNumber"]
@@ -704,7 +704,7 @@ class IMStatsViewSet(viewsets.ViewSet):
                     round_number = round_number[-1]
                 else:
                     skipped_forms_list.append(
-                        {form["_id"]: {"round": form["roundNumber"], "date": form["date_monitored"]}}
+                        {form["_id"]: {"round": form["roundNumber"], "date": form.get("date_monitored", None)}}
                     )
                     unknown_round += 1
                     continue
@@ -1242,8 +1242,14 @@ class LQASStatsViewSet(viewsets.ViewSet):
                     unknown_round += 1
                     continue
                 form_count += 1
-                today_string = form["today"]
-                today = datetime.strptime(today_string, "%Y-%m-%d").date()
+                try:
+                    today_string = form["today"]
+                    today = datetime.strptime(today_string, "%Y-%m-%d").date()
+                except KeyError:
+                    skipped_forms_list.append(
+                        {form["_id"]: {"round": form["roundNumber"], "date": form.get("Date_of_LQAS", None)}}
+                    )
+                    continue
 
                 campaign = find_lqas_im_campaign_cached(campaigns, today, country, round_number, "lqas")
 
@@ -1259,7 +1265,6 @@ class LQASStatsViewSet(viewsets.ViewSet):
                     continue
                 if form.get("Response", None) and campaign:
                     debug_response.add((campaign.obr_name, form["Response"]))
-                    # print("response", form["Response"])
                 campaign_name = campaign.obr_name
                 total_sites_visited = 0
                 total_Child_FMD = 0

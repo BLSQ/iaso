@@ -720,7 +720,8 @@ class AssignmentAPITestCase(APITestCase):
         }
 
         response = self.client.post("/api/microplanning/assignments/bulk_create_assignments/", data=data, format="json")
-        self.assertJSONResponse(response, 400)
+        r = self.assertJSONResponse(response, 400)
+        self.assertIn("planning", r)
 
     def test_restore_deleted_assignment(self):
         """restore deleted assignment if we try to create a new assignment with a previously assigned OU"""
@@ -738,10 +739,15 @@ class AssignmentAPITestCase(APITestCase):
         self.client.post("/api/microplanning/assignments/", data=data, format="json")
 
         deleted_assignment = Assignment.objects.last()
+        self.assertEqual(deleted_assignment.deleted_at, None)
         self.assertEqual(Modification.objects.count(), 1)
 
-        self.client.delete("/api/microplanning/assignments/{}".format(self.child2.id))
+        response = self.client.delete("/api/microplanning/assignments/{}/".format(deleted_assignment.id))
 
+        self.assertJSONResponse(response, 204)
+        deleted_assignment.refresh_from_db()
+        self.assertNotEqual(deleted_assignment.deleted_at, None)
+        self.assertEqual(Modification.objects.count(), 2)
         data = {
             "planning": self.planning.id,
             "org_units": [self.child2.id],
@@ -754,7 +760,10 @@ class AssignmentAPITestCase(APITestCase):
 
         self.assertJSONResponse(response, 200)
         self.assertEqual(last_created_assignment.id, deleted_assignment.id)
-        self.assertEqual(Modification.objects.count(), 2)
+        self.assertEqual(Modification.objects.count(), 3)
+        self.assertEqual(last_created_assignment.deleted_at, None)
+        self.assertEqual(last_created_assignment.org_unit, self.child2)
+        self.assertEqual(last_created_assignment.team, self.team1)
 
     def test_no_perm_create(self):
         self.client.force_authenticate(self.user)

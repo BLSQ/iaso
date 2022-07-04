@@ -237,36 +237,35 @@ class ProfilesViewSet(viewsets.ViewSet):
 
     CREATE_PASSWORD_MESSAGE_EN = """Hello,
 
-You’ve been invited to access {dns_domain}, and a new account with the username {userName} has been created for you. 
+You've been invited to access {dns_domain}, and a new account with the username {userName} has been created for you. 
 
-To set up a password for your account, simply click on the link:
+To set up a password for your account, please click on the link:
 
 {url}
 
 If clicking the link above doesn't work, please copy and paste the URL in a new browser
 window instead.
 
-If you did not request an account on {dns_domain} , you can ignore this e-mail - no passwords will be created.
+If you did not request an account on {dns_domain} , you can ignore this e-mail - no password will be created.
 
 Sincerely,
-The {dns_domain} Team.
+The IASO Team.
     """
 
-    CREATE_PASSWORD_MESSAGE_FR = """Salut, 
+    CREATE_PASSWORD_MESSAGE_FR = """Bonjour, 
 
 Vous avez été invité à accéder à {dns_domain} et un nouveau compte avec le nom d'utilisateur {userName} a été créé pour vous.
 
-Pour configurer un mot de passe pour votre compte, cliquez simplement sur le lien :
+Pour configurer un mot de passe pour votre compte, merci de cliquer sur le lien ci-dessous :
 
 {url}
 
-Si cliquer sur le lien ci-dessus ne fonctionne pas, veuillez copier et coller l'URL dans un nouveau navigateur
-fenêtre à la place.
+Si le lien ne fonctionne pas, merci de copier et coller l'URL dans une nouvelle fenêtre de votre navigateur.
 
 Si vous n'avez pas demandé de compte sur {dns_domain}, vous pouvez ignorer cet e-mail - aucun mot de passe ne sera créé.
 
 Cordialement,
-L'équipe {dns_domain}.
+L'équipe IASO.
     """
 
     EMAIL_SUBJECT_FR = "Configurer un mot de passe pour votre nouveau compte sur {dns_domain}"

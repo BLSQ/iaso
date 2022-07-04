@@ -1,17 +1,12 @@
 from django.shortcuts import get_object_or_404, render
 from django.contrib.auth.decorators import resolve_url
 from django.contrib.auth.views import redirect_to_login
-from django.http import HttpResponse, JsonResponse
 from django.conf import settings
 from iaso.models import Page, Account, TEXT, IFRAME, POWERBI
 
 from hat.__version__ import DEPLOYED_ON, DEPLOYED_BY, VERSION
 from iaso.utils.powerbi import get_powerbi_report_token
-from django.contrib.auth import authenticate, login
-from django.contrib.auth.models import User
-from rest_framework_simplejwt import authentication
-from rest_framework_simplejwt.tokens import RefreshToken
-from django.http import HttpResponse, JsonResponse, HttpResponseRedirect
+from django.http import HttpResponse, JsonResponse
 
 
 def load_powerbi_config_for_page(page):
@@ -62,15 +57,3 @@ def health(request):
         res["error"] = "db_fail"
 
     return JsonResponse(res)
-
-
-def token_auth(request):
-    token = request.GET.get("token")
-    link = request.GET.get("next")
-
-    jta = authentication.JWTTokenUserAuthentication()
-    validated_token = jta.get_validated_token(token)
-    user_id = validated_token["user_id"]
-    user = User.objects.get(id=user_id)
-    login(request, user, "django.contrib.auth.backends.ModelBackend")
-    return HttpResponseRedirect(link)

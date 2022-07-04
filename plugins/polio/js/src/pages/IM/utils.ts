@@ -121,7 +121,7 @@ export const formatImDataForChart = ({ data, campaign, round, regions }) => {
 
 export const imTooltipFormatter = formatMessage => (_value, _name, props) => {
     // eslint-disable-next-line react/prop-types
-    const ratio = `${props.payload.checked}/${props.payload.marked}`;
+    const ratio = `${props.payload.marked}/${props.payload.checked}`;
     return [ratio, formatMessage(MESSAGES.vaccinated)];
 };
 

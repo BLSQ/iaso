@@ -1,4 +1,10 @@
-import React, { useCallback, useEffect, useRef, useState } from 'react';
+import React, {
+    useCallback,
+    useEffect,
+    useRef,
+    useState,
+    useMemo,
+} from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import PropTypes from 'prop-types';
 import { useSafeIntl, useSkipEffectOnMount } from 'bluesquare-components';
@@ -188,6 +194,26 @@ const OrgUnitsTypesDialog = ({
         subUnit => subUnit.id !== formState.id.value,
     );
 
+    const allProjectWithInvalids = useMemo(() => {
+        const allUserProjectsIds = allProjects?.map(p => p.id);
+        const orgUnitypeProjects = orgUnitType.projects
+            .filter(p => !allUserProjectsIds.includes(p.id))
+            ?.map(project => ({
+                label: project.name,
+                value: project.id,
+                color: '#eb4034',
+            }));
+
+        return (
+            allProjects
+                ?.map(p => ({
+                    label: p.name,
+                    value: p.id,
+                }))
+                .concat(orgUnitypeProjects) ?? []
+        );
+    }, [allProjects, orgUnitType.projects]);
+
     return (
         <ConfirmCancelDialogComponent
             id="OuTypes-modal"
@@ -233,12 +259,7 @@ const OrgUnitsTypesDialog = ({
                 value={formState.project_ids.value}
                 errors={formState.project_ids.errors}
                 type="select"
-                options={
-                    allProjects?.map(p => ({
-                        label: p.name,
-                        value: p.id,
-                    })) ?? []
-                }
+                options={allProjectWithInvalids}
                 label={MESSAGES.projects}
                 required
             />

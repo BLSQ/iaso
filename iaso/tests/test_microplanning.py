@@ -240,12 +240,12 @@ class TeamAPITestCase(APITestCase):
 
         response = self.client.get(f"/api/microplanning/teams/?ancestor={team_a.id}", format="json")
         r = self.assertJSONResponse(response, 200)
-        self.assertEqual(len(r), 0)
+        self.assertEqual(len(r), 1)
         response = self.client.get(f"/api/microplanning/teams/?ancestor={team_b.id}", format="json")
         r = self.assertJSONResponse(response, 200)
-        self.assertEqual(len(r), 4)
+        self.assertEqual(len(r), 5)
         ids = sorted([row["id"] for row in r])
-        self.assertEqual(ids, [team_b_c.id, team_b_d.id, team_b_c_e.id, team_b_c_f.id])
+        self.assertEqual(ids, [team_b.id, team_b_c.id, team_b_d.id, team_b_c_e.id, team_b_c_f.id])
         response = self.client.get(f"/api/microplanning/teams/?ancestor={team_b.id}&search=hello", format="json")
         r = self.assertJSONResponse(response, 200)
         self.assertEqual(len(r), 1)
@@ -253,9 +253,9 @@ class TeamAPITestCase(APITestCase):
         self.assertEqual(ids, [team_b_c_f.id])
         response = self.client.get(f"/api/microplanning/teams/?ancestor={team_b_c.id}", format="json")
         r = self.assertJSONResponse(response, 200)
-        self.assertEqual(len(r), 2)
+        self.assertEqual(len(r), 3)
         ids = sorted([row["id"] for row in r])
-        self.assertEqual(ids, [team_b_c_e.id, team_b_c_f.id])
+        self.assertEqual(ids, [team_b_c.id, team_b_c_e.id, team_b_c_f.id])
 
     def test_create(self):
         user_with_perms = self.create_user_with_profile(
@@ -267,6 +267,7 @@ class TeamAPITestCase(APITestCase):
             "project": self.project1.id,
             "manager": self.user.id,
             "sub_teams": [],
+            "users": [],
         }
 
         response = self.client.post("/api/microplanning/teams/", data=data, format="json")
@@ -440,9 +441,13 @@ class PlanningTestCase(APITestCase):
                 "name": "planning1",
                 "team": self.planning.team_id,
                 "team_details": {"id": self.team1.id, "name": self.team1.name, "deleted_at": self.team1.deleted_at},
-                "project": self.project1.id,
                 "project": self.planning.project.id,
                 "org_unit": self.planning.org_unit_id,
+                "org_unit_details": {
+                    "id": self.org_unit.id,
+                    "name": self.org_unit.name,
+                    "org_unit_type": self.org_unit.org_unit_type,
+                },
                 "forms": [],
                 "description": "",
                 "published_at": None,
@@ -744,17 +749,18 @@ class AssignmentAPITestCase(APITestCase):
 
         response = self.client.get(f"/api/mobile/plannings/", format="json")
         r = self.assertJSONResponse(response, 200)
-        self.assertEqual(len(r), 2)
+        plannings = r["plannings"]
+        self.assertEqual(len(plannings), 2)
         # planning 1
-        p1 = r[0]
-        self.assertEqual(r[0]["name"], "planning1")
-        self.assertEqual(r[0]["assignments"], [{"org_unit": self.child1.id, "form_ids": []}])
+        p1 = plannings[0]
+        self.assertEqual(plannings[0]["name"], "planning1")
+        self.assertEqual(plannings[0]["assignments"], [{"org_unit_id": self.child1.id, "form_ids": []}])
 
-        p2 = r[1]
+        p2 = plannings[1]
         self.assertEqual(p2["name"], "planning2")
         self.assertEqual(
             p2["assignments"],
-            [{"org_unit": self.child1.id, "form_ids": []}, {"org_unit": self.child2.id, "form_ids": []}],
+            [{"org_unit_id": self.child1.id, "form_ids": []}, {"org_unit_id": self.child2.id, "form_ids": []}],
         )
 
         # Response look like
@@ -781,7 +787,7 @@ class AssignmentAPITestCase(APITestCase):
 
         response = self.client.get(f"/api/mobile/plannings/", format="json")
         r = self.assertJSONResponse(response, 200)
-        self.assertEqual(len(r), 0)
+        self.assertEqual(len(r["plannings"]), 0)
 
     def test_query_mobile_get(self):
         self.client.force_authenticate(self.user)

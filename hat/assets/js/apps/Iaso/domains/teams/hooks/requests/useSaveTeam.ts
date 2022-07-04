@@ -1,3 +1,4 @@
+/* eslint-disable camelcase */
 import { UseMutationResult } from 'react-query';
 import { patchRequest, postRequest } from '../../../../libs/Api';
 import { useSnackMutation } from '../../../../libs/apiHooks';
@@ -21,6 +22,14 @@ const convertToApi = data => {
     return converted;
 };
 
+export const convertAPIErrorsToState = data => {
+    const { sub_teams, ...converted } = data;
+    if (sub_teams !== undefined) {
+        converted.subTeams = sub_teams;
+    }
+    return converted;
+};
+
 const endpoint = '/api/microplanning/teams/';
 
 const patchTeam = async (body: Partial<SaveTeamQuery>) => {
@@ -32,25 +41,18 @@ const postTeam = async (body: SaveTeamQuery) => {
     return postRequest(endpoint, convertToApi(body));
 };
 
-export const useSaveTeam = (
-    type: 'create' | 'edit',
-    callback: () => void,
-): UseMutationResult => {
-    const onSuccess = () => callback();
-    const editTeam = useSnackMutation(
-        (data: Partial<SaveTeamQuery>) => patchTeam(data),
-        undefined,
-        undefined,
-        ['teamsList'],
-        { onSuccess },
-    );
-    const createTeam = useSnackMutation(
-        (data: SaveTeamQuery) => postTeam(data),
-        undefined,
-        undefined,
-        ['teamsList'],
-        { onSuccess },
-    );
+export const useSaveTeam = (type: 'create' | 'edit'): UseMutationResult => {
+    const ignoreErrorCodes = [400];
+    const editTeam = useSnackMutation({
+        mutationFn: (data: Partial<SaveTeamQuery>) => patchTeam(data),
+        invalidateQueryKey: ['teamsList'],
+        ignoreErrorCodes,
+    });
+    const createTeam = useSnackMutation({
+        mutationFn: (data: SaveTeamQuery) => postTeam(data),
+        invalidateQueryKey: ['teamsList'],
+        ignoreErrorCodes,
+    });
 
     switch (type) {
         case 'create':

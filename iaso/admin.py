@@ -300,6 +300,8 @@ class PlanningAdmin(admin.ModelAdmin):
                     "forms",
                     "org_unit",
                     "team",
+                    "started_at",
+                    "ended_at",
                 ),
             },
         ),
@@ -310,6 +312,7 @@ class PlanningAdmin(admin.ModelAdmin):
                     "created_at",
                     "created_by",
                     "updated_at",
+                    "deleted_at",
                 )
             },
         ),

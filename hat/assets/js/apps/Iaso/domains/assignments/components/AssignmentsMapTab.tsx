@@ -5,13 +5,10 @@ import React, {
     useCallback,
 } from 'react';
 import { Grid, Paper, Box } from '@material-ui/core';
-import { useTheme, Theme } from '@material-ui/core/styles';
 
 import {
     // @ts-ignore
     Table,
-    // @ts-ignore
-    useSafeIntl,
 } from 'bluesquare-components';
 
 import { AssignmentsMap } from './AssignmentsMap';
@@ -35,7 +32,7 @@ import { getSaveParams } from '../utils';
 import { useGetOrgUnitLocations } from '../hooks/requests/useGetOrgUnitLocations';
 import { useGetOrgUnitParentLocations } from '../hooks/requests/useGetOrgUnitParentLocations';
 
-import { getColumns } from '../configs/AssignmentsMapTabColumns';
+import { useColumns } from '../configs/AssignmentsMapTabColumns';
 
 type Props = {
     assignments: AssignmentsApi;
@@ -78,9 +75,7 @@ export const AssignmentsMapTab: FunctionComponent<Props> = ({
     childrenOrgunits,
     parentSelected,
 }) => {
-    const { formatMessage } = useSafeIntl();
     const { parentPicking, parentOrgunitType } = params;
-    const theme: Theme = useTheme();
 
     const [selectedItem, setSelectedItem] = useState<
         SubTeam | User | undefined
@@ -118,25 +113,31 @@ export const AssignmentsMapTab: FunctionComponent<Props> = ({
             ? currentTeam.users_details
             : currentTeam?.sub_teams_details;
 
-    const getOrgUnitParentId = useCallback(() => {
-        let orgUnitParentId = planning?.org_unit;
+    const getOrgUnitParentIds = useCallback(() => {
+        // change parent regarding the team selected
+        // if no assignation use planning?.org_unit,
+        // else use assignation
+        let orgUnitParentIds: number[] = [];
         if (currentTeam) {
-            const existingAssignmentForTeam = allAssignments.find(
+            const existingAssignmentsForTeamOrUser = allAssignments.filter(
                 assignment => assignment.team === currentTeam.id,
             );
-            if (existingAssignmentForTeam) {
-                orgUnitParentId = existingAssignmentForTeam.org_unit;
+            if (existingAssignmentsForTeamOrUser) {
+                orgUnitParentIds = existingAssignmentsForTeamOrUser.map(
+                    assignment => assignment.org_unit,
+                );
             }
         }
-        return orgUnitParentId;
-    }, [allAssignments, currentTeam, planning?.org_unit]);
+        if (planning?.org_unit && orgUnitParentIds.length === 0) {
+            orgUnitParentIds = [planning?.org_unit];
+        }
+        return orgUnitParentIds;
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [currentTeam]);
 
     const { data: locations, isFetching: isFetchingLocations } =
         useGetOrgUnitLocations({
-            // change parent regarding the team selected
-            // if no assignation use planning?.org_unit,
-            // else use assignation
-            orgUnitParentId: getOrgUnitParentId(),
+            orgUnitParentIds: getOrgUnitParentIds(),
             baseOrgunitType,
             assignments,
             allAssignments,
@@ -147,11 +148,20 @@ export const AssignmentsMapTab: FunctionComponent<Props> = ({
 
     const { data: parentLocations, isFetching: isFetchingParentLocations } =
         useGetOrgUnitParentLocations({
-            orgUnitParentId: planning?.org_unit,
+            orgUnitParentIds: getOrgUnitParentIds(),
             baseOrgunitType:
                 parentPicking === 'true' ? parentOrgunitType : undefined,
         });
 
+    const columns = useColumns({
+        assignments,
+        teams,
+        profiles,
+        setItemColor,
+        selectedItem,
+        setSelectedItem,
+        currentTeam,
+    });
     return (
         <>
             <ParentDialog
@@ -178,17 +188,7 @@ export const AssignmentsMapTab: FunctionComponent<Props> = ({
                                 countOnTop={false}
                                 marginTop={false}
                                 marginBottom={false}
-                                columns={getColumns({
-                                    formatMessage,
-                                    assignments,
-                                    teams,
-                                    profiles,
-                                    setItemColor,
-                                    theme,
-                                    selectedItem,
-                                    setSelectedItem,
-                                    currentTeam,
-                                })}
+                                columns={columns}
                                 count={
                                     currentTeam?.sub_teams_details?.length ?? 0
                                 }

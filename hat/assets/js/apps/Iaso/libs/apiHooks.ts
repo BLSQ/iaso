@@ -53,7 +53,22 @@ const MESSAGES = defineMessages({
  *   standard useMutation Options
  * @returns {UseMutationResult<mutationFn, options, void, unknown>}
  */
-export const useSnackMutation = <
+type SnackMutationDict<Data, Error, Variables, Context> = {
+    mutationFn: MutationFunction<Data, any>;
+    snackSuccessMessage?: IntlMessage;
+    snackErrorMsg?: IntlMessage;
+    invalidateQueryKey?: QueryKey | undefined;
+    options?:
+        | Omit<
+              UseMutationOptions<Data, Error, Variables, Context>,
+              'mutationFn'
+          >
+        | undefined;
+    ignoreErrorCodes?: number[];
+    showSucessSnackBar?: boolean;
+};
+
+const useBaseSnackMutation = <
     Data = unknown,
     Error = unknown,
     Variables = void,
@@ -111,6 +126,80 @@ export const useSnackMutation = <
     };
     return useMutation(mutationFn, newOptions);
 };
+
+// This hook can take a dictionay or a list of arguments. If the first argument is a dictionary, all other arguments will be ignored
+export const useSnackMutation = <
+    Data = unknown,
+    Error = unknown,
+    Variables = void,
+    Context = unknown,
+>(
+    mutationArg:
+        | MutationFunction<Data, any>
+        | SnackMutationDict<Data, Error, Variables, Context>,
+    snackSuccessMessage: IntlMessage = MESSAGES.defaultMutationApiSuccess,
+    snackErrorMsg: IntlMessage = MESSAGES.defaultMutationApiError,
+    invalidateQueryKey: QueryKey | undefined = undefined,
+    options:
+        | Omit<
+              UseMutationOptions<Data, Error, Variables, Context>,
+              'mutationFn'
+          >
+        | undefined = {},
+    showSucessSnackBar = true,
+    ignoreErrorCodes: number[] = [],
+): UseMutationResult<Data, Error, Variables, Context> => {
+    let arg1;
+    let arg2;
+    let arg3;
+    let arg4;
+    let arg5;
+    let arg6;
+    let arg7;
+    // Checking if the first argument passed is a dictionary
+    const keys = Object.keys(mutationArg) ?? [];
+    if (keys.length > 0 && keys.includes('mutationFn')) {
+        arg1 = (
+            mutationArg as SnackMutationDict<Data, Error, Variables, Context>
+        ).mutationFn;
+        arg2 = (
+            mutationArg as SnackMutationDict<Data, Error, Variables, Context>
+        ).snackSuccessMessage;
+        arg3 = (
+            mutationArg as SnackMutationDict<Data, Error, Variables, Context>
+        ).snackErrorMsg;
+        arg4 = (
+            mutationArg as SnackMutationDict<Data, Error, Variables, Context>
+        ).invalidateQueryKey;
+        arg5 = (
+            mutationArg as SnackMutationDict<Data, Error, Variables, Context>
+        ).options;
+        arg6 = (
+            mutationArg as SnackMutationDict<Data, Error, Variables, Context>
+        ).showSucessSnackBar;
+        arg7 = (
+            mutationArg as SnackMutationDict<Data, Error, Variables, Context>
+        ).ignoreErrorCodes;
+    } else {
+        arg1 = mutationArg;
+        arg2 = snackSuccessMessage;
+        arg3 = snackErrorMsg;
+        arg4 = invalidateQueryKey;
+        arg5 = options;
+        arg6 = showSucessSnackBar;
+        arg7 = ignoreErrorCodes;
+    }
+    return useBaseSnackMutation<Data, Error, Variables, Context>(
+        arg1,
+        arg2,
+        arg3,
+        arg4,
+        arg5,
+        arg6,
+        arg7,
+    );
+};
+
 /**
  * Mix a useQuery from react-query and snackbar message in case of error
  * @param queryKey
@@ -122,7 +211,7 @@ export const useSnackMutation = <
  * @returns UseQueryResult<Data, Error>;
  */
 
-export const useSnackQuery = <
+const useBaseSnackQuery = <
     QueryFnData = unknown,
     Error = unknown,
     Data = QueryFnData,
@@ -153,6 +242,61 @@ export const useSnackQuery = <
     };
     const query = useQuery(queryKey, queryFn, newOptions);
     return query;
+};
+
+type SnackQueryDict<QueryFnData, Data, QueryKeyExtended extends QueryKey> = {
+    queryKey: QueryKey;
+    queryFn: QueryFunction<QueryFnData>;
+    snackErrorMsg?: IntlMessage;
+    options?: UseQueryOptions<QueryFnData, Error, Data, QueryKeyExtended>;
+    // Give the option to not dispatch onError, to avoid multiple snackbars when re-using the query with the same query key
+    dispatchOnError?: boolean;
+};
+
+export const useSnackQuery = <
+    QueryFnData = unknown,
+    Error = unknown,
+    Data = QueryFnData,
+    QueryKeyExtended extends QueryKey = QueryKey,
+>(
+    queryArg: QueryKey | SnackQueryDict<QueryFnData, Data, QueryKeyExtended>,
+    queryFn?: QueryFunction<QueryFnData>,
+    snackErrorMsg?: IntlMessage | undefined,
+    options?: UseQueryOptions<QueryFnData, Error, Data, QueryKeyExtended>,
+    // Give the option to not dispatch onError, to avoid multiple snackbars when re-using the query with the same query key
+    dispatchOnError?: boolean,
+): UseQueryResult<Data, Error> => {
+    let arg1;
+    let arg2;
+    let arg3;
+    let arg4;
+    let arg5;
+    // QueryKey is either a string a readonly Array. In this case, we just pass all arguments in order
+    if (typeof queryArg === 'string' || Array.isArray(queryArg)) {
+        arg1 = queryArg;
+        arg2 = queryFn;
+        arg3 = snackErrorMsg;
+        arg4 = options;
+        arg5 = dispatchOnError;
+    } else {
+        arg1 = (queryArg as SnackQueryDict<QueryFnData, Data, QueryKeyExtended>)
+            .queryKey;
+        arg2 = (queryArg as SnackQueryDict<QueryFnData, Data, QueryKeyExtended>)
+            .queryFn;
+        arg3 = (queryArg as SnackQueryDict<QueryFnData, Data, QueryKeyExtended>)
+            .snackErrorMsg;
+        arg4 = (queryArg as SnackQueryDict<QueryFnData, Data, QueryKeyExtended>)
+            .options;
+        arg5 = (queryArg as SnackQueryDict<QueryFnData, Data, QueryKeyExtended>)
+            .dispatchOnError;
+    }
+    return useBaseSnackQuery<QueryFnData, Error, Data, QueryKeyExtended>(
+        arg1,
+        arg2,
+        arg3,
+        arg4,
+        arg5,
+    );
 };
 
 /**

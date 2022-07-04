@@ -1,9 +1,4 @@
-import React, {
-    FunctionComponent,
-    useCallback,
-    useMemo,
-    useEffect,
-} from 'react';
+import React, { FunctionComponent, useMemo, useEffect, useState } from 'react';
 // @ts-ignore
 import { AddButton, useSafeIntl, IconButton } from 'bluesquare-components';
 // @ts-ignore
@@ -18,11 +13,18 @@ import { commaSeparatedIdsToArray } from '../../../utils/forms';
 import { useTeamValidation } from '../validation';
 import { IntlFormatMessage } from '../../../types/intl';
 
-import { SaveTeamQuery, useSaveTeam } from '../hooks/requests/useSaveTeam';
+import {
+    convertAPIErrorsToState,
+    SaveTeamQuery,
+    useSaveTeam,
+} from '../hooks/requests/useSaveTeam';
 import { useGetProjectsDropDown } from '../hooks/requests/useGetProjectsDropDown';
 import { useGetProfilesDropdown } from '../hooks/requests/useGetProfilesDropdown';
 import { useGetTeams } from '../hooks/requests/useGetTeams';
-
+import {
+    useApiErrorValidation,
+    useTranslatedErrors,
+} from '../../../libs/validation';
 import { TEAM_OF_TEAMS, TEAM_OF_USERS } from '../constants';
 import MESSAGES from '../messages';
 
@@ -77,6 +79,7 @@ export const CreateEditTeam: FunctionComponent<Props> = ({
 }) => {
     const { formatMessage } = useSafeIntl();
     const currentUser = useCurrentUser();
+    const [closeModal, setCloseModal] = useState<any>();
     const { data: projectsDropdown, isFetching: isFetchingProjects } =
         useGetProjectsDropDown();
     const { data: profliesDropdown, isFetching: isFetchingProfiles } =
@@ -94,8 +97,22 @@ export const CreateEditTeam: FunctionComponent<Props> = ({
             });
         },
     });
+    const { mutateAsync: saveTeam } = useSaveTeam(dialogType);
 
-    const schema = useTeamValidation();
+    const {
+        apiErrors,
+        payload,
+        mutation: save,
+    } = useApiErrorValidation<Partial<SaveTeamQuery>, any>({
+        mutationFn: saveTeam,
+        onSuccess: () => {
+            closeModal.closeDialog();
+            formik.resetForm();
+        },
+        convertError: convertAPIErrorsToState,
+    });
+
+    const schema = useTeamValidation(apiErrors, payload);
 
     const formik = useFormik({
         initialValues: {
@@ -111,7 +128,7 @@ export const CreateEditTeam: FunctionComponent<Props> = ({
         enableReinitialize: true,
         validateOnBlur: true,
         validationSchema: schema,
-        onSubmit: (values: Partial<SaveTeamQuery>) => savePlanning(values), // TODO: convert forms string to Array of IDs
+        onSubmit: save, // TODO: convert forms string to Array of IDs
     });
 
     const {
@@ -126,8 +143,6 @@ export const CreateEditTeam: FunctionComponent<Props> = ({
         resetForm,
     } = formik;
 
-    const { mutateAsync: savePlanning } = useSaveTeam(dialogType, resetForm);
-
     const renderTrigger = useMemo(
         () => makeRenderTrigger(dialogType),
         [dialogType],
@@ -136,13 +151,14 @@ export const CreateEditTeam: FunctionComponent<Props> = ({
         setFieldTouched(keyValue, true);
         setFieldValue(keyValue, value);
     };
-    const getErrors = useCallback(
-        keyValue => {
-            if (!touched[keyValue]) return [];
-            return errors[keyValue] ? [errors[keyValue]] : [];
-        },
-        [errors, touched],
-    );
+
+    const getErrors = useTranslatedErrors({
+        errors,
+        formatMessage,
+        touched,
+        messages: MESSAGES,
+    });
+
     const titleMessage = formatTitle(dialogType, formatMessage);
 
     useEffect(() => {
@@ -161,7 +177,7 @@ export const CreateEditTeam: FunctionComponent<Props> = ({
                 allowConfirm={isValid && !isEqual(values, initialValues)}
                 titleMessage={titleMessage}
                 onConfirm={closeDialog => {
-                    closeDialog();
+                    setCloseModal({ closeDialog });
                     handleSubmit();
                 }}
                 onCancel={closeDialog => {

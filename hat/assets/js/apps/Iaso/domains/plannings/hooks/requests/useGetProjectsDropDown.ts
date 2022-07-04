@@ -9,11 +9,11 @@ export const useGetProjectsDropDown = (): UseQueryResult<
     DropdownOptions<number>,
     Error
 > => {
-    return useSnackQuery(
-        ['projects'],
-        () => getRequest('/api/projects'),
-        MESSAGES.projectsError,
-        {
+    return useSnackQuery({
+        queryKey: ['projects'],
+        queryFn: () => getRequest('/api/projects'),
+        snackErrorMsg: MESSAGES.projectsError,
+        options: {
             select: data => {
                 return (
                     data?.projects?.map((project: Project) => {
@@ -25,5 +25,5 @@ export const useGetProjectsDropDown = (): UseQueryResult<
                 );
             },
         },
-    );
+    });
 };

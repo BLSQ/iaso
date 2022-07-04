@@ -1,9 +1,4 @@
-import React, {
-    FunctionComponent,
-    useCallback,
-    useMemo,
-    useState,
-} from 'react';
+import React, { FunctionComponent, useMemo, useState } from 'react';
 // @ts-ignore
 import { AddButton, useSafeIntl, IconButton } from 'bluesquare-components';
 import FileCopyIcon from '@material-ui/icons/FileCopy';
@@ -28,7 +23,10 @@ import { usePlanningValidation } from '../hooks/validation';
 import { commaSeparatedIdsToArray } from '../../../utils/forms';
 import { IntlFormatMessage } from '../../../types/intl';
 import { useGetProjectsDropDown } from '../hooks/requests/useGetProjectsDropDown';
-import { useApiErrorValidation } from '../../../libs/validation';
+import {
+    useApiErrorValidation,
+    useTranslatedErrors,
+} from '../../../libs/validation';
 
 type ModalMode = 'create' | 'edit' | 'copy';
 
@@ -175,13 +173,12 @@ export const CreateEditPlanning: FunctionComponent<Props> = ({
         setFieldTouched(keyValue, true);
         setFieldValue(keyValue, value);
     };
-    const getErrors = useCallback(
-        keyValue => {
-            if (!touched[keyValue]) return [];
-            return errors?.[keyValue] ? [errors[keyValue]] : [];
-        },
-        [errors, touched],
-    );
+    const getErrors = useTranslatedErrors({
+        errors,
+        formatMessage,
+        touched,
+        messages: MESSAGES,
+    });
     const titleMessage = formatTitle(type, formatMessage);
     return (
         <FormikProvider value={formik}>

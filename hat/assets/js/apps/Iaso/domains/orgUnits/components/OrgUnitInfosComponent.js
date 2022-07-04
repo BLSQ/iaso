@@ -3,7 +3,7 @@
 /* eslint-disable react/prop-types */
 import React from 'react';
 
-import { Grid, DialogContentText } from '@material-ui/core';
+import { Grid, DialogContentText, Box } from '@material-ui/core';
 
 import PropTypes from 'prop-types';
 import moment from 'moment';
@@ -211,6 +211,7 @@ const OrgUnitCreationDetails = ({ orgUnit }) => (
             value={orgUnit.source}
             disabled
             label={MESSAGES.source}
+            withMarginTop={!orgUnit.reference_instance}
         />
         <InputComponent
             keyValue="created_at"
@@ -248,7 +249,10 @@ const OrgUnitInfosComponent = ({
 
     return (
         <Grid container spacing={4}>
-            {(orgUnit.reference_instance || formId === referenceFormId) && (
+            {(orgUnit.reference_instance ||
+                (formId === referenceFormId &&
+                    formId !== undefined &&
+                    referenceFormId !== undefined)) && (
                 <SpeedDialInstanceActions
                     speedDialClasses={classes.speedDialTop}
                     actions={Actions(
@@ -276,6 +280,7 @@ const OrgUnitInfosComponent = ({
                     value={orgUnit.name.value}
                     errors={orgUnit.name.errors}
                     label={MESSAGES.name}
+                    withMarginTop={!orgUnit.reference_instance}
                 />
                 <InputComponent
                     keyValue="org_unit_type_id"
@@ -309,58 +314,65 @@ const OrgUnitInfosComponent = ({
                     }))}
                     label={MESSAGES.groups}
                 />
-                <InputComponent
-                    keyValue="validation_status"
-                    isClearable={false}
-                    onChange={onChangeInfo}
-                    errors={orgUnit.validation_status.errors}
-                    value={orgUnit.validation_status.value}
-                    type="select"
-                    label={MESSAGES.status}
-                    options={[
-                        {
-                            label: formatMessage(MESSAGES.new),
-                            value: 'NEW',
-                        },
-                        {
-                            label: formatMessage(MESSAGES.validated),
-                            value: 'VALID',
-                        },
-                        {
-                            label: formatMessage(MESSAGES.rejected),
-                            value: 'REJECTED',
-                        },
-                    ]}
-                />
-                <InputComponent
-                    keyValue="source_ref"
-                    value={orgUnit.source_ref.value || ''}
-                    onChange={onChangeInfo}
-                    errors={orgUnit.source_ref.errors}
-                />
-                <FormControlComponent
-                    errors={orgUnit.parent_id.errors}
-                    id="ou-tree-input"
-                >
-                    <OrgUnitTreeviewModal
-                        toggleOnLabelClick={false}
-                        titleMessage={MESSAGES.selectParentOrgUnit}
-                        onConfirm={treeviewOrgUnit => {
-                            if (
-                                (treeviewOrgUnit
-                                    ? treeviewOrgUnit.id
-                                    : null) !== orgUnit.parent_id.value
-                            ) {
-                                onChangeInfo('parent_id', treeviewOrgUnit?.id);
-                            }
-                        }}
-                        source={orgUnit.source_id}
-                        initialSelection={reformatOrgUnit(orgUnit)}
-                        resetTrigger={resetTrigger}
-                    />
-                </FormControlComponent>
                 {orgUnit.reference_instance && (
-                    <OrgUnitCreationDetails orgUnit={orgUnit} />
+                    <>
+                        <InputComponent
+                            keyValue="validation_status"
+                            isClearable={false}
+                            onChange={onChangeInfo}
+                            errors={orgUnit.validation_status.errors}
+                            value={orgUnit.validation_status.value}
+                            type="select"
+                            label={MESSAGES.status}
+                            options={[
+                                {
+                                    label: formatMessage(MESSAGES.new),
+                                    value: 'NEW',
+                                },
+                                {
+                                    label: formatMessage(MESSAGES.validated),
+                                    value: 'VALID',
+                                },
+                                {
+                                    label: formatMessage(MESSAGES.rejected),
+                                    value: 'REJECTED',
+                                },
+                            ]}
+                        />
+                        <InputComponent
+                            keyValue="source_ref"
+                            value={orgUnit.source_ref.value || ''}
+                            onChange={onChangeInfo}
+                            errors={orgUnit.source_ref.errors}
+                        />
+                        <Box mb={-2}>
+                            <FormControlComponent
+                                errors={orgUnit.parent_id.errors}
+                                id="ou-tree-input"
+                            >
+                                <OrgUnitTreeviewModal
+                                    toggleOnLabelClick={false}
+                                    titleMessage={MESSAGES.selectParentOrgUnit}
+                                    onConfirm={treeviewOrgUnit => {
+                                        if (
+                                            (treeviewOrgUnit
+                                                ? treeviewOrgUnit.id
+                                                : null) !==
+                                            orgUnit.parent_id.value
+                                        ) {
+                                            onChangeInfo(
+                                                'parent_id',
+                                                treeviewOrgUnit?.id,
+                                            );
+                                        }
+                                    }}
+                                    source={orgUnit.source_id}
+                                    initialSelection={reformatOrgUnit(orgUnit)}
+                                    resetTrigger={resetTrigger}
+                                />
+                            </FormControlComponent>
+                        </Box>
+                    </>
                 )}
                 <InputComponent
                     keyValue="aliases"
@@ -368,12 +380,73 @@ const OrgUnitInfosComponent = ({
                     value={orgUnit.aliases.value}
                     type="arrayInput"
                 />
+                {orgUnit.reference_instance && (
+                    <OrgUnitCreationDetails orgUnit={orgUnit} />
+                )}
             </Grid>
-            <Grid item xs={12} md={8}>
+
+            {!orgUnit.reference_instance && (
+                <Grid item xs={12} md={4}>
+                    <InputComponent
+                        keyValue="validation_status"
+                        isClearable={false}
+                        onChange={onChangeInfo}
+                        errors={orgUnit.validation_status.errors}
+                        value={orgUnit.validation_status.value}
+                        type="select"
+                        label={MESSAGES.status}
+                        options={[
+                            {
+                                label: formatMessage(MESSAGES.new),
+                                value: 'NEW',
+                            },
+                            {
+                                label: formatMessage(MESSAGES.validated),
+                                value: 'VALID',
+                            },
+                            {
+                                label: formatMessage(MESSAGES.rejected),
+                                value: 'REJECTED',
+                            },
+                        ]}
+                    />
+                    <InputComponent
+                        keyValue="source_ref"
+                        value={orgUnit.source_ref.value || ''}
+                        onChange={onChangeInfo}
+                        errors={orgUnit.source_ref.errors}
+                    />
+                    <FormControlComponent
+                        errors={orgUnit.parent_id.errors}
+                        id="ou-tree-input"
+                    >
+                        <OrgUnitTreeviewModal
+                            toggleOnLabelClick={false}
+                            titleMessage={MESSAGES.selectParentOrgUnit}
+                            onConfirm={treeviewOrgUnit => {
+                                if (
+                                    (treeviewOrgUnit
+                                        ? treeviewOrgUnit.id
+                                        : null) !== orgUnit.parent_id.value
+                                ) {
+                                    onChangeInfo(
+                                        'parent_id',
+                                        treeviewOrgUnit?.id,
+                                    );
+                                }
+                            }}
+                            source={orgUnit.source_id}
+                            initialSelection={reformatOrgUnit(orgUnit)}
+                            resetTrigger={resetTrigger}
+                        />
+                    </FormControlComponent>
+                </Grid>
+            )}
+
+            <Grid item xs={12} md={orgUnit.reference_instance ? 8 : 4}>
                 {orgUnit.id && !orgUnit.reference_instance && (
                     <OrgUnitCreationDetails orgUnit={orgUnit} />
                 )}
-
                 {orgUnit.reference_instance && (
                     <WidgetPaper
                         id="form-contents"

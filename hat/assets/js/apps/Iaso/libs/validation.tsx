@@ -1,7 +1,8 @@
 import { FormikErrors, FormikHelpers } from 'formik';
-import { useCallback, useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import { UseMutateAsyncFunction } from 'react-query';
-import { TestConfig } from 'yup';
+import { TestConfig, TestContext } from 'yup';
+import { isEqual } from 'lodash';
 import { ApiError } from './Api';
 import { IntlFormatMessage, IntlMessage } from '../types/intl';
 import { ValidationError } from '../types/utils';
@@ -116,25 +117,79 @@ export const useApiErrorValidation = <T, K>({
  * It compares the value of the form field with the value sent to the backend for that field. If the values match
  * and there was a backend error for this field, the validation will fail.
  *
+ *
+ * The errors sent by the backend (and access with errors[fieldKey]) should be keys from the MESSAGES object used to get translations
+ *
+ * The translations themeselves should be done at the parent level, using useTranslatedErrors
+ *
  */
-export const makeAPIErrorValidator =
-    <T,>(
-        errors: ValidationError,
-        payload: T,
-        formatMessage: IntlFormatMessage,
-        messages: Record<string, IntlMessage>,
-    ) =>
-    (fieldKey: string): TestConfig<any, Record<string, any>> => {
-        return {
-            name: `API Errors ${fieldKey}`,
-            test: value => {
-                if (errors?.[fieldKey] && value === payload?.[fieldKey])
-                    return false;
-                return true;
+
+type TestContextExtended = TestContext<Record<string, any>> & {
+    originalValue: any;
+};
+
+export const useAPIErrorValidator = <T,>(
+    errors: ValidationError,
+    payload: T,
+    // eslint-disable-next-line no-unused-vars
+): ((fieldKey: string) => TestConfig<any, Record<string, any>>) => {
+    return useMemo(
+        () =>
+            (fieldKey: string): TestConfig<any, Record<string, any>> => {
+                return {
+                    name: `API Errors ${fieldKey}`,
+                    test: (_value, context: TestContextExtended) => {
+                        if (
+                            errors?.[fieldKey] &&
+                            // Using originalValue to avoid mismatches due to yup's `transform` method, eg with dates
+                            isEqual(context.originalValue, payload?.[fieldKey])
+                        ) {
+                            return false;
+                        }
+                        return true;
+                    },
+                    message: errors?.[fieldKey] ?? null,
+                } as TestConfig<any, Record<string, any>>;
             },
-            message: errors?.[fieldKey]
-                ? formatMessage(messages[errors?.[fieldKey]]) ??
-                  errors?.[fieldKey]
-                : null,
-        } as TestConfig<any, Record<string, any>>;
-    };
+        [errors, payload],
+    );
+};
+
+type GetErrorParams = {
+    formatMessage: IntlFormatMessage;
+    touched: Record<string, boolean>;
+    errors: Record<string, string>;
+    messages: Record<string, IntlMessage>;
+};
+
+/**
+ * Takes touched and errors from formik
+ * messages is the usual MESSAGES dict of translations
+ * formatMessage should come from useSafeIntl
+ *
+ * returns a callback that can be called in the `errors`props of an InputComponent to provide a trabslated error message
+ *
+ * touched is used to prevent setting the fields in error before the user has had a chance to type
+ *
+ */
+export const useTranslatedErrors = ({
+    formatMessage,
+    touched,
+    errors,
+    messages,
+}: // eslint-disable-next-line no-unused-vars
+GetErrorParams): ((keyValue: string) => string[]) => {
+    const getErrors = useCallback(
+        keyValue => {
+            if (!touched[keyValue]) return [];
+            const errorKey = errors[keyValue];
+            if (!errorKey) return [];
+            const message = messages[errorKey]
+                ? formatMessage(messages[errorKey])
+                : errorKey;
+            return [message];
+        },
+        [errors, formatMessage, messages, touched],
+    );
+    return getErrors;
+};

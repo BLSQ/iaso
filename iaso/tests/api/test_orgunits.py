@@ -1,5 +1,7 @@
-from django.contrib.gis.geos import Polygon, Point, MultiPolygon
+from django.contrib.gis.geos import Polygon, Point, MultiPolygon, GEOSGeometry
 import typing
+
+from django.db import connection
 
 from hat.audit.models import Modification
 from iaso import models as m
@@ -34,6 +36,7 @@ class OrgUnitAPITestCase(APITestCase):
 
         cls.mock_multipolygon = MultiPolygon(Polygon([[-1.3, 2.5], [-1.7, 2.8], [-1.1, 4.1], [-1.3, 2.5]]))
         cls.mock_point = Point(x=4, y=50, z=100)
+        cls.mock_multipolygon_empty = GEOSGeometry("MULTIPOLYGON EMPTY", srid=4326)
 
         cls.elite_group = m.Group.objects.create(name="Elite councils", source_version=sw_version_1)
         cls.unofficial_group = m.Group.objects.create(name="Unofficial Jedi councils")
@@ -44,9 +47,7 @@ class OrgUnitAPITestCase(APITestCase):
             version=sw_version_1,
             name="Corruscant Jedi Council",
             geom=cls.mock_multipolygon,
-            simplified_geom=cls.mock_multipolygon,
             catchment=cls.mock_multipolygon,
-            location=cls.mock_point,
             validation_status=m.OrgUnit.VALIDATION_VALID,
             source_ref="PvtAI4RUMkr",
         )
@@ -65,33 +66,41 @@ class OrgUnitAPITestCase(APITestCase):
             org_unit_type=cls.jedi_council,
             version=sw_version_1,
             name="Endor Jedi Council",
-            geom=cls.mock_multipolygon,
-            simplified_geom=cls.mock_multipolygon,
-            catchment=cls.mock_multipolygon,
-            location=cls.mock_point,
+            geom=cls.mock_multipolygon_empty,
+            simplified_geom=cls.mock_multipolygon_empty,
+            catchment=cls.mock_multipolygon_empty,
             validation_status=m.OrgUnit.VALIDATION_VALID,
         )
+
+        # I am really sorry to have to rely on this ugly hack to set the location field to an empty point, but
+        # unfortunately GEOS doesn't seem to support empty 3D geometries yet:
+        # see: https://trac.osgeo.org/geos/ticket/1129, https://trac.osgeo.org/geos/ticket/1005 and
+        # https://code.djangoproject.com/ticket/33787 for example
+        with connection.cursor() as cursor:
+            cursor.execute(
+                "UPDATE iaso_orgunit SET location=ST_GeomFromText('POINT Z EMPTY') WHERE id = %s",
+                [cls.jedi_council_endor.pk],
+            )
+
         cls.jedi_squad_endor = m.OrgUnit.objects.create(
             parent=cls.jedi_council_endor,
             org_unit_type=cls.jedi_squad,
             version=sw_version_1,
             name="Endor Jedi Squad 1",
             geom=cls.mock_multipolygon,
-            simplified_geom=cls.mock_multipolygon,
             catchment=cls.mock_multipolygon,
             location=cls.mock_point,
             validation_status=m.OrgUnit.VALIDATION_VALID,
             source_ref="F9w3VW1cQmb",
         )
-        cls.jedi_squad_endor = m.OrgUnit.objects.create(
+        cls.jedi_squad_endor_2 = m.OrgUnit.objects.create(
             parent=cls.jedi_council_endor,
             org_unit_type=cls.jedi_squad,
             version=sw_version_1,
-            name="Endor Jedi Squad 1",
+            name="Endor Jedi Squad 2",
             geom=cls.mock_multipolygon,
             simplified_geom=cls.mock_multipolygon,
             catchment=cls.mock_multipolygon,
-            location=cls.mock_point,
             validation_status=m.OrgUnit.VALIDATION_VALID,
         )
 
@@ -166,6 +175,143 @@ class OrgUnitAPITestCase(APITestCase):
         self.assertEqual(response.json()["count"], 1)
         ou_id = response.json()["orgunits"][0]["id"]
         self.assertEqual(ou_id, self.jedi_council_corruscant.id)
+
+    def test_org_unit_search_geography_any(self):
+        """GET /orgunits/ filtered so only OUs with geolocation are returned.
+
+        This is what happens when a dashboard user choose "Données géographiques - avec point ou territoire"
+
+        With geolocation meaning:
+            - the OU has a point location in the location field
+            - OR the OU has a shape in the simplified_geom field
+            - OR both
+
+        Empty geometries (POINT EMPTY, ...) and NULL values are both considered as "no geolocation" (see IA-1141)
+        """
+        self.client.force_authenticate(self.yoda)
+
+        response = self.client.get(
+            '/api/orgunits/?&order=id&page=1&searchTabIndex=0&searches=[{"validation_status":"all","color":"f4511e","geography":"any","dateFrom":null,"dateTo":null}]&limit=50'
+        )
+        self.assertJSONResponse(response, 200)
+        json_response = response.json()
+
+        # Without filters there would be 5 OU, but 2 are filtered because they lack geolocation: Corruscant jedi council
+        # (null values) and Endor Jedi council: empty geometries
+        self.assertEqual(json_response["count"], 3)
+        returned_ou_ids = {ou["id"] for ou in json_response["orgunits"]}
+        self.assertNotIn(self.jedi_council_corruscant.id, returned_ou_ids)
+        self.assertNotIn(self.jedi_council_endor.id, returned_ou_ids)
+
+    def test_org_unit_search_geography_none(self):
+        """GET /orgunits/ filtered so only OUs without geolocation are returned.
+
+        This is what happens when a dashboard user choose "Données géographiques - Sans données géographiques".
+        This tests the opposite than test_org_unit_search_geography_any()
+        """
+        self.client.force_authenticate(self.yoda)
+
+        response = self.client.get(
+            '/api/orgunits/?&order=id&page=1&searchTabIndex=0&searches=[{"validation_status":"all","color":"f4511e","geography":"none","dateFrom":null,"dateTo":null}]&limit=50'
+        )
+        self.assertJSONResponse(response, 200)
+        json_response = response.json()
+
+        # Without filters there would be 5 OU, but 3 are filtered because they have geolocation: only Corruscant jedi
+        # council and Endor Jedi council are kept
+        self.assertEqual(json_response["count"], 2)
+        returned_ou_ids = {ou["id"] for ou in json_response["orgunits"]}
+        self.assertEqual(returned_ou_ids, {self.jedi_council_corruscant.id, self.jedi_council_endor.id})
+
+    def test_org_unit_search_geography_location(self):
+        """GET /orgunits/ filtered so only OUs with a point location are returned"""
+        self.client.force_authenticate(self.yoda)
+
+        response = self.client.get(
+            '/api/orgunits/?&order=id&page=1&searchTabIndex=0&searches=[{"validation_status":"all","color":"f4511e","geography":"location","dateFrom":null,"dateTo":null}]&limit=50'
+        )
+        self.assertJSONResponse(response, 200)
+        json_response = response.json()
+
+        # Only Endor Jedi Squad 1 have non-empty points inthe location field
+        self.assertEqual(json_response["count"], 2)
+        returned_ou_ids = {ou["id"] for ou in json_response["orgunits"]}
+        self.assertEqual(returned_ou_ids, {self.jedi_squad_endor.id, self.jedi_council_brussels.id})
+
+    def test_org_unit_search_geography_shape(self):
+        """GET /orgunits/ filtered so only OUs with a shape location are returned"""
+        self.client.force_authenticate(self.yoda)
+
+        response = self.client.get(
+            '/api/orgunits/?&order=id&page=1&searchTabIndex=0&searches=[{"validation_status":"all","color":"f4511e","geography":"shape","dateFrom":null,"dateTo":null}]&limit=50'
+        )
+        self.assertJSONResponse(response, 200)
+        json_response = response.json()
+
+        # Only Endor Jedi Squad 1 have non-empty points in the simplified_geom field
+        self.assertEqual(json_response["count"], 2)
+        returned_ou_ids = {ou["id"] for ou in json_response["orgunits"]}
+        self.assertEqual(returned_ou_ids, {self.jedi_squad_endor_2.id, self.jedi_council_brussels.id})
+
+    def test_org_unit_search_geography_with_shape_true(self):
+        """GET /orgunits/ filtered so only OUs with a shape location are returned"""
+        self.client.force_authenticate(self.yoda)
+
+        response = self.client.get(
+            '/api/orgunits/?&order=id&page=1&searchTabIndex=0&searches=[{"validation_status":"all","color":"f4511e","withShape":"true","dateFrom":null,"dateTo":null}]&limit=50'
+        )
+        self.assertJSONResponse(response, 200)
+        json_response = response.json()
+
+        # Only Endor Jedi Squad 1 have non-empty points in the simplified_geom field
+        self.assertEqual(json_response["count"], 2)
+        returned_ou_ids = {ou["id"] for ou in json_response["orgunits"]}
+        self.assertEqual(returned_ou_ids, {self.jedi_squad_endor_2.id, self.jedi_council_brussels.id})
+
+    def test_org_unit_search_geography_with_shape_false(self):
+        """GET /orgunits/ filtered so only OUs without a shape location are returned"""
+        self.client.force_authenticate(self.yoda)
+
+        response = self.client.get(
+            '/api/orgunits/?&order=id&page=1&searchTabIndex=0&searches=[{"validation_status":"all","color":"f4511e","withShape":"false","dateFrom":null,"dateTo":null}]&limit=50'
+        )
+        self.assertJSONResponse(response, 200)
+        json_response = response.json()
+        self.assertEqual(json_response["count"], 3)
+        returned_ou_ids = {ou["id"] for ou in json_response["orgunits"]}
+        self.assertEqual(
+            returned_ou_ids, {self.jedi_squad_endor.id, self.jedi_council_corruscant.id, self.jedi_council_endor.id}
+        )
+
+    def test_org_unit_search_geography_with_location_true(self):
+        """GET /orgunits/ filtered so only OUs with a point location are returned"""
+        self.client.force_authenticate(self.yoda)
+
+        response = self.client.get(
+            '/api/orgunits/?&order=id&page=1&searchTabIndex=0&searches=[{"validation_status":"all","color":"f4511e","withLocation":"true","dateFrom":null,"dateTo":null}]&limit=50'
+        )
+
+        self.assertJSONResponse(response, 200)
+        json_response = response.json()
+        self.assertEqual(json_response["count"], 2)
+        returned_ou_ids = {ou["id"] for ou in json_response["orgunits"]}
+        self.assertEqual(returned_ou_ids, {self.jedi_squad_endor.id, self.jedi_council_brussels.id})
+
+    def test_org_unit_search_geography_with_location_false(self):
+        """GET /orgunits/ filtered so only OUs without a point location are returned"""
+        self.client.force_authenticate(self.yoda)
+
+        response = self.client.get(
+            '/api/orgunits/?&order=id&page=1&searchTabIndex=0&searches=[{"validation_status":"all","color":"f4511e","withLocation":"false","dateFrom":null,"dateTo":null}]&limit=50'
+        )
+
+        self.assertJSONResponse(response, 200)
+        json_response = response.json()
+        self.assertEqual(json_response["count"], 3)
+        returned_ou_ids = {ou["id"] for ou in json_response["orgunits"]}
+        self.assertEqual(
+            returned_ou_ids, {self.jedi_council_corruscant.id, self.jedi_council_endor.id, self.jedi_squad_endor_2.id}
+        )
 
     def test_org_unit_instance_duplicate_search(self):
         """GET /orgunits/ with a search based on duplicates"""

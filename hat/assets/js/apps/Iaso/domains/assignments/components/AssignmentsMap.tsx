@@ -102,11 +102,16 @@ export const AssignmentsMap: FunctionComponent<Props> = ({
         newParentLocations: OrgUnitShape[] | undefined,
     ) => {
         const bounds = getLocationsBounds(newLocations, newParentLocations);
-        if (bounds && map?.current) {
-            try {
-                map.current.leafletElement.fitBounds(bounds, boundsOptions);
-            } catch (e) {
-                console.warn(e);
+        if (
+            newLocations.shapes.all.length > 0 ||
+            newLocations.markers.all.length > 0
+        ) {
+            if (bounds && map?.current) {
+                try {
+                    map.current.leafletElement.fitBounds(bounds, boundsOptions);
+                } catch (e) {
+                    console.warn(e);
+                }
             }
         }
     };

@@ -228,11 +228,14 @@ def fetch_and_match_forma_data():
 
     dfs = []
     for config in conf.content:
-        submissions = get_content_for_config(config)
-        country = OrgUnit.objects.get(id=config["country_id"])
-        compaigns_of_country = campaign_qs.filter(country_id=config["country_id"])
-        df = handle_country(submissions, country, compaigns_of_country)
-        dfs.append(df)
+        try:
+            submissions = get_content_for_config(config)
+            country = OrgUnit.objects.get(id=config["country_id"])
+            compaigns_of_country = campaign_qs.filter(country_id=config["country_id"])
+            df = handle_country(submissions, country, compaigns_of_country)
+            dfs.append(df)
+        except Exception:
+            logger.exception(f"Error handling forma data for country {config.get('country', conf)}")
 
     concatened_df = pd.concat(dfs)
     return concatened_df

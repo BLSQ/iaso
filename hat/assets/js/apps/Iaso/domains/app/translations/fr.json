@@ -268,6 +268,8 @@
     "iaso.label.deviceField": "Nom du champ \"device\"",
     "iaso.label.devices": "Appareils",
     "iaso.label.dhis2Id": "DHIS2 id",
+    "iaso.label.sentEmailInvitation": "Envoyer un courrier d'invitation",
+    "iaso.label.sentEmailInvitationWhenAdresseExist": "Saisissez l'adresse e-mail avant d'envoyer un e-mail d'invitation",
     "iaso.label.dhis2Link": "Aller sur DHIS2",
     "iaso.label.dhis2Mappings": "Correspondances avec DHIS2",
     "iaso.label.display": "Afficher",

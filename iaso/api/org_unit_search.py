@@ -1,6 +1,9 @@
 import re
 
-from django.db.models import Q, Count, Sum, Case, When, IntegerField, Value
+from django.contrib.gis.db.models import PointField, MultiPolygonField
+from django.contrib.gis.geos import GEOSGeometry
+from django.db.models import Q, Count, Sum, Case, When, IntegerField
+from django.db.models.functions import Cast
 
 from iaso.models import OrgUnit, Instance, DataSource
 
@@ -113,29 +116,40 @@ def build_org_units_queryset(queryset, params, profile):
     if org_unit_type_id:
         queryset = queryset.filter(org_unit_type__id__in=org_unit_type_id.split(","))
 
+    # We need a few things for empty location comparisons:
+    # 1. An annotated queryset (geography fields exposed as geometries)
+    queryset = queryset.annotate(location_as_geom=Cast("location", PointField(dim=3)))
+    queryset = queryset.annotate(simplified_geom_as_geom=Cast("simplified_geom", MultiPolygonField()))
+    # 2. Empty features to compare to
+    empty_point = GEOSGeometry("POINT EMPTY", srid=4326)
+    empty_multipolygon = GEOSGeometry("MULTIPOLYGON EMPTY", srid=4326)
+
+    has_location = Q(location__isnull=False) & (~Q(location_as_geom=empty_point))
+    has_simplified_geom = Q(simplified_geom__isnull=False) & (~Q(simplified_geom_as_geom=empty_multipolygon))
+
     if geography == "location":
-        queryset = queryset.filter(location__isnull=False)
+        queryset = queryset.filter(has_location)
 
     if geography == "shape":
-        queryset = queryset.filter(simplified_geom__isnull=False)
+        queryset = queryset.filter(has_simplified_geom)
 
     if geography == "none":
-        queryset = queryset.filter(Q(location__isnull=True) & Q(simplified_geom__isnull=True))
+        queryset = queryset.filter(~has_location & ~has_simplified_geom)
 
     if geography == "any":
-        queryset = queryset.filter(Q(location__isnull=False) | Q(simplified_geom__isnull=False))
+        queryset = queryset.filter(has_location | has_simplified_geom)
 
     if with_shape == "true":
-        queryset = queryset.filter(simplified_geom__isnull=False)
+        queryset = queryset.filter(has_simplified_geom)
 
     if with_shape == "false":
-        queryset = queryset.filter(simplified_geom__isnull=True)
+        queryset = queryset.filter(~has_simplified_geom)
 
     if with_location == "true":
-        queryset = queryset.filter(Q(location__isnull=False))
+        queryset = queryset.filter(has_location)
 
     if with_location == "false":
-        queryset = queryset.filter(Q(location__isnull=True))
+        queryset = queryset.filter(~has_location)
 
     if parent_id:
         if parent_id == "0":

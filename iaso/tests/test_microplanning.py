@@ -692,17 +692,18 @@ class AssignmentAPITestCase(APITestCase):
 
         response = self.client.get(f"/api/mobile/plannings/", format="json")
         r = self.assertJSONResponse(response, 200)
-        self.assertEqual(len(r), 2)
+        plannings = r["plannings"]
+        self.assertEqual(len(plannings), 2)
         # planning 1
-        p1 = r[0]
-        self.assertEqual(r[0]["name"], "planning1")
-        self.assertEqual(r[0]["assignments"], [{"org_unit": self.child1.id, "form_ids": []}])
+        p1 = plannings[0]
+        self.assertEqual(plannings[0]["name"], "planning1")
+        self.assertEqual(plannings[0]["assignments"], [{"org_unit_id": self.child1.id, "form_ids": []}])
 
-        p2 = r[1]
+        p2 = plannings[1]
         self.assertEqual(p2["name"], "planning2")
         self.assertEqual(
             p2["assignments"],
-            [{"org_unit": self.child1.id, "form_ids": []}, {"org_unit": self.child2.id, "form_ids": []}],
+            [{"org_unit_id": self.child1.id, "form_ids": []}, {"org_unit_id": self.child2.id, "form_ids": []}],
         )
 
         # Response look like
@@ -729,7 +730,7 @@ class AssignmentAPITestCase(APITestCase):
 
         response = self.client.get(f"/api/mobile/plannings/", format="json")
         r = self.assertJSONResponse(response, 200)
-        self.assertEqual(len(r), 0)
+        self.assertEqual(len(r["plannings"]), 0)
 
     def test_query_mobile_get(self):
         self.client.force_authenticate(self.user)

@@ -317,9 +317,7 @@ class OrgUnitViewSet(viewsets.ViewSet):
             valid_validations_status = ["NEW", "VALID", "REJECTED"]
 
             if validation_status not in valid_validations_status:
-                raise serializers.ValidationError(
-                    {"error": "Invalid validation status : {}".format(validation_status)}
-                )
+                raise serializers.ValidationError({"error": "Invalid validation status : {}".format(validation_status)})
             org_unit.validation_status = validation_status
 
         if "geo_json" in request.data:

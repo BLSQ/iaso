@@ -1,22 +1,33 @@
 import React, { FunctionComponent } from 'react';
 import { Box, Paper } from '@material-ui/core';
+import { useDispatch } from 'react-redux';
 
 import {
     // @ts-ignore
     Table,
 } from 'bluesquare-components';
 
-import { AssignmentsApi } from '../types/assigment';
+import { AssignmentsApi, AssignmentParams } from '../types/assigment';
 import { OrgUnitShape, OrgUnitMarker } from '../types/locations';
 import { useColumns } from '../configs/AssignmentsListTabColumns';
 import { DropdownTeamsOptions, SubTeam, User } from '../types/team';
 import { OrgUnit } from '../../orgUnits/types/orgUnit';
 import { Profile } from '../../../utils/usersUtils';
 
+import { baseUrls } from '../../../constants/urls';
+import { redirectTo } from '../../../routing/actions';
+
+const getOrderArray = orders =>
+    orders.split(',').map(stringValue => ({
+        id: stringValue.replace('-', ''),
+        desc: stringValue.indexOf('-') !== -1,
+    }));
+
 type Props = {
     orgUnits: Array<OrgUnitShape | OrgUnitMarker | OrgUnit>;
     assignments: AssignmentsApi;
     isFetchingOrgUnits: boolean;
+    params: AssignmentParams;
     handleSaveAssignment: (
         // eslint-disable-next-line no-unused-vars
         selectedOrgUnit: OrgUnitShape | OrgUnitMarker,
@@ -26,6 +37,7 @@ type Props = {
     selectedItem: SubTeam | User | undefined;
 };
 
+const baseUrl = baseUrls.assignments;
 export const AssignmentsListTab: FunctionComponent<Props> = ({
     orgUnits,
     isFetchingOrgUnits,
@@ -34,15 +46,17 @@ export const AssignmentsListTab: FunctionComponent<Props> = ({
     teams,
     profiles,
     selectedItem,
+    params,
 }: Props) => {
     const columns = useColumns({ orgUnits, assignments, teams, profiles });
+    const dispatch = useDispatch();
     return (
         <Paper>
             <Box maxHeight="70vh" overflow="auto">
                 <Table
                     data={orgUnits}
                     showPagination={false}
-                    defaultSorted={[{ id: 'name', desc: false }]}
+                    defaultSorted={getOrderArray(params.order)}
                     countOnTop={false}
                     marginTop={false}
                     marginBottom={false}
@@ -56,7 +70,15 @@ export const AssignmentsListTab: FunctionComponent<Props> = ({
                         assignments,
                         selectedItem,
                     }}
+                    params={{ order: params.order }}
                     onRowClick={row => handleSaveAssignment(row)}
+                    onTableParamsChange={p => {
+                        const newParams = {
+                            ...params,
+                            order: p.order,
+                        };
+                        dispatch(redirectTo(baseUrl, newParams));
+                    }}
                 />
             </Box>
         </Paper>

@@ -44,6 +44,8 @@ export const useColumns = ({
 }: Props): Column[] => {
     const { formatMessage } = useSafeIntl();
 
+    const firstOrgunit: OrgUnitShape | OrgUnitMarker | OrgUnit = orgUnits[0];
+    const parentCount: number = firstOrgunit ? getParentCount(firstOrgunit) : 0;
     return useMemo(() => {
         const columns: Column[] = [
             {
@@ -52,21 +54,15 @@ export const useColumns = ({
                 accessor: 'name',
                 align: 'left',
             },
-            // @ts-ignore
         ];
-        const firstOrgunit: OrgUnitShape | OrgUnitMarker | OrgUnit =
-            orgUnits[0];
-        const parentCount: number = firstOrgunit
-            ? getParentCount(firstOrgunit)
-            : 0;
-        Array(parentCount)
+        Array(parentCount > 0 ? parentCount - 1 : parentCount)
             .fill(null)
             .forEach((_, index) => {
                 columns.push({
                     Header: formatMessage(MESSAGES.orgUnitsParent, {
                         index: index + 1,
                     }),
-                    id: `parent.${'parent.'.repeat(index)}name`,
+                    id: `parent__${'parent__'.repeat(index)}name`,
                     accessor: `parent.${'parent.'.repeat(index)}name`,
                     align: 'center',
                 });
@@ -74,6 +70,7 @@ export const useColumns = ({
         const assignationColumn: Column = {
             Header: formatMessage(MESSAGES.assignment),
             id: 'assignment',
+            sortable: false,
             Cell: settings => {
                 return (
                     <UsersTeamsCell
@@ -90,5 +87,5 @@ export const useColumns = ({
         };
         columns.push(assignationColumn);
         return columns;
-    }, [assignments, formatMessage, orgUnits, profiles, teams]);
+    }, [assignments, formatMessage, profiles, teams, parentCount]);
 };

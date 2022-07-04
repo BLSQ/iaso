@@ -97,6 +97,7 @@ export const Assignments: FunctionComponent<Props> = ({ params }) => {
         currentTeam,
         parentSelected,
         baseOrgunitType,
+        order: params.order || 'name',
     });
 
     const isLoading =
@@ -274,6 +275,7 @@ export const Assignments: FunctionComponent<Props> = ({ params }) => {
                                     {tab === 'list' && (
                                         <AssignmentsListTab
                                             assignments={allAssignments}
+                                            params={params}
                                             teams={teams || []}
                                             profiles={profiles}
                                             orgUnits={orgUnits?.all || []}
@@ -282,6 +284,7 @@ export const Assignments: FunctionComponent<Props> = ({ params }) => {
                                             }
                                             isFetchingOrgUnits={
                                                 isLoadingAssignments ||
+                                                isFetchingOrgUnits ||
                                                 !orgUnits
                                             }
                                             selectedItem={selectedItem}

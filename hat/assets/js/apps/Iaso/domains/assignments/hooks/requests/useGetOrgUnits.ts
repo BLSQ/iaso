@@ -149,13 +149,14 @@ const mapLocation = ({
 };
 
 type Props = {
-    orgUnitParentIds: number[];
+    orgUnitParentIds: number[] | undefined;
     baseOrgunitType: string | undefined;
     assignments: AssignmentsApi;
     allAssignments: AssignmentsApi;
     teams: DropdownTeamsOptions[];
     profiles: Profile[];
     currentType: 'TEAM_OF_TEAMS' | 'TEAM_OF_USERS' | undefined;
+    order: string;
 };
 
 export const useGetOrgUnits = ({
@@ -166,13 +167,14 @@ export const useGetOrgUnits = ({
     teams,
     profiles,
     currentType,
+    order,
 }: Props): UseQueryResult<Locations, Error> => {
     const params = {
         validation_status: 'all',
         asLocation: true,
         limit: 5000,
-        order: 'id',
-        orgUnitParentIds: orgUnitParentIds.join(','),
+        order,
+        orgUnitParentIds: orgUnitParentIds?.join(','),
         geography: 'any',
         onlyDirectChildren: false,
         page: 1,
@@ -184,7 +186,7 @@ export const useGetOrgUnits = ({
 
     const select = useCallback(
         (orgUnits: OrgUnit[]) => {
-            if (baseOrgunitType) {
+            if (baseOrgunitType && orgUnitParentIds) {
                 return mapLocation({
                     orgUnits,
                     orgUnitParentIds,
@@ -208,13 +210,15 @@ export const useGetOrgUnits = ({
             currentType,
         ],
     );
-
     return useSnackQuery(
         ['orgUnits', params, baseOrgunitType],
         () => getRequest(url),
         undefined,
         {
-            enabled: orgUnitParentIds?.length > 0 && Boolean(baseOrgunitType),
+            enabled:
+                orgUnitParentIds &&
+                orgUnitParentIds.length > 0 &&
+                Boolean(baseOrgunitType),
             staleTime: 1000 * 60 * 15, // in MS
             cacheTime: 1000 * 60 * 5,
             select,

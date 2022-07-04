@@ -26,6 +26,7 @@ type Props = {
     currentTeam: Team | undefined;
     parentSelected: OrgUnitShape | undefined;
     baseOrgunitType: string | undefined;
+    order: string;
 };
 
 type Result = {
@@ -56,9 +57,11 @@ export const useGetAssignmentData = ({
     currentTeam,
     parentSelected,
     baseOrgunitType,
+    order,
 }: Props): Result => {
     const [teams, setTeams] = useState<DropdownTeamsOptions[] | undefined>();
     const [profiles, setProfiles] = useState<ProfileWithColor[]>([]);
+    const [orgUnits, setOrgUnits] = useState<Locations>();
 
     const { data: dataProfiles = [] } = useGetProfiles();
     const {
@@ -77,7 +80,7 @@ export const useGetAssignmentData = ({
     }: {
         data?: AssignmentsResult;
         isLoading: boolean;
-    } = useGetAssignments({ planningId }, currentTeam);
+    } = useGetAssignments({ planning: planningId }, currentTeam);
     const assignments = useMemo(() => (data ? data.assignments : []), [data]);
     const allAssignments = useMemo(
         () => (data ? data.allAssignments : []),
@@ -92,19 +95,21 @@ export const useGetAssignmentData = ({
         });
     const { mutateAsync: saveAssignment, isLoading: isSaving } =
         useSaveAssignment();
-    const { data: orgUnits, isFetching: isFetchingOrgUnits } = useGetOrgUnits({
-        orgUnitParentIds: useGetOrgUnitParentIds({
-            currentTeam,
+    const { data: dataOrgUnits, isFetching: isFetchingOrgUnits } =
+        useGetOrgUnits({
+            orgUnitParentIds: useGetOrgUnitParentIds({
+                currentTeam,
+                allAssignments,
+                planning,
+            }),
+            baseOrgunitType,
+            assignments,
             allAssignments,
-            planning,
-        }),
-        baseOrgunitType,
-        assignments,
-        allAssignments,
-        teams: teams || [],
-        profiles: profiles || [],
-        currentType: currentTeam?.type,
-    });
+            teams: teams || [],
+            profiles: profiles || [],
+            currentType: currentTeam?.type,
+            order,
+        });
     const sidebarData =
         currentTeam?.type === 'TEAM_OF_USERS'
             ? currentTeam.users_details
@@ -122,6 +127,14 @@ export const useGetAssignmentData = ({
         }
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [dataProfiles]);
+
+    useEffect(() => {
+        if (dataOrgUnits && !isEqual(dataOrgUnits, orgUnits)) {
+            setOrgUnits(dataOrgUnits);
+        }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [dataOrgUnits]);
+
     return useMemo(() => {
         const setItemColor = (color, itemId) => {
             // TODO: improve this

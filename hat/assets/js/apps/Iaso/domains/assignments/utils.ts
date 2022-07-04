@@ -100,62 +100,6 @@ export const getTeamName = (
     return displayString;
 };
 
-// const makeTeamOfTeamsParams = ({
-//     saveParams,
-//     assignment,
-//     emptyAssignment,
-//     assignedTeam,
-//     selectedItem,
-// }) => {
-//     const id = assignment?.id ?? emptyAssignment?.id;
-//     if (id) {
-//         if (assignedTeam && selectedItem.id === assignedTeam.original.id) {
-//             return {
-//                 ...saveParams,
-//                 team: null,
-//                 user: null,
-//                 id,
-//             };
-//         }
-//         return {
-//             id,
-//             ...saveParams,
-//             team: selectedItem.id,
-//         };
-//     }
-//     return { ...saveParams, team: selectedItem.id };
-// };
-
-// const makeTeamOfUserParams = ({
-//     saveParams,
-//     selectedItem,
-//     assignment,
-//     emptyAssignment,
-//     assignedUser,
-// }) => {
-//     // saveParams.user = selectedItem.id;
-//     const id = assignment?.id ?? emptyAssignment?.id;
-//     if (id) {
-//         if (assignedUser && selectedItem.id === assignedUser.user_id) {
-//             return {
-//                 ...saveParams,
-//                 team: null,
-//                 user: null,
-//                 id,
-//             };
-//         }
-//         return {
-//             id,
-//             ...saveParams,
-//             user: selectedItem.id,
-//         };
-//     }
-//     return {
-//         ...saveParams,
-//         user: selectedItem.id,
-//     };
-// };
-
 type SaveParamsProps = {
     allAssignments: AssignmentsApi;
     selectedOrgUnit: OrgUnitShape | OrgUnitMarker | BaseLocation;

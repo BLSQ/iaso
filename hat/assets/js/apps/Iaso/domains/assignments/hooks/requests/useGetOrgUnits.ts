@@ -216,9 +216,7 @@ export const useGetOrgUnits = ({
         undefined,
         {
             enabled:
-                orgUnitParentIds &&
-                orgUnitParentIds.length > 0 &&
-                Boolean(baseOrgunitType),
+                Boolean(params.orgUnitParentIds) && Boolean(baseOrgunitType),
             staleTime: 1000 * 60 * 15, // in MS
             cacheTime: 1000 * 60 * 5,
             select,

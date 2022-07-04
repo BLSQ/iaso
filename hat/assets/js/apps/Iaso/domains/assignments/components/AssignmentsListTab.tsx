@@ -17,11 +17,26 @@ import { Profile } from '../../../utils/usersUtils';
 import { baseUrls } from '../../../constants/urls';
 import { redirectTo } from '../../../routing/actions';
 
-const getOrderArray = orders =>
-    orders.split(',').map(stringValue => ({
+type Order = {
+    id: string;
+    desc: boolean;
+};
+
+type Orders = Array<Order>;
+
+const getOrderArray = (orders: string | undefined): Orders => {
+    if (!orders)
+        return [
+            {
+                id: 'name',
+                desc: false,
+            },
+        ];
+    return orders.split(',').map(stringValue => ({
         id: stringValue.replace('-', ''),
         desc: stringValue.indexOf('-') !== -1,
     }));
+};
 
 type Props = {
     orgUnits: Array<OrgUnitShape | OrgUnitMarker | OrgUnit>;

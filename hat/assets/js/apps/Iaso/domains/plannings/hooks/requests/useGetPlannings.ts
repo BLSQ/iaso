@@ -56,21 +56,29 @@ export const useGetPlannings = (
 ): UseQueryResult<PlanningList, Error> => {
     const queryKey: any[] = ['planningsList', options];
     // @ts-ignore
-    return useSnackQuery(queryKey, () => getPlannings(options), undefined, {
-        select: data => {
-            return {
-                ...data,
-                results: data?.results.map(planning => {
-                    return {
-                        ...planning,
-                        status: planning.published_at ? 'published' : 'draft',
-                        started_at: dateApiToDateRangePicker(
-                            planning.started_at,
-                        ),
-                        ended_at: dateApiToDateRangePicker(planning.ended_at),
-                    };
-                }),
-            };
+    return useSnackQuery({
+        queryKey,
+        queryFn: () => getPlannings(options),
+        options: {
+            select: data => {
+                return {
+                    ...data,
+                    results: data?.results.map(planning => {
+                        return {
+                            ...planning,
+                            status: planning.published_at
+                                ? 'published'
+                                : 'draft',
+                            started_at: dateApiToDateRangePicker(
+                                planning.started_at,
+                            ),
+                            ended_at: dateApiToDateRangePicker(
+                                planning.ended_at,
+                            ),
+                        };
+                    }),
+                };
+            },
         },
     });
 };

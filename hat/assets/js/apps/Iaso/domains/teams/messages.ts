@@ -93,6 +93,10 @@ const MESSAGES = defineMessages({
         id: 'iaso.teams.teamDeleted',
         defaultMessage: 'Team deleted',
     },
+    noLoopInSubTree: {
+        id: 'iaso.teams.noLoopInSubTree',
+        defaultMessage: 'Cannot create loop in teams tree',
+    },
 });
 
 export default MESSAGES;

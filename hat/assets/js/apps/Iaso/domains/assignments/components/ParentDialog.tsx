@@ -33,7 +33,7 @@ import { AssignmentsApi, SaveAssignmentQuery } from '../types/assigment';
 import { Profile } from '../../../utils/usersUtils';
 import { Planning } from '../types/planning';
 
-import { getColumns } from '../configs/ParentDialogColumns';
+import { useColumns } from '../configs/ParentDialogColumns';
 
 import { getTeamName, getSaveParams } from '../utils';
 
@@ -79,6 +79,7 @@ export const ParentDialog: FunctionComponent<Props> = ({
     planning,
 }) => {
     const { formatMessage } = useSafeIntl();
+    const columns = useColumns({ teams });
     const classes: Record<string, string> = useStyles();
     const [open, setOpen] = useState<boolean>(false);
     const [mappedOrgUnits, setMappedOrgUnits] = useState<
@@ -192,7 +193,7 @@ export const ParentDialog: FunctionComponent<Props> = ({
                     countOnTop={false}
                     marginTop={false}
                     marginBottom={false}
-                    columns={getColumns({ formatMessage, teams })}
+                    columns={columns}
                     count={mappedOrgUnits.length}
                     extraProps={{
                         childrenOrgunits,

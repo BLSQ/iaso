@@ -123,7 +123,27 @@ const MESSAGES = defineMessages({
     },
     deleteWarning: {
         id: 'iaso.label.deleteWarning',
-        defaultMessage: 'Are you sure you want to delete {planningName}? ',
+        defaultMessage: 'Are you sure you want to delete {planningName}?',
+    },
+    planningAndOrgUnit: {
+        id: 'iaso.error.label.planningAndOrgUnit',
+        defaultMessage: 'Planning and org unit must be in the same project',
+    },
+    planningAndForms: {
+        id: 'iaso.error.label.planningAndForms',
+        defaultMessage: 'Planning and forms must be in the same project',
+    },
+    planningAndTeams: {
+        id: 'iaso.error.label.planningAndTeams',
+        defaultMessage: 'Planning and teams must be in the same project',
+    },
+    EndDateBeforeStartDate: {
+        id: 'iaso.error.label.EndDateBeforeStartDate',
+        defaultMessage: "End date can't before start date",
+    },
+    startDateAfterEndDate: {
+        id: 'iaso.error.label.startDateAfterEndDate',
+        defaultMessage: "Start date can't after end date",
     },
 });
 

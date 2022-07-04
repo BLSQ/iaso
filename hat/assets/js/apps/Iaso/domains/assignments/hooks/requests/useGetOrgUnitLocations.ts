@@ -17,7 +17,7 @@ import { getOrgUnitAssignation } from '../../utils';
 
 type MapProps = {
     orgUnits: OrgUnit[];
-    orgUnitParentId: number | undefined;
+    orgUnitParentIds: number[];
     baseOrgunitType: string;
     assignments: AssignmentsApi;
     allAssignments: AssignmentsApi;
@@ -28,7 +28,7 @@ type MapProps = {
 
 const mapLocation = ({
     orgUnits,
-    orgUnitParentId,
+    orgUnitParentIds,
     baseOrgunitType,
     assignments,
     allAssignments,
@@ -55,7 +55,7 @@ const mapLocation = ({
             name: orgUnit.name,
             orgUnitTypeId: orgUnit.org_unit_type_id,
         };
-        if (orgUnitParentId !== orgUnit.id) {
+        if (!orgUnitParentIds.find(ou => ou === orgUnit.id)) {
             if (parseInt(baseOrgunitType, 10) === orgUnit.org_unit_type_id) {
                 if (orgUnit.geo_json) {
                     const shape = {
@@ -147,7 +147,7 @@ const mapLocation = ({
 };
 
 type Props = {
-    orgUnitParentId: number | undefined;
+    orgUnitParentIds: number[];
     baseOrgunitType: string | undefined;
     assignments: AssignmentsApi;
     allAssignments: AssignmentsApi;
@@ -157,7 +157,7 @@ type Props = {
 };
 
 export const useGetOrgUnitLocations = ({
-    orgUnitParentId,
+    orgUnitParentIds,
     baseOrgunitType,
     assignments,
     allAssignments,
@@ -170,7 +170,7 @@ export const useGetOrgUnitLocations = ({
         asLocation: true,
         limit: 5000,
         order: 'id',
-        orgUnitParentId,
+        orgUnitParentIds: orgUnitParentIds.join(','),
         geography: 'any',
         onlyDirectChildren: false,
         page: 1,
@@ -184,14 +184,14 @@ export const useGetOrgUnitLocations = ({
         () => getRequest(url),
         undefined,
         {
-            enabled: Boolean(orgUnitParentId) && Boolean(baseOrgunitType),
+            enabled: orgUnitParentIds?.length > 0 && Boolean(baseOrgunitType),
             staleTime: 1000 * 60 * 15, // in MS
             cacheTime: 1000 * 60 * 5,
             select: (orgUnits: OrgUnit[]) => {
                 if (baseOrgunitType) {
                     return mapLocation({
                         orgUnits,
-                        orgUnitParentId,
+                        orgUnitParentIds,
                         baseOrgunitType,
                         assignments,
                         allAssignments,

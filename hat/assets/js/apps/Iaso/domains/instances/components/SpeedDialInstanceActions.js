@@ -5,8 +5,8 @@ import SpeedDialAction from '@material-ui/lab/SpeedDialAction';
 import PropTypes from 'prop-types';
 import EditIcon from '@material-ui/icons/Edit';
 import { injectIntl } from 'bluesquare-components';
-import MESSAGES from '../messages';
 import classnames from 'classnames';
+import MESSAGES from '../messages';
 
 const useStyles = makeStyles(theme => ({
     speedDial: {
@@ -26,7 +26,7 @@ const SpeedDialInstanceActions = props => {
         intl: { formatMessage },
         actions,
         onActionSelected,
-        speedDialClasses
+        speedDialClasses,
     } = props;
     const classes = useStyles();
     const [open, setOpen] = React.useState(false);

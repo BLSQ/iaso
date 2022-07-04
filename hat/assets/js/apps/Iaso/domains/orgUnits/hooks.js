@@ -150,7 +150,7 @@ export const useOrgUnitDetailData = (
     };
 };
 
-export const useSaveOrgUnit = onSuccess =>
+export const useSaveOrgUnit = (onSuccess, invalidateQueryKey = undefined) =>
     useSnackMutation(
         body =>
             body.id
@@ -158,7 +158,7 @@ export const useSaveOrgUnit = onSuccess =>
                 : postRequest('/api/orgunits/create_org_unit/', body),
         MESSAGES.saveOrgUnitSuccesfull,
         MESSAGES.saveOrgUnitError,
-        undefined,
+        invalidateQueryKey,
         { onSuccess },
     );
 

@@ -9,7 +9,7 @@ const getTeams = (): Promise<any> => {
 
 export const useGetTeams = (): UseQueryResult<any, Error> => {
     // @ts-ignore
-    return useSnackQuery(['teams'], () => getTeams());
+    return useSnackQuery(['allteams'], () => getTeams());
 };
 
 export const useGetTeamsDropDown = (): UseQueryResult<any, Error> => {

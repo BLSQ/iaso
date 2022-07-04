@@ -3,7 +3,7 @@ from django.urls import path, include
 from django.views.generic import RedirectView
 from django.conf import settings
 from django.conf.urls.static import static
-from iaso.views import page, health, token_auth
+from iaso.views import page, health
 import django_sql_dashboard
 
 admin.site.site_header = "Administration de Iaso"
@@ -12,7 +12,6 @@ admin.site.index_title = "Administration de Iaso"
 
 urlpatterns = [
     path("", RedirectView.as_view(pattern_name="dashboard:iaso", permanent=False), name="index"),
-    path("token_auth/", token_auth),
     path("_health/", health),
     path("health/", health),  # alias since current apache config hide _health/
     path("accounts/", include("django.contrib.auth.urls")),

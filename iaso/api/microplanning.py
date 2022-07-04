@@ -428,6 +428,66 @@ class AuditAssignmentSerializer(serializers.ModelSerializer):
         fields = "__all__"
 
 
+class BulkAssignmentSerializer(serializers.Serializer):
+    """Assign orgunit in bulk to as team or user.
+
+    update assignment object if it exists otherwise create it
+    Audit the modification"""
+
+    planning = serializers.PrimaryKeyRelatedField(queryset=Planning.objects.none(), write_only=True)
+    team = serializers.PrimaryKeyRelatedField(queryset=Team.objects.none(), write_only=True)
+    user = serializers.PrimaryKeyRelatedField(queryset=User.objects.none(), write_only=True)
+    org_units = serializers.PrimaryKeyRelatedField(queryset=OrgUnit.objects.none(), write_only=True, many=True)
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        user = self.context["request"].user
+        account = user.iaso_profile.account
+        users_in_account = User.objects.filter(iaso_profile__account=account)
+
+        self.fields["user"].queryset = users_in_account
+        self.fields["planning"].queryset = Planning.objects.filter_for_user(user)
+        self.fields["team"].queryset = Team.objects.filter_for_user(user)
+        self.fields["org_units"].child_relation.queryset = OrgUnit.objects.filter_for_user_and_app_id(user, None)
+
+    def validate(self, attrs):
+        if attrs.get("user") and attrs.get("team"):
+            raise serializers.ValidationError(
+                {"team": "Cannot specify both user and teams", "user": "Cannot specify both user and teams"}
+            )
+        return attrs
+
+    def save(self, **kwargs):
+        team = self.validated_data["team"]
+        user = self.validated_data["user"]
+        planning = self.validated_data["planning"]
+        request = self.context["request"]
+        requester = request.user
+        assignments_list = []
+        for org_unit in self.validated_data["org_units"]:
+            assignment, created = Assignment.objects.get_or_create(
+                planning=planning, org_unit=org_unit, defaults={"created_by": requester}
+            )
+            assignments_list.append(assignment)
+            old_value = []
+            if not created:
+                old_value = [AuditAssignmentSerializer(instance=assignment).data]
+
+            assignment.deleted_at = False
+            assignment.team = team
+            assignment.user = user
+
+            new_value = [AuditAssignmentSerializer(instance=assignment).data]
+            Modification.objects.create(
+                user=requester,
+                past_value=old_value,
+                new_value=new_value,
+                content_object=assignment,
+                source="API " + request.method + request.path,
+            )
+        return assignments_list
+
+
 class AssignmentViewSet(AuditMixin, ModelViewSet):
     """Use the same permission as planning. Multi tenancy is done via the planning. An assignment don't make much
     sense outside of it's planning."""
@@ -455,30 +515,11 @@ class AssignmentViewSet(AuditMixin, ModelViewSet):
 
     @action(methods=["POST"], detail=False)
     def bulk_create_assignments(self, request):
-        planning_id = request.data["planning"]
-        org_units_ids = request.data["org_units"]
-        team_id = request.data["team"]
-        author = request.user
-        assignments_list = []
-        for ou_id in org_units_ids:
-            ou = get_object_or_404(OrgUnit, pk=ou_id)
-            planning = get_object_or_404(Planning, pk=planning_id)
-            team = get_object_or_404(Team, pk=team_id)
-            if Assignment.objects.filter(org_unit=ou).count() == 1:
-                deleted_assignment = Assignment.objects.get(org_unit=ou)
-                if deleted_assignment.deleted_at is not None:
-                    deleted_assignment.planning = planning
-                    deleted_assignment.org_unit = ou
-                    deleted_assignment.team = team
-                    deleted_assignment.created_by = author
-                    deleted_assignment.deleted_at = None
-                    deleted_assignment.save()
-            else:
-                assignment = Assignment.objects.create(planning=planning, org_unit=ou, team=team, created_by=author)
-                assignment.save()
-                assignments_list.append(assignment)
-        serializer = AssignmentSerializer(assignments_list, many=True, context={"request": request})
-        return Response(serializer.data)
+        serializer = BulkAssignmentSerializer(data=request.data, many=True, context={"request": request})
+        serializer.is_valid()
+        assignments_list = serializer.save()
+        return_serializer = AssignmentSerializer(assignments_list, many=True, context={"request": request})
+        return Response(return_serializer.data)
 
 
 # noinspection PyMethodMayBeStatic

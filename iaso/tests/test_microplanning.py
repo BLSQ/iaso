@@ -686,6 +686,37 @@ class AssignmentAPITestCase(APITestCase):
         response = self.client.post("/api/microplanning/assignments/bulk_create_assignments/", data=data, format="json")
         self.assertJSONResponse(response, 200)
 
+    def test_bulk_create_reject_no_perm(self):
+        user_no_perms = self.create_user_with_profile(username="user_with_perms", account=self.account, permissions=[])
+        self.client.force_authenticate(user_no_perms)
+        data = {
+            "planning": self.planning.id,
+            "user": self.user.id,
+            "org_units": [self.child3.id, self.child4.id],
+            "team": self.team1.id,
+        }
+
+        response = self.client.post("/api/microplanning/assignments/bulk_create_assignments/", data=data, format="json")
+        self.assertJSONResponse(response, 403)
+
+    def test_bulk_no_access_planning(self):
+        # user don't have access to planning because it's in another account
+        other_account = Account.objects.create(name="other_account")
+
+        user = self.create_user_with_profile(
+            username="user_with_perms", account=other_account, permissions=["iaso_planning"]
+        )
+        self.client.force_authenticate(user)
+        data = {
+            "planning": self.planning.id,
+            "user": self.user.id,
+            "org_units": [self.child3.id, self.child4.id],
+            "team": self.team1.id,
+        }
+
+        response = self.client.post("/api/microplanning/assignments/bulk_create_assignments/", data=data, format="json")
+        self.assertJSONResponse(response, 200)
+
     def test_restore_deleted_assignment(self):
         """restore deleted assignment if we try to create a new assignment with a previously assigned OU"""
 

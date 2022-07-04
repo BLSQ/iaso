@@ -435,8 +435,8 @@ class BulkAssignmentSerializer(serializers.Serializer):
     Audit the modification"""
 
     planning = serializers.PrimaryKeyRelatedField(queryset=Planning.objects.none(), write_only=True)
-    team = serializers.PrimaryKeyRelatedField(queryset=Team.objects.none(), write_only=True)
-    user = serializers.PrimaryKeyRelatedField(queryset=User.objects.none(), write_only=True)
+    team = serializers.PrimaryKeyRelatedField(queryset=Team.objects.none(), write_only=True, required=False)
+    user = serializers.PrimaryKeyRelatedField(queryset=User.objects.none(), write_only=True, required=False)
     org_units = serializers.PrimaryKeyRelatedField(queryset=OrgUnit.objects.none(), write_only=True, many=True)
 
     def __init__(self, *args, **kwargs):
@@ -451,15 +451,16 @@ class BulkAssignmentSerializer(serializers.Serializer):
         self.fields["org_units"].child_relation.queryset = OrgUnit.objects.filter_for_user_and_app_id(user, None)
 
     def validate(self, attrs):
-        if attrs.get("user") and attrs.get("team"):
+        validated_data = super().validate(attrs)
+        if validated_data.get("user") and validated_data.get("team"):
             raise serializers.ValidationError(
                 {"team": "Cannot specify both user and teams", "user": "Cannot specify both user and teams"}
             )
-        return attrs
+        return validated_data
 
     def save(self, **kwargs):
-        team = self.validated_data["team"]
-        user = self.validated_data["user"]
+        team = self.validated_data.get("team")
+        user = self.validated_data.get("user")
         planning = self.validated_data["planning"]
         request = self.context["request"]
         requester = request.user
@@ -515,8 +516,8 @@ class AssignmentViewSet(AuditMixin, ModelViewSet):
 
     @action(methods=["POST"], detail=False)
     def bulk_create_assignments(self, request):
-        serializer = BulkAssignmentSerializer(data=request.data, many=True, context={"request": request})
-        serializer.is_valid()
+        serializer = BulkAssignmentSerializer(data=request.data, context={"request": request})
+        serializer.is_valid(raise_exception=True)
         assignments_list = serializer.save()
         return_serializer = AssignmentSerializer(assignments_list, many=True, context={"request": request})
         return Response(return_serializer.data)

@@ -30,3 +30,21 @@ export const useSaveAssignment = (
         showSucessSnackBar,
     );
 };
+
+const saveBulkAssignments = (data: SaveAssignmentQuery) => {
+    const url = `${endpoint}bulk_create_assignments/`;
+    return postRequest(url, data);
+};
+
+export const useBulkSaveAssignments = (
+    showSucessSnackBar = true,
+    callback: () => void = () => null,
+): UseMutationResult => {
+    const onSuccess = () => callback();
+    return useSnackMutation({
+        mutationFn: saveBulkAssignments,
+        invalidateQueryKey: ['assignmentsList'],
+        options: { onSuccess },
+        showSucessSnackBar,
+    });
+};

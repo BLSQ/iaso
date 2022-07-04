@@ -177,8 +177,8 @@ def org_units_to_gpkg_bytes(queryset: "QuerySet[OrgUnit]") -> bytes:
     filepath = os.path.join(tempfile.gettempdir(), str(uuid.uuid4()) + ".gpkg")
     export_org_units_to_gpkg(filepath, queryset)
     # see comment on the tabular export code path, previous version wasn't working with multi search union
-    org_ids = queryset.order_by("pk").values_list("pk", flat=True).distinct()
-    groups = Group.all_objects.filter(org_units__id__in=list(org_ids)).only("id", "name").distinct("id")
+    org_ids = queryset.order_by("pk").values_list("pk", flat=True)
+    groups = Group.all_objects.filter(org_units__id__in=set(org_ids)).only("id", "name").distinct("id")
     add_group_in_gpkg(filepath, groups)
 
     f = open(filepath, "rb")

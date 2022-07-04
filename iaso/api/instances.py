@@ -6,6 +6,7 @@ import pandas as pd
 from django.contrib.gis.geos import Point
 from django.core.paginator import Paginator
 from django.db import connection
+from django.db import transaction
 from django.db.models import Q, Count
 from django.http import StreamingHttpResponse, HttpResponse
 from rest_framework import serializers, status
@@ -342,6 +343,9 @@ class InstancesViewSet(viewsets.ViewSet):
         selected_ids = request.data.get("selected_ids", None)
         unselected_ids = request.data.get("unselected_ids", None)
         is_deletion = request.data.get("is_deletion", True)
+
+        print(f"is_deletion {is_deletion} {request.data}" )
+
         filters = parse_instance_filters(request.data)
         instances_query = self.get_queryset()
         instances_query = instances_query.prefetch_related("form")
@@ -353,8 +357,19 @@ class InstancesViewSet(viewsets.ViewSet):
             instances_query = instances_query.exclude(pk__in=unselected_ids)
 
         try:
-            instances_query.update(deleted=is_deletion)
+
+            with transaction.atomic():
+                for instance in instances_query.iterator():
+                    if is_deletion == True:
+                        print('soft deleting', instance)
+                        instance.soft_delete(request.user)
+                        #log_modification(original, instance, INSTANCE_API, user=request.user)
+                    else:
+                        print('restoring soft deleted', instance)
+                        instance.restore()
+
         except Exception as e:
+            print(f"Error : {e}")
             return Response(
                 {"result": "A problem happened while deleting instances"}, status=status.HTTP_400_BAD_REQUEST
             )

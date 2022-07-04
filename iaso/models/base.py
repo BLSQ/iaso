@@ -1067,6 +1067,13 @@ class Instance(models.Model):
             self.save()
             log_modification(original, self, INSTANCE_API, user=user)
 
+    def restore(self, user: typing.Optional[User] = None):
+        with transaction.atomic():
+            original = copy(self)
+            self.deleted = False
+            self.save()
+            log_modification(original, self, INSTANCE_API, user=user)
+
 
 class InstanceFile(models.Model):
     UPLOADED_TO = "instancefiles/"

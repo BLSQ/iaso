@@ -260,7 +260,6 @@ export const Assignments: FunctionComponent<Props> = ({ params }) => {
                             setParentSelected={setParentSelected}
                             childrenOrgunits={childrenOrgunits || []}
                             parentSelected={parentSelected}
-                            saveMultiAssignments={saveAssignment}
                         />
                     )}
                     {tab === 'list' && <Box>Coming soon</Box>}

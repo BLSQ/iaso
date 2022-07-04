@@ -29,7 +29,7 @@ import {
     BaseLocation,
 } from '../types/locations';
 import { SubTeam, User, DropdownTeamsOptions, Team } from '../types/team';
-import { AssignmentsApi, SaveAssignmentQuery } from '../types/assigment';
+import { AssignmentsApi } from '../types/assigment';
 import { Profile } from '../../../utils/usersUtils';
 import { Planning } from '../types/planning';
 
@@ -51,8 +51,6 @@ type Props = {
     setParentSelected: (orgUnit: OrgUnitShape | undefined) => void;
     allAssignments: AssignmentsApi;
     selectedItem: SubTeam | User | undefined;
-    // eslint-disable-next-line no-unused-vars
-    saveMultiAssignments: (params: SaveAssignmentQuery) => void;
     planning: Planning | undefined;
 };
 const useStyles = makeStyles(theme => ({
@@ -76,7 +74,6 @@ export const ParentDialog: FunctionComponent<Props> = ({
     currentTeam,
     teams,
     profiles,
-    // saveMultiAssignments,
     planning,
 }) => {
     const { formatMessage } = useSafeIntl();

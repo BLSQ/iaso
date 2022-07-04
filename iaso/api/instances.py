@@ -344,8 +344,6 @@ class InstancesViewSet(viewsets.ViewSet):
         unselected_ids = request.data.get("unselected_ids", None)
         is_deletion = request.data.get("is_deletion", True)
 
-        print(f"is_deletion {is_deletion} {request.data}" )
-
         filters = parse_instance_filters(request.data)
         instances_query = self.get_queryset()
         instances_query = instances_query.prefetch_related("form")
@@ -361,11 +359,8 @@ class InstancesViewSet(viewsets.ViewSet):
             with transaction.atomic():
                 for instance in instances_query.iterator():
                     if is_deletion == True:
-                        print('soft deleting', instance)
                         instance.soft_delete(request.user)
-                        #log_modification(original, instance, INSTANCE_API, user=request.user)
                     else:
-                        print('restoring soft deleted', instance)
                         instance.restore()
 
         except Exception as e:

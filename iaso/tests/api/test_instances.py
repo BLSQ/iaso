@@ -373,23 +373,22 @@ class InstancesAPITestCase(APITestCase):
 
         # lets bulk delete
 
-        print("************************ SOFT DELETE")
-
         audit_before_count = Modification.objects.all().count()
 
         response = self.client.post(f"/api/instances/bulkdelete/", {"selected_ids": str(soft_deleted_instance.id) })
         self.assertJSONResponse(response, 201)
 
         audit_after_count = Modification.objects.all().count()
+
         last_modif = Modification.objects.all().last()
-        print(f"test_bulk_delete_an_instance {audit_before_count} {audit_after_count} {last_modif.past_value[0]['fields']['deleted']} {last_modif.new_value[0]['fields']['deleted']}" )
+        self.assertFalse(last_modif.past_value[0]['fields']['deleted'])
+        self.assertTrue(last_modif.new_value[0]['fields']['deleted'])
     
         self.assertEqual(audit_after_count, audit_before_count + 1)
 
         response = self.client.get(f"/api/instances/{soft_deleted_instance.id}/")
         self.assertJSONResponse(response, 200)
         self.assertTrue(response.json()["deleted"])
-        print("************************ RESTORE")
         # lets restore
         response = self.client.post(f"/api/instances/bulkdelete/", {
             "selected_ids": str(soft_deleted_instance.id), 
@@ -401,6 +400,10 @@ class InstancesAPITestCase(APITestCase):
         response = self.client.get(f"/api/instances/{soft_deleted_instance.id}/")
         self.assertJSONResponse(response, 200)
         self.assertFalse(response.json()["deleted"])
+
+        last_modif = Modification.objects.all().last()
+        self.assertTrue(last_modif.past_value[0]['fields']['deleted'])
+        self.assertFalse(last_modif.new_value[0]['fields']['deleted'])
 
     def test_instance_list_by_form_id_and_status_ok(self):
         """GET /instances/?form_id=form_id&status="""

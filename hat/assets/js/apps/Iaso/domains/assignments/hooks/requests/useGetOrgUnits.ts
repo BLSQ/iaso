@@ -209,10 +209,15 @@ export const useGetOrgUnits = ({
         ],
     );
 
-    return useSnackQuery(['orgUnits'], () => getRequest(url), undefined, {
-        enabled: orgUnitParentIds?.length > 0 && Boolean(baseOrgunitType),
-        staleTime: 1000 * 60 * 15, // in MS
-        cacheTime: 1000 * 60 * 5,
-        select,
-    });
+    return useSnackQuery(
+        ['orgUnits', params, baseOrgunitType],
+        () => getRequest(url),
+        undefined,
+        {
+            enabled: orgUnitParentIds?.length > 0 && Boolean(baseOrgunitType),
+            staleTime: 1000 * 60 * 15, // in MS
+            cacheTime: 1000 * 60 * 5,
+            select,
+        },
+    );
 };

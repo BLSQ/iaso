@@ -34,7 +34,9 @@ export const useSaveAssignment = (
 const saveBulkAssignments = (data: SaveAssignmentQuery) => {
     // IA-1421: workaround to avoid sending a request if all children org units are already selected (in which case the compoenent sets both team and user to null)
     // TODO clarify expected behaviour ^^
-    if (data.team === null && data.user === null) return null;
+    if (data.team === null && data.user === null) {
+        return new Promise(() => null);
+    }
     const url = `${endpoint}bulk_create_assignments/`;
     return postRequest(url, data);
 };

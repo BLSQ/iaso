@@ -474,9 +474,10 @@ class BulkAssignmentSerializer(serializers.Serializer):
             if not created:
                 old_value = [AuditAssignmentSerializer(instance=assignment).data]
 
-            assignment.deleted_at = False
+            assignment.deleted_at = None
             assignment.team = team
             assignment.user = user
+            assignment.save()
 
             new_value = [AuditAssignmentSerializer(instance=assignment).data]
             Modification.objects.create(

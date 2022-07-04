@@ -155,6 +155,8 @@ docker-compose up db
 
 ### 4. Run migrations
 
+In a seperate bash (without closing yet the started db), launch the migrations
+
 ``` {.sourceCode .bash}
 docker-compose run --rm iaso manage migrate
 ```
@@ -167,6 +169,7 @@ then type
 create database iaso; 
 ```
 to create the missing database.)
+
 ### 5. Start the server
 
 To start all the containers (backend, frontend, db)
@@ -245,11 +248,17 @@ You can now start to develop additional features on Iaso!
 
 Alternatively or in addition to steps 7-8, you can import data from the DHIS2 demo server (play.dhis2.org).
 
-By running the command
+First find a running version from play.dhis2.org.
+Go to https://play.dhis2.org/2.37
+Then watch the redirection : ex : https://play.dhis2.org/2.37.7.1/dhis-web-commons/security/login.action 
+To find the current active version : 2.37.7.1
+That you will pass to the next docker-compose run
+
+In a new bash, run the command
 
 
 ``` {.sourceCode .bash}
-docker-compose run --rm iaso manage seed_test_data --mode=seed --dhis2version=2.35.3
+docker-compose run --rm iaso manage seed_test_data --mode=seed --dhis2version=2.37.7.1
 ```
 
 The hierarchy of OrgUnit, group of OrgUnit, Forms, and their Submissions will be imported. Type of OrgUnit are not
@@ -257,8 +266,8 @@ handled at the moment
 
 you can then log in through <http://127.0.0.1:8081/dashboard> with :
 
- -   user : testemail2.35.3
- -   password: testemail2.35.3
+ -   user : testemail2.37.7.1
+ -   password: testemail2.37.7.1
 
 ### 11. Activating the Polio plugin (optional)
 

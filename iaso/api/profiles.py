@@ -7,11 +7,15 @@ from django.core.paginator import Paginator
 from django.db.models import Q
 from django.http import JsonResponse
 from django.utils.translation import gettext as _
-
+from django.core.mail import send_mail
+from django.conf import settings
+from django.contrib.auth.tokens import PasswordResetTokenGenerator
 from iaso.models import Profile, OrgUnit
-
+from django.utils.http import urlsafe_base64_encode
 from django.contrib.auth.models import Permission
 from django.contrib.auth.models import User
+from django.utils.encoding import force_bytes
+from django.urls import reverse
 
 
 class HasProfilePermission(permissions.BasePermission):
@@ -138,14 +142,43 @@ class ProfilesViewSet(viewsets.ViewSet):
         if profile.dhis2_id == "":
             profile.dhis2_id = None
         profile.save()
+
         return Response(profile.as_dict())
+
+    @staticmethod
+    def send_email_invitation(self, profile, email_subject, email_message):
+        domain = settings.DNS_DOMAIN
+
+        token_generator = PasswordResetTokenGenerator()
+        token = token_generator.make_token(profile.user)
+
+        uid = urlsafe_base64_encode(force_bytes(profile.user.pk))
+        create_password_path = reverse("reset_password_confirmation", kwargs={"uidb64": uid, "token": token})
+
+        email_message_text = email_message.format(
+            userName=profile.user.username, url=f"https://{domain}{create_password_path}", dns_domain=f"{domain}"
+        )
+
+        email_subject_text = email_subject.format(dns_domain=f"{domain}")
+
+        send_mail(email_subject_text, email_message_text, "no-reply@%s" % domain, [profile.user.email])
+
+    @staticmethod
+    def get_message_by_language(self, request_languange="en"):
+        return self.CREATE_PASSWORD_MESSAGE_FR if request_languange == "fr" else self.CREATE_PASSWORD_MESSAGE_EN
+
+    @staticmethod
+    def get_subject_by_language(self, request_languange="en"):
+        return self.EMAIL_SUBJECT_FR if request_languange == "fr" else self.EMAIL_SUBJECT_EN
 
     def create(self, request):
         username = request.data.get("user_name")
         password = request.data.get("password", "")
+        send_email_invitation = request.data.get("send_email_invitation")
+
         if not username:
             return JsonResponse({"errorKey": "user_name", "errorMessage": _("Nom d'utilisateur requis")}, status=400)
-        if not password:
+        if not password and not send_email_invitation:
             return JsonResponse({"errorKey": "password", "errorMessage": _("Mot de passe requis")}, status=400)
         existing_profile = User.objects.filter(username=username).first()
         if existing_profile:
@@ -184,6 +217,15 @@ class ProfilesViewSet(viewsets.ViewSet):
             dhis2_id = None
         profile.dhis2_id = dhis2_id
         profile.save()
+
+        # send an email invitation to new user when the send_email_invitation checkbox has been checked
+        # and the email adresse has been given
+        if send_email_invitation and profile.user.email:
+            email_subject = self.get_subject_by_language(self, request.data.get("language"))
+            email_message = self.get_message_by_language(self, request.data.get("language"))
+
+            self.send_email_invitation(self, profile, email_subject, email_message)
+
         return Response(user.profile.as_dict())
 
     def delete(self, request, pk=None):
@@ -192,3 +234,39 @@ class ProfilesViewSet(viewsets.ViewSet):
         user.delete()
         profile.delete()
         return Response(True)
+
+    CREATE_PASSWORD_MESSAGE_EN = """Hello,
+
+You've been invited to access {dns_domain}, and a new account with the username {userName} has been created for you. 
+
+To set up a password for your account, please click on the link:
+
+{url}
+
+If clicking the link above doesn't work, please copy and paste the URL in a new browser
+window instead.
+
+If you did not request an account on {dns_domain} , you can ignore this e-mail - no password will be created.
+
+Sincerely,
+The IASO Team.
+    """
+
+    CREATE_PASSWORD_MESSAGE_FR = """Bonjour, 
+
+Vous avez été invité à accéder à {dns_domain} et un nouveau compte avec le nom d'utilisateur {userName} a été créé pour vous.
+
+Pour configurer un mot de passe pour votre compte, merci de cliquer sur le lien ci-dessous :
+
+{url}
+
+Si le lien ne fonctionne pas, merci de copier et coller l'URL dans une nouvelle fenêtre de votre navigateur.
+
+Si vous n'avez pas demandé de compte sur {dns_domain}, vous pouvez ignorer cet e-mail - aucun mot de passe ne sera créé.
+
+Cordialement,
+L'équipe IASO.
+    """
+
+    EMAIL_SUBJECT_FR = "Configurer un mot de passe pour votre nouveau compte sur {dns_domain}"
+    EMAIL_SUBJECT_EN = "Set up a password for your new account on {dns_domain}"

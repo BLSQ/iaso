@@ -24,21 +24,21 @@ class LogsViewSet(viewsets.ViewSet):
     def list(self, request):
         from_date = request.GET.get("date_from", None)
         to_date = request.GET.get("date_to", None)
-        limit = request.GET.get("limit", 50) # prevent killing iaso /api/logs will just blow up in prod
+        limit = request.GET.get("limit", 50)  # prevent killing iaso /api/logs will just blow up in prod
         page_offset = request.GET.get("page", 1)
         orders = request.GET.get("order", "-created_at").split(",")
         user_ids = request.GET.get("userId", None)
         object_id = request.GET.get("objectId", None)
         content_type_arg = request.GET.get("contenType", None)
         source = request.GET.get("source", None)
-        fields = request.GET.get("fields","").split(",")
+        fields = request.GET.get("fields", "").split(",")
 
         queryset = Modification.objects.all()
 
-        queryset= queryset.prefetch_related("user")
-        queryset= queryset.prefetch_related("user__iaso_profile")
-        queryset= queryset.prefetch_related("user__iaso_profile__user")
-        queryset= queryset.prefetch_related("content_type")
+        queryset = queryset.prefetch_related("user")
+        queryset = queryset.prefetch_related("user__iaso_profile")
+        queryset = queryset.prefetch_related("user__iaso_profile__user")
+        queryset = queryset.prefetch_related("content_type")
 
         if from_date is not None:
             queryset = queryset.filter(created_at__gte=from_date)

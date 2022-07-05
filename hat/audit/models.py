@@ -24,10 +24,10 @@ def dict_compare(d1, d2):
     shared_keys = d1_keys.intersection(d2_keys)
     added = d2_keys - d1_keys
     removed = d1_keys - d2_keys
-    modified_values = { k: {"before": d1[k], "after": d2[k] } for k in shared_keys if d1[k] != d2[k]}
-    added_values= { k: {"before":None, "after":d2[k] }  for k in added}
-    removed_values= { k: {"before":d2[k], "after":None}  for k in removed}
-    return {"added":added_values, "removed":removed_values, "modified":modified_values}
+    modified_values = {k: {"before": d1.get(k), "after": d2.get(k)} for k in shared_keys if d1[k] != d2[k]}
+    added_values = {k: {"before": None, "after": d2[k]} for k in added}
+    removed_values = {k: {"before": d1[k], "after": None} for k in removed}
+    return {"added": added_values, "removed": removed_values, "modified": modified_values}
 
 
 class IasoJsonEncoder(json.JSONEncoder):
@@ -92,10 +92,10 @@ class Modification(models.Model):
     def field_diffs(self):
         past_values = self.past_value or []
         new_values = self.new_value or []
-        past_value = past_values[0]
-        new_value= new_values[0]
-        past_fields = past_value.get("fields")
-        new_fields= new_value.get("fields")
+        past_value = past_values[0] if len(past_values) > 0 else {}
+        new_value = new_values[0] if len(new_values) > 0 else {}
+        past_fields = past_value.get("fields") or {}
+        new_fields = new_value.get("fields") or {}
         return dict_compare(past_fields, new_fields)
 
 

@@ -387,7 +387,8 @@ class InstancesAPITestCase(APITestCase):
 
         audit_after_count = Modification.objects.all().count()
 
-        last_modif = Modification.objects.all().last()
+        self.assertEqual(audit_after_count, audit_before_count + 1)
+        last_modif = Modification.objects.all().order_by("created_at").last()
         self.assertFalse(last_modif.past_value[0]["fields"]["deleted"])
         self.assertTrue(last_modif.new_value[0]["fields"]["deleted"])
 
@@ -405,7 +406,7 @@ class InstancesAPITestCase(APITestCase):
         self.assertJSONResponse(response, 200)
         self.assertFalse(response.json()["deleted"])
 
-        last_modif = Modification.objects.all().last()
+        last_modif = Modification.objects.all().order_by("created_at").last()
         self.assertTrue(last_modif.past_value[0]["fields"]["deleted"])
         self.assertFalse(last_modif.new_value[0]["fields"]["deleted"])
 

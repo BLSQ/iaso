@@ -340,8 +340,8 @@ class InstancesViewSet(viewsets.ViewSet):
     @action(detail=False, methods=["POST"], permission_classes=[permissions.IsAuthenticated, HasInstancePermission])
     def bulkdelete(self, request):
         select_all = request.data.get("select_all", None)
-        selected_ids = request.data.get("selected_ids", None)
-        unselected_ids = request.data.get("unselected_ids", None)
+        selected_ids = request.data.get("selected_ids", "").split(",")
+        unselected_ids = request.data.get("unselected_ids", "").split(",")
         is_deletion = request.data.get("is_deletion", True)
 
         filters = parse_instance_filters(request.data)

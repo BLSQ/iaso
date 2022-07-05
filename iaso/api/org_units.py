@@ -11,7 +11,7 @@ from django.http import StreamingHttpResponse, HttpResponse
 from django.shortcuts import get_object_or_404
 from django.utils import timezone
 from django.utils.translation import gettext as _
-from rest_framework import viewsets, permissions
+from rest_framework import viewsets, permissions, serializers
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.serializers import ValidationError
@@ -313,7 +313,16 @@ class OrgUnitViewSet(viewsets.ViewSet):
         if "source" in request.data:
             org_unit.source = request.data["source"]
         if "validation_status" in request.data:
-            org_unit.validation_status = request.data["validation_status"]
+            validation_status = request.data["validation_status"]
+            valid_validations_status = ["NEW", "VALID", "REJECTED"]
+
+            if validation_status not in valid_validations_status:
+                errors.append(
+                    {
+                        "errorKey": "validation_status",
+                        "errorMessage": _(f"Invalid validation status : {validation_status}"),
+                    }
+                )
 
         if "geo_json" in request.data:
             geo_json = request.data["geo_json"]

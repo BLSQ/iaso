@@ -36,12 +36,9 @@ class LogsViewSet(viewsets.ViewSet):
         queryset = Modification.objects.all()
 
         queryset= queryset.prefetch_related("user")
-        queryset=queryset.prefetch_related("user__iaso_profile")
-        queryset=queryset.prefetch_related("user__iaso_profile__user")
-        queryset=queryset.prefetch_related("user__iaso_profile__user__user_permissions")    
-        queryset=queryset.prefetch_related("user__iaso_profile__account")
-        queryset=queryset.prefetch_related("user__iaso_profile__org_units")
-        queryset=queryset.prefetch_related("content_type")
+        queryset= queryset.prefetch_related("user__iaso_profile")
+        queryset= queryset.prefetch_related("user__iaso_profile__user")
+        queryset= queryset.prefetch_related("content_type")
 
         if from_date is not None:
             queryset = queryset.filter(created_at__gte=from_date)

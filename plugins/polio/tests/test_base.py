@@ -761,11 +761,16 @@ class BudgetPolioTestCase(APITestCase):
         self.assertEqual(budget.is_finalized, True)
         self.assertEqual(budget.is_email_sent, True)
 
-    def test_authentication_link(self):
-        link = "test.com"
+    def test_authentication_link_token(self):
+        link = "testbluesquarestuff.com"
         final_link = generate_auto_authentication_link(link, self.grogu)
-        token = final_link[final_link.find(".") + 1:final_link.find("next=")]
 
-        decoded_token = jwt.get_unverified_header(token)
+        token = final_link[final_link.find("token=") + 6 : final_link.find("next=")][:-1]
+        decoded_token = jwt.decode(token, verify=False)
 
-        print(decoded_token)
+        user_id_from_token = decoded_token["user_id"]
+        token_type = decoded_token["token_type"]
+
+        self.assertEqual(self.grogu.pk, user_id_from_token)
+        self.assertEqual(token_type, "access")
+        self.assertEqual(link, final_link[final_link.find("next=") + 5 :])

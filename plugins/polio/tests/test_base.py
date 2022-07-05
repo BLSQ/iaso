@@ -598,9 +598,6 @@ class BudgetPolioTestCase(APITestCase):
         cls.grogu = cls.create_user_with_profile(
             username="Grogu", account=second_account, permissions=["iaso_polio_budget"]
         )
-        cls.validator = cls.create_user_with_profile(
-            username="Validator", account=second_account, permissions=["iaso_polio_budget"]
-        )
 
         cls.org_unit = m.OrgUnit.objects.create(
             org_unit_type=m.OrgUnitType.objects.create(name="Jedi Council", short_name="Cnc"),
@@ -642,7 +639,6 @@ class BudgetPolioTestCase(APITestCase):
         cls.project1 = project1 = account.project_set.create(name="project1")
         cls.team1 = Team.objects.create(project=project1, name="team1", manager=cls.yoda)
         cls.team2 = Team.objects.create(project=project1, name="team2", manager=cls.grogu)
-        cls.team_validator = Team.objects.create(project=project1, name="validation team", manager=cls.validator)
 
     def test_create_polio_budget(self):
         self.client.force_authenticate(self.yoda)

@@ -64,8 +64,8 @@ class HasInstancePermission(permissions.BasePermission):
             return True
 
         return request.user.is_authenticated and (
-                request.user.has_perm("menupermissions.iaso_forms")
-                or request.user.has_perm("menupermissions.iaso_submissions")
+            request.user.has_perm("menupermissions.iaso_forms")
+            or request.user.has_perm("menupermissions.iaso_submissions")
         )
 
     def has_object_permission(self, request: Request, view, obj: Instance):
@@ -331,11 +331,17 @@ class InstancesViewSet(viewsets.ViewSet):
         parent_ou = instance.org_unit.parent
         access_ou = OrgUnit.objects.filter_for_user_and_app_id(request.user, None)
 
-        if request.data["validation_status"] == "locked":
+        if request.data["validation_status"].upper() == "LOCKED":
             if parent_ou not in access_ou and parent_ou is not None or instance.org_unit not in access_ou:
                 raise serializers.ValidationError({"error": "Permission denied. You can't lock this instance."})
 
-        if parent_ou in access_ou or instance.validation_status != "locked" or parent_ou is None:
+        if parent_ou in access_ou or instance.validation_status != "LOCKED" or parent_ou is None:
+            valid_validation_status = ["LOCKED", "REVIEWED"]
+            validation_status = request.data["validation_status"].upper()
+            if validation_status not in valid_validation_status:
+                raise serializers.ValidationError({"error": f"Invalid Validation Status {validation_status}"})
+            instance.validation_status = validation_status
+            instance.save()
             if original.org_unit.reference_instance and original.org_unit_id != request.data["org_unit"]:
                 previous_orgunit = original.org_unit
                 previous_orgunit.reference_instance = None

@@ -24,15 +24,24 @@ class LogsViewSet(viewsets.ViewSet):
     def list(self, request):
         from_date = request.GET.get("date_from", None)
         to_date = request.GET.get("date_to", None)
-        limit = request.GET.get("limit", None)
+        limit = request.GET.get("limit", 50) # prevent killing iaso /api/logs will just blow up in prod
         page_offset = request.GET.get("page", 1)
-        orders = request.GET.get("order", "created_at").split(",")
+        orders = request.GET.get("order", "-created_at").split(",")
         user_ids = request.GET.get("userId", None)
         object_id = request.GET.get("objectId", None)
         content_type_arg = request.GET.get("contenType", None)
         source = request.GET.get("source", None)
+        fields = request.GET.get("fields","").split(",")
 
         queryset = Modification.objects.all()
+
+        queryset= queryset.prefetch_related("user")
+        queryset=queryset.prefetch_related("user__iaso_profile")
+        queryset=queryset.prefetch_related("user__iaso_profile__user")
+        queryset=queryset.prefetch_related("user__iaso_profile__user__user_permissions")    
+        queryset=queryset.prefetch_related("user__iaso_profile__account")
+        queryset=queryset.prefetch_related("user__iaso_profile__org_units")
+        queryset=queryset.prefetch_related("content_type")
 
         if from_date is not None:
             queryset = queryset.filter(created_at__gte=from_date)
@@ -66,7 +75,7 @@ class LogsViewSet(viewsets.ViewSet):
                 page_offset = paginator.num_pages
             page = paginator.page(page_offset)
 
-            res["list"] = map(lambda x: x.as_list(), page.object_list)
+            res["list"] = map(lambda x: x.as_list(fields), page.object_list)
             res["has_next"] = page.has_next()
             res["has_previous"] = page.has_previous()
             res["page"] = page_offset
@@ -74,7 +83,7 @@ class LogsViewSet(viewsets.ViewSet):
             res["limit"] = limit
             return Response(res)
         else:
-            return Response(map(lambda x: x.as_list(), queryset))
+            return Response(map(lambda x: x.as_list(fields), queryset))
 
     def retrieve(self, request, pk=None):
         log = get_object_or_404(Modification, pk=pk)

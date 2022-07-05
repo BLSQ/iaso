@@ -84,12 +84,12 @@ class Modification(models.Model):
             dict_list["past_value"] = self.past_value
         if "new_value" in fields:
             dict_list["new_value"] = self.new_value
-        if "diffs_fields" in fields:
-            dict_list["diffs_fields"] = self.diffs_fields()
+        if "field_diffs" in fields:
+            dict_list["field_diffs"] = self.field_diffs()
 
         return dict_list
 
-    def diffs_fields(self):
+    def field_diffs(self):
         past_values = self.past_value or []
         new_values = self.new_value or []
         past_value = past_values[0]

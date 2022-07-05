@@ -364,7 +364,6 @@ class InstancesAPITestCase(APITestCase):
 
         soft_deleted_instance = self.form_1.instances.first()
 
-
         self.client.force_authenticate(self.yoda)
 
         response = self.client.get(f"/api/instances/{soft_deleted_instance.id}/")
@@ -375,26 +374,25 @@ class InstancesAPITestCase(APITestCase):
 
         audit_before_count = Modification.objects.all().count()
 
-        response = self.client.post(f"/api/instances/bulkdelete/", {"selected_ids": str(soft_deleted_instance.id) })
+        response = self.client.post(f"/api/instances/bulkdelete/", {"selected_ids": str(soft_deleted_instance.id)})
         self.assertJSONResponse(response, 201)
 
         audit_after_count = Modification.objects.all().count()
 
         last_modif = Modification.objects.all().last()
-        self.assertFalse(last_modif.past_value[0]['fields']['deleted'])
-        self.assertTrue(last_modif.new_value[0]['fields']['deleted'])
-    
+        self.assertFalse(last_modif.past_value[0]["fields"]["deleted"])
+        self.assertTrue(last_modif.new_value[0]["fields"]["deleted"])
+
         self.assertEqual(audit_after_count, audit_before_count + 1)
 
         response = self.client.get(f"/api/instances/{soft_deleted_instance.id}/")
         self.assertJSONResponse(response, 200)
         self.assertTrue(response.json()["deleted"])
         # lets restore
-        response = self.client.post(f"/api/instances/bulkdelete/", {
-            "selected_ids": str(soft_deleted_instance.id), 
-            "is_deletion": False,
-            "showDeleted": "true"
-        })
+        response = self.client.post(
+            f"/api/instances/bulkdelete/",
+            {"selected_ids": str(soft_deleted_instance.id), "is_deletion": False, "showDeleted": "true"},
+        )
         self.assertJSONResponse(response, 201)
 
         response = self.client.get(f"/api/instances/{soft_deleted_instance.id}/")
@@ -402,8 +400,8 @@ class InstancesAPITestCase(APITestCase):
         self.assertFalse(response.json()["deleted"])
 
         last_modif = Modification.objects.all().last()
-        self.assertTrue(last_modif.past_value[0]['fields']['deleted'])
-        self.assertFalse(last_modif.new_value[0]['fields']['deleted'])
+        self.assertTrue(last_modif.past_value[0]["fields"]["deleted"])
+        self.assertFalse(last_modif.new_value[0]["fields"]["deleted"])
 
     def test_instance_list_by_form_id_and_status_ok(self):
         """GET /instances/?form_id=form_id&status="""

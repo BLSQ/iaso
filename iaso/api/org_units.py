@@ -320,7 +320,7 @@ class OrgUnitViewSet(viewsets.ViewSet):
                 errors.append(
                     {
                         "errorKey": "validation_status",
-                        "errorMessage": _("Invalid validation status : {}".format(validation_status)),
+                        "errorMessage": _(f"Invalid validation status : {validation_status}"),
                     }
                 )
 

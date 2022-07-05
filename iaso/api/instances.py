@@ -143,6 +143,7 @@ class InstancesViewSet(viewsets.ViewSet):
                 if page_offset > paginator.num_pages:
                     page_offset = paginator.num_pages
                 page = paginator.page(page_offset)
+
                 # check if the instance is linked to an org unit
                 def has_org_unit(instance):
                     return instance.org_unit if instance.org_unit else None
@@ -318,6 +319,9 @@ class InstancesViewSet(viewsets.ViewSet):
         return Response(instance.as_full_model())
 
     def patch(self, request, pk=None):
+        # EMPECHER PATCH SI USER A PAS ACCESS AUX ORGUNITS SUP DE L'OU DE L'INSTANCE
+
+        pk = request.data["id"]
         original = get_object_or_404(self.get_queryset(), pk=pk)
         instance = get_object_or_404(self.get_queryset(), pk=pk)
         self.check_object_permissions(request, instance)
@@ -325,16 +329,21 @@ class InstancesViewSet(viewsets.ViewSet):
             instance, data=request.data, partial=True, context={"request": self.request}
         )
         instance_serializer.is_valid(raise_exception=True)
+        parent_ou = instance.org_unit.parent
+        access_ou = OrgUnit.objects.filter_for_user_and_app_id(request.user, None)
 
-        if original.org_unit.reference_instance and original.org_unit_id != request.data["org_unit"]:
-            previousOrgUnit = original.org_unit
-            previousOrgUnit.reference_instance = None
-            previousOrgUnit.save()
+        if request.data["validation_status"] == "locked":
+            if parent_ou not in access_ou:
+                raise serializers.ValidationError({"error": "Permission denied. You can't lock this instance."})
+        if parent_ou in access_ou or instance.validations_status != "locked":
+            if original.org_unit.reference_instance and original.org_unit_id != request.data["org_unit"]:
+                previousOrgUnit = original.org_unit
+                previousOrgUnit.reference_instance = None
+                previousOrgUnit.save()
+            instance_serializer.save()
 
-        instance_serializer.save()
-
-        log_modification(original, instance, INSTANCE_API, user=request.user)
-        return Response(instance.as_full_model())
+            log_modification(original, instance, INSTANCE_API, user=request.user)
+            return Response(instance.as_full_model())
 
     @action(detail=False, methods=["POST"], permission_classes=[permissions.IsAuthenticated, HasInstancePermission])
     def bulkdelete(self, request):

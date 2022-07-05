@@ -27,14 +27,15 @@ const DeleteInstanceDialog = ({
 }) => {
     const classes = useStyles();
     const dispatch = useDispatch();
-    const [allowConfirm, setAllowConfirm] = useState(true)
+    const [allowConfirm, setAllowConfirm] = useState(true);
     const onConfirm = closeDialog => {
-        setAllowConfirm(false)
+        setAllowConfirm(false);
         dispatch(
             bulkDelete(selection, filters, isUnDeleteAction, () => {
                 closeDialog();
                 resetSelection();
                 setForceRefresh();
+                setAllowConfirm(false);
             }),
         );
     };

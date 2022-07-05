@@ -1,4 +1,5 @@
 import React, { useMemo } from 'react';
+import get from 'lodash/get';
 import {
     // @ts-ignore
     useSafeIntl,
@@ -15,6 +16,7 @@ import { getOrgUnitAssignation } from '../utils';
 import { Profile } from '../../../utils/usersUtils';
 
 import { UsersTeamsCell } from '../components/UsersTeamsCell';
+import { LinkToOrgUnit } from '../components/LinkToOrgUnit';
 
 import MESSAGES from '../messages';
 
@@ -53,6 +55,9 @@ export const useColumns = ({
                 id: 'name',
                 accessor: 'name',
                 align: 'left',
+                Cell: settings => {
+                    return <LinkToOrgUnit orgUnit={settings.row.original} />;
+                },
             },
         ];
         Array(parentCount > 0 ? parentCount - 1 : parentCount)
@@ -65,6 +70,16 @@ export const useColumns = ({
                     id: `parent__${'parent__'.repeat(index)}name`,
                     accessor: `parent.${'parent.'.repeat(index)}name`,
                     align: 'center',
+                    Cell: settings => {
+                        return (
+                            <LinkToOrgUnit
+                                orgUnit={get(
+                                    settings.row.original,
+                                    `parent${'.parent'.repeat(index)}`,
+                                )}
+                            />
+                        );
+                    },
                 });
             });
         const assignationColumn: Column = {

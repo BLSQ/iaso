@@ -85,6 +85,10 @@ const MESSAGES = defineMessages({
         id: 'iaso.assignment.clickRowToUnAssign',
         defaultMessage: 'Click on the row to unassign',
     },
+    details: {
+        defaultMessage: 'Details',
+        id: 'iaso.label.details',
+    },
 });
 
 export default MESSAGES;

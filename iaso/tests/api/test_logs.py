@@ -104,3 +104,18 @@ class LogsAPITestCase(APITestCase):
 
         self.assertEqual(log_entry["user"]["user_name"], "janedoe")
         self.assertEqual(log_entry["field_diffs"]["removed"]["name"], {"before": "Hydroponics study", "after": None})
+
+    def test_logs_list_with_auth_or_app_id_with_create(self):
+        """GET /logs/ without auth should return an empty paginated list if no modification in db"""
+        self.maxDiff = None
+        self.client.force_authenticate(self.jane)
+
+        log_modification(None, self.reference_form, user=self.jane, source="myunittest")
+
+        response = self.client.get("/api/logs/", {"fields": "new_value,past_value,field_diffs"})
+        self.assertJSONResponse(response, 200)
+
+        log_entry = response.json()["list"][0]
+
+        self.assertEqual(log_entry["user"]["user_name"], "janedoe")
+        self.assertEqual(log_entry["field_diffs"]["added"]["name"], {"before": None, "after": "Hydroponics study"})

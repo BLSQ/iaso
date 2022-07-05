@@ -63,8 +63,8 @@ class HasInstancePermission(permissions.BasePermission):
             return True
 
         return request.user.is_authenticated and (
-            request.user.has_perm("menupermissions.iaso_forms")
-            or request.user.has_perm("menupermissions.iaso_submissions")
+                request.user.has_perm("menupermissions.iaso_forms")
+                or request.user.has_perm("menupermissions.iaso_submissions")
         )
 
     def has_object_permission(self, request: Request, view, obj: Instance):
@@ -319,8 +319,6 @@ class InstancesViewSet(viewsets.ViewSet):
         return Response(instance.as_full_model())
 
     def patch(self, request, pk=None):
-        # EMPECHER PATCH SI USER A PAS ACCESS AUX ORGUNITS SUP DE L'OU DE L'INSTANCE
-
         pk = request.data["id"]
         original = get_object_or_404(self.get_queryset(), pk=pk)
         instance = get_object_or_404(self.get_queryset(), pk=pk)
@@ -333,17 +331,20 @@ class InstancesViewSet(viewsets.ViewSet):
         access_ou = OrgUnit.objects.filter_for_user_and_app_id(request.user, None)
 
         if request.data["validation_status"] == "locked":
-            if parent_ou not in access_ou:
+            if parent_ou not in access_ou and parent_ou is not None or instance.org_unit not in access_ou:
                 raise serializers.ValidationError({"error": "Permission denied. You can't lock this instance."})
-        if parent_ou in access_ou or instance.validations_status != "locked":
-            if original.org_unit.reference_instance and original.org_unit_id != request.data["org_unit"]:
-                previousOrgUnit = original.org_unit
-                previousOrgUnit.reference_instance = None
-                previousOrgUnit.save()
-            instance_serializer.save()
 
-            log_modification(original, instance, INSTANCE_API, user=request.user)
-            return Response(instance.as_full_model())
+        if parent_ou in access_ou or instance.validation_status != "locked" or parent_ou is None:
+            if original.org_unit.reference_instance and original.org_unit_id != request.data["org_unit"]:
+                previous_orgunit = original.org_unit
+                previous_orgunit.reference_instance = None
+                previous_orgunit.save()
+            instance_serializer.save()
+        else:
+            raise serializers.ValidationError({"error": "Permission denied. You can't lock this instance."})
+
+        log_modification(original, instance, INSTANCE_API, user=request.user)
+        return Response(instance.as_full_model())
 
     @action(detail=False, methods=["POST"], permission_classes=[permissions.IsAuthenticated, HasInstancePermission])
     def bulkdelete(self, request):

@@ -978,7 +978,7 @@ class Instance(models.Model):
             "period": self.period,
             "status": getattr(self, "status", None),
             "correlation_id": self.correlation_id,
-            "validations_status": self.validation_status,
+            "validation_status": self.validation_status,
         }
 
     def as_dict_with_parents(self):
@@ -1015,7 +1015,7 @@ class Instance(models.Model):
         return {
             "uuid": self.uuid,
             "last_modified_by": last_modified_by,
-            "validations_status": self.validation_status,
+            "validation_status": self.validation_status,
             "id": self.id,
             "device_id": self.device.imei if self.device else None,
             "file_name": self.file_name,
@@ -1069,7 +1069,7 @@ class Instance(models.Model):
             "files": [f.file.url if f.file else None for f in self.instancefile_set.filter(deleted=False)],
             "status": getattr(self, "status", None),
             "correlation_id": self.correlation_id,
-            "validations_status": self.validation_status,
+            "validation_status": self.validation_status,
         }
 
     def soft_delete(self, user: typing.Optional[User] = None):

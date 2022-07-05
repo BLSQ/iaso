@@ -4,6 +4,7 @@ import os
 from unittest import mock
 from unittest.mock import patch
 
+import jwt
 from django.contrib.auth.models import User
 from django.core.cache import cache
 from django.core.files import File
@@ -13,6 +14,7 @@ from rest_framework import status
 from rest_framework.test import APIClient
 from django.contrib.gis.geos import Polygon, Point, MultiPolygon
 
+from hat.api.token_authentication import generate_auto_authentication_link
 from hat.settings import BASE_DIR
 from iaso import models as m
 from iaso.models import Account, OrgUnit, org_unit
@@ -596,6 +598,9 @@ class BudgetPolioTestCase(APITestCase):
         cls.grogu = cls.create_user_with_profile(
             username="Grogu", account=second_account, permissions=["iaso_polio_budget"]
         )
+        cls.validator = cls.create_user_with_profile(
+            username="Validator", account=second_account, permissions=["iaso_polio_budget"]
+        )
 
         cls.org_unit = m.OrgUnit.objects.create(
             org_unit_type=m.OrgUnitType.objects.create(name="Jedi Council", short_name="Cnc"),
@@ -637,6 +642,7 @@ class BudgetPolioTestCase(APITestCase):
         cls.project1 = project1 = account.project_set.create(name="project1")
         cls.team1 = Team.objects.create(project=project1, name="team1", manager=cls.yoda)
         cls.team2 = Team.objects.create(project=project1, name="team2", manager=cls.grogu)
+        cls.team_validator = Team.objects.create(project=project1, name="validation team", manager=cls.validator)
 
     def test_create_polio_budget(self):
         self.client.force_authenticate(self.yoda)
@@ -754,3 +760,12 @@ class BudgetPolioTestCase(APITestCase):
         self.assertEqual(response_f.status_code, 200)
         self.assertEqual(budget.is_finalized, True)
         self.assertEqual(budget.is_email_sent, True)
+
+    def test_authentication_link(self):
+        link = "test.com"
+        final_link = generate_auto_authentication_link(link, self.grogu)
+        token = final_link[final_link.find(".") + 1:final_link.find("next=")]
+
+        decoded_token = jwt.get_unverified_header(token)
+
+        print(decoded_token)

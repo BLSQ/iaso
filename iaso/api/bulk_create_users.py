@@ -1,6 +1,6 @@
 import io
 
-from django.contrib.auth.models import User
+from django.contrib.auth.models import User, Permission
 from django.contrib.auth.password_validation import validate_password
 from django.core.exceptions import ValidationError, ObjectDoesNotExist, MultipleObjectsReturned
 from django.core.files.base import ContentFile
@@ -34,10 +34,33 @@ class BulkCreateUserFromCsvViewSet(ModelViewSet):
 
     Sample csv input:
 
-    username,password,email,first_name,last_name,orgunit,profile_language
+    username,password,email,first_name,last_name,orgunit,profile_language,permissions
 
-    simon,sim0nrule2,biobroly@bluesquarehub.com,Simon,D.,KINSHASA,fr
+    simon,sim0nrule2,biobroly@bluesquarehub.com,Simon,D.,KINSHASA,fr,"iaso_submissions, iaso_forms"
 
+    You can add multiples permissions for the same user : "iaso_submissions, iaso_forms"
+
+    The permissions are :
+
+    "iaso_forms",
+
+    "iaso_submissions",
+
+    "iaso_mappings",
+
+    "iaso_completeness",
+
+    "iaso_org_units",
+
+    "iaso_links",
+
+    "iaso_users",
+
+    "iaso_projects",
+
+    "iaso_sources",
+
+    "iaso_data_tasks",
     """
 
     result_key = "file"
@@ -55,6 +78,7 @@ class BulkCreateUserFromCsvViewSet(ModelViewSet):
     @transaction.atomic
     def create(self, request, *args, **kwargs):
         if request.FILES:
+            user_access_ou = OrgUnit.objects.filter_for_user_and_app_id(request.user, None)
             try:
                 user_csv = request.FILES["file"]
                 user_csv_decoded = user_csv.read().decode("utf-8")
@@ -90,9 +114,10 @@ class BulkCreateUserFromCsvViewSet(ModelViewSet):
                             )
                             validate_password(row[csv_indexes.index("password")], user)
                             user.set_password(row[csv_indexes.index("password")])
+                            user.save()
                         except ValidationError as e:
                             raise serializers.ValidationError(
-                                {"error": "Operation aborted. Error at row %d. %s" % (i, "; ".join(e.messages))}
+                                {"error": "Operation aborted. Error at row %d. %s" % (i + 1, "; ".join(e.messages))}
                             )
                     except IntegrityError:
                         raise serializers.ValidationError(
@@ -111,11 +136,11 @@ class BulkCreateUserFromCsvViewSet(ModelViewSet):
                                 if int(ou):
                                     try:
                                         ou = OrgUnit.objects.get(id=ou)
-                                        if ou not in OrgUnit.objects.filter_for_user_and_app_id(request.user, None):
+                                        if ou not in user_access_ou:
                                             raise serializers.ValidationError(
                                                 {
                                                     "error": "Operation aborted. Invalid OrgUnit {0} at row : {1}. "
-                                                    "You don't have access to this orgunit".format(ou, i)
+                                                    "You don't have access to this orgunit".format(ou, i + 1)
                                                 }
                                             )
                                         org_units_list.append(ou)
@@ -125,7 +150,7 @@ class BulkCreateUserFromCsvViewSet(ModelViewSet):
                                                 "error": "Operation aborted. Invalid OrgUnit {0} at row : {1}. "
                                                 "Fix the error "
                                                 "and try "
-                                                "again.".format(ou, i)
+                                                "again.".format(ou, i + 1)
                                             }
                                         )
                             except ValueError:
@@ -135,7 +160,7 @@ class BulkCreateUserFromCsvViewSet(ModelViewSet):
                                         raise serializers.ValidationError(
                                             {
                                                 "error": "Operation aborted. Invalid OrgUnit {0} at row : {1}. "
-                                                "You don't have access to this orgunit".format(ou, i)
+                                                "You don't have access to this orgunit".format(ou, i + 1)
                                             }
                                         )
                                     org_units_list.append(org_unit)
@@ -144,7 +169,7 @@ class BulkCreateUserFromCsvViewSet(ModelViewSet):
                                     raise serializers.ValidationError(
                                         {
                                             "error": "Operation aborted. Multiple OrgUnits with the name: {0} at row : {1}."
-                                            "Use Orgunit ID instead of name.".format(ou, i)
+                                            "Use Orgunit ID instead of name.".format(ou, i + 1)
                                         }
                                     )
                                 except ObjectDoesNotExist:
@@ -153,11 +178,30 @@ class BulkCreateUserFromCsvViewSet(ModelViewSet):
                                             "error": "Operation aborted. Invalid OrgUnit {0} at row : {1}. Fix "
                                             "the error "
                                             "and try "
-                                            "again. Use Orgunit ID instead of name.".format(ou, i)
+                                            "again. Use Orgunit ID instead of name.".format(ou, i + 1)
                                         }
                                     )
-                    user.save()
                     profile = Profile.objects.create(account=request.user.iaso_profile.account, user=user)
+                    try:
+                        user_permissions = row[csv_indexes.index("permissions")].split(",")
+                        for perm in user_permissions:
+                            perm = perm[1::] if perm[:1] == " " else perm
+                            if perm:
+                                try:
+                                    perm = Permission.objects.get(codename=perm)
+                                    user.user_permissions.add(perm)
+                                    user.save()
+                                except ObjectDoesNotExist:
+                                    raise serializers.ValidationError(
+                                        {
+                                            "error": "Operation aborted. Invalid permission {0} at row : {1}. Fix "
+                                            "the error "
+                                            "and try "
+                                            "again".format(perm, i + 1)
+                                        }
+                                    )
+                    except ValueError:
+                        pass
                     if row[csv_indexes.index("profile_language")]:
                         language = row[csv_indexes.index("profile_language")].lower()
                         profile.language = language
@@ -169,6 +213,7 @@ class BulkCreateUserFromCsvViewSet(ModelViewSet):
                     csv_file = csv_file.to_csv(path_or_buf=None, index=False)
                     content_file = ContentFile(csv_file.encode("utf-8"))
                     file_instance.file.save(f"{file_instance.id}.csv", content_file)
+                    profile.save()
                 else:
                     csv_indexes = row
                 i += 1

@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import PropTypes from 'prop-types';
 import { FormattedMessage } from 'react-intl';
 import { useDispatch } from 'react-redux';
@@ -27,7 +27,9 @@ const DeleteInstanceDialog = ({
 }) => {
     const classes = useStyles();
     const dispatch = useDispatch();
+    const [allowConfirm, setAllowConfirm] = useState(true)
     const onConfirm = closeDialog => {
+        setAllowConfirm(false)
         dispatch(
             bulkDelete(selection, filters, isUnDeleteAction, () => {
                 closeDialog();
@@ -62,6 +64,7 @@ const DeleteInstanceDialog = ({
             }}
             onConfirm={onConfirm}
             renderTrigger={renderTrigger}
+            allowConfirm={allowConfirm}
         >
             <DialogContentText id="alert-dialog-description">
                 <FormattedMessage {...MESSAGES.deleteInstanceWarning} />

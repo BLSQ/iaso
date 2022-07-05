@@ -374,8 +374,16 @@ class InstancesAPITestCase(APITestCase):
 
         audit_before_count = Modification.objects.all().count()
 
-        response = self.client.post(f"/api/instances/bulkdelete/", {"selected_ids": str(soft_deleted_instance.id)})
+        response = self.client.post(
+            f"/api/instances/bulkdelete/",
+            {"selected_ids": [str(soft_deleted_instance.id)], "is_deletion": True, "showDeleted": False},
+            format="json",
+        )
         self.assertJSONResponse(response, 201)
+
+        response = self.client.get(f"/api/instances/{soft_deleted_instance.id}/")
+        self.assertJSONResponse(response, 200)
+        self.assertTrue(response.json()["deleted"])
 
         audit_after_count = Modification.objects.all().count()
 
@@ -385,13 +393,11 @@ class InstancesAPITestCase(APITestCase):
 
         self.assertEqual(audit_after_count, audit_before_count + 1)
 
-        response = self.client.get(f"/api/instances/{soft_deleted_instance.id}/")
-        self.assertJSONResponse(response, 200)
-        self.assertTrue(response.json()["deleted"])
         # lets restore
         response = self.client.post(
             f"/api/instances/bulkdelete/",
-            {"selected_ids": str(soft_deleted_instance.id), "is_deletion": False, "showDeleted": "true"},
+            {"selected_ids": [str(soft_deleted_instance.id)], "is_deletion": False, "showDeleted": "true"},
+            format="json",
         )
         self.assertJSONResponse(response, 201)
 

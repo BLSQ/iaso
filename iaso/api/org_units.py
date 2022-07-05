@@ -316,6 +316,8 @@ class OrgUnitViewSet(viewsets.ViewSet):
             validation_status = request.data["validation_status"]
             valid_validations_status = ["NEW", "VALID", "REJECTED"]
 
+            org_unit.validation_status = validation_status
+
             if validation_status not in valid_validations_status:
                 errors.append(
                     {

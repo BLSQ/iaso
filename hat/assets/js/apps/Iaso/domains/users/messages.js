@@ -180,6 +180,15 @@ const MESSAGES = defineMessages({
         id: 'iaso.label.dhis2Id',
         defaultMessage: 'DHIS2 id',
     },
+    sentEmailInvitation: {
+        id: 'iaso.label.sentEmailInvitation',
+        defaultMessage: 'Send an invitation email',
+    },
+    sentEmailInvitationWhenAdresseExist: {
+        id: 'iaso.label.sentEmailInvitationWhenAdresseExist',
+        defaultMessage:
+            'Enter email address before sending an invitation email',
+    },
     fetchPermissionsError: {
         defaultMessage: 'An error occurred while fetching permissions list',
         id: 'iaso.snackBar.fetchPermissions',

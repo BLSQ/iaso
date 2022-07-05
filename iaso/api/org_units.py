@@ -200,8 +200,8 @@ class OrgUnitViewSet(viewsets.ViewSet):
             #  In order to get the all groups independently of filters, we should get the groups
             # based on the org_unit FK.
 
-            org_ids = queryset.order_by("pk").values_list("pk", flat=True).distinct()
-            groups = Group.objects.filter(org_units__id__in=list(org_ids)).only("id", "name").distinct("id")
+            org_ids = queryset.order_by("pk").values_list("pk", flat=True)
+            groups = Group.objects.filter(org_units__id__in=set(org_ids)).only("id", "name").distinct("id")
 
             columns = [
                 {"title": "ID", "width": 10},

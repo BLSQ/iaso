@@ -2,10 +2,11 @@ import typing
 
 from django.contrib.gis.geos import Polygon, Point, MultiPolygon
 from django.test import tag
-
+from django.core import mail
 from iaso.models import Profile
 from iaso.test import APITestCase
 from iaso import models as m
+from django.conf import settings
 
 
 class ProfileAPITestCase(APITestCase):
@@ -248,6 +249,43 @@ class ProfileAPITestCase(APITestCase):
         org_units = profile.org_units.all()
         self.assertEqual(org_units.count(), 1)
         self.assertEqual(org_units[0].name, "Corruscant Jedi Council")
+
+    def test_create_profile_with_send_email(self):
+        self.client.force_authenticate(self.jim)
+        data = {
+            "user_name": "userTest",
+            "password": "",
+            "first_name": "unittest_first_name",
+            "last_name": "unittest_last_name",
+            "send_email_invitation": True,
+            "email": "test@test.com",
+        }
+
+        response = self.client.post("/api/profiles/", data=data, format="json")
+        self.assertEqual(response.status_code, 200)
+
+        domain = settings.DNS_DOMAIN
+        self.assertEqual(len(mail.outbox), 1)
+        self.assertEqual(mail.outbox[0].subject, f"Set up a password for your new account on {domain}")
+        self.assertEqual(mail.outbox[0].from_email, "no-reply@%s" % domain)
+        self.assertEqual(mail.outbox[0].to, ["test@test.com"])
+
+    def test_create_profile_with_no_password_and_not_send_email(self):
+        self.client.force_authenticate(self.jim)
+        data = {
+            "user_name": "userTest",
+            "password": "",
+            "first_name": "unittest_first_name",
+            "last_name": "unittest_last_name",
+            "send_email_invitation": False,
+            "email": "test@test.com",
+        }
+
+        response = self.client.post("/api/profiles/", data=data, format="json")
+        self.assertEqual(response.status_code, 400)
+
+        response_data = response.json()
+        self.assertEqual(response_data["errorKey"], "password")
 
     def assertValidProfileData(self, project_data: typing.Mapping):
         self.assertHasField(project_data, "id", int)

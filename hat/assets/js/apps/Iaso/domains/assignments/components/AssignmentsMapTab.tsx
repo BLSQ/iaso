@@ -92,6 +92,8 @@ export const AssignmentsMapTab: FunctionComponent<Props> = ({
                 parentLocations={parentLocations}
                 isFetchingParentLocations={isFetchingParentLocations}
                 teams={teams}
+                profiles={profiles}
+                assignments={allAssignments}
             />
         </>
     );

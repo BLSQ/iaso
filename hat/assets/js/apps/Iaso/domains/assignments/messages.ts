@@ -50,7 +50,7 @@ const MESSAGES = defineMessages({
         id: 'iaso.label.selection',
     },
     alreadyAssignedTo: {
-        defaultMessage: 'already assigned to',
+        defaultMessage: 'Already assigned to',
         id: 'iaso.assignment.alreadyAssignedTo',
     },
     inAnotherTeam: {
@@ -88,6 +88,10 @@ const MESSAGES = defineMessages({
     details: {
         defaultMessage: 'Details',
         id: 'iaso.label.details',
+    },
+    orgUnitType: {
+        defaultMessage: 'Org unit type',
+        id: 'iaso.forms.org_unit_type_id',
     },
 });
 

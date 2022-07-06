@@ -42,7 +42,7 @@ export const AlreadyAssigned: FunctionComponent<Props> = ({ item, teams }) => {
     }
     return (
         <>
-            {`${item.name} ${formatMessage(
+            {`${formatMessage(
                 MESSAGES.alreadyAssignedTo,
             )} ${otherAssignString} ${formatMessage(MESSAGES.inAnotherTeam)}${
                 parentTeam && ` (${parentTeam.label})`

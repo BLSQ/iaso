@@ -2,6 +2,8 @@ import React, { FunctionComponent, useMemo } from 'react';
 // @ts-ignore
 import { useSafeIntl } from 'bluesquare-components';
 import { Paper, makeStyles, ClickAwayListener, Box } from '@material-ui/core';
+import classnames from 'classnames';
+
 import { OrgUnitMarker, OrgUnitShape } from '../types/locations';
 import { DropdownTeamsOptions } from '../types/team';
 import { AssignmentsApi } from '../types/assigment';
@@ -14,40 +16,70 @@ import { Profile } from '../../../utils/usersUtils';
 
 import { getOrgUnitAssignation } from '../utils';
 
+import { OrgUnitPath } from './OrgUnitPath';
+
 import MESSAGES from '../messages';
 
 type Props = {
     top: number;
     left: number;
-    handleClickAway: () => void;
+    closePopup: () => void;
     location: OrgUnitShape | OrgUnitMarker;
     alreadyAssigned: boolean;
     teams: DropdownTeamsOptions[];
     assignments: AssignmentsApi;
     profiles: Profile[];
+    popupPosition: 'top' | 'bottom' | 'left';
 };
 
 export const useStyles = makeStyles(theme => ({
     root: {
-        zIndex: 600,
+        zIndex: 1001,
         position: 'absolute',
     },
     arrow: {
         position: 'absolute',
-        top: 5,
-        left: '-4%',
         display: 'block',
         width: 0,
         height: 0,
         borderStyle: 'solid',
+        zIndex: 10,
+    },
+    arrowBottom: {
+        top: 12,
+        left: -7,
         borderWidth: '0 7.5px 13.0px 7.5px',
         borderColor: 'transparent transparent #ffffff transparent',
     },
+    arrowTop: {
+        top: -25,
+        left: -7,
+        borderWidth: '15px 7.5px 0 7.5px',
+        borderColor: '#ffffff transparent transparent transparent',
+    },
+    arrowLeft: {
+        top: -7,
+        left: -25,
+        borderWidth: '7.5px 0 7.5px 15px',
+        borderColor: 'transparent transparent transparent #ffffff',
+    },
     paper: {
         padding: theme.spacing(1, 1, 0, 1),
-        top: theme.spacing(2),
-        left: '-50%',
         position: 'relative',
+        width: 300,
+        userSelect: 'none',
+    },
+    paperBottom: {
+        transform: 'translateX(-50%)',
+        top: '25px',
+    },
+    paperTop: {
+        transform: 'translateX(calc(-50%)) translateY(-100%)',
+        bottom: '25px',
+    },
+    paperLeft: {
+        transform: 'translateX(calc(-100%)) translateY(-50%)',
+        right: '25px',
     },
     title: {
         fontSize: 12,
@@ -59,12 +91,13 @@ export const useStyles = makeStyles(theme => ({
 export const OrgUnitPopup: FunctionComponent<Props> = ({
     top,
     left,
-    handleClickAway,
+    closePopup,
     location,
     alreadyAssigned,
     teams,
     assignments,
     profiles,
+    popupPosition,
 }) => {
     const classes = useStyles();
     const { formatMessage } = useSafeIntl();
@@ -75,14 +108,14 @@ export const OrgUnitPopup: FunctionComponent<Props> = ({
                 value: <LinkToOrgUnit orgUnit={location} />,
             },
             {
-                label: formatMessage(MESSAGES.orgUnitType),
-                value: location.org_unit_type,
+                label: formatMessage(MESSAGES.parents),
+                value: <OrgUnitPath location={location} />,
             },
         ],
         [formatMessage, location],
     );
     return (
-        <ClickAwayListener onClickAway={handleClickAway}>
+        <ClickAwayListener onClickAway={closePopup}>
             <section
                 className={classes.root}
                 style={{
@@ -90,8 +123,23 @@ export const OrgUnitPopup: FunctionComponent<Props> = ({
                     left,
                 }}
             >
-                <span className={classes.arrow} />
-                <Paper elevation={1} className={classes.paper}>
+                <span
+                    className={classnames(
+                        classes.arrow,
+                        popupPosition === 'bottom' && classes.arrowBottom,
+                        popupPosition === 'top' && classes.arrowTop,
+                        popupPosition === 'left' && classes.arrowLeft,
+                    )}
+                />
+                <Paper
+                    elevation={1}
+                    className={classnames(
+                        classes.paper,
+                        popupPosition === 'bottom' && classes.paperBottom,
+                        popupPosition === 'top' && classes.paperTop,
+                        popupPosition === 'left' && classes.paperLeft,
+                    )}
+                >
                     <Box display="inline-block">
                         {infos.map((info, index) => (
                             <OrgUnitPopupLine

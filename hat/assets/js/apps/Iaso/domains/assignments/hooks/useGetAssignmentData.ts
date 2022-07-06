@@ -101,6 +101,7 @@ export const useGetAssignmentData = ({
                 currentTeam,
                 allAssignments,
                 planning,
+                isLoadingAssignments,
             }),
             baseOrgunitType,
             assignments,

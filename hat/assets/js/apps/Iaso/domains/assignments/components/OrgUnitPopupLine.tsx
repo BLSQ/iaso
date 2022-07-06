@@ -13,10 +13,12 @@ export const OrgUnitPopupLine: FunctionComponent<Props> = ({
 }) => {
     return (
         <Box display="flex" mb={1} alignItems="center">
-            <Box display="inline-block" width="100px">
+            <Box display="inline-block" width="100px" textAlign="right" pr={1}>
                 {label}:
-            </Box>{' '}
-            {value}
+            </Box>
+            <Box display="inline-block" width="180px">
+                {value}
+            </Box>
         </Box>
     );
 };

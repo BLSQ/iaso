@@ -20,8 +20,6 @@ import { MapLegend } from './MapLegend';
 import MarkersListComponent from '../../../components/maps/markers/MarkersListComponent';
 import { OrgUnitPopup } from './OrgUnitPopup';
 
-import { AlreadyAssigned } from './AlreadyAssigned';
-
 import {
     disabledColor,
     unSelectedColor,
@@ -109,6 +107,9 @@ export const AssignmentsMap: FunctionComponent<Props> = ({
     const [selectedLocation, setSelectedLocation] = useState<
         OrgUnitShape | OrgUnitMarker | undefined
     >(undefined);
+    const [popupPosition, sePopupPosition] = useState<
+        'top' | 'bottom' | 'left'
+    >('bottom');
     const [anchorPoint, setAnchorPoint] = useState<AnchorPoint>({
         x: 0,
         y: 0,
@@ -148,16 +149,32 @@ export const AssignmentsMap: FunctionComponent<Props> = ({
         }
     };
 
+    const handleContextMenu = (
+        event,
+        selectedItem: OrgUnitShape | OrgUnitMarker,
+        isAlreadyAssigned: boolean,
+    ) => {
+        const offset = 200;
+        let position: 'top' | 'bottom' | 'left' = 'bottom';
+        if (window.innerHeight - event.originalEvent.pageY < offset) {
+            position = 'top';
+        }
+        if (window.innerWidth - event.originalEvent.pageX < offset) {
+            position = 'left';
+        }
+        sePopupPosition(position);
+        setSelectedLocationAlreadyeAssigned(isAlreadyAssigned);
+        setAnchorPoint({
+            x: event.containerPoint.x,
+            y: event.containerPoint.y,
+        });
+        setSelectedLocation(selectedItem);
+    };
+
     const onEachFeature = (layer, selectedItem, isAlreadyAssigned = false) => {
         layer.on({
-            contextmenu: event => {
-                setSelectedLocationAlreadyeAssigned(isAlreadyAssigned);
-                setAnchorPoint({
-                    x: event.containerPoint.x,
-                    y: event.containerPoint.y,
-                });
-                setSelectedLocation(selectedItem);
-            },
+            contextmenu: event =>
+                handleContextMenu(event, selectedItem, isAlreadyAssigned),
         });
     };
 
@@ -176,12 +193,13 @@ export const AssignmentsMap: FunctionComponent<Props> = ({
                     <OrgUnitPopup
                         top={anchorPoint.y}
                         left={anchorPoint.x}
-                        handleClickAway={() => setSelectedLocation(undefined)}
+                        closePopup={() => setSelectedLocation(undefined)}
                         location={selectedLocation}
                         alreadyAssigned={selectedLocationAlreadyeAssigned}
                         teams={teams}
                         profiles={profiles}
                         assignments={assignments}
+                        popupPosition={popupPosition}
                     />
                 )}
                 <TilesSwitch
@@ -200,6 +218,7 @@ export const AssignmentsMap: FunctionComponent<Props> = ({
                     scrollWheelZoom={false}
                     zoomControl={false}
                     contextmenu
+                    onMovestart={() => setSelectedLocation(undefined)}
                 >
                     <ScaleControl imperial={false} />
                     <TileLayer
@@ -235,14 +254,7 @@ export const AssignmentsMap: FunctionComponent<Props> = ({
                                                     color: disabledColor,
                                                     fillOpacity: 0.5,
                                                 })}
-                                            >
-                                                {/* <Tooltip>
-                                                    <AlreadyAssigned
-                                                        item={shape}
-                                                        teams={teams}
-                                                    />
-                                                </Tooltip> */}
-                                            </GeoJSON>
+                                            />
                                         );
                                     })}
                             </Pane>
@@ -263,9 +275,7 @@ export const AssignmentsMap: FunctionComponent<Props> = ({
                                             style={() => ({
                                                 color: unSelectedColor,
                                             })}
-                                        >
-                                            {/* <Tooltip>{shape.name}</Tooltip> */}
-                                        </GeoJSON>
+                                        />
                                     ))}
                             </Pane>
                             <Pane name="shapes-selected">
@@ -281,9 +291,7 @@ export const AssignmentsMap: FunctionComponent<Props> = ({
                                             color: shape.color,
                                             fillOpacity: 0.4,
                                         })}
-                                    >
-                                        {/* <Tooltip>{shape.name}</Tooltip> */}
-                                    </GeoJSON>
+                                    />
                                 ))}
                             </Pane>
                             <Pane name="markers-unselected-already-assigned">
@@ -301,17 +309,9 @@ export const AssignmentsMap: FunctionComponent<Props> = ({
                                             disabledColor,
                                         ),
                                     })}
-                                    tooltipProps={orgUnit => {
-                                        return {
-                                            children: (
-                                                <AlreadyAssigned
-                                                    item={orgUnit}
-                                                    teams={teams}
-                                                />
-                                            ),
-                                        };
-                                    }}
-                                    TooltipComponent={Tooltip}
+                                    onContextmenu={(event, marker) =>
+                                        handleContextMenu(event, marker, true)
+                                    }
                                     isCircle
                                 />
                             </Pane>
@@ -330,10 +330,9 @@ export const AssignmentsMap: FunctionComponent<Props> = ({
                                             unSelectedColor,
                                         ),
                                     })}
-                                    tooltipProps={orgUnit => ({
-                                        children: [orgUnit.name],
-                                    })}
-                                    TooltipComponent={Tooltip}
+                                    onContextmenu={(event, marker) =>
+                                        handleContextMenu(event, marker, false)
+                                    }
                                     isCircle
                                 />
                             </Pane>
@@ -346,10 +345,9 @@ export const AssignmentsMap: FunctionComponent<Props> = ({
                                             shape.color,
                                         ),
                                     })}
-                                    tooltipProps={orgUnit => ({
-                                        children: [orgUnit.name],
-                                    })}
-                                    TooltipComponent={Tooltip}
+                                    onContextmenu={(event, marker) =>
+                                        handleContextMenu(event, marker, false)
+                                    }
                                     isCircle
                                 />
                             </Pane>

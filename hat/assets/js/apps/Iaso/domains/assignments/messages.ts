@@ -93,6 +93,10 @@ const MESSAGES = defineMessages({
         defaultMessage: 'Org unit type',
         id: 'iaso.forms.org_unit_type_id',
     },
+    parents: {
+        defaultMessage: 'Parents',
+        id: 'iaso.orgUnits.parents',
+    },
 });
 
 export default MESSAGES;

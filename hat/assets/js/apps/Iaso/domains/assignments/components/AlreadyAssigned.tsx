@@ -26,14 +26,14 @@ export const AlreadyAssigned: FunctionComponent<Props> = ({ item, teams }) => {
 
     let otherAssignString = '';
     let parentTeam;
-    if (item.otherAssignation.assignedTeam) {
+    if (item.otherAssignation?.assignedTeam) {
         parentTeam = getParentTeam({
             currentTeam: item.otherAssignation.assignedTeam,
             teams,
         });
         otherAssignString = item.otherAssignation.assignedTeam.label;
     }
-    if (item.otherAssignation.assignedUser) {
+    if (item.otherAssignation?.assignedUser) {
         parentTeam = getParentTeam({
             currentUser: item.otherAssignation.assignedUser,
             teams,

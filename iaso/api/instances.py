@@ -308,9 +308,20 @@ class InstancesViewSet(viewsets.ViewSet):
 
     def retrieve(self, request, pk=None):
         instance = get_object_or_404(self.get_queryset(), pk=pk)
+        if instance.validation_status == "LOCKED":
+            if instance.org_unit.parent is not None:
+                parent_ou = instance.org_unit.parent
+                # Faire un cache avec cette requête ?
+                access_ou = OrgUnit.objects.filter_for_user_and_app_id(request.user, None)
+                if parent_ou not in access_ou:
+                    response = instance.as_full_model()
+                    response["modification"] = False
+                    self.check_object_permissions(request, instance)
+                    return Response(response)
+        response = instance.as_full_model()
+        response["modification"] = True
         self.check_object_permissions(request, instance)
-
-        return Response(instance.as_full_model())
+        return Response(response)
 
     def delete(self, request, pk=None):
         instance = get_object_or_404(self.get_queryset(), pk=pk)
@@ -334,7 +345,7 @@ class InstancesViewSet(viewsets.ViewSet):
             if parent_ou not in access_ou and parent_ou is not None or instance.org_unit not in access_ou:
                 raise serializers.ValidationError({"error": "Permission denied. You can't lock this instance."})
 
-        if parent_ou in access_ou or instance.validation_status != "LOCKED" or parent_ou is None:
+        if parent_ou in access_ou or parent_ou is None and instance.org_unit in access_ou:
             valid_validation_status = ["LOCKED", "REVIEWED"]
             validation_status = request.data["validation_status"].upper()
             if validation_status not in valid_validation_status:

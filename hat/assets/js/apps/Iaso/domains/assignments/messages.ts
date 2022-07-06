@@ -97,6 +97,11 @@ const MESSAGES = defineMessages({
         defaultMessage: 'Parents',
         id: 'iaso.orgUnits.parents',
     },
+    mapHelper: {
+        defaultMessage:
+            'Right click on a org unit to see details popup, normal click to close popup',
+        id: 'iaso.assignment.mapHelper',
+    },
 });
 
 export default MESSAGES;

@@ -17,6 +17,7 @@ import { Locations, OrgUnitMarker, OrgUnitShape } from '../types/locations';
 
 import { TilesSwitch, Tile } from '../../../components/maps/tools/TileSwitch';
 import { MapLegend } from './MapLegend';
+import { MapInfo } from './MapInfo';
 import MarkersListComponent from '../../../components/maps/markers/MarkersListComponent';
 import { OrgUnitPopup } from './OrgUnitPopup';
 
@@ -189,6 +190,7 @@ export const AssignmentsMap: FunctionComponent<Props> = ({
         <section ref={mapContainer}>
             <Box position="relative">
                 <MapLegend />
+                <MapInfo />
                 {selectedLocation && (
                     <OrgUnitPopup
                         top={anchorPoint.y}

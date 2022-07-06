@@ -211,7 +211,7 @@ const actions = ({
         },
     ];
 
-    if (canEditEnketo) {
+    if (canEditEnketo && currentInstance.modification) {
         defaultActions = [enketoAction, ...defaultActions];
     }
 

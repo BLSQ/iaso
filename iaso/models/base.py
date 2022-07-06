@@ -1016,6 +1016,7 @@ class Instance(models.Model):
             "uuid": self.uuid,
             "last_modified_by": last_modified_by,
             "validation_status": self.validation_status,
+            "modification": True,
             "id": self.id,
             "device_id": self.device.imei if self.device else None,
             "file_name": self.file_name,

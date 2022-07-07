@@ -173,6 +173,15 @@ export const CreateEditPlanning: FunctionComponent<Props> = ({
         setFieldTouched(keyValue, true);
         setFieldValue(keyValue, value);
     };
+    // converting undefined to null for the API
+    const onChangeDate = (keyValue, value) => {
+        setFieldTouched(keyValue, true);
+        if (value === undefined) {
+            setFieldValue(keyValue, null);
+        } else {
+            setFieldValue(keyValue, value);
+        }
+    };
     const getErrors = useTranslatedErrors({
         errors,
         formatMessage,
@@ -271,7 +280,7 @@ export const CreateEditPlanning: FunctionComponent<Props> = ({
                     <Grid item xs={12}>
                         <DatesRange
                             marginTop={-2}
-                            onChangeDate={onChange}
+                            onChangeDate={onChangeDate}
                             dateFrom={values.startDate}
                             dateTo={values.endDate}
                             labelFrom={MESSAGES.startDatefrom}

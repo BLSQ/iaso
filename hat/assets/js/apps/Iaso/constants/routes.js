@@ -214,6 +214,20 @@ export const instanceDetailPath = {
     ],
 };
 
+export const compareInstanceVersionsPath = {
+    baseUrl: baseUrls.compareInstanceVersions,
+    permissions: ['iaso_submissions'],
+    // TO DO : replace CompareSubmissions by a custom component to compare two versions of a same submission
+    component: props => <CompareSubmissions {...props} />,
+    // component: props => <CompareInstanceVerions {...props} />,
+    params: [
+        {
+            isRequired: true,
+            key: 'instanceIds',
+        },
+    ],
+};
+
 export const compareInstancesPath = {
     baseUrl: baseUrls.compareInstances,
     permissions: ['iaso_submissions'],
@@ -650,6 +664,7 @@ export const routeConfigs = [
     mappingDetailPath,
     instancesPath,
     instanceDetailPath,
+    compareInstanceVersionsPath,
     compareInstancesPath,
     orgUnitsPath,
     orgUnitsDetailsPath,

@@ -1061,11 +1061,16 @@ class Instance(models.Model):
         }
 
     def soft_delete(self, user: typing.Optional[User] = None):
-        with transaction.atomic():
-            original = copy(self)
-            self.deleted = True
-            self.save()
-            log_modification(original, self, INSTANCE_API, user=user)
+        original = copy(self)
+        self.deleted = True
+        self.save()
+        log_modification(original, self, INSTANCE_API, user=user)
+
+    def restore(self, user: typing.Optional[User] = None):
+        original = copy(self)
+        self.deleted = False
+        self.save()
+        log_modification(original, self, INSTANCE_API, user=user)
 
 
 class InstanceFile(models.Model):

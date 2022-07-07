@@ -1,5 +1,4 @@
-import { useState, useEffect, useMemo } from 'react';
-import isEqual from 'lodash/isEqual';
+import { useMemo } from 'react';
 
 import { Planning } from '../types/planning';
 import { SubTeam, User, Team, DropdownTeamsOptions } from '../types/team';
@@ -61,7 +60,6 @@ export const useGetAssignmentData = ({
     baseOrgunitType,
     order,
 }: Props): Result => {
-    const [orgUnits, setOrgUnits] = useState<Locations>();
     const { data: dataProfiles = [] } = useGetProfiles();
     const {
         data: planning,
@@ -117,17 +115,15 @@ export const useGetAssignmentData = ({
             currentType: currentTeam?.type,
             order,
         });
+
+    const [orgUnits] = useBoundState<Locations | undefined>(
+        undefined,
+        dataOrgUnits,
+    );
     const sidebarData =
         currentTeam?.type === 'TEAM_OF_USERS'
             ? currentTeam.users_details
             : currentTeam?.sub_teams_details;
-
-    useEffect(() => {
-        if (dataOrgUnits && !isEqual(dataOrgUnits, orgUnits)) {
-            setOrgUnits(dataOrgUnits);
-        }
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [dataOrgUnits]);
 
     return useMemo(() => {
         const setItemColor = (color, itemId) => {
@@ -196,6 +192,8 @@ export const useGetAssignmentData = ({
         planning,
         profiles,
         saveAssignment,
+        setProfiles,
+        setTeams,
         sidebarData,
         teams,
     ]);

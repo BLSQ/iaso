@@ -9,7 +9,7 @@ import { DropdownTeamsOptions } from '../types/team';
 import { AssignmentsApi } from '../types/assigment';
 
 import { OrgUnitPopupLine } from './OrgUnitPopupLine';
-import { LinkToOrgUnit } from './LinkToOrgUnit';
+import { LinkToOrgUnit } from './LinkToOrgUnitCompo';
 import { AlreadyAssigned } from './AlreadyAssigned';
 import { UsersTeamsCell } from './UsersTeamsCell';
 import { Profile } from '../../../utils/usersUtils';
@@ -32,7 +32,7 @@ type Props = {
     popupPosition: 'top' | 'bottom' | 'left';
 };
 
-export const useStyles = makeStyles(theme => ({
+const useStyles = makeStyles(theme => ({
     root: {
         zIndex: 1001,
         position: 'absolute',

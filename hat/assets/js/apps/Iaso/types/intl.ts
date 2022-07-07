@@ -4,5 +4,9 @@ export type IntlMessage = {
     values?: Record<string, any>;
 };
 
-// eslint-disable-next-line no-unused-vars
-export type IntlFormatMessage = (message: IntlMessage, values?) => string;
+export type IntlFormatMessage = (
+    // eslint-disable-next-line no-unused-vars
+    message: IntlMessage,
+    // eslint-disable-next-line no-unused-vars
+    values?: Record<string, string | HTMLElement>,
+) => string;

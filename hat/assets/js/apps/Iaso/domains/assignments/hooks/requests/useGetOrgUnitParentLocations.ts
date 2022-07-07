@@ -11,7 +11,7 @@ import { OrgUnit } from '../../../orgUnits/types/orgUnit';
 import { OrgUnitShape } from '../../types/locations';
 
 type Props = {
-    orgUnitParentIds: number[] | undefined;
+    orgUnitParentIds?: number[];
     baseOrgunitType: string | undefined;
 };
 

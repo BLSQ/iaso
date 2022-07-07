@@ -1,6 +1,6 @@
 import csv
 
-from django.contrib.auth.models import User
+from django.contrib.auth.models import User, Permission
 
 from iaso import models as m
 from iaso.models import Profile, BulkCreateUserCsvFile
@@ -62,6 +62,25 @@ class BulkCreateCsvTestCase(APITestCase):
         self.assertEqual(len(users), 6)
         self.assertEqual(len(profiles), 6)
 
+    def test_upload_valid_csv_with_perms(self):
+        self.client.force_authenticate(self.yoda)
+        self.sw_source.projects.set([self.project])
+
+        iaso_forms = Permission.objects.get(codename="iaso_forms")
+        iaso_submissions = Permission.objects.get(codename="iaso_submissions")
+
+        with open("iaso/tests/fixtures/test_user_bulk_create_valid_with_perm.csv") as csv_users:
+            response = self.client.post(f"/api/bulkcreateuser/", {"file": csv_users})
+
+        pollux = User.objects.get(username="pollux")
+        pollux_perms = pollux.user_permissions.all()
+        has_perms = False
+        if iaso_forms and iaso_submissions in pollux_perms:
+            has_perms = True
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(has_perms, True)
+
     def test_upload_invalid_mail_csv(self):
         self.client.force_authenticate(self.yoda)
         self.sw_source.projects.set([self.project])
@@ -84,7 +103,7 @@ class BulkCreateCsvTestCase(APITestCase):
         self.assertEqual(response.status_code, 400)
         self.assertEqual(
             response.json()["error"],
-            "Operation aborted. Invalid OrgUnit 99998 at row : 1. Fix the error " "and try again.",
+            "Operation aborted. Invalid OrgUnit 99998 at row : 2. Fix the error " "and try again.",
         )
 
     def test_upload_user_already_exists(self):
@@ -119,7 +138,7 @@ class BulkCreateCsvTestCase(APITestCase):
         self.assertEqual(response.status_code, 400)
         self.assertEqual(
             response.json()["error"],
-            "Operation aborted. Invalid OrgUnit 99998 at row : 1. Fix the error " "and try again.",
+            "Operation aborted. Invalid OrgUnit 99998 at row : 2. Fix the error " "and try again.",
         )
         self.assertEqual(len(users), 3)
         self.assertEqual(len(profiles), 3)
@@ -168,7 +187,7 @@ class BulkCreateCsvTestCase(APITestCase):
         self.assertEqual(response.status_code, 400)
         self.assertEqual(
             response.json()["error"],
-            "Operation aborted. Error at row 3. This password is too short. It must contain at least 8 characters.",
+            "Operation aborted. Error at row 4. This password is too short. It must contain at least 8 characters.",
         )
 
     def test_created_users_can_login(self):
@@ -196,7 +215,7 @@ class BulkCreateCsvTestCase(APITestCase):
         self.assertEqual(response.status_code, 400)
         self.assertEqual(
             response.json()["error"],
-            "Operation aborted. Multiple OrgUnits with the name: Solana at row : 3." "Use Orgunit ID instead of name.",
+            "Operation aborted. Multiple OrgUnits with the name: Solana at row : 4." "Use Orgunit ID instead of name.",
         )
 
     def test_upload_invalid_orgunit_name(self):
@@ -209,7 +228,7 @@ class BulkCreateCsvTestCase(APITestCase):
         self.assertEqual(response.status_code, 400)
         self.assertEqual(
             response.json()["error"],
-            "Operation aborted. Invalid OrgUnit Bazarre at row : 3. Fix "
+            "Operation aborted. Invalid OrgUnit Bazarre at row : 4. Fix "
             "the error "
             "and try "
             "again. Use Orgunit ID instead of name.",

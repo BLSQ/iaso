@@ -6,8 +6,7 @@ import {
 } from 'bluesquare-components';
 
 import { AssignmentsApi } from '../types/assigment';
-import { OrgUnit } from '../../orgUnits/types/orgUnit';
-import { OrgUnitShape, OrgUnitMarker } from '../types/locations';
+import { AssignmentUnit } from '../types/locations';
 import { DropdownTeamsOptions } from '../types/team';
 import { Column } from '../../../types/table';
 
@@ -21,16 +20,13 @@ import { LinkToOrgUnit } from '../components/LinkToOrgUnit';
 import MESSAGES from '../messages';
 
 type Props = {
-    orgUnits: Array<OrgUnitShape | OrgUnitMarker | OrgUnit>;
+    orgUnits: Array<AssignmentUnit>;
     assignments: AssignmentsApi;
     teams: DropdownTeamsOptions[] | undefined;
     profiles: Profile[] | undefined;
 };
 
-const getParentCount = (
-    orgUnit: OrgUnitShape | OrgUnitMarker | OrgUnit,
-    count = 0,
-): number => {
+const getParentCount = (orgUnit: AssignmentUnit, count = 0): number => {
     let newCount = count;
     if (orgUnit.parent) {
         newCount += 1 + getParentCount(orgUnit.parent, newCount);
@@ -46,7 +42,7 @@ export const useColumns = ({
 }: Props): Column[] => {
     const { formatMessage } = useSafeIntl();
 
-    const firstOrgunit: OrgUnitShape | OrgUnitMarker | OrgUnit = orgUnits[0];
+    const firstOrgunit: AssignmentUnit = orgUnits[0];
     const parentCount: number = firstOrgunit ? getParentCount(firstOrgunit) : 0;
     return useMemo(() => {
         const columns: Column[] = [

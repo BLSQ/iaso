@@ -1,4 +1,9 @@
-import React, { FunctionComponent, useState, useEffect } from 'react';
+import React, {
+    FunctionComponent,
+    useState,
+    useEffect,
+    useCallback,
+} from 'react';
 import { Box, makeStyles, Tabs, Tab, Grid } from '@material-ui/core';
 import { useDispatch } from 'react-redux';
 
@@ -23,8 +28,7 @@ import { Sidebar } from './components/AssignmentsSidebar';
 
 import { AssignmentParams, AssignmentApi } from './types/assigment';
 import { Team, SubTeam, User } from './types/team';
-import { OrgUnitShape, OrgUnitMarker } from './types/locations';
-import { OrgUnit } from '../orgUnits/types/orgUnit';
+import { OrgUnitShape, AssignmentUnit } from './types/locations';
 
 import { useGetAssignmentData } from './hooks/useGetAssignmentData';
 
@@ -103,22 +107,45 @@ export const Assignments: FunctionComponent<Props> = ({ params }) => {
     const isLoading =
         isLoadingPlanning || isSaving || isFetchingChildrenOrgunits;
 
-    const handleSaveAssignment = (
-        selectedOrgUnit: OrgUnitShape | OrgUnitMarker | OrgUnit,
-    ) => {
-        if (planning && selectedItem) {
-            const saveParams = getSaveParams({
-                allAssignments,
-                selectedOrgUnit,
-                teams: teams || [],
-                profiles,
-                currentType: currentTeam?.type,
-                selectedItem,
-                planning,
-            });
-            saveAssignment(saveParams);
-        }
-    };
+    const handleSaveAssignment = useCallback(
+        (selectedOrgUnit: AssignmentUnit) => {
+            if (planning && selectedItem) {
+                const saveParams = getSaveParams({
+                    allAssignments,
+                    selectedOrgUnit,
+                    teams: teams || [],
+                    profiles,
+                    currentType: currentTeam?.type,
+                    selectedItem,
+                    planning,
+                });
+                saveAssignment(saveParams);
+            }
+        },
+        [
+            planning,
+            selectedItem,
+            allAssignments,
+            teams,
+            profiles,
+            currentTeam?.type,
+            saveAssignment,
+        ],
+    );
+    // const handleSaveAssignment = (selectedOrgUnit: AssignmentUnit) => {
+    //     if (planning && selectedItem) {
+    //         const saveParams = getSaveParams({
+    //             allAssignments,
+    //             selectedOrgUnit,
+    //             teams: teams || [],
+    //             profiles,
+    //             currentType: currentTeam?.type,
+    //             selectedItem,
+    //             planning,
+    //         });
+    //         saveAssignment(saveParams);
+    //     }
+    // };
 
     useEffect(() => {
         if (!baseOrgunitType && assignments.length > 0) {

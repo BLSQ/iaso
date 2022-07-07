@@ -8,10 +8,13 @@ import {
 } from 'bluesquare-components';
 
 import { AssignmentsApi, AssignmentParams } from '../types/assigment';
-import { OrgUnitShape, OrgUnitMarker } from '../types/locations';
+import {
+    OrgUnitShape,
+    OrgUnitMarker,
+    AssignmentUnit,
+} from '../types/locations';
 import { useColumns } from '../configs/AssignmentsListTabColumns';
 import { DropdownTeamsOptions, SubTeam, User } from '../types/team';
-import { OrgUnit } from '../../orgUnits/types/orgUnit';
 import { Profile } from '../../../utils/usersUtils';
 
 import { baseUrls } from '../../../constants/urls';
@@ -39,7 +42,7 @@ const getOrderArray = (orders: string | undefined): Orders => {
 };
 
 type Props = {
-    orgUnits: Array<OrgUnitShape | OrgUnitMarker | OrgUnit>;
+    orgUnits: Array<AssignmentUnit>;
     assignments: AssignmentsApi;
     isFetchingOrgUnits: boolean;
     params: AssignmentParams;

@@ -1,5 +1,4 @@
-import { useState, useEffect, useMemo } from 'react';
-import isEqual from 'lodash/isEqual';
+import { useMemo } from 'react';
 
 import { Planning } from '../types/planning';
 import { SubTeam, User, Team, DropdownTeamsOptions } from '../types/team';
@@ -20,6 +19,8 @@ import {
     useGetAssignments,
     AssignmentsResult,
 } from './requests/useGetAssignments';
+
+import { useBoundState } from './useBoundState';
 
 type Props = {
     planningId: string;
@@ -59,10 +60,6 @@ export const useGetAssignmentData = ({
     baseOrgunitType,
     order,
 }: Props): Result => {
-    const [teams, setTeams] = useState<DropdownTeamsOptions[] | undefined>();
-    const [profiles, setProfiles] = useState<ProfileWithColor[]>([]);
-    const [orgUnits, setOrgUnits] = useState<Locations>();
-
     const { data: dataProfiles = [] } = useGetProfiles();
     const {
         data: planning,
@@ -73,6 +70,14 @@ export const useGetAssignmentData = ({
     } = useGetPlanning(planningId);
     const { data: dataTeams = [], isFetched: isTeamsFetched } = useGetTeams(
         planning?.team,
+    );
+    const [teams, setTeams] = useBoundState<DropdownTeamsOptions[] | undefined>(
+        [],
+        dataTeams,
+    );
+    const [profiles, setProfiles] = useBoundState<ProfileWithColor[]>(
+        [],
+        dataProfiles,
     );
     const {
         data,
@@ -111,30 +116,15 @@ export const useGetAssignmentData = ({
             currentType: currentTeam?.type,
             order,
         });
+
+    const [orgUnits] = useBoundState<Locations | undefined>(
+        undefined,
+        dataOrgUnits,
+    );
     const sidebarData =
         currentTeam?.type === 'TEAM_OF_USERS'
             ? currentTeam.users_details
             : currentTeam?.sub_teams_details;
-    useEffect(() => {
-        if (!isEqual(dataTeams, teams)) {
-            setTeams(dataTeams);
-        }
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [dataTeams]);
-
-    useEffect(() => {
-        if (!isEqual(dataProfiles, profiles)) {
-            setProfiles(dataProfiles);
-        }
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [dataProfiles]);
-
-    useEffect(() => {
-        if (dataOrgUnits && !isEqual(dataOrgUnits, orgUnits)) {
-            setOrgUnits(dataOrgUnits);
-        }
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [dataOrgUnits]);
 
     return useMemo(() => {
         const setItemColor = (color, itemId) => {
@@ -203,6 +193,8 @@ export const useGetAssignmentData = ({
         planning,
         profiles,
         saveAssignment,
+        setProfiles,
+        setTeams,
         sidebarData,
         teams,
     ]);

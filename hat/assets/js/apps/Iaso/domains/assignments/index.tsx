@@ -23,8 +23,7 @@ import { Sidebar } from './components/AssignmentsSidebar';
 
 import { AssignmentParams, AssignmentApi } from './types/assigment';
 import { Team, SubTeam, User } from './types/team';
-import { OrgUnitShape, OrgUnitMarker } from './types/locations';
-import { OrgUnit } from '../orgUnits/types/orgUnit';
+import { OrgUnitShape, AssignmentUnit } from './types/locations';
 
 import { useGetAssignmentData } from './hooks/useGetAssignmentData';
 
@@ -103,9 +102,7 @@ export const Assignments: FunctionComponent<Props> = ({ params }) => {
     const isLoading =
         isLoadingPlanning || isSaving || isFetchingChildrenOrgunits;
 
-    const handleSaveAssignment = (
-        selectedOrgUnit: OrgUnitShape | OrgUnitMarker | OrgUnit,
-    ) => {
+    const handleSaveAssignment = (selectedOrgUnit: AssignmentUnit) => {
         if (planning && selectedItem) {
             const saveParams = getSaveParams({
                 allAssignments,

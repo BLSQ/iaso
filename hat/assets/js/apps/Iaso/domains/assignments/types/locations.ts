@@ -27,3 +27,5 @@ export type Locations = {
     markers: Selection<OrgUnitMarker>;
     all: Array<OrgUnitShape | OrgUnitMarker>;
 };
+
+export type AssignmentUnit = OrgUnitShape | OrgUnitMarker | OrgUnit;

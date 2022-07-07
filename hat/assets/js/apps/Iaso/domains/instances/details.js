@@ -1,12 +1,19 @@
 /* eslint-disable react/jsx-props-no-spreading */
 import React, { Component } from 'react';
+import { Link } from 'react-router';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 import DeleteIcon from '@material-ui/icons/Delete';
 import UpdateIcon from '@material-ui/icons/Update';
 import RestoreFromTrashIcon from '@material-ui/icons/RestoreFromTrash';
 import Alert from '@material-ui/lab/Alert';
-import { withStyles, Box, Grid, DialogContentText } from '@material-ui/core';
+import {
+    withStyles,
+    Box,
+    Grid,
+    DialogContentText,
+    Typography,
+} from '@material-ui/core';
 
 import PropTypes from 'prop-types';
 import LinkIcon from '@material-ui/icons/Link';
@@ -64,6 +71,14 @@ const styles = theme => ({
     ...commonStyles(theme),
     alert: {
         marginBottom: theme.spacing(4),
+    },
+    labelContainer: {
+        display: 'flex',
+        width: '100%',
+        justifyContent: 'flex-end',
+        alignItems: 'center',
+        position: 'relative',
+        top: 2,
     },
 });
 
@@ -398,7 +413,45 @@ class InstanceDetails extends Component {
                                 >
                                     <InstanceDetailsInfos
                                         currentInstance={currentInstance}
-                                    />
+                                    />{' '}
+                                    <Grid container spacing={1}>
+                                        <Grid xs={5} item>
+                                            <div
+                                                className={
+                                                    classes.labelContainer
+                                                }
+                                            >
+                                                <Typography
+                                                    variant="body2"
+                                                    noWrap
+                                                    color="inherit"
+                                                    title="Historique"
+                                                >
+                                                    Historique
+                                                </Typography>
+                                                :
+                                            </div>
+                                        </Grid>
+
+                                        <Grid
+                                            xs={7}
+                                            container
+                                            item
+                                            justifyContent="flex-start"
+                                            alignItems="center"
+                                        >
+                                            <Typography
+                                                variant="body1"
+                                                color="inherit"
+                                            >
+                                                <Link
+                                                    to={`${baseUrls.compareInstanceVersions}/instanceIds/${currentInstance.id}`}
+                                                >
+                                                    Voir toutes les versions
+                                                </Link>
+                                            </Typography>
+                                        </Grid>
+                                    </Grid>
                                 </WidgetPaper>
                                 <WidgetPaper
                                     title={formatMessage(MESSAGES.location)}

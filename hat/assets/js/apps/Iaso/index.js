@@ -13,6 +13,7 @@ import { addRoutes } from './routing/redirections';
 import { getPlugins, PluginsContext } from './utils';
 import { getOverriddenTheme } from './styles';
 import { ThemeConfigContext } from './domains/app/contexts/ThemeConfigContext.tsx';
+import { getRequest } from './libs/Api';
 
 const queryClient = new QueryClient({
     defaultOptions: {
@@ -26,7 +27,6 @@ export default function iasoApp(element, enabledPluginsName, themeConfig) {
     const plugins = getPlugins(enabledPluginsName);
     const allRoutesConfigs = [
         ...routeConfigs,
-        // Beware not to flatten too far
         ...plugins.map(plugin => plugin.routes).flat(),
     ];
     const baseRoutes = allRoutesConfigs.map(routeConfig => (
@@ -36,18 +36,22 @@ export default function iasoApp(element, enabledPluginsName, themeConfig) {
                 routeConfig.allowAnonymous
                     ? routeConfig.component
                     : props => (
-                        <ProtectedRoute
-                              {...props}
-                              featureFlag={routeConfig.featureFlag}
-                              permissions={routeConfig.permissions}
-                              component={routeConfig.component(props)}
-                              isRootUrl={routeConfig.isRootUrl}
-                              allRoutes={allRoutesConfigs}
-                          />
+                          <ProtectedRoute
+                            {...props}
+                            featureFlag={routeConfig.featureFlag}
+                            permissions={routeConfig.permissions}
+                            component={routeConfig.component(props)}
+                            isRootUrl={routeConfig.isRootUrl}
+                            allRoutes={allRoutesConfigs}
+                        />
                       )
             }
         />
     ));
+    const currentUser = getRequest('/api/profiles/me')
+        .then(user => user)
+        .catch(e => console.warn(e));
+    const userHomePage = currentUser.home_page;
 
     const overrideLandingRoutes = plugins
         .filter(plugin => plugin.overrideLanding)
@@ -57,7 +61,7 @@ export default function iasoApp(element, enabledPluginsName, themeConfig) {
         overrideLandingRoutes.length > 0
             ? overrideLandingRoutes[overrideLandingRoutes.length - 1]
             : undefined;
-    const routes = addRoutes(baseRoutes, overrideLanding);
+    const routes = addRoutes(baseRoutes, userHomePage || overrideLanding);
     ReactDOM.render(
         <QueryClientProvider client={queryClient}>
             <PluginsContext.Provider value={{ plugins }}>
@@ -66,11 +70,7 @@ export default function iasoApp(element, enabledPluginsName, themeConfig) {
                         theme={getOverriddenTheme(theme, themeConfig)}
                     >
                         <CssBaseline />
-                        <App
-                          store={store}
-                          routes={routes}
-                          history={history}
-                        />
+                        <App store={store} routes={routes} history={history} />
                     </MuiThemeProvider>
                 </ThemeConfigContext.Provider>
             </PluginsContext.Provider>

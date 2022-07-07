@@ -15,7 +15,7 @@ import { getOrgUnitAssignation } from '../utils';
 import { Profile } from '../../../utils/usersUtils';
 
 import { UsersTeamsCell } from '../components/UsersTeamsCell';
-import { LinkToOrgUnit } from '../components/LinkToOrgUnitCompo';
+import { LinkToOrgUnit } from '../components/LinkToOrgUnit';
 
 import MESSAGES from '../messages';
 

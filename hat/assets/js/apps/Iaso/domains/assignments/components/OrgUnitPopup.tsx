@@ -9,7 +9,7 @@ import { DropdownTeamsOptions } from '../types/team';
 import { AssignmentsApi } from '../types/assigment';
 
 import { OrgUnitPopupLine } from './OrgUnitPopupLine';
-import { LinkToOrgUnit } from './LinkToOrgUnitCompo';
+import { LinkToOrgUnit } from './LinkToOrgUnit';
 import { AlreadyAssigned } from './AlreadyAssigned';
 import { UsersTeamsCell } from './UsersTeamsCell';
 import { Profile } from '../../../utils/usersUtils';

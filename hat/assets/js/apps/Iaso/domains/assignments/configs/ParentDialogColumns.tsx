@@ -13,7 +13,7 @@ import { IntlFormatMessage } from '../../../types/intl';
 import { DropdownTeamsOptions } from '../types/team';
 
 import { AlreadyAssigned } from '../components/AlreadyAssigned';
-import { LinkToOrgUnit } from '../components/LinkToOrgUnitCompo';
+import { LinkToOrgUnit } from '../components/LinkToOrgUnit';
 
 import MESSAGES from '../messages';
 

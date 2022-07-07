@@ -331,7 +331,6 @@ class InstancesViewSet(viewsets.ViewSet):
         return Response(instance.as_full_model())
 
     def patch(self, request, pk=None):
-        pk = request.data["id"]
         original = get_object_or_404(self.get_queryset(), pk=pk)
         instance = get_object_or_404(self.get_queryset(), pk=pk)
         self.check_object_permissions(request, instance)
@@ -341,14 +340,15 @@ class InstancesViewSet(viewsets.ViewSet):
         instance_serializer.is_valid(raise_exception=True)
         parent_ou = instance.org_unit.parent
         access_ou = OrgUnit.objects.filter_for_user_and_app_id(request.user, None)
+        validation_status = request.GET.get("validation_status", None)
 
-        if request.data["validation_status"].upper() == "LOCKED":
-            if parent_ou not in access_ou and parent_ou is not None or instance.org_unit not in access_ou:
-                raise serializers.ValidationError({"error": "Permission denied. You can't lock this instance."})
+        if validation_status:
+            if validation_status.upper() == "LOCKED":
+                if parent_ou not in access_ou and parent_ou is not None or instance.org_unit not in access_ou:
+                    raise serializers.ValidationError({"error": "Permission denied. You can't lock this instance."})
 
         if parent_ou in access_ou or parent_ou is None and instance.org_unit in access_ou:
             valid_validation_status = ["LOCKED", "REVIEWED"]
-            validation_status = request.data["validation_status"].upper()
             if validation_status not in valid_validation_status:
                 raise serializers.ValidationError({"error": f"Invalid Validation Status {validation_status}"})
             instance.validation_status = validation_status

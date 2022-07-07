@@ -4,12 +4,28 @@ import { getRequest } from '../../../../libs/Api';
 import { useSnackQuery } from '../../../../libs/apiHooks';
 import { makeUrlWithParams } from '../../../../libs/utils';
 import { Pagination } from '../../../../types/table';
-import { TeamParams, TeamFilterParams, Team } from '../../types/team';
+import {
+    TeamParams,
+    TeamFilterParams,
+    Team,
+    DropdownTeamsOptions,
+} from '../../types/team';
 
 type TeamList = Pagination & {
     results: Team[];
 };
 
+const getTeamsDropdown = async (
+    options: TeamParams | TeamFilterParams,
+): Promise<Team[]> => {
+    const { ...params } = options as Record<string, any>;
+    if (params.select) {
+        delete params.select;
+    }
+
+    const url = makeUrlWithParams('/api/microplanning/teams', params);
+    return getRequest(url) as Promise<Team[]>;
+};
 const getTeams = async (
     options: TeamParams | TeamFilterParams,
 ): Promise<TeamList> => {
@@ -33,5 +49,28 @@ export const useGetTeams = (
     // @ts-ignore
     return useSnackQuery(queryKey, () => getTeams(options), undefined, {
         select,
+    });
+};
+
+export const useGetTeamsDropdown = (
+    options: TeamParams | TeamFilterParams,
+    currentTeamId: number | undefined,
+): UseQueryResult<DropdownTeamsOptions[], Error> => {
+    const queryKey: any[] = ['teamsList', options];
+    // @ts-ignore
+    return useSnackQuery(queryKey, () => getTeamsDropdown(options), undefined, {
+        enabled: Boolean(currentTeamId),
+        select: teams => {
+            if (!teams) return [];
+            const filteredTeams =
+                teams && teams.filter(team => team.id !== currentTeamId);
+            return filteredTeams.map(team => {
+                return {
+                    value: team.id.toString(),
+                    label: team.name,
+                    original: team,
+                };
+            });
+        },
     });
 };

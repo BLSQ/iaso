@@ -12,6 +12,7 @@ export type SaveTeamQuery = {
     project: number;
     type?: 'TEAM_OF_TEAMS' | 'TEAM_OF_USERS';
     users: Array<number>;
+    parent?: number;
 };
 
 const convertToApi = data => {

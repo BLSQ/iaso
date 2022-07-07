@@ -342,14 +342,21 @@ class InstancesViewSet(viewsets.ViewSet):
         access_ou = OrgUnit.objects.filter_for_user_and_app_id(request.user, None)
         validation_status = request.GET.get("validation_status", None)
 
+        if parent_ou is None:
+            print("C'eST NONE")
+
         if validation_status:
             if validation_status.upper() == "LOCKED":
                 if parent_ou not in access_ou and parent_ou is not None or instance.org_unit not in access_ou:
+                    print("dans le LOCKED")
                     raise serializers.ValidationError({"error": "Permission denied. You can't lock this instance."})
-
+        print("ACCESS ou: ", access_ou)
+        print("PARENT OU: ", parent_ou)
+        print("INSTANCE ou:", instance.org_unit)
         if parent_ou in access_ou or parent_ou is None and instance.org_unit in access_ou:
-            valid_validation_status = ["LOCKED", "REVIEWED"]
+            valid_validation_status = ["LOCKED", "REVIEWED", None]
             if validation_status not in valid_validation_status:
+                print("INVALID VALIDATION")
                 raise serializers.ValidationError({"error": f"Invalid Validation Status {validation_status}"})
             instance.validation_status = validation_status
             instance.save()
@@ -359,7 +366,8 @@ class InstancesViewSet(viewsets.ViewSet):
                 previous_orgunit.save()
             instance_serializer.save()
         else:
-            raise serializers.ValidationError({"error": "Permission denied. You can't lock this instance."})
+            print("PERMISSION DENIED")
+            raise serializers.ValidationError({"error": "Permission denied. You access this instance."})
 
         log_modification(original, instance, INSTANCE_API, user=request.user)
         return Response(instance.as_full_model())

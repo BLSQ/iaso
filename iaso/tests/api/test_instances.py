@@ -12,6 +12,7 @@ from django.utils.timezone import now
 
 from hat.api.export_utils import timestamp_to_utc_datetime
 from iaso import models as m
+from iaso.models import OrgUnit
 from iaso.test import APITestCase
 from hat.audit.models import Modification
 
@@ -529,6 +530,11 @@ class InstancesAPITestCase(APITestCase):
             name="Coruscant Jedi Council Hospital", version=self.sw_version, org_unit_type=self.jedi_council
         )
         instance_to_patch = self.form_3.instances.first()
+        # profile = self.yoda.iaso_profile
+        # print("PROFILE:", profile.org_units)
+        # profile.org_units.set([new_org_unit])
+        # profile.save()
+        print("ACCESS OU2: ", OrgUnit.objects.filter_for_user_and_app_id(self.yoda, None))
 
         response = self.client.patch(
             f"/api/instances/{instance_to_patch.id}/",
@@ -536,7 +542,6 @@ class InstancesAPITestCase(APITestCase):
             format="json",
             HTTP_ACCEPT="application/json",
         )
-
         self.assertJSONResponse(response, 200)
 
         instance_to_patch.refresh_from_db()

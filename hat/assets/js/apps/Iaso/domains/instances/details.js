@@ -435,7 +435,7 @@ class InstanceDetails extends Component {
                             <Grid xs={12} md={8} item>
                                 <WidgetPaper
                                     id="form-contents"
-                                    title={formatMessage(MESSAGES.form)}
+                                    title={formatMessage(MESSAGES.submission)}
                                     IconButton={IconButtonComponent}
                                     iconButtonProps={{
                                         onClick: () =>

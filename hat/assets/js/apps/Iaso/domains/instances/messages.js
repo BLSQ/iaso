@@ -178,6 +178,10 @@ const MESSAGES = defineMessages({
         defaultMessage: 'Informations',
         id: 'iaso.instance.infos',
     },
+    submission: {
+        defaultMessage: 'Submission',
+        id: 'iaso.instance.titleSingle',
+    },
     form: {
         defaultMessage: 'Form',
         id: 'iaso.instance.formShort',

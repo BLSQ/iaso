@@ -29,7 +29,7 @@ import {
     BaseLocation,
 } from '../types/locations';
 import { SubTeam, User, DropdownTeamsOptions, Team } from '../types/team';
-import { AssignmentsApi } from '../types/assigment';
+import { AssignmentsApi, SaveAssignmentQuery } from '../types/assigment';
 import { Profile } from '../../../utils/usersUtils';
 import { Planning } from '../types/planning';
 
@@ -38,7 +38,6 @@ import { useColumns } from '../configs/ParentDialogColumns';
 import { getTeamName, getMultiSaveParams } from '../utils';
 
 import MESSAGES from '../messages';
-import { useBulkSaveAssignments } from '../hooks/requests/useSaveAssignment';
 
 type Props = {
     currentTeam: Team | undefined;
@@ -52,6 +51,8 @@ type Props = {
     allAssignments: AssignmentsApi;
     selectedItem: SubTeam | User | undefined;
     planning: Planning | undefined;
+    // eslint-disable-next-line no-unused-vars
+    saveMultiAssignments: (params: SaveAssignmentQuery) => void;
 };
 const useStyles = makeStyles(theme => ({
     ...commonStyles(theme),
@@ -75,6 +76,7 @@ export const ParentDialog: FunctionComponent<Props> = ({
     teams,
     profiles,
     planning,
+    saveMultiAssignments,
 }) => {
     const { formatMessage } = useSafeIntl();
     const columns = useColumns({ teams });
@@ -83,7 +85,6 @@ export const ParentDialog: FunctionComponent<Props> = ({
     const [mappedOrgUnits, setMappedOrgUnits] = useState<
         Array<OrgUnitShape | OrgUnitMarker | BaseLocation>
     >([]);
-    const { mutateAsync: saveMultiAssignments } = useBulkSaveAssignments();
 
     useEffect(() => {
         if (childrenOrgunits.length > 0 && parentSelected && locations) {

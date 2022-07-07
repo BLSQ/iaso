@@ -36,7 +36,10 @@ import { OrgUnitShape } from './types/locations';
 
 import { useGetTeams } from './hooks/requests/useGetTeams';
 import { useGetProfiles } from './hooks/requests/useGetProfiles';
-import { useSaveAssignment } from './hooks/requests/useSaveAssignment';
+import {
+    useBulkSaveAssignments,
+    useSaveAssignment,
+} from './hooks/requests/useSaveAssignment';
 import { useGetOrgUnitTypes } from './hooks/requests/useGetOrgUnitTypes';
 import { useGetOrgUnitsByParent } from './hooks/requests/useGetOrgUnitsByParent';
 
@@ -101,11 +104,14 @@ export const Assignments: FunctionComponent<Props> = ({ params }) => {
         });
     const { mutateAsync: saveAssignment, isLoading: isSaving } =
         useSaveAssignment(false);
+    const { mutateAsync: saveMultiAssignments, isLoading: isBulkSaving } =
+        useBulkSaveAssignments();
 
     const isLoading =
         isLoadingPlanning ||
         isLoadingAssignments ||
         isSaving ||
+        isBulkSaving ||
         isFetchingChildrenOrgunits;
 
     const setItemColor = (color: string, itemId: number): void => {
@@ -252,6 +258,7 @@ export const Assignments: FunctionComponent<Props> = ({ params }) => {
                             profiles={profiles}
                             setItemColor={setItemColor}
                             saveAssignment={saveAssignment}
+                            saveMultiAssignments={saveMultiAssignments}
                             baseOrgunitType={baseOrgunitType}
                             params={params}
                             orgunitTypes={orgunitTypes || []}

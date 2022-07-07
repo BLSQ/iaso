@@ -1,4 +1,4 @@
-import { UseMutationResult } from 'react-query';
+import { UseMutationResult, useQueryClient } from 'react-query';
 import { postRequest, patchRequest } from '../../../../libs/Api';
 import { useSnackMutation } from '../../../../libs/apiHooks';
 
@@ -21,14 +21,12 @@ export const useSaveAssignment = (
     callback: () => void = () => null,
 ): UseMutationResult => {
     const onSuccess = () => callback();
-    return useSnackMutation(
-        (data: SaveAssignmentQuery) => saveAssignment(data),
-        undefined,
-        undefined,
-        ['assignmentsList'],
-        { onSuccess },
+    return useSnackMutation({
+        mutationFn: (data: SaveAssignmentQuery) => saveAssignment(data),
+        invalidateQueryKey: ['assignmentsList'],
+        options: { onSuccess },
         showSucessSnackBar,
-    );
+    });
 };
 
 const saveBulkAssignments = (data: SaveAssignmentQuery) => {
@@ -43,13 +41,15 @@ const saveBulkAssignments = (data: SaveAssignmentQuery) => {
 
 export const useBulkSaveAssignments = (
     showSucessSnackBar = true,
-    callback: () => void = () => null,
 ): UseMutationResult => {
-    const onSuccess = () => callback();
+    const queryClient = useQueryClient();
     return useSnackMutation({
         mutationFn: saveBulkAssignments,
-        invalidateQueryKey: ['assignmentsList'],
-        options: { onSuccess },
+        options: {
+            // Since the API sends the assignmentsList as response, we can save a call by directly updating the cache
+            onSuccess: data =>
+                queryClient.setQueryData(['assignmentsList'], data),
+        },
         showSucessSnackBar,
     });
 };

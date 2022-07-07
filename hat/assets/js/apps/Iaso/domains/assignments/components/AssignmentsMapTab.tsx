@@ -45,6 +45,8 @@ type Props = {
     setItemColor: (color: string, teamId: number) => void;
     // eslint-disable-next-line no-unused-vars
     saveAssignment: (params: SaveAssignmentQuery) => void;
+    // eslint-disable-next-line no-unused-vars
+    saveMultiAssignments: (params: SaveAssignmentQuery) => void;
     baseOrgunitType: string | undefined;
     params: AssignmentParams;
     orgunitTypes: Array<DropdownOptions<string>>;
@@ -64,6 +66,7 @@ export const AssignmentsMapTab: FunctionComponent<Props> = ({
     profiles,
     setItemColor,
     saveAssignment,
+    saveMultiAssignments,
     baseOrgunitType,
     params,
     orgunitTypes,
@@ -172,6 +175,7 @@ export const AssignmentsMapTab: FunctionComponent<Props> = ({
                 teams={teams}
                 profiles={profiles}
                 planning={planning}
+                saveMultiAssignments={saveMultiAssignments}
             />
             <Grid container spacing={2}>
                 <Grid item xs={5}>

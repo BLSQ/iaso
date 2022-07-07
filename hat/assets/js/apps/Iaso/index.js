@@ -23,7 +23,11 @@ const queryClient = new QueryClient({
     },
 });
 
-export default function iasoApp(element, enabledPluginsName, themeConfig) {
+export default async function iasoApp(
+    element,
+    enabledPluginsName,
+    themeConfig,
+) {
     const plugins = getPlugins(enabledPluginsName);
     const allRoutesConfigs = [
         ...routeConfigs,
@@ -48,9 +52,12 @@ export default function iasoApp(element, enabledPluginsName, themeConfig) {
             }
         />
     ));
-    const currentUser = getRequest('/api/profiles/me')
-        .then(user => user)
-        .catch(e => console.warn(e));
+    let currentUser;
+    try {
+        currentUser = await getRequest('/api/profiles/me');
+    } catch (e) {
+        console.warn(e);
+    }
     const userHomePage = currentUser.home_page;
 
     const overrideLandingRoutes = plugins

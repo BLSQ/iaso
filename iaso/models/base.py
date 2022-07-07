@@ -1118,6 +1118,7 @@ class Profile(models.Model):
             "language": self.language,
             "user_id": self.user.id,
             "dhis2_id": self.dhis2_id,
+            "home_page": self.home_page,
         }
 
     def as_short_dict(self):

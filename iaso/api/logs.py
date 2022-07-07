@@ -17,6 +17,7 @@ class LogsViewSet(viewsets.ViewSet):
     list:
     Returns the list of modifications
 
+    Contrary to most other endpoints, it is paginated by default to prevent overloading the system
     """
 
     authentication_classes = (CsrfExemptSessionAuthentication, BasicAuthentication)
@@ -29,7 +30,7 @@ class LogsViewSet(viewsets.ViewSet):
         orders = request.GET.get("order", "-created_at").split(",")
         user_ids = request.GET.get("userId", None)
         object_id = request.GET.get("objectId", None)
-        content_type_arg = request.GET.get("contenType", None)
+        content_type_arg = request.GET.get("contentType", None)
         source = request.GET.get("source", None)
         fields = request.GET.get("fields", "").split(",")
 
@@ -52,7 +53,7 @@ class LogsViewSet(viewsets.ViewSet):
             queryset = queryset.filter(source=source)
 
         if content_type_arg:
-            app_label, model = content_type_arg.split("-")
+            app_label, model = content_type_arg.split(".")
             try:
                 content_type = ContentType.objects.get_by_natural_key(app_label, model)
             except ContentType.DoesNotExist:

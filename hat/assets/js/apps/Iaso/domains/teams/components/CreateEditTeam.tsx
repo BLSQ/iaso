@@ -12,6 +12,7 @@ import ConfirmCancelDialogComponent from '../../../components/dialogs/ConfirmCan
 import { commaSeparatedIdsToArray } from '../../../utils/forms';
 import { useTeamValidation } from '../validation';
 import { IntlFormatMessage } from '../../../types/intl';
+import { DropdownTeamsOptions } from '../types/team';
 
 import {
     convertAPIErrorsToState,
@@ -165,6 +166,23 @@ export const CreateEditTeam: FunctionComponent<Props> = ({
             setFieldValue('users', []);
         }
     }, [setFieldValue, values.type]);
+
+    const availableChildren: DropdownTeamsOptions[] | undefined = useMemo(
+        () =>
+            teamsDropdown &&
+            teamsDropdown.filter(team => values?.parent !== team.original.id),
+        [teamsDropdown, values?.parent],
+    );
+    const availableParents: DropdownTeamsOptions[] | undefined = useMemo(
+        () =>
+            teamsDropdown &&
+            teamsDropdown.filter(
+                team =>
+                    team.original.type === TEAM_OF_TEAMS &&
+                    !values?.subTeams?.includes(team.original.id),
+            ),
+        [teamsDropdown, values?.subTeams],
+    );
     return (
         <FormikProvider value={formik}>
             {/* @ts-ignore */}
@@ -266,7 +284,7 @@ export const CreateEditTeam: FunctionComponent<Props> = ({
                         value={values.subTeams}
                         errors={getErrors('subTeams')}
                         label={MESSAGES.title}
-                        options={teamsDropdown}
+                        options={availableChildren || []}
                         loading={isFetchingTeams}
                         multi
                     />
@@ -278,12 +296,7 @@ export const CreateEditTeam: FunctionComponent<Props> = ({
                     value={values.parent}
                     errors={getErrors('parent')}
                     label={MESSAGES.parentTeam}
-                    options={
-                        teamsDropdown &&
-                        teamsDropdown.filter(
-                            team => team.original.type === TEAM_OF_TEAMS,
-                        )
-                    }
+                    options={availableParents || []}
                     loading={isFetchingTeams}
                     multi={false}
                 />

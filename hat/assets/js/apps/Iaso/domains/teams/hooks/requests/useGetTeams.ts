@@ -66,7 +66,7 @@ export const useGetTeamsDropdown = (
                 teams && teams.filter(team => team.id !== currentTeamId);
             return filteredTeams.map(team => {
                 return {
-                    value: team.id.toString(),
+                    value: team.id,
                     label: team.name,
                     original: team,
                 };

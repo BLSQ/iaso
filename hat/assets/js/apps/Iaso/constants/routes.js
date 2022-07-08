@@ -29,6 +29,7 @@ import Pages from '../domains/pages';
 import { Planning } from '../domains/plannings/index.tsx';
 import { Teams } from '../domains/teams/index.tsx';
 import { Assignments } from '../domains/assignments/index.tsx';
+import CompareInstanceVersions from '../domains/instances/compare/components/CompareInstanceVersions.tsx';
 
 import { SHOW_PAGES } from '../utils/featureFlags';
 import { paginationPathParams } from '../routing/common';
@@ -217,9 +218,7 @@ export const instanceDetailPath = {
 export const compareInstanceVersionsPath = {
     baseUrl: baseUrls.compareInstanceVersions,
     permissions: ['iaso_submissions'],
-    // TO DO : replace CompareSubmissions by a custom component to compare two versions of a same submission
-    component: props => <CompareSubmissions {...props} />,
-    // component: props => <CompareInstanceVerions {...props} />,
+    component: props => <CompareInstanceVersions {...props} />,
     params: [
         {
             isRequired: true,

@@ -50,7 +50,7 @@ urlpatterns = [
         name="reset_password_complete",
     ),
     path("sync/", include("hat.sync.urls")),
-    path("btest/", test_email_render)
+    path("btest/", test_email_render),
 ]
 
 if settings.BEANSTALK_WORKER or settings.DEBUG:

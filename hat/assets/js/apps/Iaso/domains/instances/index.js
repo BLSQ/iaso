@@ -34,7 +34,7 @@ import CreateReAssignDialogComponent from './components/CreateReAssignDialogComp
 import { baseUrls } from '../../constants/urls';
 
 import MESSAGES from './messages';
-import { useSnackQuery } from '../../libs/apiHooks';
+import { useSnackQuery } from '../../libs/apiHooks.ts';
 import snackMessages from '../../components/snackBars/messages';
 import { TableWithDeepLink } from '../../components/tables/TableWithDeepLink';
 import { PaginatedInstanceFiles } from './components/PaginatedInstancesFiles';
@@ -134,6 +134,7 @@ const Instances = ({ params }) => {
 
     const onSearch = useCallback(
         newParams => {
+            setSelection(selectionInitialState);
             setResetPageToOne(convertObjectToString(newParams));
             dispatch(redirectToReplace(baseUrl, newParams));
         },

@@ -72,6 +72,36 @@ def to_questions_by_name(form_descriptor):
     return questions_by_name
 
 
+def visit_by_path(node, questions_by_name, current_path):
+    parent = node.get("type", None) is not None and (node["type"] == "survey" or node["type"] == "group")
+
+    node_current_path = ""
+    if node.get("name", "") == "data":
+        node_current_path = ""
+    elif current_path == "":
+        node_current_path = node.get("name", "")
+    else:
+        node_current_path = current_path + "/" + node.get("name", "")
+
+    if parent:
+        if "children" in node:
+            for child in node["children"]:
+                visit_by_path(child, questions_by_name, node_current_path)
+    else:
+        try:
+            questions_by_name[node_current_path] = node
+        except:
+            visit_by_path("error", node, node_current_path)
+
+
+def to_questions_by_path(form_descriptor):
+    questions_by_path = {}
+    if not form_descriptor or len(form_descriptor) == 0:
+        return questions_by_path
+    visit_by_path(form_descriptor, questions_by_path, "")
+    return questions_by_path
+
+
 def parse_xls_form(xls_file: typing.BinaryIO, *, previous_version: str = None) -> Survey:
     """Parse an ODK xls form file.
 

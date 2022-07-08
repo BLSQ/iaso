@@ -64,8 +64,8 @@ class HasInstancePermission(permissions.BasePermission):
             return True
 
         return request.user.is_authenticated and (
-            request.user.has_perm("menupermissions.iaso_forms")
-            or request.user.has_perm("menupermissions.iaso_submissions")
+                request.user.has_perm("menupermissions.iaso_forms")
+                or request.user.has_perm("menupermissions.iaso_submissions")
         )
 
     def has_object_permission(self, request: Request, view, obj: Instance):
@@ -338,20 +338,40 @@ class InstancesViewSet(viewsets.ViewSet):
             instance, data=request.data, partial=True, context={"request": self.request}
         )
         instance_serializer.is_valid(raise_exception=True)
-
-        if instance.validation_status == "LOCKED":
-            locked_history = InstanceLockTable.objects.filter(instance=instance)
-
-            if True:
-                raise serializers.ValidationError({"error": "Permission denied. You are not allowed to modify this "
-                                                            "instance."})
-
         parent_ou = instance.org_unit.parent
         access_ou = OrgUnit.objects.filter_for_user_and_app_id(request.user, None)
+
+        if instance.validation_status == "LOCKED":
+            locked_history = InstanceLockTable.objects.get(instance=instance, is_locked=True)
+            ou_hierarchy = OrgUnit.objects.hierarchy(locked_history.top_org_unit)
+            access_ou_locked_user = OrgUnit.objects.filter_for_user_and_app_id(locked_history.author, None)
+            highest_ou_count = []
+            access_ou_list = [access_ou_locked_user, access_ou]
+            print(ou_hierarchy)
+            for i in range(2):
+                count = 0
+                for ou in ou_hierarchy:
+                    if ou.parent in access_ou_list[i]:
+                        count += 1
+                highest_ou_count.append(count)
+            max_item = max(highest_ou_count)
+            top_user = request.user if ([index for index, item in enumerate(highest_ou_count) if item == max_item]) == 1 else locked_history.author
+            return HttpResponse(top_user)
+
+            # for ou in access_ou:
+            #     if ou.parent is not None and ou.parent in access_ou:
+            #         i += 1
+
+            # if locked_ou.parent is None and locked_ou in access_ou or locked_ou.parent in access_ou:
+            #     pass
+
+            # if True:
+            #     raise serializers.ValidationError({"error": "Permission denied. You are not allowed to modify this "
+            #                                                 "instance."})
+
         validation_status = request.data["validation_status"].upper()
 
-        if validation_status
-
+        # if validation_status
 
         # # validation_status = request.GET.get("validation_status", None)
 

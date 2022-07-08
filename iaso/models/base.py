@@ -1259,6 +1259,11 @@ class BulkCreateUserCsvFile(models.Model):
 
 
 class InstanceLockTable(SoftDeletableModel):
+    instance = models.ForeignKey("Instance", on_delete=models.PROTECT, null=True, blank=True)
     is_locked = models.BooleanField(default=False)
     author = models.ForeignKey(User, on_delete=models.PROTECT)
-    top_org_unit = models.ForeignKey("OrgUnit", on_delete=models.PROTECT, null=True, blank=True)
+    top_org_unit = models.ForeignKey("OrgUnit", on_delete=models.PROTECT, null=True, blank=True, related_name="instance_lock")
+
+    def __str__(self):
+        return str(self.instance)
+

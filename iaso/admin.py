@@ -39,7 +39,7 @@ from .models import (
     AccountFeatureFlag,
     EntityType,
     Entity,
-    BulkCreateUserCsvFile,
+    BulkCreateUserCsvFile, InstanceLockTable,
 )
 from .models.microplanning import Team, Planning, Assignment
 
@@ -214,6 +214,10 @@ class ProfileAdmin(admin.GeoModelAdmin):
     list_display = ("id", "user", "account", "language")
 
 
+class LockInstanceTableAdmin(admin.ModelAdmin):
+    raw_id_fields = ("top_org_unit",)
+
+
 class ExportRequestAdmin(admin.GeoModelAdmin):
     list_filter = ("launcher", "status")
     list_display = ("status", "launcher", "params", "last_error_message")
@@ -243,15 +247,15 @@ class ExportStatusAdmin(admin.GeoModelAdmin):
         # Write a get-method for a list of module names in the class Profile
         # return HTML string which will be display in the form
         return (
-            format_html_join(
-                mark_safe("<br/><br/>"),
-                "{} http status: {} url : {} <br/> <ul> <li>sent <pre>{}</pre> </li><li>received <pre>{}</pre></li></ul>",
-                (
-                    (line.id, line.http_status, line.url, line.sent, line.received)
-                    for line in instance.export_logs.all()
-                ),
-            )
-            or mark_safe("<span>no logs available.</span>")
+                format_html_join(
+                    mark_safe("<br/><br/>"),
+                    "{} http status: {} url : {} <br/> <ul> <li>sent <pre>{}</pre> </li><li>received <pre>{}</pre></li></ul>",
+                    (
+                        (line.id, line.http_status, line.url, line.sent, line.received)
+                        for line in instance.export_logs.all()
+                    ),
+                )
+                or mark_safe("<span>no logs available.</span>")
         )
 
 
@@ -389,3 +393,4 @@ admin.site.register(Team, TeamAdmin)
 admin.site.register(Planning, PlanningAdmin)
 admin.site.register(BulkCreateUserCsvFile)
 admin.site.register(Assignment, AssignmentAdmin)
+admin.site.register(InstanceLockTable, LockInstanceTableAdmin)

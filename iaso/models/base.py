@@ -11,6 +11,7 @@ from django.contrib.auth.models import User
 from django.contrib.gis.db.models.fields import PointField
 from django.contrib.gis.geos import Point
 from django.contrib.postgres.aggregates import ArrayAgg
+from django.contrib.postgres.fields import ArrayField
 from django.core.paginator import Paginator
 from django.db import models, transaction
 from django.db.models import Q
@@ -22,6 +23,7 @@ from hat.audit.models import log_modification, INSTANCE_API
 from iaso.utils import flat_parse_xml_soup, as_soup, extract_form_version_id
 from .device import DeviceOwnership, Device
 from .forms import Form, FormVersion
+from ..utils.models.soft_deletable import SoftDeletableModel
 
 logger = getLogger(__name__)
 
@@ -1254,3 +1256,9 @@ class BulkCreateUserCsvFile(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     created_by = models.ForeignKey(User, on_delete=models.PROTECT, null=True)
     account = models.ForeignKey(Account, on_delete=models.PROTECT, null=True)
+
+
+class InstanceLockTable(SoftDeletableModel):
+    is_locked = models.BooleanField(default=False)
+    author = models.ForeignKey(User, on_delete=models.PROTECT)
+    top_org_unit = models.ForeignKey("OrgUnit", on_delete=models.PROTECT, null=True, blank=True)

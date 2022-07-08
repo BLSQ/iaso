@@ -530,10 +530,19 @@ class InstancesAPITestCase(APITestCase):
             name="Coruscant Jedi Council Hospital", version=self.sw_version, org_unit_type=self.jedi_council
         )
         instance_to_patch = self.form_3.instances.first()
-        # profile = self.yoda.iaso_profile
-        # print("PROFILE:", profile.org_units)
-        # profile.org_units.set([new_org_unit])
-        # profile.save()
+        new_org_unit.parent = instance_to_patch.org_unit
+        new_org_unit.save()
+        profile = self.yoda.iaso_profile
+        print("PROFILE:", profile.org_units)
+        out_to_add = OrgUnit.objects.get(pk=1)
+        all_ou = OrgUnit.objects.all()
+        for ou in all_ou:
+            print(ou)
+            print(ou.pk)
+            print(ou.name)
+            print("_________")
+        profile.org_units.set([instance_to_patch.org_unit, new_org_unit, out_to_add])
+        profile.save()
         print("ACCESS OU2: ", OrgUnit.objects.filter_for_user_and_app_id(self.yoda, None))
 
         response = self.client.patch(

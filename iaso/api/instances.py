@@ -20,7 +20,7 @@ import iaso.periods as periods
 from hat.api.export_utils import Echo, generate_xlsx, iter_items, timestamp_to_utc_datetime
 from hat.audit.models import log_modification, INSTANCE_API
 from hat.common.utils import queryset_iterator
-from iaso.models import Instance, OrgUnit, Form, Project, InstanceFile, InstanceQuerySet
+from iaso.models import Instance, OrgUnit, Form, Project, InstanceFile, InstanceQuerySet, InstanceLockTable
 from iaso.utils import timestamp_to_datetime
 from . import common
 from .common import safe_api_import, TimestampField
@@ -338,36 +338,50 @@ class InstancesViewSet(viewsets.ViewSet):
             instance, data=request.data, partial=True, context={"request": self.request}
         )
         instance_serializer.is_valid(raise_exception=True)
+
+        if instance.validation_status == "LOCKED":
+            locked_history = InstanceLockTable.objects.filter(instance=instance)
+
+            if True:
+                raise serializers.ValidationError({"error": "Permission denied. You are not allowed to modify this "
+                                                            "instance."})
+
         parent_ou = instance.org_unit.parent
         access_ou = OrgUnit.objects.filter_for_user_and_app_id(request.user, None)
-        validation_status = request.GET.get("validation_status", None)
+        validation_status = request.data["validation_status"].upper()
 
-        if parent_ou is None:
-            print("C'eST NONE")
+        if validation_status
 
-        if validation_status:
-            if validation_status.upper() == "LOCKED":
-                if parent_ou not in access_ou and parent_ou is not None or instance.org_unit not in access_ou:
-                    print("dans le LOCKED")
-                    raise serializers.ValidationError({"error": "Permission denied. You can't lock this instance."})
-        print("ACCESS ou: ", access_ou)
-        print("PARENT OU: ", parent_ou)
-        print("INSTANCE ou:", instance.org_unit)
-        if parent_ou in access_ou or parent_ou is None and instance.org_unit in access_ou:
-            valid_validation_status = ["LOCKED", "REVIEWED", None]
-            if validation_status not in valid_validation_status:
-                print("INVALID VALIDATION")
-                raise serializers.ValidationError({"error": f"Invalid Validation Status {validation_status}"})
-            instance.validation_status = validation_status
-            instance.save()
-            if original.org_unit.reference_instance and original.org_unit_id != request.data["org_unit"]:
-                previous_orgunit = original.org_unit
-                previous_orgunit.reference_instance = None
-                previous_orgunit.save()
-            instance_serializer.save()
-        else:
-            print("PERMISSION DENIED")
-            raise serializers.ValidationError({"error": "Permission denied. You access this instance."})
+
+        # # validation_status = request.GET.get("validation_status", None)
+
+        # print(validation_status)
+        #
+        # #ajouter hierarchy
+        # if validation_status:
+        #     print(f"VALID: {validation_status}")
+        #     if validation_status.upper() == "LOCKED":
+        #         if parent_ou not in access_ou and parent_ou is not None or instance.org_unit not in access_ou:
+        #             print("dans le LOCKED")
+        #             raise serializers.ValidationError({"error": "Permission denied. You can't lock this instance."})
+        # # print("ACCESS ou: ", access_ou)
+        # # print("PARENT OU: ", parent_ou)
+        # # print("INSTANCE ou:", instance.org_unit.pk)
+        # if parent_ou in access_ou or parent_ou is None and instance.org_unit in access_ou:
+        #     valid_validation_status = ["LOCKED", "REVIEWED", None]
+        #     if validation_status not in valid_validation_status:
+        #         print("INVALID VALIDATION")
+        #         raise serializers.ValidationError({"error": f"Invalid Validation Status {validation_status}"})
+        #     instance.validation_status = validation_status
+        #     instance.save()
+        #     if original.org_unit.reference_instance and original.org_unit_id != request.data["org_unit"]:
+        #         previous_orgunit = original.org_unit
+        #         previous_orgunit.reference_instance = None
+        #         previous_orgunit.save()
+        #     instance_serializer.save()
+        # else:
+        #     print("PERMISSION DENIED")
+        #     raise serializers.ValidationError({"error": "Permission denied. You can not do this action."})
 
         log_modification(original, instance, INSTANCE_API, user=request.user)
         return Response(instance.as_full_model())

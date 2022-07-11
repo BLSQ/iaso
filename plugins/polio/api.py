@@ -1581,7 +1581,7 @@ This is an automated email from %s
                     other_approval_teams = Team.objects.filter(name__icontains="approval").exclude(id=approval_team.id)
                     approvers = other_approval_teams.values("users", flat=True)
                     for approver in approvers:
-                         # if user is in other approval team, send the mail with the fat buttons
+                        # if user is in other approval team, send the mail with the fat buttons
                         subject = self.email_title_template.format(event_type, event.campaign.obr_name)
                         from_email = "no-reply@%s" % settings.DNS_DOMAIN
                         auto_authentication_link = generate_auto_authentication_link(link_to_send, user)
@@ -1604,13 +1604,13 @@ This is an automated email from %s
                                 "approver_last_name": event.author.last_name,
                                 "validation_link": auto_authentication_link,
                                 "rejection_link": "",
-                                "team":approval_team.name,
+                                "team": approval_team.name,
                                 "sender": settings.DNS_DOMAIN,
                             },
                         )
                         msg.attach_alternative(html_content, "text/html")
                         msg.send()
-                        #TODO check that this works
+                        # TODO check that this works
                         recipients.discard(approver)
                 for user in recipients:
                     send_mail(

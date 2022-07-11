@@ -338,72 +338,46 @@ class InstancesViewSet(viewsets.ViewSet):
             instance, data=request.data, partial=True, context={"request": self.request}
         )
         instance_serializer.is_valid(raise_exception=True)
-        parent_ou = instance.org_unit.parent
         access_ou = OrgUnit.objects.filter_for_user_and_app_id(request.user, None)
+        has_higher_access = True
 
-        if instance.validation_status == "LOCKED":
+        if instance.org_unit not in access_ou:
+            raise serializers.ValidationError({
+                "error": "You don't have the permission to modify this instance."
+            })
+
+        if instance.validation_status == "LOCKED" or request.data["validation_status"] == "LOCKED":
             locked_history = InstanceLockTable.objects.get(instance=instance, is_locked=True)
-            ou_hierarchy = OrgUnit.objects.hierarchy(locked_history.top_org_unit)
-            access_ou_locked_user = OrgUnit.objects.filter_for_user_and_app_id(locked_history.author, None)
-            highest_ou_count = []
-            access_ou_list = [access_ou_locked_user, access_ou]
-            print(ou_hierarchy)
-            for i in range(2):
-                count = 0
-                for ou in ou_hierarchy:
-                    if ou.parent in access_ou_list[i]:
-                        count += 1
-                highest_ou_count.append(count)
-            max_item = max(highest_ou_count)
-            top_user = request.user if ([index for index, item in enumerate(highest_ou_count) if item == max_item]) == 1 else locked_history.author
-            return HttpResponse(top_user)
+            parent_ou = locked_history.top_org_unit.parent
+            ou_tree = []
+            while parent_ou is not None:
+                ou_tree.append(parent_ou.pk)
+                parent_ou = parent_ou.parent
 
-            # for ou in access_ou:
-            #     if ou.parent is not None and ou.parent in access_ou:
-            #         i += 1
+            ou_tree = OrgUnit.objects.filter(pk__in=ou_tree)
 
-            # if locked_ou.parent is None and locked_ou in access_ou or locked_ou.parent in access_ou:
-            #     pass
+            for ou in ou_tree:
+                has_higher_access = True if ou in access_ou else False
+                if has_higher_access:
+                    break
 
-            # if True:
-            #     raise serializers.ValidationError({"error": "Permission denied. You are not allowed to modify this "
-            #                                                 "instance."})
+            if not has_higher_access:
+                raise serializers.ValidationError({
+                    "error": "You don't have the permission to modify this instance."
+                })
 
-        validation_status = request.data["validation_status"].upper()
+            instance.validation_status = request.data["validation_status"]
 
-        # if validation_status
-
-        # # validation_status = request.GET.get("validation_status", None)
-
-        # print(validation_status)
-        #
-        # #ajouter hierarchy
-        # if validation_status:
-        #     print(f"VALID: {validation_status}")
-        #     if validation_status.upper() == "LOCKED":
-        #         if parent_ou not in access_ou and parent_ou is not None or instance.org_unit not in access_ou:
-        #             print("dans le LOCKED")
-        #             raise serializers.ValidationError({"error": "Permission denied. You can't lock this instance."})
-        # # print("ACCESS ou: ", access_ou)
-        # # print("PARENT OU: ", parent_ou)
-        # # print("INSTANCE ou:", instance.org_unit.pk)
-        # if parent_ou in access_ou or parent_ou is None and instance.org_unit in access_ou:
-        #     valid_validation_status = ["LOCKED", "REVIEWED", None]
-        #     if validation_status not in valid_validation_status:
-        #         print("INVALID VALIDATION")
-        #         raise serializers.ValidationError({"error": f"Invalid Validation Status {validation_status}"})
-        #     instance.validation_status = validation_status
-        #     instance.save()
-        #     if original.org_unit.reference_instance and original.org_unit_id != request.data["org_unit"]:
-        #         previous_orgunit = original.org_unit
-        #         previous_orgunit.reference_instance = None
-        #         previous_orgunit.save()
-        #     instance_serializer.save()
-        # else:
-        #     print("PERMISSION DENIED")
-        #     raise serializers.ValidationError({"error": "Permission denied. You can not do this action."})
+        if original.org_unit.reference_instance and original.org_unit_id != request.data["org_unit"]:
+            previous_orgunit = original.org_unit
+            previous_orgunit.reference_instance = None
+            previous_orgunit.save()
+        instance_serializer.save()
 
         log_modification(original, instance, INSTANCE_API, user=request.user)
+        instance.last_modified_by = request.user
+        instance.save()
+        instance.as_full_model().modification = True if has_higher_access else False
         return Response(instance.as_full_model())
 
     @action(detail=False, methods=["POST"], permission_classes=[permissions.IsAuthenticated, HasInstancePermission])

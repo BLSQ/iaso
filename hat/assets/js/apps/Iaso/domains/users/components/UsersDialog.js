@@ -11,8 +11,8 @@ import UsersInfos from './UsersInfos';
 import { fetchCurrentUser } from '../actions';
 import MESSAGES from '../messages';
 import UsersLocations from './UsersLocations';
-import PermissionsSwitches from './PermissionsSwitches';
-import { useCurrentUser } from '../../../utils/usersUtils';
+import PermissionsSwitches from './PermissionsSwitches.tsx';
+import { useCurrentUser } from '../../../utils/usersUtils.ts';
 
 const useStyles = makeStyles(theme => ({
     tabs: {
@@ -227,6 +227,7 @@ const UserDialogComponent = ({
 
 UserDialogComponent.defaultProps = {
     initialData: null,
+    allowSendEmailInvitation: false,
 };
 
 UserDialogComponent.propTypes = {
@@ -234,6 +235,7 @@ UserDialogComponent.propTypes = {
     renderTrigger: PropTypes.func.isRequired,
     initialData: PropTypes.object,
     saveProfile: PropTypes.func.isRequired,
+    allowSendEmailInvitation: PropTypes.bool,
 };
 
 export default UserDialogComponent;

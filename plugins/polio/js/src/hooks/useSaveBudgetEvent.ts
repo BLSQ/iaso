@@ -28,7 +28,7 @@ const patchEvent = async (data: QueryData) => {
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { files, ...body } = data;
     // create new budget event
-    return patchRequest(`/api/polio/budgetevent/${data.id}`, body);
+    return patchRequest(`/api/polio/budgetevent/${data.id}/`, body);
 };
 
 const postEventFiles = async (data: QueryData) => {

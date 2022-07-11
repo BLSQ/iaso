@@ -174,8 +174,8 @@ export const AssignmentsMapTab: FunctionComponent<Props> = ({
                 currentTeam={currentTeam}
                 teams={teams}
                 profiles={profiles}
-                saveMultiAssignments={saveMultiAssignments}
                 planning={planning}
+                saveMultiAssignments={saveMultiAssignments}
             />
             <Grid container spacing={2}>
                 <Grid item xs={5}>

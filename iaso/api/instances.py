@@ -346,15 +346,30 @@ class InstancesViewSet(viewsets.ViewSet):
                 "error": "You don't have the permission to modify this instance."
             })
 
+        user_top_ou = request.user
+
         if instance.validation_status == "LOCKED" or request.data["validation_status"] == "LOCKED":
-            locked_history = InstanceLockTable.objects.get(instance=instance, is_locked=True)
-            parent_ou = locked_history.top_org_unit.parent
+            if InstanceLockTable.objects.filter(instance=instance).count() > 0:
+                locked_history = InstanceLockTable.objects.get(instance=instance, is_locked=True)
+                parent_ou = locked_history.top_org_unit.parent
+                org_unit = locked_history.top_org_unit
+            else:
+                parent_ou = instance.org_unit.parent
+                org_unit = instance.org_unit
+                locked_history = False
             ou_tree = []
+            if parent_ou is None and org_unit in access_ou:
+                user_top_ou = org_unit
+                print(f"USER TOP {user_top_ou}")
             while parent_ou is not None:
                 ou_tree.append(parent_ou.pk)
                 parent_ou = parent_ou.parent
+                if parent_ou in access_ou:
+                    print(f"USER TOP {user_top_ou}")
+                    user_top_ou = parent_ou
 
             ou_tree = OrgUnit.objects.filter(pk__in=ou_tree)
+            print(ou_tree)
 
             for ou in ou_tree:
                 has_higher_access = True if ou in access_ou else False
@@ -365,6 +380,13 @@ class InstancesViewSet(viewsets.ViewSet):
                 raise serializers.ValidationError({
                     "error": "You don't have the permission to modify this instance."
                 })
+
+            if request.data["validation_status"] == "LOCKED":
+                InstanceLockTable.objects.create(instance=instance, is_locked=True, author=request.user,
+                                                 top_org_unit=user_top_ou)
+                if locked_history:
+                    locked_history.is_locked = False
+                    locked_history.save()
 
             instance.validation_status = request.data["validation_status"]
 
@@ -377,7 +399,7 @@ class InstancesViewSet(viewsets.ViewSet):
         log_modification(original, instance, INSTANCE_API, user=request.user)
         instance.last_modified_by = request.user
         instance.save()
-        instance.as_full_model().modification = True if has_higher_access else False
+        # instance.as_full_model().modification = True if has_higher_access else False
         return Response(instance.as_full_model())
 
     @action(detail=False, methods=["POST"], permission_classes=[permissions.IsAuthenticated, HasInstancePermission])

@@ -341,10 +341,14 @@ class InstancesViewSet(viewsets.ViewSet):
         access_ou = OrgUnit.objects.filter_for_user_and_app_id(request.user, None)
         has_higher_access = True
 
+        validation_status = None
+        if "validation_status" in request.data:
+            validation_status = request.data["validation_status"]
+
         if instance.org_unit not in access_ou:
             raise serializers.ValidationError({"error": "You don't have the permission to modify this instance."})
 
-        if instance.validation_status == "LOCKED" or request.data["validation_status"] == "LOCKED":
+        if instance.validation_status == "LOCKED" or validation_status == "LOCKED":
             if InstanceLockTable.objects.filter(instance=instance).count() > 0:
                 locked_history = InstanceLockTable.objects.get(instance=instance, is_locked=True)
                 parent_ou = locked_history.top_org_unit
@@ -358,7 +362,6 @@ class InstancesViewSet(viewsets.ViewSet):
             if parent_ou is None:
                 if org_unit in access_ou:
                     user_top_ou = org_unit
-                    print(f"USER TOP {user_top_ou}")
             else:
                 while parent_ou is not None:
                     ou_tree.append(parent_ou.pk)
@@ -368,7 +371,6 @@ class InstancesViewSet(viewsets.ViewSet):
                     parent_ou = parent_ou.parent
 
             ou_tree = OrgUnit.objects.filter(pk__in=ou_tree)
-            print(ou_tree)
 
             for ou in ou_tree:
                 has_higher_access = True if ou in access_ou else False
@@ -378,7 +380,7 @@ class InstancesViewSet(viewsets.ViewSet):
             if not has_higher_access:
                 raise serializers.ValidationError({"error": "You don't have the permission to modify this instance."})
 
-            if request.data["validation_status"] == "LOCKED":
+            if validation_status == "LOCKED":
                 InstanceLockTable.objects.create(
                     instance=instance, is_locked=True, author=request.user, top_org_unit=user_top_ou
                 )
@@ -386,7 +388,8 @@ class InstancesViewSet(viewsets.ViewSet):
                     locked_history.is_locked = False
                     locked_history.save()
 
-            instance.validation_status = request.data["validation_status"]
+            if validation_status is not None:
+                instance.validation_status = validation_status
 
         if original.org_unit.reference_instance and original.org_unit_id != request.data["org_unit"]:
             previous_orgunit = original.org_unit

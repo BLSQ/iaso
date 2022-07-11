@@ -1524,7 +1524,9 @@ This is an automated email from %s
 
     def is_budget_approved(self, user, event):
         val_teams = (
-            Team.objects.filter(name__icontains="approval").filter(project__account=user.iaso_profile.account).filter(deleted_at=None)
+            Team.objects.filter(name__icontains="approval")
+            .filter(project__account=user.iaso_profile.account)
+            .filter(deleted_at=None)
         )
         validation_count = 0
         for val_team in val_teams:

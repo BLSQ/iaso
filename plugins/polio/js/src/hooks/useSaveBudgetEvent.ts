@@ -9,14 +9,14 @@ import { useSnackMutation } from '../../../../../hat/assets/js/apps/Iaso/libs/ap
 import { BudgetEventType } from '../constants/types';
 import MESSAGES from '../constants/messages';
 
-type QueryData = {
+export type QueryData = {
     id?: number;
     campaign: string;
     type: BudgetEventType;
     target_teams: number[];
     comments?: string;
     // status: 'validation_ongoing'; // forcing status value as we create an event
-    files: FileList;
+    files?: FileList;
 };
 const createEvent = async (data: QueryData) => {
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -102,4 +102,16 @@ export const useSaveBudgetEvent = (
     if (type === 'edit') return uploadFiles;
     if (type === 'retry') return updateBudgetEvent;
     return createBudgetEvent;
+};
+
+export const useQuickValidateBudgetEvent = () => {
+    const { mutateAsync: create } = useCreateBudgetEvent();
+    const { mutateAsync: finalize } = useFinalizeBudgetEvent();
+    return async (data: QueryData) =>
+        // @ts-ignore
+        create(data, {
+            onSuccess: response => {
+                return finalize(response.id);
+            },
+        });
 };

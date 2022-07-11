@@ -30,6 +30,8 @@ import { useGetGeoJson } from '../../hooks/useGetGeoJson';
 import { useGetCampaignScope } from '../../hooks/useGetCampaignScope';
 import { useCurrentUser } from '../../../../../../hat/assets/js/apps/Iaso/utils/usersUtils';
 import InputComponent from '../../../../../../hat/assets/js/apps/Iaso/components/forms/InputComponent';
+import { useGetTeams } from '../../hooks/useGetTeams';
+import { BudgetValidationPopUp } from './BudgetValidationPopUp';
 
 type Props = {
     router: any;
@@ -91,7 +93,8 @@ export const BudgetDetails: FunctionComponent<Props> = ({ router }) => {
         setResetPageToOne(convertObjectToString(newParams));
     }, [params.pageSize, campaignId, campaignName]);
 
-    // const { data: teams, isFetching: isFetchingTeams } = useGetTeams();
+    const { data: teams, isFetching: isFetchingTeams } = useGetTeams();
+    console.log('allTeams', teams);
     const { data: profiles, isFetching: isFetchingProfiles } = useGetProfiles();
     const columns = useBudgetDetailsColumns({ profiles });
 
@@ -131,6 +134,7 @@ export const BudgetDetails: FunctionComponent<Props> = ({ router }) => {
                     }
                 }}
             />
+            {params.action === 'confirmApproval' && <BudgetValidationPopUp />}
             {/* @ts-ignore */}
             <Box
                 // @ts-ignore

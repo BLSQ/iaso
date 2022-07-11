@@ -82,6 +82,7 @@ export const Assignments: FunctionComponent<Props> = ({ params }) => {
         assignments,
         allAssignments,
         saveAssignment,
+        saveMultiAssignments,
         teams,
         profiles,
         orgunitTypes,
@@ -272,7 +273,7 @@ export const Assignments: FunctionComponent<Props> = ({ params }) => {
                                                 }
                                                 parentSelected={parentSelected}
                                                 saveMultiAssignments={
-                                                    saveAssignment
+                                                    saveMultiAssignments
                                                 }
                                                 selectedItem={selectedItem}
                                                 locations={orgUnits}

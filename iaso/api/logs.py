@@ -1,18 +1,43 @@
+from typing import Union
+
+from django.contrib.auth.models import User
 from django.contrib.contenttypes.models import ContentType
 from django.core.paginator import Paginator
+from django.db import models
 from django.shortcuts import get_object_or_404
+from django.utils.translation import gettext as _
 from rest_framework import viewsets
 from rest_framework.authentication import BasicAuthentication
 from rest_framework.response import Response
 
-
-from hat.audit.models import Modification
 from hat.api.authentication import CsrfExemptSessionAuthentication
+from hat.audit.models import Modification
+from iaso.models import OrgUnit, Instance, Form
+
+
+def has_access_to_org_unit(user: User, obj: Union[OrgUnit, Instance, models.Model]):
+    if isinstance(obj, OrgUnit):
+        ous = OrgUnit.objects.filter_for_user_and_app_id(user, None)
+        return obj in ous
+    if isinstance(obj, Instance):
+        instances = Instance.objects.filter_for_user(user)
+        return obj in instances
+    if isinstance(obj, Form):
+        forms = Form.objects.filter_for_user_and_app_id(user)
+        return obj in forms
+    return False
 
 
 class LogsViewSet(viewsets.ViewSet):
     """
-    Modification API to retrieve log modifications.
+    Modification API to retrieve log modifications. Read only
+    unless the user is a super admin it is required to filter logs to an object instance (via a contentType and objectId)
+
+    a `fields` query param can be used to specify additionals fields to return, accepted value are :
+        - past_value
+        - new_value
+        - field_diffs
+
 
     list:
     Returns the list of modifications
@@ -47,11 +72,13 @@ class LogsViewSet(viewsets.ViewSet):
             queryset = queryset.filter(created_at__lte=to_date)
         if user_ids is not None:
             queryset = queryset.filter(user_id__in=user_ids.split(","))
-        if object_id is not None:
-            queryset = queryset.filter(object_id=object_id)
+
         if source is not None:
             queryset = queryset.filter(source=source)
 
+        content_type = None
+        if object_id is not None:
+            queryset = queryset.filter(object_id=object_id)
         if content_type_arg:
             app_label, model = content_type_arg.split(".")
             try:
@@ -60,6 +87,14 @@ class LogsViewSet(viewsets.ViewSet):
                 return queryset.none()
             else:
                 queryset = queryset.filter(content_type=content_type)
+
+        user: User = request.user
+        if not user.is_superuser:
+            if not (object_id and content_type):
+                return Response({"error": _("Unauthorized")}, status=401)
+            obj = content_type.get_object_for_this_type(pk=object_id)
+            if not has_access_to_org_unit(user, obj):
+                return Response({"error": _("Unauthorized")}, status=401)
 
         queryset = queryset.order_by(*orders)
 

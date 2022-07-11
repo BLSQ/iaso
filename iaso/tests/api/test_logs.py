@@ -1,4 +1,3 @@
-import typing
 from hat.audit.models import log_modification
 
 from iaso.test import APITestCase
@@ -43,8 +42,18 @@ class LogsAPITestCase(APITestCase):
         response = self.client.get("/api/logs/")
         self.assertJSONResponse(response, 403)
 
-    def test_logs_list_with_auth_or_app_id_but_no_logs(self):
-        """GET /logs/ without auth should return an empty paginated list if no modification in db"""
+    def test_logs_list_with_auth_no_params(self):
+        """GET /logs/ with a normal user and no object instance specified should return a 401"""
+
+        self.client.force_authenticate(self.jane)
+
+        response = self.client.get("/api/logs/")
+        self.assertJSONResponse(response, 401)
+
+    def test_logs_list_with_superuser_but_no_logs(self):
+        """GET /logs/ with a superuser should return an empty paginated list if no modification in db"""
+        self.jane.is_superuser = True
+        self.jane.save()
 
         self.client.force_authenticate(self.jane)
 
@@ -55,9 +64,11 @@ class LogsAPITestCase(APITestCase):
             {"count": 0, "list": [], "has_next": False, "has_previous": False, "page": 1, "pages": 1, "limit": 50},
         )
 
-    def test_logs_list_with_auth_or_app_id_with_data_without_params(self):
-        """GET /logs/ without auth should return an empty paginated list if no modification in db"""
+    def test_logs_list_with_superuser_with_data_without_param(self):
+        """GET /logs/ with super user should return an empty paginated list if no modification in db"""
         self.maxDiff = None
+        self.jane.is_superuser = True
+        self.jane.save()
         self.client.force_authenticate(self.jane)
 
         copy = deepcopy(self.reference_form)
@@ -71,8 +82,8 @@ class LogsAPITestCase(APITestCase):
 
         self.assertEqual(log_entry["user"]["user_name"], "janedoe")
 
-    def test_logs_list_with_auth_or_app_id_with_data_without_fields(self):
-        """GET /logs/ without auth should return an empty paginated list if no modification in db"""
+    def test_logs_list_with_app_and_params_without_fields(self):
+        """GET /logs/ for an object should return list of modification"""
         self.maxDiff = None
         self.client.force_authenticate(self.jane)
 
@@ -80,7 +91,14 @@ class LogsAPITestCase(APITestCase):
         copy_modified.name = "New form Name 1"
         log_modification(self.reference_form, copy_modified, user=self.jane, source="myunittest")
 
-        response = self.client.get("/api/logs/", {"fields": "new_value,past_value,field_diffs"})
+        response = self.client.get(
+            "/api/logs/",
+            {
+                "fields": "new_value,past_value,field_diffs",
+                "contentType": "iaso.form",
+                "objectId": self.reference_form.id,
+            },
+        )
         self.assertJSONResponse(response, 200)
 
         log_entry = response.json()["list"][0]
@@ -90,14 +108,21 @@ class LogsAPITestCase(APITestCase):
             log_entry["field_diffs"]["modified"]["name"], {"before": "Hydroponics study", "after": "New form Name 1"}
         )
 
-    def test_logs_list_with_auth_or_app_id_with_delete(self):
-        """GET /logs/ without auth should return an empty paginated list if no modification in db"""
+    def test_logs_list_with_auth_with_delete(self):
+        """GET /logs/ with auth for user, with the fields for a deleted field"""
         self.maxDiff = None
         self.client.force_authenticate(self.jane)
 
         log_modification(self.reference_form, None, user=self.jane, source="myunittest")
 
-        response = self.client.get("/api/logs/", {"fields": "new_value,past_value,field_diffs"})
+        response = self.client.get(
+            "/api/logs/",
+            {
+                "fields": "new_value,past_value,field_diffs",
+                "contentType": "iaso.form",
+                "objectId": self.reference_form.id,
+            },
+        )
         self.assertJSONResponse(response, 200)
 
         log_entry = response.json()["list"][0]
@@ -105,14 +130,21 @@ class LogsAPITestCase(APITestCase):
         self.assertEqual(log_entry["user"]["user_name"], "janedoe")
         self.assertEqual(log_entry["field_diffs"]["removed"]["name"], {"before": "Hydroponics study", "after": None})
 
-    def test_logs_list_with_auth_or_app_id_with_create(self):
-        """GET /logs/ without auth should return an empty paginated list if no modification in db"""
+    def test_logs_list_with_auth_with_create(self):
+        """GET /logs/ with auth for user, with the fields for a filled field"""
         self.maxDiff = None
         self.client.force_authenticate(self.jane)
 
         log_modification(None, self.reference_form, user=self.jane, source="myunittest")
 
-        response = self.client.get("/api/logs/", {"fields": "new_value,past_value,field_diffs"})
+        response = self.client.get(
+            "/api/logs/",
+            {
+                "fields": "new_value,past_value,field_diffs",
+                "contentType": "iaso.form",
+                "objectId": self.reference_form.id,
+            },
+        )
         self.assertJSONResponse(response, 200)
 
         log_entry = response.json()["list"][0]

@@ -9,7 +9,10 @@ import { AssignmentApi, SaveAssignmentQuery } from '../types/assigment';
 
 import { useGetTeams } from './requests/useGetTeams';
 import { useGetProfiles, ProfileWithColor } from './requests/useGetProfiles';
-import { useSaveAssignment } from './requests/useSaveAssignment';
+import {
+    useSaveAssignment,
+    useBulkSaveAssignments,
+} from './requests/useSaveAssignment';
 import { useGetOrgUnitTypes } from './requests/useGetOrgUnitTypes';
 import { useGetOrgUnitsByParent } from './requests/useGetOrgUnitsByParent';
 import { useGetOrgUnits } from './requests/useGetOrgUnits';
@@ -36,6 +39,8 @@ type Result = {
     allAssignments: AssignmentApi[];
     // eslint-disable-next-line no-unused-vars
     saveAssignment: (params: SaveAssignmentQuery) => void;
+    // eslint-disable-next-line no-unused-vars
+    saveMultiAssignments: (params: SaveAssignmentQuery) => void;
     teams: DropdownTeamsOptions[] | undefined;
     profiles: ProfileWithColor[];
     orgunitTypes: DropdownOptions<string>[] | undefined;
@@ -100,6 +105,9 @@ export const useGetAssignmentData = ({
         });
     const { mutateAsync: saveAssignment, isLoading: isSaving } =
         useSaveAssignment();
+
+    const { mutateAsync: saveMultiAssignments, isLoading: isBulkSaving } =
+        useBulkSaveAssignments();
     const { data: dataOrgUnits, isFetching: isFetchingOrgUnits } =
         useGetOrgUnits({
             orgUnitParentIds: useGetOrgUnitParentIds({
@@ -169,18 +177,20 @@ export const useGetAssignmentData = ({
             sidebarData,
             isFetchingOrgUnits,
             isLoadingPlanning,
-            isSaving,
+            isSaving: isBulkSaving || isSaving,
             isFetchingOrgunitTypes,
             isFetchingChildrenOrgunits,
             isLoadingAssignments,
             isTeamsFetched,
             setItemColor,
+            saveMultiAssignments,
         };
     }, [
         allAssignments,
         assignments,
         childrenOrgunits,
         currentTeam?.type,
+        isBulkSaving,
         isFetchingChildrenOrgunits,
         isFetchingOrgUnits,
         isFetchingOrgunitTypes,
@@ -193,6 +203,7 @@ export const useGetAssignmentData = ({
         planning,
         profiles,
         saveAssignment,
+        saveMultiAssignments,
         setProfiles,
         setTeams,
         sidebarData,

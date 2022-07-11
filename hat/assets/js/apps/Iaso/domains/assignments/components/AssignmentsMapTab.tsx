@@ -83,8 +83,8 @@ export const AssignmentsMapTab: FunctionComponent<Props> = ({
                 currentTeam={currentTeam}
                 teams={teams}
                 profiles={profiles}
-                saveMultiAssignments={saveMultiAssignments}
                 planning={planning}
+                saveMultiAssignments={saveMultiAssignments}
             />
 
             <AssignmentsMap

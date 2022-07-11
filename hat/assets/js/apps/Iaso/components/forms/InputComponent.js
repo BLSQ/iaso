@@ -12,7 +12,7 @@ import {
     injectIntl,
     Select,
 } from 'bluesquare-components';
-import { FormControl, FormLabel, Box } from '@material-ui/core';
+import { Box } from '@material-ui/core';
 import MESSAGES from '../../domains/forms/messages';
 
 class InputComponent extends Component {
@@ -47,6 +47,7 @@ class InputComponent extends Component {
             getOptionLabel,
             renderOption,
             className,
+            helperText,
         } = this.props;
         const { isFocused, displayPassword } = this.state;
         const labelText =
@@ -129,6 +130,7 @@ class InputComponent extends Component {
                             onChange={newValue => {
                                 onChange(keyValue, newValue);
                             }}
+                            helperText={helperText}
                         />
                     );
                 case 'arrayInput':
@@ -208,6 +210,7 @@ InputComponent.defaultProps = {
     getOptionSelected: null,
     renderOption: null,
     className: '',
+    helperText: undefined,
 };
 InputComponent.propTypes = {
     type: PropTypes.string,
@@ -232,6 +235,7 @@ InputComponent.propTypes = {
     getOptionSelected: PropTypes.oneOfType([PropTypes.object, PropTypes.func]),
     renderOption: PropTypes.oneOfType([PropTypes.object, PropTypes.func]),
     className: PropTypes.string,
+    helperText: PropTypes.string,
 };
 
 const translated = injectIntl(InputComponent);

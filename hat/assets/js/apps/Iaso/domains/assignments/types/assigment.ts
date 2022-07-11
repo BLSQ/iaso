@@ -29,12 +29,20 @@ export type AssignmentApi = {
     org_unit_details: OrgUnitDetails;
 };
 
-export type SaveAssignmentQuery = {
-    id?: number;
-    planning: number;
-    org_unit: number;
-    team?: number | null;
-    user?: number | null;
-};
+export type SaveAssignmentQuery =
+    | {
+          id?: number;
+          planning: number;
+          org_unit: number;
+          team?: number | null;
+          user?: number | null;
+      }
+    | {
+          id?: number;
+          planning: number;
+          org_units: number[];
+          team?: number | null;
+          user?: number | null;
+      };
 
 export type AssignmentsApi = AssignmentApi[];

@@ -82,6 +82,7 @@ export const Assignments: FunctionComponent<Props> = ({ params }) => {
         assignments,
         allAssignments,
         saveAssignment,
+        saveMultiAssignments,
         teams,
         profiles,
         orgunitTypes,
@@ -132,20 +133,6 @@ export const Assignments: FunctionComponent<Props> = ({ params }) => {
             saveAssignment,
         ],
     );
-    // const handleSaveAssignment = (selectedOrgUnit: AssignmentUnit) => {
-    //     if (planning && selectedItem) {
-    //         const saveParams = getSaveParams({
-    //             allAssignments,
-    //             selectedOrgUnit,
-    //             teams: teams || [],
-    //             profiles,
-    //             currentType: currentTeam?.type,
-    //             selectedItem,
-    //             planning,
-    //         });
-    //         saveAssignment(saveParams);
-    //     }
-    // };
 
     useEffect(() => {
         if (!baseOrgunitType && assignments.length > 0) {
@@ -286,7 +273,7 @@ export const Assignments: FunctionComponent<Props> = ({ params }) => {
                                                 }
                                                 parentSelected={parentSelected}
                                                 saveMultiAssignments={
-                                                    saveAssignment
+                                                    saveMultiAssignments
                                                 }
                                                 selectedItem={selectedItem}
                                                 locations={orgUnits}

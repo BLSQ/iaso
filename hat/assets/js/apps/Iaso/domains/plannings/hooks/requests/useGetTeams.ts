@@ -18,7 +18,7 @@ const getTeams = (): Promise<Teams> => {
 
 export const useGetTeams = (
     projectId?: number,
-): UseQueryResult<DropdownOptions<string>, Error> => {
+): UseQueryResult<DropdownOptions<string>[], Error> => {
     const queryKey: any[] = ['teams', projectId];
     // @ts-ignore
     return useSnackQuery({
@@ -26,7 +26,7 @@ export const useGetTeams = (
         queryFn: () => getTeams(),
         options: {
             select: data => {
-                if (!data) return [];
+                if (!data) return data;
                 return data
                     .filter(team =>
                         projectId ? team.project === projectId : Boolean(team),
@@ -35,6 +35,7 @@ export const useGetTeams = (
                         return {
                             value: team.id.toString(),
                             label: team.name,
+                            original: team,
                         };
                     });
             },

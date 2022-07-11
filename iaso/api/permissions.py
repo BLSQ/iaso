@@ -36,7 +36,7 @@ class PermissionsViewSet(viewsets.ViewSet):
         # TODO Remove once this is in prod
         perms = (
             perms.exclude(codename__startswith="iaso_planning")
-            .exclude(codename__startswith="iaso_teams")
+            # .exclude(codename__startswith="iaso_teams")
             .exclude(codename__startswith="iaso_assignments")
         )
 

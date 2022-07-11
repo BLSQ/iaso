@@ -145,6 +145,14 @@ const MESSAGES = defineMessages({
         id: 'iaso.error.label.startDateAfterEndDate',
         defaultMessage: "Start date can't after end date",
     },
+    formSelectHelperText: {
+        id: 'iaso.label.formSelectHelperText',
+        defaultMessage: 'You must select a project before selecting a form',
+    },
+    teamSelectHelperText: {
+        id: 'iaso.label.teamSelectHelperText',
+        defaultMessage: 'You must select a project before selecting a team',
+    },
 });
 
 export default MESSAGES;

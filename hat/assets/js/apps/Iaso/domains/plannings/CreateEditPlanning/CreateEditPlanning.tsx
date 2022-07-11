@@ -1,4 +1,4 @@
-import React, { FunctionComponent, useMemo, useState } from 'react';
+import React, { FunctionComponent, useMemo, useEffect, useState } from 'react';
 // @ts-ignore
 import { AddButton, useSafeIntl, IconButton } from 'bluesquare-components';
 import FileCopyIcon from '@material-ui/icons/FileCopy';
@@ -34,6 +34,7 @@ type Props = Partial<SavePlanningQuery> & {
     type: ModalMode;
 };
 
+const removePadding = { paddingTop: 0, paddingBottom: 0 };
 const makeRenderTrigger = (type: 'create' | 'edit' | 'copy') => {
     if (type === 'create') {
         return ({ openDialog }) => (
@@ -173,6 +174,15 @@ export const CreateEditPlanning: FunctionComponent<Props> = ({
         setFieldTouched(keyValue, true);
         setFieldValue(keyValue, value);
     };
+    // converting undefined to null for the API
+    const onChangeDate = (keyValue, value) => {
+        setFieldTouched(keyValue, true);
+        if (value === undefined) {
+            setFieldValue(keyValue, null);
+        } else {
+            setFieldValue(keyValue, value);
+        }
+    };
     const getErrors = useTranslatedErrors({
         errors,
         formatMessage,
@@ -180,6 +190,38 @@ export const CreateEditPlanning: FunctionComponent<Props> = ({
         messages: MESSAGES,
     });
     const titleMessage = formatTitle(type, formatMessage);
+
+    const showTeamHelperText =
+        getErrors('selectedTeam').length === 0 && !values.project;
+    const showFormsHelperText =
+        getErrors('forms').length === 0 && !values.project;
+
+    useEffect(() => {
+        if (
+            // Separating the check on formsDropDown and the find to skip the effect as long as forms haven't been fetched
+            formsDropdown &&
+            !formsDropdown?.find(form =>
+                form.original?.project_ids.includes(values?.project),
+            )
+        ) {
+            setFieldValue('forms', null);
+            setFieldTouched('forms', false);
+        }
+    }, [values?.project, formsDropdown, setFieldValue, setFieldTouched]);
+
+    useEffect(() => {
+        if (
+            teamsDropdown &&
+            !teamsDropdown?.find(
+                team =>
+                    parseInt(team.original?.project, 10) === values?.project,
+            )
+        ) {
+            setFieldValue('selectedTeam', null);
+            setFieldTouched('selectedTeam', false);
+        }
+    }, [values?.project, teamsDropdown, setFieldValue, setFieldTouched]);
+
     return (
         <FormikProvider value={formik}>
             {/* @ts-ignore */}
@@ -199,92 +241,119 @@ export const CreateEditPlanning: FunctionComponent<Props> = ({
                 confirmMessage={MESSAGES.save}
                 renderTrigger={renderTrigger}
             >
-                <Grid container spacing={2}>
-                    <Grid xs={6} item>
-                        <InputComponent
-                            keyValue="name"
-                            onChange={onChange}
-                            value={values.name}
-                            errors={getErrors('name')}
-                            type="text"
-                            label={MESSAGES.name}
-                            required
-                        />
-                        <InputComponent
-                            keyValue="description"
-                            onChange={onChange}
-                            value={values.description}
-                            errors={getErrors('description')}
-                            type="text"
-                            label={MESSAGES.description}
-                        />
-                        <InputComponent
-                            type="select"
-                            keyValue="forms"
-                            onChange={(keyValue, value) => {
-                                onChange(
-                                    keyValue,
-                                    commaSeparatedIdsToArray(value),
-                                );
-                            }}
-                            value={values.forms}
-                            errors={getErrors('forms')}
-                            label={MESSAGES.forms}
-                            required
-                            multi
-                            options={formsDropdown}
-                            loading={isFetchingForms}
-                        />
-                    </Grid>
-                    <Grid xs={6} item>
-                        <InputComponent
-                            type="select"
-                            keyValue="selectedTeam"
-                            onChange={onChange}
-                            value={values.selectedTeam}
-                            errors={getErrors('selectedTeam')}
-                            label={MESSAGES.team}
-                            required
-                            options={teamsDropdown}
-                            loading={isFetchingTeams}
-                        />
-                        <InputComponent
-                            type="select"
-                            keyValue="project"
-                            onChange={onChange}
-                            value={values.project}
-                            errors={getErrors('project')}
-                            label={MESSAGES.project}
-                            required
-                            options={projectsDropdown}
-                            loading={isFetchingProjects}
-                        />
-                        <Box mt={1}>
-                            <Field
+                <>
+                    <Grid container id="top-row" spacing={2}>
+                        <Grid xs={6} item style={removePadding}>
+                            <InputComponent
+                                keyValue="name"
+                                onChange={onChange}
+                                value={values.name}
+                                errors={getErrors('name')}
+                                type="text"
+                                label={MESSAGES.name}
                                 required
-                                component={OrgUnitSelect}
-                                label={formatMessage(MESSAGES.selectOrgUnit)}
-                                name="selectedOrgUnit"
                             />
-                        </Box>
+                        </Grid>
+                        <Grid xs={6} item style={removePadding}>
+                            <InputComponent
+                                type="select"
+                                keyValue="project"
+                                onChange={onChange}
+                                value={values.project}
+                                errors={getErrors('project')}
+                                label={MESSAGES.project}
+                                required
+                                options={projectsDropdown}
+                                loading={isFetchingProjects}
+                            />
+                        </Grid>
                     </Grid>
-                    <Grid item xs={12}>
-                        <DatesRange
-                            marginTop={-2}
-                            onChangeDate={onChange}
-                            dateFrom={values.startDate}
-                            dateTo={values.endDate}
-                            labelFrom={MESSAGES.startDatefrom}
-                            labelTo={MESSAGES.endDateUntil}
-                            keyDateFrom="startDate"
-                            keyDateTo="endDate"
-                            errors={[
-                                getErrors('startDate'),
-                                getErrors('endDate'),
-                            ]}
-                            blockInvalidDates={false}
-                        />
+                    <Grid container id="middle-row" spacing={2}>
+                        <Grid xs={6} item style={removePadding}>
+                            <InputComponent
+                                type="select"
+                                keyValue="selectedTeam"
+                                onChange={onChange}
+                                value={values.selectedTeam}
+                                errors={getErrors('selectedTeam')}
+                                label={MESSAGES.team}
+                                required
+                                options={teamsDropdown}
+                                loading={isFetchingTeams}
+                                disabled={!values.project}
+                                helperText={
+                                    showTeamHelperText
+                                        ? formatMessage(
+                                              MESSAGES.teamSelectHelperText,
+                                          )
+                                        : undefined
+                                }
+                            />
+                        </Grid>
+                        <Grid xs={6} item style={removePadding}>
+                            <InputComponent
+                                type="select"
+                                keyValue="forms"
+                                onChange={(keyValue, value) => {
+                                    onChange(
+                                        keyValue,
+                                        commaSeparatedIdsToArray(value),
+                                    );
+                                }}
+                                value={values.forms}
+                                errors={getErrors('forms')}
+                                label={MESSAGES.forms}
+                                required
+                                multi
+                                options={formsDropdown}
+                                loading={isFetchingForms}
+                                disabled={!values.project}
+                                helperText={
+                                    showFormsHelperText
+                                        ? formatMessage(
+                                              MESSAGES.formSelectHelperText,
+                                          )
+                                        : undefined
+                                }
+                            />
+                        </Grid>
                     </Grid>
+                    <Grid container id="last-row" spacing={2}>
+                        <Grid item xs={6} style={removePadding}>
+                            <Box mt={1}>
+                                <Field
+                                    required
+                                    component={OrgUnitSelect}
+                                    label={formatMessage(
+                                        MESSAGES.selectOrgUnit,
+                                    )}
+                                    name="selectedOrgUnit"
+                                />
+                            </Box>
+                        </Grid>
+                        <Grid xs={6} item style={removePadding}>
+                            <InputComponent
+                                keyValue="description"
+                                onChange={onChange}
+                                value={values.description}
+                                errors={getErrors('description')}
+                                type="text"
+                                label={MESSAGES.description}
+                            />
+                        </Grid>
+                    </Grid>
+                    <DatesRange
+                        onChangeDate={onChangeDate}
+                        dateFrom={values.startDate}
+                        dateTo={values.endDate}
+                        labelFrom={MESSAGES.startDatefrom}
+                        labelTo={MESSAGES.endDateUntil}
+                        keyDateFrom="startDate"
+                        keyDateTo="endDate"
+                        errors={[getErrors('startDate'), getErrors('endDate')]}
+                        blockInvalidDates={false}
+                        marginTop={0}
+                    />
                     <Grid item>
                         <InputComponent
                             type="radio"
@@ -306,7 +375,7 @@ export const CreateEditPlanning: FunctionComponent<Props> = ({
                             required
                         />
                     </Grid>
-                </Grid>
+                </>
             </ConfirmCancelDialogComponent>
         </FormikProvider>
     );

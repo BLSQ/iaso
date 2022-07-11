@@ -355,16 +355,17 @@ class InstancesViewSet(viewsets.ViewSet):
                 locked_history = False
             ou_tree = []
 
-            if parent_ou is None and org_unit in access_ou:
-                user_top_ou = org_unit
-                print(f"USER TOP {user_top_ou}")
+            if parent_ou is None:
+                if org_unit in access_ou:
+                    user_top_ou = org_unit
+                    print(f"USER TOP {user_top_ou}")
+            else:
+                while parent_ou is not None:
+                    ou_tree.append(parent_ou.pk)
+                    if parent_ou in access_ou:
+                        user_top_ou = parent_ou
 
-            while parent_ou is not None:
-                ou_tree.append(parent_ou.pk)
-                if parent_ou in access_ou:
-                    user_top_ou = parent_ou
-
-                parent_ou = parent_ou.parent
+                    parent_ou = parent_ou.parent
 
             ou_tree = OrgUnit.objects.filter(pk__in=ou_tree)
             print(ou_tree)

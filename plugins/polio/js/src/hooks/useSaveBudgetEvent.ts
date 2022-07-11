@@ -58,7 +58,8 @@ export const useCreateBudgetEvent = () =>
         createEvent,
         MESSAGES.budgetEventCreated,
         undefined,
-        ['budget-details'],
+        // ['budget-details'],
+        undefined,
         undefined,
         false,
     );
@@ -104,14 +105,17 @@ export const useSaveBudgetEvent = (
     return createBudgetEvent;
 };
 
-export const useQuickValidateBudgetEvent = () => {
-    const { mutateAsync: create } = useCreateBudgetEvent();
-    const { mutateAsync: finalize } = useFinalizeBudgetEvent();
-    return async (data: QueryData) =>
-        // @ts-ignore
-        create(data, {
-            onSuccess: response => {
-                return finalize(response.id);
-            },
-        });
+const quickPostBudget = (data: QueryData) => {
+    return createEvent(data).then(response =>
+        putBudgetFinalisation(response.id),
+    );
 };
+
+export const useQuickApproveBudgetEvent = (): UseMutationResult => {
+    return useSnackMutation({
+        mutationFn: quickPostBudget,
+        invalidateQueryKey: ['budget-details'],
+        snackSuccessMessage: MESSAGES.budgetEventFinalized,
+    });
+};
+export const useQuickRejectBudgetEvent = () => useQuickApproveBudgetEvent();

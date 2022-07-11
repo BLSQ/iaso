@@ -16,12 +16,13 @@ import { useSafeIntl } from 'bluesquare-components';
 import { useDispatch } from 'react-redux';
 import {
     QueryData,
-    useQuickApproveBudgetEvent,
+    useQuickRejectBudgetEvent,
 } from '../../hooks/useSaveBudgetEvent';
 import { useGetTeams } from '../../hooks/useGetTeams';
 import { useCurrentUser } from '../../../../../../hat/assets/js/apps/Iaso/utils/usersUtils';
 import MESSAGES from '../../constants/messages';
 import { redirectToReplace } from '../../../../../../hat/assets/js/apps/Iaso/routing/actions';
+import InputComponent from '../../../../../../hat/assets/js/apps/Iaso/components/forms/InputComponent';
 
 type Props = { campaignName: string; campaignId: string; params: any };
 
@@ -32,39 +33,41 @@ const findOtherApprovaTeams = (user, teams) => {
         .map(team => team.id);
 };
 
-const makeQuery = (campaign, target_teams): QueryData => {
+const makeQuery = (campaign, target_teams, comments): QueryData => {
     return {
         target_teams,
-        type: 'validation',
+        type: 'comments',
         campaign,
+        comment: comments, // TODO fix that spelling problem in typing
     };
 };
 
-export const BudgetValidationPopUp: FunctionComponent<Props> = ({
+export const BudgetRejectionPopUp: FunctionComponent<Props> = ({
     campaignName,
     campaignId,
     params,
 }) => {
     const currentUser = useCurrentUser();
     const { formatMessage } = useSafeIntl();
-    const [open, setOpen] = useState(true);
+    const [open, setOpen] = useState<boolean>(true);
+    const [text, setText] = useState<string>('');
     const dispatch = useDispatch();
     const { data: teams, isFetching: isFetchingTeams } = useGetTeams();
     const otherApprovalTeamIds = useMemo(() => {
         return findOtherApprovaTeams(currentUser, teams ?? []);
     }, [currentUser, teams]);
-    const { mutateAsync: approve } = useQuickApproveBudgetEvent();
+    const { mutateAsync: reject } = useQuickRejectBudgetEvent();
     const query = useMemo(
-        () => makeQuery(campaignId, otherApprovalTeamIds),
-        [campaignId, otherApprovalTeamIds],
+        () => makeQuery(campaignId, otherApprovalTeamIds, text),
+        [campaignId, otherApprovalTeamIds, text],
     );
     const onConfirm = useCallback(() => {
         // eslint-disable-next-line @typescript-eslint/no-unused-vars
         const { action, ...baseParams } = params;
-        approve(query);
+        reject(query);
         dispatch(redirectToReplace('polio/budget/details', baseParams));
         setOpen(false);
-    }, [approve, dispatch, params, query]);
+    }, [reject, dispatch, params, query]);
 
     const handleClose = () => {
         setOpen(false);
@@ -79,18 +82,27 @@ export const BudgetValidationPopUp: FunctionComponent<Props> = ({
                 aria-describedby="alert-dialog-description"
             >
                 <DialogTitle id="alert-dialog-title">
-                    {formatMessage(MESSAGES.approveBudget)}
+                    {formatMessage(MESSAGES.rejectBudget)}
                 </DialogTitle>
                 <DialogContent>
                     <DialogContentText id="alert-dialog-description">
-                        {formatMessage(MESSAGES.approveBudgetForCampaign, {
-                            campaign: campaignName,
+                        {formatMessage(MESSAGES.rejectBudgetForCampaign, {
+                            campaignName,
                         })}
                     </DialogContentText>
+                    <InputComponent
+                        type="text"
+                        multiline
+                        value={text}
+                        keyValue="comments"
+                        label={MESSAGES.comments}
+                        errors={[]}
+                        onChange={(_keyValue, input) => setText(input)}
+                    />
                 </DialogContent>
                 <DialogActions>
                     <Button onClick={onConfirm} color="primary" autoFocus>
-                        {formatMessage(MESSAGES.approve)}
+                        {formatMessage(MESSAGES.sendComment)}
                     </Button>
                     <Button onClick={handleClose} color="primary">
                         {formatMessage(MESSAGES.cancel)}

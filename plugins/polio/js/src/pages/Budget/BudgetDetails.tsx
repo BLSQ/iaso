@@ -31,6 +31,7 @@ import { useGetCampaignScope } from '../../hooks/useGetCampaignScope';
 import { useCurrentUser } from '../../../../../../hat/assets/js/apps/Iaso/utils/usersUtils';
 import InputComponent from '../../../../../../hat/assets/js/apps/Iaso/components/forms/InputComponent';
 import { BudgetValidationPopUp } from './BudgetValidationPopUp';
+import { BudgetRejectionPopUp } from './BudgetRejectionPopUp';
 
 type Props = {
     router: any;
@@ -133,6 +134,13 @@ export const BudgetDetails: FunctionComponent<Props> = ({ router }) => {
             />
             {params.action === 'confirmApproval' && (
                 <BudgetValidationPopUp
+                    campaignName={campaignName}
+                    campaignId={campaignId}
+                    params={params}
+                />
+            )}
+            {params.action === 'rejectApproval' && (
+                <BudgetRejectionPopUp
                     campaignName={campaignName}
                     campaignId={campaignId}
                     params={params}

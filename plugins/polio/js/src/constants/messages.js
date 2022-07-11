@@ -1298,6 +1298,18 @@ const MESSAGES = defineMessages({
         id: 'iaso.polio.label.approveBudget',
         defaultMessage: 'Approve budget?',
     },
+    rejectBudget: {
+        id: 'iaso.polio.label.rejectBudget',
+        defaultMessage: 'Reject budget?',
+    },
+    sendComment: {
+        id: 'iaso.polio.label.sendComment',
+        defaultMessage: 'Send comment',
+    },
+    rejectBudgetForCampaign: {
+        id: 'iaso.polio.label.rejectBudgetForCampaign',
+        defaultMessage: 'Reject budget for campaign: {campaign}',
+    },
 });
 
 export default MESSAGES;

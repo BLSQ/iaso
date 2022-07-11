@@ -347,7 +347,11 @@ class InstancesViewSet(viewsets.ViewSet):
         if instance.validation_status == "LOCKED" or request.data["validation_status"] == "LOCKED":
             if InstanceLockTable.objects.filter(instance=instance).count() > 0:
                 locked_history = InstanceLockTable.objects.get(instance=instance, is_locked=True)
-                parent_ou = locked_history.top_org_unit.parent
+                parent_ou = (
+                    locked_history.top_org_unit.parent
+                    if locked_history.top_org_unit.parent is not None
+                    else locked_history.top_org_unit
+                )
                 org_unit = locked_history.top_org_unit
             else:
                 parent_ou = instance.org_unit.parent

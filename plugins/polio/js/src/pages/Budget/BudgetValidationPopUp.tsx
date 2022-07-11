@@ -1,5 +1,10 @@
 /* eslint-disable camelcase */
-import React, { FunctionComponent, useCallback, useMemo } from 'react';
+import React, {
+    FunctionComponent,
+    useCallback,
+    useMemo,
+    useState,
+} from 'react';
 import Button from '@material-ui/core/Button';
 import Dialog from '@material-ui/core/Dialog';
 import DialogActions from '@material-ui/core/DialogActions';
@@ -8,6 +13,7 @@ import DialogContentText from '@material-ui/core/DialogContentText';
 import DialogTitle from '@material-ui/core/DialogTitle';
 // @ts-ignore
 import { useSafeIntl } from 'bluesquare-components';
+import { useDispatch } from 'react-redux';
 import {
     QueryData,
     useQuickValidateBudgetEvent,
@@ -15,14 +21,9 @@ import {
 import { useGetTeams } from '../../hooks/useGetTeams';
 import { useCurrentUser } from '../../../../../../hat/assets/js/apps/Iaso/utils/usersUtils';
 import MESSAGES from '../../constants/messages';
+import { redirectToReplace } from '../../../../../../hat/assets/js/apps/Iaso/routing/actions';
 
-type Props = { campaign: string };
-
-const findUserApprovalTeam = (user, teams) => {
-    return teams
-        .filter(team => team.name.toLowerCase().includes('approval'))
-        .find(team => team.users.includes(user.user_id));
-};
+type Props = { campaignName: string; campaignId: string; params: any };
 
 const findOtherApprovaTeams = (user, teams) => {
     return teams
@@ -40,29 +41,30 @@ const makeQuery = (campaign, target_teams): QueryData => {
 };
 
 export const BudgetValidationPopUp: FunctionComponent<Props> = ({
-    campaign,
+    campaignName,
+    campaignId,
+    params,
 }) => {
     const currentUser = useCurrentUser();
     const { formatMessage } = useSafeIntl();
+    const [open, setOpen] = useState(true);
+    const dispatch = useDispatch();
     const { data: teams, isFetching: isFetchingTeams } = useGetTeams();
-    const userApprovalTeam = findUserApprovalTeam(currentUser, teams ?? []);
     const otherApprovalTeamIds = useMemo(() => {
         return findOtherApprovaTeams(currentUser, teams ?? []);
     }, [currentUser, teams]);
     const approve = useQuickValidateBudgetEvent();
     const query = useMemo(
-        () => makeQuery(campaign, otherApprovalTeamIds),
-        [campaign, otherApprovalTeamIds],
+        () => makeQuery(campaignId, otherApprovalTeamIds),
+        [campaignId, otherApprovalTeamIds],
     );
     const onConfirm = useCallback(() => {
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        const { action, ...baseParams } = params;
         approve(query);
-    }, [approve, query]);
-    // MUI template
-    const [open, setOpen] = React.useState(true);
-
-    // const handleClickOpen = () => {
-    //     setOpen(true);
-    // };
+        dispatch(redirectToReplace('polio/budget/details', baseParams));
+        setOpen(false);
+    }, [approve, dispatch, params, query]);
 
     const handleClose = () => {
         setOpen(false);
@@ -70,15 +72,8 @@ export const BudgetValidationPopUp: FunctionComponent<Props> = ({
 
     return (
         <div>
-            {/* <Button
-                variant="outlined"
-                color="primary"
-                onClick={handleClickOpen}
-            >
-                Open alert dialog
-            </Button> */}
             <Dialog
-                open={open}
+                open={open && !isFetchingTeams}
                 onClose={handleClose}
                 aria-labelledby="alert-dialog-title"
                 aria-describedby="alert-dialog-description"
@@ -88,15 +83,17 @@ export const BudgetValidationPopUp: FunctionComponent<Props> = ({
                 </DialogTitle>
                 <DialogContent>
                     <DialogContentText id="alert-dialog-description">
-                        {formatMessage(MESSAGES.approveBudgetForCampaign)}
+                        {formatMessage(MESSAGES.approveBudgetForCampaign, {
+                            campaignName,
+                        })}
                     </DialogContentText>
                 </DialogContent>
                 <DialogActions>
-                    <Button onClick={handleClose} color="primary">
-                        Disagree
-                    </Button>
                     <Button onClick={onConfirm} color="primary" autoFocus>
-                        Agree
+                        {formatMessage(MESSAGES.approve)}
+                    </Button>
+                    <Button onClick={handleClose} color="primary">
+                        {formatMessage(MESSAGES.cancel)}
                     </Button>
                 </DialogActions>
             </Dialog>

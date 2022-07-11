@@ -116,3 +116,4 @@ def log_modification(v1, v2, source, user=None):
     modification.source = source
     modification.user = user
     modification.save()
+    return modification

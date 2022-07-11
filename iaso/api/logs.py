@@ -15,7 +15,7 @@ from hat.audit.models import Modification
 from iaso.models import OrgUnit, Instance, Form
 
 
-def has_access_to_org_unit(user: User, obj: Union[OrgUnit, Instance, models.Model]):
+def has_access_to(user: User, obj: Union[OrgUnit, Instance, models.Model]):
     if isinstance(obj, OrgUnit):
         ous = OrgUnit.objects.filter_for_user_and_app_id(user, None)
         return obj in ous
@@ -93,7 +93,7 @@ class LogsViewSet(viewsets.ViewSet):
             if not (object_id and content_type):
                 return Response({"error": _("Unauthorized")}, status=401)
             obj = content_type.get_object_for_this_type(pk=object_id)
-            if not has_access_to_org_unit(user, obj):
+            if not has_access_to(user, obj):
                 return Response({"error": _("Unauthorized")}, status=401)
 
         queryset = queryset.order_by(*orders)
@@ -120,4 +120,6 @@ class LogsViewSet(viewsets.ViewSet):
 
     def retrieve(self, request, pk=None):
         log = get_object_or_404(Modification, pk=pk)
+        if not has_access_to(request.user, log.content_object):
+            return Response({"error": _("Unauthorized")}, status=401)
         return Response(log.as_dict())

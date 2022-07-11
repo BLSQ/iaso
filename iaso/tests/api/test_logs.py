@@ -151,3 +151,22 @@ class LogsAPITestCase(APITestCase):
 
         self.assertEqual(log_entry["user"]["user_name"], "janedoe")
         self.assertEqual(log_entry["field_diffs"]["added"]["name"], {"before": None, "after": "Hydroponics study"})
+
+    def test_perm_individual_log(self):
+        self.client.force_authenticate(self.jane)
+        modification = log_modification(None, self.reference_form, user=self.jane, source="myunittest")
+
+        response = self.client.get(f"/api/logs/{modification.id}/")
+        r = self.assertJSONResponse(response, 200)
+        self.assertEqual(r["id"], modification.id)
+        self.assertEqual(r["content_type"], "iaso")
+        self.assertEqual(r["object_id"], str(self.reference_form.id))
+        self.assertEqual(r["past_value"], [])
+
+        other_account = m.Account.objects.create(name="other")
+        jim = self.create_user_with_profile(username="jim", account=other_account)
+
+        self.client.force_authenticate(jim)
+        response = self.client.get(f"/api/logs/{modification.id}/")
+        r = self.assertJSONResponse(response, 401)
+        self.assertEqual(r, {"error": "Unauthorized"})

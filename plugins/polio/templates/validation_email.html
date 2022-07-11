@@ -17,25 +17,54 @@
         <![endif]-->
         <style>
             table, td, div, h1, p {font-family: Arial, sans-serif;}
-            table, td {border:2px solid #000000 !important;}
+            {% comment %} table, td {border:2px solid #000000 !important;} {% endcomment %}
         </style>
     </head>
     <body style="margin:0;padding:0;width:100%;max-width:800px">
         <table role="presentation" style="width:100%;max-width:600px;border-collapse:collapse;border:0;border-spacing:0;background:#ffffff;">
             <tr>
-                <td align="left" style="padding:0;">
-                    The budget for campaign {{campaign}} has been approved. Please approve or leave a comment.
+                <td style="height:20px;padding:0;font-size:0;line-height:0;">&nbsp;</td>
+            </tr>
+                <tr>
+                <td align="left" style="padding:5px;">
+                    The budget for campaign {{campaign}} has been approved by {{approver_first_name}} {{approver_last_name}} from {{team}}.
                 </td>
+            </tr>
+            {%if comment%}
+                <tr>
+                    <td style="height:20px;padding:5px;font-size:0;line-height:0;">&nbsp;</td>
+                </tr>
+                <tr>
+                    <td align="left" style="padding:0px 5px;">
+                    They left the following comment:
+                    </td>
+                </tr>
+                <tr>
+                    <td align="left" style="padding:0px 5px;">
+                    {{comment}}
+                    </td>
+                </tr>
+            {%endif%}
+            <tr>
+                <td style="height:20px;padding:0;font-size:0;line-height:0;">&nbsp;</td>
+            </tr>
+            <tr>
+                <td align="left" style="padding:5px;">
+                    Please approve or leave a comment.
+                </td>
+            </tr>
+            <tr>
+                <td style="height:20px;padding:0;font-size:0;line-height:0;">&nbsp;</td>
             </tr>
             <table role="presentation" style="width:100%;max-width:600px;border-collapse:collapse;border:0;border-spacing:0;background:#ffffff;">
                 <tr>
-                    <td style="padding:0; width:45%; height:50px;">
+                    <td style="padding:5px; width:45%; height:50px;">
                         <form action={{validation_link}} style="width:100%; height:100%;">
                             <button type="submit" style="width:100%; height:100%; background-color:green; font-size:24px; font-weight:bold;color:white">Validate</button>
                         </form>
                     </td>
                     <td style="width:10%;padding:0;font-size:0;line-height:0;">&nbsp;</td>
-                    <td style="padding:0; width:45%; height:50px;">
+                    <td style="padding:5px; width:45%; height:50px;">
                         <form action={{rejection_link}} style="width:100%; height:100%;">
                             <button type="submit" style="width:100%; height:100%; background-color:red; font-size:24px; font-weight:bold;color:white"> Reject </button>
                         </form>
@@ -44,8 +73,16 @@
             </table>
             <table "width:100%;max-width:600px;">
                 <tr>
-                    <td>
-
+                    <td style="height:20px;padding:0;font-size:0;line-height:0;">&nbsp;</td>
+                </tr>
+                <tr>
+                    <td align="left" style="padding:5px;">
+                       -----------------------------------------------
+                    </td>
+                </tr>
+                <tr>
+                    <td align="left" style="padding:5px;">
+                        This is an automated email from <a href="//{{sender}}">{{sender}}</a>
                     </td>
                 </tr>
             </table>

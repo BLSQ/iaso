@@ -11,6 +11,7 @@ import requests
 from django.core.files import File
 from django.core.cache import cache
 from django.core.exceptions import ObjectDoesNotExist
+from django.core.mail import EmailMultiAlternatives
 from django.core.mail import send_mail
 from django.db.models import Q
 from django.db.models import Value, TextField, UUIDField
@@ -21,6 +22,7 @@ from django.http.response import HttpResponseBadRequest
 from django.shortcuts import get_object_or_404
 from django.utils.timezone import now, make_aware
 from django_filters.rest_framework import DjangoFilterBackend
+from django.template.loader import render_to_string
 from gspread.utils import extract_id_from_url
 from rest_framework import routers, filters, viewsets, serializers, permissions, status
 from rest_framework.decorators import action
@@ -1490,7 +1492,6 @@ class BudgetEventViewset(ModelViewSet):
         "author",
     ]
     email_title_template = "New {} for {}"
-    email_title_validation_template = "Budget VALIDATED for {}"
     email_template = """%s by %s %s.
 
 Comment: %s
@@ -1554,7 +1555,7 @@ This is an automated email from %s
     @action(methods=["PUT"], detail=False, serializer_class=BudgetEventSerializer)
     def confirm_budget(self, request):
         if request.method == "PUT":
-            event_pk = request.data["event"]
+            event_pk = request.data["event_id"]
             event = BudgetEvent.objects.get(pk=event_pk)
             event.is_finalized = True if request.data["is_finalized"] else False
             event.save()
@@ -1574,7 +1575,43 @@ This is an automated email from %s
                 )
 
                 event_type = "Approval" if event.type == "validation" else event.type
-
+                if event_type == "Approval":
+                    # We're assuming a user can only be in one approval team
+                    approval_team = event.author.teams.filter(name__icontains="approval").values()[0]
+                    other_approval_teams = Team.objects.filter(name__icontains="approval").exclude(id=approval_team.id)
+                    approvers = other_approval_teams.values("users", flat=True)
+                    for approver in approvers:
+                         # if user is in other approval team, send the mail with the fat buttons
+                        subject = self.email_title_template.format(event_type, event.campaign.obr_name)
+                        from_email = "no-reply@%s" % settings.DNS_DOMAIN
+                        auto_authentication_link = generate_auto_authentication_link(link_to_send, user)
+                        text_content = self.email_template % (
+                            event.type,
+                            event.author.first_name,
+                            event.author.last_name,
+                            event.comment,
+                            auto_authentication_link,
+                            settings.DNS_DOMAIN,
+                        )
+                        msg = EmailMultiAlternatives(subject, text_content, from_email, [user.email])
+                        html_content = render_to_string(
+                            "validation_email.html",
+                            {
+                                "LANGUAGE_CODE": user.iaso_profile.language,
+                                "campaign": event.campaign.obr_name,
+                                "comment": event.comment,
+                                "approver_first_name": event.author.first_name,
+                                "approver_last_name": event.author.last_name,
+                                "validation_link": auto_authentication_link,
+                                "rejection_link": "",
+                                "team":approval_team.name,
+                                "sender": settings.DNS_DOMAIN,
+                            },
+                        )
+                        msg.attach_alternative(html_content, "text/html")
+                        msg.send()
+                        #TODO check that this works
+                        recipients.discard(approver)
                 for user in recipients:
                     send_mail(
                         self.email_title_template.format(event_type, event.campaign.obr_name),

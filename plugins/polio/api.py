@@ -1524,7 +1524,7 @@ This is an automated email from %s
 
     def is_budget_approved(self, user, event):
         val_teams = (
-            Team.objects.filter(name__icontains="approval").filter(project__account=user).filter(deleted_at=None)
+            Team.objects.filter(name__icontains="approval").filter(project__account=user.iaso_profile.account).filter(deleted_at=None)
         )
         validation_count = 0
         for val_team in val_teams:
@@ -1546,17 +1546,18 @@ This is an automated email from %s
         event.save()
         send_approval_budget_mail(event)
 
-    def send_approvers_email(self, user, approval_team, event, event_type, link_to_send):
+    def send_approvers_email(self, user, approval_team, event, event_type, approval_link, rejection_link):
         # if user is in other approval team, send the mail with the fat buttons
         subject = self.email_title_template.format(event_type, event.campaign.obr_name)
         from_email = "no-reply@%s" % settings.DNS_DOMAIN
-        auto_authentication_link = generate_auto_authentication_link(link_to_send, user)
+        auto_authentication_approval_link = generate_auto_authentication_link(approval_link, user)
+        auto_authentication_rejection_link = generate_auto_authentication_link(rejection_link, user)
         text_content = self.email_template % (
             event.type,
             event.author.first_name,
             event.author.last_name,
             event.comment,
-            auto_authentication_link,
+            auto_authentication_approval_link,
             settings.DNS_DOMAIN,
         )
         msg = EmailMultiAlternatives(subject, text_content, from_email, [user.email])
@@ -1568,14 +1569,14 @@ This is an automated email from %s
                 "comment": event.comment,
                 "approver_first_name": event.author.first_name,
                 "approver_last_name": event.author.last_name,
-                "validation_link": auto_authentication_link,
-                "rejection_link": "",
+                "validation_link": auto_authentication_approval_link,
+                "rejection_link": auto_authentication_rejection_link,
                 "team": approval_team.name,
                 "sender": settings.DNS_DOMAIN,
             },
         )
         msg.attach_alternative(html_content, "text/html")
-        msg.send()
+        msg.send(fail_silently=False)
 
     def perform_create(self, serializer):
         event = serializer.save(author=self.request.user)
@@ -1618,9 +1619,11 @@ This is an automated email from %s
                         .filter(deleted_at=None)
                     )
                     approvers = other_approval_teams.values("users")
+                    approval_link = link_to_send + "/action/confirmApproval"
+                    rejection_link = link_to_send + "/action/rejectApproval"
                     for approver in approvers:
                         user = User.objects.get(id=approver["users"])
-                        self.send_approvers_email(user, approval_team, event, event_type, link_to_send)
+                        self.send_approvers_email(user, approval_team, event, event_type, approval_link, rejection_link)
                         # TODO check that this works
                         recipients.discard(user)
                 print("post-filter", recipients)

@@ -366,7 +366,6 @@ class InstancesViewSet(viewsets.ViewSet):
             while parent_ou is not None:
                 ou_tree.append(parent_ou.pk)
                 if parent_ou in access_ou:
-                    print(f"USER TOP {user_top_ou}")
                     user_top_ou = parent_ou
 
                 parent_ou = parent_ou.parent

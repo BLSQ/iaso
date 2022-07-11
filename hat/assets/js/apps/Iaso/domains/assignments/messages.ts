@@ -61,6 +61,10 @@ const MESSAGES = defineMessages({
         defaultMessage: 'Assign {assignmentCount} to {parentOrgUnitName}',
         id: 'iaso.assignment.parentDialog.title',
     },
+    parentDialogTitleUnsassign: {
+        defaultMessage: 'Unassign {assignmentCount} from {parentOrgUnitName}',
+        id: 'iaso.assignment.parentDialog.titleUnsassign',
+    },
     confirm: {
         id: 'iaso.label.confirm',
         defaultMessage: 'Confirm',

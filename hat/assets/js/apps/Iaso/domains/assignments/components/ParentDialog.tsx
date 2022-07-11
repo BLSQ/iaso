@@ -19,6 +19,7 @@ import React, {
     useState,
     useEffect,
     useCallback,
+    useMemo,
 } from 'react';
 
 import { OrgUnit } from '../../orgUnits/types/orgUnit';
@@ -35,7 +36,12 @@ import { Planning } from '../types/planning';
 
 import { useColumns } from '../configs/ParentDialogColumns';
 
-import { getTeamName, getMultiSaveParams } from '../utils';
+import {
+    getTeamUserName,
+    getMultiSaveParams,
+    getOrgUnitAssignation,
+    CurrentAssignment,
+} from '../utils';
 
 import MESSAGES from '../messages';
 
@@ -131,18 +137,58 @@ export const ParentDialog: FunctionComponent<Props> = ({
                 !orgUnit.otherAssignation?.assignedUser),
     );
 
+    const orgUnitsToUpdate: Array<number> = useMemo(() => {
+        const currentAssignments: CurrentAssignment[] = assignableOrgUnits.map(
+            orgUnit => {
+                const {
+                    assignment,
+                    assignedTeam,
+                    assignedUser,
+                    emptyAssignment,
+                } = getOrgUnitAssignation(
+                    allAssignments,
+                    orgUnit,
+                    teams,
+                    profiles,
+                    currentTeam?.type,
+                );
+                return {
+                    id: orgUnit.id,
+                    assignment,
+                    assignedTeam,
+                    assignedUser,
+                    emptyAssignment,
+                };
+            },
+        );
+        return currentAssignments
+            .filter(
+                assignment =>
+                    assignment?.assignedTeam?.original.id !==
+                        selectedItem?.id &&
+                    assignment?.assignedUser?.user_id !== selectedItem?.id,
+            )
+            .map(orgUnit => orgUnit.id);
+    }, [
+        allAssignments,
+        assignableOrgUnits,
+        currentTeam?.type,
+        profiles,
+        selectedItem?.id,
+        teams,
+    ]);
+
+    console.log('orgUnitsToUpdate', orgUnitsToUpdate);
     const handleSave = async (): Promise<void> => {
         setParentSelected(undefined);
         if (selectedItem && planning) {
             await saveMultiAssignments(
                 getMultiSaveParams({
-                    allAssignments,
                     selectedOrgUnits: assignableOrgUnits,
-                    teams,
-                    profiles,
                     currentType: currentTeam?.type,
                     selectedItem,
                     planning,
+                    orgUnitsToUpdate,
                 }),
             );
         }
@@ -171,9 +217,21 @@ export const ParentDialog: FunctionComponent<Props> = ({
         >
             <DialogTitle>
                 {parentSelected &&
+                    orgUnitsToUpdate.length > 0 &&
                     formatMessage(MESSAGES.parentDialogTitle, {
+                        assignmentCount: orgUnitsToUpdate.length,
+                        parentOrgUnitName: getTeamUserName(
+                            selectedItem,
+                            currentTeam,
+                            profiles,
+                            teams,
+                        ),
+                    })}
+                {parentSelected &&
+                    orgUnitsToUpdate.length === 0 &&
+                    formatMessage(MESSAGES.parentDialogTitleUnsassign, {
                         assignmentCount: assignableOrgUnits.length,
-                        parentOrgUnitName: getTeamName(
+                        parentOrgUnitName: getTeamUserName(
                             selectedItem,
                             currentTeam,
                             profiles,

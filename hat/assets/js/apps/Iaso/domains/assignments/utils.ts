@@ -78,7 +78,7 @@ export const getParentTeam = ({
     return undefined;
 };
 
-export const getTeamName = (
+export const getTeamUserName = (
     selectedItem: SubTeam | User | undefined,
     currentTeam: Team | undefined,
     profiles: Profile[],
@@ -201,55 +201,30 @@ export const getSaveParams = ({
     return saveParams;
 };
 
+export type CurrentAssignment = OrgUnitAssignedTeamUser & {
+    id: number;
+};
+
 type MultiSaveParamsProps = {
-    allAssignments: AssignmentsApi;
     selectedOrgUnits: Array<OrgUnitShape | OrgUnitMarker | BaseLocation>;
-    teams: DropdownTeamsOptions[];
-    profiles: Profile[];
     currentType: 'TEAM_OF_TEAMS' | 'TEAM_OF_USERS' | undefined;
     selectedItem: SubTeam | User;
     planning: Planning;
+    orgUnitsToUpdate: Array<number>;
 };
 
 export const getMultiSaveParams = ({
-    allAssignments,
     selectedOrgUnits,
-    teams,
-    profiles,
     currentType,
     selectedItem,
     planning,
+    orgUnitsToUpdate,
 }: MultiSaveParamsProps): SaveAssignmentQuery => {
     const orgUnitIds = selectedOrgUnits.map(orgUnit => orgUnit.id);
     const baseQuery = {
         planning: planning.id,
         org_units: orgUnitIds,
     };
-    const currentAssignments = selectedOrgUnits.map(orgUnit => {
-        const { assignment, assignedTeam, assignedUser, emptyAssignment } =
-            getOrgUnitAssignation(
-                allAssignments,
-                orgUnit,
-                teams,
-                profiles,
-                currentType,
-            );
-        return {
-            id: orgUnit.id,
-            assignment,
-            assignedTeam,
-            assignedUser,
-            emptyAssignment,
-        };
-    });
-
-    const orgUnitsToUpdate = currentAssignments
-        .filter(
-            assignment =>
-                assignment?.assignedTeam?.original.id !== selectedItem.id &&
-                assignment?.assignedUser?.user_id !== selectedItem.id,
-        )
-        .map(orgUnit => orgUnit.id);
 
     const allOrgUnitsAlreadySelected = orgUnitsToUpdate.length === 0;
 

@@ -64,8 +64,8 @@ class HasInstancePermission(permissions.BasePermission):
             return True
 
         return request.user.is_authenticated and (
-                request.user.has_perm("menupermissions.iaso_forms")
-                or request.user.has_perm("menupermissions.iaso_submissions")
+            request.user.has_perm("menupermissions.iaso_forms")
+            or request.user.has_perm("menupermissions.iaso_submissions")
         )
 
     def has_object_permission(self, request: Request, view, obj: Instance):
@@ -342,11 +342,7 @@ class InstancesViewSet(viewsets.ViewSet):
         has_higher_access = True
 
         if instance.org_unit not in access_ou:
-            raise serializers.ValidationError({
-                "error": "You don't have the permission to modify this instance."
-            })
-
-        user_top_ou = request.user
+            raise serializers.ValidationError({"error": "You don't have the permission to modify this instance."})
 
         if instance.validation_status == "LOCKED" or request.data["validation_status"] == "LOCKED":
             if InstanceLockTable.objects.filter(instance=instance).count() > 0:
@@ -358,15 +354,18 @@ class InstancesViewSet(viewsets.ViewSet):
                 org_unit = instance.org_unit
                 locked_history = False
             ou_tree = []
+
             if parent_ou is None and org_unit in access_ou:
                 user_top_ou = org_unit
                 print(f"USER TOP {user_top_ou}")
+
             while parent_ou is not None:
                 ou_tree.append(parent_ou.pk)
-                parent_ou = parent_ou.parent
                 if parent_ou in access_ou:
                     print(f"USER TOP {user_top_ou}")
                     user_top_ou = parent_ou
+
+                parent_ou = parent_ou.parent
 
             ou_tree = OrgUnit.objects.filter(pk__in=ou_tree)
             print(ou_tree)
@@ -377,13 +376,12 @@ class InstancesViewSet(viewsets.ViewSet):
                     break
 
             if not has_higher_access:
-                raise serializers.ValidationError({
-                    "error": "You don't have the permission to modify this instance."
-                })
+                raise serializers.ValidationError({"error": "You don't have the permission to modify this instance."})
 
             if request.data["validation_status"] == "LOCKED":
-                InstanceLockTable.objects.create(instance=instance, is_locked=True, author=request.user,
-                                                 top_org_unit=user_top_ou)
+                InstanceLockTable.objects.create(
+                    instance=instance, is_locked=True, author=request.user, top_org_unit=user_top_ou
+                )
                 if locked_history:
                     locked_history.is_locked = False
                     locked_history.save()

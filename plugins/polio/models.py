@@ -171,24 +171,24 @@ class Campaign(SoftDeletableModel):
     cvdpv_notified_at = models.DateField(
         null=True,
         blank=True,
-        verbose_name=_("cVDPV Notication"),
+        verbose_name=_("cVDPV Notification"),
     )
     cvdpv2_notified_at = models.DateField(
         null=True,
         blank=True,
-        verbose_name=_("cVDPV2 Notication"),
+        verbose_name=_("cVDPV2 Notification"),
     )
 
     pv_notified_at = models.DateField(
         null=True,
         blank=True,
-        verbose_name=_("PV Notication"),
+        verbose_name=_("PV Notification"),
     )
 
     pv2_notified_at = models.DateField(
         null=True,
         blank=True,
-        verbose_name=_("PV2 Notication"),
+        verbose_name=_("PV2 Notification"),
     )
 
     virus = models.CharField(max_length=6, choices=VIRUSES, null=True, blank=True)

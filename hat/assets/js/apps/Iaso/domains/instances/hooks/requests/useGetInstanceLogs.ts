@@ -3,7 +3,7 @@ import moment from 'moment';
 import { UseQueryResult } from 'react-query';
 import { getRequest } from '../../../../libs/Api';
 import { useSnackQuery } from '../../../../libs/apiHooks';
-import { Instance } from '../../types/instances';
+import { Instance } from '../../types/instance';
 
 const getInstanceLog = (instanceId: string | undefined): Promise<Instance> => {
     return getRequest(`/api/logs/?objectId=${instanceId}`);
@@ -21,7 +21,12 @@ export const useGetInstanceLogs = (
             enabled: Boolean(instanceId),
             select: data => {
                 if (!data) return [];
-                return data.map((instanceLog: Instance) => {
+                // @ts-ignore
+                const dataSorted = data.sort(
+                    (instanceLogA, instanceLogB) =>
+                        instanceLogB.id - instanceLogA.id,
+                );
+                return dataSorted.map((instanceLog: Instance) => {
                     return {
                         value: instanceLog.id,
                         label: moment(instanceLog.created_at).format('LTS'),

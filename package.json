@@ -60,7 +60,7 @@
         "leaflet-draw": "^1.0.4",
         "leaflet.markercluster": "^1.4.1",
         "lodash": "^4.17.15",
-        "moment": "^2.29.2",
+        "moment": "^2.29.4",
         "node-fetch": "^2.6.7",
         "notistack": "^1.0.10",
         "npm": "8.5.5",

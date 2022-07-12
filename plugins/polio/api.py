@@ -1496,33 +1496,43 @@ def budget_approval_email(campaign_name, link, dns_domain):
 def send_approval_budget_mail(event):
     mails_list = list()
     events = BudgetEvent.objects.filter(campaign=event.campaign)
-
+    link_to_send = (
+        "https://%s/dashboard/polio/budget/details/campaignId/%s/campaignName/%s/country/%d"
+        % (
+            settings.DNS_DOMAIN,
+            event.campaign.id,
+            event.campaign.obr_name,
+            event.campaign.country.id,
+        )
+    )
+    subject=budget_approval_email_subject(event.campaign.obr_name),
     for e in events:
         teams = e.target_teams.all()
         for team in teams:
             for user in team.users.all():
                 if user.email not in mails_list:
                     mails_list.append(user.email)
-
-                    link_to_send = (
-                        "https://%s/dashboard/polio/budget/details/campaignId/%s/campaignName/%s/country/%d"
-                        % (
-                            settings.DNS_DOMAIN,
-                            event.campaign.id,
-                            event.campaign.obr_name,
-                            event.campaign.country.id,
-                        )
-                    )
-                    send_mail(
-                        budget_approval_email_subject(event.campaign.obr_name),
-                        budget_approval_email(
+                    text_content =  budget_approval_email(
                             event.campaign.obr_name,
                             generate_auto_authentication_link(link_to_send, user),
                             settings.DNS_DOMAIN,
-                        ),
-                        DEFAULT_FROM_EMAIL,
-                        [user.email],
-                    )
+                        )
+
+                    msg = EmailMultiAlternatives(subject,text_content,DEFAULT_FROM_EMAIL,[user.email])
+                    html_content = render_to_string("budget_approved_email.html",{
+                        "campaign": event.campaign.obr_name,
+                        "LANGUAGE_CODE": user.iaso_profile.language,
+                        "sender": settings.DNS_DOMAIN,
+                        "link": generate_auto_authentication_link(link_to_send, user)
+                    })
+                    msg.attach_alternative(html_content,"text/html")
+                    msg.send(fail_silently=False)
+                    # send_mail(
+                    #     subject,
+                    #     text_content,
+                    #     DEFAULT_FROM_EMAIL,
+                    #     [user.email],
+                    # )
 
 
 def send_approvers_email(user, author_team, event, event_type, approval_link, rejection_link):
@@ -1680,19 +1690,42 @@ class BudgetEventViewset(ModelViewSet):
                         recipients.discard(user)
                 print("post-filter", recipients)
                 for user in recipients:
-                    send_mail(
-                        email_subject(event_type, event.campaign.obr_name),
-                        event_creation_email(
+                    subject = email_subject(event_type, event.campaign.obr_name)
+                    text_content = event_creation_email(
                             event.type,
                             event.author.first_name,
                             event.author.last_name,
                             event.comment,
                             generate_auto_authentication_link(link_to_send, user),
                             settings.DNS_DOMAIN,
-                        ),
-                        settings.DEFAULT_FROM_EMAIL,
-                        [user.email],
-                    )
+                        )
+                    msg = EmailMultiAlternatives(subject,text_content,DEFAULT_FROM_EMAIL,[user.email])
+                    html_content = render_to_string("event_created_email.html",{
+                        "campaign": event.campaign.obr_name,
+                        "LANGUAGE_CODE": user.iaso_profile.language,
+                        "sender": settings.DNS_DOMAIN,
+                        "link":  generate_auto_authentication_link(link_to_send, user),
+                        "first_name":event.author.first_name ,
+                        "last_name": event.author.last_name,
+                        "comment": event.comment,
+                        "event_type": event_type,
+                    })
+                    msg.attach_alternative(html_content,"text/html")
+                    msg.send(fail_silently=False)
+                    
+                    # send_mail(
+                    #     email_subject(event_type, event.campaign.obr_name),
+                    #     event_creation_email(
+                    #         event.type,
+                    #         event.author.first_name,
+                    #         event.author.last_name,
+                    #         event.comment,
+                    #         generate_auto_authentication_link(link_to_send, user),
+                    #         settings.DNS_DOMAIN,
+                    #     ),
+                    #     settings.DEFAULT_FROM_EMAIL,
+                    #     [user.email],
+                    # )
                 event.is_email_sent = True
                 event.save()
                 # If the budget is approved as a results of the events creation, send the confirmation email as well

@@ -26,9 +26,16 @@
                 <td style="height:20px;padding:0;font-size:0;line-height:0;">&nbsp;</td>
             </tr>
                 <tr>
+                {%if event_type == "approval"%}   
                 <td align="left" style="padding:5px;">
-                    The budget for campaign {{campaign}} has been approved by {{approver_first_name}} {{approver_last_name}} from {{team}}.
+                    The budget for campaign {{campaign}} has been approved by {{author_first_name}} {{author_last_name}} from {{team}}.
                 </td>
+                {%endif%}
+                {%if event_type == "submission"%}   
+                <td align="left" style="padding:5px;">
+                    A budget for campaign {{campaign}} has been submitted by {{author_first_name}} {{author_last_name}} from {{team}}, and needs approval.
+                </td>
+                {%endif%}
             </tr>
             {%if comment%}
                 <tr>

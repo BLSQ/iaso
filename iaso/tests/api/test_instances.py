@@ -12,7 +12,7 @@ from django.utils.timezone import now
 
 from hat.api.export_utils import timestamp_to_utc_datetime
 from iaso import models as m
-from iaso.models import OrgUnit
+from iaso.models import OrgUnit, Instance
 from iaso.test import APITestCase
 from hat.audit.models import Modification
 
@@ -33,11 +33,23 @@ class InstancesAPITestCase(APITestCase):
         cls.sw_version = sw_version
 
         cls.yoda = cls.create_user_with_profile(username="yoda", account=star_wars, permissions=["iaso_submissions"])
+        cls.guest = cls.create_user_with_profile(username="guest", account=star_wars, permissions=["iaso_submissions"])
+        cls.supervisor = cls.create_user_with_profile(username="supervisor", account=star_wars,
+                                                      permissions=["iaso_submissions", "iaso_forms"])
 
         cls.jedi_council = m.OrgUnitType.objects.create(name="Jedi Council", short_name="Cnc")
 
         cls.jedi_council_corruscant = m.OrgUnit.objects.create(
             name="Coruscant Jedi Council", source_ref="jedi_council_corruscant_ref"
+        )
+        cls.ou_top_1 = m.OrgUnit.objects.create(
+            name="ou_top_1", source_ref="jedi_council_corruscant_ref"
+        )
+        cls.ou_top_2 = m.OrgUnit.objects.create(
+            name="ou_top_2", source_ref="jedi_council_corruscant_ref", parent=cls.ou_top_1
+        )
+        cls.ou_top_3 = m.OrgUnit.objects.create(
+            name="ou_top_3", source_ref="jedi_council_corruscant_ref", parent=cls.ou_top_2
         )
         cls.jedi_council_endor = m.OrgUnit.objects.create(
             name="Endor Jedi Council", source_ref="jedi_council_endor_ref"
@@ -824,3 +836,33 @@ class InstancesAPITestCase(APITestCase):
 
         response = self.client.get(f"/api/instances/stats_sum/")
         r = self.assertJSONResponse(response, 200)
+
+    def test_lock_instance(self):
+        self.client.force_authenticate(self.yoda)
+
+        body = [
+            {
+                "id": str(uuid4()),
+                "created_at": 1565258153704,
+                "updated_at": 1565258153709,
+                "orgUnitId": self.jedi_council_corruscant.id,
+                "formId": self.form_1.id,
+                "period": "202002",
+                "latitude": 50.2,
+                "longitude": 4.4,
+                "accuracy": 10,
+                "altitude": 100,
+                "file": "\/storage\/emulated\/0\/odk\/instances\/RDC Collecte Data DPS_2_2019-08-08_11-54-46\/RDC Collecte Data DPS_2_2019-08-08_11-54-46.xml",
+                "name": "1",
+            }
+        ]
+        response = self.client.post(
+            f"/api/instances/?app_id=stars.empire.agriculture.hydroponics", data=body, format="json"
+        )
+        self.assertEqual(response.status_code, 200)
+
+
+
+
+    def test_user_cant_lock_instance_locked_by_higher_user(self):
+        pass

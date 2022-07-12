@@ -860,7 +860,9 @@ class Instance(models.Model):
 
     deleted = models.BooleanField(default=False)
     to_export = models.BooleanField(default=False)
-    validation_status = models.CharField(choices=VALIDATION_STATUS_CHOICES, blank=True, null=True, max_length=255)
+    validation_status = models.CharField(
+        choices=VALIDATION_STATUS_CHOICES, default="", blank=True, null=True, max_length=255
+    )
 
     def get_absolute_url(self):
         return f"/dashboard/forms/submission/instanceId/{self.pk}"
@@ -1262,8 +1264,9 @@ class InstanceLockTable(SoftDeletableModel):
     instance = models.ForeignKey("Instance", on_delete=models.PROTECT, null=True, blank=True)
     is_locked = models.BooleanField(default=False)
     author = models.ForeignKey(User, on_delete=models.PROTECT)
-    top_org_unit = models.ForeignKey("OrgUnit", on_delete=models.PROTECT, null=True, blank=True, related_name="instance_lock")
+    top_org_unit = models.ForeignKey(
+        "OrgUnit", on_delete=models.PROTECT, null=True, blank=True, related_name="instance_lock"
+    )
 
     def __str__(self):
         return str(self.instance)
-

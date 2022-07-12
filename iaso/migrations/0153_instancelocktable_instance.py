@@ -7,13 +7,15 @@ import django.db.models.deletion
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('iaso', '0152_instancelocktable'),
+        ("iaso", "0152_instancelocktable"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='instancelocktable',
-            name='instance',
-            field=models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.PROTECT, to='iaso.instance'),
+            model_name="instancelocktable",
+            name="instance",
+            field=models.ForeignKey(
+                blank=True, null=True, on_delete=django.db.models.deletion.PROTECT, to="iaso.instance"
+            ),
         ),
     ]

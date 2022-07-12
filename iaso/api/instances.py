@@ -311,10 +311,10 @@ class InstancesViewSet(viewsets.ViewSet):
         instance = get_object_or_404(self.get_queryset(), pk=pk)
         if instance.validation_status == "LOCKED":
             if instance.org_unit.parent is not None:
-                parent_ou = instance.org_unit.parent
+                current_top_ou = instance.org_unit.parent
                 # Faire un cache avec cette requête ?
                 access_ou = OrgUnit.objects.filter_for_user_and_app_id(request.user, None)
-                if parent_ou not in access_ou:
+                if current_top_ou not in access_ou:
                     response = instance.as_full_model()
                     response["modification"] = False
                     self.check_object_permissions(request, instance)
@@ -340,35 +340,32 @@ class InstancesViewSet(viewsets.ViewSet):
         instance_serializer.is_valid(raise_exception=True)
         access_ou = OrgUnit.objects.filter_for_user_and_app_id(request.user, None)
         has_higher_access = True
-
-        validation_status = None
-        if "validation_status" in request.data:
-            validation_status = request.data["validation_status"]
+        ou_tree = []
+        validation_status = request.data.get("validation_status", None)
 
         if instance.org_unit not in access_ou:
             raise serializers.ValidationError({"error": "You don't have the permission to modify this instance."})
 
+        # check if a user is higher or not in the Org Unit Hierarchy
         if instance.validation_status == "LOCKED" or validation_status == "LOCKED":
             if InstanceLockTable.objects.filter(instance=instance).count() > 0:
                 locked_history = InstanceLockTable.objects.get(instance=instance, is_locked=True)
-                parent_ou = locked_history.top_org_unit
+                current_top_ou = locked_history.top_org_unit
                 org_unit = locked_history.top_org_unit
             else:
-                parent_ou = instance.org_unit.parent
+                current_top_ou = instance.org_unit.parent
                 org_unit = instance.org_unit
                 locked_history = False
-            ou_tree = []
-
-            if parent_ou is None:
+            if current_top_ou is None:
                 if org_unit in access_ou:
                     user_top_ou = org_unit
             else:
-                while parent_ou is not None:
-                    ou_tree.append(parent_ou.pk)
-                    if parent_ou in access_ou:
-                        user_top_ou = parent_ou
+                while current_top_ou is not None:
+                    ou_tree.append(current_top_ou.pk)
+                    if current_top_ou in access_ou:
+                        user_top_ou = current_top_ou
 
-                    parent_ou = parent_ou.parent
+                    current_top_ou = current_top_ou.parent
 
             ou_tree = OrgUnit.objects.filter(pk__in=ou_tree)
 
@@ -400,7 +397,6 @@ class InstancesViewSet(viewsets.ViewSet):
         log_modification(original, instance, INSTANCE_API, user=request.user)
         instance.last_modified_by = request.user
         instance.save()
-        # instance.as_full_model().modification = True if has_higher_access else False
         return Response(instance.as_full_model())
 
     @action(detail=False, methods=["POST"], permission_classes=[permissions.IsAuthenticated, HasInstancePermission])

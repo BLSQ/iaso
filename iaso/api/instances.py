@@ -309,18 +309,14 @@ class InstancesViewSet(viewsets.ViewSet):
 
     def retrieve(self, request, pk=None):
         instance = get_object_or_404(self.get_queryset(), pk=pk)
+        has_access = True
         if instance.validation_status == "LOCKED":
-            if instance.org_unit.parent is not None:
-                current_top_ou = instance.org_unit.parent
-                # Faire un cache avec cette requête ?
-                access_ou = OrgUnit.objects.filter_for_user_and_app_id(request.user, None)
-                if current_top_ou not in access_ou:
-                    response = instance.as_full_model()
-                    response["modification"] = False
-                    self.check_object_permissions(request, instance)
-                    return Response(response)
+            lock_table = InstanceLockTable.objects.get(instance=instance, is_locked=True)
+            access_ou = OrgUnit.objects.filter_for_user_and_app_id(request.user, None)
+            if lock_table.top_org_unit not in access_ou:
+                has_access = False
         response = instance.as_full_model()
-        response["modification"] = True
+        response["modification"] = has_access
         self.check_object_permissions(request, instance)
         return Response(response)
 

@@ -29,7 +29,7 @@ import Pages from '../domains/pages';
 import { Planning } from '../domains/plannings/index.tsx';
 import { Teams } from '../domains/teams/index.tsx';
 import { Assignments } from '../domains/assignments/index.tsx';
-import CompareInstanceLogs from '../domains/instances/compare/components/CompareInstanceLogs.tsx';
+import { CompareInstanceLogs } from '../domains/instances/compare/components/CompareInstanceLogs.tsx';
 
 import { SHOW_PAGES } from '../utils/featureFlags';
 import { paginationPathParams } from '../routing/common';

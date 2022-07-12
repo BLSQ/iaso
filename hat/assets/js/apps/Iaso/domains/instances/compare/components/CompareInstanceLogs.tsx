@@ -39,7 +39,10 @@ const useStyles = makeStyles((theme: Theme) => ({
     ...commonStyles(theme),
 }));
 
-const CompareInstanceLogs: FunctionComponent<Props> = ({ params, router }) => {
+export const CompareInstanceLogs: FunctionComponent<Props> = ({
+    params,
+    router,
+}) => {
     const classes: Record<string, string> = useStyles();
     const { formatMessage } = useSafeIntl();
     const dispatch = useDispatch();
@@ -99,5 +102,3 @@ const CompareInstanceLogs: FunctionComponent<Props> = ({ params, router }) => {
         </>
     );
 };
-
-export default CompareInstanceLogs;

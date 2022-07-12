@@ -30,8 +30,8 @@ import { useGetGeoJson } from '../../hooks/useGetGeoJson';
 import { useGetCampaignScope } from '../../hooks/useGetCampaignScope';
 import { useCurrentUser } from '../../../../../../hat/assets/js/apps/Iaso/utils/usersUtils';
 import InputComponent from '../../../../../../hat/assets/js/apps/Iaso/components/forms/InputComponent';
-import { BudgetValidationPopUp } from './BudgetValidationPopUp';
-import { BudgetRejectionPopUp } from './BudgetRejectionPopUp';
+import { BudgetValidationPopUp } from './pop-ups/BudgetValidationPopUp';
+import { BudgetRejectionPopUp } from './pop-ups/BudgetRejectionPopUp';
 
 type Props = {
     router: any;
@@ -132,20 +132,22 @@ export const BudgetDetails: FunctionComponent<Props> = ({ router }) => {
                     }
                 }}
             />
-            {params.action === 'confirmApproval' && (
-                <BudgetValidationPopUp
-                    campaignName={campaignName}
-                    campaignId={campaignId}
-                    params={params}
-                />
-            )}
-            {params.action === 'rejectApproval' && (
-                <BudgetRejectionPopUp
-                    campaignName={campaignName}
-                    campaignId={campaignId}
-                    params={params}
-                />
-            )}
+            {params.action === 'confirmApproval' &&
+                budgetStatus !== 'approved' && (
+                    <BudgetValidationPopUp
+                        campaignName={campaignName}
+                        campaignId={campaignId}
+                        params={params}
+                    />
+                )}
+            {params.action === 'rejectApproval' &&
+                budgetStatus !== 'approved' && (
+                    <BudgetRejectionPopUp
+                        campaignName={campaignName}
+                        campaignId={campaignId}
+                        params={params}
+                    />
+                )}
             {/* @ts-ignore */}
             <Box
                 // @ts-ignore

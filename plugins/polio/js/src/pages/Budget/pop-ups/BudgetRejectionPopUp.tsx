@@ -17,12 +17,12 @@ import { useDispatch } from 'react-redux';
 import {
     QueryData,
     useQuickRejectBudgetEvent,
-} from '../../hooks/useSaveBudgetEvent';
-import { useGetTeams } from '../../hooks/useGetTeams';
-import { useCurrentUser } from '../../../../../../hat/assets/js/apps/Iaso/utils/usersUtils';
-import MESSAGES from '../../constants/messages';
-import { redirectToReplace } from '../../../../../../hat/assets/js/apps/Iaso/routing/actions';
-import InputComponent from '../../../../../../hat/assets/js/apps/Iaso/components/forms/InputComponent';
+} from '../../../hooks/useSaveBudgetEvent';
+import { useGetTeams } from '../../../hooks/useGetTeams';
+import { useCurrentUser } from '../../../../../../../hat/assets/js/apps/Iaso/utils/usersUtils';
+import MESSAGES from '../../../constants/messages';
+import { redirectToReplace } from '../../../../../../../hat/assets/js/apps/Iaso/routing/actions';
+import InputComponent from '../../../../../../../hat/assets/js/apps/Iaso/components/forms/InputComponent';
 
 type Props = { campaignName: string; campaignId: string; params: any };
 
@@ -87,7 +87,7 @@ export const BudgetRejectionPopUp: FunctionComponent<Props> = ({
                 <DialogContent>
                     <DialogContentText id="alert-dialog-description">
                         {formatMessage(MESSAGES.rejectBudgetForCampaign, {
-                            campaignName,
+                            campaign: campaignName,
                         })}
                     </DialogContentText>
                     <InputComponent
@@ -101,11 +101,15 @@ export const BudgetRejectionPopUp: FunctionComponent<Props> = ({
                     />
                 </DialogContent>
                 <DialogActions>
-                    <Button onClick={onConfirm} color="primary" autoFocus>
-                        {formatMessage(MESSAGES.sendComment)}
-                    </Button>
                     <Button onClick={handleClose} color="primary">
                         {formatMessage(MESSAGES.cancel)}
+                    </Button>
+                    <Button
+                        onClick={onConfirm}
+                        color="primary"
+                        variant="contained"
+                    >
+                        {formatMessage(MESSAGES.sendComment)}
                     </Button>
                 </DialogActions>
             </Dialog>

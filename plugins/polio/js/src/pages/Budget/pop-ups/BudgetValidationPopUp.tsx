@@ -17,11 +17,11 @@ import { useDispatch } from 'react-redux';
 import {
     QueryData,
     useQuickApproveBudgetEvent,
-} from '../../hooks/useSaveBudgetEvent';
-import { useGetTeams } from '../../hooks/useGetTeams';
-import { useCurrentUser } from '../../../../../../hat/assets/js/apps/Iaso/utils/usersUtils';
-import MESSAGES from '../../constants/messages';
-import { redirectToReplace } from '../../../../../../hat/assets/js/apps/Iaso/routing/actions';
+} from '../../../hooks/useSaveBudgetEvent';
+import { useGetTeams } from '../../../hooks/useGetTeams';
+import { useCurrentUser } from '../../../../../../../hat/assets/js/apps/Iaso/utils/usersUtils';
+import MESSAGES from '../../../constants/messages';
+import { redirectToReplace } from '../../../../../../../hat/assets/js/apps/Iaso/routing/actions';
 
 type Props = { campaignName: string; campaignId: string; params: any };
 
@@ -89,11 +89,16 @@ export const BudgetValidationPopUp: FunctionComponent<Props> = ({
                     </DialogContentText>
                 </DialogContent>
                 <DialogActions>
-                    <Button onClick={onConfirm} color="primary" autoFocus>
-                        {formatMessage(MESSAGES.approve)}
-                    </Button>
                     <Button onClick={handleClose} color="primary">
                         {formatMessage(MESSAGES.cancel)}
+                    </Button>
+                    <Button
+                        onClick={onConfirm}
+                        // autoFocus
+                        variant="contained"
+                        color="primary"
+                    >
+                        {formatMessage(MESSAGES.approve)}
                     </Button>
                 </DialogActions>
             </Dialog>

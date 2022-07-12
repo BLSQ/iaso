@@ -50,7 +50,7 @@ const MESSAGES = defineMessages({
         id: 'iaso.label.selection',
     },
     alreadyAssignedTo: {
-        defaultMessage: 'already assigned to',
+        defaultMessage: 'Already assigned to',
         id: 'iaso.assignment.alreadyAssignedTo',
     },
     inAnotherTeam: {
@@ -84,6 +84,23 @@ const MESSAGES = defineMessages({
     clickRowToUnAssign: {
         id: 'iaso.assignment.clickRowToUnAssign',
         defaultMessage: 'Click on the row to unassign',
+    },
+    details: {
+        defaultMessage: 'Details',
+        id: 'iaso.label.details',
+    },
+    orgUnitType: {
+        defaultMessage: 'Org unit type',
+        id: 'iaso.forms.org_unit_type_id',
+    },
+    parents: {
+        defaultMessage: 'Parents',
+        id: 'iaso.orgUnits.parents',
+    },
+    mapHelper: {
+        defaultMessage:
+            'Right click on a org unit to see details popup, normal click to close popup',
+        id: 'iaso.assignment.mapHelper',
     },
 });
 

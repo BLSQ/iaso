@@ -89,7 +89,11 @@ export const AssignmentsListTab: FunctionComponent<Props> = ({
                         selectedItem,
                     }}
                     params={{ order: params.order }}
-                    onRowClick={row => handleSaveAssignment(row)}
+                    onRowClick={(row, event) => {
+                        if (!event.target.href) {
+                            handleSaveAssignment(row);
+                        }
+                    }}
                     onTableParamsChange={p => {
                         const newParams = {
                             ...params,

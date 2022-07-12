@@ -34,6 +34,7 @@ type Props = {
     selectedItem: SubTeam | User | undefined;
     locations: Locations | undefined;
     isFetchingLocations: boolean;
+    isLoadingAssignments: boolean;
     handleSaveAssignment: (
         // eslint-disable-next-line no-unused-vars
         selectedOrgUnit: OrgUnitShape | OrgUnitMarker,
@@ -55,6 +56,7 @@ export const AssignmentsMapTab: FunctionComponent<Props> = ({
     selectedItem,
     locations,
     isFetchingLocations,
+    isLoadingAssignments,
 }) => {
     const { parentPicking, parentOrgunitType } = params;
 
@@ -64,6 +66,7 @@ export const AssignmentsMapTab: FunctionComponent<Props> = ({
                 currentTeam,
                 allAssignments,
                 planning,
+                isLoadingAssignments,
             }),
             baseOrgunitType:
                 parentPicking === 'true' ? parentOrgunitType : undefined,
@@ -92,6 +95,8 @@ export const AssignmentsMapTab: FunctionComponent<Props> = ({
                 parentLocations={parentLocations}
                 isFetchingParentLocations={isFetchingParentLocations}
                 teams={teams}
+                profiles={profiles}
+                assignments={allAssignments}
             />
         </>
     );

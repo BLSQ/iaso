@@ -283,6 +283,9 @@ export const Assignments: FunctionComponent<Props> = ({ params }) => {
                                                 handleSaveAssignment={
                                                     handleSaveAssignment
                                                 }
+                                                isLoadingAssignments={
+                                                    isLoadingAssignments
+                                                }
                                             />
                                         )}
                                     </Box>

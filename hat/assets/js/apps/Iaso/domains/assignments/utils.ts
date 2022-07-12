@@ -246,7 +246,8 @@ export const getMultiSaveParams = ({
     const orgUnitsToUpdate = currentAssignments
         .filter(
             assignment =>
-                assignment?.assignedTeam?.original.id !== selectedItem.id,
+                assignment?.assignedTeam?.original.id !== selectedItem.id &&
+                assignment?.assignedUser?.user_id !== selectedItem.id,
         )
         .map(orgUnit => orgUnit.id);
 

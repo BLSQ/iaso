@@ -1,4 +1,4 @@
-import { UseMutationResult, useQueryClient } from 'react-query';
+import { UseMutationResult } from 'react-query';
 import { postRequest, patchRequest } from '../../../../libs/Api';
 import { useSnackMutation } from '../../../../libs/apiHooks';
 
@@ -18,38 +18,29 @@ export const saveAssignment = async (
 
 export const useSaveAssignment = (
     callback: () => void = () => null,
-    showSucessSnackBar = true,
 ): UseMutationResult => {
     const onSuccess = () => callback();
     return useSnackMutation({
         mutationFn: (data: SaveAssignmentQuery) => saveAssignment(data),
         invalidateQueryKey: ['assignmentsList'],
         options: { onSuccess },
-        showSucessSnackBar,
+        showSucessSnackBar: false,
     });
 };
 
 const saveBulkAssignments = (data: SaveAssignmentQuery) => {
-    // IA-1421: workaround to avoid sending a request if all children org units are already selected (in which case the compoenent sets both team and user to null)
-    // TODO clarify expected behaviour ^^
-    if (data.team === null && data.user === null) {
-        return new Promise(() => null);
-    }
     const url = `${endpoint}bulk_create_assignments/`;
     return postRequest(url, data);
 };
 
 export const useBulkSaveAssignments = (
-    showSucessSnackBar = true,
+    callback: () => void = () => null,
 ): UseMutationResult => {
-    const queryClient = useQueryClient();
+    const onSuccess = () => callback();
     return useSnackMutation({
         mutationFn: saveBulkAssignments,
-        options: {
-            // Since the API sends the assignmentsList as response, we can save a call by directly updating the cache
-            onSuccess: data =>
-                queryClient.setQueryData(['assignmentsList'], data),
-        },
-        showSucessSnackBar,
+        invalidateQueryKey: ['assignmentsList'],
+        options: { onSuccess },
+        showSucessSnackBar: false,
     });
 };

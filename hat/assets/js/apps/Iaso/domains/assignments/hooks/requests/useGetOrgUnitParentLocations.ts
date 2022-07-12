@@ -22,7 +22,7 @@ export const useGetOrgUnitParentLocations = ({
     const params = {
         validation_status: 'all',
         asLocation: true,
-        limit: 5000,
+        limit: 5,
         order: 'id',
         orgUnitParentIds: orgUnitParentIds?.join(','),
         geography: 'shape',
@@ -39,9 +39,7 @@ export const useGetOrgUnitParentLocations = ({
         undefined,
         {
             enabled:
-                orgUnitParentIds &&
-                orgUnitParentIds.length > 0 &&
-                Boolean(baseOrgunitType),
+                Boolean(params.orgUnitParentIds) && Boolean(baseOrgunitType),
             staleTime: 1000 * 60 * 15, // in MS
             cacheTime: 1000 * 60 * 5,
             select: (orgUnits: OrgUnit[]) => {

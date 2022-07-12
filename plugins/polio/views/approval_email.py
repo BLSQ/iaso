@@ -18,22 +18,33 @@ def test_email_render(request):
             "event_type": "submission",
         },
     )
-    
+
+
 def test_budget_approval_render(request):
-    return render(request,"budget_approved_email.html",{
-        "campaign": "Test campaign",
-        "LANGUAGE_CODE": "en",
-        "sender": "iaso-staging.bluesquare.org",
-        "link": "https://media.giphy.com/media/g7GKcSzwQfugw/giphy.gif"
-    })
+    return render(
+        request,
+        "budget_approved_email.html",
+        {
+            "campaign": "Test campaign",
+            "LANGUAGE_CODE": "en",
+            "sender": "iaso-staging.bluesquare.org",
+            "link": "https://media.giphy.com/media/g7GKcSzwQfugw/giphy.gif",
+        },
+    )
+
+
 def event_creation_render(request):
-    return render(request,"event_created_email.html",{
-        "campaign": "Test campaign",
-        "LANGUAGE_CODE": "en",
-        "first_name": "Johnny",
-        "last_name": "Rotten",
-        "comment": "I am Johnny Rotten and I approve this budget",
-        "sender": "iaso-staging.bluesquare.org",
-        "link": "https://media.giphy.com/media/g7GKcSzwQfugw/giphy.gif",
-        "event_type": "submission",
-    })
+    return render(
+        request,
+        "event_created_email.html",
+        {
+            "campaign": "Test campaign",
+            "LANGUAGE_CODE": "en",
+            "first_name": "Johnny",
+            "last_name": "Rotten",
+            "comment": "I am Johnny Rotten and I approve this budget",
+            "sender": "iaso-staging.bluesquare.org",
+            "link": "https://media.giphy.com/media/g7GKcSzwQfugw/giphy.gif",
+            "event_type": "submission",
+        },
+    )

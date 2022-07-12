@@ -1496,36 +1496,36 @@ def budget_approval_email(campaign_name, link, dns_domain):
 def send_approval_budget_mail(event):
     mails_list = list()
     events = BudgetEvent.objects.filter(campaign=event.campaign)
-    link_to_send = (
-        "https://%s/dashboard/polio/budget/details/campaignId/%s/campaignName/%s/country/%d"
-        % (
-            settings.DNS_DOMAIN,
-            event.campaign.id,
-            event.campaign.obr_name,
-            event.campaign.country.id,
-        )
+    link_to_send = "https://%s/dashboard/polio/budget/details/campaignId/%s/campaignName/%s/country/%d" % (
+        settings.DNS_DOMAIN,
+        event.campaign.id,
+        event.campaign.obr_name,
+        event.campaign.country.id,
     )
-    subject=budget_approval_email_subject(event.campaign.obr_name),
+    subject = (budget_approval_email_subject(event.campaign.obr_name),)
     for e in events:
         teams = e.target_teams.all()
         for team in teams:
             for user in team.users.all():
                 if user.email not in mails_list:
                     mails_list.append(user.email)
-                    text_content =  budget_approval_email(
-                            event.campaign.obr_name,
-                            generate_auto_authentication_link(link_to_send, user),
-                            settings.DNS_DOMAIN,
-                        )
+                    text_content = budget_approval_email(
+                        event.campaign.obr_name,
+                        generate_auto_authentication_link(link_to_send, user),
+                        settings.DNS_DOMAIN,
+                    )
 
-                    msg = EmailMultiAlternatives(subject,text_content,DEFAULT_FROM_EMAIL,[user.email])
-                    html_content = render_to_string("budget_approved_email.html",{
-                        "campaign": event.campaign.obr_name,
-                        "LANGUAGE_CODE": user.iaso_profile.language,
-                        "sender": settings.DNS_DOMAIN,
-                        "link": generate_auto_authentication_link(link_to_send, user)
-                    })
-                    msg.attach_alternative(html_content,"text/html")
+                    msg = EmailMultiAlternatives(subject, text_content, DEFAULT_FROM_EMAIL, [user.email])
+                    html_content = render_to_string(
+                        "budget_approved_email.html",
+                        {
+                            "campaign": event.campaign.obr_name,
+                            "LANGUAGE_CODE": user.iaso_profile.language,
+                            "sender": settings.DNS_DOMAIN,
+                            "link": generate_auto_authentication_link(link_to_send, user),
+                        },
+                    )
+                    msg.attach_alternative(html_content, "text/html")
                     msg.send(fail_silently=False)
                     # send_mail(
                     #     subject,
@@ -1692,27 +1692,30 @@ class BudgetEventViewset(ModelViewSet):
                 for user in recipients:
                     subject = email_subject(event_type, event.campaign.obr_name)
                     text_content = event_creation_email(
-                            event.type,
-                            event.author.first_name,
-                            event.author.last_name,
-                            event.comment,
-                            generate_auto_authentication_link(link_to_send, user),
-                            settings.DNS_DOMAIN,
-                        )
-                    msg = EmailMultiAlternatives(subject,text_content,DEFAULT_FROM_EMAIL,[user.email])
-                    html_content = render_to_string("event_created_email.html",{
-                        "campaign": event.campaign.obr_name,
-                        "LANGUAGE_CODE": user.iaso_profile.language,
-                        "sender": settings.DNS_DOMAIN,
-                        "link":  generate_auto_authentication_link(link_to_send, user),
-                        "first_name":event.author.first_name ,
-                        "last_name": event.author.last_name,
-                        "comment": event.comment,
-                        "event_type": event_type,
-                    })
-                    msg.attach_alternative(html_content,"text/html")
+                        event.type,
+                        event.author.first_name,
+                        event.author.last_name,
+                        event.comment,
+                        generate_auto_authentication_link(link_to_send, user),
+                        settings.DNS_DOMAIN,
+                    )
+                    msg = EmailMultiAlternatives(subject, text_content, DEFAULT_FROM_EMAIL, [user.email])
+                    html_content = render_to_string(
+                        "event_created_email.html",
+                        {
+                            "campaign": event.campaign.obr_name,
+                            "LANGUAGE_CODE": user.iaso_profile.language,
+                            "sender": settings.DNS_DOMAIN,
+                            "link": generate_auto_authentication_link(link_to_send, user),
+                            "first_name": event.author.first_name,
+                            "last_name": event.author.last_name,
+                            "comment": event.comment,
+                            "event_type": event_type,
+                        },
+                    )
+                    msg.attach_alternative(html_content, "text/html")
                     msg.send(fail_silently=False)
-                    
+
                     # send_mail(
                     #     email_subject(event_type, event.campaign.obr_name),
                     #     event_creation_email(

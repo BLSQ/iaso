@@ -224,6 +224,14 @@ export const compareInstanceVersionsPath = {
             isRequired: true,
             key: 'instanceIds',
         },
+        {
+            isRequired: false,
+            key: 'logA',
+        },
+        {
+            isRequired: false,
+            key: 'logB',
+        },
     ],
 };
 

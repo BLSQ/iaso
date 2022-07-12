@@ -102,6 +102,10 @@ export const useGetAssignmentData = ({
         useGetOrgUnitsByParent({
             orgUnitParentId: parentSelected?.id,
             baseOrgunitType,
+            allAssignments,
+            teams: teams || [],
+            profiles: profiles || [],
+            currentType: currentTeam?.type,
         });
     const { mutateAsync: saveAssignment, isLoading: isSaving } =
         useSaveAssignment();

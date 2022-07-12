@@ -88,25 +88,23 @@ export const ParentDialog: FunctionComponent<Props> = ({
     const [mappedOrgUnits, setMappedOrgUnits] = useState<
         Array<OrgUnitShape | OrgUnitMarker | BaseLocation>
     >([]);
-    const assignableOrgUnits = mappedOrgUnits.filter(
-        orgUnit =>
-            !orgUnit.otherAssignation ||
-            (orgUnit.otherAssignation &&
-                !orgUnit.otherAssignation?.assignedTeam &&
-                !orgUnit.otherAssignation?.assignedUser),
-    );
 
     const columns = useColumns({
         orgUnitsToUpdate,
         setOrgUnitsToUpdate,
+        allAssignments,
+        teams,
+        profiles,
+        currentType: currentTeam?.type,
+        selectedItem,
     });
     const classes: Record<string, string> = useStyles();
     const [open, setOpen] = useState<boolean>(false);
 
-    console.log('orgUnitsToUpdate', orgUnitsToUpdate);
     useEffect(() => {
-        const newList = assignableOrgUnits
+        const newList = mappedOrgUnits
             .map(orgUnit => {
+                // TODO: REMOVE THIS, assignation is passed in the useGetOrgUnitsByParent now
                 const { assignment, assignedTeam, assignedUser } =
                     getOrgUnitAssignation(
                         allAssignments,
@@ -139,10 +137,11 @@ export const ParentDialog: FunctionComponent<Props> = ({
         profiles,
         selectedItem?.id,
         teams,
-        // assignableOrgUnits,
+        mappedOrgUnits,
     ]);
 
     useEffect(() => {
+        console.log('childrenOrgunits', childrenOrgunits);
         if (childrenOrgunits.length > 0 && parentSelected && locations) {
             const mapping: Array<OrgUnitShape | OrgUnitMarker | BaseLocation> =
                 [];
@@ -169,7 +168,15 @@ export const ParentDialog: FunctionComponent<Props> = ({
                     });
                 }
             });
-            setMappedOrgUnits(mapping);
+            setMappedOrgUnits(
+                mapping.filter(
+                    orgUnit =>
+                        !orgUnit.otherAssignation ||
+                        (orgUnit.otherAssignation &&
+                            !orgUnit.otherAssignation?.assignedTeam &&
+                            !orgUnit.otherAssignation?.assignedUser),
+                ),
+            );
         }
         if (!open && childrenOrgunits.length > 0 && parentSelected) {
             setOpen(true);
@@ -178,13 +185,13 @@ export const ParentDialog: FunctionComponent<Props> = ({
         }
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [childrenOrgunits, parentSelected, locations]);
-
+    console.log('mappedOrgUnits', mappedOrgUnits);
     const handleSave = async (): Promise<void> => {
         setParentSelected(undefined);
         if (selectedItem && planning) {
             await saveMultiAssignments(
                 getMultiSaveParams({
-                    selectedOrgUnits: assignableOrgUnits,
+                    selectedOrgUnits: mappedOrgUnits,
                     currentType: currentTeam?.type,
                     selectedItem,
                     planning,
@@ -207,7 +214,7 @@ export const ParentDialog: FunctionComponent<Props> = ({
             classes={{
                 paper: classes.paper,
             }}
-            onClose={(event, reason) => {
+            onClose={(_, reason) => {
                 if (reason === 'backdropClick') {
                     closeDialog();
                 }
@@ -230,7 +237,7 @@ export const ParentDialog: FunctionComponent<Props> = ({
                 {parentSelected &&
                     orgUnitsToUpdate.length === 0 &&
                     formatMessage(MESSAGES.parentDialogTitleUnsassign, {
-                        assignmentCount: assignableOrgUnits.length,
+                        assignmentCount: orgUnitsToUpdate.length,
                         parentOrgUnitName: getTeamUserName(
                             selectedItem,
                             currentTeam,
@@ -252,6 +259,7 @@ export const ParentDialog: FunctionComponent<Props> = ({
                     count={mappedOrgUnits.length}
                     extraProps={{
                         childrenOrgunits,
+                        orgUnitsToUpdate,
                     }}
                 />
             </DialogContent>
@@ -267,6 +275,7 @@ export const ParentDialog: FunctionComponent<Props> = ({
                     onClick={() => handleSave()}
                     color="primary"
                     data-test="save-button"
+                    disabled={orgUnitsToUpdate.length === 0}
                 >
                     {formatMessage(MESSAGES.confirm)}
                 </Button>

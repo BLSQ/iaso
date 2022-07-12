@@ -313,7 +313,7 @@ class Campaign(SoftDeletableModel):
 
     is_preventive = models.BooleanField(default=False, help_text="Preventive campaign")
     enable_send_weekly_email = models.BooleanField(
-        default=False, help_text="Activate the sending of a remainder email every week."
+        default=False, help_text="Activate the sending of a reminder email every week."
     )
 
     def __str__(self):

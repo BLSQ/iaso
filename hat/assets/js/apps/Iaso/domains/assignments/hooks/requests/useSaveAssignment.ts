@@ -17,8 +17,8 @@ export const saveAssignment = async (
 };
 
 export const useSaveAssignment = (
-    showSucessSnackBar = true,
     callback: () => void = () => null,
+    showSucessSnackBar = true,
 ): UseMutationResult => {
     const onSuccess = () => callback();
     return useSnackMutation({

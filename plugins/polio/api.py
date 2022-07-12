@@ -1562,7 +1562,7 @@ def send_approvers_email(user, author_team, event, event_type, approval_link, re
             "validation_link": auto_authentication_approval_link,
             "rejection_link": auto_authentication_rejection_link,
             "team": author_team.name,
-            "sender": DEFAULT_FROM_EMAIL,
+            "sender": settings.DNS_DOMAIN,
             "event_type": event_type,
         },
     )

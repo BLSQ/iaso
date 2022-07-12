@@ -9,6 +9,14 @@ const MESSAGES = defineMessages({
         defaultMessage: 'Submission',
         id: 'iaso.instance.titleSingle',
     },
+    instanceLogsTitle: {
+        id: 'iaso.instance.logs',
+        defaultMessage: 'Historique de la soumission',
+    },
+    instanceLogsDate: {
+        id: 'iaso.instance.logs.date',
+        defaultMessage: 'Date of submission',
+    },
     infos: {
         defaultMessage: 'Informations',
         id: 'iaso.instance.infos',

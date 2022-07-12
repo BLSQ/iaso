@@ -211,6 +211,8 @@
     "iaso.instance.instanceRestoreAction": "Restore instance",
     "iaso.instance.label.noOrgUnitType": "OrgUnit type not specified",
     "iaso.instance.linkOrgUnitToInstanceReferenceWarning": "This operation can still be undone",
+    "iaso.instance.logs": "Instance logs",
+    "iaso.instance.logs.date": "Date of submission",
     "iaso.instance.missingFile": "Cannot find an instance with a file",
     "iaso.instance.missingGeolocation": "Cannot find an instance with geolocation",
     "iaso.instance.org_unit": "Org unit",

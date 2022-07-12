@@ -14,8 +14,7 @@ export type QueryData = {
     campaign: string;
     type: BudgetEventType;
     target_teams: number[];
-    comments?: string;
-    // status: 'validation_ongoing'; // forcing status value as we create an event
+    comment?: string;
     files?: FileList;
 };
 const createEvent = async (data: QueryData) => {

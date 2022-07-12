@@ -33,12 +33,12 @@ const findOtherApprovaTeams = (user, teams) => {
         .map(team => team.id);
 };
 
-const makeQuery = (campaign, target_teams, comments): QueryData => {
+const makeQuery = (campaign, target_teams, comment): QueryData => {
     return {
         target_teams,
         type: 'comments',
         campaign,
-        comment: comments, // TODO fix that spelling problem in typing
+        comment,
     };
 };
 

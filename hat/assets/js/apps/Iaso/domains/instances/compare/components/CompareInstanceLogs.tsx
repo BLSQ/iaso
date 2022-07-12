@@ -1,4 +1,4 @@
-import React, { FunctionComponent } from 'react';
+import React, { FunctionComponent, useEffect, useState } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { Box, Grid, Theme } from '@material-ui/core';
 import { makeStyles } from '@material-ui/core/styles';
@@ -60,6 +60,18 @@ export const CompareInstanceLogs: FunctionComponent<Props> = ({
         dispatch(redirectTo(baseUrls.compareInstanceLogs, newParams));
     };
 
+    const [logAInitialValue, setLogAInitialValue] = useState(undefined);
+    const [logBInitialValue, setLogBInitialValue] = useState(undefined);
+
+    useEffect(() => {
+        setLogAInitialValue(
+            instanceLogsDropdown !== undefined && instanceLogsDropdown[0].value,
+        );
+        setLogBInitialValue(
+            instanceLogsDropdown !== undefined && instanceLogsDropdown[1].value,
+        );
+    }, [instanceLogsDropdown, isFetchingInstanceLogs]);
+
     return (
         <>
             <TopBar
@@ -80,7 +92,7 @@ export const CompareInstanceLogs: FunctionComponent<Props> = ({
                             type="select"
                             keyValue="logA"
                             onChange={handleChange}
-                            value={params.logA || undefined}
+                            value={params.logA || logAInitialValue}
                             label={MESSAGES.instanceLogsDate}
                             options={instanceLogsDropdown}
                             loading={isFetchingInstanceLogs}
@@ -91,7 +103,7 @@ export const CompareInstanceLogs: FunctionComponent<Props> = ({
                             type="select"
                             keyValue="logB"
                             onChange={handleChange}
-                            value={params.logB || undefined}
+                            value={params.logB || logBInitialValue}
                             label={MESSAGES.instanceLogsDate}
                             options={instanceLogsDropdown}
                             loading={isFetchingInstanceLogs}

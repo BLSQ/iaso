@@ -6,6 +6,7 @@ import {
     DialogActions,
     Button,
 } from '@material-ui/core';
+import isEqual from 'lodash/isEqual';
 import {
     // @ts-ignore
     commonStyles,
@@ -19,7 +20,6 @@ import React, {
     useState,
     useEffect,
     useCallback,
-    useMemo,
 } from 'react';
 
 import { OrgUnit } from '../../orgUnits/types/orgUnit';
@@ -40,7 +40,6 @@ import {
     getTeamUserName,
     getMultiSaveParams,
     getOrgUnitAssignation,
-    CurrentAssignment,
 } from '../utils';
 
 import MESSAGES from '../messages';
@@ -85,12 +84,63 @@ export const ParentDialog: FunctionComponent<Props> = ({
     saveMultiAssignments,
 }) => {
     const { formatMessage } = useSafeIntl();
-    const columns = useColumns({ teams });
-    const classes: Record<string, string> = useStyles();
-    const [open, setOpen] = useState<boolean>(false);
+    const [orgUnitsToUpdate, setOrgUnitsToUpdate] = useState<Array<number>>([]);
     const [mappedOrgUnits, setMappedOrgUnits] = useState<
         Array<OrgUnitShape | OrgUnitMarker | BaseLocation>
     >([]);
+    const assignableOrgUnits = mappedOrgUnits.filter(
+        orgUnit =>
+            !orgUnit.otherAssignation ||
+            (orgUnit.otherAssignation &&
+                !orgUnit.otherAssignation?.assignedTeam &&
+                !orgUnit.otherAssignation?.assignedUser),
+    );
+
+    const columns = useColumns({
+        orgUnitsToUpdate,
+        setOrgUnitsToUpdate,
+    });
+    const classes: Record<string, string> = useStyles();
+    const [open, setOpen] = useState<boolean>(false);
+
+    console.log('orgUnitsToUpdate', orgUnitsToUpdate);
+    useEffect(() => {
+        const newList = assignableOrgUnits
+            .map(orgUnit => {
+                const { assignment, assignedTeam, assignedUser } =
+                    getOrgUnitAssignation(
+                        allAssignments,
+                        orgUnit,
+                        teams,
+                        profiles,
+                        currentTeam?.type,
+                    );
+                return {
+                    id: orgUnit.id,
+                    assignment,
+                    assignedTeam,
+                    assignedUser,
+                };
+            })
+            .filter(
+                assignment =>
+                    assignment?.assignedTeam?.original.id !==
+                        selectedItem?.id &&
+                    assignment?.assignedUser?.user_id !== selectedItem?.id,
+            )
+            .map(orgUnit => orgUnit.id);
+        if (!isEqual(newList, orgUnitsToUpdate)) {
+            setOrgUnitsToUpdate(newList);
+        }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [
+        allAssignments,
+        currentTeam?.type,
+        profiles,
+        selectedItem?.id,
+        teams,
+        // assignableOrgUnits,
+    ]);
 
     useEffect(() => {
         if (childrenOrgunits.length > 0 && parentSelected && locations) {
@@ -129,56 +179,6 @@ export const ParentDialog: FunctionComponent<Props> = ({
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [childrenOrgunits, parentSelected, locations]);
 
-    const assignableOrgUnits = mappedOrgUnits.filter(
-        orgUnit =>
-            !orgUnit.otherAssignation ||
-            (orgUnit.otherAssignation &&
-                !orgUnit.otherAssignation?.assignedTeam &&
-                !orgUnit.otherAssignation?.assignedUser),
-    );
-
-    const orgUnitsToUpdate: Array<number> = useMemo(() => {
-        const currentAssignments: CurrentAssignment[] = assignableOrgUnits.map(
-            orgUnit => {
-                const {
-                    assignment,
-                    assignedTeam,
-                    assignedUser,
-                    emptyAssignment,
-                } = getOrgUnitAssignation(
-                    allAssignments,
-                    orgUnit,
-                    teams,
-                    profiles,
-                    currentTeam?.type,
-                );
-                return {
-                    id: orgUnit.id,
-                    assignment,
-                    assignedTeam,
-                    assignedUser,
-                    emptyAssignment,
-                };
-            },
-        );
-        return currentAssignments
-            .filter(
-                assignment =>
-                    assignment?.assignedTeam?.original.id !==
-                        selectedItem?.id &&
-                    assignment?.assignedUser?.user_id !== selectedItem?.id,
-            )
-            .map(orgUnit => orgUnit.id);
-    }, [
-        allAssignments,
-        assignableOrgUnits,
-        currentTeam?.type,
-        profiles,
-        selectedItem?.id,
-        teams,
-    ]);
-
-    console.log('orgUnitsToUpdate', orgUnitsToUpdate);
     const handleSave = async (): Promise<void> => {
         setParentSelected(undefined);
         if (selectedItem && planning) {

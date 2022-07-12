@@ -16,6 +16,7 @@
     "iaso.algo.addRun": "Exécuter un algorithme",
     "iaso.archived.title": "Archives",
     "iaso.area": "Aire de santé",
+    "iaso.assignment.alreadyAssigned": "Déjà assigné",
     "iaso.assignment.alreadyAssignedTo": "Déjà assigné à",
     "iaso.assignment.assignationsCount": "Nombre d'assignations",
     "iaso.assignment.baseOrgUnitsType": "Types d'unités d'org. de base",

@@ -1,7 +1,5 @@
 import React, { useMemo } from 'react';
-import { Tooltip, Box } from '@material-ui/core';
-import CheckCircleIcon from '@material-ui/icons/CheckCircle';
-import CancelIcon from '@material-ui/icons/Cancel';
+import { Tooltip, Box, Checkbox } from '@material-ui/core';
 
 import {
     // @ts-ignore
@@ -10,17 +8,20 @@ import {
 
 import { Column } from '../../../types/table';
 import { IntlFormatMessage } from '../../../types/intl';
-import { DropdownTeamsOptions } from '../types/team';
 
-import { AlreadyAssigned } from '../components/AlreadyAssigned';
 import { LinkToOrgUnit } from '../components/LinkToOrgUnit';
-
 import MESSAGES from '../messages';
 
 type Props = {
-    teams: DropdownTeamsOptions[];
+    orgUnitsToUpdate: Array<number>;
+    // eslint-disable-next-line no-unused-vars
+    setOrgUnitsToUpdate: (ids: Array<number>) => void;
 };
-export const useColumns = ({ teams }: Props): Column[] => {
+
+export const useColumns = ({
+    orgUnitsToUpdate,
+    setOrgUnitsToUpdate,
+}: Props): Column[] => {
     const { formatMessage }: { formatMessage: IntlFormatMessage } =
         useSafeIntl();
     return useMemo(() => {
@@ -41,37 +42,57 @@ export const useColumns = ({ teams }: Props): Column[] => {
                 },
             },
             {
-                Header: formatMessage(MESSAGES.status),
-                id: 'status',
-                accessor: 'status',
+                Header: formatMessage(MESSAGES.assignment),
+                id: 'assignment',
+                accessor: 'assignment',
                 sortable: false,
                 Cell: settings => {
-                    const { otherAssignation } = settings.row.original;
+                    const orgUnitId = settings.row.original.id;
+                    const disabled = !orgUnitsToUpdate.includes(orgUnitId);
                     return (
                         <Box
                             display="flex"
                             alignItems="center"
                             justifyContent="center"
                         >
-                            {otherAssignation?.assignedTeam ||
-                            otherAssignation?.assignedUser ? (
+                            {!disabled && (
+                                <Checkbox
+                                    size="small"
+                                    color="primary"
+                                    checked
+                                    onChange={() => {
+                                        const orgUnits =
+                                            orgUnitsToUpdate.filter(
+                                                orgunitId =>
+                                                    orgunitId !== orgUnitId,
+                                            );
+                                        console.log('orgUnits', orgUnits);
+                                        setOrgUnitsToUpdate(orgUnits);
+                                    }}
+                                />
+                            )}
+                            {disabled && (
                                 <Tooltip
-                                    title={
-                                        <AlreadyAssigned
-                                            item={settings.row.original}
-                                            teams={teams}
-                                        />
-                                    }
+                                    arrow
+                                    placement="top"
+                                    title={formatMessage(
+                                        MESSAGES.alreadyAssigned,
+                                    )}
                                 >
-                                    <CancelIcon color="error" />
+                                    <Box>
+                                        <Checkbox
+                                            size="small"
+                                            color="primary"
+                                            checked
+                                            disabled
+                                        />
+                                    </Box>
                                 </Tooltip>
-                            ) : (
-                                <CheckCircleIcon color="primary" />
                             )}
                         </Box>
                     );
                 },
             },
         ];
-    }, [formatMessage, teams]);
+    }, [formatMessage, orgUnitsToUpdate, setOrgUnitsToUpdate]);
 };

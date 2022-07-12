@@ -53,6 +53,10 @@ const MESSAGES = defineMessages({
         defaultMessage: 'Already assigned to',
         id: 'iaso.assignment.alreadyAssignedTo',
     },
+    alreadyAssigned: {
+        defaultMessage: 'Already assigned',
+        id: 'iaso.assignment.alreadyAssigned',
+    },
     inAnotherTeam: {
         defaultMessage: 'in another team',
         id: 'iaso.assignment.inAnotherTeam',

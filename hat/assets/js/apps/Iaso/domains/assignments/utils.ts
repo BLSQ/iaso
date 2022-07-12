@@ -201,10 +201,6 @@ export const getSaveParams = ({
     return saveParams;
 };
 
-export type CurrentAssignment = OrgUnitAssignedTeamUser & {
-    id: number;
-};
-
 type MultiSaveParamsProps = {
     selectedOrgUnits: Array<OrgUnitShape | OrgUnitMarker | BaseLocation>;
     currentType: 'TEAM_OF_TEAMS' | 'TEAM_OF_USERS' | undefined;

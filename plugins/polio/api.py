@@ -25,6 +25,7 @@ from django.utils.timezone import now, make_aware
 from django_filters.rest_framework import DjangoFilterBackend
 from django.template.loader import render_to_string
 from gspread.utils import extract_id_from_url
+from hat.settings import DEFAULT_FROM_EMAIL
 from rest_framework import routers, filters, viewsets, serializers, permissions, status
 from rest_framework.decorators import action
 from rest_framework.response import Response
@@ -1435,6 +1436,63 @@ class HasPoliobudgetPermission(permissions.BasePermission):
         return True
 
 
+def email_subject(event_type, campaign_name):
+    email_subject_template = "New {} for {}"
+    return email_subject_template.format(event_type, campaign_name)
+
+
+def event_creation_email(event_type, first_name, last_name, comment, link, dns_domain):
+    email_template = """%s by %s %s.
+
+Comment: %s
+
+------------
+
+you can access the history of this budget here: %s
+
+------------    
+This is an automated email from %s
+"""
+    return email_template % (event_type, first_name, last_name, comment, link, dns_domain)
+
+
+def creation_email_with_two_links(
+    event_type, first_name, last_name, comment, validation_link, rejection_link, dns_domain
+):
+    email_template = """%s by %s %s.
+
+Comment: %s
+
+------------
+
+you can validate the budget here: %s
+
+you can reject and add a comment hre : %s
+
+------------    
+This is an automated email from %s
+"""
+    return email_template % (event_type, first_name, last_name, comment, validation_link, rejection_link, dns_domain)
+
+
+def budget_approval_email_subject(campaign_name):
+    email_subject_validation_template = "APPROVED: Budget For Campaign {}"
+    return email_subject_validation_template.format(campaign_name)
+
+
+def budget_approval_email(campaign_name, link, dns_domain):
+    email_template = """
+            
+                    The budget for campaign {0} has been approved.
+                    Click here to see the details :
+                    {1}
+            
+                    ------------
+                    This is an automated email from {2}
+                    """
+    return email_template.format(campaign_name, link, dns_domain)
+
+
 def send_approval_budget_mail(event):
     mails_list = list()
     events = BudgetEvent.objects.filter(campaign=event.campaign)
@@ -1445,16 +1503,6 @@ def send_approval_budget_mail(event):
             for user in team.users.all():
                 if user.email not in mails_list:
                     mails_list.append(user.email)
-                    email_title_validation_template = "Budget Approval For Campaign {} "
-                    email_template = """
-            
-                    The budget for campaign {0} has been approved.
-                    Click here to see the details :
-                    {1}
-            
-                    ------------
-                    This is an automated email from {2}
-                    """
 
                     link_to_send = (
                         "https://%s/dashboard/polio/budget/details/campaignId/%s/campaignName/%s/country/%d"
@@ -1466,15 +1514,78 @@ def send_approval_budget_mail(event):
                         )
                     )
                     send_mail(
-                        email_title_validation_template.format(event.campaign.obr_name),
-                        email_template.format(
+                        budget_approval_email_subject(event.campaign.obr_name),
+                        budget_approval_email(
                             event.campaign.obr_name,
                             generate_auto_authentication_link(link_to_send, user),
                             settings.DNS_DOMAIN,
                         ),
-                        "no-reply@%s" % settings.DNS_DOMAIN,
+                        DEFAULT_FROM_EMAIL,
                         [user.email],
                     )
+
+
+def send_approvers_email(user, author_team, event, event_type, approval_link, rejection_link):
+    # if user is in other approval team, send the mail with the fat buttons
+    subject = email_subject(event_type, event.campaign.obr_name)
+    from_email = settings.DEFAULT_FROM_EMAIL
+    auto_authentication_approval_link = generate_auto_authentication_link(approval_link, user)
+    auto_authentication_rejection_link = generate_auto_authentication_link(rejection_link, user)
+    text_content = creation_email_with_two_links(
+        event.type,
+        event.author.first_name,
+        event.author.last_name,
+        event.comment,
+        auto_authentication_approval_link,
+        auto_authentication_rejection_link,
+        settings.DNS_DOMAIN,
+    )
+    msg = EmailMultiAlternatives(subject, text_content, from_email, [user.email])
+    html_content = render_to_string(
+        "validation_email.html",
+        {
+            "LANGUAGE_CODE": user.iaso_profile.language,
+            "campaign": event.campaign.obr_name,
+            "comment": event.comment,
+            "author_first_name": event.author.first_name,
+            "author_last_name": event.author.last_name,
+            "validation_link": auto_authentication_approval_link,
+            "rejection_link": auto_authentication_rejection_link,
+            "team": author_team.name,
+            "sender": DEFAULT_FROM_EMAIL,
+            "event_type": event_type,
+        },
+    )
+    msg.attach_alternative(html_content, "text/html")
+    msg.send(fail_silently=False)
+
+
+def send_approval_confirmation_to_users(event):
+    # modify campaign.budget_status instead of event.status
+    event.status = "validated"
+    event.save()
+    send_approval_budget_mail(event)
+
+
+def is_budget_approved(user, event):
+    val_teams = (
+        Team.objects.filter(name__icontains="approval")
+        .filter(project__account=user.iaso_profile.account)
+        .filter(deleted_at=None)
+    )
+    validation_count = 0
+    for val_team in val_teams:
+        for user in val_team.users.all():
+            try:
+                count = BudgetEvent.objects.filter(author=user, campaign=event.campaign, type="validation").count()
+                if count > 0:
+                    validation_count += 1
+                    break
+            except ObjectDoesNotExist:
+                pass
+    if validation_count == val_teams.count():
+        return True
+    return False
 
 
 class BudgetEventViewset(ModelViewSet):
@@ -1492,18 +1603,6 @@ class BudgetEventViewset(ModelViewSet):
         "type",
         "author",
     ]
-    email_title_template = "New {} for {}"
-    email_template = """%s by %s %s.
-
-Comment: %s
-
-------------
-
-you can access the history of this budget here: %s
-
-------------    
-This is an automated email from %s
-"""
 
     def get_serializer_class(self):
         return BudgetEventSerializer
@@ -1521,64 +1620,6 @@ This is an automated email from %s
         if campaign_id is not None:
             queryset = queryset.filter(campaign_id=campaign_id)
         return queryset.distinct()
-
-    def is_budget_approved(self, user, event):
-        val_teams = (
-            Team.objects.filter(name__icontains="approval")
-            .filter(project__account=user.iaso_profile.account)
-            .filter(deleted_at=None)
-        )
-        validation_count = 0
-        for val_team in val_teams:
-            for user in val_team.users.all():
-                try:
-                    count = BudgetEvent.objects.filter(author=user, campaign=event.campaign, type="validation").count()
-                    if count > 0:
-                        validation_count += 1
-                        break
-                except ObjectDoesNotExist:
-                    pass
-        if validation_count == val_teams.count():
-            return True
-        return False
-
-    def send_approval_confirmation_to_users(self, event):
-        # modify campaign.budget_status instead of event.status
-        event.status = "validated"
-        event.save()
-        send_approval_budget_mail(event)
-
-    def send_approvers_email(self, user, approval_team, event, event_type, approval_link, rejection_link):
-        # if user is in other approval team, send the mail with the fat buttons
-        subject = self.email_title_template.format(event_type, event.campaign.obr_name)
-        from_email = "no-reply@%s" % settings.DNS_DOMAIN
-        auto_authentication_approval_link = generate_auto_authentication_link(approval_link, user)
-        auto_authentication_rejection_link = generate_auto_authentication_link(rejection_link, user)
-        text_content = self.email_template % (
-            event.type,
-            event.author.first_name,
-            event.author.last_name,
-            event.comment,
-            auto_authentication_approval_link,
-            settings.DNS_DOMAIN,
-        )
-        msg = EmailMultiAlternatives(subject, text_content, from_email, [user.email])
-        html_content = render_to_string(
-            "validation_email.html",
-            {
-                "LANGUAGE_CODE": user.iaso_profile.language,
-                "campaign": event.campaign.obr_name,
-                "comment": event.comment,
-                "approver_first_name": event.author.first_name,
-                "approver_last_name": event.author.last_name,
-                "validation_link": auto_authentication_approval_link,
-                "rejection_link": auto_authentication_rejection_link,
-                "team": approval_team.name,
-                "sender": settings.DNS_DOMAIN,
-            },
-        )
-        msg.attach_alternative(html_content, "text/html")
-        msg.send(fail_silently=False)
 
     def perform_create(self, serializer):
         event = serializer.save(author=self.request.user)
@@ -1608,32 +1649,40 @@ This is an automated email from %s
                     event.campaign.obr_name,
                     event.campaign.country.id,
                 )
+                approval_link = link_to_send + "/action/confirmApproval"
+                rejection_link = link_to_send + "/action/rejectApproval"
                 print("pre-filter", recipients)
                 # If other approval teams still have to approve the budget, notify their members with html email
-                if event_type == "approval" and not self.is_budget_approved(current_user, event):
+                if event_type == "approval" and not is_budget_approved(current_user, event):
                     # We're assuming a user can only be in one approval team
-                    approval_team = (
-                        event.author.teams.filter(name__icontains="approval").filter(deleted_at=None).first()
-                    )
+                    author_team = event.author.teams.filter(name__icontains="approval").filter(deleted_at=None).first()
                     other_approval_teams = (
                         Team.objects.filter(name__icontains="approval")
-                        .exclude(id=approval_team.id)
+                        .exclude(id=author_team.id)
                         .filter(deleted_at=None)
                     )
                     approvers = other_approval_teams.values("users")
-                    approval_link = link_to_send + "/action/confirmApproval"
-                    rejection_link = link_to_send + "/action/rejectApproval"
+
                     for approver in approvers:
                         user = User.objects.get(id=approver["users"])
-                        self.send_approvers_email(user, approval_team, event, event_type, approval_link, rejection_link)
+                        send_approvers_email(user, author_team, event, event_type, approval_link, rejection_link)
+                        # TODO check that this works
+                        recipients.discard(user)
+                # Send email with link to all approvers if event is a submission
+                elif event_type == "submission":
+                    author_team = event.author.teams.filter(name__icontains="approval").filter(deleted_at=None).first()
+                    approval_teams = Team.objects.filter(name__icontains="approval").filter(deleted_at=None)
+                    approvers = approval_teams.values("users")
+                    for approver in approvers:
+                        user = User.objects.get(id=approver["users"])
+                        send_approvers_email(user, author_team, event, event_type, approval_link, rejection_link)
                         # TODO check that this works
                         recipients.discard(user)
                 print("post-filter", recipients)
                 for user in recipients:
                     send_mail(
-                        self.email_title_template.format(event_type, event.campaign.obr_name),
-                        self.email_template
-                        % (
+                        email_subject(event_type, event.campaign.obr_name),
+                        event_creation_email(
                             event.type,
                             event.author.first_name,
                             event.author.last_name,
@@ -1641,14 +1690,14 @@ This is an automated email from %s
                             generate_auto_authentication_link(link_to_send, user),
                             settings.DNS_DOMAIN,
                         ),
-                        "no-reply@%s" % settings.DNS_DOMAIN,
+                        settings.DEFAULT_FROM_EMAIL,
                         [user.email],
                     )
                 event.is_email_sent = True
                 event.save()
                 # If the budget is approved as a results of the events creation, send the confirmation email as well
-                if event_type == "approval" and self.is_budget_approved(current_user, event):
-                    self.send_approval_confirmation_to_users(event)
+                if event_type == "approval" and is_budget_approved(current_user, event):
+                    send_approval_confirmation_to_users(event)
             serializer = BudgetEventSerializer(event, many=False)
             return Response(serializer.data)
 

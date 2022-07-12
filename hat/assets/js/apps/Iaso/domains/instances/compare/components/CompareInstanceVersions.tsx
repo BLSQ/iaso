@@ -1,15 +1,18 @@
-import React, { FunctionComponent, useEffect } from 'react';
+import React, { FunctionComponent } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
-import { Box, Grid, Theme, GridSize } from '@material-ui/core';
+import { Box, Grid, Theme } from '@material-ui/core';
 import { makeStyles } from '@material-ui/core/styles';
 import { useSafeIntl, commonStyles } from 'bluesquare-components';
 
-import InstanceDetail from './InstanceDetail';
+import { redirectTo, redirectToReplace } from '../../../../routing/actions';
+import InputComponent from '../../../../components/forms/InputComponent';
 
-import { redirectToReplace } from '../../../../routing/actions';
+// import InstanceDetail from './InstanceDetail';
+
 import TopBar from '../../../../components/nav/TopBarComponent';
 import MESSAGES from '../messages';
 import { baseUrls } from '../../../../constants/urls';
+import { useGetInstanceLogs } from '../../hooks/requests/useGetInstanceVersions';
 
 type RouterCustom = {
     prevPathname: string | undefined;
@@ -19,6 +22,8 @@ type State = {
 };
 type Params = {
     instanceIds: string;
+    logA: string;
+    logB: string;
 };
 
 type Router = {
@@ -46,16 +51,23 @@ const CompareInstanceVersions: FunctionComponent<Props> = ({
     );
 
     const { instanceIds: instanceId } = params;
+    const { data: instanceLogsDropdown, isFetching: isFetchingInstanceLogs } =
+        useGetInstanceLogs(instanceId);
 
-    // console.log('prev path name', prevPathname);
-    // console.log('params', params);
-    // console.log('router', router);
-    // console.log('instance id', instanceId);
+    const handleChange = (key, value) => {
+        console.log('key, value', key, value);
+        const newParams = {
+            ...params,
+            [key]: value,
+        };
+        console.log('newParams', newParams);
+        dispatch(redirectTo(baseUrls.compareInstanceVersions, newParams));
+    };
 
     return (
         <>
             <TopBar
-                title={formatMessage(MESSAGES.title)}
+                title={formatMessage(MESSAGES.instanceLogsTitle)}
                 displayBackButton
                 goBack={() => {
                     if (prevPathname) {
@@ -68,12 +80,27 @@ const CompareInstanceVersions: FunctionComponent<Props> = ({
             <Box className={classes.containerFullHeightNoTabPadded}>
                 <Grid container spacing={4}>
                     <Grid xs={12} md={6} item>
-                        {/* TO DO : display actual version of instance */}
-                        {/* <InstanceDetail instanceId={instanceId} /> */}
+                        <InputComponent
+                            type="select"
+                            keyValue="logA"
+                            onChange={handleChange}
+                            value={params.logA || undefined} // params.logA
+                            label={MESSAGES.instanceLogsDate}
+                            options={instanceLogsDropdown}
+                            loading={isFetchingInstanceLogs}
+                        />
                     </Grid>
                     <Grid xs={12} md={6} item>
                         {/* TO DO : populate instance logs and create a select allowing to choose a previous version */}
-                        {/* <InstanceDetail instanceId={instanceId} /> */}
+                        <InputComponent
+                            type="select"
+                            keyValue="logB"
+                            onChange={handleChange}
+                            value={params.logB || undefined} // params.logA
+                            label={MESSAGES.instanceLogsDate}
+                            options={instanceLogsDropdown}
+                            loading={isFetchingInstanceLogs}
+                        />
                     </Grid>
                 </Grid>
             </Box>

@@ -1,11 +1,11 @@
 /* eslint-disable camelcase */
-import { UseQueryResult } from 'react-query';
 import moment from 'moment';
+import { UseQueryResult } from 'react-query';
 import { getRequest } from '../../../../libs/Api';
 import { useSnackQuery } from '../../../../libs/apiHooks';
 import { Instance } from '../../types/instances';
 
-const getInstanceLog = (instanceId: string): Promise<Instance> => {
+const getInstanceLog = (instanceId: string | undefined): Promise<Instance> => {
     return getRequest(`/api/logs/?objectId=${instanceId}`);
 };
 export const useGetInstanceLogs = (

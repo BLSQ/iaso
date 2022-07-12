@@ -445,7 +445,7 @@ class InstanceDetails extends Component {
                                                 color="inherit"
                                             >
                                                 <Link
-                                                    to={`${baseUrls.compareInstanceVersions}/instanceIds/${currentInstance.id}`}
+                                                    to={`${baseUrls.compareInstanceLogs}/instanceIds/${currentInstance.id}`}
                                                 >
                                                     Voir toutes les versions
                                                 </Link>

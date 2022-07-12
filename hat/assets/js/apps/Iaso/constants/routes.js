@@ -29,7 +29,7 @@ import Pages from '../domains/pages';
 import { Planning } from '../domains/plannings/index.tsx';
 import { Teams } from '../domains/teams/index.tsx';
 import { Assignments } from '../domains/assignments/index.tsx';
-import CompareInstanceVersions from '../domains/instances/compare/components/CompareInstanceVersions.tsx';
+import CompareInstanceLogs from '../domains/instances/compare/components/CompareInstanceLogs.tsx';
 
 import { SHOW_PAGES } from '../utils/featureFlags';
 import { paginationPathParams } from '../routing/common';
@@ -215,10 +215,10 @@ export const instanceDetailPath = {
     ],
 };
 
-export const compareInstanceVersionsPath = {
-    baseUrl: baseUrls.compareInstanceVersions,
+export const compareInstanceLogsPath = {
+    baseUrl: baseUrls.compareInstanceLogs,
     permissions: ['iaso_submissions'],
-    component: props => <CompareInstanceVersions {...props} />,
+    component: props => <CompareInstanceLogs {...props} />,
     params: [
         {
             isRequired: true,
@@ -671,7 +671,7 @@ export const routeConfigs = [
     mappingDetailPath,
     instancesPath,
     instanceDetailPath,
-    compareInstanceVersionsPath,
+    compareInstanceLogsPath,
     compareInstancesPath,
     orgUnitsPath,
     orgUnitsDetailsPath,

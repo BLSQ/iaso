@@ -17,6 +17,7 @@ class LogsViewSet(viewsets.ViewSet):
     list:
     Returns the list of modifications
 
+    Contrary to most other endpoints, it is paginated by default to prevent overloading the system
     """
 
     authentication_classes = (CsrfExemptSessionAuthentication, BasicAuthentication)
@@ -24,15 +25,21 @@ class LogsViewSet(viewsets.ViewSet):
     def list(self, request):
         from_date = request.GET.get("date_from", None)
         to_date = request.GET.get("date_to", None)
-        limit = request.GET.get("limit", None)
+        limit = request.GET.get("limit", 50)  # prevent killing iaso /api/logs will just blow up in prod
         page_offset = request.GET.get("page", 1)
-        orders = request.GET.get("order", "created_at").split(",")
+        orders = request.GET.get("order", "-created_at").split(",")
         user_ids = request.GET.get("userId", None)
         object_id = request.GET.get("objectId", None)
-        content_type_arg = request.GET.get("contenType", None)
+        content_type_arg = request.GET.get("contentType", None)
         source = request.GET.get("source", None)
+        fields = request.GET.get("fields", "").split(",")
 
         queryset = Modification.objects.all()
+
+        queryset = queryset.prefetch_related("user")
+        queryset = queryset.prefetch_related("user__iaso_profile")
+        queryset = queryset.prefetch_related("user__iaso_profile__user")
+        queryset = queryset.prefetch_related("content_type")
 
         if from_date is not None:
             queryset = queryset.filter(created_at__gte=from_date)
@@ -46,7 +53,7 @@ class LogsViewSet(viewsets.ViewSet):
             queryset = queryset.filter(source=source)
 
         if content_type_arg:
-            app_label, model = content_type_arg.split("-")
+            app_label, model = content_type_arg.split(".")
             try:
                 content_type = ContentType.objects.get_by_natural_key(app_label, model)
             except ContentType.DoesNotExist:
@@ -66,7 +73,7 @@ class LogsViewSet(viewsets.ViewSet):
                 page_offset = paginator.num_pages
             page = paginator.page(page_offset)
 
-            res["list"] = map(lambda x: x.as_list(), page.object_list)
+            res["list"] = map(lambda x: x.as_list(fields), page.object_list)
             res["has_next"] = page.has_next()
             res["has_previous"] = page.has_previous()
             res["page"] = page_offset
@@ -74,7 +81,7 @@ class LogsViewSet(viewsets.ViewSet):
             res["limit"] = limit
             return Response(res)
         else:
-            return Response(map(lambda x: x.as_list(), queryset))
+            return Response(map(lambda x: x.as_list(fields), queryset))
 
     def retrieve(self, request, pk=None):
         log = get_object_or_404(Modification, pk=pk)

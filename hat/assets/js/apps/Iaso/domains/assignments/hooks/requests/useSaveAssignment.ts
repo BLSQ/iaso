@@ -17,16 +17,30 @@ export const saveAssignment = async (
 };
 
 export const useSaveAssignment = (
-    showSucessSnackBar = true,
     callback: () => void = () => null,
 ): UseMutationResult => {
     const onSuccess = () => callback();
-    return useSnackMutation(
-        (data: SaveAssignmentQuery) => saveAssignment(data),
-        undefined,
-        undefined,
-        ['assignmentsList'],
-        { onSuccess },
-        showSucessSnackBar,
-    );
+    return useSnackMutation({
+        mutationFn: (data: SaveAssignmentQuery) => saveAssignment(data),
+        invalidateQueryKey: ['assignmentsList'],
+        options: { onSuccess },
+        showSucessSnackBar: false,
+    });
+};
+
+const saveBulkAssignments = (data: SaveAssignmentQuery) => {
+    const url = `${endpoint}bulk_create_assignments/`;
+    return postRequest(url, data);
+};
+
+export const useBulkSaveAssignments = (
+    callback: () => void = () => null,
+): UseMutationResult => {
+    const onSuccess = () => callback();
+    return useSnackMutation({
+        mutationFn: saveBulkAssignments,
+        invalidateQueryKey: ['assignmentsList'],
+        options: { onSuccess },
+        showSucessSnackBar: false,
+    });
 };

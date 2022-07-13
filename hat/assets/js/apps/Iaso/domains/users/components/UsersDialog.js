@@ -231,6 +231,7 @@ const UserDialogComponent = ({
 
 UserDialogComponent.defaultProps = {
     initialData: null,
+    allowSendEmailInvitation: false,
 };
 
 UserDialogComponent.propTypes = {
@@ -238,6 +239,7 @@ UserDialogComponent.propTypes = {
     renderTrigger: PropTypes.func.isRequired,
     initialData: PropTypes.object,
     saveProfile: PropTypes.func.isRequired,
+    allowSendEmailInvitation: PropTypes.bool,
 };
 
 export default UserDialogComponent;

@@ -7,6 +7,7 @@ import {
 import { OrgUnitMarker, OrgUnitShape, BaseLocation } from './types/locations';
 import { Planning } from './types/planning';
 import { DropdownTeamsOptions, SubTeam, User, Team } from './types/team';
+import { OrgUnit } from '../orgUnits/types/orgUnit';
 
 import { Profile, getDisplayName } from '../../utils/usersUtils';
 
@@ -14,7 +15,7 @@ export type AssignedUser = Profile & {
     color: string;
 };
 
-type OrgUnitAssignedTeamUser = {
+export type OrgUnitAssignedTeamUser = {
     assignment: AssignmentApi | undefined;
     assignedTeam: DropdownTeamsOptions | undefined;
     assignedUser: AssignedUser | undefined;
@@ -23,7 +24,7 @@ type OrgUnitAssignedTeamUser = {
 
 export const getOrgUnitAssignation = (
     assignments: AssignmentsApi,
-    orgUnit: OrgUnitShape | OrgUnitMarker | BaseLocation,
+    orgUnit: OrgUnitShape | OrgUnitMarker | BaseLocation | OrgUnit,
     teams: DropdownTeamsOptions[],
     profiles: Profile[],
     currentType: 'TEAM_OF_TEAMS' | 'TEAM_OF_USERS' | undefined,
@@ -102,7 +103,7 @@ export const getTeamName = (
 
 type SaveParamsProps = {
     allAssignments: AssignmentsApi;
-    selectedOrgUnit: OrgUnitShape | OrgUnitMarker | BaseLocation;
+    selectedOrgUnit: OrgUnitShape | OrgUnitMarker | BaseLocation | OrgUnit;
     teams: DropdownTeamsOptions[];
     profiles: Profile[];
     currentType: 'TEAM_OF_TEAMS' | 'TEAM_OF_USERS' | undefined;
@@ -131,6 +132,7 @@ export const getSaveParams = ({
         planning: planning.id,
         org_unit: selectedOrgUnit.id,
     };
+
     // TODO: make it better, copy paste for now...
     if (currentType === 'TEAM_OF_TEAMS') {
         saveParams.team = selectedItem.id;
@@ -197,4 +199,79 @@ export const getSaveParams = ({
         }
     }
     return saveParams;
+};
+
+type MultiSaveParamsProps = {
+    allAssignments: AssignmentsApi;
+    selectedOrgUnits: Array<OrgUnitShape | OrgUnitMarker | BaseLocation>;
+    teams: DropdownTeamsOptions[];
+    profiles: Profile[];
+    currentType: 'TEAM_OF_TEAMS' | 'TEAM_OF_USERS' | undefined;
+    selectedItem: SubTeam | User;
+    planning: Planning;
+};
+
+export const getMultiSaveParams = ({
+    allAssignments,
+    selectedOrgUnits,
+    teams,
+    profiles,
+    currentType,
+    selectedItem,
+    planning,
+}: MultiSaveParamsProps): SaveAssignmentQuery => {
+    const orgUnitIds = selectedOrgUnits.map(orgUnit => orgUnit.id);
+    const baseQuery = {
+        planning: planning.id,
+        org_units: orgUnitIds,
+    };
+    const currentAssignments = selectedOrgUnits.map(orgUnit => {
+        const { assignment, assignedTeam, assignedUser, emptyAssignment } =
+            getOrgUnitAssignation(
+                allAssignments,
+                orgUnit,
+                teams,
+                profiles,
+                currentType,
+            );
+        return {
+            id: orgUnit.id,
+            assignment,
+            assignedTeam,
+            assignedUser,
+            emptyAssignment,
+        };
+    });
+
+    const orgUnitsToUpdate = currentAssignments
+        .filter(
+            assignment =>
+                assignment?.assignedTeam?.original.id !== selectedItem.id &&
+                assignment?.assignedUser?.user_id !== selectedItem.id,
+        )
+        .map(orgUnit => orgUnit.id);
+
+    const allOrgUnitsAlreadySelected = orgUnitsToUpdate.length === 0;
+
+    if (allOrgUnitsAlreadySelected) {
+        return { ...baseQuery, team: null, user: null };
+    }
+
+    if (currentType === 'TEAM_OF_TEAMS') {
+        return {
+            ...baseQuery,
+            org_units: orgUnitsToUpdate,
+            team: selectedItem.id,
+        };
+    }
+    if (currentType === 'TEAM_OF_USERS') {
+        return {
+            ...baseQuery,
+            org_units: orgUnitsToUpdate,
+            user: selectedItem.id,
+        };
+    }
+    throw new Error(
+        `expected currentType type to be TEAM_OF_TEAMS or TEAM_OF_USERS. Got ${currentType}`,
+    );
 };

@@ -12,7 +12,7 @@ from django.utils.timezone import now
 
 from hat.api.export_utils import timestamp_to_utc_datetime
 from iaso import models as m
-from iaso.models import OrgUnit, Instance
+from iaso.models import OrgUnit, Instance, InstanceLockTable, Profile
 from iaso.test import APITestCase
 from hat.audit.models import Modification
 
@@ -34,17 +34,16 @@ class InstancesAPITestCase(APITestCase):
 
         cls.yoda = cls.create_user_with_profile(username="yoda", account=star_wars, permissions=["iaso_submissions"])
         cls.guest = cls.create_user_with_profile(username="guest", account=star_wars, permissions=["iaso_submissions"])
-        cls.supervisor = cls.create_user_with_profile(username="supervisor", account=star_wars,
-                                                      permissions=["iaso_submissions", "iaso_forms"])
+        cls.supervisor = cls.create_user_with_profile(
+            username="supervisor", account=star_wars, permissions=["iaso_submissions", "iaso_forms"]
+        )
 
         cls.jedi_council = m.OrgUnitType.objects.create(name="Jedi Council", short_name="Cnc")
 
         cls.jedi_council_corruscant = m.OrgUnit.objects.create(
-            name="Coruscant Jedi Council", source_ref="jedi_council_corruscant_ref"
+            name="Coruscant Jedi Council", source_ref="jedi_council_corruscant_ref", version=sw_version
         )
-        cls.ou_top_1 = m.OrgUnit.objects.create(
-            name="ou_top_1", source_ref="jedi_council_corruscant_ref"
-        )
+        cls.ou_top_1 = m.OrgUnit.objects.create(name="ou_top_1", source_ref="jedi_council_corruscant_ref")
         cls.ou_top_2 = m.OrgUnit.objects.create(
             name="ou_top_2", source_ref="jedi_council_corruscant_ref", parent=cls.ou_top_1
         )
@@ -61,6 +60,8 @@ class InstancesAPITestCase(APITestCase):
         cls.project = m.Project.objects.create(
             name="Hydroponic gardens", app_id="stars.empire.agriculture.hydroponics", account=star_wars
         )
+
+        sw_source.projects.add(cls.project)
 
         cls.form_1 = m.Form.objects.create(name="Hydroponics study", period_type=m.MONTH, single_per_period=True)
 
@@ -840,29 +841,28 @@ class InstancesAPITestCase(APITestCase):
     def test_lock_instance(self):
         self.client.force_authenticate(self.yoda)
 
-        body = [
-            {
-                "id": str(uuid4()),
-                "created_at": 1565258153704,
-                "updated_at": 1565258153709,
-                "orgUnitId": self.jedi_council_corruscant.id,
-                "formId": self.form_1.id,
-                "period": "202002",
-                "latitude": 50.2,
-                "longitude": 4.4,
-                "accuracy": 10,
-                "altitude": 100,
-                "file": "\/storage\/emulated\/0\/odk\/instances\/RDC Collecte Data DPS_2_2019-08-08_11-54-46\/RDC Collecte Data DPS_2_2019-08-08_11-54-46.xml",
-                "name": "1",
-            }
-        ]
-        response = self.client.post(
-            f"/api/instances/?app_id=stars.empire.agriculture.hydroponics", data=body, format="json"
+        instance_uuid = str(uuid4())
+
+        instance = Instance.objects.create(
+            uuid=instance_uuid,
+            org_unit=self.jedi_council_corruscant,
+            name="2",
+            period=202002,
+            project=self.project,
+            form=self.form_1,
         )
-        self.assertEqual(response.status_code, 200)
 
+        response = self.client.patch(
+            f"/api/instances/{instance.pk}/", data={"id": Instance.objects.last().pk, "validation_status": "LOCKED"}
+        )
 
+        instance = Instance.objects.get(uuid=instance_uuid)
+        locked_table = InstanceLockTable.objects.last()
 
+        self.assertJSONResponse(response, 200)
+        self.assertEqual(instance.validation_status, "LOCKED")
+        self.assertEqual(locked_table.instance, instance)
+        self.assertEqual(locked_table.is_locked, True)
 
     def test_user_cant_lock_instance_locked_by_higher_user(self):
         pass

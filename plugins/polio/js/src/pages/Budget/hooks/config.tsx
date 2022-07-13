@@ -216,6 +216,8 @@ export const useBudgetDetailsColumns = ({ profiles, data }): Column[] => {
                             ? `${authorProfile.first_name} ${authorProfile.last_name}`
                             : authorProfile?.user_name ?? '';
                     const { target_teams } = settings.row.original;
+                    const userIsAuthor =
+                        authorProfile?.user_id === currentUser.user_id;
                     const teamNames = teams
                         ?.filter(team => target_teams.includes(team.id))
                         .map(team => team.name)
@@ -252,18 +254,21 @@ export const useBudgetDetailsColumns = ({ profiles, data }): Column[] => {
                                         }
                                     />
                                 )}
-                            {!settings.row.original.deleted_at && (
-                                <DeleteDialog
-                                    titleMessage={MESSAGES.deleteBudgetEvent}
-                                    message={MESSAGES.deleteBudgetEvent}
-                                    onConfirm={() =>
-                                        deleteBudgetEvent(
-                                            settings.row.original.id,
-                                        )
-                                    }
-                                    keyName={`deleteBudgetEvent-${settings.row.original.id}`}
-                                />
-                            )}
+                            {!settings.row.original.deleted_at &&
+                                userIsAuthor && (
+                                    <DeleteDialog
+                                        titleMessage={
+                                            MESSAGES.deleteBudgetEvent
+                                        }
+                                        message={MESSAGES.deleteBudgetEvent}
+                                        onConfirm={() =>
+                                            deleteBudgetEvent(
+                                                settings.row.original.id,
+                                            )
+                                        }
+                                        keyName={`deleteBudgetEvent-${settings.row.original.id}`}
+                                    />
+                                )}
                             {settings.row.original.deleted_at && (
                                 <IconButtonComponent
                                     color="secondary"

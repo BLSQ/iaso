@@ -865,4 +865,30 @@ class InstancesAPITestCase(APITestCase):
         self.assertEqual(locked_table.is_locked, True)
 
     def test_user_cant_lock_instance_locked_by_higher_user(self):
-        pass
+        instance_uuid = str(uuid4())
+        instance = Instance.objects.create(
+            uuid=instance_uuid,
+            org_unit=self.ou_top_3,
+            name="Instance TOP 3",
+            period=202002,
+            project=self.project,
+            form=self.form_1,
+            validation_status="LOCKED",
+        )
+        instance_lock = InstanceLockTable.objects.create(
+            instance=instance, is_locked=True, author=self.supervisor, top_org_unit=self.ou_top_1
+        )
+
+        self.client.force_authenticate(self.guest)
+
+        response = self.client.patch(
+            f"/api/instances/{instance.pk}/", data={"id": instance.pk, "validation_status": ""}
+        )
+
+        guest_has_not_top_ou = (
+            True if instance_lock.top_org_unit not in OrgUnit.objects.filter_for_user_and_app_id(self.guest, None) else False
+        )
+
+        self.assertJSONResponse(response, 400)
+        self.assertEqual(guest_has_not_top_ou, True)
+

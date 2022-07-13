@@ -1,11 +1,17 @@
 import { Shape } from '../../orgUnits/types/shapes';
 import { OrgUnit } from '../../orgUnits/types/orgUnit';
+import { AssignmentApi } from './assigment';
+import { DropdownTeamsOptions } from './team';
+import { OrgUnitAssignedTeamUser, AssignedUser } from '../utils';
 
 export type BaseLocation = OrgUnit & {
     orgUnitTypeId: number;
     color?: string;
-    otherAssignation?: any | undefined;
-    assignment?: any | undefined;
+    otherAssignation?: OrgUnitAssignedTeamUser | undefined;
+    assignment?: AssignmentApi | undefined;
+    assignedTeam?: DropdownTeamsOptions | undefined;
+    assignedUser?: AssignedUser | undefined;
+    emptyAssignment?: AssignmentApi | undefined;
 };
 
 export type OrgUnitShape = BaseLocation & {

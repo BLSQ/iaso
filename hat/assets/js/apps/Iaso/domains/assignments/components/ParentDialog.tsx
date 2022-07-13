@@ -103,23 +103,6 @@ export const ParentDialog: FunctionComponent<Props> = ({
 
     useEffect(() => {
         const newList = mappedOrgUnits
-            .map(orgUnit => {
-                // TODO: REMOVE THIS, assignation is passed in the useGetOrgUnitsByParent now
-                const { assignment, assignedTeam, assignedUser } =
-                    getOrgUnitAssignation(
-                        allAssignments,
-                        orgUnit,
-                        teams,
-                        profiles,
-                        currentTeam?.type,
-                    );
-                return {
-                    id: orgUnit.id,
-                    assignment,
-                    assignedTeam,
-                    assignedUser,
-                };
-            })
             .filter(
                 assignment =>
                     assignment?.assignedTeam?.original.id !==

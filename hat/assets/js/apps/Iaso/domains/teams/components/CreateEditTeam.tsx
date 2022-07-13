@@ -86,7 +86,7 @@ export const CreateEditTeam: FunctionComponent<Props> = ({
         useGetProjectsDropDown();
     const { data: profliesDropdown, isFetching: isFetchingProfiles } =
         useGetProfilesDropdown();
-    const { data: teamsDropdown, isFetching: isFetchingTeams } =
+    const { data: teamsDropdown = [], isFetching: isFetchingTeams } =
         useGetTeamsDropdown(
             {
                 project,
@@ -167,15 +167,12 @@ export const CreateEditTeam: FunctionComponent<Props> = ({
         }
     }, [setFieldValue, values.type]);
 
-    const availableChildren: DropdownTeamsOptions[] | undefined = useMemo(
-        () =>
-            teamsDropdown &&
-            teamsDropdown.filter(team => values?.parent !== team.original.id),
+    const availableChildren: DropdownTeamsOptions[] = useMemo(
+        () => teamsDropdown.filter(team => values?.parent !== team.original.id),
         [teamsDropdown, values?.parent],
     );
     const availableParents: DropdownTeamsOptions[] | undefined = useMemo(
         () =>
-            teamsDropdown &&
             teamsDropdown.filter(
                 team =>
                     team.original.type === TEAM_OF_TEAMS &&
@@ -284,7 +281,7 @@ export const CreateEditTeam: FunctionComponent<Props> = ({
                         value={values.subTeams}
                         errors={getErrors('subTeams')}
                         label={MESSAGES.title}
-                        options={availableChildren || []}
+                        options={availableChildren}
                         loading={isFetchingTeams}
                         multi
                     />
@@ -296,7 +293,7 @@ export const CreateEditTeam: FunctionComponent<Props> = ({
                     value={values.parent}
                     errors={getErrors('parent')}
                     label={MESSAGES.parentTeam}
-                    options={availableParents || []}
+                    options={availableParents}
                     loading={isFetchingTeams}
                     multi={false}
                 />

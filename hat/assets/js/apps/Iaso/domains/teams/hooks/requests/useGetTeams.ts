@@ -58,19 +58,24 @@ export const useGetTeamsDropdown = (
 ): UseQueryResult<DropdownTeamsOptions[], Error> => {
     const queryKey: any[] = ['teamsList', options];
     // @ts-ignore
-    return useSnackQuery(queryKey, () => getTeamsDropdown(options), undefined, {
-        enabled: Boolean(currentTeamId),
-        select: teams => {
-            if (!teams) return [];
-            const filteredTeams =
-                teams && teams.filter(team => team.id !== currentTeamId);
-            return filteredTeams.map(team => {
-                return {
-                    value: team.id,
-                    label: team.name,
-                    original: team,
-                };
-            });
+    return useSnackQuery({
+        queryKey,
+        queryFn: () => getTeamsDropdown(options),
+        options: {
+            enabled: Boolean(currentTeamId),
+            select: teams => {
+                if (!teams) return [];
+                const filteredTeams = teams.filter(
+                    team => team.id !== currentTeamId,
+                );
+                return filteredTeams.map(team => {
+                    return {
+                        value: team.id,
+                        label: team.name,
+                        original: team,
+                    };
+                });
+            },
         },
     });
 };

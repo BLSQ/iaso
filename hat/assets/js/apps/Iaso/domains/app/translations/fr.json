@@ -726,6 +726,7 @@
     "iaso.teams.edit": "Editer une équipe",
     "iaso.teams.manager": "Responsable",
     "iaso.teams.noLoopInSubTree": "Impossible de créer une boucle dans la hiérarchie des équipes",
+    "iaso.teams.parentIsNotTeamOfTeam": "Le parent n'est pas une équipe d'équipes",
     "iaso.teams.teamDeleted": "Equipe effacée",
     "iaso.teams.teamsOfTeams": "Equipe d'équipes",
     "iaso.teams.teamsOfUsers": "Equipe d'utilisateurs",

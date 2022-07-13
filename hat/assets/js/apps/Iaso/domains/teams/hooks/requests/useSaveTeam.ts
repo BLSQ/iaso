@@ -3,6 +3,8 @@ import { UseMutationResult } from 'react-query';
 import { patchRequest, postRequest } from '../../../../libs/Api';
 import { useSnackMutation } from '../../../../libs/apiHooks';
 
+type TeamType = 'TEAM_OF_TEAMS' | 'TEAM_OF_USERS';
+
 export type SaveTeamQuery = {
     id?: number;
     name: string;
@@ -10,7 +12,7 @@ export type SaveTeamQuery = {
     manager: number;
     subTeams: Array<number>;
     project: number;
-    type?: 'TEAM_OF_TEAMS' | 'TEAM_OF_USERS';
+    type?: TeamType;
     users: Array<number>;
     parent?: number;
 };

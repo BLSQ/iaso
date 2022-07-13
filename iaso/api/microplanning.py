@@ -85,12 +85,12 @@ class TeamSerializer(serializers.ModelSerializer):
 
     def validate_parent(self, value: Team):
         if value.type not in (None, TeamType.TEAM_OF_TEAMS):
-            raise serializers.ValidationError("Parent is not team of teams")
+            raise serializers.ValidationError("parentIsNotTeamOfTeam")
         if self.instance:
             p = value
             while p:
                 if p == self.instance:
-                    raise serializers.ValidationError("Parent is one of our sub team")
+                    raise serializers.ValidationError("noLoopInSubTree")
                 p = p.parent
         return value
 

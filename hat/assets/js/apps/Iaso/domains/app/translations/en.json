@@ -735,6 +735,7 @@
     "iaso.teams.edit": "Edit team",
     "iaso.teams.manager": "Manager",
     "iaso.teams.noLoopInSubTree": "Cannot create loop in teams tree",
+    "iaso.teams.parentIsNotTeamOfTeam": "Parent is not team of teams",
     "iaso.teams.parentTeam": "Parent team",
     "iaso.teams.teamDeleted": "Team deleted",
     "iaso.teams.teamsOfTeams": "Teams of teams",

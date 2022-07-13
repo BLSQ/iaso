@@ -97,6 +97,14 @@ const MESSAGES = defineMessages({
         id: 'iaso.teams.noLoopInSubTree',
         defaultMessage: 'Cannot create loop in teams tree',
     },
+    parentIsNotTeamOfTeam: {
+        id: 'iaso.teams.parentIsNotTeamOfTeam',
+        defaultMessage: 'Parent is not team of teams',
+    },
+    parentTeam: {
+        id: 'iaso.teams.parentTeam',
+        defaultMessage: 'Parent team',
+    },
 });
 
 export default MESSAGES;

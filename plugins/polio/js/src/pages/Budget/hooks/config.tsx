@@ -30,6 +30,7 @@ const styles = theme => {
         deletedRow: {
             color: theme.palette.secondary.main,
         },
+        p: { margin: 0 },
     };
 };
 
@@ -116,7 +117,7 @@ export const useBudgetColumns = (): Column[] => {
 
 export const useBudgetDetailsColumns = ({ profiles, data }): Column[] => {
     const classes = useStyles();
-    const { data: teams } = useGetTeams();
+    const { data: teams = [] } = useGetTeams();
     const getRowColor = getStyle(classes);
     const { formatMessage } = useSafeIntl();
     const currentUser = useCurrentUser();
@@ -161,18 +162,41 @@ export const useBudgetDetailsColumns = ({ profiles, data }): Column[] => {
                 accessor: 'author',
                 sortable: true,
                 Cell: settings => {
-                    const { author } = settings.row.original;
+                    const { author, type } = settings.row.original;
                     const authorProfile = profiles?.profiles?.find(
                         profile => profile.user_id === author,
                     );
+                    const authorTeams = teams.filter(team =>
+                        team.users.includes(author),
+                    );
+                    const authorTeam =
+                        type === 'validation'
+                            ? authorTeams.find(team =>
+                                  team.name.toLowerCase().includes('approval'),
+                              )
+                            : authorTeams.find(
+                                  team =>
+                                      !team.name
+                                          .toLowerCase()
+                                          .includes('approval'),
+                              );
                     const nameDisplayed =
                         authorProfile?.first_name && authorProfile?.last_name
                             ? `${authorProfile.first_name} ${authorProfile.last_name}`
                             : authorProfile?.user_name ?? author;
                     return (
-                        <span className={getRowColor(settings)}>
-                            {nameDisplayed}
-                        </span>
+                        <>
+                            <p
+                                className={`${getRowColor(settings)} ${
+                                    classes.p
+                                }`}
+                            >
+                                {nameDisplayed}
+                            </p>
+                            {authorTeam && (
+                                <p className={classes.p}>{authorTeam.name}</p>
+                            )}
+                        </>
                     );
                 },
             },

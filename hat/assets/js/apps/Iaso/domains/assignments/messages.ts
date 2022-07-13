@@ -110,6 +110,10 @@ const MESSAGES = defineMessages({
             'Right click on a org unit to see details popup, normal click to close popup',
         id: 'iaso.assignment.mapHelper',
     },
+    apply: {
+        defaultMessage: 'Apply',
+        id: 'iaso.label.apply',
+    },
 });
 
 export default MESSAGES;

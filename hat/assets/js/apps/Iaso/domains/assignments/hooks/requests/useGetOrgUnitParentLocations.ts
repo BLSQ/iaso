@@ -22,7 +22,7 @@ export const useGetOrgUnitParentLocations = ({
     const params = {
         validation_status: 'all',
         asLocation: true,
-        limit: 5,
+        limit: 5000,
         order: 'id',
         orgUnitParentIds: orgUnitParentIds?.join(','),
         geography: 'shape',

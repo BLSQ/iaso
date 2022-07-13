@@ -7,10 +7,10 @@ import { useSnackQuery } from 'Iaso/libs/apiHooks';
 import { makeUrlWithParams } from '../../../../libs/utils';
 import { getOrgUnitAssignation } from '../../utils';
 
-import { OrgUnit } from '../../../orgUnits/types/orgUnit';
 import { AssignmentsApi } from '../../types/assigment';
+import { ChildrenOrgUnits } from '../../types/orgUnit';
 import { Profile } from '../../../../utils/usersUtils';
-import { DropdownTeamsOptions } from '../../types/team';
+import { DropdownTeamsOptions, SubTeam, User } from '../../types/team';
 
 type Props = {
     orgUnitParentId: number | undefined;
@@ -19,6 +19,7 @@ type Props = {
     teams: DropdownTeamsOptions[];
     profiles: Profile[];
     currentType: 'TEAM_OF_TEAMS' | 'TEAM_OF_USERS' | undefined;
+    selectedItem: SubTeam | User | undefined;
 };
 
 export const useGetOrgUnitsByParent = ({
@@ -28,7 +29,8 @@ export const useGetOrgUnitsByParent = ({
     teams,
     profiles,
     currentType,
-}: Props): UseQueryResult<OrgUnit[], Error> => {
+    selectedItem,
+}: Props): UseQueryResult<ChildrenOrgUnits, Error> => {
     const params = {
         validation_status: 'all',
         order: 'id',
@@ -46,21 +48,40 @@ export const useGetOrgUnitsByParent = ({
         {
             enabled: Boolean(orgUnitParentId) && Boolean(baseOrgunitType),
             select: data => {
-                if (!data || !data.orgUnits) return [];
-
-                return data.orgUnits.map(orgUnit => {
-                    const { assignment } = getOrgUnitAssignation(
-                        allAssignments,
-                        orgUnit,
-                        teams,
-                        profiles,
-                        currentType,
-                    );
-                    return {
-                        ...orgUnit,
-                        assignment,
+                if (data && data.orgUnits) {
+                    const result: ChildrenOrgUnits = {
+                        orgUnits: [],
+                        orgUnitsToUpdate: [],
                     };
-                });
+                    result.orgUnits = data.orgUnits.map(orgUnit => {
+                        const { assignment, assignedTeam, assignedUser } =
+                            getOrgUnitAssignation(
+                                allAssignments,
+                                orgUnit,
+                                teams,
+                                profiles,
+                                currentType,
+                            );
+                        return {
+                            ...orgUnit,
+                            assignment,
+                            assignedTeam,
+                            assignedUser,
+                        };
+                    });
+
+                    result.orgUnitsToUpdate = result.orgUnits
+                        .filter(
+                            orgUnit =>
+                                orgUnit?.assignedTeam?.original.id !==
+                                    selectedItem?.id &&
+                                orgUnit?.assignedUser?.user_id !==
+                                    selectedItem?.id,
+                        )
+                        .map(orgUnit => orgUnit.id);
+                    return result;
+                }
+                return undefined;
             },
         },
     );

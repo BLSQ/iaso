@@ -4,7 +4,7 @@ import { Planning } from '../types/planning';
 import { SubTeam, User, Team, DropdownTeamsOptions } from '../types/team';
 import { OrgUnitShape, Locations } from '../types/locations';
 import { DropdownOptions } from '../../../types/utils';
-import { OrgUnit } from '../../orgUnits/types/orgUnit';
+import { ChildrenOrgUnits } from '../types/orgUnit';
 import { AssignmentApi, SaveAssignmentQuery } from '../types/assigment';
 
 import { useGetTeams } from './requests/useGetTeams';
@@ -31,6 +31,7 @@ type Props = {
     parentSelected: OrgUnitShape | undefined;
     baseOrgunitType: string | undefined;
     order: string;
+    selectedItem: SubTeam | User | undefined;
 };
 
 type Result = {
@@ -44,7 +45,7 @@ type Result = {
     teams: DropdownTeamsOptions[] | undefined;
     profiles: ProfileWithColor[];
     orgunitTypes: DropdownOptions<string>[] | undefined;
-    childrenOrgunits: OrgUnit[] | undefined;
+    childrenOrgunits: ChildrenOrgUnits | undefined;
     orgUnits: Locations | undefined;
     sidebarData: SubTeam[] | User[] | undefined;
     isFetchingOrgUnits: boolean;
@@ -64,6 +65,7 @@ export const useGetAssignmentData = ({
     parentSelected,
     baseOrgunitType,
     order,
+    selectedItem,
 }: Props): Result => {
     const { data: dataProfiles = [] } = useGetProfiles();
     const {
@@ -106,6 +108,7 @@ export const useGetAssignmentData = ({
             teams: teams || [],
             profiles: profiles || [],
             currentType: currentTeam?.type,
+            selectedItem,
         });
     const { mutateAsync: saveAssignment, isLoading: isSaving } =
         useSaveAssignment();

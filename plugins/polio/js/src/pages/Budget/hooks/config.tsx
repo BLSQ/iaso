@@ -114,7 +114,7 @@ export const useBudgetColumns = (): Column[] => {
     }, [formatMessage]);
 };
 
-export const useBudgetDetailsColumns = ({ profiles }): Column[] => {
+export const useBudgetDetailsColumns = ({ profiles, data }): Column[] => {
     const classes = useStyles();
     const { data: teams } = useGetTeams();
     const getRowColor = getStyle(classes);
@@ -122,23 +122,11 @@ export const useBudgetDetailsColumns = ({ profiles }): Column[] => {
     const currentUser = useCurrentUser();
     const { mutateAsync: deleteBudgetEvent } = useDeleteBudgetEvent();
     const { mutateAsync: restoreBudgetEvent } = useRestoreBudgetEvent();
+    const showInternalColumn = Boolean(
+        data?.find(details => details.internal === true),
+    );
     return useMemo(() => {
-        return [
-            {
-                Header: '',
-                id: 'internal',
-                accessor: 'internal',
-                sortable: false,
-                width: 1,
-                Cell: settings => {
-                    const { internal } = settings.row.original;
-                    return internal ? (
-                        <LockIcon className={getRowColor(settings)} />
-                    ) : (
-                        <></>
-                    );
-                },
-            },
+        const defaultColumns = [
             {
                 Header: formatMessage(MESSAGES.created_at),
                 id: 'created_at',
@@ -293,8 +281,30 @@ export const useBudgetDetailsColumns = ({ profiles }): Column[] => {
                 },
             },
         ];
+        if (showInternalColumn) {
+            return [
+                {
+                    Header: '',
+                    id: 'internal',
+                    accessor: 'internal',
+                    sortable: false,
+                    width: 1,
+                    Cell: settings => {
+                        const { internal } = settings.row.original;
+                        return internal ? (
+                            <LockIcon className={getRowColor(settings)} />
+                        ) : (
+                            <></>
+                        );
+                    },
+                },
+                ...defaultColumns,
+            ];
+        }
+        return defaultColumns;
     }, [
         formatMessage,
+        showInternalColumn,
         getRowColor,
         profiles?.profiles,
         teams,

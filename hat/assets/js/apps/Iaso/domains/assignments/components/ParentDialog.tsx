@@ -35,7 +35,7 @@ import { Planning } from '../types/planning';
 
 import { useColumns } from '../configs/ParentDialogColumns';
 
-import { getTeamName, getSaveParams } from '../utils';
+import { getTeamName, getMultiSaveParams } from '../utils';
 
 import MESSAGES from '../messages';
 
@@ -50,9 +50,9 @@ type Props = {
     setParentSelected: (orgUnit: OrgUnitShape | undefined) => void;
     allAssignments: AssignmentsApi;
     selectedItem: SubTeam | User | undefined;
+    planning: Planning | undefined;
     // eslint-disable-next-line no-unused-vars
     saveMultiAssignments: (params: SaveAssignmentQuery) => void;
-    planning: Planning | undefined;
 };
 const useStyles = makeStyles(theme => ({
     ...commonStyles(theme),
@@ -75,8 +75,8 @@ export const ParentDialog: FunctionComponent<Props> = ({
     currentTeam,
     teams,
     profiles,
-    saveMultiAssignments,
     planning,
+    saveMultiAssignments,
 }) => {
     const { formatMessage } = useSafeIntl();
     const columns = useColumns({ teams });
@@ -105,6 +105,7 @@ export const ParentDialog: FunctionComponent<Props> = ({
                     mapping.push(marker);
                 } else {
                     mapping.push({
+                        ...orgUnit,
                         id: orgUnit.id,
                         name: orgUnit.name,
                         orgUnitTypeId: orgUnit.org_unit_type_id,
@@ -129,25 +130,21 @@ export const ParentDialog: FunctionComponent<Props> = ({
                 !orgUnit.otherAssignation?.assignedTeam &&
                 !orgUnit.otherAssignation?.assignedUser),
     );
-    const handleSave = async () => {
-        // TODO: this should handle with only one call to api
+
+    const handleSave = async (): Promise<void> => {
         setParentSelected(undefined);
-        for (let i = 0; i < assignableOrgUnits.length; i += 1) {
-            const orgUnit = assignableOrgUnits[i];
-            if (selectedItem && planning) {
-                // eslint-disable-next-line no-await-in-loop
-                await saveMultiAssignments(
-                    getSaveParams({
-                        allAssignments,
-                        selectedOrgUnit: orgUnit,
-                        teams,
-                        profiles,
-                        currentType: currentTeam?.type,
-                        selectedItem,
-                        planning,
-                    }),
-                );
-            }
+        if (selectedItem && planning) {
+            await saveMultiAssignments(
+                getMultiSaveParams({
+                    allAssignments,
+                    selectedOrgUnits: assignableOrgUnits,
+                    teams,
+                    profiles,
+                    currentType: currentTeam?.type,
+                    selectedItem,
+                    planning,
+                }),
+            );
         }
     };
 

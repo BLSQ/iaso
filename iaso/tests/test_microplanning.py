@@ -639,6 +639,15 @@ class AssignmentAPITestCase(APITestCase):
         cls.child2 = OrgUnit.objects.create(
             version=version, parent=root_org_unit, name="child2", org_unit_type=org_unit_type
         )
+        cls.child3 = OrgUnit.objects.create(
+            version=version, parent=root_org_unit, name="child3", org_unit_type=org_unit_type
+        )
+        cls.child4 = OrgUnit.objects.create(
+            version=version, parent=root_org_unit, name="child4", org_unit_type=org_unit_type
+        )
+        cls.child5 = OrgUnit.objects.create(
+            version=version, parent=root_org_unit, name="child4", org_unit_type=org_unit_type
+        )
         OrgUnit.objects.create(version=version, parent=root_org_unit, name="child2")
 
         cls.planning = Planning.objects.create(
@@ -721,6 +730,100 @@ class AssignmentAPITestCase(APITestCase):
         self.assertEqual(a.user, self.user)
         self.assertEqual(a.org_unit, self.child2)
         self.assertEqual(Modification.objects.all().count(), 1)
+
+    def test_bulk_create(self):
+        user_with_perms = self.create_user_with_profile(
+            username="user_with_perms", account=self.account, permissions=["iaso_planning"]
+        )
+        assignments = Assignment.objects.filter(planning=self.planning)
+        self.assertEqual(assignments.count(), 1)
+        self.client.force_authenticate(user_with_perms)
+        data = {
+            "planning": self.planning.id,
+            "org_units": [self.child3.id, self.child4.id],
+            "team": self.team1.id,
+        }
+
+        response = self.client.post("/api/microplanning/assignments/bulk_create_assignments/", data=data, format="json")
+        self.assertJSONResponse(response, 200)
+        assignments = Assignment.objects.filter(planning=self.planning)
+        self.assertEqual(assignments.count(), 3)
+        self.assertQuerysetEqual(
+            assignments, [self.child1, self.child3, self.child4], lambda x: x.org_unit, ordered=False
+        )
+        self.assertEqual(Modification.objects.count(), 2)
+
+    def test_bulk_create_reject_no_perm(self):
+        user_no_perms = self.create_user_with_profile(username="user_with_perms", account=self.account, permissions=[])
+        self.client.force_authenticate(user_no_perms)
+        data = {
+            "planning": self.planning.id,
+            "org_units": [self.child3.id, self.child4.id],
+            "team": self.team1.id,
+        }
+
+        response = self.client.post("/api/microplanning/assignments/bulk_create_assignments/", data=data, format="json")
+        self.assertJSONResponse(response, 403)
+
+    def test_bulk_no_access_planning(self):
+        # user don't have access to planning because it's in another account
+        other_account = Account.objects.create(name="other_account")
+
+        user = self.create_user_with_profile(
+            username="user_with_perms", account=other_account, permissions=["iaso_planning"]
+        )
+        self.client.force_authenticate(user)
+        data = {
+            "planning": self.planning.id,
+            "org_units": [self.child3.id, self.child4.id],
+            "team": self.team1.id,
+        }
+
+        response = self.client.post("/api/microplanning/assignments/bulk_create_assignments/", data=data, format="json")
+        r = self.assertJSONResponse(response, 400)
+        self.assertIn("planning", r)
+
+    def test_restore_deleted_assignment(self):
+        """restore deleted assignment if we try to create a new assignment with a previously assigned OU"""
+
+        user_with_perms = self.create_user_with_profile(
+            username="user_with_perms", account=self.account, permissions=["iaso_planning"]
+        )
+        self.client.force_authenticate(user_with_perms)
+        data = {
+            "planning": self.planning.id,
+            "user": self.user.id,
+            "org_unit": self.child2.id,
+        }
+
+        self.client.post("/api/microplanning/assignments/", data=data, format="json")
+
+        deleted_assignment = Assignment.objects.last()
+        self.assertEqual(deleted_assignment.deleted_at, None)
+        self.assertEqual(Modification.objects.count(), 1)
+
+        response = self.client.delete("/api/microplanning/assignments/{}/".format(deleted_assignment.id))
+
+        self.assertJSONResponse(response, 204)
+        deleted_assignment.refresh_from_db()
+        self.assertNotEqual(deleted_assignment.deleted_at, None)
+        self.assertEqual(Modification.objects.count(), 2)
+        data = {
+            "planning": self.planning.id,
+            "org_units": [self.child2.id],
+            "team": self.team1.id,
+        }
+
+        response = self.client.post("/api/microplanning/assignments/bulk_create_assignments/", data=data, format="json")
+
+        last_created_assignment = Assignment.objects.last()
+
+        self.assertJSONResponse(response, 200)
+        self.assertEqual(last_created_assignment.id, deleted_assignment.id)
+        self.assertEqual(Modification.objects.count(), 3)
+        self.assertEqual(last_created_assignment.deleted_at, None)
+        self.assertEqual(last_created_assignment.org_unit, self.child2)
+        self.assertEqual(last_created_assignment.team, self.team1)
 
     def test_no_perm_create(self):
         self.client.force_authenticate(self.user)

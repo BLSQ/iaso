@@ -1,3 +1,4 @@
+import { useCallback } from 'react';
 import { UseQueryResult } from 'react-query';
 // @ts-ignore
 import { getRequest } from 'Iaso/libs/Api';
@@ -47,12 +48,12 @@ const mapLocation = ({
             selected: [],
             unselected: [],
         },
+        all: [],
     };
     if (!orgUnits) return locations;
     orgUnits.forEach((orgUnit: OrgUnit) => {
         const baseLocation: BaseLocation = {
-            id: orgUnit.id,
-            name: orgUnit.name,
+            ...orgUnit,
             orgUnitTypeId: orgUnit.org_unit_type_id,
         };
         if (!orgUnitParentIds.find(ou => ou === orgUnit.id)) {
@@ -62,6 +63,7 @@ const mapLocation = ({
                         ...baseLocation,
                         geoJson: orgUnit.geo_json,
                     };
+                    locations.all.push(shape);
                     locations.shapes.all.push(shape);
                     const orgUnitAssignation = getOrgUnitAssignation(
                         assignments,
@@ -103,6 +105,7 @@ const mapLocation = ({
                         latitude: orgUnit.latitude,
                         longitude: orgUnit.longitude,
                     };
+                    locations.all.push(marker);
                     locations.markers.all.push(marker);
                     const orgUnitAssignation = getOrgUnitAssignation(
                         assignments,
@@ -142,21 +145,21 @@ const mapLocation = ({
             }
         }
     });
-
     return locations;
 };
 
 type Props = {
-    orgUnitParentIds: number[];
+    orgUnitParentIds: number[] | undefined;
     baseOrgunitType: string | undefined;
     assignments: AssignmentsApi;
     allAssignments: AssignmentsApi;
     teams: DropdownTeamsOptions[];
     profiles: Profile[];
     currentType: 'TEAM_OF_TEAMS' | 'TEAM_OF_USERS' | undefined;
+    order: string;
 };
 
-export const useGetOrgUnitLocations = ({
+export const useGetOrgUnits = ({
     orgUnitParentIds,
     baseOrgunitType,
     assignments,
@@ -164,44 +167,59 @@ export const useGetOrgUnitLocations = ({
     teams,
     profiles,
     currentType,
+    order,
 }: Props): UseQueryResult<Locations, Error> => {
     const params = {
         validation_status: 'all',
         asLocation: true,
         limit: 5000,
-        order: 'id',
-        orgUnitParentIds: orgUnitParentIds.join(','),
+        order,
+        orgUnitParentIds: orgUnitParentIds?.join(','),
         geography: 'any',
         onlyDirectChildren: false,
         page: 1,
         orgUnitTypeId: baseOrgunitType,
+        withParents: true,
     };
 
     const url = makeUrlWithParams('/api/orgunits', params);
 
+    const select = useCallback(
+        (orgUnits: OrgUnit[]) => {
+            if (baseOrgunitType && orgUnitParentIds) {
+                return mapLocation({
+                    orgUnits,
+                    orgUnitParentIds,
+                    baseOrgunitType,
+                    assignments,
+                    allAssignments,
+                    teams,
+                    profiles,
+                    currentType,
+                });
+            }
+            return [];
+        },
+        [
+            baseOrgunitType,
+            orgUnitParentIds,
+            assignments,
+            allAssignments,
+            teams,
+            profiles,
+            currentType,
+        ],
+    );
     return useSnackQuery(
-        ['geo_json', params, baseOrgunitType],
+        ['orgUnits', params, baseOrgunitType],
         () => getRequest(url),
         undefined,
         {
-            enabled: orgUnitParentIds?.length > 0 && Boolean(baseOrgunitType),
+            enabled:
+                Boolean(params.orgUnitParentIds) && Boolean(baseOrgunitType),
             staleTime: 1000 * 60 * 15, // in MS
             cacheTime: 1000 * 60 * 5,
-            select: (orgUnits: OrgUnit[]) => {
-                if (baseOrgunitType) {
-                    return mapLocation({
-                        orgUnits,
-                        orgUnitParentIds,
-                        baseOrgunitType,
-                        assignments,
-                        allAssignments,
-                        teams,
-                        profiles,
-                        currentType,
-                    });
-                }
-                return [];
-            },
+            select,
         },
     );
 };

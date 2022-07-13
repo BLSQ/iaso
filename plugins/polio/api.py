@@ -577,6 +577,8 @@ class IMStatsViewSet(viewsets.ViewSet):
     def list(self, request):
 
         requested_country = request.GET.get("country_id", None)
+        no_cache = request.GET.get("no_cache", "false") == "true"
+
         if requested_country is None:
             return HttpResponseBadRequest
 
@@ -601,7 +603,7 @@ class IMStatsViewSet(viewsets.ViewSet):
             version=CACHE_VERSION,
         )
 
-        if not request.user.is_anonymous and cached_response:
+        if not request.user.is_anonymous and cached_response and not no_cache:
             response = json.loads(cached_response)
             cached_date = make_aware(datetime.utcfromtimestamp(response["cache_creation_date"]))
 
@@ -655,7 +657,11 @@ class IMStatsViewSet(viewsets.ViewSet):
             "Tot_child_Abs_Farm",
         ]
         # Ugly fix to exclude forms known to have data so terrible it breaks the results
-        excluded_forms = ["2399548d-545e-4182-a3a0-54da841bc179", "59ca0419-798d-40ca-b690-460063329938"]
+        excluded_forms = [
+            "2399548d-545e-4182-a3a0-54da841bc179",
+            "59ca0419-798d-40ca-b690-460063329938",
+            "ec93a59a-b354-4f9d-8240-f2a05c24479e",
+        ]
 
         if request.user.iaso_profile.org_units.count() == 0:
             authorized_countries = OrgUnit.objects.filter(org_unit_type_id__category="COUNTRY")
@@ -696,7 +702,7 @@ class IMStatsViewSet(viewsets.ViewSet):
                     if round_number.upper() == "MOPUP":
                         continue
                 except KeyError:
-                    skipped_forms_list.append({form["_id"]: {"round": None, "date": form["date_monitored"]}})
+                    skipped_forms_list.append({form["_id"]: {"round": None, "date": form.get("date_monitored", None)}})
                     no_round_count += 1
                     continue
                 round_number = form["roundNumber"]
@@ -704,7 +710,7 @@ class IMStatsViewSet(viewsets.ViewSet):
                     round_number = round_number[-1]
                 else:
                     skipped_forms_list.append(
-                        {form["_id"]: {"round": form["roundNumber"], "date": form["date_monitored"]}}
+                        {form["_id"]: {"round": form["roundNumber"], "date": form.get("date_monitored", None)}}
                     )
                     unknown_round += 1
                     continue
@@ -748,7 +754,9 @@ class IMStatsViewSet(viewsets.ViewSet):
                         campaign_name = campaign.obr_name
                         campaign_stats[campaign_name]["bad_round_number"] += 1
                 region_name = form.get("Region")
-                district_name = form.get("District")
+                district_name = form.get("District", None)
+                if not district_name:
+                    district_name = form.get("district", None)
                 if form.get("Response", None) and campaign:
                     debug_response.add((campaign.obr_name, form["Response"]))
                 if campaign:
@@ -770,6 +778,7 @@ class IMStatsViewSet(viewsets.ViewSet):
 
                         for key in nfm_counts_dict:
                             round_stats["nfm_stats"][key] = round_stats["nfm_stats"][key] + nfm_counts_dict[key]
+
                         for key_abs in nfm_abs_counts_dict:
                             round_stats["nfm_abs_stats"][key_abs] = (
                                 round_stats["nfm_abs_stats"][key_abs] + nfm_abs_counts_dict[key_abs]
@@ -781,6 +790,7 @@ class IMStatsViewSet(viewsets.ViewSet):
                         d["district"] = district.id
                         d["region_name"] = district.parent.name
                         fully_mapped_form_count += 1
+
                 else:
                     day_country_not_found[country.name][today_string] += 1
                     form_campaign_not_found_count += 1
@@ -932,7 +942,9 @@ def handle_ona_request_with_key(request, key):
                 today_string = form["today"]
                 today = datetime.strptime(today_string, "%Y-%m-%d").date()
                 campaign = find_campaign_on_day_cached(campaigns, today, country, get_round_campaign_cached)
-                district_name = form.get("District", "")
+                district_name = form.get("District", None)
+                if not district_name:
+                    district_name = form.get("district", "")
                 facility_name = form.get("facility", None)
                 # some form version for Senegal had their facility column as Facility with an uppercase.
                 if not facility_name:
@@ -1117,7 +1129,7 @@ class LQASStatsViewSet(viewsets.ViewSet):
     """
 
     def list(self, request):
-
+        no_cache = request.GET.get("no_cache", "false") == "true"
         requested_country = request.GET.get("country_id", None)
         if requested_country is None:
             return HttpResponseBadRequest
@@ -1133,7 +1145,7 @@ class LQASStatsViewSet(viewsets.ViewSet):
             "{0}-{1}-LQAS".format(request.user.id, request.query_params["country_id"]), version=CACHE_VERSION
         )
 
-        if not request.user.is_anonymous and cached_response:
+        if not request.user.is_anonymous and cached_response and not no_cache:
             response = json.loads(cached_response)
             cached_date = make_aware(datetime.utcfromtimestamp(response["cache_creation_date"]))
             if latest_campaign_update and cached_date > latest_campaign_update:
@@ -1242,8 +1254,14 @@ class LQASStatsViewSet(viewsets.ViewSet):
                     unknown_round += 1
                     continue
                 form_count += 1
-                today_string = form["today"]
-                today = datetime.strptime(today_string, "%Y-%m-%d").date()
+                try:
+                    today_string = form["today"]
+                    today = datetime.strptime(today_string, "%Y-%m-%d").date()
+                except KeyError:
+                    skipped_forms_list.append(
+                        {form["_id"]: {"round": form["roundNumber"], "date": form.get("Date_of_LQAS", None)}}
+                    )
+                    continue
 
                 campaign = find_lqas_im_campaign_cached(campaigns, today, country, round_number, "lqas")
 
@@ -1259,13 +1277,14 @@ class LQASStatsViewSet(viewsets.ViewSet):
                     continue
                 if form.get("Response", None) and campaign:
                     debug_response.add((campaign.obr_name, form["Response"]))
-                    # print("response", form["Response"])
                 campaign_name = campaign.obr_name
                 total_sites_visited = 0
                 total_Child_FMD = 0
                 total_Child_Checked = 0
                 caregiver_counts_dict = defaultdict(int)
-                district_name = form.get("District")
+                district_name = form.get("District", None)
+                if not district_name:
+                    district_name = form.get("district", None)
                 region_name = form.get("Region")
 
                 HH_COUNT = form.get("Count_HH", None)

@@ -4,6 +4,7 @@ import os
 from unittest import mock
 from unittest.mock import patch
 
+import jwt
 from django.contrib.auth.models import User
 from django.core.cache import cache
 from django.core.files import File
@@ -13,6 +14,7 @@ from rest_framework import status
 from rest_framework.test import APIClient
 from django.contrib.gis.geos import Polygon, Point, MultiPolygon
 
+from hat.api.token_authentication import generate_auto_authentication_link
 from hat.settings import BASE_DIR
 from iaso import models as m
 from iaso.models import Account, OrgUnit, org_unit
@@ -754,3 +756,17 @@ class BudgetPolioTestCase(APITestCase):
         self.assertEqual(response_f.status_code, 200)
         self.assertEqual(budget.is_finalized, True)
         self.assertEqual(budget.is_email_sent, True)
+
+    def test_authentication_link_token(self):
+        link = "testbluesquarestuff.com"
+        final_link = generate_auto_authentication_link(link, self.grogu)
+
+        token = final_link[final_link.find("token=") + 6 : final_link.find("next=")][:-1]
+        decoded_token = jwt.decode(token, verify=False)
+
+        user_id_from_token = decoded_token["user_id"]
+        token_type = decoded_token["token_type"]
+
+        self.assertEqual(self.grogu.pk, user_id_from_token)
+        self.assertEqual(token_type, "access")
+        self.assertEqual(link, final_link[final_link.find("next=") + 5 :])

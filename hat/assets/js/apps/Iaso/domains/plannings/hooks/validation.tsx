@@ -7,9 +7,14 @@ import { ValidationError } from '../../../types/utils';
 import { useAPIErrorValidator } from '../../../libs/validation';
 
 // parse DD-MM-YYYY string to Date object
-const parseStringTodate = (_yupValue, pickerValue) => {
-    const result = moment(pickerValue, getLocaleDateFormat('L')).toDate();
-    return result;
+// eslint-disable-next-line consistent-return
+const parseStringTodate = (_yupValue, pickerValue): Date | void => {
+    // skipping if null to be able to set value to null without validation error
+    // because we need to be able to send null to the API
+    if (pickerValue !== null) {
+        const result = moment(pickerValue, getLocaleDateFormat('L')).toDate();
+        return result;
+    }
 };
 
 export const usePlanningValidation = (

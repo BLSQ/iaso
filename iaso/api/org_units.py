@@ -11,7 +11,7 @@ from django.http import StreamingHttpResponse, HttpResponse
 from django.shortcuts import get_object_or_404
 from django.utils import timezone
 from django.utils.translation import gettext as _
-from rest_framework import viewsets, permissions
+from rest_framework import viewsets, permissions, serializers
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.serializers import ValidationError
@@ -182,8 +182,9 @@ class OrgUnitViewSet(viewsets.ViewSet):
                 paginator = Paginator(queryset, limit)
                 page = paginator.page(1)
                 org_units = []
+
                 for unit in page.object_list:
-                    temp_org_unit = unit.as_location()
+                    temp_org_unit = unit.as_location(with_parents=request.GET.get("withParents", None))
                     temp_org_unit["geo_json"] = None
                     if temp_org_unit["has_geo_json"] == True:
                         shape_queryset = self.get_queryset().filter(id=temp_org_unit["id"])
@@ -200,8 +201,8 @@ class OrgUnitViewSet(viewsets.ViewSet):
             #  In order to get the all groups independently of filters, we should get the groups
             # based on the org_unit FK.
 
-            org_ids = queryset.order_by("pk").values_list("pk", flat=True).distinct()
-            groups = Group.objects.filter(org_units__id__in=list(org_ids)).only("id", "name").distinct("id")
+            org_ids = queryset.order_by("pk").values_list("pk", flat=True)
+            groups = Group.objects.filter(org_units__id__in=set(org_ids)).only("id", "name").distinct("id")
 
             columns = [
                 {"title": "ID", "width": 10},
@@ -313,7 +314,18 @@ class OrgUnitViewSet(viewsets.ViewSet):
         if "source" in request.data:
             org_unit.source = request.data["source"]
         if "validation_status" in request.data:
-            org_unit.validation_status = request.data["validation_status"]
+            validation_status = request.data["validation_status"]
+            valid_validations_status = ["NEW", "VALID", "REJECTED"]
+
+            org_unit.validation_status = validation_status
+
+            if validation_status not in valid_validations_status:
+                errors.append(
+                    {
+                        "errorKey": "validation_status",
+                        "errorMessage": _(f"Invalid validation status : {validation_status}"),
+                    }
+                )
 
         if "geo_json" in request.data:
             geo_json = request.data["geo_json"]

@@ -1660,7 +1660,7 @@ class BudgetEventViewset(ModelViewSet):
                     event.campaign.country.id,
                 )
                 approval_link = link_to_send + "/action/confirmApproval"
-                rejection_link = link_to_send + "/action/rejectApproval"
+                rejection_link = link_to_send + "/action/addComment"
                 print("pre-filter", recipients)
                 # If other approval teams still have to approve the budget, notify their members with html email
                 if event_type == "approval" and not is_budget_approved(current_user, event):

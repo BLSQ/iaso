@@ -140,14 +140,13 @@ export const BudgetDetails: FunctionComponent<Props> = ({ router }) => {
                         params={params}
                     />
                 )}
-            {params.action === 'rejectApproval' &&
-                budgetStatus !== 'approved' && (
-                    <BudgetRejectionPopUp
-                        campaignName={campaignName}
-                        campaignId={campaignId}
-                        params={params}
-                    />
-                )}
+            {params.action === 'addComment' && budgetStatus !== 'approved' && (
+                <BudgetRejectionPopUp
+                    campaignName={campaignName}
+                    campaignId={campaignId}
+                    params={params}
+                />
+            )}
             {/* @ts-ignore */}
             <Box
                 // @ts-ignore

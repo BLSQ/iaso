@@ -191,8 +191,8 @@ export const CreateEditTeam: FunctionComponent<Props> = ({
                     handleSubmit();
                 }}
                 onCancel={closeDialog => {
-                    closeDialog();
                     resetForm();
+                    closeDialog();
                 }}
                 maxWidth="xs"
                 cancelMessage={MESSAGES.cancel}

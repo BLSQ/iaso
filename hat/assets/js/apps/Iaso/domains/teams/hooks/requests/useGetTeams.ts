@@ -62,7 +62,6 @@ export const useGetTeamsDropdown = (
         queryKey,
         queryFn: () => getTeamsDropdown(options),
         options: {
-            enabled: Boolean(currentTeamId),
             select: teams => {
                 if (!teams) return [];
                 const filteredTeams = teams.filter(

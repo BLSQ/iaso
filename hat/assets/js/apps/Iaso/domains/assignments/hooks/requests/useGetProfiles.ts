@@ -6,7 +6,7 @@ import { Profile } from '../../../../utils/usersUtils';
 
 import { getColor } from '../../constants/colors';
 
-type ProfileWithColor = Profile & {
+export type ProfileWithColor = Profile & {
     color: string;
 };
 export const useGetProfiles = (): UseQueryResult<

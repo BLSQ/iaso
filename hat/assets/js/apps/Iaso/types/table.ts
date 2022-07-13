@@ -10,6 +10,7 @@ export type Column = {
     width?: number;
     // eslint-disable-next-line no-unused-vars
     Cell?: (s: any) => ReactElement;
+    align?: string;
 };
 export type Pagination = {
     pages: number;

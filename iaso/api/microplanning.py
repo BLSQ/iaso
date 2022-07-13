@@ -404,8 +404,6 @@ class AssignmentSerializer(serializers.ModelSerializer):
         assigned_team = validated_data.get("team", self.instance.team if self.instance else None)
         if assigned_team and assigned_user:
             raise serializers.ValidationError("Cannot assign on both team and users")
-        # if not assigned_team and not assigned_user:
-        #     raise serializers.ValidationError("Should be at least an assigned team or user")
 
         planning = validated_data.get("planning", self.instance.planning if self.instance else None)
         org_unit: OrgUnit = validated_data.get("org_unit", self.instance.org_unit if self.instance else None)
@@ -435,8 +433,12 @@ class BulkAssignmentSerializer(serializers.Serializer):
     Audit the modification"""
 
     planning = serializers.PrimaryKeyRelatedField(queryset=Planning.objects.none(), write_only=True)
-    team = serializers.PrimaryKeyRelatedField(queryset=Team.objects.none(), write_only=True, required=False)
-    user = serializers.PrimaryKeyRelatedField(queryset=User.objects.none(), write_only=True, required=False)
+    team = serializers.PrimaryKeyRelatedField(
+        queryset=Team.objects.none(), write_only=True, required=False, allow_null=True
+    )
+    user = serializers.PrimaryKeyRelatedField(
+        queryset=User.objects.none(), write_only=True, required=False, allow_null=True
+    )
     org_units = serializers.PrimaryKeyRelatedField(queryset=OrgUnit.objects.none(), write_only=True, many=True)
 
     def __init__(self, *args, **kwargs):
@@ -469,7 +471,6 @@ class BulkAssignmentSerializer(serializers.Serializer):
             assignment, created = Assignment.objects.get_or_create(
                 planning=planning, org_unit=org_unit, defaults={"created_by": requester}
             )
-            assignments_list.append(assignment)
             old_value = []
             if not created:
                 old_value = [AuditAssignmentSerializer(instance=assignment).data]
@@ -477,6 +478,7 @@ class BulkAssignmentSerializer(serializers.Serializer):
             assignment.deleted_at = None
             assignment.team = team
             assignment.user = user
+            assignments_list.append(assignment)
             assignment.save()
 
             new_value = [AuditAssignmentSerializer(instance=assignment).data]

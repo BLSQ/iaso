@@ -7,6 +7,7 @@ import {
 import { OrgUnitMarker, OrgUnitShape, BaseLocation } from './types/locations';
 import { Planning } from './types/planning';
 import { DropdownTeamsOptions, SubTeam, User, Team } from './types/team';
+import { OrgUnit } from '../orgUnits/types/orgUnit';
 
 import { Profile, getDisplayName } from '../../utils/usersUtils';
 
@@ -14,7 +15,7 @@ export type AssignedUser = Profile & {
     color: string;
 };
 
-type OrgUnitAssignedTeamUser = {
+export type OrgUnitAssignedTeamUser = {
     assignment: AssignmentApi | undefined;
     assignedTeam: DropdownTeamsOptions | undefined;
     assignedUser: AssignedUser | undefined;
@@ -23,7 +24,7 @@ type OrgUnitAssignedTeamUser = {
 
 export const getOrgUnitAssignation = (
     assignments: AssignmentsApi,
-    orgUnit: OrgUnitShape | OrgUnitMarker | BaseLocation,
+    orgUnit: OrgUnitShape | OrgUnitMarker | BaseLocation | OrgUnit,
     teams: DropdownTeamsOptions[],
     profiles: Profile[],
     currentType: 'TEAM_OF_TEAMS' | 'TEAM_OF_USERS' | undefined,
@@ -102,7 +103,7 @@ export const getTeamName = (
 
 type SaveParamsProps = {
     allAssignments: AssignmentsApi;
-    selectedOrgUnit: OrgUnitShape | OrgUnitMarker | BaseLocation;
+    selectedOrgUnit: OrgUnitShape | OrgUnitMarker | BaseLocation | OrgUnit;
     teams: DropdownTeamsOptions[];
     profiles: Profile[];
     currentType: 'TEAM_OF_TEAMS' | 'TEAM_OF_USERS' | undefined;
@@ -245,7 +246,8 @@ export const getMultiSaveParams = ({
     const orgUnitsToUpdate = currentAssignments
         .filter(
             assignment =>
-                assignment?.assignedTeam?.original.id !== selectedItem.id,
+                assignment?.assignedTeam?.original.id !== selectedItem.id &&
+                assignment?.assignedUser?.user_id !== selectedItem.id,
         )
         .map(orgUnit => orgUnit.id);
 

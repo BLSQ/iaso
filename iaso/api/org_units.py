@@ -182,8 +182,9 @@ class OrgUnitViewSet(viewsets.ViewSet):
                 paginator = Paginator(queryset, limit)
                 page = paginator.page(1)
                 org_units = []
+
                 for unit in page.object_list:
-                    temp_org_unit = unit.as_location()
+                    temp_org_unit = unit.as_location(with_parents=request.GET.get("withParents", None))
                     temp_org_unit["geo_json"] = None
                     if temp_org_unit["has_geo_json"] == True:
                         shape_queryset = self.get_queryset().filter(id=temp_org_unit["id"])

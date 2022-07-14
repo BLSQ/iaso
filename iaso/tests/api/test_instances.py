@@ -958,3 +958,56 @@ class InstancesAPITestCase(APITestCase):
 
         self.assertJSONResponse(response, 400)
         self.assertEqual(guest_has_not_top_ou, True)
+
+    def test_modification_status_is_false_if_no_access_to_parent_ou(self):
+        instance_uuid = str(uuid4())
+        instance = Instance.objects.create(
+            uuid=instance_uuid,
+            org_unit=self.ou_top_1,
+            name="Instance TOP 3",
+            period=202002,
+            project=self.project,
+            form=self.form_1,
+            validation_status="LOCKED",
+        )
+        instance_lock = InstanceLockTable.objects.create(
+            instance=instance, is_locked=True, author=self.supervisor, top_org_unit=self.ou_top_1
+        )
+
+        self.client.force_authenticate(self.guest)
+
+        response = self.client.get(
+            f"/api/instances/{instance.pk}/"
+        )
+
+        print(response.json())
+        self.assertJSONResponse(response, 200)
+        self.assertEqual(response.json()["validation_status"], "LOCKED")
+        self.assertEqual(response.json()["modification"], False)
+
+    def test_user_can_unlock_instance_if_has_access(self):
+        self.client.force_authenticate(self.yoda)
+
+        instance_uuid = str(uuid4())
+
+        instance = Instance.objects.create(
+            uuid=instance_uuid,
+            org_unit=self.jedi_council_corruscant,
+            name="2",
+            period=202002,
+            project=self.project,
+            form=self.form_1,
+            validation_status="LOCKED"
+        )
+
+        InstanceLockTable.objects.create(
+            instance=instance, is_locked=True, author=self.yoda, top_org_unit=self.jedi_council_corruscant
+        )
+
+        response = self.client.get(
+            f"/api/instances/{instance.pk}/"
+        )
+
+        self.assertJSONResponse(response, 200)
+        self.assertEqual(response.json()["validation_status"], "LOCKED")
+        self.assertEqual(response.json()["modification"], True)

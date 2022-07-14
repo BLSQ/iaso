@@ -19,19 +19,12 @@ import {
     useQuickRejectBudgetEvent,
 } from '../../../hooks/useSaveBudgetEvent';
 import { useGetTeams } from '../../../hooks/useGetTeams';
-import { useCurrentUser } from '../../../../../../../hat/assets/js/apps/Iaso/utils/usersUtils';
 import MESSAGES from '../../../constants/messages';
 import { redirectToReplace } from '../../../../../../../hat/assets/js/apps/Iaso/routing/actions';
 import InputComponent from '../../../../../../../hat/assets/js/apps/Iaso/components/forms/InputComponent';
+import { findApprovaTeams } from '../utils';
 
 type Props = { campaignName: string; campaignId: string; params: any };
-
-const findOtherApprovaTeams = (user, teams) => {
-    return teams
-        .filter(team => team.name.toLowerCase().includes('approval'))
-        .filter(team => team.users.includes(user.user_id))
-        .map(team => team.id);
-};
 
 const makeQuery = (campaign, target_teams, comment): QueryData => {
     return {
@@ -47,15 +40,14 @@ export const BudgetRejectionPopUp: FunctionComponent<Props> = ({
     campaignId,
     params,
 }) => {
-    const currentUser = useCurrentUser();
     const { formatMessage } = useSafeIntl();
     const [open, setOpen] = useState<boolean>(true);
     const [text, setText] = useState<string>('');
     const dispatch = useDispatch();
     const { data: teams, isFetching: isFetchingTeams } = useGetTeams();
     const otherApprovalTeamIds = useMemo(() => {
-        return findOtherApprovaTeams(currentUser, teams ?? []);
-    }, [currentUser, teams]);
+        return findApprovaTeams(teams ?? []);
+    }, [teams]);
     const { mutateAsync: reject } = useQuickRejectBudgetEvent();
     const query = useMemo(
         () => makeQuery(campaignId, otherApprovalTeamIds, text),

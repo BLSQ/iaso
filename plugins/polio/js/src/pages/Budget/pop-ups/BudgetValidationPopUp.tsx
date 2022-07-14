@@ -14,23 +14,17 @@ import DialogTitle from '@material-ui/core/DialogTitle';
 // @ts-ignore
 import { useSafeIntl } from 'bluesquare-components';
 import { useDispatch } from 'react-redux';
+import { makeStyles } from '@material-ui/core';
 import {
     QueryData,
     useQuickApproveBudgetEvent,
 } from '../../../hooks/useSaveBudgetEvent';
 import { useGetTeams } from '../../../hooks/useGetTeams';
-import { useCurrentUser } from '../../../../../../../hat/assets/js/apps/Iaso/utils/usersUtils';
 import MESSAGES from '../../../constants/messages';
 import { redirectToReplace } from '../../../../../../../hat/assets/js/apps/Iaso/routing/actions';
+import { findApprovaTeams } from '../utils';
 
 type Props = { campaignName: string; campaignId: string; params: any };
-
-const findOtherApprovaTeams = (user, teams) => {
-    return teams
-        .filter(team => team.name.toLowerCase().includes('approval'))
-        .filter(team => team.users.includes(user.user_id))
-        .map(team => team.id);
-};
 
 const makeQuery = (campaign, target_teams): QueryData => {
     return {
@@ -40,19 +34,32 @@ const makeQuery = (campaign, target_teams): QueryData => {
     };
 };
 
+const styles = theme => {
+    return {
+        green: {
+            backgroundColor: theme.palette.success.main,
+            color: 'white',
+            '&.MuiButton-contained:hover': {
+                backgroundColor: theme.palette.success.main,
+            },
+        },
+    };
+};
+const useStyles = makeStyles(styles);
+
 export const BudgetValidationPopUp: FunctionComponent<Props> = ({
     campaignName,
     campaignId,
     params,
 }) => {
-    const currentUser = useCurrentUser();
+    const classes = useStyles();
     const { formatMessage } = useSafeIntl();
-    const [open, setOpen] = useState(true);
+    const [open, setOpen] = useState(params?.action === 'confirmApproval');
     const dispatch = useDispatch();
     const { data: teams, isFetching: isFetchingTeams } = useGetTeams();
     const otherApprovalTeamIds = useMemo(() => {
-        return findOtherApprovaTeams(currentUser, teams ?? []);
-    }, [currentUser, teams]);
+        return findApprovaTeams(teams ?? []);
+    }, [teams]);
     const { mutateAsync: approve } = useQuickApproveBudgetEvent();
     const query = useMemo(
         () => makeQuery(campaignId, otherApprovalTeamIds),
@@ -61,17 +68,28 @@ export const BudgetValidationPopUp: FunctionComponent<Props> = ({
     const onConfirm = useCallback(() => {
         // eslint-disable-next-line @typescript-eslint/no-unused-vars
         const { action, ...baseParams } = params;
-        approve(query);
-        dispatch(redirectToReplace('polio/budget/details', baseParams));
-        setOpen(false);
+        approve(query, {
+            onSuccess: () => {
+                dispatch(redirectToReplace('polio/budget/details', baseParams));
+                setOpen(false);
+            },
+        });
     }, [approve, dispatch, params, query]);
 
     const handleClose = () => {
         setOpen(false);
     };
+    const handleClick = () => setOpen(true);
 
     return (
         <div>
+            <Button
+                variant="contained"
+                onClick={handleClick}
+                className={classes.green}
+            >
+                {formatMessage(MESSAGES.approve)}
+            </Button>
             <Dialog
                 open={open && !isFetchingTeams}
                 onClose={handleClose}
@@ -94,7 +112,6 @@ export const BudgetValidationPopUp: FunctionComponent<Props> = ({
                     </Button>
                     <Button
                         onClick={onConfirm}
-                        // autoFocus
                         variant="contained"
                         color="primary"
                     >

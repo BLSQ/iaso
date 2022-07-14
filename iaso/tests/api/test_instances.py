@@ -886,12 +886,13 @@ class InstancesAPITestCase(APITestCase):
         )
 
         guest_has_not_top_ou = (
-            True if instance_lock.top_org_unit not in OrgUnit.objects.filter_for_user_and_app_id(self.guest, None) else False
+            True
+            if instance_lock.top_org_unit not in OrgUnit.objects.filter_for_user_and_app_id(self.guest, None)
+            else False
         )
 
         self.assertJSONResponse(response, 400)
         self.assertEqual(guest_has_not_top_ou, True)
-
 
     def test_user_can_unlock_instance_if_has_access(self):
         self.client.force_authenticate(self.yoda)
@@ -950,9 +951,10 @@ class InstancesAPITestCase(APITestCase):
         )
 
         guest_has_not_top_ou = (
-            True if instance_lock.top_org_unit not in OrgUnit.objects.filter_for_user_and_app_id(self.guest, None) else False
+            True
+            if instance_lock.top_org_unit not in OrgUnit.objects.filter_for_user_and_app_id(self.guest, None)
+            else False
         )
 
         self.assertJSONResponse(response, 400)
         self.assertEqual(guest_has_not_top_ou, True)
-

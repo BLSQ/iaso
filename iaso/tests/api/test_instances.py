@@ -1015,7 +1015,7 @@ class InstancesAPITestCase(APITestCase):
         self.assertEqual(response.json()["validation_status"], "LOCKED")
         self.assertEqual(response.json()["modification"], False)
 
-    def test_user_can_unlock_instance_if_has_access(self):
+    def test_modification_status_is_true_if_access_to_parent_ou(self):
         self.client.force_authenticate(self.yoda)
 
         instance_uuid = str(uuid4())

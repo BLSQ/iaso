@@ -929,7 +929,7 @@ class InstancesAPITestCase(APITestCase):
         self.assertJSONResponse(unlock_response, 200)
         self.assertEqual(instance.validation_status, "")
 
-    def test_user_cant_lock_instance_if_has_not_access_to_parent_ou(self):
+    def test_user_cant_lock_instance_if_user_has_not_access_to_parent_ou(self):
         self.client.force_authenticate(self.yoda)
 
         parent_ou = m.OrgUnit.objects.create(name="Coruscant Jedi Council parent", org_unit_type=self.jedi_council)

@@ -50,11 +50,14 @@ const renderTrigger =
             );
         }
         return (
-            <AddButton
-                onClick={openDialog}
-                dataTestId="create-budgetStep-button"
-                message={MESSAGES.addStep}
-            />
+            // The div prevents the Button from being too big on small screens
+            <div>
+                <AddButton
+                    onClick={openDialog}
+                    dataTestId="create-budgetStep-button"
+                    message={MESSAGES.addStep}
+                />
+            </div>
         );
     };
 

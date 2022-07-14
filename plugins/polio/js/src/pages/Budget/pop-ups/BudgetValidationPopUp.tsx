@@ -12,7 +12,7 @@ import DialogContent from '@material-ui/core/DialogContent';
 import DialogContentText from '@material-ui/core/DialogContentText';
 import DialogTitle from '@material-ui/core/DialogTitle';
 // @ts-ignore
-import { useSafeIntl } from 'bluesquare-components';
+import { useSafeIntl, commonStyles } from 'bluesquare-components';
 import { useDispatch } from 'react-redux';
 import { makeStyles } from '@material-ui/core';
 import {
@@ -23,6 +23,7 @@ import { useGetTeams } from '../../../hooks/useGetTeams';
 import MESSAGES from '../../../constants/messages';
 import { redirectToReplace } from '../../../../../../../hat/assets/js/apps/Iaso/routing/actions';
 import { findApprovaTeams } from '../utils';
+// @ts-ignore
 
 type Props = { campaignName: string; campaignId: string; params: any };
 
@@ -36,6 +37,7 @@ const makeQuery = (campaign, target_teams): QueryData => {
 
 const styles = theme => {
     return {
+        ...commonStyles(theme),
         green: {
             backgroundColor: theme.palette.success.main,
             color: 'white',
@@ -52,7 +54,7 @@ export const BudgetValidationPopUp: FunctionComponent<Props> = ({
     campaignId,
     params,
 }) => {
-    const classes = useStyles();
+    const classes: any = useStyles();
     const { formatMessage } = useSafeIntl();
     const [open, setOpen] = useState(params?.action === 'confirmApproval');
     const dispatch = useDispatch();
@@ -86,7 +88,7 @@ export const BudgetValidationPopUp: FunctionComponent<Props> = ({
             <Button
                 variant="contained"
                 onClick={handleClick}
-                className={classes.green}
+                className={`${classes.green} ${classes.button}`}
             >
                 {formatMessage(MESSAGES.approve)}
             </Button>

@@ -12,7 +12,15 @@ import {
     // @ts-ignore
     LoadingSpinner,
 } from 'bluesquare-components';
-import { Box, Divider, Grid, Paper, Typography } from '@material-ui/core';
+import {
+    Box,
+    Divider,
+    Grid,
+    Paper,
+    Typography,
+    useMediaQuery,
+    useTheme,
+} from '@material-ui/core';
 import { useDispatch, useSelector } from 'react-redux';
 import TopBar from '../../../../../../hat/assets/js/apps/Iaso/components/nav/TopBarComponent';
 import MESSAGES from '../../constants/messages';
@@ -113,7 +121,8 @@ export const BudgetDetails: FunctionComponent<Props> = ({ router }) => {
     );
     // TODO make hook for table specific state and effects
     const [resetPageToOne, setResetPageToOne] = useState('');
-
+    const theme = useTheme();
+    const isMobileLayout = useMediaQuery(theme.breakpoints.down('md'));
     useSkipEffectOnMount(() => {
         const newParams = {
             ...params,
@@ -197,13 +206,13 @@ export const BudgetDetails: FunctionComponent<Props> = ({ router }) => {
                                 {budgetStatus !== 'approved' &&
                                     isUserInApprovalTeam &&
                                     budgetHasSubmission && (
-                                        <Box mr={4}>
-                                            <BudgetValidationPopUp
-                                                campaignName={campaignName}
-                                                campaignId={campaignId}
-                                                params={params}
-                                            />
-                                        </Box>
+                                        // <Box mr={4}>
+                                        <BudgetValidationPopUp
+                                            campaignName={campaignName}
+                                            campaignId={campaignId}
+                                            params={params}
+                                        />
+                                        // </Box>
                                     )}
                                 {params.action === 'addComment' &&
                                     budgetStatus !== 'approved' &&
@@ -216,12 +225,15 @@ export const BudgetDetails: FunctionComponent<Props> = ({ router }) => {
                                             />
                                         </Box>
                                     )}
+                                {/* {!isMobileLayout && ( */}
                                 <CreateEditBudgetEvent
                                     campaignId={campaignId}
                                 />
+                                {/* )} */}
                             </Grid>
                         )}
                     </Grid>
+                    {/* {!isMobileLayout && ( */}
                     <InputComponent
                         type="checkbox"
                         keyValue="showDeleted"
@@ -231,43 +243,51 @@ export const BudgetDetails: FunctionComponent<Props> = ({ router }) => {
                         }}
                         value={showDeleted}
                     />
+                    {/* )} */}
                 </Box>
                 <Grid container spacing={2}>
-                    <Grid item xs={8}>
-                        <Paper elevation={2}>
-                            <Box
-                                ml={2}
-                                pt={2}
-                                mr={2}
-                                pb={budgetDetails?.results.length === 0 ? 1 : 0}
-                            >
-                                <GraphTitle
-                                    text={formatMessage(MESSAGES.steps)}
-                                    displayTrigger
-                                />
-                                <Box mt={2} mb={1}>
-                                    <Divider />
+                    {!isMobileLayout && (
+                        <Grid item xs={8}>
+                            <Paper elevation={2}>
+                                <Box
+                                    ml={2}
+                                    pt={2}
+                                    mr={2}
+                                    pb={
+                                        budgetDetails?.results.length === 0
+                                            ? 1
+                                            : 0
+                                    }
+                                >
+                                    <GraphTitle
+                                        text={formatMessage(MESSAGES.steps)}
+                                        displayTrigger
+                                    />
+                                    <Box mt={2} mb={1}>
+                                        <Divider />
+                                    </Box>
+                                    <TableWithDeepLink
+                                        data={budgetDetails?.results ?? []}
+                                        count={budgetDetails?.count}
+                                        pages={budgetDetails?.pages}
+                                        params={params}
+                                        columns={columns}
+                                        baseUrl={BUDGET_DETAILS}
+                                        marginTop={false}
+                                        extraProps={{
+                                            loading:
+                                                isFetching ||
+                                                isFetchingProfiles,
+                                            columns,
+                                        }}
+                                        resetPageToOne={resetPageToOne}
+                                        elevation={0}
+                                    />
                                 </Box>
-                                <TableWithDeepLink
-                                    data={budgetDetails?.results ?? []}
-                                    count={budgetDetails?.count}
-                                    pages={budgetDetails?.pages}
-                                    params={params}
-                                    columns={columns}
-                                    baseUrl={BUDGET_DETAILS}
-                                    marginTop={false}
-                                    extraProps={{
-                                        loading:
-                                            isFetching || isFetchingProfiles,
-                                        columns,
-                                    }}
-                                    resetPageToOne={resetPageToOne}
-                                    elevation={0}
-                                />
-                            </Box>
-                        </Paper>
-                    </Grid>
-                    <Grid item xs={4}>
+                            </Paper>
+                        </Grid>
+                    )}
+                    <Grid item xs={12} md={4}>
                         <Paper>
                             <Box ml={2} pt={2} mr={2} pb={2}>
                                 <GraphTitle

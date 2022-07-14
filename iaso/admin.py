@@ -215,10 +215,6 @@ class ProfileAdmin(admin.GeoModelAdmin):
     list_display = ("id", "user", "account", "language")
 
 
-class LockInstanceTableAdmin(admin.ModelAdmin):
-    raw_id_fields = ("top_org_unit",)
-
-
 class ExportRequestAdmin(admin.GeoModelAdmin):
     list_filter = ("launcher", "status")
     list_display = ("status", "launcher", "params", "last_error_message")
@@ -358,6 +354,12 @@ class AssignmentAdmin(admin.ModelAdmin):
         "planning",
     )
     list_filter = ("planning",)
+    date_hierarchy = "created_at"
+
+
+class LockInstanceTableAdmin(admin.ModelAdmin):
+    raw_id_fields = ("top_org_unit",)
+    list_display = ("instance", "is_locked", "author", "top_org_unit", "created_at")
     date_hierarchy = "created_at"
 
 

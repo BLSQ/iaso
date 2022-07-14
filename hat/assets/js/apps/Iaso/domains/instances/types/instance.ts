@@ -26,8 +26,11 @@ export type Instance = {
     last_export_success_at: unknown;
 };
 
-export type InstanceLog = {};
+export type InstanceLogData = {
+    json: Record<string, string>;
+};
 
-export type InstanceLogDetail = {
-    new_value: Instance;
+export type InstanceLog = {
+    old_value: InstanceLogData;
+    new_value: InstanceLogData;
 };

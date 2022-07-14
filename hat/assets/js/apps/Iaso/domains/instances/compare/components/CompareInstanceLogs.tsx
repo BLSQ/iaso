@@ -9,11 +9,11 @@ import {
     useGetInstanceLogs,
     useGetInstanceLogDetail,
 } from '../hooks/useGetInstanceLogs';
-import { Instance } from '../../types/instance';
+import { Instance, InstanceLogData } from '../../types/instance';
 
 import InputComponent from '../../../../components/forms/InputComponent';
 import TopBar from '../../../../components/nav/TopBarComponent';
-import InstanceDetail from './InstanceDetail';
+import { InstanceLogDetail } from './InstanceLogDetail';
 
 import { redirectTo, redirectToReplace } from '../../../../routing/actions';
 
@@ -40,10 +40,6 @@ type Props = {
     router: Router;
 };
 
-type InstanceLog = {
-    data: Instance | undefined;
-};
-
 const useStyles = makeStyles((theme: Theme) => ({
     ...commonStyles(theme),
 }));
@@ -62,9 +58,7 @@ export const CompareInstanceLogs: FunctionComponent<Props> = ({
     const { data: instanceLogsDropdown, isFetching: isFetchingInstanceLogs } =
         useGetInstanceLogs(instanceId);
 
-    const { data: instanceLogA }: InstanceLog = useGetInstanceLogDetail(
-        params.logA,
-    );
+    const { data: instanceLogA } = useGetInstanceLogDetail(params.logA);
 
     const handleChange = (key, value) => {
         const newParams = {
@@ -86,8 +80,7 @@ export const CompareInstanceLogs: FunctionComponent<Props> = ({
         );
     }, [instanceLogsDropdown, isFetchingInstanceLogs]);
 
-    console.log(instanceLogsDropdown);
-    console.log(instanceLogA);
+    console.log('instance log a', instanceLogA);
 
     return (
         <>
@@ -114,9 +107,8 @@ export const CompareInstanceLogs: FunctionComponent<Props> = ({
                             options={instanceLogsDropdown}
                             loading={isFetchingInstanceLogs}
                         />
-
-                        <InstanceDetail
-                            instanceId={instanceId}
+                        <InstanceLogDetail
+                            isInstanceLog
                             instance={instanceLogA}
                         />
                     </Grid>

@@ -4,8 +4,9 @@ import { useSafeIntl, LoadingSpinner } from 'bluesquare-components';
 
 import { Box, Typography } from '@material-ui/core';
 
+import { ContactSupportOutlined } from '@material-ui/icons';
 import { useGetInstance } from '../hooks/useGetInstance';
-import { Instance } from '../../types/instance';
+import { Instance, InstanceLog, InstanceLogData } from '../../types/instance';
 
 import InstanceDetailsInfos from '../../components/InstanceDetailsInfos';
 import InstanceDetailsLocation from '../../components/InstanceDetailsLocation';
@@ -14,20 +15,34 @@ import WidgetPaper from '../../../../components/papers/WidgetPaperComponent';
 import ErrorPaperComponent from '../../../../components/papers/ErrorPaperComponent';
 
 import MESSAGES from '../messages';
+import { useGetInstanceLogDetail } from '../hooks/useGetInstanceLogs';
 
+type Params = {
+    logId: string | undefined;
+};
 type Props = {
-    instanceId: string | undefined;
+    params: Params;
+    instance: InstanceLogData;
 };
 
-const InstanceDetail: FunctionComponent<Props> = ({ instanceId }) => {
+export const InstanceLogDetail: FunctionComponent<Props> = ({
+    logId,
+    isInstanceLog,
+    params,
+    instance,
+}) => {
     const {
         data,
         isLoading,
         isError,
-    }: { data?: Instance; isLoading: boolean; isError: boolean } =
-        useGetInstance(instanceId);
+    }: {
+        data?: InstanceLogData;
+        isLoading: boolean;
+        isError: boolean;
+    } = useGetInstanceLogDetail(logId);
 
     const { formatMessage } = useSafeIntl();
+
     if (isLoading)
         return (
             <Box height="70vh">
@@ -42,35 +57,21 @@ const InstanceDetail: FunctionComponent<Props> = ({ instanceId }) => {
     if (isError) {
         return <ErrorPaperComponent message={formatMessage(MESSAGES.error)} />;
     }
+
     return (
         <>
             <Box mb={4}>
                 <Typography variant="h5" color="secondary">
-                    {`${formatMessage(
-                        MESSAGES.submissionTitle,
-                    )} - ${instanceId}`}
+                    LOG
                 </Typography>
             </Box>
-            <WidgetPaper
-                expandable
-                isExpanded={false}
-                title={formatMessage(MESSAGES.infos)}
-                padded
-            >
-                <InstanceDetailsInfos currentInstance={data} />
-            </WidgetPaper>
-            <WidgetPaper
-                expandable
-                isExpanded={false}
-                title={formatMessage(MESSAGES.location)}
-            >
-                <InstanceDetailsLocation currentInstance={data} />
-            </WidgetPaper>
-            <WidgetPaper title={formatMessage(MESSAGES.form)}>
-                <InstanceFileContent instance={data} />
+
+            <WidgetPaper title={formatMessage(MESSAGES.submissionTitle)}>
+                <InstanceFileContent
+                    isInstanceLog={isInstanceLog}
+                    instance={data}
+                />
             </WidgetPaper>
         </>
     );
 };
-
-export default InstanceDetail;

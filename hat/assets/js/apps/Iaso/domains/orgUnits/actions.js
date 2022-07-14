@@ -82,7 +82,7 @@ export const saveMultiEdit = data => dispatch => {
         .then(res => {
             dispatch(
                 enqueueSnackbar(
-                    succesfullSnackBar('saveMultiEditOrgUnitsSuccesfull'),
+                    succesfullSnackBar('saveMultiEditOrgUnitsLaunched'),
                 ),
             );
             return res;

@@ -43,7 +43,7 @@ class IasoJsonEncoder(json.JSONEncoder):
 class Modification(models.Model):
     content_type = models.ForeignKey(ContentType, on_delete=models.CASCADE)
     # This is a charField and not a number field so it can also fit uuid
-    object_id = models.CharField(max_length=40)
+    object_id = models.CharField(max_length=40, db_index=True)
     content_object = GenericForeignKey("content_type", "object_id")
     past_value = models.JSONField(encoder=IasoJsonEncoder)
     new_value = models.JSONField(encoder=IasoJsonEncoder)

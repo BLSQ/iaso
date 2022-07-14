@@ -28,5 +28,5 @@ export type OrgUnit = {
     version: number;
 
     groups: Array<unknown>;
-    org_unit_type: unknown;
+    org_unit_type: string;
 };

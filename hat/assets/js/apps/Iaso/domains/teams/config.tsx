@@ -66,6 +66,7 @@ export const teamColumns = (
                             project={settings.row.original.project}
                             type={settings.row.original.type}
                             users={settings.row.original.users}
+                            parent={settings.row.original.parent}
                         />
                         <DeleteDialog
                             keyName="team"

@@ -124,7 +124,10 @@ export const BudgetDetails: FunctionComponent<Props> = ({ router }) => {
     }, [params.pageSize, campaignId, campaignName]);
 
     const { data: profiles, isFetching: isFetchingProfiles } = useGetProfiles();
-    const columns = useBudgetDetailsColumns({ profiles });
+    const columns = useBudgetDetailsColumns({
+        profiles,
+        data: budgetDetails?.results,
+    });
 
     const { data: districtShapes, isFetching: isFetchingDistricts } =
         useGetGeoJson(country, 'DISTRICT');

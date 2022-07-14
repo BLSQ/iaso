@@ -105,6 +105,7 @@ export const ParentDialog: FunctionComponent<Props> = ({
                     mapping.push(marker);
                 } else {
                     mapping.push({
+                        ...orgUnit,
                         id: orgUnit.id,
                         name: orgUnit.name,
                         orgUnitTypeId: orgUnit.org_unit_type_id,

@@ -6,7 +6,7 @@ import { AssignmentApi } from '../../types/assigment';
 import { Team } from '../../types/team';
 
 type Option = {
-    planningId: string;
+    planning: string;
 };
 
 export type AssignmentsResult = {

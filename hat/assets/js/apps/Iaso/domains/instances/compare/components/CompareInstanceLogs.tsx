@@ -5,10 +5,15 @@ import { makeStyles } from '@material-ui/core/styles';
 // @ts-ignore
 import { useSafeIntl, commonStyles } from 'bluesquare-components';
 
-import { useGetInstanceLogs } from '../../hooks/requests/useGetInstanceLogs';
+import {
+    useGetInstanceLogs,
+    useGetInstanceLogDetail,
+} from '../hooks/useGetInstanceLogs';
+import { Instance } from '../../types/instance';
 
 import InputComponent from '../../../../components/forms/InputComponent';
 import TopBar from '../../../../components/nav/TopBarComponent';
+import InstanceDetail from './InstanceDetail';
 
 import { redirectTo, redirectToReplace } from '../../../../routing/actions';
 
@@ -35,6 +40,10 @@ type Props = {
     router: Router;
 };
 
+type InstanceLog = {
+    data: Instance | undefined;
+};
+
 const useStyles = makeStyles((theme: Theme) => ({
     ...commonStyles(theme),
 }));
@@ -52,6 +61,11 @@ export const CompareInstanceLogs: FunctionComponent<Props> = ({
     const { instanceIds: instanceId } = params;
     const { data: instanceLogsDropdown, isFetching: isFetchingInstanceLogs } =
         useGetInstanceLogs(instanceId);
+
+    const { data: instanceLogA }: InstanceLog = useGetInstanceLogDetail(
+        params.logA,
+    );
+
     const handleChange = (key, value) => {
         const newParams = {
             ...params,
@@ -71,6 +85,9 @@ export const CompareInstanceLogs: FunctionComponent<Props> = ({
             instanceLogsDropdown !== undefined && instanceLogsDropdown[1].value,
         );
     }, [instanceLogsDropdown, isFetchingInstanceLogs]);
+
+    console.log(instanceLogsDropdown);
+    console.log(instanceLogA);
 
     return (
         <>
@@ -96,6 +113,11 @@ export const CompareInstanceLogs: FunctionComponent<Props> = ({
                             label={MESSAGES.instanceLogsDate}
                             options={instanceLogsDropdown}
                             loading={isFetchingInstanceLogs}
+                        />
+
+                        <InstanceDetail
+                            instanceId={instanceId}
+                            instance={instanceLogA}
                         />
                     </Grid>
                     <Grid xs={12} md={6} item>

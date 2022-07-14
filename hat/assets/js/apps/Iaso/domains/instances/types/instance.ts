@@ -25,3 +25,9 @@ export type Instance = {
     form_descriptor: unknown;
     last_export_success_at: unknown;
 };
+
+export type InstanceLog = {};
+
+export type InstanceLogDetail = {
+    new_value: Instance;
+};

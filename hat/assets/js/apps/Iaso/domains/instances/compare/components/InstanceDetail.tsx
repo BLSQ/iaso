@@ -16,16 +16,23 @@ import ErrorPaperComponent from '../../../../components/papers/ErrorPaperCompone
 import MESSAGES from '../messages';
 
 type Props = {
-    instanceId: string;
+    instanceId: string | undefined;
+    instance: Instance | undefined;
 };
 
-const InstanceDetail: FunctionComponent<Props> = ({ instanceId }) => {
+const InstanceDetail: FunctionComponent<Props> = ({ instanceId, instance }) => {
     const {
         data,
         isLoading,
         isError,
     }: { data?: Instance; isLoading: boolean; isError: boolean } =
         useGetInstance(instanceId);
+    // let currentInstance;
+
+    // if (instance && data) {
+    //     currentInstance = data;
+    // }
+
     const { formatMessage } = useSafeIntl();
     if (isLoading)
         return (

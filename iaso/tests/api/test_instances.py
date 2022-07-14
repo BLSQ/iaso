@@ -1006,9 +1006,7 @@ class InstancesAPITestCase(APITestCase):
 
         self.client.force_authenticate(self.guest)
 
-        response = self.client.get(
-            f"/api/instances/{instance.pk}/"
-        )
+        response = self.client.get(f"/api/instances/{instance.pk}/")
 
         print(response.json())
         self.assertJSONResponse(response, 200)
@@ -1027,16 +1025,14 @@ class InstancesAPITestCase(APITestCase):
             period=202002,
             project=self.project,
             form=self.form_1,
-            validation_status="LOCKED"
+            validation_status="LOCKED",
         )
 
         InstanceLockTable.objects.create(
             instance=instance, is_locked=True, author=self.yoda, top_org_unit=self.jedi_council_corruscant
         )
 
-        response = self.client.get(
-            f"/api/instances/{instance.pk}/"
-        )
+        response = self.client.get(f"/api/instances/{instance.pk}/")
 
         self.assertJSONResponse(response, 200)
         self.assertEqual(response.json()["validation_status"], "LOCKED")

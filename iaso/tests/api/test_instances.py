@@ -929,6 +929,36 @@ class InstancesAPITestCase(APITestCase):
         self.assertJSONResponse(unlock_response, 200)
         self.assertEqual(instance.validation_status, "")
 
+    def test_user_cant_lock_instance_if_user_has_not_access_to_parent_ou(self):
+        self.client.force_authenticate(self.yoda)
+
+        parent_ou = m.OrgUnit.objects.create(name="Coruscant Jedi Council parent", org_unit_type=self.jedi_council)
+        self.jedi_council_corruscant.parent = parent_ou
+        self.jedi_council_corruscant.version = self.sw_version
+        self.jedi_council_corruscant.save()
+        instance_uuid = str(uuid4())
+
+        instance = Instance.objects.create(
+            uuid=instance_uuid,
+            org_unit=self.jedi_council_corruscant,
+            name="2",
+            period=202002,
+            project=self.project,
+            form=self.form_1,
+        )
+
+        response = self.client.patch(
+            f"/api/instances/{instance.pk}/",
+            data={"id": Instance.objects.get(uuid=instance_uuid).pk, "validation_status": "LOCKED"},
+        )
+
+        instance = Instance.objects.get(uuid=instance_uuid)
+        locked_table = InstanceLockTable.objects.last()
+
+        self.assertJSONResponse(response, 400)
+        self.assertEqual(instance.validation_status, "")
+        self.assertEqual(locked_table, None)
+
     def test_user_cant_modify_instance_with_higher_orgunit(self):
         instance_uuid = str(uuid4())
         instance = Instance.objects.create(

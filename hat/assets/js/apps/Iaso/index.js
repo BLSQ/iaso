@@ -13,7 +13,6 @@ import { addRoutes } from './routing/redirections';
 import { getPlugins, PluginsContext } from './utils';
 import { getOverriddenTheme } from './styles';
 import { ThemeConfigContext } from './domains/app/contexts/ThemeConfigContext.tsx';
-import { getRequest } from './libs/Api';
 
 const queryClient = new QueryClient({
     defaultOptions: {
@@ -23,10 +22,11 @@ const queryClient = new QueryClient({
     },
 });
 
-export default async function iasoApp(
+export default function iasoApp(
     element,
     enabledPluginsName,
     themeConfig,
+    userHomePage,
 ) {
     const plugins = getPlugins(enabledPluginsName);
     const allRoutesConfigs = [
@@ -40,30 +40,23 @@ export default async function iasoApp(
                 routeConfig.allowAnonymous
                     ? routeConfig.component
                     : props => (
-                          <ProtectedRoute
-                            {...props}
-                            featureFlag={routeConfig.featureFlag}
-                            permissions={routeConfig.permissions}
-                            component={routeConfig.component(props)}
-                            isRootUrl={routeConfig.isRootUrl}
-                            allRoutes={allRoutesConfigs}
-                        />
+                        <ProtectedRoute
+                              {...props}
+                              featureFlag={routeConfig.featureFlag}
+                              permissions={routeConfig.permissions}
+                              component={routeConfig.component(props)}
+                              isRootUrl={routeConfig.isRootUrl}
+                              allRoutes={allRoutesConfigs}
+                          />
                       )
             }
         />
     ));
-    let currentUser;
-    try {
-        currentUser = await getRequest('/api/profiles/me');
-    } catch (e) {
-        console.warn(e);
-    }
-    const userHomePage = currentUser.home_page;
 
     const overrideLandingRoutes = plugins
         .filter(plugin => plugin.overrideLanding)
         .map(plugin => plugin.overrideLanding);
-    // using the last plugin override (arbitrary choice
+    // using the last plugin override (arbitrary choice)
     const overrideLanding =
         overrideLandingRoutes.length > 0
             ? overrideLandingRoutes[overrideLandingRoutes.length - 1]

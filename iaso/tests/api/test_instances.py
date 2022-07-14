@@ -892,3 +892,39 @@ class InstancesAPITestCase(APITestCase):
         self.assertJSONResponse(response, 400)
         self.assertEqual(guest_has_not_top_ou, True)
 
+
+    def test_user_can_unlock_instance_if_has_access(self):
+        self.client.force_authenticate(self.yoda)
+
+        instance_uuid = str(uuid4())
+
+        instance = Instance.objects.create(
+            uuid=instance_uuid,
+            org_unit=self.jedi_council_corruscant,
+            name="2",
+            period=202002,
+            project=self.project,
+            form=self.form_1,
+        )
+
+        response = self.client.patch(
+            f"/api/instances/{instance.pk}/", data={"id": Instance.objects.last().pk, "validation_status": "LOCKED"}
+        )
+
+        instance = Instance.objects.get(uuid=instance_uuid)
+        locked_table = InstanceLockTable.objects.last()
+
+        self.assertJSONResponse(response, 200)
+        self.assertEqual(instance.validation_status, "LOCKED")
+        self.assertEqual(locked_table.instance, instance)
+        self.assertEqual(locked_table.is_locked, True)
+
+        unlock_response = self.client.patch(
+            f"/api/instances/{instance.pk}/", data={"id": Instance.objects.last().pk, "validation_status": ""}
+        )
+
+        instance = Instance.objects.get(uuid=instance_uuid)
+
+        self.assertJSONResponse(unlock_response, 200)
+        self.assertEqual(instance.validation_status, "")
+

@@ -343,15 +343,18 @@ class InstancesViewSet(viewsets.ViewSet):
             raise serializers.ValidationError({"error": "You don't have the permission to modify this instance."})
 
         # check if a user is higher or not in the Org Unit Hierarchy
-        if instance.validation_status == "LOCKED" or validation_status == "LOCKED":
-            if InstanceLockTable.objects.filter(instance=instance).count() > 0:
+        if (
+            InstanceLockTable.objects.filter(instance=instance, is_locked=True).exists()
+            or validation_status == "LOCKED"
+        ):
+            if InstanceLockTable.objects.filter(instance=instance).exists():
                 locked_history = InstanceLockTable.objects.get(instance=instance, is_locked=True)
                 current_top_ou = locked_history.top_org_unit
                 org_unit = locked_history.top_org_unit
             else:
                 current_top_ou = instance.org_unit.parent
                 org_unit = instance.org_unit
-                locked_history = False
+                locked_history = None
             if current_top_ou is None:
                 if org_unit in access_ou:
                     user_top_ou = org_unit
@@ -377,7 +380,11 @@ class InstancesViewSet(viewsets.ViewSet):
                 InstanceLockTable.objects.create(
                     instance=instance, is_locked=True, author=request.user, top_org_unit=user_top_ou
                 )
-                if locked_history:
+                if locked_history is not None:
+                    locked_history.is_locked = False
+                    locked_history.save()
+
+                if validation_status == "":
                     locked_history.is_locked = False
                     locked_history.save()
 

@@ -1,7 +1,11 @@
-import React, { FunctionComponent, useState, useEffect } from 'react';
-import { Box, makeStyles, Tabs, Tab } from '@material-ui/core';
+import React, {
+    FunctionComponent,
+    useState,
+    useEffect,
+    useCallback,
+} from 'react';
+import { Box, makeStyles, Tabs, Tab, Grid } from '@material-ui/core';
 import { useDispatch } from 'react-redux';
-import isEqual from 'lodash/isEqual';
 
 import {
     // @ts-ignore
@@ -10,38 +14,25 @@ import {
     useSafeIntl,
     // @ts-ignore
     LoadingSpinner,
-    // @ts-ignore
-    useSkipEffectOnMount,
 } from 'bluesquare-components';
 
 import { redirectTo } from '../../routing/actions';
 import { baseUrls } from '../../constants/urls';
 
-import { useGetPlanning } from './hooks/requests/useGetPlanning';
-import {
-    useGetAssignments,
-    AssignmentsResult,
-} from './hooks/requests/useGetAssignments';
-
 import TopBar from '../../components/nav/TopBarComponent';
 
 import { AssignmentsFilters } from './components/AssignmentsFilters';
 import { AssignmentsMapTab } from './components/AssignmentsMapTab';
+import { AssignmentsListTab } from './components/AssignmentsListTab';
+import { Sidebar } from './components/AssignmentsSidebar';
 
 import { AssignmentParams, AssignmentApi } from './types/assigment';
-import { Planning } from './types/planning';
-import { Team, DropdownTeamsOptions } from './types/team';
-import { Profile } from '../../utils/usersUtils';
-import { OrgUnitShape } from './types/locations';
+import { Team, SubTeam, User } from './types/team';
+import { OrgUnitShape, AssignmentUnit } from './types/locations';
 
-import { useGetTeams } from './hooks/requests/useGetTeams';
-import { useGetProfiles } from './hooks/requests/useGetProfiles';
-import {
-    useBulkSaveAssignments,
-    useSaveAssignment,
-} from './hooks/requests/useSaveAssignment';
-import { useGetOrgUnitTypes } from './hooks/requests/useGetOrgUnitTypes';
-import { useGetOrgUnitsByParent } from './hooks/requests/useGetOrgUnitsByParent';
+import { useGetAssignmentData } from './hooks/useGetAssignmentData';
+
+import { getSaveParams } from './utils';
 
 import MESSAGES from './messages';
 
@@ -49,12 +40,15 @@ type Props = {
     params: AssignmentParams;
 };
 
-type ProfilesWithColor = Profile & {
-    color: string;
-};
-
 const useStyles = makeStyles(theme => ({
     ...commonStyles(theme),
+    hiddenOpacity: {
+        position: 'absolute',
+        top: 0,
+        left: -5000,
+        zIndex: -10,
+        opacity: 0,
+    },
 }));
 
 const baseUrl = baseUrls.assignments;
@@ -63,86 +57,83 @@ export const Assignments: FunctionComponent<Props> = ({ params }) => {
     const { formatMessage } = useSafeIntl();
     const dispatch = useDispatch();
     const classes: Record<string, string> = useStyles();
-
-    const { planningId, team: currentTeamId, baseOrgunitType } = params;
-
     const [tab, setTab] = useState(params.tab ?? 'map');
     const [currentTeam, setCurrentTeam] = useState<Team>();
     const [parentSelected, setParentSelected] = useState<
         OrgUnitShape | undefined
     >();
-    const [teams, setTeams] = useState<DropdownTeamsOptions[] | undefined>();
-    const [profiles, setProfiles] = useState<ProfilesWithColor[]>([]);
+    const [selectedItem, setSelectedItem] = useState<
+        SubTeam | User | undefined
+    >();
 
-    // TODO: limit users list to planning users or sub team users
-    const { data: dataProfiles = [] } = useGetProfiles();
+    const handleChangeTab = (newTab: string) => {
+        setTab(newTab);
+        const newParams = {
+            ...params,
+            tab: newTab,
+        };
+        dispatch(redirectTo(baseUrl, newParams));
+    };
+
+    const { planningId, team: currentTeamId, baseOrgunitType } = params;
+
     const {
-        data: planning,
-        isLoading: isLoadingPlanning,
-    }: {
-        data?: Planning;
-        isLoading: boolean;
-    } = useGetPlanning(planningId);
-    const { data: dataTeams = [], isFetched: isTeamsFetched } = useGetTeams(
-        planning?.team,
-    );
-    const {
-        data,
-        isLoading: isLoadingAssignments,
-    }: {
-        data?: AssignmentsResult;
-        isLoading: boolean;
-    } = useGetAssignments({ planningId }, currentTeam);
-    const assignments = data ? data.assignments : [];
-    const allAssignments = data ? data.allAssignments : [];
-    const { data: orgunitTypes, isFetching: isFetchingOrgunitTypes } =
-        useGetOrgUnitTypes();
-    const { data: childrenOrgunits, isFetching: isFetchingChildrenOrgunits } =
-        useGetOrgUnitsByParent({
-            orgUnitParentId: parentSelected?.id,
-            baseOrgunitType,
-        });
-    const { mutateAsync: saveAssignment, isLoading: isSaving } =
-        useSaveAssignment(false);
-    const { mutateAsync: saveMultiAssignments, isLoading: isBulkSaving } =
-        useBulkSaveAssignments();
+        planning,
+        assignments,
+        allAssignments,
+        saveAssignment,
+        saveMultiAssignments,
+        teams,
+        profiles,
+        orgunitTypes,
+        childrenOrgunits,
+        orgUnits,
+        sidebarData,
+        isFetchingOrgUnits,
+        isLoadingPlanning,
+        isSaving,
+        isFetchingOrgunitTypes,
+        isFetchingChildrenOrgunits,
+        isLoadingAssignments,
+        isTeamsFetched,
+        setItemColor,
+    } = useGetAssignmentData({
+        planningId,
+        currentTeam,
+        parentSelected,
+        baseOrgunitType,
+        order: params.order || 'name',
+    });
 
     const isLoading =
-        isLoadingPlanning ||
-        isLoadingAssignments ||
-        isSaving ||
-        isBulkSaving ||
-        isFetchingChildrenOrgunits;
+        isLoadingPlanning || isSaving || isFetchingChildrenOrgunits;
 
-    const setItemColor = (color: string, itemId: number): void => {
-        // TODO: improve this
-        if (currentTeam?.type === 'TEAM_OF_USERS') {
-            const itemIndex = profiles.findIndex(
-                profile => profile.user_id === itemId,
-            );
-            if (itemIndex !== undefined) {
-                const newProfiles = [...profiles];
-                newProfiles[itemIndex] = {
-                    ...newProfiles[itemIndex],
-                    color,
-                };
-                setProfiles(newProfiles);
+    const handleSaveAssignment = useCallback(
+        (selectedOrgUnit: AssignmentUnit) => {
+            if (planning && selectedItem) {
+                const saveParams = getSaveParams({
+                    allAssignments,
+                    selectedOrgUnit,
+                    teams: teams || [],
+                    profiles,
+                    currentType: currentTeam?.type,
+                    selectedItem,
+                    planning,
+                });
+                saveAssignment(saveParams);
             }
-        }
-        if (currentTeam?.type === 'TEAM_OF_TEAMS') {
-            const itemIndex = teams?.findIndex(
-                team => team.original.id === itemId,
-            );
-            if (itemIndex !== undefined && teams) {
-                const newTeams = [...teams];
-                newTeams[itemIndex] = {
-                    ...newTeams[itemIndex],
-                    color,
-                };
-                setTeams(newTeams);
-            }
-        }
-    };
+        },
+        [
+            planning,
+            selectedItem,
+            allAssignments,
+            teams,
+            profiles,
+            currentTeam?.type,
+            saveAssignment,
+        ],
+    );
+
     useEffect(() => {
         if (!baseOrgunitType && assignments.length > 0) {
             const newBaseOrgUnitType =
@@ -155,16 +146,6 @@ export const Assignments: FunctionComponent<Props> = ({ params }) => {
         }
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [assignments]);
-
-    useSkipEffectOnMount(() => {
-        const newParams = {
-            ...params,
-            tab,
-        };
-        if (params.tab !== tab) {
-            dispatch(redirectTo(baseUrl, newParams));
-        }
-    }, [dispatch, params.tab]);
 
     useEffect(() => {
         let newCurrentTeam;
@@ -206,19 +187,16 @@ export const Assignments: FunctionComponent<Props> = ({ params }) => {
     }, [currentTeamId, teams]);
 
     useEffect(() => {
-        if (!isEqual(dataTeams, teams)) {
-            setTeams(dataTeams);
+        if (planning && currentTeam) {
+            if (currentTeam.type === 'TEAM_OF_USERS') {
+                setSelectedItem(currentTeam.users_details[0]);
+            }
+            if (currentTeam.type === 'TEAM_OF_TEAMS') {
+                setSelectedItem(currentTeam.sub_teams_details[0]);
+            }
         }
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [dataTeams]);
-
-    useEffect(() => {
-        if (!isEqual(dataProfiles, profiles)) {
-            setProfiles(dataProfiles);
-        }
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [dataProfiles]);
-
+    }, [planning?.id, currentTeam?.id]);
     return (
         <>
             <TopBar
@@ -233,7 +211,7 @@ export const Assignments: FunctionComponent<Props> = ({ params }) => {
                         root: classes.tabs,
                         indicator: classes.indicator,
                     }}
-                    onChange={(_, newtab) => setTab(newtab)}
+                    onChange={(_, newtab) => handleChangeTab(newtab)}
                 >
                     <Tab value="map" label={formatMessage(MESSAGES.map)} />
                     <Tab value="list" label={formatMessage(MESSAGES.list)} />
@@ -249,27 +227,90 @@ export const Assignments: FunctionComponent<Props> = ({ params }) => {
                     isFetchingOrgUnitTypes={isFetchingOrgunitTypes}
                 />
                 <Box mt={2}>
-                    {tab === 'map' && !isLoadingAssignments && (
-                        <AssignmentsMapTab
-                            assignments={assignments}
-                            planning={planning}
-                            currentTeam={currentTeam}
-                            teams={teams || []}
-                            profiles={profiles}
-                            setItemColor={setItemColor}
-                            saveAssignment={saveAssignment}
-                            saveMultiAssignments={saveMultiAssignments}
-                            baseOrgunitType={baseOrgunitType}
-                            params={params}
-                            orgunitTypes={orgunitTypes || []}
-                            isFetchingOrgUnitTypes={isFetchingOrgunitTypes}
-                            allAssignments={allAssignments}
-                            setParentSelected={setParentSelected}
-                            childrenOrgunits={childrenOrgunits || []}
-                            parentSelected={parentSelected}
-                        />
-                    )}
-                    {tab === 'list' && <Box>Coming soon</Box>}
+                    <>
+                        <Grid container spacing={2}>
+                            <Grid item xs={5}>
+                                <Sidebar
+                                    params={params}
+                                    data={sidebarData || []}
+                                    assignments={assignments}
+                                    selectedItem={selectedItem}
+                                    setSelectedItem={setSelectedItem}
+                                    currentTeam={currentTeam}
+                                    setItemColor={setItemColor}
+                                    teams={teams || []}
+                                    profiles={profiles}
+                                    orgunitTypes={orgunitTypes || []}
+                                    isFetchingOrgUnitTypes={
+                                        isFetchingOrgunitTypes
+                                    }
+                                    showMapSelector={tab === 'map'}
+                                />
+                            </Grid>
+                            <Grid item xs={7}>
+                                <Box position="relative" width="100%">
+                                    <Box
+                                        width="100%"
+                                        className={
+                                            tab === 'map'
+                                                ? ''
+                                                : classes.hiddenOpacity
+                                        }
+                                    >
+                                        {!isLoadingAssignments && (
+                                            <AssignmentsMapTab
+                                                planning={planning}
+                                                currentTeam={currentTeam}
+                                                teams={teams || []}
+                                                profiles={profiles}
+                                                params={params}
+                                                allAssignments={allAssignments}
+                                                setParentSelected={
+                                                    setParentSelected
+                                                }
+                                                childrenOrgunits={
+                                                    childrenOrgunits || []
+                                                }
+                                                parentSelected={parentSelected}
+                                                saveMultiAssignments={
+                                                    saveMultiAssignments
+                                                }
+                                                selectedItem={selectedItem}
+                                                locations={orgUnits}
+                                                isFetchingLocations={
+                                                    isFetchingOrgUnits
+                                                }
+                                                handleSaveAssignment={
+                                                    handleSaveAssignment
+                                                }
+                                                isLoadingAssignments={
+                                                    isLoadingAssignments
+                                                }
+                                            />
+                                        )}
+                                    </Box>
+                                    {tab === 'list' && (
+                                        <AssignmentsListTab
+                                            assignments={allAssignments}
+                                            params={params}
+                                            teams={teams || []}
+                                            profiles={profiles}
+                                            orgUnits={orgUnits?.all || []}
+                                            handleSaveAssignment={
+                                                handleSaveAssignment
+                                            }
+                                            isFetchingOrgUnits={
+                                                isLoadingAssignments ||
+                                                isFetchingOrgUnits ||
+                                                !orgUnits
+                                            }
+                                            selectedItem={selectedItem}
+                                        />
+                                    )}
+                                </Box>
+                            </Grid>
+                        </Grid>
+                    </>
                 </Box>
             </Box>
         </>

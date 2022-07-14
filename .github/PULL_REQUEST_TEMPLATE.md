@@ -4,6 +4,7 @@
 - [ ] Is my code clear enough and well documented
 - [ ] Are my typescript files well typed
 - [ ] Did I add translations
+- [ ] My migrations file are included
 
 ## Changes
 

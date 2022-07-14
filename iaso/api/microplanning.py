@@ -62,6 +62,7 @@ class TeamSerializer(serializers.ModelSerializer):
         self.fields["manager"].queryset = users_in_account
         self.fields["users"].child_relation.queryset = users_in_account
         self.fields["sub_teams"].child_relation.queryset = Team.objects.filter_for_user(user)
+        self.fields["parent"].queryset = Team.objects.filter_for_user(user)
 
     class Meta:
         model = Team
@@ -80,10 +81,21 @@ class TeamSerializer(serializers.ModelSerializer):
             "sub_teams",
             "sub_teams_details",
         ]
-        read_only_fields = ["created_at", "parent"]
+        read_only_fields = ["created_at"]
 
     users_details = NestedUserSerializer(many=True, read_only=True, source="users")
     sub_teams_details = NestedTeamSerializer(many=True, read_only=True, source="sub_teams")
+
+    def validate_parent(self, value: Team):
+        if value.type not in (None, TeamType.TEAM_OF_TEAMS):
+            raise serializers.ValidationError("parentIsNotTeamOfTeam")
+        if self.instance:
+            p = value
+            while p:
+                if p == self.instance:
+                    raise serializers.ValidationError("noLoopInSubTree")
+                p = p.parent
+        return value
 
     def validate_sub_teams(self, values):
         def recursive_check(instance, children):
@@ -96,20 +108,18 @@ class TeamSerializer(serializers.ModelSerializer):
             recursive_check(self.instance, values)
         return values
 
-    def create(self, validated_data):
-        users = validated_data.pop("users")
-        sub_teams = validated_data.pop("sub_teams")
-
-        team = Team.objects.create(**validated_data)
-        for sub_team in sub_teams:
-            team.sub_teams.add(sub_team)
-
-        team.save(force_recalculate=True)
-
-        for user in users:
-            team.users.add(user)
-
-        return team
+    def save(self, **kwargs):
+        old_sub_teams_ids = []
+        if self.instance:
+            old_sub_teams_ids = list(self.instance.sub_teams.all().values_list("id", flat=True))
+        r = super().save(**kwargs)
+        new_sub_teams_ids = list(self.instance.sub_teams.all().values_list("id", flat=True))
+        team_changed_qs = Team.objects.filter(id__in=new_sub_teams_ids + old_sub_teams_ids)
+        teams_to_update = []
+        for team in team_changed_qs:
+            teams_to_update += team.calculate_paths(force_recalculate=True)
+        Team.objects.bulk_update(teams_to_update, ["path"])
+        return r
 
     def validate(self, attrs):
         validated_data = super(TeamSerializer, self).validate(attrs)
@@ -404,8 +414,6 @@ class AssignmentSerializer(serializers.ModelSerializer):
         assigned_team = validated_data.get("team", self.instance.team if self.instance else None)
         if assigned_team and assigned_user:
             raise serializers.ValidationError("Cannot assign on both team and users")
-        # if not assigned_team and not assigned_user:
-        #     raise serializers.ValidationError("Should be at least an assigned team or user")
 
         planning = validated_data.get("planning", self.instance.planning if self.instance else None)
         org_unit: OrgUnit = validated_data.get("org_unit", self.instance.org_unit if self.instance else None)
@@ -435,8 +443,12 @@ class BulkAssignmentSerializer(serializers.Serializer):
     Audit the modification"""
 
     planning = serializers.PrimaryKeyRelatedField(queryset=Planning.objects.none(), write_only=True)
-    team = serializers.PrimaryKeyRelatedField(queryset=Team.objects.none(), write_only=True, required=False)
-    user = serializers.PrimaryKeyRelatedField(queryset=User.objects.none(), write_only=True, required=False)
+    team = serializers.PrimaryKeyRelatedField(
+        queryset=Team.objects.none(), write_only=True, required=False, allow_null=True
+    )
+    user = serializers.PrimaryKeyRelatedField(
+        queryset=User.objects.none(), write_only=True, required=False, allow_null=True
+    )
     org_units = serializers.PrimaryKeyRelatedField(queryset=OrgUnit.objects.none(), write_only=True, many=True)
 
     def __init__(self, *args, **kwargs):
@@ -469,7 +481,6 @@ class BulkAssignmentSerializer(serializers.Serializer):
             assignment, created = Assignment.objects.get_or_create(
                 planning=planning, org_unit=org_unit, defaults={"created_by": requester}
             )
-            assignments_list.append(assignment)
             old_value = []
             if not created:
                 old_value = [AuditAssignmentSerializer(instance=assignment).data]
@@ -477,6 +488,7 @@ class BulkAssignmentSerializer(serializers.Serializer):
             assignment.deleted_at = None
             assignment.team = team
             assignment.user = user
+            assignments_list.append(assignment)
             assignment.save()
 
             new_value = [AuditAssignmentSerializer(instance=assignment).data]

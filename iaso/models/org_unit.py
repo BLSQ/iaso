@@ -386,7 +386,7 @@ class OrgUnit(TreeModel):
             "org_unit_type": self.org_unit_type.name,
         }
 
-    def as_location(self):
+    def as_location(self, with_parents):
         res = {
             "id": self.id,
             "name": self.name,
@@ -404,6 +404,8 @@ class OrgUnit(TreeModel):
         }
         if hasattr(self, "search_index"):
             res["search_index"] = self.search_index
+        if with_parents:
+            res["parent"] = self.parent.as_dict_with_parents(light=True, light_parents=True) if self.parent else None
         return res
 
     def source_path(self):

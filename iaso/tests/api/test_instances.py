@@ -886,12 +886,13 @@ class InstancesAPITestCase(APITestCase):
         )
 
         guest_has_not_top_ou = (
-            True if instance_lock.top_org_unit not in OrgUnit.objects.filter_for_user_and_app_id(self.guest, None) else False
+            True
+            if instance_lock.top_org_unit not in OrgUnit.objects.filter_for_user_and_app_id(self.guest, None)
+            else False
         )
 
         self.assertJSONResponse(response, 400)
         self.assertEqual(guest_has_not_top_ou, True)
-
 
     def test_user_can_unlock_instance_if_has_access(self):
         self.client.force_authenticate(self.yoda)
@@ -928,3 +929,32 @@ class InstancesAPITestCase(APITestCase):
         self.assertJSONResponse(unlock_response, 200)
         self.assertEqual(instance.validation_status, "")
 
+    def test_user_cant_lock_instance_if_has_not_access_to_parent_ou(self):
+        self.client.force_authenticate(self.yoda)
+
+        parent_ou = m.OrgUnit.objects.create(name="Coruscant Jedi Council parent", org_unit_type=self.jedi_council)
+        self.jedi_council_corruscant.parent = parent_ou
+        self.jedi_council_corruscant.version = self.sw_version
+        self.jedi_council_corruscant.save()
+        instance_uuid = str(uuid4())
+
+        instance = Instance.objects.create(
+            uuid=instance_uuid,
+            org_unit=self.jedi_council_corruscant,
+            name="2",
+            period=202002,
+            project=self.project,
+            form=self.form_1,
+        )
+
+        response = self.client.patch(
+            f"/api/instances/{instance.pk}/",
+            data={"id": Instance.objects.get(uuid=instance_uuid).pk, "validation_status": "LOCKED"},
+        )
+
+        instance = Instance.objects.get(uuid=instance_uuid)
+        locked_table = InstanceLockTable.objects.last()
+
+        self.assertJSONResponse(response, 400)
+        self.assertEqual(instance.validation_status, "")
+        self.assertEqual(locked_table, None)

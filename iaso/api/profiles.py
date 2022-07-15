@@ -102,6 +102,8 @@ class ProfilesViewSet(viewsets.ViewSet):
             # allow user to change his own language
             user = request.user
             profile = request.user.iaso_profile
+            if "home_page" in request.data:
+                profile.home_page = request.data["home_page"]
 
             if "language" in request.data:
                 profile.language = request.data["language"]
@@ -118,6 +120,7 @@ class ProfilesViewSet(viewsets.ViewSet):
         user.username = username
         user.email = request.data.get("email", "")
         profile.language = request.data.get("language", "")
+        profile.home_page = request.data.get("home_page", "")
         profile.dhis2_id = request.data.get("dhis2_id", "")
         profile.save()
         if password != "":
@@ -203,7 +206,10 @@ class ProfilesViewSet(viewsets.ViewSet):
         # as the currently authenticated user
         current_profile = request.user.iaso_profile
         user.profile = Profile.objects.create(
-            user=user, account=current_profile.account, language=request.data.get("language", "")
+            user=user,
+            account=current_profile.account,
+            language=request.data.get("language", ""),
+            home_page=request.data.get("home_page", ""),
         )
 
         org_units = request.data.get("org_units", [])

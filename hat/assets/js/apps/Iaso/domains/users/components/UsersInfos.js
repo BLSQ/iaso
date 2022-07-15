@@ -91,6 +91,14 @@ const UsersInfos = ({
                 label={MESSAGES.dhis2_id}
             />
             <InputComponent
+                keyValue="home_page"
+                onChange={(key, value) => setFieldValue(key, value)}
+                value={currentUser.home_page.value}
+                errors={currentUser.home_page.errors}
+                type="text"
+                label={MESSAGES.homePage}
+            />
+            <InputComponent
                 keyValue="language"
                 onChange={(key, value) => setFieldValue(key, value)}
                 value={currentUser.language.value}

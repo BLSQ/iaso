@@ -13,6 +13,7 @@ import { IntlFormatMessage } from '../../../types/intl';
 import { DropdownTeamsOptions } from '../types/team';
 
 import { AlreadyAssigned } from '../components/AlreadyAssigned';
+import { LinkToOrgUnit } from '../components/LinkToOrgUnit';
 
 import MESSAGES from '../messages';
 
@@ -35,6 +36,9 @@ export const useColumns = ({ teams }: Props): Column[] => {
                 id: 'name',
                 accessor: 'name',
                 sortable: false,
+                Cell: settings => {
+                    return <LinkToOrgUnit orgUnit={settings.row.original} />;
+                },
             },
             {
                 Header: formatMessage(MESSAGES.status),

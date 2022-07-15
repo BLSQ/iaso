@@ -110,9 +110,10 @@ export const dateApiToDateRangePicker = (dateStr?: string): string | null => {
 // Convert from Api format to format expected by DateRange picker
 export const dateRangePickerToDateApi = (
     dateStr?: string,
-): string | undefined => {
+    nullable = false,
+): string | undefined | null => {
     if (!dateStr) {
-        return undefined;
+        return nullable ? null : undefined;
     }
     return moment(dateStr, getLocaleDateFormat('L')).format(apiDateFormat);
 };

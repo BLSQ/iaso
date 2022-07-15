@@ -577,6 +577,8 @@ class IMStatsViewSet(viewsets.ViewSet):
     def list(self, request):
 
         requested_country = request.GET.get("country_id", None)
+        no_cache = request.GET.get("no_cache", "false") == "true"
+
         if requested_country is None:
             return HttpResponseBadRequest
 
@@ -601,7 +603,7 @@ class IMStatsViewSet(viewsets.ViewSet):
             version=CACHE_VERSION,
         )
 
-        if not request.user.is_anonymous and cached_response:
+        if not request.user.is_anonymous and cached_response and not no_cache:
             response = json.loads(cached_response)
             cached_date = make_aware(datetime.utcfromtimestamp(response["cache_creation_date"]))
 
@@ -1127,7 +1129,7 @@ class LQASStatsViewSet(viewsets.ViewSet):
     """
 
     def list(self, request):
-
+        no_cache = request.GET.get("no_cache", "false") == "true"
         requested_country = request.GET.get("country_id", None)
         if requested_country is None:
             return HttpResponseBadRequest
@@ -1143,7 +1145,7 @@ class LQASStatsViewSet(viewsets.ViewSet):
             "{0}-{1}-LQAS".format(request.user.id, request.query_params["country_id"]), version=CACHE_VERSION
         )
 
-        if not request.user.is_anonymous and cached_response:
+        if not request.user.is_anonymous and cached_response and not no_cache:
             response = json.loads(cached_response)
             cached_date = make_aware(datetime.utcfromtimestamp(response["cache_creation_date"]))
             if latest_campaign_update and cached_date > latest_campaign_update:

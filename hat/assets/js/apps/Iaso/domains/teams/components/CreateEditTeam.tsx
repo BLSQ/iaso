@@ -12,6 +12,7 @@ import ConfirmCancelDialogComponent from '../../../components/dialogs/ConfirmCan
 import { commaSeparatedIdsToArray } from '../../../utils/forms';
 import { useTeamValidation } from '../validation';
 import { IntlFormatMessage } from '../../../types/intl';
+import { DropdownTeamsOptions } from '../types/team';
 
 import {
     convertAPIErrorsToState,
@@ -20,7 +21,7 @@ import {
 } from '../hooks/requests/useSaveTeam';
 import { useGetProjectsDropDown } from '../hooks/requests/useGetProjectsDropDown';
 import { useGetProfilesDropdown } from '../hooks/requests/useGetProfilesDropdown';
-import { useGetTeams } from '../hooks/requests/useGetTeams';
+import { useGetTeamsDropdown } from '../hooks/requests/useGetTeams';
 import {
     useApiErrorValidation,
     useTranslatedErrors,
@@ -76,6 +77,7 @@ export const CreateEditTeam: FunctionComponent<Props> = ({
     subTeams,
     type,
     users,
+    parent,
 }) => {
     const { formatMessage } = useSafeIntl();
     const currentUser = useCurrentUser();
@@ -84,19 +86,13 @@ export const CreateEditTeam: FunctionComponent<Props> = ({
         useGetProjectsDropDown();
     const { data: profliesDropdown, isFetching: isFetchingProfiles } =
         useGetProfilesDropdown();
-    const { data: teamsDropdown, isFetching: isFetchingTeams } = useGetTeams({
-        project,
-        select: teams => {
-            if (!teams) return [];
-            const filteredTeams = teams.filter(team => team.id !== id);
-            return filteredTeams.map(team => {
-                return {
-                    value: team.id.toString(),
-                    label: team.name,
-                };
-            });
-        },
-    });
+    const { data: teamsDropdown = [], isFetching: isFetchingTeams } =
+        useGetTeamsDropdown(
+            {
+                project,
+            },
+            id,
+        );
     const { mutateAsync: saveTeam } = useSaveTeam(dialogType);
 
     const {
@@ -124,6 +120,7 @@ export const CreateEditTeam: FunctionComponent<Props> = ({
             subTeams: subTeams || [],
             type,
             users: users || [],
+            parent,
         },
         enableReinitialize: true,
         validateOnBlur: true,
@@ -170,6 +167,19 @@ export const CreateEditTeam: FunctionComponent<Props> = ({
         }
     }, [setFieldValue, values.type]);
 
+    const availableChildren: DropdownTeamsOptions[] = useMemo(
+        () => teamsDropdown.filter(team => values?.parent !== team.original.id),
+        [teamsDropdown, values?.parent],
+    );
+    const availableParents: DropdownTeamsOptions[] | undefined = useMemo(
+        () =>
+            teamsDropdown.filter(
+                team =>
+                    team.original.type === TEAM_OF_TEAMS &&
+                    !values?.subTeams?.includes(team.original.id),
+            ),
+        [teamsDropdown, values?.subTeams],
+    );
     return (
         <FormikProvider value={formik}>
             {/* @ts-ignore */}
@@ -181,8 +191,8 @@ export const CreateEditTeam: FunctionComponent<Props> = ({
                     handleSubmit();
                 }}
                 onCancel={closeDialog => {
-                    closeDialog();
                     resetForm();
+                    closeDialog();
                 }}
                 maxWidth="xs"
                 cancelMessage={MESSAGES.cancel}
@@ -271,11 +281,22 @@ export const CreateEditTeam: FunctionComponent<Props> = ({
                         value={values.subTeams}
                         errors={getErrors('subTeams')}
                         label={MESSAGES.title}
-                        options={teamsDropdown}
+                        options={availableChildren}
                         loading={isFetchingTeams}
                         multi
                     />
                 )}
+                <InputComponent
+                    type="select"
+                    keyValue="parent"
+                    onChange={onChange}
+                    value={values.parent}
+                    errors={getErrors('parent')}
+                    label={MESSAGES.parentTeam}
+                    options={availableParents}
+                    loading={isFetchingTeams}
+                    multi={false}
+                />
             </ConfirmCancelDialogComponent>
         </FormikProvider>
     );

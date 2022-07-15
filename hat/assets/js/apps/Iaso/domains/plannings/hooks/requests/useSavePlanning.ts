@@ -38,11 +38,11 @@ const convertToApi = data => {
         converted.org_unit = selectedOrgUnit;
     }
     if (startDate !== undefined) {
-        converted.started_at = dateRangePickerToDateApi(startDate);
+        converted.started_at = dateRangePickerToDateApi(startDate, true);
     }
 
     if (endDate !== undefined) {
-        converted.ended_at = dateRangePickerToDateApi(endDate);
+        converted.ended_at = dateRangePickerToDateApi(endDate, true);
     }
     if (publishingStatus === 'published') {
         converted.published_at = getApiParamDateTimeString(moment());

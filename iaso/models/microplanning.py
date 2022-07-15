@@ -47,6 +47,10 @@ class Team(SoftDeletableModel):
                                     would be a burden, but the path needs to be set afterwards
         :param force_recalculate: use with caution - used to force recalculation of paths
         """
+        # correct type for parent type
+        if self.parent and self.parent.type == None:
+            self.parent.type = TeamType.TEAM_OF_TEAMS
+            self.parent.save(skip_calculate_path=True)
 
         if skip_calculate_path:
             super().save(*args, **kwargs)

@@ -1,8 +1,7 @@
 import { Shape } from '../../orgUnits/types/shapes';
+import { OrgUnit } from '../../orgUnits/types/orgUnit';
 
-export type BaseLocation = {
-    id: number;
-    name: string;
+export type BaseLocation = OrgUnit & {
     orgUnitTypeId: number;
     color?: string;
     otherAssignation?: any | undefined;
@@ -26,4 +25,7 @@ type Selection<T> = {
 export type Locations = {
     shapes: Selection<OrgUnitShape>;
     markers: Selection<OrgUnitMarker>;
+    all: Array<OrgUnitShape | OrgUnitMarker>;
 };
+
+export type AssignmentUnit = OrgUnitShape | OrgUnitMarker | OrgUnit;

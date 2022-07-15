@@ -46,6 +46,7 @@ import InputComponent from '../../../../../../hat/assets/js/apps/Iaso/components
 import { BudgetValidationPopUp } from './pop-ups/BudgetValidationPopUp';
 import { BudgetRejectionPopUp } from './pop-ups/BudgetRejectionPopUp';
 import { useGetApprovalTeams } from '../../hooks/useGetTeams';
+import { BudgetEventCard } from './cards/BudgetEventCard';
 
 type Props = {
     router: any;
@@ -206,18 +207,18 @@ export const BudgetDetails: FunctionComponent<Props> = ({ router }) => {
                                 {budgetStatus !== 'approved' &&
                                     isUserInApprovalTeam &&
                                     budgetHasSubmission && (
-                                        // <Box mr={4}>
-                                        <BudgetValidationPopUp
-                                            campaignName={campaignName}
-                                            campaignId={campaignId}
-                                            params={params}
-                                        />
-                                        // </Box>
+                                        <Box mr={isMobileLayout ? 0 : 4}>
+                                            <BudgetValidationPopUp
+                                                campaignName={campaignName}
+                                                campaignId={campaignId}
+                                                params={params}
+                                            />
+                                        </Box>
                                     )}
                                 {params.action === 'addComment' &&
                                     budgetStatus !== 'approved' &&
                                     isUserInApprovalTeam && (
-                                        <Box mr={4}>
+                                        <Box mr={isMobileLayout ? 0 : 4}>
                                             <BudgetRejectionPopUp
                                                 campaignName={campaignName}
                                                 campaignId={campaignId}
@@ -246,6 +247,13 @@ export const BudgetDetails: FunctionComponent<Props> = ({ router }) => {
                     {/* )} */}
                 </Box>
                 <Grid container spacing={2}>
+                    {/* TODO add loading state */}
+                    {isMobileLayout && budgetDetails && profiles && (
+                        <BudgetEventCard
+                            event={budgetDetails?.results[0]}
+                            profiles={profiles?.profiles}
+                        />
+                    )}
                     {!isMobileLayout && (
                         <Grid item xs={8}>
                             <Paper elevation={2}>

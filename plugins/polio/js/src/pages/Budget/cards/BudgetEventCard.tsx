@@ -15,6 +15,7 @@ import { Profile } from '../../../../../../../hat/assets/js/apps/Iaso/utils/user
 import { formatTargetTeams, formatUserName } from '../utils';
 import { useGetTeams } from '../../../hooks/useGetTeams';
 import { Nullable } from '../../../../../../../hat/assets/js/apps/Iaso/types/utils';
+import { BudgetFilesModalForCards } from '../pop-ups/BudgetFilesModalForCards';
 
 type Props = {
     event: BudgetEvent;
@@ -67,7 +68,7 @@ export const BudgetEventCard: FunctionComponent<Props> = ({
             <Grid container>
                 <Grid item xs={10}>
                     <CardActionArea>
-                        <CardContent>
+                        <CardContent onClick={() => setOpenModal(true)}>
                             <Typography variant="h6">{title}</Typography>
                             <Typography>
                                 {formatMessage(MESSAGES.by, {
@@ -92,6 +93,17 @@ export const BudgetEventCard: FunctionComponent<Props> = ({
                             </Typography>
                         </CardContent>
                     </CardActionArea>
+                    <BudgetFilesModalForCards
+                        open={openModal}
+                        setOpen={setOpenModal}
+                        eventId={event.id}
+                        author={event.author}
+                        type={event.type}
+                        note={event.comment}
+                        date={event.created_at}
+                        links={event.links}
+                        recipients={event.target_teams.join(',')}
+                    />
                 </Grid>
                 <Grid xs={2}>
                     <span>Button</span>

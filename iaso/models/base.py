@@ -813,14 +813,6 @@ class InstanceQuerySet(models.QuerySet):
 class Instance(models.Model):
     """A series of answers by an individual for a specific form"""
 
-    VALIDATION_STATUS_LOCKED = "LOCKED"
-    VALIDATION_STATUS_REVIEWED = "REVIEWED"
-
-    VALIDATION_STATUS_CHOICES = (
-        (VALIDATION_STATUS_LOCKED, _("locked")),
-        (VALIDATION_STATUS_REVIEWED, _("reviewed")),
-    )
-
     UPLOADED_TO = "instances/"
 
     STATUS_READY = "READY"
@@ -860,9 +852,6 @@ class Instance(models.Model):
 
     deleted = models.BooleanField(default=False)
     to_export = models.BooleanField(default=False)
-    validation_status = models.CharField(
-        choices=VALIDATION_STATUS_CHOICES, default="", blank=True, null=True, max_length=255
-    )
 
     def get_absolute_url(self):
         return f"/dashboard/forms/submission/instanceId/{self.pk}"
@@ -982,7 +971,6 @@ class Instance(models.Model):
             "period": self.period,
             "status": getattr(self, "status", None),
             "correlation_id": self.correlation_id,
-            "validation_status": self.validation_status,
         }
 
     def as_dict_with_parents(self):
@@ -1004,7 +992,6 @@ class Instance(models.Model):
             "period": self.period,
             "status": getattr(self, "status", None),
             "correlation_id": self.correlation_id,
-            "validations_status": self.validation_status,
         }
 
     def as_full_model(self):
@@ -1019,7 +1006,6 @@ class Instance(models.Model):
         return {
             "uuid": self.uuid,
             "last_modified_by": last_modified_by,
-            "validation_status": self.validation_status,
             "modification": True,
             "id": self.id,
             "device_id": self.device.imei if self.device else None,
@@ -1074,7 +1060,6 @@ class Instance(models.Model):
             "files": [f.file.url if f.file else None for f in self.instancefile_set.filter(deleted=False)],
             "status": getattr(self, "status", None),
             "correlation_id": self.correlation_id,
-            "validation_status": self.validation_status,
         }
 
     def soft_delete(self, user: typing.Optional[User] = None):

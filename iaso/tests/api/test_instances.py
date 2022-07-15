@@ -853,14 +853,12 @@ class InstancesAPITestCase(APITestCase):
         )
 
         response = self.client.patch(
-            f"/api/instances/{instance.pk}/", data={"id": Instance.objects.last().pk, "validation_status": "LOCKED"}
+            f"/api/instances/{instance.pk}/", data={"id": instance.pk, "validation_status": "LOCKED"}
         )
 
-        instance = Instance.objects.get(uuid=instance_uuid)
-        locked_table = InstanceLockTable.objects.last()
+        locked_table = InstanceLockTable.objects.filter(instance=instance).last()
 
         self.assertJSONResponse(response, 200)
-        self.assertEqual(instance.validation_status, "LOCKED")
         self.assertEqual(locked_table.instance, instance)
         self.assertEqual(locked_table.is_locked, True)
 
@@ -873,7 +871,6 @@ class InstancesAPITestCase(APITestCase):
             period=202002,
             project=self.project,
             form=self.form_1,
-            validation_status="LOCKED",
         )
         instance_lock = InstanceLockTable.objects.create(
             instance=instance, is_locked=True, author=self.supervisor, top_org_unit=self.ou_top_1
@@ -894,7 +891,7 @@ class InstancesAPITestCase(APITestCase):
         self.assertJSONResponse(response, 400)
         self.assertEqual(guest_has_not_top_ou, True)
 
-    def test_user_can_unlock_instance_if_has_access(self):
+    def test_user_can_lock_instance_if_has_access(self):
         self.client.force_authenticate(self.yoda)
 
         instance_uuid = str(uuid4())
@@ -909,25 +906,23 @@ class InstancesAPITestCase(APITestCase):
         )
 
         response = self.client.patch(
-            f"/api/instances/{instance.pk}/", data={"id": Instance.objects.last().pk, "validation_status": "LOCKED"}
+            f"/api/instances/{instance.pk}/", data={"id": instance.pk, "validation_status": "LOCKED"}
         )
 
-        instance = Instance.objects.get(uuid=instance_uuid)
-        locked_table = InstanceLockTable.objects.last()
+        locked_table = InstanceLockTable.objects.filter(instance=instance).last()
 
         self.assertJSONResponse(response, 200)
-        self.assertEqual(instance.validation_status, "LOCKED")
         self.assertEqual(locked_table.instance, instance)
         self.assertEqual(locked_table.is_locked, True)
 
         unlock_response = self.client.patch(
-            f"/api/instances/{instance.pk}/", data={"id": Instance.objects.last().pk, "validation_status": ""}
+            f"/api/instances/{instance.pk}/", data={"id": instance.pk, "validation_status": "UNLOCK"}
         )
-
-        instance = Instance.objects.get(uuid=instance_uuid)
+        unLocked_table = InstanceLockTable.objects.filter(instance=instance).last()
 
         self.assertJSONResponse(unlock_response, 200)
-        self.assertEqual(instance.validation_status, "")
+        self.assertEqual(unLocked_table.instance, instance)
+        self.assertEqual(unLocked_table.is_locked, False)
 
     def test_user_cant_lock_instance_if_user_has_not_access_to_parent_ou(self):
         self.client.force_authenticate(self.yoda)
@@ -952,11 +947,9 @@ class InstancesAPITestCase(APITestCase):
             data={"id": Instance.objects.get(uuid=instance_uuid).pk, "validation_status": "LOCKED"},
         )
 
-        instance = Instance.objects.get(uuid=instance_uuid)
-        locked_table = InstanceLockTable.objects.last()
+        locked_table = InstanceLockTable.objects.filter(instance=instance).last()
 
         self.assertJSONResponse(response, 400)
-        self.assertEqual(instance.validation_status, "")
         self.assertEqual(locked_table, None)
 
     def test_user_cant_modify_instance_with_higher_orgunit(self):
@@ -968,7 +961,6 @@ class InstancesAPITestCase(APITestCase):
             period=202002,
             project=self.project,
             form=self.form_1,
-            validation_status="LOCKED",
         )
         instance_lock = InstanceLockTable.objects.create(
             instance=instance, is_locked=True, author=self.supervisor, top_org_unit=self.ou_top_1
@@ -977,7 +969,7 @@ class InstancesAPITestCase(APITestCase):
         self.client.force_authenticate(self.guest)
 
         response = self.client.patch(
-            f"/api/instances/{instance.pk}/", data={"id": instance.pk, "validation_status": ""}
+            f"/api/instances/{instance.pk}/", data={"id": instance.pk, "validation_status": "UNLOCK"}
         )
 
         guest_has_not_top_ou = (
@@ -998,7 +990,6 @@ class InstancesAPITestCase(APITestCase):
             period=202002,
             project=self.project,
             form=self.form_1,
-            validation_status="LOCKED",
         )
         instance_lock = InstanceLockTable.objects.create(
             instance=instance, is_locked=True, author=self.supervisor, top_org_unit=self.ou_top_1
@@ -1008,9 +999,7 @@ class InstancesAPITestCase(APITestCase):
 
         response = self.client.get(f"/api/instances/{instance.pk}/")
 
-        print(response.json())
         self.assertJSONResponse(response, 200)
-        self.assertEqual(response.json()["validation_status"], "LOCKED")
         self.assertEqual(response.json()["modification"], False)
 
     def test_modification_status_is_true_if_access_to_parent_ou(self):
@@ -1025,7 +1014,6 @@ class InstancesAPITestCase(APITestCase):
             period=202002,
             project=self.project,
             form=self.form_1,
-            validation_status="LOCKED",
         )
 
         InstanceLockTable.objects.create(
@@ -1035,5 +1023,27 @@ class InstancesAPITestCase(APITestCase):
         response = self.client.get(f"/api/instances/{instance.pk}/")
 
         self.assertJSONResponse(response, 200)
-        self.assertEqual(response.json()["validation_status"], "LOCKED")
+        self.assertEqual(response.json()["modification"], True)
+
+    def test_modification_status_is_true_if_access_to_parent_ou(self):
+        self.client.force_authenticate(self.yoda)
+
+        instance_uuid = str(uuid4())
+
+        instance = Instance.objects.create(
+            uuid=instance_uuid,
+            org_unit=self.jedi_council_corruscant,
+            name="2",
+            period=202002,
+            project=self.project,
+            form=self.form_1,
+        )
+
+        InstanceLockTable.objects.create(
+            instance=instance, is_locked=True, author=self.yoda, top_org_unit=self.jedi_council_corruscant
+        )
+
+        response = self.client.get(f"/api/instances/{instance.pk}/")
+
+        self.assertJSONResponse(response, 200)
         self.assertEqual(response.json()["modification"], True)

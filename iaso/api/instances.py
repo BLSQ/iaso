@@ -310,11 +310,12 @@ class InstancesViewSet(viewsets.ViewSet):
     def retrieve(self, request, pk=None):
         instance = get_object_or_404(self.get_queryset(), pk=pk)
         has_access = True
-        if instance.validation_status == "LOCKED":
-            lock_table = InstanceLockTable.objects.get(instance=instance, is_locked=True)
+        lock_table = InstanceLockTable.objects.filter(instance=instance, is_locked=True).last()
+        if lock_table:
             access_ou = OrgUnit.objects.filter_for_user_and_app_id(request.user, None)
             if lock_table.top_org_unit not in access_ou:
                 has_access = False
+
         response = instance.as_full_model()
         response["modification"] = has_access
         self.check_object_permissions(request, instance)
@@ -343,53 +344,47 @@ class InstancesViewSet(viewsets.ViewSet):
             raise serializers.ValidationError({"error": "You don't have the permission to modify this instance."})
 
         # check if a user is higher or not in the Org Unit Hierarchy
-        if (
-            InstanceLockTable.objects.filter(instance=instance, is_locked=True).exists()
-            or validation_status == "LOCKED"
-        ):
-            if InstanceLockTable.objects.filter(instance=instance).exists():
-                locked_history = InstanceLockTable.objects.get(instance=instance, is_locked=True)
-                current_top_ou = locked_history.top_org_unit
-                org_unit = locked_history.top_org_unit
-            else:
-                current_top_ou = instance.org_unit.parent
-                org_unit = instance.org_unit
-                locked_history = None
-            if current_top_ou is None:
-                if org_unit in access_ou:
-                    user_top_ou = org_unit
-            else:
-                while current_top_ou is not None:
-                    ou_tree.append(current_top_ou.pk)
-                    if current_top_ou in access_ou:
-                        user_top_ou = current_top_ou
+        instance_lock = InstanceLockTable.objects.filter(instance=instance).last()
+        if instance_lock and instance_lock.is_locked:
+            current_top_ou = instance_lock.top_org_unit
+            org_unit = instance_lock.top_org_unit
+        else:
+            current_top_ou = instance.org_unit.parent
+            org_unit = instance.org_unit
 
-                    current_top_ou = current_top_ou.parent
+        if current_top_ou is None:
+            if org_unit in access_ou:
+                user_top_ou = org_unit
+        else:
+            # Construct the ou_pyramid from the instance orgUnit or the top_org_unit
+            while current_top_ou is not None:
+                ou_tree.append(current_top_ou.pk)
+                if current_top_ou in access_ou:
+                    user_top_ou = current_top_ou
 
-            ou_tree = OrgUnit.objects.filter(pk__in=ou_tree)
+                current_top_ou = current_top_ou.parent
 
-            for ou in ou_tree:
-                has_higher_access = True if ou in access_ou else False
-                if has_higher_access:
-                    break
+        ou_tree = OrgUnit.objects.filter(pk__in=ou_tree)
 
-            if not has_higher_access:
-                raise serializers.ValidationError({"error": "You don't have the permission to modify this instance."})
+        # Loop on the pyramid to check by checking if the user has access to the high level orgUnit
+        for ou in ou_tree:
+            has_higher_access = True if ou in access_ou else False
+            if has_higher_access:
+                break
+        # Not allow any action (lock or unlock) when the user has not access to the high level of the instance orgUnit
+        if not has_higher_access:
+            raise serializers.ValidationError({"error": "You don't have the permission to modify this instance."})
 
-            if validation_status == "LOCKED":
-                InstanceLockTable.objects.create(
-                    instance=instance, is_locked=True, author=request.user, top_org_unit=user_top_ou
-                )
-                if locked_history is not None:
-                    locked_history.is_locked = False
-                    locked_history.save()
-
-                if validation_status == "":
-                    locked_history.is_locked = False
-                    locked_history.save()
-
-            if validation_status is not None:
-                instance.validation_status = validation_status
+        # lock when the user choose to lock
+        if validation_status == "LOCKED":
+            InstanceLockTable.objects.create(
+                instance=instance, is_locked=True, author=request.user, top_org_unit=user_top_ou
+            )
+        # unlock when the user choose to unlock
+        if validation_status == "UNLOCK":
+            InstanceLockTable.objects.create(
+                instance=instance, is_locked=False, author=request.user, top_org_unit=user_top_ou
+            )
 
         if original.org_unit.reference_instance and original.org_unit_id != request.data["org_unit"]:
             previous_orgunit = original.org_unit

@@ -96,7 +96,6 @@ export const BudgetRejectionPopUp: FunctionComponent<Props> = ({
                         value={text}
                         keyValue="comments"
                         label={MESSAGES.comments}
-                        errors={[]}
                         onChange={(_keyValue, input) => setText(input)}
                     />
                 </DialogContent>

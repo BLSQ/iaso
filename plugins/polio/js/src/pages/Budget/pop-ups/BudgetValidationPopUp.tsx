@@ -94,7 +94,6 @@ export const BudgetValidationPopUp: FunctionComponent<Props> = ({
                     </Button>
                     <Button
                         onClick={onConfirm}
-                        // autoFocus
                         variant="contained"
                         color="primary"
                     >

@@ -1,5 +1,6 @@
 import { IntlMessage } from '../../../../../hat/assets/js/apps/Iaso/types/intl';
 import { Pagination } from '../../../../../hat/assets/js/apps/Iaso/types/table';
+import { Nullable } from '../../../../../hat/assets/js/apps/Iaso/types/utils';
 
 /* eslint-disable camelcase */
 export type FormatForNFMArgs<T> = {
@@ -46,7 +47,7 @@ export type LqasImDistrictData = {
 
 export type LqasImDistrictDataWithNameAndRegion = LqasImDistrictData & {
     name: string;
-    region_name: string | null;
+    region_name: Nullable<string>;
 };
 export type ConvertedLqasImData = {
     rounds: { number: number; data: LqasImDistrictDataWithNameAndRegion[] }[];
@@ -104,3 +105,21 @@ export type BudgetStatus =
     | 'noBudgetSubmitted';
 
 export type BudgetEventType = 'submission' | 'validation' | 'comments';
+
+export type BudgetEvent = {
+    campaign: string;
+    author: number;
+    type: BudgetEventType;
+    status: BudgetStatus;
+    created_at: Nullable<string>;
+    updated_at: Nullable<string>;
+    deleted_at: Nullable<string>;
+    // legacy. should be deleted backend side
+    cc_emails: null;
+    comment: Nullable<string>;
+    links: Nullable<string>;
+    is_finalized: boolean;
+    is_email_sent: boolean;
+    target_teams: number[];
+    files: any;
+};

@@ -1161,6 +1161,10 @@ const MESSAGES = defineMessages({
         defaultMessage: 'Comments',
         id: 'iaso.polio.label.comments',
     },
+    comment: {
+        defaultMessage: 'Comment',
+        id: 'iaso.polio.label.comment',
+    },
     validation_ongoing: {
         defaultMessage: 'Approval ongoing',
         id: 'iaso.polio.label.approval_ongoing',
@@ -1309,6 +1313,14 @@ const MESSAGES = defineMessages({
     rejectBudgetForCampaign: {
         id: 'iaso.polio.label.rejectBudgetForCampaign',
         defaultMessage: 'Reject budget for campaign: {campaign}',
+    },
+    by: {
+        id: 'iaso.polio.label.by',
+        defaultMessage: 'by {author}',
+    },
+    onDate: {
+        id: 'iaso.polio.label.onDate',
+        defaultMessage: 'on {date}',
     },
 });
 

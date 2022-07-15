@@ -107,12 +107,13 @@ export type BudgetStatus =
 export type BudgetEventType = 'submission' | 'validation' | 'comments';
 
 export type BudgetEvent = {
+    id: number;
     campaign: string;
     author: number;
     type: BudgetEventType;
     status: BudgetStatus;
-    created_at: Nullable<string>;
-    updated_at: Nullable<string>;
+    created_at: string;
+    updated_at: string;
     deleted_at: Nullable<string>;
     // legacy. should be deleted backend side
     cc_emails: null;

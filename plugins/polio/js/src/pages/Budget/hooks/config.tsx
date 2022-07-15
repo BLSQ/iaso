@@ -22,6 +22,7 @@ import {
     useRestoreBudgetEvent,
 } from '../../../hooks/useDeleteBudgetEvent';
 import { useGetTeams } from '../../../hooks/useGetTeams';
+import { formatTargetTeams, formatUserName } from '../utils';
 
 const baseUrl = BUDGET_DETAILS;
 
@@ -165,10 +166,8 @@ export const useBudgetDetailsColumns = ({ profiles, data }): Column[] => {
                     const authorProfile = profiles?.profiles?.find(
                         profile => profile.user_id === author,
                     );
-                    const nameDisplayed =
-                        authorProfile?.first_name && authorProfile?.last_name
-                            ? `${authorProfile.first_name} ${authorProfile.last_name}`
-                            : authorProfile?.user_name ?? author;
+                    const nameDisplayed = formatUserName(authorProfile);
+
                     return (
                         <span className={getRowColor(settings)}>
                             {nameDisplayed}
@@ -183,17 +182,10 @@ export const useBudgetDetailsColumns = ({ profiles, data }): Column[] => {
                 sortable: false,
                 Cell: settings => {
                     const { target_teams } = settings.row.original;
-                    const teamsToDisplay =
-                        target_teams?.length === 0
-                            ? target_teams
-                            : target_teams
-                                  .map(
-                                      (target_team: number) =>
-                                          teams?.find(
-                                              team => team.id === target_team,
-                                          )?.name,
-                                  )
-                                  .join(', ');
+                    const teamsToDisplay = formatTargetTeams(
+                        target_teams,
+                        teams,
+                    );
                     return (
                         <span className={getRowColor(settings)}>
                             {teamsToDisplay}

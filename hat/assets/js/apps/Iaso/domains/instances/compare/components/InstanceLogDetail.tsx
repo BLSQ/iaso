@@ -8,9 +8,7 @@ import { ContactSupportOutlined } from '@material-ui/icons';
 import { useGetInstance } from '../hooks/useGetInstance';
 import { Instance, InstanceLog, InstanceLogData } from '../../types/instance';
 
-import InstanceDetailsInfos from '../../components/InstanceDetailsInfos';
-import InstanceDetailsLocation from '../../components/InstanceDetailsLocation';
-import InstanceFileContent from '../../components/InstanceFileContent';
+import InstanceLogContent from './InstanceLogContent';
 import WidgetPaper from '../../../../components/papers/WidgetPaperComponent';
 import ErrorPaperComponent from '../../../../components/papers/ErrorPaperComponent';
 
@@ -22,12 +20,12 @@ type Params = {
 };
 type Props = {
     params: Params;
-    instance: InstanceLogData;
+    instance: InstanceLogData | undefined;
 };
 
 export const InstanceLogDetail: FunctionComponent<Props> = ({
     logId,
-    isInstanceLog,
+    formVersionId,
     params,
     instance,
 }) => {
@@ -42,7 +40,8 @@ export const InstanceLogDetail: FunctionComponent<Props> = ({
     } = useGetInstanceLogDetail(logId);
 
     const { formatMessage } = useSafeIntl();
-
+    console.log('log id log detail', logId);
+    console.log('instance log detail', instance);
     if (isLoading)
         return (
             <Box height="70vh">
@@ -67,10 +66,7 @@ export const InstanceLogDetail: FunctionComponent<Props> = ({
             </Box>
 
             <WidgetPaper title={formatMessage(MESSAGES.submissionTitle)}>
-                <InstanceFileContent
-                    isInstanceLog={isInstanceLog}
-                    instance={data}
-                />
+                <InstanceFileContent instance={data} />
             </WidgetPaper>
         </>
     );

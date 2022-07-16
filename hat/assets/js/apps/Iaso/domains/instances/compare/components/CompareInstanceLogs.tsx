@@ -108,7 +108,7 @@ export const CompareInstanceLogs: FunctionComponent<Props> = ({
                             loading={isFetchingInstanceLogs}
                         />
                         <InstanceLogDetail
-                            isInstanceLog
+                            logId={params.logA}
                             instance={instanceLogA}
                         />
                     </Grid>

@@ -16,6 +16,11 @@ const getInstanceLogDetail = (
     return getRequest(`/api/logs/${logId}`);
 };
 
+// const getFormVersion = versionId => {
+//     console.log('version id', versionId);
+//     return getRequest(`/api/formVersions/${versionId}/?fields=descriptor`);
+// };
+
 export const useGetInstanceLogs = (
     instanceId: string | undefined,
 ): UseQueryResult<Instance, Error> => {
@@ -54,7 +59,8 @@ export const useGetInstanceLogDetail = (
             enabled: Boolean(logId),
             select: (data: InstanceLog | undefined) => {
                 if (data) {
-                    return data.new_value[0].fields.json;
+                    data = data.new_value[0].json;
+                    return data;
                 }
 
                 return undefined;
@@ -62,3 +68,25 @@ export const useGetInstanceLogDetail = (
         },
     );
 };
+
+// export const useGetFormVersion = (
+//     formVersionId: string | undefined,
+// ): UseQueryResult<FormDescritor, Error> => {
+//     const queryKey: any[] = ['instanceLogDetail', formVersionId];
+//     // @ts-ignore
+//     return useSnackQuery(
+//         queryKey,
+//         () => getFormVersion(formVersionId),
+//         undefined,
+//         {
+//             enabled: Boolean(formVersionId),
+//             select: (data: FormDescriptor | undefined) => {
+//                 if (data) {
+//                     return data;
+//                 }
+
+//                 return undefined;
+//             },
+//         },
+//     );
+// };

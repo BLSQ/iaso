@@ -34,3 +34,7 @@ export type InstanceLog = {
     old_value: InstanceLogData;
     new_value: InstanceLogData;
 };
+
+export type FormDescriptor = {
+    descriptor: Record<string, any>;
+};

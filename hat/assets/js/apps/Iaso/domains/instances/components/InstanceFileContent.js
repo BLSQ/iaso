@@ -23,26 +23,18 @@ export default class InstanceFileContent extends Component {
     }
 
     render() {
-        const { instance, showQuestionKey, showNote, isInstanceLog } =
-            this.props;
-        const hasDescriptor =
-            !isInstanceLog && instance.form_descriptor !== null;
-
-        console.log('instance', instance);
+        const { instance, showQuestionKey, showNote } = this.props;
+        const hasDescriptor = instance.form_descriptor !== null;
 
         return !this.state.hasError && hasDescriptor ? (
             <InstanceFileContentRich
-                instanceData={
-                    isInstanceLog ? instance.json : instance.file_content
-                }
-                formDescriptor={!isInstanceLog && instance.form_descriptor}
+                instanceData={instance.file_content}
+                formDescriptor={instance.form_descriptor}
                 showQuestionKey={showQuestionKey}
                 showNote={showNote}
             />
         ) : (
-            !isInstanceLog && (
-                <InstanceFileContentBasic fileContent={instance.file_content} />
-            )
+            <InstanceFileContentBasic fileContent={instance.file_content} />
         );
     }
 }
@@ -50,12 +42,10 @@ export default class InstanceFileContent extends Component {
 InstanceFileContent.defaultProps = {
     showQuestionKey: true,
     showNote: true,
-    isInstanceLog: false,
 };
 
 InstanceFileContent.propTypes = {
     instance: PropTypes.object.isRequired,
     showQuestionKey: PropTypes.bool,
     showNote: PropTypes.bool,
-    isInstanceLog: PropTypes.bool,
 };

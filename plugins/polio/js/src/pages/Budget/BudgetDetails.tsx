@@ -252,10 +252,12 @@ export const BudgetDetails: FunctionComponent<Props> = ({ router }) => {
                 <Grid container spacing={2}>
                     {/* TODO add loading state */}
                     {isMobileLayout && budgetDetails && profiles && (
-                        <BudgetEventCard
-                            event={budgetDetails?.results[0]}
-                            profiles={profiles?.profiles}
-                        />
+                        <Grid item xs={12}>
+                            <BudgetEventCard
+                                event={budgetDetails?.results[0]}
+                                profiles={profiles?.profiles}
+                            />
+                        </Grid>
                     )}
                     {!isMobileLayout && (
                         <Grid item xs={8}>

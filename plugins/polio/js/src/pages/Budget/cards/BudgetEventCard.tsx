@@ -2,21 +2,35 @@ import {
     Card,
     CardActionArea,
     CardContent,
+    Divider,
     Grid,
     Typography,
 } from '@material-ui/core';
 import React, { FunctionComponent, useMemo, useState } from 'react';
-// @ts-ignore
-import { useSafeIntl } from 'bluesquare-components';
+import {
+    // @ts-ignore
+    useSafeIntl,
+    // @ts-ignore
+    IconButton as IconButtonComponent,
+} from 'bluesquare-components';
 import moment from 'moment';
 import { BudgetEvent } from '../../../constants/types';
 import MESSAGES from '../../../constants/messages';
-import { Profile } from '../../../../../../../hat/assets/js/apps/Iaso/utils/usersUtils';
+import {
+    Profile,
+    useCurrentUser,
+} from '../../../../../../../hat/assets/js/apps/Iaso/utils/usersUtils';
 import { formatTargetTeams, formatUserName } from '../utils';
 import { useGetTeams } from '../../../hooks/useGetTeams';
 import { Nullable } from '../../../../../../../hat/assets/js/apps/Iaso/types/utils';
 import { BudgetFilesModalForCards } from '../pop-ups/BudgetFilesModalForCards';
 import { useGetBudgetEventFiles } from '../../../hooks/useGetBudgetEventFiles';
+import DeleteDialog from '../../../../../../../hat/assets/js/apps/Iaso/components/dialogs/DeleteDialogComponent';
+import {
+    useDeleteBudgetEvent,
+    useRestoreBudgetEvent,
+} from '../../../hooks/useDeleteBudgetEvent';
+import { CreateEditBudgetEvent } from '../CreateEditBudgetEvent';
 
 type Props = {
     event: BudgetEvent;
@@ -65,17 +79,20 @@ export const BudgetEventCard: FunctionComponent<Props> = ({
     console.log('CARD', event);
     console.log('PROFILES', profiles);
     const { formatMessage } = useSafeIntl();
+    const currentUser = useCurrentUser();
+    const userIsAuthor = event?.author === currentUser.user_id;
     const { data: teams = [], isFetching: isFetchingTeams } = useGetTeams();
     const { data: budgetEventFiles, isFetching } = useGetBudgetEventFiles(
         event.id,
     );
-    console.log('files', budgetEventFiles);
+    const { mutateAsync: deleteBudgetEvent } = useDeleteBudgetEvent();
+    const { mutateAsync: restoreBudgetEvent } = useRestoreBudgetEvent();
+
     const actionMessage = formatActionMessage(
         formatMessage,
         event.comment ?? undefined,
         budgetEventFiles?.length,
     );
-    console.log('actionMEssage', actionMessage);
     const [openModal, setOpenModal] = useState<boolean>(false);
     const title = formatMessage(MESSAGES[event.type]);
     const userName = useMemo(
@@ -85,7 +102,6 @@ export const BudgetEventCard: FunctionComponent<Props> = ({
     const formattedCreationDate = moment(event.created_at).format('L');
     const targetTeams = formatTargetTeams(event.target_teams, teams);
     const truncatedComment = formatComment(event.comment);
-    // const actionMessage = formatActionMessage(event.comment, event.files);
 
     return (
         <Card>
@@ -131,8 +147,39 @@ export const BudgetEventCard: FunctionComponent<Props> = ({
                         recipients={event.target_teams.join(',')}
                     />
                 </Grid>
-                <Grid xs={2}>
-                    <span>Button</span>
+                <Grid
+                    container
+                    xs={2}
+                    direction="column"
+                    justifyContent="center"
+                >
+                    <Divider orientation="vertical" />
+                    {!event?.is_finalized && userIsAuthor && (
+                        <CreateEditBudgetEvent
+                            campaignId={event?.campaign}
+                            type="edit"
+                            budgetEvent={event}
+                            iconColor={
+                                event?.deleted_at ? 'secondary' : 'action'
+                            }
+                        />
+                    )}
+                    {!event.deleted_at && userIsAuthor && (
+                        <DeleteDialog
+                            titleMessage={MESSAGES.deleteBudgetEvent}
+                            message={MESSAGES.deleteBudgetEvent}
+                            onConfirm={() => deleteBudgetEvent(event?.id)}
+                            keyName={`deleteBudgetEvent-card-${event?.id}`}
+                        />
+                    )}
+                    {event.deleted_at && userIsAuthor && (
+                        <IconButtonComponent
+                            color="secondary"
+                            icon="restore-from-trash"
+                            tooltipMessage={MESSAGES.restore}
+                            onClick={() => restoreBudgetEvent(event?.id)}
+                        />
+                    )}
                 </Grid>
             </Grid>
         </Card>

@@ -12,7 +12,7 @@
       <script>
         window.STATIC_URL = "{{ STATIC_URL }}";
         const PLUGINS_ENABLED = {{ PLUGINS_ENABLED|safe }};
-        const USER_HOME_PAGE = "{{ USER_HOME_PAGE|safe }}";
+        const USER_HOME_PAGE = "{{ USER_HOME_PAGE }}";
         // From context processor
         const THEME = {{ theme|safe }};
         window.iasoApp(document.getElementById("app"), PLUGINS_ENABLED, THEME, USER_HOME_PAGE);

@@ -3,6 +3,7 @@ import Forms from '../domains/forms';
 import FormDetail from '../domains/forms/detail';
 import FormsStats from '../domains/forms/stats';
 import OrgUnits from '../domains/orgUnits';
+import { OrgUnits as OrgUnitsNew } from '../domains/orgUnits/index.tsx';
 import { Links } from '../domains/links';
 import Runs from '../domains/links/Runs';
 import OrgUnitDetail from '../domains/orgUnits/detail';
@@ -262,6 +263,38 @@ export const orgUnitsPath = {
     baseUrl: baseUrls.orgUnits,
     permissions: ['iaso_org_units'],
     component: props => <OrgUnits {...props} />,
+    params: [
+        {
+            isRequired: true,
+            key: 'locationLimit',
+        },
+        ...paginationPathParams.map(p => ({
+            ...p,
+            isRequired: true,
+        })),
+        {
+            isRequired: false,
+            key: 'tab',
+        },
+        {
+            isRequired: false,
+            key: 'searchTabIndex',
+        },
+        {
+            isRequired: false,
+            key: 'searchActive',
+        },
+        {
+            isRequired: false,
+            key: 'searches',
+        },
+    ],
+};
+
+export const orgUnitsPathNew = {
+    baseUrl: baseUrls.orgUnitsNew,
+    permissions: ['iaso_org_units'],
+    component: props => <OrgUnitsNew {...props} />,
     params: [
         {
             isRequired: true,
@@ -675,4 +708,5 @@ export const routeConfigs = [
     teamsPath,
     planningPath,
     assignmentsPath,
+    orgUnitsPathNew,
 ];

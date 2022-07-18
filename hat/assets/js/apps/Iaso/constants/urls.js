@@ -8,6 +8,7 @@ export const baseUrls = {
     instanceDetail: 'forms/submission',
     compareInstances: 'forms/compare',
     orgUnits: 'orgunits/list',
+    orgUnitsNew: 'orgunits/list/new',
     groups: 'orgunits/groups',
     orgUnitTypes: 'orgunits/types',
     orgUnitDetails: 'orgunits/detail',

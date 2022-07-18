@@ -18,6 +18,14 @@ const addRoutes = (baseRoutes, overrideLanding) => {
             ).replace('#', '')}"}]`}
         />,
         <Redirect
+            path={baseUrls.orgUnitsNew}
+            to={`${
+                baseUrls.orgUnitsNew
+            }/locationLimit/${locationLimitMax}/order/id/pageSize/50/page/1/searchTabIndex/0/searches/[{"validation_status":"all", "color":"${getChipColors(
+                0,
+            ).replace('#', '')}"}]`}
+        />,
+        <Redirect
             path={baseUrls.mappings}
             to={`${baseUrls.mappings}/order/form_version__form__name,form_version__version_id,mapping__mapping_type/pageSize/20/page/1`}
         />,

@@ -193,6 +193,10 @@ const MESSAGES = defineMessages({
         defaultMessage: 'An error occurred while fetching permissions list',
         id: 'iaso.snackBar.fetchPermissions',
     },
+    homePage: {
+        defaultMessage: 'Home page',
+        id: 'iaso.users.label.homePage',
+    },
 });
 
 export default MESSAGES;

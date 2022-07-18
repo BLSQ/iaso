@@ -22,11 +22,15 @@ const queryClient = new QueryClient({
     },
 });
 
-export default function iasoApp(element, enabledPluginsName, themeConfig) {
+export default function iasoApp(
+    element,
+    enabledPluginsName,
+    themeConfig,
+    userHomePage,
+) {
     const plugins = getPlugins(enabledPluginsName);
     const allRoutesConfigs = [
         ...routeConfigs,
-        // Beware not to flatten too far
         ...plugins.map(plugin => plugin.routes).flat(),
     ];
     const baseRoutes = allRoutesConfigs.map(routeConfig => (
@@ -52,12 +56,12 @@ export default function iasoApp(element, enabledPluginsName, themeConfig) {
     const overrideLandingRoutes = plugins
         .filter(plugin => plugin.overrideLanding)
         .map(plugin => plugin.overrideLanding);
-    // using the last plugin override (arbitrary choice
+    // using the last plugin override (arbitrary choice)
     const overrideLanding =
         overrideLandingRoutes.length > 0
             ? overrideLandingRoutes[overrideLandingRoutes.length - 1]
             : undefined;
-    const routes = addRoutes(baseRoutes, overrideLanding);
+    const routes = addRoutes(baseRoutes, userHomePage || overrideLanding);
     ReactDOM.render(
         <QueryClientProvider client={queryClient}>
             <PluginsContext.Provider value={{ plugins }}>
@@ -66,11 +70,7 @@ export default function iasoApp(element, enabledPluginsName, themeConfig) {
                         theme={getOverriddenTheme(theme, themeConfig)}
                     >
                         <CssBaseline />
-                        <App
-                          store={store}
-                          routes={routes}
-                          history={history}
-                        />
+                        <App store={store} routes={routes} history={history} />
                     </MuiThemeProvider>
                 </ThemeConfigContext.Provider>
             </PluginsContext.Provider>

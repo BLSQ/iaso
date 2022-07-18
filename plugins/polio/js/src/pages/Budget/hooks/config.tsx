@@ -30,7 +30,7 @@ const styles = theme => {
         deletedRow: {
             color: theme.palette.secondary.main,
         },
-        p: { margin: 0 },
+        paragraph: { margin: 0 },
     };
 };
 
@@ -166,8 +166,9 @@ export const useBudgetDetailsColumns = ({ profiles, data }): Column[] => {
                     const authorProfile = profiles?.profiles?.find(
                         profile => profile.user_id === author,
                     );
-                    const authorTeams = teams.filter(team =>
-                        team.users.includes(author),
+                    const authorTeams = useMemo(
+                        () => teams.filter(team => team.users.includes(author)),
+                        [author],
                     );
                     const authorTeam =
                         type === 'validation'
@@ -188,13 +189,15 @@ export const useBudgetDetailsColumns = ({ profiles, data }): Column[] => {
                         <>
                             <p
                                 className={`${getRowColor(settings)} ${
-                                    classes.p
+                                    classes.paragraph
                                 }`}
                             >
                                 {nameDisplayed}
                             </p>
                             {authorTeam && (
-                                <p className={classes.p}>{authorTeam.name}</p>
+                                <p className={classes.paragraph}>
+                                    {authorTeam.name}
+                                </p>
                             )}
                         </>
                     );

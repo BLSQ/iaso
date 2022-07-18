@@ -156,9 +156,29 @@ class InstancesViewSet(viewsets.ViewSet):
                     else:
                         return None
 
+                def instance_lock_status(x):
+                    has_access = True
+                    return InstanceLockTable.objects.filter(instance=x).last()
+
                 def as_dict_formatter(x):
                     dict = x.as_dict()
                     reference_form_id = get_reference_form_id(x.org_unit) if has_org_unit(x) else None
+                    instance_status = instance_lock_status(x)
+                    has_access = True
+                    is_locked = False
+                    access_ou = OrgUnit.objects.filter_for_user_and_app_id(request.user, None)
+                    if instance_status:
+                        is_locked = instance_status.is_locked
+                        if instance_status.top_org_unit not in access_ou:
+                            has_access = False
+                    else:
+                        is_locked = None
+                        if x.org_unit.parent is not None:
+                            has_access = False if x.org_unit.parent not in access_ou else True
+                        else:
+                            has_access = False if x.org_unit not in access_ou else True
+                    dict["has_access"] = has_access
+                    dict["is_locked"] = is_locked
                     if reference_form_id:
                         dict["reference_form_id"] = reference_form_id
                     return dict
@@ -328,6 +348,7 @@ class InstancesViewSet(viewsets.ViewSet):
         return Response(instance.as_full_model())
 
     def patch(self, request, pk=None):
+        print("params =====", request.data.get("validation_status", None))
         original = get_object_or_404(self.get_queryset(), pk=pk)
         instance = get_object_or_404(self.get_queryset(), pk=pk)
         self.check_object_permissions(request, instance)

@@ -4,10 +4,13 @@ import React from 'react';
 import { IconButton as IconButtonComponent } from 'bluesquare-components';
 import LinkIcon from '@material-ui/icons/Link';
 import LinkOffIcon from '@material-ui/icons/LinkOff';
+import LockIcon from '@material-ui/icons/Lock';
+import LockOpenIcon from '@material-ui/icons/LockOpen';
 import omit from 'lodash/omit';
 import { DialogContentText } from '@material-ui/core';
 import { FormattedMessage } from 'react-intl';
 import { useSaveOrgUnit } from '../../orgUnits/hooks';
+import { usePatchInstance } from '../hooks';
 import { baseUrls } from '../../../constants/urls';
 import { userHasPermission } from '../../users/utils';
 import MESSAGES from '../messages';
@@ -33,6 +36,13 @@ const initialFormState = (orgUnit, referenceSubmissionId) => {
     };
 };
 
+const initialInstanceState = (instance, status) => {
+    return {
+        id: instance?.id,
+        valisation_status: 'LOCKED',
+    };
+};
+
 const ActionTableColumnComponent = ({ settings, user }) => {
     const [_formState, _setFieldValue, setFieldErrors] = useFormState(
         initialFormState(
@@ -42,6 +52,7 @@ const ActionTableColumnComponent = ({ settings, user }) => {
     );
 
     const { mutateAsync: saveOu } = useSaveOrgUnit(null, ['instances']);
+    const { mutateAsync: saveInstance } = usePatchInstance(null, ['instances']);
 
     const onError = () => {
         if (onError.status === 400) {
@@ -92,6 +103,26 @@ const ActionTableColumnComponent = ({ settings, user }) => {
         saveOu(orgUnitPayload).catch(onError);
     };
 
+    const unlockInstance = status => {
+        const newInstance = initialInstanceState(settings.row.original, status);
+        let orgUnitPayload = newInstance;
+        orgUnitPayload = {
+            ...orgUnitPayload,
+        };
+        console.log('hello', orgUnitPayload);
+        saveInstance(orgUnitPayload).catch(onError);
+    };
+
+    const lockInstance = status => {
+        const newInstance = initialInstanceState(settings.row.original, status);
+        let orgUnitPayload = newInstance;
+        orgUnitPayload = {
+            ...orgUnitPayload,
+        };
+        console.log('hello', orgUnitPayload);
+        saveInstance(orgUnitPayload).catch(onError);
+    };
+
     const showButton =
         settings.row.original.reference_form_id ===
             settings.row.original.form_id &&
@@ -112,6 +143,10 @@ const ActionTableColumnComponent = ({ settings, user }) => {
         return !isItLinked
             ? linkOrgUnitToReferenceSubmission(null)
             : linkOrgUnitToReferenceSubmission(settings.row.original.id);
+    };
+
+    const confirmLockUnlockInstance = isLocked => {
+        return isLocked ? unlockInstance('UNLOCKED') : lockInstance('LOCKED');
     };
 
     const confirmCancelToolTipMessage = isItLinked => {
@@ -150,6 +185,49 @@ const ActionTableColumnComponent = ({ settings, user }) => {
                                 notLinked,
                             )}
                             color={notLinked ? 'inherit' : 'primary'}
+                        />
+                    )}
+                >
+                    <DialogContentText id="alert-dialog-description">
+                        <FormattedMessage
+                            id="iaso.instance.linkOrgUnitToInstanceReferenceWarning"
+                            defaultMessage="This operation can still be undone"
+                            {...MESSAGES.linkOrgUnitToInstanceReferenceWarning}
+                        />
+                    </DialogContentText>
+                </ConfirmCancelDialogComponent>
+            )}
+            {settings.row.original.has_access && (
+                <ConfirmCancelDialogComponent
+                    titleMessage={
+                        settings.row.original.is_locked
+                            ? MESSAGES.unlockedWarning
+                            : MESSAGES.lockedWarning
+                    }
+                    onConfirm={closeDialog => {
+                        confirmLockUnlockInstance(
+                            settings.row.original.is_locked,
+                        );
+                        closeDialog();
+                    }}
+                    renderTrigger={({ openDialog }) => (
+                        <IconButtonComponent
+                            onClick={openDialog}
+                            overrideIcon={
+                                settings.row.original.is_locked
+                                    ? LockOpenIcon
+                                    : LockIcon
+                            }
+                            tooltipMessage={
+                                settings.row.original.is_locked
+                                    ? MESSAGES.unlocked
+                                    : MESSAGES.locked
+                            }
+                            color={
+                                settings.row.original.is_locked
+                                    ? 'inherit'
+                                    : 'primary'
+                            }
                         />
                     )}
                 >

@@ -412,6 +412,22 @@ const MESSAGES = defineMessages({
         defaultMessage:
             'Are you sure you want to unlink this reference submission from the orgUnit ?',
     },
+    locked: {
+        id: 'iaso.instance.locked',
+        defaultMessage: 'Lock the instance',
+    },
+    unlocked: {
+        id: 'iaso.instance.unlocked',
+        defaultMessage: 'Unlock the instance',
+    },
+    lockedWarning: {
+        id: 'iaso.instance.dialog.lockedWarning',
+        defaultMessage: 'Are you sure you want to lock the submission ?',
+    },
+    unlockedWarning: {
+        id: 'iaso.instance.dialog.unlockedWarning',
+        defaultMessage: 'Are you sure you want to unlock the submission ?',
+    },
 });
 
 export default MESSAGES;

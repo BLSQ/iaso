@@ -16,6 +16,7 @@ import { formatTargetTeams, formatUserName } from '../utils';
 import { useGetTeams } from '../../../hooks/useGetTeams';
 import { Nullable } from '../../../../../../../hat/assets/js/apps/Iaso/types/utils';
 import { BudgetFilesModalForCards } from '../pop-ups/BudgetFilesModalForCards';
+import { useGetBudgetEventFiles } from '../../../hooks/useGetBudgetEventFiles';
 
 type Props = {
     event: BudgetEvent;
@@ -37,12 +38,25 @@ const formatComment = (comment: Nullable<string>): Nullable<string> => {
     return comment;
 };
 
-// const useActionMessage = (comment: string, files = 0) => {
-//     const { formatMessage } = useSafeIntl();
-//     const fileMsg = formatMessage(MESSAGES.files);
-//     if (comment.length <= COMMENT_CHAR_LIMIT) return `${files} ${fileMsg}`;
-//     return `${formatMessage(MESSAGES.seeFullMessage)} + ${files} ${fileMsg}`;
-// };
+const formatActionMessage = (
+    formatMessage,
+    comment = '',
+    files = 0,
+): Nullable<string> => {
+    const fileMsg = `${files} ${formatMessage(MESSAGES.files)}`;
+    const commentsMessage = formatMessage(MESSAGES.seeFullComment);
+
+    if (comment.length > COMMENT_CHAR_LIMIT && files > 0) {
+        return `${commentsMessage} + ${fileMsg}`;
+    }
+    if (comment.length <= COMMENT_CHAR_LIMIT && files > 0) {
+        return `${formatMessage(MESSAGES.see)} ${fileMsg}`;
+    }
+    if (comment.length > COMMENT_CHAR_LIMIT && files === 0) {
+        return `${commentsMessage}`;
+    }
+    return null;
+};
 
 export const BudgetEventCard: FunctionComponent<Props> = ({
     event,
@@ -52,6 +66,16 @@ export const BudgetEventCard: FunctionComponent<Props> = ({
     console.log('PROFILES', profiles);
     const { formatMessage } = useSafeIntl();
     const { data: teams = [], isFetching: isFetchingTeams } = useGetTeams();
+    const { data: budgetEventFiles, isFetching } = useGetBudgetEventFiles(
+        event.id,
+    );
+    console.log('files', budgetEventFiles);
+    const actionMessage = formatActionMessage(
+        formatMessage,
+        event.comment ?? undefined,
+        budgetEventFiles?.length,
+    );
+    console.log('actionMEssage', actionMessage);
     const [openModal, setOpenModal] = useState<boolean>(false);
     const title = formatMessage(MESSAGES[event.type]);
     const userName = useMemo(
@@ -85,12 +109,14 @@ export const BudgetEventCard: FunctionComponent<Props> = ({
                                     MESSAGES.destination,
                                 )}: ${targetTeams}`}
                             </Typography>
-
-                            <Typography>
-                                {`${formatMessage(
-                                    MESSAGES.comment,
-                                )}: ${truncatedComment}`}
-                            </Typography>
+                            {truncatedComment && (
+                                <Typography>
+                                    {`${formatMessage(
+                                        MESSAGES.comment,
+                                    )}: ${truncatedComment}`}
+                                </Typography>
+                            )}
+                            <Typography> {actionMessage}</Typography>
                         </CardContent>
                     </CardActionArea>
                     <BudgetFilesModalForCards

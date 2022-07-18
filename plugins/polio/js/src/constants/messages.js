@@ -1322,6 +1322,18 @@ const MESSAGES = defineMessages({
         id: 'iaso.polio.label.onDate',
         defaultMessage: 'on {date}',
     },
+    seeFullComment: {
+        id: 'iaso.polio.label.seeFullComment',
+        defaultMessage: 'See full comment',
+    },
+    files: {
+        id: 'iaso.polio.label.files',
+        defaultMessage: 'files',
+    },
+    see: {
+        id: 'iaso.polio.label.see',
+        defaultMessage: 'See',
+    },
 });
 
 export default MESSAGES;

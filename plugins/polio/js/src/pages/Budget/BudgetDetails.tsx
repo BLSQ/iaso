@@ -189,8 +189,8 @@ export const BudgetDetails: FunctionComponent<Props> = ({ router }) => {
                         </Typography>
                     </Box>
 
-                    <Grid container justifyContent="space-between">
-                        <Grid container item xs={6}>
+                    <Grid container justifyContent="space-between" spacing={1}>
+                        <Grid container item xs={6} spacing={1}>
                             {!isFetchingAll && (
                                 <BudgetStatus budgetStatus={budgetStatus} />
                             )}
@@ -207,7 +207,10 @@ export const BudgetDetails: FunctionComponent<Props> = ({ router }) => {
                                 {budgetStatus !== 'approved' &&
                                     isUserInApprovalTeam &&
                                     budgetHasSubmission && (
-                                        <Box mr={isMobileLayout ? 0 : 4}>
+                                        <Box
+                                            mr={isMobileLayout ? 0 : 4}
+                                            mb={isMobileLayout ? 1 : 0}
+                                        >
                                             <BudgetValidationPopUp
                                                 campaignName={campaignName}
                                                 campaignId={campaignId}

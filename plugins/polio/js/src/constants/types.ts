@@ -123,4 +123,5 @@ export type BudgetEvent = {
     is_email_sent: boolean;
     target_teams: number[];
     files: any;
+    internal: boolean;
 };

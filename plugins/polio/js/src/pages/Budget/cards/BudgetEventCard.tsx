@@ -1,4 +1,5 @@
 import {
+    Box,
     Card,
     CardActionArea,
     CardContent,
@@ -15,6 +16,7 @@ import {
     IconButton as IconButtonComponent,
 } from 'bluesquare-components';
 import moment from 'moment';
+import LockIcon from '@material-ui/icons/Lock';
 import { BudgetEvent, BudgetEventType } from '../../../constants/types';
 import MESSAGES from '../../../constants/messages';
 import {
@@ -132,6 +134,24 @@ export const BudgetEventCard: FunctionComponent<Props> = ({
     );
     const [openModal, setOpenModal] = useState<boolean>(false);
     const title = formatMessage(MESSAGES[event.type]);
+    const icon = event?.internal ? (
+        <div
+            style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                verticalAlign: 'middle',
+            }}
+        >
+            <LockIcon
+                style={{
+                    fontSize: '16px',
+                    marginLeft: '10px',
+                    marginBottom: '2px',
+                }}
+                color="action"
+            />
+        </div>
+    ) : null;
     const authorName = useMemo(
         () => formatUserName(getProfileFromId(event.author, profiles)),
         [event.author, profiles],
@@ -147,7 +167,12 @@ export const BudgetEventCard: FunctionComponent<Props> = ({
                 <Grid item xs={10}>
                     <CardActionArea>
                         <CardContent onClick={() => setOpenModal(true)}>
-                            <Typography variant="h6">{title}</Typography>
+                            <Box>
+                                <Typography variant="h6">
+                                    {title}
+                                    {icon}
+                                </Typography>
+                            </Box>
                             <Typography variant="body2">
                                 {formatMessage(MESSAGES.onDate, {
                                     date: formattedCreationDate,

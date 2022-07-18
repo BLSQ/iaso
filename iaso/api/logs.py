@@ -21,7 +21,7 @@ def has_access_to(user: User, obj: Union[OrgUnit, Instance, models.Model]):
         return obj in ous
     if isinstance(obj, Instance):
         instances = Instance.objects.filter_for_user(user)
-        return obj in instances
+        return user.has_perm("menupermissions.iaso_submissions") and obj in instances
     if isinstance(obj, Form):
         forms = Form.objects.filter_for_user_and_app_id(user)
         return obj in forms

@@ -8,7 +8,7 @@ from copy import deepcopy
 class LogsAPITestCase(APITestCase):
     @classmethod
     def setUpTestData(cls):
-        ghi = m.Account.objects.create(name="Global Health Initiative")
+        cls.ghi = ghi = m.Account.objects.create(name="Global Health Initiative")
         wha = m.Account.objects.create(name="Worldwide Health Aid")
         cls.ead = m.Project.objects.create(name="End All Diseases", account=ghi)
         cls.esd = m.Project.objects.create(name="End Some Diseases", account=wha)
@@ -170,3 +170,26 @@ class LogsAPITestCase(APITestCase):
         response = self.client.get(f"/api/logs/{modification.id}/")
         r = self.assertJSONResponse(response, 401)
         self.assertEqual(r, {"error": "Unauthorized"})
+
+    def test_perm_instance(self):
+        """To read instance history the user need the additional perm iaso_submission"""
+        instance = self.create_form_instance(form=self.reference_form, project=self.reference_form.projects.first())
+        modification = log_modification(None, instance, user=self.jane, source="myunittest")
+        user_with_instance_perm = self.create_user_with_profile(
+            username="bob", account=self.ghi, permissions=["iaso_submissions"]
+        )
+        user_no_instance_perm = self.create_user_with_profile(username="bob2", account=self.ghi, permissions=[])
+        user_superuser = self.create_user_with_profile(username="superuser", account=self.ghi, is_superuser=True)
+
+        self.client.force_authenticate(user_with_instance_perm)
+        response = self.client.get(f"/api/logs/{modification.id}/")
+        r = self.assertJSONResponse(response, 200)
+
+        self.client.force_authenticate(user_no_instance_perm)
+        response = self.client.get(f"/api/logs/{modification.id}/")
+        r = self.assertJSONResponse(response, 401)
+        self.assertEqual(r, {"error": "Unauthorized"})
+
+        self.client.force_authenticate(user_superuser)
+        response = self.client.get(f"/api/logs/{modification.id}/")
+        r = self.assertJSONResponse(response, 200)

@@ -64,20 +64,27 @@ const formatActionMessage = (
     formatMessage,
     comment = '',
     files = 0,
+    links = '',
 ): Nullable<string> => {
     const fileMsg = `${files} ${formatMessage(MESSAGES.files)}`;
     const commentsMessage = formatMessage(MESSAGES.seeFullComment);
+    const linkMessage = formatMessage(MESSAGES.links);
+
+    let message: Nullable<string> = null;
 
     if (comment.length > COMMENT_CHAR_LIMIT && files > 0) {
-        return `${commentsMessage} + ${fileMsg}`;
+        message = `${commentsMessage} + ${fileMsg}`;
     }
     if (comment.length <= COMMENT_CHAR_LIMIT && files > 0) {
-        return `${formatMessage(MESSAGES.see)} ${fileMsg}`;
+        message = `${formatMessage(MESSAGES.see)} ${fileMsg}`;
     }
     if (comment.length > COMMENT_CHAR_LIMIT && files === 0) {
-        return `${commentsMessage}`;
+        message = `${commentsMessage}`;
     }
-    return null;
+    if (links) {
+        message = `${message ?? formatMessage(MESSAGES.see)} + ${linkMessage}`;
+    }
+    return message;
 };
 
 const findAuthorTeam = (
@@ -121,6 +128,7 @@ export const BudgetEventCard: FunctionComponent<Props> = ({
         formatMessage,
         event.comment ?? undefined,
         budgetEventFiles?.length,
+        event.links ?? undefined,
     );
     const [openModal, setOpenModal] = useState<boolean>(false);
     const title = formatMessage(MESSAGES[event.type]);
@@ -145,9 +153,6 @@ export const BudgetEventCard: FunctionComponent<Props> = ({
                                     date: formattedCreationDate,
                                 })}
                                 <Typography>
-                                    {/* {formatMessage(MESSAGES.by, {
-                                        author: authorName,
-                                    })} */}
                                     {`${authorName} - ${authorTeam}`}
                                 </Typography>
                             </Typography>
@@ -157,7 +162,8 @@ export const BudgetEventCard: FunctionComponent<Props> = ({
                                 )}: ${targetTeams}`}
                             </Typography>
                             {truncatedComment && (
-                                <Typography>
+                                // @ts-ignore
+                                <Typography style={{ wordWrap: 'anywhere' }}>
                                     {`${formatMessage(
                                         MESSAGES.comment,
                                     )}: ${truncatedComment}`}

@@ -54,7 +54,10 @@ export const makeFileLinks = files => {
         return (
             // eslint-disable-next-line react/no-array-index-key
             <Link key={`${fileName}_${index}`} download href={file.file}>
-                <Typography>{fileName}</Typography>
+                {/* @ts-ignore */}
+                <Typography style={{ wordWrap: 'anywhere' }}>
+                    {fileName}
+                </Typography>
             </Link>
         );
     });
@@ -68,7 +71,10 @@ export const makeLinks = (links: Nullable<string>): Nullable<any[]> => {
         return (
             // eslint-disable-next-line react/no-array-index-key
             <Link key={`${trimmedLink}_${index}`} download href={trimmedLink}>
-                <Typography>{trimmedLink}</Typography>
+                {/* @ts-ignore */}
+                <Typography style={{ wordWrap: 'anywhere' }}>
+                    {trimmedLink}
+                </Typography>
             </Link>
         );
     });

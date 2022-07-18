@@ -110,8 +110,8 @@ export const BudgetEventCard: FunctionComponent<Props> = ({
     event,
     profiles,
 }) => {
-    console.log('CARD', event);
-    console.log('PROFILES', profiles);
+    // console.log('CARD', event);
+    // console.log('PROFILES', profiles);
     const { formatMessage } = useSafeIntl();
     const currentUser = useCurrentUser();
     const classes = useStyles();
@@ -120,7 +120,7 @@ export const BudgetEventCard: FunctionComponent<Props> = ({
     const { data: budgetEventFiles, isFetching } = useGetBudgetEventFiles(
         event.id,
     );
-    console.log('teams', teams);
+    // console.log('teams', teams);
     const { mutateAsync: deleteBudgetEvent } = useDeleteBudgetEvent();
     const { mutateAsync: restoreBudgetEvent } = useRestoreBudgetEvent();
 
@@ -152,9 +152,9 @@ export const BudgetEventCard: FunctionComponent<Props> = ({
                                 {formatMessage(MESSAGES.onDate, {
                                     date: formattedCreationDate,
                                 })}
-                                <Typography>
-                                    {`${authorName} - ${authorTeam}`}
-                                </Typography>
+                            </Typography>
+                            <Typography>
+                                {`${authorName} - ${authorTeam}`}
                             </Typography>
                             <Typography>
                                 {`${formatMessage(
@@ -188,6 +188,7 @@ export const BudgetEventCard: FunctionComponent<Props> = ({
                 </Grid>
                 <Grid
                     container
+                    item
                     xs={2}
                     direction="column"
                     justifyContent="center"

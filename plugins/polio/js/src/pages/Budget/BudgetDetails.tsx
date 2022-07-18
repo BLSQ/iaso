@@ -22,6 +22,7 @@ import {
     useTheme,
 } from '@material-ui/core';
 import { useDispatch, useSelector } from 'react-redux';
+import { Pagination } from '@material-ui/lab';
 import TopBar from '../../../../../../hat/assets/js/apps/Iaso/components/nav/TopBarComponent';
 import MESSAGES from '../../constants/messages';
 import { convertObjectToString } from '../../utils';
@@ -47,6 +48,8 @@ import { BudgetValidationPopUp } from './pop-ups/BudgetValidationPopUp';
 import { BudgetRejectionPopUp } from './pop-ups/BudgetRejectionPopUp';
 import { useGetApprovalTeams } from '../../hooks/useGetTeams';
 import { BudgetEventCard } from './cards/BudgetEventCard';
+import { useBoundState } from '../../../../../../hat/assets/js/apps/Iaso/domains/assignments/hooks/useBoundState';
+import { Optional } from '../../../../../../hat/assets/js/apps/Iaso/types/utils';
 
 type Props = {
     router: any;
@@ -97,18 +100,22 @@ export const BudgetDetails: FunctionComponent<Props> = ({ router }) => {
     const [showDeleted, setShowDeleted] = useState(
         apiParams.show_deleted ?? false,
     );
+
     const checkBoxLabel = formatMessage(MESSAGES.showDeleted);
     // @ts-ignore
     const prevPathname = useSelector(state => state.routerCustom.prevPathname);
     const dispatch = useDispatch();
     const { user_id: userId } = useCurrentUser();
     const isUserInApprovalTeam = useIsUserInApprovalTeam(userId);
-
+    const [page, setPage] = useBoundState<Optional<number>>(1, apiParams?.page);
+    const theme = useTheme();
+    const isMobileLayout = useMediaQuery(theme.breakpoints.down('md'));
     const { data: budgetDetails, isFetching } = useGetBudgetDetails(userId, {
         ...apiParams,
         campaign_id: campaignId,
         order: apiParams.order ?? '-created_at',
         show_deleted: showDeleted,
+        page,
     });
 
     const { data: allBudgetDetails, isFetching: isFetchingAll } =
@@ -122,8 +129,7 @@ export const BudgetDetails: FunctionComponent<Props> = ({ router }) => {
     );
     // TODO make hook for table specific state and effects
     const [resetPageToOne, setResetPageToOne] = useState('');
-    const theme = useTheme();
-    const isMobileLayout = useMediaQuery(theme.breakpoints.down('md'));
+
     useSkipEffectOnMount(() => {
         const newParams = {
             ...params,
@@ -251,11 +257,31 @@ export const BudgetDetails: FunctionComponent<Props> = ({ router }) => {
                             {budgetDetails?.results.map(budgetEvent => {
                                 return (
                                     <BudgetEventCard
+                                        key={`event-${budgetEvent.id}`}
                                         event={budgetEvent}
                                         profiles={profiles?.profiles}
                                     />
                                 );
                             })}
+                            {budgetDetails && (
+                                <Pagination
+                                    style={{ margin: 'auto' }}
+                                    page={page}
+                                    count={budgetDetails?.pages}
+                                    showLastButton
+                                    showFirstButton
+                                    onChange={(value, newPage) => {
+                                        console.log(
+                                            'onChange',
+                                            value.target,
+                                            page,
+                                        );
+                                        setPage(newPage);
+                                    }}
+                                    hidePrevButton={false}
+                                    hideNextButton={false}
+                                />
+                            )}
                         </Grid>
                     )}
                     {!isMobileLayout && (
@@ -299,42 +325,46 @@ export const BudgetDetails: FunctionComponent<Props> = ({ router }) => {
                             </Paper>
                         </Grid>
                     )}
-                    <Grid item xs={12} md={4}>
-                        <Paper>
-                            <Box ml={2} pt={2} mr={2} pb={2}>
-                                <GraphTitle
-                                    text={formatMessage(MESSAGES.scope)}
-                                    displayTrigger
-                                />
-                                <Box mt={2} mb={1}>
-                                    <Divider />
-                                </Box>
-                                {(isFetchingRegions ||
-                                    isFetchingDistricts ||
-                                    isFetchingScope) && (
-                                    <LoadingSpinner fixed={false} />
-                                )}
-                                {!isFetchingRegions &&
-                                    !isFetchingDistricts &&
-                                    !isFetchingScope && (
-                                        <MapComponent
-                                            name="BudgetScopeMap"
-                                            mainLayer={districtShapes}
-                                            backgroundLayer={regionShapes}
-                                            onSelectShape={() => null}
-                                            getMainLayerStyle={getShapeStyle}
-                                            getBackgroundLayerStyle={
-                                                getBackgroundLayerStyle
-                                            }
-                                            tooltipLabels={{
-                                                main: 'District',
-                                                background: 'Region',
-                                            }}
-                                        />
+                    {!isMobileLayout && (
+                        <Grid item xs={12} md={4}>
+                            <Paper>
+                                <Box ml={2} pt={2} mr={2} pb={2}>
+                                    <GraphTitle
+                                        text={formatMessage(MESSAGES.scope)}
+                                        displayTrigger
+                                    />
+                                    <Box mt={2} mb={1}>
+                                        <Divider />
+                                    </Box>
+                                    {(isFetchingRegions ||
+                                        isFetchingDistricts ||
+                                        isFetchingScope) && (
+                                        <LoadingSpinner fixed={false} />
                                     )}
-                            </Box>
-                        </Paper>
-                    </Grid>
+                                    {!isFetchingRegions &&
+                                        !isFetchingDistricts &&
+                                        !isFetchingScope && (
+                                            <MapComponent
+                                                name="BudgetScopeMap"
+                                                mainLayer={districtShapes}
+                                                backgroundLayer={regionShapes}
+                                                onSelectShape={() => null}
+                                                getMainLayerStyle={
+                                                    getShapeStyle
+                                                }
+                                                getBackgroundLayerStyle={
+                                                    getBackgroundLayerStyle
+                                                }
+                                                tooltipLabels={{
+                                                    main: 'District',
+                                                    background: 'Region',
+                                                }}
+                                            />
+                                        )}
+                                </Box>
+                            </Paper>
+                        </Grid>
+                    )}
                 </Grid>
             </Box>
         </>

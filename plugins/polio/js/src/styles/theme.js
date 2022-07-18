@@ -43,7 +43,7 @@ export const useStyles = makeStyles(() => ({
     mainModal: {
         position: 'relative',
         '& .MuiPaper-root.MuiDialog-paper.MuiDialog-paperScrollBody': {
-            maxWidth: '1380px',
+            maxWidth: '80%',
         },
         // below rule to remove useless scrollbar
         '& .MuiTablePagination-root': {

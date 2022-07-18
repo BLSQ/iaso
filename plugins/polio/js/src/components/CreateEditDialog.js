@@ -61,6 +61,7 @@ const CreateEditDialog = ({
 
     const initialValues = {
         rounds: [],
+        scopes: [],
         group: {
             name: 'hidden group',
             org_units: [],
@@ -142,7 +143,7 @@ const CreateEditDialog = ({
     return (
         <Dialog
             fullWidth
-            maxWidth="lg"
+            maxWidth="xl"
             open={isOpen}
             onClose={(_event, reason) => {
                 if (reason === 'backdropClick') {

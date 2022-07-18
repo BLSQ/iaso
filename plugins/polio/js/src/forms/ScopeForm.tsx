@@ -1,5 +1,10 @@
 /* eslint-disable camelcase */
-import React, { useState, useCallback, useMemo } from 'react';
+import React, {
+    useState,
+    useCallback,
+    useMemo,
+    FunctionComponent,
+} from 'react';
 import { useFormikContext } from 'formik';
 import {
     useSafeIntl,
@@ -20,11 +25,18 @@ import {
     TableCell,
     TablePagination,
     Tooltip,
+    Radio,
+    FormControl,
+    FormLabel,
+    RadioGroup,
 } from '@material-ui/core';
+import cloneDeep from 'lodash/cloneDeep';
+import sortBy from 'lodash/sortBy';
 import { MapComponent } from '../components/MapComponent/MapComponent';
 import { useGetGeoJson } from '../hooks/useGetGeoJson';
 import { useStyles } from '../styles/theme';
 import MESSAGES from '../constants/messages';
+import { polioVacines } from '../constants/virus';
 
 const selectedPathOptions = {
     color: 'lime',
@@ -45,39 +57,69 @@ const initialDistrict = {
     zIndex: '1',
 };
 
-const separate = (array, referenceArray) => {
-    const result = {
-        selected: [],
-        unselected: [],
+type Scope = {
+    name: string;
+    group: {
+        org_units: number[];
+        id?: number;
     };
-    array.forEach(item => {
-        if (referenceArray.includes(item)) {
-            result.selected.push(item);
-        } else {
-            result.unselected.push(item);
-        }
-    });
-    return result;
 };
 
-const findRegion = (shape, regionShapes) => {
+type Shape = {
+    name: string;
+    id: number;
+    parent_id: number;
+    country_parent?: { id: number };
+    root?: { id: number };
+};
+type ShapeRow = Shape & {
+    region: string;
+    vaccineName: string;
+};
+
+const findRegion = (shape: Shape, regionShapes: Shape[]) => {
     return regionShapes.filter(
         regionShape => regionShape.id === shape.parent_id,
     )[0]?.name;
 };
 
-export const ScopeForm = () => {
+const findScopeWithOrgUnit = (scopes: Scope[], orgUnitId: number) => {
+    const scope = scopes.find(s => {
+        return s.group?.org_units.includes(orgUnitId);
+    });
+    return scope;
+};
+type Values = {
+    scopes?: Scope[];
+    org_unit: Shape;
+};
+
+export const ScopeForm: FunctionComponent = () => {
     const classes = useStyles();
     const { formatMessage } = useSafeIntl();
     const [selectRegion, setSelectRegion] = useState(false);
-    const { values, setFieldValue } = useFormikContext();
+    const { values, setFieldValue } = useFormikContext<Values>();
+    const setScopes = useCallback(
+        newScopes => {
+            setFieldValue('scopes', newScopes);
+        },
+        [setFieldValue],
+    );
+    const { scopes = [] } = values;
     // Group contains selected orgunits
-    const { group = { org_units: [] } } = values;
-    // Below var to avoid crash when group is null, as the default value will only be considered if group is undefined
-    const nullSafeGroup = useMemo(() => group ?? { org_units: [] }, [group]);
+    const vaccineCount = useMemo(
+        () =>
+            Object.fromEntries(
+                scopes.map(scope => [
+                    scope.name,
+                    scope.group?.org_units?.length ?? 0,
+                ]),
+            ),
+        [scopes],
+    );
     const [page, setPage] = useState(0);
     const [rowsPerPage, setRowsPerPage] = useState(10);
-    const [sortBy, setSortBy] = useState('asc');
+    const [orderBy, setOrderBy] = useState('asc');
     const [sortFocus, setSortFocus] = useState('DISTRICT');
     const country =
         values.org_unit?.country_parent?.id ||
@@ -100,12 +142,19 @@ export const ScopeForm = () => {
 
     const getShapeStyle = useCallback(
         shape => {
-            if (nullSafeGroup.org_units.includes(shape.id))
-                return selectedPathOptions;
+            const scope = findScopeWithOrgUnit(scopes, shape.id);
+
+            if (scope) {
+                const vaccine = polioVacines.find(v => v.value === scope.name);
+                return {
+                    ...selectedPathOptions,
+                    color: vaccine?.color,
+                };
+            }
             if (values.org_unit?.id === shape.id) return initialDistrict;
             return unselectedPathOptions;
         },
-        [nullSafeGroup, values.org_unit?.id],
+        [values.org_unit?.id, scopes],
     );
 
     const getBackgroundLayerStyle = () => {
@@ -116,92 +165,139 @@ export const ScopeForm = () => {
         };
     };
 
-    const toggleRegion = (shape, allShapes, orgUnitsGroup) => {
-        const parentRegionShapes = allShapes
-            .filter(s => s.parent_id === shape.parent_id)
+    const toggleRegion = (
+        selectOrgUnit: Shape,
+        _selectedVaccine,
+        allDistricts: Shape[],
+    ) => {
+        const OrgUnitsIdInSameRegion: number[] = allDistricts
+            .filter(s => s.parent_id === selectOrgUnit.parent_id)
             .map(s => s.id);
-        const { selected, unselected } = separate(
-            parentRegionShapes,
-            orgUnitsGroup,
+        const newScopes: Scope[] = cloneDeep(scopes);
+        // Find scope for vaccine
+        let scope: Scope | undefined = newScopes.find(
+            s => s.name === _selectedVaccine,
         );
-        const isRegionSelected = selected.length === parentRegionShapes.length;
-        if (isRegionSelected) {
-            return orgUnitsGroup.filter(
-                orgUnit => !parentRegionShapes.includes(orgUnit),
+        if (scope === undefined) {
+            scope = {
+                name: _selectedVaccine,
+                group: {
+                    org_units: [],
+                },
+            };
+            newScopes.push(scope);
+        }
+        // if all the orgunits from this region are already in this vaccine scope, remove them
+        // @ts-ignore
+        if (
+            OrgUnitsIdInSameRegion.every(OrgUnitId =>
+                scope.group.org_units.includes(OrgUnitId),
+            )
+        ) {
+            scope.group.org_units = scope.group.org_units.filter(
+                OrgUnitId => !OrgUnitsIdInSameRegion.includes(OrgUnitId),
             );
-        }
-        return [...orgUnitsGroup, ...unselected];
-    };
-
-    const toggleDistrict = (shape, orgUnitsGroup) => {
-        if (orgUnitsGroup.find(org_unit => shape.id === org_unit)) {
-            return orgUnitsGroup.filter(orgUnit => orgUnit !== shape.id);
-        }
-        return [...orgUnitsGroup, shape.id];
-    };
-
-    const onSelectOrgUnit = useCallback(
-        shape => {
-            const { org_units } = nullSafeGroup;
-            let newOrgUnits;
-            if (selectRegion) {
-                newOrgUnits = toggleRegion(shape, districtShapes, org_units);
-            } else {
-                newOrgUnits = toggleDistrict(shape, org_units);
-            }
-
-            setFieldValue('group', {
-                ...nullSafeGroup,
-                org_units: newOrgUnits,
+        } else {
+            // Remove the OrgUnits from all the scopes
+            newScopes.forEach(s => {
+                // eslint-disable-next-line no-param-reassign
+                s.group.org_units = s.group.org_units.filter(
+                    OrgUnitId => !OrgUnitsIdInSameRegion.includes(OrgUnitId),
+                );
             });
+            // Add the OrgUnit in the scope for selected vaccine
+            scope.group.org_units = [
+                ...scope.group.org_units,
+                ...OrgUnitsIdInSameRegion,
+            ];
+        }
+        setScopes(newScopes);
+    };
+    const [selectedVaccine, setSelectedVaccine] = useState('mOPV2');
+
+    const toggleDistrictInVaccineScope = useCallback(
+        (district, _selectedVaccine) => {
+            const newScopes: Scope[] = cloneDeep(scopes);
+            let scope: Scope | undefined = newScopes.find(
+                s => s.name === _selectedVaccine,
+            );
+            if (scope === undefined) {
+                scope = {
+                    name: _selectedVaccine,
+                    group: {
+                        org_units: [],
+                    },
+                };
+                newScopes.push(scope);
+            }
+            // Remove org unit from selection if it's part of the scope
+            if (scope.group.org_units.includes(district.id)) {
+                scope.group.org_units = scope.group.org_units.filter(
+                    OrgUnitId => OrgUnitId !== district.id,
+                );
+            } else {
+                // Remove the orgunit from all the scope in case it's part of another scope
+                newScopes.forEach(s => {
+                    if (s.group.org_units.includes(district.id)) {
+                        // eslint-disable-next-line no-param-reassign
+                        s.group.org_units = s.group.org_units.filter(
+                            OrgUnitId => OrgUnitId !== district.id,
+                        );
+                    }
+                });
+                // Add org unit to proper scope
+                scope.group.org_units = [...scope.group.org_units, district.id];
+            }
+            setScopes(newScopes);
         },
-        [nullSafeGroup, setFieldValue, selectRegion, districtShapes],
+        [scopes, setScopes],
     );
+    //
+    const onSelectOrgUnit = shape => {
+        if (selectRegion) {
+            toggleRegion(shape, selectedVaccine, districtShapes);
+        } else {
+            toggleDistrictInVaccineScope(shape, selectedVaccine);
+        }
+    };
 
     const removeDistrictFromTable = useCallback(
-        shape => {
-            const { org_units } = nullSafeGroup;
-            const newOrgUnits = org_units.filter(
-                orgUnit => orgUnit !== shape.id,
-            );
-            setFieldValue('group', {
-                ...nullSafeGroup,
-                org_units: newOrgUnits,
-            });
+        (shape: ShapeRow) => {
+            toggleDistrictInVaccineScope(shape, shape.vaccineName);
         },
-        [nullSafeGroup, setFieldValue],
+        [toggleDistrictInVaccineScope],
     );
-    const removeRegionFromTable = useCallback(
-        shape => {
-            const { org_units } = nullSafeGroup;
 
-            const parentRegionShapes = districtShapes
+    // Remove all district in the same region as this district
+    const removeRegionFromTable = useCallback(
+        (shape: ShapeRow) => {
+            const OrgUnitIdsToRemove = districtShapes
                 .filter(s => s.parent_id === shape.parent_id)
                 .map(s => s.id);
 
-            const newOrgUnits = org_units.filter(
-                orgUnit => !parentRegionShapes.includes(orgUnit),
-            );
-
-            setFieldValue('group', {
-                ...nullSafeGroup,
-                org_units: newOrgUnits,
+            const newScopes: Scope[] = cloneDeep(scopes);
+            newScopes.forEach(scope => {
+                // eslint-disable-next-line no-param-reassign
+                scope.group.org_units = scope.group.org_units.filter(
+                    OrgUnitId => !OrgUnitIdsToRemove.includes(OrgUnitId),
+                );
             });
+            setScopes(newScopes);
         },
-        [nullSafeGroup, setFieldValue, districtShapes],
+        [districtShapes, scopes, setScopes],
     );
 
     const handleSort = useCallback(
-        orgUnitType => {
-            if (sortFocus !== orgUnitType) {
-                setSortFocus(orgUnitType);
-            } else if (sortBy === 'asc') {
-                setSortBy('desc');
+        columnToSortBy => {
+            if (sortFocus !== columnToSortBy) {
+                setSortFocus(columnToSortBy);
+            } else if (orderBy === 'asc') {
+                setOrderBy('desc');
             } else {
-                setSortBy('asc');
+                setOrderBy('asc');
             }
         },
-        [sortBy, sortFocus],
+        [orderBy, sortFocus],
     );
 
     const handleChangePage = (_event, newPage) => {
@@ -213,51 +309,33 @@ export const ScopeForm = () => {
         setPage(0);
     };
 
-    const sortShapesForTable = useCallback(() => {
-        if (!regionShapes) {
+    const shapesForTable = useMemo(() => {
+        if (!regionShapes || !districtShapes) {
             return null;
         }
-        if (sortFocus === 'DISTRICT' && sortBy === 'asc') {
-            return districtShapes?.filter(shape =>
-                nullSafeGroup.org_units.includes(shape.id),
-            );
-        }
-        if (sortFocus === 'DISTRICT' && sortBy === 'desc') {
-            return districtShapes
-                ?.filter(shape => nullSafeGroup.org_units.includes(shape.id))
-                .reverse();
-        }
-        if (sortFocus === 'REGION' && sortBy === 'asc') {
-            return districtShapes
-                ?.filter(shape => nullSafeGroup.org_units.includes(shape.id))
-                .sort(
-                    (shapeA, shapeB) =>
-                        findRegion(shapeA, regionShapes) >
-                        findRegion(shapeB, regionShapes),
-                );
-        }
-        if (sortFocus === 'REGION' && sortBy === 'desc') {
-            return districtShapes
-                ?.filter(shape => nullSafeGroup.org_units.includes(shape.id))
-                .sort(
-                    (shapeA, shapeB) =>
-                        findRegion(shapeA, regionShapes) <
-                        findRegion(shapeB, regionShapes),
-                );
-        }
-        console.warn(
-            `Sort error, there must be a wrong parameter. Received: ${sortBy}, ${sortFocus}. Expected a combination of asc|desc and DISTRICT|REGION`,
-        );
-        return null;
-    }, [
-        sortBy,
-        sortFocus,
-        districtShapes,
-        nullSafeGroup.org_units,
-        regionShapes,
-    ]);
 
-    const shapesForTable = sortShapesForTable();
+        let ds: ShapeRow[] = districtShapes
+            .map(district => {
+                return {
+                    ...district,
+                    region: findRegion(district, regionShapes),
+                    vaccineName: findScopeWithOrgUnit(scopes, district.id)
+                        ?.name,
+                };
+            })
+            .filter(d => d.vaccineName);
+
+        if (sortFocus === 'REGION') {
+            ds = sortBy(ds, ['region']);
+        } else if (sortFocus === 'VACCINE') {
+            ds = sortBy(ds, ['vaccineName']);
+        }
+        if (orderBy === 'desc') {
+            ds = ds.reverse();
+        }
+
+        return ds;
+    }, [regionShapes, districtShapes, sortFocus, orderBy, scopes]);
 
     const makeTableText = text => {
         return (
@@ -278,7 +356,7 @@ export const ScopeForm = () => {
 
     return (
         <Grid container spacing={4}>
-            <Grid xs={8} item>
+            <Grid xs={6} item>
                 {isFetching && !districtShapes && <LoadingSpinner />}
                 {!isFetching && !districtShapes && (
                     // FIXME should not be needed
@@ -295,6 +373,67 @@ export const ScopeForm = () => {
                     getBackgroundLayerStyle={getBackgroundLayerStyle}
                     tooltipLabels={{ main: 'District', background: 'Region' }}
                 />
+            </Grid>
+            <Grid xs={2} item container>
+                <Grid item>
+                    <FormControl id="vaccine">
+                        <FormLabel>Vaccine</FormLabel>
+                        <RadioGroup
+                            aria-label="vaccineScope"
+                            value={selectedVaccine}
+                            onChange={event =>
+                                setSelectedVaccine(event.target.value)
+                            }
+                        >
+                            {polioVacines.map(vaccine => (
+                                <FormControlLabel
+                                    key={vaccine.value}
+                                    value={vaccine.label}
+                                    control={<Radio />}
+                                    label={
+                                        <>
+                                            <span
+                                                style={{ color: vaccine.color }}
+                                            >
+                                                {vaccine.value}
+                                            </span>{' '}
+                                            {vaccineCount[vaccine.value] ?? 0}{' '}
+                                            districts
+                                        </>
+                                    }
+                                />
+                            ))}
+                            {/* <FormControlLabel */}
+                            {/*    value="" */}
+                            {/*    control={<Radio />} */}
+                            {/*    label="❌ Not part of campaign" */}
+                            {/* /> */}
+                        </RadioGroup>
+                    </FormControl>
+                </Grid>
+                <Grid item>
+                    <FormGroup>
+                        <FormControlLabel
+                            style={{ width: 'max-content' }}
+                            control={
+                                <Switch
+                                    size="medium"
+                                    checked={selectRegion}
+                                    onChange={toggleRegionSelect}
+                                    color="primary"
+                                />
+                            }
+                            label={formatMessage(MESSAGES.selectRegion)}
+                        />
+                    </FormGroup>
+                </Grid>
+                <Grid xs={4} item>
+                    {districtShapes && isFetching && (
+                        <Typography align="right">
+                            {formatMessage(MESSAGES.refreshing)}
+                        </Typography>
+                    )}
+                </Grid>
             </Grid>
 
             <Grid xs={4} item>
@@ -322,6 +461,16 @@ export const ScopeForm = () => {
                                     </Typography>
                                 </TableCell>
                                 <TableCell
+                                    onClick={() => handleSort('VACCINE')}
+                                    variant="head"
+                                    style={{ cursor: 'pointer' }}
+                                >
+                                    <Typography>
+                                        {' '}
+                                        {formatMessage(MESSAGES.vaccine)}
+                                    </Typography>
+                                </TableCell>
+                                <TableCell
                                     variant="head"
                                     style={{
                                         cursor: 'pointer',
@@ -339,10 +488,6 @@ export const ScopeForm = () => {
                                     page * rowsPerPage + rowsPerPage,
                                 )
                                 .map((shape, i) => {
-                                    const region = findRegion(
-                                        shape,
-                                        regionShapes,
-                                    );
                                     return (
                                         <TableRow
                                             key={shape.id}
@@ -354,15 +499,15 @@ export const ScopeForm = () => {
                                         >
                                             <TableCell
                                                 style={{
-                                                    width: '33%',
+                                                    width: '25%',
                                                     cursor: 'default',
                                                 }}
                                             >
-                                                {makeTableText(region)}
+                                                {makeTableText(shape.region)}
                                             </TableCell>
                                             <TableCell
                                                 style={{
-                                                    width: '33%',
+                                                    width: '25%',
                                                     cursor: 'default',
                                                 }}
                                             >
@@ -370,7 +515,17 @@ export const ScopeForm = () => {
                                             </TableCell>
                                             <TableCell
                                                 style={{
-                                                    minWidth: '33%',
+                                                    width: '20%',
+                                                    cursor: 'default',
+                                                }}
+                                            >
+                                                {makeTableText(
+                                                    shape.vaccineName,
+                                                )}
+                                            </TableCell>
+                                            <TableCell
+                                                style={{
+                                                    minWidth: '30%',
                                                     cursor: 'pointer',
                                                 }}
                                             >
@@ -415,31 +570,7 @@ export const ScopeForm = () => {
                     onRowsPerPageChange={handleChangeRowsPerPage}
                 />
             </Grid>
-            <Grid container>
-                <Grid xs={8} item>
-                    <FormGroup>
-                        <FormControlLabel
-                            style={{ width: 'max-content' }}
-                            control={
-                                <Switch
-                                    size="medium"
-                                    checked={selectRegion}
-                                    onChange={toggleRegionSelect}
-                                    color="primary"
-                                />
-                            }
-                            label={formatMessage(MESSAGES.selectRegion)}
-                        />
-                    </FormGroup>
-                </Grid>
-                <Grid xs={4} item>
-                    {districtShapes && isFetching && (
-                        <Typography align="right">
-                            {formatMessage(MESSAGES.refreshing)}
-                        </Typography>
-                    )}
-                </Grid>
-            </Grid>
+            <Grid container />
         </Grid>
     );
 };

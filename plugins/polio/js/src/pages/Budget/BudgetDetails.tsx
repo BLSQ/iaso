@@ -16,6 +16,7 @@ import {
     Box,
     Divider,
     Grid,
+    makeStyles,
     Paper,
     Typography,
     useMediaQuery,
@@ -92,9 +93,22 @@ const useIsUserInApprovalTeam = (userId?: number): boolean => {
     return isUserInApprovalTeam;
 };
 
+const style = () => {
+    return {
+        pagination: {
+            '&.MuiPagination-root > .MuiPagination-ul': {
+                justifyContent: 'center',
+            },
+        },
+    };
+};
+
+const usePaginationStyles = makeStyles(style);
+
 export const BudgetDetails: FunctionComponent<Props> = ({ router }) => {
     const { params } = router;
     const classes = useStyles();
+    const paginationStyle = usePaginationStyles();
     const { campaignName, campaignId, country, ...apiParams } = router.params;
     const { formatMessage } = useSafeIntl();
     const [showDeleted, setShowDeleted] = useState(
@@ -265,17 +279,12 @@ export const BudgetDetails: FunctionComponent<Props> = ({ router }) => {
                             })}
                             {budgetDetails && (
                                 <Pagination
-                                    style={{ margin: 'auto' }}
+                                    className={paginationStyle.pagination}
                                     page={page}
                                     count={budgetDetails?.pages}
                                     showLastButton
                                     showFirstButton
                                     onChange={(value, newPage) => {
-                                        console.log(
-                                            'onChange',
-                                            value.target,
-                                            page,
-                                        );
                                         setPage(newPage);
                                     }}
                                     hidePrevButton={false}

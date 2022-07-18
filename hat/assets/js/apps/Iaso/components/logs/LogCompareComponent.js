@@ -104,6 +104,45 @@ const renderValue = (fieldKey, value, fields, classes) => {
     }
 };
 
+// Use an errorBoundary so if the value cannot be parsed and crash when rendering
+// we still display the raw value
+class ValueWithErrorBoundary extends React.Component {
+    constructor(props) {
+        super(props);
+        this.state = { hasError: false };
+    }
+
+    static getDerivedStateFromError(error) {
+        // Update state so the next render will show the fallback UI.
+        console.error(error);
+        return { hasError: true, error };
+    }
+
+    render() {
+        if (this.state.hasError) {
+            // You can render any custom fallback UI
+            return (
+                <>
+                    <h1>Error rendering value:</h1>
+                    <div>${this.props.value}</div>
+                </>
+            );
+        }
+        return renderValue(
+            this.props.fieldKey,
+            this.props.value,
+            this.props.fields,
+            this.props.classes,
+        );
+    }
+}
+ValueWithErrorBoundary.propTypes = {
+    value: PropTypes.any,
+    fieldKey: PropTypes.string.isRequired,
+    fields: PropTypes.object.isRequired,
+    classes: PropTypes.object.isRequired,
+};
+
 const getArrayfields = objectItem =>
     Object.keys(objectItem).map(fieldKey => ({
         fieldKey,
@@ -215,12 +254,12 @@ const LogCompareComponent = ({ log, compareLog, goToRevision, title }) => {
                                             : null
                                     }
                                 >
-                                    {renderValue(
-                                        fieldKey,
-                                        value,
-                                        l.fields,
-                                        classes,
-                                    )}
+                                    <ValueWithErrorBoundary
+                                        fieldKey={fieldKey}
+                                        value={value}
+                                        fields={l.fields}
+                                        classes={classes}
+                                    />
                                 </TableCell>
                             </TableRow>
                         ))}

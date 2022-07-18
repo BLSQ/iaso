@@ -22,6 +22,7 @@ import { useGetTeams } from '../../../hooks/useGetTeams';
 import { useCurrentUser } from '../../../../../../../hat/assets/js/apps/Iaso/utils/usersUtils';
 import MESSAGES from '../../../constants/messages';
 import { redirectToReplace } from '../../../../../../../hat/assets/js/apps/Iaso/routing/actions';
+import { useDialogActionStyles } from './style';
 
 type Props = { campaignName: string; campaignId: string; params: any };
 
@@ -45,6 +46,7 @@ export const BudgetValidationPopUp: FunctionComponent<Props> = ({
     campaignId,
     params,
 }) => {
+    const { action: actionStyle } = useDialogActionStyles();
     const currentUser = useCurrentUser();
     const { formatMessage } = useSafeIntl();
     const [open, setOpen] = useState(true);
@@ -88,13 +90,12 @@ export const BudgetValidationPopUp: FunctionComponent<Props> = ({
                         })}
                     </DialogContentText>
                 </DialogContent>
-                <DialogActions>
+                <DialogActions className={actionStyle}>
                     <Button onClick={handleClose} color="primary">
                         {formatMessage(MESSAGES.cancel)}
                     </Button>
                     <Button
                         onClick={onConfirm}
-                        // autoFocus
                         variant="contained"
                         color="primary"
                     >

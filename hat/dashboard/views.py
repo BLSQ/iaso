@@ -7,13 +7,11 @@ from django.conf import settings
 
 
 def _base_iaso(request: HttpRequest) -> HttpResponse:
+    USER_HOME_PAGE = request.user.iaso_profile.home_page if request.user.is_authenticated else ""
     return render(
         request,
         "iaso/index.html",
-        {
-            "PLUGINS_ENABLED": settings.PLUGINS,
-            "STATIC_URL": settings.STATIC_URL,
-        },
+        {"PLUGINS_ENABLED": settings.PLUGINS, "STATIC_URL": settings.STATIC_URL, "USER_HOME_PAGE": USER_HOME_PAGE},
     )
 
 

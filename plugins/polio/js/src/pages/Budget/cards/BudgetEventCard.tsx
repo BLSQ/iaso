@@ -4,6 +4,7 @@ import {
     CardContent,
     Divider,
     Grid,
+    makeStyles,
     Typography,
 } from '@material-ui/core';
 import React, { FunctionComponent, useMemo, useState } from 'react';
@@ -14,7 +15,7 @@ import {
     IconButton as IconButtonComponent,
 } from 'bluesquare-components';
 import moment from 'moment';
-import { BudgetEvent } from '../../../constants/types';
+import { BudgetEvent, BudgetEventType } from '../../../constants/types';
 import MESSAGES from '../../../constants/messages';
 import {
     Profile,
@@ -38,6 +39,13 @@ type Props = {
 };
 
 const COMMENT_CHAR_LIMIT = 50;
+const style = theme => {
+    return {
+        cta: { color: theme.palette.secondary.main },
+    };
+};
+
+const useStyles = makeStyles(style);
 
 const getProfileFromId = (userId: number, profiles: Profile[]) => {
     return (
@@ -72,6 +80,25 @@ const formatActionMessage = (
     return null;
 };
 
+const findAuthorTeam = (
+    author: number,
+    teams: any[],
+    eventType: BudgetEventType,
+) => {
+    if (eventType === 'validation') {
+        return teams.find(
+            team =>
+                team.name.toLowerCase().includes('approval') &&
+                team.users.includes(author),
+        )?.name;
+    }
+    return teams.find(
+        team =>
+            !team.name.toLowerCase().includes('approval') &&
+            team.users.includes(author),
+    )?.name;
+};
+
 export const BudgetEventCard: FunctionComponent<Props> = ({
     event,
     profiles,
@@ -80,11 +107,13 @@ export const BudgetEventCard: FunctionComponent<Props> = ({
     console.log('PROFILES', profiles);
     const { formatMessage } = useSafeIntl();
     const currentUser = useCurrentUser();
+    const classes = useStyles();
     const userIsAuthor = event?.author === currentUser.user_id;
     const { data: teams = [], isFetching: isFetchingTeams } = useGetTeams();
     const { data: budgetEventFiles, isFetching } = useGetBudgetEventFiles(
         event.id,
     );
+    console.log('teams', teams);
     const { mutateAsync: deleteBudgetEvent } = useDeleteBudgetEvent();
     const { mutateAsync: restoreBudgetEvent } = useRestoreBudgetEvent();
 
@@ -95,13 +124,14 @@ export const BudgetEventCard: FunctionComponent<Props> = ({
     );
     const [openModal, setOpenModal] = useState<boolean>(false);
     const title = formatMessage(MESSAGES[event.type]);
-    const userName = useMemo(
+    const authorName = useMemo(
         () => formatUserName(getProfileFromId(event.author, profiles)),
         [event.author, profiles],
     );
     const formattedCreationDate = moment(event.created_at).format('L');
     const targetTeams = formatTargetTeams(event.target_teams, teams);
     const truncatedComment = formatComment(event.comment);
+    const authorTeam = findAuthorTeam(event.author, teams, event.type);
 
     return (
         <Card>
@@ -110,15 +140,16 @@ export const BudgetEventCard: FunctionComponent<Props> = ({
                     <CardActionArea>
                         <CardContent onClick={() => setOpenModal(true)}>
                             <Typography variant="h6">{title}</Typography>
-                            <Typography>
-                                {formatMessage(MESSAGES.by, {
-                                    author: userName,
-                                })}
-                            </Typography>
-                            <Typography>
+                            <Typography variant="body2">
                                 {formatMessage(MESSAGES.onDate, {
                                     date: formattedCreationDate,
                                 })}
+                                <Typography>
+                                    {/* {formatMessage(MESSAGES.by, {
+                                        author: authorName,
+                                    })} */}
+                                    {`${authorName} - ${authorTeam}`}
+                                </Typography>
                             </Typography>
                             <Typography>
                                 {`${formatMessage(
@@ -132,7 +163,9 @@ export const BudgetEventCard: FunctionComponent<Props> = ({
                                     )}: ${truncatedComment}`}
                                 </Typography>
                             )}
-                            <Typography> {actionMessage}</Typography>
+                            <Typography variant="body2" className={classes.cta}>
+                                {actionMessage}
+                            </Typography>
                         </CardContent>
                     </CardActionArea>
                     <BudgetFilesModalForCards

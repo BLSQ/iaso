@@ -203,7 +203,6 @@ export const BudgetDetails: FunctionComponent<Props> = ({ router }) => {
                                 xs={6}
                                 justifyContent="flex-end"
                             >
-                                {/* TODO check user is approver */}
                                 {budgetStatus !== 'approved' &&
                                     isUserInApprovalTeam &&
                                     budgetHasSubmission && (
@@ -229,15 +228,12 @@ export const BudgetDetails: FunctionComponent<Props> = ({ router }) => {
                                             />
                                         </Box>
                                     )}
-                                {/* {!isMobileLayout && ( */}
                                 <CreateEditBudgetEvent
                                     campaignId={campaignId}
                                 />
-                                {/* )} */}
                             </Grid>
                         )}
                     </Grid>
-                    {/* {!isMobileLayout && ( */}
                     <InputComponent
                         type="checkbox"
                         keyValue="showDeleted"
@@ -247,16 +243,19 @@ export const BudgetDetails: FunctionComponent<Props> = ({ router }) => {
                         }}
                         value={showDeleted}
                     />
-                    {/* )} */}
                 </Box>
                 <Grid container spacing={2}>
                     {/* TODO add loading state */}
                     {isMobileLayout && budgetDetails && profiles && (
                         <Grid item xs={12}>
-                            <BudgetEventCard
-                                event={budgetDetails?.results[0]}
-                                profiles={profiles?.profiles}
-                            />
+                            {budgetDetails?.results.map(budgetEvent => {
+                                return (
+                                    <BudgetEventCard
+                                        event={budgetEvent}
+                                        profiles={profiles?.profiles}
+                                    />
+                                );
+                            })}
                         </Grid>
                     )}
                     {!isMobileLayout && (

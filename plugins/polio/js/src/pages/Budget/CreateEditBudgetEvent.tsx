@@ -8,7 +8,7 @@ import { useFormik, FormikProvider } from 'formik';
 import { isEqual } from 'lodash';
 // @ts-ignore
 import { AddButton, useSafeIntl, IconButton } from 'bluesquare-components';
-import { Box } from '@material-ui/core';
+import { Box, makeStyles } from '@material-ui/core';
 import ConfirmCancelDialogComponent from '../../../../../../hat/assets/js/apps/Iaso/components/dialogs/ConfirmCancelDialogComponent';
 import MESSAGES from '../../constants/messages';
 import InputComponent from '../../../../../../hat/assets/js/apps/Iaso/components/forms/InputComponent';
@@ -36,30 +36,49 @@ type Props = {
     iconColor?: string;
 };
 
-const renderTrigger =
-    (type: 'create' | 'edit' | 'retry' = 'create', color = 'action') =>
-    ({ openDialog }) => {
-        if (type === 'edit') {
-            return (
-                <IconButton
-                    color={color}
-                    onClick={openDialog}
-                    icon="edit"
-                    tooltipMessage={MESSAGES.resendFiles}
-                />
-            );
-        }
-        return (
-            // The div prevents the Button from being too big on small screens
-            <div>
-                <AddButton
-                    onClick={openDialog}
-                    dataTestId="create-budgetStep-button"
-                    message={MESSAGES.addStep}
-                />
-            </div>
-        );
+const style = theme => {
+    return {
+        addButton: {
+            [theme.breakpoints.down('md')]: {
+                marginLeft: theme.spacing(1),
+            },
+        },
     };
+};
+
+const useButtonStyles = makeStyles(style);
+
+const useRenderTrigger = (
+    type: 'create' | 'edit' | 'retry' = 'create',
+    color = 'action',
+) => {
+    const classes = useButtonStyles();
+    return useCallback(
+        ({ openDialog }) => {
+            if (type === 'edit') {
+                return (
+                    <IconButton
+                        color={color}
+                        onClick={openDialog}
+                        icon="edit"
+                        tooltipMessage={MESSAGES.resendFiles}
+                    />
+                );
+            }
+            return (
+                // The div prevents the Button from being too big on small screens
+                <div className={classes.addButton}>
+                    <AddButton
+                        onClick={openDialog}
+                        dataTestId="create-budgetStep-button"
+                        message={MESSAGES.addStep}
+                    />
+                </div>
+            );
+        },
+        [classes.addButton, color, type],
+    );
+};
 
 const getTitleMessage = (type: 'create' | 'edit' | 'retry') => {
     if (type === 'create') return MESSAGES.newBudgetStep;
@@ -230,6 +249,7 @@ export const CreateEditBudgetEvent: FunctionComponent<Props> = ({
         () => makeEventsDropdown(user, approvalTeams, formatMessage),
         [formatMessage, user, approvalTeams],
     );
+    const renderTrigger = useRenderTrigger(type, iconColor);
 
     return (
         <FormikProvider value={formik}>
@@ -249,7 +269,7 @@ export const CreateEditBudgetEvent: FunctionComponent<Props> = ({
                 maxWidth="sm"
                 cancelMessage={MESSAGES.cancel}
                 confirmMessage={MESSAGES.send}
-                renderTrigger={renderTrigger(type, iconColor)}
+                renderTrigger={renderTrigger}
             >
                 {(currentType === 'create' || currentType === 'retry') && (
                     <>

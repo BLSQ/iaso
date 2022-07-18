@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-non-null-assertion */
 import {
     Box,
     Card,
@@ -8,7 +9,12 @@ import {
     makeStyles,
     Typography,
 } from '@material-ui/core';
-import React, { FunctionComponent, useMemo, useState } from 'react';
+import React, {
+    FunctionComponent,
+    useCallback,
+    useMemo,
+    useState,
+} from 'react';
 import {
     // @ts-ignore
     useSafeIntl,
@@ -44,6 +50,9 @@ const COMMENT_CHAR_LIMIT = 50;
 const style = theme => {
     return {
         cta: { color: theme.palette.secondary.main },
+        inactiveCard: {
+            cursor: 'default',
+        },
     };
 };
 
@@ -108,6 +117,15 @@ const findAuthorTeam = (
     )?.name;
 };
 
+const shouldOpenModal = (
+    files: Nullable<number> = 0,
+    links: Nullable<string> = '',
+    comments: Nullable<string> = '',
+) => {
+    if (files || links || comments) return true;
+    return false;
+};
+
 export const BudgetEventCard: FunctionComponent<Props> = ({
     event,
     profiles,
@@ -122,15 +140,17 @@ export const BudgetEventCard: FunctionComponent<Props> = ({
     const { data: budgetEventFiles, isFetching } = useGetBudgetEventFiles(
         event.id,
     );
+    const eventLinks = event?.links ?? '';
+    const eventComment = event?.comment ?? '';
     // console.log('teams', teams);
     const { mutateAsync: deleteBudgetEvent } = useDeleteBudgetEvent();
     const { mutateAsync: restoreBudgetEvent } = useRestoreBudgetEvent();
 
     const actionMessage = formatActionMessage(
         formatMessage,
-        event.comment ?? undefined,
+        eventComment,
         budgetEventFiles?.length,
-        event.links ?? undefined,
+        eventLinks,
     );
     const [openModal, setOpenModal] = useState<boolean>(false);
     const title = formatMessage(MESSAGES[event.type]);
@@ -160,13 +180,24 @@ export const BudgetEventCard: FunctionComponent<Props> = ({
     const targetTeams = formatTargetTeams(event.target_teams, teams);
     const truncatedComment = formatComment(event.comment);
     const authorTeam = findAuthorTeam(event.author, teams, event.type);
+    const allowOpenModal = shouldOpenModal(
+        budgetEventFiles?.length,
+        eventLinks,
+        eventComment,
+    );
+    const onClick = useCallback(() => {
+        if (allowOpenModal) setOpenModal(true);
+    }, [allowOpenModal]);
 
     return (
         <Card>
             <Grid container>
                 <Grid item xs={10}>
-                    <CardActionArea>
-                        <CardContent onClick={() => setOpenModal(true)}>
+                    <CardActionArea
+                        className={allowOpenModal ? '' : classes.inactiveCard}
+                        disableRipple={!allowOpenModal}
+                    >
+                        <CardContent onClick={onClick}>
                             <Box>
                                 <Typography variant="h6">
                                     {title}

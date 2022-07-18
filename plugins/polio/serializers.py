@@ -26,6 +26,8 @@ from .models import (
     CampaignGroup,
     BudgetEvent,
     BudgetFiles,
+    RoundScope,
+    CampaignScope,
 )
 from .preparedness.calculator import get_preparedness_score, preparedness_summary
 from .preparedness.parser import (
@@ -215,16 +217,35 @@ class GroupSerializer(serializers.ModelSerializer):
     org_units = serializers.PrimaryKeyRelatedField(
         many=True, allow_empty=True, queryset=OrgUnit.objects.all(), style={"base_template": "input.html"}
     )
+    name = serializers.CharField(default="hidden")
 
     class Meta:
         model = Group
         fields = ["name", "org_units", "id"]
 
 
+class RoundScopeSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = RoundScope
+        fields = ["group", "vaccine"]
+
+    group = GroupSerializer()
+
+
+class CampaignScopeSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = CampaignScope
+        fields = ["group", "vaccine"]
+
+    group = GroupSerializer()
+
+
 class RoundSerializer(serializers.ModelSerializer):
     class Meta:
         model = Round
         fields = "__all__"
+
+    scopes = RoundScopeSerializer(many=True, required=False)
 
 
 # Don't display the url for Anonymous users
@@ -405,6 +426,7 @@ class CampaignSerializer(serializers.ModelSerializer):
         return _("Preparing")
 
     group = GroupSerializer(required=False, allow_null=True)
+    scopes = CampaignScopeSerializer(many=True, required=False)
 
     last_surge = SurgeSerializer(
         required=False,
@@ -421,19 +443,38 @@ class CampaignSerializer(serializers.ModelSerializer):
         rounds = validated_data.pop("rounds", [])
 
         if group:
-            org_units = group.pop("org_units") if "org_units" in group else []
+            org_units = group.pop("org_units", [])
             campaign_group = Group.domain_objects.create(**group, domain="POLIO")
             campaign_group.org_units.set(OrgUnit.objects.filter(pk__in=map(lambda org_unit: org_unit.id, org_units)))
         else:
             campaign_group = None
 
+        campaign_scopes = validated_data.pop("scopes", [])
         campaign = Campaign.objects.create(
             **validated_data,
             group=campaign_group,
         )
+
         campaign.grouped_campaigns.set(grouped_campaigns)
+
+        for scope in campaign_scopes:
+            vaccine = scope.get("vaccine")
+            org_units = scope.get("group", {}).get("org_units")
+            scope, created = campaign.scopes.get_or_create(vaccine=vaccine)
+            if not scope.group:
+                scope.group = Group.objects.create(name="hidden roundScope")
+            scope.group.org_units.set(org_units)
+
         for round_data in rounds:
-            Round.objects.create(campaign=campaign, **round_data)
+            scopes = round_data.pop("scopes", [])
+            round = Round.objects.create(campaign=campaign, **round_data)
+            for scope in scopes:
+                vaccine = scope.get("vaccine")
+                org_units = scope.get("group", {}).get("org_units")
+                scope, created = round.scopes.get_or_create(vaccine=vaccine)
+                if not scope.group:
+                    scope.group = Group.objects.create(name="hidden roundScope")
+                scope.group.org_units.set(org_units)
 
         log_campaign_modification(campaign, None, self.context["request"].user)
         return campaign
@@ -443,6 +484,15 @@ class CampaignSerializer(serializers.ModelSerializer):
         old_campaign_dump = serialize_campaign(instance)
         group = validated_data.pop("group") if "group" in validated_data else None
         rounds = validated_data.pop("rounds", [])
+        campaign_scopes = validated_data.pop("scopes", [])
+        for scope in campaign_scopes:
+            vaccine = scope.get("vaccine")
+            org_units = scope.get("group", {}).get("org_units")
+            scope, created = instance.scopes.get_or_create(vaccine=vaccine)
+            if not scope.group:
+                scope.group = Group.objects.create(name="hidden roundScope")
+            scope.group.org_units.set(org_units)
+
         round_instances = []
         # find existing round either by id or number
         for round_data in rounds:
@@ -459,9 +509,18 @@ class CampaignSerializer(serializers.ModelSerializer):
                     pass
             # we pop the campaign since we use the set afterward which will also remove the deleted one
             round_data.pop("campaign", None)
+            scopes = round_data.pop("scopes", [])
             round_serializer = RoundSerializer(instance=round, data=round_data)
             round_serializer.is_valid(raise_exception=True)
-            round_instances.append(round_serializer.save())
+            round_instance = round_serializer.save()
+            round_instances.append(round_instance)
+            for scope in scopes:
+                vaccine = scope.get("vaccine")
+                org_units = scope.get("group", {}).get("org_units")
+                scope, created = instance.scopes.get_or_create(vaccine=vaccine)
+                if not scope.group:
+                    scope.group = Group.objects.create(name="hidden roundScope")
+                scope.group.org_units.set(org_units)
         instance.rounds.set(round_instances)
         if group:
             org_units = group.pop("org_units") if "org_units" in group else []

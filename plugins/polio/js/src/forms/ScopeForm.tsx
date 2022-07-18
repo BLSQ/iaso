@@ -58,7 +58,7 @@ const initialDistrict = {
 };
 
 type Scope = {
-    name: string;
+    vaccine: string;
     group: {
         org_units: number[];
         id?: number;
@@ -111,7 +111,7 @@ export const ScopeForm: FunctionComponent = () => {
         () =>
             Object.fromEntries(
                 scopes.map(scope => [
-                    scope.name,
+                    scope.vaccine,
                     scope.group?.org_units?.length ?? 0,
                 ]),
             ),
@@ -145,7 +145,9 @@ export const ScopeForm: FunctionComponent = () => {
             const scope = findScopeWithOrgUnit(scopes, shape.id);
 
             if (scope) {
-                const vaccine = polioVacines.find(v => v.value === scope.name);
+                const vaccine = polioVacines.find(
+                    v => v.value === scope.vaccine,
+                );
                 return {
                     ...selectedPathOptions,
                     color: vaccine?.color,
@@ -176,11 +178,11 @@ export const ScopeForm: FunctionComponent = () => {
         const newScopes: Scope[] = cloneDeep(scopes);
         // Find scope for vaccine
         let scope: Scope | undefined = newScopes.find(
-            s => s.name === _selectedVaccine,
+            s => s.vaccine === _selectedVaccine,
         );
         if (scope === undefined) {
             scope = {
-                name: _selectedVaccine,
+                vaccine: _selectedVaccine,
                 group: {
                     org_units: [],
                 },
@@ -219,11 +221,11 @@ export const ScopeForm: FunctionComponent = () => {
         (district, _selectedVaccine) => {
             const newScopes: Scope[] = cloneDeep(scopes);
             let scope: Scope | undefined = newScopes.find(
-                s => s.name === _selectedVaccine,
+                s => s.vaccine === _selectedVaccine,
             );
             if (scope === undefined) {
                 scope = {
-                    name: _selectedVaccine,
+                    vaccine: _selectedVaccine,
                     group: {
                         org_units: [],
                     },
@@ -320,7 +322,7 @@ export const ScopeForm: FunctionComponent = () => {
                     ...district,
                     region: findRegion(district, regionShapes),
                     vaccineName: findScopeWithOrgUnit(scopes, district.id)
-                        ?.name,
+                        ?.vaccine,
                 };
             })
             .filter(d => d.vaccineName);

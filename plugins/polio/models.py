@@ -80,6 +80,43 @@ ROUNDSTATUS = [
 ]
 
 
+def make_group_round_scope():
+    return Group.objects.create(name="hidden roundScope")
+
+
+class RoundScope(models.Model):
+    "Scope (selection of orgunit) for a round and vaccines"
+
+    group = models.OneToOneField(
+        Group, on_delete=models.CASCADE, related_name="roundScope", default=make_group_round_scope
+    )
+    round = models.ForeignKey("Round", on_delete=models.CASCADE, related_name="scopes")
+
+    vaccine = models.CharField(max_length=5, choices=VACINES)
+
+    class Meta:
+        unique_together = [("round", "vaccine")]
+        ordering = ["round", "vaccine"]
+
+
+def make_group_campaign_scope():
+    return Group.objects.create(name="hidden campaginScope")
+
+
+class CampaignScope(models.Model):
+    """Scope (selection of orgunit) for a campaign and vaccines"""
+
+    group = models.OneToOneField(
+        Group, on_delete=models.CASCADE, related_name="campaignScope", default=make_group_campaign_scope
+    )
+    campaign = models.ForeignKey("Campaign", on_delete=models.CASCADE, related_name="scopes")
+    vaccine = models.CharField(max_length=5, choices=VACINES)
+
+    class Meta:
+        unique_together = [("campaign", "vaccine")]
+        ordering = ["campaign", "vaccine"]
+
+
 class Round(models.Model):
     class Meta:
         ordering = ["number", "started_at"]

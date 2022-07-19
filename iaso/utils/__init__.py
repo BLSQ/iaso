@@ -8,19 +8,34 @@ def timestamp_to_datetime(timestamp):
     return date.strftime("%Y-%m-%d %H:%M:%S")
 
 
-def get_flat_children_tree(el, flat_xml_dict, repeat_groups):
+def get_flat_children_tree(current_path, el, flat_xml_dict, repeat_groups, allowed_paths, skipped_path):
     for children in el.findChildren(None, {}, False):
+        node_current_path = ""
+        if el.name == "[document]":
+            node_current_path = ""
+        elif el.name == "data":
+            node_current_path = children.name
+        else:
+            node_current_path = current_path + "/" + children.name
+
         if children.name in repeat_groups:
             if children.name not in flat_xml_dict:
                 flat_xml_dict[children.name] = []
             child_dict = {}
-            get_flat_children_tree(children, child_dict, repeat_groups)
+            get_flat_children_tree(current_path, children, child_dict, repeat_groups, None, skipped_path)
             flat_xml_dict[children.name].append(child_dict)
         elif len(children.findChildren(None, {}, False)) > 0:
-
-            get_flat_children_tree(children, flat_xml_dict, repeat_groups)
+            get_flat_children_tree(
+                node_current_path, children, flat_xml_dict, repeat_groups, allowed_paths, skipped_path
+            )
         else:
-            flat_xml_dict[children.name] = children.text
+            if allowed_paths:
+                if node_current_path in allowed_paths:
+                    flat_xml_dict[children.name] = children.text
+                else:
+                    skipped_path.append(node_current_path)
+            else:
+                flat_xml_dict[children.name] = children.text
 
 
 def get_children_tree(el):
@@ -53,16 +68,16 @@ def extract_form_version_id(soup):
     return None
 
 
-def flat_parse_xml_soup(soup, repeat_groups):
-
+def flat_parse_xml_soup(soup, repeat_groups, allowed_paths):
+    skipped_paths = []
     flat_xml_dict = {}
-    get_flat_children_tree(soup, flat_xml_dict, repeat_groups)
+    get_flat_children_tree("", soup, flat_xml_dict, repeat_groups, allowed_paths, skipped_paths)
 
     version_id = extract_form_version_id(soup)
     if version_id:
         flat_xml_dict["_version"] = version_id
 
-    return flat_xml_dict
+    return {"flat_json": flat_xml_dict, "skipped_paths": skipped_paths}
 
 
 def slugify_underscore(filename):

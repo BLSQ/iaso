@@ -53,6 +53,10 @@ const MESSAGES = defineMessages({
         defaultMessage: 'Already assigned to',
         id: 'iaso.assignment.alreadyAssignedTo',
     },
+    alreadyAssigned: {
+        defaultMessage: 'Already assigned',
+        id: 'iaso.assignment.alreadyAssigned',
+    },
     inAnotherTeam: {
         defaultMessage: 'in another team',
         id: 'iaso.assignment.inAnotherTeam',
@@ -60,6 +64,10 @@ const MESSAGES = defineMessages({
     parentDialogTitle: {
         defaultMessage: 'Assign {assignmentCount} to {parentOrgUnitName}',
         id: 'iaso.assignment.parentDialog.title',
+    },
+    parentDialogTitleUnsassign: {
+        defaultMessage: 'Unassign {assignmentCount} from {parentOrgUnitName}',
+        id: 'iaso.assignment.parentDialog.titleUnsassign',
     },
     confirm: {
         id: 'iaso.label.confirm',
@@ -101,6 +109,10 @@ const MESSAGES = defineMessages({
         defaultMessage:
             'Right click on a org unit to see details popup, normal click to close popup',
         id: 'iaso.assignment.mapHelper',
+    },
+    apply: {
+        defaultMessage: 'Apply',
+        id: 'iaso.label.apply',
     },
 });
 

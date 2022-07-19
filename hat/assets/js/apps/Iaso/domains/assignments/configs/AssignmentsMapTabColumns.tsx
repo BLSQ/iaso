@@ -15,7 +15,7 @@ import { IntlFormatMessage } from '../../../types/intl';
 
 import { Profile } from '../../../utils/usersUtils';
 
-import { getTeamName } from '../utils';
+import { getTeamUserName } from '../utils';
 
 import { colors } from '../constants/colors';
 
@@ -79,7 +79,7 @@ export const useColumns = ({
                 Cell: settings => {
                     return (
                         <>
-                            {getTeamName(
+                            {getTeamUserName(
                                 settings.row.original,
                                 currentTeam,
                                 profiles,

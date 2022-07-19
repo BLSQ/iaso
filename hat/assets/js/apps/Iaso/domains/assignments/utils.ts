@@ -78,7 +78,7 @@ export const getParentTeam = ({
     return undefined;
 };
 
-export const getTeamName = (
+export const getTeamUserName = (
     selectedItem: SubTeam | User | undefined,
     currentTeam: Team | undefined,
     profiles: Profile[],
@@ -202,72 +202,38 @@ export const getSaveParams = ({
 };
 
 type MultiSaveParamsProps = {
-    allAssignments: AssignmentsApi;
-    selectedOrgUnits: Array<OrgUnitShape | OrgUnitMarker | BaseLocation>;
-    teams: DropdownTeamsOptions[];
-    profiles: Profile[];
     currentType: 'TEAM_OF_TEAMS' | 'TEAM_OF_USERS' | undefined;
     selectedItem: SubTeam | User;
     planning: Planning;
+    orgUnitsToUpdate: Array<number>;
+    mode: 'UNASSIGN' | 'ASSIGN';
 };
 
 export const getMultiSaveParams = ({
-    allAssignments,
-    selectedOrgUnits,
-    teams,
-    profiles,
     currentType,
     selectedItem,
     planning,
+    orgUnitsToUpdate,
+    mode,
 }: MultiSaveParamsProps): SaveAssignmentQuery => {
-    const orgUnitIds = selectedOrgUnits.map(orgUnit => orgUnit.id);
     const baseQuery = {
         planning: planning.id,
-        org_units: orgUnitIds,
+        org_units: orgUnitsToUpdate,
     };
-    const currentAssignments = selectedOrgUnits.map(orgUnit => {
-        const { assignment, assignedTeam, assignedUser, emptyAssignment } =
-            getOrgUnitAssignation(
-                allAssignments,
-                orgUnit,
-                teams,
-                profiles,
-                currentType,
-            );
-        return {
-            id: orgUnit.id,
-            assignment,
-            assignedTeam,
-            assignedUser,
-            emptyAssignment,
-        };
-    });
 
-    const orgUnitsToUpdate = currentAssignments
-        .filter(
-            assignment =>
-                assignment?.assignedTeam?.original.id !== selectedItem.id &&
-                assignment?.assignedUser?.user_id !== selectedItem.id,
-        )
-        .map(orgUnit => orgUnit.id);
-
-    const allOrgUnitsAlreadySelected = orgUnitsToUpdate.length === 0;
-
-    if (allOrgUnitsAlreadySelected) {
+    if (mode === 'UNASSIGN') {
         return { ...baseQuery, team: null, user: null };
     }
 
     if (currentType === 'TEAM_OF_TEAMS') {
         return {
             ...baseQuery,
-            org_units: orgUnitsToUpdate,
             team: selectedItem.id,
         };
     }
     if (currentType === 'TEAM_OF_USERS') {
         return {
             ...baseQuery,
-            org_units: orgUnitsToUpdate,
             user: selectedItem.id,
         };
     }

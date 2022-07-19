@@ -238,7 +238,7 @@ export const AssignmentsMap: FunctionComponent<Props> = ({
                                 {locations.shapes.unselected
                                     .filter(
                                         shape =>
-                                            shape.otherAssignation.assignment,
+                                            shape.otherAssignation?.assignment,
                                     )
                                     .map(shape => {
                                         return (
@@ -264,7 +264,7 @@ export const AssignmentsMap: FunctionComponent<Props> = ({
                                 {locations.shapes.unselected
                                     .filter(
                                         shape =>
-                                            !shape.otherAssignation.assignment,
+                                            !shape.otherAssignation?.assignment,
                                     )
                                     .map(shape => (
                                         <GeoJSON
@@ -302,7 +302,7 @@ export const AssignmentsMap: FunctionComponent<Props> = ({
                                         locations.markers.unselected.filter(
                                             marker =>
                                                 marker.otherAssignation
-                                                    .assignment,
+                                                    ?.assignment,
                                         ) || []
                                     }
                                     onMarkerClick={() => null}
@@ -323,7 +323,7 @@ export const AssignmentsMap: FunctionComponent<Props> = ({
                                         locations.markers.unselected.filter(
                                             marker =>
                                                 !marker.otherAssignation
-                                                    .assignment,
+                                                    ?.assignment,
                                         ) || []
                                     }
                                     onMarkerClick={shape => onClick(shape)}

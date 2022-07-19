@@ -5,11 +5,7 @@ import { makeStyles } from '@material-ui/core/styles';
 // @ts-ignore
 import { useSafeIntl, commonStyles } from 'bluesquare-components';
 
-import {
-    useGetInstanceLogs,
-    useGetInstanceLogDetail,
-} from '../hooks/useGetInstanceLogs';
-import { Instance, InstanceLogData } from '../../types/instance';
+import { useGetInstanceLogs } from '../hooks/useGetInstanceLogs';
 
 import InputComponent from '../../../../components/forms/InputComponent';
 import TopBar from '../../../../components/nav/TopBarComponent';
@@ -54,11 +50,14 @@ export const CompareInstanceLogs: FunctionComponent<Props> = ({
     const prevPathname: string | undefined = useSelector(
         (state: State) => state.routerCustom.prevPathname,
     );
+
+    const [logAInitialValue, setLogAInitialValue] = useState(undefined);
+    const [logBInitialValue, setLogBInitialValue] = useState(undefined);
+
     const { instanceIds: instanceId } = params;
+
     const { data: instanceLogsDropdown, isFetching: isFetchingInstanceLogs } =
         useGetInstanceLogs(instanceId);
-
-    const { data: instanceLogA } = useGetInstanceLogDetail(params.logA);
 
     const handleChange = (key, value) => {
         const newParams = {
@@ -68,8 +67,20 @@ export const CompareInstanceLogs: FunctionComponent<Props> = ({
         dispatch(redirectTo(baseUrls.compareInstanceLogs, newParams));
     };
 
-    const [logAInitialValue, setLogAInitialValue] = useState(undefined);
-    const [logBInitialValue, setLogBInitialValue] = useState(undefined);
+    useEffect(() => {
+        if (
+            instanceLogsDropdown &&
+            params.logA === undefined &&
+            params.logB === undefined
+        ) {
+            const defautParams = {
+                ...params,
+                logA: instanceLogsDropdown[0].value,
+                logB: instanceLogsDropdown[1].value,
+            };
+            dispatch(redirectTo(baseUrls.compareInstanceLogs, defautParams));
+        }
+    }, []);
 
     useEffect(() => {
         setLogAInitialValue(
@@ -79,8 +90,6 @@ export const CompareInstanceLogs: FunctionComponent<Props> = ({
             instanceLogsDropdown !== undefined && instanceLogsDropdown[1].value,
         );
     }, [instanceLogsDropdown, isFetchingInstanceLogs]);
-
-    console.log('instance log a', instanceLogA);
 
     return (
         <>
@@ -107,10 +116,7 @@ export const CompareInstanceLogs: FunctionComponent<Props> = ({
                             options={instanceLogsDropdown}
                             loading={isFetchingInstanceLogs}
                         />
-                        <InstanceLogDetail
-                            logId={params.logA}
-                            instance={instanceLogA}
-                        />
+                        <InstanceLogDetail logId={params.logA} />
                     </Grid>
                     <Grid xs={12} md={6} item>
                         <InputComponent
@@ -122,6 +128,8 @@ export const CompareInstanceLogs: FunctionComponent<Props> = ({
                             options={instanceLogsDropdown}
                             loading={isFetchingInstanceLogs}
                         />
+
+                        <InstanceLogDetail logId={params.logB} />
                     </Grid>
                 </Grid>
             </Box>

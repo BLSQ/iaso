@@ -1,47 +1,62 @@
-import React, { FunctionComponent } from 'react';
+import React, { FunctionComponent, useState, useEffect } from 'react';
 // @ts-ignore
 import { useSafeIntl, LoadingSpinner } from 'bluesquare-components';
 
-import { Box, Typography } from '@material-ui/core';
+import { Box } from '@material-ui/core';
 
-import { ContactSupportOutlined } from '@material-ui/icons';
-import { useGetInstance } from '../hooks/useGetInstance';
-import { Instance, InstanceLog, InstanceLogData } from '../../types/instance';
+import { InstanceLogData, FormDescriptor } from '../../types/instance';
 
-import InstanceLogContent from './InstanceLogContent';
+import {
+    useGetInstanceLogDetail,
+    useGetFormDescriptor,
+} from '../hooks/useGetInstanceLogs';
+
+import InstanceFileContent from '../../components/InstanceFileContent';
 import WidgetPaper from '../../../../components/papers/WidgetPaperComponent';
 import ErrorPaperComponent from '../../../../components/papers/ErrorPaperComponent';
 
 import MESSAGES from '../messages';
-import { useGetInstanceLogDetail } from '../hooks/useGetInstanceLogs';
 
-type Params = {
+type Props = {
     logId: string | undefined;
 };
-type Props = {
-    params: Params;
-    instance: InstanceLogData | undefined;
-};
 
-export const InstanceLogDetail: FunctionComponent<Props> = ({
-    logId,
-    formVersionId,
-    params,
-    instance,
-}) => {
+export const InstanceLogDetail: FunctionComponent<Props> = ({ logId }) => {
     const {
-        data,
+        data: instanceLogDetail,
         isLoading,
         isError,
     }: {
-        data?: InstanceLogData;
+        data?: InstanceLogData | undefined;
         isLoading: boolean;
         isError: boolean;
     } = useGetInstanceLogDetail(logId);
 
+    const {
+        data: instanceFormDescriptor,
+    }: {
+        data?: FormDescriptor | undefined;
+    } = useGetFormDescriptor(instanceLogDetail?.form);
+
     const { formatMessage } = useSafeIntl();
-    console.log('log id log detail', logId);
-    console.log('instance log detail', instance);
+
+    const [instanceLog, setInstanceLog] = useState<{
+        form_descriptor: FormDescriptor | undefined;
+        file_content: InstanceLogData | undefined;
+    }>({
+        form_descriptor: undefined,
+        file_content: undefined,
+    });
+
+    useEffect(() => {
+        if (instanceLogDetail && instanceFormDescriptor) {
+            setInstanceLog({
+                form_descriptor: instanceFormDescriptor,
+                file_content: instanceLogDetail.json,
+            });
+        }
+    }, [instanceLogDetail, instanceFormDescriptor]);
+
     if (isLoading)
         return (
             <Box height="70vh">
@@ -59,15 +74,11 @@ export const InstanceLogDetail: FunctionComponent<Props> = ({
 
     return (
         <>
-            <Box mb={4}>
-                <Typography variant="h5" color="secondary">
-                    LOG
-                </Typography>
-            </Box>
-
-            <WidgetPaper title={formatMessage(MESSAGES.submissionTitle)}>
-                <InstanceFileContent instance={data} />
-            </WidgetPaper>
+            {instanceLog.form_descriptor && instanceLog.file_content && (
+                <WidgetPaper title={formatMessage(MESSAGES.submissionTitle)}>
+                    <InstanceFileContent instance={instanceLog} logId={logId} />
+                </WidgetPaper>
+            )}
         </>
     );
 };

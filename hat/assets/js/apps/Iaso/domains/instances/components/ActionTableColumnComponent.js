@@ -103,24 +103,12 @@ const ActionTableColumnComponent = ({ settings, user }) => {
         saveOu(orgUnitPayload).catch(onError);
     };
 
-    const unlockInstance = status => {
-        const newInstance = initialInstanceState(settings.row.original, status);
-        let orgUnitPayload = newInstance;
-        orgUnitPayload = {
-            ...orgUnitPayload,
+    const lockOrUnlockInstance = status => {
+        const instanceParams = {
+            id: settings.row.original.id,
+            validation_status: status,
         };
-        console.log('hello', orgUnitPayload);
-        saveInstance(orgUnitPayload).catch(onError);
-    };
-
-    const lockInstance = status => {
-        const newInstance = initialInstanceState(settings.row.original, status);
-        let orgUnitPayload = newInstance;
-        orgUnitPayload = {
-            ...orgUnitPayload,
-        };
-        console.log('hello', orgUnitPayload);
-        saveInstance(orgUnitPayload).catch(onError);
+        saveInstance(instanceParams).catch(onError);
     };
 
     const showButton =
@@ -146,7 +134,8 @@ const ActionTableColumnComponent = ({ settings, user }) => {
     };
 
     const confirmLockUnlockInstance = isLocked => {
-        return isLocked ? unlockInstance('UNLOCKED') : lockInstance('LOCKED');
+        const statusValues = isLocked ? 'UNLOCK' : 'LOCKED';
+        lockOrUnlockInstance(statusValues);
     };
 
     const confirmCancelToolTipMessage = isItLinked => {

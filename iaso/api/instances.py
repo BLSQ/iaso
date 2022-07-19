@@ -348,7 +348,6 @@ class InstancesViewSet(viewsets.ViewSet):
         return Response(instance.as_full_model())
 
     def patch(self, request, pk=None):
-        print("params =====", request.data.get("validation_status", None))
         original = get_object_or_404(self.get_queryset(), pk=pk)
         instance = get_object_or_404(self.get_queryset(), pk=pk)
         self.check_object_permissions(request, instance)
@@ -360,7 +359,6 @@ class InstancesViewSet(viewsets.ViewSet):
         has_higher_access = True
         ou_tree = []
         validation_status = request.data.get("validation_status", None)
-
         if instance.org_unit not in access_ou:
             raise serializers.ValidationError({"error": "You don't have the permission to modify this instance."})
 

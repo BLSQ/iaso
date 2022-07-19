@@ -1502,7 +1502,7 @@ def send_approval_budget_mail(event):
         event.campaign.obr_name,
         event.campaign.country.id,
     )
-    subject = (budget_approval_email_subject(event.campaign.obr_name),)
+    subject = budget_approval_email_subject(event.campaign.obr_name)
     for e in events:
         teams = e.target_teams.all()
         for team in teams:

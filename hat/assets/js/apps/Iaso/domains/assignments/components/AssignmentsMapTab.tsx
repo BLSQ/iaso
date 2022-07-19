@@ -11,7 +11,7 @@ import {
 import { Planning } from '../types/planning';
 import { Team, DropdownTeamsOptions, SubTeam, User } from '../types/team';
 import { OrgUnitShape, Locations, OrgUnitMarker } from '../types/locations';
-import { OrgUnit } from '../../orgUnits/types/orgUnit';
+import { ChildrenOrgUnits } from '../types/orgUnit';
 
 import { Profile } from '../../../utils/usersUtils';
 
@@ -29,12 +29,13 @@ type Props = {
     params: AssignmentParams;
     // eslint-disable-next-line no-unused-vars
     setParentSelected: (orgUnit: OrgUnitShape | undefined) => void;
-    childrenOrgunits: OrgUnit[];
+    childrenOrgunits: ChildrenOrgUnits | undefined;
     parentSelected: OrgUnitShape | undefined;
     selectedItem: SubTeam | User | undefined;
     locations: Locations | undefined;
     isFetchingLocations: boolean;
     isLoadingAssignments: boolean;
+    isFetchingChildrenOrgunits: boolean;
     handleSaveAssignment: (
         // eslint-disable-next-line no-unused-vars
         selectedOrgUnit: OrgUnitShape | OrgUnitMarker,
@@ -57,6 +58,7 @@ export const AssignmentsMapTab: FunctionComponent<Props> = ({
     locations,
     isFetchingLocations,
     isLoadingAssignments,
+    isFetchingChildrenOrgunits,
 }) => {
     const { parentPicking, parentOrgunitType } = params;
 
@@ -74,17 +76,16 @@ export const AssignmentsMapTab: FunctionComponent<Props> = ({
     return (
         <>
             <ParentDialog
-                locations={locations}
-                childrenOrgunits={childrenOrgunits || []}
+                childrenOrgunits={childrenOrgunits}
                 parentSelected={parentSelected}
                 setParentSelected={setParentSelected}
-                allAssignments={allAssignments}
                 selectedItem={selectedItem}
                 currentTeam={currentTeam}
                 teams={teams}
                 profiles={profiles}
                 planning={planning}
                 saveMultiAssignments={saveMultiAssignments}
+                isFetchingChildrenOrgunits={isFetchingChildrenOrgunits}
             />
 
             <AssignmentsMap

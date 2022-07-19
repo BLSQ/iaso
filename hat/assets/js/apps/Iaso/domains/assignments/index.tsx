@@ -103,6 +103,7 @@ export const Assignments: FunctionComponent<Props> = ({ params }) => {
         parentSelected,
         baseOrgunitType,
         order: params.order || 'name',
+        selectedItem,
     });
 
     const isLoading =
@@ -269,7 +270,7 @@ export const Assignments: FunctionComponent<Props> = ({ params }) => {
                                                     setParentSelected
                                                 }
                                                 childrenOrgunits={
-                                                    childrenOrgunits || []
+                                                    childrenOrgunits
                                                 }
                                                 parentSelected={parentSelected}
                                                 saveMultiAssignments={
@@ -285,6 +286,9 @@ export const Assignments: FunctionComponent<Props> = ({ params }) => {
                                                 }
                                                 isLoadingAssignments={
                                                     isLoadingAssignments
+                                                }
+                                                isFetchingChildrenOrgunits={
+                                                    isFetchingChildrenOrgunits
                                                 }
                                             />
                                         )}

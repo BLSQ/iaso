@@ -414,10 +414,14 @@ class InstanceDetails extends Component {
                                     classes={classes}
                                 />
 
-                                <InstanceDetailsLocksHistory
-                                    currentInstance={currentInstance}
-                                    classes={classes}
-                                />
+                                {currentInstance.instance_locks_history.length >
+                                    0 && (
+                                    <InstanceDetailsLocksHistory
+                                        currentInstance={currentInstance}
+                                        classes={classes}
+                                    />
+                                )}
+
                                 {currentInstance.files.length > 0 && (
                                     <WidgetPaper
                                         title={formatMessage(MESSAGES.files)}

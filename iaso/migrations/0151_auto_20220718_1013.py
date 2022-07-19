@@ -5,7 +5,10 @@ from django.db import migrations
 
 def create_feature_flags(apps, schema_editor):
     FeatureFlag = apps.get_model("iaso", "FeatureFlag")
-    FeatureFlag.objects.create(code="CHECK_POSITION_FOR_FORMS", name="Mobile: Check right location.")
+    FeatureFlag.objects.create(
+        code="CHECK_POSITION_FOR_FORMS",
+        name="Mobile: Enforce users are within reach of the Org Unit before starting a form.",
+    )
 
 
 def destroy_feature_flags(apps, schema_editor):

@@ -1286,6 +1286,30 @@ const MESSAGES = defineMessages({
         id: 'iaso.polio.label.internal',
         defaultMessage: 'Internal',
     },
+    approve: {
+        id: 'iaso.polio.label.approve',
+        defaultMessage: 'Approve',
+    },
+    approveBudgetForCampaign: {
+        id: 'iaso.polio.label.approveBudgetForCampaign',
+        defaultMessage: 'Approve budget for campaign: {campaign}',
+    },
+    approveBudget: {
+        id: 'iaso.polio.label.approveBudget',
+        defaultMessage: 'Approve budget?',
+    },
+    rejectBudget: {
+        id: 'iaso.polio.label.rejectBudget',
+        defaultMessage: 'Reject budget?',
+    },
+    sendComment: {
+        id: 'iaso.polio.label.sendComment',
+        defaultMessage: 'Send comment',
+    },
+    rejectBudgetForCampaign: {
+        id: 'iaso.polio.label.rejectBudgetForCampaign',
+        defaultMessage: 'Reject budget for campaign: {campaign}',
+    },
 });
 
 export default MESSAGES;

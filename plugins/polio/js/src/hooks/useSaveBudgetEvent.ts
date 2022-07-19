@@ -9,14 +9,13 @@ import { useSnackMutation } from '../../../../../hat/assets/js/apps/Iaso/libs/ap
 import { BudgetEventType } from '../constants/types';
 import MESSAGES from '../constants/messages';
 
-type QueryData = {
+export type QueryData = {
     id?: number;
     campaign: string;
     type: BudgetEventType;
     target_teams: number[];
-    comments?: string;
-    // status: 'validation_ongoing'; // forcing status value as we create an event
-    files: FileList;
+    comment?: string;
+    files?: FileList;
 };
 const createEvent = async (data: QueryData) => {
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -28,7 +27,7 @@ const patchEvent = async (data: QueryData) => {
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { files, ...body } = data;
     // create new budget event
-    return patchRequest(`/api/polio/budgetevent/${data.id}`, body);
+    return patchRequest(`/api/polio/budgetevent/${data.id}/`, body);
 };
 
 const postEventFiles = async (data: QueryData) => {
@@ -58,7 +57,8 @@ export const useCreateBudgetEvent = () =>
         createEvent,
         MESSAGES.budgetEventCreated,
         undefined,
-        ['budget-details'],
+        // ['budget-details'],
+        undefined,
         undefined,
         false,
     );
@@ -103,3 +103,18 @@ export const useSaveBudgetEvent = (
     if (type === 'retry') return updateBudgetEvent;
     return createBudgetEvent;
 };
+
+const quickPostBudget = (data: QueryData) => {
+    return createEvent(data).then(response =>
+        putBudgetFinalisation(response.id),
+    );
+};
+
+export const useQuickApproveBudgetEvent = (): UseMutationResult => {
+    return useSnackMutation({
+        mutationFn: quickPostBudget,
+        invalidateQueryKey: ['budget-details'],
+        snackSuccessMessage: MESSAGES.budgetEventFinalized,
+    });
+};
+export const useQuickRejectBudgetEvent = () => useQuickApproveBudgetEvent();

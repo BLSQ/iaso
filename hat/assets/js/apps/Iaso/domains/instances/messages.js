@@ -428,6 +428,14 @@ const MESSAGES = defineMessages({
         id: 'iaso.instance.dialog.unlockedWarning',
         defaultMessage: 'Are you sure you want to unlock the submission ?',
     },
+    patchInstanceSuccesfull: {
+        id: 'iaso.instance.patchInstanceSuccesfull',
+        defaultMessage: 'Submission saved successfully',
+    },
+    patchInstanceError: {
+        id: 'iaso.instance.patchInstanceError',
+        defaultMessage: 'An error occurred while saving submission',
+    },
 });
 
 export default MESSAGES;

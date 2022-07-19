@@ -5,6 +5,7 @@ import {
     fetchDevices,
     fetchDevicesOwnerships,
 } from '../../utils/requests';
+import MESSAGES from './messages';
 import { setOrgUnitTypes } from '../orgUnits/actions';
 import {
     setDevicesList,
@@ -80,8 +81,8 @@ export const useGetPeriods = formId => {
 export const usePatchInstance = (onSuccess, invalidateQueryKey = undefined) =>
     useSnackMutation(
         body => patchRequest(`/api/instances/${body.id}/`, body),
-        '',
-        '',
+        MESSAGES.patchInstanceSuccesfull,
+        MESSAGES.patchInstanceError,
         invalidateQueryKey,
         { onSuccess },
     );

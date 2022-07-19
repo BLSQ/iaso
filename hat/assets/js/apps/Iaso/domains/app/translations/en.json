@@ -234,6 +234,8 @@
     "iaso.instance.unlocked": "Unlock the instance",
     "iaso.instance.dialog.lockedWarning": "Are you sure you want to lock the submission ?",
     "iaso.instance.dialog.unlockedWarning": "Are you sure you want to unlock the submission ?",
+    "iaso.instance.patchInstanceSuccesfull": "Submission saved successfully",
+    "iaso.instance.patchInstanceError": "An error occurred while saving submission",
     "iaso.label.actions": "Action(s)",
     "iaso.label.add": "Add",
     "iaso.label.address": "Address",

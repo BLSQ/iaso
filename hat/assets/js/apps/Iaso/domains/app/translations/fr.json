@@ -230,6 +230,8 @@
     "iaso.instance.unlocked": "Déverrouiller la soumission",
     "iaso.instance.dialog.lockedWarning": "Êtes-vous sûr de vouloir vérrouiller la soumission ?",
     "iaso.instance.dialog.unlockedWarning": "Êtes-vous sûr de vouloir Déverrouiller la soumission ?",
+    "iaso.instance.patchInstanceSuccesfull": "Soumission sauvée avec succès",
+    "iaso.instance.patchInstanceError": "Une erreur est survenue lors de la sauvegarde de la soumission",
     "iaso.label.actions": "Action(s)",
     "iaso.label.add": "Ajouter",
     "iaso.label.address": "Adresse",

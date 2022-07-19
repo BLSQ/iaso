@@ -359,6 +359,7 @@ class InstancesViewSet(viewsets.ViewSet):
         has_higher_access = True
         ou_tree = []
         validation_status = request.data.get("validation_status", None)
+        data_org_unit = request.data.get("org_unit", None)
         if instance.org_unit not in access_ou:
             raise serializers.ValidationError({"error": "You don't have the permission to modify this instance."})
 
@@ -405,7 +406,7 @@ class InstancesViewSet(viewsets.ViewSet):
                 instance=instance, is_locked=False, author=request.user, top_org_unit=user_top_ou
             )
 
-        if original.org_unit.reference_instance and original.org_unit_id != request.data["org_unit"]:
+        if original.org_unit.reference_instance and original.org_unit_id != data_org_unit:
             previous_orgunit = original.org_unit
             previous_orgunit.reference_instance = None
             previous_orgunit.save()

@@ -23,6 +23,7 @@ type Props = {
     params: OrgUnitParams;
     // eslint-disable-next-line no-unused-vars
     onSearch: (searches: any) => void;
+    currentTab: string;
 };
 
 const useStyles = makeStyles(theme => ({
@@ -41,6 +42,7 @@ const useStyles = makeStyles(theme => ({
 export const OrgUnitFiltersContainer: FunctionComponent<Props> = ({
     params,
     onSearch,
+    currentTab,
 }) => {
     const classes: Record<string, string> = useStyles();
     // @ts-ignore
@@ -51,8 +53,10 @@ export const OrgUnitFiltersContainer: FunctionComponent<Props> = ({
         ...searchParams,
     ]);
 
-    const [textSearchError, setTextSearchError] = useState(false);
-    const [filtersUpdated, setFiltersUpdated] = useState(false);
+    const [hasLocationLimitError, setHasLocationLimitError] =
+        useState<boolean>(false);
+    const [textSearchError, setTextSearchError] = useState<boolean>(false);
+    const [filtersUpdated, setFiltersUpdated] = useState<boolean>(false);
     const currentSearchIndex = parseInt(params.searchTabIndex, 10);
 
     const handleSearch = useCallback(() => {
@@ -83,6 +87,18 @@ export const OrgUnitFiltersContainer: FunctionComponent<Props> = ({
         [searches, params, onSearch],
     );
 
+    const handleLocationLimitChange = useCallback(
+        (locationLimit: number) => {
+            setFiltersUpdated(true);
+            const tempParams = {
+                ...params,
+                locationLimit,
+            };
+            onSearch(tempParams);
+        },
+        [params, onSearch],
+    );
+
     useEffect(() => {
         setSearches(searchParams);
         // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -99,7 +115,6 @@ export const OrgUnitFiltersContainer: FunctionComponent<Props> = ({
                                 classes.hiddenOpacity,
                         )}
                     >
-                        FILTERS {searchIndex}
                         <Filters
                             onSearch={handleSearch}
                             searchIndex={searchIndex}
@@ -108,13 +123,23 @@ export const OrgUnitFiltersContainer: FunctionComponent<Props> = ({
                             setFiltersUpdated={setFiltersUpdated}
                             setSearches={setSearches}
                             onChangeColor={handleChangeColor}
+                            currentTab={currentTab}
+                            params={params}
+                            setHasLocationLimitError={setHasLocationLimitError}
+                            handleLocationLimitChange={
+                                handleLocationLimitChange
+                            }
                         />
                     </Box>
                 );
             })}
-            <Box mt={2} mr={-2}>
+            <Box mt={2} justifyContent="flex-end" display="flex">
                 <FilterButton
-                    disabled={!filtersUpdated || textSearchError}
+                    disabled={
+                        !filtersUpdated ||
+                        textSearchError ||
+                        hasLocationLimitError
+                    }
                     onFilter={handleSearch}
                 />
             </Box>

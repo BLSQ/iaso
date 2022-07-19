@@ -1,5 +1,5 @@
-import React, { FunctionComponent, useMemo } from 'react';
-import { makeStyles, Box } from '@material-ui/core';
+import React, { FunctionComponent, useMemo, useState } from 'react';
+import { makeStyles, Box, Tabs, Tab } from '@material-ui/core';
 // @ts-ignore
 import { commonStyles, useSafeIntl, DynamicTabs } from 'bluesquare-components';
 import { useDispatch } from 'react-redux';
@@ -32,6 +32,10 @@ import { getChipColors } from '../../constants/chipColors';
 
 const useStyles = makeStyles(theme => ({
     ...commonStyles(theme),
+    tabs: {
+        ...commonStyles(theme).tabs,
+        padding: 0,
+    },
     hiddenOpacity: {
         position: 'absolute',
         top: '0px',
@@ -53,6 +57,8 @@ export const OrgUnits: FunctionComponent<Props> = ({ params }) => {
     const currentUser = useCurrentUser();
     const searchCounts = [];
 
+    const [tab, setTab] = useState<string>(params.tab ?? 'list');
+
     const searches = useMemo(
         () => decodeSearch(params.searches),
         [params.searches],
@@ -67,13 +73,20 @@ export const OrgUnits: FunctionComponent<Props> = ({ params }) => {
     };
 
     const onSearch = newParams => {
-        // console.log('newParams', newParams);
-        // handleTableSelection('reset');
-        // setResetTablePage(convertObjectToString(newParams));
+        const tempParams = { ...newParams };
+        if (newParams.searchActive !== 'true') {
+            tempParams.searchActive = true;
+        }
+        dispatch(redirectTo(baseUrl, tempParams));
+    };
+
+    const handleChangeTab = newtab => {
+        setTab(newtab);
+        const newParams = {
+            ...params,
+            tab: newtab,
+        };
         dispatch(redirectTo(baseUrl, newParams));
-        // if (!filtersUpdated && params.searchActive !== 'true') {
-        //     fetchOrgUnits();
-        // }
     };
 
     return (
@@ -111,7 +124,35 @@ export const OrgUnits: FunctionComponent<Props> = ({ params }) => {
                 />
             </TopBar>
             <Box className={classes.containerFullHeightNoTabPadded}>
-                <OrgUnitFiltersContainer params={params} onSearch={onSearch} />
+                <OrgUnitFiltersContainer
+                    params={params}
+                    onSearch={onSearch}
+                    currentTab={tab}
+                />
+                {params.searchActive === 'true' && (
+                    <>
+                        <Tabs
+                            value={tab}
+                            classes={{
+                                root: classes.tabs,
+                            }}
+                            className={classes.marginBottom}
+                            indicatorColor="primary"
+                            onChange={(event, newtab) =>
+                                handleChangeTab(newtab)
+                            }
+                        >
+                            <Tab
+                                value="list"
+                                label={formatMessage(MESSAGES.list)}
+                            />
+                            <Tab
+                                value="map"
+                                label={formatMessage(MESSAGES.map)}
+                            />
+                        </Tabs>
+                    </>
+                )}
             </Box>
         </>
     );

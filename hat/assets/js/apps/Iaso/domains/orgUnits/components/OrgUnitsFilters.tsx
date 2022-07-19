@@ -1,16 +1,32 @@
-import { Grid, Box } from '@material-ui/core';
-import React, { FunctionComponent, useState } from 'react';
+import { Grid, Box, Typography, makeStyles, Divider } from '@material-ui/core';
+import React, { FunctionComponent, useState, useEffect, useMemo } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
+// @ts-ignore
+import { commonStyles, useSafeIntl } from 'bluesquare-components';
 
-// import InputComponent from '../../../components/forms/InputComponent';
+import InputComponent from '../../../components/forms/InputComponent';
 import { ColorPicker } from '../../../components/forms/ColorPicker';
 import { SearchFilter } from '../../../components/filters/Search';
+import { OrgUnitTreeviewModal } from './TreeView/OrgUnitTreeviewModal';
+import { LocationLimit } from '../../../utils/map/LocationLimit';
+import DatesRange from '../../../components/filters/DatesRange';
 
 import { getChipColors } from '../../../constants/chipColors';
 
-// import MESSAGES from '../messages';
+import { useGetOrgUnitTypes } from '../hooks/requests/useGetOrgUnitTypes';
+import { useGetGroups } from '../hooks/requests/useGetGroups';
+import { useGetDataSources } from '../hooks/requests/useGetDataSources';
+import { useCurrentUser } from '../../../utils/usersUtils';
+import { useGetOrgUnit } from './TreeView/requests';
+
+import { IntlFormatMessage } from '../../../types/intl';
+import { OrgUnitParams } from '../types/orgUnit';
+import { setOrgUnitsLocations } from '../actions';
+
+import MESSAGES from '../messages';
 
 type Props = {
-    searches: [Record<string, unknown>];
+    searches: [Record<string, any>];
     searchIndex: number;
     // eslint-disable-next-line no-unused-vars
     setTextSearchError: (hasError: boolean) => void;
@@ -19,10 +35,26 @@ type Props = {
     onChangeColor: (color: string, index: number) => void;
     // eslint-disable-next-line no-unused-vars
     setFiltersUpdated: (isUpdated: boolean) => void;
-    setSearches: React.Dispatch<
-        React.SetStateAction<[Record<string, unknown>]>
-    >;
+    setSearches: React.Dispatch<React.SetStateAction<[Record<string, any>]>>;
+    currentTab: string;
+    // eslint-disable-next-line no-unused-vars
+    handleLocationLimitChange: (limit: number) => void;
+    params: OrgUnitParams;
+    setHasLocationLimitError: React.Dispatch<React.SetStateAction<boolean>>;
 };
+
+const retrieveSourceFromVersionId = (versionId, dataSources) => {
+    const idAsNumber = parseInt(versionId, 10);
+    const result = dataSources.find(
+        src =>
+            src.versions.filter(srcVersion => srcVersion.id === idAsNumber)
+                .length > 0,
+    );
+    return result?.id;
+};
+const useStyles = makeStyles(theme => ({
+    ...commonStyles(theme),
+}));
 
 export const OrgUnitFilters: FunctionComponent<Props> = ({
     searches,
@@ -32,10 +64,73 @@ export const OrgUnitFilters: FunctionComponent<Props> = ({
     setTextSearchError,
     setFiltersUpdated,
     setSearches,
+    currentTab,
+    handleLocationLimitChange,
+    params,
+    setHasLocationLimitError,
 }) => {
-    const [filters, setFilters] = useState(searches[searchIndex]);
+    const dispatch = useDispatch();
+    const classes: Record<string, string> = useStyles();
+    const { formatMessage }: { formatMessage: IntlFormatMessage } =
+        useSafeIntl();
+    const currentUser = useCurrentUser();
+
+    const orgUnitsLocations = useSelector(
+        // @ts-ignore
+        state => state.orgUnits.orgUnitsLocations,
+    );
+    // @ts-ignore
+    const isClusterActive = useSelector(state => state.map.isClusterActive);
+
+    const [dataSourceId, setDataSourceId] = useState<number | undefined>();
+    const [sourceVersionId, setSourceVersionId] = useState<
+        number | undefined
+    >();
+    const [initialOrgUnitId, setInitialOrgUnitId] = useState<
+        number | undefined
+    >(searches[searchIndex].levels);
+    const [filters, setFilters] = useState<Record<string, any>>(
+        searches[searchIndex],
+    );
+    const [showAdvancedSettings, setShowAdvancedSettings] = useState(false);
+
+    const { data: initialOrgUnit } = useGetOrgUnit(initialOrgUnitId);
+    const { data: orgunitTypes, isFetching: isFetchingOrgunitTypes } =
+        useGetOrgUnitTypes();
+    const { data: dataSources, isFetching: isFetchingDataSources } =
+        useGetDataSources();
+    const { data: groups, isFetching: isFetchingGroups } = useGetGroups({
+        dataSourceId,
+        sourceVersionId,
+    });
     const handleChange = (key, value) => {
         setFiltersUpdated(true);
+        if (key === 'version') {
+            setSourceVersionId(value);
+        }
+        if (key === 'source') {
+            setInitialOrgUnitId(undefined);
+            setDataSourceId(value);
+            setSourceVersionId(undefined);
+        }
+        if (key === 'levels') {
+            setInitialOrgUnitId(value);
+        }
+
+        if (isClusterActive) {
+            // Ugly patch to force rerender of clusters
+            const locations = [...orgUnitsLocations.locations];
+            locations[searchIndex] = [];
+            dispatch(
+                setOrgUnitsLocations({
+                    ...orgUnitsLocations,
+                    locations,
+                }),
+            );
+            setTimeout(() => {
+                dispatch(setOrgUnitsLocations(orgUnitsLocations));
+            }, 100);
+        }
         const newFilters: Record<string, unknown> = {
             ...filters,
             [key]: value,
@@ -51,10 +146,75 @@ export const OrgUnitFilters: FunctionComponent<Props> = ({
     const currentColor = filters.color
         ? `#${filters.color}`
         : getChipColors(searchIndex);
+
+    // Splitting this effect from the one below, so we can use the deps array
+    useEffect(() => {
+        // we may have a sourceVersionId but no dataSourceId if using deep linking
+        // in that case we retrieve the dataSourceId so we can display it
+        if (!dataSourceId && !sourceVersionId && filters?.version) {
+            const id = retrieveSourceFromVersionId(
+                filters.version,
+                dataSources,
+            );
+            setDataSourceId(id);
+            setSourceVersionId(parseInt(filters.version, 10));
+        }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [dataSourceId, filters.version, sourceVersionId]);
+
+    useEffect(() => {
+        // if no dataSourceId or sourceVersionId are provided, use the default from user
+        if (
+            !dataSourceId &&
+            !sourceVersionId &&
+            !filters?.version &&
+            currentUser?.account?.default_version?.data_source?.id
+        ) {
+            setDataSourceId(
+                filters?.source ??
+                    currentUser?.account?.default_version?.data_source?.id,
+            );
+            setSourceVersionId(
+                filters?.version ?? currentUser?.account?.default_version?.id,
+            );
+        }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
+
+    // Set the version to the dataSources default version when changing source
+    useEffect(() => {
+        if (dataSourceId) {
+            const dataSource = dataSources?.find(
+                src => src?.original?.id === dataSourceId,
+            );
+            if (
+                dataSource &&
+                !dataSource.original?.versions.find(
+                    version => version.id === sourceVersionId,
+                )
+            ) {
+                const selectedVersion =
+                    dataSource?.original?.default_version?.id;
+                setSourceVersionId(selectedVersion);
+            }
+        }
+    }, [dataSourceId, sourceVersionId, dataSources]);
+    const versionsDropDown = useMemo(() => {
+        if (!dataSources || !dataSourceId) return [];
+        return (
+            dataSources
+                .filter(src => src.original?.id === dataSourceId)[0]
+                ?.original?.versions.sort((a, b) => a.number - b.number)
+                .map(version => ({
+                    label: version.number.toString(),
+                    value: version.id.toString(),
+                })) ?? []
+        );
+    }, [dataSourceId, dataSources]);
     return (
-        <Grid container spacing={0}>
-            <Grid item xs={3}>
-                <Box mt={3} mb={4}>
+        <Grid container spacing={2}>
+            <Grid item xs={4}>
+                <Box mt={4} mb={4}>
                     <ColorPicker
                         currentColor={currentColor}
                         onChangeColor={color =>
@@ -72,14 +232,190 @@ export const OrgUnitFilters: FunctionComponent<Props> = ({
                     value={filters.search ? `${filters.search}` : ''}
                     onErrorChange={setTextSearchError}
                 />
-                {/* <InputComponent
-                    keyValue="search"
+                <InputComponent
+                    type="select"
+                    disabled={isFetchingDataSources}
+                    keyValue="source"
                     onChange={handleChange}
-                    value={filters.search}
-                    type="search"
-                    label={MESSAGES.search}
-                    onEnterPressed={handleSearch}
-                /> */}
+                    value={!isFetchingDataSources && filters.source}
+                    label={MESSAGES.source}
+                    options={dataSources}
+                    loading={isFetchingDataSources}
+                />
+                {!showAdvancedSettings && (
+                    <Typography
+                        className={classes.advancedSettings}
+                        variant="overline"
+                        onClick={() => setShowAdvancedSettings(true)}
+                    >
+                        {formatMessage(MESSAGES.showAdvancedSettings)}
+                    </Typography>
+                )}
+                {showAdvancedSettings && (
+                    <>
+                        <InputComponent
+                            type="select"
+                            // disabled={isFetchingOrgunitTypes}
+                            keyValue="version"
+                            onChange={handleChange}
+                            value={sourceVersionId}
+                            label={MESSAGES.sourceVersion}
+                            options={versionsDropDown}
+                            clearable={false}
+                            // loading={isFetchingOrgunitTypes}
+                        />
+                        <Typography
+                            className={classes.advancedSettings}
+                            variant="overline"
+                            onClick={() => setShowAdvancedSettings(false)}
+                        >
+                            {formatMessage(MESSAGES.hideAdvancedSettings)}
+                        </Typography>
+                    </>
+                )}
+            </Grid>
+
+            <Grid item xs={4}>
+                <InputComponent
+                    type="select"
+                    disabled={isFetchingOrgunitTypes}
+                    keyValue="orgUnitTypes"
+                    onChange={handleChange}
+                    value={!isFetchingOrgunitTypes && filters.orgUnitTypes}
+                    label={MESSAGES.org_unit_type}
+                    options={orgunitTypes}
+                    loading={isFetchingOrgunitTypes}
+                />
+                <InputComponent
+                    type="select"
+                    disabled={isFetchingGroups}
+                    keyValue="groups"
+                    onChange={handleChange}
+                    value={!isFetchingGroups && filters.groups}
+                    label={MESSAGES.groups}
+                    options={groups}
+                    loading={isFetchingGroups}
+                />
+                <InputComponent
+                    type="select"
+                    keyValue="validation_status"
+                    onChange={handleChange}
+                    value={filters.validation_status}
+                    label={MESSAGES.validationStatus}
+                    options={[
+                        {
+                            label: formatMessage(MESSAGES.all),
+                            value: 'all',
+                        },
+                        {
+                            label: formatMessage(MESSAGES.new),
+                            value: 'NEW',
+                        },
+                        {
+                            label: formatMessage(MESSAGES.validated),
+                            value: 'VALID',
+                        },
+                        {
+                            label: formatMessage(MESSAGES.rejected),
+                            value: 'REJECTED',
+                        },
+                    ]}
+                />
+
+                {currentTab === 'map' && (
+                    <>
+                        <Divider />
+                        <Box mt={2}>
+                            <LocationLimit
+                                keyValue="locationLimit"
+                                onChange={(urlKey, value) => {
+                                    handleLocationLimitChange(value);
+                                }}
+                                value={params.locationLimit}
+                                setHasError={setHasLocationLimitError}
+                            />
+                        </Box>
+                    </>
+                )}
+            </Grid>
+
+            <Grid item xs={4}>
+                <Box mb={1}>
+                    <OrgUnitTreeviewModal
+                        toggleOnLabelClick={false}
+                        titleMessage={MESSAGES.parent}
+                        onConfirm={orgUnit => {
+                            // TODO rename levels in to parent
+                            handleChange('levels', orgUnit?.id);
+                        }}
+                        source={dataSourceId}
+                        version={sourceVersionId}
+                        initialSelection={initialOrgUnit}
+                    />
+                </Box>
+                <Box mb={1}>
+                    <InputComponent
+                        type="select"
+                        keyValue="geography"
+                        onChange={handleChange}
+                        value={filters.geography}
+                        label={MESSAGES.geographicalData}
+                        options={[
+                            {
+                                label: formatMessage(MESSAGES.anyGeography),
+                                value: 'any',
+                            },
+                            {
+                                label: formatMessage(MESSAGES.withLocation),
+                                value: 'location',
+                            },
+                            {
+                                label: formatMessage(MESSAGES.withShape),
+                                value: 'shape',
+                            },
+                            {
+                                label: formatMessage(
+                                    MESSAGES.noGeographicalData,
+                                ),
+                                value: 'none',
+                            },
+                        ]}
+                    />
+                </Box>
+                <Divider />
+                <Box mt={1}>
+                    <InputComponent
+                        type="select"
+                        keyValue="hasInstances"
+                        onChange={handleChange}
+                        value={filters.hasInstances}
+                        label={MESSAGES.hasInstances}
+                        options={[
+                            {
+                                label: formatMessage(MESSAGES.with),
+                                value: 'true',
+                            },
+                            {
+                                label: formatMessage(MESSAGES.without),
+                                value: 'false',
+                            },
+                            {
+                                label: formatMessage(MESSAGES.duplicates),
+                                value: 'duplicates',
+                            },
+                        ]}
+                    />
+                </Box>
+                {(filters.hasInstances === 'true' ||
+                    filters.hasInstances === 'duplicates') && (
+                    <Box mt={-3}>
+                        <DatesRange
+                            onChangeDate={handleChange}
+                            dateFrom={filters.dateFrom}
+                            dateTo={filters.dateTo}
+                        />
+                    </Box>
+                )}
             </Grid>
         </Grid>
     );

@@ -29,6 +29,10 @@ const MESSAGES = defineMessages({
         defaultMessage: 'Edit org unit type',
         id: 'iaso.orgUnits.editOrgUnitType',
     },
+    validationStatus: {
+        id: 'iaso.forms.validationStatus',
+        defaultMessage: 'Validation status',
+    },
     new: {
         id: 'iaso.forms.new',
         defaultMessage: 'new',
@@ -435,6 +439,43 @@ const MESSAGES = defineMessages({
     downloadXml: {
         id: 'iaso.label.downloadXml',
         defaultMessage: 'Download XML',
+    },
+
+    anyGeography: {
+        id: 'iaso.label.anyGeography',
+        defaultMessage: 'With point or territory',
+    },
+    withLocation: {
+        id: 'iaso.label.withLocation',
+        defaultMessage: 'With point only',
+    },
+    withShape: {
+        id: 'iaso.label.withShape',
+        defaultMessage: 'With territory only',
+    },
+    noGeographicalData: {
+        id: 'iaso.label.noGeographicalData',
+        defaultMessage: 'Without geography',
+    },
+    geographicalData: {
+        id: 'iaso.label.geographicalData',
+        defaultMessage: 'Geographical data',
+    },
+    with: {
+        id: 'iaso.label.with',
+        defaultMessage: 'With',
+    },
+    without: {
+        id: 'iaso.label.without',
+        defaultMessage: 'Without',
+    },
+    duplicates: {
+        id: 'iaso.label.duplicates',
+        defaultMessage: 'Duplicates',
+    },
+    hasInstances: {
+        id: 'iaso.forms.hasInstances',
+        defaultMessage: 'Form submissions',
     },
 });
 

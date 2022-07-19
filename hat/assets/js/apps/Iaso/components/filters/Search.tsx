@@ -55,7 +55,7 @@ const SearchFilter: FunctionComponent<Props> = ({
     }, [currentValue, formatMessage]);
 
     useSkipEffectOnMount(() => {
-        onChange(currentValue, keyValue);
+        onChange(keyValue, currentValue);
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [currentValue, keyValue]);
 

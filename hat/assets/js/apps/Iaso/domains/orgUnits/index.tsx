@@ -5,16 +5,21 @@ import { commonStyles, useSafeIntl, DynamicTabs } from 'bluesquare-components';
 import { useDispatch } from 'react-redux';
 
 // COMPONENTS
+import { OrgUnitFiltersContainer } from './components/OrgUnitFiltersContainer';
 import TopBar from '../../components/nav/TopBarComponent';
-import { TableWithDeepLink } from '../../components/tables/TableWithDeepLink';
+// import { TableWithDeepLink } from '../../components/tables/TableWithDeepLink';
 // COMPONENTS
 
 // TYPES
-import { UrlParams } from '../../types/table';
+import { OrgUnitParams } from './types/orgUnit';
 // TYPES
 
 // UTILS
-import { decodeSearch, encodeUriParams, mapOrgUnitByLocation } from './utils';
+import {
+    decodeSearch,
+    // encodeUriParams,
+    // mapOrgUnitByLocation,
+} from './utils';
 import { useCurrentUser } from '../../utils/usersUtils';
 import { redirectTo } from '../../routing/actions';
 // UTILS
@@ -27,15 +32,14 @@ import { getChipColors } from '../../constants/chipColors';
 
 const useStyles = makeStyles(theme => ({
     ...commonStyles(theme),
+    hiddenOpacity: {
+        position: 'absolute',
+        top: '0px',
+        left: '0px',
+        zIndex: '-100',
+        opacity: '0',
+    },
 }));
-
-type OrgUnitParams = UrlParams & {
-    locationLimit: string;
-    tab?: string;
-    searchTabIndex: string;
-    searchActive: string;
-    searches: string;
-};
 
 type Props = {
     params: OrgUnitParams;
@@ -60,6 +64,16 @@ export const OrgUnits: FunctionComponent<Props> = ({ params }) => {
 
     const onTabsDeleted = newParams => {
         dispatch(redirectTo(baseUrl, newParams));
+    };
+
+    const onSearch = newParams => {
+        // console.log('newParams', newParams);
+        // handleTableSelection('reset');
+        // setResetTablePage(convertObjectToString(newParams));
+        dispatch(redirectTo(baseUrl, newParams));
+        // if (!filtersUpdated && params.searchActive !== 'true') {
+        //     fetchOrgUnits();
+        // }
     };
 
     return (
@@ -97,7 +111,7 @@ export const OrgUnits: FunctionComponent<Props> = ({ params }) => {
                 />
             </TopBar>
             <Box className={classes.containerFullHeightNoTabPadded}>
-                FILTERS, LIST, MAP
+                <OrgUnitFiltersContainer params={params} onSearch={onSearch} />
             </Box>
         </>
     );

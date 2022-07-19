@@ -1,3 +1,4 @@
+import { UrlParams } from '../../../types/table';
 import { Shape } from './shapes';
 
 /* eslint-disable camelcase */
@@ -29,4 +30,12 @@ export type OrgUnit = {
 
     groups: Array<unknown>;
     org_unit_type: string;
+};
+
+export type OrgUnitParams = UrlParams & {
+    locationLimit: string;
+    tab?: string;
+    searchTabIndex: string;
+    searchActive: string;
+    searches: string;
 };

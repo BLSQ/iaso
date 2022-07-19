@@ -39,6 +39,7 @@ import CreateReAssignDialogComponent from './components/CreateReAssignDialogComp
 import InstanceDetailsInfos from './components/InstanceDetailsInfos';
 import InstanceDetailsLocation from './components/InstanceDetailsLocation';
 import InstanceDetailsExportRequests from './components/InstanceDetailsExportRequests';
+import InstanceDetailsLocksHistory from './components/InstanceDetailsLocksHistory';
 import InstancesFilesList from './components/InstancesFilesListComponent';
 import InstanceFileContent from './components/InstanceFileContent';
 import SpeedDialInstanceActions from './components/SpeedDialInstanceActions';
@@ -409,6 +410,11 @@ class InstanceDetails extends Component {
                                     />
                                 </WidgetPaper>
                                 <InstanceDetailsExportRequests
+                                    currentInstance={currentInstance}
+                                    classes={classes}
+                                />
+
+                                <InstanceDetailsLocksHistory
                                     currentInstance={currentInstance}
                                     classes={classes}
                                 />

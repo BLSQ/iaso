@@ -436,6 +436,10 @@ const MESSAGES = defineMessages({
         id: 'iaso.instance.patchInstanceError',
         defaultMessage: 'An error occurred while saving submission',
     },
+    instanceLocksHistory: {
+        id: 'iaso.label.instanceLocksHistory',
+        defaultMessage: 'Instance locks history',
+    },
 });
 
 export default MESSAGES;

@@ -7,7 +7,7 @@ import { useDispatch } from 'react-redux';
 // COMPONENTS
 import { OrgUnitFiltersContainer } from './components/OrgUnitFiltersContainer';
 import TopBar from '../../components/nav/TopBarComponent';
-// import { TableWithDeepLink } from '../../components/tables/TableWithDeepLink';
+import { TableWithDeepLink } from '../../components/tables/TableWithDeepLink';
 // COMPONENTS
 
 // TYPES
@@ -33,6 +33,7 @@ import { getChipColors } from '../../constants/chipColors';
 
 // HOOKS
 import { useGetOrgUnits } from './hooks/requests/useGetOrgUnits';
+import { useGetOrgUnitsTableColumns } from './hooks/useGetOrgUnitsTableColumns';
 // HOOKS
 
 const useStyles = makeStyles(theme => ({
@@ -54,6 +55,12 @@ type Props = {
     params: OrgUnitParams;
 };
 
+// TODO:
+// - replace orgUnits by orgUnitsNew
+// - delete old index, filters
+// - remove requests
+// - emove messages
+
 const baseUrl = baseUrls.orgUnitsNew;
 export const OrgUnits: FunctionComponent<Props> = ({ params }) => {
     const dispatch = useDispatch();
@@ -63,23 +70,19 @@ export const OrgUnits: FunctionComponent<Props> = ({ params }) => {
     const searchCounts = [];
 
     const [tab, setTab] = useState<string>(params.tab ?? 'list');
-
     const searches: [Search] = useMemo(
         () => decodeSearch(params.searches),
         [params.searches],
     );
+    const columns = useGetOrgUnitsTableColumns(searches);
     const defaultSource = useMemo(
         () => currentUser?.account?.default_version?.data_source,
         [currentUser],
     );
 
-    const { data: orgUnits, isFetching: isFetchingOrgUnits } = useGetOrgUnits(
-        searches,
-        params,
-        params.searchActive,
-    );
-    console.log('orgUnits', orgUnits);
-    console.log('isFetchingOrgUnits', isFetchingOrgUnits);
+    const { data: orgUnitsData, isFetching: isFetchingOrgUnits } =
+        useGetOrgUnits(searches, params, params.searchActive);
+
     const onTabsDeleted = newParams => {
         dispatch(redirectTo(baseUrl, newParams));
     };
@@ -163,6 +166,23 @@ export const OrgUnits: FunctionComponent<Props> = ({ params }) => {
                                 label={formatMessage(MESSAGES.map)}
                             />
                         </Tabs>
+                        {tab === 'list' && (
+                            <Box mt={-4}>
+                                <TableWithDeepLink
+                                    data={orgUnitsData?.orgunits || []}
+                                    count={orgUnitsData?.count}
+                                    pages={orgUnitsData?.pages}
+                                    params={params}
+                                    columns={columns}
+                                    baseUrl={baseUrl}
+                                    marginTop={false}
+                                    extraProps={{
+                                        loading: isFetchingOrgUnits,
+                                        columns,
+                                    }}
+                                />
+                            </Box>
+                        )}
                     </>
                 )}
             </Box>

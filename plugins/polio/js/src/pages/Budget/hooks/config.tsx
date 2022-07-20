@@ -296,18 +296,19 @@ export const useBudgetDetailsColumns = ({ profiles, data }): Column[] => {
                                         keyName={`deleteBudgetEvent-${settings.row.original.id}`}
                                     />
                                 )}
-                            {settings.row.original.deleted_at && (
-                                <IconButtonComponent
-                                    color="secondary"
-                                    icon="restore-from-trash"
-                                    tooltipMessage={MESSAGES.restore}
-                                    onClick={() =>
-                                        restoreBudgetEvent(
-                                            settings.row.original.id,
-                                        )
-                                    }
-                                />
-                            )}
+                            {settings.row.original.deleted_at &&
+                                userIsAuthor && (
+                                    <IconButtonComponent
+                                        color="secondary"
+                                        icon="restore-from-trash"
+                                        tooltipMessage={MESSAGES.restore}
+                                        onClick={() =>
+                                            restoreBudgetEvent(
+                                                settings.row.original.id,
+                                            )
+                                        }
+                                    />
+                                )}
                         </section>
                     );
                 },
@@ -324,7 +325,10 @@ export const useBudgetDetailsColumns = ({ profiles, data }): Column[] => {
                     Cell: settings => {
                         const { internal } = settings.row.original;
                         return internal ? (
-                            <LockIcon className={getRowColor(settings)} />
+                            <LockIcon
+                                className={getRowColor(settings)}
+                                color="action"
+                            />
                         ) : (
                             <></>
                         );

@@ -5,6 +5,10 @@ const MESSAGES = defineMessages({
         defaultMessage: 'Polio',
         id: 'iaso.label.polio',
     },
+    scope_per_round: {
+        defaultMessage: 'Separate scope per round',
+        id: 'iaso.polio.label.scope_per_round',
+    },
     campaigns: {
         defaultMessage: 'Campaigns',
         id: 'iaso.polio.label.campaigns',

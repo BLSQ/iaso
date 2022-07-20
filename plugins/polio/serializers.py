@@ -517,7 +517,7 @@ class CampaignSerializer(serializers.ModelSerializer):
             for scope in scopes:
                 vaccine = scope.get("vaccine")
                 org_units = scope.get("group", {}).get("org_units")
-                scope, created = instance.scopes.get_or_create(vaccine=vaccine)
+                scope, created = round_instance.scopes.get_or_create(vaccine=vaccine)
                 if not scope.group:
                     scope.group = Group.objects.create(name="hidden roundScope")
                 scope.group.org_units.set(org_units)

@@ -188,7 +188,7 @@ const CreateEditDialog = ({
                             )}
                         </Grid>
                     </Grid>
-                    {formik.errors.rounds && (
+                    {formik.errors?.rounds && (
                         <RoundsEmptyDates
                             roundErrors={formik.errors.rounds}
                             roundValues={formik.values.rounds}

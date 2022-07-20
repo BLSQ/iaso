@@ -105,7 +105,7 @@ export const ScopeInput: FunctionComponent<FieldProps<Scope[], Values>> = ({
     const classes = useStyles();
     const { formatMessage } = useSafeIntl();
     const [selectRegion, setSelectRegion] = useState(false);
-    const { value: scopes } = field;
+    const { value: scopes = [] } = field;
     const { setValue: setScopes } = helpers;
 
     // Group contains selected orgunits
@@ -195,6 +195,7 @@ export const ScopeInput: FunctionComponent<FieldProps<Scope[], Values>> = ({
         // @ts-ignore
         if (
             OrgUnitsIdInSameRegion.every(OrgUnitId =>
+                // @ts-ignore
                 scope.group.org_units.includes(OrgUnitId),
             )
         ) {
@@ -460,7 +461,6 @@ export const ScopeInput: FunctionComponent<FieldProps<Scope[], Values>> = ({
                                     style={{ cursor: 'pointer' }}
                                 >
                                     <Typography>
-                                        {' '}
                                         {formatMessage(MESSAGES.district)}
                                     </Typography>
                                 </TableCell>
@@ -470,7 +470,6 @@ export const ScopeInput: FunctionComponent<FieldProps<Scope[], Values>> = ({
                                     style={{ cursor: 'pointer' }}
                                 >
                                     <Typography>
-                                        {' '}
                                         {formatMessage(MESSAGES.vaccine)}
                                     </Typography>
                                 </TableCell>

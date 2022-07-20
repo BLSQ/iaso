@@ -1,16 +1,9 @@
-import React, {
-    FunctionComponent,
-    useCallback,
-    useEffect,
-    useState,
-} from 'react';
+import React, { FunctionComponent, useEffect, useState } from 'react';
 import {
     // @ts-ignore
     useSafeIntl,
     // @ts-ignore
     useSkipEffectOnMount,
-    // @ts-ignore
-    LoadingSpinner,
 } from 'bluesquare-components';
 import {
     Box,
@@ -40,9 +33,6 @@ import { GraphTitle } from '../../components/LQAS-IM/GraphTitle';
 import { BudgetStatus, findBudgetStatus } from './BudgetStatus';
 import { CreateEditBudgetEvent } from './CreateEditBudgetEvent';
 import { redirectToReplace } from '../../../../../../hat/assets/js/apps/Iaso/routing/actions';
-import { MapComponent } from '../../components/MapComponent/MapComponent';
-import { useGetGeoJson } from '../../hooks/useGetGeoJson';
-import { useGetCampaignScope } from '../../hooks/useGetCampaignScope';
 import { useCurrentUser } from '../../../../../../hat/assets/js/apps/Iaso/utils/usersUtils';
 import InputComponent from '../../../../../../hat/assets/js/apps/Iaso/components/forms/InputComponent';
 import { BudgetValidationPopUp } from './pop-ups/BudgetValidationPopUp';
@@ -51,29 +41,10 @@ import { useGetApprovalTeams } from '../../hooks/useGetTeams';
 import { BudgetEventCard } from './cards/BudgetEventCard';
 import { useBoundState } from '../../../../../../hat/assets/js/apps/Iaso/domains/assignments/hooks/useBoundState';
 import { Optional } from '../../../../../../hat/assets/js/apps/Iaso/types/utils';
+import { BudgetMap } from './Map/BudgetMap';
 
 type Props = {
     router: any;
-};
-
-const selectedPathOptions = {
-    color: 'lime',
-    weight: '1',
-    opacity: '1',
-    zIndex: '1',
-};
-const unselectedPathOptions = {
-    color: 'gray',
-    weight: '1',
-    opacity: '1',
-    zIndex: '1',
-};
-const getBackgroundLayerStyle = () => {
-    return {
-        color: 'grey',
-        opacity: '1',
-        fillColor: 'transparent',
-    };
 };
 
 const useIsUserInApprovalTeam = (userId?: number): boolean => {
@@ -159,28 +130,7 @@ export const BudgetDetails: FunctionComponent<Props> = ({ router }) => {
         data: budgetDetails?.results,
     });
 
-    const { data: districtShapes, isFetching: isFetchingDistricts } =
-        useGetGeoJson(country, 'DISTRICT');
-
-    const { data: regionShapes, isFetching: isFetchingRegions } = useGetGeoJson(
-        country,
-        'REGION',
-    );
-
-    const { data: scope, isFetching: isFetchingScope } = useGetCampaignScope({
-        country: parseInt(country, 10),
-        campaignId,
-    });
-
     const budgetStatus = findBudgetStatus(allBudgetDetails);
-
-    const getShapeStyle = useCallback(
-        shape => {
-            if (scope.includes(shape.id)) return selectedPathOptions;
-            return unselectedPathOptions;
-        },
-        [scope],
-    );
 
     return (
         <>
@@ -335,43 +285,11 @@ export const BudgetDetails: FunctionComponent<Props> = ({ router }) => {
                         </Grid>
                     )}
                     {!isMobileLayout && (
-                        <Grid item xs={12} md={4}>
-                            <Paper>
-                                <Box ml={2} pt={2} mr={2} pb={2}>
-                                    <GraphTitle
-                                        text={formatMessage(MESSAGES.scope)}
-                                        displayTrigger
-                                    />
-                                    <Box mt={2} mb={1}>
-                                        <Divider />
-                                    </Box>
-                                    {(isFetchingRegions ||
-                                        isFetchingDistricts ||
-                                        isFetchingScope) && (
-                                        <LoadingSpinner fixed={false} />
-                                    )}
-                                    {!isFetchingRegions &&
-                                        !isFetchingDistricts &&
-                                        !isFetchingScope && (
-                                            <MapComponent
-                                                name="BudgetScopeMap"
-                                                mainLayer={districtShapes}
-                                                backgroundLayer={regionShapes}
-                                                onSelectShape={() => null}
-                                                getMainLayerStyle={
-                                                    getShapeStyle
-                                                }
-                                                getBackgroundLayerStyle={
-                                                    getBackgroundLayerStyle
-                                                }
-                                                tooltipLabels={{
-                                                    main: 'District',
-                                                    background: 'Region',
-                                                }}
-                                            />
-                                        )}
-                                </Box>
-                            </Paper>
+                        <Grid item xs={12} lg={4}>
+                            <BudgetMap
+                                country={country}
+                                campaignId={campaignId}
+                            />
                         </Grid>
                     )}
                 </Grid>

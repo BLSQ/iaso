@@ -57,6 +57,7 @@ from .api.hesabu_descriptors import HesabuDescriptorsViewSet
 from .api.dhis2_resources import DHIS2_VIEWSETS
 from .api.permissions import PermissionsViewSet
 from .api.feature_flags import FeatureFlagViewSet
+from .api.check_version import CheckVersionViewSet
 from iaso import matching
 import pkgutil
 
@@ -96,6 +97,7 @@ router.register(r"permissions", PermissionsViewSet, basename="permissions")
 router.register(r"derivedinstances", DerivedInstancesViewSet, basename="derivedinstances")
 router.register(r"mobile/orgunits", MobileOrgUnitViewSet, basename="orgunitsmobile")
 router.register(r"featureflags", FeatureFlagViewSet, basename="featureflags")
+router.register(r"mobile/checkversion", CheckVersionViewSet, basename="checkversion")
 router.register(r"copyversion", CopyVersionViewSet, basename="copyversion")
 router.register(r"dhis2ouimporter", Dhis2OuImporterViewSet, basename="dhis2ouimporter")
 router.register(r"setupaccount", SetupAccountViewSet, basename="setupaccount")

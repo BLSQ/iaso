@@ -5,7 +5,6 @@ from django.conf import settings
 from django.conf.urls.static import static
 from iaso.views import page, health
 import django_sql_dashboard
-from plugins.polio.views.approval_email import event_creation_render, test_budget_approval_render, test_email_render
 
 admin.site.site_header = "Administration de Iaso"
 admin.site.site_title = "Iaso"
@@ -50,9 +49,6 @@ urlpatterns = [
         name="reset_password_complete",
     ),
     path("sync/", include("hat.sync.urls")),
-    path("btest/", test_email_render),
-    path("ctest/", test_budget_approval_render),
-    path("dtest/", event_creation_render),
 ]
 
 if settings.BEANSTALK_WORKER or settings.DEBUG:

@@ -31,6 +31,7 @@ const styles = theme => {
         deletedRow: {
             color: theme.palette.secondary.main,
         },
+        paragraph: { margin: 0 },
     };
 };
 
@@ -117,7 +118,7 @@ export const useBudgetColumns = (): Column[] => {
 
 export const useBudgetDetailsColumns = ({ profiles, data }): Column[] => {
     const classes = useStyles();
-    const { data: teams } = useGetTeams();
+    const { data: teams = [] } = useGetTeams();
     const getRowColor = getStyle(classes);
     const { formatMessage } = useSafeIntl();
     const currentUser = useCurrentUser();
@@ -162,16 +163,42 @@ export const useBudgetDetailsColumns = ({ profiles, data }): Column[] => {
                 accessor: 'author',
                 sortable: true,
                 Cell: settings => {
-                    const { author } = settings.row.original;
+                    const { author, type } = settings.row.original;
                     const authorProfile = profiles?.profiles?.find(
                         profile => profile.user_id === author,
                     );
                     const nameDisplayed = formatUserName(authorProfile);
 
+                    const authorTeams = useMemo(
+                        () => teams.filter(team => team.users.includes(author)),
+                        [author],
+                    );
+                    const authorTeam =
+                        type === 'validation'
+                            ? authorTeams.find(team =>
+                                  team.name.toLowerCase().includes('approval'),
+                              )
+                            : authorTeams.find(
+                                  team =>
+                                      !team.name
+                                          .toLowerCase()
+                                          .includes('approval'),
+                              );
                     return (
-                        <span className={getRowColor(settings)}>
-                            {nameDisplayed}
-                        </span>
+                        <>
+                            <p
+                                className={`${getRowColor(settings)} ${
+                                    classes.paragraph
+                                }`}
+                            >
+                                {nameDisplayed}
+                            </p>
+                            {authorTeam && (
+                                <p className={classes.paragraph}>
+                                    {authorTeam.name}
+                                </p>
+                            )}
+                        </>
                     );
                 },
             },
@@ -304,6 +331,7 @@ export const useBudgetDetailsColumns = ({ profiles, data }): Column[] => {
         showInternalColumn,
         getRowColor,
         profiles?.profiles,
+        classes.paragraph,
         teams,
         currentUser.user_id,
         deleteBudgetEvent,

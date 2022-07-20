@@ -23,6 +23,7 @@ import MESSAGES from '../../../constants/messages';
 import { redirectToReplace } from '../../../../../../../hat/assets/js/apps/Iaso/routing/actions';
 import InputComponent from '../../../../../../../hat/assets/js/apps/Iaso/components/forms/InputComponent';
 import { findApprovaTeams } from '../utils';
+import { useDialogActionStyles } from './style';
 
 type Props = { campaignName: string; campaignId: string; params: any };
 
@@ -40,6 +41,8 @@ export const BudgetRejectionPopUp: FunctionComponent<Props> = ({
     campaignId,
     params,
 }) => {
+    const { action: actionStyle } = useDialogActionStyles();
+
     const { formatMessage } = useSafeIntl();
     const [open, setOpen] = useState<boolean>(true);
     const [text, setText] = useState<string>('');
@@ -88,11 +91,10 @@ export const BudgetRejectionPopUp: FunctionComponent<Props> = ({
                         value={text}
                         keyValue="comments"
                         label={MESSAGES.comments}
-                        errors={[]}
                         onChange={(_keyValue, input) => setText(input)}
                     />
                 </DialogContent>
-                <DialogActions>
+                <DialogActions className={actionStyle}>
                     <Button onClick={handleClose} color="primary">
                         {formatMessage(MESSAGES.cancel)}
                     </Button>

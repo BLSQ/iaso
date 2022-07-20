@@ -23,7 +23,7 @@ import { useGetTeams } from '../../../hooks/useGetTeams';
 import MESSAGES from '../../../constants/messages';
 import { redirectToReplace } from '../../../../../../../hat/assets/js/apps/Iaso/routing/actions';
 import { findApprovaTeams } from '../utils';
-// @ts-ignore
+import { useDialogActionStyles } from './style';
 
 type Props = { campaignName: string; campaignId: string; params: any };
 
@@ -55,6 +55,7 @@ export const BudgetValidationPopUp: FunctionComponent<Props> = ({
     params,
 }) => {
     const classes: any = useStyles();
+    const { action: actionStyle } = useDialogActionStyles();
     const { formatMessage } = useSafeIntl();
     const [open, setOpen] = useState(params?.action === 'confirmApproval');
     const dispatch = useDispatch();
@@ -88,7 +89,7 @@ export const BudgetValidationPopUp: FunctionComponent<Props> = ({
             <Button
                 variant="contained"
                 onClick={handleClick}
-                className={`${classes.green} ${classes.button}`}
+                className={classes.green}
             >
                 {formatMessage(MESSAGES.approve)}
             </Button>
@@ -108,7 +109,7 @@ export const BudgetValidationPopUp: FunctionComponent<Props> = ({
                         })}
                     </DialogContentText>
                 </DialogContent>
-                <DialogActions>
+                <DialogActions className={actionStyle}>
                     <Button onClick={handleClose} color="primary">
                         {formatMessage(MESSAGES.cancel)}
                     </Button>

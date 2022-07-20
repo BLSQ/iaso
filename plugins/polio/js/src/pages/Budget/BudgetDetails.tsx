@@ -1,10 +1,6 @@
-import React, { FunctionComponent, useEffect, useState } from 'react';
-import {
-    // @ts-ignore
-    useSafeIntl,
-    // @ts-ignore
-    useSkipEffectOnMount,
-} from 'bluesquare-components';
+import React, { FunctionComponent, useState } from 'react';
+// @ts-ignore
+import { useSafeIntl } from 'bluesquare-components';
 import {
     Box,
     Divider,
@@ -19,7 +15,6 @@ import { useDispatch, useSelector } from 'react-redux';
 import { Pagination } from '@material-ui/lab';
 import TopBar from '../../../../../../hat/assets/js/apps/Iaso/components/nav/TopBarComponent';
 import MESSAGES from '../../constants/messages';
-import { convertObjectToString } from '../../utils';
 import { useStyles } from '../../styles/theme';
 import { TableWithDeepLink } from '../../../../../../hat/assets/js/apps/Iaso/components/tables/TableWithDeepLink';
 import {
@@ -27,7 +22,7 @@ import {
     useGetBudgetDetails,
 } from '../../hooks/useGetBudgetDetails';
 import { BUDGET, BUDGET_DETAILS } from '../../constants/routes';
-import { useBudgetDetailsColumns } from './hooks/config';
+import { useTableState } from './hooks/config';
 import { useGetProfiles } from '../../components/CountryNotificationsConfig/requests';
 import { GraphTitle } from '../../components/LQAS-IM/GraphTitle';
 import { BudgetStatus, findBudgetStatus } from './BudgetStatus';
@@ -37,31 +32,14 @@ import { useCurrentUser } from '../../../../../../hat/assets/js/apps/Iaso/utils/
 import InputComponent from '../../../../../../hat/assets/js/apps/Iaso/components/forms/InputComponent';
 import { BudgetValidationPopUp } from './pop-ups/BudgetValidationPopUp';
 import { BudgetRejectionPopUp } from './pop-ups/BudgetRejectionPopUp';
-import { useGetApprovalTeams } from '../../hooks/useGetTeams';
 import { BudgetEventCard } from './cards/BudgetEventCard';
 import { useBoundState } from '../../../../../../hat/assets/js/apps/Iaso/domains/assignments/hooks/useBoundState';
 import { Optional } from '../../../../../../hat/assets/js/apps/Iaso/types/utils';
 import { BudgetMap } from './Map/BudgetMap';
+import { useIsUserInApprovalTeam } from './hooks/useIsUserInApprovalTeam';
 
 type Props = {
     router: any;
-};
-
-const useIsUserInApprovalTeam = (userId?: number): boolean => {
-    const { data: approvalTeams, isFetching } = useGetApprovalTeams();
-    const [isUserInApprovalTeam, setIsUserInApprovalTeam] =
-        useState<boolean>(false);
-
-    useEffect(() => {
-        if (userId && !isFetching)
-            setIsUserInApprovalTeam(
-                Boolean(
-                    approvalTeams.find(team => team.users.includes(userId)),
-                ),
-            );
-    }, [approvalTeams, isFetching, userId]);
-
-    return isUserInApprovalTeam;
 };
 
 const style = () => {
@@ -103,8 +81,11 @@ export const BudgetDetails: FunctionComponent<Props> = ({ router }) => {
         page,
     });
 
+    // Using all details (non paginated) to determine status
     const { data: allBudgetDetails, isFetching: isFetchingAll } =
         useGetAllBudgetDetails(campaignId, showDeleted);
+
+    const budgetStatus = findBudgetStatus(allBudgetDetails);
 
     const budgetHasSubmission = Boolean(
         allBudgetDetails?.find(
@@ -112,25 +93,13 @@ export const BudgetDetails: FunctionComponent<Props> = ({ router }) => {
                 budgetEvent.type === 'submission' && !budgetEvent.deleted_at,
         ),
     );
-    // TODO make hook for table specific state and effects
-    const [resetPageToOne, setResetPageToOne] = useState('');
-
-    useSkipEffectOnMount(() => {
-        const newParams = {
-            ...params,
-        };
-        delete newParams.page;
-        delete newParams.order;
-        setResetPageToOne(convertObjectToString(newParams));
-    }, [params.pageSize, campaignId, campaignName]);
-
     const { data: profiles, isFetching: isFetchingProfiles } = useGetProfiles();
-    const columns = useBudgetDetailsColumns({
-        profiles,
-        data: budgetDetails?.results,
-    });
 
-    const budgetStatus = findBudgetStatus(allBudgetDetails);
+    const { resetPageToOne, columns } = useTableState({
+        profiles,
+        events: budgetDetails?.results,
+        params,
+    });
 
     return (
         <>

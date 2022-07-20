@@ -1,10 +1,12 @@
 /* eslint-disable camelcase */
-import React, { useMemo } from 'react';
+import React, { useMemo, useState } from 'react';
 import {
     // @ts-ignore
     useSafeIntl,
     // @ts-ignore
     IconButton as IconButtonComponent,
+    // @ts-ignore
+    useSkipEffectOnMount,
 } from 'bluesquare-components';
 import moment from 'moment';
 import { makeStyles } from '@material-ui/core';
@@ -15,7 +17,10 @@ import { BUDGET_DETAILS } from '../../../constants/routes';
 import { DateTimeCellRfc } from '../../../../../../../hat/assets/js/apps/Iaso/components/Cells/DateTimeCell';
 import { BudgetFilesModal } from '../BudgetFilesModal';
 import { CreateEditBudgetEvent } from '../CreateEditBudgetEvent';
-import { useCurrentUser } from '../../../../../../../hat/assets/js/apps/Iaso/utils/usersUtils';
+import {
+    Profile,
+    useCurrentUser,
+} from '../../../../../../../hat/assets/js/apps/Iaso/utils/usersUtils';
 import DeleteDialog from '../../../../../../../hat/assets/js/apps/Iaso/components/dialogs/DeleteDialogComponent';
 import {
     useDeleteBudgetEvent,
@@ -23,6 +28,9 @@ import {
 } from '../../../hooks/useDeleteBudgetEvent';
 import { useGetTeams } from '../../../hooks/useGetTeams';
 import { formatTargetTeams, formatUserName } from '../utils';
+import { BudgetEvent } from '../../../constants/types';
+import { Optional } from '../../../../../../../hat/assets/js/apps/Iaso/types/utils';
+import { convertObjectToString } from '../../../utils';
 
 const baseUrl = BUDGET_DETAILS;
 
@@ -337,4 +345,40 @@ export const useBudgetDetailsColumns = ({ profiles, data }): Column[] => {
         deleteBudgetEvent,
         restoreBudgetEvent,
     ]);
+};
+
+type Params = {
+    events: Optional<BudgetEvent[]>;
+    profiles: Profile[];
+    params: Record<string, any>;
+};
+
+export const useTableState = ({
+    events,
+    profiles,
+    params,
+}: Params): { resetPageToOne: unknown; columns: Column[] } => {
+    const { campaignName, campaignId } = params;
+    const [resetPageToOne, setResetPageToOne] = useState('');
+
+    useSkipEffectOnMount(() => {
+        const newParams = {
+            ...params,
+        };
+        delete newParams.page;
+        delete newParams.order;
+        setResetPageToOne(convertObjectToString(newParams));
+    }, [params.pageSize, campaignId, campaignName]);
+
+    const columns = useBudgetDetailsColumns({
+        profiles,
+        data: events,
+    });
+
+    return useMemo(() => {
+        return {
+            resetPageToOne,
+            columns,
+        };
+    }, [columns, resetPageToOne]);
 };

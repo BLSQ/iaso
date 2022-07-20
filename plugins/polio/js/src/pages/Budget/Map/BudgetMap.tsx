@@ -8,23 +8,16 @@ import { useGetCampaignScope } from '../../../hooks/useGetCampaignScope';
 import { useGetGeoJson } from '../../../hooks/useGetGeoJson';
 import MESSAGES from '../../../constants/messages';
 import { MapComponent } from '../../../components/MapComponent/MapComponent';
+import {
+    unselectedPathOptions,
+    selectedPathOptions,
+} from '../../../styles/constants';
 
 type Props = {
     country: string;
     campaignId: string;
 };
-const selectedPathOptions = {
-    color: 'lime',
-    weight: '1',
-    opacity: '1',
-    zIndex: '1',
-};
-const unselectedPathOptions = {
-    color: 'gray',
-    weight: '1',
-    opacity: '1',
-    zIndex: '1',
-};
+
 const getBackgroundLayerStyle = () => {
     return {
         color: 'grey',

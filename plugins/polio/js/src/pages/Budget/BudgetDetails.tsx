@@ -284,7 +284,7 @@ export const BudgetDetails: FunctionComponent<Props> = ({ router }) => {
                             </Paper>
                         </Grid>
                     )}
-                    {!isMobileLayout && (
+                    {isMobileLayout && (
                         <Grid item xs={12} lg={4}>
                             <BudgetMap
                                 country={country}

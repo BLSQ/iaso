@@ -20,10 +20,10 @@ import {
     useSafeIntl,
     // @ts-ignore
     IconButton as IconButtonComponent,
+    // @ts-ignore
+    LoadingSpinner,
 } from 'bluesquare-components';
 import moment from 'moment';
-import LockIcon from '@material-ui/icons/Lock';
-import { BudgetEvent, BudgetEventType } from '../../../constants/types';
 import MESSAGES from '../../../constants/messages';
 import {
     Profile,
@@ -31,7 +31,6 @@ import {
 } from '../../../../../../../hat/assets/js/apps/Iaso/utils/usersUtils';
 import { formatTargetTeams, formatUserName } from '../utils';
 import { useGetTeams } from '../../../hooks/useGetTeams';
-import { Nullable } from '../../../../../../../hat/assets/js/apps/Iaso/types/utils';
 import { BudgetFilesModalForCards } from '../pop-ups/BudgetFilesModalForCards';
 import { useGetBudgetEventFiles } from '../../../hooks/useGetBudgetEventFiles';
 import DeleteDialog from '../../../../../../../hat/assets/js/apps/Iaso/components/dialogs/DeleteDialogComponent';
@@ -40,13 +39,21 @@ import {
     useRestoreBudgetEvent,
 } from '../../../hooks/useDeleteBudgetEvent';
 import { CreateEditBudgetEvent } from '../CreateEditBudgetEvent';
+import { LockIcon } from './LockIcon';
+import { BudgetEvent } from '../../../constants/types';
+import {
+    findAuthorTeam,
+    formatActionMessage,
+    formatComment,
+    getProfileFromId,
+    shouldOpenModal,
+} from './utils';
 
 type Props = {
     event: BudgetEvent;
     profiles: Profile[];
 };
 
-const COMMENT_CHAR_LIMIT = 50;
 const style = theme => {
     return {
         cta: { color: theme.palette.secondary.main },
@@ -58,91 +65,20 @@ const style = theme => {
 
 const useStyles = makeStyles(style);
 
-const getProfileFromId = (userId: number, profiles: Profile[]) => {
-    return (
-        profiles.find((profile: Profile) => profile.user_id === userId) ??
-        ({} as Profile)
-    );
-};
-const formatComment = (comment: Nullable<string>): Nullable<string> => {
-    if (!comment) return comment;
-    if (comment.length > COMMENT_CHAR_LIMIT)
-        return `${comment.substring(0, COMMENT_CHAR_LIMIT)}...`;
-    return comment;
-};
-
-const formatActionMessage = (
-    formatMessage,
-    comment = '',
-    files = 0,
-    links = '',
-): Nullable<string> => {
-    const fileMsg = `${files} ${formatMessage(MESSAGES.files)}`;
-    const commentsMessage = formatMessage(MESSAGES.seeFullComment);
-    const linkMessage = formatMessage(MESSAGES.links);
-
-    let message: Nullable<string> = null;
-
-    if (comment.length > COMMENT_CHAR_LIMIT && files > 0) {
-        message = `${commentsMessage} + ${fileMsg}`;
-    }
-    if (comment.length <= COMMENT_CHAR_LIMIT && files > 0) {
-        message = `${formatMessage(MESSAGES.see)} ${fileMsg}`;
-    }
-    if (comment.length > COMMENT_CHAR_LIMIT && files === 0) {
-        message = `${commentsMessage}`;
-    }
-    if (links) {
-        message = `${message ?? formatMessage(MESSAGES.see)} + ${linkMessage}`;
-    }
-    return message;
-};
-
-const findAuthorTeam = (
-    author: number,
-    teams: any[],
-    eventType: BudgetEventType,
-) => {
-    if (eventType === 'validation') {
-        return teams.find(
-            team =>
-                team.name.toLowerCase().includes('approval') &&
-                team.users.includes(author),
-        )?.name;
-    }
-    return teams.find(
-        team =>
-            !team.name.toLowerCase().includes('approval') &&
-            team.users.includes(author),
-    )?.name;
-};
-
-const shouldOpenModal = (
-    files: Nullable<number> = 0,
-    links: Nullable<string> = '',
-    comments: Nullable<string> = '',
-) => {
-    if (files || links || comments) return true;
-    return false;
-};
-
 export const BudgetEventCard: FunctionComponent<Props> = ({
     event,
     profiles,
 }) => {
-    // console.log('CARD', event);
-    // console.log('PROFILES', profiles);
     const { formatMessage } = useSafeIntl();
     const currentUser = useCurrentUser();
     const classes = useStyles();
     const userIsAuthor = event?.author === currentUser.user_id;
     const { data: teams = [], isFetching: isFetchingTeams } = useGetTeams();
-    const { data: budgetEventFiles, isFetching } = useGetBudgetEventFiles(
-        event.id,
-    );
+    const { data: budgetEventFiles, isFetching: isFetchingFiles } =
+        useGetBudgetEventFiles(event.id);
+    const isLoading = isFetchingFiles || isFetchingTeams;
     const eventLinks = event?.links ?? '';
     const eventComment = event?.comment ?? '';
-    // console.log('teams', teams);
     const { mutateAsync: deleteBudgetEvent } = useDeleteBudgetEvent();
     const { mutateAsync: restoreBudgetEvent } = useRestoreBudgetEvent();
 
@@ -154,24 +90,7 @@ export const BudgetEventCard: FunctionComponent<Props> = ({
     );
     const [openModal, setOpenModal] = useState<boolean>(false);
     const title = formatMessage(MESSAGES[event.type]);
-    const icon = event?.internal ? (
-        <div
-            style={{
-                display: 'inline-flex',
-                alignItems: 'center',
-                verticalAlign: 'middle',
-            }}
-        >
-            <LockIcon
-                style={{
-                    fontSize: '16px',
-                    marginLeft: '10px',
-                    marginBottom: '2px',
-                }}
-                color="action"
-            />
-        </div>
-    ) : null;
+
     const authorName = useMemo(
         () => formatUserName(getProfileFromId(event.author, profiles)),
         [event.author, profiles],
@@ -196,39 +115,48 @@ export const BudgetEventCard: FunctionComponent<Props> = ({
                     <CardActionArea
                         className={allowOpenModal ? '' : classes.inactiveCard}
                         disableRipple={!allowOpenModal}
+                        disabled={isLoading}
                     >
-                        <CardContent onClick={onClick}>
-                            <Box>
-                                <Typography variant="h6">
-                                    {title}
-                                    {icon}
+                        {isLoading && <LoadingSpinner fixed={false} />}
+                        {!isLoading && (
+                            <CardContent onClick={onClick}>
+                                <Box>
+                                    <Typography variant="h6">
+                                        {title}
+                                        <LockIcon internal={event?.internal} />
+                                    </Typography>
+                                </Box>
+                                <Typography variant="body2">
+                                    {formatMessage(MESSAGES.onDate, {
+                                        date: formattedCreationDate,
+                                    })}
                                 </Typography>
-                            </Box>
-                            <Typography variant="body2">
-                                {formatMessage(MESSAGES.onDate, {
-                                    date: formattedCreationDate,
-                                })}
-                            </Typography>
-                            <Typography>
-                                {`${authorName} - ${authorTeam}`}
-                            </Typography>
-                            <Typography>
-                                {`${formatMessage(
-                                    MESSAGES.destination,
-                                )}: ${targetTeams}`}
-                            </Typography>
-                            {truncatedComment && (
-                                // @ts-ignore
-                                <Typography style={{ wordWrap: 'anywhere' }}>
+                                <Typography>
+                                    {`${authorName} - ${authorTeam}`}
+                                </Typography>
+                                <Typography>
                                     {`${formatMessage(
-                                        MESSAGES.comment,
-                                    )}: ${truncatedComment}`}
+                                        MESSAGES.destination,
+                                    )}: ${targetTeams}`}
                                 </Typography>
-                            )}
-                            <Typography variant="body2" className={classes.cta}>
-                                {actionMessage}
-                            </Typography>
-                        </CardContent>
+                                {truncatedComment && (
+                                    <Typography
+                                        // @ts-ignore
+                                        style={{ wordWrap: 'anywhere' }}
+                                    >
+                                        {`${formatMessage(
+                                            MESSAGES.comment,
+                                        )}: ${truncatedComment}`}
+                                    </Typography>
+                                )}
+                                <Typography
+                                    variant="body2"
+                                    className={classes.cta}
+                                >
+                                    {actionMessage}
+                                </Typography>
+                            </CardContent>
+                        )}
                     </CardActionArea>
                     <BudgetFilesModalForCards
                         open={openModal}

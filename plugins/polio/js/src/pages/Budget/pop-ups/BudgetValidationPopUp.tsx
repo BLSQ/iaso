@@ -22,7 +22,7 @@ import {
 import { useGetTeams } from '../../../hooks/useGetTeams';
 import MESSAGES from '../../../constants/messages';
 import { redirectToReplace } from '../../../../../../../hat/assets/js/apps/Iaso/routing/actions';
-import { findApprovaTeams } from '../utils';
+import { findApprovalTeams } from '../utils';
 import { useDialogActionStyles } from './style';
 
 type Props = { campaignName: string; campaignId: string; params: any };
@@ -61,7 +61,7 @@ export const BudgetValidationPopUp: FunctionComponent<Props> = ({
     const dispatch = useDispatch();
     const { data: teams, isFetching: isFetchingTeams } = useGetTeams();
     const otherApprovalTeamIds = useMemo(() => {
-        return findApprovaTeams(teams ?? []);
+        return findApprovalTeams(teams ?? []);
     }, [teams]);
     const { mutateAsync: approve } = useQuickApproveBudgetEvent();
     const query = useMemo(

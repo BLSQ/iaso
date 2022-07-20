@@ -6,7 +6,7 @@ import { Profile } from '../../../../../../hat/assets/js/apps/Iaso/utils/usersUt
 import { fileExtensions } from '../../constants/fileExtensions';
 import { Nullable } from '../../../../../../hat/assets/js/apps/Iaso/types/utils';
 
-export const findApprovaTeams = (teams: any[]): number[] => {
+export const findApprovalTeams = (teams: any[]): number[] => {
     return teams
         .filter(team => team.name.toLowerCase().includes('approval'))
         .map(team => team.id);

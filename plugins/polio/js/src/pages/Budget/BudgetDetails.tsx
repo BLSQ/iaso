@@ -26,7 +26,7 @@ import { useTableState } from './hooks/config';
 import { useGetProfiles } from '../../components/CountryNotificationsConfig/requests';
 import { GraphTitle } from '../../components/LQAS-IM/GraphTitle';
 import { BudgetStatus, findBudgetStatus } from './BudgetStatus';
-import { CreateEditBudgetEvent } from './CreateEditBudgetEvent';
+import { CreateEditBudgetEvent } from './CreateEditBudgetEvent/CreateEditBudgetEvent';
 import { redirectToReplace } from '../../../../../../hat/assets/js/apps/Iaso/routing/actions';
 import { useCurrentUser } from '../../../../../../hat/assets/js/apps/Iaso/utils/usersUtils';
 import InputComponent from '../../../../../../hat/assets/js/apps/Iaso/components/forms/InputComponent';
@@ -185,7 +185,6 @@ export const BudgetDetails: FunctionComponent<Props> = ({ router }) => {
                     />
                 </Box>
                 <Grid container spacing={2}>
-                    {/* TODO add loading state */}
                     {isMobileLayout && budgetDetails && profiles && (
                         <Grid item xs={12}>
                             {budgetDetails?.results.map(budgetEvent => {

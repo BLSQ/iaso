@@ -9,24 +9,25 @@ import React, {
 import { useFormik, FormikProvider } from 'formik';
 import { isEqual } from 'lodash';
 // @ts-ignore
-import { AddButton, useSafeIntl, IconButton } from 'bluesquare-components';
-import { Box, makeStyles } from '@material-ui/core';
-import ConfirmCancelDialogComponent from '../../../../../../hat/assets/js/apps/Iaso/components/dialogs/ConfirmCancelDialogComponent';
-import MESSAGES from '../../constants/messages';
-import InputComponent from '../../../../../../hat/assets/js/apps/Iaso/components/forms/InputComponent';
-import { useCurrentUser } from '../../../../../../hat/assets/js/apps/Iaso/utils/usersUtils';
-import { commaSeparatedIdsToArray } from '../../../../../../hat/assets/js/apps/Iaso/utils/forms';
+import { useSafeIntl } from 'bluesquare-components';
+import { Box } from '@material-ui/core';
+import ConfirmCancelDialogComponent from '../../../../../../../hat/assets/js/apps/Iaso/components/dialogs/ConfirmCancelDialogComponent';
+import MESSAGES from '../../../constants/messages';
+import InputComponent from '../../../../../../../hat/assets/js/apps/Iaso/components/forms/InputComponent';
+import { useCurrentUser } from '../../../../../../../hat/assets/js/apps/Iaso/utils/usersUtils';
+import { commaSeparatedIdsToArray } from '../../../../../../../hat/assets/js/apps/Iaso/utils/forms';
 import {
     useFinalizeBudgetEvent,
     useSaveBudgetEvent,
     useUploadBudgetFiles,
-} from '../../hooks/useSaveBudgetEvent';
-import FileInputComponent from '../../../../../../hat/assets/js/apps/Iaso/components/forms/FileInputComponent';
-import { useBudgetEvenValidation } from './hooks/validation';
+} from '../../../hooks/useSaveBudgetEvent';
+import FileInputComponent from '../../../../../../../hat/assets/js/apps/Iaso/components/forms/FileInputComponent';
+import { useBudgetEvenValidation } from '../hooks/validation';
 import {
     useGetTeamsDropDown,
     useGetApprovalTeams,
-} from '../../hooks/useGetTeams';
+} from '../../../hooks/useGetTeams';
+import { getTitleMessage, useRenderTrigger, makeEventsDropdown } from './utils';
 
 type Props = {
     campaignId: string;
@@ -34,91 +35,6 @@ type Props = {
     budgetEvent?: any;
     iconColor?: string;
     isMobileLayout?: boolean;
-};
-
-const style = theme => {
-    return {
-        addButton: {
-            [theme.breakpoints.down('md')]: {
-                marginLeft: theme.spacing(1),
-            },
-        },
-    };
-};
-
-const useButtonStyles = makeStyles(style);
-
-const useRenderTrigger = (
-    type: 'create' | 'edit' | 'retry' = 'create',
-    isMobileLayout: boolean,
-    color = 'action',
-) => {
-    const classes = useButtonStyles();
-    return useCallback(
-        ({ openDialog }) => {
-            if (type === 'edit') {
-                return (
-                    <IconButton
-                        color={color}
-                        onClick={openDialog}
-                        icon="edit"
-                        tooltipMessage={MESSAGES.resendFiles}
-                    />
-                );
-            }
-            return (
-                // The div prevents the Button from being too big on small screens
-                <div className={classes.addButton}>
-                    <AddButton
-                        onClick={openDialog}
-                        dataTestId="create-budgetStep-button"
-                        message={
-                            isMobileLayout ? MESSAGES.add : MESSAGES.addStep
-                        }
-                    />
-                </div>
-            );
-        },
-        [classes.addButton, color, type, isMobileLayout],
-    );
-};
-
-const getTitleMessage = (type: 'create' | 'edit' | 'retry') => {
-    if (type === 'create') return MESSAGES.newBudgetStep;
-    if (type === 'edit') return MESSAGES.resendFiles;
-    if (type === 'retry') return MESSAGES.tryUpdateStep;
-    throw new Error(
-        `expected type to be one of: create, edit,retry, got ${type}`,
-    );
-};
-
-const makeEventsDropdown = (user, approvalTeams, formatMessage) => {
-    const isUserApprover = Boolean(
-        approvalTeams
-            ?.map(validationTeam => validationTeam.users)
-            .flat()
-            .find(userId => userId === user.user_id),
-    );
-    const baseOptions = [
-        {
-            value: 'submission',
-            label: formatMessage(MESSAGES.submission),
-        },
-        {
-            value: 'comments',
-            label: formatMessage(MESSAGES.comments),
-        },
-    ];
-    if (isUserApprover) {
-        return [
-            ...baseOptions,
-            {
-                value: 'validation',
-                label: formatMessage(MESSAGES.validation),
-            },
-        ];
-    }
-    return baseOptions;
 };
 
 export const CreateEditBudgetEvent: FunctionComponent<Props> = ({
@@ -155,7 +71,6 @@ export const CreateEditBudgetEvent: FunctionComponent<Props> = ({
             files: budgetEvent?.files ?? null,
             links: budgetEvent?.links ?? null,
             internal: budgetEvent?.internal ?? false,
-            // status: budgetEvent?.status ?? 'validation_ongoing',
         },
         enableReinitialize: true,
         validateOnBlur: true,

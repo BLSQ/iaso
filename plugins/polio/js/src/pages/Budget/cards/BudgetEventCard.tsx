@@ -38,7 +38,7 @@ import {
     useDeleteBudgetEvent,
     useRestoreBudgetEvent,
 } from '../../../hooks/useDeleteBudgetEvent';
-import { CreateEditBudgetEvent } from '../CreateEditBudgetEvent';
+import { CreateEditBudgetEvent } from '../CreateEditBudgetEvent/CreateEditBudgetEvent';
 import { LockIcon } from './LockIcon';
 import { BudgetEvent } from '../../../constants/types';
 import {

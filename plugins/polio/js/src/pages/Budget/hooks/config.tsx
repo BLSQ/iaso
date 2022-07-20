@@ -229,7 +229,7 @@ export const useBudgetDetailsColumns = ({ profiles, data }): Column[] => {
                 },
             },
             {
-                Header: formatMessage(MESSAGES.viewFiles),
+                Header: formatMessage(MESSAGES.actions),
                 id: 'id',
                 accessor: 'id',
                 sortable: false,

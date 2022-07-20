@@ -1,26 +1,38 @@
 import React, { FunctionComponent, useMemo, useState } from 'react';
 import { makeStyles, Box, Tabs, Tab } from '@material-ui/core';
-// @ts-ignore
-import { commonStyles, useSafeIntl, DynamicTabs } from 'bluesquare-components';
+import EditIcon from '@material-ui/icons/Edit';
+import {
+    // @ts-ignore
+    commonStyles,
+    // @ts-ignore
+    useSafeIntl,
+    // @ts-ignore
+    DynamicTabs,
+    // @ts-ignore
+    selectionInitialState,
+    // @ts-ignore
+    setTableSelection,
+    // @ts-ignore
+    LoadingSpinner,
+} from 'bluesquare-components';
 import { useDispatch } from 'react-redux';
 
 // COMPONENTS
+import DownloadButtonsComponent from '../../components/DownloadButtonsComponent';
+import { OrgUnitsMultiActionsDialog } from './components/OrgUnitsMultiActionsDialog';
 import { OrgUnitFiltersContainer } from './components/OrgUnitFiltersContainer';
 import TopBar from '../../components/nav/TopBarComponent';
 import { TableWithDeepLink } from '../../components/tables/TableWithDeepLink';
 // COMPONENTS
 
 // TYPES
-import { OrgUnitParams } from './types/orgUnit';
+import { OrgUnit, OrgUnitParams } from './types/orgUnit';
 import { Search } from './types/search';
+import { Selection } from './types/selection';
 // TYPES
 
 // UTILS
-import {
-    decodeSearch,
-    // encodeUriParams,
-    // mapOrgUnitByLocation,
-} from './utils';
+import { decodeSearch } from './utils';
 import { useCurrentUser } from '../../utils/usersUtils';
 import { redirectTo } from '../../routing/actions';
 // UTILS
@@ -34,6 +46,8 @@ import { getChipColors } from '../../constants/chipColors';
 // HOOKS
 import { useGetOrgUnits } from './hooks/requests/useGetOrgUnits';
 import { useGetOrgUnitsTableColumns } from './hooks/useGetOrgUnitsTableColumns';
+import { useBulkSaveOrgUnits } from './hooks/requests/useBulkSaveOrgUnits';
+import { useGetApiParams } from './hooks/useGetApiParams';
 // HOOKS
 
 const useStyles = makeStyles(theme => ({
@@ -69,7 +83,13 @@ export const OrgUnits: FunctionComponent<Props> = ({ params }) => {
     const currentUser = useCurrentUser();
     const searchCounts = [];
 
+    const [multiActionPopupOpen, setMultiActionPopupOpen] =
+        useState<boolean>(false);
     const [tab, setTab] = useState<string>(params.tab ?? 'list');
+    const [selection, setSelection] = useState<Selection<OrgUnit>>(
+        selectionInitialState,
+    );
+
     const searches: [Search] = useMemo(
         () => decodeSearch(params.searches),
         [params.searches],
@@ -79,15 +99,20 @@ export const OrgUnits: FunctionComponent<Props> = ({ params }) => {
         () => currentUser?.account?.default_version?.data_source,
         [currentUser],
     );
+    const { getUrl } = useGetApiParams(searches, params);
 
+    const { mutateAsync: saveMulti, isLoading: isSavingMulti } =
+        useBulkSaveOrgUnits();
     const { data: orgUnitsData, isFetching: isFetchingOrgUnits } =
         useGetOrgUnits(searches, params, params.searchActive);
 
     const onTabsDeleted = newParams => {
+        handleTableSelection('reset');
         dispatch(redirectTo(baseUrl, newParams));
     };
 
     const onSearch = newParams => {
+        handleTableSelection('reset');
         const tempParams = { ...newParams };
         if (newParams.searchActive !== 'true') {
             tempParams.searchActive = true;
@@ -104,8 +129,43 @@ export const OrgUnits: FunctionComponent<Props> = ({ params }) => {
         dispatch(redirectTo(baseUrl, newParams));
     };
 
+    const handleTableSelection = (
+        selectionType,
+        items = [],
+        totalCount = 0,
+    ) => {
+        const newSelection: Selection<OrgUnit> = setTableSelection(
+            selection,
+            selectionType,
+            items,
+            totalCount,
+        );
+        setSelection(newSelection);
+    };
+
+    const multiEditDisabled =
+        !selection.selectAll && selection.selectedItems.length === 0;
+    const selectionActions = useMemo(
+        () => [
+            {
+                icon: <EditIcon />,
+                label: formatMessage(MESSAGES.multiSelectionAction),
+                onClick: () => setMultiActionPopupOpen(true),
+                disabled: multiEditDisabled,
+            },
+        ],
+        [multiEditDisabled, formatMessage],
+    );
     return (
         <>
+            <OrgUnitsMultiActionsDialog
+                open={multiActionPopupOpen}
+                params={params}
+                closeDialog={() => setMultiActionPopupOpen(false)}
+                selection={selection}
+                saveMulti={saveMulti}
+            />
+            {isSavingMulti && <LoadingSpinner fixed={false} absolute />}
             <TopBar title={formatMessage(MESSAGES.title)}>
                 <DynamicTabs
                     deleteMessage={MESSAGES.delete}
@@ -177,12 +237,43 @@ export const OrgUnits: FunctionComponent<Props> = ({ params }) => {
                                     baseUrl={baseUrl}
                                     marginTop={false}
                                     extraProps={{
-                                        loading: isFetchingOrgUnits,
+                                        loading:
+                                            isFetchingOrgUnits || isSavingMulti,
                                         columns,
                                     }}
+                                    multiSelect
+                                    selection={selection}
+                                    selectionActions={selectionActions}
+                                    setTableSelection={(
+                                        selectionType,
+                                        items,
+                                        totalCount,
+                                    ) =>
+                                        handleTableSelection(
+                                            selectionType,
+                                            items,
+                                            totalCount,
+                                        )
+                                    }
                                 />
                             </Box>
                         )}
+                        {tab === 'list' &&
+                            orgUnitsData &&
+                            orgUnitsData?.orgunits?.length > 0 && (
+                                <Box
+                                    mb={4}
+                                    mt={1}
+                                    display="flex"
+                                    justifyContent="flex-end"
+                                >
+                                    <DownloadButtonsComponent
+                                        csvUrl={getUrl(true, 'csv')}
+                                        xlsxUrl={getUrl(true, 'xlsx')}
+                                        gpkgUrl={getUrl(true, 'gpkg')}
+                                    />
+                                </Box>
+                            )}
                     </>
                 )}
             </Box>

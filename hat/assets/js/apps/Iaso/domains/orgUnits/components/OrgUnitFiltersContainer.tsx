@@ -1,6 +1,8 @@
-import { Box, makeStyles } from '@material-ui/core';
+import { Box, makeStyles, Button } from '@material-ui/core';
+import Add from '@material-ui/icons/Add';
+import { useDispatch } from 'react-redux';
 // @ts-ignore
-import { commonStyles } from 'bluesquare-components';
+import { commonStyles, useSafeIntl } from 'bluesquare-components';
 import React, {
     FunctionComponent,
     useState,
@@ -11,13 +13,17 @@ import classnames from 'classnames';
 
 import { FilterButton } from '../../../components/FilterButton';
 import { OrgUnitFilters as Filters } from './OrgUnitsFilters';
+import { redirectTo } from '../../../routing/actions';
 
 import { OrgUnitParams } from '../types/orgUnit';
 
-// import MESSAGES from '../messages';
-// import { baseUrls } from '../../../constants/urls';
+import { baseUrls } from '../../../constants/urls';
 
 import { decodeSearch } from '../utils';
+
+import { IntlFormatMessage } from '../../../types/intl';
+
+import MESSAGES from '../messages';
 
 type Props = {
     params: OrgUnitParams;
@@ -37,13 +43,14 @@ const useStyles = makeStyles(theme => ({
     },
 }));
 
-// const baseUrl = baseUrls.teams;
-
 export const OrgUnitFiltersContainer: FunctionComponent<Props> = ({
     params,
     onSearch,
     currentTab,
 }) => {
+    const dispatch = useDispatch();
+    const { formatMessage }: { formatMessage: IntlFormatMessage } =
+        useSafeIntl();
     const classes: Record<string, string> = useStyles();
     // @ts-ignore
     const searchParams: [Record<string, unknown>] = decodeSearch(
@@ -134,6 +141,21 @@ export const OrgUnitFiltersContainer: FunctionComponent<Props> = ({
                 );
             })}
             <Box mt={2} justifyContent="flex-end" display="flex">
+                <Button
+                    variant="contained"
+                    className={classnames(classes.button, classes.marginRight)}
+                    color="primary"
+                    onClick={() =>
+                        dispatch(
+                            redirectTo(baseUrls.orgUnitDetails, {
+                                orgUnitId: '0',
+                            }),
+                        )
+                    }
+                >
+                    <Add className={classes.buttonIcon} />
+                    {formatMessage(MESSAGES.create)}
+                </Button>
                 <FilterButton
                     disabled={
                         !filtersUpdated ||

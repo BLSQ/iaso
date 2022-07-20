@@ -21,7 +21,7 @@ const getDataSources = (): Promise<OrgUnitsApi> => {
 };
 
 export const useGetOrgUnits = (searches: [Search], params: OrgUnitParams, searchActive): UseQueryResult<Result, Error> => {
-    const apiParams = useGetApiParams(searches, params)
+    const {apiParams} = useGetApiParams(searches, params)
     const queryKey: any[] = ['orgunits', apiParams];
     const queryString = new URLSearchParams(apiParams);
     return useSnackQuery(queryKey, () => getRequest(`/api/orgunits/?${queryString.toString()}`), undefined, {

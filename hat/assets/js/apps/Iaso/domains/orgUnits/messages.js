@@ -477,6 +477,19 @@ const MESSAGES = defineMessages({
         id: 'iaso.forms.hasInstances',
         defaultMessage: 'Form submissions',
     },
+    saveMultiEditOrgUnitsSuccesfull: {
+        defaultMessage: 'Selected org unit saved successfully',
+        id: 'iaso.snackBar.saveMultiEditOrgUnitsSuccesfull',
+    },
+    saveMultiEditOrgUnitsError: {
+        defaultMessage: 'An error occurred while saving selected org units',
+        id: 'iaso.snackBar.saveMultiEditOrgUnitsError',
+    },
+    saveMultiEditOrgUnitsLaunched: {
+        defaultMessage:
+            'The modifications to the org units will take a few minutes to take effect',
+        id: 'iaso.snackBar.saveMultiEditOrgUnitsLaunched',
+    },
 });
 
 export default MESSAGES;

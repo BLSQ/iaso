@@ -5,6 +5,8 @@ import {
     useSafeIntl,
     // @ts-ignore
     LoadingSpinner,
+    // @ts-ignore
+    ErrorBoundaryWithMessage,
 } from 'bluesquare-components';
 import { Box, Divider, Paper } from '@material-ui/core';
 import { GraphTitle } from '../../../components/LQAS-IM/GraphTitle';
@@ -16,7 +18,6 @@ import {
     unselectedPathOptions,
     selectedPathOptions,
 } from '../../../styles/constants';
-import { BudgetMapErrorBoundary } from './BudgetMapErrorBoundary';
 
 type Props = {
     country: string;
@@ -73,7 +74,9 @@ export const BudgetMap: FunctionComponent<Props> = ({
                     !isFetchingDistricts &&
                     !isFetchingScope && (
                         // @ts-ignore
-                        <BudgetMapErrorBoundary>
+                        <ErrorBoundaryWithMessage
+                            message={MESSAGES.cannotDisplayMap}
+                        >
                             <MapComponent
                                 name="BudgetScopeMap"
                                 mainLayer={districtShapes}
@@ -88,7 +91,7 @@ export const BudgetMap: FunctionComponent<Props> = ({
                                     background: 'Region',
                                 }}
                             />
-                        </BudgetMapErrorBoundary>
+                        </ErrorBoundaryWithMessage>
                     )}
             </Box>
         </Paper>

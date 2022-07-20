@@ -1338,6 +1338,10 @@ const MESSAGES = defineMessages({
         id: 'iaso.polio.label.add',
         defaultMessage: 'Add',
     },
+    cannotDisplayMap: {
+        id: 'iaso.polio.label.cannotDisplayMap',
+        defaultMessage: 'Cannot display map',
+    },
 });
 
 export default MESSAGES;

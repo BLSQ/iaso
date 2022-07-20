@@ -167,16 +167,20 @@ class InstancesViewSet(viewsets.ViewSet):
                     has_access = True
                     is_locked = False
                     access_ou = OrgUnit.objects.filter_for_user_and_app_id(request.user, None)
+                    top_org_unit = x.org_unit.parent if x.org_unit.parent is not None else x.org_unit
+
                     if instance_status:
                         is_locked = instance_status.is_locked
-                        if instance_status.top_org_unit not in access_ou:
-                            has_access = False
-                    else:
-                        is_locked = None
-                        if x.org_unit.parent is not None:
-                            has_access = False if x.org_unit.parent not in access_ou else True
+                        if is_locked:
+                            if instance_status.top_org_unit not in access_ou:
+                                has_access = False
                         else:
-                            has_access = False if x.org_unit not in access_ou else True
+                            if top_org_unit not in access_ou:
+                                has_access = False
+                    else:
+                        if top_org_unit not in access_ou:
+                            has_access = False
+
                     dict["has_access"] = has_access
                     dict["is_locked"] = is_locked
                     if reference_form_id:
@@ -330,14 +334,32 @@ class InstancesViewSet(viewsets.ViewSet):
     def retrieve(self, request, pk=None):
         instance = get_object_or_404(self.get_queryset(), pk=pk)
         has_access = True
-        lock_table = InstanceLockTable.objects.filter(instance=instance, is_locked=True).last()
-        if lock_table:
-            access_ou = OrgUnit.objects.filter_for_user_and_app_id(request.user, None)
-            if lock_table.top_org_unit not in access_ou:
+        is_locked = False
+        all_instance_locks = InstanceLockTable.objects.filter(instance=instance)
+        last_instance_lock = all_instance_locks.last()
+        access_ou = OrgUnit.objects.filter_for_user_and_app_id(request.user, None)
+        top_org_unit = instance.org_unit.parent if instance.org_unit.parent is not None else instance.org_unit
+
+        if last_instance_lock:
+            is_locked = last_instance_lock.is_locked
+            if is_locked:
+                if last_instance_lock.top_org_unit not in access_ou:
+                    has_access = False
+            else:
+                if top_org_unit not in access_ou:
+                    has_access = False
+        else:
+            if top_org_unit not in access_ou:
                 has_access = False
 
         response = instance.as_full_model()
+
+        def instance_lock_as_dict(x):
+            return x.as_dict()
+
+        response["instance_locks_history"] = map(instance_lock_as_dict, all_instance_locks.order_by("-created_at"))
         response["modification"] = has_access
+        response["is_locked"] = is_locked
         self.check_object_permissions(request, instance)
         return Response(response)
 

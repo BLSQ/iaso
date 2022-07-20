@@ -1018,9 +1018,6 @@ class Instance(models.Model):
         if self.last_modified_by is not None:
             last_modified_by = self.last_modified_by.username
 
-        def instance_lock_as_dict(x):
-            return x.as_dict()
-
         return {
             "uuid": self.uuid,
             "last_modified_by": last_modified_by,
@@ -1044,9 +1041,6 @@ class Instance(models.Model):
             "status": getattr(self, "status", None),
             "correlation_id": self.correlation_id,
             "last_export_success_at": self.last_export_success_at.timestamp() if self.last_export_success_at else None,
-            "instance_locks_history": map(
-                instance_lock_as_dict, InstanceLockTable.objects.filter(instance=self).order_by("-created_at")
-            ),
             "export_statuses": [
                 {
                     "status": export_status.status,

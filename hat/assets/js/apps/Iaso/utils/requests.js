@@ -546,3 +546,16 @@ const dispatchSaveOrgUnit = dispatch => orgUnit =>
         });
 
 export const saveOrgUnitWithDispatch = dispatchSaveOrgUnit(storeDispatch);
+
+const dispatchSaveInstance = dispatch => instance =>
+    patchRequest(`/api/instances/${instance.id}/`, instance)
+        .then(savedInstance => {
+            dispatch(enqueueSnackbar(succesfullSnackBar()));
+            return savedInstance;
+        })
+        .catch(error => {
+            dispatch(enqueueSnackbar(errorSnackBar(null, null, error)));
+            console.error('Error while saving instance:', error);
+        });
+
+export const saveInstanceWithDispatch = dispatchSaveInstance(storeDispatch);

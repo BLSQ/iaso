@@ -1,17 +1,11 @@
 import React from 'react';
 import { Divider, Grid, Typography } from '@material-ui/core';
 import PropTypes from 'prop-types';
-import moment from 'moment';
-import { textPlaceholder, injectIntl } from 'bluesquare-components';
+import { injectIntl } from 'bluesquare-components';
 import LockIcon from '@material-ui/icons/Lock';
 import LockOpenIcon from '@material-ui/icons/LockOpen';
 import MESSAGES from '../messages';
 import WidgetPaper from '../../../components/papers/WidgetPaperComponent';
-import InstanceDetailsField from './InstanceDetailsField';
-import InputComponent from '../../../components/forms/InputComponent';
-
-const formatUnixTimestamp = unix =>
-    unix ? moment.unix(unix).format('LTS') : textPlaceholder;
 
 const InstanceDetailsLocksHistory = ({
     currentInstance,
@@ -23,84 +17,86 @@ const InstanceDetailsLocksHistory = ({
         title={formatMessage(MESSAGES.instanceLocksHistory)}
     >
         <Grid container spacing={1}>
-            <Grid
-                xs={4}
-                item
-                container
-                justifyContent="flex-start"
-                alignItems="center"
-            >
-                <Typography variant="body1" color="inherit">
-                    User
+            <Grid xs={5} container item justifyContent="center">
+                <Typography variant="body2" color="inherit">
+                    <b>
+                        {formatMessage(MESSAGES.lockAuthorLabel)}
+                        {currentInstance.instance_locks_history.length === 0 &&
+                            ': --'}
+                    </b>
                 </Typography>
             </Grid>
 
-            <Grid
-                xs={4}
-                item
-                container
-                justifyContent="flex-start"
-                alignItems="center"
-            >
-                <Typography variant="body1" color="inherit">
-                    Top org unit
+            <Grid xs={5} item container justifyContent="center">
+                <Typography variant="body2" color="inherit">
+                    <b>
+                        {formatMessage(MESSAGES.lockTopOrgUnitLabel)}
+                        {currentInstance.instance_locks_history.length === 0 &&
+                            ' : --'}
+                    </b>
                 </Typography>
             </Grid>
-            <Grid
-                xs={4}
-                item
-                container
-                justifyContent="flex-start"
-                alignItems="center"
-            >
-                <Typography variant="body1" color="inherit">
-                    Status
+            <Grid xs={2} item container justifyContent="center">
+                <Typography variant="body2" color="inherit">
+                    <b>
+                        {formatMessage(MESSAGES.lockStatusLabel)}
+                        {currentInstance.instance_locks_history.length === 0 &&
+                            ' : --'}
+                    </b>
                 </Typography>
             </Grid>
         </Grid>
-        <Divider />
+        {currentInstance.instance_locks_history &&
+            currentInstance.instance_locks_history.length > 0 && <Divider />}
         {currentInstance.instance_locks_history.map((instanceLock, index) => (
             <>
-                <Grid container key={instanceLock.id} spacing={1}>
+                <Grid container spacing={1}>
                     <Grid
-                        xs={4}
-                        item
+                        xs={5}
                         container
-                        justifyContent="flex-start"
-                        alignItems="center"
-                        title="Author"
-                    >
-                        <Typography variant="body1" color="inherit">
-                            {instanceLock.user}
-                        </Typography>
-                    </Grid>
-
-                    <Grid
-                        xs={4}
                         item
-                        container
-                        justifyContent="flex-start"
+                        justifyContent="center"
                         alignItems="center"
                     >
                         <Typography
-                            variant="body1"
+                            variant="body2"
                             color="inherit"
-                            title="Org unit"
+                            title={formatMessage(MESSAGES.lockAuthorLabel)}
+                        >
+                            {instanceLock.user}
+                        </Typography>
+                    </Grid>
+                    <Grid
+                        xs={5}
+                        container
+                        item
+                        justifyContent="center"
+                        alignItems="center"
+                    >
+                        <Typography
+                            variant="body2"
+                            color="inherit"
+                            title={formatMessage(MESSAGES.lockTopOrgUnitLabel)}
                         >
                             {instanceLock.top_org_unit}
                         </Typography>
                     </Grid>
+
                     <Grid
-                        xs={4}
-                        item
+                        xs={2}
                         container
-                        justifyContent="flex-start"
-                        alignItems="right"
+                        item
+                        justifyContent="center"
+                        alignItems="center"
                     >
                         <Typography
-                            variant="body1"
+                            variant="body2"
                             color="inherit"
-                            title={instanceLock.status ? 'Locked' : 'Unlocked'}
+                            title={
+                                instanceLock.status
+                                    ? formatMessage(MESSAGES.lockedTitle)
+                                    : formatMessage(MESSAGES.unlockedTitle)
+                            }
                         >
                             {instanceLock.status ? (
                                 <LockIcon />
@@ -110,7 +106,10 @@ const InstanceDetailsLocksHistory = ({
                         </Typography>
                     </Grid>
                 </Grid>
-                <Divider />
+                {index !==
+                    currentInstance.instance_locks_history.length - 1 && (
+                    <Divider />
+                )}
             </>
         ))}
     </WidgetPaper>

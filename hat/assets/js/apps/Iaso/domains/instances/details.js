@@ -7,7 +7,8 @@ import UpdateIcon from '@material-ui/icons/Update';
 import RestoreFromTrashIcon from '@material-ui/icons/RestoreFromTrash';
 import Alert from '@material-ui/lab/Alert';
 import { withStyles, Box, Grid, DialogContentText } from '@material-ui/core';
-
+import LockIcon from '@material-ui/icons/Lock';
+import LockOpenIcon from '@material-ui/icons/LockOpen';
 import PropTypes from 'prop-types';
 import LinkIcon from '@material-ui/icons/Link';
 import LinkOffIcon from '@material-ui/icons/LinkOff';
@@ -49,11 +50,12 @@ import EnketoIcon from './components/EnketoIcon';
 import { getInstancesFilesList } from './utils';
 import { userHasPermission } from '../users/utils';
 import MESSAGES from './messages';
-
+import { usePatchInstance } from './hooks';
 import { baseUrls } from '../../constants/urls';
 import {
     fetchFormOrgUnitTypes,
     saveOrgUnitWithDispatch,
+    saveInstanceWithDispatch,
 } from '../../utils/requests';
 
 import {
@@ -108,6 +110,16 @@ const linkOrLinkOffOrgUnitToReferenceSubmission = (
     });
 };
 
+const lockOrUnlockInstance = (instance, status) => {
+    const instanceParams = {
+        id: instance.id,
+        validation_status: status,
+    };
+    saveInstanceWithDispatch(instanceParams).then(() => {
+        window.location.reload(false);
+    });
+};
+
 const actions = ({
     currentInstance,
     reAssignInstance,
@@ -132,6 +144,47 @@ const actions = ({
         id: 'instanceEditAction',
         icon: <EnketoIcon />,
         disabled: currentInstance && currentInstance.deleted,
+    };
+
+    const renderTriggerLock = (isLocked, openDialog) => {
+        return isLocked ? (
+            <LockOpenIcon onClick={openDialog} />
+        ) : (
+            <LockIcon onClick={openDialog} />
+        );
+    };
+
+    const confirmLockUnlockInstance = instance => {
+        const statusValues = instance.is_locked ? 'UNLOCK' : 'LOCKED';
+        lockOrUnlockInstance(instance, statusValues);
+    };
+
+    const lockAction = {
+        id: currentInstance.is_locked ? 'unlocked' : 'locked',
+        icon: (
+            <ConfirmCancelDialogComponent
+                titleMessage={
+                    currentInstance.is_locked
+                        ? MESSAGES.unlocked
+                        : MESSAGES.locked
+                }
+                onConfirm={closeDialog => {
+                    confirmLockUnlockInstance(currentInstance);
+                    closeDialog();
+                }}
+                renderTrigger={({ openDialog }) =>
+                    renderTriggerLock(currentInstance.is_locked, openDialog)
+                }
+            >
+                <DialogContentText id="alert-dialog-description">
+                    <FormattedMessage
+                        id="iaso.instance.unlockedWarning"
+                        defaultMessage="This operation can still be undone"
+                        {...MESSAGES.linkOrgUnitToInstanceReferenceWarning}
+                    />
+                </DialogContentText>
+            </ConfirmCancelDialogComponent>
+        ),
     };
     const { referenceFormId } = params;
     const referenceSubmission = currentInstance.org_unit.reference_instance_id;
@@ -161,6 +214,7 @@ const actions = ({
             <LinkIcon onClick={openDialog} />
         );
     };
+
     let defaultActions = [
         {
             id: 'instanceExportAction',
@@ -214,6 +268,10 @@ const actions = ({
 
     if (canEditEnketo && currentInstance.modification) {
         defaultActions = [enketoAction, ...defaultActions];
+    }
+
+    if (currentInstance.modification) {
+        defaultActions = [lockAction, ...defaultActions];
     }
 
     if (!hasSubmissionPermission || !hasfeatureFlag) return defaultActions;
@@ -414,13 +472,10 @@ class InstanceDetails extends Component {
                                     classes={classes}
                                 />
 
-                                {currentInstance.instance_locks_history.length >
-                                    0 && (
-                                    <InstanceDetailsLocksHistory
-                                        currentInstance={currentInstance}
-                                        classes={classes}
-                                    />
-                                )}
+                                <InstanceDetailsLocksHistory
+                                    currentInstance={currentInstance}
+                                    classes={classes}
+                                />
 
                                 {currentInstance.files.length > 0 && (
                                     <WidgetPaper

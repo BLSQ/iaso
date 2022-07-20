@@ -212,11 +212,6 @@ const ActionTableColumnComponent = ({ settings, user }) => {
                                     ? MESSAGES.unlocked
                                     : MESSAGES.locked
                             }
-                            color={
-                                settings.row.original.is_locked
-                                    ? 'inherit'
-                                    : 'primary'
-                            }
                         />
                     )}
                 >

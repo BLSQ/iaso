@@ -440,6 +440,26 @@ const MESSAGES = defineMessages({
         id: 'iaso.label.instanceLocksHistory',
         defaultMessage: 'Instance locks history',
     },
+    lockAuthorLabel: {
+        id: 'iaso.instance.lockAuthorLabel',
+        defaultMessage: 'Author',
+    },
+    lockTopOrgUnitLabel: {
+        id: 'iaso.instance.lockTopOrgUnitLabel',
+        defaultMessage: 'High level org unit',
+    },
+    lockStatusLabel: {
+        id: 'iaso.instance.lockStatusLabel',
+        defaultMessage: 'Status',
+    },
+    lockedTitle: {
+        id: 'iaso.instance.lockedTitle"',
+        defaultMessage: 'Locked',
+    },
+    unlockedTitle: {
+        id: 'iaso.instance.unlockedTitle"',
+        defaultMessage: 'Unlocked',
+    },
 });
 
 export default MESSAGES;

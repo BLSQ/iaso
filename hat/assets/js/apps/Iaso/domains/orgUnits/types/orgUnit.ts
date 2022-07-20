@@ -39,3 +39,7 @@ export type OrgUnitParams = UrlParams & {
     searchActive: string;
     searches: string;
 };
+
+export type OrgUnitsApi = {
+    orgunits: OrgUnit[];
+};

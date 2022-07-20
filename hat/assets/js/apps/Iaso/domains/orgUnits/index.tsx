@@ -12,6 +12,7 @@ import TopBar from '../../components/nav/TopBarComponent';
 
 // TYPES
 import { OrgUnitParams } from './types/orgUnit';
+import { Search } from './types/search';
 // TYPES
 
 // UTILS
@@ -29,6 +30,10 @@ import { baseUrls } from '../../constants/urls';
 import MESSAGES from './messages';
 import { getChipColors } from '../../constants/chipColors';
 // CONSTANTS
+
+// HOOKS
+import { useGetOrgUnits } from './hooks/requests/useGetOrgUnits';
+// HOOKS
 
 const useStyles = makeStyles(theme => ({
     ...commonStyles(theme),
@@ -59,7 +64,7 @@ export const OrgUnits: FunctionComponent<Props> = ({ params }) => {
 
     const [tab, setTab] = useState<string>(params.tab ?? 'list');
 
-    const searches = useMemo(
+    const searches: [Search] = useMemo(
         () => decodeSearch(params.searches),
         [params.searches],
     );
@@ -68,6 +73,13 @@ export const OrgUnits: FunctionComponent<Props> = ({ params }) => {
         [currentUser],
     );
 
+    const { data: orgUnits, isFetching: isFetchingOrgUnits } = useGetOrgUnits(
+        searches,
+        params,
+        params.searchActive,
+    );
+    console.log('orgUnits', orgUnits);
+    console.log('isFetchingOrgUnits', isFetchingOrgUnits);
     const onTabsDeleted = newParams => {
         dispatch(redirectTo(baseUrl, newParams));
     };

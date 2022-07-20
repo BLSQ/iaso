@@ -36,8 +36,9 @@ export type OrgUnitParams = UrlParams & {
     locationLimit: string;
     tab?: string;
     searchTabIndex: string;
-    searchActive: string;
+    searchActive?: string;
     searches: string;
+    pageSize?: string;
 };
 
 export type OrgUnitsApi = {

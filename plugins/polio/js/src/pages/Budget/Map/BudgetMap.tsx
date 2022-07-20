@@ -1,7 +1,11 @@
 /* eslint-disable react/require-default-props */
 import React, { FunctionComponent, useCallback } from 'react';
-// @ts-ignore
-import { useSafeIntl, LoadingSpinner } from 'bluesquare-components';
+import {
+    // @ts-ignore
+    useSafeIntl,
+    // @ts-ignore
+    LoadingSpinner,
+} from 'bluesquare-components';
 import { Box, Divider, Paper } from '@material-ui/core';
 import { GraphTitle } from '../../../components/LQAS-IM/GraphTitle';
 import { useGetCampaignScope } from '../../../hooks/useGetCampaignScope';
@@ -12,6 +16,7 @@ import {
     unselectedPathOptions,
     selectedPathOptions,
 } from '../../../styles/constants';
+import { BudgetMapErrorBoundary } from './BudgetMapErrorBoundary';
 
 type Props = {
     country: string;
@@ -67,18 +72,23 @@ export const BudgetMap: FunctionComponent<Props> = ({
                 {!isFetchingRegions &&
                     !isFetchingDistricts &&
                     !isFetchingScope && (
-                        <MapComponent
-                            name="BudgetScopeMap"
-                            mainLayer={districtShapes}
-                            backgroundLayer={regionShapes}
-                            onSelectShape={() => null}
-                            getMainLayerStyle={getShapeStyle}
-                            getBackgroundLayerStyle={getBackgroundLayerStyle}
-                            tooltipLabels={{
-                                main: 'District',
-                                background: 'Region',
-                            }}
-                        />
+                        // @ts-ignore
+                        <BudgetMapErrorBoundary>
+                            <MapComponent
+                                name="BudgetScopeMap"
+                                mainLayer={districtShapes}
+                                backgroundLayer={regionShapes}
+                                onSelectShape={() => null}
+                                getMainLayerStyle={getShapeStyle}
+                                getBackgroundLayerStyle={
+                                    getBackgroundLayerStyle
+                                }
+                                tooltipLabels={{
+                                    main: 'District',
+                                    background: 'Region',
+                                }}
+                            />
+                        </BudgetMapErrorBoundary>
                     )}
             </Box>
         </Paper>

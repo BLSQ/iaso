@@ -253,14 +253,9 @@ export const BudgetDetails: FunctionComponent<Props> = ({ router }) => {
                             </Paper>
                         </Grid>
                     )}
-                    {isMobileLayout && (
-                        <Grid item xs={12} lg={4}>
-                            <BudgetMap
-                                country={country}
-                                campaignId={campaignId}
-                            />
-                        </Grid>
-                    )}
+                    <Grid item xs={12} lg={4}>
+                        <BudgetMap country={country} campaignId={campaignId} />
+                    </Grid>
                 </Grid>
             </Box>
         </>

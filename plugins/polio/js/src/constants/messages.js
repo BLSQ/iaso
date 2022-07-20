@@ -1334,6 +1334,10 @@ const MESSAGES = defineMessages({
         id: 'iaso.polio.label.see',
         defaultMessage: 'See',
     },
+    add: {
+        id: 'iaso.polio.label.add',
+        defaultMessage: 'Add',
+    },
 });
 
 export default MESSAGES;

@@ -169,6 +169,7 @@ export const BudgetDetails: FunctionComponent<Props> = ({ router }) => {
                                     )}
                                 <CreateEditBudgetEvent
                                     campaignId={campaignId}
+                                    isMobileLayout={isMobileLayout}
                                 />
                             </Grid>
                         )}

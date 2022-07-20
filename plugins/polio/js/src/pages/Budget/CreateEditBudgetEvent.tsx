@@ -1,3 +1,5 @@
+/* eslint-disable react/require-default-props */
+/* eslint-disable react/no-unused-prop-types */
 import React, {
     FunctionComponent,
     useCallback,
@@ -28,12 +30,10 @@ import {
 
 type Props = {
     campaignId: string;
-    // eslint-disable-next-line react/require-default-props
     type?: 'create' | 'edit' | 'retry';
-    // eslint-disable-next-line react/require-default-props
     budgetEvent?: any;
-    // eslint-disable-next-line react/require-default-props
     iconColor?: string;
+    isMobileLayout?: boolean;
 };
 
 const style = theme => {
@@ -50,6 +50,7 @@ const useButtonStyles = makeStyles(style);
 
 const useRenderTrigger = (
     type: 'create' | 'edit' | 'retry' = 'create',
+    isMobileLayout: boolean,
     color = 'action',
 ) => {
     const classes = useButtonStyles();
@@ -71,12 +72,14 @@ const useRenderTrigger = (
                     <AddButton
                         onClick={openDialog}
                         dataTestId="create-budgetStep-button"
-                        message={MESSAGES.addStep}
+                        message={
+                            isMobileLayout ? MESSAGES.add : MESSAGES.addStep
+                        }
                     />
                 </div>
             );
         },
-        [classes.addButton, color, type],
+        [classes.addButton, color, type, isMobileLayout],
     );
 };
 
@@ -123,6 +126,7 @@ export const CreateEditBudgetEvent: FunctionComponent<Props> = ({
     budgetEvent,
     type = 'create',
     iconColor = 'action',
+    isMobileLayout = false,
 }) => {
     const { data: teamsDropdown, isFetching: isFetchingTeams } =
         useGetTeamsDropDown();
@@ -249,7 +253,7 @@ export const CreateEditBudgetEvent: FunctionComponent<Props> = ({
         () => makeEventsDropdown(user, approvalTeams, formatMessage),
         [formatMessage, user, approvalTeams],
     );
-    const renderTrigger = useRenderTrigger(type, iconColor);
+    const renderTrigger = useRenderTrigger(type, isMobileLayout, iconColor);
 
     return (
         <FormikProvider value={formik}>

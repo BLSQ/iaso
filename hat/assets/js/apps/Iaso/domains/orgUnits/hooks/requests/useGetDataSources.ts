@@ -8,6 +8,8 @@ import { DropdownOptions } from '../../../../types/utils';
 
 import { DataSourcesApi } from '../../types/dataSources';
 
+import { staleTime } from '../../config';
+
 const getDataSources = (): Promise<DataSourcesApi> => {
     return getRequest('/api/datasources/');
 };
@@ -19,6 +21,7 @@ export const useGetDataSources = (): UseQueryResult<
     const queryKey: any[] = ['sources'];
     // @ts-ignore
     return useSnackQuery(queryKey, () => getDataSources(), undefined, {
+        staleTime,
         select: data => {
             if (!data) return [];
             return data.sources.map(dataSource => {

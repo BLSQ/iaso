@@ -30,6 +30,10 @@ type Props = {
     // eslint-disable-next-line no-unused-vars
     onSearch: (searches: any) => void;
     currentTab: string;
+    filtersUpdated: boolean;
+    setFiltersUpdated: React.Dispatch<React.SetStateAction<boolean>>;
+    // triggerSearch: boolean;
+    setTriggerSearch: React.Dispatch<React.SetStateAction<boolean>>;
 };
 
 const useStyles = makeStyles(theme => ({
@@ -47,6 +51,10 @@ export const OrgUnitFiltersContainer: FunctionComponent<Props> = ({
     params,
     onSearch,
     currentTab,
+    filtersUpdated,
+    setFiltersUpdated,
+    // triggerSearch,
+    setTriggerSearch,
 }) => {
     const dispatch = useDispatch();
     const { formatMessage }: { formatMessage: IntlFormatMessage } =
@@ -63,7 +71,6 @@ export const OrgUnitFiltersContainer: FunctionComponent<Props> = ({
     const [hasLocationLimitError, setHasLocationLimitError] =
         useState<boolean>(false);
     const [textSearchError, setTextSearchError] = useState<boolean>(false);
-    const [filtersUpdated, setFiltersUpdated] = useState<boolean>(false);
     const currentSearchIndex = parseInt(params.searchTabIndex, 10);
 
     const handleSearch = useCallback(() => {
@@ -73,11 +80,10 @@ export const OrgUnitFiltersContainer: FunctionComponent<Props> = ({
                 page: 1,
                 searches: JSON.stringify(searches),
             };
-
+            setTriggerSearch(true);
             onSearch(tempParams);
-            setFiltersUpdated(false);
         }
-    }, [filtersUpdated, searches, params, onSearch]);
+    }, [filtersUpdated, params, searches, onSearch, setTriggerSearch]);
 
     const handleChangeColor = useCallback(
         (color: string, searchIndex: number) => {
@@ -85,10 +91,8 @@ export const OrgUnitFiltersContainer: FunctionComponent<Props> = ({
             newSearches[searchIndex].color = color.replace('#', '');
             const tempParams = {
                 ...params,
-                page: 1,
                 searches: JSON.stringify(newSearches),
             };
-
             onSearch(tempParams);
         },
         [searches, params, onSearch],
@@ -101,9 +105,10 @@ export const OrgUnitFiltersContainer: FunctionComponent<Props> = ({
                 ...params,
                 locationLimit,
             };
+            setTriggerSearch(true);
             onSearch(tempParams);
         },
-        [params, onSearch],
+        [params, onSearch, setFiltersUpdated, setTriggerSearch],
     );
 
     useEffect(() => {
@@ -136,6 +141,7 @@ export const OrgUnitFiltersContainer: FunctionComponent<Props> = ({
                             handleLocationLimitChange={
                                 handleLocationLimitChange
                             }
+                            filtersUpdated={filtersUpdated}
                         />
                     </Box>
                 );

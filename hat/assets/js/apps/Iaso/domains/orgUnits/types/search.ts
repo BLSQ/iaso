@@ -13,4 +13,5 @@ export type Search = {
     hasInstances?: string;
     dateFrom?: string;
     dateTo?: string;
+    color?: string;
 };

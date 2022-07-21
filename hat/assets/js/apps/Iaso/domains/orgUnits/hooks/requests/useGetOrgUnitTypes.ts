@@ -7,6 +7,7 @@ import { useSnackQuery } from '../../../../libs/apiHooks';
 import { DropdownOptions } from '../../../../types/utils';
 
 import { OrgunitTypesApi } from '../../types/orgunitTypes';
+import { staleTime } from '../../config';
 
 const getOrgunitTypes = (): Promise<OrgunitTypesApi> => {
     return getRequest('/api/orgunittypes/');
@@ -19,6 +20,7 @@ export const useGetOrgUnitTypes = (): UseQueryResult<
     const queryKey: any[] = ['orgunittypes'];
     // @ts-ignore
     return useSnackQuery(queryKey, () => getOrgunitTypes(), undefined, {
+        staleTime,
         select: data => {
             if (!data) return [];
             return data.orgUnitTypes

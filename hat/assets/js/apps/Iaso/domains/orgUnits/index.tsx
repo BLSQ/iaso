@@ -1,4 +1,4 @@
-import React, { FunctionComponent, useMemo, useState } from 'react';
+import React, { FunctionComponent, useMemo, useState, useEffect } from 'react';
 import { makeStyles, Box, Tabs, Tab } from '@material-ui/core';
 import EditIcon from '@material-ui/icons/Edit';
 import {
@@ -34,7 +34,7 @@ import { Selection } from './types/selection';
 // UTILS
 import { decodeSearch } from './utils';
 import { useCurrentUser } from '../../utils/usersUtils';
-import { redirectTo } from '../../routing/actions';
+import { redirectTo, redirectToReplace } from '../../routing/actions';
 // UTILS
 
 // CONSTANTS
@@ -83,6 +83,8 @@ export const OrgUnits: FunctionComponent<Props> = ({ params }) => {
     const currentUser = useCurrentUser();
     const searchCounts = [];
 
+    const [triggerSearch, setTriggerSearch] = useState<boolean>(false);
+    const [filtersUpdated, setFiltersUpdated] = useState<boolean>(false);
     const [multiActionPopupOpen, setMultiActionPopupOpen] =
         useState<boolean>(false);
     const [tab, setTab] = useState<string>(params.tab ?? 'list');
@@ -103,12 +105,17 @@ export const OrgUnits: FunctionComponent<Props> = ({ params }) => {
 
     const { mutateAsync: saveMulti, isLoading: isSavingMulti } =
         useBulkSaveOrgUnits();
+
+    const { apiParams } = useGetApiParams(searches, params);
     const { data: orgUnitsData, isFetching: isFetchingOrgUnits } =
-        useGetOrgUnits(searches, params, params.searchActive);
+        useGetOrgUnits(apiParams, triggerSearch, () => {
+            setFiltersUpdated(false);
+            setTriggerSearch(false);
+        });
 
     const onTabsDeleted = newParams => {
         handleTableSelection('reset');
-        dispatch(redirectTo(baseUrl, newParams));
+        dispatch(redirectToReplace(baseUrl, newParams));
     };
 
     const onSearch = newParams => {
@@ -117,7 +124,7 @@ export const OrgUnits: FunctionComponent<Props> = ({ params }) => {
         if (newParams.searchActive !== 'true') {
             tempParams.searchActive = true;
         }
-        dispatch(redirectTo(baseUrl, tempParams));
+        dispatch(redirectToReplace(baseUrl, tempParams));
     };
 
     const handleChangeTab = newtab => {
@@ -126,7 +133,7 @@ export const OrgUnits: FunctionComponent<Props> = ({ params }) => {
             ...params,
             tab: newtab,
         };
-        dispatch(redirectTo(baseUrl, newParams));
+        dispatch(redirectToReplace(baseUrl, newParams));
     };
 
     const handleTableSelection = (
@@ -156,6 +163,14 @@ export const OrgUnits: FunctionComponent<Props> = ({ params }) => {
         ],
         [multiEditDisabled, formatMessage],
     );
+    // onload, if searchActive is true => set triggerSearch to true
+    useEffect(() => {
+        if (params.searchActive) {
+            setTriggerSearch(true);
+        }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
+
     return (
         <>
             <OrgUnitsMultiActionsDialog
@@ -203,6 +218,9 @@ export const OrgUnits: FunctionComponent<Props> = ({ params }) => {
                     params={params}
                     onSearch={onSearch}
                     currentTab={tab}
+                    filtersUpdated={filtersUpdated}
+                    setFiltersUpdated={setFiltersUpdated}
+                    setTriggerSearch={setTriggerSearch}
                 />
                 {params.searchActive === 'true' && (
                     <>

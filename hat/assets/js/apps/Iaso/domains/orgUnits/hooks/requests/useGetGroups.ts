@@ -7,6 +7,7 @@ import { getRequest } from 'Iaso/libs/Api';
 import { DropdownOptions } from '../../../../types/utils';
 
 import MESSAGES from '../../messages';
+import { staleTime } from '../../config';
 
 type Props = {
     dataSourceId?: number;
@@ -40,6 +41,7 @@ export const useGetGroups = ({
         MESSAGES.fetchGroupsError,
         {
             enabled,
+            staleTime,
             select: data => {
                 if (!data) return [];
                 return data.groups.map(group => {

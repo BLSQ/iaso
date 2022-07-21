@@ -4,10 +4,9 @@ import { OrgUnitParams } from '../types/orgUnit';
 import { Search } from '../types/search';
 import { getFromDateString, getToDateString } from '../../../utils/dates';
 
-type ApiParams = {
+export type ApiParams = {
     order: string;
     page: string;
-    searchTabIndex: string;
     limit: string;
     searches: string;
 };
@@ -33,10 +32,10 @@ export const useGetApiParams = (
             getFromDateString(searches[i].dateFrom) || undefined;
         tempSearches[i].dateTo =
             getToDateString(searches[i].dateTo) || undefined;
+        delete tempSearches[i].color;
     });
 
     const apiParams = {
-        searchTabIndex: params.searchTabIndex,
         limit: params.pageSize ? params.pageSize : '50',
         order: params.order ? params.order : '-updated_at',
         page: params.page ? params.page : '1',

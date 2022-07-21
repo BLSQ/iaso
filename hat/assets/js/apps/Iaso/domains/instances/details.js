@@ -50,7 +50,6 @@ import EnketoIcon from './components/EnketoIcon';
 import { getInstancesFilesList } from './utils';
 import { userHasPermission } from '../users/utils';
 import MESSAGES from './messages';
-import { usePatchInstance } from './hooks';
 import { baseUrls } from '../../constants/urls';
 import {
     fetchFormOrgUnitTypes,

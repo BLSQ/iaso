@@ -244,6 +244,7 @@
     "iaso.instance.lockStatusLabel": "Status",
     "iaso.instance.lockedTitle": "Locked",
     "iaso.instance.unlockedTitle": "Unlocked",
+    "iaso.instance.NoLocksHistory": "There is not locks History",
     "iaso.label.actions": "Action(s)",
     "iaso.label.add": "Add",
     "iaso.label.address": "Address",

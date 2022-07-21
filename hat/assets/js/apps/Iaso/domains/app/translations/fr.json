@@ -240,6 +240,7 @@
     "iaso.instance.lockStatusLabel": "Status",
     "iaso.instance.lockedTitle": "Verrouillé",
     "iaso.instance.unlockedTitle": "Déverrouillé",
+    "iaso.instance.NoLocksHistory": "Il n'y a pas d'historique",
     "iaso.label.actions": "Action(s)",
     "iaso.label.add": "Ajouter",
     "iaso.label.address": "Adresse",

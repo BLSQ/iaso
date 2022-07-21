@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { Fragment } from 'react';
 import { Divider, Grid, Typography } from '@material-ui/core';
 import PropTypes from 'prop-types';
 import { injectIntl } from 'bluesquare-components';
@@ -16,40 +16,44 @@ const InstanceDetailsLocksHistory = ({
         padded
         title={formatMessage(MESSAGES.instanceLocksHistory)}
     >
-        <Grid container spacing={1}>
-            <Grid xs={5} container item justifyContent="center">
-                <Typography variant="body2" color="inherit">
-                    <b>
-                        {formatMessage(MESSAGES.lockAuthorLabel)}
-                        {currentInstance.instance_locks_history.length === 0 &&
-                            ': --'}
-                    </b>
-                </Typography>
-            </Grid>
-
-            <Grid xs={5} item container justifyContent="center">
-                <Typography variant="body2" color="inherit">
-                    <b>
-                        {formatMessage(MESSAGES.lockTopOrgUnitLabel)}
-                        {currentInstance.instance_locks_history.length === 0 &&
-                            ' : --'}
-                    </b>
-                </Typography>
-            </Grid>
-            <Grid xs={2} item container justifyContent="center">
-                <Typography variant="body2" color="inherit">
-                    <b>
-                        {formatMessage(MESSAGES.lockStatusLabel)}
-                        {currentInstance.instance_locks_history.length === 0 &&
-                            ' : --'}
-                    </b>
-                </Typography>
-            </Grid>
-        </Grid>
-        {currentInstance.instance_locks_history &&
-            currentInstance.instance_locks_history.length > 0 && <Divider />}
-        {currentInstance.instance_locks_history.map((instanceLock, index) => (
+        {currentInstance.instance_locks_history.length > 0 && (
             <>
+                <Grid container spacing={1}>
+                    <Grid xs={5} container item justifyContent="center">
+                        <Typography variant="body2" color="inherit">
+                            <b>{formatMessage(MESSAGES.lockAuthorLabel)}</b>
+                        </Typography>
+                    </Grid>
+
+                    <Grid xs={5} item container justifyContent="center">
+                        <Typography variant="body2" color="inherit">
+                            <b>{formatMessage(MESSAGES.lockTopOrgUnitLabel)}</b>
+                        </Typography>
+                    </Grid>
+                    <Grid xs={2} item container justifyContent="center">
+                        <Typography variant="body2" color="inherit">
+                            <b>{formatMessage(MESSAGES.lockStatusLabel)}</b>
+                        </Typography>
+                    </Grid>
+                </Grid>
+                <Divider />
+            </>
+        )}
+
+        {currentInstance.instance_locks_history.length === 0 && (
+            <Grid xs={5} container item justifyContent="center">
+                <Typography
+                    variant="body2"
+                    color="inherit"
+                    title={formatMessage(MESSAGES.lockAuthorLabel)}
+                >
+                    {`${formatMessage(MESSAGES.NoLocksHistory)}: --`}
+                </Typography>
+            </Grid>
+        )}
+
+        {currentInstance.instance_locks_history.map((instanceLock, index) => (
+            <Fragment key={index}>
                 <Grid container spacing={1}>
                     <Grid
                         xs={5}
@@ -110,7 +114,7 @@ const InstanceDetailsLocksHistory = ({
                     currentInstance.instance_locks_history.length - 1 && (
                     <Divider />
                 )}
-            </>
+            </Fragment>
         ))}
     </WidgetPaper>
 );

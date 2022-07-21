@@ -453,12 +453,16 @@ const MESSAGES = defineMessages({
         defaultMessage: 'Status',
     },
     lockedTitle: {
-        id: 'iaso.instance.lockedTitle"',
+        id: 'iaso.instance.lockedTitle',
         defaultMessage: 'Locked',
     },
     unlockedTitle: {
-        id: 'iaso.instance.unlockedTitle"',
+        id: 'iaso.instance.unlockedTitle',
         defaultMessage: 'Unlocked',
+    },
+    NoLocksHistory: {
+        defaultMessage: 'There is no locks History',
+        id: 'iaso.instance.NoLocksHistory',
     },
 });
 

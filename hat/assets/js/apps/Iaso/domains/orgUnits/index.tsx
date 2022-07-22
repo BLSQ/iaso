@@ -124,7 +124,7 @@ export const OrgUnits: FunctionComponent<Props> = ({ params }) => {
         useBulkSaveOrgUnits();
     const { apiParams } = useGetApiParams(searches, params);
     const { data: orgUnitsData, isFetching: isFetchingOrgUnits } =
-        useGetOrgUnits(apiParams, triggerSearch, searches, () => {
+        useGetOrgUnits(apiParams, triggerSearch, () => {
             setFiltersUpdated(false);
             setTriggerSearch(false);
         });
@@ -184,7 +184,17 @@ export const OrgUnits: FunctionComponent<Props> = ({ params }) => {
         },
         [params, dispatch],
     );
-    const handleChangeDynamicTab = useCallback(
+
+    const handleDeletedDynamicTab = useCallback(
+        newParams => {
+            setSearches(decodeSearch(decodeURI(newParams.searches)));
+            dispatch(redirectTo(baseUrl, newParams));
+            setTriggerSearch(true);
+        },
+        [dispatch],
+    );
+
+    const handleAddDynamicTab = useCallback(
         newParams => {
             setFiltersUpdated(true);
             setTriggerSearch(false);
@@ -245,8 +255,8 @@ export const OrgUnits: FunctionComponent<Props> = ({ params }) => {
                     onTabChange={newParams => {
                         dispatch(redirectTo(baseUrl, newParams));
                     }}
-                    onTabsDeleted={handleChangeDynamicTab}
-                    onTabsAdded={handleChangeDynamicTab}
+                    onTabsDeleted={handleDeletedDynamicTab}
+                    onTabsAdded={handleAddDynamicTab}
                     maxItems={9}
                     counts={orgUnitsData?.counts || []}
                     displayCounts

@@ -31,6 +31,7 @@ import { OrgUnitsMultiActionsDialog } from './components/OrgUnitsMultiActionsDia
 import { OrgUnitFiltersContainer } from './components/OrgUnitFiltersContainer';
 import TopBar from '../../components/nav/TopBarComponent';
 import { TableWithDeepLink } from '../../components/tables/TableWithDeepLink';
+import OrgunitsMap from './components/OrgunitsMapComponent';
 // COMPONENTS
 
 // TYPES
@@ -40,7 +41,7 @@ import { Selection } from './types/selection';
 // TYPES
 
 // UTILS
-import { decodeSearch } from './utils';
+import { decodeSearch, mapOrgUnitByLocation } from './utils';
 import { useCurrentUser } from '../../utils/usersUtils';
 import { redirectTo } from '../../routing/actions';
 // UTILS
@@ -56,6 +57,7 @@ import { useGetOrgUnits } from './hooks/requests/useGetOrgUnits';
 import { useGetOrgUnitsTableColumns } from './hooks/useGetOrgUnitsTableColumns';
 import { useBulkSaveOrgUnits } from './hooks/requests/useBulkSaveOrgUnits';
 import { useGetApiParams } from './hooks/useGetApiParams';
+import { useGetOrgUnitTypes } from './hooks/requests/useGetOrgUnitTypes';
 // HOOKS
 
 const useStyles = makeStyles(theme => ({
@@ -116,18 +118,35 @@ export const OrgUnits: FunctionComponent<Props> = ({ params }) => {
 
     // CUSTOM HOOKS
     const columns = useGetOrgUnitsTableColumns(searches);
-    const { getUrl } = useGetApiParams(searches, params);
+    const { getUrl, apiParams } = useGetApiParams(searches, params);
+    const { apiParams: apiParamsLocations } = useGetApiParams(
+        searches,
+        params,
+        true,
+    );
     // CUSTOM HOOKS
 
     // REQUESTS HOOKS
+
+    const { data: orgunitTypes, isFetching: isFetchingOrgunitTypes } =
+        useGetOrgUnitTypes();
     const { mutateAsync: saveMulti, isLoading: isSavingMulti } =
         useBulkSaveOrgUnits();
-    const { apiParams } = useGetApiParams(searches, params);
     const { data: orgUnitsData, isFetching: isFetchingOrgUnits } =
-        useGetOrgUnits(apiParams, triggerSearch, () => {
-            setFiltersUpdated(false);
-            setTriggerSearch(false);
+        useGetOrgUnits({
+            params: apiParams,
+            enabled: triggerSearch,
+            callback: () => {
+                setFiltersUpdated(false);
+                setTriggerSearch(false);
+            },
         });
+    const { data: orgUnitsDataLocation } = useGetOrgUnits({
+        params: apiParamsLocations,
+        enabled: triggerSearch,
+        queryKey: ['orgunitslocations'],
+        select: data => mapOrgUnitByLocation(data, searches),
+    });
     // REQUESTS HOOKS
 
     // SELECTION
@@ -185,6 +204,7 @@ export const OrgUnits: FunctionComponent<Props> = ({ params }) => {
         [params, dispatch],
     );
 
+    // refetch results too map searches and org units search indexes
     const handleDeletedDynamicTab = useCallback(
         newParams => {
             setSearches(decodeSearch(decodeURI(newParams.searches)));
@@ -271,6 +291,8 @@ export const OrgUnits: FunctionComponent<Props> = ({ params }) => {
                     searches={searches}
                     setSearches={setSearches}
                     setFiltersUpdated={setFiltersUpdated}
+                    orgunitTypes={orgunitTypes || []}
+                    isFetchingOrgunitTypes={isFetchingOrgunitTypes}
                 />
                 {orgUnitsData && (
                     <>
@@ -340,6 +362,24 @@ export const OrgUnits: FunctionComponent<Props> = ({ params }) => {
                                     />
                                 </Box>
                             )}
+
+                        {!isFetchingOrgunitTypes && !isFetchingOrgunitTypes && (
+                            <div
+                                className={
+                                    tab === 'map' ? '' : classes.hiddenOpacity
+                                }
+                            >
+                                <div className={classes.containerMarginNeg}>
+                                    {orgUnitsDataLocation && (
+                                        <OrgunitsMap
+                                            params={params}
+                                            orgUnitTypes={orgunitTypes || []}
+                                            orgUnits={orgUnitsDataLocation}
+                                        />
+                                    )}
+                                </div>
+                            </div>
+                        )}
                     </>
                 )}
             </Box>

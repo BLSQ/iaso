@@ -19,10 +19,9 @@ import { OrgUnitParams } from '../types/orgUnit';
 
 import { baseUrls } from '../../../constants/urls';
 
-// import { decodeSearch } from '../utils';
-
 import { IntlFormatMessage } from '../../../types/intl';
 import { Search } from '../types/search';
+import { DropdownOptions } from '../../../types/utils';
 
 import MESSAGES from '../messages';
 
@@ -35,6 +34,8 @@ type Props = {
     currentTab: string;
     filtersUpdated: boolean;
     setFiltersUpdated: React.Dispatch<React.SetStateAction<boolean>>;
+    orgunitTypes: DropdownOptions<string>[];
+    isFetchingOrgunitTypes: boolean;
 };
 
 const baseUrl = baseUrls.orgUnitsNew;
@@ -57,6 +58,8 @@ export const OrgUnitFiltersContainer: FunctionComponent<Props> = ({
     setFiltersUpdated,
     searches,
     setSearches,
+    orgunitTypes,
+    isFetchingOrgunitTypes,
 }) => {
     const dispatch = useDispatch();
     const { formatMessage }: { formatMessage: IntlFormatMessage } =
@@ -94,7 +97,6 @@ export const OrgUnitFiltersContainer: FunctionComponent<Props> = ({
 
     return (
         <>
-            {currentSearchIndex}
             <Filters
                 onSearch={handleSearch}
                 searchIndex={currentSearchIndex}
@@ -108,6 +110,8 @@ export const OrgUnitFiltersContainer: FunctionComponent<Props> = ({
                 params={params}
                 setHasLocationLimitError={setHasLocationLimitError}
                 filtersUpdated={filtersUpdated}
+                orgunitTypes={orgunitTypes}
+                isFetchingOrgunitTypes={isFetchingOrgunitTypes}
             />
             <Box mt={2} justifyContent="flex-end" display="flex">
                 <Button

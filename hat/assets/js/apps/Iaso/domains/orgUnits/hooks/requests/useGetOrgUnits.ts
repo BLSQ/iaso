@@ -18,21 +18,31 @@ type Result = Pagination & {
     counts: Count[];
 };
 
-export const useGetOrgUnits = (
-    apiParams: ApiParams,
-    triggerSearch: boolean,
-    callback: () => void = () => null,
-): UseQueryResult<Result, Error> => {
+type Props = {
+    params: ApiParams;
+    enabled: boolean;
+    callback?: () => void;
+    queryKey?: Array<string>;
+    // eslint-disable-next-line no-unused-vars
+    select?: (data: Result) => any;
+};
+
+export const useGetOrgUnits = ({
+    params,
+    enabled,
+    callback = () => null,
+    queryKey = ['orgunits'],
+    select = data => data,
+}: Props): UseQueryResult<Result, Error> => {
     const onSuccess = () => callback();
-    const queryKey: any[] = ['orgunits'];
-    const queryString = new URLSearchParams(apiParams);
-    return useSnackQuery(
+    const queryString = new URLSearchParams(params);
+    return useSnackQuery({
         queryKey,
-        () => getRequest(`/api/orgunits/?${queryString.toString()}`),
-        undefined,
-        {
-            enabled: triggerSearch,
+        queryFn: () => getRequest(`/api/orgunits/?${queryString.toString()}`),
+        options: {
+            enabled,
             onSuccess,
+            select,
         },
-    );
+    });
 };

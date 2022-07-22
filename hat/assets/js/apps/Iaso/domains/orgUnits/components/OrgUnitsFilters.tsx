@@ -19,7 +19,6 @@ import DatesRange from '../../../components/filters/DatesRange';
 
 import { getChipColors } from '../../../constants/chipColors';
 
-import { useGetOrgUnitTypes } from '../hooks/requests/useGetOrgUnitTypes';
 import { useGetGroups } from '../hooks/requests/useGetGroups';
 import { useGetDataSources } from '../hooks/requests/useGetDataSources';
 import { useCurrentUser } from '../../../utils/usersUtils';
@@ -28,6 +27,7 @@ import { useGetOrgUnit } from './TreeView/requests';
 import { IntlFormatMessage } from '../../../types/intl';
 import { OrgUnitParams } from '../types/orgUnit';
 import { Search } from '../types/search';
+import { DropdownOptions } from '../../../types/utils';
 
 import { setOrgUnitsLocations } from '../actions';
 
@@ -49,6 +49,8 @@ type Props = {
     currentTab: string;
     params: OrgUnitParams;
     setHasLocationLimitError: React.Dispatch<React.SetStateAction<boolean>>;
+    orgunitTypes: DropdownOptions<string>[];
+    isFetchingOrgunitTypes: boolean;
 };
 
 const retrieveSourceFromVersionId = (versionId, dataSources) => {
@@ -77,6 +79,8 @@ export const OrgUnitFilters: FunctionComponent<Props> = ({
     currentTab,
     params,
     setHasLocationLimitError,
+    orgunitTypes,
+    isFetchingOrgunitTypes,
 }) => {
     const dispatch = useDispatch();
     const classes: Record<string, string> = useStyles();
@@ -102,8 +106,7 @@ export const OrgUnitFilters: FunctionComponent<Props> = ({
     const [showAdvancedSettings, setShowAdvancedSettings] = useState(false);
 
     const { data: initialOrgUnit } = useGetOrgUnit(initialOrgUnitId);
-    const { data: orgunitTypes, isFetching: isFetchingOrgunitTypes } =
-        useGetOrgUnitTypes();
+
     const { data: dataSources, isFetching: isFetchingDataSources } =
         useGetDataSources();
     const { data: groups, isFetching: isFetchingGroups } = useGetGroups({

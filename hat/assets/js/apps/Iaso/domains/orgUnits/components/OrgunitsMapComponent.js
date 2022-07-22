@@ -270,18 +270,24 @@ class OrgunitsMap extends Component {
                         {orgUnits.shapes
                             .filter(o => !o.org_unit_type_id)
                             .map(o => (
-                                <Pane name="no-org-unit-type">
+                                <Pane name="no-org-unit-type" key={o.id}>
                                     {getShape(o)}
                                 </Pane>
                             ))}
                         {orgUnitTypes.map(ot => (
                             <Pane
-                                style={{ zIndex: 400 + (ot.depth || 1) }}
-                                name={`org-type-${ot.id}}`}
-                                key={ot.id}
+                                style={{
+                                    zIndex: 400 + (ot.original.depth || 1),
+                                }}
+                                name={`org-type-${ot.original.id}`}
+                                key={ot.original.id}
                             >
                                 {orgUnits.shapes
-                                    .filter(o => o.org_unit_type_id === ot.id)
+                                    .filter(
+                                        o =>
+                                            o.org_unit_type_id ===
+                                            ot.original.id,
+                                    )
                                     .map(o => getShape(o))}
                             </Pane>
                         ))}
@@ -307,7 +313,7 @@ class OrgunitsMap extends Component {
                                             }}
                                         >
                                             <Pane
-                                                name="markers"
+                                                name={`markers-${searchIndex}`}
                                                 style={{ zIndex: 500 }}
                                             >
                                                 <MarkersListComponent
@@ -338,7 +344,8 @@ class OrgunitsMap extends Component {
                             orgUnits.locations.map(
                                 (orgUnitsBySearch, searchIndex) => (
                                     <Pane
-                                        name="markers"
+                                        key={searchIndex}
+                                        name={`markers-${searchIndex}`}
                                         style={{ zIndex: 500 }}
                                     >
                                         <MarkersListComponent
@@ -389,8 +396,6 @@ OrgunitsMap.propTypes = {
 const MapStateToProps = state => ({
     currentTile: state.map.currentTile,
     isClusterActive: state.map.isClusterActive,
-    orgUnits: state.orgUnits.orgUnitsLocations,
-    orgUnitTypes: state.orgUnits.orgUnitTypes,
 });
 
 const MapDispatchToProps = dispatch => ({

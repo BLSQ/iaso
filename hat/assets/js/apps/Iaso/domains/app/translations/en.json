@@ -245,6 +245,7 @@
     "iaso.instance.lockedTitle": "Locked",
     "iaso.instance.unlockedTitle": "Unlocked",
     "iaso.instance.NoLocksHistory": "There is not locks History",
+    "iaso.instance.CanLockAgain": "Lock the submission again",
     "iaso.label.actions": "Action(s)",
     "iaso.label.add": "Add",
     "iaso.label.address": "Address",

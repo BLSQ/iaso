@@ -1,6 +1,6 @@
 /* eslint-disable react/jsx-props-no-spreading */
 /* eslint-disable react/prop-types */
-import React from 'react';
+import React, { useState } from 'react';
 import { IconButton as IconButtonComponent } from 'bluesquare-components';
 import LinkIcon from '@material-ui/icons/Link';
 import LinkOffIcon from '@material-ui/icons/LinkOff';
@@ -16,6 +16,7 @@ import { userHasPermission } from '../../users/utils';
 import MESSAGES from '../messages';
 import { useFormState } from '../../../hooks/form';
 import ConfirmCancelDialogComponent from '../../../components/dialogs/ConfirmCancelDialogComponent';
+import InputComponent from '../../../components/forms/InputComponent';
 import {
     hasFeatureFlag,
     SHOW_LINK_INSTANCE_REFERENCE,
@@ -36,14 +37,8 @@ const initialFormState = (orgUnit, referenceSubmissionId) => {
     };
 };
 
-const initialInstanceState = (instance, status) => {
-    return {
-        id: instance?.id,
-        valisation_status: 'LOCKED',
-    };
-};
-
 const ActionTableColumnComponent = ({ settings, user }) => {
+    const [lockAgain, setLockAgain] = useState(false);
     const [_formState, _setFieldValue, setFieldErrors] = useFormState(
         initialFormState(
             settings.row.original.org_unit,
@@ -106,7 +101,7 @@ const ActionTableColumnComponent = ({ settings, user }) => {
     const lockOrUnlockInstance = status => {
         const instanceParams = {
             id: settings.row.original.id,
-            validation_status: status,
+            validation_status: lockAgain ? 'LOCKED' : status,
         };
         saveInstance(instanceParams).catch(onError);
     };
@@ -142,6 +137,15 @@ const ActionTableColumnComponent = ({ settings, user }) => {
         return !isItLinked
             ? MESSAGES.linkOffOrgUnitReferenceSubmission
             : MESSAGES.linkOrgUnitReferenceSubmission;
+    };
+
+    const checkLockAgain = checkBoxStatus => {
+        const checkedStatus = !checkBoxStatus;
+        setLockAgain(checkedStatus);
+    };
+
+    const resetLockAgainCheckBox = () => {
+        setLockAgain(false);
     };
 
     return (
@@ -199,6 +203,7 @@ const ActionTableColumnComponent = ({ settings, user }) => {
                         );
                         closeDialog();
                     }}
+                    onClosed={resetLockAgainCheckBox}
                     renderTrigger={({ openDialog }) => (
                         <IconButtonComponent
                             onClick={openDialog}
@@ -222,6 +227,17 @@ const ActionTableColumnComponent = ({ settings, user }) => {
                             {...MESSAGES.linkOrgUnitToInstanceReferenceWarning}
                         />
                     </DialogContentText>
+                    {settings.row.original.can_lock_again && (
+                        <>
+                            <InputComponent
+                                keyValue="lock_again"
+                                onChange={() => checkLockAgain(lockAgain)}
+                                value={lockAgain}
+                                type="checkbox"
+                                label={MESSAGES.CanLockAgain}
+                            />
+                        </>
+                    )}
                 </ConfirmCancelDialogComponent>
             )}
         </section>

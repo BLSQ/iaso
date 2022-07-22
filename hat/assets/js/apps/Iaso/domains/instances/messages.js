@@ -464,6 +464,10 @@ const MESSAGES = defineMessages({
         defaultMessage: 'There is no locks History',
         id: 'iaso.instance.NoLocksHistory',
     },
+    CanLockAgain: {
+        defaultMessage: 'Lock the submission again',
+        id: 'iaso.instance.CanLockAgain',
+    },
 });
 
 export default MESSAGES;

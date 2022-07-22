@@ -181,6 +181,7 @@ class InstancesViewSet(viewsets.ViewSet):
                         if top_org_unit not in access_ou:
                             has_access = False
 
+                    dict["can_lock_again"] = has_access and is_locked and request.user != instance_status.author
                     dict["has_access"] = has_access
                     dict["is_locked"] = is_locked
                     if reference_form_id:
@@ -358,6 +359,7 @@ class InstancesViewSet(viewsets.ViewSet):
             return x.as_dict()
 
         response["instance_locks_history"] = map(instance_lock_as_dict, all_instance_locks.order_by("-created_at"))
+        response["can_lock_again"] = has_access and is_locked and request.user != last_instance_lock.author
         response["modification"] = has_access
         response["is_locked"] = is_locked
         self.check_object_permissions(request, instance)

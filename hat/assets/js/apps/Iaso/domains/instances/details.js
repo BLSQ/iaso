@@ -1,5 +1,5 @@
 /* eslint-disable react/jsx-props-no-spreading */
-import React, { Component } from 'react';
+import React, { Component, useState } from 'react';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 import DeleteIcon from '@material-ui/icons/Delete';
@@ -56,6 +56,7 @@ import {
     saveOrgUnitWithDispatch,
     saveInstanceWithDispatch,
 } from '../../utils/requests';
+import InputComponent from '../../components/forms/InputComponent';
 
 import {
     hasFeatureFlag,
@@ -109,10 +110,10 @@ const linkOrLinkOffOrgUnitToReferenceSubmission = (
     });
 };
 
-const lockOrUnlockInstance = (instance, status) => {
+const lockOrUnlockInstance = (instance, status, lockAgainStatus) => {
     const instanceParams = {
         id: instance.id,
-        validation_status: status,
+        validation_status: lockAgainStatus ? 'LOCKED' : status,
     };
     saveInstanceWithDispatch(instanceParams).then(() => {
         window.location.reload(false);
@@ -128,6 +129,9 @@ const actions = ({
     params,
     currentUser,
     redirectToActionInstance,
+    lockAgain,
+    changeCheckBox,
+    resetLockAgainCheckBox,
 }) => {
     const hasSubmissionPermission = userHasPermission(
         'iaso_org_units',
@@ -153,9 +157,17 @@ const actions = ({
         );
     };
 
-    const confirmLockUnlockInstance = instance => {
+    const confirmLockUnlockInstance = (instance, lockAgainStatus) => {
         const statusValues = instance.is_locked ? 'UNLOCK' : 'LOCKED';
-        lockOrUnlockInstance(instance, statusValues);
+        lockOrUnlockInstance(instance, statusValues, lockAgainStatus);
+    };
+
+    const checkLockAgain = lockAgainStatus => {
+        changeCheckBox(lockAgainStatus);
+    };
+
+    const resetLockAgain = () => {
+        resetLockAgainCheckBox();
     };
 
     const lockAction = {
@@ -168,9 +180,10 @@ const actions = ({
                         : MESSAGES.locked
                 }
                 onConfirm={closeDialog => {
-                    confirmLockUnlockInstance(currentInstance);
+                    confirmLockUnlockInstance(currentInstance, lockAgain);
                     closeDialog();
                 }}
+                onClosed={resetLockAgain}
                 renderTrigger={({ openDialog }) =>
                     renderTriggerLock(currentInstance.is_locked, openDialog)
                 }
@@ -182,6 +195,15 @@ const actions = ({
                         {...MESSAGES.linkOrgUnitToInstanceReferenceWarning}
                     />
                 </DialogContentText>
+                {currentInstance.can_lock_again && (
+                    <InputComponent
+                        keyValue="lock_again"
+                        onChange={() => checkLockAgain(lockAgain)}
+                        value={lockAgain}
+                        type="checkbox"
+                        label={MESSAGES.CanLockAgain}
+                    />
+                )}
             </ConfirmCancelDialogComponent>
         ),
     };
@@ -315,6 +337,7 @@ class InstanceDetails extends Component {
         this.state = {
             orgUnitTypeIds: [],
             showDial: true,
+            lockAgain: false,
         };
     }
 
@@ -378,12 +401,21 @@ class InstanceDetails extends Component {
             params,
             redirectToActionInstance,
         } = this.props;
-        const { showDial } = this.state;
+        const { showDial, lockAgain } = this.state;
         const formId = currentInstance?.form_id;
         const canEditEnketo = userHasPermission(
             'iaso_update_submission',
             currentUser,
         );
+
+        const changeCheckBox = lockAgainStatus => {
+            this.setState({ lockAgain: !lockAgainStatus });
+        };
+
+        const resetLockAgainCheckBox = () => {
+            this.setState({ lockAgain: false });
+        };
+
         return (
             <section className={classes.relativeContainer}>
                 <TopBar
@@ -422,6 +454,9 @@ class InstanceDetails extends Component {
                                     params,
                                     currentUser,
                                     redirectToActionInstance,
+                                    lockAgain,
+                                    changeCheckBox,
+                                    resetLockAgainCheckBox,
                                 })}
                                 onActionSelected={action =>
                                     this.onActionSelected(action)

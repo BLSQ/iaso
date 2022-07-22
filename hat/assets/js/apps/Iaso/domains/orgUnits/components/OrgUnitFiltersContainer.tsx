@@ -7,7 +7,7 @@ import React, {
     FunctionComponent,
     useState,
     useCallback,
-    useEffect,
+    // useEffect,
 } from 'react';
 import classnames from 'classnames';
 
@@ -19,23 +19,25 @@ import { OrgUnitParams } from '../types/orgUnit';
 
 import { baseUrls } from '../../../constants/urls';
 
-import { decodeSearch } from '../utils';
+// import { decodeSearch } from '../utils';
 
 import { IntlFormatMessage } from '../../../types/intl';
+import { Search } from '../types/search';
 
 import MESSAGES from '../messages';
 
 type Props = {
     params: OrgUnitParams;
+    searches: [Search];
+    setSearches: React.Dispatch<React.SetStateAction<[Search]>>;
     // eslint-disable-next-line no-unused-vars
     onSearch: (searches: any) => void;
     currentTab: string;
     filtersUpdated: boolean;
     setFiltersUpdated: React.Dispatch<React.SetStateAction<boolean>>;
-    // triggerSearch: boolean;
-    setTriggerSearch: React.Dispatch<React.SetStateAction<boolean>>;
 };
 
+const baseUrl = baseUrls.orgUnitsNew;
 const useStyles = makeStyles(theme => ({
     ...commonStyles(theme),
     hiddenOpacity: {
@@ -53,20 +55,13 @@ export const OrgUnitFiltersContainer: FunctionComponent<Props> = ({
     currentTab,
     filtersUpdated,
     setFiltersUpdated,
-    // triggerSearch,
-    setTriggerSearch,
+    searches,
+    setSearches,
 }) => {
     const dispatch = useDispatch();
     const { formatMessage }: { formatMessage: IntlFormatMessage } =
         useSafeIntl();
     const classes: Record<string, string> = useStyles();
-    // @ts-ignore
-    const searchParams: [Record<string, unknown>] = decodeSearch(
-        decodeURI(params.searches),
-    );
-    const [searches, setSearches] = useState<[Record<string, unknown>]>([
-        ...searchParams,
-    ]);
 
     const [hasLocationLimitError, setHasLocationLimitError] =
         useState<boolean>(false);
@@ -80,10 +75,9 @@ export const OrgUnitFiltersContainer: FunctionComponent<Props> = ({
                 page: 1,
                 searches: JSON.stringify(searches),
             };
-            setTriggerSearch(true);
             onSearch(tempParams);
         }
-    }, [filtersUpdated, params, searches, onSearch, setTriggerSearch]);
+    }, [filtersUpdated, params, searches, onSearch]);
 
     const handleChangeColor = useCallback(
         (color: string, searchIndex: number) => {
@@ -93,59 +87,28 @@ export const OrgUnitFiltersContainer: FunctionComponent<Props> = ({
                 ...params,
                 searches: JSON.stringify(newSearches),
             };
-            onSearch(tempParams);
+            dispatch(redirectTo(baseUrl, tempParams));
         },
-        [searches, params, onSearch],
+        [searches, params, dispatch],
     );
-
-    const handleLocationLimitChange = useCallback(
-        (locationLimit: number) => {
-            setFiltersUpdated(true);
-            const tempParams = {
-                ...params,
-                locationLimit,
-            };
-            setTriggerSearch(true);
-            onSearch(tempParams);
-        },
-        [params, onSearch, setFiltersUpdated, setTriggerSearch],
-    );
-
-    useEffect(() => {
-        setSearches(searchParams);
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [searchParams.length]);
 
     return (
         <>
-            {searches.map((_, searchIndex) => {
-                return (
-                    <Box
-                        key={searchIndex}
-                        className={classnames(
-                            searchIndex !== currentSearchIndex &&
-                                classes.hiddenOpacity,
-                        )}
-                    >
-                        <Filters
-                            onSearch={handleSearch}
-                            searchIndex={searchIndex}
-                            searches={searches}
-                            setTextSearchError={setTextSearchError}
-                            setFiltersUpdated={setFiltersUpdated}
-                            setSearches={setSearches}
-                            onChangeColor={handleChangeColor}
-                            currentTab={currentTab}
-                            params={params}
-                            setHasLocationLimitError={setHasLocationLimitError}
-                            handleLocationLimitChange={
-                                handleLocationLimitChange
-                            }
-                            filtersUpdated={filtersUpdated}
-                        />
-                    </Box>
-                );
-            })}
+            {currentSearchIndex}
+            <Filters
+                onSearch={handleSearch}
+                searchIndex={currentSearchIndex}
+                currentSearch={searches[currentSearchIndex]}
+                searches={searches}
+                setTextSearchError={setTextSearchError}
+                setFiltersUpdated={setFiltersUpdated}
+                setSearches={setSearches}
+                onChangeColor={handleChangeColor}
+                currentTab={currentTab}
+                params={params}
+                setHasLocationLimitError={setHasLocationLimitError}
+                filtersUpdated={filtersUpdated}
+            />
             <Box mt={2} justifyContent="flex-end" display="flex">
                 <Button
                     variant="contained"

@@ -150,23 +150,28 @@ export const useGetOrgUnitsTableColumns = (searches: [Search]): Column[] => {
             Header: formatMessage(MESSAGES.search),
             accessor: 'search_index',
             width: 100,
-            Cell: settings => (
-                <section>
-                    <span
-                        style={
-                            settings.row.original.color
-                                ? {
-                                      backgroundColor: `#${settings.row.original.color}`,
-                                      border: `2px solid ${Color(
-                                          `#${settings.row.original.color}`,
-                                      ).darken(0.5)}`,
-                                  }
-                                : {}
-                        }
-                        className={classes.roundColor}
-                    />
-                </section>
-            ),
+            Cell: settings => {
+                const color =
+                    searches[settings.row.original.search_index]?.color ??
+                    undefined;
+                return (
+                    <section>
+                        <span
+                            style={
+                                color
+                                    ? {
+                                          backgroundColor: `#${color}`,
+                                          border: `2px solid ${Color(
+                                              `#${color}`,
+                                          ).darken(0.5)}`,
+                                      }
+                                    : {}
+                            }
+                            className={classes.roundColor}
+                        />
+                    </section>
+                );
+            },
         });
     }
     return columns;

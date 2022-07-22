@@ -36,8 +36,9 @@ export const chipColors = [
     yellow[700],
 ];
 
-export const getChipColors = (i, reverse = false) => {
-    const colors = reverse ? chipColors.reverse() : chipColors;
+export const getChipColors = (i, reverse = false, usedColors = []) => {
+    let colors = reverse ? chipColors.reverse() : chipColors;
+    colors = colors.filter(color => !usedColors.includes(color));
     return colors[i % colors.length];
 };
 

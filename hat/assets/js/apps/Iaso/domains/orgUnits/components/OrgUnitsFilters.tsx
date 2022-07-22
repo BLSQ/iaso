@@ -1,8 +1,14 @@
 import { Grid, Box, Typography, makeStyles, Divider } from '@material-ui/core';
 import React, { FunctionComponent, useState, useEffect, useMemo } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-// @ts-ignore
-import { commonStyles, useSafeIntl } from 'bluesquare-components';
+import {
+    // @ts-ignore
+    commonStyles,
+    // @ts-ignore
+    useSafeIntl,
+    // @ts-ignore
+    useSkipEffectOnMount,
+} from 'bluesquare-components';
 
 import InputComponent from '../../../components/forms/InputComponent';
 import { ColorPicker } from '../../../components/forms/ColorPicker';
@@ -21,13 +27,16 @@ import { useGetOrgUnit } from './TreeView/requests';
 
 import { IntlFormatMessage } from '../../../types/intl';
 import { OrgUnitParams } from '../types/orgUnit';
+import { Search } from '../types/search';
+
 import { setOrgUnitsLocations } from '../actions';
 
 import MESSAGES from '../messages';
 
 type Props = {
-    searches: [Record<string, any>];
+    searches: [Search];
     searchIndex: number;
+    currentSearch: Search;
     // eslint-disable-next-line no-unused-vars
     setTextSearchError: (hasError: boolean) => void;
     onSearch: () => void;
@@ -36,10 +45,8 @@ type Props = {
     filtersUpdated: boolean;
     // eslint-disable-next-line no-unused-vars
     setFiltersUpdated: (isUpdated: boolean) => void;
-    setSearches: React.Dispatch<React.SetStateAction<[Record<string, any>]>>;
+    setSearches: React.Dispatch<React.SetStateAction<[Search]>>;
     currentTab: string;
-    // eslint-disable-next-line no-unused-vars
-    handleLocationLimitChange: (limit: number) => void;
     params: OrgUnitParams;
     setHasLocationLimitError: React.Dispatch<React.SetStateAction<boolean>>;
 };
@@ -60,6 +67,7 @@ const useStyles = makeStyles(theme => ({
 export const OrgUnitFilters: FunctionComponent<Props> = ({
     searches,
     searchIndex,
+    currentSearch,
     onSearch,
     onChangeColor,
     setTextSearchError,
@@ -67,7 +75,6 @@ export const OrgUnitFilters: FunctionComponent<Props> = ({
     setFiltersUpdated,
     setSearches,
     currentTab,
-    handleLocationLimitChange,
     params,
     setHasLocationLimitError,
 }) => {
@@ -89,11 +96,9 @@ export const OrgUnitFilters: FunctionComponent<Props> = ({
         number | undefined
     >();
     const [initialOrgUnitId, setInitialOrgUnitId] = useState<
-        number | undefined
-    >(searches[searchIndex].levels);
-    const [filters, setFilters] = useState<Record<string, any>>(
-        searches[searchIndex],
-    );
+        string | undefined
+    >(currentSearch?.levels);
+    const [filters, setFilters] = useState<Record<string, any>>(currentSearch);
     const [showAdvancedSettings, setShowAdvancedSettings] = useState(false);
 
     const { data: initialOrgUnit } = useGetOrgUnit(initialOrgUnitId);
@@ -147,7 +152,7 @@ export const OrgUnitFilters: FunctionComponent<Props> = ({
         tempSearches[searchIndex] = newFilters;
         setSearches(tempSearches);
     };
-    const currentColor = filters.color
+    const currentColor = filters?.color
         ? `#${filters.color}`
         : getChipColors(searchIndex);
 
@@ -157,14 +162,14 @@ export const OrgUnitFilters: FunctionComponent<Props> = ({
         // in that case we retrieve the dataSourceId so we can display it
         if (!dataSourceId && !sourceVersionId && filters?.version) {
             const id = retrieveSourceFromVersionId(
-                filters.version,
+                filters?.version,
                 dataSources,
             );
             setDataSourceId(id);
-            setSourceVersionId(parseInt(filters.version, 10));
+            setSourceVersionId(parseInt(filters?.version, 10));
         }
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [dataSourceId, filters.version, sourceVersionId]);
+    }, [dataSourceId, filters?.version, sourceVersionId]);
 
     useEffect(() => {
         // if no dataSourceId or sourceVersionId are provided, use the default from user
@@ -203,6 +208,11 @@ export const OrgUnitFilters: FunctionComponent<Props> = ({
             }
         }
     }, [dataSourceId, sourceVersionId, dataSources]);
+    useSkipEffectOnMount(() => {
+        if (filters !== currentSearch) {
+            setFilters(currentSearch);
+        }
+    }, [currentSearch]);
     const versionsDropDown = useMemo(() => {
         if (!dataSources || !dataSourceId) return [];
         return (
@@ -233,7 +243,7 @@ export const OrgUnitFilters: FunctionComponent<Props> = ({
                     onChange={handleChange}
                     keyValue="search"
                     required
-                    value={filters.search ? `${filters.search}` : ''}
+                    value={filters?.search ? `${filters?.search}` : ''}
                     onErrorChange={setTextSearchError}
                 />
                 <InputComponent
@@ -241,7 +251,7 @@ export const OrgUnitFilters: FunctionComponent<Props> = ({
                     disabled={isFetchingDataSources}
                     keyValue="source"
                     onChange={handleChange}
-                    value={!isFetchingDataSources && filters.source}
+                    value={!isFetchingDataSources && filters?.source}
                     label={MESSAGES.source}
                     options={dataSources}
                     loading={isFetchingDataSources}
@@ -285,7 +295,7 @@ export const OrgUnitFilters: FunctionComponent<Props> = ({
                     disabled={isFetchingOrgunitTypes}
                     keyValue="orgUnitTypes"
                     onChange={handleChange}
-                    value={!isFetchingOrgunitTypes && filters.orgUnitTypes}
+                    value={!isFetchingOrgunitTypes && filters?.orgUnitTypes}
                     label={MESSAGES.org_unit_type}
                     options={orgunitTypes}
                     loading={isFetchingOrgunitTypes}
@@ -295,7 +305,7 @@ export const OrgUnitFilters: FunctionComponent<Props> = ({
                     disabled={isFetchingGroups}
                     keyValue="groups"
                     onChange={handleChange}
-                    value={!isFetchingGroups && filters.groups}
+                    value={!isFetchingGroups && filters?.groups}
                     label={MESSAGES.groups}
                     options={groups}
                     loading={isFetchingGroups}
@@ -304,7 +314,7 @@ export const OrgUnitFilters: FunctionComponent<Props> = ({
                     type="select"
                     keyValue="validation_status"
                     onChange={handleChange}
-                    value={filters.validation_status}
+                    value={filters?.validation_status}
                     label={MESSAGES.validationStatus}
                     options={[
                         {
@@ -332,9 +342,7 @@ export const OrgUnitFilters: FunctionComponent<Props> = ({
                         <Box mt={2}>
                             <LocationLimit
                                 keyValue="locationLimit"
-                                onChange={(urlKey, value) => {
-                                    handleLocationLimitChange(value);
-                                }}
+                                onChange={handleChange}
                                 value={params.locationLimit}
                                 setHasError={setHasLocationLimitError}
                             />
@@ -362,7 +370,7 @@ export const OrgUnitFilters: FunctionComponent<Props> = ({
                         type="select"
                         keyValue="geography"
                         onChange={handleChange}
-                        value={filters.geography}
+                        value={filters?.geography}
                         label={MESSAGES.geographicalData}
                         options={[
                             {
@@ -392,7 +400,7 @@ export const OrgUnitFilters: FunctionComponent<Props> = ({
                         type="select"
                         keyValue="hasInstances"
                         onChange={handleChange}
-                        value={filters.hasInstances}
+                        value={filters?.hasInstances}
                         label={MESSAGES.hasInstances}
                         options={[
                             {
@@ -410,13 +418,13 @@ export const OrgUnitFilters: FunctionComponent<Props> = ({
                         ]}
                     />
                 </Box>
-                {(filters.hasInstances === 'true' ||
-                    filters.hasInstances === 'duplicates') && (
+                {(filters?.hasInstances === 'true' ||
+                    filters?.hasInstances === 'duplicates') && (
                     <Box mt={-3}>
                         <DatesRange
                             onChangeDate={handleChange}
-                            dateFrom={filters.dateFrom}
-                            dateTo={filters.dateTo}
+                            dateFrom={filters?.dateFrom}
+                            dateTo={filters?.dateTo}
                         />
                     </Box>
                 )}

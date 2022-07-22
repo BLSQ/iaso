@@ -32,7 +32,6 @@ export const useGetApiParams = (
             getFromDateString(searches[i].dateFrom) || undefined;
         tempSearches[i].dateTo =
             getToDateString(searches[i].dateTo) || undefined;
-        delete tempSearches[i].color;
     });
 
     const apiParams = {

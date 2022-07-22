@@ -1,4 +1,10 @@
-import React, { FunctionComponent, useMemo, useState, useEffect } from 'react';
+import React, {
+    FunctionComponent,
+    useMemo,
+    useState,
+    useEffect,
+    useCallback,
+} from 'react';
 import { makeStyles, Box, Tabs, Tab } from '@material-ui/core';
 import EditIcon from '@material-ui/icons/Edit';
 import {
@@ -14,6 +20,8 @@ import {
     setTableSelection,
     // @ts-ignore
     LoadingSpinner,
+    // @ts-ignore
+    useSkipEffectOnMount,
 } from 'bluesquare-components';
 import { useDispatch } from 'react-redux';
 
@@ -34,7 +42,7 @@ import { Selection } from './types/selection';
 // UTILS
 import { decodeSearch } from './utils';
 import { useCurrentUser } from '../../utils/usersUtils';
-import { redirectTo, redirectToReplace } from '../../routing/actions';
+import { redirectTo } from '../../routing/actions';
 // UTILS
 
 // CONSTANTS
@@ -77,12 +85,14 @@ type Props = {
 
 const baseUrl = baseUrls.orgUnitsNew;
 export const OrgUnits: FunctionComponent<Props> = ({ params }) => {
+    // HOOKS
     const dispatch = useDispatch();
     const classes: Record<string, string> = useStyles();
     const { formatMessage } = useSafeIntl();
     const currentUser = useCurrentUser();
-    const searchCounts = [];
+    // HOOKS
 
+    // STATE
     const [triggerSearch, setTriggerSearch] = useState<boolean>(false);
     const [filtersUpdated, setFiltersUpdated] = useState<boolean>(false);
     const [multiActionPopupOpen, setMultiActionPopupOpen] =
@@ -92,66 +102,50 @@ export const OrgUnits: FunctionComponent<Props> = ({ params }) => {
         selectionInitialState,
     );
 
-    const searches: [Search] = useMemo(
-        () => decodeSearch(params.searches),
-        [params.searches],
+    const [searches, setSearches] = useState<[Search]>(
+        decodeSearch(decodeURI(params.searches)),
     );
-    const columns = useGetOrgUnitsTableColumns(searches);
+    // STATE
+
+    // MEMO
     const defaultSource = useMemo(
         () => currentUser?.account?.default_version?.data_source,
         [currentUser],
     );
-    const { getUrl } = useGetApiParams(searches, params);
+    // MEMO
 
+    // CUSTOM HOOKS
+    const columns = useGetOrgUnitsTableColumns(searches);
+    const { getUrl } = useGetApiParams(searches, params);
+    // CUSTOM HOOKS
+
+    // REQUESTS HOOKS
     const { mutateAsync: saveMulti, isLoading: isSavingMulti } =
         useBulkSaveOrgUnits();
-
     const { apiParams } = useGetApiParams(searches, params);
     const { data: orgUnitsData, isFetching: isFetchingOrgUnits } =
-        useGetOrgUnits(apiParams, triggerSearch, () => {
+        useGetOrgUnits(apiParams, triggerSearch, searches, () => {
             setFiltersUpdated(false);
             setTriggerSearch(false);
         });
+    // REQUESTS HOOKS
 
-    const onTabsDeleted = newParams => {
-        handleTableSelection('reset');
-        dispatch(redirectToReplace(baseUrl, newParams));
-    };
-
-    const onSearch = newParams => {
-        handleTableSelection('reset');
-        const tempParams = { ...newParams };
-        if (newParams.searchActive !== 'true') {
-            tempParams.searchActive = true;
-        }
-        dispatch(redirectToReplace(baseUrl, tempParams));
-    };
-
-    const handleChangeTab = newtab => {
-        setTab(newtab);
-        const newParams = {
-            ...params,
-            tab: newtab,
-        };
-        dispatch(redirectToReplace(baseUrl, newParams));
-    };
-
-    const handleTableSelection = (
-        selectionType,
-        items = [],
-        totalCount = 0,
-    ) => {
-        const newSelection: Selection<OrgUnit> = setTableSelection(
-            selection,
-            selectionType,
-            items,
-            totalCount,
-        );
-        setSelection(newSelection);
-    };
-
+    // SELECTION
     const multiEditDisabled =
         !selection.selectAll && selection.selectedItems.length === 0;
+
+    const handleTableSelection = useCallback(
+        (selectionType, items = [], totalCount = 0) => {
+            const newSelection: Selection<OrgUnit> = setTableSelection(
+                selection,
+                selectionType,
+                items,
+                totalCount,
+            );
+            setSelection(newSelection);
+        },
+        [selection],
+    );
     const selectionActions = useMemo(
         () => [
             {
@@ -163,6 +157,44 @@ export const OrgUnits: FunctionComponent<Props> = ({ params }) => {
         ],
         [multiEditDisabled, formatMessage],
     );
+    // SELECTION
+
+    const onSearch = useCallback(
+        newParams => {
+            handleTableSelection('reset');
+            const tempParams = { ...newParams };
+            if (newParams.searchActive !== 'true') {
+                tempParams.searchActive = true;
+            }
+            setTriggerSearch(true);
+            dispatch(redirectTo(baseUrl, tempParams));
+        },
+        [handleTableSelection, dispatch],
+    );
+
+    // TABS
+    const handleChangeTab = useCallback(
+        newtab => {
+            setTab(newtab);
+            const newParams = {
+                ...params,
+                tab: newtab,
+            };
+            dispatch(redirectTo(baseUrl, newParams));
+        },
+        [params, dispatch],
+    );
+    const handleChangeDynamicTab = useCallback(
+        newParams => {
+            setFiltersUpdated(true);
+            setTriggerSearch(false);
+            setSearches(decodeSearch(decodeURI(newParams.searches)));
+            dispatch(redirectTo(baseUrl, newParams));
+        },
+        [dispatch],
+    );
+    // TABS
+
     // onload, if searchActive is true => set triggerSearch to true
     useEffect(() => {
         if (params.searchActive) {
@@ -170,6 +202,12 @@ export const OrgUnits: FunctionComponent<Props> = ({ params }) => {
         }
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
+
+    // trigger search on order, page size and page
+    useSkipEffectOnMount(() => {
+        setTriggerSearch(true);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [params.order, params.page, params.pageSize]);
 
     return (
         <>
@@ -180,19 +218,22 @@ export const OrgUnits: FunctionComponent<Props> = ({ params }) => {
                 selection={selection}
                 saveMulti={saveMulti}
             />
-            {isSavingMulti && <LoadingSpinner fixed={false} absolute />}
+            {(isFetchingOrgUnits || isSavingMulti) && (
+                <LoadingSpinner fixed={false} absolute />
+            )}
             <TopBar title={formatMessage(MESSAGES.title)}>
                 <DynamicTabs
                     deleteMessage={MESSAGES.delete}
                     addMessage={MESSAGES.add}
                     baseLabel={formatMessage(MESSAGES.search)}
-                    params={params}
+                    params={{ ...params, searches: JSON.stringify(searches) }}
                     defaultItem={{
                         validation_status: 'all',
-                        color: getChipColors(searches.length + 1).replace(
-                            '#',
-                            '',
-                        ),
+                        color: getChipColors(
+                            searches.length + 1,
+                            false,
+                            searches.map(search => `#${search.color}`),
+                        ).replace('#', ''),
                         source: defaultSource && defaultSource.id,
                     }}
                     paramKey="searches"
@@ -201,15 +242,13 @@ export const OrgUnits: FunctionComponent<Props> = ({ params }) => {
                     redirectTo={(path, newParams) =>
                         dispatch(redirectTo(path, newParams))
                     }
-                    onTabsUpdated={newParams =>
-                        dispatch(redirectTo(baseUrl, newParams))
-                    }
-                    onTabChange={newParams =>
-                        dispatch(redirectTo(baseUrl, newParams))
-                    }
-                    onTabsDeleted={onTabsDeleted}
+                    onTabChange={newParams => {
+                        dispatch(redirectTo(baseUrl, newParams));
+                    }}
+                    onTabsDeleted={handleChangeDynamicTab}
+                    onTabsAdded={handleChangeDynamicTab}
                     maxItems={9}
-                    counts={searchCounts}
+                    counts={orgUnitsData?.counts || []}
                     displayCounts
                 />
             </TopBar>
@@ -219,10 +258,11 @@ export const OrgUnits: FunctionComponent<Props> = ({ params }) => {
                     onSearch={onSearch}
                     currentTab={tab}
                     filtersUpdated={filtersUpdated}
+                    searches={searches}
+                    setSearches={setSearches}
                     setFiltersUpdated={setFiltersUpdated}
-                    setTriggerSearch={setTriggerSearch}
                 />
-                {params.searchActive === 'true' && (
+                {orgUnitsData && (
                     <>
                         <Tabs
                             value={tab}
@@ -255,8 +295,6 @@ export const OrgUnits: FunctionComponent<Props> = ({ params }) => {
                                     baseUrl={baseUrl}
                                     marginTop={false}
                                     extraProps={{
-                                        loading:
-                                            isFetchingOrgUnits || isSavingMulti,
                                         columns,
                                     }}
                                     multiSelect

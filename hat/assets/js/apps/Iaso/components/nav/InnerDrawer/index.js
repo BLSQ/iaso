@@ -141,6 +141,18 @@ class InnerDrawer extends Component {
                                             }
                                         />
                                     )}
+                                    <Tab
+                                        classes={{
+                                            root: classes.innerDrawerTab,
+                                        }}
+                                        disabled={settingsDisabled}
+                                        value="settings"
+                                        label={
+                                            <FormattedMessage
+                                                {...MESSAGES.settings}
+                                            />
+                                        }
+                                    />
                                     {commentsOptionComponent && (
                                         <Tab
                                             classes={{
@@ -155,18 +167,6 @@ class InnerDrawer extends Component {
                                             }
                                         />
                                     )}
-                                    <Tab
-                                        classes={{
-                                            root: classes.innerDrawerTab,
-                                        }}
-                                        disabled={settingsDisabled}
-                                        value="settings"
-                                        label={
-                                            <FormattedMessage
-                                                {...MESSAGES.settings}
-                                            />
-                                        }
-                                    />
                                 </Tabs>
                             )}
                             <Box

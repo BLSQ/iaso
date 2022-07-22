@@ -31,7 +31,7 @@ import { OrgUnitsMultiActionsDialog } from './components/OrgUnitsMultiActionsDia
 import { OrgUnitFiltersContainer } from './components/OrgUnitFiltersContainer';
 import TopBar from '../../components/nav/TopBarComponent';
 import { TableWithDeepLink } from '../../components/tables/TableWithDeepLink';
-import OrgunitsMap from './components/OrgunitsMapComponent';
+import { OrgUnitsMap } from './components/OrgUnitsMap';
 // COMPONENTS
 
 // TYPES
@@ -41,7 +41,7 @@ import { Selection } from './types/selection';
 // TYPES
 
 // UTILS
-import { decodeSearch, mapOrgUnitByLocation } from './utils';
+import { decodeSearch } from './utils';
 import { useCurrentUser } from '../../utils/usersUtils';
 import { redirectTo } from '../../routing/actions';
 // UTILS
@@ -53,7 +53,10 @@ import { getChipColors } from '../../constants/chipColors';
 // CONSTANTS
 
 // HOOKS
-import { useGetOrgUnits } from './hooks/requests/useGetOrgUnits';
+import {
+    useGetOrgUnits,
+    useGetOrgUnitsLocations,
+} from './hooks/requests/useGetOrgUnits';
 import { useGetOrgUnitsTableColumns } from './hooks/useGetOrgUnitsTableColumns';
 import { useBulkSaveOrgUnits } from './hooks/requests/useBulkSaveOrgUnits';
 import { useGetApiParams } from './hooks/useGetApiParams';
@@ -141,11 +144,13 @@ export const OrgUnits: FunctionComponent<Props> = ({ params }) => {
                 setTriggerSearch(false);
             },
         });
-    const { data: orgUnitsDataLocation } = useGetOrgUnits({
+    const {
+        data: orgUnitsDataLocation,
+        isFetching: isFetchingOrgUnitsDataLocation,
+    } = useGetOrgUnitsLocations({
         params: apiParamsLocations,
         enabled: triggerSearch,
-        queryKey: ['orgunitslocations'],
-        select: data => mapOrgUnitByLocation(data, searches),
+        searches,
     });
     // REQUESTS HOOKS
 
@@ -239,6 +244,12 @@ export const OrgUnits: FunctionComponent<Props> = ({ params }) => {
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [params.order, params.page, params.pageSize]);
 
+    const isLoading =
+        isFetchingOrgUnits ||
+        isSavingMulti ||
+        (tab === 'map' &&
+            isFetchingOrgUnitsDataLocation &&
+            isFetchingOrgunitTypes);
     return (
         <>
             <OrgUnitsMultiActionsDialog
@@ -248,9 +259,7 @@ export const OrgUnits: FunctionComponent<Props> = ({ params }) => {
                 selection={selection}
                 saveMulti={saveMulti}
             />
-            {(isFetchingOrgUnits || isSavingMulti) && (
-                <LoadingSpinner fixed={false} absolute />
-            )}
+            {isLoading && <LoadingSpinner fixed={false} absolute />}
             <TopBar title={formatMessage(MESSAGES.title)}>
                 <DynamicTabs
                     deleteMessage={MESSAGES.delete}
@@ -363,20 +372,18 @@ export const OrgUnits: FunctionComponent<Props> = ({ params }) => {
                                 </Box>
                             )}
 
-                        {!isFetchingOrgunitTypes && !isFetchingOrgunitTypes && (
+                        {!isFetchingOrgunitTypes && orgUnitsDataLocation && (
                             <div
                                 className={
                                     tab === 'map' ? '' : classes.hiddenOpacity
                                 }
                             >
                                 <div className={classes.containerMarginNeg}>
-                                    {orgUnitsDataLocation && (
-                                        <OrgunitsMap
-                                            params={params}
-                                            orgUnitTypes={orgunitTypes || []}
-                                            orgUnits={orgUnitsDataLocation}
-                                        />
-                                    )}
+                                    <OrgUnitsMap
+                                        params={params}
+                                        orgUnitTypes={orgunitTypes || []}
+                                        orgUnits={orgUnitsDataLocation}
+                                    />
                                 </div>
                             </div>
                         )}

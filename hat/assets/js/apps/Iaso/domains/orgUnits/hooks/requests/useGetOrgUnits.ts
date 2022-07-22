@@ -4,10 +4,14 @@ import { getRequest } from '../../../../libs/Api';
 import { useSnackQuery } from '../../../../libs/apiHooks';
 
 import { OrgUnit } from '../../types/orgUnit';
+import { Search } from '../../types/search';
 
 import { ApiParams } from '../useGetApiParams';
 
 import { Pagination } from '../../../../types/table';
+import { Locations } from '../../components/OrgUnitsMap';
+
+import { mapOrgUnitByLocation } from '../../utils';
 
 type Count = {
     index: number;
@@ -22,27 +26,43 @@ type Props = {
     params: ApiParams;
     enabled: boolean;
     callback?: () => void;
-    queryKey?: Array<string>;
-    // eslint-disable-next-line no-unused-vars
-    select?: (data: Result) => any;
+};
+
+type PropsLocation = {
+    params: ApiParams;
+    enabled: boolean;
+    searches: Search[];
 };
 
 export const useGetOrgUnits = ({
     params,
     enabled,
     callback = () => null,
-    queryKey = ['orgunits'],
-    select = data => data,
 }: Props): UseQueryResult<Result, Error> => {
     const onSuccess = () => callback();
     const queryString = new URLSearchParams(params);
     return useSnackQuery({
-        queryKey,
+        queryKey: ['orgunits'],
         queryFn: () => getRequest(`/api/orgunits/?${queryString.toString()}`),
         options: {
             enabled,
             onSuccess,
-            select,
+        },
+    });
+};
+
+export const useGetOrgUnitsLocations = ({
+    params,
+    enabled,
+    searches,
+}: PropsLocation): UseQueryResult<Locations, Error> => {
+    const queryString = new URLSearchParams(params);
+    return useSnackQuery({
+        queryKey: ['orgunitslocations'],
+        queryFn: () => getRequest(`/api/orgunits/?${queryString.toString()}`),
+        options: {
+            enabled,
+            select: data => mapOrgUnitByLocation(data, searches),
         },
     });
 };

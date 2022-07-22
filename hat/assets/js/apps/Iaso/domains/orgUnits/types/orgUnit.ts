@@ -27,9 +27,9 @@ export type OrgUnit = {
     source: string;
     source_id: number;
     version: number;
-
     groups: Array<unknown>;
     org_unit_type: string;
+    search_index?: number;
 };
 
 export type OrgUnitParams = UrlParams & {

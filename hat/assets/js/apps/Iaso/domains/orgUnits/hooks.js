@@ -8,9 +8,6 @@ import { getRequest, patchRequest, postRequest } from 'Iaso/libs/Api';
 import { useQuery, useQueryClient } from 'react-query';
 import MESSAGES from './messages';
 import { getOtChipColors, getChipColors } from '../../constants/chipColors';
-import { fetchOrgUnitsTypes } from '../../utils/requests';
-import { setOrgUnitTypes } from './actions';
-import { useFetchOnMount } from '../../hooks/fetchOnMount';
 
 export const useOrgUnitDetailData = (
     isNewOrgunit,
@@ -206,15 +203,4 @@ export const useGetOrgUnitTypes = () => {
     return useQuery(['orgUnitTypes'], getOrgUnitTypes, {
         select: data => data.orgUnitTypes,
     });
-};
-
-export const useOrgUnitsFiltersData = (dispatch, setFetchingOrgUnitTypes) => {
-    useFetchOnMount([
-        {
-            fetch: fetchOrgUnitsTypes,
-            setFetching: fetching =>
-                dispatch(setFetchingOrgUnitTypes(fetching)),
-            setData: setOrgUnitTypes,
-        },
-    ]);
 };

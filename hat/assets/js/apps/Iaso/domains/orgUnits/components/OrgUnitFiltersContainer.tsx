@@ -38,7 +38,7 @@ type Props = {
     isFetchingOrgunitTypes: boolean;
 };
 
-const baseUrl = baseUrls.orgUnitsNew;
+const baseUrl = baseUrls.orgUnits;
 const useStyles = makeStyles(theme => ({
     ...commonStyles(theme),
     hiddenOpacity: {

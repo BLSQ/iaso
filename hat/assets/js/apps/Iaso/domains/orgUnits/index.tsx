@@ -83,12 +83,11 @@ type Props = {
 };
 
 // TODO:
-// - replace orgUnits by orgUnitsNew
-// - delete old index, filters
+// - delete old index, filters, map
 // - remove requests
-// - emove messages
+// - remove messages
 
-const baseUrl = baseUrls.orgUnitsNew;
+const baseUrl = baseUrls.orgUnits;
 export const OrgUnits: FunctionComponent<Props> = ({ params }) => {
     // HOOKS
     const dispatch = useDispatch();

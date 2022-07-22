@@ -1,6 +1,5 @@
 import { Grid, Box, Typography, makeStyles, Divider } from '@material-ui/core';
 import React, { FunctionComponent, useState, useEffect, useMemo } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
 import {
     // @ts-ignore
     commonStyles,
@@ -28,8 +27,6 @@ import { IntlFormatMessage } from '../../../types/intl';
 import { OrgUnitParams } from '../types/orgUnit';
 import { Search } from '../types/search';
 import { DropdownOptions } from '../../../types/utils';
-
-import { setOrgUnitsLocations } from '../actions';
 
 import MESSAGES from '../messages';
 
@@ -82,18 +79,10 @@ export const OrgUnitFilters: FunctionComponent<Props> = ({
     orgunitTypes,
     isFetchingOrgunitTypes,
 }) => {
-    const dispatch = useDispatch();
     const classes: Record<string, string> = useStyles();
     const { formatMessage }: { formatMessage: IntlFormatMessage } =
         useSafeIntl();
     const currentUser = useCurrentUser();
-
-    const orgUnitsLocations = useSelector(
-        // @ts-ignore
-        state => state.orgUnits.orgUnitsLocations,
-    );
-    // @ts-ignore
-    const isClusterActive = useSelector(state => state.map.isClusterActive);
 
     const [dataSourceId, setDataSourceId] = useState<number | undefined>();
     const [sourceVersionId, setSourceVersionId] = useState<
@@ -127,21 +116,6 @@ export const OrgUnitFilters: FunctionComponent<Props> = ({
         }
         if (key === 'levels') {
             setInitialOrgUnitId(value);
-        }
-
-        if (isClusterActive) {
-            // Ugly patch to force rerender of clusters
-            const locations = [...orgUnitsLocations.locations];
-            locations[searchIndex] = [];
-            dispatch(
-                setOrgUnitsLocations({
-                    ...orgUnitsLocations,
-                    locations,
-                }),
-            );
-            setTimeout(() => {
-                dispatch(setOrgUnitsLocations(orgUnitsLocations));
-            }, 100);
         }
         const newFilters: Record<string, unknown> = {
             ...filters,

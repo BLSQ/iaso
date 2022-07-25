@@ -515,6 +515,7 @@ class BudgetEvent(SoftDeletableModel):
     links = models.TextField(blank=True, null=True)
     is_finalized = models.BooleanField(default=False)
     is_email_sent = models.BooleanField(default=False)
+    amount = models.DecimalField(blank=True, null=True, decimal_places=2, max_digits=14)
 
     def __str__(self):
         return str(self.campaign)

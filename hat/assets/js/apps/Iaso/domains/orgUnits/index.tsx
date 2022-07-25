@@ -76,6 +76,7 @@ const useStyles = makeStyles(theme => ({
         left: '0px',
         zIndex: '-100',
         opacity: '0',
+        width: '100%',
     },
 }));
 

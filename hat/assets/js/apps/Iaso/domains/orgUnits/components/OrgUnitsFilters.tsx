@@ -270,9 +270,9 @@ export const OrgUnitFilters: FunctionComponent<Props> = ({
                 <InputComponent
                     type="select"
                     disabled={isFetchingOrgunitTypes}
-                    keyValue="orgUnitTypes"
+                    keyValue="orgUnitTypeId"
                     onChange={handleChange}
-                    value={!isFetchingOrgunitTypes && filters?.orgUnitTypes}
+                    value={!isFetchingOrgunitTypes && filters?.orgUnitTypeId}
                     label={MESSAGES.org_unit_type}
                     options={orgunitTypes}
                     loading={isFetchingOrgunitTypes}

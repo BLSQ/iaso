@@ -22,7 +22,7 @@ import {
     useUploadBudgetFiles,
 } from '../../../hooks/useSaveBudgetEvent';
 import FileInputComponent from '../../../../../../../hat/assets/js/apps/Iaso/components/forms/FileInputComponent';
-import { useBudgetEvenValidation } from '../hooks/validation';
+import { useBudgetEventValidation } from '../hooks/validation';
 import {
     useGetTeamsDropDown,
     useGetApprovalTeams,
@@ -58,7 +58,7 @@ export const CreateEditBudgetEvent: FunctionComponent<Props> = ({
     const { mutateAsync: uploadFiles } = useUploadBudgetFiles();
     const { mutateAsync: finalize } = useFinalizeBudgetEvent();
     const [closeModal, setCloseModal] = useState<any>();
-    const validationSchema = useBudgetEvenValidation();
+    const validationSchema = useBudgetEventValidation();
 
     const formik = useFormik({
         initialValues: {

@@ -10,7 +10,7 @@ import {
 
 const multipleUrlsValidator = makeRegexValidator(urlRegex);
 
-export const useBudgetEvenValidation = () => {
+export const useBudgetEventValidation = () => {
     const { formatMessage } = useSafeIntl();
     const fieldRequired = formatMessage(MESSAGES.requiredField);
     const urlFormat = formatMessage(MESSAGES.urlFormat);
@@ -30,7 +30,15 @@ export const useBudgetEvenValidation = () => {
                 .nullable()
                 .required(fieldRequired),
             type: string()
-                .oneOf(['submission', 'comments', 'validation']) // TODO add translation for this error
+                .oneOf([
+                    'submission',
+                    'comments',
+                    'validation',
+                    'request',
+                    'feedback',
+                    'review',
+                    'transmission',
+                ]) // TODO add translation for this error
                 .nullable()
                 .required(fieldRequired)
                 .typeError(typeError),

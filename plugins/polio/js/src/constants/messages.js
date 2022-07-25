@@ -1346,6 +1346,22 @@ const MESSAGES = defineMessages({
         id: 'iaso.polio.label.amount',
         defaultMessage: 'Amount',
     },
+    review: {
+        id: 'iaso.polio.label.review',
+        defaultMessage: 'Review',
+    },
+    transmission: {
+        id: 'iaso.polio.label.transmission',
+        defaultMessage: 'Transmission',
+    },
+    feedback: {
+        id: 'iaso.polio.label.feedback',
+        defaultMessage: 'Feedback',
+    },
+    request: {
+        id: 'iaso.polio.label.request',
+        defaultMessage: 'Request',
+    },
 });
 
 export default MESSAGES;

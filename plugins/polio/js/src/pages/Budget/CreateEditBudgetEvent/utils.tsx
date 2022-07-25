@@ -86,6 +86,22 @@ export const makeEventsDropdown = (
             label: formatMessage(MESSAGES.comments) as string,
             value: 'comments',
         },
+        {
+            label: formatMessage(MESSAGES.request) as string,
+            value: 'request',
+        },
+        {
+            label: formatMessage(MESSAGES.feedback) as string,
+            value: 'feedback',
+        },
+        {
+            label: formatMessage(MESSAGES.transmission) as string,
+            value: 'transmission',
+        },
+        {
+            label: formatMessage(MESSAGES.review) as string,
+            value: 'review',
+        },
     ];
     if (isUserApprover) {
         return [

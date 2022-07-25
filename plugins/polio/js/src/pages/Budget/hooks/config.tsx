@@ -32,6 +32,7 @@ import { BudgetEvent } from '../../../constants/types';
 import { Optional } from '../../../../../../../hat/assets/js/apps/Iaso/types/utils';
 import { convertObjectToString } from '../../../utils';
 import { formatThousand } from '../../../../../../../hat/assets/js/apps/Iaso/utils';
+import { formatComment } from '../cards/utils';
 
 const baseUrl = BUDGET_DETAILS;
 
@@ -139,19 +140,6 @@ export const useBudgetDetailsColumns = ({ profiles, data }): Column[] => {
     return useMemo(() => {
         const defaultColumns = [
             {
-                Header: formatMessage(MESSAGES.created_at),
-                id: 'created_at',
-                accessor: 'created_at',
-                sortable: true,
-                Cell: settings => {
-                    return (
-                        <span className={getRowColor(settings)}>
-                            {DateTimeCellRfc(settings)}
-                        </span>
-                    );
-                },
-            },
-            {
                 Header: formatMessage(MESSAGES.event),
                 id: 'type',
                 accessor: 'type',
@@ -166,6 +154,21 @@ export const useBudgetDetailsColumns = ({ profiles, data }): Column[] => {
                     );
                 },
             },
+            {
+                Header: formatMessage(MESSAGES.comment),
+                id: 'comment',
+                accessor: 'comment',
+                sortable: true,
+                Cell: settings => {
+                    const { comment } = settings.row.original;
+                    return (
+                        <span className={getRowColor(settings)}>
+                            {comment ? formatComment(comment) : '--'}
+                        </span>
+                    );
+                },
+            },
+
             {
                 Header: formatMessage(MESSAGES.author),
                 id: 'author',
@@ -225,6 +228,19 @@ export const useBudgetDetailsColumns = ({ profiles, data }): Column[] => {
                     return (
                         <span className={getRowColor(settings)}>
                             {teamsToDisplay}
+                        </span>
+                    );
+                },
+            },
+            {
+                Header: formatMessage(MESSAGES.created_at),
+                id: 'created_at',
+                accessor: 'created_at',
+                sortable: true,
+                Cell: settings => {
+                    return (
+                        <span className={getRowColor(settings)}>
+                            {DateTimeCellRfc(settings)}
                         </span>
                     );
                 },

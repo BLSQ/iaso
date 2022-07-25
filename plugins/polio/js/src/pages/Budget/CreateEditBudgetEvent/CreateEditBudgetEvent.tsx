@@ -260,7 +260,7 @@ export const CreateEditBudgetEvent: FunctionComponent<Props> = ({
                         label={MESSAGES.links}
                     />
                 )}
-                {values.type !== 'validation' && (
+                {values.type !== 'validation' && currentType !== 'edit' && (
                     <InputComponent
                         type="checkbox"
                         keyValue="internal"

@@ -3,7 +3,7 @@ export type Search = {
     search?: string;
     source?: string;
     version?: string;
-    orgUnitTypes?: string;
+    orgUnitTypeId?: string;
     groups?: string;
     validation_status?: string;
     locationLimit?: string;

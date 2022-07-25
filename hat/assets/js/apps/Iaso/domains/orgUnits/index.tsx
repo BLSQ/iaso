@@ -229,9 +229,17 @@ export const OrgUnits: FunctionComponent<Props> = ({ params }) => {
 
     // onload, if searchActive is true => set triggerSearch to true
     useEffect(() => {
-        if (params.searchActive) {
+        if (params.searchActive === 'true') {
             setTriggerSearch(true);
         }
+        return () => {
+            setSearches([
+                {
+                    validation_status: 'all',
+                    color: getChipColors(0).replace('#', ''),
+                },
+            ]);
+        };
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
@@ -284,7 +292,11 @@ export const OrgUnits: FunctionComponent<Props> = ({ params }) => {
                     onTabsDeleted={handleDeletedDynamicTab}
                     onTabsAdded={handleAddDynamicTab}
                     maxItems={9}
-                    counts={orgUnitsData?.counts || []}
+                    counts={
+                        (params.searchActive === 'true' &&
+                            orgUnitsData?.counts) ||
+                        []
+                    }
                     displayCounts
                 />
             </TopBar>
@@ -300,7 +312,7 @@ export const OrgUnits: FunctionComponent<Props> = ({ params }) => {
                     orgunitTypes={orgunitTypes || []}
                     isFetchingOrgunitTypes={isFetchingOrgunitTypes}
                 />
-                {orgUnitsData && (
+                {orgUnitsData && params.searchActive === 'true' && (
                     <>
                         <Tabs
                             value={tab}

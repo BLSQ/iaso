@@ -5,7 +5,7 @@ import {
     useSnackQueries,
 } from 'Iaso/libs/apiHooks.ts';
 import { getRequest, patchRequest, postRequest } from 'Iaso/libs/Api';
-import { useQuery, useQueryClient } from 'react-query';
+import { useQueryClient } from 'react-query';
 import MESSAGES from './messages';
 import { getOtChipColors, getChipColors } from '../../constants/chipColors';
 
@@ -164,7 +164,6 @@ const makeGroupsQueryParams = ({ dataSourceId, sourceVersionId }) => {
     if (dataSourceId) return `?dataSource=${dataSourceId}`;
     return '?defaultVersion=true';
 };
-const getOrgUnitTypes = () => getRequest(`/api/orgunittypes/`);
 
 export const useGetGroups = ({ dataSourceId, sourceVersionId }) => {
     const [enabled, setEnabled] = useState(false);
@@ -197,10 +196,4 @@ export const useGetGroups = ({ dataSourceId, sourceVersionId }) => {
 export const useRefreshOrgUnit = () => {
     const queryClient = useQueryClient();
     return data => queryClient.setQueryData(['forms', data.id], data);
-};
-
-export const useGetOrgUnitTypes = () => {
-    return useQuery(['orgUnitTypes'], getOrgUnitTypes, {
-        select: data => data.orgUnitTypes,
-    });
 };

@@ -83,8 +83,6 @@ type Props = {
 };
 
 // TODO:
-// - delete old index, filters, map
-// - remove requests
 // - remove messages
 
 const baseUrl = baseUrls.orgUnits;

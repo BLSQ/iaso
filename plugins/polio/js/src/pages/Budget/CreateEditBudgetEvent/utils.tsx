@@ -28,12 +28,11 @@ export const useRenderTrigger = (
     const classes = useButtonStyles();
     return useCallback(
         ({ openDialog }) => {
-            if (type === 'edit') {
+            if (type === 'edit' || type === 'retry') {
                 return (
                     <IconButton
                         color={color}
                         onClick={openDialog}
-                        icon="edit"
                         overrideIcon={AutorenewIcon}
                         tooltipMessage={MESSAGES.resendFiles}
                     />

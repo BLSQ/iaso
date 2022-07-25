@@ -16,7 +16,7 @@ export const useGetTeamsDropDown = (): UseQueryResult<any, Error> => {
     // @ts-ignore
     return useSnackQuery(['teams'], () => getTeams(), undefined, {
         // staleTime required to avoid infinite loop
-        staleTime: 20000,
+        staleTime: Infinity,
         select: data => {
             if (!data) return [];
             return data.map(team => {
@@ -34,7 +34,7 @@ export const useGetApprovalTeams = (): UseQueryResult<any, Error> => {
     // @ts-ignore
     return useSnackQuery(queryKey, () => getTeams(), undefined, {
         // staleTime required to avoid infinite loop
-        staleTime: 20000,
+        staleTime: Infinity,
         select: data => {
             if (!data) return [];
             return data.filter(team =>

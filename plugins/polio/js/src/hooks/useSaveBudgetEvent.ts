@@ -1,5 +1,5 @@
 /* eslint-disable camelcase */
-import { UseMutationResult } from 'react-query';
+import { UseMutationResult, useQueryClient } from 'react-query';
 import {
     patchRequest,
     postRequest,
@@ -76,12 +76,20 @@ export const useUploadBudgetFiles = () =>
         showSucessSnackBar: false,
     });
 
-export const useFinalizeBudgetEvent = () =>
-    useSnackMutation({
+export const useFinalizeBudgetEvent = () => {
+    const queryClient = useQueryClient();
+    return useSnackMutation({
         mutationFn: putBudgetFinalisation,
         snackSuccessMessage: MESSAGES.budgetEventFinalized,
         invalidateQueryKey: ['budget-details'],
+        // Since staleTime for ['teams'] is Infinity, we invalidate the cache when an event has been created to refresh the teams list
+        options: {
+            onSettled: () => {
+                queryClient.invalidateQueries(['teams']);
+            },
+        },
     });
+};
 
 export const useSaveBudgetEvent = (
     type: 'create' | 'edit' | 'retry',

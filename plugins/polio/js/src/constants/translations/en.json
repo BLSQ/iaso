@@ -119,6 +119,7 @@
     "iaso.polio.label.add": "Add",
     "iaso.polio.label.addStep": "Add step",
     "iaso.polio.label.all": "All",
+    "iaso.polio.label.amount": "Amount",
     "iaso.polio.label.approve": "Approve",
     "iaso.polio.label.approveBudget": "Approve budget?",
     "iaso.polio.label.approveBudgetForCampaign": "Approve budget for campaign: {campaign}",

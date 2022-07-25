@@ -31,6 +31,7 @@ import { formatTargetTeams, formatUserName } from '../utils';
 import { BudgetEvent } from '../../../constants/types';
 import { Optional } from '../../../../../../../hat/assets/js/apps/Iaso/types/utils';
 import { convertObjectToString } from '../../../utils';
+import { formatThousand } from '../../../../../../../hat/assets/js/apps/Iaso/utils';
 
 const baseUrl = BUDGET_DETAILS;
 
@@ -226,6 +227,24 @@ export const useBudgetDetailsColumns = ({ profiles, data }): Column[] => {
                             {teamsToDisplay}
                         </span>
                     );
+                },
+            },
+            {
+                Header: `${formatMessage(MESSAGES.amount)} (USD)`,
+                id: 'amount',
+                accessor: 'amount',
+                sortable: false,
+                Cell: settings => {
+                    const { amount } = settings.row.original;
+
+                    if (amount) {
+                        return (
+                            <span className={getRowColor(settings)}>
+                                {formatThousand(parseInt(amount, 10))}
+                            </span>
+                        );
+                    }
+                    return <span className={getRowColor(settings)}>--</span>;
                 },
             },
             {

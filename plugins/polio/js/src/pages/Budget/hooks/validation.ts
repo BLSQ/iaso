@@ -1,7 +1,7 @@
 import { useMemo } from 'react';
 // @ts-ignore
 import { useSafeIntl } from 'bluesquare-components';
-import { array, mixed, object, string, bool } from 'yup';
+import { array, mixed, object, string, bool, number } from 'yup';
 import MESSAGES from '../../../constants/messages';
 import {
     makeRegexValidator,
@@ -34,6 +34,7 @@ export const useBudgetEvenValidation = () => {
                 .nullable()
                 .required(fieldRequired)
                 .typeError(typeError),
+            amount: number().nullable().typeError(typeError),
         });
     }, [fieldRequired, typeError, urlFormat]);
 };

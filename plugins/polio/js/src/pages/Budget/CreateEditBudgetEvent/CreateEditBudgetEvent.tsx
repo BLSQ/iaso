@@ -71,6 +71,7 @@ export const CreateEditBudgetEvent: FunctionComponent<Props> = ({
             files: budgetEvent?.files ?? null,
             links: budgetEvent?.links ?? null,
             internal: budgetEvent?.internal ?? false,
+            amount: budgetEvent?.amount ?? null,
         },
         enableReinitialize: true,
         validateOnBlur: true,
@@ -234,6 +235,15 @@ export const CreateEditBudgetEvent: FunctionComponent<Props> = ({
                             value={values.comment}
                             errors={getErrors('comment')}
                             label={MESSAGES.notes}
+                        />
+                        <InputComponent
+                            type="number"
+                            keyValue="amount"
+                            disabled={currentType !== 'create'}
+                            onChange={onChange}
+                            value={values.amount}
+                            errors={getErrors('amount')}
+                            label={MESSAGES.amount}
                         />
                     </>
                 )}

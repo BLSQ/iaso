@@ -42,6 +42,7 @@ import { Selection } from './types/selection';
 
 // UTILS
 import { decodeSearch } from './utils';
+import { convertObjectToString } from '../../utils';
 import { useCurrentUser } from '../../utils/usersUtils';
 import { redirectTo } from '../../routing/actions';
 // UTILS
@@ -92,6 +93,7 @@ export const OrgUnits: FunctionComponent<Props> = ({ params }) => {
     // HOOKS
 
     // STATE
+    const [resetPageToOne, setResetPageToOne] = useState<string>('');
     const [triggerSearch, setTriggerSearch] = useState<boolean>(false);
     const [filtersUpdated, setFiltersUpdated] = useState<boolean>(true);
     const [multiActionPopupOpen, setMultiActionPopupOpen] =
@@ -184,6 +186,7 @@ export const OrgUnits: FunctionComponent<Props> = ({ params }) => {
             if (newParams.searchActive !== 'true') {
                 tempParams.searchActive = true;
             }
+            setResetPageToOne(convertObjectToString(tempParams));
             setTriggerSearch(true);
             dispatch(redirectTo(baseUrl, tempParams));
         },
@@ -322,6 +325,7 @@ export const OrgUnits: FunctionComponent<Props> = ({ params }) => {
                         {tab === 'list' && (
                             <Box mt={-4}>
                                 <TableWithDeepLink
+                                    resetPageToOne={resetPageToOne}
                                     data={orgUnitsData?.orgunits || []}
                                     count={orgUnitsData?.count}
                                     pages={orgUnitsData?.pages}

@@ -12,7 +12,7 @@ export const testPagination = ({
     },
     selector = 'body',
 }) =>
-    describe.only('pagination', () => {
+    describe('pagination', () => {
         beforeEach(() => {
             cy.intercept(
                 {

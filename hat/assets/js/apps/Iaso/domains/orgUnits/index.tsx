@@ -82,9 +82,6 @@ type Props = {
     params: OrgUnitParams;
 };
 
-// TODO:
-// - remove messages
-
 const baseUrl = baseUrls.orgUnits;
 export const OrgUnits: FunctionComponent<Props> = ({ params }) => {
     // HOOKS
@@ -96,7 +93,7 @@ export const OrgUnits: FunctionComponent<Props> = ({ params }) => {
 
     // STATE
     const [triggerSearch, setTriggerSearch] = useState<boolean>(false);
-    const [filtersUpdated, setFiltersUpdated] = useState<boolean>(false);
+    const [filtersUpdated, setFiltersUpdated] = useState<boolean>(true);
     const [multiActionPopupOpen, setMultiActionPopupOpen] =
         useState<boolean>(false);
     const [tab, setTab] = useState<string>(params.tab ?? 'list');

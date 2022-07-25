@@ -168,7 +168,6 @@ export const useBudgetDetailsColumns = ({ profiles, data }): Column[] => {
                     );
                 },
             },
-
             {
                 Header: formatMessage(MESSAGES.author),
                 id: 'author',

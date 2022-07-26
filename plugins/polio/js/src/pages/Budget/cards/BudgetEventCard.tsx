@@ -43,10 +43,10 @@ import { LockIcon } from './LockIcon';
 import { BudgetEvent } from '../../../constants/types';
 import {
     findAuthorTeam,
-    formatActionMessage,
     formatComment,
     getProfileFromId,
     shouldOpenModal,
+    useActionMessage,
 } from './utils';
 
 type Props = {
@@ -82,8 +82,7 @@ export const BudgetEventCard: FunctionComponent<Props> = ({
     const { mutateAsync: deleteBudgetEvent } = useDeleteBudgetEvent();
     const { mutateAsync: restoreBudgetEvent } = useRestoreBudgetEvent();
 
-    const actionMessage = formatActionMessage(
-        formatMessage,
+    const actionMessage = useActionMessage(
         eventComment,
         budgetEventFiles?.length,
         eventLinks,

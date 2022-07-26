@@ -1,10 +1,12 @@
+// @ts-ignore
+import { useSafeIntl } from 'bluesquare-components';
 import {
     Nullable,
     Optional,
 } from '../../../../../../../hat/assets/js/apps/Iaso/types/utils';
 import { Profile } from '../../../../../../../hat/assets/js/apps/Iaso/utils/usersUtils';
 import MESSAGES from '../../../constants/messages';
-import { BudgetEventType, IntlFormatMessage } from '../../../constants/types';
+import { BudgetEventType } from '../../../constants/types';
 
 export const COMMENT_CHAR_LIMIT = 50;
 export const getProfileFromId = (
@@ -23,12 +25,12 @@ export const formatComment = (comment: Nullable<string>): Nullable<string> => {
     return comment;
 };
 
-export const formatActionMessage = (
-    formatMessage: IntlFormatMessage,
+export const useActionMessage = (
     comment = '',
     files = 0,
     links = '',
 ): Nullable<string> => {
+    const { formatMessage } = useSafeIntl();
     const fileMsg = `${files} ${formatMessage(MESSAGES.files)}`;
     const commentsMessage = formatMessage(MESSAGES.seeFullComment);
     const linkMessage = formatMessage(MESSAGES.links);

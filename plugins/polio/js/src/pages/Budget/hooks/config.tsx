@@ -191,7 +191,7 @@ export const useBudgetDetailsColumns = ({ profiles, data }): Column[] => {
                                       !team.name
                                           .toLowerCase()
                                           .includes('approval'),
-                              );
+                              ) ?? authorTeams[0];
                     return (
                         <>
                             <p

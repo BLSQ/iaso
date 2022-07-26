@@ -54,7 +54,7 @@ export const BudgetValidationPopUp: FunctionComponent<Props> = ({
     campaignId,
     params,
 }) => {
-    const classes: any = useStyles();
+    const classes: Record<string, string> = useStyles();
     const { action: actionStyle } = useDialogActionStyles();
     const { formatMessage } = useSafeIntl();
     const [open, setOpen] = useState(params?.action === 'confirmApproval');

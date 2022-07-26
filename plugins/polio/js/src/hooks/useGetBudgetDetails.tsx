@@ -25,23 +25,8 @@ const getBudgetDetails = async (params?: Params) => {
 };
 
 export const useGetBudgetDetails = (userId: number, params?: Params) => {
-    return useSnackQuery(
-        ['budget-details', userId, params],
-        () => getBudgetDetails(params),
-        undefined,
-        {
-            select: data => {
-                if (!data) return data;
-                const filteredResults = data.results.filter(budgetEvent => {
-                    return (
-                        budgetEvent?.author === userId ||
-                        budgetEvent?.is_finalized
-                    );
-                });
-
-                return { ...data, results: filteredResults };
-            },
-        },
+    return useSnackQuery(['budget-details', userId, params], () =>
+        getBudgetDetails(params),
     );
 };
 

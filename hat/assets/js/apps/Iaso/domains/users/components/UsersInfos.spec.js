@@ -20,6 +20,7 @@ const currentUser = {
     org_units: [],
     language: { value: 'fr', errors: [] },
     dhis2_id: '1',
+    home_page: '/settings/users',
 };
 
 const renderComponent = initialData => {
@@ -52,7 +53,7 @@ describe('UsersInfos', () => {
                 target: { value: 'en' },
             });
         }
-        expect(setFieldValue.getCalls().length).to.equal(6);
+        expect(setFieldValue.getCalls().length).to.equal(7);
     });
     it('triggerd callback when changing language', () => {
         const select = component.find(Select).at(0);

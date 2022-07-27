@@ -906,13 +906,28 @@ class Instance(models.Model):
                 form_versions = self.form.form_versions.filter(version_id=form_version_id)
                 form_version = form_versions.first()
                 if form_version:
-
-                    self.json = flat_parse_xml_soup(soup, [rg["name"] for rg in form_version.repeat_groups()])
+                    questions_by_path = form_version.questions_by_path()
+                    allowed_paths = set(questions_by_path.keys())
+                    allowed_paths.add("formhub")
+                    allowed_paths.add("formhub/uuid")
+                    allowed_paths.add("meta")
+                    allowed_paths.add("meta/instanceID")
+                    allowed_paths.add("meta/editUserID")
+                    allowed_paths.add("meta/deprecatedID ")
+                    flat_results = flat_parse_xml_soup(
+                        soup, [rg["name"] for rg in form_version.repeat_groups()], allowed_paths
+                    )
+                    if len(flat_results["skipped_paths"]) > 0:
+                        print(
+                            f"skipped {len(flat_results['skipped_paths'])} paths while parsing instance {self.id}",
+                            flat_results,
+                        )
+                    self.json = flat_results["flat_json"]
                 else:
                     # warn old form, but keep it working ? or throw error
-                    self.json = flat_parse_xml_soup(soup, [])
+                    self.json = flat_parse_xml_soup(soup, [], None)["flat_json"]
             else:
-                self.json = flat_parse_xml_soup(soup, [])
+                self.json = flat_parse_xml_soup(soup, [], None)["flat_json"]
             file_content = self.json
             self.save()
         else:
@@ -1094,6 +1109,7 @@ class Profile(models.Model):
     org_units = models.ManyToManyField("OrgUnit", blank=True, related_name="iaso_profile")
     language = models.CharField(max_length=512, null=True, blank=True)
     dhis2_id = models.CharField(max_length=128, null=True, blank=True, help_text="Dhis2 user ID for SSO Auth")
+    home_page = models.CharField(max_length=512, null=True, blank=True)
 
     class Meta:
         constraints = [models.UniqueConstraint(fields=["dhis2_id", "account"], name="dhis2_id_constraint")]
@@ -1117,6 +1133,7 @@ class Profile(models.Model):
             "language": self.language,
             "user_id": self.user.id,
             "dhis2_id": self.dhis2_id,
+            "home_page": self.home_page,
         }
 
     def as_short_dict(self):

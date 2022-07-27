@@ -49,7 +49,7 @@ const OrgUnitForm = ({
         saveOrgUnit(
             newOrgUnit,
             savedOrgUnit => {
-                setOrgUnitModified(false);
+                setOrgUnitModified(true);
                 setFormState(initialFormState(savedOrgUnit));
             },
             error => {
@@ -112,6 +112,7 @@ const OrgUnitForm = ({
         }
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [orgUnit.id]);
+
     return (
         <>
             <OrgUnitInfos

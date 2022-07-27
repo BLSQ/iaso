@@ -12,9 +12,10 @@
       <script>
         window.STATIC_URL = "{{ STATIC_URL }}";
         const PLUGINS_ENABLED = {{ PLUGINS_ENABLED|safe }};
+        const USER_HOME_PAGE = "{{ USER_HOME_PAGE |default:"" }}";
         // From context processor
         const THEME = {{ theme|safe }};
-        window.iasoApp(document.getElementById("app"), PLUGINS_ENABLED, THEME);
+        window.iasoApp(document.getElementById("app"), PLUGINS_ENABLED, THEME, USER_HOME_PAGE);
       </script>
     {% endblock %}
   </section>

@@ -1161,6 +1161,10 @@ const MESSAGES = defineMessages({
         defaultMessage: 'Comments',
         id: 'iaso.polio.label.comments',
     },
+    comment: {
+        defaultMessage: 'Comment',
+        id: 'iaso.polio.label.comment',
+    },
     validation_ongoing: {
         defaultMessage: 'Approval ongoing',
         id: 'iaso.polio.label.approval_ongoing',
@@ -1285,6 +1289,74 @@ const MESSAGES = defineMessages({
     internal: {
         id: 'iaso.polio.label.internal',
         defaultMessage: 'Internal',
+    },
+    approve: {
+        id: 'iaso.polio.label.approve',
+        defaultMessage: 'Approve',
+    },
+    approveBudgetForCampaign: {
+        id: 'iaso.polio.label.approveBudgetForCampaign',
+        defaultMessage: 'Approve budget for campaign: {campaign}',
+    },
+    approveBudget: {
+        id: 'iaso.polio.label.approveBudget',
+        defaultMessage: 'Approve budget?',
+    },
+    rejectBudget: {
+        id: 'iaso.polio.label.rejectBudget',
+        defaultMessage: 'Reject budget?',
+    },
+    sendComment: {
+        id: 'iaso.polio.label.sendComment',
+        defaultMessage: 'Send comment',
+    },
+    rejectBudgetForCampaign: {
+        id: 'iaso.polio.label.rejectBudgetForCampaign',
+        defaultMessage: 'Reject budget for campaign: {campaign}',
+    },
+    Community_leader: {
+        id: 'iaso.polio.label.Community_leader',
+        defaultMessage: 'Community leader',
+    },
+    Neighbour: {
+        id: 'iaso.polio.label.Neighbour',
+        defaultMessage: 'Neighbour',
+    },
+    Teachers_Student: {
+        id: 'iaso.polio.label.Teachers_Student',
+        defaultMessage: 'Teachers',
+    },
+    Town_crier: {
+        id: 'iaso.polio.label.Town_crier',
+        defaultMessage: 'Town crier',
+    },
+    by: {
+        id: 'iaso.polio.label.by',
+        defaultMessage: 'by {author}',
+    },
+    onDate: {
+        id: 'iaso.polio.label.onDate',
+        defaultMessage: 'on {date}',
+    },
+    seeFullComment: {
+        id: 'iaso.polio.label.seeFullComment',
+        defaultMessage: 'See full comment',
+    },
+    files: {
+        id: 'iaso.polio.label.files',
+        defaultMessage: 'files',
+    },
+    see: {
+        id: 'iaso.polio.label.see',
+        defaultMessage: 'See',
+    },
+    add: {
+        id: 'iaso.polio.label.add',
+        defaultMessage: 'Add',
+    },
+    cannotDisplayMap: {
+        id: 'iaso.polio.label.cannotDisplayMap',
+        defaultMessage: 'Cannot display map',
     },
 });
 

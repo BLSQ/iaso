@@ -250,6 +250,9 @@ class FormVersion(models.Model):
 
         return repeats
 
+    def questions_by_path(self):
+        return parsing.to_questions_by_path(self.get_or_save_form_descriptor())
+
     def as_dict(self):
         return {
             "id": self.id,

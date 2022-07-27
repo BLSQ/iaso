@@ -627,6 +627,10 @@ export const assignmentsPath = {
             isRequired: false,
             key: 'tab',
         },
+        {
+            isRequired: false,
+            key: 'order',
+        },
     ],
 };
 export const teamsPath = {

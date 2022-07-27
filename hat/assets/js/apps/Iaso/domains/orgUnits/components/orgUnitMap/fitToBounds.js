@@ -12,6 +12,7 @@ const fitToBounds = ({
     locationGroup,
     catchmentGroup,
     map,
+    ancestorWithGeoJson,
 }) => {
     if (map) {
         const mappedOrgUnitTypesSelected = mapOrgUnitByLocation(
@@ -24,8 +25,8 @@ const fitToBounds = ({
         const groups = [];
         const locations = [];
         let shapesBounds;
-        if (orgUnit.ancestor_geo_json) {
-            const tempBounds = L.geoJSON(orgUnit.ancestor_geo_json);
+        if (ancestorWithGeoJson) {
+            const tempBounds = L.geoJSON(ancestorWithGeoJson.geo_json);
             shapesBounds = tempBounds.getBounds();
         }
         mappedOrgUnitTypesSelected.forEach(ot => {

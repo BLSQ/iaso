@@ -38,7 +38,6 @@ import {
 } from '../domains/orgUnits/orgUnitTypes/reducer';
 import { localeMiddleware } from '../domains/app/middleware';
 
-// TODO pass baseUrl without hardcoding it
 // eslint-disable-next-line react-hooks/rules-of-hooks
 let storeHistory = useRouterHistory(createHistory)({
     basename: '/dashboard',
@@ -76,7 +75,7 @@ const store = createStore(
     },
     [routerMiddleware(storeHistory), thunk, localeMiddleware],
 );
-// TODO: see if mutation necessary. If not don't reassign history and initialize history const here
+
 storeHistory = syncHistoryWithStore(storeHistory, store);
 
 const history = storeHistory;

@@ -1,7 +1,4 @@
 import React, { useMemo } from 'react';
-import { Tooltip, Box } from '@material-ui/core';
-import CheckCircleIcon from '@material-ui/icons/CheckCircle';
-import CancelIcon from '@material-ui/icons/Cancel';
 
 import {
     // @ts-ignore
@@ -10,16 +7,27 @@ import {
 
 import { Column } from '../../../types/table';
 import { IntlFormatMessage } from '../../../types/intl';
-import { DropdownTeamsOptions } from '../types/team';
+import { SubTeam, User } from '../types/team';
 
-import { AlreadyAssigned } from '../components/AlreadyAssigned';
+import { LinkToOrgUnit } from '../components/LinkToOrgUnit';
+import { CheckBoxCell } from '../components/CheckBoxCell';
 
 import MESSAGES from '../messages';
 
 type Props = {
-    teams: DropdownTeamsOptions[];
+    orgUnitsToUpdate: Array<number>;
+    // eslint-disable-next-line no-unused-vars
+    setOrgUnitsToUpdate: (ids: Array<number>) => void;
+    selectedItem: SubTeam | User | undefined;
+    mode: 'UNASSIGN' | 'ASSIGN';
 };
-export const useColumns = ({ teams }: Props): Column[] => {
+
+export const useColumns = ({
+    orgUnitsToUpdate,
+    setOrgUnitsToUpdate,
+    selectedItem,
+    mode,
+}: Props): Column[] => {
     const { formatMessage }: { formatMessage: IntlFormatMessage } =
         useSafeIntl();
     return useMemo(() => {
@@ -35,39 +43,33 @@ export const useColumns = ({ teams }: Props): Column[] => {
                 id: 'name',
                 accessor: 'name',
                 sortable: false,
+                Cell: settings => {
+                    return <LinkToOrgUnit orgUnit={settings.row.original} />;
+                },
             },
             {
-                Header: formatMessage(MESSAGES.status),
-                id: 'status',
-                accessor: 'status',
+                Header: formatMessage(MESSAGES.assignment),
+                id: 'assignment',
+                accessor: 'assignment',
                 sortable: false,
                 Cell: settings => {
-                    const { otherAssignation } = settings.row.original;
                     return (
-                        <Box
-                            display="flex"
-                            alignItems="center"
-                            justifyContent="center"
-                        >
-                            {otherAssignation?.assignedTeam ||
-                            otherAssignation?.assignedUser ? (
-                                <Tooltip
-                                    title={
-                                        <AlreadyAssigned
-                                            item={settings.row.original}
-                                            teams={teams}
-                                        />
-                                    }
-                                >
-                                    <CancelIcon color="error" />
-                                </Tooltip>
-                            ) : (
-                                <CheckCircleIcon color="primary" />
-                            )}
-                        </Box>
+                        <CheckBoxCell
+                            orgUnit={settings.row.original}
+                            orgUnitsToUpdate={orgUnitsToUpdate}
+                            mode={mode}
+                            selectedItem={selectedItem}
+                            setOrgUnitsToUpdate={setOrgUnitsToUpdate}
+                        />
                     );
                 },
             },
         ];
-    }, [formatMessage, teams]);
+    }, [
+        formatMessage,
+        orgUnitsToUpdate,
+        setOrgUnitsToUpdate,
+        mode,
+        selectedItem,
+    ]);
 };

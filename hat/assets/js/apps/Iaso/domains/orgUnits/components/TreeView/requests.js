@@ -1,4 +1,4 @@
-import { useSnackQuery } from '../../../../libs/apiHooks';
+import { useSnackQuery } from '../../../../libs/apiHooks.ts';
 import { getRequest } from '../../../../libs/Api';
 import { dispatch } from '../../../../redux/store';
 import { enqueueSnackbar } from '../../../../redux/snackBarsReducer';

@@ -1,0 +1,81 @@
+
+<!DOCTYPE HTML>
+<html lang={{LANGUAGE_CODE}} xmlns="http://www.w3.org/1999/xhtml" xmlns:o="urn:schemas-microsoft-com:office:office">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width,initial-scale=1">
+        <meta name="x-apple-disable-message-reformatting">
+        <meta http-equiv="Content-Type" content="text/html charset=UTF-8" />
+        <title></title>
+        <!--[if mso]>
+        <noscript>
+            <xml>
+                <o:OfficeDocumentSettings>
+                    <o:PixelsPerInch>96</o:PixelsPerInch>
+                </o:OfficeDocumentSettings>
+            </xml>
+        </noscript>
+        <![endif]-->
+        <style>
+            table, td, div, h1, p {font-family: Arial, sans-serif;}
+            {% comment %} table, td {border:2px solid #000000 !important;} {% endcomment %}
+        </style>
+    </head>
+    <body style="margin:0;padding:0;width:100%;max-width:800px">
+        <table role="presentation" style="width:100%;max-width:600px;border-collapse:collapse;border:0;border-spacing:0;background:#ffffff;">
+            <tr>
+                <td style="height:20px;padding:0;font-size:0;line-height:0;">&nbsp;</td>
+            </tr>
+            <tr>
+                <td align="left" style="padding:5px;">
+                    New {{event_type}} created by {{first_name}} {{last_name}} for {{campaign}}.
+                </td>
+            </tr>
+            {%if comment%}
+            <tr>
+                <td style="height:20px;padding:5px;font-size:0;line-height:0;">&nbsp;</td>
+            </tr>
+            <tr>
+                <td align="left" style="padding:0px 5px;">
+                Comments:
+                </td>
+            </tr>
+            <tr>
+                <td align="left" style="padding:0px 5px;">
+                {{comment}}
+                </td>
+            </tr>
+        {%endif%}
+            <tr>
+                <td style="height:20px;padding:5px;font-size:0;line-height:0;">&nbsp;</td>
+            </tr>
+            <tr>
+                <td align="left" style="padding:5px;">
+                    You can access the history of this budget <a href={{link}}>here</a>.
+                </td>
+            </tr>
+         
+            <tr>
+                <td style="height:20px;padding:0;font-size:0;line-height:0;">&nbsp;</td>
+            </tr>
+            <tr>
+                <td style="height:20px;padding:0;font-size:0;line-height:0;">&nbsp;</td>
+            </tr>
+            <table role="presentation" style="width:100%;max-width:600px;">
+                <tr>
+                    <td style="height:20px;padding:0;font-size:0;line-height:0;">&nbsp;</td>
+                </tr>
+                <tr>
+                    <td align="left" style="padding:5px;">
+                       -----------------------------------------------
+                    </td>
+                </tr>
+                <tr>
+                    <td align="left" style="padding:5px;">
+                        This is an automated email from <a href="//{{sender}}">{{sender}}</a>
+                    </td>
+                </tr>
+            </table>
+        </table>
+    </body>
+</html>

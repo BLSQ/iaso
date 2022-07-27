@@ -1,5 +1,6 @@
 /* eslint-disable camelcase */
 import React, { FunctionComponent } from 'react';
+// @ts-ignore
 import { useSafeIntl } from 'bluesquare-components';
 
 import MESSAGES from '../../constants/messages';
@@ -28,7 +29,7 @@ export const CaregiverInfoSource: FunctionComponent<Props> = ({ district }) => {
                 .map(sourceKey => {
                     return (
                         <p key={sourceKey}>
-                            {`${formatMessage(MESSAGES[sourceKey])}
+                            {`${formatMessage(MESSAGES[sourceKey]) ?? sourceKey}
                         : ${floatToPercentString(
                             district.care_giver_stats.ratio,
                         )}

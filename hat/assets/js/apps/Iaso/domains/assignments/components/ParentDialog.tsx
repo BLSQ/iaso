@@ -19,23 +19,19 @@ import React, {
     useState,
     useEffect,
     useCallback,
+    useMemo,
 } from 'react';
 
-import { OrgUnit } from '../../orgUnits/types/orgUnit';
-import {
-    OrgUnitShape,
-    Locations,
-    OrgUnitMarker,
-    BaseLocation,
-} from '../types/locations';
+import { OrgUnitShape } from '../types/locations';
+import { ChildrenOrgUnits } from '../types/orgUnit';
 import { SubTeam, User, DropdownTeamsOptions, Team } from '../types/team';
-import { AssignmentsApi, SaveAssignmentQuery } from '../types/assigment';
+import { SaveAssignmentQuery } from '../types/assigment';
 import { Profile } from '../../../utils/usersUtils';
 import { Planning } from '../types/planning';
 
 import { useColumns } from '../configs/ParentDialogColumns';
 
-import { getTeamName, getSaveParams } from '../utils';
+import { getTeamUserName, getMultiSaveParams } from '../utils';
 
 import MESSAGES from '../messages';
 
@@ -43,16 +39,15 @@ type Props = {
     currentTeam: Team | undefined;
     teams: DropdownTeamsOptions[];
     profiles: Profile[];
-    childrenOrgunits: OrgUnit[];
-    locations: Locations | undefined;
+    childrenOrgunits: ChildrenOrgUnits | undefined;
     parentSelected: OrgUnitShape | undefined;
     // eslint-disable-next-line no-unused-vars
     setParentSelected: (orgUnit: OrgUnitShape | undefined) => void;
-    allAssignments: AssignmentsApi;
     selectedItem: SubTeam | User | undefined;
+    planning: Planning | undefined;
+    isFetchingChildrenOrgunits: boolean;
     // eslint-disable-next-line no-unused-vars
     saveMultiAssignments: (params: SaveAssignmentQuery) => void;
-    planning: Planning | undefined;
 };
 const useStyles = makeStyles(theme => ({
     ...commonStyles(theme),
@@ -68,92 +63,67 @@ const useStyles = makeStyles(theme => ({
 export const ParentDialog: FunctionComponent<Props> = ({
     childrenOrgunits,
     parentSelected,
-    setParentSelected,
-    allAssignments,
     selectedItem,
-    locations,
     currentTeam,
     teams,
     profiles,
-    saveMultiAssignments,
     planning,
+    saveMultiAssignments,
+    setParentSelected,
+    isFetchingChildrenOrgunits,
 }) => {
     const { formatMessage } = useSafeIntl();
-    const columns = useColumns({ teams });
+    const [orgUnitsToUpdate, setOrgUnitsToUpdate] = useState<Array<number>>([]);
+
+    const mode: 'UNASSIGN' | 'ASSIGN' = useMemo(
+        () =>
+            childrenOrgunits?.orgUnitsToUpdate.length === 0
+                ? 'UNASSIGN'
+                : 'ASSIGN',
+        [childrenOrgunits?.orgUnitsToUpdate],
+    );
+
+    const columns = useColumns({
+        orgUnitsToUpdate,
+        setOrgUnitsToUpdate,
+        selectedItem,
+        mode,
+    });
     const classes: Record<string, string> = useStyles();
-    const [open, setOpen] = useState<boolean>(false);
-    const [mappedOrgUnits, setMappedOrgUnits] = useState<
-        Array<OrgUnitShape | OrgUnitMarker | BaseLocation>
-    >([]);
+    const open = Boolean(parentSelected);
 
     useEffect(() => {
-        if (childrenOrgunits.length > 0 && parentSelected && locations) {
-            const mapping: Array<OrgUnitShape | OrgUnitMarker | BaseLocation> =
-                [];
-            childrenOrgunits.forEach((orgUnit: OrgUnit) => {
-                const shape: OrgUnitShape | undefined =
-                    locations.shapes.all.find(
-                        location => location.id === orgUnit.id,
-                    );
-                const marker: OrgUnitMarker | undefined =
-                    locations.markers.all.find(
-                        location => location.id === orgUnit.id,
-                    );
-                if (shape) {
-                    mapping.push(shape);
-                } else if (marker) {
-                    mapping.push(marker);
-                } else {
-                    mapping.push({
-                        id: orgUnit.id,
-                        name: orgUnit.name,
-                        orgUnitTypeId: orgUnit.org_unit_type_id,
-                        otherAssignation: undefined,
-                    });
-                }
-            });
-            setMappedOrgUnits(mapping);
-        }
-        if (!open && childrenOrgunits.length > 0 && parentSelected) {
-            setOpen(true);
-        } else if (open) {
-            setOpen(false);
-        }
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [childrenOrgunits, parentSelected, locations]);
-
-    const assignableOrgUnits = mappedOrgUnits.filter(
-        orgUnit =>
-            !orgUnit.otherAssignation ||
-            (orgUnit.otherAssignation &&
-                !orgUnit.otherAssignation?.assignedTeam &&
-                !orgUnit.otherAssignation?.assignedUser),
-    );
-    const handleSave = async () => {
-        // TODO: this should handle with only one call to api
-        setParentSelected(undefined);
-        for (let i = 0; i < assignableOrgUnits.length; i += 1) {
-            const orgUnit = assignableOrgUnits[i];
-            if (selectedItem && planning) {
-                // eslint-disable-next-line no-await-in-loop
-                await saveMultiAssignments(
-                    getSaveParams({
-                        allAssignments,
-                        selectedOrgUnit: orgUnit,
-                        teams,
-                        profiles,
-                        currentType: currentTeam?.type,
-                        selectedItem,
-                        planning,
-                    }),
+        if (childrenOrgunits) {
+            if (mode === 'ASSIGN') {
+                setOrgUnitsToUpdate(childrenOrgunits.orgUnitsToUpdate);
+            }
+            if (mode === 'UNASSIGN') {
+                setOrgUnitsToUpdate(
+                    childrenOrgunits.orgUnits.map(orgUnit => orgUnit.id),
                 );
             }
+        }
+    }, [childrenOrgunits, mode]);
+
+    const handleSave = async (): Promise<void> => {
+        setParentSelected(undefined);
+        if (selectedItem && planning && childrenOrgunits) {
+            await saveMultiAssignments(
+                getMultiSaveParams({
+                    currentType: currentTeam?.type,
+                    selectedItem,
+                    planning,
+                    orgUnitsToUpdate,
+                    mode,
+                }),
+            );
         }
     };
 
     const closeDialog = useCallback(() => {
-        setOpen(false);
-    }, [setOpen]);
+        setParentSelected(undefined);
+    }, [setParentSelected]);
+
     if (!open) return null;
 
     return (
@@ -164,7 +134,7 @@ export const ParentDialog: FunctionComponent<Props> = ({
             classes={{
                 paper: classes.paper,
             }}
-            onClose={(event, reason) => {
+            onClose={(_, reason) => {
                 if (reason === 'backdropClick') {
                     closeDialog();
                 }
@@ -172,31 +142,47 @@ export const ParentDialog: FunctionComponent<Props> = ({
             scroll="body"
             data-test=""
         >
-            <DialogTitle>
-                {parentSelected &&
-                    formatMessage(MESSAGES.parentDialogTitle, {
-                        assignmentCount: assignableOrgUnits.length,
-                        parentOrgUnitName: getTeamName(
-                            selectedItem,
-                            currentTeam,
-                            profiles,
-                            teams,
-                        ),
-                    })}
-            </DialogTitle>
+            {childrenOrgunits && (
+                <>
+                    <DialogTitle>
+                        {mode === 'ASSIGN' &&
+                            formatMessage(MESSAGES.parentDialogTitle, {
+                                assignmentCount: orgUnitsToUpdate.length,
+                                parentOrgUnitName: getTeamUserName(
+                                    selectedItem,
+                                    currentTeam,
+                                    profiles,
+                                    teams,
+                                ),
+                            })}
+                        {mode === 'UNASSIGN' &&
+                            formatMessage(MESSAGES.parentDialogTitleUnsassign, {
+                                assignmentCount: orgUnitsToUpdate.length,
+                                parentOrgUnitName: getTeamUserName(
+                                    selectedItem,
+                                    currentTeam,
+                                    profiles,
+                                    teams,
+                                ),
+                            })}
+                    </DialogTitle>
+                </>
+            )}
             <DialogContent className={classes.content}>
                 <Table
                     elevation={0}
-                    data={mappedOrgUnits}
+                    data={childrenOrgunits?.orgUnits || []}
                     showPagination={false}
                     defaultSorted={[{ id: 'name', desc: false }]}
                     countOnTop={false}
                     marginTop={false}
                     marginBottom={false}
                     columns={columns}
-                    count={mappedOrgUnits.length}
+                    count={childrenOrgunits?.orgUnits.length || 0}
                     extraProps={{
                         childrenOrgunits,
+                        orgUnitsToUpdate,
+                        loading: isFetchingChildrenOrgunits,
                     }}
                 />
             </DialogContent>
@@ -212,6 +198,7 @@ export const ParentDialog: FunctionComponent<Props> = ({
                     onClick={() => handleSave()}
                     color="primary"
                     data-test="save-button"
+                    disabled={orgUnitsToUpdate.length === 0}
                 >
                     {formatMessage(MESSAGES.confirm)}
                 </Button>

@@ -25,25 +25,11 @@ import { MapComponent } from '../components/MapComponent/MapComponent';
 import { useGetGeoJson } from '../hooks/useGetGeoJson';
 import { useStyles } from '../styles/theme';
 import MESSAGES from '../constants/messages';
-
-const selectedPathOptions = {
-    color: 'lime',
-    weight: '1',
-    opacity: '1',
-    zIndex: '1',
-};
-const unselectedPathOptions = {
-    color: 'gray',
-    weight: '1',
-    opacity: '1',
-    zIndex: '1',
-};
-const initialDistrict = {
-    color: '#FF695C',
-    weight: '1',
-    opacity: '1',
-    zIndex: '1',
-};
+import {
+    initialDistrict,
+    unselectedPathOptions,
+    selectedPathOptions,
+} from '../styles/constants';
 
 const separate = (array, referenceArray) => {
     const result = {

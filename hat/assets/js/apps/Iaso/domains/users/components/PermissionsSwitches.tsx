@@ -5,7 +5,7 @@ import {
     Typography,
     makeStyles,
 } from '@material-ui/core';
-
+// @ts-ignore
 import { useSafeIntl, LoadingSpinner } from 'bluesquare-components';
 
 import MESSAGES from '../messages';

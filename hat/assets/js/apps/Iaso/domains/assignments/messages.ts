@@ -37,6 +37,10 @@ const MESSAGES = defineMessages({
         defaultMessage: 'Assignments count',
         id: 'iaso.assignment.count',
     },
+    assignment: {
+        defaultMessage: 'Assignment',
+        id: 'iaso.assignment.label',
+    },
     color: {
         defaultMessage: 'Color',
         id: 'iaso.label.color',
@@ -46,8 +50,12 @@ const MESSAGES = defineMessages({
         id: 'iaso.label.selection',
     },
     alreadyAssignedTo: {
-        defaultMessage: 'already assigned to',
+        defaultMessage: 'Already assigned to',
         id: 'iaso.assignment.alreadyAssignedTo',
+    },
+    alreadyAssigned: {
+        defaultMessage: 'Already assigned',
+        id: 'iaso.assignment.alreadyAssigned',
     },
     inAnotherTeam: {
         defaultMessage: 'in another team',
@@ -56,6 +64,10 @@ const MESSAGES = defineMessages({
     parentDialogTitle: {
         defaultMessage: 'Assign {assignmentCount} to {parentOrgUnitName}',
         id: 'iaso.assignment.parentDialog.title',
+    },
+    parentDialogTitleUnsassign: {
+        defaultMessage: 'Unassign {assignmentCount} from {parentOrgUnitName}',
+        id: 'iaso.assignment.parentDialog.titleUnsassign',
     },
     confirm: {
         id: 'iaso.label.confirm',
@@ -68,6 +80,39 @@ const MESSAGES = defineMessages({
     status: {
         id: 'iaso.forms.status',
         defaultMessage: 'Status',
+    },
+    orgUnits: {
+        id: 'iaso.label.orgUnit',
+        defaultMessage: 'Org units',
+    },
+    orgUnitsParent: {
+        id: 'iaso.label.orgUnitParent',
+        defaultMessage: 'Parent {index}',
+    },
+    clickRowToUnAssign: {
+        id: 'iaso.assignment.clickRowToUnAssign',
+        defaultMessage: 'Click on the row to unassign',
+    },
+    details: {
+        defaultMessage: 'Details',
+        id: 'iaso.label.details',
+    },
+    orgUnitType: {
+        defaultMessage: 'Org unit type',
+        id: 'iaso.forms.org_unit_type_id',
+    },
+    parents: {
+        defaultMessage: 'Parents',
+        id: 'iaso.orgUnits.parents',
+    },
+    mapHelper: {
+        defaultMessage:
+            'Right click on a org unit to see details popup, normal click to close popup',
+        id: 'iaso.assignment.mapHelper',
+    },
+    apply: {
+        defaultMessage: 'Apply',
+        id: 'iaso.label.apply',
     },
 });
 

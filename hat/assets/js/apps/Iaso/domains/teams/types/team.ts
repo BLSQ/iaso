@@ -40,3 +40,9 @@ export type TeamParams = UrlParams &
             data: Array<Team>,
         ) => Array<any>;
     };
+
+export type DropdownTeamsOptions = {
+    label: string;
+    value: string;
+    original: Team;
+};

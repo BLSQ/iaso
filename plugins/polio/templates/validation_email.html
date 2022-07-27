@@ -1,0 +1,95 @@
+
+<!DOCTYPE HTML>
+<html lang={{LANGUAGE_CODE}} xmlns="http://www.w3.org/1999/xhtml" xmlns:o="urn:schemas-microsoft-com:office:office">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width,initial-scale=1">
+        <meta name="x-apple-disable-message-reformatting">
+        <meta http-equiv="Content-Type" content="text/html charset=UTF-8" />
+        <title></title>
+        <!--[if mso]>
+        <noscript>
+            <xml>
+                <o:OfficeDocumentSettings>
+                    <o:PixelsPerInch>96</o:PixelsPerInch>
+                </o:OfficeDocumentSettings>
+            </xml>
+        </noscript>
+        <![endif]-->
+        <style>
+            table, td, div, h1, p {font-family: Arial, sans-serif;}
+            {% comment %} table, td {border:2px solid #000000 !important;} {% endcomment %}
+        </style>
+    </head>
+    <body style="margin:0;padding:0;width:100%;max-width:800px">
+        <table role="presentation" style="width:100%;max-width:600px;border-collapse:collapse;border:0;border-spacing:0;background:#ffffff;">
+            <tr>
+                <td style="height:20px;padding:0;font-size:0;line-height:0;">&nbsp;</td>
+            </tr>
+                <tr>
+                {%if event_type == "approval"%}   
+                <td align="left" style="padding:5px;">
+                    The budget for campaign {{campaign}} has been approved by {{author_first_name}} {{author_last_name}} from {{team}}.
+                </td>
+                {%endif%}
+                {%if event_type == "submission"%}   
+                <td align="left" style="padding:5px;">
+                    A budget for campaign {{campaign}} has been submitted by {{author_first_name}} {{author_last_name}} from {{team}}, and needs approval.
+                </td>
+                {%endif%}
+            </tr>
+            {%if comment%}
+                <tr>
+                    <td style="height:20px;padding:5px;font-size:0;line-height:0;">&nbsp;</td>
+                </tr>
+                <tr>
+                    <td align="left" style="padding:0px 5px;">
+                    They left the following comment:
+                    </td>
+                </tr>
+                <tr>
+                    <td align="left" style="padding:0px 5px;">
+                    {{comment}}
+                    </td>
+                </tr>
+            {%endif%}
+            <tr>
+                <td style="height:20px;padding:0;font-size:0;line-height:0;">&nbsp;</td>
+            </tr>
+            <tr>
+                <td align="left" style="padding:5px;">
+                    Please approve or leave a comment.
+                </td>
+            </tr>
+            <tr>
+                <td style="height:20px;padding:0;font-size:0;line-height:0;">&nbsp;</td>
+            </tr>
+            <table role="presentation" style="width:100%;max-width:600px;border-collapse:collapse;border:0;border-spacing:0;background:#ffffff;">
+                <tr>
+                    <td style="padding:5px; width:45%; height:50px; align:center;background-color:green;border-radius:5px; text-align:center;">
+                            <a href={{validation_link}} style="display:inline-block; font-size:24px; font-weight:bold;color:white; text-decoration:none;width:100%; padding:10px 0px;">Approve</a>
+                    </td>
+                    <td style="width:10%;padding:0;font-size:0;line-height:0;">&nbsp;</td>
+                    <td style="padding:5px; width:45%; height:50px; align:center;background-color:orange;border-radius:5px; text-align:center;">
+                            <a href={{rejection_link}} style="display:inline-block; font-size:24px; font-weight:bold;color:white; text-decoration:none;width:100%; padding:10px 0px;">Comment</a>
+                    </td>
+                </tr>
+            </table>
+            <table role="presentation" style="width:100%;max-width:600px;">
+                <tr>
+                    <td style="height:20px;padding:0;font-size:0;line-height:0;">&nbsp;</td>
+                </tr>
+                <tr>
+                    <td align="left" style="padding:5px;">
+                       -----------------------------------------------
+                    </td>
+                </tr>
+                <tr>
+                    <td align="left" style="padding:5px;">
+                        This is an automated email from <a href="//{{sender}}">{{sender}}</a>
+                    </td>
+                </tr>
+            </table>
+        </table>
+    </body>
+</html>

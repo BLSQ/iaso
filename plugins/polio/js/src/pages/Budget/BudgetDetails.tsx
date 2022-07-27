@@ -1,4 +1,9 @@
-import React, { FunctionComponent, useCallback, useState } from 'react';
+import React, {
+    FunctionComponent,
+    useCallback,
+    useEffect,
+    useState,
+} from 'react';
 import {
     // @ts-ignore
     useSafeIntl,
@@ -32,6 +37,7 @@ import { useCurrentUser } from '../../../../../../hat/assets/js/apps/Iaso/utils/
 import InputComponent from '../../../../../../hat/assets/js/apps/Iaso/components/forms/InputComponent';
 import { BudgetValidationPopUp } from './pop-ups/BudgetValidationPopUp';
 import { BudgetRejectionPopUp } from './pop-ups/BudgetRejectionPopUp';
+import { useGetApprovalTeams } from '../../hooks/useGetTeams';
 
 type Props = {
     router: any;
@@ -57,6 +63,23 @@ const getBackgroundLayerStyle = () => {
     };
 };
 
+const useIsUserInApprovalTeam = (userId?: number): boolean => {
+    const { data: approvalTeams, isFetching } = useGetApprovalTeams();
+    const [isUserInApprovalTeam, setIsUserInApprovalTeam] =
+        useState<boolean>(false);
+
+    useEffect(() => {
+        if (userId && !isFetching)
+            setIsUserInApprovalTeam(
+                Boolean(
+                    approvalTeams.find(team => team.users.includes(userId)),
+                ),
+            );
+    }, [approvalTeams, isFetching, userId]);
+
+    return isUserInApprovalTeam;
+};
+
 export const BudgetDetails: FunctionComponent<Props> = ({ router }) => {
     const { params } = router;
     const classes = useStyles();
@@ -70,6 +93,7 @@ export const BudgetDetails: FunctionComponent<Props> = ({ router }) => {
     const prevPathname = useSelector(state => state.routerCustom.prevPathname);
     const dispatch = useDispatch();
     const { user_id: userId } = useCurrentUser();
+    const isUserInApprovalTeam = useIsUserInApprovalTeam(userId);
 
     const { data: budgetDetails, isFetching } = useGetBudgetDetails(userId, {
         ...apiParams,
@@ -81,6 +105,12 @@ export const BudgetDetails: FunctionComponent<Props> = ({ router }) => {
     const { data: allBudgetDetails, isFetching: isFetchingAll } =
         useGetAllBudgetDetails(campaignId, showDeleted);
 
+    const budgetHasSubmission = Boolean(
+        allBudgetDetails?.find(
+            budgetEvent =>
+                budgetEvent.type === 'submission' && !budgetEvent.deleted_at,
+        ),
+    );
     // TODO make hook for table specific state and effects
     const [resetPageToOne, setResetPageToOne] = useState('');
 
@@ -135,21 +165,6 @@ export const BudgetDetails: FunctionComponent<Props> = ({ router }) => {
                     }
                 }}
             />
-            {params.action === 'confirmApproval' &&
-                budgetStatus !== 'approved' && (
-                    <BudgetValidationPopUp
-                        campaignName={campaignName}
-                        campaignId={campaignId}
-                        params={params}
-                    />
-                )}
-            {params.action === 'addComment' && budgetStatus !== 'approved' && (
-                <BudgetRejectionPopUp
-                    campaignName={campaignName}
-                    campaignId={campaignId}
-                    params={params}
-                />
-            )}
             {/* @ts-ignore */}
             <Box
                 // @ts-ignore
@@ -171,7 +186,36 @@ export const BudgetDetails: FunctionComponent<Props> = ({ router }) => {
                             )}
                         </Grid>
                         {budgetStatus !== 'validated' && (
-                            <Grid>
+                            <Grid
+                                container
+                                item
+                                direction="row"
+                                xs={6}
+                                justifyContent="flex-end"
+                            >
+                                {/* TODO check user is approver */}
+                                {budgetStatus !== 'approved' &&
+                                    isUserInApprovalTeam &&
+                                    budgetHasSubmission && (
+                                        <Box mr={4}>
+                                            <BudgetValidationPopUp
+                                                campaignName={campaignName}
+                                                campaignId={campaignId}
+                                                params={params}
+                                            />
+                                        </Box>
+                                    )}
+                                {params.action === 'addComment' &&
+                                    budgetStatus !== 'approved' &&
+                                    isUserInApprovalTeam && (
+                                        <Box mr={4}>
+                                            <BudgetRejectionPopUp
+                                                campaignName={campaignName}
+                                                campaignId={campaignId}
+                                                params={params}
+                                            />
+                                        </Box>
+                                    )}
                                 <CreateEditBudgetEvent
                                     campaignId={campaignId}
                                 />

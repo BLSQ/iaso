@@ -1362,6 +1362,10 @@ const MESSAGES = defineMessages({
         id: 'iaso.polio.label.request',
         defaultMessage: 'Request',
     },
+    seeProcedure: {
+        id: 'iaso.polio.label.seeProcedure',
+        defaultMessage: 'See procedure',
+    },
 });
 
 export default MESSAGES;

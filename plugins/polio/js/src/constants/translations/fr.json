@@ -168,6 +168,7 @@
     "iaso.polio.label.districtScore": "District",
     "iaso.polio.label.districtsNeedMatching": "Certains districts doivent être identifiés par un administrateur et ne sont pas montrés. Veuillez contacter un administrateur pour plus d'informations",
     "iaso.polio.label.districtsNotFound": "Districts non-trouvés",
+    "iaso.polio.label.seeProcedure": "Voir la procédure",
     "iaso.polio.label.editGroupedCampaign": "Editer campagne groupée",
     "iaso.polio.label.emailListEmpty": "Pas de destinataire configuré sur ce pays",
     "iaso.polio.label.emailListLabel": "Destinataires configurés:",

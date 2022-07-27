@@ -163,6 +163,7 @@
     "iaso.polio.label.districtScore": "District",
     "iaso.polio.label.districtsNeedMatching": "Some districts need to be matched by an admin and are not shown. Please contact an admin for more information",
     "iaso.polio.label.districtsNotFound": "Districts not found",
+    "iaso.polio.label.seeProcedure": "See procedure",
     "iaso.polio.label.editGroupedCampaign": "Edit grouped campaign",
     "iaso.polio.label.emailListEmpty": "No email configured for this country",
     "iaso.polio.label.emailListLabel": "Configured emails :",

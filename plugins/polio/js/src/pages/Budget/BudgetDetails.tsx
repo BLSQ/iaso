@@ -11,6 +11,7 @@ import {
     useMediaQuery,
     useTheme,
 } from '@material-ui/core';
+
 import { useDispatch, useSelector } from 'react-redux';
 import { Pagination } from '@material-ui/lab';
 import TopBar from '../../../../../../hat/assets/js/apps/Iaso/components/nav/TopBarComponent';
@@ -38,6 +39,7 @@ import { Optional } from '../../../../../../hat/assets/js/apps/Iaso/types/utils'
 import { BudgetMap } from './Map/BudgetMap';
 import { useIsUserInApprovalTeam } from './hooks/useIsUserInApprovalTeam';
 import { handleTableDeepLink } from '../../../../../../hat/assets/js/apps/Iaso/utils/table';
+import { LinkToProcedure } from './LinkToProcedure';
 
 type Props = {
     router: any;
@@ -193,6 +195,7 @@ export const BudgetDetails: FunctionComponent<Props> = ({ router }) => {
                         }}
                         value={showDeleted}
                     />
+                    <LinkToProcedure />
                 </Box>
                 <Grid container spacing={2}>
                     {isMobileLayout && budgetDetails && profiles && (
@@ -238,10 +241,27 @@ export const BudgetDetails: FunctionComponent<Props> = ({ router }) => {
                                             : 0
                                     }
                                 >
-                                    <GraphTitle
-                                        text={formatMessage(MESSAGES.steps)}
-                                        displayTrigger
-                                    />
+                                    <Grid
+                                        container
+                                        justifyContent="space-between"
+                                    >
+                                        <Grid item lg={8}>
+                                            <GraphTitle
+                                                text={formatMessage(
+                                                    MESSAGES.steps,
+                                                )}
+                                                displayTrigger
+                                            />
+                                        </Grid>
+                                        <Grid
+                                            container
+                                            item
+                                            xs={4}
+                                            justifyContent="flex-end"
+                                        >
+                                            <LinkToProcedure />
+                                        </Grid>
+                                    </Grid>
                                     <Box mt={2} mb={1}>
                                         <Divider />
                                     </Box>

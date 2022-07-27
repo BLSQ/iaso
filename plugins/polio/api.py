@@ -1597,28 +1597,31 @@ def is_budget_approved(user, event):
         return True
     return False
 
+
 class RecipientFilterBackend(filters.BaseFilterBackend):
     def filter_queryset(self, request, queryset, view):
         recipient = request.query_params.get("recipient")
         if recipient:
-            queryset=queryset.filter(target_teams__in=[int(recipient)])
+            queryset = queryset.filter(target_teams__in=[int(recipient)])
         return queryset
-    
+
+
 class BudgetEventTypeFilterBackend(filters.BaseFilterBackend):
-    def filter_queryset(self,request,queryset,view):
-        type = request.query_params.get("type","all")
+    def filter_queryset(self, request, queryset, view):
+        type = request.query_params.get("type", "all")
         if type == "all":
             return queryset
         else:
             return queryset.filter(type=type)
-        
+
+
 class SenderTeamFilterBackend(filters.BaseFilterBackend):
-    def filter_queryset(self,request,queryset,view):
+    def filter_queryset(self, request, queryset, view):
         sender_team_id = request.query_params.get("senderTeam")
         if sender_team_id:
             try:
                 sender_team = Team.objects.get(int(sender_team_id))
-                queryset=queryset.filter(author__in=sender_team.users)
+                queryset = queryset.filter(author__in=sender_team.users)
             except:
                 print("No team found for id ", sender_team_id)
 

@@ -40,6 +40,7 @@ import { BudgetMap } from './Map/BudgetMap';
 import { useIsUserInApprovalTeam } from './hooks/useIsUserInApprovalTeam';
 import { handleTableDeepLink } from '../../../../../../hat/assets/js/apps/Iaso/utils/table';
 import { LinkToProcedure } from './LinkToProcedure';
+import { BudgetDetailsFilters } from './BudgetDetailsFilters';
 
 type Props = {
     router: any;
@@ -132,13 +133,25 @@ export const BudgetDetails: FunctionComponent<Props> = ({ router }) => {
                 className={`${classes.containerFullHeightNoTabPadded}`}
             >
                 <Box mb={5} ml={2} mr={2}>
-                    <Box mb={4}>
-                        <Typography variant="h4" style={{ fontWeight: 'bold' }}>
-                            {`${formatMessage(
-                                MESSAGES.campaign,
-                            )}: ${campaignName}`}
-                        </Typography>
-                    </Box>
+                    <Grid container>
+                        <Grid item xs={isMobileLayout ? 12 : 6}>
+                            <Box mb={4}>
+                                <Typography
+                                    variant="h4"
+                                    style={{ fontWeight: 'bold' }}
+                                >
+                                    {`${formatMessage(
+                                        MESSAGES.campaign,
+                                    )}: ${campaignName}`}
+                                </Typography>
+                            </Box>
+                        </Grid>
+                        {!isMobileLayout && (
+                            <Grid item xs={6}>
+                                <BudgetDetailsFilters params={params} />
+                            </Grid>
+                        )}
+                    </Grid>
 
                     <Grid container justifyContent="space-between" spacing={1}>
                         <Grid container item xs={6} spacing={1}>

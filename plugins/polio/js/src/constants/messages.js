@@ -1366,6 +1366,14 @@ const MESSAGES = defineMessages({
         id: 'iaso.polio.label.seeProcedure',
         defaultMessage: 'See procedure',
     },
+    sentToTeam: {
+        id: 'iaso.polio.label.sentToTeam',
+        defaultMessage: 'Sent to team',
+    },
+    sentByTeam: {
+        id: 'iaso.polio.label.sentByTeam',
+        defaultMessage: 'Sent by team',
+    },
 });
 
 export default MESSAGES;

@@ -1314,6 +1314,22 @@ const MESSAGES = defineMessages({
         id: 'iaso.polio.label.rejectBudgetForCampaign',
         defaultMessage: 'Reject budget for campaign: {campaign}',
     },
+    Community_leader: {
+        id: 'iaso.polio.label.Community_leader',
+        defaultMessage: 'Community leader',
+    },
+    Neighbour: {
+        id: 'iaso.polio.label.Neighbour',
+        defaultMessage: 'Neighbour',
+    },
+    Teachers_Student: {
+        id: 'iaso.polio.label.Teachers_Student',
+        defaultMessage: 'Teachers',
+    },
+    Town_crier: {
+        id: 'iaso.polio.label.Town_crier',
+        defaultMessage: 'Town crier',
+    },
     by: {
         id: 'iaso.polio.label.by',
         defaultMessage: 'by {author}',

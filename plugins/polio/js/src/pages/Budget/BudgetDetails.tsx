@@ -1,4 +1,4 @@
-import React, { FunctionComponent, useState } from 'react';
+import React, { FunctionComponent, useCallback, useState } from 'react';
 // @ts-ignore
 import { useSafeIntl } from 'bluesquare-components';
 import {
@@ -37,6 +37,7 @@ import { useBoundState } from '../../../../../../hat/assets/js/apps/Iaso/domains
 import { Optional } from '../../../../../../hat/assets/js/apps/Iaso/types/utils';
 import { BudgetMap } from './Map/BudgetMap';
 import { useIsUserInApprovalTeam } from './hooks/useIsUserInApprovalTeam';
+import { handleTableDeepLink } from '../../../../../../hat/assets/js/apps/Iaso/utils/table';
 
 type Props = {
     router: any;
@@ -70,7 +71,10 @@ export const BudgetDetails: FunctionComponent<Props> = ({ router }) => {
     const dispatch = useDispatch();
     const { user_id: userId } = useCurrentUser();
     const isUserInApprovalTeam = useIsUserInApprovalTeam(userId);
-    const [page, setPage] = useBoundState<Optional<number>>(1, apiParams?.page);
+    const [page, setPage] = useBoundState<Optional<number | string>>(
+        1,
+        apiParams?.page,
+    );
     const theme = useTheme();
     const isMobileLayout = useMediaQuery(theme.breakpoints.down('md'));
     const { data: budgetDetails, isFetching } = useGetBudgetDetails(userId, {
@@ -80,7 +84,6 @@ export const BudgetDetails: FunctionComponent<Props> = ({ router }) => {
         show_deleted: showDeleted,
         page,
     });
-
     // Using all details (non paginated) to determine status
     const { data: allBudgetDetails, isFetching: isFetchingAll } =
         useGetAllBudgetDetails(campaignId, showDeleted);
@@ -100,6 +103,13 @@ export const BudgetDetails: FunctionComponent<Props> = ({ router }) => {
         events: budgetDetails?.results,
         params,
     });
+    const onCardPaginationChange = useCallback(
+        (_value, newPage) => {
+            setPage(newPage);
+            handleTableDeepLink(BUDGET_DETAILS)({ ...params, page: newPage });
+        },
+        [params, setPage],
+    );
 
     return (
         <>
@@ -199,15 +209,18 @@ export const BudgetDetails: FunctionComponent<Props> = ({ router }) => {
                             {budgetDetails && (
                                 <Pagination
                                     className={paginationStyle.pagination}
-                                    page={page}
+                                    page={
+                                        Number.isSafeInteger(page)
+                                            ? (page as number)
+                                            : parseInt(page as string, 10)
+                                    }
                                     count={budgetDetails?.pages}
                                     showLastButton
                                     showFirstButton
-                                    onChange={(value, newPage) => {
-                                        setPage(newPage);
-                                    }}
+                                    onChange={onCardPaginationChange}
                                     hidePrevButton={false}
                                     hideNextButton={false}
+                                    size="small"
                                 />
                             )}
                         </Grid>

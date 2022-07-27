@@ -530,7 +530,10 @@ class BudgetEvent(SoftDeletableModel):
 
     def save(self, *args, **kwargs):
         super(BudgetEvent, self).save(*args, **kwargs)
-        self.campaign.last_budget_event = self
+        if self.campaign.last_budget_event is None:
+            self.campaign.last_budget_event = self
+        elif self.campaign.last_budget_event.created_at < self.created_at:
+            self.campaign.last_budget_event = self
         self.campaign.save()
 
 

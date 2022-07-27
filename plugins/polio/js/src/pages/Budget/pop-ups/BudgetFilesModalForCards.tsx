@@ -50,7 +50,7 @@ export const BudgetFilesModalForCards: FunctionComponent<Props> = ({
         setOpen(false);
     }, [setOpen]);
     return (
-        <div>
+        <>
             <Dialog
                 open={open}
                 onClose={handleClose}
@@ -89,7 +89,11 @@ export const BudgetFilesModalForCards: FunctionComponent<Props> = ({
                                     </Box>
                                     <Typography
                                         variant="body2"
-                                        style={{ whiteSpace: 'pre-line' }}
+                                        style={{
+                                            whiteSpace: 'pre-line',
+                                            // @ts-ignore
+                                            wordWrap: 'anywhere',
+                                        }}
                                     >
                                         {note}
                                     </Typography>
@@ -104,6 +108,6 @@ export const BudgetFilesModalForCards: FunctionComponent<Props> = ({
                     </Button>
                 </DialogActions>
             </Dialog>
-        </div>
+        </>
     );
 };

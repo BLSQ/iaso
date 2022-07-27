@@ -5,6 +5,7 @@ import { Link } from 'react-router';
 import { Profile } from '../../../../../../hat/assets/js/apps/Iaso/utils/usersUtils';
 import { fileExtensions } from '../../constants/fileExtensions';
 import { Nullable } from '../../../../../../hat/assets/js/apps/Iaso/types/utils';
+import { Team } from '../../../../../../hat/assets/js/apps/Iaso/domains/teams/types/team';
 
 export const findApprovalTeams = (teams: any[]): number[] => {
     return teams
@@ -18,7 +19,10 @@ export const formatUserName = (profile: Profile): string => {
         : profile?.user_name ?? profile?.user_id;
 };
 
-export const formatTargetTeams = (targetTeams: number[], teams): string => {
+export const formatTargetTeams = (
+    targetTeams: number[],
+    teams: Team[],
+): string => {
     return targetTeams?.length === 0
         ? // TODO translate or throw error
           'None'
@@ -30,7 +34,7 @@ export const formatTargetTeams = (targetTeams: number[], teams): string => {
               .join(', ');
 };
 
-export const extractFileName = (fileUrl: string) => {
+export const extractFileName = (fileUrl: string): string => {
     let trimmedLeft = '';
     let i = 0;
     // find the end of file name by searching for the extension
@@ -48,7 +52,7 @@ export const extractFileName = (fileUrl: string) => {
     return removedSlashes[removedSlashes.length - 1];
 };
 
-export const makeFileLinks = files => {
+export const makeFileLinks = (files: { file: string }[]): React.ReactNode => {
     return files.map((file, index) => {
         const fileName = extractFileName(file.file) || file.file;
         return (

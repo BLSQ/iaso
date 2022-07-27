@@ -45,6 +45,10 @@ export const LqasImMap = ({
     const { formatMessage } = useSafeIntl();
     const { data: shapes = defaultShapes, isFetching: isFetchingGeoJson } =
         useGetGeoJson(countryId, 'DISTRICT');
+    const {
+        data: regionShapes = defaultShapes,
+        isFetching: isFetchingRegions,
+    } = useGetGeoJson(countryId, 'REGION');
 
     const legendItems = useMemo(() => {
         if (type === 'lqas') {
@@ -124,12 +128,12 @@ export const LqasImMap = ({
                     />
                 </MapLegendContainer>
                 {/* Showing spinner on isFetching alone would make the map seem like it's loading before the user has chosen a country and campaign */}
-                {(isFetching || isFetchingGeoJson) && (
+                {(isFetching || isFetchingGeoJson || isFetchingRegions) && (
                     <LoadingSpinner fixed={false} absolute />
                 )}
                 <MapComponent
                     name={`LQASIMMap${round}-${type}`}
-                    backgroundLayer={shapes}
+                    backgroundLayer={regionShapes}
                     mainLayer={mainLayer}
                     onSelectShape={() => null}
                     getMainLayerStyle={getMainLayerStyles}

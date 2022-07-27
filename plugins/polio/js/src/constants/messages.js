@@ -1161,6 +1161,10 @@ const MESSAGES = defineMessages({
         defaultMessage: 'Comments',
         id: 'iaso.polio.label.comments',
     },
+    comment: {
+        defaultMessage: 'Comment',
+        id: 'iaso.polio.label.comment',
+    },
     validation_ongoing: {
         defaultMessage: 'Approval ongoing',
         id: 'iaso.polio.label.approval_ongoing',
@@ -1325,6 +1329,34 @@ const MESSAGES = defineMessages({
     Town_crier: {
         id: 'iaso.polio.label.Town_crier',
         defaultMessage: 'Town crier',
+    },
+    by: {
+        id: 'iaso.polio.label.by',
+        defaultMessage: 'by {author}',
+    },
+    onDate: {
+        id: 'iaso.polio.label.onDate',
+        defaultMessage: 'on {date}',
+    },
+    seeFullComment: {
+        id: 'iaso.polio.label.seeFullComment',
+        defaultMessage: 'See full comment',
+    },
+    files: {
+        id: 'iaso.polio.label.files',
+        defaultMessage: 'files',
+    },
+    see: {
+        id: 'iaso.polio.label.see',
+        defaultMessage: 'See',
+    },
+    add: {
+        id: 'iaso.polio.label.add',
+        defaultMessage: 'Add',
+    },
+    cannotDisplayMap: {
+        id: 'iaso.polio.label.cannotDisplayMap',
+        defaultMessage: 'Cannot display map',
     },
 });
 

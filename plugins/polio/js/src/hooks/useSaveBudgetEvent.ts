@@ -1,5 +1,5 @@
 /* eslint-disable camelcase */
-import { UseMutationResult } from 'react-query';
+import { UseMutationResult, useQueryClient } from 'react-query';
 import {
     patchRequest,
     postRequest,
@@ -53,44 +53,43 @@ const putBudgetFinalisation = async (id: number) => {
 };
 
 export const useCreateBudgetEvent = () =>
-    useSnackMutation(
-        createEvent,
-        MESSAGES.budgetEventCreated,
-        undefined,
-        // ['budget-details'],
-        undefined,
-        undefined,
-        false,
-    );
-
+    useSnackMutation({
+        mutationFn: createEvent,
+        snackSuccessMessage: MESSAGES.budgetEventCreated,
+        invalidateQueryKey: ['budget-details'],
+        showSucessSnackBar: false,
+    });
+// We don't need to invalidate the key here since the call to finalize will be called onSuccess in CreateEditBudgetEvent and will invalidate the key onSuccess.
+// There's no need to invalidate the key onError, since nothing will have changed then
 export const useUpdateBudgetEvent = () =>
-    useSnackMutation(
-        patchEvent,
-        MESSAGES.budgetEventCreated,
-        undefined,
-        ['budget-details'],
-        undefined,
-        false,
-    );
+    useSnackMutation({
+        mutationFn: patchEvent,
+        snackSuccessMessage: MESSAGES.budgetEventCreated,
+        showSucessSnackBar: false,
+    });
 
+// We don't invalidate the 'budget-details query key when uploading file, otherwise , the onSuccess call in CreateEditBudgetEvent gets short-circuited, and the call to finalize is not sent
 export const useUploadBudgetFiles = () =>
-    useSnackMutation(
-        postEventFiles,
-        MESSAGES.budgetFilesUploaded,
-        undefined,
-        ['budget-details'],
-        undefined,
-        false,
-    );
+    useSnackMutation({
+        mutationFn: postEventFiles,
+        snackSuccessMessage: MESSAGES.budgetFilesUploaded,
+        showSucessSnackBar: false,
+    });
 
-export const useFinalizeBudgetEvent = () =>
-    useSnackMutation(
-        putBudgetFinalisation,
-        MESSAGES.budgetEventFinalized,
-        undefined,
-        ['budget-details'],
-        undefined,
-    );
+export const useFinalizeBudgetEvent = () => {
+    const queryClient = useQueryClient();
+    return useSnackMutation({
+        mutationFn: putBudgetFinalisation,
+        snackSuccessMessage: MESSAGES.budgetEventFinalized,
+        invalidateQueryKey: ['budget-details'],
+        // Since staleTime for ['teams'] is Infinity, we invalidate the cache when an event has been created to refresh the teams list
+        options: {
+            onSettled: () => {
+                queryClient.invalidateQueries(['teams']);
+            },
+        },
+    });
+};
 
 export const useSaveBudgetEvent = (
     type: 'create' | 'edit' | 'retry',

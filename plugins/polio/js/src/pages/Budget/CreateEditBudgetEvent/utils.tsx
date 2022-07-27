@@ -2,6 +2,7 @@ import React, { useCallback, ReactNode } from 'react';
 // @ts-ignore
 import { AddButton, IconButton } from 'bluesquare-components';
 import { makeStyles } from '@material-ui/core';
+import AutorenewIcon from '@material-ui/icons/Autorenew';
 import MESSAGES from '../../../constants/messages';
 import { IntlMessage } from '../../../../../../../hat/assets/js/apps/Iaso/types/intl';
 import { DropdownOptions } from '../../../../../../../hat/assets/js/apps/Iaso/types/utils';
@@ -27,12 +28,12 @@ export const useRenderTrigger = (
     const classes = useButtonStyles();
     return useCallback(
         ({ openDialog }) => {
-            if (type === 'edit') {
+            if (type === 'edit' || type === 'retry') {
                 return (
                     <IconButton
                         color={color}
                         onClick={openDialog}
-                        icon="edit"
+                        overrideIcon={AutorenewIcon}
                         tooltipMessage={MESSAGES.resendFiles}
                     />
                 );

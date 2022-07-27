@@ -1620,8 +1620,8 @@ class SenderTeamFilterBackend(filters.BaseFilterBackend):
         sender_team_id = request.query_params.get("senderTeam")
         if sender_team_id:
             try:
-                sender_team = Team.objects.get(int(sender_team_id))
-                queryset = queryset.filter(author__in=sender_team.users)
+                sender_team = Team.objects.get(id=int(sender_team_id))
+                queryset = queryset.filter(author__in=list(sender_team.users.all()))
             except:
                 print("No team found for id ", sender_team_id)
 

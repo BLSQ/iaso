@@ -1,7 +1,13 @@
 /* eslint-disable react/require-default-props */
 import React, { FunctionComponent, useCallback } from 'react';
-// @ts-ignore
-import { useSafeIntl, LoadingSpinner } from 'bluesquare-components';
+import {
+    // @ts-ignore
+    useSafeIntl,
+    // @ts-ignore
+    LoadingSpinner,
+    // @ts-ignore
+    ErrorBoundaryWithMessage,
+} from 'bluesquare-components';
 import { Box, Divider, Paper } from '@material-ui/core';
 import { GraphTitle } from '../../../components/LQAS-IM/GraphTitle';
 import { useGetCampaignScope } from '../../../hooks/useGetCampaignScope';
@@ -67,18 +73,25 @@ export const BudgetMap: FunctionComponent<Props> = ({
                 {!isFetchingRegions &&
                     !isFetchingDistricts &&
                     !isFetchingScope && (
-                        <MapComponent
-                            name="BudgetScopeMap"
-                            mainLayer={districtShapes}
-                            backgroundLayer={regionShapes}
-                            onSelectShape={() => null}
-                            getMainLayerStyle={getShapeStyle}
-                            getBackgroundLayerStyle={getBackgroundLayerStyle}
-                            tooltipLabels={{
-                                main: 'District',
-                                background: 'Region',
-                            }}
-                        />
+                        // @ts-ignore
+                        <ErrorBoundaryWithMessage
+                            message={MESSAGES.cannotDisplayMap}
+                        >
+                            <MapComponent
+                                name="BudgetScopeMap"
+                                mainLayer={districtShapes}
+                                backgroundLayer={regionShapes}
+                                onSelectShape={() => null}
+                                getMainLayerStyle={getShapeStyle}
+                                getBackgroundLayerStyle={
+                                    getBackgroundLayerStyle
+                                }
+                                tooltipLabels={{
+                                    main: 'District',
+                                    background: 'Region',
+                                }}
+                            />
+                        </ErrorBoundaryWithMessage>
                     )}
             </Box>
         </Paper>

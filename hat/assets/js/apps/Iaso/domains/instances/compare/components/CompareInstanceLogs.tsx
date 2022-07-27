@@ -80,7 +80,7 @@ export const CompareInstanceLogs: FunctionComponent<Props> = ({
             };
             dispatch(redirectTo(baseUrls.compareInstanceLogs, defautParams));
         }
-    }, []);
+    }, [instanceLogsDropdown]);
 
     useEffect(() => {
         setLogAInitialValue(

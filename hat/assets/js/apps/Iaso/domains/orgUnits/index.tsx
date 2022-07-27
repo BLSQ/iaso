@@ -98,6 +98,7 @@ export const OrgUnits: FunctionComponent<Props> = ({ params }) => {
     // STATE
     const [resetPageToOne, setResetPageToOne] = useState<string>('');
     const [deletedTab, setDeletedTab] = useState<boolean>(false);
+    const [refresh, setRefresh] = useState<boolean>(false);
     const [filtersUpdated, setFiltersUpdated] = useState<boolean>(true);
     const [multiActionPopupOpen, setMultiActionPopupOpen] =
         useState<boolean>(false);
@@ -196,16 +197,20 @@ export const OrgUnits: FunctionComponent<Props> = ({ params }) => {
 
     const onSearch = useCallback(
         newParams => {
+            setSearches(newParams.searches);
             handleTableSelection('reset');
-            const tempParams = { ...newParams };
+            const tempParams = {
+                ...newParams,
+                searches: JSON.stringify(newParams.searches),
+            };
             if (newParams.searchActive !== 'true') {
                 tempParams.searchActive = true;
             }
             setResetPageToOne(convertObjectToString(tempParams));
             dispatch(redirectTo(baseUrl, tempParams));
-            handleSearch();
+            setRefresh(true);
         },
-        [handleTableSelection, dispatch, handleSearch],
+        [handleTableSelection, dispatch],
     );
 
     // TABS
@@ -269,6 +274,12 @@ export const OrgUnits: FunctionComponent<Props> = ({ params }) => {
             handleSearch();
         }
     }, [apiParams.searches]);
+    useSkipEffectOnMount(() => {
+        if (refresh) {
+            setRefresh(false);
+            handleSearch();
+        }
+    }, [searches]);
 
     const isLoading =
         isFetchingOrgUnits ||
@@ -324,7 +335,6 @@ export const OrgUnits: FunctionComponent<Props> = ({ params }) => {
                     currentTab={tab}
                     filtersUpdated={filtersUpdated}
                     searches={searches}
-                    setSearches={setSearches}
                     setFiltersUpdated={setFiltersUpdated}
                     orgunitTypes={orgunitTypes || []}
                     isFetchingOrgunitTypes={isFetchingOrgunitTypes}

@@ -28,7 +28,6 @@ import MESSAGES from '../messages';
 type Props = {
     params: OrgUnitParams;
     searches: [Search];
-    setSearches: React.Dispatch<React.SetStateAction<[Search]>>;
     // eslint-disable-next-line no-unused-vars
     onSearch: (searches: any) => void;
     currentTab: string;
@@ -58,7 +57,6 @@ export const OrgUnitFiltersContainer: FunctionComponent<Props> = ({
     filtersUpdated,
     setFiltersUpdated,
     searches,
-    setSearches,
     orgunitTypes,
     isFetchingOrgunitTypes,
 }) => {
@@ -69,6 +67,7 @@ export const OrgUnitFiltersContainer: FunctionComponent<Props> = ({
 
     const [hasLocationLimitError, setHasLocationLimitError] =
         useState<boolean>(false);
+    const [localSearches, setLocalSearches] = useState<[Search]>(searches);
     const [textSearchError, setTextSearchError] = useState<boolean>(false);
     const currentSearchIndex = parseInt(params.searchTabIndex, 10);
 
@@ -77,15 +76,15 @@ export const OrgUnitFiltersContainer: FunctionComponent<Props> = ({
             const tempParams = {
                 ...params,
                 page: 1,
-                searches: JSON.stringify(searches),
+                searches: localSearches,
             };
             onSearch(tempParams);
         }
-    }, [filtersUpdated, params, searches, onSearch]);
+    }, [filtersUpdated, params, localSearches, onSearch]);
 
     const handleChangeColor = useCallback(
         (color: string, searchIndex: number) => {
-            const newSearches = [...searches];
+            const newSearches = [...localSearches];
             newSearches[searchIndex].color = color.replace('#', '');
             const tempParams = {
                 ...params,
@@ -93,7 +92,7 @@ export const OrgUnitFiltersContainer: FunctionComponent<Props> = ({
             };
             dispatch(redirectTo(baseUrl, tempParams));
         },
-        [searches, params, dispatch],
+        [localSearches, params, dispatch],
     );
 
     return (
@@ -114,7 +113,7 @@ export const OrgUnitFiltersContainer: FunctionComponent<Props> = ({
                         searches={searches}
                         setTextSearchError={setTextSearchError}
                         setFiltersUpdated={setFiltersUpdated}
-                        setSearches={setSearches}
+                        setSearches={setLocalSearches}
                         onChangeColor={handleChangeColor}
                         currentTab={currentTab}
                         params={params}

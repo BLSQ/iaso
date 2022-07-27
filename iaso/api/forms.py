@@ -10,6 +10,7 @@ from iaso.models import Form, Project, OrgUnitType, Profile, OrgUnit
 from iaso.utils import timestamp_to_datetime
 from .common import ModelViewSet, TimestampField, DynamicFieldsModelSerializer
 from hat.api.export_utils import Echo, generate_xlsx, iter_items
+from hat.audit.models import log_modification, FORM_API
 from .projects import ProjectSerializer
 
 
@@ -140,6 +141,28 @@ class FormSerializer(DynamicFieldsModelSerializer):
                 raise serializers.ValidationError(tracker_errors)
 
         return data
+
+    def update(self, form, validated_data):
+        # get the original form
+        original = Form.objects.get(pk=form.id)
+        # assign new validated values to the form to be update
+        form.name = validated_data.pop("name", None)
+        form.projects.set(validated_data.pop("projects", None))
+        form.org_unit_types.set(validated_data.pop("org_unit_types", None))
+        form.period_type = validated_data.pop("period_type", None)
+        form.location_field = validated_data.pop("location_field", None)
+        form.device_field = validated_data.pop("device_field", None)
+        form.single_per_period = validated_data.pop("single_per_period", None)
+        form.periods_before_allowed = validated_data.pop("periods_before_allowed", None)
+        form.periods_after_allowed = validated_data.pop("periods_after_allowed", None)
+        form.derived = validated_data.pop("derived", None)
+        form.label_keys = validated_data.pop("label_keys", None)
+        # log the changes made on the form
+        log_modification(original, form, FORM_API, user=self.context["request"].user)
+        # save the form's updates
+        form.save()
+
+        return form
 
 
 class FormsViewSet(ModelViewSet):

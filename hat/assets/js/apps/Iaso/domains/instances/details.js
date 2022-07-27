@@ -427,7 +427,9 @@ class InstanceDetails extends Component {
                                                     color="inherit"
                                                     title="Historique"
                                                 >
-                                                    Historique
+                                                    {formatMessage(
+                                                        MESSAGES.history,
+                                                    )}
                                                 </Typography>
                                                 :
                                             </div>
@@ -447,7 +449,9 @@ class InstanceDetails extends Component {
                                                 <Link
                                                     to={`${baseUrls.compareInstanceLogs}/instanceIds/${currentInstance.id}`}
                                                 >
-                                                    Voir toutes les versions
+                                                    {formatMessage(
+                                                        MESSAGES.seeAllVersions,
+                                                    )}
                                                 </Link>
                                             </Typography>
                                         </Grid>

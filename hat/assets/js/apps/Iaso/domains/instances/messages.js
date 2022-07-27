@@ -416,6 +416,14 @@ const MESSAGES = defineMessages({
         defaultMessage:
             'Are you sure you want to unlink this reference submission from the orgUnit ?',
     },
+    history: {
+        id: 'iaso.label.history',
+        defaultMessage: 'History',
+    },
+    seeAllVersions: {
+        id: 'iaso.label.seeAllVersions',
+        defaultMessage: 'See all versions',
+    },
 });
 
 export default MESSAGES;

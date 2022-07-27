@@ -29,6 +29,7 @@ export type Instance = {
 export type InstanceLogData = {
     fields: Record<string, any>;
     json: Record<string, any>;
+    _version: string;
     form: number;
 };
 

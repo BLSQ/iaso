@@ -195,7 +195,7 @@ export const BudgetDetails: FunctionComponent<Props> = ({ router }) => {
                         }}
                         value={showDeleted}
                     />
-                    <LinkToProcedure />
+                    {isMobileLayout && <LinkToProcedure />}
                 </Box>
                 <Grid container spacing={2}>
                     {isMobileLayout && budgetDetails && profiles && (

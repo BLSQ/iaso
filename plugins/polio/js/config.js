@@ -269,6 +269,18 @@ const routes = [
                 isRequired: false,
                 key: 'action',
             },
+            {
+                isRequired: false,
+                key: 'senderTeam',
+            },
+            {
+                isRequired: false,
+                key: 'recipient',
+            },
+            {
+                isRequired: false,
+                key: 'type',
+            },
         ],
     },
     {

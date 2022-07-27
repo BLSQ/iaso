@@ -167,6 +167,9 @@ class FormVersionsViewSet(ModelViewSet):
         form_id = self.request.query_params.get("form_id", None)
         if form_id:
             queryset = queryset.filter(form__id=form_id)
+        version_id = self.request.query_params.get("version_id", None)
+        if version_id:
+            queryset = queryset.filter(version_id=version_id)
 
         queryset = queryset.annotate(
             full_name=Concat("form__name", Value(" - V"), "version_id", output_field=TextField())

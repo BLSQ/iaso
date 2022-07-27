@@ -24,19 +24,16 @@ type Result = Pagination & {
 
 type Props = {
     params: ApiParams;
-    enabled: boolean;
     callback?: () => void;
 };
 
 type PropsLocation = {
     params: ApiParams;
-    enabled: boolean;
     searches: Search[];
 };
 
 export const useGetOrgUnits = ({
     params,
-    enabled,
     callback = () => null,
 }: Props): UseQueryResult<Result, Error> => {
     const onSuccess = () => callback();
@@ -45,7 +42,8 @@ export const useGetOrgUnits = ({
         queryKey: ['orgunits'],
         queryFn: () => getRequest(`/api/orgunits/?${queryString.toString()}`),
         options: {
-            enabled,
+            enabled: false,
+            staleTime: Infinity,
             onSuccess,
         },
     });
@@ -53,7 +51,6 @@ export const useGetOrgUnits = ({
 
 export const useGetOrgUnitsLocations = ({
     params,
-    enabled,
     searches,
 }: PropsLocation): UseQueryResult<Locations, Error> => {
     const queryString = new URLSearchParams(params);
@@ -61,7 +58,8 @@ export const useGetOrgUnitsLocations = ({
         queryKey: ['orgunitslocations'],
         queryFn: () => getRequest(`/api/orgunits/?${queryString.toString()}`),
         options: {
-            enabled,
+            enabled: false,
+            staleTime: Infinity,
             select: data => mapOrgUnitByLocation(data, searches),
         },
     });

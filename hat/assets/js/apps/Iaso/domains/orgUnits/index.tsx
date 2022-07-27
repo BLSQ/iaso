@@ -24,6 +24,7 @@ import {
     useSkipEffectOnMount,
 } from 'bluesquare-components';
 import { useDispatch } from 'react-redux';
+import { useQueryClient } from 'react-query';
 
 // COMPONENTS
 import DownloadButtonsComponent from '../../components/DownloadButtonsComponent';
@@ -87,6 +88,7 @@ type Props = {
 const baseUrl = baseUrls.orgUnits;
 export const OrgUnits: FunctionComponent<Props> = ({ params }) => {
     // HOOKS
+    const queryClient = useQueryClient();
     const dispatch = useDispatch();
     const classes: Record<string, string> = useStyles();
     const { formatMessage } = useSafeIntl();
@@ -95,7 +97,7 @@ export const OrgUnits: FunctionComponent<Props> = ({ params }) => {
 
     // STATE
     const [resetPageToOne, setResetPageToOne] = useState<string>('');
-    const [triggerSearch, setTriggerSearch] = useState<boolean>(false);
+    const [deletedTab, setDeletedTab] = useState<boolean>(false);
     const [filtersUpdated, setFiltersUpdated] = useState<boolean>(true);
     const [multiActionPopupOpen, setMultiActionPopupOpen] =
         useState<boolean>(false);
@@ -113,6 +115,10 @@ export const OrgUnits: FunctionComponent<Props> = ({ params }) => {
     const defaultSource = useMemo(
         () => currentUser?.account?.default_version?.data_source,
         [currentUser],
+    );
+    const isSearchActive = useMemo(
+        () => params.searchActive === 'true',
+        [params.searchActive],
     );
     // MEMO
 
@@ -132,21 +138,22 @@ export const OrgUnits: FunctionComponent<Props> = ({ params }) => {
         useGetOrgUnitTypes();
     const { mutateAsync: saveMulti, isLoading: isSavingMulti } =
         useBulkSaveOrgUnits();
-    const { data: orgUnitsData, isFetching: isFetchingOrgUnits } =
-        useGetOrgUnits({
-            params: apiParams,
-            enabled: triggerSearch,
-            callback: () => {
-                setFiltersUpdated(false);
-                setTriggerSearch(false);
-            },
-        });
+    const {
+        data: orgUnitsData,
+        isFetching: isFetchingOrgUnits,
+        refetch: fetchOrgUnits,
+    } = useGetOrgUnits({
+        params: apiParams,
+        callback: () => {
+            setFiltersUpdated(false);
+        },
+    });
     const {
         data: orgUnitsDataLocation,
         isFetching: isFetchingOrgUnitsDataLocation,
+        refetch: fetchOrgUnitsLocations,
     } = useGetOrgUnitsLocations({
         params: apiParamsLocations,
-        enabled: triggerSearch,
         searches,
     });
     // REQUESTS HOOKS
@@ -180,6 +187,13 @@ export const OrgUnits: FunctionComponent<Props> = ({ params }) => {
     );
     // SELECTION
 
+    const handleSearch = useCallback(() => {
+        fetchOrgUnits();
+        if (params.tab === 'map') {
+            fetchOrgUnitsLocations();
+        }
+    }, [fetchOrgUnits, params.tab, fetchOrgUnitsLocations]);
+
     const onSearch = useCallback(
         newParams => {
             handleTableSelection('reset');
@@ -188,10 +202,10 @@ export const OrgUnits: FunctionComponent<Props> = ({ params }) => {
                 tempParams.searchActive = true;
             }
             setResetPageToOne(convertObjectToString(tempParams));
-            setTriggerSearch(true);
             dispatch(redirectTo(baseUrl, tempParams));
+            handleSearch();
         },
-        [handleTableSelection, dispatch],
+        [handleTableSelection, dispatch, handleSearch],
     );
 
     // TABS
@@ -207,48 +221,54 @@ export const OrgUnits: FunctionComponent<Props> = ({ params }) => {
         [params, dispatch],
     );
 
-    // refetch results too map searches and org units search indexes
-    const handleDeletedDynamicTab = useCallback(
+    const handleDeleteDynamicTab = useCallback(
         newParams => {
-            setSearches(decodeSearch(decodeURI(newParams.searches)));
             dispatch(redirectTo(baseUrl, newParams));
-            setTriggerSearch(true);
+            setSearches(decodeSearch(decodeURI(newParams.searches)));
+            setDeletedTab(true);
         },
         [dispatch],
     );
-
     const handleAddDynamicTab = useCallback(
         newParams => {
+            const tempParams = {
+                ...newParams,
+            };
+            delete tempParams.searchActive;
             setFiltersUpdated(true);
-            setTriggerSearch(false);
-            setSearches(decodeSearch(decodeURI(newParams.searches)));
-            dispatch(redirectTo(baseUrl, newParams));
+            setSearches(decodeSearch(decodeURI(tempParams.searches)));
+            dispatch(redirectTo(baseUrl, tempParams));
         },
         [dispatch],
     );
     // TABS
 
-    // onload, if searchActive is true => set triggerSearch to true
+    // onload, if searchActive is true => set launch search
     useEffect(() => {
-        if (params.searchActive === 'true') {
-            setTriggerSearch(true);
+        if (isSearchActive) {
+            handleSearch();
         }
         return () => {
-            setSearches([
-                {
-                    validation_status: 'all',
-                    color: getChipColors(0).replace('#', ''),
-                },
-            ]);
+            queryClient
+                .getQueryCache()
+                .findAll(['orgunits', 'orgunitslocations'])
+                .forEach(query => query.setData(undefined));
         };
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
     // trigger search on order, page size and page
     useSkipEffectOnMount(() => {
-        setTriggerSearch(true);
-        // eslint-disable-next-line react-hooks/exhaustive-deps
+        handleSearch();
     }, [params.order, params.page, params.pageSize]);
+
+    // trigger search after delete tab redirection
+    useSkipEffectOnMount(() => {
+        if (isSearchActive && deletedTab) {
+            setDeletedTab(false);
+            handleSearch();
+        }
+    }, [apiParams.searches]);
 
     const isLoading =
         isFetchingOrgUnits ||
@@ -290,14 +310,10 @@ export const OrgUnits: FunctionComponent<Props> = ({ params }) => {
                     onTabChange={newParams => {
                         dispatch(redirectTo(baseUrl, newParams));
                     }}
-                    onTabsDeleted={handleDeletedDynamicTab}
+                    onTabsDeleted={handleDeleteDynamicTab}
                     onTabsAdded={handleAddDynamicTab}
                     maxItems={9}
-                    counts={
-                        (params.searchActive === 'true' &&
-                            orgUnitsData?.counts) ||
-                        []
-                    }
+                    counts={orgUnitsData?.counts || []}
                     displayCounts
                 />
             </TopBar>
@@ -313,7 +329,7 @@ export const OrgUnits: FunctionComponent<Props> = ({ params }) => {
                     orgunitTypes={orgunitTypes || []}
                     isFetchingOrgunitTypes={isFetchingOrgunitTypes}
                 />
-                {orgUnitsData && params.searchActive === 'true' && (
+                {orgUnitsData && (
                     <>
                         <Tabs
                             value={tab}

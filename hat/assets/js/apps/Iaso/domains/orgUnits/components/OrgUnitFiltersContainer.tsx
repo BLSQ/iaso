@@ -47,6 +47,7 @@ const useStyles = makeStyles(theme => ({
         left: '0px',
         zIndex: '-100',
         opacity: '0',
+        width: '100%',
     },
 }));
 
@@ -97,22 +98,33 @@ export const OrgUnitFiltersContainer: FunctionComponent<Props> = ({
 
     return (
         <>
-            <Filters
-                onSearch={handleSearch}
-                searchIndex={currentSearchIndex}
-                currentSearch={searches[currentSearchIndex]}
-                searches={searches}
-                setTextSearchError={setTextSearchError}
-                setFiltersUpdated={setFiltersUpdated}
-                setSearches={setSearches}
-                onChangeColor={handleChangeColor}
-                currentTab={currentTab}
-                params={params}
-                setHasLocationLimitError={setHasLocationLimitError}
-                filtersUpdated={filtersUpdated}
-                orgunitTypes={orgunitTypes}
-                isFetchingOrgunitTypes={isFetchingOrgunitTypes}
-            />
+            {searches.map((search, searchIndex) => (
+                <Box
+                    key={searchIndex}
+                    className={
+                        searchIndex === currentSearchIndex
+                            ? ''
+                            : classes.hiddenOpacity
+                    }
+                >
+                    <Filters
+                        onSearch={handleSearch}
+                        searchIndex={currentSearchIndex}
+                        currentSearch={searches[searchIndex]}
+                        searches={searches}
+                        setTextSearchError={setTextSearchError}
+                        setFiltersUpdated={setFiltersUpdated}
+                        setSearches={setSearches}
+                        onChangeColor={handleChangeColor}
+                        currentTab={currentTab}
+                        params={params}
+                        setHasLocationLimitError={setHasLocationLimitError}
+                        filtersUpdated={filtersUpdated}
+                        orgunitTypes={orgunitTypes}
+                        isFetchingOrgunitTypes={isFetchingOrgunitTypes}
+                    />
+                </Box>
+            ))}
             <Box mt={2} justifyContent="flex-end" display="flex">
                 <Button
                     variant="contained"

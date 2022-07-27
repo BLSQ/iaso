@@ -2,7 +2,11 @@
 import { getRequest } from '../../../../../hat/assets/js/apps/Iaso/libs/Api';
 import { useSnackQuery } from '../../../../../hat/assets/js/apps/Iaso/libs/apiHooks';
 import { makeUrlWithParams } from '../../../../../hat/assets/js/apps/Iaso/libs/utils';
-import { UrlParams } from '../../../../../hat/assets/js/apps/Iaso/types/table';
+import {
+    Pagination,
+    UrlParams,
+} from '../../../../../hat/assets/js/apps/Iaso/types/table';
+import { BudgetEvent } from '../constants/types';
 
 const endpoint = '/api/polio/budgetevent';
 
@@ -11,7 +15,13 @@ type Params = Partial<UrlParams> & {
     show_deleted: boolean;
 };
 
-const getBudgetDetails = async (params?: Params) => {
+export type PaginatedBudgetDetails = Pagination & {
+    results: BudgetEvent[];
+};
+
+const getBudgetDetails = async (
+    params?: Params,
+): Promise<PaginatedBudgetDetails> => {
     if (params) {
         const { pageSize, ...otherParams } = params;
         const urlParams = {

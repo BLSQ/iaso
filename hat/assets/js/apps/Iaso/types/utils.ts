@@ -8,3 +8,6 @@ export type DropdownOptions<T> = {
 };
 export type ValidationError = Record<string, string> | null | undefined;
 export type GenericObject = Record<string, any>;
+export type Nullable<T> = T | null;
+// This type might be useful when typing eg useState
+export type Optional<T> = T | undefined;

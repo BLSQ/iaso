@@ -20,10 +20,10 @@ const getInstanceLogDetail = (
     return getRequest(`/api/logs/${logId}`);
 };
 
-const getFormId = formId => {
-    // TO DO : add versionId in parameters waiting change in backend to filter on version_id
-    // TO DO : replace call api below by : /api/formversions/?version_id=versionId&form_id=formID
-    return getRequest(`/api/formversions/${formId}/?fields=descriptor`);
+const getVersion = (versionId, formId) => {
+    return getRequest(
+        `/api/formversions/?version_id=${versionId}&form_id=${formId}&fields=descriptor`,
+    );
 };
 
 export const useGetInstanceLogs = (
@@ -76,19 +76,26 @@ export const useGetInstanceLogDetail = (
 };
 
 export const useGetFormDescriptor = (
+    versionId: string | undefined,
     formId: number | undefined,
 ): UseQueryResult<FormDescriptor, Error> => {
-    const queryKey: any[] = ['instanceDescriptor', formId];
+    const queryKey: any[] = ['instanceDescriptor', versionId];
     // @ts-ignore
-    return useSnackQuery(queryKey, () => getFormId(formId), undefined, {
-        enabled: Boolean(formId),
-        select: (data: FormDescriptor | undefined) => {
-            if (data) {
-                data = data.descriptor;
-                return data;
-            }
+    return useSnackQuery(
+        queryKey,
+        () => getVersion(versionId, formId),
+        undefined,
+        {
+            enabled: Boolean(versionId),
+            select: (data: FormDescriptor | undefined) => {
+                if (data) {
+                    const instanceLogDescriptor =
+                        data.form_versions[0].descriptor;
+                    return instanceLogDescriptor;
+                }
 
-            return undefined;
+                return undefined;
+            },
         },
-    });
+    );
 };

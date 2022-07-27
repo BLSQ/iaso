@@ -36,7 +36,10 @@ export const InstanceLogDetail: FunctionComponent<Props> = ({ logId }) => {
         data: instanceFormDescriptor,
     }: {
         data?: FormDescriptor | undefined;
-    } = useGetFormDescriptor(instanceLogDetail?.form);
+    } = useGetFormDescriptor(
+        instanceLogDetail?.json._version,
+        instanceLogDetail?.form,
+    );
 
     const { formatMessage } = useSafeIntl();
 

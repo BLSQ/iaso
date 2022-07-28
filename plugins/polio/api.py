@@ -704,7 +704,7 @@ class IMStatsViewSet(viewsets.ViewSet):
                 try:
                     round_number = form.get("roundNumber", None)
                     if round_number is None:
-                        round_number = form.get("HH", [])[0]["HH/roundNumber"]
+                        round_number = form.get("HH", [{}])[0]["HH/roundNumber"]
                     if round_number.upper() == "MOPUP":
                         continue
                 except KeyError:

@@ -64,9 +64,7 @@ export const useGetInstanceLogDetail = (
             enabled: Boolean(logId),
             select: (data: InstanceLog | undefined) => {
                 if (data) {
-                    const instanceLogData = data.new_value[0].fields;
-
-                    return instanceLogData;
+                    return data.new_value[0].fields;
                 }
 
                 return undefined;
@@ -89,9 +87,8 @@ export const useGetFormDescriptor = (
             enabled: Boolean(versionId),
             select: (data: FormDescriptor | undefined) => {
                 if (data) {
-                    const instanceLogDescriptor =
-                        data.form_versions[0].descriptor;
-                    return instanceLogDescriptor;
+                    data.form_versions[0].descriptor;
+                    return data.form_versions[0].descriptor;
                 }
 
                 return undefined;

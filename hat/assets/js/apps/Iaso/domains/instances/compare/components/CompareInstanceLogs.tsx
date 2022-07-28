@@ -11,6 +11,8 @@ import InputComponent from '../../../../components/forms/InputComponent';
 import TopBar from '../../../../components/nav/TopBarComponent';
 import { InstanceLogDetail } from './InstanceLogDetail';
 
+import { IntlFormatMessage } from '../../../../types/intl';
+
 import { redirectTo, redirectToReplace } from '../../../../routing/actions';
 
 import MESSAGES from '../messages';
@@ -45,7 +47,8 @@ export const CompareInstanceLogs: FunctionComponent<Props> = ({
     router,
 }) => {
     const classes: Record<string, string> = useStyles();
-    const { formatMessage } = useSafeIntl();
+    const { formatMessage }: { formatMessage: IntlFormatMessage } =
+        useSafeIntl();
     const dispatch = useDispatch();
     const prevPathname: string | undefined = useSelector(
         (state: State) => state.routerCustom.prevPathname,

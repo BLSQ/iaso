@@ -1,15 +1,23 @@
-import { Box, makeStyles, Button } from '@material-ui/core';
+import { Box, makeStyles, Button, AppBar } from '@material-ui/core';
 import Add from '@material-ui/icons/Add';
 import { useDispatch } from 'react-redux';
-// @ts-ignore
-import { commonStyles, useSafeIntl } from 'bluesquare-components';
+import {
+    // @ts-ignore
+    commonStyles,
+    // @ts-ignore
+    useSafeIntl,
+    // @ts-ignore
+    DynamicTabs,
+} from 'bluesquare-components';
 import React, {
     FunctionComponent,
     useState,
     useCallback,
-    // useEffect,
+    useMemo,
 } from 'react';
 import classnames from 'classnames';
+
+import { useCurrentUser } from '../../../utils/usersUtils';
 
 import { FilterButton } from '../../../components/FilterButton';
 import { OrgUnitFilters as Filters } from './OrgUnitsFilters';
@@ -18,16 +26,20 @@ import { redirectTo } from '../../../routing/actions';
 import { OrgUnitParams } from '../types/orgUnit';
 
 import { baseUrls } from '../../../constants/urls';
+import { getChipColors } from '../../../constants/chipColors';
 
 import { IntlFormatMessage } from '../../../types/intl';
 import { Search } from '../types/search';
 import { DropdownOptions } from '../../../types/utils';
+import { Count } from '../hooks/requests/useGetOrgUnits';
+
+import { decodeSearch } from '../utils';
 
 import MESSAGES from '../messages';
 
 type Props = {
     params: OrgUnitParams;
-    searches: [Search];
+    defaultSearches: [Search];
     // eslint-disable-next-line no-unused-vars
     onSearch: (searches: any) => void;
     currentTab: string;
@@ -35,6 +47,8 @@ type Props = {
     setFiltersUpdated: React.Dispatch<React.SetStateAction<boolean>>;
     orgunitTypes: DropdownOptions<string>[];
     isFetchingOrgunitTypes: boolean;
+    counts: Count[];
+    setDeletedTab: React.Dispatch<React.SetStateAction<boolean>>;
 };
 
 const baseUrl = baseUrls.orgUnits;
@@ -48,6 +62,21 @@ const useStyles = makeStyles(theme => ({
         opacity: '0',
         width: '100%',
     },
+    tabsContainer: {
+        backgroundColor: theme.palette.primary.main,
+        // to be over topbar shadow
+        zIndex: 1101,
+        position: 'fixed',
+        top: 64,
+    },
+    tabsContainerShadow: {
+        position: 'absolute',
+        bottom: 0,
+        height: 10,
+        width: '100%',
+        zIndex: -1,
+        boxShadow: '0 4px 5px -2px rgb(0 0 0 / 20%)',
+    },
 }));
 
 export const OrgUnitFiltersContainer: FunctionComponent<Props> = ({
@@ -56,18 +85,26 @@ export const OrgUnitFiltersContainer: FunctionComponent<Props> = ({
     currentTab,
     filtersUpdated,
     setFiltersUpdated,
-    searches,
+    defaultSearches,
     orgunitTypes,
     isFetchingOrgunitTypes,
+    counts,
+    setDeletedTab,
 }) => {
     const dispatch = useDispatch();
+    const currentUser = useCurrentUser();
+
     const { formatMessage }: { formatMessage: IntlFormatMessage } =
         useSafeIntl();
     const classes: Record<string, string> = useStyles();
+    const defaultSource = useMemo(
+        () => currentUser?.account?.default_version?.data_source,
+        [currentUser],
+    );
 
     const [hasLocationLimitError, setHasLocationLimitError] =
         useState<boolean>(false);
-    const [localSearches, setLocalSearches] = useState<[Search]>(searches);
+    const [searches, setSearches] = useState<[Search]>(defaultSearches);
     const [textSearchError, setTextSearchError] = useState<boolean>(false);
     const currentSearchIndex = parseInt(params.searchTabIndex, 10);
 
@@ -76,15 +113,15 @@ export const OrgUnitFiltersContainer: FunctionComponent<Props> = ({
             const tempParams = {
                 ...params,
                 page: 1,
-                searches: localSearches,
+                searches,
             };
             onSearch(tempParams);
         }
-    }, [filtersUpdated, params, localSearches, onSearch]);
+    }, [filtersUpdated, params, searches, onSearch]);
 
     const handleChangeColor = useCallback(
         (color: string, searchIndex: number) => {
-            const newSearches = [...localSearches];
+            const newSearches = [...searches];
             newSearches[searchIndex].color = color.replace('#', '');
             const tempParams = {
                 ...params,
@@ -92,62 +129,119 @@ export const OrgUnitFiltersContainer: FunctionComponent<Props> = ({
             };
             dispatch(redirectTo(baseUrl, tempParams));
         },
-        [localSearches, params, dispatch],
+        [searches, params, dispatch],
+    );
+
+    const handleDeleteDynamicTab = useCallback(
+        newParams => {
+            dispatch(redirectTo(baseUrl, newParams));
+            setSearches(decodeSearch(decodeURI(newParams.searches)));
+            setDeletedTab(true);
+        },
+        [dispatch, setDeletedTab],
+    );
+    const handleAddDynamicTab = useCallback(
+        newParams => {
+            dispatch(redirectTo(baseUrl, newParams));
+            setFiltersUpdated(true);
+            setSearches(decodeSearch(decodeURI(newParams.searches)));
+        },
+        [dispatch, setFiltersUpdated],
     );
 
     return (
         <>
-            {searches.map((search, searchIndex) => (
-                <Box
-                    key={searchIndex}
-                    className={
-                        searchIndex === currentSearchIndex
-                            ? ''
-                            : classes.hiddenOpacity
+            <AppBar className={classes.tabsContainer} elevation={0}>
+                <DynamicTabs
+                    deleteMessage={MESSAGES.delete}
+                    addMessage={MESSAGES.add}
+                    baseLabel={formatMessage(MESSAGES.search)}
+                    params={{
+                        ...params,
+                        searches: JSON.stringify(searches),
+                    }}
+                    defaultItem={{
+                        validation_status: 'all',
+                        color: getChipColors(
+                            searches.length + 1,
+                            false,
+                            searches.map(search => `#${search.color}`),
+                        ).replace('#', ''),
+                        source: defaultSource && defaultSource.id,
+                    }}
+                    paramKey="searches"
+                    tabParamKey="searchTabIndex"
+                    baseUrl={baseUrl}
+                    redirectTo={(path, newParams) =>
+                        dispatch(redirectTo(path, newParams))
                     }
-                >
-                    <Filters
-                        onSearch={handleSearch}
-                        searchIndex={currentSearchIndex}
-                        currentSearch={searches[searchIndex]}
-                        searches={searches}
-                        setTextSearchError={setTextSearchError}
-                        setFiltersUpdated={setFiltersUpdated}
-                        setSearches={setLocalSearches}
-                        onChangeColor={handleChangeColor}
-                        currentTab={currentTab}
-                        params={params}
-                        setHasLocationLimitError={setHasLocationLimitError}
-                        filtersUpdated={filtersUpdated}
-                        orgunitTypes={orgunitTypes}
-                        isFetchingOrgunitTypes={isFetchingOrgunitTypes}
+                    onTabChange={newParams => {
+                        dispatch(redirectTo(baseUrl, newParams));
+                    }}
+                    onTabsDeleted={handleDeleteDynamicTab}
+                    onTabsAdded={handleAddDynamicTab}
+                    maxItems={9}
+                    counts={counts}
+                    displayCounts
+                />
+                <Box className={classes.tabsContainerShadow} />
+            </AppBar>
+            <Box px={4} mt={4}>
+                {searches.map((search, searchIndex) => (
+                    <Box
+                        key={searchIndex}
+                        className={
+                            searchIndex === currentSearchIndex
+                                ? ''
+                                : classes.hiddenOpacity
+                        }
+                    >
+                        <Filters
+                            onSearch={handleSearch}
+                            searchIndex={currentSearchIndex}
+                            currentSearch={searches[searchIndex]}
+                            searches={searches}
+                            setTextSearchError={setTextSearchError}
+                            setFiltersUpdated={setFiltersUpdated}
+                            setSearches={setSearches}
+                            onChangeColor={handleChangeColor}
+                            currentTab={currentTab}
+                            params={params}
+                            setHasLocationLimitError={setHasLocationLimitError}
+                            filtersUpdated={filtersUpdated}
+                            orgunitTypes={orgunitTypes}
+                            isFetchingOrgunitTypes={isFetchingOrgunitTypes}
+                        />
+                    </Box>
+                ))}
+                <Box mt={2} justifyContent="flex-end" display="flex">
+                    <Button
+                        variant="contained"
+                        className={classnames(
+                            classes.button,
+                            classes.marginRight,
+                        )}
+                        color="primary"
+                        onClick={() =>
+                            dispatch(
+                                redirectTo(baseUrls.orgUnitDetails, {
+                                    orgUnitId: '0',
+                                }),
+                            )
+                        }
+                    >
+                        <Add className={classes.buttonIcon} />
+                        {formatMessage(MESSAGES.create)}
+                    </Button>
+                    <FilterButton
+                        disabled={
+                            !filtersUpdated ||
+                            textSearchError ||
+                            hasLocationLimitError
+                        }
+                        onFilter={handleSearch}
                     />
                 </Box>
-            ))}
-            <Box mt={2} justifyContent="flex-end" display="flex">
-                <Button
-                    variant="contained"
-                    className={classnames(classes.button, classes.marginRight)}
-                    color="primary"
-                    onClick={() =>
-                        dispatch(
-                            redirectTo(baseUrls.orgUnitDetails, {
-                                orgUnitId: '0',
-                            }),
-                        )
-                    }
-                >
-                    <Add className={classes.buttonIcon} />
-                    {formatMessage(MESSAGES.create)}
-                </Button>
-                <FilterButton
-                    disabled={
-                        !filtersUpdated ||
-                        textSearchError ||
-                        hasLocationLimitError
-                    }
-                    onFilter={handleSearch}
-                />
             </Box>
         </>
     );

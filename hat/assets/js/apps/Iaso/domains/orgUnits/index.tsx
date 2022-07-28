@@ -13,8 +13,6 @@ import {
     // @ts-ignore
     useSafeIntl,
     // @ts-ignore
-    DynamicTabs,
-    // @ts-ignore
     selectionInitialState,
     // @ts-ignore
     setTableSelection,
@@ -44,14 +42,13 @@ import { Selection } from './types/selection';
 // UTILS
 import { decodeSearch } from './utils';
 import { convertObjectToString } from '../../utils';
-import { useCurrentUser } from '../../utils/usersUtils';
 import { redirectTo } from '../../routing/actions';
 // UTILS
 
 // CONSTANTS
 import { baseUrls } from '../../constants/urls';
 import MESSAGES from './messages';
-import { getChipColors } from '../../constants/chipColors';
+import { MENU_HEIGHT_WITHOUT_TABS } from '../../constants/uiConstants';
 // CONSTANTS
 
 // HOOKS
@@ -67,6 +64,16 @@ import { useGetOrgUnitTypes } from './hooks/requests/useGetOrgUnitTypes';
 
 const useStyles = makeStyles(theme => ({
     ...commonStyles(theme),
+    container: {
+        width: '100%',
+        height: `calc(100vh - ${MENU_HEIGHT_WITHOUT_TABS}px)`,
+        padding: 0,
+        margin: 0,
+        overflow: 'auto',
+        backgroundColor: 'white',
+        position: 'relative',
+        top: 48,
+    },
     tabs: {
         ...commonStyles(theme).tabs,
         padding: 0,
@@ -92,7 +99,6 @@ export const OrgUnits: FunctionComponent<Props> = ({ params }) => {
     const dispatch = useDispatch();
     const classes: Record<string, string> = useStyles();
     const { formatMessage } = useSafeIntl();
-    const currentUser = useCurrentUser();
     // HOOKS
 
     // STATE
@@ -106,18 +112,14 @@ export const OrgUnits: FunctionComponent<Props> = ({ params }) => {
     const [selection, setSelection] = useState<Selection<OrgUnit>>(
         selectionInitialState,
     );
-
-    const [searches, setSearches] = useState<[Search]>(
-        decodeSearch(decodeURI(params.searches)),
-    );
     // STATE
 
     // MEMO
-    const defaultSource = useMemo(
-        () => currentUser?.account?.default_version?.data_source,
-        [currentUser],
+    const searches: [Search] = useMemo(
+        () => decodeSearch(decodeURI(params.searches)),
+        [params.searches],
     );
-    const isSearchActive = useMemo(
+    const isSearchActive: boolean = useMemo(
         () => params.searchActive === 'true',
         [params.searchActive],
     );
@@ -141,7 +143,7 @@ export const OrgUnits: FunctionComponent<Props> = ({ params }) => {
         useBulkSaveOrgUnits();
     const {
         data: orgUnitsData,
-        isLoading: isFetchingOrgUnits,
+        isFetching: isFetchingOrgUnits,
         refetch: fetchOrgUnits,
     } = useGetOrgUnits({
         params: apiParams,
@@ -190,14 +192,11 @@ export const OrgUnits: FunctionComponent<Props> = ({ params }) => {
 
     const handleSearch = useCallback(() => {
         fetchOrgUnits();
-        if (params.tab === 'map') {
-            fetchOrgUnitsLocations();
-        }
-    }, [fetchOrgUnits, params.tab, fetchOrgUnitsLocations]);
+        fetchOrgUnitsLocations();
+    }, [fetchOrgUnits, fetchOrgUnitsLocations]);
 
     const onSearch = useCallback(
         newParams => {
-            setSearches(newParams.searches);
             handleTableSelection('reset');
             const tempParams = {
                 ...newParams,
@@ -225,27 +224,6 @@ export const OrgUnits: FunctionComponent<Props> = ({ params }) => {
         },
         [params, dispatch],
     );
-
-    const handleDeleteDynamicTab = useCallback(
-        newParams => {
-            dispatch(redirectTo(baseUrl, newParams));
-            setSearches(decodeSearch(decodeURI(newParams.searches)));
-            setDeletedTab(true);
-        },
-        [dispatch],
-    );
-    const handleAddDynamicTab = useCallback(
-        newParams => {
-            const tempParams = {
-                ...newParams,
-            };
-            delete tempParams.searchActive;
-            setFiltersUpdated(true);
-            setSearches(decodeSearch(decodeURI(tempParams.searches)));
-            dispatch(redirectTo(baseUrl, tempParams));
-        },
-        [dispatch],
-    );
     // TABS
 
     // onload, if searchActive is true => set launch search
@@ -256,7 +234,11 @@ export const OrgUnits: FunctionComponent<Props> = ({ params }) => {
         return () => {
             queryClient
                 .getQueryCache()
-                .findAll(['orgunits', 'orgunitslocations'])
+                .findAll(['orgunits'])
+                .forEach(query => query.setData(undefined));
+            queryClient
+                .getQueryCache()
+                .findAll(['orgunitslocations'])
                 .forEach(query => query.setData(undefined));
         };
         // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -274,6 +256,7 @@ export const OrgUnits: FunctionComponent<Props> = ({ params }) => {
             handleSearch();
         }
     }, [apiParams.searches]);
+
     useSkipEffectOnMount(() => {
         if (refresh) {
             setRefresh(false);
@@ -297,135 +280,112 @@ export const OrgUnits: FunctionComponent<Props> = ({ params }) => {
                 saveMulti={saveMulti}
             />
             {isLoading && <LoadingSpinner fixed={false} absolute />}
-            <TopBar title={formatMessage(MESSAGES.title)}>
-                <DynamicTabs
-                    deleteMessage={MESSAGES.delete}
-                    addMessage={MESSAGES.add}
-                    baseLabel={formatMessage(MESSAGES.search)}
-                    params={{ ...params, searches: JSON.stringify(searches) }}
-                    defaultItem={{
-                        validation_status: 'all',
-                        color: getChipColors(
-                            searches.length + 1,
-                            false,
-                            searches.map(search => `#${search.color}`),
-                        ).replace('#', ''),
-                        source: defaultSource && defaultSource.id,
-                    }}
-                    paramKey="searches"
-                    tabParamKey="searchTabIndex"
-                    baseUrl={baseUrl}
-                    redirectTo={(path, newParams) =>
-                        dispatch(redirectTo(path, newParams))
-                    }
-                    onTabChange={newParams => {
-                        dispatch(redirectTo(baseUrl, newParams));
-                    }}
-                    onTabsDeleted={handleDeleteDynamicTab}
-                    onTabsAdded={handleAddDynamicTab}
-                    maxItems={9}
-                    counts={orgUnitsData?.counts || []}
-                    displayCounts
-                />
-            </TopBar>
-            <Box className={classes.containerFullHeightNoTabPadded}>
+            <TopBar title={formatMessage(MESSAGES.title)} />
+
+            <Box className={classes.container}>
                 <OrgUnitFiltersContainer
                     params={params}
                     onSearch={onSearch}
                     currentTab={tab}
                     filtersUpdated={filtersUpdated}
-                    searches={searches}
+                    defaultSearches={searches}
                     setFiltersUpdated={setFiltersUpdated}
                     orgunitTypes={orgunitTypes || []}
                     isFetchingOrgunitTypes={isFetchingOrgunitTypes}
+                    counts={(!isLoading && orgUnitsData?.counts) || []}
+                    setDeletedTab={setDeletedTab}
                 />
-                {orgUnitsData && (
-                    <>
-                        <Tabs
-                            value={tab}
-                            classes={{
-                                root: classes.tabs,
-                            }}
-                            className={classes.marginBottom}
-                            indicatorColor="primary"
-                            onChange={(event, newtab) =>
-                                handleChangeTab(newtab)
-                            }
-                        >
-                            <Tab
-                                value="list"
-                                label={formatMessage(MESSAGES.list)}
-                            />
-                            <Tab
-                                value="map"
-                                label={formatMessage(MESSAGES.map)}
-                            />
-                        </Tabs>
-                        {tab === 'list' && (
-                            <Box mt={-4}>
-                                <TableWithDeepLink
-                                    resetPageToOne={resetPageToOne}
-                                    data={orgUnitsData?.orgunits || []}
-                                    count={orgUnitsData?.count}
-                                    pages={orgUnitsData?.pages}
-                                    params={params}
-                                    columns={columns}
-                                    baseUrl={baseUrl}
-                                    marginTop={false}
-                                    extraProps={{
-                                        columns,
-                                    }}
-                                    multiSelect
-                                    selection={selection}
-                                    selectionActions={selectionActions}
-                                    setTableSelection={(
-                                        selectionType,
-                                        items,
-                                        totalCount,
-                                    ) =>
-                                        handleTableSelection(
+                <Box px={4}>
+                    {orgUnitsData && (
+                        <>
+                            <Tabs
+                                value={tab}
+                                classes={{
+                                    root: classes.tabs,
+                                }}
+                                className={classes.marginBottom}
+                                indicatorColor="primary"
+                                onChange={(event, newtab) =>
+                                    handleChangeTab(newtab)
+                                }
+                            >
+                                <Tab
+                                    value="list"
+                                    label={formatMessage(MESSAGES.list)}
+                                />
+                                <Tab
+                                    value="map"
+                                    label={formatMessage(MESSAGES.map)}
+                                />
+                            </Tabs>
+                            {tab === 'list' && (
+                                <Box mt={-4}>
+                                    <TableWithDeepLink
+                                        resetPageToOne={resetPageToOne}
+                                        data={orgUnitsData?.orgunits || []}
+                                        count={orgUnitsData?.count}
+                                        pages={orgUnitsData?.pages}
+                                        params={params}
+                                        columns={columns}
+                                        baseUrl={baseUrl}
+                                        marginTop={false}
+                                        extraProps={{
+                                            columns,
+                                        }}
+                                        multiSelect
+                                        selection={selection}
+                                        selectionActions={selectionActions}
+                                        setTableSelection={(
                                             selectionType,
                                             items,
                                             totalCount,
-                                        )
-                                    }
-                                />
-                            </Box>
-                        )}
-                        {tab === 'list' &&
-                            orgUnitsData &&
-                            orgUnitsData?.orgunits?.length > 0 && (
-                                <Box
-                                    mb={4}
-                                    mt={1}
-                                    display="flex"
-                                    justifyContent="flex-end"
-                                >
-                                    <DownloadButtonsComponent
-                                        csvUrl={getUrl(true, 'csv')}
-                                        xlsxUrl={getUrl(true, 'xlsx')}
-                                        gpkgUrl={getUrl(true, 'gpkg')}
+                                        ) =>
+                                            handleTableSelection(
+                                                selectionType,
+                                                items,
+                                                totalCount,
+                                            )
+                                        }
                                     />
                                 </Box>
                             )}
+                            {tab === 'list' &&
+                                orgUnitsData &&
+                                orgUnitsData?.orgunits?.length > 0 && (
+                                    <Box
+                                        mb={8}
+                                        mt={1}
+                                        display="flex"
+                                        justifyContent="flex-end"
+                                    >
+                                        <DownloadButtonsComponent
+                                            csvUrl={getUrl(true, 'csv')}
+                                            xlsxUrl={getUrl(true, 'xlsx')}
+                                            gpkgUrl={getUrl(true, 'gpkg')}
+                                        />
+                                    </Box>
+                                )}
 
-                        {!isFetchingOrgunitTypes && orgUnitsDataLocation && (
-                            <div
-                                className={
-                                    tab === 'map' ? '' : classes.hiddenOpacity
-                                }
-                            >
-                                <div className={classes.containerMarginNeg}>
-                                    <OrgUnitsMap
-                                        params={params}
-                                        orgUnitTypes={orgunitTypes || []}
-                                        orgUnits={orgUnitsDataLocation}
-                                    />
+                            {!isFetchingOrgunitTypes && orgUnitsDataLocation && (
+                                <div
+                                    className={
+                                        tab === 'map'
+                                            ? ''
+                                            : classes.hiddenOpacity
+                                    }
+                                >
+                                    <div className={classes.containerMarginNeg}>
+                                        <OrgUnitsMap
+                                            params={params}
+                                            orgUnitTypes={orgunitTypes || []}
+                                            orgUnits={orgUnitsDataLocation}
+                                        />
+                                    </div>
                                 </div>
-                            </div>
-                        )}
-                    </>
-                )}
+                            )}
+                        </>
+                    )}
+                </Box>
             </Box>
         </>
     );

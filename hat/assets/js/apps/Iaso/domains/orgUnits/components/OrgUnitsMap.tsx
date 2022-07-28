@@ -236,7 +236,7 @@ export const OrgUnitsMap: FunctionComponent<Props> = ({
                         .map(o => (
                             <Pane name="no-org-unit-type" key={o.id}>
                                 <GeoJSON
-                                    key={o.id}
+                                    key={`${o.id}-${o.search_index}`}
                                     style={() => ({
                                         color: getSearchColor(o.search_index),
                                     })}
@@ -264,7 +264,7 @@ export const OrgUnitsMap: FunctionComponent<Props> = ({
                                 )
                                 .map(o => (
                                     <GeoJSON
-                                        key={o.id}
+                                        key={`${o.id}-${o.search_index}`}
                                         style={() => ({
                                             color: getSearchColor(
                                                 o.search_index,

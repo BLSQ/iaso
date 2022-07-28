@@ -13,7 +13,7 @@ import { Locations } from '../../components/OrgUnitsMap';
 
 import { mapOrgUnitByLocation } from '../../utils';
 
-type Count = {
+export type Count = {
     index: number;
     count: number;
 };

@@ -107,11 +107,11 @@ export const OrgUnitFilters: FunctionComponent<Props> = ({
             setFiltersUpdated(true);
         }
         if (key === 'version') {
-            setSourceVersionId(value);
+            setSourceVersionId(parseInt(value, 10));
         }
         if (key === 'source') {
             setInitialOrgUnitId(undefined);
-            setDataSourceId(value);
+            setDataSourceId(parseInt(value, 10));
             setSourceVersionId(undefined);
         }
         if (key === 'levels') {
@@ -145,8 +145,7 @@ export const OrgUnitFilters: FunctionComponent<Props> = ({
             setDataSourceId(id);
             setSourceVersionId(parseInt(filters?.version, 10));
         }
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [dataSourceId, filters?.version, sourceVersionId]);
+    }, [dataSourceId, dataSources, filters?.version]);
 
     useEffect(() => {
         // if no dataSourceId or sourceVersionId are provided, use the default from user
@@ -185,6 +184,7 @@ export const OrgUnitFilters: FunctionComponent<Props> = ({
             }
         }
     }, [dataSourceId, sourceVersionId, dataSources]);
+
     useSkipEffectOnMount(() => {
         if (filters !== currentSearch) {
             setFilters(currentSearch);
@@ -202,6 +202,7 @@ export const OrgUnitFilters: FunctionComponent<Props> = ({
                 })) ?? []
         );
     }, [dataSourceId, dataSources]);
+
     return (
         <Grid container spacing={2}>
             <Grid item xs={4}>
@@ -228,7 +229,7 @@ export const OrgUnitFilters: FunctionComponent<Props> = ({
                     disabled={isFetchingDataSources}
                     keyValue="source"
                     onChange={handleChange}
-                    value={!isFetchingDataSources && filters?.source}
+                    value={!isFetchingDataSources && dataSourceId}
                     label={MESSAGES.source}
                     options={dataSources}
                     loading={isFetchingDataSources}

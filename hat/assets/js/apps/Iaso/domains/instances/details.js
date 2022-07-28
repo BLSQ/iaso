@@ -413,7 +413,7 @@ class InstanceDetails extends Component {
                                 >
                                     <InstanceDetailsInfos
                                         currentInstance={currentInstance}
-                                    />{' '}
+                                    />
                                     <Grid container spacing={1}>
                                         <Grid xs={5} item>
                                             <div

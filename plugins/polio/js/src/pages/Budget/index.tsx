@@ -9,7 +9,7 @@ import {
 } from 'bluesquare-components';
 // @ts-ignore
 import TopBar from 'Iaso/components/nav/TopBarComponent';
-import { Box, Grid } from '@material-ui/core';
+import { Box, Grid, useMediaQuery, useTheme } from '@material-ui/core';
 import { TableWithDeepLink } from '../../../../../../hat/assets/js/apps/Iaso/components/tables/TableWithDeepLink';
 import {
     useCampaignParams,
@@ -43,6 +43,8 @@ export const Budget: FunctionComponent<Props> = ({ router }) => {
 
     const { data: campaigns, isFetching } = useGetCampaigns(apiParams).query;
     const columns = useBudgetColumns();
+    const theme = useTheme();
+    const isMobileLayout = useMediaQuery(theme.breakpoints.down('md'));
 
     useSkipEffectOnMount(() => {
         const newParams = {
@@ -62,33 +64,40 @@ export const Budget: FunctionComponent<Props> = ({ router }) => {
             {/* @ts-ignore */}
             <Box className={classes.containerFullHeightNoTabPadded}>
                 <BudgetFilters params={params} />
-                <Grid container item justifyContent="flex-end">
-                    <AddButton
-                        onClick={() => {
-                            setCampaignDialogOpen(true);
-                        }}
-                        dataTestId="create-campaign-button"
-                        message={MESSAGES.addCampaign}
-                    />
-                </Grid>
-                <TableWithDeepLink
-                    data={campaigns?.campaigns ?? []}
-                    count={campaigns?.count}
-                    pages={campaigns?.pages}
-                    params={apiParams}
-                    columns={columns}
-                    baseUrl={BUDGET}
-                    marginTop={false}
-                    extraProps={{
-                        loading: isFetching,
-                    }}
-                    resetPageToOne={resetPageToOne}
-                />
+                {!isMobileLayout && (
+                    <>
+                        <Grid container item justifyContent="flex-end">
+                            <AddButton
+                                onClick={() => {
+                                    setCampaignDialogOpen(true);
+                                }}
+                                dataTestId="create-campaign-button"
+                                message={MESSAGES.addCampaign}
+                            />
+                        </Grid>
+
+                        <TableWithDeepLink
+                            data={campaigns?.campaigns ?? []}
+                            count={campaigns?.count}
+                            pages={campaigns?.pages}
+                            params={apiParams}
+                            columns={columns}
+                            baseUrl={BUDGET}
+                            marginTop={false}
+                            extraProps={{
+                                loading: isFetching,
+                            }}
+                            resetPageToOne={resetPageToOne}
+                        />
+                    </>
+                )}
             </Box>
-            <PolioCreateEditDialog
-                isOpen={campaignDialogOpen}
-                onClose={() => setCampaignDialogOpen(false)}
-            />
+            {isMobileLayout && (
+                <PolioCreateEditDialog
+                    isOpen={campaignDialogOpen}
+                    onClose={() => setCampaignDialogOpen(false)}
+                />
+            )}
         </>
     );
 };

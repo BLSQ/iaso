@@ -4,13 +4,16 @@ import { UseQueryResult } from 'react-query';
 import { getRequest } from '../../../../libs/Api';
 import { useSnackQuery } from '../../../../libs/apiHooks';
 import {
-    Instance,
     InstanceLog,
+    InstanceLogDetail,
+    InstanceLogsDetail,
     InstanceLogData,
     FormDescriptor,
 } from '../../types/instance';
 
-const getInstanceLog = (instanceId: string | undefined): Promise<Instance> => {
+const getInstanceLog = (
+    instanceId: string | undefined,
+): Promise<InstanceLogsDetail> => {
     return getRequest(`/api/logs/?objectId=${instanceId}&order=-created_at`);
 };
 
@@ -28,7 +31,7 @@ const getVersion = (versionId, formId) => {
 
 export const useGetInstanceLogs = (
     instanceId: string | undefined,
-): UseQueryResult<Instance, Error> => {
+): UseQueryResult<InstanceLogsDetail, Error> => {
     const queryKey: any[] = ['instanceLog', instanceId];
     return useSnackQuery(
         queryKey,
@@ -38,7 +41,7 @@ export const useGetInstanceLogs = (
             enabled: Boolean(instanceId),
             select: data => {
                 if (!data) return [];
-                return data.map((instanceLog: Instance) => {
+                return data.list.map((instanceLog: InstanceLogDetail) => {
                     return {
                         value: instanceLog.id,
                         label: moment(instanceLog.created_at).format('LTS'),
@@ -84,6 +87,7 @@ export const useGetFormDescriptor = (
             enabled: Boolean(versionId),
             select: (data: FormDescriptor | undefined) => {
                 if (data) {
+                    console.log('data descriptor', data);
                     return data.form_versions[0].descriptor;
                 }
 

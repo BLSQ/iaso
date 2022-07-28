@@ -27,6 +27,20 @@ export type Instance = {
     last_export_success_at: unknown;
 };
 
+export type InstanceLogsDetail = {
+    count: number;
+    list: Array<any>;
+};
+
+export type InstanceLogDetail = {
+    id: number;
+    content_type: string;
+    object_id: string;
+    source: string;
+    user: Record<string, any>;
+    created_at: string;
+};
+
 export type InstanceLogData = {
     fields: Record<string, any>;
     json: Record<string, any>;

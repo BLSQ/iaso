@@ -30,7 +30,6 @@ export const useGetInstanceLogs = (
     instanceId: string | undefined,
 ): UseQueryResult<Instance, Error> => {
     const queryKey: any[] = ['instanceLog', instanceId];
-    // @ts-ignore
     return useSnackQuery(
         queryKey,
         () => getInstanceLog(instanceId),
@@ -55,7 +54,6 @@ export const useGetInstanceLogDetail = (
     logId: string | undefined,
 ): UseQueryResult<InstanceLogData, Error> => {
     const queryKey: any[] = ['instanceLogDetail', logId];
-    // @ts-ignore
     return useSnackQuery(
         queryKey,
         () => getInstanceLogDetail(logId),
@@ -78,7 +76,6 @@ export const useGetFormDescriptor = (
     formId: number | undefined,
 ): UseQueryResult<FormDescriptor, Error> => {
     const queryKey: any[] = ['instanceDescriptor', versionId];
-    // @ts-ignore
     return useSnackQuery(
         queryKey,
         () => getVersion(versionId, formId),
@@ -87,7 +84,6 @@ export const useGetFormDescriptor = (
             enabled: Boolean(versionId),
             select: (data: FormDescriptor | undefined) => {
                 if (data) {
-                    data.form_versions[0].descriptor;
                     return data.form_versions[0].descriptor;
                 }
 

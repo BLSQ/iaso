@@ -54,8 +54,12 @@ export const CompareInstanceLogs: FunctionComponent<Props> = ({
         (state: State) => state.routerCustom.prevPathname,
     );
 
-    const [logAInitialValue, setLogAInitialValue] = useState(undefined);
-    const [logBInitialValue, setLogBInitialValue] = useState(undefined);
+    const [logAInitialValue, setLogAInitialValue] = useState<
+        number | undefined
+    >(undefined);
+    const [logBInitialValue, setLogBInitialValue] = useState<
+        number | undefined
+    >(undefined);
 
     const { instanceIds: instanceId } = params;
 
@@ -78,8 +82,8 @@ export const CompareInstanceLogs: FunctionComponent<Props> = ({
         ) {
             const defautParams = {
                 ...params,
-                logA: instanceLogsDropdown[0].value,
-                logB: instanceLogsDropdown[1].value,
+                logA: instanceLogsDropdown[0]?.value,
+                logB: instanceLogsDropdown[1]?.value,
             };
             dispatch(redirectTo(baseUrls.compareInstanceLogs, defautParams));
         }
@@ -88,10 +92,10 @@ export const CompareInstanceLogs: FunctionComponent<Props> = ({
 
     useEffect(() => {
         setLogAInitialValue(
-            instanceLogsDropdown !== undefined && instanceLogsDropdown[0].value,
+            instanceLogsDropdown && instanceLogsDropdown[0]?.value,
         );
         setLogBInitialValue(
-            instanceLogsDropdown !== undefined && instanceLogsDropdown[1].value,
+            instanceLogsDropdown && instanceLogsDropdown[1]?.value,
         );
     }, [instanceLogsDropdown, isFetchingInstanceLogs]);
 

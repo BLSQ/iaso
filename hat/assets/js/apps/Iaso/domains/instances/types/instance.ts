@@ -1,5 +1,6 @@
 /* eslint-disable camelcase */
 import { OrgUnit } from '../../orgUnits/types/orgUnit';
+import { Pagination } from '../../../types/table';
 
 export type Instance = {
     uuid: string;
@@ -27,11 +28,6 @@ export type Instance = {
     last_export_success_at: unknown;
 };
 
-export type InstanceLogsDetail = {
-    count: number;
-    list: Array<any>;
-};
-
 export type InstanceLogDetail = {
     id: number;
     content_type: string;
@@ -41,18 +37,25 @@ export type InstanceLogDetail = {
     created_at: string;
 };
 
+export type InstanceLogsDetail = Pagination & {
+    list: Array<InstanceLogDetail>;
+};
+
+type NewValue = {
+    fields: Record<string, any>;
+};
+
 export type InstanceLogData = {
     fields: Record<string, any>;
     json: Record<string, any>;
     _version: string;
     form: number;
+    new_value: NewValue[];
 };
 
-export type InstanceLog = {
-    old_value: InstanceLogData;
-    new_value: InstanceLogData;
-};
-
-export type FormDescriptor = {
+type FormVersions = {
     descriptor: Record<string, any>;
+};
+export type FormDescriptor = {
+    form_versions: FormVersions[];
 };

@@ -4,12 +4,12 @@ import { UseQueryResult } from 'react-query';
 import { getRequest } from '../../../../libs/Api';
 import { useSnackQuery } from '../../../../libs/apiHooks';
 import {
-    InstanceLog,
     InstanceLogDetail,
     InstanceLogsDetail,
     InstanceLogData,
     FormDescriptor,
 } from '../../types/instance';
+import { DropdownOptions } from '../../../../types/utils';
 
 const getInstanceLog = (
     instanceId: string | undefined,
@@ -31,13 +31,12 @@ const getVersion = (versionId, formId) => {
 
 export const useGetInstanceLogs = (
     instanceId: string | undefined,
-): UseQueryResult<InstanceLogsDetail, Error> => {
+): UseQueryResult<DropdownOptions<number>[], Error> => {
     const queryKey: any[] = ['instanceLog', instanceId];
-    return useSnackQuery(
+    return useSnackQuery({
         queryKey,
-        () => getInstanceLog(instanceId),
-        undefined,
-        {
+        queryFn: () => getInstanceLog(instanceId),
+        options: {
             enabled: Boolean(instanceId),
             select: data => {
                 if (!data) return [];
@@ -50,20 +49,19 @@ export const useGetInstanceLogs = (
                 });
             },
         },
-    );
+    });
 };
 
 export const useGetInstanceLogDetail = (
     logId: string | undefined,
-): UseQueryResult<InstanceLogData, Error> => {
+): UseQueryResult<Record<string, any> | undefined, Error> => {
     const queryKey: any[] = ['instanceLogDetail', logId];
-    return useSnackQuery(
+    return useSnackQuery({
         queryKey,
-        () => getInstanceLogDetail(logId),
-        undefined,
-        {
+        queryFn: () => getInstanceLogDetail(logId),
+        options: {
             enabled: Boolean(logId),
-            select: (data: InstanceLog | undefined) => {
+            select: data => {
                 if (data) {
                     return data.new_value[0].fields;
                 }
@@ -71,28 +69,26 @@ export const useGetInstanceLogDetail = (
                 return undefined;
             },
         },
-    );
+    });
 };
 
 export const useGetFormDescriptor = (
     versionId: string | undefined,
     formId: number | undefined,
-): UseQueryResult<FormDescriptor, Error> => {
+): UseQueryResult<Record<string, any> | undefined, Error> => {
     const queryKey: any[] = ['instanceDescriptor', versionId];
-    return useSnackQuery(
+    return useSnackQuery({
         queryKey,
-        () => getVersion(versionId, formId),
-        undefined,
-        {
+        queryFn: () => getVersion(versionId, formId),
+        options: {
             enabled: Boolean(versionId),
             select: (data: FormDescriptor | undefined) => {
                 if (data) {
-                    console.log('data descriptor', data);
                     return data.form_versions[0].descriptor;
                 }
 
                 return undefined;
             },
         },
-    );
+    });
 };

@@ -1,3 +1,4 @@
+/* eslint-disable camelcase */
 import React, { FunctionComponent, useState, useEffect } from 'react';
 // @ts-ignore
 import { useSafeIntl, LoadingSpinner } from 'bluesquare-components';

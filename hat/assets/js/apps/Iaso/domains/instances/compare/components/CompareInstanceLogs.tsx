@@ -83,6 +83,7 @@ export const CompareInstanceLogs: FunctionComponent<Props> = ({
             };
             dispatch(redirectTo(baseUrls.compareInstanceLogs, defautParams));
         }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [instanceLogsDropdown]);
 
     useEffect(() => {

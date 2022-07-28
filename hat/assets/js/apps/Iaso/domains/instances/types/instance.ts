@@ -1,3 +1,4 @@
+/* eslint-disable camelcase */
 import { OrgUnit } from '../../orgUnits/types/orgUnit';
 
 export type Instance = {

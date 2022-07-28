@@ -31,7 +31,7 @@ export const BudgetDetailsFilters: FunctionComponent<Props> = ({ params }) => {
     return (
         <Box mb={4}>
             <Grid container spacing={2}>
-                <Grid item xs={3}>
+                <Grid item xs={12} sm={6} md={3}>
                     <InputComponent
                         keyValue="senderTeam"
                         onChange={handleChange}
@@ -43,7 +43,7 @@ export const BudgetDetailsFilters: FunctionComponent<Props> = ({ params }) => {
                         loading={isFetching}
                     />
                 </Grid>
-                <Grid item xs={3}>
+                <Grid item xs={12} sm={6} md={3}>
                     <InputComponent
                         keyValue="recipient"
                         onChange={handleChange}
@@ -55,7 +55,7 @@ export const BudgetDetailsFilters: FunctionComponent<Props> = ({ params }) => {
                         loading={isFetching}
                     />
                 </Grid>
-                <Grid item xs={3}>
+                <Grid item xs={12} sm={6} md={3}>
                     <InputComponent
                         keyValue="type"
                         onChange={handleChange}
@@ -66,7 +66,14 @@ export const BudgetDetailsFilters: FunctionComponent<Props> = ({ params }) => {
                         label={MESSAGES.eventType}
                     />
                 </Grid>
-                <Grid container item xs={3} justifyContent="flex-end">
+                <Grid
+                    container
+                    item
+                    xs={12}
+                    sm={6}
+                    md={3}
+                    justifyContent="flex-end"
+                >
                     <Box mt={2} mr={-2}>
                         <FilterButton
                             disabled={!filtersUpdated}

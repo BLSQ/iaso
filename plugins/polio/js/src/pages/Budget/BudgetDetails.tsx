@@ -3,6 +3,7 @@ import React, { FunctionComponent, useCallback, useState } from 'react';
 import { useSafeIntl } from 'bluesquare-components';
 import {
     Box,
+    Collapse,
     Divider,
     Grid,
     makeStyles,
@@ -13,6 +14,7 @@ import {
 } from '@material-ui/core';
 
 import { useDispatch, useSelector } from 'react-redux';
+import MoreHorizIcon from '@material-ui/icons/MoreHoriz';
 import { Pagination } from '@material-ui/lab';
 import TopBar from '../../../../../../hat/assets/js/apps/Iaso/components/nav/TopBarComponent';
 import MESSAGES from '../../constants/messages';
@@ -100,6 +102,7 @@ export const BudgetDetails: FunctionComponent<Props> = ({ router }) => {
         ),
     );
     const { data: profiles, isFetching: isFetchingProfiles } = useGetProfiles();
+    const [expand, setExpand] = useState<boolean>(false);
 
     const { resetPageToOne, columns } = useTableState({
         profiles,
@@ -208,7 +211,26 @@ export const BudgetDetails: FunctionComponent<Props> = ({ router }) => {
                         }}
                         value={showDeleted}
                     />
-                    {isMobileLayout && <LinkToProcedure />}
+                    {isMobileLayout && (
+                        <>
+                            <Grid container justifyContent="space-between">
+                                <Grid item>
+                                    <LinkToProcedure />
+                                </Grid>
+                                <Grid item>
+                                    <MoreHorizIcon
+                                        color="action"
+                                        onClick={() => {
+                                            setExpand(value => !value);
+                                        }}
+                                    />
+                                </Grid>
+                            </Grid>
+                            <Collapse in={expand}>
+                                <BudgetDetailsFilters params={params} />
+                            </Collapse>
+                        </>
+                    )}
                 </Box>
                 <Grid container spacing={2}>
                     {isMobileLayout && budgetDetails && profiles && (

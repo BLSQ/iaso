@@ -5,8 +5,6 @@ import { useSafeIntl, LoadingSpinner } from 'bluesquare-components';
 
 import { Box } from '@material-ui/core';
 
-import { InstanceLogData, FormDescriptor } from '../../types/instance';
-
 import {
     useGetInstanceLogDetail,
     useGetFormDescriptor,
@@ -28,7 +26,7 @@ export const InstanceLogDetail: FunctionComponent<Props> = ({ logId }) => {
         isLoading,
         isError,
     }: {
-        data?: InstanceLogData | undefined;
+        data?: Record<string, any> | undefined;
         isLoading: boolean;
         isError: boolean;
     } = useGetInstanceLogDetail(logId);
@@ -36,7 +34,7 @@ export const InstanceLogDetail: FunctionComponent<Props> = ({ logId }) => {
     const {
         data: instanceFormDescriptor,
     }: {
-        data?: FormDescriptor | undefined;
+        data?: Record<string, any> | undefined;
     } = useGetFormDescriptor(
         instanceLogDetail?.json._version,
         instanceLogDetail?.form,
@@ -45,7 +43,7 @@ export const InstanceLogDetail: FunctionComponent<Props> = ({ logId }) => {
     const { formatMessage } = useSafeIntl();
 
     const [instanceLog, setInstanceLog] = useState<{
-        form_descriptor: FormDescriptor | undefined;
+        form_descriptor: Record<string, any> | undefined;
         file_content: Record<string, any> | undefined;
     }>({
         form_descriptor: undefined,

@@ -170,7 +170,7 @@ export const useGetOrgUnits = ({
     order,
 }: Props): UseQueryResult<Locations, Error> => {
     const params = {
-        validation_status: 'all',
+        validation_status: 'VALID',
         asLocation: true,
         limit: 5000,
         order,

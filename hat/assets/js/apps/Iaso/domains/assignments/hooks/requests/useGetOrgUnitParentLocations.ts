@@ -20,7 +20,7 @@ export const useGetOrgUnitParentLocations = ({
     baseOrgunitType,
 }: Props): UseQueryResult<OrgUnitShape[], Error> => {
     const params = {
-        validation_status: 'all',
+        validation_status: 'VALID',
         asLocation: true,
         limit: 5000,
         order: 'id',

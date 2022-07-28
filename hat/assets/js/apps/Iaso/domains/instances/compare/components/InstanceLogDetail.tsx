@@ -46,7 +46,7 @@ export const InstanceLogDetail: FunctionComponent<Props> = ({ logId }) => {
 
     const [instanceLog, setInstanceLog] = useState<{
         form_descriptor: FormDescriptor | undefined;
-        file_content: InstanceLogData | undefined;
+        file_content: Record<string, any> | undefined;
     }>({
         form_descriptor: undefined,
         file_content: undefined,

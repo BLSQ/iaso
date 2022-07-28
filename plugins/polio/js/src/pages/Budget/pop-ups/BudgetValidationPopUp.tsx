@@ -12,7 +12,7 @@ import DialogContent from '@material-ui/core/DialogContent';
 import DialogContentText from '@material-ui/core/DialogContentText';
 import DialogTitle from '@material-ui/core/DialogTitle';
 // @ts-ignore
-import { useSafeIntl } from 'bluesquare-components';
+import { useSafeIntl, commonStyles } from 'bluesquare-components';
 import { useDispatch } from 'react-redux';
 import { makeStyles } from '@material-ui/core';
 import {
@@ -22,7 +22,7 @@ import {
 import { useGetTeams } from '../../../hooks/useGetTeams';
 import MESSAGES from '../../../constants/messages';
 import { redirectToReplace } from '../../../../../../../hat/assets/js/apps/Iaso/routing/actions';
-import { findApprovaTeams } from '../utils';
+import { findApprovalTeams } from '../utils';
 import { useDialogActionStyles } from './style';
 
 type Props = { campaignName: string; campaignId: string; params: any };
@@ -37,6 +37,7 @@ const makeQuery = (campaign, target_teams): QueryData => {
 
 const styles = theme => {
     return {
+        ...commonStyles(theme),
         green: {
             backgroundColor: theme.palette.success.main,
             color: 'white',
@@ -53,14 +54,14 @@ export const BudgetValidationPopUp: FunctionComponent<Props> = ({
     campaignId,
     params,
 }) => {
-    const classes = useStyles();
+    const classes: Record<string, string> = useStyles();
     const { action: actionStyle } = useDialogActionStyles();
     const { formatMessage } = useSafeIntl();
     const [open, setOpen] = useState(params?.action === 'confirmApproval');
     const dispatch = useDispatch();
     const { data: teams, isFetching: isFetchingTeams } = useGetTeams();
     const otherApprovalTeamIds = useMemo(() => {
-        return findApprovaTeams(teams ?? []);
+        return findApprovalTeams(teams ?? []);
     }, [teams]);
     const { mutateAsync: approve } = useQuickApproveBudgetEvent();
     const query = useMemo(

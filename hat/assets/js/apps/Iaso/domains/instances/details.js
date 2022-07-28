@@ -54,6 +54,7 @@ import ConfirmCancelDialogComponent from '../../components/dialogs/ConfirmCancel
 import EnketoIcon from './components/EnketoIcon';
 import { getInstancesFilesList } from './utils';
 import { userHasPermission } from '../users/utils';
+import { getRequest } from '../../libs/Api';
 import MESSAGES from './messages';
 
 import { baseUrls } from '../../constants/urls';
@@ -272,6 +273,7 @@ class InstanceDetails extends Component {
         this.state = {
             orgUnitTypeIds: [],
             showDial: true,
+            showHistoryLink: true,
         };
     }
 
@@ -291,6 +293,16 @@ class InstanceDetails extends Component {
                 },
             );
         });
+
+        getRequest(`/api/logs/?objectId=${instanceId}&order=-created_at`).then(
+            instanceLogsDetails => {
+                if (instanceLogsDetails.list.length === 1) {
+                    this.setState({
+                        showHistoryLink: false,
+                    });
+                }
+            },
+        );
     }
 
     onActionSelected(action) {
@@ -335,12 +347,13 @@ class InstanceDetails extends Component {
             params,
             redirectToActionInstance,
         } = this.props;
-        const { showDial } = this.state;
+        const { showDial, showHistoryLink } = this.state;
         const formId = currentInstance?.form_id;
         const canEditEnketo = userHasPermission(
             'iaso_update_submission',
             currentUser,
         );
+
         return (
             <section className={classes.relativeContainer}>
                 <TopBar
@@ -414,48 +427,51 @@ class InstanceDetails extends Component {
                                     <InstanceDetailsInfos
                                         currentInstance={currentInstance}
                                     />
-                                    <Grid container spacing={1}>
-                                        <Grid xs={5} item>
-                                            <div
-                                                className={
-                                                    classes.labelContainer
-                                                }
+
+                                    {showHistoryLink && (
+                                        <Grid container spacing={1}>
+                                            <Grid xs={5} item>
+                                                <div
+                                                    className={
+                                                        classes.labelContainer
+                                                    }
+                                                >
+                                                    <Typography
+                                                        variant="body2"
+                                                        noWrap
+                                                        color="inherit"
+                                                        title="Historique"
+                                                    >
+                                                        {formatMessage(
+                                                            MESSAGES.history,
+                                                        )}
+                                                    </Typography>
+                                                    :
+                                                </div>
+                                            </Grid>
+
+                                            <Grid
+                                                xs={7}
+                                                container
+                                                item
+                                                justifyContent="flex-start"
+                                                alignItems="center"
                                             >
                                                 <Typography
-                                                    variant="body2"
-                                                    noWrap
+                                                    variant="body1"
                                                     color="inherit"
-                                                    title="Historique"
                                                 >
-                                                    {formatMessage(
-                                                        MESSAGES.history,
-                                                    )}
+                                                    <Link
+                                                        to={`${baseUrls.compareInstanceLogs}/instanceIds/${currentInstance.id}`}
+                                                    >
+                                                        {formatMessage(
+                                                            MESSAGES.seeAllVersions,
+                                                        )}
+                                                    </Link>
                                                 </Typography>
-                                                :
-                                            </div>
+                                            </Grid>
                                         </Grid>
-
-                                        <Grid
-                                            xs={7}
-                                            container
-                                            item
-                                            justifyContent="flex-start"
-                                            alignItems="center"
-                                        >
-                                            <Typography
-                                                variant="body1"
-                                                color="inherit"
-                                            >
-                                                <Link
-                                                    to={`${baseUrls.compareInstanceLogs}/instanceIds/${currentInstance.id}`}
-                                                >
-                                                    {formatMessage(
-                                                        MESSAGES.seeAllVersions,
-                                                    )}
-                                                </Link>
-                                            </Typography>
-                                        </Grid>
-                                    </Grid>
+                                    )}
                                 </WidgetPaper>
                                 <WidgetPaper
                                     title={formatMessage(MESSAGES.location)}

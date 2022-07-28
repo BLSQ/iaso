@@ -44,6 +44,7 @@ export const useGetOrgUnits = ({
         options: {
             enabled: false,
             staleTime: Infinity,
+            keepPreviousData: true,
             onSuccess,
         },
     });

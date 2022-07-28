@@ -141,7 +141,7 @@ export const OrgUnits: FunctionComponent<Props> = ({ params }) => {
         useBulkSaveOrgUnits();
     const {
         data: orgUnitsData,
-        isFetching: isFetchingOrgUnits,
+        isLoading: isFetchingOrgUnits,
         refetch: fetchOrgUnits,
     } = useGetOrgUnits({
         params: apiParams,

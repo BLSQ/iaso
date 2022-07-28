@@ -35,11 +35,11 @@ export const useGetGroups = ({
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [dataSourceId]);
 
-    return useSnackQuery(
-        ['groups', dataSourceId, groupsQueryParams],
-        () => getRequest(`/api/groups/${groupsQueryParams}`),
-        MESSAGES.fetchGroupsError,
-        {
+    return useSnackQuery({
+        queryKey: ['groups', dataSourceId, groupsQueryParams],
+        queryFn: () => getRequest(`/api/groups/${groupsQueryParams}`),
+        snackErrorMsg: MESSAGES.fetchGroupsError,
+        options: {
             enabled,
             staleTime,
             select: data => {
@@ -53,5 +53,5 @@ export const useGetGroups = ({
                 });
             },
         },
-    );
+    });
 };

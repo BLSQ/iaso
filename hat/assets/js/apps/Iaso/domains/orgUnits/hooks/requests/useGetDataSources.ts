@@ -20,17 +20,21 @@ export const useGetDataSources = (): UseQueryResult<
 > => {
     const queryKey: any[] = ['sources'];
     // @ts-ignore
-    return useSnackQuery(queryKey, () => getDataSources(), undefined, {
-        staleTime,
-        select: data => {
-            if (!data) return [];
-            return data.sources.map(dataSource => {
-                return {
-                    value: dataSource.id.toString(),
-                    label: dataSource.name,
-                    original: dataSource,
-                };
-            });
+    return useSnackQuery({
+        queryKey,
+        queryFn: () => getDataSources(),
+        options: {
+            staleTime,
+            select: data => {
+                if (!data) return [];
+                return data.sources.map(dataSource => {
+                    return {
+                        value: dataSource.id.toString(),
+                        label: dataSource.name,
+                        original: dataSource,
+                    };
+                });
+            },
         },
     });
 };

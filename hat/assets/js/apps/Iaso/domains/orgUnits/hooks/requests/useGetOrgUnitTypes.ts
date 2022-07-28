@@ -19,24 +19,30 @@ export const useGetOrgUnitTypes = (): UseQueryResult<
 > => {
     const queryKey: any[] = ['orgunittypes'];
     // @ts-ignore
-    return useSnackQuery(queryKey, () => getOrgunitTypes(), undefined, {
-        staleTime,
-        select: data => {
-            if (!data) return [];
-            return data.orgUnitTypes
-                .sort((orgunitType1, orgunitType2) => {
-                    if (orgunitType1.depth && orgunitType2.depth) {
-                        return orgunitType1.depth < orgunitType2.depth ? -1 : 1;
-                    }
-                    return 1;
-                })
-                .map(orgunitType => {
-                    return {
-                        value: orgunitType.id.toString(),
-                        label: orgunitType.name,
-                        original: orgunitType,
-                    };
-                });
+    return useSnackQuery({
+        queryKey,
+        queryFn: () => getOrgunitTypes(),
+        options: {
+            staleTime,
+            select: data => {
+                if (!data) return [];
+                return data.orgUnitTypes
+                    .sort((orgunitType1, orgunitType2) => {
+                        if (orgunitType1.depth && orgunitType2.depth) {
+                            return orgunitType1.depth < orgunitType2.depth
+                                ? -1
+                                : 1;
+                        }
+                        return 1;
+                    })
+                    .map(orgunitType => {
+                        return {
+                            value: orgunitType.id.toString(),
+                            label: orgunitType.name,
+                            original: orgunitType,
+                        };
+                    });
+            },
         },
     });
 };

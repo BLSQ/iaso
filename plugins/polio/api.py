@@ -702,14 +702,15 @@ class IMStatsViewSet(viewsets.ViewSet):
                     print("------------")
                     continue
                 try:
-                    round_number = form["roundNumber"]
+                    round_number = form.get("roundNumber", None)
+                    if round_number is None:
+                        round_number = form.get("HH", [{}])[0]["HH/roundNumber"]
                     if round_number.upper() == "MOPUP":
                         continue
                 except KeyError:
                     skipped_forms_list.append({form["_id"]: {"round": None, "date": form.get("date_monitored", None)}})
                     no_round_count += 1
                     continue
-                round_number = form["roundNumber"]
                 if round_number[-1].isdigit():
                     round_number = round_number[-1]
                 else:

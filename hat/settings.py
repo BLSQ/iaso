@@ -54,6 +54,7 @@ AWS_STORAGE_BUCKET_NAME = os.environ.get("AWS_STORAGE_BUCKET_NAME", "")
 # Default site for django contrib site framework
 SITE_ID = 1
 
+FILE_SERVER_URL = os.environ.get("FILE_SERVER_URL", "")
 
 # Logging
 

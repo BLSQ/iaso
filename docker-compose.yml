@@ -61,6 +61,7 @@ services:
       ENKETO_URL: http://enketo:8005/
       EMAIL_BACKEND: "django.core.mail.backends.console.EmailBackend"
       LIVE_COMPONENTS:
+      FILE_SERVER_URL: $FILE_SERVER_URL
     # Limit logging in dev to not overflow terminal
     logging: &iaso_logging
       driver: "json-file"

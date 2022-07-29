@@ -6,6 +6,7 @@ from django.db import models, transaction
 from django.utils.html import strip_tags
 from django.utils.translation import ugettext_lazy as _
 from django.contrib.postgres.fields import ArrayField, CITextField
+from django.conf import settings
 
 from .project import Project
 from ..dhis2.form_mapping import copy_mappings_from_previous_version
@@ -257,8 +258,8 @@ class FormVersion(models.Model):
         return {
             "id": self.id,
             "version_id": self.version_id,
-            "file": self.file.url,
-            "xls_file": self.xls_file.url if self.xls_file else None,
+            "file": settings.FILE_SERVER_URL + self.file.url,
+            "xls_file": settings.FILE_SERVER_URL + self.xls_file.url if self.xls_file else None,
             "created_at": self.created_at.timestamp() if self.created_at else None,
             "updated_at": self.updated_at.timestamp() if self.updated_at else None,
         }

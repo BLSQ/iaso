@@ -294,6 +294,7 @@ class InstanceDetails extends Component {
             );
         });
 
+        // not showing history link in submission detail if there is only one version/log
         getRequest(`/api/logs/?objectId=${instanceId}&order=-created_at`).then(
             instanceLogsDetails => {
                 if (instanceLogsDetails.list.length === 1) {
@@ -428,7 +429,7 @@ class InstanceDetails extends Component {
                                         currentInstance={currentInstance}
                                     />
 
-                                    {showHistoryLink && (
+                                    {currentInstance && showHistoryLink && (
                                         <Grid container spacing={1}>
                                             <Grid xs={5} item>
                                                 <div

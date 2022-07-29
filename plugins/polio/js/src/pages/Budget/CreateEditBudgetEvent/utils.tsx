@@ -1,6 +1,6 @@
 import React, { useCallback, ReactNode } from 'react';
 // @ts-ignore
-import { AddButton, IconButton } from 'bluesquare-components';
+import { AddButton, IconButton, useSafeIntl } from 'bluesquare-components';
 import { makeStyles } from '@material-ui/core';
 import AutorenewIcon from '@material-ui/icons/Autorenew';
 import MESSAGES from '../../../constants/messages';
@@ -113,4 +113,38 @@ export const makeEventsDropdown = (
         ];
     }
     return baseOptions;
+};
+
+export const useAllEventsOption = (): DropdownOptions<BudgetEventType>[] => {
+    const { formatMessage } = useSafeIntl();
+    return [
+        {
+            label: formatMessage(MESSAGES.submission) as string,
+            value: 'submission',
+        },
+        {
+            label: formatMessage(MESSAGES.comments) as string,
+            value: 'comments',
+        },
+        {
+            label: formatMessage(MESSAGES.request) as string,
+            value: 'request',
+        },
+        {
+            label: formatMessage(MESSAGES.feedback) as string,
+            value: 'feedback',
+        },
+        {
+            label: formatMessage(MESSAGES.transmission) as string,
+            value: 'transmission',
+        },
+        {
+            label: formatMessage(MESSAGES.review) as string,
+            value: 'review',
+        },
+        {
+            value: 'validation',
+            label: formatMessage(MESSAGES.validation),
+        },
+    ];
 };

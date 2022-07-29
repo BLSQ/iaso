@@ -3,9 +3,10 @@ import typing
 from django.db.models import Max, Q, Count
 from django.http import StreamingHttpResponse, HttpResponse
 from django.utils.dateparse import parse_date
-from rest_framework import serializers, permissions
+from rest_framework import serializers, permissions, status
 from rest_framework.request import Request
 from rest_framework.generics import get_object_or_404
+from rest_framework.response import Response
 
 from iaso.models import Form, Project, OrgUnitType, Profile, OrgUnit
 from iaso.utils import timestamp_to_datetime
@@ -349,6 +350,15 @@ class FormsViewSet(ModelViewSet):
             created_at,
             updated_at,
         ]
+
+    def destroy(self, request, pk=None):
+        original = get_object_or_404(Form, pk=pk)
+        form = self.get_object()
+        self.check_object_permissions(request, form)
+        self.perform_destroy(form)
+        # log the changes made on the form
+        log_modification(original, form, FORM_API, user=request.user)
+        return Response(status=status.HTTP_204_NO_CONTENT)
 
 
 class MobileFormViewSet(FormsViewSet):

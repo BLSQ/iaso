@@ -2,6 +2,7 @@
 
 import superUser from '../../fixtures/profiles/me/superuser.json';
 import submission from '../../fixtures/submissions/details_1007.json';
+import submissionLogs from '../../fixtures/submissions/submission_logs.json';
 import { testPermission } from '../../support/testPermission';
 import { testTopBar } from '../../support/testTopBar';
 
@@ -21,7 +22,11 @@ describe('Instance details', () => {
             'getSubmission',
         );
         cy.intercept('GET', '/api/profiles/me/**', superUser);
-        cy.intercept('GET', '/api/logs/?objectId=1007&order=-created_at');
+        cy.intercept(
+            'GET',
+            '/api/logs/?objectId=1007&order=-created_at',
+            submissionLogs,
+        );
     });
     testPermission(baseUrl);
     testTopBar(baseUrl, topBarTitle, true);

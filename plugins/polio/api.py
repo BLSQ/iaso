@@ -1680,7 +1680,7 @@ class BudgetEventViewset(ModelViewSet):
                         # TODO check that this works
                         recipients.discard(user)
                 # Send email with link to all approvers if event is a submission
-                elif event_type == "submission":
+                elif event_type == "submission" or event_type == "transmission":
                     author_team = event.author.teams.filter(name__icontains="approval").filter(deleted_at=None).first()
                     approval_teams = Team.objects.filter(name__icontains="approval").filter(deleted_at=None)
                     approvers = approval_teams.values("users")
@@ -1717,19 +1717,6 @@ class BudgetEventViewset(ModelViewSet):
                     msg.attach_alternative(html_content, "text/html")
                     msg.send(fail_silently=False)
 
-                    # send_mail(
-                    #     email_subject(event_type, event.campaign.obr_name),
-                    #     event_creation_email(
-                    #         event.type,
-                    #         event.author.first_name,
-                    #         event.author.last_name,
-                    #         event.comment,
-                    #         generate_auto_authentication_link(link_to_send, user),
-                    #         settings.DNS_DOMAIN,
-                    #     ),
-                    #     settings.DEFAULT_FROM_EMAIL,
-                    #     [user.email],
-                    # )
                 event.is_email_sent = True
                 event.save()
                 # If the budget is approved as a results of the events creation, send the confirmation email as well

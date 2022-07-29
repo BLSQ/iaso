@@ -21,6 +21,7 @@ describe('Instance details', () => {
             'getSubmission',
         );
         cy.intercept('GET', '/api/profiles/me/**', superUser);
+        cy.intercept('GET', '/api/logs/?objectId=1007&order=-created_at');
     });
     testPermission(baseUrl);
     testTopBar(baseUrl, topBarTitle, true);

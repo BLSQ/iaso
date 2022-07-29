@@ -144,10 +144,11 @@ class FormSerializer(DynamicFieldsModelSerializer):
         return data
 
     def update(self, form, validated_data):
-        if form.id is not None:
-            original = get_object_or_404(Form, pk=form.id)
+        # get the original form either is deleted or not
+        if form.deleted_at is not None:
+            original = Form.objects_only_deleted.get(pk=form.id)
         else:
-            original = None
+            original = get_object_or_404(Form, pk=form.id)
         # assign validated data to variable
         name = validated_data.pop("name", None)
         projects = validated_data.pop("projects", None)
@@ -160,6 +161,7 @@ class FormSerializer(DynamicFieldsModelSerializer):
         periods_after_allowed = validated_data.pop("periods_after_allowed", None)
         derived = validated_data.pop("derived", None)
         label_keys = validated_data.pop("label_keys", None)
+        deleted_at = validated_data.pop("deleted_at", None)
         # assign variable to form object
         if name is not None:
             form.name = name
@@ -187,6 +189,8 @@ class FormSerializer(DynamicFieldsModelSerializer):
             form.derived = derived
         if label_keys is not None:
             form.label_keys = label_keys
+
+        form.deleted_at = deleted_at
         # save the form's updates
         form.save()
 

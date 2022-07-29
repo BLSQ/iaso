@@ -1,63 +1,49 @@
 /* eslint-disable camelcase */
 import React, {
-    useState,
+    FunctionComponent,
     useCallback,
     useMemo,
-    FunctionComponent,
+    useState,
 } from 'react';
 import { useField } from 'formik';
 // @ts-ignore
 import {
-    useSafeIntl,
-    LoadingSpinner,
     IconButton as IconButtonComponent,
+    LoadingSpinner,
+    useSafeIntl,
 } from 'bluesquare-components';
 import {
+    FormControl,
     FormControlLabel,
     FormGroup,
-    Switch,
-    Grid,
-    Typography,
-    TableContainer,
-    Table as MuiTable,
-    TableHead,
-    TableBody,
-    TableRow,
-    TableCell,
-    TablePagination,
-    Tooltip,
-    Radio,
-    FormControl,
     FormLabel,
+    Grid,
+    Radio,
     RadioGroup,
+    Switch,
+    Table as MuiTable,
+    TableBody,
+    TableCell,
+    TableContainer,
+    TableHead,
+    TablePagination,
+    TableRow,
+    Tooltip,
+    Typography,
 } from '@material-ui/core';
 import cloneDeep from 'lodash/cloneDeep';
 import sortBy from 'lodash/sortBy';
 import { FieldProps } from 'formik/dist/Field';
 import { MapComponent } from '../MapComponent/MapComponent';
 import { useGetGeoJson } from '../../hooks/useGetGeoJson';
-import { useStyles } from '../../styles/theme';
 import MESSAGES from '../../constants/messages';
 import { polioVacines } from '../../constants/virus';
-
-const selectedPathOptions = {
-    color: 'lime',
-    weight: '1',
-    opacity: '1',
-    zIndex: '1',
-};
-const unselectedPathOptions = {
-    color: 'gray',
-    weight: '1',
-    opacity: '1',
-    zIndex: '1',
-};
-const initialDistrict = {
-    color: '#FF695C',
-    weight: '1',
-    opacity: '1',
-    zIndex: '1',
-};
+import {
+    initialDistrict,
+    selectedPathOptions,
+    unselectedPathOptions,
+} from '../../styles/constants';
+import { useStyles } from '../../styles/theme';
 
 type Scope = {
     vaccine: string;

@@ -12,7 +12,7 @@ import { redirectTo } from '../../../routing/actions';
 import { baseUrls } from '../../../constants/urls';
 import { sendDhisOuImporterRequest } from '../requests';
 import { useFormState } from '../../../hooks/form';
-import { useSnackMutation } from '../../../libs/apiHooks';
+import { useSnackMutation } from '../../../libs/apiHooks.ts';
 import InputComponent from '../../../components/forms/InputComponent';
 
 const initialFormState = sourceCredentials => {

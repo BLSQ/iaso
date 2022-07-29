@@ -288,6 +288,39 @@ class InstanceModelTestCase(TestCase):
         json_instance = instance.get_and_save_json_of_xml()
         self.assertTrue("_version" not in json_instance)
 
+    def test_xml_to_json_should_omit_older_answers(self):
+
+        with open("iaso/tests/fixtures/edit_existing_submission_xlsform.xlsx", "rb") as form_1_version_1_file:
+            survey = parsing.parse_xls_form(form_1_version_1_file)
+            form_version = m.FormVersion.objects.create_for_form_and_survey(
+                form=self.form_1, survey=survey, xls_file=File(form_1_version_1_file)
+            )
+            form_version.version_id = "2022051101"  # force version to match instance files
+            form_version.save()
+
+        instance = m.Instance.objects.create(
+            form=self.form_1,
+            period="202001",
+            org_unit=self.jedi_council_coruscant,
+            file=UploadedFile(open("iaso/tests/fixtures/edit_existing_submission.xml")),
+        )
+
+        json_instance = instance.get_and_save_json_of_xml()
+
+        # as described in https://bluesquare.atlassian.net/browse/IA-1351
+        #
+        # these pmns_qlte_cs_rdc_14_total_max and pmns_qlte_cs_rdc_14_total_point
+        # were twice in the xml
+        #
+        # but in the newer version of the form
+        #    grp14/synthesis/pmns_qlte_cs_rdc_14_total_max 26
+        # and
+        #    grp14/synthesis14/pmns_qlte_cs_rdc_14_total_max 13
+        # should be ignored (previous version calculate)
+
+        self.assertEquals(json_instance["pmns_qlte_cs_rdc_14_total_max"], "26")
+        self.assertEquals(json_instance["pmns_qlte_cs_rdc_14_total_point"], "26")
+
     def test_instances_for_org_unit_hierarchy(self):
         """Test the querying instances within a specific org unit hierarchy"""
 

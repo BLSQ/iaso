@@ -1,10 +1,12 @@
 /* eslint-disable camelcase */
-import React, { useMemo } from 'react';
+import React, { useMemo, useState } from 'react';
 import {
     // @ts-ignore
     useSafeIntl,
     // @ts-ignore
     IconButton as IconButtonComponent,
+    // @ts-ignore
+    useSkipEffectOnMount,
 } from 'bluesquare-components';
 import moment from 'moment';
 import { makeStyles } from '@material-ui/core';
@@ -14,14 +16,21 @@ import { Column } from '../../../../../../../hat/assets/js/apps/Iaso/types/table
 import { BUDGET_DETAILS } from '../../../constants/routes';
 import { DateTimeCellRfc } from '../../../../../../../hat/assets/js/apps/Iaso/components/Cells/DateTimeCell';
 import { BudgetFilesModal } from '../BudgetFilesModal';
-import { CreateEditBudgetEvent } from '../CreateEditBudgetEvent';
-import { useCurrentUser } from '../../../../../../../hat/assets/js/apps/Iaso/utils/usersUtils';
+import { CreateEditBudgetEvent } from '../CreateEditBudgetEvent/CreateEditBudgetEvent';
+import {
+    Profile,
+    useCurrentUser,
+} from '../../../../../../../hat/assets/js/apps/Iaso/utils/usersUtils';
 import DeleteDialog from '../../../../../../../hat/assets/js/apps/Iaso/components/dialogs/DeleteDialogComponent';
 import {
     useDeleteBudgetEvent,
     useRestoreBudgetEvent,
 } from '../../../hooks/useDeleteBudgetEvent';
 import { useGetTeams } from '../../../hooks/useGetTeams';
+import { formatTargetTeams, formatUserName } from '../utils';
+import { BudgetEvent } from '../../../constants/types';
+import { Optional } from '../../../../../../../hat/assets/js/apps/Iaso/types/utils';
+import { convertObjectToString } from '../../../utils';
 
 const baseUrl = BUDGET_DETAILS;
 
@@ -30,6 +39,7 @@ const styles = theme => {
         deletedRow: {
             color: theme.palette.secondary.main,
         },
+        paragraph: { margin: 0 },
     };
 };
 
@@ -116,7 +126,7 @@ export const useBudgetColumns = (): Column[] => {
 
 export const useBudgetDetailsColumns = ({ profiles, data }): Column[] => {
     const classes = useStyles();
-    const { data: teams } = useGetTeams();
+    const { data: teams = [] } = useGetTeams();
     const getRowColor = getStyle(classes);
     const { formatMessage } = useSafeIntl();
     const currentUser = useCurrentUser();
@@ -161,18 +171,42 @@ export const useBudgetDetailsColumns = ({ profiles, data }): Column[] => {
                 accessor: 'author',
                 sortable: true,
                 Cell: settings => {
-                    const { author } = settings.row.original;
+                    const { author, type } = settings.row.original;
                     const authorProfile = profiles?.profiles?.find(
                         profile => profile.user_id === author,
                     );
-                    const nameDisplayed =
-                        authorProfile?.first_name && authorProfile?.last_name
-                            ? `${authorProfile.first_name} ${authorProfile.last_name}`
-                            : authorProfile?.user_name ?? author;
+                    const nameDisplayed = formatUserName(authorProfile);
+
+                    const authorTeams = useMemo(
+                        () => teams.filter(team => team.users.includes(author)),
+                        [author],
+                    );
+                    const authorTeam =
+                        type === 'validation'
+                            ? authorTeams.find(team =>
+                                  team.name.toLowerCase().includes('approval'),
+                              )
+                            : authorTeams.find(
+                                  team =>
+                                      !team.name
+                                          .toLowerCase()
+                                          .includes('approval'),
+                              ) ?? authorTeams[0];
                     return (
-                        <span className={getRowColor(settings)}>
-                            {nameDisplayed}
-                        </span>
+                        <>
+                            <p
+                                className={`${getRowColor(settings)} ${
+                                    classes.paragraph
+                                }`}
+                            >
+                                {nameDisplayed}
+                            </p>
+                            {authorTeam && (
+                                <p className={classes.paragraph}>
+                                    {authorTeam.name}
+                                </p>
+                            )}
+                        </>
                     );
                 },
             },
@@ -183,17 +217,10 @@ export const useBudgetDetailsColumns = ({ profiles, data }): Column[] => {
                 sortable: false,
                 Cell: settings => {
                     const { target_teams } = settings.row.original;
-                    const teamsToDisplay =
-                        target_teams?.length === 0
-                            ? target_teams
-                            : target_teams
-                                  .map(
-                                      (target_team: number) =>
-                                          teams?.find(
-                                              team => team.id === target_team,
-                                          )?.name,
-                                  )
-                                  .join(', ');
+                    const teamsToDisplay = formatTargetTeams(
+                        target_teams,
+                        teams,
+                    );
                     return (
                         <span className={getRowColor(settings)}>
                             {teamsToDisplay}
@@ -202,7 +229,7 @@ export const useBudgetDetailsColumns = ({ profiles, data }): Column[] => {
                 },
             },
             {
-                Header: formatMessage(MESSAGES.viewFiles),
+                Header: formatMessage(MESSAGES.actions),
                 id: 'id',
                 accessor: 'id',
                 sortable: false,
@@ -269,18 +296,19 @@ export const useBudgetDetailsColumns = ({ profiles, data }): Column[] => {
                                         keyName={`deleteBudgetEvent-${settings.row.original.id}`}
                                     />
                                 )}
-                            {settings.row.original.deleted_at && (
-                                <IconButtonComponent
-                                    color="secondary"
-                                    icon="restore-from-trash"
-                                    tooltipMessage={MESSAGES.restore}
-                                    onClick={() =>
-                                        restoreBudgetEvent(
-                                            settings.row.original.id,
-                                        )
-                                    }
-                                />
-                            )}
+                            {settings.row.original.deleted_at &&
+                                userIsAuthor && (
+                                    <IconButtonComponent
+                                        color="secondary"
+                                        icon="restore-from-trash"
+                                        tooltipMessage={MESSAGES.restore}
+                                        onClick={() =>
+                                            restoreBudgetEvent(
+                                                settings.row.original.id,
+                                            )
+                                        }
+                                    />
+                                )}
                         </section>
                     );
                 },
@@ -297,7 +325,10 @@ export const useBudgetDetailsColumns = ({ profiles, data }): Column[] => {
                     Cell: settings => {
                         const { internal } = settings.row.original;
                         return internal ? (
-                            <LockIcon className={getRowColor(settings)} />
+                            <LockIcon
+                                className={getRowColor(settings)}
+                                color="action"
+                            />
                         ) : (
                             <></>
                         );
@@ -312,9 +343,46 @@ export const useBudgetDetailsColumns = ({ profiles, data }): Column[] => {
         showInternalColumn,
         getRowColor,
         profiles?.profiles,
+        classes.paragraph,
         teams,
         currentUser.user_id,
         deleteBudgetEvent,
         restoreBudgetEvent,
     ]);
+};
+
+type Params = {
+    events: Optional<BudgetEvent[]>;
+    profiles: Profile[];
+    params: Record<string, any>;
+};
+
+export const useTableState = ({
+    events,
+    profiles,
+    params,
+}: Params): { resetPageToOne: unknown; columns: Column[] } => {
+    const { campaignName, campaignId } = params;
+    const [resetPageToOne, setResetPageToOne] = useState('');
+
+    useSkipEffectOnMount(() => {
+        const newParams = {
+            ...params,
+        };
+        delete newParams.page;
+        delete newParams.order;
+        setResetPageToOne(convertObjectToString(newParams));
+    }, [params.pageSize, campaignId, campaignName]);
+
+    const columns = useBudgetDetailsColumns({
+        profiles,
+        data: events,
+    });
+
+    return useMemo(() => {
+        return {
+            resetPageToOne,
+            columns,
+        };
+    }, [columns, resetPageToOne]);
 };

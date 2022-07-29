@@ -1,5 +1,5 @@
 /* eslint-disable camelcase */
-import { UseMutationResult } from 'react-query';
+import { UseMutationResult, useQueryClient } from 'react-query';
 import {
     patchRequest,
     postRequest,
@@ -9,14 +9,13 @@ import { useSnackMutation } from '../../../../../hat/assets/js/apps/Iaso/libs/ap
 import { BudgetEventType } from '../constants/types';
 import MESSAGES from '../constants/messages';
 
-type QueryData = {
+export type QueryData = {
     id?: number;
     campaign: string;
     type: BudgetEventType;
     target_teams: number[];
-    comments?: string;
-    // status: 'validation_ongoing'; // forcing status value as we create an event
-    files: FileList;
+    comment?: string;
+    files?: FileList;
 };
 const createEvent = async (data: QueryData) => {
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -28,7 +27,7 @@ const patchEvent = async (data: QueryData) => {
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { files, ...body } = data;
     // create new budget event
-    return patchRequest(`/api/polio/budgetevent/${data.id}`, body);
+    return patchRequest(`/api/polio/budgetevent/${data.id}/`, body);
 };
 
 const postEventFiles = async (data: QueryData) => {
@@ -54,43 +53,43 @@ const putBudgetFinalisation = async (id: number) => {
 };
 
 export const useCreateBudgetEvent = () =>
-    useSnackMutation(
-        createEvent,
-        MESSAGES.budgetEventCreated,
-        undefined,
-        ['budget-details'],
-        undefined,
-        false,
-    );
-
+    useSnackMutation({
+        mutationFn: createEvent,
+        snackSuccessMessage: MESSAGES.budgetEventCreated,
+        invalidateQueryKey: ['budget-details'],
+        showSucessSnackBar: false,
+    });
+// We don't need to invalidate the key here since the call to finalize will be called onSuccess in CreateEditBudgetEvent and will invalidate the key onSuccess.
+// There's no need to invalidate the key onError, since nothing will have changed then
 export const useUpdateBudgetEvent = () =>
-    useSnackMutation(
-        patchEvent,
-        MESSAGES.budgetEventCreated,
-        undefined,
-        ['budget-details'],
-        undefined,
-        false,
-    );
+    useSnackMutation({
+        mutationFn: patchEvent,
+        snackSuccessMessage: MESSAGES.budgetEventCreated,
+        showSucessSnackBar: false,
+    });
 
+// We don't invalidate the 'budget-details query key when uploading file, otherwise , the onSuccess call in CreateEditBudgetEvent gets short-circuited, and the call to finalize is not sent
 export const useUploadBudgetFiles = () =>
-    useSnackMutation(
-        postEventFiles,
-        MESSAGES.budgetFilesUploaded,
-        undefined,
-        ['budget-details'],
-        undefined,
-        false,
-    );
+    useSnackMutation({
+        mutationFn: postEventFiles,
+        snackSuccessMessage: MESSAGES.budgetFilesUploaded,
+        showSucessSnackBar: false,
+    });
 
-export const useFinalizeBudgetEvent = () =>
-    useSnackMutation(
-        putBudgetFinalisation,
-        MESSAGES.budgetEventFinalized,
-        undefined,
-        ['budget-details'],
-        undefined,
-    );
+export const useFinalizeBudgetEvent = () => {
+    const queryClient = useQueryClient();
+    return useSnackMutation({
+        mutationFn: putBudgetFinalisation,
+        snackSuccessMessage: MESSAGES.budgetEventFinalized,
+        invalidateQueryKey: ['budget-details'],
+        // Since staleTime for ['teams'] is Infinity, we invalidate the cache when an event has been created to refresh the teams list
+        options: {
+            onSettled: () => {
+                queryClient.invalidateQueries(['teams']);
+            },
+        },
+    });
+};
 
 export const useSaveBudgetEvent = (
     type: 'create' | 'edit' | 'retry',
@@ -103,3 +102,18 @@ export const useSaveBudgetEvent = (
     if (type === 'retry') return updateBudgetEvent;
     return createBudgetEvent;
 };
+
+const quickPostBudget = (data: QueryData) => {
+    return createEvent(data).then(response =>
+        putBudgetFinalisation(response.id),
+    );
+};
+
+export const useQuickApproveBudgetEvent = (): UseMutationResult => {
+    return useSnackMutation({
+        mutationFn: quickPostBudget,
+        invalidateQueryKey: ['budget-details'],
+        snackSuccessMessage: MESSAGES.budgetEventFinalized,
+    });
+};
+export const useQuickRejectBudgetEvent = () => useQuickApproveBudgetEvent();

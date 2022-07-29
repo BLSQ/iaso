@@ -93,6 +93,7 @@ const initialState = currentUser => {
         currentOption: 'filters',
         formsSelected: [],
         orgUnitTypesSelected: [],
+        ancestorWithGeoJson: undefined,
         ...buttonsInitialState,
     };
 };
@@ -136,7 +137,8 @@ class OrgUnitMapComponent extends Component {
     }
 
     componentDidUpdate(prevProps) {
-        const { locationGroup, catchmentGroup } = this.state;
+        const { locationGroup, catchmentGroup, ancestorWithGeoJson } =
+            this.state;
         const {
             intl: { formatMessage },
             currentOrgUnit,
@@ -171,6 +173,9 @@ class OrgUnitMapComponent extends Component {
                 formatMessage(MESSAGES.catchment),
             );
         }
+        if (currentOrgUnit?.parent?.id !== ancestorWithGeoJson?.id) {
+            this.setAncestor();
+        }
     }
 
     componentWillUnmount() {
@@ -197,6 +202,20 @@ class OrgUnitMapComponent extends Component {
         resetOrgUnit();
     }
 
+    setAncestor() {
+        const { currentOrgUnit } = this.props;
+        for (
+            let ancestor = currentOrgUnit.parent;
+            ancestor;
+            ancestor = ancestor.parent
+        ) {
+            if (ancestor.geo_json) {
+                this.setState({ ancestorWithGeoJson: ancestor });
+                break;
+            }
+        }
+    }
+
     setCurrentOption(currentOption) {
         this.setState({
             currentOption,
@@ -211,6 +230,7 @@ class OrgUnitMapComponent extends Component {
             catchmentGroup,
             formsSelected,
             orgUnitTypesSelected,
+            ancestorWithGeoJson,
         } = this.state;
         fitToBounds({
             padding,
@@ -223,6 +243,7 @@ class OrgUnitMapComponent extends Component {
             locationGroup,
             catchmentGroup,
             map: this.map.leafletElement,
+            ancestorWithGeoJson,
         });
     }
 
@@ -338,6 +359,7 @@ class OrgUnitMapComponent extends Component {
             formsSelected,
             orgUnitTypesSelected,
             catchmentGroup,
+            ancestorWithGeoJson,
         } = this.state;
         const hasMarker =
             Boolean(currentOrgUnit.latitude) &&
@@ -358,17 +380,6 @@ class OrgUnitMapComponent extends Component {
             catchment.edit ||
             catchment.delete ||
             catchment.add;
-        let ancestorWithGeoJson = null;
-        for (
-            let ancestor = currentOrgUnit.parent;
-            ancestor;
-            ancestor = ancestor.parent
-        ) {
-            if (ancestor.geo_json) {
-                ancestorWithGeoJson = ancestor;
-                break;
-            }
-        }
 
         const getSourceShape = (s, o) => (
             <GeoJSON

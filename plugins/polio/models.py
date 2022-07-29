@@ -209,24 +209,24 @@ class Campaign(SoftDeletableModel):
     cvdpv_notified_at = models.DateField(
         null=True,
         blank=True,
-        verbose_name=_("cVDPV Notication"),
+        verbose_name=_("cVDPV Notification"),
     )
     cvdpv2_notified_at = models.DateField(
         null=True,
         blank=True,
-        verbose_name=_("cVDPV2 Notication"),
+        verbose_name=_("cVDPV2 Notification"),
     )
 
     pv_notified_at = models.DateField(
         null=True,
         blank=True,
-        verbose_name=_("PV Notication"),
+        verbose_name=_("PV Notification"),
     )
 
     pv2_notified_at = models.DateField(
         null=True,
         blank=True,
-        verbose_name=_("PV2 Notication"),
+        verbose_name=_("PV2 Notification"),
     )
 
     virus = models.CharField(max_length=6, choices=VIRUSES, null=True, blank=True)
@@ -351,7 +351,7 @@ class Campaign(SoftDeletableModel):
 
     is_preventive = models.BooleanField(default=False, help_text="Preventive campaign")
     enable_send_weekly_email = models.BooleanField(
-        default=False, help_text="Activate the sending of a remainder email every week."
+        default=False, help_text="Activate the sending of a reminder email every week."
     )
 
     def __str__(self):
@@ -557,7 +557,10 @@ class BudgetEvent(SoftDeletableModel):
 
     def save(self, *args, **kwargs):
         super(BudgetEvent, self).save(*args, **kwargs)
-        self.campaign.last_budget_event = self
+        if self.campaign.last_budget_event is None:
+            self.campaign.last_budget_event = self
+        elif self.campaign.last_budget_event.created_at < self.created_at:
+            self.campaign.last_budget_event = self
         self.campaign.save()
 
 

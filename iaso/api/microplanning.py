@@ -87,7 +87,7 @@ class TeamSerializer(serializers.ModelSerializer):
     sub_teams_details = NestedTeamSerializer(many=True, read_only=True, source="sub_teams")
 
     def validate_parent(self, value: Team):
-        if value.type not in (None, TeamType.TEAM_OF_TEAMS):
+        if value is not None and value.type not in (None, TeamType.TEAM_OF_TEAMS):
             raise serializers.ValidationError("parentIsNotTeamOfTeam")
         if self.instance:
             p = value

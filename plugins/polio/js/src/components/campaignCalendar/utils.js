@@ -232,12 +232,7 @@ const addCellsBeforeRound = ({
         // if first round is not starting on the first cell, populate with empty cell
         if (startInRange) {
             if (!round.start.isSame(firstMonday, 'day')) {
-                let monday;
-                if (round.start.weekday() !== 1) {
-                    monday = round.start?.clone().startOf('isoWeek');
-                } else {
-                    monday = round.start?.clone();
-                }
+                const monday = round.start?.clone().startOf('isoWeek');
                 const extraDays = round.start?.clone().diff(monday, 'days');
                 const fullWeeks = monday.diff(firstMonday, 'weeks');
                 Array(fullWeeks)

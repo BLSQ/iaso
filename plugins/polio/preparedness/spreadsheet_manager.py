@@ -3,12 +3,14 @@
 Use a template configured in polio.Config preparedness_template_id
 """
 import copy
+from typing import Optional
 
 import gspread
 from django.utils.translation import gettext_lazy as _
 from gspread.utils import rowcol_to_a1, Dimension, a1_range_to_grid_range
 from rest_framework import exceptions
 
+from iaso.models import OrgUnit
 from plugins.polio.models import CountryUsersGroup, Campaign
 from plugins.polio.preparedness.client import get_client, get_google_config
 
@@ -125,8 +127,18 @@ def copy_protected_range_to_sheet(template_protected_ranges, new_sheet):
     return requests
 
 
-def generate_spreadsheet_for_campaign(campaign: Campaign):
+def get_round_districts(round):
+    return OrgUnit.objects.filter(groups__roundScope__round=round)
+
+
+def get_round_regions(round):
+    # May not be the most efficient
+    return OrgUnit.objects.filter(id__in=get_round_districts(round).values_list("parent_id", flat=True).distinct())
+
+
+def generate_spreadsheet_for_campaign(campaign: Campaign, round_number: Optional[int]):
     lang = "EN"
+
     try:
         country = campaign.country
         if not country:
@@ -147,8 +159,13 @@ def generate_spreadsheet_for_campaign(campaign: Campaign):
     meta = spreadsheet.fetch_sheet_metadata()
     template_range = meta["sheets"][regional_template_worksheet.index]["protectedRanges"]  # regional_template_worksheet
     batched_requests = []
-    districts = campaign.get_districts()
-    regions = campaign.get_regions()
+    if campaign.separate_scopes_per_round and round_number != None:
+        round = campaign.rounds.get(number=round_number)
+        districts = get_round_districts(round)
+        regions = get_round_regions(round)
+    else:
+        districts = campaign.get_districts()
+        regions = campaign.get_regions()
     current_index = 2
     for index, region in enumerate(regions):
         regional_worksheet = regional_template_worksheet.duplicate(current_index, None, region.name)

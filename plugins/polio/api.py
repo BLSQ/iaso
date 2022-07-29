@@ -24,6 +24,7 @@ from django_filters.rest_framework import DjangoFilterBackend
 from gspread.utils import extract_id_from_url
 from rest_framework import routers, filters, viewsets, serializers, permissions, status
 from rest_framework.decorators import action
+from rest_framework.request import Request
 from rest_framework.response import Response
 from django.conf import settings
 import urllib.parse
@@ -174,8 +175,10 @@ class CampaignViewSet(ModelViewSet):
         return Response(get_current_preparedness(campaign, roundNumber))
 
     @action(methods=["POST"], detail=True, serializer_class=CampaignPreparednessSpreadsheetSerializer)
-    def create_preparedness_sheet(self, request, pk=None, **kwargs):
-        serializer = CampaignPreparednessSpreadsheetSerializer(data={"campaign": pk})
+    def create_preparedness_sheet(self, request: Request, pk=None, **kwargs):
+        data = request.data
+        data["campaign"] = pk
+        serializer = CampaignPreparednessSpreadsheetSerializer(data=data)
         serializer.is_valid(raise_exception=True)
         serializer.save()
         return Response(serializer.data)

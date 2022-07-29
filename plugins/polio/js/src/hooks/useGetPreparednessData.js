@@ -28,11 +28,11 @@ export const useFetchPreparedness = () => {
 };
 
 export const useGeneratePreparednessSheet = campaign_id => {
-    return useSnackMutation(googleSheetURL =>
+    return useSnackMutation(roundNumber =>
         postRequest(
             `/api/polio/campaigns/${campaign_id}/create_preparedness_sheet/`,
             {
-                google_sheet_url: googleSheetURL,
+                round_number: roundNumber,
             },
         ),
     );

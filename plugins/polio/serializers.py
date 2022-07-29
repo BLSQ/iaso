@@ -368,12 +368,14 @@ class CampaignPreparednessSpreadsheetSerializer(serializers.Serializer):
     """Serializer used to CREATE Preparedness spreadsheet from template"""
 
     campaign = serializers.PrimaryKeyRelatedField(queryset=Campaign.objects.all(), write_only=True)
+    round_number = serializers.IntegerField(required=False)
     url = serializers.URLField(read_only=True)
 
     def create(self, validated_data):
         campaign = validated_data.get("campaign")
+        round_number = validated_data.get("round_number")
 
-        spreadsheet = generate_spreadsheet_for_campaign(campaign)
+        spreadsheet = generate_spreadsheet_for_campaign(campaign, round_number)
 
         return {"url": spreadsheet.url}
 

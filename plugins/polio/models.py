@@ -361,9 +361,7 @@ class Campaign(SoftDeletableModel):
         return getattr(self, key)
 
     def get_districts(self):
-        if self.group is None:
-            return OrgUnit.objects.none()
-        return self.group.org_units.all()
+        return OrgUnit.objects.filter(groups__campaignScope__campaign=self)
 
     def get_regions(self):
         return OrgUnit.objects.filter(id__in=self.get_districts().values_list("parent_id", flat=True).distinct())

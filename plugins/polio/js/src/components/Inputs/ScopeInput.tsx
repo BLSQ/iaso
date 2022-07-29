@@ -6,10 +6,12 @@ import React, {
     useState,
 } from 'react';
 import { useField } from 'formik';
-// @ts-ignore
 import {
+    // @ts-ignore
     IconButton as IconButtonComponent,
+    // @ts-ignore
     LoadingSpinner,
+    // @ts-ignore
     useSafeIntl,
 } from 'bluesquare-components';
 import {

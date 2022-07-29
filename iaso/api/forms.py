@@ -5,6 +5,7 @@ from django.http import StreamingHttpResponse, HttpResponse
 from django.utils.dateparse import parse_date
 from rest_framework import serializers, permissions
 from rest_framework.request import Request
+from rest_framework.generics import get_object_or_404
 
 from iaso.models import Form, Project, OrgUnitType, Profile, OrgUnit
 from iaso.utils import timestamp_to_datetime
@@ -143,24 +144,54 @@ class FormSerializer(DynamicFieldsModelSerializer):
         return data
 
     def update(self, form, validated_data):
-        # get the original form
-        original = Form.objects.get(pk=form.id)
-        # assign new validated values to the form to be update
-        form.name = validated_data.pop("name", None)
-        form.projects.set(validated_data.pop("projects", None))
-        form.org_unit_types.set(validated_data.pop("org_unit_types", None))
-        form.period_type = validated_data.pop("period_type", None)
-        form.location_field = validated_data.pop("location_field", None)
-        form.device_field = validated_data.pop("device_field", None)
-        form.single_per_period = validated_data.pop("single_per_period", None)
-        form.periods_before_allowed = validated_data.pop("periods_before_allowed", None)
-        form.periods_after_allowed = validated_data.pop("periods_after_allowed", None)
-        form.derived = validated_data.pop("derived", None)
-        form.label_keys = validated_data.pop("label_keys", None)
-        # log the changes made on the form
-        log_modification(original, form, FORM_API, user=self.context["request"].user)
+        if form.id is not None:
+            original = get_object_or_404(Form, pk=form.id)
+        else:
+            original = None
+        # assign validated data to variable
+        name = validated_data.pop("name", None)
+        projects = validated_data.pop("projects", None)
+        org_unit_types = validated_data.pop("org_unit_types", None)
+        period_type = validated_data.pop("period_type", None)
+        location_field = validated_data.pop("location_field", None)
+        device_field = validated_data.pop("device_field", None)
+        single_per_period = validated_data.pop("single_per_period", None)
+        periods_before_allowed = validated_data.pop("periods_before_allowed", None)
+        periods_after_allowed = validated_data.pop("periods_after_allowed", None)
+        derived = validated_data.pop("derived", None)
+        label_keys = validated_data.pop("label_keys", None)
+        # assign variable to form object
+        if name is not None:
+            form.name = name
+        if projects is not None:
+            form.projects.clear()
+            for project in projects:
+                form.projects.add(project)
+        if org_unit_types is not None:
+            form.org_unit_types.clear()
+            for org_unit_type in org_unit_types:
+                form.org_unit_types.add(org_unit_type)
+        if period_type is not None:
+            form.period_type = period_type
+        if location_field is not None:
+            form.location_field = location_field
+        if device_field is not None:
+            form.device_field = device_field
+        if single_per_period is not None:
+            form.single_per_period = single_per_period
+        if periods_before_allowed is not None:
+            form.periods_before_allowed = periods_before_allowed
+        if periods_after_allowed is not None:
+            form.periods_after_allowed = periods_after_allowed
+        if derived is not None:
+            form.derived = derived
+        if label_keys is not None:
+            form.label_keys = label_keys
         # save the form's updates
         form.save()
+
+        # log the changes made on the form
+        log_modification(original, form, FORM_API, user=self.context["request"].user)
 
         return form
 

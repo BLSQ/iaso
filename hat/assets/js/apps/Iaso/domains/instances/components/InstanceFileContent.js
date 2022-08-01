@@ -23,11 +23,12 @@ export default class InstanceFileContent extends Component {
     }
 
     render() {
-        const { instance, showQuestionKey, showNote } = this.props;
+        const { instance, showQuestionKey, showNote, logId } = this.props;
         const hasDescriptor = instance.form_descriptor !== null;
 
         return !this.state.hasError && hasDescriptor ? (
             <InstanceFileContentRich
+                logId={logId}
                 instanceData={instance.file_content}
                 formDescriptor={instance.form_descriptor}
                 showQuestionKey={showQuestionKey}
@@ -42,10 +43,12 @@ export default class InstanceFileContent extends Component {
 InstanceFileContent.defaultProps = {
     showQuestionKey: true,
     showNote: true,
+    logId: null,
 };
 
 InstanceFileContent.propTypes = {
     instance: PropTypes.object.isRequired,
     showQuestionKey: PropTypes.bool,
     showNote: PropTypes.bool,
+    logId: PropTypes.string,
 };

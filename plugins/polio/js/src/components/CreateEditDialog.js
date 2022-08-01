@@ -24,7 +24,7 @@ import { useFormValidator } from '../hooks/useFormValidator';
 import { BaseInfoForm } from '../forms/BaseInfoForm';
 import { DetectionForm } from '../forms/DetectionForm';
 import { RiskAssessmentForm } from '../forms/RiskAssessmentForm';
-import { ScopeForm } from '../forms/ScopeForm';
+import { ScopeForm } from '../forms/ScopeForm.tsx';
 import { BudgetForm } from '../forms/BudgetForm';
 import { Form } from '../forms/Form';
 import { RoundsForm } from '../forms/RoundsForm';

@@ -1,12 +1,13 @@
 /* eslint-disable camelcase */
 import React, { FunctionComponent, useState } from 'react';
 import { Field, useFormikContext } from 'formik';
-import { ScopeInput } from '../components/Inputs/ScopeInput';
-import { BooleanInput } from '../components/Inputs';
+// @ts-ignore
 import { useSafeIntl } from 'bluesquare-components';
-import MESSAGES from '../constants/messages';
 import { TabContext, TabList, TabPanel } from '@material-ui/lab';
 import { Tab } from '@material-ui/core';
+import { ScopeInput } from '../components/Inputs/ScopeInput';
+import { BooleanInput } from '../components/Inputs';
+import MESSAGES from '../constants/messages';
 import { useStyles } from '../styles/theme';
 
 type Round = {
@@ -22,7 +23,7 @@ export const ScopeForm: FunctionComponent = () => {
     const { formatMessage } = useSafeIntl();
     const { values } = useFormikContext<Values>();
     const { separate_scopes_per_round: scopePerRound, rounds } = values;
-    const classes: any = useStyles();
+    const classes: Record<string, string> = useStyles();
     const sortedRounds = [...rounds]
         .map((round, roundIndex) => {
             return { ...round, originalIndex: roundIndex };
@@ -58,7 +59,11 @@ export const ScopeForm: FunctionComponent = () => {
                         ))}
                     </TabList>
                     {sortedRounds.map(round => (
-                        <TabPanel value={`${round.number}`} key={round.number}>
+                        <TabPanel
+                            value={`${round.number}`}
+                            key={round.number}
+                            className={classes.tabPanel}
+                        >
                             <Field
                                 name={`rounds[${round.originalIndex}].scopes`}
                                 component={ScopeInput}

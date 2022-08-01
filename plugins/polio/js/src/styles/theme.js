@@ -148,6 +148,7 @@ export const useStyles = makeStyles(() => ({
     },
     tabPanel: {
         padding: 0,
+        width: '100%',
     },
     fullHeight: { height: '100%' },
 }));

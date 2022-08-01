@@ -18,7 +18,6 @@ import {
     FormControl,
     FormControlLabel,
     FormGroup,
-    FormLabel,
     Grid,
     Radio,
     RadioGroup,
@@ -32,6 +31,7 @@ import {
     TableRow,
     Tooltip,
     Typography,
+    Box,
 } from '@material-ui/core';
 import cloneDeep from 'lodash/cloneDeep';
 import sortBy from 'lodash/sortBy';
@@ -46,6 +46,8 @@ import {
     unselectedPathOptions,
 } from '../../styles/constants';
 import { useStyles } from '../../styles/theme';
+
+import { MapLegend } from '../../../../../../hat/assets/js/apps/Iaso/components/maps/MapLegend';
 
 type Scope = {
     vaccine: string;
@@ -90,7 +92,7 @@ export const ScopeInput: FunctionComponent<FieldProps<Scope[], Values>> = ({
 }) => {
     // eslint-disable-next-line no-unused-vars
     const [_field, _meta, helpers] = useField(field.name);
-    const classes = useStyles();
+    const classes: Record<string, string> = useStyles();
     const { formatMessage } = useSafeIntl();
     const [selectRegion, setSelectRegion] = useState(false);
     const { value: scopes = [] } = field;
@@ -349,7 +351,7 @@ export const ScopeInput: FunctionComponent<FieldProps<Scope[], Values>> = ({
 
     return (
         <Grid container spacing={4}>
-            <Grid xs={6} item>
+            <Grid xs={7} item>
                 {isFetching && !districtShapes && <LoadingSpinner />}
                 {!isFetching && !districtShapes && (
                     // FIXME should not be needed
@@ -357,79 +359,91 @@ export const ScopeInput: FunctionComponent<FieldProps<Scope[], Values>> = ({
                         {formatMessage(MESSAGES.pleaseSaveCampaign)}
                     </Typography>
                 )}
-                <MapComponent
-                    name="ScopeMap"
-                    mainLayer={districtShapes}
-                    backgroundLayer={regionShapes}
-                    onSelectShape={onSelectOrgUnit}
-                    getMainLayerStyle={getShapeStyle}
-                    getBackgroundLayerStyle={getBackgroundLayerStyle}
-                    tooltipLabels={{ main: 'District', background: 'Region' }}
-                />
-            </Grid>
-            <Grid xs={2} item container>
-                <Grid item>
-                    <FormControl id="vaccine">
-                        <FormLabel>Vaccine</FormLabel>
-                        <RadioGroup
-                            aria-label="vaccineScope"
-                            value={selectedVaccine}
-                            onChange={event =>
-                                setSelectedVaccine(event.target.value)
-                            }
-                        >
-                            {polioVacines.map(vaccine => (
-                                <FormControlLabel
-                                    key={vaccine.value}
-                                    value={vaccine.label}
-                                    control={<Radio />}
-                                    label={
-                                        <>
-                                            <span
-                                                style={{ color: vaccine.color }}
-                                            >
-                                                {vaccine.value}
-                                            </span>{' '}
-                                            {vaccineCount[vaccine.value] ?? 0}{' '}
-                                            districts
-                                        </>
-                                    }
-                                />
-                            ))}
-                            {/* <FormControlLabel */}
-                            {/*    value="" */}
-                            {/*    control={<Radio />} */}
-                            {/*    label="❌ Not part of campaign" */}
-                            {/* /> */}
-                        </RadioGroup>
-                    </FormControl>
-                </Grid>
-                <Grid item>
-                    <FormGroup>
-                        <FormControlLabel
-                            style={{ width: 'max-content' }}
-                            control={
-                                <Switch
-                                    size="medium"
-                                    checked={selectRegion}
-                                    onChange={toggleRegionSelect}
-                                    color="primary"
-                                />
-                            }
-                            label={formatMessage(MESSAGES.selectRegion)}
-                        />
-                    </FormGroup>
-                </Grid>
-                <Grid xs={4} item>
-                    {districtShapes && isFetching && (
-                        <Typography align="right">
-                            {formatMessage(MESSAGES.refreshing)}
-                        </Typography>
-                    )}
-                </Grid>
-            </Grid>
+                <Box position="relative">
+                    <MapComponent
+                        name="ScopeMap"
+                        mainLayer={districtShapes}
+                        backgroundLayer={regionShapes}
+                        onSelectShape={onSelectOrgUnit}
+                        getMainLayerStyle={getShapeStyle}
+                        getBackgroundLayerStyle={getBackgroundLayerStyle}
+                        tooltipLabels={{
+                            main: 'District',
+                            background: 'Region',
+                        }}
+                    />
 
-            <Grid xs={4} item>
+                    <MapLegend
+                        titleMessage={MESSAGES.vaccine}
+                        width={170}
+                        content={
+                            <FormControl id="vaccine">
+                                <RadioGroup
+                                    aria-label="vaccineScope"
+                                    value={selectedVaccine}
+                                    onChange={event =>
+                                        setSelectedVaccine(event.target.value)
+                                    }
+                                >
+                                    {polioVacines.map(vaccine => (
+                                        <FormControlLabel
+                                            key={vaccine.value}
+                                            value={vaccine.label}
+                                            control={<Radio size="small" />}
+                                            label={
+                                                <Box
+                                                    className={
+                                                        classes.vaccinesSelect
+                                                    }
+                                                >
+                                                    <span
+                                                        style={{
+                                                            color: vaccine.color,
+                                                        }}
+                                                    >
+                                                        {vaccine.value}
+                                                    </span>{' '}
+                                                    {vaccineCount[
+                                                        vaccine.value
+                                                    ] ?? 0}{' '}
+                                                    {formatMessage(
+                                                        MESSAGES.districts,
+                                                    )}
+                                                </Box>
+                                            }
+                                        />
+                                    ))}
+                                    {/* <FormControlLabel */}
+                                    {/*    value="" */}
+                                    {/*    control={<Radio />} */}
+                                    {/*    label="❌ Not part of campaign" */}
+                                    {/* /> */}
+                                </RadioGroup>
+                            </FormControl>
+                        }
+                    />
+                </Box>
+                <FormGroup>
+                    <FormControlLabel
+                        style={{ width: 'max-content' }}
+                        control={
+                            <Switch
+                                size="medium"
+                                checked={selectRegion}
+                                onChange={toggleRegionSelect}
+                                color="primary"
+                            />
+                        }
+                        label={formatMessage(MESSAGES.selectRegion)}
+                    />
+                </FormGroup>
+                {districtShapes && isFetching && (
+                    <Typography align="right">
+                        {formatMessage(MESSAGES.refreshing)}
+                    </Typography>
+                )}
+            </Grid>
+            <Grid xs={5} item>
                 <TableContainer className={classes.districtList}>
                     <MuiTable stickyHeader size="small">
                         <TableHead>
@@ -488,39 +502,26 @@ export const ScopeInput: FunctionComponent<FieldProps<Scope[], Values>> = ({
                                                     : ''
                                             }
                                         >
-                                            <TableCell
-                                                style={{
-                                                    width: '25%',
-                                                    cursor: 'default',
-                                                }}
-                                            >
+                                            <TableCell>
                                                 {makeTableText(shape.region)}
                                             </TableCell>
-                                            <TableCell
-                                                style={{
-                                                    width: '25%',
-                                                    cursor: 'default',
-                                                }}
-                                            >
+                                            <TableCell>
                                                 {makeTableText(shape.name)}
                                             </TableCell>
-                                            <TableCell
-                                                style={{
-                                                    width: '20%',
-                                                    cursor: 'default',
-                                                }}
-                                            >
+                                            <TableCell>
                                                 {makeTableText(
                                                     shape.vaccineName,
                                                 )}
                                             </TableCell>
                                             <TableCell
                                                 style={{
-                                                    minWidth: '30%',
+                                                    padding: 0,
                                                     cursor: 'pointer',
+                                                    textAlign: 'center',
                                                 }}
                                             >
                                                 <IconButtonComponent
+                                                    size="small"
                                                     onClick={() =>
                                                         removeRegionFromTable(
                                                             shape,
@@ -532,6 +533,7 @@ export const ScopeInput: FunctionComponent<FieldProps<Scope[], Values>> = ({
                                                     }
                                                 />
                                                 <IconButtonComponent
+                                                    size="small"
                                                     onClick={() =>
                                                         removeDistrictFromTable(
                                                             shape,

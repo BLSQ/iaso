@@ -531,7 +531,7 @@ class CampaignSerializer(serializers.ModelSerializer):
             )
             campaign_group.org_units.set(OrgUnit.objects.filter(pk__in=map(lambda org_unit: org_unit.id, org_units)))
             instance.group = campaign_group
-
+        validated_data.pop("last_budget_event", None)
         campaign = super().update(instance, validated_data)
         log_campaign_modification(campaign, old_campaign_dump, self.context["request"].user)
         return campaign

@@ -151,4 +151,7 @@ export const useStyles = makeStyles(() => ({
         width: '100%',
     },
     fullHeight: { height: '100%' },
+    vaccinesSelect: {
+        fontSize: 12,
+    },
 }));

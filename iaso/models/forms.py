@@ -1,11 +1,15 @@
 import pathlib
 import typing
+from copy import copy
 from django.contrib.auth.models import AnonymousUser, User
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.db import models, transaction
 from django.utils.html import strip_tags
 from django.utils.translation import ugettext_lazy as _
 from django.contrib.postgres.fields import ArrayField, CITextField
+from datetime import datetime
+
+from hat.audit.models import log_modification, FORM_API
 
 from .project import Project
 from ..dhis2.form_mapping import copy_mappings_from_previous_version
@@ -148,6 +152,12 @@ class Form(SoftDeletableModel):
             else:
                 print(f"Invalid questions on version {form_version}: {str(questions)[:50]}")
         self.possible_fields = _reformat_questions(all_questions)
+
+    def soft_delete(self, user: typing.Optional[User] = None):
+        original = copy(self)
+        self.deleted_at = datetime.now()
+        self.save()
+        log_modification(original, self, FORM_API, user=user)
 
 
 def _form_version_upload_to(instance: "FormVersion", filename: str) -> str:

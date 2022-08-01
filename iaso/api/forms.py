@@ -352,12 +352,9 @@ class FormsViewSet(ModelViewSet):
         ]
 
     def destroy(self, request, pk=None):
-        original = get_object_or_404(Form, pk=pk)
-        form = self.get_object()
+        form = get_object_or_404(self.get_queryset(), pk=pk)
         self.check_object_permissions(request, form)
-        self.perform_destroy(form)
-        # log the changes made on the form
-        log_modification(original, form, FORM_API, user=request.user)
+        form.soft_delete(request.user)
         return Response(status=status.HTTP_204_NO_CONTENT)
 
 

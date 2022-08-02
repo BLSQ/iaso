@@ -303,11 +303,11 @@ const actions = ({
         },
     ];
 
-    if (canEditEnketo && currentInstance.modification) {
+    if (canEditEnketo && currentInstance.has_access) {
         defaultActions = [enketoAction, ...defaultActions];
     }
 
-    if (currentInstance.modification) {
+    if (currentInstance.has_access) {
         defaultActions = [lockAction, ...defaultActions];
     }
 

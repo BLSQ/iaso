@@ -360,7 +360,7 @@ class InstancesViewSet(viewsets.ViewSet):
 
         response["instance_locks_history"] = map(instance_lock_as_dict, all_instance_locks.order_by("-created_at"))
         response["can_lock_again"] = has_access and is_locked and request.user != last_instance_lock.author
-        response["modification"] = has_access
+        response["has_access"] = has_access
         response["is_locked"] = is_locked
         self.check_object_permissions(request, instance)
         return Response(response)

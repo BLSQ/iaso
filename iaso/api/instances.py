@@ -354,24 +354,14 @@ class InstancesViewSet(viewsets.ViewSet):
 
     def retrieve(self, request, pk=None):
         instance = get_object_or_404(self.get_queryset(), pk=pk)
-        has_access = True
         is_locked = False
         all_instance_locks = InstanceLockTable.objects.filter(instance=instance)
         last_instance_lock = all_instance_locks.last()
-        access_ou = OrgUnit.objects.filter_for_user_and_app_id(request.user, None)
-        top_org_unit = instance.org_unit.parent if instance.org_unit.parent is not None else instance.org_unit
 
         if last_instance_lock:
             is_locked = last_instance_lock.is_locked
-            if is_locked:
-                if last_instance_lock.top_org_unit not in access_ou:
-                    has_access = False
-            else:
-                if top_org_unit not in access_ou:
-                    has_access = False
-        else:
-            if top_org_unit not in access_ou:
-                has_access = False
+
+        has_access = self.check_instance_access(instance, last_instance_lock, request)
 
         response = instance.as_full_model()
 
@@ -382,6 +372,7 @@ class InstancesViewSet(viewsets.ViewSet):
         response["can_lock_again"] = has_access and is_locked and request.user != last_instance_lock.author
         response["has_access"] = has_access
         response["is_locked"] = is_locked
+
         self.check_object_permissions(request, instance)
         return Response(response)
 

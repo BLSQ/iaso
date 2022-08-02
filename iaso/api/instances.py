@@ -436,9 +436,9 @@ class InstancesViewSet(viewsets.ViewSet):
             previous_orgunit.save()
         instance_serializer.save()
 
-        log_modification(original, instance, INSTANCE_API, user=request.user)
         instance.last_modified_by = request.user
         instance.save()
+        log_modification(original, instance, INSTANCE_API, user=request.user)
         return Response(instance.as_full_model())
 
     @action(detail=False, methods=["POST"], permission_classes=[permissions.IsAuthenticated, HasInstancePermission])

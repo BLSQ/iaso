@@ -471,6 +471,7 @@ const MESSAGES = defineMessages({
     CanLockAgain: {
         defaultMessage: 'Lock the submission again',
         id: 'iaso.instance.CanLockAgain',
+    },
     history: {
         id: 'iaso.label.history',
         defaultMessage: 'History',

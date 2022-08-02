@@ -157,31 +157,20 @@ class InstancesViewSet(viewsets.ViewSet):
                         return None
 
                 def instance_lock_status(x):
-                    has_access = True
                     return InstanceLockTable.objects.filter(instance=x).last()
 
                 def as_dict_formatter(x):
                     dict = x.as_dict()
                     reference_form_id = get_reference_form_id(x.org_unit) if has_org_unit(x) else None
-                    instance_status = instance_lock_status(x)
-                    has_access = True
+                    last_instance_lock = InstanceLockTable.objects.filter(instance=x).last()
                     is_locked = False
-                    access_ou = OrgUnit.objects.filter_for_user_and_app_id(request.user, None)
-                    top_org_unit = x.org_unit.parent if x.org_unit.parent is not None else x.org_unit
 
-                    if instance_status:
-                        is_locked = instance_status.is_locked
-                        if is_locked:
-                            if instance_status.top_org_unit not in access_ou:
-                                has_access = False
-                        else:
-                            if top_org_unit not in access_ou:
-                                has_access = False
-                    else:
-                        if top_org_unit not in access_ou:
-                            has_access = False
+                    if last_instance_lock:
+                        is_locked = last_instance_lock.is_locked
 
-                    dict["can_lock_again"] = has_access and is_locked and request.user != instance_status.author
+                    has_access = self.check_instance_access(x, last_instance_lock, request)
+
+                    dict["can_lock_again"] = has_access and is_locked and request.user != last_instance_lock.author
                     dict["has_access"] = has_access
                     dict["is_locked"] = is_locked
                     if reference_form_id:

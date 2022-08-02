@@ -1053,9 +1053,9 @@ class InstancesAPITestCase(APITestCase):
         response = self.client.get(f"/api/instances/{instance.pk}/")
 
         self.assertJSONResponse(response, 200)
-        self.assertEqual(response.json()["modification"], False)
+        self.assertEqual(response.json()["has_access"], False)
 
-    def test_modification_status_is_true_if_access_to_parent_ou(self):
+    def test_has_access_status_is_true_if_access_to_parent_ou(self):
         self.client.force_authenticate(self.yoda)
 
         instance_uuid = str(uuid4())
@@ -1076,9 +1076,9 @@ class InstancesAPITestCase(APITestCase):
         response = self.client.get(f"/api/instances/{instance.pk}/")
 
         self.assertJSONResponse(response, 200)
-        self.assertEqual(response.json()["modification"], True)
+        self.assertEqual(response.json()["has_access"], True)
 
-    def test_modification_status_is_true_if_access_to_parent_ou(self):
+    def test_has_access_status_is_true_if_access_to_parent_ou(self):
         self.client.force_authenticate(self.yoda)
 
         instance_uuid = str(uuid4())
@@ -1099,4 +1099,4 @@ class InstancesAPITestCase(APITestCase):
         response = self.client.get(f"/api/instances/{instance.pk}/")
 
         self.assertJSONResponse(response, 200)
-        self.assertEqual(response.json()["modification"], True)
+        self.assertEqual(response.json()["has_access"], True)

@@ -438,15 +438,15 @@ const MESSAGES = defineMessages({
     },
     latitudeLongitude: {
         id: 'iaso.label.latitudeLongitude',
-        defaultMessage: 'Lantitude & Longitude',
+        defaultMessage: 'Latitude & Longitude',
     },
     hasGeometry: {
         id: 'iaso.label.hasGeometry',
-        defaultMessage: 'It has geometry',
+        defaultMessage: 'With Geography',
     },
     hasNoGeometryAndGps: {
-        id: 'iaso.label.hasNoGeometryOrGps',
-        defaultMessage: 'It has no geometry and GPS',
+        id: 'iaso.label.hasNoGeometryAndGps',
+        defaultMessage: 'Without geographic data',
     },
 });
 

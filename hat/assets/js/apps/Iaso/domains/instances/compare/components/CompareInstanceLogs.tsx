@@ -139,11 +139,10 @@ export const CompareInstanceLogs: FunctionComponent<Props> = ({
                             keyValue="logA"
                             onChange={handleChange}
                             value={params.logA || logAInitialValue}
-                            label={MESSAGES.instanceLogsDate}
+                            label={MESSAGES.instanceLogsVersionA}
                             options={instanceLogsDropdown}
                             loading={isFetchingInstanceLogs}
                         />
-                        <InstanceLogDetail logId={params.logA} />
                     </Grid>
                     <Grid xs={12} md={6} item>
                         <InputComponent
@@ -151,12 +150,17 @@ export const CompareInstanceLogs: FunctionComponent<Props> = ({
                             keyValue="logB"
                             onChange={handleChange}
                             value={params.logB || logBInitialValue}
-                            label={MESSAGES.instanceLogsDate}
+                            label={MESSAGES.instanceLogsVersionB}
                             options={instanceLogsDropdown}
                             loading={isFetchingInstanceLogs}
                         />
+                    </Grid>
 
-                        <InstanceLogDetail logId={params.logB} />
+                    <Grid xs={12} md={12} item>
+                        <InstanceLogDetail
+                            logA={params.logA}
+                            logB={params.logB}
+                        />
                     </Grid>
                 </Grid>
             </Box>

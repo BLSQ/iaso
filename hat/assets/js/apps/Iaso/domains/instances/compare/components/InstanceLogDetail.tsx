@@ -10,54 +10,101 @@ import {
     useGetFormDescriptor,
 } from '../hooks/useGetInstanceLogs';
 
-import InstanceFileContent from '../../components/InstanceFileContent';
-import WidgetPaper from '../../../../components/papers/WidgetPaperComponent';
+import { InstanceLogContentBasic } from './InstanceLogContentBasic';
 import ErrorPaperComponent from '../../../../components/papers/ErrorPaperComponent';
 
 import MESSAGES from '../messages';
 
 type Props = {
-    logId: string | undefined;
+    logA: string | undefined;
+    logB: string | undefined;
 };
 
-export const InstanceLogDetail: FunctionComponent<Props> = ({ logId }) => {
+export const InstanceLogDetail: FunctionComponent<Props> = ({ logA, logB }) => {
     const {
-        data: instanceLogDetail,
+        data: instanceLogDetailA,
+    }: // isLoading,
+    // isError,
+    {
+        data?: Record<string, any> | undefined;
+        isLoading: boolean;
+        isError: boolean;
+    } = useGetInstanceLogDetail(logA);
+
+    const {
+        data: instanceLogDetailB,
         isLoading,
         isError,
     }: {
         data?: Record<string, any> | undefined;
         isLoading: boolean;
         isError: boolean;
-    } = useGetInstanceLogDetail(logId);
+    } = useGetInstanceLogDetail(logB);
 
     const {
-        data: instanceFormDescriptor,
+        data: instanceFormDescriptorA,
     }: {
         data?: Record<string, any> | undefined;
     } = useGetFormDescriptor(
-        instanceLogDetail?.json._version,
-        instanceLogDetail?.form,
+        instanceLogDetailA?.json._version,
+        instanceLogDetailA?.form,
+    );
+
+    const {
+        data: instanceFormDescriptorB,
+    }: {
+        data?: Record<string, any> | undefined;
+    } = useGetFormDescriptor(
+        instanceLogDetailB?.json._version,
+        instanceLogDetailB?.form,
     );
 
     const { formatMessage } = useSafeIntl();
 
     const [instanceLog, setInstanceLog] = useState<{
-        form_descriptor: Record<string, any> | undefined;
-        file_content: Record<string, any> | undefined;
+        form_descriptor: {
+            logA: Record<string, any> | undefined;
+            logB: Record<string, any> | undefined;
+        };
+        file_content: {
+            logA: Record<string, any> | undefined;
+            logB: Record<string, any> | undefined;
+        };
     }>({
-        form_descriptor: undefined,
-        file_content: undefined,
+        form_descriptor: {
+            logA: undefined,
+            logB: undefined,
+        },
+        file_content: {
+            logA: undefined,
+            logB: undefined,
+        },
     });
 
     useEffect(() => {
-        if (instanceLogDetail && instanceFormDescriptor) {
+        if (
+            instanceLogDetailA &&
+            instanceFormDescriptorA &&
+            instanceLogDetailB &&
+            instanceFormDescriptorB
+        ) {
             setInstanceLog({
-                form_descriptor: instanceFormDescriptor,
-                file_content: instanceLogDetail.json,
+                form_descriptor: {
+                    logA: instanceFormDescriptorA,
+                    logB: instanceFormDescriptorB,
+                },
+                file_content: {
+                    logA: instanceLogDetailA.json,
+                    logB: instanceLogDetailB.json,
+                },
             });
         }
-    }, [instanceLogDetail, instanceFormDescriptor]);
+    }, [
+        instanceLogDetailA,
+        instanceFormDescriptorA,
+        instanceLogDetailB,
+        instanceFormDescriptorB,
+    ]);
 
     if (isLoading)
         return (
@@ -76,10 +123,10 @@ export const InstanceLogDetail: FunctionComponent<Props> = ({ logId }) => {
 
     return (
         <>
-            {instanceLog.form_descriptor && instanceLog.file_content && (
-                <WidgetPaper title={formatMessage(MESSAGES.submissionTitle)}>
-                    <InstanceFileContent instance={instanceLog} logId={logId} />
-                </WidgetPaper>
+            {instanceLog.file_content && (
+                <InstanceLogContentBasic
+                    fileContent={instanceLog.file_content}
+                />
             )}
         </>
     );

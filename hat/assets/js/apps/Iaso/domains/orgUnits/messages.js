@@ -141,6 +141,10 @@ const MESSAGES = defineMessages({
         defaultMessage: 'Groups',
         id: 'iaso.label.groups',
     },
+    group: {
+        defaultMessage: 'Group',
+        id: 'iaso.label.group',
+    },
     addToGroups: {
         defaultMessage: 'Add to group(s)',
         id: 'iaso.orgUnits.addToGroups',
@@ -489,6 +493,18 @@ const MESSAGES = defineMessages({
         defaultMessage:
             'The modifications to the org units will take a few minutes to take effect',
         id: 'iaso.snackBar.saveMultiEditOrgUnitsLaunched',
+    },
+    latitudeLongitude: {
+        id: 'iaso.label.latitudeLongitude',
+        defaultMessage: 'Lantitude & Longitude',
+    },
+    hasGeometry: {
+        id: 'iaso.label.hasGeometry',
+        defaultMessage: 'It has geometry',
+    },
+    hasNoGeometryAndGps: {
+        id: 'iaso.label.hasNoGeometryOrGps',
+        defaultMessage: 'It has no geometry and GPS',
     },
 });
 

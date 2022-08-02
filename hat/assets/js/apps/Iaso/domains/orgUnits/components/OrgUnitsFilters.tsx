@@ -203,7 +203,8 @@ export const OrgUnitFilters: FunctionComponent<Props> = ({
                 })) ?? []
         );
     }, [dataSourceId, dataSources]);
-
+    console.log('filters?.group', filters?.group);
+    console.log('groups', groups);
     return (
         <Grid container spacing={2}>
             <Grid item xs={4}>
@@ -282,10 +283,10 @@ export const OrgUnitFilters: FunctionComponent<Props> = ({
                 <InputComponent
                     type="select"
                     disabled={isFetchingGroups}
-                    keyValue="groups"
+                    keyValue="group"
                     onChange={handleChange}
-                    value={!isFetchingGroups && filters?.groups}
-                    label={MESSAGES.groups}
+                    value={!isFetchingGroups && filters?.group}
+                    label={MESSAGES.group}
                     options={groups}
                     loading={isFetchingGroups}
                 />

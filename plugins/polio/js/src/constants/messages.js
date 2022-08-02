@@ -1314,6 +1314,22 @@ const MESSAGES = defineMessages({
         id: 'iaso.polio.label.rejectBudgetForCampaign',
         defaultMessage: 'Reject budget for campaign: {campaign}',
     },
+    Community_leader: {
+        id: 'iaso.polio.label.Community_leader',
+        defaultMessage: 'Community leader',
+    },
+    Neighbour: {
+        id: 'iaso.polio.label.Neighbour',
+        defaultMessage: 'Neighbour',
+    },
+    Teachers_Student: {
+        id: 'iaso.polio.label.Teachers_Student',
+        defaultMessage: 'Teachers',
+    },
+    Town_crier: {
+        id: 'iaso.polio.label.Town_crier',
+        defaultMessage: 'Town crier',
+    },
     by: {
         id: 'iaso.polio.label.by',
         defaultMessage: 'by {author}',
@@ -1341,6 +1357,38 @@ const MESSAGES = defineMessages({
     cannotDisplayMap: {
         id: 'iaso.polio.label.cannotDisplayMap',
         defaultMessage: 'Cannot display map',
+    },
+    amount: {
+        id: 'iaso.polio.label.amount',
+        defaultMessage: 'Amount',
+    },
+    review: {
+        id: 'iaso.polio.label.review',
+        defaultMessage: 'Review',
+    },
+    transmission: {
+        id: 'iaso.polio.label.transmission',
+        defaultMessage: 'Transmission',
+    },
+    feedback: {
+        id: 'iaso.polio.label.feedback',
+        defaultMessage: 'Feedback',
+    },
+    request: {
+        id: 'iaso.polio.label.request',
+        defaultMessage: 'Request',
+    },
+    seeProcedure: {
+        id: 'iaso.polio.label.seeProcedure',
+        defaultMessage: 'See procedure',
+    },
+    sentToTeam: {
+        id: 'iaso.polio.label.sentToTeam',
+        defaultMessage: 'Sent to team',
+    },
+    sentByTeam: {
+        id: 'iaso.polio.label.sentByTeam',
+        defaultMessage: 'Sent by team',
     },
 });
 

@@ -73,6 +73,9 @@ const useStyles = makeStyles(theme => ({
         backgroundColor: 'white',
         position: 'relative',
         top: 48,
+        '& .MuiSpeedDial-directionUp, &.MuiSpeedDial-directionLeft': {
+            position: 'fixed',
+        },
     },
     tabs: {
         ...commonStyles(theme).tabs,
@@ -295,6 +298,23 @@ export const OrgUnits: FunctionComponent<Props> = ({ params }) => {
                     counts={(!isLoading && orgUnitsData?.counts) || []}
                     setDeletedTab={setDeletedTab}
                 />
+                {tab === 'list' &&
+                    orgUnitsData &&
+                    orgUnitsData?.orgunits?.length > 0 && (
+                        <Box
+                            mb={2}
+                            mt={2}
+                            mr={4}
+                            display="flex"
+                            justifyContent="flex-end"
+                        >
+                            <DownloadButtonsComponent
+                                csvUrl={getUrl(true, 'csv')}
+                                xlsxUrl={getUrl(true, 'xlsx')}
+                                gpkgUrl={getUrl(true, 'gpkg')}
+                            />
+                        </Box>
+                    )}
                 <Box px={4}>
                     {orgUnitsData && (
                         <>
@@ -349,22 +369,6 @@ export const OrgUnits: FunctionComponent<Props> = ({ params }) => {
                                     />
                                 </Box>
                             )}
-                            {tab === 'list' &&
-                                orgUnitsData &&
-                                orgUnitsData?.orgunits?.length > 0 && (
-                                    <Box
-                                        mb={8}
-                                        mt={1}
-                                        display="flex"
-                                        justifyContent="flex-end"
-                                    >
-                                        <DownloadButtonsComponent
-                                            csvUrl={getUrl(true, 'csv')}
-                                            xlsxUrl={getUrl(true, 'xlsx')}
-                                            gpkgUrl={getUrl(true, 'gpkg')}
-                                        />
-                                    </Box>
-                                )}
 
                             {!isFetchingOrgunitTypes && orgUnitsDataLocation && (
                                 <div

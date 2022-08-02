@@ -165,6 +165,20 @@ const actions = ({
         disabled: currentInstance && currentInstance.deleted,
     };
 
+    const deleteRestore = {
+        id:
+            currentInstance && currentInstance.deleted
+                ? 'instanceRestoreAction'
+                : 'instanceDeleteAction',
+        icon:
+            currentInstance && currentInstance.deleted ? (
+                <RestoreFromTrashIcon />
+            ) : (
+                <DeleteIcon />
+            ),
+        disabled: false,
+    };
+
     const renderTriggerLock = (isLocked, openDialog) => {
         return isLocked ? (
             <LockOpenIcon onClick={openDialog} />
@@ -288,20 +302,11 @@ const actions = ({
             ),
             disabled: currentInstance && currentInstance.deleted,
         },
-        {
-            id:
-                currentInstance && currentInstance.deleted
-                    ? 'instanceRestoreAction'
-                    : 'instanceDeleteAction',
-            icon:
-                currentInstance && currentInstance.deleted ? (
-                    <RestoreFromTrashIcon />
-                ) : (
-                    <DeleteIcon />
-                ),
-            disabled: false,
-        },
     ];
+
+    if (currentInstance.has_access) {
+        defaultActions = [...defaultActions, deleteRestore];
+    }
 
     if (canEditEnketo && currentInstance.has_access) {
         defaultActions = [enketoAction, ...defaultActions];

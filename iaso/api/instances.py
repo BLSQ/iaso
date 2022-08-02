@@ -326,6 +326,26 @@ class InstancesViewSet(viewsets.ViewSet):
             response["Content-Disposition"] = "attachment; filename=%s" % filename
             return response
 
+    @staticmethod
+    def check_instance_access(instance, last_instance_lock, request):
+        has_access = True
+        access_ou = OrgUnit.objects.filter_for_user_and_app_id(request.user, None)
+        top_org_unit = instance.org_unit.parent if instance.org_unit.parent is not None else instance.org_unit
+
+        if last_instance_lock:
+            is_locked = last_instance_lock.is_locked
+            if is_locked:
+                if last_instance_lock.top_org_unit not in access_ou:
+                    has_access = False
+            else:
+                if top_org_unit not in access_ou:
+                    has_access = False
+        else:
+            if top_org_unit not in access_ou:
+                has_access = False
+
+        return has_access
+
     @safe_api_import("instance")
     def create(self, _, request):
         import_data(request.data, request.user, request.query_params.get("app_id"))
@@ -367,6 +387,13 @@ class InstancesViewSet(viewsets.ViewSet):
 
     def delete(self, request, pk=None):
         instance = get_object_or_404(self.get_queryset(), pk=pk)
+        last_instance_lock = InstanceLockTable.objects.filter(instance=instance).last()
+
+        has_access = self.check_instance_access(instance, last_instance_lock, request)
+
+        if has_access is False:
+            raise serializers.ValidationError({"error": "You don't have the permission to modify this instance."})
+
         self.check_object_permissions(request, instance)
         instance.soft_delete(request.user)
         return Response(instance.as_full_model())

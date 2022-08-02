@@ -72,7 +72,6 @@ const FormForm = ({ currentForm, setFieldValue }) => {
         projects = currentForm.project_ids.value.join(',');
     }
     const logsUrl = `/${baseUrls.apiLogs}/?objectId=${currentForm.id.value}&contentType=iaso.form`;
-
     return (
         <>
             <Grid container spacing={2} justifyContent="flex-start">
@@ -307,15 +306,17 @@ const FormForm = ({ currentForm, setFieldValue }) => {
                     )}
                 </Grid>
             </Grid>
-            <Grid justifyContent="space-between" container spacing={2}>
-                <Typography
-                    className={classes.linkToChangesLog}
-                    variant="overline"
-                    onClick={() => redirectToChangesLog(logsUrl)}
-                >
-                    {intl.formatMessage(MESSAGES.formChangeLog)}
-                </Typography>
-            </Grid>
+            {currentForm.id.value && (
+                <Grid justifyContent="space-between" container spacing={2}>
+                    <Typography
+                        className={classes.linkToChangesLog}
+                        variant="overline"
+                        onClick={() => redirectToChangesLog(logsUrl)}
+                    >
+                        {intl.formatMessage(MESSAGES.formChangeLog)}
+                    </Typography>
+                </Grid>
+            )}
         </>
     );
 };

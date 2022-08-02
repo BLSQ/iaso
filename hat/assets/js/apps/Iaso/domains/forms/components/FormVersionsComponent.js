@@ -1,10 +1,12 @@
-import React from 'react';
+import React, { useState } from 'react';
 import PropTypes from 'prop-types';
 import { FormattedMessage } from 'react-intl';
 import { Box, Typography } from '@material-ui/core';
 import {
     useSafeIntl,
     AddButton as AddButtonComponent,
+    selectionInitialState,
+    setTableSelection,
 } from 'bluesquare-components';
 import { fetchList } from '../../../utils/requests';
 
@@ -26,6 +28,7 @@ const FormVersionsComponent = ({
     formId,
 }) => {
     const intl = useSafeIntl();
+    const [selection, setSelection] = useState(selectionInitialState);
 
     if (!formId) return null;
 
@@ -61,6 +64,18 @@ const FormVersionsComponent = ({
                     formId,
                     periodType,
                 )}
+                multiSelect
+                selection={selection}
+                setTableSelection={(selectionType, items, totalCount) => {
+                    setSelection(
+                        setTableSelection(
+                            selection,
+                            selectionType,
+                            items,
+                            totalCount,
+                        ),
+                    );
+                }}
                 forceRefresh={forceRefresh}
                 onForceRefreshDone={() => setForceRefresh(false)}
             />

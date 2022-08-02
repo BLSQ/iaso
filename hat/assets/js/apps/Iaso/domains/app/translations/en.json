@@ -1,5 +1,4 @@
 {
-    "PeriodSelectorComponent.label.apply": "Apply",
     "blsq.treeview.error": "Please select an org unit",
     "blsq.treeview.label.selectMultiple": "Select org unit(s)",
     "blsq.treeview.label.selectSingle": "Select an org unit",
@@ -216,6 +215,8 @@
     "iaso.instance.instanceRestoreAction": "Restore instance",
     "iaso.instance.label.noOrgUnitType": "OrgUnit type not specified",
     "iaso.instance.linkOrgUnitToInstanceReferenceWarning": "This operation can still be undone",
+    "iaso.instance.logs": "Instance logs",
+    "iaso.instance.logs.date": "Date of submission",
     "iaso.instance.missingFile": "Cannot find an instance with a file",
     "iaso.instance.missingGeolocation": "Cannot find an instance with geolocation",
     "iaso.instance.org_unit": "Org unit",
@@ -398,6 +399,7 @@
     "iaso.label.save": "Save",
     "iaso.label.search": "Search",
     "iaso.label.see": "See",
+    "iaso.label.seeAllVersions": "See all versions",
     "iaso.label.selectAll": "Select all",
     "iaso.label.selectParentOrgUnit": "Select parent org Unit",
     "iaso.label.selection": "Selection",
@@ -807,5 +809,6 @@
     "map.draw.label.undo": "Undo",
     "map.label.fitToBounds": "Center the map",
     "map.label.zoom.box": "Draw a square to zoom",
-    "map.label.zoom.info": "Current zoom level"
+    "map.label.zoom.info": "Current zoom level",
+    "PeriodSelectorComponent.label.apply": "Apply"
 }

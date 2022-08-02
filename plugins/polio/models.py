@@ -498,7 +498,15 @@ class CampaignGroup(SoftDeletableModel):
 
 class BudgetEvent(SoftDeletableModel):
 
-    TYPES = (("submission", "Budget Submission"), ("comments", "Comments"), ("validation", "Validation"))
+    TYPES = (
+        ("submission", "Budget Submission"),
+        ("comments", "Comments"),
+        ("validation", "Approval"),
+        ("request", "Request"),
+        ("feedback", "Feedback"),
+        ("review", "Review"),
+        ("transmission", "Transmission"),
+    )
 
     STATUS = (("validation_ongoing", "Validation Ongoing"), ("validated", "Validated"))
 
@@ -515,13 +523,17 @@ class BudgetEvent(SoftDeletableModel):
     links = models.TextField(blank=True, null=True)
     is_finalized = models.BooleanField(default=False)
     is_email_sent = models.BooleanField(default=False)
+    amount = models.DecimalField(blank=True, null=True, decimal_places=2, max_digits=14)
 
     def __str__(self):
         return str(self.campaign)
 
     def save(self, *args, **kwargs):
         super(BudgetEvent, self).save(*args, **kwargs)
-        self.campaign.last_budget_event = self
+        if self.campaign.last_budget_event is None:
+            self.campaign.last_budget_event = self
+        elif self.campaign.last_budget_event.created_at < self.created_at:
+            self.campaign.last_budget_event = self
         self.campaign.save()
 
 

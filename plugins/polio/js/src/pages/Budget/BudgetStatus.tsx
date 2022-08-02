@@ -26,10 +26,10 @@ export const sortBudgetEventByUpdate = budgetEvents => {
     if (!budgetEvents) return [];
     const sorted = budgetEvents.sort(
         (
-            a: { updated_at: moment.MomentInput },
-            b: { updated_at: moment.MomentInput },
+            a: { created_at: moment.MomentInput },
+            b: { created_at: moment.MomentInput },
         ) => {
-            return moment(a.updated_at).isSameOrBefore(moment(b.updated_at));
+            return moment(a.created_at).isSameOrBefore(moment(b.created_at));
         },
     );
     return sorted;

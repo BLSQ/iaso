@@ -178,6 +178,10 @@ const MESSAGES = defineMessages({
         defaultMessage: 'Informations',
         id: 'iaso.instance.infos',
     },
+    submission: {
+        defaultMessage: 'Submission',
+        id: 'iaso.instance.titleSingle',
+    },
     form: {
         defaultMessage: 'Form',
         id: 'iaso.instance.formShort',
@@ -467,6 +471,13 @@ const MESSAGES = defineMessages({
     CanLockAgain: {
         defaultMessage: 'Lock the submission again',
         id: 'iaso.instance.CanLockAgain',
+    history: {
+        id: 'iaso.label.history',
+        defaultMessage: 'History',
+    },
+    seeAllVersions: {
+        id: 'iaso.label.seeAllVersions',
+        defaultMessage: 'See all versions',
     },
 });
 

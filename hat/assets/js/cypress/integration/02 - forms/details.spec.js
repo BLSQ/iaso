@@ -59,7 +59,7 @@ describe('Forms details', () => {
             testTablerender({
                 baseUrl,
                 rows: 3,
-                columns: 4,
+                columns: 5,
                 apiKey: 'formversions',
             });
             // TODO test pagination

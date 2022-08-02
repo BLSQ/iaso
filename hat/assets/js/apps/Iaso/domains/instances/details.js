@@ -1,14 +1,21 @@
 /* eslint-disable react/jsx-props-no-spreading */
-import React, { Component, useState } from 'react';
+import React, { Component } from 'react';
+import { Link } from 'react-router';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 import DeleteIcon from '@material-ui/icons/Delete';
 import UpdateIcon from '@material-ui/icons/Update';
 import RestoreFromTrashIcon from '@material-ui/icons/RestoreFromTrash';
 import Alert from '@material-ui/lab/Alert';
-import { withStyles, Box, Grid, DialogContentText } from '@material-ui/core';
 import LockIcon from '@material-ui/icons/Lock';
 import LockOpenIcon from '@material-ui/icons/LockOpen';
+import {
+    withStyles,
+    Box,
+    Grid,
+    DialogContentText,
+    Typography,
+} from '@material-ui/core';
 import PropTypes from 'prop-types';
 import LinkIcon from '@material-ui/icons/Link';
 import LinkOffIcon from '@material-ui/icons/LinkOff';
@@ -49,6 +56,7 @@ import ConfirmCancelDialogComponent from '../../components/dialogs/ConfirmCancel
 import EnketoIcon from './components/EnketoIcon';
 import { getInstancesFilesList } from './utils';
 import { userHasPermission } from '../users/utils';
+import { getRequest } from '../../libs/Api';
 import MESSAGES from './messages';
 import { baseUrls } from '../../constants/urls';
 import {
@@ -67,6 +75,14 @@ const styles = theme => ({
     ...commonStyles(theme),
     alert: {
         marginBottom: theme.spacing(4),
+    },
+    labelContainer: {
+        display: 'flex',
+        width: '100%',
+        justifyContent: 'flex-end',
+        alignItems: 'center',
+        position: 'relative',
+        top: 2,
     },
 });
 
@@ -338,6 +354,7 @@ class InstanceDetails extends Component {
             orgUnitTypeIds: [],
             showDial: true,
             lockAgain: false,
+            showHistoryLink: true,
         };
     }
 
@@ -357,6 +374,17 @@ class InstanceDetails extends Component {
                 },
             );
         });
+
+        // not showing history link in submission detail if there is only one version/log
+        getRequest(`/api/logs/?objectId=${instanceId}&order=-created_at`).then(
+            instanceLogsDetails => {
+                if (instanceLogsDetails.list.length === 1) {
+                    this.setState({
+                        showHistoryLink: false,
+                    });
+                }
+            },
+        );
     }
 
     onActionSelected(action) {
@@ -401,7 +429,7 @@ class InstanceDetails extends Component {
             params,
             redirectToActionInstance,
         } = this.props;
-        const { showDial, lockAgain } = this.state;
+        const { showDial, lockAgain, showHistoryLink } = this.state;
         const formId = currentInstance?.form_id;
         const canEditEnketo = userHasPermission(
             'iaso_update_submission',
@@ -492,6 +520,51 @@ class InstanceDetails extends Component {
                                     <InstanceDetailsInfos
                                         currentInstance={currentInstance}
                                     />
+
+                                    {currentInstance && showHistoryLink && (
+                                        <Grid container spacing={1}>
+                                            <Grid xs={5} item>
+                                                <div
+                                                    className={
+                                                        classes.labelContainer
+                                                    }
+                                                >
+                                                    <Typography
+                                                        variant="body2"
+                                                        noWrap
+                                                        color="inherit"
+                                                        title="Historique"
+                                                    >
+                                                        {formatMessage(
+                                                            MESSAGES.history,
+                                                        )}
+                                                    </Typography>
+                                                    :
+                                                </div>
+                                            </Grid>
+
+                                            <Grid
+                                                xs={7}
+                                                container
+                                                item
+                                                justifyContent="flex-start"
+                                                alignItems="center"
+                                            >
+                                                <Typography
+                                                    variant="body1"
+                                                    color="inherit"
+                                                >
+                                                    <Link
+                                                        to={`${baseUrls.compareInstanceLogs}/instanceIds/${currentInstance.id}`}
+                                                    >
+                                                        {formatMessage(
+                                                            MESSAGES.seeAllVersions,
+                                                        )}
+                                                    </Link>
+                                                </Typography>
+                                            </Grid>
+                                        </Grid>
+                                    )}
                                 </WidgetPaper>
                                 <WidgetPaper
                                     title={formatMessage(MESSAGES.location)}
@@ -534,7 +607,7 @@ class InstanceDetails extends Component {
                             <Grid xs={12} md={8} item>
                                 <WidgetPaper
                                     id="form-contents"
-                                    title={formatMessage(MESSAGES.form)}
+                                    title={formatMessage(MESSAGES.submission)}
                                     IconButton={IconButtonComponent}
                                     iconButtonProps={{
                                         onClick: () =>

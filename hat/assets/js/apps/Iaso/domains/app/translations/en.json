@@ -216,6 +216,8 @@
     "iaso.instance.instanceRestoreAction": "Restore instance",
     "iaso.instance.label.noOrgUnitType": "OrgUnit type not specified",
     "iaso.instance.linkOrgUnitToInstanceReferenceWarning": "This operation can still be undone",
+    "iaso.instance.logs": "Instance logs",
+    "iaso.instance.logs.date": "Date of submission",
     "iaso.instance.missingFile": "Cannot find an instance with a file",
     "iaso.instance.missingGeolocation": "Cannot find an instance with geolocation",
     "iaso.instance.org_unit": "Org unit",
@@ -412,6 +414,7 @@
     "iaso.label.save": "Save",
     "iaso.label.search": "Search",
     "iaso.label.see": "See",
+    "iaso.label.seeAllVersions": "See all versions",
     "iaso.label.selectAll": "Select all",
     "iaso.label.selectParentOrgUnit": "Select parent org Unit",
     "iaso.label.selection": "Selection",
@@ -473,6 +476,9 @@
     "iaso.label.year": "Years",
     "iaso.label.yes": "Yes",
     "iaso.label.instanceLocksHistory": "Instance locks history",
+    "iaso.label.latitudeLongitude": "Lantitude & Longitude",
+    "iaso.label.hasGeometry": "It has geometry",
+    "iaso.label.hasNoGeometryAndGps": "It has no geometry and GPS",
     "iaso.links.title": "Links validation",
     "iaso.logout": "Logout",
     "iaso.logs.goToRevision": "Keep all",
@@ -819,5 +825,6 @@
     "map.draw.label.undo": "Undo",
     "map.label.fitToBounds": "Center the map",
     "map.label.zoom.box": "Draw a square to zoom",
-    "map.label.zoom.info": "Current zoom level"
+    "map.label.zoom.info": "Current zoom level",
+    "PeriodSelectorComponent.label.apply": "Apply"
 }

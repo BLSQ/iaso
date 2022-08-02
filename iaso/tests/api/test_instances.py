@@ -8,6 +8,7 @@ from django.test import tag
 from django.core.files import File
 from unittest import mock
 
+from django.utils import timezone
 from django.utils.timezone import now
 
 from hat.api.export_utils import timestamp_to_utc_datetime
@@ -186,6 +187,58 @@ class InstancesAPITestCase(APITestCase):
         self.assertEqual(self.jedi_council_corruscant, last_instance.org_unit)
         self.assertEqual(self.form_1, last_instance.form)
         self.assertEqual(timestamp_to_utc_datetime(1565258153704), last_instance.created_at)
+        self.assertEqual(datetime.datetime(2019, 8, 8, 9, 55, 53, tzinfo=timezone.utc), last_instance.created_at)
+        # TODO: the assertion below will fail because our API does not store properly the updated_at property
+        # TODO: (See IA-278: https://bluesquare.atlassian.net/browse/IA-278)
+        # self.assertEqual(
+        #     timestamp_to_utc_datetime(1565258153709), last_instance.updated_at
+        # )
+        self.assertEqual(self.form_1, last_instance.form)
+        self.assertIsNotNone(last_instance.project)
+
+    def test_instance_create_anonymous_microsecond(self):
+        """POST /api/instances/ happy path (anonymous)
+
+        Test creation using new iasoapp 2.0 format of using second instead of microsecond
+        for timestamp https://bluesquare.atlassian.net/browse/IA-1473
+        """
+
+        instance_uuid = str(uuid4())
+        body = [
+            {
+                "id": instance_uuid,
+                "created_at": 1565258153704 / 1000,
+                "updated_at": 1565258153709 / 1000,
+                "orgUnitId": self.jedi_council_corruscant.id,
+                "formId": self.form_1.id,
+                "period": "202002",
+                "latitude": 50.2,
+                "longitude": 4.4,
+                "accuracy": 10,
+                "altitude": 100,
+                "file": "\/storage\/emulated\/0\/odk\/instances\/RDC Collecte Data DPS_2_2019-08-08_11-54-46\/RDC Collecte Data DPS_2_2019-08-08_11-54-46.xml",
+                "name": "1",
+            }
+        ]
+        response = self.client.post(
+            f"/api/instances/?app_id=stars.empire.agriculture.hydroponics", data=body, format="json"
+        )
+        self.assertEqual(response.status_code, 200)
+
+        self.assertAPIImport("instance", request_body=body, has_problems=False)
+
+        last_instance = m.Instance.objects.last()
+        self.assertEqual(instance_uuid, last_instance.uuid)
+        self.assertEquals("RDC Collecte Data DPS_2_2019-08-08_11-54-46.xml", last_instance.file_name)
+        self.assertEqual("202002", last_instance.period)
+        self.assertIsInstance(last_instance.location, Point)
+        self.assertEqual(10, last_instance.accuracy)
+        self.assertEqual(4.4, last_instance.location.x)
+        self.assertEqual(50.2, last_instance.location.y)
+        self.assertEqual(self.jedi_council_corruscant, last_instance.org_unit)
+        self.assertEqual(self.form_1, last_instance.form)
+        self.assertEqual(timestamp_to_utc_datetime(1565258153704), last_instance.created_at)
+        self.assertEqual(datetime.datetime(2019, 8, 8, 9, 55, 53, tzinfo=timezone.utc), last_instance.created_at)
         # TODO: the assertion below will fail because our API does not store properly the updated_at property
         # TODO: (See IA-278: https://bluesquare.atlassian.net/browse/IA-278)
         # self.assertEqual(

@@ -21,8 +21,8 @@ import LinkIcon from '@material-ui/icons/Link';
 import LinkOffIcon from '@material-ui/icons/LinkOff';
 import omit from 'lodash/omit';
 import { FormattedMessage } from 'react-intl';
-import CheckBoxIcon from '@material-ui/icons/CheckBox';
-import CheckBoxOutlineBlankIcon from '@material-ui/icons/CheckBoxOutlineBlank';
+import GpsFixedIcon from '@material-ui/icons/GpsFixed';
+import GpsOffIcon from '@material-ui/icons/GpsOff';
 import { useSaveOrgUnit } from '../hooks';
 import { useFormState } from '../../../hooks/form';
 import InputComponent from '../../../components/forms/InputComponent';
@@ -243,7 +243,7 @@ const OrgUnitCreationDetails = ({ orgUnit, formatMessage, classes }) => {
                     className={classes.geometryExistence}
                 >
                     <Grid item>
-                        <CheckBoxOutlineBlankIcon color="primary" />
+                        <GpsOffIcon color="primary" />
                     </Grid>
                     <Grid item>
                         <Typography>
@@ -262,7 +262,7 @@ const OrgUnitCreationDetails = ({ orgUnit, formatMessage, classes }) => {
                     className={classes.geometryExistence}
                 >
                     <Grid item>
-                        <CheckBoxIcon color="primary" />
+                        <GpsFixedIcon color="primary" />
                     </Grid>
                     <Grid item>
                         <Typography>

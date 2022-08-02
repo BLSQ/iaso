@@ -11,15 +11,23 @@ const MESSAGES = defineMessages({
     },
     instanceLogsTitle: {
         id: 'iaso.instance.logs',
-        defaultMessage: 'Historique de la soumission',
+        defaultMessage: 'Compare all versions',
     },
-    instanceLogsDate: {
-        id: 'iaso.instance.logs.date',
-        defaultMessage: 'Date of submission',
+    instanceLogsVersionA: {
+        id: 'iaso.instance.logs.versionA',
+        defaultMessage: 'Version A',
+    },
+    instanceLogsVersionB: {
+        id: 'iaso.instance.logs.versionB',
+        defaultMessage: 'Version B',
     },
     infos: {
         defaultMessage: 'Informations',
         id: 'iaso.instance.infos',
+    },
+    label: {
+        defaultMessage: 'Label',
+        id: 'iaso.label.label',
     },
     location: {
         defaultMessage: 'Location',

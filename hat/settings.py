@@ -381,12 +381,9 @@ BEANSTALK_SQS_URL = os.environ.get(
 BEANSTALK_SQS_REGION = os.environ.get("BEANSTALK_SQS_REGION", "eu-central-1")
 
 if DEBUG:
-    BEANSTALK_TASK_SERVICE = "beanstalk_worker.services.PostgresTaskService"
+    BACKGROUND_TASK_SERVICE = "beanstalk_worker.services.PostgresTaskService"
 else:
-    BEANSTALK_TASK_SERVICE = "beanstalk_worker.services.TaskService"
-
-# BEANSTALK_TASK_SERVICE = "beanstalk_worker.services.TaskService"
-
+    BACKGROUND_TASK_SERVICE = "beanstalk_worker.services.TaskService"
 
 DISABLE_SSL_REDIRECT = bool(os.environ.get("DISABLE_SSL_REDIRECT", False))
 SSL_ON = not (DEBUG or BEANSTALK_WORKER or DISABLE_SSL_REDIRECT)

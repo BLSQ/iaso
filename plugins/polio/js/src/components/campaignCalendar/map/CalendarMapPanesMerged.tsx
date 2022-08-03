@@ -28,7 +28,7 @@ export const CalendarMapPanesMerged: FunctionComponent<Props> = ({
                             style={() =>
                                 getGeoJsonStyle(
                                     mergedShape.color,
-                                    mergedShape.properties.vacine,
+                                    mergedShape.color,
                                     viewport,
                                 )
                             }

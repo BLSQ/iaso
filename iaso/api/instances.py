@@ -25,6 +25,8 @@ from iaso.utils import timestamp_to_datetime
 from . import common
 from .common import safe_api_import, TimestampField
 from .instance_filters import parse_instance_filters
+from .comment import UserSerializer
+from iaso.api.serializers import OrgUnitSmallSearchSerializer
 
 
 class InstanceSerializer(serializers.ModelSerializer):
@@ -77,6 +79,16 @@ class InstanceFileSerializer(serializers.Serializer):
     instance_id = serializers.IntegerField()
     file = serializers.FileField(use_url=True)
     created_at = TimestampField(read_only=True)
+
+
+class InstanceLockSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = InstanceLockTable
+        fields = ["id", "author", "top_org_unit", "is_locked", "created_at"]
+        read_only_fields = ["created_at"]
+
+    author = UserSerializer(read_only=True)
+    top_org_unit = OrgUnitSmallSearchSerializer(read_only=True)
 
 
 class InstancesViewSet(viewsets.ViewSet):
@@ -398,11 +410,11 @@ class InstancesViewSet(viewsets.ViewSet):
 
         response = instance.as_full_model()
 
-        def instance_lock_as_dict(x):
-            return x.as_dict()
+        def instance_lock_serialize(x):
+            return InstanceLockSerializer(x).data
 
         # Logs(history) of all instance locks
-        response["instance_locks_history"] = map(instance_lock_as_dict, all_instance_locks.order_by("-created_at"))
+        response["instance_locks_history"] = map(instance_lock_serialize, all_instance_locks.order_by("-created_at"))
         # To show that the instance can be locked again with a user who has access to the parent of the instance org unit
         response["can_lock_again"] = has_access and is_locked and request.user != last_instance_lock.author
         # To display the Lock or unlock icon when the use has access to the two actions

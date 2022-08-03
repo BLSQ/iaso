@@ -67,7 +67,7 @@ const InstanceDetailsLocksHistory = ({
                             color="inherit"
                             title={formatMessage(MESSAGES.lockAuthorLabel)}
                         >
-                            {instanceLock.user}
+                            {instanceLock.author.username}
                         </Typography>
                     </Grid>
                     <Grid
@@ -82,7 +82,7 @@ const InstanceDetailsLocksHistory = ({
                             color="inherit"
                             title={formatMessage(MESSAGES.lockTopOrgUnitLabel)}
                         >
-                            {instanceLock.top_org_unit}
+                            {instanceLock.top_org_unit.name}
                         </Typography>
                     </Grid>
 
@@ -97,12 +97,12 @@ const InstanceDetailsLocksHistory = ({
                             variant="body2"
                             color="inherit"
                             title={
-                                instanceLock.status
+                                instanceLock.is_locked
                                     ? formatMessage(MESSAGES.lockedTitle)
                                     : formatMessage(MESSAGES.unlockedTitle)
                             }
                         >
-                            {instanceLock.status ? (
+                            {instanceLock.is_locked ? (
                                 <LockIcon />
                             ) : (
                                 <LockOpenIcon />

@@ -373,17 +373,29 @@ if SENTRY_URL:
     )
 
 # Workers configuration
+#
+# Define if this environment is a worker (not in use)
+IS_BACKGROUND_WORKER = bool(os.environ.get("WORKER", False))
 
-BEANSTALK_WORKER = bool(os.environ.get("WORKER", False))
-BEANSTALK_SQS_URL = os.environ.get(
-    "BEANSTALK_SQS_URL", "https://sqs.eu-central-1.amazonaws.com/198293380284/iaso-staging-queue"
-)
-BEANSTALK_SQS_REGION = os.environ.get("BEANSTALK_SQS_REGION", "eu-central-1")
+# Define the backend to be used:
+#   Needs to be one of: POSTGRES, SQS
+#   Defaulting to SQS since most the environments run that way
+BACKGROUND_BACKEND = os.environ.get("BACKGROUND_TASK_SERVICE", "SQS")
 
-if DEBUG:
+if BACKGROUND_BACKEND == "POSTGRES":
+    # Postgres backed background jobs
+    BEANSTALK_WORKER  = False
     BACKGROUND_TASK_SERVICE = "beanstalk_worker.services.PostgresTaskService"
-else:
+elif BACKGROUND_BACKEND == "SQS":
+    # SQS backed background jobs, SQS will send job payloads to `tasks/task`
+    BEANSTALK_WORKER = IS_BACKGROUND_WORKER # Used to expose extra URLs
     BACKGROUND_TASK_SERVICE = "beanstalk_worker.services.TaskService"
+    BEANSTALK_SQS_URL = os.environ.get(
+        "BEANSTALK_SQS_URL", "https://sqs.eu-central-1.amazonaws.com/198293380284/iaso-staging-queue"
+    )
+    BEANSTALK_SQS_REGION = os.environ.get("BEANSTALK_SQS_REGION", "eu-central-1")
+else:
+    raise Exception("BACKGROUND_TASK_SERVICE needs to one of: POSTGRES, SQS")
 
 DISABLE_SSL_REDIRECT = bool(os.environ.get("DISABLE_SSL_REDIRECT", False))
 SSL_ON = not (DEBUG or BEANSTALK_WORKER or DISABLE_SSL_REDIRECT)

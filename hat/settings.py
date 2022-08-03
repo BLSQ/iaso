@@ -144,6 +144,7 @@ INSTALLED_APPS = [
     "beanstalk_worker",
     "django_comments",
     "django_filters",
+    "drf_yasg",
 ]
 
 # needed because we customize the comment model

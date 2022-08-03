@@ -271,7 +271,8 @@ Timeline tracker Automated message
         url_path="merged_shapes.geojson",
     )
     def shapes(self, request):
-        cached_response = cache.get("{0}-geo_shapes".format(request.user.id))
+        cached_response = None
+        # cached_response = cache.get("{0}-geo_shapes".format(request.user.id))
         queryset = self.filter_queryset(self.get_queryset())
         # Remove deleted and campaign with missing group
         queryset = queryset.filter(deleted_at=None).exclude(group=None)
@@ -438,109 +439,6 @@ class PreparednessDashboardViewSet(viewsets.ViewSet):
                 if p:
                     r.append(p)
         return Response(r)
-
-
-class IMViewSet(viewsets.ViewSet):
-    """
-           Endpoint used to transform IM (independent monitoring) data from existing ODK forms stored in ONA. Very custom to the polio project.
-
-    sample Config:
-
-    configs = [
-           {
-               "keys": {"roundNumber": "roundNumber",
-                       "Response": "Response",
-                },
-               "prefix": "OHH",
-               "url": 'https://brol.com/api/v1/data/5888',
-               "login": "qmsdkljf",
-               "password": "qmsdlfj"
-           },
-           {
-               "keys": {'roundNumber': "roundNumber",
-                       "Response": "Response",
-                },
-               "prefix": "HH",
-               "url":  'https://brol.com/api/v1/data/5887',
-               "login": "qmsldkjf",
-               "password": "qsdfmlkj"
-           }
-       ]
-    """
-
-    def list(self, request):
-
-        slug = request.GET.get("country", None)
-        as_csv = request.GET.get("format", None) == "csv"
-        config = get_object_or_404(Config, slug=slug)
-        res = []
-        failure_count = 0
-        all_keys = set()
-        for config in config.content:
-            keys = config["keys"]
-            all_keys = all_keys.union(keys.keys())
-            prefix = config["prefix"]
-            cached_response, created = URLCache.objects.get_or_create(url=config["url"])
-            delta = now() - cached_response.updated_at
-            if created or delta > timedelta(minutes=60):
-                response = requests.get(config["url"], auth=(config["login"], config["password"]))
-                cached_response.content = response.text
-                cached_response.save()
-                forms = response.json()
-            else:
-                forms = json.loads(cached_response.content)
-
-            form_count = 0
-            for form in forms:
-                print(json.dumps(form))
-                break
-                try:
-                    copy_form = form.copy()
-                    del copy_form[prefix]
-                    all_keys = all_keys.union(copy_form.keys())
-                    for key in keys.keys():
-                        value = form.get(key, None)
-                        if value is None:
-                            value = form[prefix][0]["%s/%s" % (prefix, key)]
-                        copy_form[keys[key]] = value
-                    count = 1
-                    for sub_part in form[prefix]:
-                        for k in sub_part.keys():
-                            new_key = "%s[%d]/%s" % (prefix, count, k[len(prefix) + 1 :])
-                            all_keys.add(new_key)
-                            copy_form[new_key] = sub_part[k]
-                        count += 1
-                    copy_form["type"] = prefix
-                    res.append(copy_form)
-                except Exception as e:
-                    print("failed on ", e, form, prefix)
-                    failure_count += 1
-                form_count += 1
-
-        print("parsed:", len(res), "failed:", failure_count)
-        # print("all_keys", all_keys)
-
-        all_keys = sorted(list(all_keys))
-        all_keys.insert(0, "type")
-        if not as_csv:
-            for item in res:
-                for k in all_keys:
-                    if k not in item:
-                        item[k] = None
-            return JsonResponse(res, safe=False)
-        else:
-            response = HttpResponse(content_type="text/csv")
-
-            writer = csv.writer(response)
-            writer.writerow(all_keys)
-            i = 1
-            for item in res:
-                ar = [item.get(key, None) for key in all_keys]
-                writer.writerow(ar)
-                i += 1
-                if i % 100 == 0:
-                    print(i)
-            return response
 
 
 def _build_district_cache(districts_qs):
@@ -1782,7 +1680,6 @@ router = routers.SimpleRouter()
 router.register(r"polio/campaigns", CampaignViewSet, basename="Campaign")
 router.register(r"polio/campaignsgroup", CampaignGroupViewSet, basename="campaigngroup")
 router.register(r"polio/preparedness_dashboard", PreparednessDashboardViewSet, basename="preparedness_dashboard")
-router.register(r"polio/im", IMViewSet, basename="IM")
 router.register(r"polio/imstats", IMStatsViewSet, basename="imstats")
 router.register(r"polio/lqasstats", LQASStatsViewSet, basename="lqasstats")
 router.register(r"polio/vaccines", VaccineStocksViewSet, basename="vaccines")

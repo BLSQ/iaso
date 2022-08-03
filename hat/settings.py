@@ -382,7 +382,7 @@ IS_BACKGROUND_WORKER = bool(os.environ.get("WORKER", False))
 #   Defaulting to SQS since most the environments run that way
 BACKGROUND_BACKEND = os.environ.get("BACKGROUND_TASK_SERVICE", "SQS")
 
-if BACKGROUND_BACKEND == "POSTGRES":
+if (BACKGROUND_BACKEND == "POSTGRES" or DEBUG):
     # Postgres backed background jobs
     BEANSTALK_WORKER = False
     BACKGROUND_TASK_SERVICE = "beanstalk_worker.services.PostgresTaskService"

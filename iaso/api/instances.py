@@ -335,67 +335,12 @@ class InstancesViewSet(viewsets.ViewSet):
 
         return has_access
 
-    @safe_api_import("instance")
-    def create(self, _, request):
-        import_data(request.data, request.user, request.query_params.get("app_id"))
-
-        return Response({"res": "ok"})
-
-    def retrieve(self, request, pk=None):
-        instance = get_object_or_404(self.get_queryset(), pk=pk)
-        is_locked = False
-        all_instance_locks = InstanceLockTable.objects.filter(instance=instance)
-        last_instance_lock = all_instance_locks.last()
-
-        if last_instance_lock:
-            is_locked = last_instance_lock.is_locked
-
-        has_access = self.check_instance_access(instance, last_instance_lock, request)
-
-        response = instance.as_full_model()
-
-        def instance_lock_as_dict(x):
-            return x.as_dict()
-
-        response["instance_locks_history"] = map(instance_lock_as_dict, all_instance_locks.order_by("-created_at"))
-        response["can_lock_again"] = has_access and is_locked and request.user != last_instance_lock.author
-        response["has_access"] = has_access
-        response["is_locked"] = is_locked
-
-        self.check_object_permissions(request, instance)
-        return Response(response)
-
-    def delete(self, request, pk=None):
-        instance = get_object_or_404(self.get_queryset(), pk=pk)
-        last_instance_lock = InstanceLockTable.objects.filter(instance=instance).last()
-
-        has_access = self.check_instance_access(instance, last_instance_lock, request)
-
-        if has_access is False:
-            raise serializers.ValidationError({"error": "You don't have the permission to modify this instance."})
-
-        self.check_object_permissions(request, instance)
-        instance.soft_delete(request.user)
-        return Response(instance.as_full_model())
-
-    def patch(self, request, pk=None):
-        original = get_object_or_404(self.get_queryset(), pk=pk)
-        instance = get_object_or_404(self.get_queryset(), pk=pk)
-        self.check_object_permissions(request, instance)
-        instance_serializer = InstanceSerializer(
-            instance, data=request.data, partial=True, context={"request": self.request}
-        )
-        instance_serializer.is_valid(raise_exception=True)
-        access_ou = OrgUnit.objects.filter_for_user_and_app_id(request.user, None)
+    @staticmethod
+    def lock_unlock_instance(instance, instance_lock, access_ou, request):
         has_higher_access = True
         ou_tree = []
         validation_status = request.data.get("validation_status", None)
-        data_org_unit = request.data.get("org_unit", None)
-        if instance.org_unit not in access_ou:
-            raise serializers.ValidationError({"error": "You don't have the permission to modify this instance."})
 
-        # check if a user is higher or not in the Org Unit Hierarchy
-        instance_lock = InstanceLockTable.objects.filter(instance=instance).last()
         if instance_lock and instance_lock.is_locked:
             current_top_ou = instance_lock.top_org_unit
             org_unit = instance_lock.top_org_unit
@@ -436,6 +381,76 @@ class InstancesViewSet(viewsets.ViewSet):
             InstanceLockTable.objects.create(
                 instance=instance, is_locked=False, author=request.user, top_org_unit=user_top_ou
             )
+
+    @safe_api_import("instance")
+    def create(self, _, request):
+        import_data(request.data, request.user, request.query_params.get("app_id"))
+
+        return Response({"res": "ok"})
+
+    def retrieve(self, request, pk=None):
+        instance = get_object_or_404(self.get_queryset(), pk=pk)
+        is_locked = False
+        all_instance_locks = InstanceLockTable.objects.filter(instance=instance)
+        last_instance_lock = all_instance_locks.last()
+
+        if last_instance_lock:
+            is_locked = last_instance_lock.is_locked
+
+        has_access = self.check_instance_access(instance, last_instance_lock, request)
+
+        response = instance.as_full_model()
+
+        def instance_lock_as_dict(x):
+            return x.as_dict()
+
+        # Logs(history) of all instance locks
+        response["instance_locks_history"] = map(instance_lock_as_dict, all_instance_locks.order_by("-created_at"))
+        # To show that the instance can be locked again with a user who has access to the parent of the instance org unit
+        response["can_lock_again"] = has_access and is_locked and request.user != last_instance_lock.author
+        # To display the Lock or unlock icon when the use has access to the two actions
+        response["has_access"] = has_access
+        # To display either the unlock or the lock icon depending if the instance is already lock or not
+        response["is_locked"] = is_locked
+
+        self.check_object_permissions(request, instance)
+        return Response(response)
+
+    def delete(self, request, pk=None):
+        instance = get_object_or_404(self.get_queryset(), pk=pk)
+        last_instance_lock = InstanceLockTable.objects.filter(instance=instance).last()
+
+        has_access = self.check_instance_access(instance, last_instance_lock, request)
+
+        if has_access is False:
+            raise serializers.ValidationError({"error": "You don't have the permission to modify this instance."})
+
+        self.check_object_permissions(request, instance)
+        instance.soft_delete(request.user)
+        return Response(instance.as_full_model())
+
+    def patch(self, request, pk=None):
+        original = get_object_or_404(self.get_queryset(), pk=pk)
+        instance = get_object_or_404(self.get_queryset(), pk=pk)
+        self.check_object_permissions(request, instance)
+        instance_serializer = InstanceSerializer(
+            instance, data=request.data, partial=True, context={"request": self.request}
+        )
+        instance_serializer.is_valid(raise_exception=True)
+        access_ou = OrgUnit.objects.filter_for_user_and_app_id(request.user, None)
+        data_org_unit = request.data.get("org_unit", None)
+
+        # get the last instance instanceLockTable
+        instance_lock = InstanceLockTable.objects.filter(instance=instance).last()
+
+        # Check if the user has access to the locked instance
+        has_access = self.check_instance_access(instance, instance_lock, request)
+
+        if instance.org_unit not in access_ou or has_access is False:
+            raise serializers.ValidationError({"error": "You don't have the permission to modify this instance."})
+
+        # Lock or Unlock the instance if the user has access to it
+        self.lock_unlock_instance(instance, instance_lock, access_ou, request)
 
         if original.org_unit.reference_instance and original.org_unit_id != data_org_unit:
             previous_orgunit = original.org_unit

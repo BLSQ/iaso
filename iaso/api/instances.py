@@ -156,13 +156,10 @@ class InstancesViewSet(viewsets.ViewSet):
                     else:
                         return None
 
-                def instance_lock_status(x):
-                    return InstanceLockTable.objects.filter(instance=x).last()
-
                 def as_dict_formatter(x):
                     dict = x.as_dict()
                     reference_form_id = get_reference_form_id(x.org_unit) if has_org_unit(x) else None
-                    last_instance_lock = InstanceLockTable.objects.filter(instance=x).last()
+                    last_instance_lock = x.instancelocktable_set.last()
                     is_locked = False
 
                     if last_instance_lock:
@@ -391,7 +388,7 @@ class InstancesViewSet(viewsets.ViewSet):
     def retrieve(self, request, pk=None):
         instance = get_object_or_404(self.get_queryset(), pk=pk)
         is_locked = False
-        all_instance_locks = InstanceLockTable.objects.filter(instance=instance)
+        all_instance_locks = instance.instancelocktable_set
         last_instance_lock = all_instance_locks.last()
 
         if last_instance_lock:
@@ -418,8 +415,7 @@ class InstancesViewSet(viewsets.ViewSet):
 
     def delete(self, request, pk=None):
         instance = get_object_or_404(self.get_queryset(), pk=pk)
-        last_instance_lock = InstanceLockTable.objects.filter(instance=instance).last()
-
+        last_instance_lock = instance.instancelocktable_set.last()
         has_access = self.check_instance_access(instance, last_instance_lock, request)
 
         if has_access is False:
@@ -441,7 +437,7 @@ class InstancesViewSet(viewsets.ViewSet):
         data_org_unit = request.data.get("org_unit", None)
 
         # get the last instance instanceLockTable
-        instance_lock = InstanceLockTable.objects.filter(instance=instance).last()
+        instance_lock = instance.instancelocktable_set.last()
 
         # Check if the user has access to the locked instance
         has_access = self.check_instance_access(instance, instance_lock, request)

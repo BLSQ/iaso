@@ -909,7 +909,7 @@ class InstancesAPITestCase(APITestCase):
             f"/api/instances/{instance.pk}/", data={"id": instance.pk, "validation_status": "LOCKED"}
         )
 
-        locked_table = InstanceLockTable.objects.filter(instance=instance).last()
+        locked_table = instance.instancelocktable_set.last()
 
         self.assertJSONResponse(response, 200)
         self.assertEqual(locked_table.instance, instance)
@@ -962,7 +962,7 @@ class InstancesAPITestCase(APITestCase):
             f"/api/instances/{instance.pk}/", data={"id": instance.pk, "validation_status": "LOCKED"}
         )
 
-        locked_table = InstanceLockTable.objects.filter(instance=instance).last()
+        locked_table = instance.instancelocktable_set.last()
 
         self.assertJSONResponse(response, 200)
         self.assertEqual(locked_table.instance, instance)
@@ -971,7 +971,7 @@ class InstancesAPITestCase(APITestCase):
         unlock_response = self.client.patch(
             f"/api/instances/{instance.pk}/", data={"id": instance.pk, "validation_status": "UNLOCK"}
         )
-        unLocked_table = InstanceLockTable.objects.filter(instance=instance).last()
+        unLocked_table = instance.instancelocktable_set.last()
 
         self.assertJSONResponse(unlock_response, 200)
         self.assertEqual(unLocked_table.instance, instance)
@@ -1000,7 +1000,7 @@ class InstancesAPITestCase(APITestCase):
             data={"id": Instance.objects.get(uuid=instance_uuid).pk, "validation_status": "LOCKED"},
         )
 
-        locked_table = InstanceLockTable.objects.filter(instance=instance).last()
+        locked_table = instance.instancelocktable_set.last()
 
         self.assertJSONResponse(response, 400)
         self.assertEqual(locked_table, None)

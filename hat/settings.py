@@ -384,11 +384,11 @@ BACKGROUND_BACKEND = os.environ.get("BACKGROUND_TASK_SERVICE", "SQS")
 
 if BACKGROUND_BACKEND == "POSTGRES":
     # Postgres backed background jobs
-    BEANSTALK_WORKER  = False
+    BEANSTALK_WORKER = False
     BACKGROUND_TASK_SERVICE = "beanstalk_worker.services.PostgresTaskService"
 elif BACKGROUND_BACKEND == "SQS":
     # SQS backed background jobs, SQS will send job payloads to `tasks/task`
-    BEANSTALK_WORKER = IS_BACKGROUND_WORKER # Used to expose extra URLs
+    BEANSTALK_WORKER = IS_BACKGROUND_WORKER  # Used to expose extra URLs
     BACKGROUND_TASK_SERVICE = "beanstalk_worker.services.TaskService"
     BEANSTALK_SQS_URL = os.environ.get(
         "BEANSTALK_SQS_URL", "https://sqs.eu-central-1.amazonaws.com/198293380284/iaso-staging-queue"

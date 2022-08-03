@@ -23,7 +23,7 @@ class EntityTypeSerializer(serializers.ModelSerializer):
             "updated_at",
             "reference_form",
             "entities_count",
-        ]
+            ]
 
     created_at = TimestampField(read_only=True)
     updated_at = TimestampField(read_only=True)
@@ -35,6 +35,9 @@ class EntityTypeSerializer(serializers.ModelSerializer):
 
 
 class EntitySerializer(serializers.ModelSerializer):
+    # attributes = serializers.SlugRelatedField(many=False, read_only=True, slug_field="attributes")
+    # instances = serializers.SlugRelatedField(many=True, read_only=True, slug_field="instances")
+
     class Meta:
         model = Entity
         fields = [
@@ -157,7 +160,8 @@ class EntityViewSet(ModelViewSet):
         serializer = EntitySerializer(entities, many=True)
         return Response(serializer.data)
 
+    @action(detail=False, methods=["GET"])
     def get_beneficiary(self, pk):
         beneficiary = get_object_or_404(Entity, pk=pk, type="beneficiary")
-
-
+        serializer = EntitySerializer(beneficiary, many=False)
+        return Response(serializer.data)

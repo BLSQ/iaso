@@ -34,7 +34,13 @@ const polioViruses = [
     },
 ];
 
-const polioVacines = [
+type Vaccin = {
+    value: string;
+    label: string;
+    color: string;
+};
+
+const polioVacines: Vaccin[] = [
     {
         value: 'mOPV2',
         label: 'mOPV2',

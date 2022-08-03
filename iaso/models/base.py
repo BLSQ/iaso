@@ -1273,12 +1273,3 @@ class InstanceLockTable(models.Model):
 
     def __str__(self):
         return str(self.instance)
-
-    def as_dict(self):
-        return {
-            "id": self.id,
-            "user": self.author.username,
-            "top_org_unit": self.top_org_unit.name,
-            "created_at": self.created_at,
-            "status": self.is_locked,
-        }

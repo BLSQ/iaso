@@ -7,6 +7,7 @@ from rest_framework import serializers, permissions, status
 from rest_framework.request import Request
 from rest_framework.generics import get_object_or_404
 from rest_framework.response import Response
+from copy import copy
 
 from iaso.models import Form, Project, OrgUnitType, Profile, OrgUnit
 from iaso.utils import timestamp_to_datetime
@@ -145,59 +146,9 @@ class FormSerializer(DynamicFieldsModelSerializer):
         return data
 
     def update(self, form, validated_data):
-        # get the original form either is deleted or not
-        if form.deleted_at is not None:
-            original = Form.objects_only_deleted.get(pk=form.id)
-        else:
-            original = get_object_or_404(Form, pk=form.id)
-        # assign validated data to variable
-        name = validated_data.pop("name", None)
-        projects = validated_data.pop("projects", None)
-        org_unit_types = validated_data.pop("org_unit_types", None)
-        period_type = validated_data.pop("period_type", None)
-        location_field = validated_data.pop("location_field", None)
-        device_field = validated_data.pop("device_field", None)
-        single_per_period = validated_data.pop("single_per_period", None)
-        periods_before_allowed = validated_data.pop("periods_before_allowed", None)
-        periods_after_allowed = validated_data.pop("periods_after_allowed", None)
-        derived = validated_data.pop("derived", None)
-        label_keys = validated_data.pop("label_keys", None)
-        deleted_at = validated_data.pop("deleted_at", None)
-        # assign variable to form object
-        if name is not None:
-            form.name = name
-        if projects is not None:
-            form.projects.clear()
-            for project in projects:
-                form.projects.add(project)
-        if org_unit_types is not None:
-            form.org_unit_types.clear()
-            for org_unit_type in org_unit_types:
-                form.org_unit_types.add(org_unit_type)
-        if period_type is not None:
-            form.period_type = period_type
-        if location_field is not None:
-            form.location_field = location_field
-        if device_field is not None:
-            form.device_field = device_field
-        if single_per_period is not None:
-            form.single_per_period = single_per_period
-        if periods_before_allowed is not None:
-            form.periods_before_allowed = periods_before_allowed
-        if periods_after_allowed is not None:
-            form.periods_after_allowed = periods_after_allowed
-        if derived is not None:
-            form.derived = derived
-        if label_keys is not None:
-            form.label_keys = label_keys
-
-        form.deleted_at = deleted_at
-        # save the form's updates
-        form.save()
-
-        # log the changes made on the form
+        original = copy(form)
+        form = super(FormSerializer, self).update(form, validated_data)
         log_modification(original, form, FORM_API, user=self.context["request"].user)
-
         return form
 
 
@@ -351,11 +302,12 @@ class FormsViewSet(ModelViewSet):
             updated_at,
         ]
 
-    def destroy(self, request, pk=None):
-        form = get_object_or_404(self.get_queryset(), pk=pk)
-        self.check_object_permissions(request, form)
-        form.soft_delete(request.user)
-        return Response(status=status.HTTP_204_NO_CONTENT)
+    def destroy(self, request, *args, **kwargs):
+        original = get_object_or_404(Form, pk=self.kwargs["pk"])
+        response = super(FormsViewSet, self).destroy(request, *args, **kwargs)
+        destroyed_form = Form.objects_only_deleted.get(pk=original.id)
+        log_modification(original, destroyed_form, FORM_API, user=request.user)
+        return response
 
 
 class MobileFormViewSet(FormsViewSet):

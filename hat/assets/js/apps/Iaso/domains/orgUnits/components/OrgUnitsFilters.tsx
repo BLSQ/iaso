@@ -54,8 +54,9 @@ const retrieveSourceFromVersionId = (versionId, dataSources) => {
     const idAsNumber = parseInt(versionId, 10);
     const result = dataSources.find(
         src =>
-            src.versions.filter(srcVersion => srcVersion.id === idAsNumber)
-                .length > 0,
+            src.original.versions.filter(
+                srcVersion => srcVersion.id === idAsNumber,
+            ).length > 0,
     );
     return result?.id;
 };
@@ -111,8 +112,8 @@ export const OrgUnitFilters: FunctionComponent<Props> = ({
         }
         if (key === 'source') {
             setInitialOrgUnitId(undefined);
-            setDataSourceId(parseInt(value, 10));
             setSourceVersionId(undefined);
+            setDataSourceId(parseInt(value, 10));
         }
         if (key === 'levels') {
             setInitialOrgUnitId(value);
@@ -137,7 +138,12 @@ export const OrgUnitFilters: FunctionComponent<Props> = ({
     useEffect(() => {
         // we may have a sourceVersionId but no dataSourceId if using deep linking
         // in that case we retrieve the dataSourceId so we can display it
-        if (!dataSourceId && !sourceVersionId && filters?.version) {
+        if (
+            dataSources &&
+            !dataSourceId &&
+            !sourceVersionId &&
+            filters?.version
+        ) {
             const id = retrieveSourceFromVersionId(
                 filters?.version,
                 dataSources,
@@ -156,6 +162,7 @@ export const OrgUnitFilters: FunctionComponent<Props> = ({
             !filters?.version &&
             currentUser?.account?.default_version?.data_source?.id
         ) {
+            // TO-DO => IA-1491 when coming from groups page, we need to prefill source and version from the selected group !
             setDataSourceId(
                 filters?.source ??
                     currentUser?.account?.default_version?.data_source?.id,
@@ -203,8 +210,7 @@ export const OrgUnitFilters: FunctionComponent<Props> = ({
                 })) ?? []
         );
     }, [dataSourceId, dataSources]);
-    console.log('filters?.group', filters?.group);
-    console.log('groups', groups);
+
     return (
         <Grid container spacing={2}>
             <Grid item xs={4}>
@@ -249,14 +255,14 @@ export const OrgUnitFilters: FunctionComponent<Props> = ({
                     <>
                         <InputComponent
                             type="select"
-                            // disabled={isFetchingOrgunitTypes}
+                            disabled={isFetchingOrgunitTypes}
                             keyValue="version"
                             onChange={handleChange}
                             value={sourceVersionId}
                             label={MESSAGES.sourceVersion}
                             options={versionsDropDown}
                             clearable={false}
-                            // loading={isFetchingOrgunitTypes}
+                            loading={isFetchingOrgunitTypes}
                         />
                         <Typography
                             className={classes.advancedSettings}

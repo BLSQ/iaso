@@ -34,7 +34,6 @@ export const useGetGroups = ({
         if (dataSourceId) setEnabled(true);
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [dataSourceId]);
-
     return useSnackQuery({
         queryKey: ['groups', dataSourceId, groupsQueryParams],
         queryFn: () => getRequest(`/api/groups/${groupsQueryParams}`),

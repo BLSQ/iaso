@@ -20,7 +20,7 @@ VIRUSES = [
     ("WPV1", _("WPV1")),
 ]
 
-VACINES = [
+VACCINES = [
     ("mOPV2", _("mOPV2")),
     ("nOPV2", _("nOPV2")),
     ("bOPV", _("bOPV")),
@@ -92,7 +92,7 @@ class RoundScope(models.Model):
     )
     round = models.ForeignKey("Round", on_delete=models.CASCADE, related_name="scopes")
 
-    vaccine = models.CharField(max_length=5, choices=VACINES)
+    vaccine = models.CharField(max_length=5, choices=VACCINES)
 
     class Meta:
         unique_together = [("round", "vaccine")]
@@ -100,7 +100,7 @@ class RoundScope(models.Model):
 
 
 def make_group_campaign_scope():
-    return Group.objects.create(name="hidden campaginScope")
+    return Group.objects.create(name="hidden campaignScope")
 
 
 class CampaignScope(models.Model):
@@ -110,7 +110,7 @@ class CampaignScope(models.Model):
         Group, on_delete=models.CASCADE, related_name="campaignScope", default=make_group_campaign_scope
     )
     campaign = models.ForeignKey("Campaign", on_delete=models.CASCADE, related_name="scopes")
-    vaccine = models.CharField(max_length=5, choices=VACINES)
+    vaccine = models.CharField(max_length=5, choices=VACCINES)
 
     class Meta:
         unique_together = [("campaign", "vaccine")]
@@ -230,7 +230,7 @@ class Campaign(SoftDeletableModel):
     )
 
     virus = models.CharField(max_length=6, choices=VIRUSES, null=True, blank=True)
-    vacine = models.CharField(max_length=5, choices=VACINES, null=True, blank=True)
+    vacine = models.CharField(max_length=5, choices=VACCINES, null=True, blank=True)
 
     # Detection
     detection_status = models.CharField(default="PENDING", max_length=10, choices=STATUS)
@@ -489,7 +489,7 @@ class URLCache(models.Model):
 class SpreadSheetImport(models.Model):
     """A copy of a Google Spreadsheet in the DB, in JSON format
 
-    This allow us to separate the parsing of the datasheet from it's retrieval
+    This allows us to separate the parsing of the datasheet from its retrieval
     and to keep a history.
     """
 

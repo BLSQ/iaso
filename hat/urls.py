@@ -61,7 +61,6 @@ schema_view = get_schema_view(
         title="Iaso",
         default_version="v1",
         description="Iaso Swagger",
-        contact=openapi.Contact(email="sdusausoy@bluesquarehub.com"),
         license=openapi.License(name="Almost Open Source"),
     ),
     public=False,

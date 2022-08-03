@@ -127,7 +127,12 @@ const CalendarMap = ({ campaigns, loadingCampaigns }) => {
                     attribution='&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors'
                     url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
                 />
-                {viewport.zoom > 6 && (
+                <CalendarMapPanesRegular
+                    campaignsShapes={campaignsShapes}
+                    regions={regions}
+                    viewport={viewport}
+                />
+                {/* {viewport.zoom > 6 && (
                     <CalendarMapPanesRegular
                         campaignsShapes={campaignsShapes}
                         regions={regions}
@@ -139,7 +144,7 @@ const CalendarMap = ({ campaigns, loadingCampaigns }) => {
                         mergedShapes={mergedShapesToDisplay}
                         viewport={viewport}
                     />
-                )}
+                )} */}
             </Map>
         </Box>
     );

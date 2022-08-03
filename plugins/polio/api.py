@@ -60,7 +60,18 @@ from .forma import (
     find_orgunit_in_cache,
 )
 from .helpers import get_url_content
-from .models import Campaign, Config, LineListImport, SpreadSheetImport, Round, CampaignGroup, BudgetEvent, BudgetFiles
+from .models import (
+    Campaign,
+    Config,
+    LineListImport,
+    SpreadSheetImport,
+    Round,
+    CampaignGroup,
+    BudgetEvent,
+    BudgetFiles,
+    CampaignScope,
+    RoundScope,
+)
 from .models import CountryUsersGroup
 from .models import URLCache
 from .preparedness.calculator import preparedness_summary
@@ -271,8 +282,8 @@ Timeline tracker Automated message
         url_path="merged_shapes.geojson",
     )
     def shapes(self, request):
-        cached_response = None
-        # cached_response = cache.get("{0}-geo_shapes".format(request.user.id))
+        # FIXME: The cache ignore all the filter parameter which will return wrong result if used
+        cached_response = cache.get("{0}-geo_shapes".format(request.user.id))
         queryset = self.filter_queryset(self.get_queryset())
         # Remove deleted and campaign with missing group
         queryset = queryset.filter(deleted_at=None).exclude(group=None)
@@ -309,6 +320,113 @@ where group_id = polio_campaign.group_id""",
 
         cache.set(
             "{0}-geo_shapes".format(request.user.id),
+            json.dumps(res),
+            3600 * 24,
+        )
+        return JsonResponse(res)
+
+    @staticmethod
+    def return_cached_response_if_valid(cache_key, update_dates):
+        cached_response = cache.get(cache_key)
+        if not cached_response:
+            return None
+        parsed_cache_response = json.loads(cached_response)
+        cache_creation_date = make_aware(datetime.utcfromtimestamp(parsed_cache_response["cache_creation_date"]))
+        for update_date in update_dates:
+            if update_date and update_date > cache_creation_date:
+                return None
+        return JsonResponse(json.loads(cached_response))
+
+    @action(
+        methods=["GET", "HEAD"],
+        detail=False,
+        url_path="v2/merged_shapes.geojson",
+    )
+    def shapes_v2(self, request):
+        # FIXME: The cache ignore all the filter parameter which will return wrong result if used
+        key_name = "{0}-geo_shapes_v2".format(request.user.id)
+
+        campaigns = self.filter_queryset(self.get_queryset())
+        # Remove deleted campaigns
+        campaigns = campaigns.filter(deleted_at=None)
+
+        last_campaign_updated = campaigns.order_by("updated_at").last()
+        last_roundscope_org_unit_updated = (
+            OrgUnit.objects.order_by("updated_at").filter(groups__roundScope__round__campaign__in=campaigns).last()
+        )
+        last_org_unit_updated = (
+            OrgUnit.objects.order_by("updated_at").filter(groups__campaignScope__campaign__in=campaigns).last()
+        )
+
+        update_dates = [
+            last_org_unit_updated.updated_at if last_campaign_updated else None,
+            last_roundscope_org_unit_updated.updated_at if last_roundscope_org_unit_updated else None,
+            last_campaign_updated.updated_at if last_campaign_updated else None,
+        ]
+        cached_response = self.return_cached_response_if_valid(key_name, update_dates)
+        if cached_response:
+            return cached_response
+
+        campaign_scopes = CampaignScope.objects.filter(campaign__in=campaigns.filter(separate_scopes_per_round=False))
+        campaign_scopes = campaign_scopes.prefetch_related("campaign")
+        campaign_scopes = campaign_scopes.prefetch_related("campaign__country")
+        campaign_scopes = campaign_scopes.annotate(
+            geom=RawSQL(
+                """select st_asgeojson(st_simplify(st_union(st_buffer(iaso_orgunit.geom::geometry, 0)), 0.01)::geography)
+from iaso_orgunit right join iaso_group_org_units ON iaso_group_org_units.orgunit_id = iaso_orgunit.id
+where group_id = polio_campaignscope.group_id""",
+                [],
+            )
+        )
+        # Check if the campaigns have been updated since the response has been cached
+        features = []
+        scope: CampaignScope
+        for scope in campaign_scopes:
+            if scope.geom:
+                feature = {
+                    "type": "Feature",
+                    "geometry": json.loads(scope.geom),
+                    "properties": {
+                        "obr_name": scope.campaign.obr_name,
+                        "id": str(scope.campaign.id),
+                        "vacine": scope.vaccine,
+                        "top_level_org_unit_name": scope.campaign.country.name,
+                    },
+                }
+                features.append(feature)
+
+        round_scopes = RoundScope.objects.filter(round__campaign__in=campaigns.filter(separate_scopes_per_round=True))
+        round_scopes = round_scopes.prefetch_related("round__campaign")
+        round_scopes = round_scopes.prefetch_related("round__campaign__country")
+        round_scopes = round_scopes.annotate(
+            geom=RawSQL(
+                """select st_asgeojson(st_simplify(st_union(st_buffer(iaso_orgunit.geom::geometry, 0)), 0.01)::geography)
+from iaso_orgunit right join iaso_group_org_units ON iaso_group_org_units.orgunit_id = iaso_orgunit.id
+where group_id = polio_roundscope.group_id""",
+                [],
+            )
+        )
+
+        for scope in round_scopes:
+            scope: RoundScope
+            if scope.geom:
+                feature = {
+                    "type": "Feature",
+                    "geometry": json.loads(scope.geom),
+                    "properties": {
+                        "obr_name": scope.round.campaign.obr_name,
+                        "id": str(scope.round.campaign.id),
+                        "vacine": scope.vaccine,
+                        "top_level_org_unit_name": scope.round.campaign.country.name,
+                        "round_number": scope.round.number,
+                    },
+                }
+                features.append(feature)
+
+        res = {"type": "FeatureCollection", "features": features, "cache_creation_date": datetime.utcnow().timestamp()}
+
+        cache.set(
+            key_name,
             json.dumps(res),
             3600 * 24,
         )

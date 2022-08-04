@@ -105,4 +105,10 @@ def iter_items(queryset, pseudo_buffer, columns, get_row, chunk_size=5000):
 
 
 def timestamp_to_utc_datetime(timestamp):
-    return datetime.fromtimestamp(int(timestamp / 1000), timezone.utc)
+    """iaso mobile app >= 2.0 send timestamp as second instead of microsecond
+    so we do a detection  cf https://bluesquare.atlassian.net/browse/IA-1473"""
+    dt = datetime.fromtimestamp(int(timestamp / 1000), timezone.utc)
+    if dt.year < 1972:
+        return datetime.fromtimestamp(int(timestamp), timezone.utc)
+    else:
+        return dt

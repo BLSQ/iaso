@@ -3,7 +3,7 @@
 /* eslint-disable react/prop-types */
 import React from 'react';
 
-import { Grid, DialogContentText, Box } from '@material-ui/core';
+import { Grid, DialogContentText, Box, Typography } from '@material-ui/core';
 
 import PropTypes from 'prop-types';
 import moment from 'moment';
@@ -21,6 +21,8 @@ import LinkIcon from '@material-ui/icons/Link';
 import LinkOffIcon from '@material-ui/icons/LinkOff';
 import omit from 'lodash/omit';
 import { FormattedMessage } from 'react-intl';
+import GpsFixedIcon from '@material-ui/icons/GpsFixed';
+import GpsOffIcon from '@material-ui/icons/GpsOff';
 import { useSaveOrgUnit } from '../hooks';
 import { useFormState } from '../../../hooks/form';
 import InputComponent from '../../../components/forms/InputComponent';
@@ -45,6 +47,9 @@ import {
 const useStyles = makeStyles(theme => ({
     speedDialTop: {
         top: theme.spacing(12.5),
+    },
+    geometryExistence: {
+        marginTop: '16px',
     },
 }));
 
@@ -204,27 +209,80 @@ const Actions = (
     ];
 };
 
-const OrgUnitCreationDetails = ({ orgUnit }) => (
-    <>
-        <InputComponent
-            keyValue="source"
-            value={orgUnit.source}
-            disabled
-            label={MESSAGES.source}
-            withMarginTop={!orgUnit.reference_instance}
-        />
-        <InputComponent
-            keyValue="created_at"
-            value={moment.unix(orgUnit.created_at).format('LTS')}
-            disabled
-        />
-        <InputComponent
-            keyValue="updated_at"
-            value={moment.unix(orgUnit.updated_at).format('LTS')}
-            disabled
-        />
-    </>
-);
+const OrgUnitCreationDetails = ({ orgUnit, formatMessage, classes }) => {
+    const latitudeLongitude =
+        orgUnit.latitude && orgUnit.longitude
+            ? `${formatMessage(MESSAGES.latitude)}: ${
+                  orgUnit.latitude
+              },  ${formatMessage(MESSAGES.longitude)}: ${orgUnit.longitude}`
+            : false;
+    return (
+        <>
+            <InputComponent
+                keyValue="source"
+                value={orgUnit.source}
+                disabled
+                label={MESSAGES.source}
+                withMarginTop={!orgUnit.reference_instance}
+            />
+            <InputComponent
+                keyValue="created_at"
+                value={moment.unix(orgUnit.created_at).format('LTS')}
+                disabled
+            />
+            <InputComponent
+                keyValue="updated_at"
+                value={moment.unix(orgUnit.updated_at).format('LTS')}
+                disabled
+            />
+
+            {!orgUnit.has_geo_json && !latitudeLongitude && (
+                <Grid
+                    container
+                    spacing={1}
+                    className={classes.geometryExistence}
+                >
+                    <Grid item>
+                        <GpsOffIcon color="primary" />
+                    </Grid>
+                    <Grid item>
+                        <Typography>
+                            <FormattedMessage
+                                {...MESSAGES.hasNoGeometryAndGps}
+                            />
+                        </Typography>
+                    </Grid>
+                </Grid>
+            )}
+
+            {orgUnit.has_geo_json && (
+                <Grid
+                    container
+                    spacing={1}
+                    className={classes.geometryExistence}
+                >
+                    <Grid item>
+                        <GpsFixedIcon color="primary" />
+                    </Grid>
+                    <Grid item>
+                        <Typography>
+                            <FormattedMessage {...MESSAGES.hasGeometry} />
+                        </Typography>
+                    </Grid>
+                </Grid>
+            )}
+            {latitudeLongitude && (
+                <InputComponent
+                    keyValue="latitudeLongitude"
+                    value={latitudeLongitude}
+                    type="text"
+                    disabled
+                    label={MESSAGES.latitudeLongitude}
+                />
+            )}
+        </>
+    );
+};
 
 const OrgUnitInfosComponent = ({
     orgUnit,
@@ -253,7 +311,7 @@ const OrgUnitInfosComponent = ({
                 (formId === referenceFormId &&
                     formId !== undefined &&
                     referenceFormId !== undefined)) && (
-                <SpeedDialInstanceActions
+                    <SpeedDialInstanceActions
                     speedDialClasses={classes.speedDialTop}
                     actions={Actions(
                         orgUnit,
@@ -314,6 +372,7 @@ const OrgUnitInfosComponent = ({
                     }))}
                     label={MESSAGES.groups}
                 />
+
                 {orgUnit.reference_instance && (
                     <>
                         <InputComponent
@@ -381,7 +440,11 @@ const OrgUnitInfosComponent = ({
                     type="arrayInput"
                 />
                 {orgUnit.reference_instance && (
-                    <OrgUnitCreationDetails orgUnit={orgUnit} />
+                    <OrgUnitCreationDetails
+                        orgUnit={orgUnit}
+                        formatMessage={formatMessage}
+                        classes={classes}
+                    />
                 )}
             </Grid>
 
@@ -445,7 +508,11 @@ const OrgUnitInfosComponent = ({
 
             <Grid item xs={12} md={orgUnit.reference_instance ? 8 : 4}>
                 {orgUnit.id && !orgUnit.reference_instance && (
-                    <OrgUnitCreationDetails orgUnit={orgUnit} />
+                    <OrgUnitCreationDetails
+                        orgUnit={orgUnit}
+                        formatMessage={formatMessage}
+                        classes={classes}
+                    />
                 )}
                 {orgUnit.reference_instance && (
                     <WidgetPaper

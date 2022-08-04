@@ -178,6 +178,10 @@ const MESSAGES = defineMessages({
         defaultMessage: 'Informations',
         id: 'iaso.instance.infos',
     },
+    submission: {
+        defaultMessage: 'Submission',
+        id: 'iaso.instance.titleSingle',
+    },
     form: {
         defaultMessage: 'Form',
         id: 'iaso.instance.formShort',
@@ -411,6 +415,14 @@ const MESSAGES = defineMessages({
         id: 'iaso.instance.dialog.linkOffOrgUnitToInstanceReferenceTitle',
         defaultMessage:
             'Are you sure you want to unlink this reference submission from the orgUnit ?',
+    },
+    history: {
+        id: 'iaso.label.history',
+        defaultMessage: 'History',
+    },
+    seeAllVersions: {
+        id: 'iaso.label.seeAllVersions',
+        defaultMessage: 'See all versions',
     },
 });
 

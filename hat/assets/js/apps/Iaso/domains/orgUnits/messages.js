@@ -436,6 +436,18 @@ const MESSAGES = defineMessages({
         id: 'iaso.label.downloadXml',
         defaultMessage: 'Download XML',
     },
+    latitudeLongitude: {
+        id: 'iaso.label.latitudeLongitude',
+        defaultMessage: 'Latitude & Longitude',
+    },
+    hasGeometry: {
+        id: 'iaso.label.hasGeometry',
+        defaultMessage: 'With Geography',
+    },
+    hasNoGeometryAndGps: {
+        id: 'iaso.label.hasNoGeometryAndGps',
+        defaultMessage: 'Without geographic data',
+    },
 });
 
 export default MESSAGES;

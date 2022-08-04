@@ -1,8 +1,5 @@
-import React from 'react';
-import { connect, useSelector } from 'react-redux';
-import PropTypes from 'prop-types';
-import { bindActionCreators } from 'redux';
-import { FormattedMessage } from 'react-intl';
+import React, { FunctionComponent, useState } from 'react';
+import { UseMutateAsyncFunction } from 'react-query';
 
 import {
     Dialog,
@@ -10,27 +7,43 @@ import {
     DialogContent,
     DialogActions,
     Button,
-    withStyles,
+    makeStyles,
     Box,
     Grid,
     Typography,
 } from '@material-ui/core';
-
 import {
-    selectionInitialState,
+    // @ts-ignore
     commonStyles,
+    // @ts-ignore
     formatThousand,
+    // @ts-ignore
+    useSafeIntl,
 } from 'bluesquare-components';
+// @ts-ignore
 import { useCurrentUser } from 'Iaso/utils/usersUtils';
-import { saveMultiEdit as saveMultiEditAction } from '../actions';
+import { useGetOrgUnitTypes } from '../hooks/requests/useGetOrgUnitTypes';
 
 import MESSAGES from '../messages';
 import InputComponent from '../../../components/forms/InputComponent';
 import ConfirmDialog from '../../../components/dialogs/ConfirmDialogComponent';
 import { compareGroupVersions, decodeSearch } from '../utils';
 import { useGetGroups } from '../hooks';
+import { OrgUnitParams, OrgUnit } from '../types/orgUnit';
+import { SaveData } from '../types/saveMulti';
+import { Selection } from '../types/selection';
+import { Group } from '../types/group';
+import { OrgunitType } from '../types/orgunitTypes';
 
-const styles = theme => ({
+type Props = {
+    open: boolean;
+    params: OrgUnitParams;
+    closeDialog: () => void;
+    selection: Selection<OrgUnit>;
+    saveMulti: UseMutateAsyncFunction<unknown, unknown, unknown, unknown>;
+};
+
+const useStyles = makeStyles(theme => ({
     ...commonStyles(theme),
     paper: {
         overflow: 'visible',
@@ -46,30 +59,34 @@ const styles = theme => ({
         paddingBottom: theme.spacing(2),
         paddingRight: theme.spacing(2),
     },
-});
+}));
 
 const stringOfIdsToArrayofIds = stringValue =>
     !stringValue || stringValue === ''
         ? []
         : stringValue.split(',').map(s => parseInt(s, 10));
 
-const OrgUnitsMultiActionsDialog = ({
+export const OrgUnitsMultiActionsDialog: FunctionComponent<Props> = ({
     open,
     closeDialog,
-    classes,
-    orgUnitTypes,
     selection: { selectCount, selectedItems, unSelectedItems, selectAll },
     params,
-    saveMultiEdit,
-    fetchOrgUnits,
+    saveMulti,
 }) => {
-    const [editGroups, setEditGroups] = React.useState(false);
-    const [groupsAdded, setGroupsAdded] = React.useState([]);
-    const [groupsRemoved, setGroupsRemoved] = React.useState([]);
-    const [editOrgUnitType, setEditOrgUnitType] = React.useState(false);
-    const [orgUnitType, setOrgUnitType] = React.useState(null);
-    const [editValidation, setEditValidation] = React.useState(false);
-    const [validationStatus, setValidationStatus] = React.useState(null);
+    const { formatMessage } = useSafeIntl();
+    const classes: Record<string, string> = useStyles();
+    const { data: orgUnitTypes } = useGetOrgUnitTypes();
+    const [editGroups, setEditGroups] = useState<boolean>(false);
+    const [groupsAdded, setGroupsAdded] = useState<Group[]>([]);
+    const [groupsRemoved, setGroupsRemoved] = useState<Group[]>([]);
+    const [editOrgUnitType, setEditOrgUnitType] = useState<boolean>(false);
+    const [orgUnitType, setOrgUnitType] = useState<OrgunitType | undefined>(
+        undefined,
+    );
+    const [editValidation, setEditValidation] = useState<boolean>(false);
+    const [validationStatus, setValidationStatus] = useState<
+        string | undefined
+    >(undefined);
 
     const currentUser = useCurrentUser();
     const { groups = [], isFetchingGroups } = useGetGroups({
@@ -95,13 +112,13 @@ const OrgUnitsMultiActionsDialog = ({
     };
     const handleSetEditOuType = editEnabled => {
         if (!editEnabled) {
-            setEditOrgUnitType(null);
+            setEditOrgUnitType(false);
         }
         setEditOrgUnitType(editEnabled);
     };
     const handleSetEditValidation = editEnabled => {
         if (!editEnabled) {
-            setValidationStatus(null);
+            setValidationStatus(undefined);
         }
         setEditValidation(editEnabled);
     };
@@ -110,13 +127,13 @@ const OrgUnitsMultiActionsDialog = ({
         setGroupsAdded([]);
         setGroupsRemoved([]);
         setEditOrgUnitType(false);
-        setOrgUnitType(null);
+        setOrgUnitType(undefined);
         setEditValidation(false);
-        setValidationStatus(null);
+        setValidationStatus(undefined);
         closeDialog();
     };
     const saveAndReset = () => {
-        const data = {};
+        const data: SaveData = {};
         if (editGroups) {
             if (groupsAdded.length > 0) {
                 data.groups_added = groupsAdded;
@@ -146,10 +163,7 @@ const OrgUnitsMultiActionsDialog = ({
             });
             data.searches = searches;
         }
-        saveMultiEdit(data).then(() => {
-            closeAndReset();
-            fetchOrgUnits();
-        });
+        saveMulti(data).then(() => closeAndReset());
     };
     return (
         <>
@@ -168,15 +182,10 @@ const OrgUnitsMultiActionsDialog = ({
                 scroll="body"
             >
                 <DialogTitle className={classes.title}>
-                    <FormattedMessage {...MESSAGES.multiEditTitle} />
+                    {formatMessage(MESSAGES.multiEditTitle)}
                     {` (${formatThousand(selectCount)} `}
-                    {selectCount === 1 && (
-                        <FormattedMessage {...MESSAGES.titleSingle} />
-                    )}
-                    {selectCount > 1 && (
-                        <FormattedMessage {...MESSAGES.titleMulti} />
-                    )}
-                    )
+                    {selectCount === 1 && formatMessage(MESSAGES.titleSingle)}
+                    {selectCount > 1 && formatMessage(MESSAGES.titleMulti)})
                 </DialogTitle>
                 <DialogContent className={classes.content}>
                     <div>
@@ -257,10 +266,7 @@ const OrgUnitsMultiActionsDialog = ({
                                 onChange={(key, value) => setOrgUnitType(value)}
                                 value={orgUnitType}
                                 type="select"
-                                options={orgUnitTypes.map(ot => ({
-                                    label: ot.name,
-                                    value: ot.id,
-                                }))}
+                                options={orgUnitTypes || []}
                                 label={MESSAGES.org_unit_type}
                                 isSearchable
                             />
@@ -288,26 +294,18 @@ const OrgUnitsMultiActionsDialog = ({
                                     options={[
                                         {
                                             value: 'NEW',
-                                            label: (
-                                                <FormattedMessage
-                                                    {...MESSAGES.new}
-                                                />
-                                            ),
+                                            label: formatMessage(MESSAGES.new),
                                         },
                                         {
                                             value: 'VALID',
-                                            label: (
-                                                <FormattedMessage
-                                                    {...MESSAGES.valid}
-                                                />
+                                            label: formatMessage(
+                                                MESSAGES.valid,
                                             ),
                                         },
                                         {
                                             value: 'REJECTED',
-                                            label: (
-                                                <FormattedMessage
-                                                    {...MESSAGES.rejected}
-                                                />
+                                            label: formatMessage(
+                                                MESSAGES.rejected,
                                             ),
                                         },
                                     ]}
@@ -318,30 +316,27 @@ const OrgUnitsMultiActionsDialog = ({
                 </DialogContent>
                 <DialogActions className={classes.action}>
                     <Button onClick={closeAndReset} color="primary">
-                        <FormattedMessage {...MESSAGES.cancel} />
+                        {formatMessage(MESSAGES.cancel)}
                     </Button>
 
                     <ConfirmDialog
-                        btnMessage={<FormattedMessage {...MESSAGES.validate} />}
+                        btnMessage={formatMessage(MESSAGES.validate)}
                         question={
                             <Grid direction="column" container>
                                 <Grid item>
                                     <Box>
-                                        <FormattedMessage
-                                            {...MESSAGES.confirmMultiChange}
-                                        />
+                                        {formatMessage(
+                                            MESSAGES.confirmMultiChange,
+                                        )}
                                         <>🚨</>
                                     </Box>
                                 </Grid>
                                 <Grid item>
                                     <Box>
                                         <Typography variant="body2">
-                                            <FormattedMessage
-                                                {...MESSAGES.bulkChangeCount}
-                                                values={{
-                                                    count: selectCount ?? 0,
-                                                }}
-                                            />
+                                            {formatMessage(
+                                                MESSAGES.bulkChangeCount,
+                                            )}
                                         </Typography>
                                     </Box>
                                 </Grid>
@@ -356,33 +351,3 @@ const OrgUnitsMultiActionsDialog = ({
         </>
     );
 };
-OrgUnitsMultiActionsDialog.defaultProps = {
-    selection: selectionInitialState,
-};
-
-OrgUnitsMultiActionsDialog.propTypes = {
-    open: PropTypes.bool.isRequired,
-    closeDialog: PropTypes.func.isRequired,
-    params: PropTypes.object.isRequired,
-    classes: PropTypes.object.isRequired,
-    orgUnitTypes: PropTypes.array.isRequired,
-    saveMultiEdit: PropTypes.func.isRequired,
-    fetchOrgUnits: PropTypes.func.isRequired,
-    selection: PropTypes.object,
-};
-
-const MapStateToProps = state => ({
-    orgUnitTypes: state.orgUnits.orgUnitTypes,
-});
-
-const mapDispatchToProps = dispatch => ({
-    ...bindActionCreators(
-        {
-            saveMultiEdit: saveMultiEditAction,
-        },
-        dispatch,
-    ),
-});
-export default withStyles(styles)(
-    connect(MapStateToProps, mapDispatchToProps)(OrgUnitsMultiActionsDialog),
-);

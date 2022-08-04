@@ -69,7 +69,7 @@ export const getScopeStyle = (shape, scope) => {
     return defaultShapeStyle;
 };
 
-export const findScopeIds = (obrName, campaigns) => {
+export const findScopeIds = (obrName, campaigns, currentRound) => {
     let scopeIds = obrName
         ? [...campaigns].filter(campaign => campaign.obr_name === obrName)
         : [...campaigns];
@@ -82,14 +82,16 @@ export const findScopeIds = (obrName, campaigns) => {
             if (!campaign.separate_scopes_per_round) {
                 return campaign.group.org_units;
             }
-            return campaign.rounds
-                .map(round =>
-                    round.scopes
-                        .filter(scope => scope.group)
-                        .map(scope => scope.group.org_units)
-                        .flat(),
-                )
-                .flat();
+            const fullRound = campaign.rounds.find(
+                round => round.number === currentRound,
+            );
+            if (fullRound) {
+                return fullRound.scopes
+                    .filter(scope => scope.group)
+                    .map(scope => scope.group.org_units)
+                    .flat();
+            }
+            return [];
         })
         .flat();
     return scopeIds;

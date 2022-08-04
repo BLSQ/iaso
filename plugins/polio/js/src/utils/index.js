@@ -70,19 +70,28 @@ export const getScopeStyle = (shape, scope) => {
 };
 
 export const findScopeIds = (obrName, campaigns) => {
-    let scopeIds = [];
-    if (obrName) {
-        scopeIds = campaigns
-            .filter(campaign => campaign.obr_name === obrName)
-            .filter(campaign => campaign.group)
-            .map(campaign => campaign.group.org_units)
-            .flat();
-    } else {
-        scopeIds = campaigns
-            .filter(campaign => campaign.group)
-            .map(campaign => campaign.group.org_units)
-            .flat();
-    }
+    let scopeIds = obrName
+        ? [...campaigns].filter(campaign => campaign.obr_name === obrName)
+        : [...campaigns];
+
+    scopeIds = scopeIds
+        .filter(
+            campaign => campaign.group || campaign.separate_scopes_per_round,
+        )
+        .map(campaign => {
+            if (!campaign.separate_scopes_per_round) {
+                return campaign.group.org_units;
+            }
+            return campaign.rounds
+                .map(round =>
+                    round.scopes
+                        .filter(scope => scope.group)
+                        .map(scope => scope.group.org_units)
+                        .flat(),
+                )
+                .flat();
+        })
+        .flat();
     return scopeIds;
 };
 

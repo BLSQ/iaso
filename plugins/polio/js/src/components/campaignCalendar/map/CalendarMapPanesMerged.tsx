@@ -1,3 +1,4 @@
+/* eslint-disable camelcase */
 import React, { FunctionComponent } from 'react';
 import { GeoJSON, Pane } from 'react-leaflet';
 
@@ -6,8 +7,20 @@ import { CalendarMapTooltip } from './CalendarMapTooltip';
 import { getGeoJsonStyle } from './utils';
 import { polioVacines } from '../../../constants/virus';
 
+type mergeShape = {
+    geom: any;
+    color: string;
+    properties: {
+        scope_key: string;
+        id: string; // the campaign id
+        vacine: string;
+        top_level_org_unit_name: string;
+        obr_name: string;
+    };
+};
+
 type Props = {
-    mergedShapes: any[];
+    mergedShapes: mergeShape[];
     viewport: ViewPort;
 };
 
@@ -20,8 +33,8 @@ export const CalendarMapPanesMerged: FunctionComponent<Props> = ({
             {mergedShapes?.map(mergedShape => {
                 return (
                     <Pane
-                        name={`campaign-${mergedShape.properties.id}`}
-                        key={`campaign-${mergedShape.properties.id}`}
+                        name={`campaign-${mergedShape.properties.scope_key}`}
+                        key={`campaign-${mergedShape.properties.scope_key}`}
                     >
                         <GeoJSON
                             key={mergedShape.properties.id}

@@ -16,35 +16,64 @@ import 'leaflet/dist/leaflet.css';
 import { CalendarMapPanesRegular } from './CalendarMapPanesRegular.tsx';
 import { CalendarMapPanesMerged } from './CalendarMapPanesMerged.tsx';
 import { defaultViewport, boundariesZoomLimit } from './constants.ts';
+import { polioVacines } from '../../../constants/virus';
+
+const getShapeQuery = (loadingCampaigns, groupId, campaign, vaccine, round) => {
+    const baseParams = {
+        asLocation: true,
+        limit: 3000,
+        group: groupId,
+        app_id: appId,
+    };
+    const queryString = new URLSearchParams(baseParams);
+    return {
+        queryKey: ['campaignShape', baseParams],
+        queryFn: () => getRequest(`/api/orgunits/?${queryString.toString()}`),
+        select: data => ({
+            campaign,
+            shapes: data,
+            vaccine,
+            color: polioVacines.find(v => v.value === vaccine)?.color,
+            round,
+        }),
+        enabled: !loadingCampaigns,
+    };
+};
 
 const CalendarMap = ({ campaigns, loadingCampaigns }) => {
     const classes = useStyles();
     const [viewport, setViewPort] = useState(defaultViewport);
     const map = useRef();
-    const shapesQueries = useQueries(
-        campaigns
-            .filter(c => Boolean(c.original.group?.id))
-            .map(campaign => {
-                const baseParams = {
-                    asLocation: true,
-                    limit: 3000,
-                    group: campaign.original.group.id,
-                    app_id: appId,
-                };
-
-                const queryString = new URLSearchParams(baseParams);
-                return {
-                    queryKey: ['campaignShape', baseParams],
-                    queryFn: () =>
-                        getRequest(`/api/orgunits/?${queryString.toString()}`),
-                    select: data => ({
+    const queries = [];
+    campaigns
+        .filter(c => Boolean(c.original.group?.id) || c.separateScopesPerRound)
+        .forEach(campaign => {
+            if (campaign.separateScopesPerRound) {
+                campaign.rounds.forEach(round => {
+                    round.scopes.forEach(scope => {
+                        queries.push(
+                            getShapeQuery(
+                                loadingCampaigns,
+                                scope.group.id,
+                                campaign,
+                                scope.vaccine,
+                                round,
+                            ),
+                        );
+                    });
+                });
+            } else {
+                queries.push(
+                    getShapeQuery(
+                        loadingCampaigns,
+                        campaign.original.group.id,
                         campaign,
-                        shapes: data,
-                    }),
-                    enabled: !loadingCampaigns,
-                };
-            }),
-    );
+                        campaign.original.vacine,
+                    ),
+                );
+            }
+        });
+    const shapesQueries = useQueries(queries);
 
     const regionsQueries = useQueries(
         campaigns
@@ -108,7 +137,7 @@ const CalendarMap = ({ campaigns, loadingCampaigns }) => {
             {(loadingCampaigns || loadingShapes) && <LoadingSpinner absolute />}
             <div className={classes.mapLegend}>
                 {viewport.zoom > boundariesZoomLimit && (
-                    <CampaignsLegend campaigns={campaignsShapes} />
+                    <CampaignsLegend campaigns={campaigns} />
                 )}
                 <Box display="flex" justifyContent="flex-end">
                     <VaccinesLegend />

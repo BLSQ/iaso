@@ -4,6 +4,7 @@ import { GeoJSON, Pane } from 'react-leaflet';
 import { ViewPort } from '../../../constants/types';
 import { CalendarMapTooltip } from './CalendarMapTooltip';
 import { getGeoJsonStyle } from './utils';
+import { polioVacines } from '../../../constants/virus';
 
 type Props = {
     mergedShapes: any[];
@@ -27,8 +28,12 @@ export const CalendarMapPanesMerged: FunctionComponent<Props> = ({
                             data={mergedShape}
                             style={() =>
                                 getGeoJsonStyle(
+                                    polioVacines.find(
+                                        v =>
+                                            v.value ===
+                                            mergedShape.properties.vacine,
+                                    )?.color || mergedShape.color,
                                     mergedShape.color,
-                                    mergedShape.properties.vacine,
                                     viewport,
                                 )
                             }

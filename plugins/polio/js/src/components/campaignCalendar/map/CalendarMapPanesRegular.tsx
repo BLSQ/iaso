@@ -18,31 +18,35 @@ export const CalendarMapPanesRegular: FunctionComponent<Props> = ({
 }) => {
     return (
         <>
-            {campaignsShapes.map(cs => {
+            {campaignsShapes.map(campaignShape => {
+                const { id, name, country, original, color } =
+                    campaignShape.campaign;
+                const paneName = `campaign-${id}-vaccine-${
+                    campaignShape.vaccine
+                }${
+                    campaignShape.round ? `round-${campaignShape.round.id}` : ''
+                }`;
                 return (
-                    <Pane
-                        name={`campaign-${cs.campaign.id}`}
-                        key={cs.campaign.id}
-                    >
-                        {cs.shapes.map(shape => (
+                    <Pane name={paneName} key={paneName}>
+                        {campaignShape.shapes.map(shape => (
                             <GeoJSON
                                 key={shape.id}
                                 data={shape.geo_json}
                                 style={() =>
                                     getGeoJsonStyle(
-                                        cs.campaign.color,
-                                        cs.campaign.original.vacine,
+                                        campaignShape.color || color,
+                                        color,
                                         viewport,
                                     )
                                 }
                             >
                                 <CalendarMapTooltip
                                     type="regular"
-                                    campaign={cs.campaign.name}
-                                    country={cs.campaign.country}
+                                    campaign={name}
+                                    country={country}
                                     region={findRegion(shape, regions)}
                                     district={shape.name}
-                                    vaccine={cs.campaign.original.vacine}
+                                    vaccine={original.vacine}
                                 />
                             </GeoJSON>
                         ))}

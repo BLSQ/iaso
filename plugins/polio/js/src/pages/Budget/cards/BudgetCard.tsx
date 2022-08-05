@@ -35,11 +35,14 @@ type Props = {
     campaign: CardCampaign;
 };
 
-const styles = theme => ({
+const useStyles = makeStyles(theme => ({
+    cardContent: {
+        padding: `${theme.spacing(1)}px !important`,
+    },
     title: {
         fontSize: 16,
         fontWeight: 'bold',
-        marginBottom: theme.spacing(1),
+        marginBottom: theme.spacing(0.5),
         width: '60%',
         alignItems: 'center',
     },
@@ -52,11 +55,8 @@ const styles = theme => ({
     rejected: { color: theme.palette.error.main },
     validated: { color: theme.palette.success.main },
     validation_ongoing: { color: WARNING_COLOR },
-    country: { color: theme.palette.grey[700], marginTop: theme.spacing(1) },
-});
-
-// @ts-ignore
-const useStyles = makeStyles(styles);
+    country: { color: theme.palette.grey[700], marginTop: theme.spacing(0.5) },
+}));
 
 const baseUrl = BUDGET_DETAILS;
 export const BudgetCard: FunctionComponent<Props> = ({ campaign }) => {
@@ -70,7 +70,7 @@ export const BudgetCard: FunctionComponent<Props> = ({ campaign }) => {
         <Card>
             <Grid container>
                 <Grid item xs={10}>
-                    <CardContent>
+                    <CardContent className={classes.cardContent}>
                         <Box display="flex">
                             <Typography
                                 variant="h6"

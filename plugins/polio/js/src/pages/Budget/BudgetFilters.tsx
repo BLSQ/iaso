@@ -24,6 +24,7 @@ type Props = {
         // eslint-disable-next-line camelcase
         last_budget_event__status: BudgetStatus;
     };
+    buttonSize?: 'medium' | 'small' | 'large' | undefined;
 };
 
 const statusOptions = (formatMessage: IntlFormatMessage) => {
@@ -35,7 +36,10 @@ const statusOptions = (formatMessage: IntlFormatMessage) => {
     });
 };
 const baseUrl = BUDGET;
-export const BudgetFilters: FunctionComponent<Props> = ({ params }) => {
+export const BudgetFilters: FunctionComponent<Props> = ({
+    params,
+    buttonSize,
+}) => {
     const { filters, handleSearch, handleChange, filtersUpdated } =
         useFilterState(baseUrl, params);
     const { formatMessage } = useSafeIntl();
@@ -85,6 +89,7 @@ export const BudgetFilters: FunctionComponent<Props> = ({ params }) => {
                         <FilterButton
                             disabled={!filtersUpdated}
                             onFilter={handleSearch}
+                            size={buttonSize}
                         />
                     </Box>
                 </Grid>
@@ -93,4 +98,8 @@ export const BudgetFilters: FunctionComponent<Props> = ({ params }) => {
             {/* </Grid> */}
         </Box>
     );
+};
+
+BudgetFilters.defaultProps = {
+    buttonSize: 'medium',
 };

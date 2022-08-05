@@ -21,9 +21,13 @@ type Props = {
         recipient?: string;
         type?: string;
     };
+    buttonSize?: 'medium' | 'small' | 'large' | undefined;
 };
 
-export const BudgetDetailsFilters: FunctionComponent<Props> = ({ params }) => {
+export const BudgetDetailsFilters: FunctionComponent<Props> = ({
+    params,
+    buttonSize,
+}) => {
     const { filters, handleSearch, handleChange, filtersUpdated } =
         useFilterState(BUDGET_DETAILS, params);
     const { data: teams, isFetching } = useGetTeamsDropDown();
@@ -80,10 +84,15 @@ export const BudgetDetailsFilters: FunctionComponent<Props> = ({ params }) => {
                         <FilterButton
                             disabled={!filtersUpdated}
                             onFilter={handleSearch}
+                            size={buttonSize}
                         />
                     </Box>
                 </Grid>
             </Grid>
         </Box>
     );
+};
+
+BudgetDetailsFilters.defaultProps = {
+    buttonSize: 'medium',
 };

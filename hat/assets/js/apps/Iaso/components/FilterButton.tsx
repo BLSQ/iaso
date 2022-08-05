@@ -14,11 +14,13 @@ const MESSAGES = defineMessages({
 type Props = {
     disabled: boolean;
     onFilter: () => void;
+    size?: 'medium' | 'small' | 'large' | undefined;
 };
 
 export const FilterButton: FunctionComponent<Props> = ({
     disabled,
     onFilter,
+    size,
 }) => {
     return (
         <Button
@@ -27,6 +29,7 @@ export const FilterButton: FunctionComponent<Props> = ({
             variant="contained"
             color="primary"
             onClick={onFilter}
+            size={size}
         >
             <Box mr={1} top={3} position="relative">
                 <FiltersIcon />
@@ -34,4 +37,8 @@ export const FilterButton: FunctionComponent<Props> = ({
             <FormattedMessage {...MESSAGES.filter} />
         </Button>
     );
+};
+
+FilterButton.defaultProps = {
+    size: 'medium',
 };

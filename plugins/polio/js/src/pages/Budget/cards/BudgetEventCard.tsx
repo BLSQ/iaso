@@ -56,13 +56,21 @@ type Props = {
 
 const style = theme => {
     return {
+        cardContent: {
+            padding: `${theme.spacing(1)}px !important`,
+        },
         cta: { color: theme.palette.secondary.main },
         inactiveCard: {
             cursor: 'default',
         },
+        title: {
+            fontSize: 16,
+            fontWeight: 'bold',
+        },
     };
 };
 
+// @ts-ignore
 const useStyles = makeStyles(style);
 
 export const BudgetEventCard: FunctionComponent<Props> = ({
@@ -118,9 +126,15 @@ export const BudgetEventCard: FunctionComponent<Props> = ({
                     >
                         {isLoading && <LoadingSpinner fixed={false} />}
                         {!isLoading && (
-                            <CardContent onClick={onClick}>
+                            <CardContent
+                                onClick={onClick}
+                                className={classes.cardContent}
+                            >
                                 <Box>
-                                    <Typography variant="h6">
+                                    <Typography
+                                        variant="h6"
+                                        className={classes.title}
+                                    >
                                         {title}
                                         <LockIcon internal={event?.internal} />
                                     </Typography>

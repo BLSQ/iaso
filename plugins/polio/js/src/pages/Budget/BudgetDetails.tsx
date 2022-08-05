@@ -48,22 +48,24 @@ type Props = {
     router: any;
 };
 
-const style = () => {
-    return {
-        pagination: {
-            '&.MuiPagination-root > .MuiPagination-ul': {
-                justifyContent: 'center',
-            },
+const useBudgetDetailsStyles = makeStyles(theme => ({
+    pagination: {
+        '&.MuiPagination-root > .MuiPagination-ul': {
+            justifyContent: 'center',
         },
-    };
-};
-
-const usePaginationStyles = makeStyles(style);
+    },
+    title: {
+        fontWeight: 'bold',
+        [theme.breakpoints.down('md')]: {
+            fontSize: 22,
+        },
+    },
+}));
 
 export const BudgetDetails: FunctionComponent<Props> = ({ router }) => {
     const { params } = router;
     const classes = useStyles();
-    const paginationStyle = usePaginationStyles();
+    const paginationStyle = useBudgetDetailsStyles();
     const { campaignName, campaignId, country, ...apiParams } = router.params;
     const { formatMessage } = useSafeIntl();
     const [showDeleted, setShowDeleted] = useState(
@@ -140,8 +142,8 @@ export const BudgetDetails: FunctionComponent<Props> = ({ router }) => {
                         <Grid item xs={isMobileLayout ? 12 : 6}>
                             <Box mb={4}>
                                 <Typography
+                                    className={paginationStyle.title}
                                     variant="h4"
-                                    style={{ fontWeight: 'bold' }}
                                 >
                                     {`${formatMessage(
                                         MESSAGES.campaign,
@@ -227,7 +229,10 @@ export const BudgetDetails: FunctionComponent<Props> = ({ router }) => {
                                 </Grid>
                             </Grid>
                             <Collapse in={expand}>
-                                <BudgetDetailsFilters params={params} />
+                                <BudgetDetailsFilters
+                                    params={params}
+                                    buttonSize="small"
+                                />
                             </Collapse>
                         </>
                     )}

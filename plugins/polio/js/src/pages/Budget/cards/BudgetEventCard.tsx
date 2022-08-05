@@ -54,24 +54,19 @@ type Props = {
     profiles: Profile[];
 };
 
-const style = theme => {
-    return {
-        cardContent: {
-            padding: `${theme.spacing(1)}px !important`,
-        },
-        cta: { color: theme.palette.secondary.main },
-        inactiveCard: {
-            cursor: 'default',
-        },
-        title: {
-            fontSize: 16,
-            fontWeight: 'bold',
-        },
-    };
-};
-
-// @ts-ignore
-const useStyles = makeStyles(style);
+const useStyles = makeStyles(theme => ({
+    cardContent: {
+        padding: `${theme.spacing(1)}px !important`,
+    },
+    cta: { color: theme.palette.secondary.main },
+    inactiveCard: {
+        cursor: 'default',
+    },
+    title: {
+        fontSize: 16,
+        fontWeight: 'bold',
+    },
+}));
 
 export const BudgetEventCard: FunctionComponent<Props> = ({
     event,

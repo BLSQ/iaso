@@ -17,7 +17,7 @@ import {
     Collapse,
     makeStyles,
 } from '@material-ui/core';
-import MoreHorizIcon from '@material-ui/icons/MoreHoriz';
+import SearchIcon from '@material-ui/icons/Search';
 import { Pagination } from '@material-ui/lab';
 
 // @ts-ignore
@@ -105,7 +105,7 @@ export const Budget: FunctionComponent<Props> = ({ router }) => {
                     top={theme.spacing(2)}
                     right={theme.spacing(2)}
                 >
-                    <MoreHorizIcon
+                    <SearchIcon
                         onClick={() => {
                             setExpand(value => !value);
                         }}

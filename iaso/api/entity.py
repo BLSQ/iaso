@@ -16,14 +16,7 @@ from rest_framework import serializers
 class EntityTypeSerializer(serializers.ModelSerializer):
     class Meta:
         model = EntityType
-        fields = [
-            "id",
-            "name",
-            "created_at",
-            "updated_at",
-            "reference_form",
-            "entities_count",
-            ]
+        fields = ["id", "name", "created_at", "updated_at", "reference_form", "entities_count", "account"]
 
     created_at = TimestampField(read_only=True)
     updated_at = TimestampField(read_only=True)
@@ -35,7 +28,6 @@ class EntityTypeSerializer(serializers.ModelSerializer):
 
 
 class BeneficiarySerializer(serializers.ModelSerializer):
-
     class Meta:
         model = Entity
         depth = 1
@@ -61,7 +53,6 @@ class BeneficiarySerializer(serializers.ModelSerializer):
 
 
 class EntitySerializer(serializers.ModelSerializer):
-
     class Meta:
         model = Entity
         fields = [
@@ -101,7 +92,7 @@ class EntityTypeViewSet(ModelViewSet):
 
     def get_queryset(self):
         search = self.request.query_params.get("search", None)
-        queryset = EntityType.objects.filter()
+        queryset = EntityType.objects.filter(account=self.request.user.iaso_profile.account)
         if search:
             queryset = queryset.filter(name__icontains=search)
         return queryset

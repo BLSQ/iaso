@@ -4,14 +4,14 @@ from django.db import migrations
 
 
 def create_entity_type_beneficiary(apps, schema_editor):
-    Data = apps.get_model('iaso', 'EntityType')
+    Data = apps.get_model("iaso", "EntityType")
     data = {"name": "beneficiary"}
     Data.objects.create(**data)
 
 
 class Migration(migrations.Migration):
     dependencies = [
-        ('iaso', '0152_auto_20220802_1408'),
+        ("iaso", "0152_auto_20220802_1408"),
     ]
 
     operations = [

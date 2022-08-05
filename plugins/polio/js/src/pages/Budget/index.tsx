@@ -6,22 +6,30 @@ import {
     useSkipEffectOnMount,
     // @ts-ignore
     AddButton,
+    // @ts-ignore
+    LoadingSpinner,
 } from 'bluesquare-components';
+import { Box, Grid, useMediaQuery, useTheme } from '@material-ui/core';
+
 // @ts-ignore
 import TopBar from 'Iaso/components/nav/TopBarComponent';
-import { Box, Grid, useMediaQuery, useTheme } from '@material-ui/core';
 import { TableWithDeepLink } from '../../../../../../hat/assets/js/apps/Iaso/components/tables/TableWithDeepLink';
+
 import {
     useCampaignParams,
     useGetCampaigns,
 } from '../../hooks/useGetCampaigns';
+
 import { useStyles } from '../../styles/theme';
 import { BUDGET } from '../../constants/routes';
-import { useBudgetColumns } from './hooks/config';
-import { convertObjectToString } from '../../utils';
 import MESSAGES from '../../constants/messages';
+import { useBudgetColumns } from './hooks/config';
+
+import { convertObjectToString } from '../../utils';
+
 import { BudgetFilters } from './BudgetFilters';
 import { PolioCreateEditDialog } from '../../components/CreateEditDialog';
+import { BudgetCard, CardCampaign } from './cards/BudgetCard';
 
 type Props = {
     router: any;
@@ -89,6 +97,19 @@ export const Budget: FunctionComponent<Props> = ({ router }) => {
                             }}
                             resetPageToOne={resetPageToOne}
                         />
+                    </>
+                )}
+                {isMobileLayout && (
+                    <>
+                        {isFetching && <LoadingSpinner />}
+                        {campaigns?.campaigns &&
+                            campaigns.campaigns.map(
+                                (campaign: CardCampaign) => (
+                                    <Box key={campaign.id} mb={1}>
+                                        <BudgetCard campaign={campaign} />
+                                    </Box>
+                                ),
+                            )}
                     </>
                 )}
             </Box>

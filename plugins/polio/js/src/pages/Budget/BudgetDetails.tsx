@@ -237,11 +237,12 @@ export const BudgetDetails: FunctionComponent<Props> = ({ router }) => {
                         <Grid item xs={12}>
                             {budgetDetails?.results.map(budgetEvent => {
                                 return (
-                                    <BudgetEventCard
-                                        key={`event-${budgetEvent.id}`}
-                                        event={budgetEvent}
-                                        profiles={profiles?.profiles}
-                                    />
+                                    <Box mb={1} key={`event-${budgetEvent.id}`}>
+                                        <BudgetEventCard
+                                            event={budgetEvent}
+                                            profiles={profiles?.profiles}
+                                        />
+                                    </Box>
                                 );
                             })}
                             {budgetDetails && (

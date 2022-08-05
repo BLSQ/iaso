@@ -3,6 +3,8 @@ import uuid
 
 
 ## Remove blank=True, null=True on FK once the modles are sets and validated
+from django.db.models import UniqueConstraint
+
 from iaso.models import Instance, Form, Account
 from iaso.utils.models.soft_deletable import SoftDeletableModel
 
@@ -12,6 +14,10 @@ class EntityType(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     reference_form = models.ForeignKey(Form, blank=True, null=True, on_delete=models.PROTECT)
+    account = models.ForeignKey(Account, on_delete=models.PROTECT, blank=True, null=True)
+
+    class Meta:
+        unique_together = ["name", "account"]
 
     def __str__(self):
         return f"{self.name}"

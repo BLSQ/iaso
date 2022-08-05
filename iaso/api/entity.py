@@ -161,7 +161,8 @@ class EntityViewSet(ModelViewSet):
         return Response(serializer.data)
 
     @action(detail=False, methods=["GET"])
-    def get_beneficiary(self, pk):
-        beneficiary = get_object_or_404(Entity, pk=pk, type="beneficiary")
+    def get_beneficiary(self, request, pk=None):
+        print("PK: ", pk)
+        beneficiary = get_object_or_404(Entity, pk=pk, entity_type="beneficiary")
         serializer = EntitySerializer(beneficiary, many=False)
         return Response(serializer.data)

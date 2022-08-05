@@ -7,7 +7,7 @@ from rest_framework.response import Response
 from iaso.api.common import TimestampField, ModelViewSet
 from iaso.models import Entity, Instance, EntityType, Form, Account, entity
 
-from django.http import JsonResponse
+from django.http import JsonResponse, HttpResponse
 from rest_framework import viewsets, permissions, filters
 from rest_framework.request import Request
 from rest_framework import serializers
@@ -34,9 +34,33 @@ class EntityTypeSerializer(serializers.ModelSerializer):
         return Entity.objects.filter(entity_type=obj.id).count()
 
 
+class BeneficiarySerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = Entity
+        depth = 1
+        fields = [
+            "id",
+            "name",
+            "uuid",
+            "created_at",
+            "updated_at",
+            "attributes",
+            "entity_type",
+            "entity_type_name",
+            "instances",
+        ]
+
+    entity_type_name = serializers.SerializerMethodField()
+    created_at = TimestampField(read_only=True)
+    updated_at = TimestampField(read_only=True)
+
+    @staticmethod
+    def get_entity_type_name(obj: Entity):
+        return obj.entity_type.name if obj.entity_type else None
+
+
 class EntitySerializer(serializers.ModelSerializer):
-    # attributes = serializers.SlugRelatedField(many=False, read_only=True, slug_field="attributes")
-    # instances = serializers.SlugRelatedField(many=True, read_only=True, slug_field="instances")
 
     class Meta:
         model = Entity
@@ -161,8 +185,8 @@ class EntityViewSet(ModelViewSet):
         return Response(serializer.data)
 
     @action(detail=False, methods=["GET"])
-    def get_beneficiary(self, request, pk=None):
-        print("PK: ", pk)
-        beneficiary = get_object_or_404(Entity, pk=pk, entity_type="beneficiary")
-        serializer = EntitySerializer(beneficiary, many=False)
+    def get_beneficiary(self, request, *args, **kwargs):
+        pk = request.GET.get("id", None)
+        beneficiary = get_object_or_404(Entity, pk=pk, entity_type__name="beneficiary")
+        serializer = BeneficiarySerializer(beneficiary, many=False)
         return Response(serializer.data)

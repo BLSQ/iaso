@@ -2,11 +2,16 @@
 
 from django.db import migrations
 
+from iaso.models import Account, EntityType
+
 
 def create_entity_type_beneficiary(apps, schema_editor):
-    Data = apps.get_model("iaso", "EntityType")
-    data = {"name": "beneficiary"}
-    Data.objects.create(**data)
+    accounts = Account.objects.all()
+    for account in accounts:
+        if not EntityType.objects.get(name="beneficiary", account=account).exists():
+            Data = apps.get_model("iaso", "EntityType")
+            data = {"name": "beneficiary", "account": account}
+            Data.objects.create(**data)
 
 
 class Migration(migrations.Migration):

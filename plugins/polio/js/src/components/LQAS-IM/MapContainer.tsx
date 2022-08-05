@@ -1,6 +1,6 @@
 import React, { FunctionComponent } from 'react';
 
-import { Paper, Divider } from '@material-ui/core';
+import { Paper, Divider, Box } from '@material-ui/core';
 
 import { LqasImMap } from './LqasImMap';
 
@@ -85,13 +85,15 @@ export const MapContainer: FunctionComponent<Props> = ({
     );
     return (
         <Paper elevation={paperElevation}>
-            <LqasImMapHeader
-                round={round}
-                startDate={startDate}
-                endDate={endDate}
-                options={options}
-                onRoundSelect={onRoundChange}
-            />
+            <Box mb={2}>
+                <LqasImMapHeader
+                    round={round}
+                    startDate={startDate}
+                    endDate={endDate}
+                    options={options}
+                    onRoundSelect={onRoundChange}
+                />
+            </Box>
             <Divider />
             {type === 'lqas' && (
                 <LqasSummary round={round} campaign={campaign} data={data} />

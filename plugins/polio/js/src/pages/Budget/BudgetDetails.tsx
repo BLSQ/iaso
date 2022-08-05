@@ -135,7 +135,7 @@ export const BudgetDetails: FunctionComponent<Props> = ({ router }) => {
                 // @ts-ignore
                 className={`${classes.containerFullHeightNoTabPadded}`}
             >
-                <Box mb={5} ml={2} mr={2}>
+                <Box mb={5}>
                     <Grid container>
                         <Grid item xs={isMobileLayout ? 12 : 6}>
                             <Box mb={4}>

@@ -351,7 +351,7 @@ export const OrgUnitFilters: FunctionComponent<Props> = ({
                         initialSelection={initialOrgUnit}
                     />
                 </Box>
-                <Box mb={1}>
+                <Box mb={2}>
                     <InputComponent
                         type="select"
                         keyValue="geography"

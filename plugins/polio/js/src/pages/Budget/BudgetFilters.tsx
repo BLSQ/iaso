@@ -1,4 +1,4 @@
-import { Box, Grid } from '@material-ui/core';
+import { Box, Grid, useMediaQuery, useTheme } from '@material-ui/core';
 import React, { FunctionComponent } from 'react';
 // @ts-ignore
 import { useSafeIntl } from 'bluesquare-components';
@@ -39,11 +39,13 @@ export const BudgetFilters: FunctionComponent<Props> = ({ params }) => {
     const { filters, handleSearch, handleChange, filtersUpdated } =
         useFilterState(baseUrl, params);
     const { formatMessage } = useSafeIntl();
+    const theme = useTheme();
+    const isXSLayout = useMediaQuery(theme.breakpoints.down('xs'));
+    const isSmLayout = useMediaQuery(theme.breakpoints.down('sm'));
     return (
         <Box mb={4}>
-            <Grid container spacing={2}>
-                {/* <Grid container item spacing={2} xs={12} lg={11}> */}
-                <Grid item xs={6} md={3}>
+            <Grid container spacing={isXSLayout ? 0 : 2}>
+                <Grid item xs={12} sm={6} md={3}>
                     <InputComponent
                         keyValue="search"
                         onChange={handleChange}
@@ -53,7 +55,7 @@ export const BudgetFilters: FunctionComponent<Props> = ({ params }) => {
                         onEnterPressed={handleSearch}
                     />
                 </Grid>
-                <Grid item xs={6} md={3}>
+                <Grid item xs={12} sm={6} md={3}>
                     <InputComponent
                         type="select"
                         multi={false}
@@ -64,18 +66,21 @@ export const BudgetFilters: FunctionComponent<Props> = ({ params }) => {
                         label={MESSAGES.status}
                     />
                 </Grid>
-                <Grid item xs={12} md={6}>
-                    <DatesRange
-                        onChangeDate={handleChange}
-                        dateFrom={filters.startdateFrom}
-                        dateTo={filters.endDateUntil}
-                        labelFrom={MESSAGES.R1StartFrom}
-                        labelTo={MESSAGES.R1StartTo}
-                        keyDateFrom="r1StartFrom"
-                        keyDateTo="r1StartTo"
-                    />
+                <Grid item xs={12} sm={12} md={6}>
+                    <Box mt={isSmLayout && !isXSLayout ? -3 : 0}>
+                        <DatesRange
+                            onChangeDate={handleChange}
+                            dateFrom={filters.startdateFrom}
+                            dateTo={filters.endDateUntil}
+                            labelFrom={MESSAGES.R1StartFrom}
+                            labelTo={MESSAGES.R1StartTo}
+                            keyDateFrom="r1StartFrom"
+                            keyDateTo="r1StartTo"
+                            xs={12}
+                        />
+                    </Box>
                 </Grid>
-                <Grid container item xs={12} md={1} justifyContent="flex-end">
+                <Grid container item xs={12} justifyContent="flex-end">
                     <Box mt={2}>
                         <FilterButton
                             disabled={!filtersUpdated}

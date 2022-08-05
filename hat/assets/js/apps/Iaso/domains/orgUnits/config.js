@@ -172,3 +172,5 @@ export const orgUnitsLogsColumns = formatMessage => [
         Expander,
     },
 ];
+
+export const staleTime = 60000;

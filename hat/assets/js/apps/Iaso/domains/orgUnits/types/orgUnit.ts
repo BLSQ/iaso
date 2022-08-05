@@ -1,3 +1,4 @@
+import { UrlParams } from '../../../types/table';
 import { Shape } from './shapes';
 
 /* eslint-disable camelcase */
@@ -26,7 +27,20 @@ export type OrgUnit = {
     source: string;
     source_id: number;
     version: number;
-
     groups: Array<unknown>;
     org_unit_type: string;
+    search_index?: number;
+};
+
+export type OrgUnitParams = UrlParams & {
+    locationLimit: string;
+    tab?: string;
+    searchTabIndex: string;
+    searchActive?: string;
+    searches: string;
+    pageSize?: string;
+};
+
+export type OrgUnitsApi = {
+    orgunits: OrgUnit[];
 };

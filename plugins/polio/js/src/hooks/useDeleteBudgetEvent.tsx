@@ -1,3 +1,4 @@
+import { UseMutationResult } from 'react-query';
 import {
     deleteRequest,
     restoreRequest,
@@ -7,7 +8,7 @@ import { useSnackMutation } from '../../../../../hat/assets/js/apps/Iaso/libs/ap
 const deleteBudgetEvent = (id: number) =>
     deleteRequest(`/api/polio/budgetevent/${id}/`);
 
-export const useDeleteBudgetEvent = () =>
+export const useDeleteBudgetEvent = (): UseMutationResult =>
     useSnackMutation(deleteBudgetEvent, undefined, undefined, [
         'budget-details',
     ]);
@@ -15,7 +16,7 @@ export const useDeleteBudgetEvent = () =>
 const restoreBudgetEvent = (id: number) =>
     restoreRequest(`/api/polio/budgetevent/${id}/`);
 
-export const useRestoreBudgetEvent = () =>
+export const useRestoreBudgetEvent = (): UseMutationResult =>
     useSnackMutation(restoreBudgetEvent, undefined, undefined, [
         'budget-details',
     ]);

@@ -11,16 +11,16 @@ import { IconButton, LoadingSpinner, useSafeIntl } from 'bluesquare-components';
 import moment from 'moment';
 import React, { FunctionComponent, useCallback } from 'react';
 import { FormattedMessage } from 'react-intl';
-import { Link } from 'react-router';
 import DialogComponent from '../../../../../../hat/assets/js/apps/Iaso/components/dialogs/DialogComponent';
-import { fileExtensions } from '../../constants/fileExtensions';
 import MESSAGES from '../../constants/messages';
+import { BudgetEventType } from '../../constants/types';
 import { useGetBudgetEventFiles } from '../../hooks/useGetBudgetEventFiles';
+import { makeFileLinks, makeLinks } from './utils';
 
 type Props = {
     eventId: number;
     note?: string;
-    type: 'submission' | 'comments';
+    type: BudgetEventType;
     date: string;
     links: string;
     author: string;
@@ -62,50 +62,6 @@ const makeRenderTrigger =
     };
 const onClose = closeDialog => {
     closeDialog();
-};
-
-const extractFileName = (fileUrl: string) => {
-    let trimmedLeft = '';
-    let i = 0;
-    // find the end of file name by searching for the extension
-    while (trimmedLeft === '' && i < fileExtensions.length) {
-        const currentExtension = fileExtensions[i];
-        if (fileUrl?.indexOf(currentExtension) !== -1) {
-            trimmedLeft = `${
-                fileUrl?.split(currentExtension)[0]
-            }${currentExtension}`;
-        }
-        i += 1;
-    }
-    // The name is the behind the last slash, so we find it by splitting
-    const removedSlashes = trimmedLeft.split('/');
-    return removedSlashes[removedSlashes.length - 1];
-};
-
-const makeFileLinks = files => {
-    return files.map((file, index) => {
-        const fileName = extractFileName(file.file) || file.file;
-        return (
-            // eslint-disable-next-line react/no-array-index-key
-            <Link key={`${fileName}_${index}`} download href={file.file}>
-                <Typography>{fileName}</Typography>
-            </Link>
-        );
-    });
-};
-
-const makeLinks = (links: string) => {
-    if (!links) return null;
-    const linksArray = links.split(',');
-    return linksArray.map((link, index) => {
-        const trimmedLink = link.trim();
-        return (
-            // eslint-disable-next-line react/no-array-index-key
-            <Link key={`${trimmedLink}_${index}`} download href={trimmedLink}>
-                <Typography>{trimmedLink}</Typography>
-            </Link>
-        );
-    });
 };
 
 export const BudgetFilesModal: FunctionComponent<Props> = ({

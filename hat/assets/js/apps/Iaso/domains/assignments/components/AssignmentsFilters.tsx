@@ -38,7 +38,7 @@ export const AssignmentsFilters: FunctionComponent<Props> = ({
     return (
         <>
             <Grid container spacing={2}>
-                <Grid item xs={2}>
+                <Grid item xs={4} lg={3} xl={2}>
                     <InputComponent
                         type="select"
                         keyValue="team"
@@ -51,7 +51,7 @@ export const AssignmentsFilters: FunctionComponent<Props> = ({
                         clearable={false}
                     />
                 </Grid>
-                <Grid item xs={2}>
+                <Grid item xs={4} lg={3} xl={2}>
                     <InputComponent
                         type="select"
                         disabled={isFetchingOrgUnitTypes}
@@ -68,7 +68,7 @@ export const AssignmentsFilters: FunctionComponent<Props> = ({
                         clearable={false}
                     />
                 </Grid>
-                <Grid item xs={2} container alignItems="center">
+                <Grid item xs={4} lg={3} xl={2} container alignItems="center">
                     <Button
                         disabled={!filtersUpdated}
                         variant="contained"

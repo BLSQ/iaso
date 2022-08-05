@@ -2,7 +2,7 @@ import React from 'react';
 import Forms from '../domains/forms';
 import FormDetail from '../domains/forms/detail';
 import FormsStats from '../domains/forms/stats';
-import OrgUnits from '../domains/orgUnits';
+import { OrgUnits } from '../domains/orgUnits';
 import { Links } from '../domains/links';
 import Runs from '../domains/links/Runs';
 import OrgUnitDetail from '../domains/orgUnits/detail';
@@ -29,6 +29,7 @@ import Pages from '../domains/pages';
 import { Planning } from '../domains/plannings/index.tsx';
 import { Teams } from '../domains/teams/index.tsx';
 import { Assignments } from '../domains/assignments/index.tsx';
+import { CompareInstanceLogs } from '../domains/instances/compare/components/CompareInstanceLogs.tsx';
 
 import { SHOW_PAGES } from '../utils/featureFlags';
 import { paginationPathParams } from '../routing/common';
@@ -210,6 +211,26 @@ export const instanceDetailPath = {
         {
             isRequired: false,
             key: 'referenceFormId',
+        },
+    ],
+};
+
+export const compareInstanceLogsPath = {
+    baseUrl: baseUrls.compareInstanceLogs,
+    permissions: ['iaso_submissions'],
+    component: props => <CompareInstanceLogs {...props} />,
+    params: [
+        {
+            isRequired: true,
+            key: 'instanceIds',
+        },
+        {
+            isRequired: false,
+            key: 'logA',
+        },
+        {
+            isRequired: false,
+            key: 'logB',
         },
     ],
 };
@@ -654,6 +675,7 @@ export const routeConfigs = [
     mappingDetailPath,
     instancesPath,
     instanceDetailPath,
+    compareInstanceLogsPath,
     compareInstancesPath,
     orgUnitsPath,
     orgUnitsDetailsPath,

@@ -1161,6 +1161,10 @@ const MESSAGES = defineMessages({
         defaultMessage: 'Comments',
         id: 'iaso.polio.label.comments',
     },
+    comment: {
+        defaultMessage: 'Comment',
+        id: 'iaso.polio.label.comment',
+    },
     validation_ongoing: {
         defaultMessage: 'Approval ongoing',
         id: 'iaso.polio.label.approval_ongoing',
@@ -1309,6 +1313,82 @@ const MESSAGES = defineMessages({
     rejectBudgetForCampaign: {
         id: 'iaso.polio.label.rejectBudgetForCampaign',
         defaultMessage: 'Reject budget for campaign: {campaign}',
+    },
+    Community_leader: {
+        id: 'iaso.polio.label.Community_leader',
+        defaultMessage: 'Community leader',
+    },
+    Neighbour: {
+        id: 'iaso.polio.label.Neighbour',
+        defaultMessage: 'Neighbour',
+    },
+    Teachers_Student: {
+        id: 'iaso.polio.label.Teachers_Student',
+        defaultMessage: 'Teachers',
+    },
+    Town_crier: {
+        id: 'iaso.polio.label.Town_crier',
+        defaultMessage: 'Town crier',
+    },
+    by: {
+        id: 'iaso.polio.label.by',
+        defaultMessage: 'by {author}',
+    },
+    onDate: {
+        id: 'iaso.polio.label.onDate',
+        defaultMessage: 'on {date}',
+    },
+    seeFullComment: {
+        id: 'iaso.polio.label.seeFullComment',
+        defaultMessage: 'See full comment',
+    },
+    files: {
+        id: 'iaso.polio.label.files',
+        defaultMessage: 'files',
+    },
+    see: {
+        id: 'iaso.polio.label.see',
+        defaultMessage: 'See',
+    },
+    add: {
+        id: 'iaso.polio.label.add',
+        defaultMessage: 'Add',
+    },
+    cannotDisplayMap: {
+        id: 'iaso.polio.label.cannotDisplayMap',
+        defaultMessage: 'Cannot display map',
+    },
+    amount: {
+        id: 'iaso.polio.label.amount',
+        defaultMessage: 'Amount',
+    },
+    review: {
+        id: 'iaso.polio.label.review',
+        defaultMessage: 'Review',
+    },
+    transmission: {
+        id: 'iaso.polio.label.transmission',
+        defaultMessage: 'Transmission',
+    },
+    feedback: {
+        id: 'iaso.polio.label.feedback',
+        defaultMessage: 'Feedback',
+    },
+    request: {
+        id: 'iaso.polio.label.request',
+        defaultMessage: 'Request',
+    },
+    seeProcedure: {
+        id: 'iaso.polio.label.seeProcedure',
+        defaultMessage: 'See procedure',
+    },
+    sentToTeam: {
+        id: 'iaso.polio.label.sentToTeam',
+        defaultMessage: 'Sent to team',
+    },
+    sentByTeam: {
+        id: 'iaso.polio.label.sentByTeam',
+        defaultMessage: 'Sent by team',
     },
 });
 

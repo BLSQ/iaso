@@ -1,11 +1,12 @@
 from rest_framework.response import Response
 from rest_framework import viewsets, permissions
 from iaso.api.common import safe_api_import
-
+import json
 from iaso.models import OrgUnit, Project
 from django.contrib.gis.geos import Point
 
 from hat.api.export_utils import timestamp_to_utc_datetime
+from django.core.cache import cache
 
 
 class HasOrgUnitPermission(permissions.BasePermission):
@@ -46,14 +47,28 @@ class MobileOrgUnitViewSet(viewsets.ViewSet):
         )
 
     def list(self, request):
-        queryset = self.get_queryset()
+        queryset = self.get_queryset().prefetch_related("org_unit_type")
         queryset = queryset.select_related("org_unit_type")
         response = {}
         roots = []
         if request.user.is_authenticated:
             roots = request.user.iaso_profile.org_units.values_list("id", flat=True)
         response["roots"] = roots
-        response["orgUnits"] = [unit.as_dict_for_mobile() for unit in queryset]
+
+        app_id = self.request.query_params.get("app_id")
+        if app_id:
+            cached_response = cache.get(app_id)
+        else:
+            return Response()
+
+        if cached_response is None:
+            cached_response = json.dumps([unit.as_dict_for_mobile() for unit in queryset])
+            cache.set(
+                app_id,
+                cached_response,
+                300,
+            )
+        response["orgUnits"] = json.loads(cached_response)
 
         return Response(response)
 

@@ -22,6 +22,7 @@ export const FilterButton: FunctionComponent<Props> = ({
 }) => {
     return (
         <Button
+            data-test="search-button"
             disabled={disabled}
             variant="contained"
             color="primary"

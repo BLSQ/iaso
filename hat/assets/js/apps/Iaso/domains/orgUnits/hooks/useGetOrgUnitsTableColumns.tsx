@@ -1,21 +1,47 @@
 import React from 'react';
-
+import { makeStyles } from '@material-ui/core';
 import Color from 'color';
 import {
+    // @ts-ignore
     IconButton as IconButtonComponent,
-    Expander,
+    // @ts-ignore
+    commonStyles,
+    // @ts-ignore
+    useSafeIntl,
 } from 'bluesquare-components';
-import { baseUrls } from '../../constants/urls';
-import OrgUnitTooltip from './components/OrgUnitTooltip';
-import getDisplayName from '../../utils/usersUtils.ts';
-import MESSAGES from './messages';
-import { getStatusMessage, getOrgUnitGroups } from './utils';
-import {
-    DateTimeCell,
-    DateTimeCellRfc,
-} from '../../components/Cells/DateTimeCell';
+import { baseUrls } from '../../../constants/urls';
+import OrgUnitTooltip from '../components/OrgUnitTooltip';
+import MESSAGES from '../messages';
+import { getStatusMessage, getOrgUnitGroups } from '../utils';
+import { DateTimeCell } from '../../../components/Cells/DateTimeCell';
 
-export const orgUnitsTableColumns = (formatMessage, classes, searches) => {
+import { Search } from '../types/search';
+import { Column } from '../../../types/table';
+import { IntlFormatMessage } from '../../../types/intl';
+
+const useStyles = makeStyles(theme => ({
+    ...commonStyles(theme),
+    roundColor: {
+        display: 'inline-block',
+        width: 15,
+        height: 15,
+        borderRadius: 15,
+    },
+    statusNew: {
+        color: theme.palette.primary.main,
+    },
+    statusValidated: {
+        color: theme.palette.success.main,
+    },
+    statusRejected: {
+        color: theme.palette.error.main,
+    },
+}));
+
+export const useGetOrgUnitsTableColumns = (searches: [Search]): Column[] => {
+    const classes: Record<string, string> = useStyles();
+    const { formatMessage }: { formatMessage: IntlFormatMessage } =
+        useSafeIntl();
     const getStatusColor = status => {
         switch (status) {
             case 'NEW': {
@@ -29,7 +55,7 @@ export const orgUnitsTableColumns = (formatMessage, classes, searches) => {
                 return classes.statusValidated;
         }
     };
-    const columns = [
+    const columns: Column[] = [
         {
             Header: 'Id',
             accessor: 'id',
@@ -124,53 +150,29 @@ export const orgUnitsTableColumns = (formatMessage, classes, searches) => {
             Header: formatMessage(MESSAGES.search),
             accessor: 'search_index',
             width: 100,
-            Cell: settings => (
-                <section>
-                    <span
-                        style={
-                            settings.row.original.color
-                                ? {
-                                      backgroundColor: `#${settings.row.original.color}`,
-                                      border: `2px solid ${Color(
-                                          `#${settings.row.original.color}`,
-                                      ).darken(0.5)}`,
-                                  }
-                                : {}
-                        }
-                        className={classes.roundColor}
-                    />
-                </section>
-            ),
+            Cell: settings => {
+                const color =
+                    searches[settings.row.original.search_index]?.color ??
+                    undefined;
+                return (
+                    <section>
+                        <span
+                            style={
+                                color
+                                    ? {
+                                          backgroundColor: `#${color}`,
+                                          border: `2px solid ${Color(
+                                              `#${color}`,
+                                          ).darken(0.5)}`,
+                                      }
+                                    : {}
+                            }
+                            className={classes.roundColor}
+                        />
+                    </section>
+                );
+            },
         });
     }
     return columns;
 };
-
-export const orgUnitsLogsColumns = formatMessage => [
-    {
-        Header: 'ID',
-        accessor: 'id',
-        width: 100,
-    },
-    {
-        Header: formatMessage(MESSAGES.date),
-        accessor: 'created_at',
-        Cell: DateTimeCellRfc,
-    },
-    {
-        Header: formatMessage(MESSAGES.user),
-        accessor: 'user__username',
-        Cell: settings =>
-            settings.row.original.user
-                ? getDisplayName(settings.row.original.user)
-                : null,
-    },
-    {
-        expander: true,
-        accessor: 'expander',
-        width: 65,
-        Expander,
-    },
-];
-
-export const staleTime = 60000;

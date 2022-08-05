@@ -36,7 +36,7 @@ import InputComponent from '../../../../../../hat/assets/js/apps/Iaso/components
 import { BudgetValidationPopUp } from './pop-ups/BudgetValidationPopUp';
 import { BudgetRejectionPopUp } from './pop-ups/BudgetRejectionPopUp';
 import { BudgetEventCard } from './cards/BudgetEventCard';
-import { useBoundState } from '../../../../../../hat/assets/js/apps/Iaso/domains/assignments/hooks/useBoundState';
+import { useBoundState } from '../../../../../../hat/assets/js/apps/Iaso/hooks/useBoundState';
 import { Optional } from '../../../../../../hat/assets/js/apps/Iaso/types/utils';
 import { BudgetMap } from './Map/BudgetMap';
 import { useIsUserInApprovalTeam } from './hooks/useIsUserInApprovalTeam';

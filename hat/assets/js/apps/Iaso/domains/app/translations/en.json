@@ -432,6 +432,7 @@
     "iaso.label.noOptions": "No result found",
     "iaso.label.notValid": "Not valid(s)",
     "iaso.label.ok": "OK",
+    "iaso.label.onlyOneExisitingVersion": "Only one existing version",
     "iaso.label.orgUnit": "Org units",
     "iaso.label.orgUnitParent": "Parent {index}",
     "iaso.label.orgUnitsTypes": "Organisation unit types",

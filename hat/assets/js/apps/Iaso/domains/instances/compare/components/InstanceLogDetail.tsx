@@ -5,10 +5,9 @@ import { useSafeIntl, LoadingSpinner } from 'bluesquare-components';
 
 import { Box } from '@material-ui/core';
 
-import {
-    useGetInstanceLogDetail,
-    useGetFormDescriptor,
-} from '../hooks/useGetInstanceLogs';
+import { useGetInstanceLogDetail } from '../hooks/useGetInstanceLogs';
+
+import { FileContent } from '../../types/instance';
 
 import { InstanceLogContentBasic } from './InstanceLogContentBasic';
 import ErrorPaperComponent from '../../../../components/papers/ErrorPaperComponent';
@@ -22,89 +21,50 @@ type Props = {
 
 export const InstanceLogDetail: FunctionComponent<Props> = ({ logA, logB }) => {
     const {
-        data: instanceLogDetailA,
-    }: // isLoading,
-    // isError,
-    {
-        data?: Record<string, any> | undefined;
-        isLoading: boolean;
-        isError: boolean;
-    } = useGetInstanceLogDetail(logA);
-
-    const {
-        data: instanceLogDetailB,
+        data: instanceLogDetail,
         isLoading,
         isError,
     }: {
-        data?: Record<string, any> | undefined;
+        data?: FileContent;
         isLoading: boolean;
         isError: boolean;
-    } = useGetInstanceLogDetail(logB);
-
-    const {
-        data: instanceFormDescriptorA,
-    }: {
-        data?: Record<string, any> | undefined;
-    } = useGetFormDescriptor(
-        instanceLogDetailA?.json._version,
-        instanceLogDetailA?.form,
-    );
-
-    const {
-        data: instanceFormDescriptorB,
-    }: {
-        data?: Record<string, any> | undefined;
-    } = useGetFormDescriptor(
-        instanceLogDetailB?.json._version,
-        instanceLogDetailB?.form,
-    );
+    } = useGetInstanceLogDetail(logA, logB);
 
     const { formatMessage } = useSafeIntl();
 
     const [instanceLog, setInstanceLog] = useState<{
-        form_descriptor: {
-            logA: Record<string, any> | undefined;
-            logB: Record<string, any> | undefined;
-        };
-        file_content: {
-            logA: Record<string, any> | undefined;
-            logB: Record<string, any> | undefined;
-        };
+        // form_descriptor: {
+        //     logA: Record<string, any> | undefined;
+        //     logB: Record<string, any> | undefined;
+        // };
+        // file_content: {
+        logA: Record<string, any> | undefined;
+        logB: Record<string, any> | undefined;
+        // };
     }>({
-        form_descriptor: {
-            logA: undefined,
-            logB: undefined,
-        },
-        file_content: {
-            logA: undefined,
-            logB: undefined,
-        },
+        // form_descriptor: {
+        //     logA: undefined,
+        //     logB: undefined,
+        // },
+
+        logA: undefined,
+        logB: undefined,
     });
 
     useEffect(() => {
-        if (
-            instanceLogDetailA &&
-            instanceFormDescriptorA &&
-            instanceLogDetailB &&
-            instanceFormDescriptorB
-        ) {
-            setInstanceLog({
-                form_descriptor: {
-                    logA: instanceFormDescriptorA,
-                    logB: instanceFormDescriptorB,
-                },
-                file_content: {
-                    logA: instanceLogDetailA.json,
-                    logB: instanceLogDetailB.json,
-                },
-            });
-        }
-    }, [
-        instanceLogDetailA,
-        instanceFormDescriptorA,
-        instanceLogDetailB,
-        instanceFormDescriptorB,
-    ]);
+        instanceLogDetail?.logA || instanceLogDetail?.logB;
+        setInstanceLog({
+            // form_descriptor: {
+            //     logA: instanceFormDescriptorA,
+            //     logB: instanceFormDescriptorB,
+            // },
+
+            logA: instanceLogDetail?.logA,
+            logB: instanceLogDetail?.logB,
+        });
+    }, [logA, logB]);
+
+    console.log('instance log detail', instanceLogDetail);
 
     if (isLoading)
         return (
@@ -123,10 +83,8 @@ export const InstanceLogDetail: FunctionComponent<Props> = ({ logA, logB }) => {
 
     return (
         <>
-            {instanceLog.file_content && (
-                <InstanceLogContentBasic
-                    fileContent={instanceLog.file_content}
-                />
+            {instanceLog && (
+                <InstanceLogContentBasic fileContent={instanceLog} />
             )}
         </>
     );

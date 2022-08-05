@@ -1,4 +1,5 @@
 /* eslint-disable camelcase */
+import { useMemo } from 'react';
 import moment from 'moment';
 import { UseQueryResult } from 'react-query';
 import { getRequest } from '../../../../libs/Api';
@@ -7,6 +8,8 @@ import {
     InstanceLogDetail,
     InstanceLogsDetail,
     InstanceLogData,
+    FileContent,
+    InstanceLogFileContent,
     FormDescriptor,
 } from '../../types/instance';
 import { DropdownOptions } from '../../../../types/utils';
@@ -54,55 +57,31 @@ export const useGetInstanceLogs = (
     });
 };
 
-// export const useGetInstanceLogDetail = (
-//     logA: string | undefined,
-//     logB: string | undefined,
-// ): UseQueryResult<Record<string, any>[] | undefined, Error> => {
-//     const instanceLog: Record<string, any>[] | undefined = [];
-
-//     const instanceLogADetail: Record<string, any> = useSnackQuery({
-//         queryKey: ['logA'],
-//         queryFn: () => getInstanceLogDetail(logA),
-//         options: {
-//             enabled: Boolean(logA),
-//             select: data => {
-//                 if (data) {
-//                     return data.new_value[0].fields;
-//                 }
-
-//                 return undefined;
-//             },
-//         },
-//     });
-//     const instanceLogBDetail: Record<string, any> = useSnackQuery({
-//         queryKey: ['logB'],
-//         queryFn: () => getInstanceLogDetail(logB),
-//         options: {
-//             enabled: Boolean(logB),
-//             select: data => {
-//                 if (data) {
-//                     return data.new_value[0].fields;
-//                 }
-
-//                 return undefined;
-//             },
-//         },
-//     });
-
-//     instanceLog.push(instanceLogADetail, instanceLogBDetail);
-
-//     return instanceLog;
-// };
-
 export const useGetInstanceLogDetail = (
-    logId: string | undefined,
-): UseQueryResult<Record<string, any> | undefined, Error> => {
-    const queryKey: any[] = ['instanceLogDetail', logId];
-    return useSnackQuery({
-        queryKey,
-        queryFn: () => getInstanceLogDetail(logId),
+    logA: string | undefined,
+    logB: string | undefined,
+): UseQueryResult<InstanceLogFileContent | undefined> => {
+    const instanceLogADetail: Record<string, any> = useSnackQuery({
+        queryKey: ['logA', logA],
+        queryFn: () => getInstanceLogDetail(logA),
         options: {
-            enabled: Boolean(logId),
+            enabled: Boolean(logA),
+            select: data => {
+                if (data) {
+                    console.log('data instance log A', data);
+                    return data.new_value[0].fields;
+                }
+
+                return undefined;
+            },
+        },
+    });
+
+    const instanceLogBDetail: Record<string, any> = useSnackQuery({
+        queryKey: ['logB', logB],
+        queryFn: () => getInstanceLogDetail(logB),
+        options: {
+            enabled: Boolean(logB),
             select: data => {
                 if (data) {
                     return data.new_value[0].fields;
@@ -112,6 +91,19 @@ export const useGetInstanceLogDetail = (
             },
         },
     });
+
+    const instanceLogsDetail = useMemo(() => {
+        const data = {
+            logA: instanceLogADetail.data?.json,
+            logB: instanceLogBDetail.data?.json,
+        };
+
+        return data;
+    }, [instanceLogADetail.data?.json, instanceLogBDetail.data?.json]);
+
+    return {
+        data: instanceLogsDetail,
+    };
 };
 
 export const useGetFormDescriptor = (

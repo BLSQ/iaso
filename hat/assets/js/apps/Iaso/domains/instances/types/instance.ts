@@ -72,3 +72,14 @@ type FormVersions = {
 export type FormDescriptor = {
     form_versions: FormVersions[];
 };
+
+export type FileContent = {
+    logA: Record<string, any>;
+    logB: Record<string, any>;
+};
+
+export type InstanceLogFileContent = {
+    data: FileContent;
+    isLoading: boolean;
+    isError: boolean;
+};

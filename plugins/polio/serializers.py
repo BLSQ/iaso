@@ -427,7 +427,7 @@ class CampaignSerializer(serializers.ModelSerializer):
                 return _("Round {} started").format(round.number)
         return _("Preparing")
 
-    group = GroupSerializer(required=False, allow_null=True)
+    # group = GroupSerializer(required=False, allow_null=True)
     scopes = CampaignScopeSerializer(many=True, required=False)
 
     last_surge = SurgeSerializer(
@@ -440,21 +440,12 @@ class CampaignSerializer(serializers.ModelSerializer):
 
     @atomic
     def create(self, validated_data):
-        group = validated_data.pop("group") if "group" in validated_data else None
         grouped_campaigns = validated_data.pop("grouped_campaigns", [])
         rounds = validated_data.pop("rounds", [])
-
-        if group:
-            org_units = group.pop("org_units", [])
-            campaign_group = Group.domain_objects.create(**group, domain="POLIO")
-            campaign_group.org_units.set(OrgUnit.objects.filter(pk__in=map(lambda org_unit: org_unit.id, org_units)))
-        else:
-            campaign_group = None
 
         campaign_scopes = validated_data.pop("scopes", [])
         campaign = Campaign.objects.create(
             **validated_data,
-            group=campaign_group,
         )
 
         campaign.grouped_campaigns.set(grouped_campaigns)
@@ -484,7 +475,6 @@ class CampaignSerializer(serializers.ModelSerializer):
     @atomic
     def update(self, instance: Campaign, validated_data):
         old_campaign_dump = serialize_campaign(instance)
-        group = validated_data.pop("group") if "group" in validated_data else None
         rounds = validated_data.pop("rounds", [])
         campaign_scopes = validated_data.pop("scopes", [])
         for scope in campaign_scopes:
@@ -524,13 +514,7 @@ class CampaignSerializer(serializers.ModelSerializer):
                     scope.group = Group.objects.create(name="hidden roundScope")
                 scope.group.org_units.set(org_units)
         instance.rounds.set(round_instances)
-        if group:
-            org_units = group.pop("org_units") if "org_units" in group else []
-            campaign_group, created = Group.domain_objects.get_or_create(
-                pk=instance.group_id, defaults={**group, "domain": "POLIO"}
-            )
-            campaign_group.org_units.set(OrgUnit.objects.filter(pk__in=map(lambda org_unit: org_unit.id, org_units)))
-            instance.group = campaign_group
+
         validated_data.pop("last_budget_event", None)
         campaign = super().update(instance, validated_data)
         log_campaign_modification(campaign, old_campaign_dump, self.context["request"].user)
@@ -539,7 +523,7 @@ class CampaignSerializer(serializers.ModelSerializer):
     class Meta:
         model = Campaign
         fields = "__all__"
-        read_only_fields = ["last_surge", "preperadness_sync_status", "creation_email_send_at"]
+        read_only_fields = ["last_surge", "preperadness_sync_status", "creation_email_send_at", "group"]
 
 
 class SmallCampaignSerializer(CampaignSerializer):
@@ -554,7 +538,7 @@ class SmallCampaignSerializer(CampaignSerializer):
             "description",
             "initial_org_unit",
             "creation_email_send_at",
-            "group",
+            # "group",
             "onset_at",
             "three_level_call_at",
             "cvdpv_notified_at",
@@ -630,7 +614,7 @@ class AnonymousCampaignSerializer(CampaignSerializer):
             "description",
             "initial_org_unit",
             "creation_email_send_at",
-            "group",
+            # "group",
             "onset_at",
             "three_level_call_at",
             "cvdpv_notified_at",

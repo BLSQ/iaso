@@ -288,7 +288,7 @@ Timeline tracker Automated message
         postgresql server which is faster.
         Campaign with and without scope per round are  handled separately"""
         # FIXME: The cache ignore all the filter parameter which will return wrong result if used
-        key_name = "{0}-geo_shapesVVV".format(request.user.id)
+        key_name = "{0}-geo_shapes".format(request.user.id)
         campaigns = self.filter_queryset(self.get_queryset())
         # Remove deleted campaigns
         campaigns = campaigns.filter(deleted_at=None)

@@ -347,6 +347,7 @@ class Campaign(SoftDeletableModel):
         return getattr(self, key)
 
     def get_districts(self):
+        # Get districts on campaign scope, make only sense if separate_scopes_per_round=True
         return OrgUnit.objects.filter(groups__campaignScope__campaign=self)
 
     def get_all_districts(self):

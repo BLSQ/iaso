@@ -1079,7 +1079,8 @@ class OrgUnitsPerCampaignViewset(viewsets.ViewSet):
         queryset = OrgUnit.objects.none()
 
         for campaign in campaigns:
-            districts = OrgUnit.objects.filter(groups=campaign.group_id)
+            districts = campaign.get_all_districts()
+
             if districts:
                 all_facilities = OrgUnit.objects.hierarchy(districts)
                 if org_unit_type:

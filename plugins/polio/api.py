@@ -786,7 +786,8 @@ class IMStatsViewSet(viewsets.ViewSet):
                     debug_response.add((campaign.obr_name, form["Response"]))
                 if campaign:
                     campaign_name = campaign.obr_name
-                    scope = campaign.group.org_units.values_list("id", flat=True) if campaign.group else []
+                    # FIXME: We refetch the whole list for all submission this is probably a cause of slowness
+                    scope = campaign.get_all_districts().values_list("id", flat=True)
                     campaign_stats[campaign_name]["has_scope"] = len(scope) > 0
                     district = find_district(district_name, region_name, district_dict)
                     if not district:
@@ -1353,7 +1354,8 @@ class LQASStatsViewSet(viewsets.ViewSet):
                             source_info = HH.get("Count_HH/Caregiver_Source_Info/" + source_info_key)
                             if source_info == "True":
                                 caregiver_counts_dict[source_info_key] += 1
-                scope = campaign.group.org_units.values_list("id", flat=True) if campaign.group else []
+                # FIXME: We refetch the whole list for all submission this is probably a cause of slowness
+                scope = campaign.get_all_districts().values_list("id", flat=True)
                 campaign_stats[campaign_name]["has_scope"] = len(scope) > 0
                 district = find_district(district_name, region_name, district_dict)
                 if not district:

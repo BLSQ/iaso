@@ -13,7 +13,7 @@ from django.core.cache import cache
 from django.core.exceptions import ObjectDoesNotExist
 from django.core.mail import EmailMultiAlternatives
 from django.core.mail import send_mail
-from django.db.models import Q
+from django.db.models import Q, Max, Min
 from django.db.models import Value, TextField, UUIDField
 from django.contrib.auth.models import User
 from django.db.models.expressions import RawSQL
@@ -924,28 +924,18 @@ def find_lqas_im_campaign(campaigns, today, country, round_number: Optional[int]
     return None
 
 
-def get_round_campaign(c, index):
-    if index == 0:
-        return c.get_round_one()
-    if index == 1:
-        return c.get_round_two()
-
-
-def find_campaign_on_day(campaigns, day, country, get_round_campaign_cached):
+def find_campaign_on_day(campaigns, day):
     for c in campaigns:
-        round_one = get_round_campaign_cached(c, 0)
-        round_two = get_round_campaign_cached(c, 1)
-        if not (round_one and round_one.started_at):
+        if not c.start_date:
             continue
-        round_end = round_two.ended_at if (round_two and round_two.ended_at) else round_one.ended_at
-        if round_end:
-            end_date = round_end + timedelta(days=+10)
+        start_date = c.start_date
+        end_date = c.end_date
+        if not end_date or end_date < c.last_start_date:
+            end_date = c.last_start_date + timedelta(days=+28)
         else:
-            end_date = round_one.started_at + timedelta(days=+28)
-
-        if c.country_id == country.id and round_one.started_at <= day < end_date:
+            end_date = end_date + timedelta(days=+10)
+        if start_date <= day < end_date:
             return c
-    return None
 
 
 def convert_dicts_to_table(list_of_dicts):
@@ -973,7 +963,6 @@ def handle_ona_request_with_key(request, key):
     campaigns = Campaign.objects.all().filter(deleted_at=None)
 
     form_count = 0
-    get_round_campaign_cached = functools.lru_cache(None)(get_round_campaign)
     find_campaign_on_day_cached = functools.lru_cache(None)(find_campaign_on_day)
     for config in config.content:
         forms = get_url_content(
@@ -987,12 +976,18 @@ def handle_ona_request_with_key(request, key):
             .prefetch_related("parent")
         )
         cache = make_orgunits_cache(facilities)
+        # Add fields to speed up detection of campaign day
+        campaign_qs = campaigns.filter(country_id=country.id).annotate(
+            last_start_date=Max("rounds__started_at"),
+            start_date=Min("rounds__started_at"),
+            end_date=Max("rounds__ended_at"),
+        )
 
         for form in forms:
             try:
                 today_string = form["today"]
                 today = datetime.strptime(today_string, "%Y-%m-%d").date()
-                campaign = find_campaign_on_day_cached(campaigns, today, country, get_round_campaign_cached)
+                campaign = find_campaign_on_day_cached(campaign_qs, today, country)
                 district_name = form.get("District", None)
                 if not district_name:
                     district_name = form.get("district", "")

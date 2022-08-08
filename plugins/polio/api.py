@@ -282,44 +282,69 @@ Timeline tracker Automated message
         url_path="merged_shapes.geojson",
     )
     def shapes(self, request):
+        """GeoJson, one geojson per campaign
+
+        We use the django annotate feature to make a raw Postgis request that will generate the shape on the
+        postgresql server which is faster.
+        Campaign with and without scope per round are  handled separately"""
         # FIXME: The cache ignore all the filter parameter which will return wrong result if used
-        cached_response = cache.get("{0}-geo_shapes".format(request.user.id))
-        queryset = self.filter_queryset(self.get_queryset())
-        # Remove deleted and campaign with missing group
-        queryset = queryset.filter(deleted_at=None).exclude(group=None)
+        key_name = "{0}-geo_shapesVVV".format(request.user.id)
+        campaigns = self.filter_queryset(self.get_queryset())
+        # Remove deleted campaigns
+        campaigns = campaigns.filter(deleted_at=None)
 
-        if cached_response and queryset:
-            parsed_cache_response = json.loads(cached_response)
-            cache_creation_date = make_aware(datetime.utcfromtimestamp(parsed_cache_response["cache_creation_date"]))
-            last_campaign_updated = queryset.order_by("updated_at").last()
-            last_org_unit_updated = OrgUnit.objects.filter(groups__campaigns__in=queryset).order_by("updated_at").last()
-            if (
-                last_org_unit_updated
-                and cache_creation_date > last_org_unit_updated.updated_at
-                and last_campaign_updated
-                and cache_creation_date > last_campaign_updated.updated_at
-            ):
-                return JsonResponse(json.loads(cached_response))
+        # Determine last modification date to see if we invalidate the cache
+        last_campaign_updated = campaigns.order_by("updated_at").last()
+        last_roundscope_org_unit_updated = (
+            OrgUnit.objects.order_by("updated_at").filter(groups__roundScope__round__campaign__in=campaigns).last()
+        )
+        last_org_unit_updated = (
+            OrgUnit.objects.order_by("updated_at").filter(groups__campaignScope__campaign__in=campaigns).last()
+        )
 
-        queryset = queryset.annotate(
+        update_dates = [
+            last_org_unit_updated.updated_at if last_campaign_updated else None,
+            last_roundscope_org_unit_updated.updated_at if last_roundscope_org_unit_updated else None,
+            last_campaign_updated.updated_at if last_campaign_updated else None,
+        ]
+        cached_response = self.return_cached_response_if_valid(key_name, update_dates)
+        if cached_response:
+            return cached_response
+
+        round_scope_queryset = campaigns.filter(separate_scopes_per_round=True).annotate(
             geom=RawSQL(
                 """select st_asgeojson(st_simplify(st_union(st_buffer(iaso_orgunit.geom::geometry, 0)), 0.01)::geography)
-from iaso_orgunit right join iaso_group_org_units ON iaso_group_org_units.orgunit_id = iaso_orgunit.id
-where group_id = polio_campaign.group_id""",
+from iaso_orgunit
+right join iaso_group_org_units ON iaso_group_org_units.orgunit_id = iaso_orgunit.id
+right join polio_roundscope ON iaso_group_org_units.group_id =  polio_roundscope.group_id
+right join polio_round ON polio_round.id = polio_roundscope.round_id
+where polio_round.campaign_id = polio_campaign.id""",
                 [],
             )
         )
-        # Check if the campaigns have been updated since the response has been cached
+        # For campaign scope
+        campain_scope_queryset = campaigns.filter(separate_scopes_per_round=False).annotate(
+            geom=RawSQL(
+                """select st_asgeojson(st_simplify(st_union(st_buffer(iaso_orgunit.geom::geometry, 0)), 0.01)::geography)
+from iaso_orgunit
+right join iaso_group_org_units ON iaso_group_org_units.orgunit_id = iaso_orgunit.id
+right join polio_campaignscope ON iaso_group_org_units.group_id =  polio_campaignscope.group_id
+where polio_campaignscope.campaign_id = polio_campaign.id""",
+                [],
+            )
+        )
+
         features = []
-        for c in queryset:
-            if c.geom:
-                s = SmallCampaignSerializer(c)
-                feature = {"type": "Feature", "geometry": json.loads(c.geom), "properties": s.data}
-                features.append(feature)
+        for queryset in (round_scope_queryset, campain_scope_queryset):
+            for c in queryset:
+                if c.geom:
+                    s = SmallCampaignSerializer(c)
+                    feature = {"type": "Feature", "geometry": json.loads(c.geom), "properties": s.data}
+                    features.append(feature)
         res = {"type": "FeatureCollection", "features": features, "cache_creation_date": datetime.utcnow().timestamp()}
 
         cache.set(
-            "{0}-geo_shapes".format(request.user.id),
+            key_name,
             json.dumps(res),
             3600 * 24,
         )

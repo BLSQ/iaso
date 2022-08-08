@@ -269,10 +269,11 @@ class EntityAdmin(admin.ModelAdmin):
     list_display = (
         "id",
         "name",
+        "account",
         "entity_type",
     )
     list_filter = ("entity_type",)
-    raw_id_fields = ("attributes",)
+    raw_id_fields = ("attributes", "instances")
 
 
 class PlanningAdmin(admin.ModelAdmin):

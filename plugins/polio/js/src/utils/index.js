@@ -80,7 +80,10 @@ export const findScopeIds = (obrName, campaigns, currentRound) => {
         )
         .map(campaign => {
             if (!campaign.separate_scopes_per_round) {
-                return campaign.group.org_units;
+                return campaign.scopes
+                    .filter(scope => scope.group)
+                    .map(scope => scope.group.org_units)
+                    .flat();
             }
             const fullRound = campaign.rounds.find(
                 round => round.number === currentRound,

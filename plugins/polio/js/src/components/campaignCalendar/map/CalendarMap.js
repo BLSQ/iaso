@@ -16,7 +16,7 @@ import 'leaflet/dist/leaflet.css';
 import { CalendarMapPanesRegular } from './CalendarMapPanesRegular.tsx';
 import { CalendarMapPanesMerged } from './CalendarMapPanesMerged.tsx';
 import { defaultViewport, boundariesZoomLimit } from './constants.ts';
-import { polioVacines } from '../../../constants/virus';
+import { polioVacines } from '../../../constants/virus.ts';
 
 const getShapeQuery = (loadingCampaigns, groupId, campaign, vaccine, round) => {
     const baseParams = {
@@ -63,14 +63,16 @@ const CalendarMap = ({ campaigns, loadingCampaigns }) => {
                     });
                 });
             } else {
-                queries.push(
-                    getShapeQuery(
-                        loadingCampaigns,
-                        campaign.original.group.id,
-                        campaign,
-                        campaign.original.vacine,
-                    ),
-                );
+                campaign.scopes.forEach(scope => {
+                    queries.push(
+                        getShapeQuery(
+                            loadingCampaigns,
+                            scope.group.id,
+                            campaign,
+                            scope.vaccine,
+                        ),
+                    );
+                });
             }
         });
     const shapesQueries = useQueries(queries);

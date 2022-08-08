@@ -276,6 +276,15 @@ class EntityAdmin(admin.ModelAdmin):
     raw_id_fields = ("attributes", "instances")
 
 
+class EntityTypeAdmin(admin.ModelAdmin):
+    readonly_fields = ("created_at",)
+    list_display = (
+        "id",
+        "name",
+        "account",
+    )
+
+
 class PlanningAdmin(admin.ModelAdmin):
     raw_id_fields = ("org_unit",)
     list_display = (
@@ -372,7 +381,7 @@ admin.site.register(ExportLog, ExportLogAdmin)
 admin.site.register(DevicePosition)
 admin.site.register(Page)
 admin.site.register(Task, TaskAdmin)
-admin.site.register(EntityType)
+admin.site.register(EntityType, EntityTypeAdmin)
 admin.site.register(Entity, EntityAdmin)
 admin.site.register(Team, TeamAdmin)
 admin.site.register(Planning, PlanningAdmin)

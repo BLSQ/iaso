@@ -181,3 +181,9 @@ class EntityViewSet(ModelViewSet):
         beneficiary = get_object_or_404(Entity, pk=pk, entity_type__name="beneficiary")
         serializer = BeneficiarySerializer(beneficiary, many=False)
         return Response(serializer.data)
+
+    @action(detail=False, methods=["GET"])
+    def beneficiaries(self, request, *args, **kwargs):
+        beneficiaries = Entity.objects.filter(entity_type__name="beneficiary", account=request.user.iaso_profile.account)
+        serializer = BeneficiarySerializer(beneficiaries, many=True)
+        return Response(serializer.data)

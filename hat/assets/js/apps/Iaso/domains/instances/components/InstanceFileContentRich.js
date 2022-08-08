@@ -1,4 +1,6 @@
 import React from 'react';
+import { useSelector } from 'react-redux';
+import { find } from 'lodash';
 import PropTypes from 'prop-types';
 import {
     Table,
@@ -59,9 +61,28 @@ const useStyle = makeStyles(theme => ({
  * @returns {*}
  */
 function translateLabel(label) {
-    // TODO: pick current locale - not trivial since keys could be "FR", "French", "En français"...
+    const activeLocale = useSelector(state => state.app.locale);
+    const arrayFR = ['FR', 'French', 'Version française'];
+    const arrayEN = ['EN', 'English', 'English version'];
+
     if (isPlainObject(label)) {
-        return label[Object.keys(label)[0]];
+        const EN = find(
+            arrayEN,
+            localLabel => localLabel === activeLocale.label,
+        );
+
+        const FR = find(
+            arrayFR,
+            localLabel => localLabel === activeLocale.label,
+        );
+
+        if (FR) {
+            return label[Object.keys(label)[0]];
+        }
+
+        if (EN) {
+            return label[Object.keys(label)[1]];
+        }
     }
 
     return label;

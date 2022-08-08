@@ -98,7 +98,7 @@ def parents_q(org_units):
 
 def make_find_orgunit_for_campaign(cs):
     districts = (
-        cs.group.org_units.all()
+        cs.get_all_districts()
         .prefetch_related("parent")
         .prefetch_related("parent__parent")
         .prefetch_related("parent__parent__parent")
@@ -147,7 +147,7 @@ def make_find_orgunit_for_campaign(cs):
 def find_campaign_orgunits(campaign_find_func, campaign, *args):
     if pd.isna(campaign):
         return
-    if not campaign.group or not campaign.group.org_units.count() > 0:
+    if not campaign.get_all_districts().count() > 0:
         # print(f"skipping {cs}, no scope")
         return
 
@@ -244,10 +244,10 @@ def fetch_and_match_forma_data():
 def get_forma_scope_df(campaigns):
     scope_dfs = []
     for campaign in campaigns:
-        if not campaign.group or not campaign.group.org_units.count() > 0:
+        districts = campaign.get_all_districts()
+        if districts.count() == 0:
             logger.info(f"skipping {campaign}, no scope")
             continue
-        districts = campaign.group.org_units.all()
         facilities = OrgUnit.objects.filter(parent__in=districts)
         regions = OrgUnit.objects.filter(parents_q(districts)).filter(path__depth=2)
         countries = OrgUnit.objects.filter(parents_q(districts)).filter(path__depth=1)

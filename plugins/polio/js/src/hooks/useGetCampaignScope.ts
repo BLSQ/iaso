@@ -12,7 +12,14 @@ export const useGetCampaignScope = ({ country, campaignId }) => {
                     campaign => campaign.id === campaignId,
                 );
                 if (!selectedCampaign.separate_scopes_per_round) {
-                    return selectedCampaign?.group?.org_units ?? [];
+                    return (
+                        (selectedCampaign?.scopes &&
+                            selectedCampaign.scopes
+                                .filter(scope => scope.group)
+                                .map(scope => scope.group.org_units)
+                                .flat()) ??
+                        []
+                    );
                 }
                 return selectedCampaign.rounds
                     .map(round =>

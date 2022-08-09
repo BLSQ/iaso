@@ -17,11 +17,15 @@ import {
 
 import TopBar from '../../../components/nav/TopBarComponent';
 import { Filters } from './components/Filters';
-import { EntityDialog } from '../components/EntityDialog';
-import { useGetPaginated, useDelete, useSave } from './hooks/requests';
+import { Dialog } from './components/Dialog';
+import {
+    useGetBeneficiariesPaginated,
+    useDeleteBeneficiary,
+    useSaveBeneficiary,
+} from './hooks/requests';
 
 import { columns, baseUrl } from './config';
-import MESSAGES from '../messages';
+import MESSAGES from './messages';
 
 import { redirectTo } from '../../../routing/actions';
 
@@ -46,9 +50,11 @@ export const Beneficiaries: FunctionComponent<Props> = ({ params }) => {
     const { formatMessage } = useSafeIntl();
     const dispatch = useDispatch();
 
-    const { data, isFetching: fetchingEntities } = useGetPaginated(params);
-    const { mutate: deleteEntity, isLoading: deleting } = useDelete();
-    const { mutate: saveEntity, isLoading: saving } = useSave();
+    const { data, isFetching: fetchingEntities } =
+        useGetBeneficiariesPaginated(params);
+    const { mutate: deleteEntity, isLoading: deleting } =
+        useDeleteBeneficiary();
+    const { mutate: saveEntity, isLoading: saving } = useSaveBeneficiary();
 
     const isLoading = fetchingEntities || deleting || saving;
 
@@ -68,11 +74,11 @@ export const Beneficiaries: FunctionComponent<Props> = ({ params }) => {
                     alignItems="center"
                     className={classes.marginTop}
                 >
-                    <EntityDialog
+                    <Dialog
                         titleMessage={MESSAGES.create}
                         renderTrigger={({ openDialog }) => (
                             <AddButtonComponent
-                                dataTestId="add-entity-button"
+                                dataTestId="add-beneficiary-button"
                                 onClick={openDialog}
                             />
                         )}

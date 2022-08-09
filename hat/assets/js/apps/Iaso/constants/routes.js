@@ -20,6 +20,7 @@ import Devices from '../domains/devices';
 import Groups from '../domains/orgUnits/groups';
 import Types from '../domains/orgUnits/orgUnitTypes';
 import { Beneficiaries } from '../domains/entities/beneficiaries/index.tsx';
+import { Details as BeneficiaryDetail } from '../domains/entities/beneficiaries/details.tsx';
 import { Entities } from '../domains/entities/index.tsx';
 import { EntityTypes } from '../domains/entities/entityTypes/index.tsx';
 import PageError from '../components/errors/PageError';
@@ -550,6 +551,18 @@ export const beneficiariesPath = {
         })),
     ],
 };
+export const beneficiariesDetailsPath = {
+    baseUrl: baseUrls.beneficiariesDetails,
+    permissions: ['iaso_beneficiaries'],
+    component: props => <BeneficiaryDetail {...props} />,
+    params: [
+        {
+            isRequired: true,
+            key: 'beneficiaryId',
+        },
+        ...paginationPathParams,
+    ],
+};
 
 export const entitiesPath = {
     baseUrl: baseUrls.entities,
@@ -714,4 +727,5 @@ export const routeConfigs = [
     planningPath,
     assignmentsPath,
     beneficiariesPath,
+    beneficiariesDetailsPath,
 ];

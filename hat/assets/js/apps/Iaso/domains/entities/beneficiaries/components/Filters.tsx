@@ -14,7 +14,7 @@ import {
 
 import InputComponent from '../../../../components/forms/InputComponent';
 import { redirectTo } from '../../../../routing/actions';
-import MESSAGES from '../../messages';
+import MESSAGES from '../messages';
 
 import { baseUrl } from '../../config';
 

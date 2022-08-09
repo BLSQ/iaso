@@ -13,13 +13,12 @@ import isEqual from 'lodash/isEqual';
 
 import InputComponent from '../../../../components/forms/InputComponent';
 import ConfirmCancelDialogComponent from '../../../../components/dialogs/ConfirmCancelDialogComponent';
-import { useGetTypes } from '../../entityTypes/hooks/requests';
 
 import { Entity } from '../../types/entity';
 
 import { baseUrls } from '../../../../constants/urls';
 
-import MESSAGES from '../../messages';
+import MESSAGES from '../messages';
 
 import { IntlMessage } from '../../../../types/intl';
 
@@ -30,14 +29,13 @@ type RenderTriggerProps = {
 type EmptyEntity = {
     name?: string | null;
     attributes?: number | null;
-    entity_type?: number | null;
 };
 
 type Props = {
     titleMessage: IntlMessage;
     // eslint-disable-next-line no-unused-vars
     renderTrigger: ({ openDialog }: RenderTriggerProps) => ReactNode;
-    initialData: Entity | EmptyEntity;
+    initialData?: Entity | EmptyEntity;
     // eslint-disable-next-line no-unused-vars
     saveEntity: (e: Entity) => void;
 };
@@ -56,18 +54,11 @@ const useStyles = makeStyles(theme => ({
 export const Dialog: FunctionComponent<Props> = ({
     titleMessage,
     renderTrigger,
-    initialData = {
-        name: null,
-        entity_type: null,
-        attributes: null,
-    },
+    initialData,
     saveEntity,
 }) => {
     const classes: Record<string, string> = useStyles();
     const { formatMessage } = useSafeIntl();
-
-    const { data: entityTypes, isFetching: fetchingEntitytypes } =
-        useGetTypes();
 
     const getSchema = () =>
         yup.lazy(() =>
@@ -84,7 +75,10 @@ export const Dialog: FunctionComponent<Props> = ({
     const formik: FormikProps<Entity | EmptyEntity> = useFormik<
         Entity | EmptyEntity
     >({
-        initialValues: initialData,
+        initialValues: initialData || {
+            name: null,
+            attributes: null,
+        },
         enableReinitialize: true,
         validateOnBlur: true,
         validationSchema: getSchema,
@@ -139,25 +133,15 @@ export const Dialog: FunctionComponent<Props> = ({
                         label={MESSAGES.name}
                         required
                     />
-                    <InputComponent
-                        keyValue="entity_type"
-                        clearable={false}
-                        required
-                        onChange={setFieldValue}
-                        value={values.entity_type}
-                        errors={getErrors('entity_type')}
-                        type="select"
-                        options={
-                            entityTypes?.map(t => ({
-                                label: t.name,
-                                value: t.id,
-                            })) ?? []
-                        }
-                        label={MESSAGES.type}
-                        loading={fetchingEntitytypes}
-                    />
                 </div>
             </ConfirmCancelDialogComponent>
         </FormikProvider>
     );
+};
+
+Dialog.defaultProps = {
+    initialData: {
+        name: null,
+        attributes: null,
+    },
 };

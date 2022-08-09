@@ -9,7 +9,7 @@ import {
 import MESSAGES from '../../messages';
 
 import { PaginatedEntities } from '../../types/paginatedEntities';
-import { Entity } from '../../types/entity';
+import { Beneficiary } from '../types/beneficiary';
 
 type Params = {
     pageSize: string;
@@ -26,7 +26,7 @@ type NewParams = {
     search?: string;
 };
 
-export const useGetPaginated = (
+export const useGetBeneficiariesPaginated = (
     params: Params,
 ): UseQueryResult<PaginatedEntities, Error> => {
     const newParams: NewParams = {
@@ -46,14 +46,17 @@ export const useGetPaginated = (
     );
 };
 
-export const useGet = (): UseQueryResult<Array<Entity>, Error> => {
+export const useGetBeneficiaries = (): UseQueryResult<
+    Array<Beneficiary>,
+    Error
+> => {
     // @ts-ignore
     return useSnackQuery(['beneficiaries'], () =>
         getRequest('/api/entity/beneficiaries'),
     );
 };
 
-export const useDelete = (): UseMutationResult =>
+export const useDeleteBeneficiary = (): UseMutationResult =>
     useSnackMutation(
         body => deleteRequest(`/api/entity/${body.id}/`),
         MESSAGES.deleteSuccess,
@@ -61,7 +64,7 @@ export const useDelete = (): UseMutationResult =>
         ['beneficiaries'],
     );
 
-export const useSave = (): UseMutationResult =>
+export const useSaveBeneficiary = (): UseMutationResult =>
     useSnackMutation(
         body =>
             body.id
@@ -71,3 +74,22 @@ export const useSave = (): UseMutationResult =>
         undefined,
         ['beneficiaries'],
     );
+
+const getBeneficiary = (
+    beneficiaryId: string | undefined,
+): Promise<Beneficiary> => {
+    return getRequest(`/api/entity/get_beneficiary/?id=${beneficiaryId}`);
+};
+export const useGetBeneficiary = (
+    beneficiaryId: string | undefined,
+): UseQueryResult<Beneficiary, Error> => {
+    const queryKey: any[] = ['beneficiary', beneficiaryId];
+    return useSnackQuery(
+        queryKey,
+        () => getBeneficiary(beneficiaryId),
+        undefined,
+        {
+            retry: false,
+        },
+    );
+};

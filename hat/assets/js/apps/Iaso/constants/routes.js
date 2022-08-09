@@ -19,6 +19,7 @@ import Tasks from '../domains/tasks';
 import Devices from '../domains/devices';
 import Groups from '../domains/orgUnits/groups';
 import Types from '../domains/orgUnits/orgUnitTypes';
+import { Beneficiaries } from '../domains/entities/beneficiaries/index.tsx';
 import { Entities } from '../domains/entities/index.tsx';
 import { EntityTypes } from '../domains/entities/entityTypes/index.tsx';
 import PageError from '../components/errors/PageError';
@@ -534,6 +535,21 @@ export const orgUnitTypesPath = {
         })),
     ],
 };
+export const beneficiariesPath = {
+    baseUrl: baseUrls.beneficiaries,
+    permissions: ['iaso_beneficiaries'],
+    component: props => <Beneficiaries {...props} />,
+    params: [
+        {
+            isRequired: false,
+            key: 'search',
+        },
+        ...paginationPathParams.map(p => ({
+            ...p,
+            isRequired: true,
+        })),
+    ],
+};
 
 export const entitiesPath = {
     baseUrl: baseUrls.entities,
@@ -697,4 +713,5 @@ export const routeConfigs = [
     teamsPath,
     planningPath,
     assignmentsPath,
+    beneficiariesPath,
 ];

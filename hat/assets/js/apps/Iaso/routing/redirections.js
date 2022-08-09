@@ -26,6 +26,10 @@ const addRoutes = (baseRoutes, overrideLanding) => {
             to={`${baseUrls.users}/order/user__username/pageSize/20/page/1`}
         />,
         <Redirect
+            path={baseUrls.beneficiaries}
+            to={`${baseUrls.beneficiaries}/order/name/pageSize/20/page/1`}
+        />,
+        <Redirect
             path={baseUrls.entities}
             to={`${baseUrls.entities}/order/name/pageSize/20/page/1`}
         />,

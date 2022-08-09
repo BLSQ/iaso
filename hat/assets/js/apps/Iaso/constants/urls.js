@@ -27,6 +27,7 @@ export const baseUrls = {
     planning: 'planning/list',
     assignments: 'planning/assignments',
     teams: 'settings/teams',
+    beneficiaries: 'entities/beneficiaries',
     error401: '401',
     error500: '500',
 };

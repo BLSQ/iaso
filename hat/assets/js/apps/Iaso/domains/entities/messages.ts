@@ -81,6 +81,10 @@ const MESSAGES = defineMessages({
         id: 'iaso.forms.viewInstance',
         defaultMessage: 'View submission',
     },
+    beneficiaries: {
+        id: 'iaso.label.beneficiaries',
+        defaultMessage: 'Beneficiaries',
+    },
 });
 
 export default MESSAGES;

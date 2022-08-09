@@ -1,16 +1,16 @@
 import React, { ReactElement } from 'react';
 // @ts-ignore
 import { IconButton as IconButtonComponent } from 'bluesquare-components';
-import { EntityDialog } from './components/EntityDialog';
-import DeleteDialog from '../../components/dialogs/DeleteDialogComponent';
-import { DateTimeCell } from '../../components/Cells/DateTimeCell';
-import { IntlMessage } from '../../types/intl';
-import MESSAGES from './messages';
+import { Dialog } from './components/Dialog';
+import DeleteDialog from '../../../components/dialogs/DeleteDialogComponent';
+import { DateTimeCell } from '../../../components/Cells/DateTimeCell';
+import { IntlMessage } from '../../../types/intl';
+import MESSAGES from '../messages';
 
-import { baseUrls } from '../../constants/urls';
+import { baseUrls } from '../../../constants/urls';
 
-import { Entity } from './types/entity';
-import { Column } from '../../types/table';
+import { Entity } from '../types/entity';
+import { Column } from '../../../types/table';
 
 export const baseUrl = baseUrls.entities;
 
@@ -63,7 +63,7 @@ export const columns = ({
                     icon="remove-red-eye"
                     tooltipMessage={MESSAGES.viewInstance}
                 />
-                <EntityDialog
+                <Dialog
                     renderTrigger={({ openDialog }) => (
                         <IconButtonComponent
                             onClick={openDialog}

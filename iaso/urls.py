@@ -104,6 +104,7 @@ router.register(r"tasks/create/importgpkg", ImportGPKGViewSet, basename="importg
 router.register(r"tasks", TaskSourceViewSet, basename="tasks")
 router.register(r"comments", CommentViewSet, basename="comments")
 router.register(r"entity", EntityViewSet, basename="entity")
+router.register(r"entities/beneficiaries", EntityViewSet, basename="beneficiaries")
 router.register(r"entitytype", EntityTypeViewSet, basename="entitytype")
 router.register(r"bulkcreateuser", BulkCreateUserFromCsvViewSet, basename="bulkcreateuser")
 router.register(r"microplanning/teams", TeamViewSet, basename="teams")

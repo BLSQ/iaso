@@ -1,3 +1,4 @@
+from django.core.paginator import Paginator
 from django.db.models import Q
 from django.shortcuts import get_object_or_404
 from django_filters.rest_framework import DjangoFilterBackend
@@ -184,8 +185,33 @@ class EntityViewSet(ModelViewSet):
 
     @action(detail=False, methods=["GET"])
     def beneficiaries(self, request, *args, **kwargs):
+        limit = request.GET.get("limit", None)
+        page_offset = request.GET.get("page", 1)
+        orders = request.GET.get("order", "updated_at").split(",")
+        csv_format = request.GET.get("csv", None)
+        xlsx_format = request.GET.get("xlsx", None)
+
         beneficiaries = Entity.objects.filter(
             entity_type__name="beneficiary", account=request.user.iaso_profile.account
         )
+
+        if limit:
+            limit = int(limit)
+            page_offset = int(page_offset)
+            paginator = Paginator(beneficiaries, limit)
+            res = {"count": paginator.count}
+            if page_offset > paginator.num_pages:
+                page_offset = paginator.num_pages
+            page = paginator.page(page_offset)
+
+            serializer = BeneficiarySerializer(beneficiaries, many=True)
+            res["instances"] = serializer.data
+            res["has_next"] = page.has_next()
+            res["has_previous"] = page.has_previous()
+            res["page"] = page_offset
+            res["pages"] = paginator.num_pages
+            res["limit"] = limit
+            return Response(res)
+
         serializer = BeneficiarySerializer(beneficiaries, many=True)
         return Response(serializer.data)

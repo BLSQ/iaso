@@ -1,6 +1,4 @@
 import React from 'react';
-import { useSelector } from 'react-redux';
-import { find } from 'lodash';
 import PropTypes from 'prop-types';
 import {
     Table,
@@ -15,6 +13,8 @@ import CommentIcon from '@material-ui/icons/Comment';
 import isPlainObject from 'lodash/isPlainObject';
 
 import { textPlaceholder } from 'bluesquare-components';
+
+import { getCookie } from '../../../utils/cookies';
 
 const useStyle = makeStyles(theme => ({
     tableCellHead: {
@@ -60,29 +60,18 @@ const useStyle = makeStyles(theme => ({
  * @param label
  * @returns {*}
  */
+
+const labelLocales = { fr: 'French', en: 'English' };
+
 function translateLabel(label) {
-    const activeLocale = useSelector(state => state.app.locale);
-    const arrayFR = ['FR', 'French', 'Version française'];
-    const arrayEN = ['EN', 'English', 'English version'];
+    const locale = getCookie('django_language') ?? 'en';
 
     if (isPlainObject(label)) {
-        const EN = find(
-            arrayEN,
-            localLabel => localLabel === activeLocale.label,
-        );
+        const correctKey = Object.keys(label).find(key => {
+            return labelLocales[locale].includes(key);
+        });
 
-        const FR = find(
-            arrayFR,
-            localLabel => localLabel === activeLocale.label,
-        );
-
-        if (FR) {
-            return label[Object.keys(label)[0]];
-        }
-
-        if (EN) {
-            return label[Object.keys(label)[1]];
-        }
+        return label[correctKey];
     }
 
     return label;

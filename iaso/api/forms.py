@@ -151,6 +151,11 @@ class FormSerializer(DynamicFieldsModelSerializer):
         log_modification(original, form, FORM_API, user=self.context["request"].user)
         return form
 
+    def create(self, validated_data):
+        form = super(FormSerializer, self).create(validated_data)
+        log_modification(None, form, FORM_API, user=self.context["request"].user)
+        return form
+
 
 class FormsViewSet(ModelViewSet):
     """Forms API

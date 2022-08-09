@@ -182,6 +182,21 @@ class EntityViewSet(ModelViewSet):
         serializer = EntitySerializer(entities, many=True)
         return Response(serializer.data)
 
+    def export_beneficiary_as_csv_xls(self, beneficiary, param):
+        columns = [
+            {"title": "First_Name", "width": 20},
+            {"title": "Last_name", "width": 20},
+            {"title": "Age", "width": 20},
+            {"title": "Form", "width": 40},
+            {"title": "Date", "width": 20},
+            {"title": "Org_Unit", "width": 20},
+            {"title": "Key_Information", "width": 20},
+            {"title": "Submiter", "width": 20},
+        ]
+
+        filename = "beneficiary" if int(param) else "beneficiaries"
+
+
     @action(detail=False, methods=["GET"])
     def get_beneficiary(self, request, *args, **kwargs):
         pk = request.GET.get("id", None)
@@ -211,7 +226,14 @@ class EntityViewSet(ModelViewSet):
             page = paginator.page(page_offset)
 
             serializer = BeneficiarySerializer(beneficiaries, many=True)
-            res["instances"] = serializer.data
+
+            def as_dict_formatter(x):
+                dict = x.as_dict()
+                dict["beneficiaries"] = serializer.data
+                return dict
+
+
+            res["beneficiaries"] = map(as_dict_formatter, page.object_list)
             res["has_next"] = page.has_next()
             res["has_previous"] = page.has_previous()
             res["page"] = page_offset

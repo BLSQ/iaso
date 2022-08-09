@@ -153,12 +153,6 @@ class Form(SoftDeletableModel):
                 print(f"Invalid questions on version {form_version}: {str(questions)[:50]}")
         self.possible_fields = _reformat_questions(all_questions)
 
-    def soft_delete(self, user: typing.Optional[User] = None):
-        original = copy(self)
-        self.deleted_at = datetime.now()
-        self.save()
-        log_modification(original, self, FORM_API, user=user)
-
 
 def _form_version_upload_to(instance: "FormVersion", filename: str) -> str:
     path = pathlib.Path(filename)

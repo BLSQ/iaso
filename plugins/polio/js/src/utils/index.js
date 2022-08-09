@@ -69,20 +69,31 @@ export const getScopeStyle = (shape, scope) => {
     return defaultShapeStyle;
 };
 
-export const findScopeIds = (obrName, campaigns) => {
-    let scopeIds = [];
-    if (obrName) {
-        scopeIds = campaigns
-            .filter(campaign => campaign.obr_name === obrName)
-            .filter(campaign => campaign.group)
-            .map(campaign => campaign.group.org_units)
-            .flat();
-    } else {
-        scopeIds = campaigns
-            .filter(campaign => campaign.group)
-            .map(campaign => campaign.group.org_units)
-            .flat();
-    }
+export const findScopeIds = (obrName, campaigns, currentRound) => {
+    let scopeIds = obrName
+        ? campaigns.filter(campaign => campaign.obr_name === obrName)
+        : campaigns;
+
+    scopeIds = scopeIds
+        .map(campaign => {
+            if (!campaign.separate_scopes_per_round) {
+                return campaign.scopes
+                    .filter(scope => scope.group)
+                    .map(scope => scope.group.org_units)
+                    .flat();
+            }
+            const fullRound = campaign.rounds.find(
+                round => round.number === currentRound,
+            );
+            if (fullRound) {
+                return fullRound.scopes
+                    .filter(scope => scope.group)
+                    .map(scope => scope.group.org_units)
+                    .flat();
+            }
+            return [];
+        })
+        .flat();
     return scopeIds;
 };
 

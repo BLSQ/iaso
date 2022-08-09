@@ -71,13 +71,10 @@ export const getScopeStyle = (shape, scope) => {
 
 export const findScopeIds = (obrName, campaigns, currentRound) => {
     let scopeIds = obrName
-        ? [...campaigns].filter(campaign => campaign.obr_name === obrName)
-        : [...campaigns];
+        ? campaigns.filter(campaign => campaign.obr_name === obrName)
+        : campaigns;
 
     scopeIds = scopeIds
-        .filter(
-            campaign => campaign.group || campaign.separate_scopes_per_round,
-        )
         .map(campaign => {
             if (!campaign.separate_scopes_per_round) {
                 return campaign.scopes

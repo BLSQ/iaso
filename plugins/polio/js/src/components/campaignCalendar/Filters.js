@@ -43,8 +43,8 @@ const Filters = ({ router, disableDates, disableOnlyDeleted, showTest }) => {
     const [showOnlyDeleted, setShowOnlyDeleted] = useState(
         params.showOnlyDeleted === 'true',
     );
-    const [r1StartFrom, setR1StartFrom] = useState(params.r1StartFrom);
-    const [r1StartTo, set1StartTo] = useState(params.r1StartTo);
+    const [roundStartFrom, setRoundStartFrom] = useState(params.roundStartFrom);
+    const [roundStartTo, set1StartTo] = useState(params.roundStartTo);
     const dispatch = useDispatch();
     const handleSearch = useCallback(() => {
         if (filtersUpdated) {
@@ -52,8 +52,8 @@ const Filters = ({ router, disableDates, disableOnlyDeleted, showTest }) => {
             const urlParams = {
                 countries,
                 search: search && search !== '' ? search : undefined,
-                r1StartFrom,
-                r1StartTo,
+                roundStartFrom,
+                roundStartTo,
                 page: null,
                 campaignType,
                 showOnlyDeleted: showOnlyDeleted || undefined,
@@ -66,8 +66,8 @@ const Filters = ({ router, disableDates, disableOnlyDeleted, showTest }) => {
         filtersUpdated,
         countries,
         search,
-        r1StartFrom,
-        r1StartTo,
+        roundStartFrom,
+        roundStartTo,
         campaignType,
         campaignGroups,
         showOnlyDeleted,
@@ -91,8 +91,8 @@ const Filters = ({ router, disableDates, disableOnlyDeleted, showTest }) => {
     }, [
         countries,
         search,
-        r1StartFrom,
-        r1StartTo,
+        roundStartFrom,
+        roundStartTo,
         showOnlyDeleted,
         campaignType,
         campaignGroups,
@@ -184,16 +184,16 @@ const Filters = ({ router, disableDates, disableOnlyDeleted, showTest }) => {
                                 lg={12}
                                 onChangeDate={(key, value) => {
                                     if (key === 'dateFrom') {
-                                        setR1StartFrom(value);
+                                        setRoundStartFrom(value);
                                     }
                                     if (key === 'dateTo') {
                                         set1StartTo(value);
                                     }
                                 }}
-                                labelFrom={MESSAGES.R1StartFrom}
-                                labelTo={MESSAGES.R1StartTo}
-                                dateFrom={r1StartFrom}
-                                dateTo={r1StartTo}
+                                labelFrom={MESSAGES.RoundStartFrom}
+                                labelTo={MESSAGES.RoundStartTo}
+                                dateFrom={roundStartFrom}
+                                dateTo={roundStartTo}
                             />
                         </Grid>
                     )}

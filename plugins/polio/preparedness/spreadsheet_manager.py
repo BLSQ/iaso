@@ -127,13 +127,9 @@ def copy_protected_range_to_sheet(template_protected_ranges, new_sheet):
     return requests
 
 
-def get_round_districts(round):
-    return OrgUnit.objects.filter(groups__roundScope__round=round)
-
-
-def get_round_regions(round):
+def get_region_from_district(districts):
     # May not be the most efficient
-    return OrgUnit.objects.filter(id__in=get_round_districts(round).values_list("parent_id", flat=True).distinct())
+    return OrgUnit.objects.filter(id__in=districts.values_list("parent_id", flat=True).distinct())
 
 
 def generate_spreadsheet_for_campaign(campaign: Campaign, round_number: Optional[int]):
@@ -159,13 +155,9 @@ def generate_spreadsheet_for_campaign(campaign: Campaign, round_number: Optional
     meta = spreadsheet.fetch_sheet_metadata()
     template_range = meta["sheets"][regional_template_worksheet.index]["protectedRanges"]  # regional_template_worksheet
     batched_requests = []
-    if campaign.separate_scopes_per_round and round_number != None:
-        round = campaign.rounds.get(number=round_number)
-        districts = get_round_districts(round)
-        regions = get_round_regions(round)
-    else:
-        districts = campaign.get_districts()
-        regions = campaign.get_regions()
+    districts = campaign.get_districts_for_round_number(round_number)
+    regions = get_region_from_district(districts)
+
     current_index = 2
     for index, region in enumerate(regions):
         regional_worksheet = regional_template_worksheet.duplicate(current_index, None, region.name)

@@ -241,46 +241,49 @@ def fetch_and_match_forma_data():
 def get_forma_scope_df(campaigns):
     scope_dfs = []
     for campaign in campaigns:
-        districts = campaign.get_all_districts()
-        if districts.count() == 0:
-            logger.info(f"skipping {campaign}, no scope")
-            continue
-        facilities = OrgUnit.objects.filter(parent__in=districts)
-        regions = OrgUnit.objects.filter(parents_q(districts)).filter(path__depth=2)
-        countries = OrgUnit.objects.filter(parents_q(districts)).filter(path__depth=1)
+        for round in campaign.rounds.all():
+            districts = campaign.get_districts_for_round(round)
 
-        for ous in [districts, facilities, regions, countries]:
-            scope_df = DataFrame.from_records(
-                ous.values(
+            if districts.count() == 0:
+                logger.info(f"skipping {campaign}, no scope")
+                continue
+            facilities = OrgUnit.objects.filter(parent__in=districts)
+            regions = OrgUnit.objects.filter(parents_q(districts)).filter(path__depth=2)
+            countries = OrgUnit.objects.filter(parents_q(districts)).filter(path__depth=1)
+
+            for ous in [districts, facilities, regions, countries]:
+                scope_df = DataFrame.from_records(
+                    ous.values(
+                        "name",
+                        "id",
+                        "parent",
+                        "parent__name",
+                        "parent__parent__name",
+                        "parent__parent_id",
+                        "parent__parent__parent__name",
+                        "parent__parent__parent_id",
+                        "org_unit_type__name",
+                    )
+                )
+                if scope_df.shape == (0, 0):
+                    continue
+
+                scope_df.columns = [
                     "name",
                     "id",
-                    "parent",
-                    "parent__name",
-                    "parent__parent__name",
-                    "parent__parent_id",
-                    "parent__parent__parent__name",
-                    "parent__parent__parent_id",
-                    "org_unit_type__name",
-                )
-            )
-            if scope_df.shape == (0, 0):
-                continue
-
-            scope_df.columns = [
-                "name",
-                "id",
-                "parent_name",
-                "parent_id",
-                "parent2_name",
-                "parent2_id",
-                "parent3_name",
-                "parent3_id",
-                "type",
-            ]
-            scope_df["campaign_id"] = str(campaign.id)
-            scope_df["campaign_obr_name"] = str(campaign.obr_name)
-            print(campaign, scope_df.shape)
-            scope_dfs.append(scope_df)
+                    "parent_name",
+                    "parent_id",
+                    "parent2_name",
+                    "parent2_id",
+                    "parent3_name",
+                    "parent3_id",
+                    "type",
+                ]
+                scope_df["campaign_id"] = str(campaign.id)
+                scope_df["campaign_obr_name"] = str(campaign.obr_name)
+                scope_df["round_number"] = str(round.number)
+                print(campaign, scope_df.shape)
+                scope_dfs.append(scope_df)
 
     all_scopes = pd.concat(scope_dfs)
     return all_scopes

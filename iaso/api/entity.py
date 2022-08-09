@@ -47,6 +47,12 @@ class BeneficiarySerializer(serializers.ModelSerializer):
     entity_type_name = serializers.SerializerMethodField()
     created_at = TimestampField(read_only=True)
     updated_at = TimestampField(read_only=True)
+    attributes = serializers.SerializerMethodField()
+
+    def get_attributes(self, entity: Entity):
+        if entity.attributes:
+            return entity.attributes.as_full_model()
+        return None
 
     @staticmethod
     def get_entity_type_name(obj: Entity):

@@ -54,14 +54,12 @@ AWS_STORAGE_BUCKET_NAME = os.environ.get("AWS_STORAGE_BUCKET_NAME", "")
 # Default site for django contrib site framework
 SITE_ID = 1
 
-
 # Logging
 
 LOGGING_LEVEL = os.getenv("DJANGO_LOGGING_LEVEL", "INFO")
 if TESTING:
     # We don't want to see log output when running tests
     LOGGING_LEVEL = "CRITICAL"
-
 
 ENKETO = {
     "ENKETO_DEV": os.getenv("ENKETO_DEV"),
@@ -168,13 +166,11 @@ MIDDLEWARE = [
 
 ROOT_URLCONF = "hat.urls"
 
-
 # Allow CORS for all origins but don't transmit the session cookies or other credentials (which is the default)
 # see https://github.com/adamchainz/django-cors-headers#cors_allow_credentials-bool
 CORS_ORIGIN_ALLOW_ALL = True
 CORS_ALLOW_ALL_ORIGINS = True  # name used in the new version of django-cors-header, for forward compat
 CORS_ALLOW_CREDENTIALS = False
-
 
 TEMPLATES = [
     {
@@ -199,7 +195,6 @@ TEMPLATES = [
 ]
 
 WSGI_APPLICATION = "hat.wsgi.application"
-
 
 # Database
 
@@ -260,7 +255,6 @@ AUTH_PASSWORD_VALIDATORS = [
     {"NAME": "django.contrib.auth.password_validation.NumericPasswordValidator"},
 ]
 
-
 # Internationalization
 
 LANGUAGE_CODE = "en"
@@ -284,7 +278,6 @@ PROJECT_ROOT = os.path.dirname(os.path.abspath(__file__))
 
 LOGIN_URL = "/login"
 LOGIN_REDIRECT_URL = "/"
-
 
 AUTH_CLASSES = [
     "iaso.api.auth.authentication.CsrfExemptSessionAuthentication",
@@ -357,7 +350,6 @@ WEBPACK_LOADER = {
     }
 }
 
-
 AUTH_PROFILE_MODULE = "hat.users.Profile"
 
 try:
@@ -365,7 +357,6 @@ try:
 except Exception as e:
     print("error importing hat.__version", e)
     VERSION = "undetected_version"
-
 
 if SENTRY_URL:
     sentry_sdk.init(
@@ -379,10 +370,11 @@ IS_BACKGROUND_WORKER = bool(os.environ.get("WORKER", False))
 
 # Define the backend to be used:
 #   Needs to be one of: POSTGRES, SQS
-#   Defaulting to SQS since most the environments run that way
-BACKGROUND_BACKEND = os.environ.get("BACKGROUND_TASK_SERVICE", "SQS")
+#   Defaulting to SQS in production and Postgres in DEBUG
+DEFAULT_BACKGROUND_BACKEND = "POSTGRES" if DEBUG else "SQS"
+BACKGROUND_BACKEND = os.environ.get("BACKGROUND_TASK_SERVICE", DEFAULT_BACKGROUND_BACKEND)
 
-if BACKGROUND_BACKEND == "POSTGRES" or DEBUG:
+if BACKGROUND_BACKEND == "POSTGRES":
     # Postgres backed background jobs
     BEANSTALK_WORKER = False
     BACKGROUND_TASK_SERVICE = "beanstalk_worker.services.PostgresTaskService"
@@ -415,7 +407,6 @@ EMAIL_HOST_PASSWORD = os.environ.get("EMAIL_HOST_PASSWORD", "")
 EMAIL_PORT = os.environ.get("EMAIL_PORT", "8025")
 EMAIL_USE_TLS = os.environ.get("EMAIL_TLS", "true") == "true"
 
-
 # Application customizations
 APP_TITLE = os.environ.get("APP_TITLE", "Iaso")
 FAVICON_PATH = os.environ.get("FAVICON_PATH", "images/iaso-favicon.png")
@@ -424,7 +415,6 @@ THEME_PRIMARY_COLOR = os.environ.get("THEME_PRIMARY_COLOR", "#006699")
 THEME_SECONDARY_COLOR = os.environ.get("THEME_SECONDARY_COLOR", "#0066CC")
 THEME_PRIMARY_BACKGROUND_COLOR = os.environ.get("THEME_PRIMARY_BACKGROUND_COLOR", "#F5F5F5")
 SHOW_NAME_WITH_LOGO = os.environ.get("SHOW_NAME_WITH_LOGO", "yes")
-
 
 AUTHENTICATION_BACKENDS = [
     "django.contrib.auth.backends.ModelBackend",

@@ -9,7 +9,7 @@ from logging import getLogger
 logger = getLogger(__name__)
 
 
-task_service = LazyService("BEANSTALK_TASK_SERVICE")
+task_service = LazyService("BACKGROUND_TASK_SERVICE")
 
 
 def task_decorator(task_name=""):

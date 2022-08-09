@@ -20,7 +20,7 @@ const staticFields = [
     },
     {
         key: 'r1StartDate',
-        sortKey: 'round_one__started_at',
+        sortKey: 'first_round_started_at',
         render: campaign => {
             const roundOne =
                 campaign.rounds &&

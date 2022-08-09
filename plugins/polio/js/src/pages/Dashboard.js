@@ -10,7 +10,7 @@ import {
 import { withRouter } from 'react-router';
 import { useDispatch } from 'react-redux';
 import { push } from 'react-router-redux';
-import { Box } from '@material-ui/core';
+import { Box, Tooltip } from '@material-ui/core';
 import AddIcon from '@material-ui/icons/Add';
 import DownloadIcon from '@material-ui/icons/GetApp';
 import CloudUploadIcon from '@material-ui/icons/CloudUpload';
@@ -164,8 +164,8 @@ const Dashboard = ({ router }) => {
         apiParams.pageSize,
         apiParams.countries,
         apiParams.search,
-        apiParams.r1StartFrom,
-        apiParams.r1StartTo,
+        apiParams.roundStartFrom,
+        apiParams.roundStartTo,
     ]);
     const columns = useMemo(() => {
         const cols = [
@@ -186,9 +186,31 @@ const Dashboard = ({ router }) => {
             {
                 Header: formatMessage(MESSAGES.lastRound),
                 id: `last_round_started_at`,
-                sortable: false, // TODO: make this column sortable with the api => POLIO-311
-                accessor: row =>
-                    row.rounds && row.rounds[row.rounds.length - 1]?.started_at,
+                accessor: row => {
+                    const allRounds = (
+                        <>
+                            {row.rounds.map(r => (
+                                <li>
+                                    {r.number +
+                                        '. ' +
+                                        r.started_at +
+                                        ' -> ' +
+                                        r.ended_at}
+                                    <br />
+                                </li>
+                            ))}
+                        </>
+                    );
+                    return (
+                        <Tooltip title={allRounds}>
+                            <span>
+                                {row.rounds &&
+                                    row.rounds[row.rounds.length - 1]
+                                        ?.started_at}
+                            </span>
+                        </Tooltip>
+                    );
+                },
             },
             {
                 Header: formatMessage(MESSAGES.status),

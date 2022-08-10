@@ -45,36 +45,34 @@ const CalendarMap = ({ campaigns, loadingCampaigns }) => {
     const [viewport, setViewPort] = useState(defaultViewport);
     const map = useRef();
     const queries = [];
-    campaigns
-        .filter(c => Boolean(c.original.group?.id) || c.separateScopesPerRound)
-        .forEach(campaign => {
-            if (campaign.separateScopesPerRound) {
-                campaign.rounds.forEach(round => {
-                    round.scopes.forEach(scope => {
-                        queries.push(
-                            getShapeQuery(
-                                loadingCampaigns,
-                                scope.group.id,
-                                campaign,
-                                scope.vaccine,
-                                round,
-                            ),
-                        );
-                    });
-                });
-            } else {
-                campaign.scopes.forEach(scope => {
+    campaigns.forEach(campaign => {
+        if (campaign.separateScopesPerRound) {
+            campaign.rounds.forEach(round => {
+                round.scopes.forEach(scope => {
                     queries.push(
                         getShapeQuery(
                             loadingCampaigns,
                             scope.group.id,
                             campaign,
                             scope.vaccine,
+                            round,
                         ),
                     );
                 });
-            }
-        });
+            });
+        } else {
+            campaign.scopes.forEach(scope => {
+                queries.push(
+                    getShapeQuery(
+                        loadingCampaigns,
+                        scope.group.id,
+                        campaign,
+                        scope.vaccine,
+                    ),
+                );
+            });
+        }
+    });
     const shapesQueries = useQueries(queries);
 
     const regionsQueries = useQueries(

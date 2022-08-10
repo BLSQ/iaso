@@ -20,7 +20,7 @@ type Params = {
     order: string;
     page: string;
     search?: string;
-    entityTypes?: string;
+    location?: string;
 };
 
 type ApiParams = {
@@ -28,6 +28,7 @@ type ApiParams = {
     order: string;
     page: string;
     search?: string;
+    orgUnitId?: string;
 };
 
 type GetAPiParams = {
@@ -42,6 +43,10 @@ export const useGetBeneficiariesApiParams = (params: Params): GetAPiParams => {
     };
     if (params.search) {
         apiParams.search = params.search;
+    }
+
+    if (params.location) {
+        apiParams.orgUnitId = params.location;
     }
 
     // @ts-ignore

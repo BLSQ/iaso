@@ -41,6 +41,10 @@ const MESSAGES = defineMessages({
         defaultMessage: 'Years',
         id: 'iaso.label.yearNoCap',
     },
+    location: {
+        defaultMessage: 'Location',
+        id: 'iaso.forms.location',
+    },
 });
 
 export default MESSAGES;

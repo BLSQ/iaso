@@ -271,6 +271,7 @@ class BeneficiaryViewset(ModelViewSet):
 
     def get_queryset(self):
         search = self.request.query_params.get("search", None)
+        org_unit_id = self.request.query_params.get("orgUnitId", None)
         order = self.request.query_params.get("order", "updated_at").split(",")
 
         queryset = Entity.objects.filter(
@@ -279,6 +280,10 @@ class BeneficiaryViewset(ModelViewSet):
         if search:
             # TODO: extend search to attributes uuid, form name, ...
             queryset = queryset.filter(name__icontains=search)
+        if org_unit_id:
+            queryset = queryset.filter(attributes__org_unit__id=org_unit_id)
+
+        # location
 
         queryset = queryset.order_by(*order)
         return queryset

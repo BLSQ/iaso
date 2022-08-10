@@ -545,6 +545,10 @@ export const beneficiariesPath = {
             isRequired: false,
             key: 'search',
         },
+        {
+            isRequired: false,
+            key: 'location',
+        },
         ...paginationPathParams.map(p => ({
             ...p,
             isRequired: true,

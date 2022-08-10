@@ -53,7 +53,7 @@ class GPKGImport(TestCase):
         self.assertEqual(c.geom.geom_type, "MultiPolygon")
         self.assertEqual(len(c.geom.coords[0][0]), 2108)
 
-        self.assertEqual(c.get_all_districts().count(), 0)
+        self.assertEqual(c.groups.all().count(), 0)
 
         c2 = c.orgunit_set.first()
         self.assertEqual(c2.name, "CSI de Garga-Sarali")

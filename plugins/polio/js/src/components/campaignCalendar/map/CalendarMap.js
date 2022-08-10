@@ -75,33 +75,6 @@ const CalendarMap = ({ campaigns, loadingCampaigns }) => {
     });
     const shapesQueries = useQueries(queries);
 
-    const regionsQueries = useQueries(
-        campaigns
-            .filter(c => Boolean(c.original.group?.id))
-            .map(campaign => {
-                const baseParams = {
-                    order: 'id',
-                    page: 1,
-                    limit: 1000,
-                    app_id: appId,
-                    // eslint-disable-next-line max-len
-                    searches: `[{"validation_status":"all","color":"f4511e","source":2,"levels":${campaign?.country_id?.toString()},"orgUnitTypeId":"6","orgUnitParentId":${campaign?.country_id?.toString()},"dateFrom":null,"dateTo":null}]`,
-                };
-                const queryString = new URLSearchParams(baseParams);
-                return {
-                    queryKey: ['campaignRegion', baseParams],
-                    queryFn: () =>
-                        getRequest(`/api/orgunits/?${queryString.toString()}`),
-                    select: data => {
-                        return data.orgunits.map(orgUnit => ({
-                            id: orgUnit.id,
-                            name: orgUnit.name,
-                        }));
-                    },
-                    enabled: !loadingCampaigns,
-                };
-            }),
-    );
     const { data: mergedShapes, isLoading: isLoadingMergedShapes } =
         useGetMergedCampaignShapes().query;
 
@@ -121,17 +94,12 @@ const CalendarMap = ({ campaigns, loadingCampaigns }) => {
     const loadingShapes =
         viewport.zoom <= 6
             ? isLoadingMergedShapes
-            : shapesQueries.some(q => q.isLoading) ||
-              regionsQueries.some(q => q.isLoading);
+            : shapesQueries.some(q => q.isLoading);
 
     const campaignsShapes = shapesQueries
         .filter(sq => sq.data)
         .map(sq => sq.data);
 
-    const regions = regionsQueries
-        .filter(sq => sq.data)
-        .map(sq => sq.data)
-        .flat();
     return (
         <Box position="relative">
             {(loadingCampaigns || loadingShapes) && <LoadingSpinner absolute />}
@@ -159,7 +127,6 @@ const CalendarMap = ({ campaigns, loadingCampaigns }) => {
                 {viewport.zoom > 6 && (
                     <CalendarMapPanesRegular
                         campaignsShapes={campaignsShapes}
-                        regions={regions}
                         viewport={viewport}
                     />
                 )}

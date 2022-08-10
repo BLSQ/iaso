@@ -104,9 +104,6 @@ export const makeLegendItem = ({ message, value, color }) => {
         color,
     };
 };
-export const findRegion = (orgUnit, regions) => {
-    return regions?.filter(region => region.id === orgUnit.parent_id)[0]?.name;
-};
 
 export const convertWidth = width => {
     if (width === 'xs') return '100px';

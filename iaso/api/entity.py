@@ -3,6 +3,7 @@ from django.db.models import Q
 from django.shortcuts import get_object_or_404
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.decorators import action
+from rest_framework.fields import DateTimeField
 from rest_framework.response import Response
 
 from iaso.api.common import TimestampField, ModelViewSet
@@ -45,9 +46,9 @@ class BeneficiarySerializer(serializers.ModelSerializer):
         ]
 
     entity_type_name = serializers.SerializerMethodField()
+    attributes = serializers.SerializerMethodField()
     created_at = TimestampField(read_only=True)
     updated_at = TimestampField(read_only=True)
-    attributes = serializers.SerializerMethodField()
 
     def get_attributes(self, entity: Entity):
         if entity.attributes:
@@ -106,6 +107,22 @@ class EntityTypeViewSet(ModelViewSet):
 
 
 class EntityFilterBackend(filters.BaseFilterBackend):
+    def filter_queryset(self, request, queryset, view):
+        query_param = request.query_params.get("deletion_status", "active")
+
+        if query_param == "deleted":
+            query = Q(deleted_at__isnull=False)
+            return queryset.filter(query)
+
+        if query_param == "active":
+            query = Q(deleted_at__isnull=True)
+            return queryset.filter(query)
+
+        if query_param == "all":
+            return queryset
+        return queryset
+
+class BeneficiaryFilterBackend(filters.BaseFilterBackend):
     def filter_queryset(self, request, queryset, view):
         query_param = request.query_params.get("deletion_status", "active")
 
@@ -182,64 +199,87 @@ class EntityViewSet(ModelViewSet):
         serializer = EntitySerializer(entities, many=True)
         return Response(serializer.data)
 
-    def export_beneficiary_as_csv_xls(self, beneficiary, param):
-        columns = [
-            {"title": "First_Name", "width": 20},
-            {"title": "Last_name", "width": 20},
-            {"title": "Age", "width": 20},
-            {"title": "Form", "width": 40},
-            {"title": "Date", "width": 20},
-            {"title": "Org_Unit", "width": 20},
-            {"title": "Key_Information", "width": 20},
-            {"title": "Submiter", "width": 20},
-        ]
-
-        filename = "beneficiary" if int(param) else "beneficiaries"
-
-
-    @action(detail=False, methods=["GET"])
-    def get_beneficiary(self, request, *args, **kwargs):
-        pk = request.GET.get("id", None)
-        beneficiary = get_object_or_404(Entity, pk=pk, entity_type__name="beneficiary")
-        serializer = BeneficiarySerializer(beneficiary, many=False)
-        return Response(serializer.data)
-
-    @action(detail=False, methods=["GET"])
-    def beneficiaries(self, request, *args, **kwargs):
-        limit = request.GET.get("limit", None)
-        page_offset = request.GET.get("page", 1)
-        orders = request.GET.get("order", "updated_at").split(",")
-        csv_format = request.GET.get("csv", None)
-        xlsx_format = request.GET.get("xlsx", None)
-
-        beneficiaries = Entity.objects.filter(
-            entity_type__name="beneficiary", account=request.user.iaso_profile.account
-        )
-
-        if limit:
-            limit = int(limit)
-            page_offset = int(page_offset)
-            paginator = Paginator(beneficiaries, limit)
-            res = {"count": paginator.count}
-            if page_offset > paginator.num_pages:
-                page_offset = paginator.num_pages
-            page = paginator.page(page_offset)
-
-            serializer = BeneficiarySerializer(beneficiaries, many=True)
-
-            def as_dict_formatter(x):
-                dict = x.as_dict()
-                dict["beneficiaries"] = serializer.data
-                return dict
+    # def export_beneficiary_as_csv_xls(self, beneficiary, param):
+    #     columns = [
+    #         {"title": "First_Name", "width": 20},
+    #         {"title": "Last_name", "width": 20},
+    #         {"title": "Age", "width": 20},
+    #         {"title": "Form", "width": 40},
+    #         {"title": "Date", "width": 20},
+    #         {"title": "Org_Unit", "width": 20},
+    #         {"title": "Key_Information", "width": 20},
+    #         {"title": "Submiter", "width": 20},
+    #     ]
+    #
+    #     filename = "beneficiary" if int(param) else "beneficiaries"
 
 
-            res["beneficiaries"] = map(as_dict_formatter, page.object_list)
-            res["has_next"] = page.has_next()
-            res["has_previous"] = page.has_previous()
-            res["page"] = page_offset
-            res["pages"] = paginator.num_pages
-            res["limit"] = limit
-            return Response(res)
+    # @action(detail=False, methods=["GET"])
+    # def get_beneficiary(self, request, *args, **kwargs):
+    #     pk = request.GET.get("id", None)
+    #     beneficiary = get_object_or_404(Entity, pk=pk, entity_type__name="beneficiary")
+    #     serializer = BeneficiarySerializer(beneficiary, many=False)
+    #     return Response(serializer.data)
+    #
+    # @action(detail=False, methods=["GET"])
+    # def beneficiaries(self, request, *args, **kwargs):
+    #     limit = request.GET.get("limit", None)
+    #     page_offset = request.GET.get("page", 1)
+    #     orders = request.GET.get("order", "updated_at").split(",")
+    #     csv_format = request.GET.get("csv", None)
+    #     xlsx_format = request.GET.get("xlsx", None)
+    #
+    #     beneficiaries = Entity.objects.filter(
+    #         entity_type__name="beneficiary", account=request.user.iaso_profile.account
+    #     )
+    #
+    #     if limit:
+    #         limit = int(limit)
+    #         page_offset = int(page_offset)
+    #         paginator = Paginator(beneficiaries, limit)
+    #         res = {"count": paginator.count}
+    #         if page_offset > paginator.num_pages:
+    #             page_offset = paginator.num_pages
+    #         page = paginator.page(page_offset)
+    #
+    #         serializer = BeneficiarySerializer(beneficiaries, many=True)
+    #
+    #         def as_dict_formatter(x):
+    #             dict = x.as_dict()
+    #             dict["beneficiaries"] = serializer.data
+    #             return dict
+    #
+    #         res["beneficiaries"] = map(as_dict_formatter, page.object_list)
+    #         res["has_next"] = page.has_next()
+    #         res["has_previous"] = page.has_previous()
+    #         res["page"] = page_offset
+    #         res["pages"] = paginator.num_pages
+    #         res["limit"] = limit
+    #         return Response(res)
+    #
+    #     serializer = BeneficiarySerializer(beneficiaries, many=True)
+    #     return Response(serializer.data)
 
-        serializer = BeneficiarySerializer(beneficiaries, many=True)
-        return Response(serializer.data)
+
+class BeneficiaryViewset(ModelViewSet):
+    results_key = "beneficiary"
+    remove_results_key_if_paginated = True
+    filter_backends = [filters.OrderingFilter, DjangoFilterBackend, EntityFilterBackend]
+
+    def get_serializer_class(self):
+        return BeneficiarySerializer
+
+    def get_queryset(self):
+        search = self.request.query_params.get("search", None)
+        entity_types__id = self.request.query_params.get("entity_types__ids", None)
+        order = self.request.query_params.get("order", "updated_at").split(",")
+
+        queryset = Entity.objects.filter(account=self.request.user.iaso_profile.account, entity_type__entity__name="beneficiary")
+        if search:
+            queryset = queryset.filter(name__icontains=search)
+        if entity_types__id:
+            entity_types__ids = entity_types__id.split(",")
+            queryset = queryset.filter(entity_type__in=entity_types__ids)
+
+        queryset = queryset.order_by(*order)
+        return queryset

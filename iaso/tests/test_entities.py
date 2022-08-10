@@ -349,6 +349,6 @@ class EntityAPITestCase(APITestCase):
         entity = Entity.objects.create(name="client", attributes=instance, entity_type=entity_type, account=account)
         print(f"ENTITY: {entity} ")
 
-        response = self.client.get(f"/api/entity/get_beneficiary/?id={entity.pk}")
+        response = self.client.get(f"/api/entity/beneficiary/?id={entity.pk}")
 
         self.assertEqual(response.status_code, 200)

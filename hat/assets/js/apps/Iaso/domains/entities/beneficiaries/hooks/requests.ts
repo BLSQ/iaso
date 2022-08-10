@@ -8,8 +8,12 @@ import {
 } from '../../../../libs/Api';
 import MESSAGES from '../../messages';
 
-import { PaginatedEntities } from '../../types/paginatedEntities';
 import { Beneficiary } from '../types/beneficiary';
+import { Pagination } from '../../../../types/table';
+
+export interface PaginatedBeneficiaries extends Pagination {
+    instances: Array<Beneficiary>;
+}
 
 type Params = {
     pageSize: string;
@@ -28,7 +32,7 @@ type NewParams = {
 
 export const useGetBeneficiariesPaginated = (
     params: Params,
-): UseQueryResult<PaginatedEntities, Error> => {
+): UseQueryResult<PaginatedBeneficiaries, Error> => {
     const newParams: NewParams = {
         limit: params.pageSize || '20',
         order: params.order || 'id',

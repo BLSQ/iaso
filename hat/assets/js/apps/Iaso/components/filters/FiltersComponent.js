@@ -3,7 +3,7 @@ import { connect } from 'react-redux';
 import { replace } from 'react-router-redux';
 import PropTypes from 'prop-types';
 import { createUrl } from 'bluesquare-components';
-
+import { SearchFilter } from './Search.tsx';
 import InputComponent from '../forms/InputComponent';
 
 class FiltersComponent extends React.Component {
@@ -29,26 +29,34 @@ class FiltersComponent extends React.Component {
             callback(value, urlKey);
         } else {
             const newState = { ...this.state, [urlKey]: value };
+            console.log('new state', newState);
             this.setState(newState);
             if (launchSearch) {
+                this.props.onFilterChanged();
                 this.onSearch(newState);
             }
         }
     }
 
     onSearch(state = this.state) {
-        const { params, redirectTo, baseUrl } = this.props;
-        const newParams = {
-            ...params,
-        };
+        console.log('state', state);
+        // const { params, redirectTo, baseUrl } = this.props;
+        // const newParams = {
+        //     ...params,
+        // };
         Object.keys(state).map(objectKey => {
             const value = state[objectKey];
-            newParams[objectKey] = value;
+            console.log('value', value);
+            // newParams[objectKey] = value;
             return null;
         });
 
         this.props.onFilterChanged();
-        redirectTo(baseUrl, newParams);
+        // redirectTo(baseUrl, newParams);
+    }
+
+    setError() {
+        this.setState({ textSearchError: false });
     }
 
     toggleCheckbox(checked, urlKey, filter) {
@@ -70,14 +78,19 @@ class FiltersComponent extends React.Component {
     }
 
     render() {
-        const { filters, params, onEnterPressed } = this.props;
+        const { filters, params, onEnterPressed, setTextSearchError } =
+            this.props;
+
         if (!filters) {
             return null;
         }
+
         return (
             <section>
                 {filters.map(filter => {
-                    let filterValue = filter.value || params[filter.urlKey];
+                    let filterValue =
+                        filter.value || params[filter.urlKey] || '';
+
                     if (filter.useKeyParam === false) {
                         filterValue = filter.value;
                     }
@@ -137,10 +150,9 @@ class FiltersComponent extends React.Component {
                                 )}
 
                                 {filter.type === 'search' && (
-                                    <InputComponent
-                                        disabled={filter.isDisabled || false}
-                                        keyValue={filter.urlKey}
-                                        uid={filter.uid}
+                                    <SearchFilter
+                                        withMarginTop={filter.withMarginTop}
+                                        onEnterPressed={onEnterPressed}
                                         onChange={(key, value) =>
                                             this.onSearchChange(
                                                 key,
@@ -149,12 +161,30 @@ class FiltersComponent extends React.Component {
                                                 filter.callback,
                                             )
                                         }
+                                        keyValue={filter.urlKey}
+                                        required
                                         value={filterValue}
-                                        type="search"
-                                        label={filter.label}
-                                        withMarginTop={filter.withMarginTop}
-                                        onEnterPressed={onEnterPressed}
+                                        onErrorChange={setTextSearchError}
                                     />
+
+                                    // <InputComponent
+                                    //     disabled={filter.isDisabled || false}
+                                    //     keyValue={filter.urlKey}
+                                    //     uid={filter.uid}
+                                    //     onChange={(key, value) =>
+                                    //         this.onSearchChange(
+                                    //             key,
+                                    //             value,
+                                    //             true,
+                                    //             filter.callback,
+                                    //         )
+                                    //     }
+                                    //     value={filterValue}
+                                    //     type="search"
+                                    //     label={filter.label}
+                                    //     withMarginTop={filter.withMarginTop}
+                                    //     onEnterPressed={onEnterPressed}
+                                    // />
                                 )}
 
                                 {filter.type === 'checkbox' && ( // TODO: check with team
@@ -195,6 +225,7 @@ FiltersComponent.defaultProps = {
     onEnterPressed: () => null,
     onFilterChanged: () => null,
     redirectOnChange: true,
+    setTextSearchError: () => null,
 };
 
 FiltersComponent.propTypes = {
@@ -205,6 +236,7 @@ FiltersComponent.propTypes = {
     onEnterPressed: PropTypes.func,
     onFilterChanged: PropTypes.func,
     redirectOnChange: PropTypes.bool,
+    setTextSearchError: PropTypes.func,
 };
 
 const MapStateToProps = () => ({});

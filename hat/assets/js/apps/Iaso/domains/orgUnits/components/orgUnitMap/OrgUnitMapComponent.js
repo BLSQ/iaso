@@ -84,6 +84,17 @@ const styles = theme => ({
 
 const orgunitsPane = 'org-units';
 
+const getAncestorWithGeojson = orgUnit => {
+    let ancestorWithGeoJson;
+    for (let ancestor = orgUnit.parent; ancestor; ancestor = ancestor.parent) {
+        if (ancestor.geo_json) {
+            ancestorWithGeoJson = ancestor;
+            break;
+        }
+    }
+    return ancestorWithGeoJson;
+};
+
 const initialState = currentUser => {
     return {
         locationGroup: new EditableGroup(),
@@ -173,7 +184,10 @@ class OrgUnitMapComponent extends Component {
                 formatMessage(MESSAGES.catchment),
             );
         }
-        if (currentOrgUnit?.parent?.id !== ancestorWithGeoJson?.id) {
+        if (
+            getAncestorWithGeojson(currentOrgUnit)?.id !==
+            ancestorWithGeoJson?.id
+        ) {
             this.setAncestor();
         }
     }
@@ -204,15 +218,10 @@ class OrgUnitMapComponent extends Component {
 
     setAncestor() {
         const { currentOrgUnit } = this.props;
-        for (
-            let ancestor = currentOrgUnit.parent;
-            ancestor;
-            ancestor = ancestor.parent
-        ) {
-            if (ancestor.geo_json) {
-                this.setState({ ancestorWithGeoJson: ancestor });
-                break;
-            }
+        const ancestor = getAncestorWithGeojson(currentOrgUnit);
+
+        if (ancestor) {
+            this.setState({ ancestorWithGeoJson: ancestor });
         }
     }
 

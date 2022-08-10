@@ -585,13 +585,13 @@ const MESSAGES = defineMessages({
         id: 'iaso.polio.label.filter',
         defaultMessage: 'Filter',
     },
-    R1StartFrom: {
-        id: 'iaso.polio.label.R1StartFrom',
-        defaultMessage: 'R1 start date from',
+    RoundStartFrom: {
+        id: 'iaso.polio.label.RoundStartFrom',
+        defaultMessage: 'Round start date from',
     },
-    R1StartTo: {
-        id: 'iaso.polio.label.R1StartTo',
-        defaultMessage: 'R1 start date to',
+    RoundStartTo: {
+        id: 'iaso.polio.label.RoundStartTo',
+        defaultMessage: 'Round start date to',
     },
     sortAsc: {
         id: 'iaso.polio.label.sortAsc',
@@ -1361,6 +1361,38 @@ const MESSAGES = defineMessages({
     cannotDisplayMap: {
         id: 'iaso.polio.label.cannotDisplayMap',
         defaultMessage: 'Cannot display map',
+    },
+    amount: {
+        id: 'iaso.polio.label.amount',
+        defaultMessage: 'Amount',
+    },
+    review: {
+        id: 'iaso.polio.label.review',
+        defaultMessage: 'Review',
+    },
+    transmission: {
+        id: 'iaso.polio.label.transmission',
+        defaultMessage: 'Transmission',
+    },
+    feedback: {
+        id: 'iaso.polio.label.feedback',
+        defaultMessage: 'Feedback',
+    },
+    request: {
+        id: 'iaso.polio.label.request',
+        defaultMessage: 'Request',
+    },
+    seeProcedure: {
+        id: 'iaso.polio.label.seeProcedure',
+        defaultMessage: 'See procedure',
+    },
+    sentToTeam: {
+        id: 'iaso.polio.label.sentToTeam',
+        defaultMessage: 'Sent to team',
+    },
+    sentByTeam: {
+        id: 'iaso.polio.label.sentByTeam',
+        defaultMessage: 'Sent by team',
     },
 });
 

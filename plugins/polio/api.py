@@ -111,13 +111,14 @@ class CampaignViewSet(ModelViewSet):
         CustomFilterBackend,
         DeletionFilterBackend,
     ]
+
     ordering_fields = [
         "obr_name",
         "cvdpv2_notified_at",
         "detection_status",
-        "round_one__started_at",
-        "round_two__started_at",
         "vacine",
+        "first_round_started_at",
+        "last_round_started_at",
         "country__name",
         "last_budget_event__created_at",
         "last_budget_event__type",
@@ -132,7 +133,7 @@ class CampaignViewSet(ModelViewSet):
         "vacine": ["exact"],
         "cvdpv2_notified_at": ["gte", "lte", "range"],
         "created_at": ["gte", "lte", "range"],
-        "round_one__started_at": ["gte", "lte", "range"],
+        "rounds__started_at": ["gte", "lte", "range"],
     }
 
     # We allow anonymous read access for the embeddable calendar map view
@@ -165,11 +166,15 @@ class CampaignViewSet(ModelViewSet):
             campaigns = campaigns.filter(is_preventive=False).filter(is_test=False)
         if campaign_groups:
             campaigns = campaigns.filter(grouped_campaigns__in=campaign_groups.split(","))
-        return campaigns
+        return campaigns.distinct()
 
     def get_queryset(self):
         user = self.request.user
         campaigns = Campaign.objects.all()
+
+        # used for Ordering
+        campaigns = campaigns.annotate(last_round_started_at=Max("rounds__started_at"))
+        campaigns = campaigns.annotate(first_round_started_at=Min("rounds__started_at"))
 
         if user.is_authenticated and user.iaso_profile.org_units.count():
             org_units = OrgUnit.objects.hierarchy(user.iaso_profile.org_units.all())
@@ -748,14 +753,15 @@ class IMStatsViewSet(viewsets.ViewSet):
                     print("------------")
                     continue
                 try:
-                    round_number = form["roundNumber"]
+                    round_number = form.get("roundNumber", None)
+                    if round_number is None:
+                        round_number = form.get("HH", [{}])[0]["HH/roundNumber"]
                     if round_number.upper() == "MOPUP":
                         continue
                 except KeyError:
                     skipped_forms_list.append({form["_id"]: {"round": None, "date": form.get("date_monitored", None)}})
                     no_round_count += 1
                     continue
-                round_number = form["roundNumber"]
                 if round_number[-1].isdigit():
                     round_number = round_number[-1]
                 else:
@@ -1642,6 +1648,36 @@ def is_budget_approved(user, event):
     return False
 
 
+class RecipientFilterBackend(filters.BaseFilterBackend):
+    def filter_queryset(self, request, queryset, view):
+        recipient = request.query_params.get("recipient")
+        if recipient:
+            queryset = queryset.filter(target_teams__in=[int(recipient)])
+        return queryset
+
+
+class BudgetEventTypeFilterBackend(filters.BaseFilterBackend):
+    def filter_queryset(self, request, queryset, view):
+        type = request.query_params.get("type", "all")
+        if type == "all":
+            return queryset
+        else:
+            return queryset.filter(type=type)
+
+
+class SenderTeamFilterBackend(filters.BaseFilterBackend):
+    def filter_queryset(self, request, queryset, view):
+        sender_team_id = request.query_params.get("senderTeam")
+        if sender_team_id:
+            try:
+                sender_team = Team.objects.get(id=int(sender_team_id))
+                queryset = queryset.filter(author__in=list(sender_team.users.all()))
+            except:
+                print("No team found for id ", sender_team_id)
+
+        return queryset
+
+
 class BudgetEventViewset(ModelViewSet):
     result_key = "results"
     remove_results_key_if_paginated = True
@@ -1650,6 +1686,9 @@ class BudgetEventViewset(ModelViewSet):
     filter_backends = [
         filters.OrderingFilter,
         DjangoFilterBackend,
+        BudgetEventTypeFilterBackend,
+        RecipientFilterBackend,
+        SenderTeamFilterBackend,
     ]
     ordering_fields = [
         "created_at",
@@ -1723,7 +1762,7 @@ class BudgetEventViewset(ModelViewSet):
                         # TODO check that this works
                         recipients.discard(user)
                 # Send email with link to all approvers if event is a submission
-                elif event_type == "submission":
+                elif event_type == "submission" or event_type == "transmission":
                     author_team = event.author.teams.filter(name__icontains="approval").filter(deleted_at=None).first()
                     approval_teams = Team.objects.filter(name__icontains="approval").filter(deleted_at=None)
                     approvers = approval_teams.values("users")
@@ -1760,19 +1799,6 @@ class BudgetEventViewset(ModelViewSet):
                     msg.attach_alternative(html_content, "text/html")
                     msg.send(fail_silently=False)
 
-                    # send_mail(
-                    #     email_subject(event_type, event.campaign.obr_name),
-                    #     event_creation_email(
-                    #         event.type,
-                    #         event.author.first_name,
-                    #         event.author.last_name,
-                    #         event.comment,
-                    #         generate_auto_authentication_link(link_to_send, user),
-                    #         settings.DNS_DOMAIN,
-                    #     ),
-                    #     settings.DEFAULT_FROM_EMAIL,
-                    #     [user.email],
-                    # )
                 event.is_email_sent = True
                 event.save()
                 # If the budget is approved as a results of the events creation, send the confirmation email as well

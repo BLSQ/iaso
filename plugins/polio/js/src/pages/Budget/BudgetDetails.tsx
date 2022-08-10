@@ -3,6 +3,7 @@ import React, { FunctionComponent, useCallback, useState } from 'react';
 import { useSafeIntl } from 'bluesquare-components';
 import {
     Box,
+    Collapse,
     Divider,
     Grid,
     makeStyles,
@@ -11,7 +12,9 @@ import {
     useMediaQuery,
     useTheme,
 } from '@material-ui/core';
+
 import { useDispatch, useSelector } from 'react-redux';
+import MoreHorizIcon from '@material-ui/icons/MoreHoriz';
 import { Pagination } from '@material-ui/lab';
 import TopBar from '../../../../../../hat/assets/js/apps/Iaso/components/nav/TopBarComponent';
 import MESSAGES from '../../constants/messages';
@@ -33,11 +36,13 @@ import InputComponent from '../../../../../../hat/assets/js/apps/Iaso/components
 import { BudgetValidationPopUp } from './pop-ups/BudgetValidationPopUp';
 import { BudgetRejectionPopUp } from './pop-ups/BudgetRejectionPopUp';
 import { BudgetEventCard } from './cards/BudgetEventCard';
-import { useBoundState } from '../../../../../../hat/assets/js/apps/Iaso/domains/assignments/hooks/useBoundState';
+import { useBoundState } from '../../../../../../hat/assets/js/apps/Iaso/hooks/useBoundState';
 import { Optional } from '../../../../../../hat/assets/js/apps/Iaso/types/utils';
 import { BudgetMap } from './Map/BudgetMap';
 import { useIsUserInApprovalTeam } from './hooks/useIsUserInApprovalTeam';
 import { handleTableDeepLink } from '../../../../../../hat/assets/js/apps/Iaso/utils/table';
+import { LinkToProcedure } from './LinkToProcedure';
+import { BudgetDetailsFilters } from './BudgetDetailsFilters';
 
 type Props = {
     router: any;
@@ -97,6 +102,7 @@ export const BudgetDetails: FunctionComponent<Props> = ({ router }) => {
         ),
     );
     const { data: profiles, isFetching: isFetchingProfiles } = useGetProfiles();
+    const [expand, setExpand] = useState<boolean>(false);
 
     const { resetPageToOne, columns } = useTableState({
         profiles,
@@ -130,13 +136,25 @@ export const BudgetDetails: FunctionComponent<Props> = ({ router }) => {
                 className={`${classes.containerFullHeightNoTabPadded}`}
             >
                 <Box mb={5} ml={2} mr={2}>
-                    <Box mb={4}>
-                        <Typography variant="h4" style={{ fontWeight: 'bold' }}>
-                            {`${formatMessage(
-                                MESSAGES.campaign,
-                            )}: ${campaignName}`}
-                        </Typography>
-                    </Box>
+                    <Grid container>
+                        <Grid item xs={isMobileLayout ? 12 : 6}>
+                            <Box mb={4}>
+                                <Typography
+                                    variant="h4"
+                                    style={{ fontWeight: 'bold' }}
+                                >
+                                    {`${formatMessage(
+                                        MESSAGES.campaign,
+                                    )}: ${campaignName}`}
+                                </Typography>
+                            </Box>
+                        </Grid>
+                        {!isMobileLayout && (
+                            <Grid item xs={6}>
+                                <BudgetDetailsFilters params={params} />
+                            </Grid>
+                        )}
+                    </Grid>
 
                     <Grid container justifyContent="space-between" spacing={1}>
                         <Grid container item xs={6} spacing={1}>
@@ -193,6 +211,26 @@ export const BudgetDetails: FunctionComponent<Props> = ({ router }) => {
                         }}
                         value={showDeleted}
                     />
+                    {isMobileLayout && (
+                        <>
+                            <Grid container justifyContent="space-between">
+                                <Grid item>
+                                    <LinkToProcedure />
+                                </Grid>
+                                <Grid item>
+                                    <MoreHorizIcon
+                                        color="action"
+                                        onClick={() => {
+                                            setExpand(value => !value);
+                                        }}
+                                    />
+                                </Grid>
+                            </Grid>
+                            <Collapse in={expand}>
+                                <BudgetDetailsFilters params={params} />
+                            </Collapse>
+                        </>
+                    )}
                 </Box>
                 <Grid container spacing={2}>
                     {isMobileLayout && budgetDetails && profiles && (
@@ -238,10 +276,27 @@ export const BudgetDetails: FunctionComponent<Props> = ({ router }) => {
                                             : 0
                                     }
                                 >
-                                    <GraphTitle
-                                        text={formatMessage(MESSAGES.steps)}
-                                        displayTrigger
-                                    />
+                                    <Grid
+                                        container
+                                        justifyContent="space-between"
+                                    >
+                                        <Grid item lg={8}>
+                                            <GraphTitle
+                                                text={formatMessage(
+                                                    MESSAGES.steps,
+                                                )}
+                                                displayTrigger
+                                            />
+                                        </Grid>
+                                        <Grid
+                                            container
+                                            item
+                                            xs={4}
+                                            justifyContent="flex-end"
+                                        >
+                                            <LinkToProcedure />
+                                        </Grid>
+                                    </Grid>
                                     <Box mt={2} mb={1}>
                                         <Divider />
                                     </Box>

@@ -517,6 +517,7 @@ class CampaignSerializer(serializers.ModelSerializer):
 
         validated_data.pop("last_budget_event", None)
         campaign = super().update(instance, validated_data)
+
         log_campaign_modification(campaign, old_campaign_dump, self.context["request"].user)
         return campaign
 

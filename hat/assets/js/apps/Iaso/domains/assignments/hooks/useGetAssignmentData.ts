@@ -23,7 +23,7 @@ import {
     AssignmentsResult,
 } from './requests/useGetAssignments';
 
-import { useBoundState } from './useBoundState';
+import { useBoundState } from '../../../hooks/useBoundState';
 
 type Props = {
     planningId: string;

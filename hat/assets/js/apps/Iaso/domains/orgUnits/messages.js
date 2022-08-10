@@ -29,6 +29,10 @@ const MESSAGES = defineMessages({
         defaultMessage: 'Edit org unit type',
         id: 'iaso.orgUnits.editOrgUnitType',
     },
+    validationStatus: {
+        id: 'iaso.forms.validationStatus',
+        defaultMessage: 'Validation status',
+    },
     new: {
         id: 'iaso.forms.new',
         defaultMessage: 'new',
@@ -136,6 +140,10 @@ const MESSAGES = defineMessages({
     groups: {
         defaultMessage: 'Groups',
         id: 'iaso.label.groups',
+    },
+    group: {
+        defaultMessage: 'Group',
+        id: 'iaso.label.group',
     },
     addToGroups: {
         defaultMessage: 'Add to group(s)',
@@ -435,6 +443,68 @@ const MESSAGES = defineMessages({
     downloadXml: {
         id: 'iaso.label.downloadXml',
         defaultMessage: 'Download XML',
+    },
+
+    anyGeography: {
+        id: 'iaso.label.anyGeography',
+        defaultMessage: 'With point or territory',
+    },
+    withLocation: {
+        id: 'iaso.label.withLocation',
+        defaultMessage: 'With point only',
+    },
+    withShape: {
+        id: 'iaso.label.withShape',
+        defaultMessage: 'With territory only',
+    },
+    noGeographicalData: {
+        id: 'iaso.label.noGeographicalData',
+        defaultMessage: 'Without geography',
+    },
+    geographicalData: {
+        id: 'iaso.label.geographicalData',
+        defaultMessage: 'Geographical data',
+    },
+    with: {
+        id: 'iaso.label.with',
+        defaultMessage: 'With',
+    },
+    without: {
+        id: 'iaso.label.without',
+        defaultMessage: 'Without',
+    },
+    duplicates: {
+        id: 'iaso.label.duplicates',
+        defaultMessage: 'Duplicates',
+    },
+    hasInstances: {
+        id: 'iaso.forms.hasInstances',
+        defaultMessage: 'Form submissions',
+    },
+    saveMultiEditOrgUnitsSuccesfull: {
+        defaultMessage: 'Selected org unit saved successfully',
+        id: 'iaso.snackBar.saveMultiEditOrgUnitsSuccesfull',
+    },
+    saveMultiEditOrgUnitsError: {
+        defaultMessage: 'An error occurred while saving selected org units',
+        id: 'iaso.snackBar.saveMultiEditOrgUnitsError',
+    },
+    saveMultiEditOrgUnitsLaunched: {
+        defaultMessage:
+            'The modifications to the org units will take a few minutes to take effect',
+        id: 'iaso.snackBar.saveMultiEditOrgUnitsLaunched',
+    },
+    latitudeLongitude: {
+        id: 'iaso.label.latitudeLongitude',
+        defaultMessage: 'Latitude & Longitude',
+    },
+    hasGeometry: {
+        id: 'iaso.label.hasGeometry',
+        defaultMessage: 'With Geography',
+    },
+    hasNoGeometryAndGps: {
+        id: 'iaso.label.hasNoGeometryAndGps',
+        defaultMessage: 'Without geographic data',
     },
 });
 

@@ -22,7 +22,7 @@ import {
     useUploadBudgetFiles,
 } from '../../../hooks/useSaveBudgetEvent';
 import FileInputComponent from '../../../../../../../hat/assets/js/apps/Iaso/components/forms/FileInputComponent';
-import { useBudgetEvenValidation } from '../hooks/validation';
+import { useBudgetEventValidation } from '../hooks/validation';
 import {
     useGetTeamsDropDown,
     useGetApprovalTeams,
@@ -58,7 +58,7 @@ export const CreateEditBudgetEvent: FunctionComponent<Props> = ({
     const { mutateAsync: uploadFiles } = useUploadBudgetFiles();
     const { mutateAsync: finalize } = useFinalizeBudgetEvent();
     const [closeModal, setCloseModal] = useState<any>();
-    const validationSchema = useBudgetEvenValidation();
+    const validationSchema = useBudgetEventValidation();
 
     const formik = useFormik({
         initialValues: {
@@ -71,6 +71,7 @@ export const CreateEditBudgetEvent: FunctionComponent<Props> = ({
             files: budgetEvent?.files ?? null,
             links: budgetEvent?.links ?? null,
             internal: budgetEvent?.internal ?? false,
+            amount: budgetEvent?.amount ?? null,
         },
         enableReinitialize: true,
         validateOnBlur: true,
@@ -234,6 +235,15 @@ export const CreateEditBudgetEvent: FunctionComponent<Props> = ({
                             value={values.comment}
                             errors={getErrors('comment')}
                             label={MESSAGES.notes}
+                        />
+                        <InputComponent
+                            type="number"
+                            keyValue="amount"
+                            disabled={currentType !== 'create'}
+                            onChange={onChange}
+                            value={values.amount}
+                            errors={getErrors('amount')}
+                            label={MESSAGES.amount}
                         />
                     </>
                 )}

@@ -31,6 +31,8 @@ import { formatTargetTeams, formatUserName } from '../utils';
 import { BudgetEvent } from '../../../constants/types';
 import { Optional } from '../../../../../../../hat/assets/js/apps/Iaso/types/utils';
 import { convertObjectToString } from '../../../utils';
+import { formatThousand } from '../../../../../../../hat/assets/js/apps/Iaso/utils';
+import { formatComment } from '../cards/utils';
 
 const baseUrl = BUDGET_DETAILS;
 
@@ -138,19 +140,6 @@ export const useBudgetDetailsColumns = ({ profiles, data }): Column[] => {
     return useMemo(() => {
         const defaultColumns = [
             {
-                Header: formatMessage(MESSAGES.created_at),
-                id: 'created_at',
-                accessor: 'created_at',
-                sortable: true,
-                Cell: settings => {
-                    return (
-                        <span className={getRowColor(settings)}>
-                            {DateTimeCellRfc(settings)}
-                        </span>
-                    );
-                },
-            },
-            {
                 Header: formatMessage(MESSAGES.event),
                 id: 'type',
                 accessor: 'type',
@@ -161,6 +150,20 @@ export const useBudgetDetailsColumns = ({ profiles, data }): Column[] => {
                             {formatMessage(
                                 MESSAGES[settings.row.original.type],
                             )}
+                        </span>
+                    );
+                },
+            },
+            {
+                Header: formatMessage(MESSAGES.comment),
+                id: 'comment',
+                accessor: 'comment',
+                sortable: true,
+                Cell: settings => {
+                    const { comment } = settings.row.original;
+                    return (
+                        <span className={getRowColor(settings)}>
+                            {comment ? formatComment(comment) : '--'}
                         </span>
                     );
                 },
@@ -226,6 +229,37 @@ export const useBudgetDetailsColumns = ({ profiles, data }): Column[] => {
                             {teamsToDisplay}
                         </span>
                     );
+                },
+            },
+            {
+                Header: formatMessage(MESSAGES.created_at),
+                id: 'created_at',
+                accessor: 'created_at',
+                sortable: true,
+                Cell: settings => {
+                    return (
+                        <span className={getRowColor(settings)}>
+                            {DateTimeCellRfc(settings)}
+                        </span>
+                    );
+                },
+            },
+            {
+                Header: `${formatMessage(MESSAGES.amount)} (USD)`,
+                id: 'amount',
+                accessor: 'amount',
+                sortable: false,
+                Cell: settings => {
+                    const { amount } = settings.row.original;
+
+                    if (amount) {
+                        return (
+                            <span className={getRowColor(settings)}>
+                                {formatThousand(parseInt(amount, 10))}
+                            </span>
+                        );
+                    }
+                    return <span className={getRowColor(settings)}>--</span>;
                 },
             },
             {

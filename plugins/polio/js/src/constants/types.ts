@@ -104,7 +104,14 @@ export type BudgetStatus =
     | 'validation_ongoing'
     | 'noBudgetSubmitted';
 
-export type BudgetEventType = 'submission' | 'validation' | 'comments';
+export type BudgetEventType =
+    | 'submission'
+    | 'validation'
+    | 'comments'
+    | 'request'
+    | 'transmission'
+    | 'feedback'
+    | 'review';
 
 export type BudgetEvent = {
     id: number;

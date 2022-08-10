@@ -7,6 +7,7 @@ export const baseUrls = {
     instances: 'forms/submissions',
     instanceDetail: 'forms/submission',
     compareInstances: 'forms/compare',
+    compareInstanceLogs: 'forms/compareInstanceLogs',
     orgUnits: 'orgunits/list',
     groups: 'orgunits/groups',
     orgUnitTypes: 'orgunits/types',
@@ -26,6 +27,7 @@ export const baseUrls = {
     planning: 'planning/list',
     assignments: 'planning/assignments',
     teams: 'settings/teams',
+    apiLogs: 'api/logs',
     error401: '401',
     error500: '500',
 };

@@ -12,16 +12,16 @@ import {
     // @ts-ignore
     useSafeIntl,
     // @ts-ignore
-    AddButton as AddButtonComponent,
+    // AddButton as AddButtonComponent,
 } from 'bluesquare-components';
 
 import TopBar from '../../../components/nav/TopBarComponent';
 import { Filters } from './components/Filters';
-import { Dialog } from './components/Dialog';
+// import { Dialog } from './components/Dialog';
 import {
     useGetBeneficiariesPaginated,
     useDeleteBeneficiary,
-    useSaveBeneficiary,
+    // useSaveBeneficiary,
 } from './hooks/requests';
 
 import { columns, baseUrl } from './config';
@@ -54,9 +54,10 @@ export const Beneficiaries: FunctionComponent<Props> = ({ params }) => {
         useGetBeneficiariesPaginated(params);
     const { mutate: deleteEntity, isLoading: deleting } =
         useDeleteBeneficiary();
-    const { mutate: saveEntity, isLoading: saving } = useSaveBeneficiary();
+    // const { mutate: saveEntity, isLoading: saving } = useSaveBeneficiary();
 
-    const isLoading = fetchingEntities || deleting || saving;
+    // const isLoading = fetchingEntities || deleting || saving;
+    const isLoading = fetchingEntities || deleting;
 
     return (
         <>
@@ -74,7 +75,7 @@ export const Beneficiaries: FunctionComponent<Props> = ({ params }) => {
                     alignItems="center"
                     className={classes.marginTop}
                 >
-                    <Dialog
+                    {/* <Dialog
                         titleMessage={MESSAGES.create}
                         renderTrigger={({ openDialog }) => (
                             <AddButtonComponent
@@ -83,16 +84,15 @@ export const Beneficiaries: FunctionComponent<Props> = ({ params }) => {
                             />
                         )}
                         saveEntity={saveEntity}
-                    />
+                    /> */}
                 </Grid>
                 <Table
-                    data={data?.entities ?? []}
+                    data={data?.instances ?? []}
                     pages={data?.pages ?? 1}
                     defaultSorted={[{ id: 'name', desc: false }]}
                     columns={columns({
                         formatMessage,
                         deleteEntity,
-                        saveEntity,
                     })}
                     count={data?.count ?? 0}
                     baseUrl={baseUrl}

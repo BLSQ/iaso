@@ -2,7 +2,7 @@
 
 type Attributes = {
     name: string;
-    json: Record<string, string>;
+    file_content: Record<string, string>;
 };
 export type Beneficiary = {
     id: number;

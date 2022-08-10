@@ -1,7 +1,6 @@
 import React, { ReactElement } from 'react';
 // @ts-ignore
 import { IconButton as IconButtonComponent } from 'bluesquare-components';
-import { Dialog } from './components/Dialog';
 import DeleteDialog from '../../../components/dialogs/DeleteDialogComponent';
 import { DateTimeCell } from '../../../components/Cells/DateTimeCell';
 import { IntlMessage } from '../../../types/intl';
@@ -12,7 +11,7 @@ import { baseUrls } from '../../../constants/urls';
 import { Entity } from '../types/entity';
 import { Column } from '../../../types/table';
 
-export const baseUrl = baseUrls.entities;
+export const baseUrl = baseUrls.beneficiaries;
 
 type Props = {
     // eslint-disable-next-line no-unused-vars
@@ -20,25 +19,17 @@ type Props = {
     // eslint-disable-next-line no-unused-vars
     deleteEntity: (e: Entity) => void;
     // eslint-disable-next-line no-unused-vars
-    saveEntity: (e: Entity) => void;
+    // saveEntity: (e: Entity) => void;
 };
 
 export const columns = ({
     formatMessage,
     deleteEntity,
-    saveEntity,
 }: Props): Array<Column> => [
     {
         Header: formatMessage(MESSAGES.name),
         id: 'name',
         accessor: 'name',
-    },
-    {
-        Header: formatMessage(MESSAGES.types),
-        id: 'entity_type_name',
-        accessor: 'entity_type_name',
-        // TODO: allow to sort on entity type name
-        sortable: false,
     },
     {
         Header: formatMessage(MESSAGES.created_at),
@@ -59,21 +50,9 @@ export const columns = ({
             // TODO: limit to user permissions
             <section>
                 <IconButtonComponent
-                    url={`/${baseUrls.instanceDetail}/instanceId/${settings.row.original.attributes}`}
+                    url={`/${baseUrls.beneficiariesDetails}/beneficiaryId/${settings.row.original.id}`}
                     icon="remove-red-eye"
-                    tooltipMessage={MESSAGES.viewInstance}
-                />
-                <Dialog
-                    renderTrigger={({ openDialog }) => (
-                        <IconButtonComponent
-                            onClick={openDialog}
-                            icon="edit"
-                            tooltipMessage={MESSAGES.edit}
-                        />
-                    )}
-                    initialData={settings.row.original}
-                    titleMessage={MESSAGES.updateMessage}
-                    saveEntity={saveEntity}
+                    tooltipMessage={MESSAGES.edit}
                 />
                 <DeleteDialog
                     keyName="entity"

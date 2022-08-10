@@ -60,7 +60,8 @@ export const Details: FunctionComponent<Props> = ({ router }) => {
             <Box className={`${classes.containerFullHeightNoTabPadded}`}>
                 {isLoadingBeneficiary && <LoadingSpinner />}
                 {beneficiary && beneficiary.name}
-                {beneficiary && JSON.stringify(beneficiary.attributes?.json)}
+                {beneficiary &&
+                    JSON.stringify(beneficiary.attributes?.file_content)}
             </Box>
         </>
     );

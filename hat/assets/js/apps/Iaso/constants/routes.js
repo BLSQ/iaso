@@ -543,6 +543,10 @@ export const beneficiariesPath = {
     params: [
         {
             isRequired: false,
+            key: 'tab',
+        },
+        {
+            isRequired: false,
             key: 'search',
         },
         {

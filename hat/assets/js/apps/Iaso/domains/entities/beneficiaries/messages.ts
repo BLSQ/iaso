@@ -53,6 +53,14 @@ const MESSAGES = defineMessages({
         defaultMessage: 'End date',
         id: 'iaso.label.dateTo',
     },
+    map: {
+        defaultMessage: 'Map',
+        id: 'iaso.label.map',
+    },
+    list: {
+        defaultMessage: 'List',
+        id: 'iaso.label.list',
+    },
 });
 
 export default MESSAGES;

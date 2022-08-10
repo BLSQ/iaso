@@ -12,7 +12,7 @@ import { Beneficiary } from '../types/beneficiary';
 import { Pagination } from '../../../../types/table';
 
 export interface PaginatedBeneficiaries extends Pagination {
-    instances: Array<Beneficiary>;
+    beneficiaries: Array<Beneficiary>;
 }
 
 type Params = {

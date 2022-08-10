@@ -87,7 +87,7 @@ export const Beneficiaries: FunctionComponent<Props> = ({ params }) => {
                     /> */}
                 </Grid>
                 <Table
-                    data={data?.instances ?? []}
+                    data={data?.beneficiaries ?? []}
                     pages={data?.pages ?? 1}
                     defaultSorted={[{ id: 'name', desc: false }]}
                     columns={columns({

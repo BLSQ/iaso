@@ -42,7 +42,7 @@ export const useGetBeneficiariesPaginated = (
     const searchParams = new URLSearchParams(newParams);
     // @ts-ignore
     return useSnackQuery(['beneficiaries', newParams], () =>
-        getRequest(`/api/entity/beneficiaries/?${searchParams.toString()}`),
+        getRequest(`/api/entity/beneficiary/?${searchParams.toString()}`),
     );
 };
 
@@ -52,7 +52,7 @@ export const useGetBeneficiaries = (): UseQueryResult<
 > => {
     // @ts-ignore
     return useSnackQuery(['beneficiaries'], () =>
-        getRequest('/api/entity/beneficiaries'),
+        getRequest('/api/entity/beneficiary'),
     );
 };
 

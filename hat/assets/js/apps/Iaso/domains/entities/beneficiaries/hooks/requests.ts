@@ -23,32 +23,43 @@ type Params = {
     entityTypes?: string;
 };
 
-type NewParams = {
+type ApiParams = {
     limit: string;
     order: string;
     page: string;
     search?: string;
 };
 
-export const useGetBeneficiariesPaginated = (
-    params: Params,
-): UseQueryResult<PaginatedBeneficiaries, Error> => {
-    const newParams: NewParams = {
+type GetAPiParams = {
+    url: string;
+    apiParams: ApiParams;
+};
+export const useGetBeneficiariesApiParams = (params: Params): GetAPiParams => {
+    const apiParams: ApiParams = {
         limit: params.pageSize || '20',
         order: params.order || 'id',
         page: params.page || '1',
     };
     if (params.search) {
-        newParams.search = params.search;
+        apiParams.search = params.search;
     }
 
     // @ts-ignore
-    const searchParams = new URLSearchParams(newParams);
+    const searchParams = new URLSearchParams(apiParams);
+    return {
+        url: `/api/entity/beneficiary/?${searchParams.toString()}`,
+        apiParams,
+    };
+};
+
+export const useGetBeneficiariesPaginated = (
+    params: Params,
+): UseQueryResult<PaginatedBeneficiaries, Error> => {
+    const { url, apiParams } = useGetBeneficiariesApiParams(params);
     // @ts-ignore
     return useSnackQuery({
-        queryKey: ['beneficiaries', newParams],
-        queryFn: () =>
-            getRequest(`/api/entity/beneficiary/?${searchParams.toString()}`),
+        queryKey: ['beneficiaries', apiParams],
+        queryFn: () => getRequest(url),
         options: {
             staleTime: 60000,
         },

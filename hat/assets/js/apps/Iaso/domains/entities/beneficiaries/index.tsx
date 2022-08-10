@@ -17,9 +17,11 @@ import {
 
 import TopBar from '../../../components/nav/TopBarComponent';
 import { Filters } from './components/Filters';
+import DownloadButtonsComponent from '../../../components/DownloadButtonsComponent';
 // import { Dialog } from './components/Dialog';
 import {
     useGetBeneficiariesPaginated,
+    useGetBeneficiariesApiParams,
     // useDeleteBeneficiary,
     // useSaveBeneficiary,
 } from './hooks/requests';
@@ -50,6 +52,7 @@ export const Beneficiaries: FunctionComponent<Props> = ({ params }) => {
     const { formatMessage } = useSafeIntl();
     const dispatch = useDispatch();
     const columns = useColumns();
+    const { url: apiUrl } = useGetBeneficiariesApiParams(params);
 
     const { data, isFetching } = useGetBeneficiariesPaginated(params);
     // const { mutate: deleteEntity, isLoading: deleting } =
@@ -94,6 +97,10 @@ export const Beneficiaries: FunctionComponent<Props> = ({ params }) => {
                     baseUrl={baseUrl}
                     params={params}
                     onTableParamsChange={p => dispatch(redirectTo(baseUrl, p))}
+                />
+                <DownloadButtonsComponent
+                    csvUrl={`${apiUrl}&csv=true`}
+                    xlsxUrl={`${apiUrl}&xlsx=true`}
                 />
             </Box>
         </>

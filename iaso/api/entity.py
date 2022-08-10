@@ -272,14 +272,11 @@ class BeneficiaryViewset(ModelViewSet):
     def get_queryset(self):
         search = self.request.query_params.get("search", None)
         entity_types__id = self.request.query_params.get("entity_types__ids", None)
-        name = self.request.query_params.get("name", None)
         order = self.request.query_params.get("order", "updated_at").split(",")
 
-        queryset = Entity.objects.filter(account=self.request.user.iaso_profile.account)
+        queryset = Entity.objects.filter(account=self.request.user.iaso_profile.account, entity_type__entity__name="beneficiary")
         if search:
             queryset = queryset.filter(name__icontains=search)
-        if name:
-            queryset = queryset.filter(name=name)
         if entity_types__id:
             entity_types__ids = entity_types__id.split(",")
             queryset = queryset.filter(entity_type__in=entity_types__ids)

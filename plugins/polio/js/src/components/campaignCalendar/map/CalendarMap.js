@@ -16,7 +16,7 @@ import 'leaflet/dist/leaflet.css';
 import { CalendarMapPanesRegular } from './CalendarMapPanesRegular.tsx';
 import { CalendarMapPanesMerged } from './CalendarMapPanesMerged.tsx';
 import { defaultViewport, boundariesZoomLimit } from './constants.ts';
-import { polioVacines } from '../../../constants/virus.ts';
+import { polioVaccines } from '../../../constants/virus.ts';
 
 const getShapeQuery = (loadingCampaigns, groupId, campaign, vaccine, round) => {
     const baseParams = {
@@ -33,7 +33,7 @@ const getShapeQuery = (loadingCampaigns, groupId, campaign, vaccine, round) => {
             campaign,
             shapes: data,
             vaccine,
-            color: polioVacines.find(v => v.value === vaccine)?.color,
+            color: polioVaccines.find(v => v.value === vaccine)?.color,
             round,
         }),
         enabled: !loadingCampaigns,

@@ -4,6 +4,7 @@ from datetime import datetime
 import pandas as pd
 from django.contrib.auth.models import User
 from django.db import transaction
+from django.db.models import Count
 from django.db.transaction import atomic
 from gspread.exceptions import APIError
 from gspread.exceptions import NoValidUrlKeyFound
@@ -11,13 +12,10 @@ from rest_framework import serializers
 from rest_framework.validators import UniqueValidator
 from django.utils.translation import gettext as _
 from django.utils import timezone
-from django.core import validators
-from django.core.exceptions import ValidationError
 
-from iaso.api.common import TimestampField
 from hat.audit.models import Modification, CAMPAIGN_API
 
-from iaso.models import Group, OrgUnit
+from iaso.models import Group
 from .models import (
     Round,
     LineListImport,
@@ -521,6 +519,9 @@ class CampaignSerializer(serializers.ModelSerializer):
         log_campaign_modification(campaign, old_campaign_dump, self.context["request"].user)
         return campaign
 
+    # Vaccines with real scope
+    vaccines = serializers.CharField(read_only=True)
+
     class Meta:
         model = Campaign
         fields = "__all__"
@@ -547,7 +548,7 @@ class SmallCampaignSerializer(CampaignSerializer):
             "pv_notified_at",
             "pv2_notified_at",
             "virus",
-            "vacine",
+            "vaccines",
             "detection_status",
             "detection_responsible",
             "detection_first_draft_submitted_at",
@@ -623,7 +624,7 @@ class AnonymousCampaignSerializer(CampaignSerializer):
             "pv_notified_at",
             "pv2_notified_at",
             "virus",
-            "vacine",
+            "vaccines",
             "detection_status",
             "detection_responsible",
             "detection_first_draft_submitted_at",

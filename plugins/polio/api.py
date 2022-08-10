@@ -79,7 +79,7 @@ from .preparedness.parser import get_preparedness
 
 logger = getLogger(__name__)
 
-CACHE_VERSION = 5
+CACHE_VERSION = 6
 
 
 class CustomFilterBackend(filters.BaseFilterBackend):
@@ -116,7 +116,6 @@ class CampaignViewSet(ModelViewSet):
         "obr_name",
         "cvdpv2_notified_at",
         "detection_status",
-        "vacine",
         "first_round_started_at",
         "last_round_started_at",
         "country__name",
@@ -130,7 +129,6 @@ class CampaignViewSet(ModelViewSet):
         "country__id": ["in"],
         "grouped_campaigns__id": ["in", "exact"],
         "obr_name": ["exact", "contains"],
-        "vacine": ["exact"],
         "cvdpv2_notified_at": ["gte", "lte", "range"],
         "created_at": ["gte", "lte", "range"],
         "rounds__started_at": ["gte", "lte", "range"],
@@ -348,16 +346,12 @@ where polio_campaignscope.campaign_id = polio_campaign.id""",
                     features.append(feature)
         res = {"type": "FeatureCollection", "features": features, "cache_creation_date": datetime.utcnow().timestamp()}
 
-        cache.set(
-            key_name,
-            json.dumps(res),
-            3600 * 24,
-        )
+        cache.set(key_name, json.dumps(res), 3600 * 24, version=CACHE_VERSION)
         return JsonResponse(res)
 
     @staticmethod
     def return_cached_response_if_valid(cache_key, update_dates):
-        cached_response = cache.get(cache_key)
+        cached_response = cache.get(cache_key, version=CACHE_VERSION)
         if not cached_response:
             return None
         parsed_cache_response = json.loads(cached_response)
@@ -419,7 +413,7 @@ where group_id = polio_campaignscope.group_id""",
                     "properties": {
                         "obr_name": scope.campaign.obr_name,
                         "id": str(scope.campaign.id),
-                        "vacine": scope.vaccine,
+                        "vaccine": scope.vaccine,
                         "scope_key": f"campaignScope-{scope.id}",
                         "top_level_org_unit_name": scope.campaign.country.name,
                     },
@@ -447,7 +441,7 @@ where group_id = polio_roundscope.group_id""",
                     "properties": {
                         "obr_name": scope.round.campaign.obr_name,
                         "id": str(scope.round.campaign.id),
-                        "vacine": scope.vaccine,
+                        "vaccine": scope.vaccine,
                         "scope_key": f"roundScope-{scope.id}",
                         "top_level_org_unit_name": scope.round.campaign.country.name,
                         "round_number": scope.round.number,
@@ -457,11 +451,7 @@ where group_id = polio_roundscope.group_id""",
 
         res = {"type": "FeatureCollection", "features": features, "cache_creation_date": datetime.utcnow().timestamp()}
 
-        cache.set(
-            key_name,
-            json.dumps(res),
-            3600 * 24,
-        )
+        cache.set(key_name, json.dumps(res), 3600 * 24, version=CACHE_VERSION)
         return JsonResponse(res)
 
 

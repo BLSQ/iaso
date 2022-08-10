@@ -2,6 +2,7 @@ from uuid import uuid4
 
 from django.contrib.auth.models import User
 from django.db import models
+from django.db.models import Count
 from django.utils.translation import gettext as _
 from gspread.utils import extract_id_from_url
 
@@ -216,6 +217,7 @@ class Campaign(SoftDeletableModel):
     )
 
     virus = models.CharField(max_length=6, choices=VIRUSES, null=True, blank=True)
+    # Deprecated
     vacine = models.CharField(max_length=5, choices=VACCINES, null=True, blank=True)
 
     # Detection
@@ -390,6 +392,24 @@ class Campaign(SoftDeletableModel):
                 pass
 
         super().save(*args, **kwargs)
+
+    @property
+    def vaccines(self):
+        if self.separate_scopes_per_round:
+            vaccines = set()
+            for round in self.rounds.all():
+                for scope in round.scopes.annotate(orgunits_count=Count("group__org_units")).filter(
+                    orgunits_count__gte=1
+                ):
+                    vaccines.add(scope.vaccine)
+            return ", ".join(list(vaccines))
+        else:
+            return ",".join(
+                scope.vaccine
+                for scope in self.scopes.annotate(orgunits_count=Count("group__org_units")).filter(
+                    orgunits_count__gte=1
+                )
+            )
 
     def get_round_one(self):
         try:

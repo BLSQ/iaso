@@ -39,7 +39,7 @@ import { FieldProps } from 'formik/dist/Field';
 import { MapComponent } from '../MapComponent/MapComponent';
 import { useGetGeoJson } from '../../hooks/useGetGeoJson';
 import MESSAGES from '../../constants/messages';
-import { polioVacines } from '../../constants/virus';
+import { polioVaccines } from '../../constants/virus';
 import {
     initialDistrict,
     selectedPathOptions,
@@ -137,7 +137,7 @@ export const ScopeInput: FunctionComponent<FieldProps<Scope[], Values>> = ({
             const scope = findScopeWithOrgUnit(scopes, shape.id);
 
             if (scope) {
-                const vaccine = polioVacines.find(
+                const vaccine = polioVaccines.find(
                     v => v.value === scope.vaccine,
                 );
                 return {
@@ -385,7 +385,7 @@ export const ScopeInput: FunctionComponent<FieldProps<Scope[], Values>> = ({
                                         setSelectedVaccine(event.target.value)
                                     }
                                 >
-                                    {polioVacines.map(vaccine => (
+                                    {polioVaccines.map(vaccine => (
                                         <FormControlLabel
                                             key={vaccine.value}
                                             value={vaccine.label}

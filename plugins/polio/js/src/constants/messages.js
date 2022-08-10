@@ -9,6 +9,10 @@ const MESSAGES = defineMessages({
         defaultMessage: 'Separate scope per round',
         id: 'iaso.polio.label.scope_per_round',
     },
+    helpTextEditVaccineViaScope: {
+        defaultMessage: 'The list of vaccines comes from the scope',
+        id: 'iaso.polio.label.helpTextEditVaccineViaScope',
+    },
     campaigns: {
         defaultMessage: 'Campaigns',
         id: 'iaso.polio.label.campaigns',

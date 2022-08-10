@@ -44,11 +44,11 @@ def create_spreadsheet(title: str, lang: str):
     return spreadsheet
 
 
-def update_national_worksheet(sheet: gspread.Worksheet, country=None, payment_mode="", vacine=""):
+def update_national_worksheet(sheet: gspread.Worksheet, vaccines: str, country=None, payment_mode=""):
     country_name = country.name if country else ""
     updates = [
         {"range": "C4", "values": [[payment_mode]]},
-        {"range": "C11", "values": [[vacine]]},
+        {"range": "C11", "values": [[vaccines]]},
         {"range": "C6", "values": [[country_name]]},
     ]
 
@@ -147,7 +147,7 @@ def generate_spreadsheet_for_campaign(campaign: Campaign, round_number: Optional
     spreadsheet = create_spreadsheet(campaign.obr_name, lang)
     update_national_worksheet(
         spreadsheet.worksheet("National"),
-        vacine=campaign.vacine,
+        vaccines=campaign.vaccines,
         payment_mode=campaign.payment_mode,
         country=campaign.country,
     )

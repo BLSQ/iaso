@@ -93,7 +93,7 @@ const RoundPopper = ({
                             <FormattedMessage {...MESSAGES.vaccine} />:
                         </Grid>
                         <Grid item sm={6} container justifyContent="flex-start">
-                            {campaign.original.vacine}
+                            {campaign.original.vaccines}
                         </Grid>
                         <Grid item sm={6} container justifyContent="flex-end">
                             <FormattedMessage {...MESSAGES.preventiveShort} />:

@@ -1,6 +1,14 @@
 import { defineMessages } from 'react-intl';
 
 const MESSAGES = defineMessages({
+    age: {
+        defaultMessage: 'Age',
+        id: 'iaso.label.age',
+    },
+    id: {
+        defaultMessage: 'Identifier',
+        id: 'iaso.label.id',
+    },
     title: {
         defaultMessage: 'Entities',
         id: 'iaso.entities.title',
@@ -80,6 +88,14 @@ const MESSAGES = defineMessages({
     viewInstance: {
         id: 'iaso.forms.viewInstance',
         defaultMessage: 'View submission',
+    },
+    lastVisit: {
+        id: 'iaso.entities.lastVisit',
+        defaultMessage: 'Last visit',
+    },
+    registrationDate: {
+        id: 'iaso.entities.registrationDate',
+        defaultMessage: 'Registration date',
     },
 });
 

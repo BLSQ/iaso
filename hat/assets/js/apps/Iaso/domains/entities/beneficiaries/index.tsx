@@ -20,11 +20,11 @@ import { Filters } from './components/Filters';
 // import { Dialog } from './components/Dialog';
 import {
     useGetBeneficiariesPaginated,
-    useDeleteBeneficiary,
+    // useDeleteBeneficiary,
     // useSaveBeneficiary,
 } from './hooks/requests';
 
-import { columns, baseUrl } from './config';
+import { useColumns, baseUrl } from './config';
 import MESSAGES from './messages';
 
 import { redirectTo } from '../../../routing/actions';
@@ -49,16 +49,15 @@ export const Beneficiaries: FunctionComponent<Props> = ({ params }) => {
     const classes: Record<string, string> = useStyles();
     const { formatMessage } = useSafeIntl();
     const dispatch = useDispatch();
+    const columns = useColumns();
 
-    const { data, isFetching: fetchingEntities } =
-        useGetBeneficiariesPaginated(params);
-    const { mutate: deleteEntity, isLoading: deleting } =
-        useDeleteBeneficiary();
+    const { data, isFetching } = useGetBeneficiariesPaginated(params);
+    // const { mutate: deleteEntity, isLoading: deleting } =
+    //     useDeleteBeneficiary();
     // const { mutate: saveEntity, isLoading: saving } = useSaveBeneficiary();
 
     // const isLoading = fetchingEntities || deleting || saving;
-    const isLoading = fetchingEntities || deleting;
-
+    const isLoading = isFetching;
     return (
         <>
             {isLoading && <LoadingSpinner />}
@@ -90,10 +89,7 @@ export const Beneficiaries: FunctionComponent<Props> = ({ params }) => {
                     data={data?.beneficiary ?? []}
                     pages={data?.pages ?? 1}
                     defaultSorted={[{ id: 'name', desc: false }]}
-                    columns={columns({
-                        formatMessage,
-                        deleteEntity,
-                    })}
+                    columns={columns}
                     count={data?.count ?? 0}
                     baseUrl={baseUrl}
                     params={params}

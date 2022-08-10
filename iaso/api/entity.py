@@ -122,6 +122,7 @@ class EntityFilterBackend(filters.BaseFilterBackend):
             return queryset
         return queryset
 
+
 class BeneficiaryFilterBackend(filters.BaseFilterBackend):
     def filter_queryset(self, request, queryset, view):
         query_param = request.query_params.get("deletion_status", "active")
@@ -213,7 +214,6 @@ class EntityViewSet(ModelViewSet):
     #
     #     filename = "beneficiary" if int(param) else "beneficiaries"
 
-
     # @action(detail=False, methods=["GET"])
     # def get_beneficiary(self, request, *args, **kwargs):
     #     pk = request.GET.get("id", None)
@@ -277,6 +277,7 @@ class BeneficiaryViewset(ModelViewSet):
             account=self.request.user.iaso_profile.account, entity_type__name="beneficiary"
         )
         if search:
+            # TODO: extend search to attributes uuid, form name, ...
             queryset = queryset.filter(name__icontains=search)
 
         queryset = queryset.order_by(*order)

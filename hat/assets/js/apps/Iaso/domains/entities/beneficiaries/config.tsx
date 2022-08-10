@@ -1,67 +1,120 @@
 import React, { ReactElement } from 'react';
-// @ts-ignore
-import { IconButton as IconButtonComponent } from 'bluesquare-components';
-import DeleteDialog from '../../../components/dialogs/DeleteDialogComponent';
+import {
+    // @ts-ignore
+    IconButton as IconButtonComponent,
+    // @ts-ignore
+    useSafeIntl,
+} from 'bluesquare-components';
+
+import moment from 'moment';
+import { LinkToOrgUnit } from '../../orgUnits/components/LinkToOrgUnit';
 import { DateTimeCell } from '../../../components/Cells/DateTimeCell';
-import { IntlMessage } from '../../../types/intl';
+
+import { AgeCell } from './components/AgeCell';
+
+// import DeleteDialog from '../../../components/dialogs/DeleteDialogComponent';
+
+import { IntlFormatMessage } from '../../../types/intl';
 import MESSAGES from '../messages';
 
 import { baseUrls } from '../../../constants/urls';
 
-import { Entity } from '../types/entity';
 import { Column } from '../../../types/table';
 
 export const baseUrl = baseUrls.beneficiaries;
 
-type Props = {
-    // eslint-disable-next-line no-unused-vars
-    formatMessage: (msg: IntlMessage) => string;
-    // eslint-disable-next-line no-unused-vars
-    deleteEntity: (e: Entity) => void;
-    // eslint-disable-next-line no-unused-vars
-    // saveEntity: (e: Entity) => void;
+// TODO: ADD program, vaccine number, gender columns
+export const useColumns = (): Array<Column> => {
+    const { formatMessage }: { formatMessage: IntlFormatMessage } =
+        useSafeIntl();
+    return [
+        {
+            Header: formatMessage(MESSAGES.name),
+            id: 'name',
+            accessor: 'name',
+        },
+        {
+            Header: formatMessage(MESSAGES.id),
+            id: 'uuid',
+            accessor: 'uuid',
+        },
+        {
+            Header: formatMessage(MESSAGES.lastVisit),
+            id: 'instances__created_at',
+            // TODO: MAKE IT SORTABLE
+            sortable: false,
+            accessor: 'instances__created_at',
+            Cell: (settings): ReactElement => {
+                const { instances } = settings.row.original;
+                const sortedInstances = [...instances].sort((a, b) =>
+                    moment(a.created_at).isBefore(moment(b.created_at)) ? 1 : 0,
+                );
+                return (
+                    <section>
+                        {sortedInstances[0]
+                            ? moment(sortedInstances[0].created_at).format(
+                                  'LTS',
+                              )
+                            : '-'}
+                    </section>
+                );
+            },
+        },
+        {
+            Header: 'HC',
+            id: 'attributes__org_unit__name',
+            accessor: 'attributes__org_unit__name',
+            Cell: settings => {
+                return settings.row.original.attributes?.org_unit ? (
+                    <LinkToOrgUnit
+                        orgUnit={settings.row.original.attributes.org_unit}
+                    />
+                ) : (
+                    <>--</>
+                );
+            },
+        },
+        {
+            Header: formatMessage(MESSAGES.registrationDate),
+            accessor: 'created_at',
+            Cell: DateTimeCell,
+        },
+        {
+            Header: formatMessage(MESSAGES.age),
+            // TODO: MAKE IT SORTABLE
+            sortable: false,
+            accessor: 'attributes__file_content__birth_date',
+            id: 'attributes__file_content__birth_date',
+            Cell: settings => (
+                <AgeCell
+                    birthDate={
+                        settings.row.original.attributes.file_content.birth_date
+                    }
+                />
+            ),
+        },
+        {
+            Header: formatMessage(MESSAGES.actions),
+            accessor: 'actions',
+            resizable: false,
+            sortable: false,
+            Cell: (settings): ReactElement => (
+                // TODO: limit to user permissions
+                <section>
+                    <IconButtonComponent
+                        url={`/${baseUrls.beneficiariesDetails}/beneficiaryId/${settings.row.original.id}`}
+                        icon="remove-red-eye"
+                        tooltipMessage={MESSAGES.edit}
+                    />
+                    {/* <DeleteDialog
+                        keyName="entity"
+                        disabled={settings.row.original.instances_count > 0}
+                        titleMessage={MESSAGES.deleteTitle}
+                        message={MESSAGES.deleteText}
+                        onConfirm={() => deleteEntity(settings.row.original)}
+                    /> */}
+                </section>
+            ),
+        },
+    ];
 };
-
-export const columns = ({
-    formatMessage,
-    deleteEntity,
-}: Props): Array<Column> => [
-    {
-        Header: formatMessage(MESSAGES.name),
-        id: 'name',
-        accessor: 'name',
-    },
-    {
-        Header: formatMessage(MESSAGES.created_at),
-        accessor: 'created_at',
-        Cell: DateTimeCell,
-    },
-    {
-        Header: formatMessage(MESSAGES.updated_at),
-        accessor: 'updated_at',
-        Cell: DateTimeCell,
-    },
-    {
-        Header: formatMessage(MESSAGES.actions),
-        accessor: 'actions',
-        resizable: false,
-        sortable: false,
-        Cell: (settings): ReactElement => (
-            // TODO: limit to user permissions
-            <section>
-                <IconButtonComponent
-                    url={`/${baseUrls.beneficiariesDetails}/beneficiaryId/${settings.row.original.id}`}
-                    icon="remove-red-eye"
-                    tooltipMessage={MESSAGES.edit}
-                />
-                <DeleteDialog
-                    keyName="entity"
-                    disabled={settings.row.original.instances_count > 0}
-                    titleMessage={MESSAGES.deleteTitle}
-                    message={MESSAGES.deleteText}
-                    onConfirm={() => deleteEntity(settings.row.original)}
-                />
-            </section>
-        ),
-    },
-];

@@ -37,6 +37,10 @@ const MESSAGES = defineMessages({
         defaultMessage: 'Create entity',
         id: 'iaso.entities.create',
     },
+    years: {
+        defaultMessage: 'Years',
+        id: 'iaso.label.yearNoCap',
+    },
 });
 
 export default MESSAGES;

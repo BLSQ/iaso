@@ -45,9 +45,14 @@ export const useGetBeneficiariesPaginated = (
     // @ts-ignore
     const searchParams = new URLSearchParams(newParams);
     // @ts-ignore
-    return useSnackQuery(['beneficiaries', newParams], () =>
-        getRequest(`/api/entity/beneficiary/?${searchParams.toString()}`),
-    );
+    return useSnackQuery({
+        queryKey: ['beneficiaries', newParams],
+        queryFn: () =>
+            getRequest(`/api/entity/beneficiary/?${searchParams.toString()}`),
+        options: {
+            staleTime: 60000,
+        },
+    });
 };
 
 export const useGetBeneficiaries = (): UseQueryResult<
@@ -82,7 +87,7 @@ export const useSaveBeneficiary = (): UseMutationResult =>
 const getBeneficiary = (
     beneficiaryId: string | undefined,
 ): Promise<Beneficiary> => {
-    return getRequest(`/api/entity/get_beneficiary/?id=${beneficiaryId}`);
+    return getRequest(`/api/entity/beneficiary/${beneficiaryId}`);
 };
 export const useGetBeneficiary = (
     beneficiaryId: string | undefined,

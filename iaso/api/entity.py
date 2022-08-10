@@ -3,6 +3,7 @@ from django.db.models import Q
 from django.shortcuts import get_object_or_404
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.decorators import action
+from rest_framework.fields import DateTimeField
 from rest_framework.response import Response
 
 from iaso.api.common import TimestampField, ModelViewSet
@@ -46,6 +47,8 @@ class BeneficiarySerializer(serializers.ModelSerializer):
 
     entity_type_name = serializers.SerializerMethodField()
     attributes = serializers.SerializerMethodField()
+    created_at = TimestampField(read_only=True)
+    updated_at = TimestampField(read_only=True)
 
     def get_attributes(self, entity: Entity):
         if entity.attributes:
@@ -72,6 +75,8 @@ class EntitySerializer(serializers.ModelSerializer):
         ]
 
     entity_type_name = serializers.SerializerMethodField()
+    created_at = TimestampField(read_only=True)
+    updated_at = TimestampField(read_only=True)
 
     @staticmethod
     def get_entity_type_name(obj: Entity):

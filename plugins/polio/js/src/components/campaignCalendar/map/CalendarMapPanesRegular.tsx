@@ -19,8 +19,7 @@ export const CalendarMapPanesRegular: FunctionComponent<Props> = ({
     return (
         <>
             {campaignsShapes.map(campaignShape => {
-                const { id, name, country, original, color } =
-                    campaignShape.campaign;
+                const { id, name, country, color } = campaignShape.campaign;
                 const paneName = `campaign-${id}-vaccine-${
                     campaignShape.vaccines
                 }${
@@ -46,7 +45,8 @@ export const CalendarMapPanesRegular: FunctionComponent<Props> = ({
                                     country={country}
                                     region={findRegion(shape, regions)}
                                     district={shape.name}
-                                    vaccines={original.vaccines}
+                                    vaccine={campaignShape.vaccine}
+                                    // vaccines={original.vaccines}
                                 />
                             </GeoJSON>
                         ))}

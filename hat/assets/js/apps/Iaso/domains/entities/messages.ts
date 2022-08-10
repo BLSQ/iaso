@@ -57,6 +57,10 @@ const MESSAGES = defineMessages({
         defaultMessage: 'Edit',
         id: 'iaso.label.edit',
     },
+    see: {
+        defaultMessage: 'See',
+        id: 'iaso.label.see',
+    },
     actions: {
         defaultMessage: 'Action(s)',
         id: 'iaso.label.actions',

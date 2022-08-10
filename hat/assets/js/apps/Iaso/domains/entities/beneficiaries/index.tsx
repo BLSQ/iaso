@@ -75,7 +75,6 @@ export const Beneficiaries: FunctionComponent<Props> = ({ params }) => {
                     spacing={0}
                     justifyContent="flex-end"
                     alignItems="center"
-                    className={classes.marginTop}
                 >
                     {/* <Dialog
                         titleMessage={MESSAGES.create}

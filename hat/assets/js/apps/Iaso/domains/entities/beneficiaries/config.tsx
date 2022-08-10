@@ -104,7 +104,7 @@ export const useColumns = (): Array<Column> => {
                     <IconButtonComponent
                         url={`/${baseUrls.beneficiariesDetails}/beneficiaryId/${settings.row.original.id}`}
                         icon="remove-red-eye"
-                        tooltipMessage={MESSAGES.edit}
+                        tooltipMessage={MESSAGES.see}
                     />
                     {/* <DeleteDialog
                         keyName="entity"

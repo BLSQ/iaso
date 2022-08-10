@@ -45,6 +45,14 @@ const MESSAGES = defineMessages({
         defaultMessage: 'Location',
         id: 'iaso.forms.location',
     },
+    dateFrom: {
+        defaultMessage: 'Start date',
+        id: 'iaso.label.dateFrom',
+    },
+    dateTo: {
+        defaultMessage: 'End date',
+        id: 'iaso.label.dateTo',
+    },
 });
 
 export default MESSAGES;

@@ -272,6 +272,8 @@ class BeneficiaryViewset(ModelViewSet):
     def get_queryset(self):
         search = self.request.query_params.get("search", None)
         org_unit_id = self.request.query_params.get("orgUnitId", None)
+        date_from = self.request.query_params.get("dateFrom", None)
+        date_to = self.request.query_params.get("dateTo", None)
         order = self.request.query_params.get("order", "updated_at").split(",")
 
         queryset = Entity.objects.filter(
@@ -282,6 +284,11 @@ class BeneficiaryViewset(ModelViewSet):
             queryset = queryset.filter(name__icontains=search)
         if org_unit_id:
             queryset = queryset.filter(attributes__org_unit__id=org_unit_id)
+        if date_from:
+            # TODO: see if we use created_at as reference date (or latest instance creation, update, ...)
+            queryset = queryset.filter(created_at__gte=date_from)
+        if date_to:
+            queryset = queryset.filter(created_at__lte=date_to)
 
         # location
 

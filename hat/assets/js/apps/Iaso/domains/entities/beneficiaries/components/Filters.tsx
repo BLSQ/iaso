@@ -7,11 +7,12 @@ import SearchIcon from '@material-ui/icons/Search';
 import {
     // @ts-ignore
     commonStyles,
-
     // @ts-ignore
     useSafeIntl,
 } from 'bluesquare-components';
 
+// @ts-ignore
+import DatesRange from 'Iaso/components/filters/DatesRange';
 import InputComponent from '../../../../components/forms/InputComponent';
 import { OrgUnitTreeviewModal } from '../../../orgUnits/components/TreeView/OrgUnitTreeviewModal';
 
@@ -32,6 +33,8 @@ type Params = {
     page: string;
     search?: string;
     location?: string;
+    dateFrom?: string;
+    dateTo?: string;
 };
 
 type Props = {
@@ -45,6 +48,8 @@ const Filters: FunctionComponent<Props> = ({ params }) => {
     const [filters, setFilters] = useState({
         search: params.search,
         location: params.location,
+        dateFrom: params.dateFrom,
+        dateTo: params.dateTo,
     });
     const [filtersUpdated, setFiltersUpdated] = useState(false);
     const [initialOrgUnitId, setInitialOrgUnitId] = useState(params?.location);
@@ -79,7 +84,7 @@ const Filters: FunctionComponent<Props> = ({ params }) => {
 
     return (
         <>
-            <Grid container spacing={4}>
+            <Grid container spacing={2}>
                 <Grid item xs={3}>
                     <InputComponent
                         keyValue="search"
@@ -102,6 +107,19 @@ const Filters: FunctionComponent<Props> = ({ params }) => {
                             initialSelection={initialOrgUnit}
                         />
                     </Box>
+                </Grid>
+                <Grid item xs={3}>
+                    <DatesRange
+                        xs={12}
+                        sm={12}
+                        md={12}
+                        lg={12}
+                        onChangeDate={handleChange}
+                        labelFrom={MESSAGES.dateFrom}
+                        labelTo={MESSAGES.dateTo}
+                        dateFrom={filters.dateFrom}
+                        dateTo={filters.dateTo}
+                    />
                 </Grid>
             </Grid>
             <Grid

@@ -1,4 +1,8 @@
 import { UseMutationResult, UseQueryResult } from 'react-query';
+import moment from 'moment';
+
+// @ts-ignore
+import { apiDateFormat } from 'Iaso/utils/dates.ts';
 import { useSnackMutation, useSnackQuery } from '../../../../libs/apiHooks';
 import {
     deleteRequest,
@@ -21,6 +25,8 @@ type Params = {
     page: string;
     search?: string;
     location?: string;
+    dateFrom?: string;
+    dateTo?: string;
 };
 
 type ApiParams = {
@@ -29,6 +35,8 @@ type ApiParams = {
     page: string;
     search?: string;
     orgUnitId?: string;
+    dateFrom?: string;
+    dateTo?: string;
 };
 
 type GetAPiParams = {
@@ -47,6 +55,14 @@ export const useGetBeneficiariesApiParams = (params: Params): GetAPiParams => {
 
     if (params.location) {
         apiParams.orgUnitId = params.location;
+    }
+
+    if (params.dateFrom) {
+        apiParams.dateFrom = moment(params.dateFrom).format(apiDateFormat);
+    }
+
+    if (params.dateTo) {
+        apiParams.dateTo = moment(params.dateTo).format(apiDateFormat);
     }
 
     // @ts-ignore
@@ -74,20 +90,19 @@ export const useGetBeneficiariesPaginated = (
 export const useGetBeneficiaries = (): UseQueryResult<
     Array<Beneficiary>,
     Error
-> => {
-    // @ts-ignore
-    return useSnackQuery(['beneficiaries'], () =>
-        getRequest('/api/entity/beneficiary'),
-    );
-};
+> =>
+    useSnackQuery({
+        queryKey: ['beneficiaries'],
+        queryFn: () => getRequest('/api/entity/beneficiary'),
+    });
 
 export const useDeleteBeneficiary = (): UseMutationResult =>
-    useSnackMutation(
-        body => deleteRequest(`/api/entity/${body.id}/`),
-        MESSAGES.deleteSuccess,
-        MESSAGES.deleteError,
-        ['beneficiaries'],
-    );
+    useSnackMutation({
+        mutationFn: body => deleteRequest(`/api/entity/${body.id}/`),
+        snackSuccessMessage: MESSAGES.deleteSuccess,
+        snackErrorMsg: MESSAGES.deleteError,
+        invalidateQueryKey: ['beneficiaries'],
+    });
 
 export const useSaveBeneficiary = (): UseMutationResult =>
     useSnackMutation(
@@ -109,12 +124,11 @@ export const useGetBeneficiary = (
     beneficiaryId: string | undefined,
 ): UseQueryResult<Beneficiary, Error> => {
     const queryKey: any[] = ['beneficiary', beneficiaryId];
-    return useSnackQuery(
+    return useSnackQuery({
         queryKey,
-        () => getBeneficiary(beneficiaryId),
-        undefined,
-        {
+        queryFn: () => getBeneficiary(beneficiaryId),
+        options: {
             retry: false,
         },
-    );
+    });
 };

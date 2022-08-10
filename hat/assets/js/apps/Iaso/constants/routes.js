@@ -549,6 +549,14 @@ export const beneficiariesPath = {
             isRequired: false,
             key: 'location',
         },
+        {
+            isRequired: false,
+            key: 'dateFrom',
+        },
+        {
+            isRequired: false,
+            key: 'dateTo',
+        },
         ...paginationPathParams.map(p => ({
             ...p,
             isRequired: true,

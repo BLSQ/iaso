@@ -14,6 +14,8 @@ from rest_framework import viewsets, permissions, filters
 from rest_framework.request import Request
 from rest_framework import serializers
 
+import xlsxwriter
+
 
 class EntityTypeSerializer(serializers.ModelSerializer):
     class Meta:
@@ -201,16 +203,7 @@ class EntityViewSet(ModelViewSet):
         return Response(serializer.data)
 
     # def export_beneficiary_as_csv_xls(self, beneficiary, param):
-    #     columns = [
-    #         {"title": "First_Name", "width": 20},
-    #         {"title": "Last_name", "width": 20},
-    #         {"title": "Age", "width": 20},
-    #         {"title": "Form", "width": 40},
-    #         {"title": "Date", "width": 20},
-    #         {"title": "Org_Unit", "width": 20},
-    #         {"title": "Key_Information", "width": 20},
-    #         {"title": "Submiter", "width": 20},
-    #     ]
+
     #
     #     filename = "beneficiary" if int(param) else "beneficiaries"
 
@@ -281,3 +274,36 @@ class BeneficiaryViewset(ModelViewSet):
 
         queryset = queryset.order_by(*order)
         return queryset
+
+    def list(self, request: Request, *args, **kwargs):
+        csv_format = request.GET.get("csv", None)
+        xlsx_format = request.GET.get("xlsx", None)
+
+        if xlsx_format == "true":
+            beneficiaries = Entity.objects.filter(
+                account=self.request.user.iaso_profile.account, entity_type__name="beneficiary"
+            )
+
+            workbook = xlsxwriter.Workbook("beneficiaries.xlsx")
+            worksheet = workbook.add_worksheet()
+
+            bold = workbook.add_format({"bold": True})
+
+            worksheet.write("A1", "Name", bold)
+            worksheet.write("A2", "Last Visit", bold)
+            worksheet.write("A3", "Key Information", bold)
+
+            b_list = list()
+
+            for b in beneficiaries:
+                temp_list = []
+                temp_list.append(b.attributes.as_dict())
+                b_list.append(temp_list)
+
+
+
+            return HttpResponse(b_list)
+
+
+        return super().list(request, *args, **kwargs)
+

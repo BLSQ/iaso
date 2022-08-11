@@ -22,7 +22,7 @@ import Filters from './TableFilters';
 import DownloadButtonsComponent from '../DownloadButtonsComponent';
 import { redirectToReplace } from '../../routing/actions';
 import { convertObjectToString } from '../../utils';
-import { useAbortController } from '../../libs/apiHooks';
+import { useAbortController } from '../../libs/apiHooks.ts';
 
 const useStyles = makeStyles(theme => ({
     ...commonStyles(theme),
@@ -62,7 +62,6 @@ const SingleTable = ({
     const [selection, setSelection] = useState(selectionInitialState);
     const [didFetchData, setDidFetchData] = useState(false);
     const [firstLoad, setFirstLoad] = useState(true);
-    const [textSearchError, setTextSearchError] = useState(false);
     const [tableResults, setTableResults] = useState(tableInitialResult);
     // We need to use state to be able to reset pagination when using built-in filters
     const [resetPagination, setResetPagination] = useState(resetPageToOne);
@@ -246,7 +245,6 @@ const SingleTable = ({
                         setResetPagination(convertObjectToString(newParams));
                         dispatch(redirectToReplace(key, newParams));
                     }}
-                    setTextSearchError={setTextSearchError}
                 />
             )}
             {((count > 0 && exportButtons) || extraComponent) && (
@@ -328,7 +326,6 @@ SingleTable.defaultProps = {
     selectionActions: [],
     propsToWatch: null,
     resetPageToOne: '',
-    setTextSearchError: () => null,
 };
 
 SingleTable.propTypes = {
@@ -360,7 +357,6 @@ SingleTable.propTypes = {
     selectionActions: PropTypes.array,
     propsToWatch: PropTypes.any,
     resetPageToOne: PropTypes.string,
-    setTextSearchError: PropTypes.func,
 };
 
 export default withRouter(SingleTable);

@@ -279,7 +279,7 @@ class BeneficiaryViewset(ModelViewSet):
         csv_format = request.GET.get("csv", None)
         xlsx_format = request.GET.get("xlsx", None)
 
-        if xlsx_format == "true":
+        if xlsx_format:
             beneficiaries = Entity.objects.filter(
                 account=self.request.user.iaso_profile.account, entity_type__name="beneficiary"
             )
@@ -293,16 +293,31 @@ class BeneficiaryViewset(ModelViewSet):
             worksheet.write("A2", "Last Visit", bold)
             worksheet.write("A3", "Key Information", bold)
 
-            b_list = list()
+            beneficiaries_details_list = list()
 
             for b in beneficiaries:
                 temp_list = []
                 temp_list.append(b.attributes.as_dict())
-                b_list.append(temp_list)
+                # must add value to the list in same order as the worksheet cells
+                beneficiaries_details_list.append(temp_list)
 
+            beneficiaries_details_list = tuple(beneficiaries_details_list)
 
+            row = 1
+            col = 0
 
-            return HttpResponse(b_list)
+            for i in range(len(beneficiaries_details_list)):
+                worksheet.write(row, col+1, i)
+                row += 1
+
+            workbook.close()
+
+            # Must Add the xlsx download response
+
+            return HttpResponse(beneficiaries_details_list)
+
+        if csv_format:
+            pass
 
 
         return super().list(request, *args, **kwargs)

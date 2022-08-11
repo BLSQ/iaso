@@ -14,6 +14,8 @@ from rest_framework import viewsets, permissions, filters
 from rest_framework.request import Request
 from rest_framework import serializers
 
+import xlsxwriter
+
 
 class EntityTypeSerializer(serializers.ModelSerializer):
     class Meta:
@@ -201,16 +203,7 @@ class EntityViewSet(ModelViewSet):
         return Response(serializer.data)
 
     # def export_beneficiary_as_csv_xls(self, beneficiary, param):
-    #     columns = [
-    #         {"title": "First_Name", "width": 20},
-    #         {"title": "Last_name", "width": 20},
-    #         {"title": "Age", "width": 20},
-    #         {"title": "Form", "width": 40},
-    #         {"title": "Date", "width": 20},
-    #         {"title": "Org_Unit", "width": 20},
-    #         {"title": "Key_Information", "width": 20},
-    #         {"title": "Submiter", "width": 20},
-    #     ]
+
     #
     #     filename = "beneficiary" if int(param) else "beneficiaries"
 
@@ -294,3 +287,51 @@ class BeneficiaryViewset(ModelViewSet):
 
         queryset = queryset.order_by(*order)
         return queryset
+
+    def list(self, request: Request, *args, **kwargs):
+        csv_format = request.GET.get("csv", None)
+        xlsx_format = request.GET.get("xlsx", None)
+
+        if xlsx_format:
+            beneficiaries = Entity.objects.filter(
+                account=self.request.user.iaso_profile.account, entity_type__name="beneficiary"
+            )
+
+            workbook = xlsxwriter.Workbook("beneficiaries.xlsx")
+            worksheet = workbook.add_worksheet()
+
+            bold = workbook.add_format({"bold": True})
+
+            worksheet.write("A1", "Name", bold)
+            worksheet.write("A2", "Last Visit", bold)
+            worksheet.write("A3", "Key Information", bold)
+
+            beneficiaries_details_list = list()
+
+            for b in beneficiaries:
+                temp_list = []
+                temp_list.append(b.attributes.as_dict())
+                # must add value to the list in same order as the worksheet cells
+                beneficiaries_details_list.append(temp_list)
+
+            beneficiaries_details_list = tuple(beneficiaries_details_list)
+
+            row = 1
+            col = 0
+
+            for i in range(len(beneficiaries_details_list)):
+                worksheet.write(row, col+1, i)
+                row += 1
+
+            workbook.close()
+
+            # Must Add the xlsx download response
+
+            return HttpResponse(beneficiaries_details_list)
+
+        if csv_format:
+            pass
+
+
+        return super().list(request, *args, **kwargs)
+

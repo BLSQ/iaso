@@ -29,6 +29,7 @@ const Forms = ({ params }) => {
     const dispatch = useDispatch();
     const currentUser = useCurrentUser();
     const [forceRefresh, setForceRefresh] = useState(false);
+    const [textSearchError, setTextSearchError] = useState(false);
     const [showDeleted, setShowDeleted] = useState(params.showDeleted);
     const handleDeleteForm = formId =>
         deleteForm(dispatch, formId).then(() => {
@@ -49,7 +50,11 @@ const Forms = ({ params }) => {
         <>
             <TopBar title={intl.formatMessage(MESSAGES.title)} />
             <Box className={classes.containerFullHeightNoTabPadded}>
-                <Filters params={params} />
+                <Filters
+                    params={params}
+                    onErrorChange={setTextSearchError}
+                    isSearchDisabled={textSearchError}
+                />
 
                 <SingleTable
                     baseUrl={baseUrl}

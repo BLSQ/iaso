@@ -574,7 +574,7 @@ class LQASIMPolioTestCase(APITestCase):
 
         response = self.client.get("/api/polio/campaigns/merged_shapes.geojson/")
 
-        is_cached = True if cache.get("{0}-geo_shapes".format(self.yoda.id)) else False
+        is_cached = True if cache.get("{0}-geo_shapes".format(self.yoda.id), version=CACHE_VERSION) else False
 
         self.assertEqual(response.status_code, 200)
         self.assertEqual(is_cached, True)

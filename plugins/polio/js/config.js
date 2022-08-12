@@ -47,11 +47,11 @@ const campaignsFilters = [
     },
     {
         isRequired: false,
-        key: 'r1StartFrom',
+        key: 'roundStartFrom',
     },
     {
         isRequired: false,
-        key: 'r1StartTo',
+        key: 'roundStartTo',
     },
     {
         isRequired: false,
@@ -235,11 +235,11 @@ const routes = [
             },
             {
                 isRequired: false,
-                key: 'r1StartFrom',
+                key: 'roundStartFrom',
             },
             {
                 isRequired: false,
-                key: 'r1StartTo',
+                key: 'roundStartTo',
             },
         ],
     },

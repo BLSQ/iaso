@@ -62,7 +62,13 @@ def build_org_units_queryset(queryset, params, profile):
             queryset = queryset.filter(Q(name__icontains=search) | Q(aliases__contains=[search]))
 
     if group:
-        queryset = queryset.filter(groups__in=group.split(","))
+        if isinstance(group, str):
+            group_ids = group.split(",")
+        elif isinstance(group, int):
+            group_ids = [group]
+        else:
+            group_ids = group
+        queryset = queryset.filter(groups__in=group_ids)
 
     if source:
         source = DataSource.objects.get(id=source)

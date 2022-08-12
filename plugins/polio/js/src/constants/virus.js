@@ -1,7 +1,3 @@
-import deepPurple from '@material-ui/core/colors/deepPurple';
-import orange from '@material-ui/core/colors/orange';
-import red from '@material-ui/core/colors/red';
-
 const polioViruses = [
     // Legacy values
     // {
@@ -38,17 +34,17 @@ const polioVacines = [
     {
         value: 'mOPV2',
         label: 'mOPV2',
-        color: deepPurple['900'],
+        color: '#66ff66',
     },
     {
         value: 'nOPV2',
         label: 'nOPV2',
-        color: red['900'],
+        color: '#00b0f0',
     },
     {
         value: 'bOPV',
         label: 'bOPV',
-        color: orange['600'],
+        color: '#ffff00',
     },
 ];
 

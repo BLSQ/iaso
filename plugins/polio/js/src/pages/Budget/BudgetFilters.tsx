@@ -17,8 +17,8 @@ type Props = {
     params: UrlParams & {
         campaignType: string;
         showOnlyDeleted: boolean;
-        r1StartTo: string;
-        r1StartFrom: string;
+        roundStartTo: string;
+        roundStartFrom: string;
         country: any;
         campaign: string;
         // eslint-disable-next-line camelcase
@@ -76,10 +76,10 @@ export const BudgetFilters: FunctionComponent<Props> = ({
                             onChangeDate={handleChange}
                             dateFrom={filters.startdateFrom}
                             dateTo={filters.endDateUntil}
-                            labelFrom={MESSAGES.R1StartFrom}
-                            labelTo={MESSAGES.R1StartTo}
-                            keyDateFrom="r1StartFrom"
-                            keyDateTo="r1StartTo"
+                            labelFrom={MESSAGES.RoundStartFrom}
+                            labelTo={MESSAGES.RoundStartTo}
+                            keyDateFrom="roundStartFrom"
+                            keyDateTo="roundStartTo"
                             xs={12}
                         />
                     </Box>

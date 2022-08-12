@@ -525,6 +525,10 @@ const MESSAGES = defineMessages({
         id: 'iaso.label.forbiddenChars',
         defaultMessage: 'Forbidden characters: "&", "/","?"," "" " and "%"',
     },
+    formChangeLog: {
+        id: 'iaso.form.label.formChangeLog',
+        defaultMessage: 'Link to changes log',
+    },
 });
 
 export default MESSAGES;

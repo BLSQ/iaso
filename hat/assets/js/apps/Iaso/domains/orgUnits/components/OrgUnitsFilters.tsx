@@ -228,7 +228,6 @@ export const OrgUnitFilters: FunctionComponent<Props> = ({
                     onEnterPressed={() => onSearch()}
                     onChange={handleChange}
                     keyValue="search"
-                    required
                     value={filters?.search ? `${filters?.search}` : ''}
                     onErrorChange={setTextSearchError}
                 />

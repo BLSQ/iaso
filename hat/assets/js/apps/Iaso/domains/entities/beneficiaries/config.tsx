@@ -98,6 +98,18 @@ export const useColumns = (): Array<Column> => {
             ),
         },
         {
+            Header: formatMessage(MESSAGES.gender),
+            // TODO: MAKE IT SORTABLE
+            sortable: false,
+            accessor: 'attributes__file_content__gender',
+            id: 'attributes__file_content__gender',
+            Cell: settings => {
+                const { gender } =
+                    settings.row.original.attributes.file_content;
+                return <>{gender ? formatMessage(MESSAGES[gender]) : '--'}</>;
+            },
+        },
+        {
             Header: formatMessage(MESSAGES.actions),
             accessor: 'actions',
             resizable: false,

@@ -101,6 +101,18 @@ const MESSAGES = defineMessages({
         id: 'iaso.entities.registrationDate',
         defaultMessage: 'Registration date',
     },
+    gender: {
+        id: 'iaso.entities.gender',
+        defaultMessage: 'Gender',
+    },
+    female: {
+        id: 'iaso.entities.female',
+        defaultMessage: 'Female',
+    },
+    male: {
+        id: 'iaso.entities.male',
+        defaultMessage: 'Male',
+    },
 });
 
 export default MESSAGES;

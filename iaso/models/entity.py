@@ -42,8 +42,8 @@ class Entity(SoftDeletableModel):
     updated_at = models.DateTimeField(auto_now=True)
     entity_type = models.ForeignKey(EntityType, blank=True, on_delete=models.PROTECT)
     attributes = models.OneToOneField(
-        Instance, on_delete=models.PROTECT, help_text="instance", related_name="attributes"
-    )
+        Instance, on_delete=models.PROTECT, help_text="instance", related_name="attributes",
+    blank=True, null=True)
     instances = models.ManyToManyField(Instance, blank=True)
     account = models.ForeignKey(Account, on_delete=models.PROTECT)
 

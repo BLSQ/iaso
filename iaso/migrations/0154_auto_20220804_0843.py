@@ -8,9 +8,13 @@ def create_entity_type_beneficiary(apps, schema_editor):
     accounts = Account.objects.all()
     EntityType = apps.get_model("iaso", "EntityType")
     for account in accounts:
-        if not EntityType.objects.filter(name="beneficiary", account=account).exists():
+        if not EntityType.objects.filter(name="Pregnant and lactating woman", account=account).exists():
             Data = apps.get_model("iaso", "EntityType")
-            data = {"name": "beneficiary", "account": account}
+            data = {"name": "Pregnant and lactating woman", "account": account}
+            Data.objects.create(**data)
+        if not EntityType.objects.filter(name="Children under 5", account=account).exists():
+            Data = apps.get_model("iaso", "EntityType")
+            data = {"name": "Children under 5", "account": account}
             Data.objects.create(**data)
 
 

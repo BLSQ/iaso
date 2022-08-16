@@ -28,7 +28,7 @@ type Params = {
     order: string;
     page: string;
     search?: string;
-    entityTypes?: string;
+    showDeleted?: string;
 };
 
 type Props = {
@@ -49,43 +49,35 @@ const Filters: FunctionComponent<Props> = ({
     const dispatch = useDispatch();
     const [textSearchErrors, setTextSearchErrors] = useState<Array<string>>([]);
     const [hasError, setHasError] = useState<boolean>(false);
-    const [filters, setFilters] = useState({
-        search: params.search,
-    });
+    const [search, setSearch] = useState<string | undefined>(params.search);
+    const [showOnlyDeleted, setShowOnlyDeleted] = useState(
+        params.showDeleted === 'true',
+    );
 
     const handleSearch = useCallback(() => {
         if (filtersUpdated) {
             setFiltersUpdated(false);
             const tempParams = {
                 ...params,
-                ...filters,
+                search: search && search !== '' ? search : undefined,
+                showDeleted: showOnlyDeleted || undefined,
             };
+
             tempParams.page = '1';
             dispatch(redirectTo(baseUrl, tempParams));
         }
-    }, [filtersUpdated, dispatch, filters, params]);
-
-    const handleChange = useCallback(
-        (key, value) => {
-            setFiltersUpdated(true);
-            setFilters({
-                ...filters,
-                [key]: value,
-            });
-        },
-        [filters],
-    );
+    }, [dispatch, filtersUpdated, params, search, showOnlyDeleted]);
 
     useEffect(() => {
-        if (filters.search !== undefined) {
-            const hasForbiddenChar = containsForbiddenCharacter(filters.search);
+        if (search !== undefined) {
+            const hasForbiddenChar = containsForbiddenCharacter(search);
             setHasError(hasForbiddenChar);
             const newErrors = hasForbiddenChar
                 ? [formatMessage(MESSAGES.forbiddenChars)]
                 : [];
             setTextSearchErrors(newErrors);
         }
-    }, [filters.search, formatMessage]);
+    }, [search, formatMessage]);
 
     useEffect(() => {
         onErrorChange(hasError);
@@ -97,8 +89,11 @@ const Filters: FunctionComponent<Props> = ({
                 <Grid item xs={3}>
                     <InputComponent
                         keyValue="search"
-                        onChange={handleChange}
-                        value={filters.search}
+                        onChange={(key, value) => {
+                            setSearch(value);
+                            setFiltersUpdated(true);
+                        }}
+                        value={search}
                         type="search"
                         label={MESSAGES.search}
                         onEnterPressed={handleSearch}
@@ -106,6 +101,21 @@ const Filters: FunctionComponent<Props> = ({
                     />
                 </Grid>
             </Grid>
+            <Grid container spacing={4}>
+                <Grid item xs={3}>
+                    <InputComponent
+                        keyValue="showDeleted"
+                        onChange={(key, value) => {
+                            setShowOnlyDeleted(value);
+                            setFiltersUpdated(true);
+                        }}
+                        value={showOnlyDeleted}
+                        type="checkbox"
+                        label={MESSAGES.showDeleted}
+                    />
+                </Grid>
+            </Grid>
+
             <Grid
                 container
                 spacing={4}

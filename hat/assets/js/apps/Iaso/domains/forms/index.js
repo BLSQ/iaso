@@ -2,9 +2,14 @@ import React, { useEffect, useState } from 'react';
 import PropTypes from 'prop-types';
 import { useDispatch } from 'react-redux';
 import { makeStyles, Box } from '@material-ui/core';
-import { useSafeIntl, commonStyles } from 'bluesquare-components';
+import {
+    useSafeIntl,
+    commonStyles,
+    AddButton as AddButtonComponent,
+} from 'bluesquare-components';
 import { fetchAllProjects } from '../projects/actions';
 import { fetchAllOrgUnitTypes } from '../orgUnits/orgUnitTypes/actions';
+import { redirectTo } from '../../routing/actions';
 
 import formsTableColumns from './config';
 
@@ -16,6 +21,7 @@ import { deleteForm, restoreForm, fetchForms } from '../../utils/requests';
 import MESSAGES from './messages';
 
 import { baseUrls } from '../../constants/urls';
+import { userHasPermission } from '../users/utils';
 import { useCurrentUser } from '../../utils/usersUtils.ts';
 
 const useStyles = makeStyles(theme => ({
@@ -28,6 +34,7 @@ const Forms = ({ params }) => {
     const intl = useSafeIntl();
     const dispatch = useDispatch();
     const currentUser = useCurrentUser();
+    const userHasFormsPermission = userHasPermission('iaso_forms', currentUser);
     const [forceRefresh, setForceRefresh] = useState(false);
     const [textSearchError, setTextSearchError] = useState(false);
     const [showDeleted, setShowDeleted] = useState(params.showDeleted);
@@ -44,6 +51,7 @@ const Forms = ({ params }) => {
         dispatch(fetchAllOrgUnitTypes());
         // This fix a bug in redux cache when we passed from "archived" to "non-archived" form page and vice versa
         setForceRefresh(true);
+        setShowDeleted(Boolean(params.showDeleted));
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [params]);
     return (
@@ -88,6 +96,20 @@ const Forms = ({ params }) => {
                     toggleActiveSearch
                     searchActive
                     isFullHeight={false}
+                    extraComponent={
+                        userHasFormsPermission && (
+                            <AddButtonComponent
+                                dataTestId="add-form-button"
+                                onClick={() => {
+                                    dispatch(
+                                        redirectTo(baseUrls.formDetail, {
+                                            formId: '0',
+                                        }),
+                                    );
+                                }}
+                            />
+                        )
+                    }
                 />
             </Box>
         </>

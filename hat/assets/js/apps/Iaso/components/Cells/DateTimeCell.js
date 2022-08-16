@@ -12,3 +12,6 @@ export const DateTimeCell = cellInfo =>
 
 export const DateTimeCellRfc = cellInfo =>
     cellInfo.value ? moment(cellInfo.value).format('LTS') : textPlaceholder;
+
+export const DateCell = cellInfo =>
+    cellInfo.value ? moment(cellInfo.value).format('L') : textPlaceholder;

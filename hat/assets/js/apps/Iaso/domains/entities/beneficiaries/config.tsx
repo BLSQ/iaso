@@ -8,7 +8,7 @@ import {
 
 import moment from 'moment';
 import { LinkToOrgUnit } from '../../orgUnits/components/LinkToOrgUnit';
-import { DateTimeCell } from '../../../components/Cells/DateTimeCell';
+import { DateCell } from '../../../components/Cells/DateTimeCell';
 
 import { AgeCell } from './components/AgeCell';
 
@@ -76,9 +76,21 @@ export const useColumns = (): Array<Column> => {
         },
         {
             Header: formatMessage(MESSAGES.registrationDate),
-            accessor: 'created_at',
-            Cell: DateTimeCell,
+            accessor: 'attributes__file_content_end',
+            Cell: settings => {
+                const cellInfo = {
+                    value: settings.row.original.attributes.file_content.end,
+                };
+                return <DateCell value={cellInfo} />;
+            },
         },
+        // TODO comment out when form and field name confirmed
+        // {
+        //     Header: formatMessage(MESSAGES.vaccinationNumber),
+        //     sortable: false,
+        //     accessor: 'attributes__file_content__vaccination_number',
+        //     id: 'attributes__file_content__vaccination_number',
+        // },
         {
             Header: formatMessage(MESSAGES.age),
             // TODO: MAKE IT SORTABLE

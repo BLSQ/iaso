@@ -1,4 +1,5 @@
 import React from 'react';
+import { useSelector } from 'react-redux';
 import PropTypes from 'prop-types';
 import {
     Table,
@@ -54,13 +55,27 @@ const useStyle = makeStyles(theme => ({
 
 /**
  * Translate the provided label if it is translatable
- *
+ * If the locale language matches the user language, we display it
+ * if not, we display it in English by default
+ * if there is no english version, we display the first one
  * @param label
  * @returns {*}
  */
-function translateLabel(label) {
-    // TODO: pick current locale - not trivial since keys could be "FR", "French", "En français"...
+
+const labelLocales = { fr: 'French', en: 'English' };
+
+function translateLabel(label, activeLocale) {
     if (isPlainObject(label)) {
+        const correctKey = Object.keys(label).find(key => {
+            if (labelLocales[activeLocale].includes(key)) {
+                return true;
+            }
+            return labelLocales.en.includes(key);
+        });
+
+        if (correctKey) {
+            return label[correctKey];
+        }
         return label[Object.keys(label)[0]];
     }
 
@@ -82,7 +97,7 @@ function getRawValue(descriptor, data) {
  * @param data
  * @returns {string|*}
  */
-function getDisplayedValue(descriptor, data) {
+function getDisplayedValue(descriptor, data, activeLocale) {
     const value = data[descriptor.name];
     if (value === undefined) {
         return textPlaceholder;
@@ -93,7 +108,7 @@ function getDisplayedValue(descriptor, data) {
         case 'select one': {
             const choice = descriptor.children.find(c => c.name === value);
             return choice !== undefined
-                ? translateLabel(choice.label)
+                ? translateLabel(choice.label, activeLocale)
                 : `${value} (choice not found)`;
         }
         case 'select_multiple':
@@ -102,7 +117,9 @@ function getDisplayedValue(descriptor, data) {
                 value.split(' ').includes(c.name),
             );
             return choices.length > 0
-                ? choices.map(choice => translateLabel(choice.label)).join(', ')
+                ? choices
+                      .map(choice => translateLabel(choice.label, activeLocale))
+                      .join(', ')
                 : `${value} (multi choice not found)`;
         }
         default:
@@ -262,6 +279,7 @@ FormGroup.propTypes = {
 
 function FormField({ descriptor, data, showQuestionKey }) {
     const classes = useStyle();
+    const activeLocale = useSelector(state => state.app.locale.code);
 
     return (
         <TableRow>
@@ -276,7 +294,7 @@ function FormField({ descriptor, data, showQuestionKey }) {
                 align="right"
                 title={getRawValue(descriptor, data)}
             >
-                {getDisplayedValue(descriptor, data)}
+                {getDisplayedValue(descriptor, data, activeLocale)}
             </TableCell>
         </TableRow>
     );
@@ -294,6 +312,7 @@ FormField.propTypes = {
 
 function FormCalculatedField({ descriptor, data, showQuestionKey }) {
     const classes = useStyle();
+    const activeLocale = useSelector(state => state.app.locale.code);
 
     return (
         <TableRow>
@@ -311,7 +330,7 @@ function FormCalculatedField({ descriptor, data, showQuestionKey }) {
                 </div>
             </TableCell>
             <TableCell className={classes.tableCell} align="right">
-                {getDisplayedValue(descriptor, data)}
+                {getDisplayedValue(descriptor, data, activeLocale)}
             </TableCell>
         </TableRow>
     );
@@ -329,13 +348,14 @@ FormCalculatedField.propTypes = {
 
 function FormMetaField({ descriptor, data, showQuestionKey }) {
     const classes = useStyle();
+    const activeLocale = useSelector(state => state.app.locale.code);
 
     return (
         <TableRow>
             <TableCell className={classes.tableCell} colSpan={2}>
                 <Label
                     descriptor={descriptor}
-                    value={getDisplayedValue(descriptor, data)}
+                    value={getDisplayedValue(descriptor, data, activeLocale)}
                     showQuestionKey={showQuestionKey}
                 />
             </TableCell>
@@ -385,11 +405,12 @@ FormNoteField.propTypes = {
 
 function Label({ descriptor, value, tooltip, showQuestionKey }) {
     const classes = useStyle();
+    const activeLocale = useSelector(state => state.app.locale.code);
 
     let label = descriptor.name;
     let showNameHint = false;
     if ('label' in descriptor) {
-        label = translateLabel(descriptor.label);
+        label = translateLabel(descriptor.label, activeLocale);
 
         if (value !== null) {
             // useful for meta questions, whose labels are like "subscriberid ${subscriberid}"

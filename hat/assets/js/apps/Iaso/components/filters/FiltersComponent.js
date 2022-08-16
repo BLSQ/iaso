@@ -50,10 +50,6 @@ class FiltersComponent extends React.Component {
         redirectTo(baseUrl, newParams);
     }
 
-    setError() {
-        this.setState({ textSearchError: false });
-    }
-
     toggleCheckbox(checked, urlKey, filter) {
         const { params, redirectTo, baseUrl, redirectOnChange } = this.props;
         const newParams = {

@@ -116,6 +116,7 @@
     "iaso.entities.type": "Type",
     "iaso.entities.types": "Types",
     "iaso.entities.update": "Update entity",
+    "iaso.entities.vaccinationNumber": "Vaccination number",
     "iaso.entityTypes.count": "Entities count",
     "iaso.entityTypes.create": "Create entity type",
     "iaso.entityTypes.dialog.deleteTitle": "Are you sure you want to delete this entity type?",

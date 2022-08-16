@@ -113,6 +113,10 @@ const MESSAGES = defineMessages({
         id: 'iaso.entities.male',
         defaultMessage: 'Male',
     },
+    vaccinationNumber: {
+        id: 'iaso.entities.vaccinationNumber',
+        defaultMessage: 'Vaccination number',
+    },
 });
 
 export default MESSAGES;

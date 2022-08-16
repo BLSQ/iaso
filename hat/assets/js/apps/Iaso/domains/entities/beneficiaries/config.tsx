@@ -1,3 +1,4 @@
+/* eslint-disable camelcase */
 import React, { ReactElement } from 'react';
 import {
     // @ts-ignore
@@ -84,13 +85,17 @@ export const useColumns = (): Array<Column> => {
                 return <DateCell value={cellInfo} />;
             },
         },
-        // TODO comment out when form and field name confirmed
-        // {
-        //     Header: formatMessage(MESSAGES.vaccinationNumber),
-        //     sortable: false,
-        //     accessor: 'attributes__file_content__vaccination_number',
-        //     id: 'attributes__file_content__vaccination_number',
-        // },
+        {
+            Header: formatMessage(MESSAGES.vaccinationNumber),
+            sortable: false,
+            accessor: 'attributes__file_content__vaccination_number',
+            id: 'attributes__file_content__vaccination_number',
+            Cell: settings => {
+                const { vaccination_number } =
+                    settings.row.original.attributes.file_content;
+                return <>{vaccination_number ?? '--'}</>;
+            },
+        },
         {
             Header: formatMessage(MESSAGES.age),
             // TODO: MAKE IT SORTABLE

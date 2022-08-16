@@ -90,6 +90,10 @@ export const useColumns = (): Array<Column> => {
                     birthDate={
                         settings.row.original.attributes.file_content.birth_date
                     }
+                    age={settings.row.original.attributes.file_content.age}
+                    ageType={
+                        settings.row.original.attributes.file_content.age_type
+                    }
                 />
             ),
         },

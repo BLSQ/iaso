@@ -272,9 +272,7 @@ class BeneficiaryViewset(ModelViewSet):
         by_uuid = self.request.query_params.get("by_uuid", None)
         form_name = self.request.query_params.get("form_name", None)
 
-        queryset = Entity.objects.filter(
-            account=self.request.user.iaso_profile.account
-        )
+        queryset = Entity.objects.filter(account=self.request.user.iaso_profile.account)
         if form_name:
             queryset = queryset.filter(attributes__form__name__icontains=form_name)
         if search:
@@ -328,7 +326,7 @@ class BeneficiaryViewset(ModelViewSet):
             col = 0
 
             for i in range(len(beneficiaries_details_list)):
-                worksheet.write(row, col+1, i)
+                worksheet.write(row, col + 1, i)
                 row += 1
 
             workbook.close()
@@ -340,6 +338,4 @@ class BeneficiaryViewset(ModelViewSet):
         if csv_format:
             pass
 
-
         return super().list(request, *args, **kwargs)
-

@@ -28,7 +28,7 @@ class EntityType(models.Model):
             "created_at": self.created_at,
             "updated_at": self.updated_at,
             "reference_form": self.reference_form,
-            "account": self.account.as_dict()
+            "account": self.account.as_dict(),
         }
 
 
@@ -70,5 +70,5 @@ class Entity(SoftDeletableModel):
             "entity_type": self.entity_type.as_dict(),
             "attributes": self.attributes.as_dict(),
             "instances": instances,
-            "account": self.account.as_dict()
+            "account": self.account.as_dict(),
         }

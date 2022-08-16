@@ -340,7 +340,7 @@ class EntityAPITestCase(APITestCase):
     def test_get_beneficiary(self):
         self.client.force_authenticate(self.yoda)
         account = self.yoda.iaso_profile.account
-        entity_type = EntityType.objects.create(name="beneficiary", reference_form=self.form_1, account=account)
+        entity_type = EntityType.objects.create(name="Children under 5", reference_form=self.form_1, account=account)
         instance = Instance.objects.create(
             org_unit=self.jedi_council_corruscant,
             form=self.form_1,

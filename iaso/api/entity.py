@@ -268,13 +268,21 @@ class BeneficiaryViewset(ModelViewSet):
         date_from = self.request.query_params.get("dateFrom", None)
         date_to = self.request.query_params.get("dateTo", None)
         order = self.request.query_params.get("order", "updated_at").split(",")
+        entity_type = self.request.query_params.get("entity_type", None)
+        by_uuid = self.request.query_params.get("by_uuid", None)
+        form_name = self.request.query_params.get("form_name", None)
 
         queryset = Entity.objects.filter(
-            account=self.request.user.iaso_profile.account, entity_type__name="beneficiary"
+            account=self.request.user.iaso_profile.account
         )
+        if form_name:
+            queryset = queryset.filter(attributes__form__name__icontains=form_name)
         if search:
-            # TODO: extend search to attributes uuid, form name, ...
             queryset = queryset.filter(name__icontains=search)
+        if by_uuid:
+            queryset = queryset.filter(uuid=by_uuid)
+        if entity_type:
+            queryset = queryset.filter(name=entity_type)
         if org_unit_id:
             queryset = queryset.filter(attributes__org_unit__id=org_unit_id)
         if date_from:

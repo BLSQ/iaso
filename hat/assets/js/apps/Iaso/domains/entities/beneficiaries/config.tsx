@@ -66,7 +66,12 @@ export const useColumns = (): Array<Column> => {
             id: 'attributes__program',
             accessor: 'attributes__program',
             Cell: settings => {
-                return <>{settings.row.original.attributes?.program ?? '--'}</>;
+                return (
+                    <>
+                        {settings.row.original.attributes.file_content
+                            ?.program ?? '--'}
+                    </>
+                );
             },
         },
         {

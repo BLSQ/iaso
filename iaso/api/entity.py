@@ -278,7 +278,7 @@ class BeneficiaryViewset(ModelViewSet):
         form_name = self.request.query_params.get("form_name", None)
 
         queryset = Entity.objects.filter(
-            account=self.request.user.iaso_profile.account, entity_type__entity__name="Children under 5"
+            account=self.request.user.iaso_profile.account, entity_type__name="Children Under 5"
         )
         if form_name:
             queryset = queryset.filter(attributes__form__name__icontains=form_name)

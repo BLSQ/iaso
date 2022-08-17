@@ -1,20 +1,23 @@
-from django.core.paginator import Paginator
+import json
+from time import gmtime, strftime
 from django.db.models import Q
 from django.shortcuts import get_object_or_404
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.decorators import action
-from rest_framework.fields import DateTimeField
 from rest_framework.response import Response
 
+from hat.api.export_utils import generate_xlsx, iter_items, Echo
+from hat.common.utils import queryset_iterator
 from iaso.api.common import TimestampField, ModelViewSet
-from iaso.models import Entity, Instance, EntityType, Form, Account, entity
+from iaso.api.instance_filters import parse_instance_filters
+from iaso.models import Entity, Instance, EntityType, Form
 
-from django.http import JsonResponse, HttpResponse
-from rest_framework import viewsets, permissions, filters
+from django.http import JsonResponse, HttpResponse, StreamingHttpResponse
+from rest_framework import permissions, filters
 from rest_framework.request import Request
 from rest_framework import serializers
 
-import xlsxwriter
+from iaso.utils import timestamp_to_datetime
 
 
 class EntityTypeSerializer(serializers.ModelSerializer):
@@ -45,17 +48,26 @@ class BeneficiarySerializer(serializers.ModelSerializer):
             "entity_type",
             "entity_type_name",
             "instances",
+            "submitter"
         ]
 
     entity_type_name = serializers.SerializerMethodField()
     attributes = serializers.SerializerMethodField()
     created_at = TimestampField(read_only=True)
     updated_at = TimestampField(read_only=True)
+    submitter = serializers.SerializerMethodField()
 
     def get_attributes(self, entity: Entity):
         if entity.attributes:
             return entity.attributes.as_full_model()
         return None
+
+    def get_submitter(self, entity: Entity):
+        try:
+            submitter = entity.attributes.last_modified_by.username
+        except AttributeError:
+            submitter = None
+        return submitter
 
     @staticmethod
     def get_entity_type_name(obj: Entity):
@@ -208,13 +220,6 @@ class EntityViewSet(ModelViewSet):
     #     filename = "beneficiary" if int(param) else "beneficiaries"
 
     # @action(detail=False, methods=["GET"])
-    # def get_beneficiary(self, request, *args, **kwargs):
-    #     pk = request.GET.get("id", None)
-    #     beneficiary = get_object_or_404(Entity, pk=pk, entity_type__name="beneficiary")
-    #     serializer = BeneficiarySerializer(beneficiary, many=False)
-    #     return Response(serializer.data)
-    #
-    # @action(detail=False, methods=["GET"])
     # def beneficiaries(self, request, *args, **kwargs):
     #     limit = request.GET.get("limit", None)
     #     page_offset = request.GET.get("page", 1)
@@ -273,7 +278,7 @@ class BeneficiaryViewset(ModelViewSet):
         form_name = self.request.query_params.get("form_name", None)
 
         queryset = Entity.objects.filter(
-            account=self.request.user.iaso_profile.account
+            account=self.request.user.iaso_profile.account, entity_type__entity__name="Children under 5"
         )
         if form_name:
             queryset = queryset.filter(attributes__form__name__icontains=form_name)
@@ -296,50 +301,15 @@ class BeneficiaryViewset(ModelViewSet):
         queryset = queryset.order_by(*order)
         return queryset
 
-    def list(self, request: Request, *args, **kwargs):
-        csv_format = request.GET.get("csv", None)
-        xlsx_format = request.GET.get("xlsx", None)
+    @action(detail=False, methods=["GET"])
+    def export_xlsx(self, request, *args, **kwargs):
+        id = self.request.query_params.get("id", None)
+        beneficiary = get_object_or_404(Entity, pk=id, account=request.user.iaso_profile.account)
+        serializer = BeneficiarySerializer(beneficiary, many=False)
 
-        if xlsx_format:
-            beneficiaries = Entity.objects.filter(
-                account=self.request.user.iaso_profile.account, entity_type__name="beneficiary"
-            )
+        res = {}
 
-            workbook = xlsxwriter.Workbook("beneficiaries.xlsx")
-            worksheet = workbook.add_worksheet()
-
-            bold = workbook.add_format({"bold": True})
-
-            worksheet.write("A1", "Name", bold)
-            worksheet.write("A2", "Last Visit", bold)
-            worksheet.write("A3", "Key Information", bold)
-
-            beneficiaries_details_list = list()
-
-            for b in beneficiaries:
-                temp_list = []
-                temp_list.append(b.attributes.as_dict())
-                # must add value to the list in same order as the worksheet cells
-                beneficiaries_details_list.append(temp_list)
-
-            beneficiaries_details_list = tuple(beneficiaries_details_list)
-
-            row = 1
-            col = 0
-
-            for i in range(len(beneficiaries_details_list)):
-                worksheet.write(row, col+1, i)
-                row += 1
-
-            workbook.close()
-
-            # Must Add the xlsx download response
-
-            return HttpResponse(beneficiaries_details_list)
-
-        if csv_format:
-            pass
-
-
-        return super().list(request, *args, **kwargs)
-
+        res["beneficiaries"] = serializer.data
+        for k, v in res:
+            print(k, v)
+        return Response(res)

@@ -2,7 +2,6 @@ from django.db import models
 from django.contrib.postgres.fields import ArrayField, CITextField
 import uuid
 
-
 ## Remove blank=True, null=True on FK once the modles are sets and validated
 from django.db.models import UniqueConstraint
 

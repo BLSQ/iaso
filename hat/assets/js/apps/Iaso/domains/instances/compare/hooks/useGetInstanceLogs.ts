@@ -8,7 +8,6 @@ import {
     InstanceLogDetail,
     InstanceLogsDetail,
     InstanceLogData,
-    FileContent,
     InstanceLogFileContent,
     FormDescriptor,
 } from '../../types/instance';
@@ -60,7 +59,7 @@ export const useGetInstanceLogs = (
 export const useGetInstanceLogDetail = (
     logA: string | undefined,
     logB: string | undefined,
-): UseQueryResult<InstanceLogFileContent | undefined> => {
+): UseQueryResult<InstanceLogFileContent, Error> => {
     const instanceLogADetail: Record<string, any> = useSnackQuery({
         queryKey: ['logA', logA],
         queryFn: () => getInstanceLogDetail(logA),
@@ -68,7 +67,6 @@ export const useGetInstanceLogDetail = (
             enabled: Boolean(logA),
             select: data => {
                 if (data) {
-                    console.log('data instance log A', data);
                     return data.new_value[0].fields;
                 }
 
@@ -94,15 +92,19 @@ export const useGetInstanceLogDetail = (
 
     const instanceLogsDetail = useMemo(() => {
         const data = {
-            logA: instanceLogADetail.data?.json,
-            logB: instanceLogBDetail.data?.json,
+            logA: instanceLogADetail.data,
+            logB: instanceLogBDetail.data,
         };
 
         return data;
-    }, [instanceLogADetail.data?.json, instanceLogBDetail.data?.json]);
+    }, [instanceLogADetail?.data, instanceLogBDetail?.data]);
 
     return {
         data: instanceLogsDetail,
+        isLoading:
+            instanceLogADetail.data === undefined ||
+            instanceLogBDetail.data === undefined,
+        isError: !instanceLogADetail.data || !instanceLogBDetail.data,
     };
 };
 

@@ -20,7 +20,7 @@ import iaso.periods as periods
 from hat.api.export_utils import Echo, generate_xlsx, iter_items, timestamp_to_utc_datetime
 from hat.audit.models import log_modification, INSTANCE_API
 from hat.common.utils import queryset_iterator
-from iaso.models import Instance, OrgUnit, Form, Project, InstanceFile, InstanceQuerySet
+from iaso.models import Instance, OrgUnit, Form, Project, InstanceFile, InstanceQuerySet, Entity
 from iaso.utils import timestamp_to_datetime
 from . import common
 from .common import safe_api_import, TimestampField
@@ -463,6 +463,18 @@ def import_data(instances, user, app_id):
             instance.org_unit = org_unit
 
         instance.form_id = instance_data.get("formId")
+
+        entityUuid = instance_data.get("entityUuid", None)
+        entityTypeId = instance_data.get("entityTypeId", None)
+        if entityUuid and entityTypeId:
+            entity, created = Entity.objects.get_or_create(
+                uuid=entityUuid, entity_type_id=entityTypeId, account=project.account
+            )
+            instance.entity = entity
+            # If instance's form is the same as the type reference form, set the instance as reference_instance
+            if entity.entity_type.reference_form == instance.form:
+                entity.attributes = instance
+                entity.save()
 
         created_at_ts = instance_data.get("created_at", None)
         instance.created_at = timestamp_to_utc_datetime(int(created_at_ts)) if created_at_ts is not None else None

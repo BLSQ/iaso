@@ -2,7 +2,6 @@ from django.db import models
 from django.contrib.postgres.fields import ArrayField, CITextField
 import uuid
 
-
 ## Remove blank=True, null=True on FK once the modles are sets and validated
 from django.db.models import UniqueConstraint
 
@@ -48,7 +47,6 @@ class Entity(SoftDeletableModel):
     attributes = models.OneToOneField(
         Instance, on_delete=models.PROTECT, help_text="instance", related_name="attributes", blank=True, null=True
     )
-    instances = models.ManyToManyField(Instance, blank=True)
     account = models.ForeignKey(Account, on_delete=models.PROTECT)
 
     class Meta:

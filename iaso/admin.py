@@ -273,7 +273,7 @@ class EntityAdmin(admin.ModelAdmin):
         "entity_type",
     )
     list_filter = ("entity_type",)
-    raw_id_fields = ("attributes", "instances")
+    raw_id_fields = ("attributes",)
 
 
 class EntityTypeAdmin(admin.ModelAdmin):

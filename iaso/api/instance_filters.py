@@ -25,4 +25,5 @@ def parse_instance_filters(req):
         "from_date": req.get("dateFrom", None),
         "to_date": req.get("dateTo", None),
         "show_deleted": show_deleted,
+        "entity_id": req.get("entityId", None),
     }

@@ -693,6 +693,7 @@ class InstanceQuerySet(models.QuerySet):
         from_date=None,
         to_date=None,
         show_deleted=None,
+        entity_id=None,
     ):
         queryset = self
 
@@ -751,6 +752,9 @@ class InstanceQuerySet(models.QuerySet):
         else:
             # whatever don't show deleted submissions
             queryset = queryset.exclude(deleted=True)
+
+        if entity_id:
+            queryset = queryset.filter(entity_id=entity_id)
 
         if search:
             if search.startswith("ids:"):

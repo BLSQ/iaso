@@ -225,9 +225,10 @@ def export_xlsx(beneficiaries):
     workbook = xlsxwriter.Workbook(mem_file)
     worksheet = workbook.add_worksheet("beneficiary")
     worksheet.set_column(0, 100, 30)
-    row_color = workbook.add_format({'bg_color': '#FFC7CE'})
+    row_color = workbook.add_format({"bg_color": "#FFC7CE"})
     row = 0
     col = 0
+    filename = ""
     for beneficiary in beneficiaries:
         res = {"beneficiaries": BeneficiarySerializer(beneficiary, many=False).data}
         worksheet.set_row(row, cell_format=row_color)
@@ -246,14 +247,12 @@ def export_xlsx(beneficiaries):
                     col += 1
         col = 0
         row += 2
+        filename = beneficiary.name
+    filename = f"EXPORT_BENEFICIARIES.xlsx" if len(beneficiaries) > 1 else f"{filename.upper()}_BENEFICIARY.xlsx"
     workbook.close()
     mem_file.seek(0)
-    filename = f"EXPORT_BENEFICIARIES.xlsx"
-    response = HttpResponse(
-        mem_file,
-        content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
-    )
-    response['Content-Disposition'] = 'attachment; filename=%s' % filename
+    response = HttpResponse(mem_file, content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
+    response["Content-Disposition"] = "attachment; filename=%s" % filename
     return response
 
 
@@ -269,6 +268,7 @@ class BeneficiaryViewset(ModelViewSet):
     or by id:
     /api/entity/beneficiary/?xlsx=true&id=<id>
     """
+
     results_key = "beneficiary"
     remove_results_key_if_paginated = True
     filter_backends = [filters.OrderingFilter, DjangoFilterBackend, EntityFilterBackend]
@@ -316,13 +316,17 @@ class BeneficiaryViewset(ModelViewSet):
     def list(self, request: Request, *args, **kwargs):
         csv_format = request.GET.get("csv", None)
         xlsx_format = request.GET.get("xlsx", None)
-        id = request.query_params.get("id", None)
+        pk = request.query_params.get("id", None)
 
         if xlsx_format or csv_format:
-            if id:
-                beneficiaries = Entity.objects.filter(account=self.request.user.iaso_profile.account, pk=id, deleted_at__isnull=True)
+            if pk:
+                beneficiaries = Entity.objects.filter(
+                    account=self.request.user.iaso_profile.account, pk=pk, deleted_at__isnull=True
+                )
             else:
-                beneficiaries = Entity.objects.filter(account=self.request.user.iaso_profile.account, deleted_at__isnull=True)
+                beneficiaries = Entity.objects.filter(
+                    account=self.request.user.iaso_profile.account, deleted_at__isnull=True
+                )
             return export_xlsx(beneficiaries)
 
         return super().list(request, *args, **kwargs)

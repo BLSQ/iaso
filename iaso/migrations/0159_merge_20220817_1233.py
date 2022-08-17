@@ -6,9 +6,8 @@ from django.db import migrations
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('iaso', '0156_alter_entity_attributes'),
-        ('iaso', '0158_alter_instance_entity'),
+        ("iaso", "0156_alter_entity_attributes"),
+        ("iaso", "0158_alter_instance_entity"),
     ]
 
-    operations = [
-    ]
+    operations = []

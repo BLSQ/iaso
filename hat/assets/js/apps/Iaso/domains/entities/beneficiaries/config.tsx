@@ -62,6 +62,14 @@ export const useColumns = (): Array<Column> => {
             },
         },
         {
+            Header: formatMessage(MESSAGES.program),
+            id: 'attributes__program',
+            accessor: 'attributes__program',
+            Cell: settings => {
+                return <>{settings.row.original.attributes?.program ?? '--'}</>;
+            },
+        },
+        {
             Header: 'HC',
             id: 'attributes__org_unit__name',
             accessor: 'attributes__org_unit__name',

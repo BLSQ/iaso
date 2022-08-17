@@ -111,6 +111,7 @@
     "iaso.entities.gender": "Gender",
     "iaso.entities.lastVisit": "Last visit",
     "iaso.entities.male": "Male",
+    "iaso.entities.program": "Program",
     "iaso.entities.registrationDate": "Registration date",
     "iaso.entities.title": "Entities",
     "iaso.entities.type": "Type",

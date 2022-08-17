@@ -1,4 +1,5 @@
 from django.db import models
+from django.contrib.postgres.fields import ArrayField, CITextField
 import uuid
 
 
@@ -15,6 +16,9 @@ class EntityType(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
     reference_form = models.ForeignKey(Form, blank=True, null=True, on_delete=models.PROTECT)
     account = models.ForeignKey(Account, on_delete=models.PROTECT, blank=True, null=True)
+    # List of field we will show for this entity in list and detail view.
+    fields_list_view = ArrayField(CITextField(max_length=255, blank=True), size=100, null=True, blank=True)
+    fields_detail_view = ArrayField(CITextField(max_length=255, blank=True), size=100, null=True, blank=True)
 
     class Meta:
         unique_together = ["name", "account"]
@@ -42,7 +46,7 @@ class Entity(SoftDeletableModel):
     updated_at = models.DateTimeField(auto_now=True)
     entity_type = models.ForeignKey(EntityType, blank=True, on_delete=models.PROTECT)
     attributes = models.OneToOneField(
-        Instance, on_delete=models.PROTECT, help_text="instance", related_name="attributes"
+        Instance, on_delete=models.PROTECT, help_text="instance", related_name="attributes", blank=True, null=True
     )
     instances = models.ManyToManyField(Instance, blank=True)
     account = models.ForeignKey(Account, on_delete=models.PROTECT)

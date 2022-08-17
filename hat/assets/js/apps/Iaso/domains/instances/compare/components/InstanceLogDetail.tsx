@@ -1,5 +1,5 @@
 /* eslint-disable camelcase */
-import React, { FunctionComponent, useState, useEffect } from 'react';
+import React, { FunctionComponent } from 'react';
 // @ts-ignore
 import { useSafeIntl, LoadingSpinner } from 'bluesquare-components';
 
@@ -32,40 +32,6 @@ export const InstanceLogDetail: FunctionComponent<Props> = ({ logA, logB }) => {
 
     const { formatMessage } = useSafeIntl();
 
-    const [instanceLog, setInstanceLog] = useState<{
-        // form_descriptor: {
-        //     logA: Record<string, any> | undefined;
-        //     logB: Record<string, any> | undefined;
-        // };
-        // file_content: {
-        logA: Record<string, any> | undefined;
-        logB: Record<string, any> | undefined;
-        // };
-    }>({
-        // form_descriptor: {
-        //     logA: undefined,
-        //     logB: undefined,
-        // },
-
-        logA: undefined,
-        logB: undefined,
-    });
-
-    useEffect(() => {
-        instanceLogDetail?.logA || instanceLogDetail?.logB;
-        setInstanceLog({
-            // form_descriptor: {
-            //     logA: instanceFormDescriptorA,
-            //     logB: instanceFormDescriptorB,
-            // },
-
-            logA: instanceLogDetail?.logA,
-            logB: instanceLogDetail?.logB,
-        });
-    }, [logA, logB]);
-
-    console.log('instance log detail', instanceLogDetail);
-
     if (isLoading)
         return (
             <Box height="70vh">
@@ -77,14 +43,17 @@ export const InstanceLogDetail: FunctionComponent<Props> = ({ logA, logB }) => {
                 />
             </Box>
         );
+
+    // TO DO: add specific errors if instanceId does not exist or if log id does not exist
     if (isError) {
         return <ErrorPaperComponent message={formatMessage(MESSAGES.error)} />;
     }
 
     return (
         <>
-            {instanceLog && (
-                <InstanceLogContentBasic fileContent={instanceLog} />
+            {instanceLogDetail && (
+                // TO DO: add fileDescriptor prop to get label from label key
+                <InstanceLogContentBasic fileContent={instanceLogDetail} />
             )}
         </>
     );

@@ -1,3 +1,5 @@
+import io
+
 import xlsxwriter
 from django.db.models import Q
 from django.http import JsonResponse, HttpResponse
@@ -310,9 +312,37 @@ class BeneficiaryViewset(ModelViewSet):
         beneficiary = get_object_or_404(Entity, pk=id, account=request.user.iaso_profile.account)
         serializer = BeneficiarySerializer(beneficiary, many=False)
 
-        res = {}
+        mem_file = io.BytesIO()
+        workbook = xlsxwriter.Workbook(mem_file)
+        worksheet = workbook.add_worksheet("beneficiary")
+        worksheet.set_column(0, 3, 30)
+        row = 0
+        col = 0
+        res = {"beneficiaries": serializer.data}
 
-        res["beneficiaries"] = serializer.data
-        for k, v in res:
-            print(k, v)
-        return Response(res)
+        for k, v in res["beneficiaries"].items():
+            if k in beneficiary.entity_type.fields_detail_view or k == "attributes":
+                if k == "attributes":
+                    for k_, v_ in res["beneficiaries"]["attributes"]["file_content"].items():
+                        worksheet.write(row, col, k_)
+                        worksheet.write(row + 1, col, v_)
+                        col += 1
+                        row = 0
+                else:
+                    worksheet.write(row, col, k)
+                    worksheet.write(row + 1, col, v)
+                    col += 1
+                    row = 0
+        worksheet.set_column(0, col, 30)
+        workbook.close()
+        mem_file.seek(0)
+
+        filename = f"{beneficiary.name}_beneficiary.xlsx"
+
+        response = HttpResponse(
+            mem_file,
+            content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+        )
+        response['Content-Disposition'] = 'attachment; filename=%s' % filename
+
+        return response

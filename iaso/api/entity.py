@@ -1,29 +1,32 @@
-import json
-from time import gmtime, strftime
+import xlsxwriter
 from django.db.models import Q
+from django.http import JsonResponse, HttpResponse
 from django.shortcuts import get_object_or_404
 from django_filters.rest_framework import DjangoFilterBackend
+from rest_framework import permissions, filters
+from rest_framework import serializers
 from rest_framework.decorators import action
+from rest_framework.request import Request
 from rest_framework.response import Response
 
-from hat.api.export_utils import generate_xlsx, iter_items, Echo
-from hat.common.utils import queryset_iterator
 from iaso.api.common import TimestampField, ModelViewSet
-from iaso.api.instance_filters import parse_instance_filters
-from iaso.models import Entity, Instance, EntityType, Form
-
-from django.http import JsonResponse, HttpResponse, StreamingHttpResponse
-from rest_framework import permissions, filters
-from rest_framework.request import Request
-from rest_framework import serializers
-
-from iaso.utils import timestamp_to_datetime
+from iaso.models import Entity, Instance, EntityType
 
 
 class EntityTypeSerializer(serializers.ModelSerializer):
     class Meta:
         model = EntityType
-        fields = ["id", "name", "created_at", "updated_at", "reference_form", "entities_count", "account"]
+        fields = [
+            "id",
+            "name",
+            "created_at",
+            "updated_at",
+            "reference_form",
+            "entities_count",
+            "account",
+            "fields_detail_view",
+            "fields_list_view",
+        ]
 
     created_at = TimestampField(read_only=True)
     updated_at = TimestampField(read_only=True)
@@ -48,7 +51,7 @@ class BeneficiarySerializer(serializers.ModelSerializer):
             "entity_type",
             "entity_type_name",
             "instances",
-            "submitter"
+            "submitter",
         ]
 
     entity_type_name = serializers.SerializerMethodField()

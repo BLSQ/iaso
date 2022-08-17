@@ -72,7 +72,7 @@ export const InstanceLogContentBasic: FunctionComponent<Props> = ({
             <TableBody>
                 {fileContent.logA &&
                     fileContent.logB &&
-                    Object.keys(fileContent.logA).map(labelKey => {
+                    Object.keys(fileContent.logA.json).map(labelKey => {
                         if (labelKey !== 'meta' && labelKey !== 'uuid') {
                             return (
                                 <TableRow key={labelKey}>
@@ -86,13 +86,13 @@ export const InstanceLogContentBasic: FunctionComponent<Props> = ({
                                         className={classes.tableCell}
                                         align="left"
                                     >
-                                        {fileContent.logA[labelKey]}
+                                        {fileContent?.logA.json[labelKey]}
                                     </TableCell>
                                     <TableCell
                                         className={classes.tableCell}
                                         align="left"
                                     >
-                                        {fileContent.logB[labelKey]}
+                                        {fileContent?.logB.json[labelKey]}
                                     </TableCell>
                                 </TableRow>
                             );

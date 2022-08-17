@@ -1,15 +1,20 @@
 /* eslint-disable camelcase */
-import React, { ReactElement } from 'react';
+import React, { ReactElement, useMemo } from 'react';
 import {
     // @ts-ignore
     IconButton as IconButtonComponent,
     // @ts-ignore
     useSafeIntl,
+    // @ts-ignore
 } from 'bluesquare-components';
 
 import moment from 'moment';
+import _ from 'lodash';
 import { LinkToOrgUnit } from '../../orgUnits/components/LinkToOrgUnit';
-import { DateCell } from '../../../components/Cells/DateTimeCell';
+import {
+    DateCell,
+    DateTimeCellRfc,
+} from '../../../components/Cells/DateTimeCell';
 
 import { AgeCell } from './components/AgeCell';
 
@@ -163,4 +168,42 @@ export const useColumns = (): Array<Column> => {
             ),
         },
     ];
+};
+
+const generateColumns = (
+    fields: string[],
+    formatMessage: IntlFormatMessage,
+): Column[] => {
+    return fields.map(field => {
+        return {
+            Header: formatMessage(MESSAGES[field]) ?? 'HEADER',
+            id: `${field}`,
+            accessor: `${field}`,
+            Cell: settings => {
+                const data = _.get(settings.row.original, field);
+                const asDateTime = moment(data, 'DD-MM-YYYYThh:mm:ssZ', true);
+                const asDate = moment(data, 'DD-MM-YYYY', true);
+                if (asDateTime.isValid()) {
+                    return (
+                        <DateTimeCellRfc value={moment(data).format('LTS')} />
+                    );
+                }
+                if (asDate.isValid()) {
+                    return <DateCell value={moment(data).format('L')} />;
+                }
+
+                return <>{data}</>;
+            },
+        };
+    });
+};
+
+export const useBeneficiariesDetailsColumns = (
+    fields: Array<string> = [],
+): Array<Column> => {
+    const { formatMessage } = useSafeIntl();
+    return useMemo(
+        () => generateColumns(fields, formatMessage),
+        [fields, formatMessage],
+    );
 };

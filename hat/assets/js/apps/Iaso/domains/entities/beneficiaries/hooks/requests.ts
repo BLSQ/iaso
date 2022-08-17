@@ -14,6 +14,7 @@ import MESSAGES from '../../messages';
 
 import { Beneficiary } from '../types/beneficiary';
 import { Pagination } from '../../../../types/table';
+import { Instance } from '../types/instance';
 
 export interface PaginatedBeneficiaries extends Pagination {
     beneficiary: Array<Beneficiary>;
@@ -129,6 +130,27 @@ export const useGetBeneficiary = (
         queryFn: () => getBeneficiary(beneficiaryId),
         options: {
             retry: false,
+        },
+    });
+};
+
+const getSubmissions = (id?: number) => {
+    return getRequest(`/api/instances/?entityId=${id}`);
+};
+
+export const useGetSubmissions = (
+    id?: number,
+): UseQueryResult<Instance[], Error> => {
+    return useSnackQuery({
+        queryKey: ['submissionsForEntity', id],
+        queryFn: () => getSubmissions(id),
+        options: {
+            retry: false,
+            enabled: Boolean(id),
+            select: data => {
+                if (!data) return [];
+                return data.instances;
+            },
         },
     });
 };

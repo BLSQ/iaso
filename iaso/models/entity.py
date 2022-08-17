@@ -48,7 +48,6 @@ class Entity(SoftDeletableModel):
     attributes = models.OneToOneField(
         Instance, on_delete=models.PROTECT, help_text="instance", related_name="attributes", blank=True, null=True
     )
-    instances = models.ManyToManyField(Instance, blank=True)
     account = models.ForeignKey(Account, on_delete=models.PROTECT)
 
     class Meta:

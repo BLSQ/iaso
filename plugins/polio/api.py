@@ -983,7 +983,7 @@ def handle_ona_request_with_key(request, key):
             try:
                 today_string = form["today"]
                 today = datetime.strptime(today_string, "%Y-%m-%d").date()
-                campaign = find_campaign_on_day_cached(campaign_qs, today, country)
+                campaign = find_campaign_on_day_cached(campaign_qs, today)
                 district_name = form.get("District", None)
                 if not district_name:
                     district_name = form.get("district", "")

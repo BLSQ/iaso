@@ -13,7 +13,7 @@ import { InstanceLogDetail } from './InstanceLogDetail';
 
 import { IntlFormatMessage } from '../../../../types/intl';
 
-import { redirectTo, redirectToReplace } from '../../../../routing/actions';
+import { redirectToReplace } from '../../../../routing/actions';
 
 import MESSAGES from '../messages';
 import { baseUrls } from '../../../../constants/urls';
@@ -33,6 +33,7 @@ type Params = {
 // type Router = {
 //     goBack: () => void;
 // };
+
 type Props = {
     params: Params;
     // router: Router;
@@ -74,7 +75,7 @@ export const CompareInstanceLogs: FunctionComponent<Props> = ({
             ...params,
             [key]: value,
         };
-        dispatch(redirectTo(baseUrls.compareInstanceLogs, newParams));
+        dispatch(redirectToReplace(baseUrls.compareInstanceLogs, newParams));
     };
 
     useEffect(() => {
@@ -86,7 +87,10 @@ export const CompareInstanceLogs: FunctionComponent<Props> = ({
                     logB: instanceLogsDropdown[1]?.value,
                 };
                 dispatch(
-                    redirectTo(baseUrls.compareInstanceLogs, defaultParams),
+                    redirectToReplace(
+                        baseUrls.compareInstanceLogs,
+                        defaultParams,
+                    ),
                 );
             } else if (params.logA === undefined) {
                 const defaultParams = {
@@ -94,7 +98,10 @@ export const CompareInstanceLogs: FunctionComponent<Props> = ({
                     logA: instanceLogsDropdown[0]?.value,
                 };
                 dispatch(
-                    redirectTo(baseUrls.compareInstanceLogs, defaultParams),
+                    redirectToReplace(
+                        baseUrls.compareInstanceLogs,
+                        defaultParams,
+                    ),
                 );
             } else if (params.logB === undefined) {
                 const defaultParams = {
@@ -103,7 +110,10 @@ export const CompareInstanceLogs: FunctionComponent<Props> = ({
                 };
 
                 dispatch(
-                    redirectTo(baseUrls.compareInstanceLogs, defaultParams),
+                    redirectToReplace(
+                        baseUrls.compareInstanceLogs,
+                        defaultParams,
+                    ),
                 );
             }
         }

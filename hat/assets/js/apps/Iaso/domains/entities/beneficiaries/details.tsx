@@ -10,6 +10,7 @@ import {
     Table,
 } from 'bluesquare-components';
 import { Box, Grid, makeStyles } from '@material-ui/core';
+import EditIcon from '@material-ui/icons/Edit';
 
 import { useDispatch, useSelector } from 'react-redux';
 import TopBar from '../../../components/nav/TopBarComponent';
@@ -23,12 +24,38 @@ import { useGetBeneficiary, useGetSubmissions } from './hooks/requests';
 import { Beneficiary } from './types/beneficiary';
 import { useResetPageToOne } from '../../../hooks/useResetPageToOne';
 import { useBeneficiariesDetailsColumns } from './config';
+import { CsvButton } from '../../../components/Buttons/CsvButton';
+import { XlsxButton } from '../../../components/Buttons/XslxButton';
 
 type Props = {
     router: any;
 };
 const useStyles = makeStyles(theme => ({
     ...commonStyles(theme),
+    // @ts-ignore
+    allBorders: { border: `1px solid ${theme.palette.mediumGray.main}` },
+    allButTopBorder: {
+        // @ts-ignore
+        border: `1px solid ${theme.palette.mediumGray.main}`,
+        borderTop: 'none',
+    },
+    allButBottomBorder: {
+        // @ts-ignore
+        border: `1px solid ${theme.palette.mediumGray.main}`,
+        borderBottom: 'none',
+    },
+    allButLeftBorder: {
+        // @ts-ignore
+        border: `1px solid ${theme.palette.mediumGray.main}`,
+        borderLeft: 'none',
+    },
+    BottomAndRightBorders: {
+        // @ts-ignore
+        border: `1px solid ${theme.palette.mediumGray.main}`,
+        borderLeft: 'none',
+        borderTop: 'none',
+    },
+    titleRow: { fontWeight: 'bold' },
 }));
 
 export const Details: FunctionComponent<Props> = ({ router }) => {
@@ -78,22 +105,71 @@ export const Details: FunctionComponent<Props> = ({ router }) => {
                                 container
                                 item
                                 xs={6}
-                                style={{
-                                    border: '1px solid black',
-                                    fontWeight: 'bold',
-                                }}
+                                className={`${classes.allBorders} ${classes.titleRow}`}
                                 justifyContent="center"
                             >
-                                First name
+                                <Box mt={1} mb={1}>
+                                    {formatMessage(MESSAGES.name)}
+                                </Box>
                             </Grid>
                             <Grid
                                 item
                                 container
                                 xs={6}
-                                style={{ border: '1px solid black' }}
+                                className={classes.allButLeftBorder}
                                 justifyContent="center"
                             >
-                                Whatever
+                                <Box mt={1} mb={1}>
+                                    {beneficiary?.attributes.file_content.name}
+                                </Box>
+                            </Grid>
+                        </Grid>
+                        {/* <Grid container item xs={12}>
+                            <Grid
+                                item
+                                container
+                                xs={6}
+                                className={`${classes.allButTopBorder} ${classes.titleRow}`}
+                                justifyContent="center"
+                            >
+                                <Box mt={1} mb={1}>
+                                    {formatMessage(MESSAGES.lastName)}
+                                </Box>
+                            </Grid>
+                            <Grid
+                                item
+                                container
+                                xs={6}
+                                className={classes.BottomAndRightBorders}
+                                justifyContent="center"
+                            >
+                                <Box mt={1} mb={1}>
+                                    Whatever
+                                </Box>
+                            </Grid>
+                        </Grid> */}
+                        <Grid container item xs={12}>
+                            <Grid
+                                item
+                                container
+                                xs={6}
+                                className={`${classes.allButTopBorder} ${classes.titleRow}`}
+                                justifyContent="center"
+                            >
+                                <Box mt={1} mb={1}>
+                                    {formatMessage(MESSAGES.age)}
+                                </Box>
+                            </Grid>
+                            <Grid
+                                item
+                                container
+                                xs={6}
+                                className={classes.BottomAndRightBorders}
+                                justifyContent="center"
+                            >
+                                <Box mt={1} mb={1}>
+                                    {beneficiary?.attributes.file_content.age}
+                                </Box>
                             </Grid>
                         </Grid>
                         <Grid container item xs={12}>
@@ -101,76 +177,68 @@ export const Details: FunctionComponent<Props> = ({ router }) => {
                                 item
                                 container
                                 xs={6}
-                                style={{
-                                    border: '1px solid black',
-                                    fontWeight: 'bold',
-                                }}
+                                className={`${classes.allButTopBorder} ${classes.titleRow}`}
                                 justifyContent="center"
                             >
-                                <Box>Last name</Box>
+                                <Box mt={1} mb={1}>
+                                    {formatMessage(MESSAGES.gender)}
+                                </Box>
                             </Grid>
                             <Grid
                                 item
                                 container
                                 xs={6}
-                                style={{ border: '1px solid black' }}
+                                className={classes.BottomAndRightBorders}
                                 justifyContent="center"
                             >
-                                <Box>Whatever</Box>
-                            </Grid>
-                        </Grid>
-                        <Grid container item xs={12}>
-                            <Grid
-                                item
-                                container
-                                xs={6}
-                                style={{
-                                    border: '1px solid black',
-                                    fontWeight: 'bold',
-                                }}
-                                justifyContent="center"
-                            >
-                                <Box>Age</Box>
-                            </Grid>
-                            <Grid
-                                item
-                                container
-                                xs={6}
-                                style={{ border: '1px solid black' }}
-                                justifyContent="center"
-                            >
-                                <Box>12</Box>
-                            </Grid>
-                        </Grid>
-                        <Grid container item xs={12}>
-                            <Grid
-                                item
-                                container
-                                xs={6}
-                                style={{
-                                    border: '1px solid black',
-                                    fontWeight: 'bold',
-                                }}
-                                justifyContent="center"
-                            >
-                                <Box>Gender</Box>
-                            </Grid>
-                            <Grid
-                                item
-                                container
-                                xs={6}
-                                style={{ border: '1px solid black' }}
-                                justifyContent="center"
-                            >
-                                <Box>Female</Box>
+                                <Box mt={1} mb={1}>
+                                    {beneficiary?.attributes.file_content
+                                        .gender ??
+                                        formatMessage(MESSAGES.unknown)}
+                                </Box>
                             </Grid>
                         </Grid>
                     </Grid>
-                    <span>Icon</span>
+                    <Grid container item xs={1}>
+                        <Box ml={2}>
+                            <EditIcon
+                                onClick={() => {
+                                    console.log(
+                                        'Edit Beneficiary',
+                                        beneficiary?.name,
+                                        beneficiaryId,
+                                    );
+                                    alert('Entity edition, coming soon');
+                                }}
+                                color="action"
+                            />
+                        </Box>
+                    </Grid>
+                    <Grid container item xs={3} justifyContent="center">
+                        <Box mt={1}>
+                            {`${formatMessage(MESSAGES.nfcCards)}: ${
+                                // TODO update when nfc data is available from backend
+                                // @ts-ignore
+                                beneficiary?.attributes.nfc_cards ?? 0
+                            }`}
+                        </Box>
+                    </Grid>
+                    <Grid container item xs={5} justifyContent="flex-end">
+                        <Box mr={2}>
+                            <CsvButton
+                                csvUrl={`/api/entity/beneficiary/?csv=true&id=${beneficiaryId}`}
+                            />
+                        </Box>
+                        <Box>
+                            <XlsxButton
+                                xlsxUrl={`/api/entity/beneficiary/?xlsx=true&id=${beneficiaryId}`}
+                            />
+                        </Box>
+                    </Grid>
                 </Grid>
-                <span>{beneficiary?.uuid}</span>
+                <Box mt={2}>{beneficiary?.uuid}</Box>
                 <Table
-                    data={submissions}
+                    data={submissions ?? []}
                     columns={columns}
                     resetPageToOne={resetPageToOne}
                     count={1}

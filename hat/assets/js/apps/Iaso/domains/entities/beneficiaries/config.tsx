@@ -13,6 +13,7 @@ import _ from 'lodash';
 import { LinkToOrgUnit } from '../../orgUnits/components/LinkToOrgUnit';
 import {
     DateCell,
+    DateTimeCell,
     DateTimeCellRfc,
 } from '../../../components/Cells/DateTimeCell';
 
@@ -170,7 +171,7 @@ export const useColumns = (): Array<Column> => {
     ];
 };
 
-const generateColumns = (
+const generateColumnsFromFieldsList = (
     fields: string[],
     formatMessage: IntlFormatMessage,
 ): Column[] => {
@@ -192,18 +193,81 @@ const generateColumns = (
                     return <DateCell value={moment(data).format('L')} />;
                 }
 
-                return <>{data}</>;
+                return <>{data ?? '--'}</>;
             },
         };
     });
 };
 
-export const useBeneficiariesDetailsColumns = (
+export const useColumnsFromFieldsList = (
     fields: Array<string> = [],
 ): Array<Column> => {
     const { formatMessage } = useSafeIntl();
     return useMemo(
-        () => generateColumns(fields, formatMessage),
+        () => generateColumnsFromFieldsList(fields, formatMessage),
         [fields, formatMessage],
+    );
+};
+
+export const useBeneficiariesDetailsColumns = (
+    fields: Array<string> = [],
+): Column[] => {
+    const { formatMessage } = useSafeIntl();
+    const columnsFromList: Column[] = useColumnsFromFieldsList(fields);
+    return useMemo(
+        () => [
+            {
+                Header: formatMessage(MESSAGES.form),
+                // TODO make sortable
+                sortable: false,
+                id: 'form_name',
+                accessor: 'form_name',
+            },
+            {
+                Header: formatMessage(MESSAGES.created_at),
+                // TODO make sortable
+                sortable: false,
+                id: 'created_at',
+                accessor: 'created_at',
+                Cell: DateTimeCell,
+            },
+            {
+                Header: formatMessage(MESSAGES.OrgUnitName),
+                // TODO make sortable
+                sortable: false,
+                id: 'org_unit.name',
+                accessor: 'org_unit.name',
+            },
+            {
+                Header: formatMessage(MESSAGES.submitter),
+                // TODO make sortable
+                sortable: false,
+                id: 'created_by.user_name',
+                accessor: 'created_by.user_name',
+            },
+            ...columnsFromList,
+            {
+                Header: formatMessage(MESSAGES.actions),
+                sortable: false,
+                id: 'actions',
+                Cell: (settings): ReactElement => (
+                    // TODO: limit to user permissions
+                    <section>
+                        <IconButtonComponent
+                            // url={`/${baseUrls.beneficiariesDetails}/beneficiaryId/${settings.row.original.id}`}
+                            icon="remove-red-eye"
+                            tooltipMessage={MESSAGES.see}
+                            onClick={() => {
+                                console.log(
+                                    'Go to details of submission',
+                                    settings.row.original.id,
+                                );
+                            }}
+                        />
+                    </section>
+                ),
+            },
+        ],
+        [columnsFromList, formatMessage],
     );
 };

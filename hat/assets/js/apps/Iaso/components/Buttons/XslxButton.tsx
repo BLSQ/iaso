@@ -2,9 +2,10 @@
 import React, { FunctionComponent } from 'react';
 import { makeStyles, Button } from '@material-ui/core';
 import SaveAlt from '@material-ui/icons/SaveAlt';
+import ExcellSvg from '../svg/ExcellSvgComponent';
 
 type Props = {
-    csvUrl: string;
+    xlsxUrl: string;
     variant?: 'contained' | 'outlined' | 'text';
 };
 
@@ -15,25 +16,30 @@ const styles = theme => ({
             marginRight: theme.spacing(1),
         },
     },
+    icon: {
+        height: theme.spacing(3),
+        width: 'auto',
+        marginRight: theme.spacing(1),
+    },
 });
 
 const useStyles = makeStyles(styles);
 
-export const CsvButton: FunctionComponent<Props> = ({
-    csvUrl,
+export const XlsxButton: FunctionComponent<Props> = ({
+    xlsxUrl,
     variant = 'contained',
 }) => {
     const classes = useStyles();
     return (
         <Button
-            data-test="csv-export-button"
+            data-test="xlsx-export-button"
             variant={variant}
             className={classes.button}
             color="primary"
-            href={csvUrl}
+            href={xlsxUrl}
         >
-            <SaveAlt />
-            CSV
+            <ExcellSvg className={classes.icon} />
+            XLSX
         </Button>
     );
 };

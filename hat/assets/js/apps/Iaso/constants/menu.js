@@ -148,15 +148,15 @@ const menuItems = defaultSourceId => [
                 key: 'beneficiaries',
                 icon: props => <BeneficiarySvg {...props} />,
             },
-            {
-                label: MESSAGES.list,
-                permissions: paths.entitiesPath.permissions,
-                key: 'list',
-                icon: props => <FormatListBulleted {...props} />,
-            },
+            // {
+            //     label: MESSAGES.list,
+            //     permissions: paths.entitiesPath.permissions,
+            //     key: 'list',
+            //     icon: props => <FormatListBulleted {...props} />,
+            // },
             {
                 label: MESSAGES.entityTypesTitle,
-                permissions: paths.entitiesPath.permissions,
+                permissions: paths.entityTypesPath.permissions,
                 key: 'types',
                 icon: props => <CategoryIcon {...props} />,
             },

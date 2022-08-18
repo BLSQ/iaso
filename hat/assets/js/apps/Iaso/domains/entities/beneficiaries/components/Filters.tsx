@@ -1,4 +1,9 @@
-import React, { useState, FunctionComponent, useCallback } from 'react';
+import React, {
+    useState,
+    FunctionComponent,
+    useCallback,
+    useMemo,
+} from 'react';
 import { useDispatch } from 'react-redux';
 
 import { Grid, Button, makeStyles, Box } from '@material-ui/core';
@@ -22,6 +27,8 @@ import MESSAGES from '../messages';
 import { baseUrl } from '../../config';
 
 import { useGetOrgUnit } from '../../../orgUnits/components/TreeView/requests';
+import { useGetTeamsDropdown } from '../../../teams/hooks/requests/useGetTeams';
+import { useGetUsersDropDown } from '../hooks/requests';
 
 const useStyles = makeStyles(theme => ({
     ...commonStyles(theme),
@@ -35,6 +42,8 @@ type Params = {
     location?: string;
     dateFrom?: string;
     dateTo?: string;
+    submitterId?: string;
+    submitterTeamId?: string;
 };
 
 type Props = {
@@ -50,11 +59,22 @@ const Filters: FunctionComponent<Props> = ({ params }) => {
         location: params.location,
         dateFrom: params.dateFrom,
         dateTo: params.dateTo,
+        submitterId: params.submitterId,
+        submitterTeamId: params.submitterTeamId,
     });
     const [filtersUpdated, setFiltersUpdated] = useState(false);
     const [initialOrgUnitId, setInitialOrgUnitId] = useState(params?.location);
 
     const { data: initialOrgUnit } = useGetOrgUnit(initialOrgUnitId);
+    const { data: teamOptions } = useGetTeamsDropdown({});
+
+    const selectedTeam = useMemo(() => {
+        return teamOptions?.find(
+            option => option.value === filters.submitterTeamId,
+        )?.original;
+    }, [filters.submitterTeamId, teamOptions]);
+
+    const { data: usersOptions } = useGetUsersDropDown(selectedTeam);
 
     const handleSearch = useCallback(() => {
         if (filtersUpdated) {
@@ -81,7 +101,17 @@ const Filters: FunctionComponent<Props> = ({ params }) => {
         },
         [filters],
     );
-
+    const handleTeamChange = useCallback(
+        (key, value) => {
+            setFiltersUpdated(true);
+            setFilters({
+                ...filters,
+                [key]: value,
+                submitterId: undefined,
+            });
+        },
+        [filters],
+    );
     return (
         <>
             <Grid container spacing={2}>
@@ -119,6 +149,24 @@ const Filters: FunctionComponent<Props> = ({ params }) => {
                         labelTo={MESSAGES.dateTo}
                         dateFrom={filters.dateFrom}
                         dateTo={filters.dateTo}
+                    />
+                </Grid>
+                <Grid item xs={3}>
+                    <InputComponent
+                        keyValue="submitterTeamId"
+                        onChange={handleTeamChange}
+                        value={filters.submitterTeamId}
+                        type="select"
+                        label={MESSAGES.search}
+                        options={teamOptions}
+                    />
+                    <InputComponent
+                        keyValue="submitterId"
+                        onChange={handleChange}
+                        value={filters.submitterId}
+                        type="select"
+                        label={MESSAGES.search}
+                        options={usersOptions}
                     />
                 </Grid>
             </Grid>

@@ -11,7 +11,10 @@ export const useGetInstances = ({ orgUnitId }) => {
 
     const queryString = new URLSearchParams(params);
 
-    return useSnackQuery(['instances', params], () =>
-        getRequest(`/api/instances/?${queryString.toString()}`),
+    return useSnackQuery(
+        ['instances', params],
+        () => getRequest(`/api/instances/?${queryString.toString()}`),
+        undefined,
+        { enabled: Boolean(orgUnitId) },
     );
 };

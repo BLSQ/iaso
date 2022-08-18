@@ -250,7 +250,7 @@ export const useBeneficiariesDetailsColumns = (
             },
             {
                 Header: formatMessage(MESSAGES.keyInfo),
-                // TODO make sortable
+                // TODO get correct key when implemented on backend
                 sortable: false,
                 id: 'key_info',
                 accessor: 'key_info',

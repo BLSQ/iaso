@@ -70,7 +70,7 @@ class BeneficiarySerializer(serializers.ModelSerializer):
 
     def get_submitter(self, entity: Entity):
         try:
-            submitter = entity.attributes.last_modified_by.username
+            submitter = entity.attributes.created_by.username
         except AttributeError:
             submitter = None
         return submitter

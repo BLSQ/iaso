@@ -1,3 +1,4 @@
+import csv
 import io
 
 import xlsxwriter
@@ -220,7 +221,7 @@ class EntityViewSet(ModelViewSet):
         return Response(serializer.data)
 
 
-def export_xlsx(beneficiaries):
+def export_beneficiary_as_xlsx(beneficiaries):
     mem_file = io.BytesIO()
     workbook = xlsxwriter.Workbook(mem_file)
     worksheet = workbook.add_worksheet("beneficiary")
@@ -253,6 +254,42 @@ def export_xlsx(beneficiaries):
     mem_file.seek(0)
     response = HttpResponse(mem_file, content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
     response["Content-Disposition"] = "attachment; filename=%s" % filename
+    return response
+
+
+def export_beneficiary_as_csv(beneficiaries):
+
+    header = []
+    data = []
+    filename = ""
+
+    for beneficiary in beneficiaries:
+        res = {"beneficiaries": BeneficiarySerializer(beneficiary, many=False).data}
+        benef_data = []
+        for k, v in res["beneficiaries"].items():
+            if k in beneficiary.entity_type.fields_detail_view or k == "attributes":
+                if k == "attributes":
+                    for k_, v_ in res["beneficiaries"]["attributes"]["file_content"].items():
+                        if k_ not in header:
+                            header.append(k_)
+                        benef_data.append(v_)
+                else:
+                    if k not in header:
+                        header.append(k)
+                    benef_data.append(v)
+        data.append(benef_data)
+        filename = beneficiary.name
+    filename = f"EXPORT_BENEFICIARIES.csv" if len(beneficiaries) > 1 else f"{filename.upper()}_BENEFICIARY.csv"
+
+    response = HttpResponse(
+        content_type="txt/csv",
+        headers={"Content-Disposition": f"attachment; filename={filename}"},
+    )
+
+    writer = csv.writer(response)
+    writer.writerow(header)
+    writer.writerows(data)
+
     return response
 
 
@@ -327,6 +364,9 @@ class BeneficiaryViewset(ModelViewSet):
                 beneficiaries = Entity.objects.filter(
                     account=self.request.user.iaso_profile.account, deleted_at__isnull=True
                 )
-            return export_xlsx(beneficiaries)
+            if xlsx_format:
+                return export_beneficiary_as_xlsx(beneficiaries)
+            if csv_format:
+                return export_beneficiary_as_csv(beneficiaries)
 
         return super().list(request, *args, **kwargs)

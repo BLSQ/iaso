@@ -286,10 +286,10 @@ class BeneficiaryViewset(ModelViewSet):
         by_uuid = self.request.query_params.get("by_uuid", None)
         form_name = self.request.query_params.get("form_name", None)
         show_deleted = self.request.query_params.get("show_deleted", None)
+        created_by_id = self.request.query_params.get("created_by_id", None)
+        created_by_team_id = self.request.query_params.get("created_by_team_id", None)
 
-        queryset = Entity.objects.filter(
-            account=self.request.user.iaso_profile.account, entity_type__name="Children Under 5"
-        )
+        queryset = Entity.objects.filter(account=self.request.user.iaso_profile.account)
         if form_name:
             queryset = queryset.filter(attributes__form__name__icontains=form_name)
         if search:
@@ -307,6 +307,10 @@ class BeneficiaryViewset(ModelViewSet):
             queryset = queryset.filter(created_at__lte=date_to)
         if show_deleted:
             queryset = queryset.filter(deleted_at__isnull=True)
+        if created_by_id:
+            queryset = queryset.filter(attributes__created_by_id=created_by_id)
+        if created_by_team_id:
+            queryset = queryset.filter(attributes__created_by__teams__id=created_by_team_id)
 
         # location
 

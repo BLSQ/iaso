@@ -65,6 +65,34 @@ const MESSAGES = defineMessages({
         defaultMessage: 'List',
         id: 'iaso.label.list',
     },
+    firstName: {
+        defaultMessage: 'First name',
+        id: 'iaso.label.firstName',
+    },
+    lastName: {
+        defaultMessage: 'Last name',
+        id: 'iaso.label.lastName',
+    },
+    gender: {
+        id: 'iaso.entities.gender',
+        defaultMessage: 'Gender',
+    },
+    age: {
+        defaultMessage: 'Age',
+        id: 'iaso.label.age',
+    },
+    unknown: {
+        defaultMessage: 'Unknown',
+        id: 'iaso.label.unknown',
+    },
+    nfcCards: {
+        defaultMessage: 'NFC Cards',
+        id: 'iaso.entities.label.nfcCards',
+    },
+    edit: {
+        defaultMessage: 'Edit',
+        id: 'iaso.label.edit',
+    },
 });
 
 export default MESSAGES;

@@ -1,7 +1,7 @@
-from django.http import Http404
 from django.utils.datastructures import MultiValueDictKeyError
 from rest_framework import status
 from rest_framework.exceptions import ValidationError
+from rest_framework.generics import get_object_or_404
 from rest_framework.response import Response
 from drf_yasg.utils import swagger_auto_schema
 from drf_yasg import openapi
@@ -65,11 +65,8 @@ class CheckVersionViewSet(ViewSet):
             raise ValidationError(f"parameters '{APP_VERSION}' must be an integer")
         # endregion
 
-        try:
-            project = Project.objects.get(app_id=app_id)
-            project_min_version = project.min_version
-        except Project.DoesNotExist:
-            raise Http404
+        project = get_object_or_404(Project, app_id=app_id)
+        project_min_version = project.min_version
 
         if project_min_version is not None and app_version < project_min_version:
             return Response(data={"min_version": project_min_version}, status=status.HTTP_426_UPGRADE_REQUIRED)

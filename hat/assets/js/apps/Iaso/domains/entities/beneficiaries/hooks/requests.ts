@@ -14,7 +14,7 @@ import MESSAGES from '../../messages';
 
 import { Beneficiary } from '../types/beneficiary';
 import { Pagination } from '../../../../types/table';
-import { Instance } from '../types/instance';
+import { Instance } from '../../../instances/types/instance';
 
 export interface PaginatedBeneficiaries extends Pagination {
     beneficiary: Array<Beneficiary>;

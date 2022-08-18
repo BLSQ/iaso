@@ -137,6 +137,14 @@ const MESSAGES = defineMessages({
         id: 'iaso.instance.submitter',
         defaultMessage: 'Submitter',
     },
+    last_sync_at: {
+        id: 'iaso.instance.last_sync_at',
+        defaultMessage: 'Last sync',
+    },
+    keyInfo: {
+        id: 'iaso.entities.keyInfo',
+        defaultMessage: 'Key information',
+    },
 });
 
 export default MESSAGES;

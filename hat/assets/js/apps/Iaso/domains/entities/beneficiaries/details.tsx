@@ -208,6 +208,7 @@ export const Details: FunctionComponent<Props> = ({ router }) => {
                                         beneficiary?.name,
                                         beneficiaryId,
                                     );
+                                    // eslint-disable-next-line no-alert
                                     alert('Entity edition, coming soon');
                                 }}
                                 color="action"

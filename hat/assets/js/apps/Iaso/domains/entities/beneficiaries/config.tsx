@@ -27,6 +27,7 @@ import MESSAGES from '../messages';
 import { baseUrls } from '../../../constants/urls';
 
 import { Column } from '../../../types/table';
+import getDisplayName from '../../../utils/usersUtils';
 
 export const baseUrl = baseUrls.beneficiaries;
 
@@ -232,6 +233,15 @@ export const useBeneficiariesDetailsColumns = (
                 Cell: DateTimeCell,
             },
             {
+                Header: formatMessage(MESSAGES.last_sync_at),
+                // TODO make sortable
+                // TODO get correct key when implemented on backend
+                sortable: false,
+                id: 'last_sync_at',
+                accessor: 'last_sync_at',
+                Cell: DateTimeCell,
+            },
+            {
                 Header: formatMessage(MESSAGES.OrgUnitName),
                 // TODO make sortable
                 sortable: false,
@@ -239,11 +249,25 @@ export const useBeneficiariesDetailsColumns = (
                 accessor: 'org_unit.name',
             },
             {
+                Header: formatMessage(MESSAGES.keyInfo),
+                // TODO make sortable
+                sortable: false,
+                id: 'key_info',
+                accessor: 'key_info',
+                Cell: _settings => {
+                    return <>--</>;
+                },
+            },
+            {
                 Header: formatMessage(MESSAGES.submitter),
                 // TODO make sortable
                 sortable: false,
                 id: 'created_by.user_name',
                 accessor: 'created_by.user_name',
+                Cell: settings => {
+                    const { created_by: user } = settings.row.original;
+                    return <>{getDisplayName(user)}</>;
+                },
             },
             ...columnsFromList,
             {

@@ -93,6 +93,14 @@ const MESSAGES = defineMessages({
         defaultMessage: 'Edit',
         id: 'iaso.label.edit',
     },
+    submitter: {
+        defaultMessage: 'Submitter',
+        id: 'iaso.entities.label.submitter',
+    },
+    submitterTeam: {
+        defaultMessage: 'Submitter team',
+        id: 'iaso.entities.label.submitterTeam',
+    },
 });
 
 export default MESSAGES;

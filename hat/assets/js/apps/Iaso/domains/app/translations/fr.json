@@ -109,6 +109,8 @@
     "iaso.entities.gender": "Genre",
     "iaso.entities.keyInfo": "Points-clés",
     "iaso.entities.label.nfcCards": "Cartes NFC",
+    "iaso.entities.label.submitter": "Editeur",
+    "iaso.entities.label.submitterTeam": "Equipe éditeur",
     "iaso.entities.lastVisit": "Dernière visite",
     "iaso.entities.male": "Masculin",
     "iaso.entities.program": "Programme",

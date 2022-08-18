@@ -67,11 +67,14 @@ export const useGetBeneficiariesApiParams = (params: Params): GetAPiParams => {
     }
 
     if (params.dateFrom) {
-        apiParams.dateFrom = moment(params.dateFrom).format(apiDateFormat);
+        apiParams.dateFrom = moment(params.dateFrom, 'DD-MM-YYYY').format(
+            apiDateFormat,
+        );
     }
-
     if (params.dateTo) {
-        apiParams.dateTo = moment(params.dateTo).format(apiDateFormat);
+        apiParams.dateTo = moment(params.dateTo, 'DD-MM-YYYY').format(
+            apiDateFormat,
+        );
     }
     if (params.submitterId) {
         apiParams.created_by_id = params.submitterId;

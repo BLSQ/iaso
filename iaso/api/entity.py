@@ -1,3 +1,4 @@
+import csv
 import io
 
 import xlsxwriter
@@ -215,52 +216,92 @@ class EntityViewSet(ModelViewSet):
         serializer = EntitySerializer(entities, many=True)
         return Response(serializer.data)
 
-    # def export_beneficiary_as_csv_xls(self, beneficiary, param):
 
-    #
-    #     filename = "beneficiary" if int(param) else "beneficiaries"
+def export_beneficiary_as_xlsx(beneficiaries):
+    mem_file = io.BytesIO()
+    workbook = xlsxwriter.Workbook(mem_file)
+    worksheet = workbook.add_worksheet("beneficiary")
+    worksheet.set_column(0, 100, 30)
+    row_color = workbook.add_format({"bg_color": "#FFC7CE"})
+    row = 0
+    col = 0
+    filename = ""
+    for beneficiary in beneficiaries:
+        res = {"beneficiaries": BeneficiarySerializer(beneficiary, many=False).data}
+        worksheet.set_row(row, cell_format=row_color)
+        worksheet.write(row, col, f"{beneficiary.name.upper()}:")
+        row += 1
+        for k, v in res["beneficiaries"].items():
+            if k in beneficiary.entity_type.fields_detail_view or k == "attributes":
+                if k == "attributes":
+                    for k_, v_ in res["beneficiaries"]["attributes"]["file_content"].items():
+                        worksheet.write(row, col, k_)
+                        worksheet.write(row + 1, col, v_)
+                        col += 1
+                else:
+                    worksheet.write(row, col, k)
+                    worksheet.write(row + 1, col, v)
+                    col += 1
+        col = 0
+        row += 2
+        filename = beneficiary.name
+    filename = f"EXPORT_BENEFICIARIES.xlsx" if len(beneficiaries) > 1 else f"{filename.upper()}_BENEFICIARY.xlsx"
+    workbook.close()
+    mem_file.seek(0)
+    response = HttpResponse(mem_file, content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
+    response["Content-Disposition"] = "attachment; filename=%s" % filename
+    return response
 
-    # @action(detail=False, methods=["GET"])
-    # def beneficiaries(self, request, *args, **kwargs):
-    #     limit = request.GET.get("limit", None)
-    #     page_offset = request.GET.get("page", 1)
-    #     orders = request.GET.get("order", "updated_at").split(",")
-    #     csv_format = request.GET.get("csv", None)
-    #     xlsx_format = request.GET.get("xlsx", None)
-    #
-    #     beneficiaries = Entity.objects.filter(
-    #         entity_type__name="beneficiary", account=request.user.iaso_profile.account
-    #     )
-    #
-    #     if limit:
-    #         limit = int(limit)
-    #         page_offset = int(page_offset)
-    #         paginator = Paginator(beneficiaries, limit)
-    #         res = {"count": paginator.count}
-    #         if page_offset > paginator.num_pages:
-    #             page_offset = paginator.num_pages
-    #         page = paginator.page(page_offset)
-    #
-    #         serializer = BeneficiarySerializer(beneficiaries, many=True)
-    #
-    #         def as_dict_formatter(x):
-    #             dict = x.as_dict()
-    #             dict["beneficiaries"] = serializer.data
-    #             return dict
-    #
-    #         res["beneficiaries"] = map(as_dict_formatter, page.object_list)
-    #         res["has_next"] = page.has_next()
-    #         res["has_previous"] = page.has_previous()
-    #         res["page"] = page_offset
-    #         res["pages"] = paginator.num_pages
-    #         res["limit"] = limit
-    #         return Response(res)
-    #
-    #     serializer = BeneficiarySerializer(beneficiaries, many=True)
-    #     return Response(serializer.data)
+
+def export_beneficiary_as_csv(beneficiaries):
+
+    header = []
+    data = []
+    filename = ""
+
+    for beneficiary in beneficiaries:
+        res = {"beneficiaries": BeneficiarySerializer(beneficiary, many=False).data}
+        benef_data = []
+        for k, v in res["beneficiaries"].items():
+            if k in beneficiary.entity_type.fields_detail_view or k == "attributes":
+                if k == "attributes":
+                    for k_, v_ in res["beneficiaries"]["attributes"]["file_content"].items():
+                        if k_ not in header:
+                            header.append(k_)
+                        benef_data.append(v_)
+                else:
+                    if k not in header:
+                        header.append(k)
+                    benef_data.append(v)
+        data.append(benef_data)
+        filename = beneficiary.name
+    filename = f"EXPORT_BENEFICIARIES.csv" if len(beneficiaries) > 1 else f"{filename.upper()}_BENEFICIARY.csv"
+
+    response = HttpResponse(
+        content_type="txt/csv",
+        headers={"Content-Disposition": f"attachment; filename={filename}"},
+    )
+
+    writer = csv.writer(response)
+    writer.writerow(header)
+    writer.writerows(data)
+
+    return response
 
 
 class BeneficiaryViewset(ModelViewSet):
+    """Beneficiaries API
+
+    GET /api/entity/beneficiary
+    GET /api/entity/beneficiary/<id>
+    DELETE /api/entity/beneficiary/<id>
+
+    To export as xlsx:
+    /api/entity/beneficiary/?xlsx=true
+    or by id:
+    /api/entity/beneficiary/?xlsx=true&id=<id>
+    """
+
     results_key = "beneficiary"
     remove_results_key_if_paginated = True
     filter_backends = [filters.OrderingFilter, DjangoFilterBackend, EntityFilterBackend]
@@ -277,6 +318,9 @@ class BeneficiaryViewset(ModelViewSet):
         entity_type = self.request.query_params.get("entity_type", None)
         by_uuid = self.request.query_params.get("by_uuid", None)
         form_name = self.request.query_params.get("form_name", None)
+        show_deleted = self.request.query_params.get("show_deleted", None)
+        created_by_id = self.request.query_params.get("created_by_id", None)
+        created_by_team_id = self.request.query_params.get("created_by_team_id", None)
 
         queryset = Entity.objects.filter(account=self.request.user.iaso_profile.account)
         if form_name:
@@ -294,49 +338,35 @@ class BeneficiaryViewset(ModelViewSet):
             queryset = queryset.filter(created_at__gte=date_from)
         if date_to:
             queryset = queryset.filter(created_at__lte=date_to)
+        if show_deleted:
+            queryset = queryset.filter(deleted_at__isnull=True)
+        if created_by_id:
+            queryset = queryset.filter(attributes__created_by_id=created_by_id)
+        if created_by_team_id:
+            queryset = queryset.filter(attributes__created_by__teams__id=created_by_team_id)
 
         # location
 
         queryset = queryset.order_by(*order)
         return queryset
 
-    @action(detail=False, methods=["GET"])
-    def export_xlsx(self, request, *args, **kwargs):
-        id = self.request.query_params.get("id", None)
-        beneficiary = get_object_or_404(Entity, pk=id, account=request.user.iaso_profile.account)
-        serializer = BeneficiarySerializer(beneficiary, many=False)
+    def list(self, request: Request, *args, **kwargs):
+        csv_format = request.GET.get("csv", None)
+        xlsx_format = request.GET.get("xlsx", None)
+        pk = request.query_params.get("id", None)
 
-        mem_file = io.BytesIO()
-        workbook = xlsxwriter.Workbook(mem_file)
-        worksheet = workbook.add_worksheet("beneficiary")
-        worksheet.set_column(0, 3, 30)
-        row = 0
-        col = 0
-        res = {"beneficiaries": serializer.data}
+        if xlsx_format or csv_format:
+            if pk:
+                beneficiaries = Entity.objects.filter(
+                    account=self.request.user.iaso_profile.account, pk=pk, deleted_at__isnull=True
+                )
+            else:
+                beneficiaries = Entity.objects.filter(
+                    account=self.request.user.iaso_profile.account, deleted_at__isnull=True
+                )
+            if xlsx_format:
+                return export_beneficiary_as_xlsx(beneficiaries)
+            if csv_format:
+                return export_beneficiary_as_csv(beneficiaries)
 
-        for k, v in res["beneficiaries"].items():
-            if k in beneficiary.entity_type.fields_detail_view or k == "attributes":
-                if k == "attributes":
-                    for k_, v_ in res["beneficiaries"]["attributes"]["file_content"].items():
-                        worksheet.write(row, col, k_)
-                        worksheet.write(row + 1, col, v_)
-                        col += 1
-                        row = 0
-                else:
-                    worksheet.write(row, col, k)
-                    worksheet.write(row + 1, col, v)
-                    col += 1
-                    row = 0
-        worksheet.set_column(0, col, 30)
-        workbook.close()
-        mem_file.seek(0)
-
-        filename = f"{beneficiary.name}_beneficiary.xlsx"
-
-        response = HttpResponse(
-            mem_file,
-            content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
-        )
-        response['Content-Disposition'] = 'attachment; filename=%s' % filename
-
-        return response
+        return super().list(request, *args, **kwargs)

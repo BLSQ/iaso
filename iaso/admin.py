@@ -133,6 +133,7 @@ class InstanceAdmin(admin.GeoModelAdmin):
                     "device",
                     "entity",
                     "last_modified_by",
+                    "created_by",
                 )
             },
         ),

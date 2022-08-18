@@ -7,13 +7,20 @@ import django.db.models.deletion
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('iaso', '0155_alter_entitytype_unique_together'),
+        ("iaso", "0155_alter_entitytype_unique_together"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='entity',
-            name='attributes',
-            field=models.OneToOneField(blank=True, help_text='instance', null=True, on_delete=django.db.models.deletion.PROTECT, related_name='attributes', to='iaso.instance'),
+            model_name="entity",
+            name="attributes",
+            field=models.OneToOneField(
+                blank=True,
+                help_text="instance",
+                null=True,
+                on_delete=django.db.models.deletion.PROTECT,
+                related_name="attributes",
+                to="iaso.instance",
+            ),
         ),
     ]

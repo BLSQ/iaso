@@ -5,9 +5,12 @@ import { useSafeIntl, LoadingSpinner } from 'bluesquare-components';
 
 import { Box } from '@material-ui/core';
 
-import { useGetInstanceLogDetail } from '../hooks/useGetInstanceLogs';
+import {
+    useGetInstanceLogDetail,
+    useGetFormDescriptor,
+} from '../hooks/useGetInstanceLogs';
 
-import { FileContent } from '../../types/instance';
+import { FileContent, FormDescriptor } from '../../types/instance';
 
 import { InstanceLogContentBasic } from './InstanceLogContentBasic';
 import ErrorPaperComponent from '../../../../components/papers/ErrorPaperComponent';
@@ -29,6 +32,15 @@ export const InstanceLogDetail: FunctionComponent<Props> = ({ logA, logB }) => {
         isLoading: boolean;
         isError: boolean;
     } = useGetInstanceLogDetail(logA, logB);
+
+    const {
+        data: instanceLogDescriptor,
+    }: {
+        data?: FormDescriptor;
+    } = useGetFormDescriptor(
+        instanceLogDetail?.logA?.json._version,
+        instanceLogDetail?.logA?.form,
+    );
 
     const { formatMessage } = useSafeIntl();
 
@@ -53,7 +65,11 @@ export const InstanceLogDetail: FunctionComponent<Props> = ({ logA, logB }) => {
         <>
             {instanceLogDetail && (
                 // TO DO: add fileDescriptor prop to get label from label key
-                <InstanceLogContentBasic fileContent={instanceLogDetail} />
+                // TO DO: add user name who did the modification
+                <InstanceLogContentBasic
+                    fileContent={instanceLogDetail}
+                    fileDescriptor={instanceLogDescriptor}
+                />
             )}
         </>
     );

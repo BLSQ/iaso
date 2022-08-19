@@ -236,7 +236,13 @@ def export_beneficiary_as_xlsx(beneficiaries):
         worksheet.write(row, col, f"{beneficiary.name.upper()}:")
         row += 1
         for k, v in res["beneficiaries"].items():
-            if k in beneficiary.entity_type.fields_detail_view or k == "attributes":
+            try:
+                fields_list = beneficiary.entity_type.fields_detail_view
+            except TypeError:
+                raise serializers.ValidationError(
+                    {"error": "You must provide a field details view list in order to export the beneficiaries."}
+                )
+            if k in fields_list or k == "attributes":
                 if k == "attributes":
                     for k_, v_ in res["beneficiaries"]["attributes"]["file_content"].items():
                         worksheet.write(row, col, k_)
@@ -267,7 +273,13 @@ def export_beneficiary_as_csv(beneficiaries):
         res = {"beneficiaries": BeneficiarySerializer(beneficiary, many=False).data}
         benef_data = []
         for k, v in res["beneficiaries"].items():
-            if k in beneficiary.entity_type.fields_detail_view or k == "attributes":
+            try:
+                fields_list = beneficiary.entity_type.fields_detail_view
+            except TypeError:
+                raise serializers.ValidationError(
+                    {"error": "You must provide a field details view list in order to export the beneficiaries."}
+                )
+            if k in fields_list or k == "attributes":
                 if k == "attributes":
                     for k_, v_ in res["beneficiaries"]["attributes"]["file_content"].items():
                         if k_ not in header:

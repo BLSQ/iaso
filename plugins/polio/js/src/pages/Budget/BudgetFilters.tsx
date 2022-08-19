@@ -1,3 +1,4 @@
+/* eslint-disable react/require-default-props */
 import { Box, Grid, useMediaQuery, useTheme } from '@material-ui/core';
 import React, { FunctionComponent } from 'react';
 // @ts-ignore
@@ -38,7 +39,7 @@ const statusOptions = (formatMessage: IntlFormatMessage) => {
 const baseUrl = BUDGET;
 export const BudgetFilters: FunctionComponent<Props> = ({
     params,
-    buttonSize,
+    buttonSize = 'medium',
 }) => {
     const { filters, handleSearch, handleChange, filtersUpdated } =
         useFilterState(baseUrl, params);
@@ -98,8 +99,4 @@ export const BudgetFilters: FunctionComponent<Props> = ({
             {/* </Grid> */}
         </Box>
     );
-};
-
-BudgetFilters.defaultProps = {
-    buttonSize: 'medium',
 };

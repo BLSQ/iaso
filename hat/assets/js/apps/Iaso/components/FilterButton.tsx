@@ -1,3 +1,4 @@
+/* eslint-disable react/require-default-props */
 /* eslint-disable react/jsx-props-no-spreading */
 import React, { FunctionComponent } from 'react';
 import FiltersIcon from '@material-ui/icons/FilterList';
@@ -20,7 +21,7 @@ type Props = {
 export const FilterButton: FunctionComponent<Props> = ({
     disabled,
     onFilter,
-    size,
+    size = 'medium',
 }) => {
     return (
         <Button
@@ -37,8 +38,4 @@ export const FilterButton: FunctionComponent<Props> = ({
             <FormattedMessage {...MESSAGES.filter} />
         </Button>
     );
-};
-
-FilterButton.defaultProps = {
-    size: 'medium',
 };

@@ -204,11 +204,13 @@ const InstancesFiltersComponent = ({
                         label={MESSAGES.org_unit_type_id}
                         loading={fetchingOrgUnitTypes}
                     />
-                    <LocationLimit
-                        onChange={handleFormChange}
-                        value={formState.mapResults.value}
-                        setHasError={setHasLocationLimitError}
-                    />
+                    <Box mt={2}>
+                        <LocationLimit
+                            onChange={handleFormChange}
+                            value={formState.mapResults.value}
+                            setHasError={setHasLocationLimitError}
+                        />
+                    </Box>
                 </Grid>
                 <Grid item xs={4}>
                     <InputComponent

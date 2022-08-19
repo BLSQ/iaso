@@ -16,8 +16,18 @@ class AppSerializer(ProjectSerializer):
 
     class Meta(ProjectSerializer.Meta):
         model = Project
-        fields = ["id", "name", "app_id", "forms", "feature_flags", "needs_authentication", "created_at", "updated_at"]
-        read_only_fields = ["id", "created_at", "updated_at"]
+        fields = [
+            "id",
+            "name",
+            "app_id",
+            "forms",
+            "feature_flags",
+            "needs_authentication",
+            "min_version",
+            "created_at",
+            "updated_at",
+        ]
+        read_only_fields = ["id", "created_at", "updated_at", "min_version"]
 
     id = serializers.CharField(read_only=True, source="app_id")
 

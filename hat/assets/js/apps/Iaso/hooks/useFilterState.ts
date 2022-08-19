@@ -8,6 +8,8 @@ export type FilterState = {
     // eslint-disable-next-line no-unused-vars
     handleChange: (keyValue: string, value: unknown) => void;
     filtersUpdated: boolean;
+    // eslint-disable-next-line no-unused-vars
+    setFiltersUpdated: (updated: boolean) => void;
 };
 
 const paginationParams = ['pageSize', 'page', 'order'];
@@ -68,6 +70,7 @@ export const useFilterState = (
             handleChange,
             handleSearch,
             filtersUpdated,
+            setFiltersUpdated,
         };
     }, [filters, handleChange, handleSearch, filtersUpdated]);
 };

@@ -44,6 +44,7 @@ export const useRenderTrigger = (
                     <AddButton
                         onClick={openDialog}
                         dataTestId="create-budgetStep-button"
+                        size={isMobileLayout ? 'small' : 'medium'}
                         message={
                             isMobileLayout ? MESSAGES.add : MESSAGES.addStep
                         }

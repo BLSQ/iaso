@@ -10,7 +10,9 @@ class AppsAPITestCase(APITestCase):
         account = m.Account.objects.create(name="Global Health Initiative")
         cls.yoda = cls.create_user_with_profile(username="yoda", account=account, permissions=["iaso_forms"])
         cls.project_1 = m.Project.objects.create(name="Project 1", account=account, app_id="org.ghi.p1")
-        cls.project_2 = m.Project.objects.create(name="Project 2", account=account, app_id="org.ghi.p2")
+        cls.project_2 = m.Project.objects.create(
+            name="Project 2", account=account, app_id="org.ghi.p2", min_version=1234
+        )
         cls.flag_1 = m.FeatureFlag.objects.create(
             code="send_location", name="Send GPS location", description="Send GPS location every time etc"
         )
@@ -215,6 +217,7 @@ class AppsAPITestCase(APITestCase):
         self.assertHasField(app_data, "id", str)
         self.assertHasField(app_data, "name", str)
         self.assertHasField(app_data, "feature_flags", list)
+        self.assertHasField(app_data, "min_version", int, optional=True)
         self.assertHasField(app_data, "needs_authentication", bool)
         self.assertHasField(app_data, "created_at", float)
         self.assertHasField(app_data, "updated_at", float)

@@ -17,10 +17,11 @@ class AppsViewSet(ModelViewSet):
     The idea behind the endpoint is to "hide" projects from the mobile app, and just expose app settings for a
     single app.
 
-    This API is open to anonymous users.
+    This API is open to anonymous users:
 
-    GET /api/apps/current/?app_id=some.app.id
-    GET /api/apps/<app_id>/
+    - `GET /api/apps/current/?app_id=some.app.id`
+
+    - `GET /api/apps/<app_id>/`
     """
 
     permission_classes = [permissions.IsAuthenticatedOrReadOnly]
@@ -35,7 +36,7 @@ class AppsViewSet(ModelViewSet):
         return Project.objects.all()
 
     def get_object(self):
-        """Override to handle GET /api/app/current/?app_id=some.app.id"""
+        """Override to handle GET /api/apps/current/?app_id=some.app.id"""
         if self.kwargs["app_id"] == "current":
             app_id = self.request.query_params.get("app_id", None)
             if app_id is None:

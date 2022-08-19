@@ -1754,6 +1754,8 @@ class BudgetEventViewset(ModelViewSet):
                 # Send email with link to all approvers if event is a submission
                 elif event_type == "submission" or event_type == "transmission":
                     author_team = event.author.teams.filter(name__icontains="approval").filter(deleted_at=None).first()
+                    if not author_team:
+                        author_team = event.author.teams.first()
                     approval_teams = Team.objects.filter(name__icontains="approval").filter(deleted_at=None)
                     approvers = approval_teams.values("users")
                     for approver in approvers:

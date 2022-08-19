@@ -47,6 +47,7 @@ class Project(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     external_token = models.UUIDField(default=uuid4, null=True)
+    min_version = models.IntegerField(null=True, blank=False)
     objects = ProjectQuerySet.as_manager()
 
     def __str__(self):

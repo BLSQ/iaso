@@ -43,6 +43,7 @@ class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = ["id", "username", "first_name", "last_name", "email"]
+        ref_name = "polio_user_serializer"
 
 
 class CountryUsersGroupSerializer(serializers.ModelSerializer):
@@ -220,6 +221,7 @@ class GroupSerializer(serializers.ModelSerializer):
     class Meta:
         model = Group
         fields = ["name", "org_units", "id"]
+        ref_name = "polio_group_serializer"
 
 
 class RoundScopeSerializer(serializers.ModelSerializer):

@@ -54,16 +54,19 @@ type Props = {
     profiles: Profile[];
 };
 
-const style = theme => {
-    return {
-        cta: { color: theme.palette.secondary.main },
-        inactiveCard: {
-            cursor: 'default',
-        },
-    };
-};
-
-const useStyles = makeStyles(style);
+const useStyles = makeStyles(theme => ({
+    cardContent: {
+        padding: `${theme.spacing(1)}px !important`,
+    },
+    cta: { color: theme.palette.secondary.main },
+    inactiveCard: {
+        cursor: 'default',
+    },
+    title: {
+        fontSize: 16,
+        fontWeight: 'bold',
+    },
+}));
 
 export const BudgetEventCard: FunctionComponent<Props> = ({
     event,
@@ -118,9 +121,15 @@ export const BudgetEventCard: FunctionComponent<Props> = ({
                     >
                         {isLoading && <LoadingSpinner fixed={false} />}
                         {!isLoading && (
-                            <CardContent onClick={onClick}>
+                            <CardContent
+                                onClick={onClick}
+                                className={classes.cardContent}
+                            >
                                 <Box>
-                                    <Typography variant="h6">
+                                    <Typography
+                                        variant="h6"
+                                        className={classes.title}
+                                    >
                                         {title}
                                         <LockIcon internal={event?.internal} />
                                     </Typography>

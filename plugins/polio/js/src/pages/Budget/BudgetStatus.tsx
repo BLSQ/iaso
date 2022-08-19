@@ -12,7 +12,12 @@ type Props = {
 };
 
 const styles = theme => ({
-    title: { fontWeight: 'bold' },
+    title: {
+        fontWeight: 'bold',
+        [theme.breakpoints.down('md')]: {
+            fontSize: 18,
+        },
+    },
     rejected: { color: theme.palette.error.main },
     validated: { color: theme.palette.success.main },
     validation_ongoing: { color: WARNING_COLOR },

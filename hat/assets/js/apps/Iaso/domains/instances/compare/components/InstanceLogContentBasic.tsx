@@ -94,7 +94,12 @@ export const InstanceLogContentBasic: FunctionComponent<Props> = ({
                 {fileContent.logA &&
                     fileContent.logB &&
                     Object.keys(fileContent.logA.json).map(labelKey => {
-                        if (labelKey !== 'meta' && labelKey !== 'uuid') {
+                        if (
+                            labelKey !== 'meta' &&
+                            labelKey !== 'uuid' &&
+                            (fileContent.logA.json[labelKey] ||
+                                fileContent.logB.json[labelKey])
+                        ) {
                             return (
                                 <TableRow key={labelKey}>
                                     <TableCell

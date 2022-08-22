@@ -10,6 +10,7 @@ import {
     InstanceLogData,
     InstanceLogFileContent,
     FormDescriptor,
+    InstanceUserLogDetail,
 } from '../../types/instance';
 import { DropdownOptions } from '../../../../types/utils';
 
@@ -108,6 +109,57 @@ export const useGetInstanceLogDetail = (
     };
 };
 
+export const useGetUserInstanceLog = (
+    logA: string | undefined,
+    logB: string | undefined,
+): UseQueryResult<InstanceUserLogDetail, Error> => {
+    const userLogADetail: Record<string, any> = useSnackQuery({
+        queryKey: ['userlogA', logA],
+        queryFn: () => getInstanceLogDetail(logA),
+        options: {
+            enabled: Boolean(logA),
+            select: data => {
+                if (data) {
+                    return data.user;
+                }
+
+                return undefined;
+            },
+        },
+    });
+
+    const userLogBDetail: Record<string, any> = useSnackQuery({
+        queryKey: ['userlogB', logB],
+        queryFn: () => getInstanceLogDetail(logB),
+        options: {
+            enabled: Boolean(logB),
+            select: data => {
+                if (data) {
+                    return data.user;
+                }
+
+                return undefined;
+            },
+        },
+    });
+
+    const userLogsDetail = useMemo(() => {
+        const data = {
+            logA: userLogADetail.data,
+            logB: userLogBDetail.data,
+        };
+
+        return data;
+    }, [userLogADetail?.data, userLogBDetail?.data]);
+
+    return {
+        data: userLogsDetail,
+        isLoading:
+            userLogADetail.data === undefined ||
+            userLogBDetail.data === undefined,
+        isError: !userLogADetail.data || !userLogBDetail.data,
+    };
+};
 export const useGetFormDescriptor = (
     versionId: string | undefined,
     formId: number | undefined,

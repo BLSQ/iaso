@@ -113,7 +113,7 @@ export const BudgetEventCard: FunctionComponent<Props> = ({
     return (
         <Card>
             <Grid container>
-                <Grid item xs={10}>
+                <Grid item xs={userIsAuthor ? 10 : 12}>
                     <CardActionArea
                         className={allowOpenModal ? '' : classes.inactiveCard}
                         disableRipple={!allowOpenModal}
@@ -178,41 +178,43 @@ export const BudgetEventCard: FunctionComponent<Props> = ({
                         recipients={event.target_teams.join(',')}
                     />
                 </Grid>
-                <Grid
-                    container
-                    item
-                    xs={2}
-                    direction="column"
-                    justifyContent="center"
-                >
-                    <Divider orientation="vertical" />
-                    {!event?.is_finalized && userIsAuthor && (
-                        <CreateEditBudgetEvent
-                            campaignId={event?.campaign}
-                            type="edit"
-                            budgetEvent={event}
-                            iconColor={
-                                event?.deleted_at ? 'secondary' : 'action'
-                            }
-                        />
-                    )}
-                    {!event.deleted_at && userIsAuthor && (
-                        <DeleteDialog
-                            titleMessage={MESSAGES.deleteBudgetEvent}
-                            message={MESSAGES.deleteBudgetEvent}
-                            onConfirm={() => deleteBudgetEvent(event?.id)}
-                            keyName={`deleteBudgetEvent-card-${event?.id}`}
-                        />
-                    )}
-                    {event.deleted_at && userIsAuthor && (
-                        <IconButtonComponent
-                            color="secondary"
-                            icon="restore-from-trash"
-                            tooltipMessage={MESSAGES.restore}
-                            onClick={() => restoreBudgetEvent(event?.id)}
-                        />
-                    )}
-                </Grid>
+                {userIsAuthor && (
+                    <Grid
+                        container
+                        item
+                        xs={2}
+                        direction="column"
+                        justifyContent="center"
+                    >
+                        <Divider orientation="vertical" />
+                        {!event?.is_finalized && userIsAuthor && (
+                            <CreateEditBudgetEvent
+                                campaignId={event?.campaign}
+                                type="edit"
+                                budgetEvent={event}
+                                iconColor={
+                                    event?.deleted_at ? 'secondary' : 'action'
+                                }
+                            />
+                        )}
+                        {!event.deleted_at && userIsAuthor && (
+                            <DeleteDialog
+                                titleMessage={MESSAGES.deleteBudgetEvent}
+                                message={MESSAGES.deleteBudgetEvent}
+                                onConfirm={() => deleteBudgetEvent(event?.id)}
+                                keyName={`deleteBudgetEvent-card-${event?.id}`}
+                            />
+                        )}
+                        {event.deleted_at && userIsAuthor && (
+                            <IconButtonComponent
+                                color="secondary"
+                                icon="restore-from-trash"
+                                tooltipMessage={MESSAGES.restore}
+                                onClick={() => restoreBudgetEvent(event?.id)}
+                            />
+                        )}
+                    </Grid>
+                )}
             </Grid>
         </Card>
     );

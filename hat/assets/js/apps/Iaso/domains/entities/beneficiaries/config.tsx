@@ -83,7 +83,7 @@ export const useColumns = (): Array<Column> => {
                 Cell: settings => {
                     return (
                         <>
-                            {settings.row.original?.attributes.file_content
+                            {settings.row.original?.attributes?.file_content
                                 ?.program ?? '--'}
                         </>
                     );
@@ -96,7 +96,9 @@ export const useColumns = (): Array<Column> => {
                 Cell: settings => {
                     return settings.row.original?.attributes?.org_unit ? (
                         <LinkToOrgUnit
-                            orgUnit={settings.row.original?.attributes.org_unit}
+                            orgUnit={
+                                settings.row.original?.attributes?.org_unit
+                            }
                         />
                     ) : (
                         <>--</>
@@ -108,7 +110,7 @@ export const useColumns = (): Array<Column> => {
                 accessor: 'attributes__file_content_end',
                 Cell: settings => {
                     const cellInfo = {
-                        value: settings.row.original?.attributes.file_content
+                        value: settings.row.original?.attributes?.file_content
                             .end,
                     };
                     if (cellInfo) {
@@ -124,7 +126,7 @@ export const useColumns = (): Array<Column> => {
                 id: 'attributes__file_content__vaccination_number',
                 Cell: settings => {
                     const { vaccination_number } =
-                        settings.row.original?.attributes.file_content ?? {};
+                        settings.row.original?.attributes?.file_content ?? {};
                     return <>{vaccination_number ?? '--'}</>;
                 },
             },
@@ -137,12 +139,14 @@ export const useColumns = (): Array<Column> => {
                 Cell: settings => (
                     <AgeCell
                         birthDate={
-                            settings.row.original?.attributes.file_content
+                            settings.row.original?.attributes?.file_content
                                 .birth_date
                         }
-                        age={settings.row.original?.attributes.file_content.age}
+                        age={
+                            settings.row.original?.attributes?.file_content.age
+                        }
                         ageType={
-                            settings.row.original?.attributes.file_content
+                            settings.row.original?.attributes?.file_content
                                 .age_type
                         }
                     />
@@ -156,7 +160,7 @@ export const useColumns = (): Array<Column> => {
                 id: 'attributes__file_content__gender',
                 Cell: settings => {
                     const { gender } =
-                        settings.row.original?.attributes.file_content ?? {};
+                        settings.row.original?.attributes?.file_content ?? {};
                     return (
                         <>{gender ? formatMessage(MESSAGES[gender]) : '--'}</>
                     );

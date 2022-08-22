@@ -26,6 +26,7 @@ import { useResetPageToOne } from '../../../hooks/useResetPageToOne';
 import { useBeneficiariesDetailsColumns } from './config';
 import { CsvButton } from '../../../components/Buttons/CsvButton';
 import { XlsxButton } from '../../../components/Buttons/XslxButton';
+import { getAge } from '../../../hooks/useGetAge';
 
 type Props = {
     router: any;
@@ -163,7 +164,7 @@ export const Details: FunctionComponent<Props> = ({ router }) => {
                 <Grid container>
                     {/* TODO uncomment when we can extract key translation from form */}
                     {/* <Grid container item xs={3}>
-                        {mapFileContent(beneficiary?.attributes.file_content)}
+                        {mapFileContent(beneficiary?.attributes?.file_content)}
                     </Grid> */}
                     <Grid container item xs={3}>
                         <Grid container item xs={12}>
@@ -186,7 +187,8 @@ export const Details: FunctionComponent<Props> = ({ router }) => {
                                 justifyContent="center"
                             >
                                 <Box mt={1} mb={1}>
-                                    {beneficiary?.attributes.file_content.name}
+                                    {beneficiary?.attributes?.file_content
+                                        ?.name ?? '--'}
                                 </Box>
                             </Grid>
                         </Grid>
@@ -210,7 +212,18 @@ export const Details: FunctionComponent<Props> = ({ router }) => {
                                 justifyContent="center"
                             >
                                 <Box mt={1} mb={1}>
-                                    {beneficiary?.attributes.file_content.age}
+                                    {getAge({
+                                        age: beneficiary?.attributes
+                                            ?.file_content?.age,
+                                        ageType:
+                                            (beneficiary?.attributes
+                                                ?.file_content?.age_type as
+                                                | '0'
+                                                | '1') ?? '0',
+                                        birthDate:
+                                            beneficiary?.attributes
+                                                ?.file_content?.birth_date,
+                                    }) ?? '--'}
                                 </Box>
                             </Grid>
                         </Grid>
@@ -234,7 +247,7 @@ export const Details: FunctionComponent<Props> = ({ router }) => {
                                 justifyContent="center"
                             >
                                 <Box mt={1} mb={1}>
-                                    {beneficiary?.attributes.file_content
+                                    {beneficiary?.attributes?.file_content
                                         .gender ??
                                         formatMessage(MESSAGES.unknown)}
                                 </Box>
@@ -262,7 +275,7 @@ export const Details: FunctionComponent<Props> = ({ router }) => {
                             {`${formatMessage(MESSAGES.nfcCards)}: ${
                                 // TODO update when nfc data is available from backend
                                 // @ts-ignore
-                                beneficiary?.attributes.nfc_cards ?? 0
+                                beneficiary?.attributes?.nfc_cards ?? 0
                             }`}
                         </Box>
                     </Grid>

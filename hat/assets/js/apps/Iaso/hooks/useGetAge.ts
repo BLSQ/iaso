@@ -7,20 +7,28 @@ type Props = {
     age?: string;
 };
 
+export const getAge = ({
+    ageType,
+    age,
+    birthDate,
+}: Props): number | undefined => {
+    if (ageType === '0') {
+        const today = moment();
+        if (!birthDate) {
+            return undefined;
+        }
+        return today.diff(moment(birthDate), 'months');
+    }
+    if (ageType === '1') {
+        if (!age) return undefined;
+        return parseInt(age, 10);
+    }
+    return undefined;
+};
+
 export const useGetAge = (props: Props): number | undefined => {
     const { ageType, age, birthDate } = props;
     return useMemo(() => {
-        if (ageType === '0') {
-            const today = moment();
-            if (!birthDate) {
-                return undefined;
-            }
-            return today.diff(moment(birthDate), 'months');
-        }
-        if (ageType === '1') {
-            if (!age) return undefined;
-            return parseInt(age, 10);
-        }
-        return undefined;
+        return getAge({ ageType, age, birthDate });
     }, [age, ageType, birthDate]);
 };

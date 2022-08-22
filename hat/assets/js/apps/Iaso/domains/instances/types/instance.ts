@@ -64,6 +64,7 @@ export type InstanceLogData = {
     _version: string;
     form: number;
     new_value: NewValue[];
+    user: Record<string, any>;
 };
 
 type FormVersions = {
@@ -82,4 +83,15 @@ export type InstanceLogFileContent = {
     data: FileContent;
     isLoading: boolean;
     isError: boolean;
+};
+
+export type User = {
+    logA: Record<string, any>;
+    logB: Record<string, any>;
+};
+
+export type InstanceUserLogDetail = {
+    data: User;
+    isLoading: boolean;
+    isEror: boolean;
 };

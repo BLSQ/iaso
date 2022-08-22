@@ -1,3 +1,4 @@
+/* eslint-disable react/require-default-props */
 import React, { FunctionComponent } from 'react';
 import {
     // @ts-ignore
@@ -10,16 +11,23 @@ import { IntlFormatMessage } from '../../../../types/intl';
 import MESSAGES from '../messages';
 
 type Props = {
-    birthDate?: string | undefined;
+    ageType: '0' | '1';
+    birthDate?: string;
+    age?: string;
 };
 
-export const AgeCell: FunctionComponent<Props> = ({ birthDate }) => {
+export const AgeCell: FunctionComponent<Props> = ({
+    ageType,
+    age,
+    birthDate,
+}) => {
     const { formatMessage }: { formatMessage: IntlFormatMessage } =
         useSafeIntl();
-    const age = useGetAge(birthDate);
-    if (!age) return <>--</>;
-    return <>{`${age} ${formatMessage(MESSAGES.years)}`}</>;
-};
-AgeCell.defaultProps = {
-    birthDate: undefined,
+    const result = useGetAge({
+        ageType,
+        age,
+        birthDate,
+    });
+    if (!result) return <>--</>;
+    return <>{`${result} ${formatMessage(MESSAGES.months)}`}</>;
 };

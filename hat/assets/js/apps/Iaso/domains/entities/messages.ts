@@ -101,6 +101,26 @@ const MESSAGES = defineMessages({
         id: 'iaso.entities.registrationDate',
         defaultMessage: 'Registration date',
     },
+    gender: {
+        id: 'iaso.entities.gender',
+        defaultMessage: 'Gender',
+    },
+    female: {
+        id: 'iaso.entities.female',
+        defaultMessage: 'Female',
+    },
+    male: {
+        id: 'iaso.entities.male',
+        defaultMessage: 'Male',
+    },
+    vaccinationNumber: {
+        id: 'iaso.entities.vaccinationNumber',
+        defaultMessage: 'Vaccination number',
+    },
+    program: {
+        id: 'iaso.entities.program',
+        defaultMessage: 'Program',
+    },
 });
 
 export default MESSAGES;

@@ -1,3 +1,4 @@
+/* eslint-disable camelcase */
 import React, { ReactElement } from 'react';
 import {
     // @ts-ignore
@@ -8,7 +9,7 @@ import {
 
 import moment from 'moment';
 import { LinkToOrgUnit } from '../../orgUnits/components/LinkToOrgUnit';
-import { DateTimeCell } from '../../../components/Cells/DateTimeCell';
+import { DateCell } from '../../../components/Cells/DateTimeCell';
 
 import { AgeCell } from './components/AgeCell';
 
@@ -61,6 +62,19 @@ export const useColumns = (): Array<Column> => {
             },
         },
         {
+            Header: formatMessage(MESSAGES.program),
+            id: 'attributes__program',
+            accessor: 'attributes__program',
+            Cell: settings => {
+                return (
+                    <>
+                        {settings.row.original.attributes.file_content
+                            ?.program ?? '--'}
+                    </>
+                );
+            },
+        },
+        {
             Header: 'HC',
             id: 'attributes__org_unit__name',
             accessor: 'attributes__org_unit__name',
@@ -76,8 +90,24 @@ export const useColumns = (): Array<Column> => {
         },
         {
             Header: formatMessage(MESSAGES.registrationDate),
-            accessor: 'created_at',
-            Cell: DateTimeCell,
+            accessor: 'attributes__file_content_end',
+            Cell: settings => {
+                const cellInfo = {
+                    value: settings.row.original.attributes.file_content.end,
+                };
+                return <DateCell value={cellInfo} />;
+            },
+        },
+        {
+            Header: formatMessage(MESSAGES.vaccinationNumber),
+            sortable: false,
+            accessor: 'attributes__file_content__vaccination_number',
+            id: 'attributes__file_content__vaccination_number',
+            Cell: settings => {
+                const { vaccination_number } =
+                    settings.row.original.attributes.file_content;
+                return <>{vaccination_number ?? '--'}</>;
+            },
         },
         {
             Header: formatMessage(MESSAGES.age),
@@ -90,8 +120,24 @@ export const useColumns = (): Array<Column> => {
                     birthDate={
                         settings.row.original.attributes.file_content.birth_date
                     }
+                    age={settings.row.original.attributes.file_content.age}
+                    ageType={
+                        settings.row.original.attributes.file_content.age_type
+                    }
                 />
             ),
+        },
+        {
+            Header: formatMessage(MESSAGES.gender),
+            // TODO: MAKE IT SORTABLE
+            sortable: false,
+            accessor: 'attributes__file_content__gender',
+            id: 'attributes__file_content__gender',
+            Cell: settings => {
+                const { gender } =
+                    settings.row.original.attributes.file_content;
+                return <>{gender ? formatMessage(MESSAGES[gender]) : '--'}</>;
+            },
         },
         {
             Header: formatMessage(MESSAGES.actions),

@@ -1,3 +1,4 @@
+/* eslint-disable react/require-default-props */
 /* eslint-disable camelcase */
 import React, { ReactNode, FunctionComponent } from 'react';
 import { useFormik, FormikProvider, FormikProps } from 'formik';
@@ -137,11 +138,4 @@ export const Dialog: FunctionComponent<Props> = ({
             </ConfirmCancelDialogComponent>
         </FormikProvider>
     );
-};
-
-Dialog.defaultProps = {
-    initialData: {
-        name: null,
-        attributes: null,
-    },
 };

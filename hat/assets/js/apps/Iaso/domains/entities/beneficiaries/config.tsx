@@ -41,6 +41,11 @@ export const useColumns = (): Array<Column> => {
                 Header: formatMessage(MESSAGES.name),
                 id: 'name',
                 accessor: 'name',
+                Cell: settings => {
+                    return (
+                        <>{settings.row.orginal?.attributes?.name ?? '--'}</>
+                    );
+                },
             },
             {
                 Header: formatMessage(MESSAGES.id),

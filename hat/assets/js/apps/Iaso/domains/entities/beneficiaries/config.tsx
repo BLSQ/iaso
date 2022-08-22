@@ -44,7 +44,7 @@ export const useColumns = (): Array<Column> => {
                 Cell: settings => {
                     return (
                         <>
-                            {settings.row.orginal?.attributes?.file_content
+                            {settings.row.original?.attributes?.file_content
                                 ?.name ?? '--'}
                         </>
                     );

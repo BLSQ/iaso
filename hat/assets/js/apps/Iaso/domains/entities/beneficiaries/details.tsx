@@ -280,7 +280,7 @@ export const Details: FunctionComponent<Props> = ({ router }) => {
                         </Box>
                     </Grid>
                     <Grid container item xs={5} justifyContent="flex-end">
-                        <Box mr={2}>
+                        <Box>
                             <CsvButton
                                 csvUrl={`/api/entity/beneficiary/?csv=true&id=${beneficiaryId}`}
                             />

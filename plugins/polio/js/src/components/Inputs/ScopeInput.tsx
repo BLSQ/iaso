@@ -32,6 +32,8 @@ import {
     Tooltip,
     Typography,
     Box,
+    List,
+    ListItem,
 } from '@material-ui/core';
 import cloneDeep from 'lodash/cloneDeep';
 import sortBy from 'lodash/sortBy';
@@ -348,7 +350,6 @@ export const ScopeInput: FunctionComponent<FieldProps<Scope[], Values>> = ({
             </Tooltip>
         );
     };
-
     return (
         <Grid container spacing={4}>
             <Grid xs={7} item>
@@ -375,50 +376,61 @@ export const ScopeInput: FunctionComponent<FieldProps<Scope[], Values>> = ({
 
                     <MapLegend
                         titleMessage={MESSAGES.vaccine}
-                        width={170}
+                        width={175}
                         content={
                             <FormControl id="vaccine">
-                                <RadioGroup
-                                    aria-label="vaccineScope"
-                                    value={selectedVaccine}
-                                    onChange={event =>
-                                        setSelectedVaccine(event.target.value)
-                                    }
-                                >
+                                <List>
                                     {polioVaccines.map(vaccine => (
-                                        <FormControlLabel
+                                        <ListItem
                                             key={vaccine.value}
-                                            value={vaccine.label}
-                                            control={<Radio size="small" />}
-                                            label={
-                                                <Box
+                                            button
+                                            className={classes.vaccinesList}
+                                            onClick={() =>
+                                                setSelectedVaccine(
+                                                    vaccine.value,
+                                                )
+                                            }
+                                        >
+                                            <Box
+                                                className={
+                                                    classes.vaccinesSelect
+                                                }
+                                            >
+                                                <span
+                                                    style={{
+                                                        backgroundColor:
+                                                            vaccine.color,
+                                                    }}
                                                     className={
-                                                        classes.vaccinesSelect
+                                                        classes.roundColor
                                                     }
                                                 >
-                                                    <span
-                                                        style={{
-                                                            color: vaccine.color,
-                                                        }}
-                                                    >
-                                                        {vaccine.value}
-                                                    </span>{' '}
-                                                    {vaccineCount[
-                                                        vaccine.value
-                                                    ] ?? 0}{' '}
-                                                    {formatMessage(
-                                                        MESSAGES.districts,
+                                                    {selectedVaccine ===
+                                                        vaccine.value && (
+                                                        <span
+                                                            className={
+                                                                classes.roundColorInner
+                                                            }
+                                                        />
                                                     )}
-                                                </Box>
-                                            }
-                                        />
+                                                </span>
+                                                <span
+                                                    className={
+                                                        classes.vaccineName
+                                                    }
+                                                >
+                                                    {vaccine.value}
+                                                </span>
+                                                {': '}
+                                                {vaccineCount[vaccine.value] ??
+                                                    0}{' '}
+                                                {formatMessage(
+                                                    MESSAGES.districts,
+                                                )}
+                                            </Box>
+                                        </ListItem>
                                     ))}
-                                    {/* <FormControlLabel */}
-                                    {/*    value="" */}
-                                    {/*    control={<Radio />} */}
-                                    {/*    label="❌ Not part of campaign" */}
-                                    {/* /> */}
-                                </RadioGroup>
+                                </List>
                             </FormControl>
                         }
                     />

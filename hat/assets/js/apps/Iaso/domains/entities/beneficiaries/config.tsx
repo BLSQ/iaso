@@ -43,7 +43,10 @@ export const useColumns = (): Array<Column> => {
                 accessor: 'name',
                 Cell: settings => {
                     return (
-                        <>{settings.row.orginal?.attributes?.name ?? '--'}</>
+                        <>
+                            {settings.row.orginal?.attributes?.file_content
+                                ?.name ?? '--'}
+                        </>
                     );
                 },
             },

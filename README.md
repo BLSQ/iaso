@@ -740,13 +740,6 @@ e.g: bulk import, modifications or export of OrgUnits.  Theses are the functions
 marked by the decorator @task_decorator, when called they get added to a Queue
 and get executed by a worker.
 
-
-The logic is based on a fork of the library
-[django-beanstalk-worker](https://pypi.org/project/django-beanstalk-worker/)
-from tolomea, please consult it's doc for reference.
-
-In production on AWS, we use Elastic Beanstalk workers which use a SQS queue.
-
 In local development, you can run a worker by using the command:
 ```
 docker-compose run iaso manage tasks_worker
@@ -763,3 +756,17 @@ the task. At execution time the task will receive a iaso.models.Task
 instance in argument that should be used to report progress. It's
 mandatory for the function, at the end of a successful execution to call
 task.report_success() to mark its proper completion.
+
+We have two background workers mechanisms: a postgres backed one, and a SQS backed one. You can choose which one to use using the `BACKGROUND_TASK_SERVICE` environment variable, use either `SQS` or `POSTGRES` (it defaults to `SQS` in production).
+
+## AWS SQS
+
+The logic is based on a fork of the library [django-beanstalk-worker](https://pypi.org/project/django-beanstalk-worker/) from tolomea, please consult its doc for reference.
+
+In production on AWS, we use Elastic Beanstalk workers which use a SQS queue. They use the SQS queue for enqueuing and persisting the tasks, but rely on the Elasic Beanstalk Worker environment to poll from that qeueue and push it to the webapp, at `tasks/task`. [AWS Elastic Beanstalk Worker docs](https://docs.aws.amazon.com/elasticbeanstalk/latest/dg/using-features-managing-env-tiers.html#worker-daemon)
+
+## Postgres
+
+This is also the one that you get when running locally with `docker-compose run iaso manage tasks_worker`, instead of enqueuing the tasks to SQS, we now enqueue them to our postgres server.
+
+Our tasks_worker process (which runs indefinitely) will listen for new tasks and run them when it gets notified (using postgres's NOTIFY/LISTEN features)

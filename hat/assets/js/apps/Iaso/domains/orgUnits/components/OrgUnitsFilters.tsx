@@ -228,7 +228,6 @@ export const OrgUnitFilters: FunctionComponent<Props> = ({
                     onEnterPressed={() => onSearch()}
                     onChange={handleChange}
                     keyValue="search"
-                    required
                     value={filters?.search ? `${filters?.search}` : ''}
                     onErrorChange={setTextSearchError}
                 />
@@ -351,7 +350,7 @@ export const OrgUnitFilters: FunctionComponent<Props> = ({
                         initialSelection={initialOrgUnit}
                     />
                 </Box>
-                <Box mb={1}>
+                <Box mb={2}>
                     <InputComponent
                         type="select"
                         keyValue="geography"

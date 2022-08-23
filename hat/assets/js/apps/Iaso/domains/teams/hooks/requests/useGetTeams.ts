@@ -54,7 +54,7 @@ export const useGetTeams = (
 
 export const useGetTeamsDropdown = (
     options: TeamParams | TeamFilterParams,
-    currentTeamId: number | undefined,
+    currentTeamId?: number | undefined,
 ): UseQueryResult<DropdownTeamsOptions[], Error> => {
     const queryKey: any[] = ['teamsList', options];
     // @ts-ignore

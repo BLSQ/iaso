@@ -1,4 +1,9 @@
-import React, { useState, FunctionComponent, useCallback } from 'react';
+import React, {
+    useState,
+    FunctionComponent,
+    useCallback,
+    useMemo,
+} from 'react';
 import { useDispatch } from 'react-redux';
 
 import { Grid, Button, makeStyles, Box } from '@material-ui/core';
@@ -22,6 +27,8 @@ import MESSAGES from '../messages';
 import { baseUrl } from '../../config';
 
 import { useGetOrgUnit } from '../../../orgUnits/components/TreeView/requests';
+import { useGetTeamsDropdown } from '../../../teams/hooks/requests/useGetTeams';
+import { useGetUsersDropDown } from '../hooks/requests';
 
 const useStyles = makeStyles(theme => ({
     ...commonStyles(theme),
@@ -35,6 +42,8 @@ type Params = {
     location?: string;
     dateFrom?: string;
     dateTo?: string;
+    submitterId?: string;
+    submitterTeamId?: string;
 };
 
 type Props = {
@@ -50,11 +59,22 @@ const Filters: FunctionComponent<Props> = ({ params }) => {
         location: params.location,
         dateFrom: params.dateFrom,
         dateTo: params.dateTo,
+        submitterId: params.submitterId,
+        submitterTeamId: params.submitterTeamId,
     });
     const [filtersUpdated, setFiltersUpdated] = useState(false);
     const [initialOrgUnitId, setInitialOrgUnitId] = useState(params?.location);
 
     const { data: initialOrgUnit } = useGetOrgUnit(initialOrgUnitId);
+    const { data: teamOptions } = useGetTeamsDropdown({});
+
+    const selectedTeam = useMemo(() => {
+        return teamOptions?.find(
+            option => option.value === filters.submitterTeamId,
+        )?.original;
+    }, [filters.submitterTeamId, teamOptions]);
+
+    const { data: usersOptions } = useGetUsersDropDown(selectedTeam);
 
     const handleSearch = useCallback(() => {
         if (filtersUpdated) {
@@ -81,45 +101,86 @@ const Filters: FunctionComponent<Props> = ({ params }) => {
         },
         [filters],
     );
-
+    const handleTeamChange = useCallback(
+        (key, value) => {
+            setFiltersUpdated(true);
+            setFilters({
+                ...filters,
+                [key]: value,
+                submitterId: undefined,
+            });
+        },
+        [filters],
+    );
     return (
         <>
             <Grid container spacing={2}>
                 <Grid item xs={3}>
-                    <InputComponent
-                        keyValue="search"
-                        onChange={handleChange}
-                        value={filters.search}
-                        type="search"
-                        label={MESSAGES.search}
-                        onEnterPressed={handleSearch}
-                    />
-                    <Box id="ou-tree-input">
-                        <OrgUnitTreeviewModal
-                            toggleOnLabelClick={false}
-                            titleMessage={MESSAGES.location}
-                            onConfirm={orgUnit =>
-                                handleChange(
-                                    'location',
-                                    orgUnit ? [orgUnit.id] : undefined,
-                                )
-                            }
-                            initialSelection={initialOrgUnit}
+                    <Box mt={2} p={1} mb={2}>
+                        <InputComponent
+                            keyValue="search"
+                            onChange={handleChange}
+                            value={filters.search}
+                            type="search"
+                            label={MESSAGES.search}
+                            onEnterPressed={handleSearch}
+                        />
+                        <Box id="ou-tree-input">
+                            <OrgUnitTreeviewModal
+                                toggleOnLabelClick={false}
+                                titleMessage={MESSAGES.location}
+                                onConfirm={orgUnit =>
+                                    handleChange(
+                                        'location',
+                                        orgUnit ? [orgUnit.id] : undefined,
+                                    )
+                                }
+                                initialSelection={initialOrgUnit}
+                            />
+                        </Box>
+                    </Box>
+                </Grid>
+                <Grid item xs={3}>
+                    <Box mt={2} p={1} mb={2}>
+                        <DatesRange
+                            xs={12}
+                            sm={12}
+                            md={12}
+                            lg={12}
+                            onChangeDate={handleChange}
+                            labelFrom={MESSAGES.dateFrom}
+                            labelTo={MESSAGES.dateTo}
+                            dateFrom={filters.dateFrom}
+                            dateTo={filters.dateTo}
                         />
                     </Box>
                 </Grid>
                 <Grid item xs={3}>
-                    <DatesRange
-                        xs={12}
-                        sm={12}
-                        md={12}
-                        lg={12}
-                        onChangeDate={handleChange}
-                        labelFrom={MESSAGES.dateFrom}
-                        labelTo={MESSAGES.dateTo}
-                        dateFrom={filters.dateFrom}
-                        dateTo={filters.dateTo}
-                    />
+                    <Box
+                        mt={2}
+                        p={1}
+                        mb={2}
+                        border={1}
+                        borderRadius={5}
+                        borderColor="rgba(0,0,0,0.23)"
+                    >
+                        <InputComponent
+                            keyValue="submitterTeamId"
+                            onChange={handleTeamChange}
+                            value={filters.submitterTeamId}
+                            type="select"
+                            label={MESSAGES.submitterTeam}
+                            options={teamOptions}
+                        />
+                        <InputComponent
+                            keyValue="submitterId"
+                            onChange={handleChange}
+                            value={filters.submitterId}
+                            type="select"
+                            label={MESSAGES.submitter}
+                            options={usersOptions}
+                        />
+                    </Box>
                 </Grid>
             </Grid>
             <Grid

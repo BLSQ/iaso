@@ -156,7 +156,7 @@ const menuItems = defaultSourceId => [
             },
             {
                 label: MESSAGES.entityTypesTitle,
-                permissions: paths.entitiesPath.permissions,
+                permissions: paths.entityTypesPath.permissions,
                 key: 'types',
                 icon: props => <CategoryIcon {...props} />,
             },

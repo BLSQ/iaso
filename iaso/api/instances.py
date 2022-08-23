@@ -130,6 +130,7 @@ class InstancesViewSet(viewsets.ViewSet):
         queryset = queryset.prefetch_related("org_unit")
         queryset = queryset.prefetch_related("org_unit__org_unit_type")
         queryset = queryset.prefetch_related("form")
+        queryset = queryset.prefetch_related("created_by")
         queryset = queryset.for_filters(**filters)
         queryset = queryset.order_by(*orders)
         # IA-1023 = allow to sort instances by form version

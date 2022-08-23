@@ -1,3 +1,4 @@
+/* eslint-disable camelcase */
 import { UseMutationResult, UseQueryResult } from 'react-query';
 import moment from 'moment';
 
@@ -14,6 +15,10 @@ import MESSAGES from '../../messages';
 
 import { Beneficiary } from '../types/beneficiary';
 import { Pagination } from '../../../../types/table';
+import { Instance } from '../../../instances/types/instance';
+import { DropdownOptions } from '../../../../types/utils';
+import getDisplayName, { Profile } from '../../../../utils/usersUtils';
+import { DropdownTeamsOptions, Team } from '../../../teams/types/team';
 
 export interface PaginatedBeneficiaries extends Pagination {
     beneficiary: Array<Beneficiary>;
@@ -27,6 +32,8 @@ type Params = {
     location?: string;
     dateFrom?: string;
     dateTo?: string;
+    submitterId?: string;
+    submitterTeamId?: string;
 };
 
 type ApiParams = {
@@ -37,6 +44,8 @@ type ApiParams = {
     orgUnitId?: string;
     dateFrom?: string;
     dateTo?: string;
+    created_by_team_id?: string;
+    created_by_id?: string;
 };
 
 type GetAPiParams = {
@@ -58,11 +67,20 @@ export const useGetBeneficiariesApiParams = (params: Params): GetAPiParams => {
     }
 
     if (params.dateFrom) {
-        apiParams.dateFrom = moment(params.dateFrom).format(apiDateFormat);
+        apiParams.dateFrom = moment(params.dateFrom, 'DD-MM-YYYY').format(
+            apiDateFormat,
+        );
     }
-
     if (params.dateTo) {
-        apiParams.dateTo = moment(params.dateTo).format(apiDateFormat);
+        apiParams.dateTo = moment(params.dateTo, 'DD-MM-YYYY').format(
+            apiDateFormat,
+        );
+    }
+    if (params.submitterId) {
+        apiParams.created_by_id = params.submitterId;
+    }
+    if (params.submitterTeamId) {
+        apiParams.created_by_team_id = params.submitterTeamId;
     }
 
     // @ts-ignore
@@ -129,6 +147,96 @@ export const useGetBeneficiary = (
         queryFn: () => getBeneficiary(beneficiaryId),
         options: {
             retry: false,
+        },
+    });
+};
+
+const getSubmissions = (id?: number) => {
+    return getRequest(`/api/instances/?entityId=${id}`);
+};
+
+export const useGetSubmissions = (
+    id?: number,
+): UseQueryResult<Instance[], Error> => {
+    return useSnackQuery({
+        queryKey: ['submissionsForEntity', id],
+        queryFn: () => getSubmissions(id),
+        options: {
+            retry: false,
+            enabled: Boolean(id),
+            select: data => {
+                if (!data) return [];
+                return data.instances;
+            },
+        },
+    });
+};
+
+export const useGetUsersDropDown = (
+    team?: Team,
+): UseQueryResult<DropdownOptions<number>, Error> => {
+    return useSnackQuery(
+        ['profiles', team],
+        () => getRequest('/api/profiles'),
+        MESSAGES.projectsError,
+        {
+            select: data => {
+                if (!data) return [];
+                if (team) {
+                    return data.profiles
+                        ?.filter((profile: Profile) => {
+                            return Boolean(
+                                team.users_details.find(
+                                    userProfile =>
+                                        userProfile.username ===
+                                        profile.user_name,
+                                ),
+                            );
+                        })
+                        .map((profile: Profile) => {
+                            return {
+                                value: profile.user_id,
+                                label: getDisplayName(profile),
+                            };
+                        });
+                }
+                return data.profiles.map((profile: Profile) => {
+                    return {
+                        value: profile.user_id,
+                        label: getDisplayName(profile),
+                    };
+                });
+            },
+        },
+    );
+};
+
+const getTeams = async (): Promise<Team[]> => {
+    return getRequest('/api/microplanning/teams') as Promise<Team[]>;
+};
+
+export const useGetTeamsDropdown = (): UseQueryResult<
+    DropdownTeamsOptions[],
+    Error
+> => {
+    const queryKey: any[] = ['teamsList'];
+    // @ts-ignore
+    return useSnackQuery({
+        queryKey,
+        queryFn: () => getTeams(),
+        options: {
+            select: teams => {
+                if (!teams) return [];
+                return teams
+                    .filter(team => team.type === 'TEAM_OF_USERS')
+                    .map(team => {
+                        return {
+                            value: team.id,
+                            label: team.name,
+                            original: team,
+                        };
+                    });
+            },
         },
     });
 };

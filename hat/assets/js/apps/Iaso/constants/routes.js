@@ -561,6 +561,14 @@ export const beneficiariesPath = {
             isRequired: false,
             key: 'dateTo',
         },
+        {
+            isRequired: false,
+            key: 'submitterId',
+        },
+        {
+            isRequired: false,
+            key: 'submitterTeamId',
+        },
         ...paginationPathParams.map(p => ({
             ...p,
             isRequired: true,

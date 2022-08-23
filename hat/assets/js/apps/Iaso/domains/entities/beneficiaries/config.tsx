@@ -236,6 +236,7 @@ export const useColumnsFromFieldsList = (
 };
 
 export const useBeneficiariesDetailsColumns = (
+    beneficiaryId: number,
     fields: Array<string> = [],
 ): Column[] => {
     const { formatMessage } = useSafeIntl();
@@ -303,20 +304,14 @@ export const useBeneficiariesDetailsColumns = (
                     // TODO: limit to user permissions
                     <section>
                         <IconButtonComponent
-                            // url={`/${baseUrls.beneficiariesDetails}/beneficiaryId/${settings.row.original.id}`}
+                            url={`/${baseUrls.beneficiarySubmissionDetail}/instanceId/${settings.row.original.id}/beneficiaryId/${beneficiaryId}`}
                             icon="remove-red-eye"
                             tooltipMessage={MESSAGES.see}
-                            onClick={() => {
-                                console.log(
-                                    'Go to details of submission',
-                                    settings.row.original.id,
-                                );
-                            }}
                         />
                     </section>
                 ),
             },
         ],
-        [columnsFromList, formatMessage],
+        [beneficiaryId, columnsFromList, formatMessage],
     );
 };

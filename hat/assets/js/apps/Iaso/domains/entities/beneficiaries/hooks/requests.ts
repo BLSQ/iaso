@@ -1,5 +1,5 @@
 /* eslint-disable camelcase */
-import { UseMutationResult, UseQueryResult } from 'react-query';
+import { UseMutationResult, useQueryClient, UseQueryResult } from 'react-query';
 import moment from 'moment';
 
 // @ts-ignore
@@ -158,6 +158,7 @@ const getSubmissions = (id?: number) => {
 export const useGetSubmissions = (
     id?: number,
 ): UseQueryResult<Instance[], Error> => {
+    const queryClient = useQueryClient();
     return useSnackQuery({
         queryKey: ['submissionsForEntity', id],
         queryFn: () => getSubmissions(id),
@@ -167,6 +168,14 @@ export const useGetSubmissions = (
             select: data => {
                 if (!data) return [];
                 return data.instances;
+            },
+            onSuccess: data => {
+                data.forEach(instance => {
+                    queryClient.setQueryData(
+                        ['beneficiaryVisit', instance.id.toString()],
+                        instance,
+                    );
+                });
             },
         },
     });
@@ -237,6 +246,23 @@ export const useGetTeamsDropdown = (): UseQueryResult<
                         };
                     });
             },
+        },
+    });
+};
+
+const getVisitSubmission = (submissionId: string): Promise<any> =>
+    getRequest(`/api/instances/${submissionId}`);
+
+export const useGetVisitSubmission = (submissionId: string): UseQueryResult => {
+    return useSnackQuery({
+        queryKey: ['beneficiaryVisit', submissionId],
+        queryFn: () => getVisitSubmission(submissionId),
+        options: {
+            select: data => {
+                if (!data) return {};
+                return data;
+            },
+            staleTime: Infinity,
         },
     });
 };

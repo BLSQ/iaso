@@ -30,6 +30,8 @@ export const baseUrls = {
     apiLogs: 'api/logs',
     beneficiaries: 'entities/beneficiaries',
     beneficiariesDetails: 'entities/beneficiaries/details',
+    // Using "visit" as it's the name used by the client and we're already using the "beneficiary" denomination
+    beneficiarySubmissionDetail: 'entities/beneficiaries/visit',
     error401: '401',
     error500: '500',
 };

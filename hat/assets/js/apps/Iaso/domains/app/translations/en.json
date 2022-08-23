@@ -475,7 +475,7 @@
     "iaso.label.xls_form_file": "XLSForm file",
     "iaso.label.year": "Years",
     "iaso.label.yes": "Yes",
-    "iaso.label.instanceLocksHistory": "Instance locks history",
+    "iaso.label.instanceLocksHistory": "Instance locks",
     "iaso.label.latitudeLongitude": "Latitude & Longitude",
     "iaso.label.hasGeometry": "With geographic data",
     "iaso.label.hasNoGeometryAndGps": "Without geographic data",

@@ -40,7 +40,7 @@ from .models import (
     EntityType,
     Entity,
     BulkCreateUserCsvFile,
-    InstanceLockTable,
+    InstanceLock,
 )
 from .models.microplanning import Team, Planning, Assignment
 
@@ -133,7 +133,6 @@ class InstanceAdmin(admin.GeoModelAdmin):
                     "org_unit",
                     "device",
                     "last_modified_by",
-                    "validation_status",
                 )
             },
         ),
@@ -357,10 +356,10 @@ class AssignmentAdmin(admin.ModelAdmin):
     date_hierarchy = "created_at"
 
 
-class LockInstanceTableAdmin(admin.ModelAdmin):
+class InstanceLockAdmin(admin.ModelAdmin):
     raw_id_fields = ("top_org_unit",)
-    list_display = ("instance", "is_locked", "author", "top_org_unit", "created_at")
-    date_hierarchy = "created_at"
+    list_display = ("instance", "locked_by", "top_org_unit", "locked_at", "unlocked_by", "unlocked_at")
+    date_hierarchy = "locked_at"
 
 
 admin.site.register(Link, LinkAdmin)
@@ -396,4 +395,4 @@ admin.site.register(Team, TeamAdmin)
 admin.site.register(Planning, PlanningAdmin)
 admin.site.register(BulkCreateUserCsvFile)
 admin.site.register(Assignment, AssignmentAdmin)
-admin.site.register(InstanceLockTable, LockInstanceTableAdmin)
+admin.site.register(InstanceLock, InstanceLockAdmin)

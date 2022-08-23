@@ -13,7 +13,7 @@ from django.utils.timezone import now
 
 from hat.api.export_utils import timestamp_to_utc_datetime
 from iaso import models as m
-from iaso.models import OrgUnit, Instance, InstanceLockTable, Profile
+from iaso.models import OrgUnit, Instance, InstanceLock
 from iaso.test import APITestCase
 from hat.audit.models import Modification
 
@@ -1015,7 +1015,7 @@ class InstancesAPITestCase(APITestCase):
             project=self.project,
             form=self.form_1,
         )
-        instance_lock = InstanceLockTable.objects.create(
+        instance_lock = InstanceLock.objects.create(
             instance=instance, is_locked=True, author=self.supervisor, top_org_unit=self.ou_top_1
         )
 
@@ -1044,7 +1044,7 @@ class InstancesAPITestCase(APITestCase):
             project=self.project,
             form=self.form_1,
         )
-        instance_lock = InstanceLockTable.objects.create(
+        instance_lock = InstanceLock.objects.create(
             instance=instance, is_locked=True, author=self.supervisor, top_org_unit=self.ou_top_1
         )
 
@@ -1069,7 +1069,7 @@ class InstancesAPITestCase(APITestCase):
             form=self.form_1,
         )
 
-        InstanceLockTable.objects.create(
+        InstanceLock.objects.create(
             instance=instance, is_locked=True, author=self.yoda, top_org_unit=self.jedi_council_corruscant
         )
 
@@ -1092,7 +1092,7 @@ class InstancesAPITestCase(APITestCase):
             form=self.form_1,
         )
 
-        InstanceLockTable.objects.create(
+        InstanceLock.objects.create(
             instance=instance, is_locked=True, author=self.yoda, top_org_unit=self.jedi_council_corruscant
         )
 

@@ -62,7 +62,7 @@ import { baseUrls } from '../../constants/urls';
 import {
     fetchFormOrgUnitTypes,
     saveOrgUnitWithDispatch,
-    saveInstanceWithDispatch,
+    lockInstanceWithDispatch,
 } from '../../utils/requests';
 import InputComponent from '../../components/forms/InputComponent';
 
@@ -126,16 +126,6 @@ const linkOrLinkOffOrgUnitToReferenceSubmission = (
     });
 };
 
-const lockOrUnlockInstance = (instance, status, lockAgainStatus) => {
-    const instanceParams = {
-        id: instance.id,
-        validation_status: lockAgainStatus ? 'LOCKED' : status,
-    };
-    saveInstanceWithDispatch(instanceParams).then(() => {
-        window.location.reload(false);
-    });
-};
-
 const actions = ({
     currentInstance,
     reAssignInstance,
@@ -187,13 +177,11 @@ const actions = ({
         );
     };
 
-    const confirmLockUnlockInstance = (instance, lockAgainStatus) => {
-        const statusValues = instance.is_locked ? 'UNLOCK' : 'LOCKED';
-        lockOrUnlockInstance(instance, statusValues, lockAgainStatus);
-    };
-
-    const checkLockAgain = lockAgainStatus => {
-        changeCheckBox(lockAgainStatus);
+    const confirmLockUnlockInstance = instance => {
+        const instanceParams = {
+            id: instance.id,
+        };
+        return lockInstanceWithDispatch(instanceParams);
     };
 
     const resetLockAgain = () => {
@@ -201,17 +189,17 @@ const actions = ({
     };
 
     const lockAction = {
-        id: currentInstance.is_locked ? 'unlocked' : 'locked',
+        id: 'locked',
         icon: (
             <ConfirmCancelDialogComponent
-                titleMessage={
-                    currentInstance.is_locked
-                        ? MESSAGES.unlocked
-                        : MESSAGES.locked
-                }
+                titleMessage={MESSAGES.locked}
                 onConfirm={closeDialog => {
-                    confirmLockUnlockInstance(currentInstance, lockAgain);
-                    closeDialog();
+                    confirmLockUnlockInstance(currentInstance, lockAgain).then(
+                        () => {
+                            closeDialog();
+                            window.location.reload(false);
+                        },
+                    );
                 }}
                 onClosed={resetLockAgain}
                 renderTrigger={({ openDialog }) =>
@@ -219,21 +207,8 @@ const actions = ({
                 }
             >
                 <DialogContentText id="alert-dialog-description">
-                    <FormattedMessage
-                        id="iaso.instance.unlockedWarning"
-                        defaultMessage="This operation can still be undone"
-                        {...MESSAGES.linkOrgUnitToInstanceReferenceWarning}
-                    />
+                    <FormattedMessage {...MESSAGES.lockActionDescription} />
                 </DialogContentText>
-                {currentInstance.can_lock_again && (
-                    <InputComponent
-                        keyValue="lock_again"
-                        onChange={() => checkLockAgain(lockAgain)}
-                        value={lockAgain}
-                        type="checkbox"
-                        label={MESSAGES.CanLockAgain}
-                    />
-                )}
             </ConfirmCancelDialogComponent>
         ),
     };
@@ -304,15 +279,15 @@ const actions = ({
         },
     ];
 
-    if (currentInstance.has_access) {
+    if (currentInstance.can_user_modify) {
         defaultActions = [...defaultActions, deleteRestore];
     }
 
-    if (canEditEnketo && currentInstance.has_access) {
+    if (canEditEnketo && currentInstance.can_user_modify) {
         defaultActions = [enketoAction, ...defaultActions];
     }
 
-    if (currentInstance.has_access) {
+    if (currentInstance.can_user_modify) {
         defaultActions = [lockAction, ...defaultActions];
     }
 
@@ -369,6 +344,7 @@ class InstanceDetails extends Component {
             fetchInstanceDetail,
             dispatch,
         } = this.props;
+        console.log(dispatch);
         fetchInstanceDetail(instanceId).then(instanceDetails => {
             fetchFormOrgUnitTypes(dispatch, instanceDetails.form_id).then(
                 orgUnitTypeIds => {
@@ -476,7 +452,7 @@ class InstanceDetails extends Component {
                 {fetching && <LoadingSpinner />}
                 {currentInstance && (
                     <Box className={classes.containerFullHeightNoTabPadded}>
-                        {showDial && (
+                        {currentInstance.can_user_modify && showDial && (
                             <SpeedDialInstanceActions
                                 actions={actions({
                                     currentInstance,

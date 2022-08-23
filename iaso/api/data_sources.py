@@ -7,7 +7,6 @@ from iaso.models import DataSource, OrgUnit, SourceVersion, ExternalCredentials
 from rest_framework import serializers, permissions
 from rest_framework.generics import get_object_or_404
 
-from ..tasks.dhis2_ou_exporter import get_api_from_credential
 from ..tasks.dhis2_ou_importer import get_api
 
 

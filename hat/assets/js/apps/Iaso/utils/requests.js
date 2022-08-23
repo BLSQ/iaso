@@ -419,3 +419,16 @@ const dispatchSaveInstance = dispatch => instance =>
         });
 
 export const saveInstanceWithDispatch = dispatchSaveInstance(storeDispatch);
+
+const lockInstance = dispatch => instance =>
+    postRequest(`/api/instances/${instance.id}/add_lock/`)
+        .then(savedInstance => {
+            dispatch(enqueueSnackbar(succesfullSnackBar()));
+            return savedInstance;
+        })
+        .catch(error => {
+            dispatch(enqueueSnackbar(errorSnackBar(null, null, error)));
+            console.error('Error while saving instance:', error);
+        });
+
+export const lockInstanceWithDispatch = lockInstance(storeDispatch);

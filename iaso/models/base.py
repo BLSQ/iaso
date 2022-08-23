@@ -1089,6 +1089,23 @@ class Instance(models.Model):
         self.save()
         log_modification(original, self, INSTANCE_API, user=user)
 
+    def can_user_modify(self, user):
+        """Check only for lock, assume user have other perms"""
+        # active locks for instance
+        locks = self.instancelock_set.filter(unlocked_by__isnull=True)
+        # highest lock
+        highest_lock = locks.order_by("top_org_unit__path__depth").first()
+        if not highest_lock:
+            # No lock anyone can modify
+            return True
+
+        # can user access this orgunit
+        from iaso.models import OrgUnit  # Local import to prevent loop
+
+        if highest_lock.top_org_unit in OrgUnit.objects.filter_for_user(user):
+            return True
+        return False
+
 
 class InstanceFile(models.Model):
     UPLOADED_TO = "instancefiles/"
@@ -1262,14 +1279,23 @@ class BulkCreateUserCsvFile(models.Model):
     account = models.ForeignKey(Account, on_delete=models.PROTECT, null=True)
 
 
-class InstanceLockTable(models.Model):
-    instance = models.ForeignKey("Instance", on_delete=models.PROTECT, null=True, blank=True)
-    is_locked = models.BooleanField(default=False)
-    author = models.ForeignKey(User, on_delete=models.PROTECT)
-    top_org_unit = models.ForeignKey(
-        "OrgUnit", on_delete=models.PROTECT, null=True, blank=True, related_name="instance_lock"
-    )
-    created_at = models.DateTimeField(auto_now_add=True)
+class InstanceLockQueryset(models.QuerySet):
+    def actives(self):
+        """Lock that don't have ben unlocked"""
+        return self.filter(unlocked_by__isnull=True)
 
+
+class InstanceLock(models.Model):
+    instance = models.ForeignKey("Instance", on_delete=models.CASCADE)
+    locked_at = models.DateTimeField(auto_now_add=True)
+    locked_by = models.ForeignKey(User, on_delete=models.PROTECT)
+    unlocked_at = models.DateTimeField(blank=True, null=True)
+    unlocked_by = models.ForeignKey(User, on_delete=models.PROTECT, blank=True, null=True, related_name="+")
+    top_org_unit = models.ForeignKey("OrgUnit", on_delete=models.PROTECT, related_name="instance_lock")
+
+    # We CASCADE if we delete the instance because the lock don't make sense then
+    # but if the user or orgunit is deleted we should probably worry hence protect
     def __str__(self):
-        return str(self.instance)
+        return (
+            f"{self.instance} - {self.locked_by} " + f"UNLOCKED by {self.unlocked_by}" if self.unlocked_by else "LOCKED"
+        )

@@ -112,6 +112,9 @@ class OrgUnitQuerySet(models.QuerySet):
 
         return RawSQL(f"array[{ltree_list}]", []) if len(ltree_list) > 0 else ""
 
+    def filter_for_user(self, user):
+        return self.filter_for_user_and_app_id(user, None)
+
     def filter_for_user_and_app_id(
         self, user: typing.Union[User, AnonymousUser, None], app_id: typing.Optional[str] = None
     ) -> "OrgUnitQuerySet":

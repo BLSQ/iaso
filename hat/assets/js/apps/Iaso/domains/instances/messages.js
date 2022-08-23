@@ -416,6 +416,7 @@ const MESSAGES = defineMessages({
         defaultMessage:
             'Are you sure you want to unlink this reference submission from the orgUnit ?',
     },
+
     locked: {
         id: 'iaso.instance.locked',
         defaultMessage: 'Lock the instance',
@@ -424,13 +425,36 @@ const MESSAGES = defineMessages({
         id: 'iaso.instance.unlocked',
         defaultMessage: 'Unlock the instance',
     },
-    lockedWarning: {
-        id: 'iaso.instance.dialog.lockedWarning',
-        defaultMessage: 'Are you sure you want to lock the submission ?',
+    removeLockAction: {
+        id: 'iaso.instance.dialog.removeLockAction',
+        defaultMessage: 'Open this lock',
+    },
+    lockedCanModify: {
+        id: 'iaso.instance.dialog.lockedCanModify',
+        defaultMessage:
+            'Instance modification is locked for some users however you have the right to modify still modify it',
+    },
+    lockedCannotModify: {
+        id: 'iaso.instance.dialog.lockedCannotModify',
+        defaultMessage:
+            'There is a lock on the instance and you cannot modify it',
+    },
+    lockSuccess: {
+        id: 'iaso.instance.dialog.lockSuccess',
+        defaultMessage: 'Lock added on the instance',
+    },
+    lockOpened: {
+        id: 'iaso.instance.dialog.lockOpened',
+        defaultMessage: 'This lock has been opened',
+    },
+    lockActionDescription: {
+        id: 'iaso.instance.dialog.lockActionDescription',
+        defaultMessage:
+            'This will preventing modification on the instance by any user having lower access than you',
     },
     unlockedWarning: {
         id: 'iaso.instance.dialog.unlockedWarning',
-        defaultMessage: 'Are you sure you want to unlock the submission ?',
+        defaultMessage: 'Locking hte ',
     },
     patchInstanceSuccesfull: {
         id: 'iaso.instance.patchInstanceSuccesfull',
@@ -440,9 +464,9 @@ const MESSAGES = defineMessages({
         id: 'iaso.instance.patchInstanceError',
         defaultMessage: 'An error occurred while saving submission',
     },
-    instanceLocksHistory: {
-        id: 'iaso.label.instanceLocksHistory',
-        defaultMessage: 'Instance locks history',
+    instanceLocks: {
+        id: 'iaso.label.instanceLocks',
+        defaultMessage: 'Instance locks',
     },
     lockAuthorLabel: {
         id: 'iaso.instance.lockAuthorLabel',

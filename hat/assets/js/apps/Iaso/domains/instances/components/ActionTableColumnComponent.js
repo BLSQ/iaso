@@ -1,11 +1,13 @@
 /* eslint-disable react/jsx-props-no-spreading */
 /* eslint-disable react/prop-types */
-import React, { useState } from 'react';
-import { IconButton as IconButtonComponent } from 'bluesquare-components';
+import React from 'react';
+import {
+    IconButton as IconButtonComponent,
+    useSafeIntl,
+} from 'bluesquare-components';
 import LinkIcon from '@material-ui/icons/Link';
 import LinkOffIcon from '@material-ui/icons/LinkOff';
 import LockIcon from '@material-ui/icons/Lock';
-import LockOpenIcon from '@material-ui/icons/LockOpen';
 import omit from 'lodash/omit';
 import { DialogContentText } from '@material-ui/core';
 import { FormattedMessage } from 'react-intl';
@@ -16,7 +18,6 @@ import { userHasPermission } from '../../users/utils';
 import MESSAGES from '../messages';
 import { useFormState } from '../../../hooks/form';
 import ConfirmCancelDialogComponent from '../../../components/dialogs/ConfirmCancelDialogComponent';
-import InputComponent from '../../../components/forms/InputComponent';
 import {
     hasFeatureFlag,
     SHOW_LINK_INSTANCE_REFERENCE,
@@ -38,7 +39,7 @@ const initialFormState = (orgUnit, referenceSubmissionId) => {
 };
 
 const ActionTableColumnComponent = ({ settings, user }) => {
-    const [lockAgain, setLockAgain] = useState(false);
+    const { formatMessage } = useSafeIntl();
     const [_formState, _setFieldValue, setFieldErrors] = useFormState(
         initialFormState(
             settings.row.original.org_unit,
@@ -98,14 +99,6 @@ const ActionTableColumnComponent = ({ settings, user }) => {
         saveOu(orgUnitPayload).catch(onError);
     };
 
-    const lockOrUnlockInstance = status => {
-        const instanceParams = {
-            id: settings.row.original.id,
-            validation_status: lockAgain ? 'LOCKED' : status,
-        };
-        saveInstance(instanceParams).catch(onError);
-    };
-
     const showButton =
         settings.row.original.reference_form_id ===
             settings.row.original.form_id &&
@@ -128,24 +121,10 @@ const ActionTableColumnComponent = ({ settings, user }) => {
             : linkOrgUnitToReferenceSubmission(settings.row.original.id);
     };
 
-    const confirmLockUnlockInstance = isLocked => {
-        const statusValues = isLocked ? 'UNLOCK' : 'LOCKED';
-        lockOrUnlockInstance(statusValues);
-    };
-
     const confirmCancelToolTipMessage = isItLinked => {
         return !isItLinked
             ? MESSAGES.linkOffOrgUnitReferenceSubmission
             : MESSAGES.linkOrgUnitReferenceSubmission;
-    };
-
-    const checkLockAgain = checkBoxStatus => {
-        const checkedStatus = !checkBoxStatus;
-        setLockAgain(checkedStatus);
-    };
-
-    const resetLockAgainCheckBox = () => {
-        setLockAgain(false);
     };
 
     return (
@@ -190,55 +169,23 @@ const ActionTableColumnComponent = ({ settings, user }) => {
                     </DialogContentText>
                 </ConfirmCancelDialogComponent>
             )}
-            {settings.row.original.has_access && (
-                <ConfirmCancelDialogComponent
-                    titleMessage={
-                        settings.row.original.is_locked
-                            ? MESSAGES.unlockedWarning
-                            : MESSAGES.lockedWarning
-                    }
-                    onConfirm={closeDialog => {
-                        confirmLockUnlockInstance(
-                            settings.row.original.is_locked,
-                        );
-                        closeDialog();
-                    }}
-                    onClosed={resetLockAgainCheckBox}
-                    renderTrigger={({ openDialog }) => (
-                        <IconButtonComponent
-                            onClick={openDialog}
-                            overrideIcon={
-                                settings.row.original.is_locked
-                                    ? LockOpenIcon
-                                    : LockIcon
-                            }
-                            tooltipMessage={
-                                settings.row.original.is_locked
-                                    ? MESSAGES.unlocked
-                                    : MESSAGES.locked
-                            }
-                        />
+            {settings.row.original.is_locked && (
+                <>
+                    {settings.row.original.can_user_modify ? (
+                        <span
+                            style={{ verticalAlign: 'center' }}
+                            title={formatMessage(MESSAGES.lockedCanModify)}
+                        >
+                            <LockIcon color="primary"></LockIcon>
+                        </span>
+                    ) : (
+                        <span
+                            title={formatMessage(MESSAGES.lockedCannotModify)}
+                        >
+                            <LockIcon></LockIcon>
+                        </span>
                     )}
-                >
-                    <DialogContentText id="alert-dialog-description">
-                        <FormattedMessage
-                            id="iaso.instance.linkOrgUnitToInstanceReferenceWarning"
-                            defaultMessage="This operation can still be undone"
-                            {...MESSAGES.linkOrgUnitToInstanceReferenceWarning}
-                        />
-                    </DialogContentText>
-                    {settings.row.original.can_lock_again && (
-                        <>
-                            <InputComponent
-                                keyValue="lock_again"
-                                onChange={() => checkLockAgain(lockAgain)}
-                                value={lockAgain}
-                                type="checkbox"
-                                label={MESSAGES.CanLockAgain}
-                            />
-                        </>
-                    )}
-                </ConfirmCancelDialogComponent>
+                </>
             )}
         </section>
     );

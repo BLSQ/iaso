@@ -154,6 +154,7 @@ class InstancesViewSet(viewsets.ViewSet):
         queryset = queryset.exclude(file="").exclude(device__test_device=True)
 
         queryset = queryset.prefetch_related("org_unit")
+        queryset = queryset.prefetch_related("org_unit__version", "org_unit__version__data_source")
         queryset = queryset.prefetch_related("org_unit__org_unit_type")
         queryset = queryset.prefetch_related("form")
         queryset = queryset.for_filters(**filters)

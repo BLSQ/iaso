@@ -95,6 +95,7 @@ class OrgUnitQuerySet(models.QuerySet):
         # We need to cast PathValue instances to strings - this could be fixed upstream
         # (https://github.com/mariocesar/django-ltree/issues/8)
         if isinstance(org_unit, (list, models.QuerySet)):
+            org_unit = org_unit.only("path") if isinstance(org_unit, models.QuerySet) else org_unit
             query = reduce(operator.or_, [models.Q(path__descendants=str(ou.path)) for ou in list(org_unit)])
         else:
             query = models.Q(path__descendants=str(org_unit.path))
@@ -315,7 +316,7 @@ class OrgUnit(TreeModel):
             "altitude": self.location.z if self.location else None,
             "has_geo_json": True if self.simplified_geom else False,
             "version": self.version.number if self.version else None,
-            "reference_instance_id": self.reference_instance_id if self.reference_instance else None,
+            "reference_instance_id": self.reference_instance_id if self.reference_instance_id else None,
         }
 
         if hasattr(self, "search_index"):

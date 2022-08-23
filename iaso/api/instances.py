@@ -166,15 +166,17 @@ class InstancesViewSet(viewsets.ViewSet):
                 limit = int(limit)
                 page_offset = int(page_offset)
                 # Make the Lock calculation via annotation so it's a lot faster
+                # count_lock_applying_to_user = Number of lock that prevent user to modify the instance
                 queryset = queryset.annotate(
-                    higher_lock=FilteredRelation(
+                    lock_applying_to_user=FilteredRelation(
                         "instancelock",
-                        condition=~Q(
-                            instancelock__top_org_unit__in=OrgUnit.objects.filter_for_user(request.user),
-                            instancelock__unlocked_by__isnull=True,
+                        condition=Q(
+                            ~Q(instancelock__top_org_unit__in=OrgUnit.objects.filter_for_user(request.user))
+                            & Q(instancelock__unlocked_by__isnull=False),
                         ),
                     )
-                ).annotate(count_higher_lock=Count("higher_lock"))
+                ).annotate(count_lock_applying_to_user=Count("lock_applying_to_user"))
+                # count_active_lock = Number of lock on instance that are not unlocked
                 queryset = queryset.annotate(
                     count_active_lock=Count("instancelock", Q(instancelock__unlocked_by__isnull=True))
                 )
@@ -200,7 +202,7 @@ class InstancesViewSet(viewsets.ViewSet):
                     dict = x.as_dict()
                     reference_form_id = get_reference_form_id(x.org_unit) if has_org_unit(x) else None
 
-                    dict["can_user_modify"] = x.count_higher_lock > 0
+                    dict["can_user_modify"] = x.count_lock_applying_to_user == 0
                     dict["is_locked"] = x.count_active_lock > 0
                     if reference_form_id:
                         dict["reference_form_id"] = reference_form_id

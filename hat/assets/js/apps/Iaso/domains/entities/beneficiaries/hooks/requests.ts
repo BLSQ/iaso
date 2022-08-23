@@ -147,6 +147,7 @@ export const useGetBeneficiary = (
         queryFn: () => getBeneficiary(beneficiaryId),
         options: {
             retry: false,
+            staleTime: Infinity,
         },
     });
 };
@@ -250,8 +251,9 @@ export const useGetTeamsDropdown = (): UseQueryResult<
     });
 };
 
-const getVisitSubmission = (submissionId: string): Promise<any> =>
-    getRequest(`/api/instances/${submissionId}`);
+const getVisitSubmission = (submissionId: string): Promise<any> => {
+    return getRequest(`/api/instances/${submissionId}`);
+};
 
 export const useGetVisitSubmission = (submissionId: string): UseQueryResult => {
     return useSnackQuery({
@@ -259,10 +261,11 @@ export const useGetVisitSubmission = (submissionId: string): UseQueryResult => {
         queryFn: () => getVisitSubmission(submissionId),
         options: {
             select: data => {
-                if (!data) return {};
+                if (!data) return { file_content: [] };
                 return data;
             },
             staleTime: Infinity,
+            // refetchOnMount: true,
         },
     });
 };

@@ -8,7 +8,7 @@ from django.contrib.gis.geos import Point
 from django.core.paginator import Paginator
 from django.db import connection
 from django.db import transaction
-from django.db.models import Q, Count
+from django.db.models import Q, Count, FilteredRelation
 from django.http import StreamingHttpResponse, HttpResponse
 from django.utils.timezone import now
 from rest_framework import serializers, status
@@ -164,6 +164,19 @@ class InstancesViewSet(viewsets.ViewSet):
             if limit:
                 limit = int(limit)
                 page_offset = int(page_offset)
+                # Make the Lock calculation via annotation so it's a lot faster
+                queryset = queryset.annotate(
+                    higher_lock=FilteredRelation(
+                        "instancelock",
+                        condition=~Q(
+                            instancelock__top_org_unit__in=OrgUnit.objects.filter_for_user(request.user),
+                            instancelock__unlocked_by__isnull=True,
+                        ),
+                    )
+                ).annotate(count_higher_lock=Count("higher_lock"))
+                queryset = queryset.annotate(
+                    count_active_lock=Count("instancelock", Q(instancelock__unlocked_by__isnull=True))
+                )
 
                 paginator = Paginator(queryset, limit)
                 res = {"count": paginator.count}
@@ -186,10 +199,8 @@ class InstancesViewSet(viewsets.ViewSet):
                     dict = x.as_dict()
                     reference_form_id = get_reference_form_id(x.org_unit) if has_org_unit(x) else None
 
-                    all_instance_locks = x.instancelock_set.all()
-
-                    dict["can_user_modify"] = self.can_user_modify(x, request.user)
-                    dict["is_locked"] = any(lock.unlocked_by is None for lock in all_instance_locks)
+                    dict["can_user_modify"] = x.count_higher_lock > 0
+                    dict["is_locked"] = x.count_active_lock > 0
                     if reference_form_id:
                         dict["reference_form_id"] = reference_form_id
                     return dict

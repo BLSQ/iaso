@@ -9,7 +9,7 @@ import {
     // @ts-ignore
     Table,
 } from 'bluesquare-components';
-import { Box, Grid, makeStyles } from '@material-ui/core';
+import { Box, Grid, makeStyles, Paper } from '@material-ui/core';
 import EditIcon from '@material-ui/icons/Edit';
 
 import { useDispatch, useSelector } from 'react-redux';
@@ -26,7 +26,8 @@ import { useResetPageToOne } from '../../../hooks/useResetPageToOne';
 import { useBeneficiariesDetailsColumns } from './config';
 import { CsvButton } from '../../../components/Buttons/CsvButton';
 import { XlsxButton } from '../../../components/Buttons/XslxButton';
-import { getAge } from '../../../hooks/useGetAge';
+import { BeneficiaryBaseInfo } from './components/BeneficiaryBaseInfo';
+import WidgetPaper from '../../../components/papers/WidgetPaperComponent';
 
 type Props = {
     router: any;
@@ -57,6 +58,7 @@ const useStyles = makeStyles(theme => ({
         borderTop: 'none',
     },
     titleRow: { fontWeight: 'bold' },
+    fullWith: { width: '100%' },
 }));
 
 // const mapFileContent = (
@@ -88,6 +90,7 @@ export const Details: FunctionComponent<Props> = ({ router }) => {
         isLoading: boolean;
     } = useGetBeneficiary(beneficiaryId);
     const columns = useBeneficiariesDetailsColumns(
+        beneficiary?.id ?? null,
         // @ts-ignore
         beneficiary?.entity_type?.fields_detail_view ?? [],
     );
@@ -167,94 +170,15 @@ export const Details: FunctionComponent<Props> = ({ router }) => {
                         {mapFileContent(beneficiary?.attributes?.file_content)}
                     </Grid> */}
                     <Grid container item xs={3}>
-                        <Grid container item xs={12}>
-                            <Grid
-                                container
-                                item
-                                xs={6}
-                                className={`${classes.allBorders} ${classes.titleRow}`}
-                                justifyContent="center"
-                            >
-                                <Box mt={1} mb={1}>
-                                    {formatMessage(MESSAGES.name)}
-                                </Box>
-                            </Grid>
-                            <Grid
-                                item
-                                container
-                                xs={6}
-                                className={classes.allButLeftBorder}
-                                justifyContent="center"
-                            >
-                                <Box mt={1} mb={1}>
-                                    {beneficiary?.attributes?.file_content
-                                        ?.name ?? '--'}
-                                </Box>
-                            </Grid>
-                        </Grid>
-                        <Grid container item xs={12}>
-                            <Grid
-                                item
-                                container
-                                xs={6}
-                                className={`${classes.allButTopBorder} ${classes.titleRow}`}
-                                justifyContent="center"
-                            >
-                                <Box mt={1} mb={1}>
-                                    {formatMessage(MESSAGES.age)}
-                                </Box>
-                            </Grid>
-                            <Grid
-                                item
-                                container
-                                xs={6}
-                                className={classes.BottomAndRightBorders}
-                                justifyContent="center"
-                            >
-                                <Box mt={1} mb={1}>
-                                    {getAge({
-                                        age: beneficiary?.attributes
-                                            ?.file_content?.age,
-                                        ageType:
-                                            (beneficiary?.attributes
-                                                ?.file_content?.age_type as
-                                                | '0'
-                                                | '1') ?? '0',
-                                        birthDate:
-                                            beneficiary?.attributes
-                                                ?.file_content?.birth_date,
-                                    }) ?? '--'}
-                                </Box>
-                            </Grid>
-                        </Grid>
-                        <Grid container item xs={12}>
-                            <Grid
-                                item
-                                container
-                                xs={6}
-                                className={`${classes.allButTopBorder} ${classes.titleRow}`}
-                                justifyContent="center"
-                            >
-                                <Box mt={1} mb={1}>
-                                    {formatMessage(MESSAGES.gender)}
-                                </Box>
-                            </Grid>
-                            <Grid
-                                item
-                                container
-                                xs={6}
-                                className={classes.BottomAndRightBorders}
-                                justifyContent="center"
-                            >
-                                <Box mt={1} mb={1}>
-                                    {beneficiary?.attributes?.file_content
-                                        .gender ??
-                                        formatMessage(MESSAGES.unknown)}
-                                </Box>
-                            </Grid>
-                        </Grid>
+                        <WidgetPaper
+                            className={classes.fullWith}
+                            title={formatMessage(MESSAGES.beneficiary)}
+                        >
+                            <BeneficiaryBaseInfo beneficiary={beneficiary} />
+                        </WidgetPaper>
                     </Grid>
-                    <Grid container item xs={1}>
+                    {/* TODO uncomment when edition is possible */}
+                    {/* <Grid container item xs={1}>
                         <Box ml={2}>
                             <EditIcon
                                 onClick={() => {
@@ -269,7 +193,7 @@ export const Details: FunctionComponent<Props> = ({ router }) => {
                                 color="action"
                             />
                         </Box>
-                    </Grid>
+                    </Grid> */}
                     <Grid container item xs={3} justifyContent="center">
                         <Box mt={1}>
                             {`${formatMessage(MESSAGES.nfcCards)}: ${
@@ -292,7 +216,6 @@ export const Details: FunctionComponent<Props> = ({ router }) => {
                         </Box>
                     </Grid>
                 </Grid>
-                <Box mt={2}>{beneficiary?.uuid}</Box>
                 <Table
                     data={submissions ?? []}
                     columns={columns}

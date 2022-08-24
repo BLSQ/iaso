@@ -134,11 +134,11 @@ const MESSAGES = defineMessages({
         defaultMessage: 'Form',
     },
     submitter: {
-        id: 'iaso.instance.submitter',
+        id: 'iaso.entities.label.submitter',
         defaultMessage: 'Submitter',
     },
     last_sync_at: {
-        id: 'iaso.instance.last_sync_at',
+        id: 'iaso.entities.label.last_sync_at',
         defaultMessage: 'Last sync',
     },
     keyInfo: {

@@ -2,7 +2,7 @@ import React from 'react';
 import Forms from '../domains/forms';
 import FormDetail from '../domains/forms/detail';
 import FormsStats from '../domains/forms/stats';
-import { OrgUnits } from '../domains/orgUnits';
+import { OrgUnits } from '../domains/orgUnits/index.tsx';
 import { Links } from '../domains/links';
 import Runs from '../domains/links/Runs';
 import OrgUnitDetail from '../domains/orgUnits/detail';
@@ -35,6 +35,7 @@ import { CompareInstanceLogs } from '../domains/instances/compare/components/Com
 
 import { SHOW_PAGES } from '../utils/featureFlags';
 import { paginationPathParams } from '../routing/common';
+import { VisitDetails } from '../domains/entities/visit/VisitDetails.tsx';
 
 const paginationPathParamsWithPrefix = prefix =>
     paginationPathParams.map(p => ({
@@ -588,6 +589,22 @@ export const beneficiariesDetailsPath = {
     ],
 };
 
+export const beneficiarySubmissionDetailPath = {
+    baseUrl: baseUrls.beneficiarySubmissionDetail,
+    permissions: ['iaso_beneficiaries'],
+    component: props => <VisitDetails {...props} />,
+    params: [
+        {
+            isRequired: true,
+            key: 'instanceId',
+        },
+        {
+            isRequired: true,
+            key: 'beneficiaryId',
+        },
+    ],
+};
+
 export const entitiesPath = {
     baseUrl: baseUrls.entities,
     permissions: ['iaso_entities'],
@@ -752,4 +769,5 @@ export const routeConfigs = [
     assignmentsPath,
     beneficiariesPath,
     beneficiariesDetailsPath,
+    beneficiarySubmissionDetailPath,
 ];

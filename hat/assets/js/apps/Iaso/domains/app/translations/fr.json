@@ -108,6 +108,7 @@
     "iaso.entities.female": "Féminin",
     "iaso.entities.gender": "Genre",
     "iaso.entities.keyInfo": "Points-clés",
+    "iaso.entities.label.beneficiaryInfo": "Informations bénéficiaire",
     "iaso.entities.label.details": "Détails",
     "iaso.entities.label.last_sync_at": "Dernière synchro",
     "iaso.entities.label.nfcCards": "Cartes NFC",

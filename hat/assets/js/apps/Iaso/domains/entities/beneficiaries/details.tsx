@@ -172,7 +172,7 @@ export const Details: FunctionComponent<Props> = ({ router }) => {
                     <Grid container item xs={3}>
                         <WidgetPaper
                             className={classes.fullWith}
-                            title={formatMessage(MESSAGES.beneficiary)}
+                            title={formatMessage(MESSAGES.beneficiaryInfo)}
                         >
                             <BeneficiaryBaseInfo beneficiary={beneficiary} />
                         </WidgetPaper>

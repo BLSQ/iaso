@@ -109,6 +109,10 @@ const MESSAGES = defineMessages({
         defaultMessage: 'Visit details',
         id: 'iaso.entities.label.visitDetails',
     },
+    beneficiaryInfo: {
+        defaultMessage: 'Beneficiary information',
+        id: 'iaso.entities.label.beneficiaryInfo',
+    },
     uuid: {
         defaultMessage: 'UUID',
         id: 'iaso.label.uuid',

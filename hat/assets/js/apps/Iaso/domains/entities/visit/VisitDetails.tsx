@@ -79,7 +79,6 @@ export const VisitDetails: FunctionComponent<Props> = ({ params, router }) => {
                             >
                                 <BeneficiaryBaseInfo
                                     beneficiary={beneficiary}
-                                    paperLayout
                                 />
                             </WidgetPaper>
                         </Grid>

@@ -521,6 +521,10 @@ const MESSAGES = defineMessages({
         id: 'iaso.forms.error.fieldRequired',
         defaultMessage: 'This field is required',
     },
+    forbiddenChars: {
+        id: 'iaso.label.forbiddenChars',
+        defaultMessage: 'Forbidden characters: "&", "/","?"," "" " and "%"',
+    },
     formChangeLog: {
         id: 'iaso.form.label.formChangeLog',
         defaultMessage: 'Link to changes log',

@@ -81,10 +81,6 @@ describe('Forms', () => {
                 cy.get('#search-search').type(search);
                 cy.get('@search-button').should('not.be.disabled');
             });
-            it('should deep link search', () => {
-                cy.get('#search-search').type(search);
-                cy.url().should('eq', `${baseUrl}/search/${search}`);
-            });
         });
         describe('Show deleted checkbox', () => {
             beforeEach(() => {
@@ -92,10 +88,6 @@ describe('Forms', () => {
             });
             it('should not be checked', () => {
                 cy.get('#check-box-showDeleted').should('not.be.checked');
-            });
-            it('should deep link search', () => {
-                cy.get('#check-box-showDeleted').check();
-                cy.url().should('eq', `${baseUrl}/showDeleted/true`);
             });
         });
         describe('Search button', () => {
@@ -110,10 +102,7 @@ describe('Forms', () => {
             it('action should deep link active search', () => {
                 cy.get('#search-search').type(search);
                 cy.get('[data-test="search-button"]').click();
-                cy.url().should(
-                    'eq',
-                    `${baseUrl}/page/1/search/${search}/searchActive/true`,
-                );
+                cy.url().should('eq', `${baseUrl}/page/1/search/${search}`);
             });
         });
         describe('Table', () => {
@@ -231,7 +220,6 @@ describe('Forms', () => {
                     page: '1',
                     search,
                     showDeleted: 'true',
-                    searchActive: 'true',
                     all: 'true',
                     limit: '50',
                 },

@@ -68,6 +68,7 @@ const SearchFilter: FunctionComponent<Props> = ({
             setCurrentValue(value);
         }
     }, [value]);
+
     return (
         <Box mt={withMarginTop ? 2 : 0}>
             <SearchInput

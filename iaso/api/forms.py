@@ -191,7 +191,8 @@ class FormsViewSet(ModelViewSet):
         if self.request.query_params.get("only_deleted", None):
             form_objects = Form.objects_only_deleted
 
-        if self.request.query_params.get("showDeleted", ""):
+        show_deleted = self.request.query_params.get("showDeleted", "false")
+        if show_deleted == "true":
             form_objects = Form.objects_only_deleted
 
         queryset = form_objects.filter_for_user_and_app_id(self.request.user, self.request.query_params.get("app_id"))

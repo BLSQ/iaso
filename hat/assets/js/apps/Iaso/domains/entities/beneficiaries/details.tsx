@@ -78,7 +78,7 @@ export const Details: FunctionComponent<Props> = ({ router }) => {
     } = useGetBeneficiary(beneficiaryId);
     const columns = useBeneficiariesDetailsColumns(
         // @ts-ignore
-        beneficiary?.entity_type?.fields_detail_view,
+        beneficiary?.entity_type?.fields_detail_view ?? [],
     );
 
     const { data: submissions, isLoading: isLoadingSubmissions } =

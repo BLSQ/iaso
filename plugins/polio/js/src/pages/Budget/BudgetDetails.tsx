@@ -36,7 +36,7 @@ import InputComponent from '../../../../../../hat/assets/js/apps/Iaso/components
 import { BudgetValidationPopUp } from './pop-ups/BudgetValidationPopUp';
 import { BudgetRejectionPopUp } from './pop-ups/BudgetRejectionPopUp';
 import { BudgetEventCard } from './cards/BudgetEventCard';
-import { useBoundState } from '../../../../../../hat/assets/js/apps/Iaso/domains/assignments/hooks/useBoundState';
+import { useBoundState } from '../../../../../../hat/assets/js/apps/Iaso/hooks/useBoundState';
 import { Optional } from '../../../../../../hat/assets/js/apps/Iaso/types/utils';
 import { BudgetMap } from './Map/BudgetMap';
 import { useIsUserInApprovalTeam } from './hooks/useIsUserInApprovalTeam';
@@ -48,22 +48,24 @@ type Props = {
     router: any;
 };
 
-const style = () => {
-    return {
-        pagination: {
-            '&.MuiPagination-root > .MuiPagination-ul': {
-                justifyContent: 'center',
-            },
+const useBudgetDetailsStyles = makeStyles(theme => ({
+    pagination: {
+        '&.MuiPagination-root > .MuiPagination-ul': {
+            justifyContent: 'center',
         },
-    };
-};
-
-const usePaginationStyles = makeStyles(style);
+    },
+    title: {
+        fontWeight: 'bold',
+        [theme.breakpoints.down('md')]: {
+            fontSize: 22,
+        },
+    },
+}));
 
 export const BudgetDetails: FunctionComponent<Props> = ({ router }) => {
     const { params } = router;
     const classes = useStyles();
-    const paginationStyle = usePaginationStyles();
+    const paginationStyle = useBudgetDetailsStyles();
     const { campaignName, campaignId, country, ...apiParams } = router.params;
     const { formatMessage } = useSafeIntl();
     const [showDeleted, setShowDeleted] = useState(
@@ -135,13 +137,13 @@ export const BudgetDetails: FunctionComponent<Props> = ({ router }) => {
                 // @ts-ignore
                 className={`${classes.containerFullHeightNoTabPadded}`}
             >
-                <Box mb={5} ml={2} mr={2}>
+                <Box mb={5}>
                     <Grid container>
                         <Grid item xs={isMobileLayout ? 12 : 6}>
                             <Box mb={4}>
                                 <Typography
+                                    className={paginationStyle.title}
                                     variant="h4"
-                                    style={{ fontWeight: 'bold' }}
                                 >
                                     {`${formatMessage(
                                         MESSAGES.campaign,
@@ -227,7 +229,10 @@ export const BudgetDetails: FunctionComponent<Props> = ({ router }) => {
                                 </Grid>
                             </Grid>
                             <Collapse in={expand}>
-                                <BudgetDetailsFilters params={params} />
+                                <BudgetDetailsFilters
+                                    params={params}
+                                    buttonSize="small"
+                                />
                             </Collapse>
                         </>
                     )}
@@ -237,11 +242,12 @@ export const BudgetDetails: FunctionComponent<Props> = ({ router }) => {
                         <Grid item xs={12}>
                             {budgetDetails?.results.map(budgetEvent => {
                                 return (
-                                    <BudgetEventCard
-                                        key={`event-${budgetEvent.id}`}
-                                        event={budgetEvent}
-                                        profiles={profiles?.profiles}
-                                    />
+                                    <Box mb={1} key={`event-${budgetEvent.id}`}>
+                                        <BudgetEventCard
+                                            event={budgetEvent}
+                                            profiles={profiles?.profiles}
+                                        />
+                                    </Box>
                                 );
                             })}
                             {budgetDetails && (

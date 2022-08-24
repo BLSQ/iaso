@@ -144,6 +144,7 @@
     "iaso.form.label.showAdvancedSettings": "Show advanced settings",
     "iaso.form.label.singlePerPeriodSelect": "Please select an answer",
     "iaso.form.label.sourceVersion": "Source version",
+    "iaso.form.label.formChangeLog": "Link to changes log",
     "iaso.form.stats.allSubmissionsTitle": "All Submissions",
     "iaso.form.stats.submissionsPerMonthTitle": "New submissions per month",
     "iaso.forms.aliases": "Aliases",

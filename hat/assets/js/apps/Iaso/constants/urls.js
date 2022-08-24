@@ -29,6 +29,7 @@ export const baseUrls = {
     teams: 'settings/teams',
     beneficiaries: 'entities/beneficiaries',
     beneficiariesDetails: 'entities/beneficiaries/details',
+    apiLogs: 'api/logs',
     error401: '401',
     error500: '500',
 };

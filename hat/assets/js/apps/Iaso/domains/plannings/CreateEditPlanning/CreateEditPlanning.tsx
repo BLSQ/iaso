@@ -34,7 +34,7 @@ type Props = Partial<SavePlanningQuery> & {
     type: ModalMode;
 };
 
-const removePadding = { paddingTop: 0, paddingBottom: 0 };
+const removePadding = { paddingTop: 4, paddingBottom: 4 };
 const makeRenderTrigger = (type: 'create' | 'edit' | 'copy') => {
     if (type === 'create') {
         return ({ openDialog }) => (

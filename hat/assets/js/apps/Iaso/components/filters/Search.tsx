@@ -55,7 +55,7 @@ const SearchFilter: FunctionComponent<Props> = ({
     }, [currentValue, formatMessage]);
 
     useSkipEffectOnMount(() => {
-        onChange(currentValue, keyValue);
+        onChange(keyValue, currentValue);
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [currentValue, keyValue]);
 
@@ -63,6 +63,11 @@ const SearchFilter: FunctionComponent<Props> = ({
         onErrorChange(hasError);
     }, [hasError, onErrorChange]);
 
+    useSkipEffectOnMount(() => {
+        if (value !== currentValue) {
+            setCurrentValue(value);
+        }
+    }, [value]);
     return (
         <Box mt={withMarginTop ? 2 : 0}>
             <SearchInput

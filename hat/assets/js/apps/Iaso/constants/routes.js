@@ -2,7 +2,7 @@ import React from 'react';
 import Forms from '../domains/forms';
 import FormDetail from '../domains/forms/detail';
 import FormsStats from '../domains/forms/stats';
-import OrgUnits from '../domains/orgUnits';
+import { OrgUnits } from '../domains/orgUnits';
 import { Links } from '../domains/links';
 import Runs from '../domains/links/Runs';
 import OrgUnitDetail from '../domains/orgUnits/detail';

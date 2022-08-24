@@ -142,6 +142,7 @@
     "iaso.form.label.showAdvancedSettings": "Afficher les paramètres avancés",
     "iaso.form.label.singlePerPeriodSelect": "Veuillez sélectionner une réponse",
     "iaso.form.label.sourceVersion": "Version de la source",
+    "iaso.form.label.formChangeLog": "Lien vers le Journal des modifications",
     "iaso.form.stats.allSubmissionsTitle": "Nombre total de soumissions",
     "iaso.form.stats.submissionsPerMonthTitle": "Nouvelles soumissions par mois",
     "iaso.forms.aliases": "Alias",

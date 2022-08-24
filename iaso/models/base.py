@@ -12,7 +12,7 @@ from django.contrib.gis.db.models.fields import PointField
 from django.contrib.gis.geos import Point
 from django.contrib.postgres.aggregates import ArrayAgg
 from django.core.paginator import Paginator
-from django.db import models, transaction
+from django.db import models
 from django.db.models import Q
 from django.shortcuts import get_object_or_404
 from django.utils import timezone
@@ -693,6 +693,7 @@ class InstanceQuerySet(models.QuerySet):
         from_date=None,
         to_date=None,
         show_deleted=None,
+        entity_id=None,
     ):
         queryset = self
 
@@ -751,6 +752,9 @@ class InstanceQuerySet(models.QuerySet):
         else:
             # whatever don't show deleted submissions
             queryset = queryset.exclude(deleted=True)
+
+        if entity_id:
+            queryset = queryset.filter(entity_id=entity_id)
 
         if search:
             if search.startswith("ids:"):
@@ -843,6 +847,7 @@ class Instance(models.Model):
     accuracy = models.DecimalField(null=True, decimal_places=2, max_digits=7)
     device = models.ForeignKey("Device", null=True, blank=True, on_delete=models.DO_NOTHING)
     period = models.TextField(null=True, blank=True, db_index=True)
+    entity = models.ForeignKey("Entity", null=True, blank=True, on_delete=models.DO_NOTHING, related_name="instances")
 
     last_export_success_at = models.DateTimeField(null=True, blank=True)
 
@@ -985,6 +990,13 @@ class Instance(models.Model):
             "period": self.period,
             "status": getattr(self, "status", None),
             "correlation_id": self.correlation_id,
+            "created_by": {
+                "first_name": self.created_by.first_name,
+                "user_name": self.created_by.username,
+                "last_name": self.created_by.last_name,
+            }
+            if self.created_by
+            else None,
         }
 
     def as_dict_with_parents(self):

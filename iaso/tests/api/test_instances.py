@@ -871,3 +871,165 @@ class InstancesAPITestCase(APITestCase):
 
         response = self.client.get(f"/api/instances/stats_sum/")
         r = self.assertJSONResponse(response, 200)
+
+    def test_instance_create_entity(self):
+        """POST /api/instances/ with an entity that don't exist in db, it create it"""
+
+        instance_uuid = str(uuid4())
+        entity_uuid = str(uuid4())
+        entity_type = m.EntityType.objects.create(account=self.star_wars)
+
+        pre_existing_instance_count = m.Instance.objects.count()
+        pre_existing_entity_count = m.Entity.objects.count()
+        body = [
+            {
+                "id": instance_uuid,
+                "created_at": 1565258153704,
+                "updated_at": 1565258153704,
+                "orgUnitId": self.jedi_council_corruscant.id,
+                "formId": self.form_1.id,
+                "file": "\/storage\/emulated\/0\/odk\/instances\/RDC Collecte Data DPS_2_2019-08-08_11-54-46\/RDC Collecte Data DPS_2_2019-08-08_11-54-46.xml",
+                "entityUuid": entity_uuid,
+                "entityTypeId": entity_type.id,
+                "name": "Mobile app name i2",
+            },
+        ]
+        response = self.client.post(
+            f"/api/instances/?app_id=stars.empire.agriculture.hydroponics", data=body, format="json"
+        )
+        self.assertEqual(response.status_code, 200)
+
+        self.assertAPIImport("instance", request_body=body, has_problems=False)
+
+        self.assertEqual(pre_existing_instance_count + 1, m.Instance.objects.count())  # One added instance
+        self.assertEqual(pre_existing_entity_count + 1, m.Entity.objects.count())  # One added instance
+        entity = m.Entity.objects.get(uuid=entity_uuid)
+        instance = m.Instance.objects.get(uuid=instance_uuid)
+        self.assertEqual(entity.attributes, None)
+        self.assertQuerysetEqual(entity.instances.all(), [instance], ordered=False)
+        self.assertEqual(instance.entity, entity)
+        self.assertEqual(entity.entity_type, entity_type)
+        self.assertEqual(entity.account, self.star_wars)
+
+    def test_instance_create_preexisting_entity(self):
+        """POST /api/instances/ with an entity that exist in db, do not create it"""
+
+        instance_uuid = str(uuid4())
+        entity_uuid = str(uuid4())
+        entity_type = m.EntityType.objects.create(account=self.star_wars)
+
+        entity = m.Entity.objects.create(
+            account=self.star_wars,
+            entity_type=entity_type,
+            uuid=entity_uuid,
+        )
+
+        pre_existing_instance_count = m.Instance.objects.count()
+        pre_existing_entity_count = m.Entity.objects.count()
+        body = [
+            {
+                "id": instance_uuid,
+                "created_at": 1565258153704,
+                "updated_at": 1565258153704,
+                "orgUnitId": self.jedi_council_corruscant.id,
+                "formId": self.form_1.id,
+                "file": "\/storage\/emulated\/0\/odk\/instances\/RDC Collecte Data DPS_2_2019-08-08_11-54-46\/RDC Collecte Data DPS_2_2019-08-08_11-54-46.xml",
+                "entityUuid": entity_uuid,
+                "entityTypeId": entity_type.id,
+                "name": "Mobile app name i2",
+            },
+        ]
+        response = self.client.post(
+            f"/api/instances/?app_id=stars.empire.agriculture.hydroponics", data=body, format="json"
+        )
+        self.assertEqual(response.status_code, 200)
+
+        self.assertAPIImport("instance", request_body=body, has_problems=False)
+
+        self.assertEqual(pre_existing_instance_count + 1, m.Instance.objects.count())  # One added instance
+        self.assertEqual(pre_existing_entity_count, m.Entity.objects.count())  # No added enity
+        entity = m.Entity.objects.get(uuid=entity_uuid)
+        instance = m.Instance.objects.get(uuid=instance_uuid)
+        self.assertEqual(entity.attributes, None)
+        self.assertQuerysetEqual(entity.instances.all(), [instance], ordered=False)
+        self.assertEqual(instance.entity, entity)
+        self.assertEqual(entity.entity_type, entity_type)
+        self.assertEqual(entity.account, self.star_wars)
+
+    def test_instance_create_entity(self):
+        """POST /api/instances/ with an entity that don't exist in db, it create it"""
+
+        instance_uuid = str(uuid4())
+        entity_uuid = str(uuid4())
+        entity_type = m.EntityType.objects.create(account=self.star_wars)
+
+        pre_existing_instance_count = m.Instance.objects.count()
+        pre_existing_entity_count = m.Entity.objects.count()
+        body = [
+            {
+                "id": instance_uuid,
+                "created_at": 1565258153704,
+                "updated_at": 1565258153704,
+                "orgUnitId": self.jedi_council_corruscant.id,
+                "formId": self.form_1.id,
+                "file": "\/storage\/emulated\/0\/odk\/instances\/RDC Collecte Data DPS_2_2019-08-08_11-54-46\/RDC Collecte Data DPS_2_2019-08-08_11-54-46.xml",
+                "entityUuid": entity_uuid,
+                "entityTypeId": entity_type.id,
+                "name": "Mobile app name i2",
+            },
+        ]
+        response = self.client.post(
+            f"/api/instances/?app_id=stars.empire.agriculture.hydroponics", data=body, format="json"
+        )
+        self.assertEqual(response.status_code, 200)
+
+        self.assertAPIImport("instance", request_body=body, has_problems=False)
+
+        self.assertEqual(pre_existing_instance_count + 1, m.Instance.objects.count())  # One added instance
+        self.assertEqual(pre_existing_entity_count + 1, m.Entity.objects.count())  # One added instance
+        entity = m.Entity.objects.get(uuid=entity_uuid)
+        instance = m.Instance.objects.get(uuid=instance_uuid)
+        self.assertEqual(entity.attributes, None)
+        self.assertQuerysetEqual(entity.instances.all(), [instance], ordered=False)
+        self.assertEqual(instance.entity, entity)
+        self.assertEqual(entity.entity_type, entity_type)
+        self.assertEqual(entity.account, self.star_wars)
+
+    def test_instance_create_preexisting_entity_attribute(self):
+        """POST /api/instances/ with a new entity where form is reference_form set new instance as attributes"""
+
+        instance_uuid = str(uuid4())
+        entity_uuid = str(uuid4())
+        entity_type = m.EntityType.objects.create(account=self.star_wars, reference_form=self.form_1)
+
+        pre_existing_instance_count = m.Instance.objects.count()
+        pre_existing_entity_count = m.Entity.objects.count()
+        body = [
+            {
+                "id": instance_uuid,
+                "created_at": 1565258153704,
+                "updated_at": 1565258153704,
+                "orgUnitId": self.jedi_council_corruscant.id,
+                "formId": self.form_1.id,
+                "file": "\/storage\/emulated\/0\/odk\/instances\/RDC Collecte Data DPS_2_2019-08-08_11-54-46\/RDC Collecte Data DPS_2_2019-08-08_11-54-46.xml",
+                "entityUuid": entity_uuid,
+                "entityTypeId": entity_type.id,
+                "name": "Mobile app name i2",
+            },
+        ]
+        response = self.client.post(
+            f"/api/instances/?app_id=stars.empire.agriculture.hydroponics", data=body, format="json"
+        )
+        self.assertEqual(response.status_code, 200)
+
+        self.assertAPIImport("instance", request_body=body, has_problems=False)
+
+        self.assertEqual(pre_existing_instance_count + 1, m.Instance.objects.count())  # One added instance
+        self.assertEqual(pre_existing_entity_count + 1, m.Entity.objects.count())  # One added Entity
+        entity = m.Entity.objects.get(uuid=entity_uuid)
+        instance = m.Instance.objects.get(uuid=instance_uuid)
+        self.assertEqual(entity.attributes, instance)
+        self.assertQuerysetEqual(entity.instances.all(), [instance], ordered=False)
+        self.assertEqual(instance.entity, entity)
+        self.assertEqual(entity.entity_type, entity_type)
+        self.assertEqual(entity.account, self.star_wars)

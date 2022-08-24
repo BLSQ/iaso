@@ -125,6 +125,10 @@ const MESSAGES = defineMessages({
         defaultMessage: 'Parent',
         id: 'iaso.assignment.map.parent',
     },
+    beneficiaries: {
+        defaultMessage: 'Beneficiaries',
+        id: 'iaso.label.beneficiaries',
+    },
 });
 
 export default MESSAGES;

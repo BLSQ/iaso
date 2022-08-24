@@ -1,4 +1,5 @@
 import React, { ReactElement } from 'react';
+// @ts-ignore
 import { IconButton as IconButtonComponent } from 'bluesquare-components';
 import { EntityDialog } from './components/EntityDialog';
 import DeleteDialog from '../../components/dialogs/DeleteDialogComponent';
@@ -11,7 +12,7 @@ import { baseUrls } from '../../constants/urls';
 import { Entity } from './types/entity';
 import { Column } from '../../types/table';
 
-export const baseUrl = baseUrls.entities;
+export const baseUrl = baseUrls.beneficiaries;
 
 type Props = {
     // eslint-disable-next-line no-unused-vars

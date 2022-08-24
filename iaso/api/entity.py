@@ -59,8 +59,6 @@ class BeneficiarySerializer(serializers.ModelSerializer):
 
     entity_type_name = serializers.SerializerMethodField()
     attributes = serializers.SerializerMethodField()
-    created_at = TimestampField(read_only=True)
-    updated_at = TimestampField(read_only=True)
     submitter = serializers.SerializerMethodField()
 
     def get_attributes(self, entity: Entity):
@@ -95,8 +93,6 @@ class EntitySerializer(serializers.ModelSerializer):
         ]
 
     entity_type_name = serializers.SerializerMethodField()
-    created_at = TimestampField(read_only=True)
-    updated_at = TimestampField(read_only=True)
 
     @staticmethod
     def get_entity_type_name(obj: Entity):

@@ -17,4 +17,6 @@ export type Beneficiary = {
     attributes: Attributes;
     entity_type: number;
     entity_type_name: string;
+    submitter: string;
+    instances: Record<string, any>[];
 };

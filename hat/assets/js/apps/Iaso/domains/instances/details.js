@@ -8,7 +8,6 @@ import UpdateIcon from '@material-ui/icons/Update';
 import RestoreFromTrashIcon from '@material-ui/icons/RestoreFromTrash';
 import Alert from '@material-ui/lab/Alert';
 import LockIcon from '@material-ui/icons/Lock';
-import LockOpenIcon from '@material-ui/icons/LockOpen';
 import {
     withStyles,
     Box,
@@ -47,7 +46,7 @@ import CreateReAssignDialogComponent from './components/CreateReAssignDialogComp
 import InstanceDetailsInfos from './components/InstanceDetailsInfos';
 import InstanceDetailsLocation from './components/InstanceDetailsLocation';
 import InstanceDetailsExportRequests from './components/InstanceDetailsExportRequests';
-import InstanceDetailsLocksHistory from './components/InstanceDetailsLocksHistory';
+import InstanceDetailsLocksHistory from './components/InstanceDetailsLocksHistory.tsx';
 import InstancesFilesList from './components/InstancesFilesListComponent';
 import InstanceFileContent from './components/InstanceFileContent';
 import SpeedDialInstanceActions from './components/SpeedDialInstanceActions';
@@ -64,7 +63,6 @@ import {
     saveOrgUnitWithDispatch,
     lockInstanceWithDispatch,
 } from '../../utils/requests';
-import InputComponent from '../../components/forms/InputComponent';
 
 import {
     hasFeatureFlag,
@@ -136,8 +134,6 @@ const actions = ({
     currentUser,
     redirectToActionInstance,
     lockAgain,
-    changeCheckBox,
-    resetLockAgainCheckBox,
 }) => {
     const hasSubmissionPermission = userHasPermission(
         'iaso_org_units',
@@ -169,14 +165,6 @@ const actions = ({
         disabled: false,
     };
 
-    const renderTriggerLock = (isLocked, openDialog) => {
-        return isLocked ? (
-            <LockOpenIcon onClick={openDialog} />
-        ) : (
-            <LockIcon onClick={openDialog} />
-        );
-    };
-
     const confirmLockUnlockInstance = instance => {
         const instanceParams = {
             id: instance.id,
@@ -184,15 +172,11 @@ const actions = ({
         return lockInstanceWithDispatch(instanceParams);
     };
 
-    const resetLockAgain = () => {
-        resetLockAgainCheckBox();
-    };
-
     const lockAction = {
-        id: 'locked',
+        id: 'lockActionTooltip', // used by translation
         icon: (
             <ConfirmCancelDialogComponent
-                titleMessage={MESSAGES.locked}
+                titleMessage={MESSAGES.lockAction}
                 onConfirm={closeDialog => {
                     confirmLockUnlockInstance(currentInstance, lockAgain).then(
                         () => {
@@ -201,13 +185,18 @@ const actions = ({
                         },
                     );
                 }}
-                onClosed={resetLockAgain}
-                renderTrigger={({ openDialog }) =>
-                    renderTriggerLock(currentInstance.is_locked, openDialog)
-                }
+                renderTrigger={({ openDialog }) => (
+                    <LockIcon onClick={openDialog} />
+                )}
             >
                 <DialogContentText id="alert-dialog-description">
                     <FormattedMessage {...MESSAGES.lockActionDescription} />
+                    <br />
+                    {currentInstance.is_locked && (
+                        <FormattedMessage
+                            {...MESSAGES.lockActionExistingLockDescription}
+                        />
+                    )}
                 </DialogContentText>
             </ConfirmCancelDialogComponent>
         ),
@@ -344,7 +333,6 @@ class InstanceDetails extends Component {
             fetchInstanceDetail,
             dispatch,
         } = this.props;
-        console.log(dispatch);
         fetchInstanceDetail(instanceId).then(instanceDetails => {
             fetchFormOrgUnitTypes(dispatch, instanceDetails.form_id).then(
                 orgUnitTypeIds => {
@@ -417,14 +405,6 @@ class InstanceDetails extends Component {
             currentUser,
         );
 
-        const changeCheckBox = lockAgainStatus => {
-            this.setState({ lockAgain: !lockAgainStatus });
-        };
-
-        const resetLockAgainCheckBox = () => {
-            this.setState({ lockAgain: false });
-        };
-
         return (
             <section className={classes.relativeContainer}>
                 <TopBar
@@ -464,8 +444,6 @@ class InstanceDetails extends Component {
                                     currentUser,
                                     redirectToActionInstance,
                                     lockAgain,
-                                    changeCheckBox,
-                                    resetLockAgainCheckBox,
                                 })}
                                 onActionSelected={action =>
                                     this.onActionSelected(action)

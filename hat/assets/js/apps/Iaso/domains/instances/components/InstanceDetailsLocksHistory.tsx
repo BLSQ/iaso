@@ -86,7 +86,7 @@ const InstanceDetailsLocksHistory = ({
                                 <td> {instanceLock.top_org_unit.name}</td>
                                 <td>
                                     {instanceLock.unlocked_by ? (
-                                        <td>
+                                        <>
                                             <span
                                                 title={formatMessage(
                                                     MESSAGES.lockOpened,
@@ -97,7 +97,7 @@ const InstanceDetailsLocksHistory = ({
                                             {getDisplayName(
                                                 instanceLock.unlocked_by,
                                             )}
-                                        </td>
+                                        </>
                                     ) : (
                                         <ConfirmCancelDialogComponent
                                             titleMessage={

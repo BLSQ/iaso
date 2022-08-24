@@ -416,10 +416,13 @@ const MESSAGES = defineMessages({
         defaultMessage:
             'Are you sure you want to unlink this reference submission from the orgUnit ?',
     },
-
-    locked: {
-        id: 'iaso.instance.locked',
+    lockActionTooltip: {
+        id: 'iaso.instance.lockActionTooltip',
         defaultMessage: 'Lock the instance',
+    },
+    lockAction: {
+        id: 'iaso.instance.lockAction',
+        defaultMessage: 'Lock the instance?',
     },
     unlocked: {
         id: 'iaso.instance.unlocked',
@@ -450,7 +453,13 @@ const MESSAGES = defineMessages({
     lockActionDescription: {
         id: 'iaso.instance.dialog.lockActionDescription',
         defaultMessage:
-            'This will preventing modification on the instance by any user having lower access than you',
+            'This will preventing modification on the instance by any user having lower access than you.',
+    },
+    lockActionExistingLockDescription: {
+        id: 'iaso.instance.dialog.lockActionExistingLockDescription',
+        defaultMessage:
+            'This submission is already locked by one or mocked locks, locking again will add a supplementary lock.' +
+            ' Use the unlock action in the lock table on the bottom right to remove the lock on the submission',
     },
     unlockedWarning: {
         id: 'iaso.instance.dialog.unlockedWarning',

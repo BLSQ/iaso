@@ -236,7 +236,7 @@ export const useColumnsFromFieldsList = (
 };
 
 export const useBeneficiariesDetailsColumns = (
-    beneficiaryId: number,
+    beneficiaryId: number | null,
     fields: Array<string> = [],
 ): Column[] => {
     const { formatMessage } = useSafeIntl();
@@ -307,6 +307,7 @@ export const useBeneficiariesDetailsColumns = (
                             url={`/${baseUrls.beneficiarySubmissionDetail}/instanceId/${settings.row.original.id}/beneficiaryId/${beneficiaryId}`}
                             icon="remove-red-eye"
                             tooltipMessage={MESSAGES.see}
+                            disabled={!beneficiaryId}
                         />
                     </section>
                 ),

@@ -88,8 +88,8 @@ export const Details: FunctionComponent<Props> = ({ router }) => {
         isLoading: boolean;
     } = useGetBeneficiary(beneficiaryId);
     const columns = useBeneficiariesDetailsColumns(
+        beneficiary?.id ?? null,
         // @ts-ignore
-        beneficiary?.id,
         beneficiary?.entity_type?.fields_detail_view ?? [],
     );
     // Code to format table by looping through form to avoid hard coding values

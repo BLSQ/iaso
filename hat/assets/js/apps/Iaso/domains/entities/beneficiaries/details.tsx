@@ -27,6 +27,7 @@ import { useBeneficiariesDetailsColumns } from './config';
 import { CsvButton } from '../../../components/Buttons/CsvButton';
 import { XlsxButton } from '../../../components/Buttons/XslxButton';
 import { BeneficiaryBaseInfo } from './components/BeneficiaryBaseInfo';
+import WidgetPaper from '../../../components/papers/WidgetPaperComponent';
 
 type Props = {
     router: any;
@@ -57,6 +58,7 @@ const useStyles = makeStyles(theme => ({
         borderTop: 'none',
     },
     titleRow: { fontWeight: 'bold' },
+    fullWith: { width: '100%' },
 }));
 
 // const mapFileContent = (
@@ -168,11 +170,15 @@ export const Details: FunctionComponent<Props> = ({ router }) => {
                         {mapFileContent(beneficiary?.attributes?.file_content)}
                     </Grid> */}
                     <Grid container item xs={3}>
-                        <Paper style={{ width: '100%' }}>
+                        <WidgetPaper
+                            className={classes.fullWith}
+                            title={formatMessage(MESSAGES.beneficiary)}
+                        >
                             <BeneficiaryBaseInfo beneficiary={beneficiary} />
-                        </Paper>
+                        </WidgetPaper>
                     </Grid>
-                    <Grid container item xs={1}>
+                    {/* TODO uncomment when edition is possible */}
+                    {/* <Grid container item xs={1}>
                         <Box ml={2}>
                             <EditIcon
                                 onClick={() => {
@@ -187,7 +193,7 @@ export const Details: FunctionComponent<Props> = ({ router }) => {
                                 color="action"
                             />
                         </Box>
-                    </Grid>
+                    </Grid> */}
                     <Grid container item xs={3} justifyContent="center">
                         <Box mt={1}>
                             {`${formatMessage(MESSAGES.nfcCards)}: ${
@@ -210,7 +216,6 @@ export const Details: FunctionComponent<Props> = ({ router }) => {
                         </Box>
                     </Grid>
                 </Grid>
-                <Box mt={2}>{beneficiary?.uuid}</Box>
                 <Table
                     data={submissions ?? []}
                     columns={columns}

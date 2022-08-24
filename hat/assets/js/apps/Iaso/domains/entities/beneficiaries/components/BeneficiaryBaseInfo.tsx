@@ -9,25 +9,6 @@ import { Beneficiary } from '../types/beneficiary';
 
 const useStyles = makeStyles(theme => {
     return {
-        allBorders: {
-            // @ts-ignore
-            border: `1px solid`,
-        },
-        allButTopBorder: {
-            // @ts-ignore
-            border: `1px solid`,
-            borderTop: 'none',
-        },
-        allButBottomBorder: {
-            // @ts-ignore
-            border: `1px solid`,
-            borderBottom: 'none',
-        },
-        allButLeftBorder: {
-            // @ts-ignore
-            border: `1px solid`,
-            borderLeft: 'none',
-        },
         BottomAndRightBorders: {
             // @ts-ignore
             border: `1px solid`,
@@ -37,12 +18,6 @@ const useStyles = makeStyles(theme => {
         onlyRightBorder: { borderRight: '1px solid' },
         onlyBottomBorder: { borderBottom: '1px solid' },
         titleRow: { fontWeight: 'bold' },
-        bottomRightRadius: { borderBottomRightRadius: 5 },
-        bottomLeftRadius: { borderBottomLeftRadius: 5 },
-        topLeftRadius: { borderTopLeftRadius: 5 },
-        topRightRadius: { borderTopRightRadius: 5 },
-        // @ts-ignore
-        grayBorder: { borderColor: theme.palette.mediumGray.main },
         // @ts-ignore
         lightGrayBorder: { borderColor: theme.palette.ligthGray.border },
     };
@@ -50,36 +25,20 @@ const useStyles = makeStyles(theme => {
 
 type Props = {
     beneficiary?: Beneficiary;
-    paperLayout?: boolean;
 };
 
 export const BeneficiaryBaseInfo: FunctionComponent<Props> = ({
     beneficiary,
-    paperLayout = false,
 }) => {
     const { formatMessage } = useSafeIntl();
     const classes = useStyles();
-    const borderColor = paperLayout
-        ? classes.lightGrayBorder
-        : classes.grayBorder;
-    const topLeftStyle = paperLayout
-        ? `${classes.BottomAndRightBorders} ${borderColor} ${classes.titleRow}`
-        : `${classes.allBorders} ${classes.titleRow}  ${borderColor} ${classes.topLeftRadius}`;
-    const topRightStyle = paperLayout
-        ? `${classes.onlyBottomBorder} ${borderColor}`
-        : `${classes.allButLeftBorder}  ${borderColor} ${classes.topRightRadius}`;
-    const middleLeftStyle = paperLayout
-        ? `${classes.BottomAndRightBorders} ${borderColor} ${classes.titleRow}`
-        : `${classes.allButTopBorder} ${classes.titleRow} ${borderColor}`;
-    const middleRightStyle = paperLayout
-        ? `${classes.onlyBottomBorder} ${borderColor}`
-        : `${classes.BottomAndRightBorders} ${borderColor}`;
-    const bottomLeftStyle = paperLayout
-        ? `${classes.onlyRightBorder} ${borderColor} ${classes.titleRow}`
-        : `${classes.allButTopBorder} ${classes.titleRow}  ${borderColor} ${classes.bottomLeftRadius}`;
-    const bottomRightStyle = paperLayout
-        ? ''
-        : `${classes.BottomAndRightBorders}  ${borderColor} ${classes.bottomRightRadius}`;
+    const borderColor = classes.lightGrayBorder;
+    const topLeftStyle = `${classes.BottomAndRightBorders} ${borderColor} ${classes.titleRow}`;
+    const topRightStyle = `${classes.onlyBottomBorder} ${borderColor}`;
+    const middleLeftStyle = `${classes.BottomAndRightBorders} ${borderColor} ${classes.titleRow}`;
+    const middleRightStyle = `${classes.onlyBottomBorder} ${borderColor}`;
+    const bottomLeftStyle = `${classes.onlyRightBorder} ${borderColor} ${classes.titleRow}`;
+    const bottomRightStyle = '';
     return (
         <>
             <Grid container item xs={12}>
@@ -143,7 +102,7 @@ export const BeneficiaryBaseInfo: FunctionComponent<Props> = ({
                     item
                     container
                     xs={6}
-                    className={bottomLeftStyle}
+                    className={middleLeftStyle}
                     justifyContent="center"
                 >
                     <Box mt={1} mb={1}>
@@ -154,12 +113,36 @@ export const BeneficiaryBaseInfo: FunctionComponent<Props> = ({
                     item
                     container
                     xs={6}
-                    className={bottomRightStyle}
+                    className={middleRightStyle}
                     justifyContent="center"
                 >
                     <Box mt={1} mb={1}>
                         {beneficiary?.attributes?.file_content.gender ??
                             formatMessage(MESSAGES.unknown)}
+                    </Box>
+                </Grid>
+            </Grid>
+            <Grid container item xs={12}>
+                <Grid
+                    item
+                    container
+                    xs={6}
+                    className={bottomLeftStyle}
+                    justifyContent="center"
+                >
+                    <Box mt={1} mb={1}>
+                        {formatMessage(MESSAGES.uuid)}
+                    </Box>
+                </Grid>
+                <Grid
+                    item
+                    container
+                    xs={6}
+                    className={bottomRightStyle}
+                    justifyContent="center"
+                >
+                    <Box mt={1} mb={1} style={{ textAlign: 'center' }}>
+                        {beneficiary?.uuid ?? '--'}
                     </Box>
                 </Grid>
             </Grid>

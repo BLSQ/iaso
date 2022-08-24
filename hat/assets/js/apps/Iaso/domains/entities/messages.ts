@@ -121,6 +121,30 @@ const MESSAGES = defineMessages({
         id: 'iaso.entities.program',
         defaultMessage: 'Program',
     },
+    'org_unit.name': {
+        id: 'iaso.instance.org_unit',
+        defaultMessage: 'Org unit',
+    },
+    OrgUnitName: {
+        id: 'iaso.instance.org_unit',
+        defaultMessage: 'Org unit',
+    },
+    form: {
+        id: 'iaso.instance.form',
+        defaultMessage: 'Form',
+    },
+    submitter: {
+        id: 'iaso.instance.submitter',
+        defaultMessage: 'Submitter',
+    },
+    last_sync_at: {
+        id: 'iaso.instance.last_sync_at',
+        defaultMessage: 'Last sync',
+    },
+    keyInfo: {
+        id: 'iaso.entities.keyInfo',
+        defaultMessage: 'Key information',
+    },
 });
 
 export default MESSAGES;

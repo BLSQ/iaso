@@ -51,9 +51,10 @@ const Forms = ({ params }) => {
         dispatch(fetchAllOrgUnitTypes());
         // This fix a bug in redux cache when we passed from "archived" to "non-archived" form page and vice versa
         setForceRefresh(true);
-        setShowDeleted(Boolean(params.showDeleted));
+        setShowDeleted(Boolean(params.showDeleted === 'true'));
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [params]);
+
     return (
         <>
             <TopBar title={intl.formatMessage(MESSAGES.title)} />
@@ -61,7 +62,7 @@ const Forms = ({ params }) => {
                 <Filters
                     params={params}
                     onErrorChange={setTextSearchError}
-                    isSearchDisabled={textSearchError}
+                    hasErrors={textSearchError}
                 />
 
                 <SingleTable
@@ -71,7 +72,6 @@ const Forms = ({ params }) => {
                     apiParams={{
                         ...params,
                         all: true,
-                        only_deleted: params.showDeleted ? 1 : 0,
                     }}
                     fetchItems={(d, u, newParams, signal) =>
                         fetchForms(d, u, signal).then(res => {

@@ -1,5 +1,5 @@
 /* eslint-disable camelcase */
-import { UseMutationResult, useQueryClient, UseQueryResult } from 'react-query';
+import { UseMutationResult, UseQueryResult } from 'react-query';
 import moment from 'moment';
 
 // @ts-ignore
@@ -159,7 +159,6 @@ const getSubmissions = (id?: number) => {
 export const useGetSubmissions = (
     id?: number,
 ): UseQueryResult<Instance[], Error> => {
-    const queryClient = useQueryClient();
     return useSnackQuery({
         queryKey: ['submissionsForEntity', id],
         queryFn: () => getSubmissions(id),
@@ -169,14 +168,6 @@ export const useGetSubmissions = (
             select: data => {
                 if (!data) return [];
                 return data.instances;
-            },
-            onSuccess: data => {
-                data.forEach(instance => {
-                    queryClient.setQueryData(
-                        ['beneficiaryVisit', instance.id.toString()],
-                        instance,
-                    );
-                });
             },
         },
     });
@@ -255,7 +246,9 @@ const getVisitSubmission = (submissionId: string): Promise<any> => {
     return getRequest(`/api/instances/${submissionId}`);
 };
 
-export const useGetVisitSubmission = (submissionId: string): UseQueryResult => {
+export const useGetVisitSubmission = (
+    submissionId: string,
+): UseQueryResult<Instance, Error> => {
     return useSnackQuery({
         queryKey: ['beneficiaryVisit', submissionId],
         queryFn: () => getVisitSubmission(submissionId),
@@ -264,8 +257,8 @@ export const useGetVisitSubmission = (submissionId: string): UseQueryResult => {
                 if (!data) return { file_content: [] };
                 return data;
             },
+            // Prevent from refteching when navigating back and forth
             staleTime: Infinity,
-            // refetchOnMount: true,
         },
     });
 };

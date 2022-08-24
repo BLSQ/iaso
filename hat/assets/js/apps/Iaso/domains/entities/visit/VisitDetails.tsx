@@ -9,6 +9,7 @@ import {
 } from 'bluesquare-components';
 import { Box, Grid, makeStyles, Paper } from '@material-ui/core';
 import { useDispatch, useSelector } from 'react-redux';
+import moment from 'moment';
 import InstanceFileContent from '../../instances/components/InstanceFileContent';
 import {
     useGetVisitSubmission,
@@ -45,10 +46,16 @@ export const VisitDetails: FunctionComponent<Props> = ({ params, router }) => {
     // @ts-ignore
     const prevPathname = useSelector(state => state.routerCustom.prevPathname);
     const dispatch = useDispatch();
+    // Null checking beforehand because moment will return a date by default
+    const visitDate =
+        submission?.created_at &&
+        moment.unix(submission.created_at).format('LTS');
+    const baseTitle = submission?.form_name ?? formatMessage(MESSAGES.details);
+    const title = visitDate ? `${baseTitle} - ${visitDate}` : baseTitle;
     return (
         <>
             <TopBar
-                title={formatMessage(MESSAGES.beneficiaries)}
+                title={formatMessage(MESSAGES.visitDetails)}
                 displayBackButton
                 goBack={() => {
                     if (prevPathname) {
@@ -78,9 +85,7 @@ export const VisitDetails: FunctionComponent<Props> = ({ params, router }) => {
 
                     <Grid item xs={8}>
                         {!isLoadingSubmission && (
-                            <WidgetPaper
-                                title={`${submission?.form_name ?? 'details'}`}
-                            >
+                            <WidgetPaper title={title}>
                                 <InstanceFileContent instance={submission} />
                             </WidgetPaper>
                         )}

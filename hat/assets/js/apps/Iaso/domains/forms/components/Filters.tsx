@@ -47,7 +47,6 @@ const Filters: FunctionComponent<Props> = ({
     const [showDeleted, setShowDeleted] = useState<boolean>(
         filters.showDeleted === 'true',
     );
-    const [isSearchDisabled, setSearchDisabled] = useState<boolean>(true);
 
     useEffect(() => {
         if (filters.search !== undefined) {
@@ -63,8 +62,6 @@ const Filters: FunctionComponent<Props> = ({
     useEffect(() => {
         onErrorChange(hasError);
     }, [hasError, onErrorChange]);
-
-    console.log('filters', filters);
 
     return (
         <>
@@ -88,7 +85,6 @@ const Filters: FunctionComponent<Props> = ({
                         onChange={(key, value) => {
                             handleChange('showDeleted', !showDeleted);
                             setShowDeleted(value);
-                            setSearchDisabled(!isSearchDisabled);
                         }}
                         value={showDeleted}
                         type="checkbox"

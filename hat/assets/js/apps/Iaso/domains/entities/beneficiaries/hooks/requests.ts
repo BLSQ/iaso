@@ -147,6 +147,7 @@ export const useGetBeneficiary = (
         queryFn: () => getBeneficiary(beneficiaryId),
         options: {
             retry: false,
+            staleTime: Infinity,
         },
     });
 };
@@ -237,6 +238,27 @@ export const useGetTeamsDropdown = (): UseQueryResult<
                         };
                     });
             },
+        },
+    });
+};
+
+const getVisitSubmission = (submissionId: string): Promise<any> => {
+    return getRequest(`/api/instances/${submissionId}`);
+};
+
+export const useGetVisitSubmission = (
+    submissionId: string,
+): UseQueryResult<Instance, Error> => {
+    return useSnackQuery({
+        queryKey: ['beneficiaryVisit', submissionId],
+        queryFn: () => getVisitSubmission(submissionId),
+        options: {
+            select: data => {
+                if (!data) return { file_content: [] };
+                return data;
+            },
+            // Prevent from refteching when navigating back and forth
+            staleTime: Infinity,
         },
     });
 };

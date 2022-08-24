@@ -101,6 +101,14 @@ const MESSAGES = defineMessages({
         defaultMessage: 'Submitter team',
         id: 'iaso.entities.label.submitterTeam',
     },
+    details: {
+        defaultMessage: 'Details',
+        id: 'iaso.entities.label.details',
+    },
+    visitDetails: {
+        defaultMessage: 'Visit details',
+        id: 'iaso.entities.label.visitDetails',
+    },
 });
 
 export default MESSAGES;

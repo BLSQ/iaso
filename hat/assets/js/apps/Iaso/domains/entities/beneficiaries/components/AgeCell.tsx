@@ -28,6 +28,6 @@ export const AgeCell: FunctionComponent<Props> = ({
         age,
         birthDate,
     });
-    if (!result) return <>--</>;
+    if (!result && typeof result !== 'number') return <>--</>;
     return <>{`${result} ${formatMessage(MESSAGES.months)}`}</>;
 };

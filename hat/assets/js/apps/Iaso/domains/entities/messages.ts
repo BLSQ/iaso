@@ -145,6 +145,10 @@ const MESSAGES = defineMessages({
         id: 'iaso.entities.keyInfo',
         defaultMessage: 'Key information',
     },
+    projectsError: {
+        id: 'iaso.snackBar.fetchProjectsError',
+        defaultMessage: 'An error occurred while fetching projects list',
+    },
 });
 
 export default MESSAGES;

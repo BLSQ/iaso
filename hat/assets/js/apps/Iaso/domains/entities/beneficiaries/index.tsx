@@ -17,7 +17,6 @@ import {
 
 import TopBar from '../../../components/nav/TopBarComponent';
 import { Filters } from './components/Filters';
-// import { ListMap } from './components/ListMap';
 import DownloadButtonsComponent from '../../../components/DownloadButtonsComponent';
 // import { Dialog } from './components/Dialog';
 import {
@@ -31,6 +30,7 @@ import { useColumns, baseUrl } from './config';
 import MESSAGES from './messages';
 
 import { redirectTo } from '../../../routing/actions';
+import { ListMap } from './components/ListMap';
 
 const useStyles = makeStyles(theme => ({
     ...commonStyles(theme),
@@ -64,21 +64,21 @@ export const Beneficiaries: FunctionComponent<Props> = ({ params }) => {
     const { url: apiUrl } = useGetBeneficiariesApiParams(params);
 
     const { data, isFetching } = useGetBeneficiariesPaginated(params);
-    // const [tab, setTab] = useState(params.tab ?? 'list');
+    const [tab, setTab] = useState(params.tab ?? 'list');
     // const { mutate: deleteEntity, isLoading: deleting } =
     //     useDeleteBeneficiary();
     // const { mutate: saveEntity, isLoading: saving } = useSaveBeneficiary();
 
     // const isLoading = fetchingEntities || deleting || saving;
     const isLoading = isFetching;
-    // const handleChangeTab = (newTab: string) => {
-    //     setTab(newTab);
-    //     const newParams = {
-    //         ...params,
-    //         tab: newTab,
-    //     };
-    //     dispatch(redirectTo(baseUrl, newParams));
-    // };
+    const handleChangeTab = (newTab: string) => {
+        setTab(newTab);
+        const newParams = {
+            ...params,
+            tab: newTab,
+        };
+        dispatch(redirectTo(baseUrl, newParams));
+    };
 
     return (
         <>
@@ -87,7 +87,7 @@ export const Beneficiaries: FunctionComponent<Props> = ({ params }) => {
                 title={formatMessage(MESSAGES.beneficiaries)}
                 displayBackButton={false}
             >
-                {/* <Tabs
+                <Tabs
                     value={tab}
                     classes={{
                         root: classes.tabs,
@@ -97,7 +97,7 @@ export const Beneficiaries: FunctionComponent<Props> = ({ params }) => {
                 >
                     <Tab value="list" label={formatMessage(MESSAGES.list)} />
                     <Tab value="map" label={formatMessage(MESSAGES.map)} />
-                </Tabs> */}
+                </Tabs>
             </TopBar>
             <Box className={classes.containerFullHeightNoTabPadded}>
                 <Filters params={params} />
@@ -118,7 +118,7 @@ export const Beneficiaries: FunctionComponent<Props> = ({ params }) => {
                         saveEntity={saveEntity}
                     /> */}
                 </Grid>
-                {/* 
+
                 <Box position="relative" width="100%" pb={4}>
                     <Box
                         pt={2}
@@ -137,11 +137,9 @@ export const Beneficiaries: FunctionComponent<Props> = ({ params }) => {
                                 locations={
                                     data?.beneficiary?.map(beneficiary => ({
                                         latitude:
-                                            beneficiary.attributes?.org_unit
-                                                .latitude,
+                                            beneficiary.attributes?.latitude,
                                         longitude:
-                                            beneficiary.attributes?.org_unit
-                                                .longitude,
+                                            beneficiary.attributes?.longitude,
                                         orgUnit:
                                             beneficiary.attributes?.org_unit,
                                         id: beneficiary.id,
@@ -150,28 +148,28 @@ export const Beneficiaries: FunctionComponent<Props> = ({ params }) => {
                                 isFetchingLocations={isFetching}
                             />
                         )}
-                    </Box> */}
-                {/* {tab === 'list' && ( */}
-                <>
-                    <Table
-                        data={data?.beneficiary ?? []}
-                        pages={data?.pages ?? 1}
-                        defaultSorted={[{ id: 'name', desc: false }]}
-                        columns={columns}
-                        count={data?.count ?? 0}
-                        baseUrl={baseUrl}
-                        params={params}
-                        onTableParamsChange={p =>
-                            dispatch(redirectTo(baseUrl, p))
-                        }
-                    />
-                    <DownloadButtonsComponent
-                        csvUrl={`${apiUrl}&csv=true`}
-                        xlsxUrl={`${apiUrl}&xlsx=true`}
-                    />
-                </>
-                {/* )} */}
-                {/* </Box> */}
+                    </Box>
+                    {tab === 'list' && (
+                        <>
+                            <Table
+                                data={data?.beneficiary ?? []}
+                                pages={data?.pages ?? 1}
+                                defaultSorted={[{ id: 'name', desc: false }]}
+                                columns={columns}
+                                count={data?.count ?? 0}
+                                baseUrl={baseUrl}
+                                params={params}
+                                onTableParamsChange={p =>
+                                    dispatch(redirectTo(baseUrl, p))
+                                }
+                            />
+                            <DownloadButtonsComponent
+                                csvUrl={`${apiUrl}&csv=true`}
+                                xlsxUrl={`${apiUrl}&xlsx=true`}
+                            />
+                        </>
+                    )}
+                </Box>
             </Box>
         </>
     );

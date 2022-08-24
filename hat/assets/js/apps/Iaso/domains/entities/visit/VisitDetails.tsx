@@ -7,7 +7,7 @@ import {
     // @ts-ignore
     commonStyles,
 } from 'bluesquare-components';
-import { Box, Grid, makeStyles, Paper } from '@material-ui/core';
+import { Box, Grid, makeStyles } from '@material-ui/core';
 import { useDispatch, useSelector } from 'react-redux';
 import moment from 'moment';
 import InstanceFileContent from '../../instances/components/InstanceFileContent';
@@ -74,11 +74,14 @@ export const VisitDetails: FunctionComponent<Props> = ({ params, router }) => {
                 <Grid container item spacing={4}>
                     {!isLoadingbeneficiary && (
                         <Grid item xs={4}>
-                            <Paper elevation={1}>
+                            <WidgetPaper
+                                title={formatMessage(MESSAGES.beneficiary)}
+                            >
                                 <BeneficiaryBaseInfo
                                     beneficiary={beneficiary}
+                                    paperLayout
                                 />
-                            </Paper>
+                            </WidgetPaper>
                         </Grid>
                     )}
                     {isLoadingbeneficiary && <LoadingSpinner absolute />}

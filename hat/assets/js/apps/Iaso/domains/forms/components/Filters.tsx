@@ -1,10 +1,4 @@
-import React, {
-    useState,
-    FunctionComponent,
-    useCallback,
-    useEffect,
-} from 'react';
-import { useDispatch } from 'react-redux';
+import React, { useState, FunctionComponent, useEffect } from 'react';
 
 import { Grid, Button, makeStyles } from '@material-ui/core';
 import SearchIcon from '@material-ui/icons/Search';
@@ -12,7 +6,8 @@ import SearchIcon from '@material-ui/icons/Search';
 import { commonStyles, useSafeIntl } from 'bluesquare-components';
 
 import InputComponent from '../../../components/forms/InputComponent';
-import { redirectTo } from '../../../routing/actions';
+import { useFilterState } from '../../../hooks/useFilterState';
+
 import MESSAGES from '../messages';
 
 import { containsForbiddenCharacter } from '../../../constants/filters';
@@ -35,53 +30,41 @@ type Props = {
     params: Params;
     // eslint-disable-next-line no-unused-vars
     onErrorChange: (hasError: boolean) => void;
-    isSearchDisabled: boolean;
+    hasErrors: boolean;
 };
 
 const Filters: FunctionComponent<Props> = ({
     params,
     onErrorChange,
-    isSearchDisabled,
+    hasErrors,
 }) => {
-    const [filtersUpdated, setFiltersUpdated] = useState(false);
     const classes: Record<string, string> = useStyles();
     const { formatMessage } = useSafeIntl();
-    const dispatch = useDispatch();
+    const { filters, handleSearch, handleChange, filtersUpdated } =
+        useFilterState(baseUrl, params);
     const [textSearchErrors, setTextSearchErrors] = useState<Array<string>>([]);
     const [hasError, setHasError] = useState<boolean>(false);
-    const [search, setSearch] = useState<string | undefined>(params.search);
-    const [showOnlyDeleted, setShowOnlyDeleted] = useState(
-        params.showDeleted === 'true',
+    const [showDeleted, setShowDeleted] = useState<boolean>(
+        filters.showDeleted === 'true',
     );
-
-    const handleSearch = useCallback(() => {
-        if (filtersUpdated) {
-            setFiltersUpdated(false);
-            const tempParams = {
-                ...params,
-                search: search && search !== '' ? search : undefined,
-                showDeleted: showOnlyDeleted || undefined,
-            };
-
-            tempParams.page = '1';
-            dispatch(redirectTo(baseUrl, tempParams));
-        }
-    }, [dispatch, filtersUpdated, params, search, showOnlyDeleted]);
+    const [isSearchDisabled, setSearchDisabled] = useState<boolean>(true);
 
     useEffect(() => {
-        if (search !== undefined) {
-            const hasForbiddenChar = containsForbiddenCharacter(search);
+        if (filters.search !== undefined) {
+            const hasForbiddenChar = containsForbiddenCharacter(filters.search);
             setHasError(hasForbiddenChar);
             const newErrors = hasForbiddenChar
                 ? [formatMessage(MESSAGES.forbiddenChars)]
                 : [];
             setTextSearchErrors(newErrors);
         }
-    }, [search, formatMessage]);
+    }, [filters.search, formatMessage]);
 
     useEffect(() => {
         onErrorChange(hasError);
     }, [hasError, onErrorChange]);
+
+    console.log('filters', filters);
 
     return (
         <>
@@ -89,14 +72,11 @@ const Filters: FunctionComponent<Props> = ({
                 <Grid item xs={3}>
                     <InputComponent
                         keyValue="search"
-                        onChange={(key, value) => {
-                            setSearch(value);
-                            setFiltersUpdated(true);
-                        }}
-                        value={search}
+                        onChange={handleChange}
+                        value={filters.search}
                         type="search"
                         label={MESSAGES.search}
-                        onEnterPressed={handleSearch}
+                        onEnterPressed={!hasError ? handleSearch : null}
                         errors={textSearchErrors}
                     />
                 </Grid>
@@ -106,10 +86,11 @@ const Filters: FunctionComponent<Props> = ({
                     <InputComponent
                         keyValue="showDeleted"
                         onChange={(key, value) => {
-                            setShowOnlyDeleted(value);
-                            setFiltersUpdated(true);
+                            handleChange('showDeleted', !showDeleted);
+                            setShowDeleted(value);
+                            setSearchDisabled(!isSearchDisabled);
                         }}
-                        value={showOnlyDeleted}
+                        value={showDeleted}
                         type="checkbox"
                         label={MESSAGES.showDeleted}
                     />
@@ -131,7 +112,9 @@ const Filters: FunctionComponent<Props> = ({
                 >
                     <Button
                         data-test="search-button"
-                        disabled={!filtersUpdated || isSearchDisabled}
+                        disabled={
+                            (!showDeleted && !filtersUpdated) || hasErrors
+                        }
                         variant="contained"
                         className={classes.button}
                         color="primary"

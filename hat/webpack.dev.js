@@ -50,26 +50,25 @@ module.exports = {
     // config for webpack-dev-server
     devServer: {
         historyApiFallback: true,
-        noInfo: false,
         // needed so we can load the js from django (on another port or docker)
         headers: {
             'Access-Control-Allow-Origin': '*',
         },
         host: '0.0.0.0',
         port: 3000,
-        // It suppress error shown in console, so it has to be set to false.
-        quiet: false,
-        // It suppress everything except error, so it has to be set to false as well
-        // to see success build.
-        stats: {
-            // Config for minimal console.log mess.
-            assets: true,
-            colors: true,
-            version: false,
-            hash: false,
-            timings: true,
-            chunks: true,
-            chunkModules: false,
+        devMiddleware: {
+            // It suppress everything except error, so it has to be set to false as well
+            // to see success build.
+            stats: {
+                // Config for minimal console.log mess.
+                assets: true,
+                colors: true,
+                version: false,
+                hash: false,
+                timings: true,
+                chunks: true,
+                chunkModules: false,
+            },
         },
     },
 

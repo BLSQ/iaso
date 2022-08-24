@@ -7,7 +7,7 @@ import { CalendarMapTooltip } from './CalendarMapTooltip';
 import { getGeoJsonStyle } from './utils';
 import { polioVaccines } from '../../../constants/virus';
 
-type mergeShape = {
+type MergeShape = {
     geom: any;
     color: string;
     properties: {
@@ -20,7 +20,7 @@ type mergeShape = {
 };
 
 type Props = {
-    mergedShapes: mergeShape[];
+    mergedShapes: MergeShape[];
     viewport: ViewPort;
 };
 

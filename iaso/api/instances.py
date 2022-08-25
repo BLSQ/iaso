@@ -77,7 +77,8 @@ class HasInstancePermission(permissions.BasePermission):
         self.has_permission(request, view)
         if request.method in permissions.SAFE_METHODS:
             return True
-        if request.user.has_perm("menupermission.iaso_update_submission") and obj.can_user_modify(request.user):
+        # if request.user.has_perm("menupermission.iaso_update_submission") and obj.can_user_modify(request.user):
+        if obj.can_user_modify(request.user):
             return True
         return False
 
@@ -171,8 +172,8 @@ class InstancesViewSet(viewsets.ViewSet):
                     lock_applying_to_user=FilteredRelation(
                         "instancelock",
                         condition=Q(
-                            ~Q(instancelock__top_org_unit__in=OrgUnit.objects.filter_for_user(request.user))
-                            & Q(instancelock__unlocked_by__isnull=False),
+                            ~Q(instancelock__top_org_unit__in=OrgUnit.objects.filter_for_user(request.user)),
+                            Q(instancelock__unlocked_by__isnull=True),
                         ),
                     )
                 ).annotate(count_lock_applying_to_user=Count("lock_applying_to_user"))
@@ -372,9 +373,9 @@ class InstancesViewSet(viewsets.ViewSet):
         # user orgunit that contain the instance's orgunit and is the highest level.
         if not user_orgunits.exists():
             # user is not restricted to any orgunit, use the root that contain the instance
-            top_level = OrgUnit.objects.filter(path__descendants=instance.org_unit.path).order_by("path__depth").first()
+            top_level = OrgUnit.objects.filter(path__ancestors=instance.org_unit.path).order_by("path__depth").first()
         else:
-            top_level = user_orgunits.filter(path__descendants=instance.org_unit.path).order_by("path__depth").last()
+            top_level = user_orgunits.filter(path__ancestors=instance.org_unit.path).order_by("path__depth").first()
         assert top_level, "No intersection found"  # should not happen
 
         lock = InstanceLock.objects.create(locked_by=user, top_org_unit=top_level, instance=instance)
@@ -418,7 +419,7 @@ class InstancesViewSet(viewsets.ViewSet):
         return Response({"res": "ok"})
 
     def retrieve(self, request, pk=None):
-        instance = get_object_or_404(self.get_queryset(), pk=pk)
+        instance: Instance = get_object_or_404(self.get_queryset(), pk=pk)
         self.check_object_permissions(request, instance)
         all_instance_locks = instance.instancelock_set.all()
 
@@ -427,7 +428,7 @@ class InstancesViewSet(viewsets.ViewSet):
         # Logs(history) of all instance locks
         response["instance_locks"] = InstanceLockSerializer(all_instance_locks.order_by("-locked_at"), many=True).data
         # To display the Lock or unlock icon when the use has access to the two actions
-        response["can_user_modify"] = self.can_user_modify(instance, request.user)
+        response["can_user_modify"] = instance.can_user_modify(request.user)
         # To display either the unlock or lock icon depending on if the instance is already lock or not
         response["is_locked"] = any(lock.unlocked_by is None for lock in all_instance_locks)
 
@@ -445,7 +446,7 @@ class InstancesViewSet(viewsets.ViewSet):
         self.check_object_permissions(request, instance)
         data = {
             **request.data,
-            "last_modified_by": request.user,
+            "last_modified_by": request.user.id,
         }
         instance_serializer = InstanceSerializer(instance, data=data, partial=True, context={"request": self.request})
         instance_serializer.is_valid(raise_exception=True)
@@ -454,7 +455,6 @@ class InstancesViewSet(viewsets.ViewSet):
 
         if instance.org_unit not in access_ou:
             raise serializers.ValidationError({"error": "You don't have the permission to modify this instance."})
-        self.can_user_modify(instance, request.user, raise_exception=True)
 
         if original.org_unit.reference_instance and original.org_unit_id != data_org_unit:
             previous_orgunit = original.org_unit

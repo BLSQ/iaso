@@ -156,14 +156,7 @@ const Filters: FunctionComponent<Props> = ({ params }) => {
                     </Box>
                 </Grid>
                 <Grid item xs={3}>
-                    <Box
-                        mt={2}
-                        p={1}
-                        mb={2}
-                        border={1}
-                        borderRadius={5}
-                        borderColor="rgba(0,0,0,0.23)"
-                    >
+                    <Box mt={2} p={1} mb={2}>
                         <InputComponent
                             keyValue="submitterTeamId"
                             onChange={handleTeamChange}

@@ -424,12 +424,8 @@ const MESSAGES = defineMessages({
         id: 'iaso.instance.lockAction',
         defaultMessage: 'Lock the instance?',
     },
-    unlocked: {
-        id: 'iaso.instance.unlocked',
-        defaultMessage: 'Unlock the instance',
-    },
     removeLockAction: {
-        id: 'iaso.instance.dialog.removeLockAction',
+        id: 'iaso.instance.removeLockAction',
         defaultMessage: 'Open this lock',
     },
     lockedCanModify: {
@@ -460,10 +456,6 @@ const MESSAGES = defineMessages({
         defaultMessage:
             'This submission is already locked by one or mocked locks, locking again will add a supplementary lock.' +
             ' Use the unlock action in the lock table on the bottom right to remove the lock on the submission',
-    },
-    unlockedWarning: {
-        id: 'iaso.instance.dialog.unlockedWarning',
-        defaultMessage: 'Locking hte ',
     },
     patchInstanceSuccesfull: {
         id: 'iaso.instance.patchInstanceSuccesfull',
@@ -500,10 +492,6 @@ const MESSAGES = defineMessages({
     NoLocksHistory: {
         defaultMessage: 'There is no locks History',
         id: 'iaso.instance.NoLocksHistory',
-    },
-    CanLockAgain: {
-        defaultMessage: 'Lock the submission again',
-        id: 'iaso.instance.CanLockAgain',
     },
     history: {
         id: 'iaso.label.history',

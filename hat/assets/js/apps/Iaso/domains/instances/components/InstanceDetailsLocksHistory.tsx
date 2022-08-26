@@ -118,7 +118,7 @@ const InstanceDetailsLocksHistory = ({
                                                         !currentInstance.can_user_modify
                                                     }
                                                     tooltipMessage={
-                                                        MESSAGES.unlocked
+                                                        MESSAGES.removeLockAction
                                                     }
                                                     style={{ height: '1em' }}
                                                 />

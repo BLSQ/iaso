@@ -45,7 +45,19 @@
                 {{comment}}
                 </td>
             </tr>
-        {%endif%}
+            {%endif%}
+            {%if file%}
+            <tr>
+                <td align="left" style="padding:0px 5px;">
+                    Files:
+                </td>
+            </tr>
+            <tr>
+                <td align="left" style="padding:0px 5px;">
+                    <a href={{file}}>{{file}}</a>
+                </td>
+            </tr>
+            {%endif%}
             <tr>
                 <td style="height:20px;padding:5px;font-size:0;line-height:0;">&nbsp;</td>
             </tr>

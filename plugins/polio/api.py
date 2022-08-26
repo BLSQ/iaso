@@ -1345,10 +1345,12 @@ def email_subject(event_type, campaign_name):
     return email_subject_template.format(event_type, campaign_name)
 
 
-def event_creation_email(event_type, first_name, last_name, comment, link, dns_domain):
+def event_creation_email(event_type, first_name, last_name, comment,file, link, dns_domain):
     email_template = """%s by %s %s.
 
 Comment: %s
+
+file:%s
 
 ------------
 
@@ -1357,7 +1359,7 @@ you can access the history of this budget here: %s
 ------------    
 This is an automated email from %s
 """
-    return email_template % (event_type, first_name, last_name, comment, link, dns_domain)
+    return email_template % (event_type, first_name, last_name, comment,file, link, dns_domain)
 
 
 def creation_email_with_two_links(
@@ -1431,12 +1433,6 @@ def send_approval_budget_mail(event):
                     )
                     msg.attach_alternative(html_content, "text/html")
                     msg.send(fail_silently=False)
-                    # send_mail(
-                    #     subject,
-                    #     text_content,
-                    #     DEFAULT_FROM_EMAIL,
-                    #     [user.email],
-                    # )
 
 
 def send_approvers_email(user, author_team, event, event_type, approval_link, rejection_link):
@@ -1501,6 +1497,15 @@ def is_budget_approved(user, event):
         return True
     return False
 
+def make_budget_event_file_links(event):
+    domain = settings.DNS_DOMAIN
+    event_files = event.event_files.all()
+    if not event_files:
+        return None
+    test_file= event_files.first()
+    serialized_file=BudgetFilesSerializer(test_file).data
+    #TODO return name along with path
+    return "http://"+domain+serialized_file['file']
 
 class RecipientFilterBackend(filters.BaseFilterBackend):
     def filter_queryset(self, request, queryset, view):
@@ -1580,6 +1585,8 @@ class BudgetEventViewset(ModelViewSet):
             event = BudgetEvent.objects.get(pk=event_pk)
             event.is_finalized = True if request.data["is_finalized"] else False
             event.save()
+
+            path_to_file = make_budget_event_file_links(event)
             current_user = self.request.user
             event_type = "approval" if event.type == "validation" else event.type
 
@@ -1635,6 +1642,7 @@ class BudgetEventViewset(ModelViewSet):
                         event.author.first_name,
                         event.author.last_name,
                         event.comment,
+                        path_to_file,
                         generate_auto_authentication_link(link_to_send, user),
                         settings.DNS_DOMAIN,
                     )
@@ -1650,6 +1658,7 @@ class BudgetEventViewset(ModelViewSet):
                             "last_name": event.author.last_name,
                             "comment": event.comment,
                             "event_type": event_type,
+                            "file":path_to_file
                         },
                     )
                     msg.attach_alternative(html_content, "text/html")

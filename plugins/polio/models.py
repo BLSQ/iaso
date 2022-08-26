@@ -538,7 +538,7 @@ class BudgetEvent(SoftDeletableModel):
 
 
 class BudgetFiles(models.Model):
-    event = models.ForeignKey(BudgetEvent, on_delete=models.PROTECT)
+    event = models.ForeignKey(BudgetEvent, on_delete=models.PROTECT, related_name="event_files")
     file = models.FileField()
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)

@@ -1345,7 +1345,7 @@ def email_subject(event_type, campaign_name):
     return email_subject_template.format(event_type, campaign_name)
 
 
-def event_creation_email(event_type, first_name, last_name, comment,file, link, dns_domain):
+def event_creation_email(event_type, first_name, last_name, comment, file, link, dns_domain):
     email_template = """%s by %s %s.
 
 Comment: %s
@@ -1359,7 +1359,7 @@ you can access the history of this budget here: %s
 ------------    
 This is an automated email from %s
 """
-    return email_template % (event_type, first_name, last_name, comment,file, link, dns_domain)
+    return email_template % (event_type, first_name, last_name, comment, file, link, dns_domain)
 
 
 def creation_email_with_two_links(
@@ -1497,15 +1497,17 @@ def is_budget_approved(user, event):
         return True
     return False
 
+
 def make_budget_event_file_links(event):
     domain = settings.DNS_DOMAIN
     event_files = event.event_files.all()
     if not event_files:
         return None
-    test_file= event_files.first()
-    serialized_file=BudgetFilesSerializer(test_file).data
-    #TODO return name along with path
-    return "http://"+domain+serialized_file['file']
+    test_file = event_files.first()
+    serialized_file = BudgetFilesSerializer(test_file).data
+    # TODO return name along with path
+    return "http://" + domain + serialized_file["file"]
+
 
 class RecipientFilterBackend(filters.BaseFilterBackend):
     def filter_queryset(self, request, queryset, view):
@@ -1658,7 +1660,7 @@ class BudgetEventViewset(ModelViewSet):
                             "last_name": event.author.last_name,
                             "comment": event.comment,
                             "event_type": event_type,
-                            "file":path_to_file
+                            "file": path_to_file,
                         },
                     )
                     msg.attach_alternative(html_content, "text/html")

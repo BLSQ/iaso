@@ -1,12 +1,14 @@
-import React, { useMemo } from 'react';
+import React, { useMemo, useEffect, useState } from 'react';
 import PropTypes from 'prop-types';
 import moment from 'moment';
-import { Box, makeStyles, Grid } from '@material-ui/core';
+import { Box, makeStyles, Grid, Button } from '@material-ui/core';
 import { commonStyles, useSafeIntl } from 'bluesquare-components';
 import { useSelector } from 'react-redux';
 
 import TopBar from 'Iaso/components/nav/TopBarComponent';
 
+import { jsPDF } from 'jspdf';
+import html2canvas from 'html2canvas';
 import { CampaignsCalendar } from '../components/campaignCalendar';
 import { getCampaignColor } from '../constants/campaignsColors';
 import { CalendarMap } from '../components/campaignCalendar/map/CalendarMap';
@@ -72,6 +74,27 @@ const Calendar = ({ params }) => {
             ).map((c, index) => ({ ...c, color: getCampaignColor(index) })),
         [mappedCampaigns, calendarData.firstMonday, calendarData.lastSunday],
     );
+
+    const [isCalendarLoaded, setCalendarLoaded] = useState(false);
+
+    const createPDF = async () => {
+        const pdf = new jsPDF('portrait', 'pt', 'a4');
+        const data = await html2canvas(document.querySelector('#pdf'));
+        const img = data.toDataURL('image/png');
+        const imgProperties = pdf.getImageProperties(img);
+        const pdfWidth = pdf.internal.pageSize.getWidth();
+        const pdfHeight =
+            (imgProperties.height * pdfWidth) / imgProperties.width;
+        pdf.addImage(img, 'PNG', 0, 0, pdfWidth, pdfHeight);
+        pdf.save('polio_calendar.pdf');
+    };
+
+    useEffect(() => {
+        if (mappedCampaigns.length > 0 && filteredCampaigns) {
+            setCalendarLoaded(true);
+        }
+    }, [isCalendarLoaded, mappedCampaigns.length, filteredCampaigns]);
+
     return (
         <div>
             {isLogged && (
@@ -80,31 +103,43 @@ const Calendar = ({ params }) => {
                     displayBackButton={false}
                 />
             )}
-            <Box className={classes.containerFullHeightNoTabPadded}>
-                <Box mb={4}>
-                    <Filters disableDates disableOnlyDeleted />
-                </Box>
 
-                <Grid container spacing={2}>
-                    <Grid item xs={12} lg={8}>
-                        <CampaignsCalendar
-                            currentDate={currentDate}
-                            params={params}
-                            orders={orders}
-                            campaigns={filteredCampaigns}
-                            calendarData={calendarData}
-                            currentMonday={currentMonday}
-                            loadingCampaigns={isLoading}
-                        />
+            <div id="pdf">
+                <Box className={classes.containerFullHeightNoTabPadded}>
+                    <Box mb={4}>
+                        <Filters disableDates disableOnlyDeleted />
+                    </Box>{' '}
+                    <Box>
+                        {' '}
+                        <Button
+                            onClick={createPDF}
+                            disabled={!isCalendarLoaded}
+                            type="button"
+                        >
+                            Export in pdf
+                        </Button>
+                    </Box>
+                    <Grid container spacing={2}>
+                        <Grid item xs={12} lg={8}>
+                            <CampaignsCalendar
+                                currentDate={currentDate}
+                                params={params}
+                                orders={orders}
+                                campaigns={filteredCampaigns}
+                                calendarData={calendarData}
+                                currentMonday={currentMonday}
+                                loadingCampaigns={isLoading}
+                            />
+                        </Grid>
+                        <Grid item xs={12} lg={4}>
+                            <CalendarMap
+                                campaigns={filteredCampaigns}
+                                loadingCampaigns={isLoading}
+                            />
+                        </Grid>
                     </Grid>
-                    <Grid item xs={12} lg={4}>
-                        <CalendarMap
-                            campaigns={filteredCampaigns}
-                            loadingCampaigns={isLoading}
-                        />
-                    </Grid>
-                </Grid>
-            </Box>
+                </Box>
+            </div>
         </div>
     );
 };

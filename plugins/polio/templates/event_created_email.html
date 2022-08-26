@@ -46,7 +46,10 @@
                 </td>
             </tr>
             {%endif%}
-            {%if file%}
+            {%if file_path and file_name%}
+            <tr>
+                <td style="height:20px;padding:5px;font-size:0;line-height:0;">&nbsp;</td>
+            </tr>
             <tr>
                 <td align="left" style="padding:0px 5px;">
                     Files:
@@ -54,7 +57,7 @@
             </tr>
             <tr>
                 <td align="left" style="padding:0px 5px;">
-                    <a href={{file}}>{{file}}</a>
+                    <a href={{file_path}}>{{file_name}}</a>
                 </td>
             </tr>
             {%endif%}

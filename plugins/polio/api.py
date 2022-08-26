@@ -1506,7 +1506,7 @@ def make_budget_event_file_links(event):
     test_file = event_files.first()
     serialized_file = BudgetFilesSerializer(test_file).data
     # TODO return name along with path
-    return "http://" + domain + serialized_file["file"]
+    return {"path":"http://" + domain + serialized_file["file"], "name":test_file.file.name}
 
 
 class RecipientFilterBackend(filters.BaseFilterBackend):
@@ -1588,7 +1588,7 @@ class BudgetEventViewset(ModelViewSet):
             event.is_finalized = True if request.data["is_finalized"] else False
             event.save()
 
-            path_to_file = make_budget_event_file_links(event)
+            file_info = make_budget_event_file_links(event)
             current_user = self.request.user
             event_type = "approval" if event.type == "validation" else event.type
 
@@ -1644,7 +1644,7 @@ class BudgetEventViewset(ModelViewSet):
                         event.author.first_name,
                         event.author.last_name,
                         event.comment,
-                        path_to_file,
+                        file_info["path"],
                         generate_auto_authentication_link(link_to_send, user),
                         settings.DNS_DOMAIN,
                     )
@@ -1660,7 +1660,8 @@ class BudgetEventViewset(ModelViewSet):
                             "last_name": event.author.last_name,
                             "comment": event.comment,
                             "event_type": event_type,
-                            "file": path_to_file,
+                            "file_path": file_info["path"],
+                            "file_name":file_info["name"]
                         },
                     )
                     msg.attach_alternative(html_content, "text/html")

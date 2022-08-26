@@ -9,9 +9,9 @@ import { Link } from 'react-router';
 import { userHasPermission } from '../../users/utils';
 import { baseUrls } from '../../../constants/urls';
 import { useCurrentUser } from '../../../utils/usersUtils';
-import { OrgUnit } from '../../orgUnits/types/orgUnit';
+import { OrgUnit } from '../types/orgUnit';
 
-import MESSAGES from '../messages';
+import MESSAGES from '../../assignments/messages';
 
 const useStyles = makeStyles(theme => ({
     root: {

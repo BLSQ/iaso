@@ -11,6 +11,8 @@ import DeleteDialog from '../../components/dialogs/DeleteDialogComponent';
 import { DateTimeCell } from '../../components/Cells/DateTimeCell';
 import { YesNoCell } from '../../components/Cells/YesNoCell';
 
+export const baseUrl = baseUrls.forms;
+
 export const formVersionsTableColumns = (
     formatMessage,
     setForceRefresh,

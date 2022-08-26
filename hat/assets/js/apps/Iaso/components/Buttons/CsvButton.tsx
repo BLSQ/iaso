@@ -1,10 +1,11 @@
+/* eslint-disable react/require-default-props */
 import React, { FunctionComponent } from 'react';
 import { makeStyles, Button } from '@material-ui/core';
 import SaveAlt from '@material-ui/icons/SaveAlt';
 
 type Props = {
     csvUrl: string;
-    variant: 'contained' | 'outlined' | 'text';
+    variant?: 'contained' | 'outlined' | 'text';
 };
 
 const styles = theme => ({

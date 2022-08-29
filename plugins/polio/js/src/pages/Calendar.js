@@ -6,9 +6,7 @@ import { commonStyles, useSafeIntl } from 'bluesquare-components';
 import { useSelector } from 'react-redux';
 
 import TopBar from 'Iaso/components/nav/TopBarComponent';
-
-import { jsPDF } from 'jspdf';
-import html2canvas from 'html2canvas';
+import domToPdf from 'dom-to-pdf';
 import { CampaignsCalendar } from '../components/campaignCalendar';
 import { getCampaignColor } from '../constants/campaignsColors';
 import { CalendarMap } from '../components/campaignCalendar/map/CalendarMap';
@@ -76,17 +74,21 @@ const Calendar = ({ params }) => {
     );
 
     const [isCalendarLoaded, setCalendarLoaded] = useState(false);
+    const [isPdf, setPdf] = useState(false);
 
     const createPDF = async () => {
-        const pdf = new jsPDF('portrait', 'pt', 'a4');
-        const data = await html2canvas(document.querySelector('#pdf'));
-        const img = data.toDataURL('image/png');
-        const imgProperties = pdf.getImageProperties(img);
-        const pdfWidth = pdf.internal.pageSize.getWidth();
-        const pdfHeight =
-            (imgProperties.height * pdfWidth) / imgProperties.width;
-        pdf.addImage(img, 'PNG', 0, 0, pdfWidth, pdfHeight);
-        pdf.save('polio_calendar.pdf');
+        const element = document.getElementById('pdf');
+        const options = {
+            filename: 'calendar.pdf',
+        };
+        await setPdf(true);
+
+        await domToPdf(element, options, () => {
+            console.log('pdf exported');
+        });
+        setTimeout(() => {
+            setPdf(false);
+        }, 5000);
     };
 
     useEffect(() => {
@@ -97,18 +99,19 @@ const Calendar = ({ params }) => {
 
     return (
         <div>
-            {isLogged && (
+            {isLogged && !isPdf && (
                 <TopBar
                     title={formatMessage(MESSAGES.calendar)}
                     displayBackButton={false}
                 />
             )}
-
             <div id="pdf">
                 <Box className={classes.containerFullHeightNoTabPadded}>
-                    <Box mb={4}>
-                        <Filters disableDates disableOnlyDeleted />
-                    </Box>{' '}
+                    {!isPdf && (
+                        <Box mb={4}>
+                            <Filters disableDates disableOnlyDeleted />
+                        </Box>
+                    )}
                     <Box>
                         {' '}
                         <Button
@@ -120,7 +123,7 @@ const Calendar = ({ params }) => {
                         </Button>
                     </Box>
                     <Grid container spacing={2}>
-                        <Grid item xs={12} lg={8}>
+                        <Grid item xs={12} lg={!isPdf ? 12 : 12}>
                             <CampaignsCalendar
                                 currentDate={currentDate}
                                 params={params}
@@ -131,11 +134,13 @@ const Calendar = ({ params }) => {
                                 loadingCampaigns={isLoading}
                             />
                         </Grid>
-                        <Grid item xs={12} lg={4}>
-                            <CalendarMap
-                                campaigns={filteredCampaigns}
-                                loadingCampaigns={isLoading}
-                            />
+                        <Grid item xs={12} lg={!isPdf ? 12 : 12}>
+                            <div id="svg">
+                                <CalendarMap
+                                    campaigns={filteredCampaigns}
+                                    loadingCampaigns={isLoading}
+                                />
+                            </div>
                         </Grid>
                     </Grid>
                 </Box>

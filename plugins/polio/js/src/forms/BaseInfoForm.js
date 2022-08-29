@@ -5,7 +5,7 @@ import { Field, useFormikContext } from 'formik';
 import { useSafeIntl } from 'bluesquare-components';
 import { useStyles } from '../styles/theme';
 import { SendEmailButton } from '../components/Buttons/SendEmailButton';
-import { polioViruses } from '../constants/virus';
+import { polioViruses } from '../constants/virus.ts';
 import { OrgUnitsLevels } from '../components/Inputs/OrgUnitsSelect';
 import {
     BooleanInput,

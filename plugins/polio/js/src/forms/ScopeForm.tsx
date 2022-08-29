@@ -1,5 +1,5 @@
 /* eslint-disable camelcase */
-import React, { FunctionComponent, useState } from 'react';
+import React, { FunctionComponent, useState, useMemo } from 'react';
 import { Field, useFormikContext } from 'formik';
 // @ts-ignore
 import { useSafeIntl } from 'bluesquare-components';
@@ -24,11 +24,15 @@ export const ScopeForm: FunctionComponent = () => {
     const { values } = useFormikContext<Values>();
     const { separate_scopes_per_round: scopePerRound, rounds } = values;
     const classes: Record<string, string> = useStyles();
-    const sortedRounds = [...rounds]
-        .map((round, roundIndex) => {
-            return { ...round, originalIndex: roundIndex };
-        })
-        .sort((a, b) => a.number - b.number);
+    const sortedRounds = useMemo(
+        () =>
+            [...rounds]
+                .map((round, roundIndex) => {
+                    return { ...round, originalIndex: roundIndex };
+                })
+                .sort((a, b) => a.number - b.number),
+        [rounds],
+    );
     const [currentTab, setCurrentTab] = useState('1');
     const handleChangeTab = (event, newValue) => {
         setCurrentTab(newValue);

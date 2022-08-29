@@ -1497,9 +1497,11 @@ def is_budget_approved(user, event):
         return True
     return False
 
+
 def format_file_link(event_file):
     serialized_file = BudgetFilesSerializer(event_file).data
-    return {"path":"http://" + settings.DNS_DOMAIN + serialized_file["file"], "name":event_file.file.name}
+    return {"path": "http://" + settings.DNS_DOMAIN + serialized_file["file"], "name": event_file.file.name}
+
 
 def make_budget_event_file_links(event):
     event_files = event.event_files.all()
@@ -1508,7 +1510,6 @@ def make_budget_event_file_links(event):
     files_as_list = [format_file_link(f) for f in event_files]
     # files_as_list = list(event_files)
     return files_as_list
-
 
 
 class RecipientFilterBackend(filters.BaseFilterBackend):
@@ -1668,7 +1669,7 @@ class BudgetEventViewset(ModelViewSet):
                             "last_name": event.author.last_name,
                             "comment": event.comment,
                             "event_type": event_type,
-                            "files":file_info
+                            "files": file_info,
                         },
                     )
                     msg.attach_alternative(html_content, "text/html")

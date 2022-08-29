@@ -178,7 +178,7 @@ export const useColumns = (): Array<Column> => {
                     // TODO: limit to user permissions
                     <section>
                         <IconButtonComponent
-                            url={`/${baseUrls.beneficiariesDetails}/beneficiaryId/${settings.row.original.id}`}
+                            url={`/${baseUrls.entityDetails}/entityId/${settings.row.original.id}`}
                             icon="remove-red-eye"
                             tooltipMessage={MESSAGES.see}
                         />
@@ -236,7 +236,7 @@ export const useColumnsFromFieldsList = (
 };
 
 export const useBeneficiariesDetailsColumns = (
-    beneficiaryId: number | null,
+    entityId: number | null,
     fields: Array<string> = [],
 ): Column[] => {
     const { formatMessage } = useSafeIntl();
@@ -304,15 +304,15 @@ export const useBeneficiariesDetailsColumns = (
                     // TODO: limit to user permissions
                     <section>
                         <IconButtonComponent
-                            url={`/${baseUrls.beneficiarySubmissionDetail}/instanceId/${settings.row.original.id}/beneficiaryId/${beneficiaryId}`}
+                            url={`/${baseUrls.entitySubmissionDetail}/instanceId/${settings.row.original.id}/entityId/${entityId}`}
                             icon="remove-red-eye"
                             tooltipMessage={MESSAGES.see}
-                            disabled={!beneficiaryId}
+                            disabled={!entityId}
                         />
                     </section>
                 ),
             },
         ],
-        [beneficiaryId, columnsFromList, formatMessage],
+        [entityId, columnsFromList, formatMessage],
     );
 };

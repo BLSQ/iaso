@@ -1350,7 +1350,7 @@ def event_creation_email(event_type, first_name, last_name, comment, file, link,
 
 Comment: %s
 
-file:%s
+Files:%s
 
 ------------
 
@@ -1363,22 +1363,33 @@ This is an automated email from %s
 
 
 def creation_email_with_two_links(
-    event_type, first_name, last_name, comment, validation_link, rejection_link, dns_domain
+    event_type, first_name, last_name, comment, files, validation_link, rejection_link, dns_domain
 ):
     email_template = """%s by %s %s.
 
 Comment: %s
 
+Files: %s
+
 ------------
 
 you can validate the budget here: %s
 
-you can reject and add a comment hre : %s
+you can reject and add a comment here : %s
 
 ------------    
 This is an automated email from %s
 """
-    return email_template % (event_type, first_name, last_name, comment, validation_link, rejection_link, dns_domain)
+    return email_template % (
+        event_type,
+        first_name,
+        last_name,
+        comment,
+        files,
+        validation_link,
+        rejection_link,
+        dns_domain,
+    )
 
 
 def budget_approval_email_subject(campaign_name):
@@ -1446,6 +1457,7 @@ def send_approvers_email(user, author_team, event, event_type, approval_link, re
         event.author.first_name,
         event.author.last_name,
         event.comment,
+        ",\n ".join([f["path"] for f in files_info]),
         auto_authentication_approval_link,
         auto_authentication_rejection_link,
         settings.DNS_DOMAIN,
@@ -1591,6 +1603,12 @@ class BudgetEventViewset(ModelViewSet):
             event.save()
 
             files_info = make_budget_event_file_links(event)
+            print("------------------------------")
+            print("------------------------------")
+            for f in files_info:
+                print(f["path"])
+            print("------------------------------")
+            print("------------------------------")
             current_user = self.request.user
             event_type = "approval" if event.type == "validation" else event.type
 
@@ -1659,8 +1677,7 @@ class BudgetEventViewset(ModelViewSet):
                         event.author.first_name,
                         event.author.last_name,
                         event.comment,
-                        # file_info["path"],
-                        "delete me after testing",
+                        ",\n ".join([f["path"] for f in files_info]),
                         generate_auto_authentication_link(link_to_send, user),
                         settings.DNS_DOMAIN,
                     )

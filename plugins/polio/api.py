@@ -1435,7 +1435,7 @@ def send_approval_budget_mail(event):
                     msg.send(fail_silently=False)
 
 
-def send_approvers_email(user, author_team, event, event_type, approval_link, rejection_link):
+def send_approvers_email(user, author_team, event, event_type, approval_link, rejection_link, files_info):
     # if user is in other approval team, send the mail with the fat buttons
     subject = email_subject(event_type, event.campaign.obr_name)
     from_email = settings.DEFAULT_FROM_EMAIL
@@ -1464,6 +1464,7 @@ def send_approvers_email(user, author_team, event, event_type, approval_link, re
             "team": author_team.name,
             "sender": settings.DNS_DOMAIN,
             "event_type": event_type,
+            "files": files_info,
         },
     )
     msg.attach_alternative(html_content, "text/html")
@@ -1507,9 +1508,7 @@ def make_budget_event_file_links(event):
     event_files = event.event_files.all()
     if not event_files:
         return None
-    files_as_list = [format_file_link(f) for f in event_files]
-    # files_as_list = list(event_files)
-    return files_as_list
+    return [format_file_link(f) for f in event_files]
 
 
 class RecipientFilterBackend(filters.BaseFilterBackend):
@@ -1591,12 +1590,7 @@ class BudgetEventViewset(ModelViewSet):
             event.is_finalized = True if request.data["is_finalized"] else False
             event.save()
 
-            file_info = make_budget_event_file_links(event)
-            print("--------------------------------")
-            print("--------------------------------")
-            print(file_info)
-            print("--------------------------------")
-            print("--------------------------------")
+            files_info = make_budget_event_file_links(event)
             current_user = self.request.user
             event_type = "approval" if event.type == "validation" else event.type
 
@@ -1615,7 +1609,6 @@ class BudgetEventViewset(ModelViewSet):
                 )
                 approval_link = link_to_send + "/action/confirmApproval"
                 rejection_link = link_to_send + "/action/addComment"
-                print("pre-filter", recipients)
                 # If other approval teams still have to approve the budget, notify their members with html email
                 if event_type == "approval" and not is_budget_approved(current_user, event):
                     # We're assuming a user can only be in one approval team
@@ -1629,7 +1622,15 @@ class BudgetEventViewset(ModelViewSet):
 
                     for approver in approvers:
                         user = User.objects.get(id=approver["users"])
-                        send_approvers_email(user, author_team, event, event_type, approval_link, rejection_link)
+                        send_approvers_email(
+                            user,
+                            author_team,
+                            event,
+                            event_type,
+                            approval_link,
+                            rejection_link,
+                            files_info,
+                        )
                         # TODO check that this works
                         recipients.discard(user)
                 # Send email with link to all approvers if event is a submission
@@ -1641,10 +1642,16 @@ class BudgetEventViewset(ModelViewSet):
                     approvers = approval_teams.values("users")
                     for approver in approvers:
                         user = User.objects.get(id=approver["users"])
-                        send_approvers_email(user, author_team, event, event_type, approval_link, rejection_link)
-                        # TODO check that this works
+                        send_approvers_email(
+                            user,
+                            author_team,
+                            event,
+                            event_type,
+                            approval_link,
+                            rejection_link,
+                            files_info,
+                        )
                         recipients.discard(user)
-                print("post-filter", recipients)
                 for user in recipients:
                     subject = email_subject(event_type, event.campaign.obr_name)
                     text_content = event_creation_email(
@@ -1669,7 +1676,7 @@ class BudgetEventViewset(ModelViewSet):
                             "last_name": event.author.last_name,
                             "comment": event.comment,
                             "event_type": event_type,
-                            "files": file_info,
+                            "files": files_info,
                         },
                     )
                     msg.attach_alternative(html_content, "text/html")

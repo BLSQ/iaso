@@ -27,7 +27,7 @@ import {
 } from './hooks/requests';
 
 import { useColumns, baseUrl } from './config';
-import MESSAGES from './messages';
+import MESSAGES from '../messages';
 
 import { redirectTo } from '../../../routing/actions';
 import { ListMap } from './components/ListMap';
@@ -99,7 +99,7 @@ export const Beneficiaries: FunctionComponent<Props> = ({ params }) => {
                     <Tab value="map" label={formatMessage(MESSAGES.map)} />
                 </Tabs>
             </TopBar>
-            <Box className={classes.containerFullHeightNoTabPadded}>
+            <Box p={2}>
                 <Filters params={params} />
                 <Grid
                     container
@@ -119,7 +119,7 @@ export const Beneficiaries: FunctionComponent<Props> = ({ params }) => {
                     /> */}
                 </Grid>
 
-                <Box position="relative" width="100%" pb={4}>
+                <Box position="relative" width="100%" pb={2}>
                     <Box
                         pt={2}
                         width="100%"
@@ -127,22 +127,20 @@ export const Beneficiaries: FunctionComponent<Props> = ({ params }) => {
                     >
                         {!isFetching && (
                             <ListMap
-                                handleClick={selectedBeneficiary =>
-                                    // eslint-disable-next-line no-console
-                                    console.log(
-                                        'selectedBeneficiary',
-                                        selectedBeneficiary,
-                                    )
-                                }
                                 locations={
                                     data?.beneficiary?.map(beneficiary => ({
                                         latitude:
-                                            beneficiary.attributes?.latitude,
+                                            beneficiary.attributes?.org_unit
+                                                ?.latitude,
                                         longitude:
-                                            beneficiary.attributes?.longitude,
+                                            beneficiary.attributes?.org_unit
+                                                ?.longitude,
                                         orgUnit:
                                             beneficiary.attributes?.org_unit,
                                         id: beneficiary.id,
+                                        original: {
+                                            ...beneficiary,
+                                        },
                                     })) || []
                                 }
                                 isFetchingLocations={isFetching}

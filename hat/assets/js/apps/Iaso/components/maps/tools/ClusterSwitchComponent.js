@@ -24,12 +24,13 @@ const ClusterSwitchComponent = props => {
         isClusterActive,
         classes,
         intl: { formatMessage },
+        innerDrawerContent,
     } = props;
     return (
         <Box
-            px={3}
-            py={2}
-            className={classes.innerDrawerContent}
+            px={innerDrawerContent ? 3 : 0}
+            py={innerDrawerContent ? 2 : 0}
+            className={innerDrawerContent ? classes.innerDrawerContent : ''}
             component="div"
         >
             <Grid
@@ -59,12 +60,16 @@ const ClusterSwitchComponent = props => {
         </Box>
     );
 };
+ClusterSwitchComponent.defaultProps = {
+    innerDrawerContent: true,
+};
 
 ClusterSwitchComponent.propTypes = {
     intl: PropTypes.object.isRequired,
     isClusterActive: PropTypes.bool.isRequired,
     toggleCluster: PropTypes.func.isRequired,
     classes: PropTypes.object.isRequired,
+    innerDrawerContent: PropTypes.bool,
 };
 
 const MapStateToProps = state => ({

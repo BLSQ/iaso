@@ -92,7 +92,7 @@ export const Details: FunctionComponent<Props> = ({ router }) => {
     const columns = useBeneficiariesDetailsColumns(
         beneficiary?.id ?? null,
         // @ts-ignore
-        beneficiary?.entity_type?.fields_detail_view ?? [],
+        beneficiary?.entity_type?.fields_detail_info_view ?? [],
     );
     // Code to format table by looping through form to avoid hard coding values
     // TODO Handle dates (as all values are displayed as strings)

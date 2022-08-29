@@ -1,6 +1,14 @@
 import { defineMessages } from 'react-intl';
 
 const MESSAGES = defineMessages({
+    age: {
+        defaultMessage: 'Age',
+        id: 'iaso.label.age',
+    },
+    id: {
+        defaultMessage: 'Identifier',
+        id: 'iaso.label.id',
+    },
     title: {
         defaultMessage: 'Entities',
         id: 'iaso.entities.title',
@@ -49,6 +57,10 @@ const MESSAGES = defineMessages({
         defaultMessage: 'Edit',
         id: 'iaso.label.edit',
     },
+    see: {
+        defaultMessage: 'See',
+        id: 'iaso.label.see',
+    },
     actions: {
         defaultMessage: 'Action(s)',
         id: 'iaso.label.actions',
@@ -80,6 +92,62 @@ const MESSAGES = defineMessages({
     viewInstance: {
         id: 'iaso.forms.viewInstance',
         defaultMessage: 'View submission',
+    },
+    lastVisit: {
+        id: 'iaso.entities.lastVisit',
+        defaultMessage: 'Last visit',
+    },
+    registrationDate: {
+        id: 'iaso.entities.registrationDate',
+        defaultMessage: 'Registration date',
+    },
+    gender: {
+        id: 'iaso.entities.gender',
+        defaultMessage: 'Gender',
+    },
+    female: {
+        id: 'iaso.entities.female',
+        defaultMessage: 'Female',
+    },
+    male: {
+        id: 'iaso.entities.male',
+        defaultMessage: 'Male',
+    },
+    vaccinationNumber: {
+        id: 'iaso.entities.vaccinationNumber',
+        defaultMessage: 'Vaccination number',
+    },
+    program: {
+        id: 'iaso.entities.program',
+        defaultMessage: 'Program',
+    },
+    'org_unit.name': {
+        id: 'iaso.instance.org_unit',
+        defaultMessage: 'Org unit',
+    },
+    OrgUnitName: {
+        id: 'iaso.instance.org_unit',
+        defaultMessage: 'Org unit',
+    },
+    form: {
+        id: 'iaso.instance.form',
+        defaultMessage: 'Form',
+    },
+    submitter: {
+        id: 'iaso.entities.label.submitter',
+        defaultMessage: 'Submitter',
+    },
+    last_sync_at: {
+        id: 'iaso.entities.label.last_sync_at',
+        defaultMessage: 'Last sync',
+    },
+    keyInfo: {
+        id: 'iaso.entities.keyInfo',
+        defaultMessage: 'Key information',
+    },
+    projectsError: {
+        id: 'iaso.snackBar.fetchProjectsError',
+        defaultMessage: 'An error occurred while fetching projects list',
     },
 });
 

@@ -56,6 +56,7 @@ const WidgetPaper = ({
     isExpanded,
     id,
     showHeader,
+    className,
 }) => {
     const [open, setOpen] = useState(isExpanded);
     const handleClick = () => {
@@ -64,7 +65,7 @@ const WidgetPaper = ({
         }
     };
     return (
-        <Paper elevation={1} className={classes.root} id={id}>
+        <Paper elevation={1} className={`${classes.root} ${className}`} id={id}>
             {showHeader && (
                 <div className={classes.paperTitle}>
                     <Grid xs={IconButton ? 10 : 12} item>
@@ -129,6 +130,7 @@ WidgetPaper.defaultProps = {
     isExpanded: true,
     id: undefined,
     showHeader: true,
+    className: '',
 };
 
 WidgetPaper.propTypes = {
@@ -142,6 +144,7 @@ WidgetPaper.propTypes = {
     isExpanded: PropTypes.bool,
     id: PropTypes.string,
     showHeader: PropTypes.bool,
+    className: PropTypes.string,
 };
 
 export default withStyles(styles)(WidgetPaper);

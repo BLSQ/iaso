@@ -22,7 +22,7 @@ import Filters from './TableFilters';
 import DownloadButtonsComponent from '../DownloadButtonsComponent';
 import { redirectToReplace } from '../../routing/actions';
 import { convertObjectToString } from '../../utils';
-import { useAbortController } from '../../libs/apiHooks';
+import { useAbortController } from '../../libs/apiHooks.ts';
 
 const useStyles = makeStyles(theme => ({
     ...commonStyles(theme),

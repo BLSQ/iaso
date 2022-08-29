@@ -9,7 +9,7 @@ import { Column } from '../../../types/table';
 import { IntlFormatMessage } from '../../../types/intl';
 import { SubTeam, User } from '../types/team';
 
-import { LinkToOrgUnit } from '../components/LinkToOrgUnit';
+import { LinkToOrgUnit } from '../../orgUnits/components/LinkToOrgUnit';
 import { CheckBoxCell } from '../components/CheckBoxCell';
 
 import MESSAGES from '../messages';

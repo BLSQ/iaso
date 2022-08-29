@@ -11,11 +11,10 @@ import { DropdownTeamsOptions } from '../types/team';
 import { Column } from '../../../types/table';
 
 import { getOrgUnitAssignation } from '../utils';
-
 import { Profile } from '../../../utils/usersUtils';
 
 import { UsersTeamsCell } from '../components/UsersTeamsCell';
-import { LinkToOrgUnit } from '../components/LinkToOrgUnit';
+import { LinkToOrgUnit } from '../../orgUnits/components/LinkToOrgUnit';
 
 import MESSAGES from '../messages';
 

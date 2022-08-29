@@ -328,7 +328,7 @@ class InstanceDetails extends Component {
         }
     }
 
-    onLigthBoxToggled(open) {
+    onLightBoxToggled(open) {
         this.setState({
             showDial: !open,
         });
@@ -498,8 +498,8 @@ class InstanceDetails extends Component {
                                             files={getInstancesFilesList([
                                                 currentInstance,
                                             ])}
-                                            onLigthBoxToggled={open =>
-                                                this.onLigthBoxToggled(open)
+                                            onLightBoxToggled={open =>
+                                                this.onLightBoxToggled(open)
                                             }
                                         />
                                     </WidgetPaper>

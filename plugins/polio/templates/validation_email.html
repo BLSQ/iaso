@@ -73,6 +73,26 @@
             </tr>
             {% endfor %}
             {%endif%}
+            {%if links%}
+            <tr>
+                <td style="height:20px;padding:5px;font-size:0;line-height:0;">&nbsp;</td>
+            </tr>
+            <tr>
+                <td align="left" style="padding:0px 5px;">
+                    Links:
+                </td>
+            </tr>
+            <tr>
+                <td style="height:20px;padding:5px;font-size:0;line-height:0;">&nbsp;</td>
+            </tr>
+            {% for l in links%}
+            <tr>
+                <td align="left" style="padding:0px 5px;">
+                    <a href={{l}}>{{l}}</a>
+                </td>
+            </tr>
+            {% endfor %}
+            {%endif%}
             <tr>
                 <td style="height:20px;padding:0;font-size:0;line-height:0;">&nbsp;</td>
             </tr>

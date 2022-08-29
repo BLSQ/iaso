@@ -1345,12 +1345,14 @@ def email_subject(event_type, campaign_name):
     return email_subject_template.format(event_type, campaign_name)
 
 
-def event_creation_email(event_type, first_name, last_name, comment, file, link, dns_domain):
+def event_creation_email(event_type, first_name, last_name, comment, file, links, link, dns_domain):
     email_template = """%s by %s %s.
 
 Comment: %s
 
-Files:%s
+Files: %s
+
+Links: %s
 
 ------------
 
@@ -1359,17 +1361,19 @@ you can access the history of this budget here: %s
 ------------    
 This is an automated email from %s
 """
-    return email_template % (event_type, first_name, last_name, comment, file, link, dns_domain)
+    return email_template % (event_type, first_name, last_name, comment, file, links, link, dns_domain)
 
 
 def creation_email_with_two_links(
-    event_type, first_name, last_name, comment, files, validation_link, rejection_link, dns_domain
+    event_type, first_name, last_name, comment, files, links, validation_link, rejection_link, dns_domain
 ):
     email_template = """%s by %s %s.
 
 Comment: %s
 
-Files: %s
+Files:  %s
+
+Links: %s
 
 ------------
 
@@ -1386,6 +1390,7 @@ This is an automated email from %s
         last_name,
         comment,
         files,
+        links,
         validation_link,
         rejection_link,
         dns_domain,
@@ -1446,10 +1451,13 @@ def send_approval_budget_mail(event):
                     msg.send(fail_silently=False)
 
 
-def send_approvers_email(user, author_team, event, event_type, approval_link, rejection_link, files_info):
+def send_approvers_email(user, author_team, event, event_type, approval_link, rejection_link, files_info, links_string):
     # if user is in other approval team, send the mail with the fat buttons
     subject = email_subject(event_type, event.campaign.obr_name)
     from_email = settings.DEFAULT_FROM_EMAIL
+    files_string = "None"
+    if files_info:
+        files_string = ",\n ".join([f["path"] for f in files_info])
     auto_authentication_approval_link = generate_auto_authentication_link(approval_link, user)
     auto_authentication_rejection_link = generate_auto_authentication_link(rejection_link, user)
     text_content = creation_email_with_two_links(
@@ -1457,7 +1465,8 @@ def send_approvers_email(user, author_team, event, event_type, approval_link, re
         event.author.first_name,
         event.author.last_name,
         event.comment,
-        ",\n ".join([f["path"] for f in files_info]),
+        files_string,
+        links_string,
         auto_authentication_approval_link,
         auto_authentication_rejection_link,
         settings.DNS_DOMAIN,
@@ -1477,6 +1486,7 @@ def send_approvers_email(user, author_team, event, event_type, approval_link, re
             "sender": settings.DNS_DOMAIN,
             "event_type": event_type,
             "files": files_info,
+            "links": links_string.split(","),
         },
     )
     msg.attach_alternative(html_content, "text/html")
@@ -1601,14 +1611,11 @@ class BudgetEventViewset(ModelViewSet):
             event = BudgetEvent.objects.get(pk=event_pk)
             event.is_finalized = True if request.data["is_finalized"] else False
             event.save()
-
+            files_string = "None"
             files_info = make_budget_event_file_links(event)
-            print("------------------------------")
-            print("------------------------------")
-            for f in files_info:
-                print(f["path"])
-            print("------------------------------")
-            print("------------------------------")
+            if files_info:
+                files_string = ",\n ".join([f["path"] for f in files_info])
+
             current_user = self.request.user
             event_type = "approval" if event.type == "validation" else event.type
 
@@ -1641,13 +1648,7 @@ class BudgetEventViewset(ModelViewSet):
                     for approver in approvers:
                         user = User.objects.get(id=approver["users"])
                         send_approvers_email(
-                            user,
-                            author_team,
-                            event,
-                            event_type,
-                            approval_link,
-                            rejection_link,
-                            files_info,
+                            user, author_team, event, event_type, approval_link, rejection_link, files_info, event.links
                         )
                         # TODO check that this works
                         recipients.discard(user)
@@ -1661,13 +1662,7 @@ class BudgetEventViewset(ModelViewSet):
                     for approver in approvers:
                         user = User.objects.get(id=approver["users"])
                         send_approvers_email(
-                            user,
-                            author_team,
-                            event,
-                            event_type,
-                            approval_link,
-                            rejection_link,
-                            files_info,
+                            user, author_team, event, event_type, approval_link, rejection_link, files_info, event.links
                         )
                         recipients.discard(user)
                 for user in recipients:
@@ -1677,7 +1672,8 @@ class BudgetEventViewset(ModelViewSet):
                         event.author.first_name,
                         event.author.last_name,
                         event.comment,
-                        ",\n ".join([f["path"] for f in files_info]),
+                        files_string,
+                        event.links,
                         generate_auto_authentication_link(link_to_send, user),
                         settings.DNS_DOMAIN,
                     )
@@ -1694,6 +1690,7 @@ class BudgetEventViewset(ModelViewSet):
                             "comment": event.comment,
                             "event_type": event_type,
                             "files": files_info,
+                            "links": event.links.split(","),
                         },
                     )
                     msg.attach_alternative(html_content, "text/html")

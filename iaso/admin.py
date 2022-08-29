@@ -122,7 +122,20 @@ class InstanceAdmin(admin.GeoModelAdmin):
     fieldsets = (
         (
             None,
-            {"fields": ("deleted", "form", "period", "uuid", "name", "org_unit", "device", "last_modified_by")},
+            {
+                "fields": (
+                    "deleted",
+                    "form",
+                    "period",
+                    "uuid",
+                    "name",
+                    "org_unit",
+                    "device",
+                    "entity",
+                    "last_modified_by",
+                    "created_by",
+                )
+            },
         ),
         (
             "File",
@@ -269,10 +282,20 @@ class EntityAdmin(admin.ModelAdmin):
     list_display = (
         "id",
         "name",
+        "account",
         "entity_type",
     )
     list_filter = ("entity_type",)
     raw_id_fields = ("attributes",)
+
+
+class EntityTypeAdmin(admin.ModelAdmin):
+    readonly_fields = ("created_at",)
+    list_display = (
+        "id",
+        "name",
+        "account",
+    )
 
 
 class PlanningAdmin(admin.ModelAdmin):
@@ -371,7 +394,7 @@ admin.site.register(ExportLog, ExportLogAdmin)
 admin.site.register(DevicePosition)
 admin.site.register(Page)
 admin.site.register(Task, TaskAdmin)
-admin.site.register(EntityType)
+admin.site.register(EntityType, EntityTypeAdmin)
 admin.site.register(Entity, EntityAdmin)
 admin.site.register(Team, TeamAdmin)
 admin.site.register(Planning, PlanningAdmin)

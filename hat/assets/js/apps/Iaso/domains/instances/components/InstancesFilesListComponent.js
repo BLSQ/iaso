@@ -101,22 +101,22 @@ class InstancesFilesList extends Component {
     }
 
     openLightbox(index) {
-        const { onLigthBoxToggled } = this.props;
+        const { onLightBoxToggled } = this.props;
         this.setCurrentIndex(index, 'images');
         this.setState({
             viewerIsOpen: true,
         });
-        onLigthBoxToggled(true);
+        onLightBoxToggled(true);
     }
 
     closeLightbox() {
-        const { fetchDetails, instanceDetail, onLigthBoxToggled } = this.props;
+        const { fetchDetails, instanceDetail, onLightBoxToggled } = this.props;
         this.setCurrentIndex(-1, 'images');
         this.setState({
             viewerIsOpen: false,
             instanceDetail: fetchDetails ? null : instanceDetail,
         });
-        onLigthBoxToggled(false);
+        onLightBoxToggled(false);
     }
 
     render() {
@@ -229,7 +229,7 @@ InstancesFilesList.defaultProps = {
     fetching: false,
     instanceDetail: null,
     files: [],
-    onLigthBoxToggled: () => null,
+    onLightBoxToggled: () => null,
 };
 
 InstancesFilesList.propTypes = {
@@ -240,7 +240,7 @@ InstancesFilesList.propTypes = {
     dispatch: PropTypes.func.isRequired,
     fetchDetails: PropTypes.bool,
     instanceDetail: PropTypes.object,
-    onLigthBoxToggled: PropTypes.func,
+    onLightBoxToggled: PropTypes.func,
 };
 
 const MapStateToProps = () => ({});

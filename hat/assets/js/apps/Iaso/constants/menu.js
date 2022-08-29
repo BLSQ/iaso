@@ -20,6 +20,7 @@ import GroupIcon from '@material-ui/icons/Group';
 import AssignmentIcon from '@material-ui/icons/Assignment';
 
 import OrgUnitSvg from '../components/svg/OrgUnitSvgComponent';
+import BeneficiarySvg from '../components/svg/Beneficiary';
 import DHIS2Svg from '../components/svg/DHIS2SvgComponent';
 import * as paths from './routes';
 import {
@@ -142,6 +143,12 @@ const menuItems = defaultSourceId => [
         icon: props => <EnityIcon {...props} />,
         subMenu: [
             {
+                label: MESSAGES.beneficiaries,
+                permissions: paths.beneficiariesPath.permissions,
+                key: 'beneficiaries',
+                icon: props => <BeneficiarySvg {...props} />,
+            },
+            {
                 label: MESSAGES.list,
                 permissions: paths.entitiesPath.permissions,
                 key: 'list',
@@ -149,7 +156,7 @@ const menuItems = defaultSourceId => [
             },
             {
                 label: MESSAGES.entityTypesTitle,
-                permissions: paths.entitiesPath.permissions,
+                permissions: paths.entityTypesPath.permissions,
                 key: 'types',
                 icon: props => <CategoryIcon {...props} />,
             },

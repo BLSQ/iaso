@@ -2,7 +2,7 @@ import React from 'react';
 import Forms from '../domains/forms';
 import FormDetail from '../domains/forms/detail';
 import FormsStats from '../domains/forms/stats';
-import { OrgUnits } from '../domains/orgUnits';
+import { OrgUnits } from '../domains/orgUnits/index.tsx';
 import { Links } from '../domains/links';
 import Runs from '../domains/links/Runs';
 import OrgUnitDetail from '../domains/orgUnits/detail';
@@ -19,6 +19,8 @@ import Tasks from '../domains/tasks';
 import Devices from '../domains/devices';
 import Groups from '../domains/orgUnits/groups';
 import Types from '../domains/orgUnits/orgUnitTypes';
+import { Beneficiaries } from '../domains/entities/beneficiaries/index.tsx';
+import { Details as BeneficiaryDetail } from '../domains/entities/beneficiaries/details.tsx';
 import { Entities } from '../domains/entities/index.tsx';
 import { EntityTypes } from '../domains/entities/entityTypes/index.tsx';
 import PageError from '../components/errors/PageError';
@@ -33,6 +35,7 @@ import { CompareInstanceLogs } from '../domains/instances/compare/components/Com
 
 import { SHOW_PAGES } from '../utils/featureFlags';
 import { paginationPathParams } from '../routing/common';
+import { VisitDetails } from '../domains/entities/visit/VisitDetails.tsx';
 
 const paginationPathParamsWithPrefix = prefix =>
     paginationPathParams.map(p => ({
@@ -534,6 +537,73 @@ export const orgUnitTypesPath = {
         })),
     ],
 };
+export const beneficiariesPath = {
+    baseUrl: baseUrls.beneficiaries,
+    permissions: ['iaso_beneficiaries'],
+    component: props => <Beneficiaries {...props} />,
+    params: [
+        {
+            isRequired: false,
+            key: 'tab',
+        },
+        {
+            isRequired: false,
+            key: 'search',
+        },
+        {
+            isRequired: false,
+            key: 'location',
+        },
+        {
+            isRequired: false,
+            key: 'dateFrom',
+        },
+        {
+            isRequired: false,
+            key: 'dateTo',
+        },
+        {
+            isRequired: false,
+            key: 'submitterId',
+        },
+        {
+            isRequired: false,
+            key: 'submitterTeamId',
+        },
+        ...paginationPathParams.map(p => ({
+            ...p,
+            isRequired: true,
+        })),
+    ],
+};
+export const beneficiariesDetailsPath = {
+    baseUrl: baseUrls.beneficiariesDetails,
+    permissions: ['iaso_beneficiaries'],
+    component: props => <BeneficiaryDetail {...props} />,
+    params: [
+        {
+            isRequired: true,
+            key: 'beneficiaryId',
+        },
+        ...paginationPathParams,
+    ],
+};
+
+export const beneficiarySubmissionDetailPath = {
+    baseUrl: baseUrls.beneficiarySubmissionDetail,
+    permissions: ['iaso_beneficiaries'],
+    component: props => <VisitDetails {...props} />,
+    params: [
+        {
+            isRequired: true,
+            key: 'instanceId',
+        },
+        {
+            isRequired: true,
+            key: 'beneficiaryId',
+        },
+    ],
+};
 
 export const entitiesPath = {
     baseUrl: baseUrls.entities,
@@ -697,4 +767,7 @@ export const routeConfigs = [
     teamsPath,
     planningPath,
     assignmentsPath,
+    beneficiariesPath,
+    beneficiariesDetailsPath,
+    beneficiarySubmissionDetailPath,
 ];

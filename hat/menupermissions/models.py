@@ -24,6 +24,7 @@ PLANNING = _("Planning")
 TEAMS = _("Equipes")
 ASSIGNMENTS = _("Attributions")
 POLIO_BUDGET = _("Budget Polio")
+BENEFICIARIES = _("Beneficiaries")
 
 
 # When adding a new permissions, it also need to be added in
@@ -73,4 +74,5 @@ class CustomPermissionSupport(models.Model):
             ("iaso_teams", TEAMS),
             ("iaso_assignments", ASSIGNMENTS),
             ("iaso_polio_budget", POLIO_BUDGET),
+            ("iaso_beneficiaries", PLANNING),
         )

@@ -46,7 +46,7 @@
                 </td>
             </tr>
             {%endif%}
-            {%if file_path and file_name%}
+            {%if files%}
             <tr>
                 <td style="height:20px;padding:5px;font-size:0;line-height:0;">&nbsp;</td>
             </tr>
@@ -55,11 +55,13 @@
                     Files:
                 </td>
             </tr>
+            {% for file in files%}
             <tr>
                 <td align="left" style="padding:0px 5px;">
-                    <a href={{file_path}}>{{file_name}}</a>
+                    <a href={{file.path}}>{{file.name}}</a>
                 </td>
             </tr>
+            {% endfor %}
             {%endif%}
             <tr>
                 <td style="height:20px;padding:5px;font-size:0;line-height:0;">&nbsp;</td>

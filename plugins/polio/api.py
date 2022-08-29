@@ -1497,16 +1497,18 @@ def is_budget_approved(user, event):
         return True
     return False
 
+def format_file_link(event_file):
+    serialized_file = BudgetFilesSerializer(event_file).data
+    return {"path":"http://" + settings.DNS_DOMAIN + serialized_file["file"], "name":event_file.file.name}
 
 def make_budget_event_file_links(event):
-    domain = settings.DNS_DOMAIN
     event_files = event.event_files.all()
     if not event_files:
         return None
-    test_file = event_files.first()
-    serialized_file = BudgetFilesSerializer(test_file).data
-    # TODO return name along with path
-    return {"path":"http://" + domain + serialized_file["file"], "name":test_file.file.name}
+    files_as_list = [format_file_link(f) for f in event_files]
+    # files_as_list = list(event_files)
+    return files_as_list
+
 
 
 class RecipientFilterBackend(filters.BaseFilterBackend):
@@ -1589,6 +1591,11 @@ class BudgetEventViewset(ModelViewSet):
             event.save()
 
             file_info = make_budget_event_file_links(event)
+            print("--------------------------------")
+            print("--------------------------------")
+            print(file_info)
+            print("--------------------------------")
+            print("--------------------------------")
             current_user = self.request.user
             event_type = "approval" if event.type == "validation" else event.type
 
@@ -1644,7 +1651,8 @@ class BudgetEventViewset(ModelViewSet):
                         event.author.first_name,
                         event.author.last_name,
                         event.comment,
-                        file_info["path"],
+                        # file_info["path"],
+                        "delete me after testing",
                         generate_auto_authentication_link(link_to_send, user),
                         settings.DNS_DOMAIN,
                     )
@@ -1660,8 +1668,7 @@ class BudgetEventViewset(ModelViewSet):
                             "last_name": event.author.last_name,
                             "comment": event.comment,
                             "event_type": event_type,
-                            "file_path": file_info["path"],
-                            "file_name":file_info["name"]
+                            "files":file_info
                         },
                     )
                     msg.attach_alternative(html_content, "text/html")

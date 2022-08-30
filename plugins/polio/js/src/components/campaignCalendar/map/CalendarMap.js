@@ -17,7 +17,7 @@ import { CalendarMapPanesRegular } from './CalendarMapPanesRegular.tsx';
 import { CalendarMapPanesMerged } from './CalendarMapPanesMerged.tsx';
 import { defaultViewport, boundariesZoomLimit } from './constants.ts';
 
-const CalendarMap = ({ campaigns, loadingCampaigns }) => {
+const CalendarMap = ({ campaigns, loadingCampaigns, isPdf }) => {
     const classes = useStyles();
     const [viewport, setViewPort] = useState(defaultViewport);
     const map = useRef();
@@ -117,7 +117,9 @@ const CalendarMap = ({ campaigns, loadingCampaigns }) => {
             <Map
                 zoomSnap={0.25}
                 ref={map}
-                style={{ height: '72vh' }}
+                style={{
+                    height: !isPdf ? '72vh' : '1000px',
+                }}
                 center={defaultViewport.center}
                 zoom={defaultViewport.zoom}
                 scrollWheelZoom={false}
@@ -145,9 +147,14 @@ const CalendarMap = ({ campaigns, loadingCampaigns }) => {
     );
 };
 
+CalendarMap.defaultProps = {
+    isPdf: false,
+};
+
 CalendarMap.propTypes = {
     campaigns: PropTypes.array.isRequired,
     loadingCampaigns: PropTypes.bool.isRequired,
+    isPdf: PropTypes.bool,
 };
 
 export { CalendarMap };

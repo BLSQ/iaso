@@ -56,6 +56,9 @@ const Calendar = ({ params }) => {
         ? moment(params.currentDate, dateFormat)
         : moment();
 
+    const [isCalendarLoaded, setCalendarLoaded] = useState(false);
+    const [isPdf, setPdf] = useState(false);
+
     const currentMonday = currentDate.clone().startOf('isoWeek');
     const calendarData = useMemo(
         () => getCalendarData(currentMonday),
@@ -73,22 +76,21 @@ const Calendar = ({ params }) => {
         [mappedCampaigns, calendarData.firstMonday, calendarData.lastSunday],
     );
 
-    const [isCalendarLoaded, setCalendarLoaded] = useState(false);
-    const [isPdf, setPdf] = useState(false);
-
     const createPDF = async () => {
         const element = document.getElementById('pdf');
         const options = {
             filename: 'calendar.pdf',
+            excludeTagNames: 'button',
         };
         await setPdf(true);
 
         await domToPdf(element, options, () => {
             console.log('pdf exported');
         });
+
         setTimeout(() => {
             setPdf(false);
-        }, 5000);
+        }, 20000);
     };
 
     useEffect(() => {
@@ -106,24 +108,29 @@ const Calendar = ({ params }) => {
                 />
             )}
             <div id="pdf">
-                <Box className={classes.containerFullHeightNoTabPadded}>
+                <Box
+                    className={classes.containerFullHeightNoTabPadded}
+                    style={{ height: isPdf && 'auto' }}
+                >
                     {!isPdf && (
                         <Box mb={4}>
                             <Filters disableDates disableOnlyDeleted />
                         </Box>
                     )}
-                    <Box>
+                    <Box mb={2} mt={2}>
                         {' '}
                         <Button
                             onClick={createPDF}
                             disabled={!isCalendarLoaded}
                             type="button"
+                            color="primary"
+                            variant="contained"
                         >
                             Export in pdf
                         </Button>
                     </Box>
                     <Grid container spacing={2}>
-                        <Grid item xs={12} lg={!isPdf ? 12 : 12}>
+                        <Grid item xs={12} lg={!isPdf ? 8 : 12}>
                             <CampaignsCalendar
                                 currentDate={currentDate}
                                 params={params}
@@ -132,15 +139,15 @@ const Calendar = ({ params }) => {
                                 calendarData={calendarData}
                                 currentMonday={currentMonday}
                                 loadingCampaigns={isLoading}
+                                isPdf={isPdf}
                             />
                         </Grid>
-                        <Grid item xs={12} lg={!isPdf ? 12 : 12}>
-                            <div id="svg">
-                                <CalendarMap
-                                    campaigns={filteredCampaigns}
-                                    loadingCampaigns={isLoading}
-                                />
-                            </div>
+                        <Grid item xs={12} lg={!isPdf ? 4 : 12}>
+                            <CalendarMap
+                                campaigns={filteredCampaigns}
+                                loadingCampaigns={isLoading}
+                                isPdf={isPdf}
+                            />
                         </Grid>
                     </Grid>
                 </Box>

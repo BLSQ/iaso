@@ -1,5 +1,6 @@
 import csv
 import io
+import json
 
 import xlsxwriter
 from django.db.models import Q
@@ -43,7 +44,6 @@ class EntityTypeSerializer(serializers.ModelSerializer):
 class EntitySerializer(serializers.ModelSerializer):
     class Meta:
         model = Entity
-        depth = 1
         fields = [
             "id",
             "name",
@@ -131,6 +131,7 @@ class EntityFilterBackend(filters.BaseFilterBackend):
         if query_param == "all":
             return queryset
         return queryset
+
 
 def export_beneficiary_as_xlsx(beneficiaries):
     mem_file = io.BytesIO()
@@ -306,23 +307,60 @@ class EntityViewSet(ModelViewSet):
         csv_format = request.GET.get("csv", None)
         xlsx_format = request.GET.get("xlsx", None)
         pk = request.query_params.get("id", None)
+        account = self.request.user.iaso_profile.account
+        entity_type = request.query_params.get("entity_type", None)
+        orders = request.GET.get("order", "name").split(",")
 
         if xlsx_format or csv_format:
             if pk:
-                beneficiaries = Entity.objects.filter(
-                    account=self.request.user.iaso_profile.account, pk=pk, deleted_at__isnull=True
-                )
+                beneficiaries = Entity.objects.filter(account=account, pk=pk, deleted_at__isnull=True)
             else:
-                beneficiaries = Entity.objects.filter(
-                    account=self.request.user.iaso_profile.account, deleted_at__isnull=True
-                )
+                beneficiaries = Entity.objects.filter(account=account, deleted_at__isnull=True)
             if xlsx_format:
                 return export_beneficiary_as_xlsx(beneficiaries)
             if csv_format:
                 return export_beneficiary_as_csv(beneficiaries)
 
-        return super().list(request, *args, **kwargs)
+        entities = (
+            Entity.objects.filter(account=account)
+            if entity_type is None
+            else Entity.objects.filter(account=account, entity_type=entity_type)
+        )
+        entities = entities.order_by(*orders)
+        count = 0
+        result_list = []
+        for entity in entities:
+            count += 1
+            entity_serialized = EntitySerializer(entity, many=False)
+            file_content = entity_serialized.data.get("attributes").get("file_content")
+            if entity_type is None:
+                result = {
+                    "id": entity.id,
+                    "uuid": entity.uuid,
+                    "name": file_content.get("name"),
+                    "created_at": entity.created_at,
+                    "updated_at": entity.updated_at,
+                    "attributes": entity.attributes.pk,
+                    "entity_type": entity.entity_type,
+                }
+                result_list.append(result)
 
+                return super().list(request, *args, **kwargs)
+            else:
+                latest_form_version_id = EntityType.objects.get(pk=entity_type).reference_form.latest_version.pk
+                form_version = FormVersion.objects.get(pk=latest_form_version_id)
+                xpath = form_version.get_or_save_form_descriptor()["_xpath"]
+                for k, v in xpath.items():
+                    print(k,v)
+                result = {}
+                for k, v in file_content.items():
+                    if k in list(entity.entity_type.fields_list_view):
+                        result[k] = v
+                result_list.append(result)
+        response = {
+            "result": result_list}
+
+        return Response(response)
 
 
 class BeneficiaryViewset(ModelViewSet):
@@ -385,5 +423,3 @@ class BeneficiaryViewset(ModelViewSet):
 
         queryset = queryset.order_by(*order)
         return queryset
-
-

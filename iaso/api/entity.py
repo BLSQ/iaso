@@ -13,7 +13,7 @@ from rest_framework.request import Request
 from rest_framework.response import Response
 
 from iaso.api.common import TimestampField, ModelViewSet
-from iaso.models import Entity, Instance, EntityType
+from iaso.models import Entity, Instance, EntityType, FormVersion
 
 
 class EntityTypeSerializer(serializers.ModelSerializer):
@@ -104,10 +104,16 @@ class EntityTypeViewSet(ModelViewSet):
     def get_attribute_fields(self, request):
         entity_type_id = self.request.query_params.get("id", None)
         entity_type = get_object_or_404(EntityType, pk=entity_type_id)
+        latest_form_version_id = entity_type.reference_form.latest_version.pk
+        form_version = FormVersion.objects.get(pk=latest_form_version_id)
+        xpath = form_version.get_or_save_form_descriptor()["_xpath"]
+        fields = []
 
-        serializer = EntityTypeSerializer(entity_type, many=False)
+        for k in xpath:
+            fields.append(k)
+        resp = {"fields": sorted(fields)}
 
-        return Response(serializer.data)
+        return Response(resp)
 
 
 class EntityFilterBackend(filters.BaseFilterBackend):

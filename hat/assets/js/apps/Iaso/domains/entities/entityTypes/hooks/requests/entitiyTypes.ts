@@ -4,13 +4,13 @@ import {
     deleteRequest,
     postRequest,
     patchRequest,
-} from '../../../../libs/Api';
-import { useSnackQuery, useSnackMutation } from '../../../../libs/apiHooks';
+} from '../../../../../libs/Api';
+import { useSnackQuery, useSnackMutation } from '../../../../../libs/apiHooks';
 
-import { PaginatedEntityTypes } from '../types/paginatedEntityTypes';
-import { EntityType } from '../types/entityType';
+import { PaginatedEntityTypes } from '../../types/paginatedEntityTypes';
+import { EntityType } from '../../types/entityType';
 
-import MESSAGES from '../messages';
+import MESSAGES from '../../messages';
 
 export const useDelete = (): UseMutationResult =>
     useSnackMutation(

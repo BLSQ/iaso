@@ -13,7 +13,11 @@ import {
 import TopBar from '../../../components/nav/TopBarComponent';
 import { Filters } from './components/Filters';
 // import {EntityTypesDialog} from './components/EntityTypesDialog';
-import { useGetTypesPaginated, useDelete, useSave } from './hooks/requests';
+import {
+    useGetTypesPaginated,
+    useDelete,
+    useSave,
+} from './hooks/requests/entitiyTypes';
 
 import { columns, baseUrl } from './config';
 import MESSAGES from './messages';

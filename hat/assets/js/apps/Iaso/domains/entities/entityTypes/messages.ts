@@ -81,6 +81,14 @@ const MESSAGES = defineMessages({
         id: 'iaso.entityTypes.count',
         defaultMessage: 'Entities count',
     },
+    fieldsDetailInfoView: {
+        id: 'iaso.entityTypes.fieldsDetailInfoView',
+        defaultMessage: 'Detail info fields',
+    },
+    fieldsListView: {
+        id: 'iaso.entityTypes.fieldsListView',
+        defaultMessage: 'List fields',
+    },
 });
 
 export default MESSAGES;

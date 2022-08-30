@@ -1,9 +1,11 @@
 /* eslint-disable camelcase */
-import React, { ReactNode, FunctionComponent } from 'react';
+import React, { ReactNode, FunctionComponent, useState, useMemo } from 'react';
 import { useFormik, FormikProvider, FormikProps } from 'formik';
 import * as yup from 'yup';
 import {
+    // @ts-ignore
     useSafeIntl,
+    // @ts-ignore
     IconButton as IconButtonComponent,
 } from 'bluesquare-components';
 import { makeStyles, Box } from '@material-ui/core';
@@ -16,6 +18,8 @@ import { EntityType } from '../types/entityType';
 
 import { baseUrls } from '../../../../constants/urls';
 
+import { useGetForm } from '../hooks/requests/forms';
+
 import MESSAGES from '../messages';
 
 type RenderTriggerProps = {
@@ -23,8 +27,10 @@ type RenderTriggerProps = {
 };
 
 type EmptyEntityType = {
-    name?: string | null;
-    reference_form?: number | null;
+    name?: string;
+    reference_form?: number;
+    fields_detail_info_view?: string[];
+    fields_list_view?: string[];
 };
 
 type Props = {
@@ -51,12 +57,15 @@ export const EntityTypesDialog: FunctionComponent<Props> = ({
     titleMessage,
     renderTrigger,
     initialData = {
-        name: null,
-        reference_form: null,
+        name: undefined,
+        reference_form: undefined,
+        fields_detail_info_view: [],
+        fields_list_view: [],
     },
     saveEntityType,
 }) => {
     const classes: Record<string, string> = useStyles();
+    const [isOpen, setIsOpen] = useState<boolean>(false);
     const { formatMessage } = useSafeIntl();
 
     const getSchema = () =>
@@ -88,6 +97,19 @@ export const EntityTypesDialog: FunctionComponent<Props> = ({
         resetForm,
     } = formik;
     const getErrors = k => (errors[k] ? [errors[k]] : []);
+    const { data: currentForm, isFetching: isFetchingForm } = useGetForm(
+        values?.reference_form,
+        Boolean(values?.reference_form) && isOpen,
+        'possible_fields',
+    );
+    const possibleFields = useMemo(
+        () =>
+            (currentForm?.possible_fields || []).map(field => ({
+                value: field.name,
+                label: field.label,
+            })),
+        [currentForm],
+    );
     return (
         <FormikProvider value={formik}>
             {/* @ts-ignore */}
@@ -106,6 +128,8 @@ export const EntityTypesDialog: FunctionComponent<Props> = ({
                 dialogProps={{
                     classNames: classes.dialog,
                 }}
+                onOpen={() => setIsOpen(true)}
+                onClosed={() => setIsOpen(false)}
             >
                 {values.reference_form && (
                     <Box className={classes.view}>
@@ -125,6 +149,35 @@ export const EntityTypesDialog: FunctionComponent<Props> = ({
                         type="text"
                         label={MESSAGES.name}
                         required
+                    />
+                    <InputComponent
+                        type="select"
+                        multi
+                        disabled={isFetchingForm}
+                        keyValue="fields_list_view"
+                        onChange={(key, value) =>
+                            setFieldValue(key, value ? value.split(',') : null)
+                        }
+                        value={!isFetchingForm ? values.fields_list_view : []}
+                        label={MESSAGES.fieldsListView}
+                        options={possibleFields}
+                    />
+                    <InputComponent
+                        type="select"
+                        multi
+                        disabled={isFetchingForm}
+                        loading={isFetchingForm}
+                        keyValue="fields_detail_info_view"
+                        onChange={(key, value) =>
+                            setFieldValue(key, value ? value.split(',') : null)
+                        }
+                        value={
+                            !isFetchingForm
+                                ? values.fields_detail_info_view
+                                : []
+                        }
+                        label={MESSAGES.fieldsDetailInfoView}
+                        options={possibleFields}
                     />
                 </div>
             </ConfirmCancelDialogComponent>

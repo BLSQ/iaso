@@ -1,15 +1,15 @@
 import { UseMutationResult, UseQueryResult } from 'react-query';
-import { useSnackMutation, useSnackQuery } from '../../../libs/apiHooks';
+import { useSnackMutation, useSnackQuery } from '../../../../libs/apiHooks';
 import {
     deleteRequest,
     getRequest,
     postRequest,
     patchRequest,
-} from '../../../libs/Api';
-import MESSAGES from '../messages';
+} from '../../../../libs/Api';
+import MESSAGES from '../../messages';
 
-import { PaginatedEntities } from '../types/paginatedEntities';
-import { Entity } from '../types/entity';
+import { PaginatedEntities } from '../../types/paginatedEntities';
+import { Entity } from '../../types/entity';
 
 type Params = {
     pageSize: string;

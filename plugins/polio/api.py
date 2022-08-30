@@ -3,6 +3,7 @@ import csv
 import functools
 import json
 from datetime import timedelta, datetime
+import logging
 from typing import Any, List, NoReturn, Optional, Union
 from collections import defaultdict
 from functools import lru_cache
@@ -601,9 +602,7 @@ class IMStatsViewSet(viewsets.ViewSet):
                 nfm_abs_counts_dict = defaultdict(int)
                 done_something = False
                 if isinstance(form, str):
-                    print("------------")
                     print("wrong form format:", form, "in", country.name)
-                    print("------------")
                     continue
                 try:
                     round_number = form.get("roundNumber", None)
@@ -703,9 +702,6 @@ class IMStatsViewSet(viewsets.ViewSet):
                 else:
                     day_country_not_found[country.name][today_string] += 1
                     form_campaign_not_found_count += 1
-            print("(----------------------------)")
-            print(country.name, debug_response)
-            print("(----------------------------)")
         skipped_forms.update(
             {"count": len(skipped_forms_list), "no_round": no_round_count, "unknown_round": unknown_round}
         )
@@ -1262,8 +1258,6 @@ class LQASStatsViewSet(viewsets.ViewSet):
                     d["total_sites_visited"] = d["total_sites_visited"] + total_sites_visited
                     d["district"] = district.id
                     d["region_name"] = district.parent.name
-            print("(----------------------------)")
-            print(country.name, debug_response)
         add_nfm_stats_for_rounds(campaign_stats, nfm_reasons_per_district_per_campaign, "nfm_stats")
         add_nfm_stats_for_rounds(campaign_stats, nfm_abs_reasons_per_district_per_campaign, "nfm_abs_stats")
         format_caregiver_stats(campaign_stats)
@@ -1346,7 +1340,9 @@ def email_subject(event_type: str, campaign_name: str) -> str:
     return email_subject_template.format(event_type, campaign_name)
 
 
-def event_creation_email(event_type: str, first_name: str, last_name: str, comment: str, file: str, links: str, link: str, dns_domain: str) -> str:
+def event_creation_email(
+    event_type: str, first_name: str, last_name: str, comment: str, file: str, links: str, link: str, dns_domain: str
+) -> str:
     email_template = """%s by %s %s.
 
 Comment: %s
@@ -1366,7 +1362,15 @@ This is an automated email from %s
 
 
 def creation_email_with_two_links(
-    event_type: str, first_name: str, last_name: str, comment: str, files: str, links:str, validation_link: str, rejection_link: str, dns_domain: str
+    event_type: str,
+    first_name: str,
+    last_name: str,
+    comment: str,
+    files: str,
+    links: str,
+    validation_link: str,
+    rejection_link: str,
+    dns_domain: str,
 ) -> str:
     email_template = """%s by %s %s.
 
@@ -1452,7 +1456,16 @@ def send_approval_budget_mail(event: BudgetEvent) -> NoReturn:
                     msg.send(fail_silently=False)
 
 
-def send_approvers_email(user: User, author_team: Team, event: BudgetEvent, event_type: str, approval_link: str, rejection_link: str, files_info: Union[List[Dict[str, Any]],None], links_string: str) -> NoReturn:
+def send_approvers_email(
+    user: User,
+    author_team: Team,
+    event: BudgetEvent,
+    event_type: str,
+    approval_link: str,
+    rejection_link: str,
+    files_info: Union[List[Dict[str, Any]], None],
+    links_string: str,
+) -> NoReturn:
     # if user is in other approval team, send the mail with the fat buttons
     subject = email_subject(event_type, event.campaign.obr_name)
     from_email = settings.DEFAULT_FROM_EMAIL
@@ -1494,7 +1507,7 @@ def send_approvers_email(user: User, author_team: Team, event: BudgetEvent, even
     msg.send(fail_silently=False)
 
 
-def send_approval_confirmation_to_users(event :BudgetEvent) -> NoReturn:
+def send_approval_confirmation_to_users(event: BudgetEvent) -> NoReturn:
     # modify campaign.budget_status instead of event.status
     event.status = "validated"
     event.save()
@@ -1527,7 +1540,7 @@ def format_file_link(event_file: BudgetFiles) -> str:
     return {"path": "https://" + settings.DNS_DOMAIN + serialized_file["file"], "name": event_file.file.name}
 
 
-def make_budget_event_file_links(event: BudgetEvent) -> Union[str,None]:
+def make_budget_event_file_links(event: BudgetEvent) -> Union[str, None]:
     event_files = event.event_files.all()
     if not event_files:
         return None
@@ -1559,7 +1572,7 @@ class SenderTeamFilterBackend(filters.BaseFilterBackend):
                 sender_team = Team.objects.get(id=int(sender_team_id))
                 queryset = queryset.filter(author__in=list(sender_team.users.all()))
             except:
-                print("No team found for id ", sender_team_id)
+                logging.debug("No team found for id ", sender_team_id)
 
         return queryset
 

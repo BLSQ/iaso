@@ -30,7 +30,7 @@ class EntityType(models.Model):
             "name": self.name,
             "created_at": self.created_at,
             "updated_at": self.updated_at,
-            "reference_form": self.reference_form,
+            "reference_form": self.reference_form.as_dict(),
             "account": self.account.as_dict(),
         }
 

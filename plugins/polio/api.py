@@ -3,7 +3,7 @@ import functools
 import json
 from datetime import timedelta, datetime
 import logging
-from typing import Any, Dict, List, NoReturn, Optional, Union
+from typing import Any, Dict, List, Optional, Union
 from collections import defaultdict
 from functools import lru_cache
 from logging import getLogger
@@ -1419,7 +1419,7 @@ def budget_approval_email(campaign_name: str, link: str, dns_domain: str) -> str
     return email_template.format(campaign_name, link, dns_domain)
 
 
-def send_approval_budget_mail(event: BudgetEvent) -> NoReturn:
+def send_approval_budget_mail(event: BudgetEvent) -> None:
     mails_list = list()
     events = BudgetEvent.objects.filter(campaign=event.campaign)
     link_to_send = "https://%s/dashboard/polio/budget/details/campaignId/%s/campaignName/%s/country/%d" % (
@@ -1462,9 +1462,9 @@ def send_approvers_email(
     event_type: str,
     approval_link: str,
     rejection_link: str,
-    files_info: Union[List[Dict[str, Any]], None],
-    links_string: Union[str, None],
-) -> NoReturn:
+    files_info: Optional[List[Dict[str, Any]]],
+    links_string: Optional[str],
+) -> None:
     # if user is in other approval team, send the mail with the fat buttons
     subject = email_subject(event_type, event.campaign.obr_name)
     from_email = settings.DEFAULT_FROM_EMAIL
@@ -1509,7 +1509,7 @@ def send_approvers_email(
     msg.send(fail_silently=False)
 
 
-def send_approval_confirmation_to_users(event: BudgetEvent) -> NoReturn:
+def send_approval_confirmation_to_users(event: BudgetEvent) -> None:
     # modify campaign.budget_status instead of event.status
     event.status = "validated"
     event.save()
@@ -1537,12 +1537,12 @@ def is_budget_approved(user: User, event: BudgetEvent) -> bool:
     return False
 
 
-def format_file_link(event_file: BudgetFiles) -> str:
+def format_file_link(event_file: BudgetFiles) -> Dict:
     serialized_file = BudgetFilesSerializer(event_file).data
     return {"path": "https://" + settings.DNS_DOMAIN + serialized_file["file"], "name": event_file.file.name}
 
 
-def make_budget_event_file_links(event: BudgetEvent) -> Union[str, None]:
+def make_budget_event_file_links(event: BudgetEvent) -> Optional[str]:
     event_files = event.event_files.all()
     if not event_files:
         return None

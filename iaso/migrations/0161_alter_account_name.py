@@ -7,14 +7,16 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('iaso', '0160_merge_20220819_1239'),
+        ("iaso", "0160_merge_20220819_1239"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='account',
-            name='name',
-            field=models.TextField(default='no name', unique=True, validators=[django.core.validators.MinLengthValidator(1)]),
+            model_name="account",
+            name="name",
+            field=models.TextField(
+                default="no name", unique=True, validators=[django.core.validators.MinLengthValidator(1)]
+            ),
             preserve_default=False,
         ),
     ]

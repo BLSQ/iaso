@@ -118,6 +118,7 @@
               "ignorePureComponents": true
             }
           ],
+          "react/require-default-props": "off",
           "valid-typeof": "warn",
           "no-unused-expressions": "off",
           "class-methods-use-this": "warn",

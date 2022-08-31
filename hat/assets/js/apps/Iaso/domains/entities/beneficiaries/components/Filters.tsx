@@ -22,7 +22,7 @@ import InputComponent from '../../../../components/forms/InputComponent';
 import { OrgUnitTreeviewModal } from '../../../orgUnits/components/TreeView/OrgUnitTreeviewModal';
 
 import { redirectTo } from '../../../../routing/actions';
-import MESSAGES from '../messages';
+import MESSAGES from '../../messages';
 
 import { baseUrl } from '../../config';
 
@@ -113,67 +113,61 @@ const Filters: FunctionComponent<Props> = ({ params }) => {
         [filters],
     );
     return (
-        <>
+        <Box mb={1}>
             <Grid container spacing={2}>
                 <Grid item xs={3}>
-                    <Box mt={2} p={1} mb={2}>
-                        <InputComponent
-                            keyValue="search"
-                            onChange={handleChange}
-                            value={filters.search}
-                            type="search"
-                            label={MESSAGES.search}
-                            onEnterPressed={handleSearch}
-                        />
-                        <Box id="ou-tree-input">
-                            <OrgUnitTreeviewModal
-                                toggleOnLabelClick={false}
-                                titleMessage={MESSAGES.location}
-                                onConfirm={orgUnit =>
-                                    handleChange(
-                                        'location',
-                                        orgUnit ? [orgUnit.id] : undefined,
-                                    )
-                                }
-                                initialSelection={initialOrgUnit}
-                            />
-                        </Box>
-                    </Box>
-                </Grid>
-                <Grid item xs={3}>
-                    <Box mt={2} p={1} mb={2}>
-                        <DatesRange
-                            xs={12}
-                            sm={12}
-                            md={12}
-                            lg={12}
-                            onChangeDate={handleChange}
-                            labelFrom={MESSAGES.dateFrom}
-                            labelTo={MESSAGES.dateTo}
-                            dateFrom={filters.dateFrom}
-                            dateTo={filters.dateTo}
+                    <InputComponent
+                        keyValue="search"
+                        onChange={handleChange}
+                        value={filters.search}
+                        type="search"
+                        label={MESSAGES.search}
+                        onEnterPressed={handleSearch}
+                    />
+                    <Box id="ou-tree-input">
+                        <OrgUnitTreeviewModal
+                            toggleOnLabelClick={false}
+                            titleMessage={MESSAGES.location}
+                            onConfirm={orgUnit =>
+                                handleChange(
+                                    'location',
+                                    orgUnit ? [orgUnit.id] : undefined,
+                                )
+                            }
+                            initialSelection={initialOrgUnit}
                         />
                     </Box>
                 </Grid>
                 <Grid item xs={3}>
-                    <Box mt={2} p={1} mb={2}>
-                        <InputComponent
-                            keyValue="submitterTeamId"
-                            onChange={handleTeamChange}
-                            value={filters.submitterTeamId}
-                            type="select"
-                            label={MESSAGES.submitterTeam}
-                            options={teamOptions}
-                        />
-                        <InputComponent
-                            keyValue="submitterId"
-                            onChange={handleChange}
-                            value={filters.submitterId}
-                            type="select"
-                            label={MESSAGES.submitter}
-                            options={usersOptions}
-                        />
-                    </Box>
+                    <DatesRange
+                        xs={12}
+                        sm={12}
+                        md={12}
+                        lg={12}
+                        onChangeDate={handleChange}
+                        labelFrom={MESSAGES.dateFrom}
+                        labelTo={MESSAGES.dateTo}
+                        dateFrom={filters.dateFrom}
+                        dateTo={filters.dateTo}
+                    />
+                </Grid>
+                <Grid item xs={3}>
+                    <InputComponent
+                        keyValue="submitterTeamId"
+                        onChange={handleTeamChange}
+                        value={filters.submitterTeamId}
+                        type="select"
+                        label={MESSAGES.submitterTeam}
+                        options={teamOptions}
+                    />
+                    <InputComponent
+                        keyValue="submitterId"
+                        onChange={handleChange}
+                        value={filters.submitterId}
+                        type="select"
+                        label={MESSAGES.submitter}
+                        options={usersOptions}
+                    />
                 </Grid>
             </Grid>
             <Grid
@@ -202,7 +196,7 @@ const Filters: FunctionComponent<Props> = ({ params }) => {
                     </Button>
                 </Grid>
             </Grid>
-        </>
+        </Box>
     );
 };
 

@@ -26,12 +26,7 @@ type RenderTriggerProps = {
     openDialog: () => void;
 };
 
-type EmptyEntityType = {
-    name?: string;
-    reference_form?: number;
-    fields_detail_info_view?: string[];
-    fields_list_view?: string[];
-};
+type EmptyEntityType = Partial<EntityType>;
 
 type Props = {
     titleMessage: IntlMessage;

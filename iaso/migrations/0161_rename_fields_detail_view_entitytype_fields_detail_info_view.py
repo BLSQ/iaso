@@ -6,13 +6,13 @@ from django.db import migrations
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('iaso', '0160_merge_20220819_1239'),
+        ("iaso", "0160_merge_20220819_1239"),
     ]
 
     operations = [
         migrations.RenameField(
-            model_name='entitytype',
-            old_name='fields_detail_view',
-            new_name='fields_detail_info_view',
+            model_name="entitytype",
+            old_name="fields_detail_view",
+            new_name="fields_detail_info_view",
         ),
     ]

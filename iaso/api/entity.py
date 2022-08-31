@@ -1,6 +1,5 @@
 import csv
 import io
-import json
 
 import xlsxwriter
 from django.core.paginator import Paginator
@@ -394,7 +393,7 @@ class EntityViewSet(ModelViewSet):
                 if k in list(entity.entity_type.fields_list_view):
                     result[k] = v
             result_list.append(result)
-        columns_list = [i for n, i in enumerate(columns_list) if i not in columns_list[n + 1:]]
+        columns_list = [i for n, i in enumerate(columns_list) if i not in columns_list[n + 1 :]]
 
         if limit:
             limit = int(limit)
@@ -410,74 +409,10 @@ class EntityViewSet(ModelViewSet):
             res["page"] = page_offset
             res["pages"] = paginator.num_pages
             res["limit"] = limit
-            res["colums"] = columns_list,
+            res["colums"] = (columns_list,)
             res["result"] = map(lambda x: x, page.object_list)
             return Response(res)
 
-        response = {
-            "columns": columns_list,
-            "result": result_list}
+        response = {"columns": columns_list, "result": result_list}
 
         return Response(response)
-
-
-class BeneficiaryViewset(ModelViewSet):
-    """Beneficiaries API
-
-    GET /api/entity/beneficiary
-    GET /api/entity/beneficiary/<id>
-    DELETE /api/entity/beneficiary/<id>
-
-    To export as xlsx:
-    /api/entity/beneficiary/?xlsx=true
-    or by id:
-    /api/entity/beneficiary/?xlsx=true&id=<id>
-    """
-
-    results_key = "beneficiary"
-    remove_results_key_if_paginated = True
-    filter_backends = [filters.OrderingFilter, DjangoFilterBackend, EntityFilterBackend]
-
-    def get_serializer_class(self):
-        return EntitySerializer
-
-    def get_queryset(self):
-        search = self.request.query_params.get("search", None)
-        org_unit_id = self.request.query_params.get("orgUnitId", None)
-        date_from = self.request.query_params.get("dateFrom", None)
-        date_to = self.request.query_params.get("dateTo", None)
-        order = self.request.query_params.get("order", "updated_at").split(",")
-        entity_type = self.request.query_params.get("entity_type", None)
-        by_uuid = self.request.query_params.get("by_uuid", None)
-        form_name = self.request.query_params.get("form_name", None)
-        show_deleted = self.request.query_params.get("show_deleted", None)
-        created_by_id = self.request.query_params.get("created_by_id", None)
-        created_by_team_id = self.request.query_params.get("created_by_team_id", None)
-
-        queryset = Entity.objects.filter(account=self.request.user.iaso_profile.account)
-        if form_name:
-            queryset = queryset.filter(attributes__form__name__icontains=form_name)
-        if search:
-            queryset = queryset.filter(name__icontains=search)
-        if by_uuid:
-            queryset = queryset.filter(uuid=by_uuid)
-        if entity_type:
-            queryset = queryset.filter(name=entity_type)
-        if org_unit_id:
-            queryset = queryset.filter(attributes__org_unit__id=org_unit_id)
-        if date_from:
-            # TODO: see if we use created_at as reference date (or latest instance creation, update, ...)
-            queryset = queryset.filter(created_at__gte=date_from)
-        if date_to:
-            queryset = queryset.filter(created_at__lte=date_to)
-        if show_deleted:
-            queryset = queryset.filter(deleted_at__isnull=True)
-        if created_by_id:
-            queryset = queryset.filter(attributes__created_by_id=created_by_id)
-        if created_by_team_id:
-            queryset = queryset.filter(attributes__created_by__teams__id=created_by_team_id)
-
-        # location
-
-        queryset = queryset.order_by(*order)
-        return queryset

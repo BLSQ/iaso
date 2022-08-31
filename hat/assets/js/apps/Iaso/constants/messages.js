@@ -10,7 +10,7 @@ const MESSAGES = defineMessages({
         id: 'iaso.entities.title',
     },
     entityTypesTitle: {
-        defaultMessage: 'Entity types',
+        defaultMessage: 'Beneficiary types',
         id: 'iaso.entityTypes.title',
     },
     submissionsTitle: {

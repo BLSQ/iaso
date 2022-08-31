@@ -133,18 +133,16 @@ export const useSaveBeneficiary = (): UseMutationResult =>
         ['beneficiaries'],
     );
 
-const getBeneficiary = (
-    beneficiaryId: string | undefined,
-): Promise<Beneficiary> => {
-    return getRequest(`/api/entity/beneficiary/${beneficiaryId}`);
+const getBeneficiary = (entityId: string | undefined): Promise<Beneficiary> => {
+    return getRequest(`/api/entity/beneficiary/${entityId}`);
 };
 export const useGetBeneficiary = (
-    beneficiaryId: string | undefined,
+    entityId: string | undefined,
 ): UseQueryResult<Beneficiary, Error> => {
-    const queryKey: any[] = ['beneficiary', beneficiaryId];
+    const queryKey: any[] = ['beneficiary', entityId];
     return useSnackQuery({
         queryKey,
-        queryFn: () => getBeneficiary(beneficiaryId),
+        queryFn: () => getBeneficiary(entityId),
         options: {
             retry: false,
             staleTime: Infinity,

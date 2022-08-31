@@ -1,23 +1,31 @@
 import React, { FunctionComponent, useRef, useState, useEffect } from 'react';
 import { Map, TileLayer, Pane, ScaleControl } from 'react-leaflet';
-import { Box, useTheme } from '@material-ui/core';
+import { Box, useTheme, makeStyles } from '@material-ui/core';
+import MarkerClusterGroup from 'react-leaflet-markercluster';
 import {
     // @ts-ignore
     LoadingSpinner,
+    // @ts-ignore
+    commonStyles,
 } from 'bluesquare-components';
 
 import {
     TilesSwitch,
     Tile,
 } from '../../../../components/maps/tools/TileSwitch';
+import { PopupComponent as Popup } from './Popup';
+
 import MarkersListComponent from '../../../../components/maps/markers/MarkersListComponent';
 
 import tiles from '../../../../constants/mapTiles';
+
+import { Beneficiary } from '../types/beneficiary';
 
 import {
     ZoomControl,
     circleColorMarkerOptions,
     getLatLngBounds,
+    clusterCustomMarker,
 } from '../../../../utils/mapUtils';
 import { OrgUnit } from '../../../orgUnits/types/orgUnit';
 
@@ -26,34 +34,40 @@ const defaultViewport = {
     zoom: 3.25,
 };
 
-type Location = {
-    latitude: number;
-    longitude: number;
+export type Location = {
+    latitude?: number;
+    longitude?: number;
     orgUnit: OrgUnit;
     id: number;
+    original: Beneficiary;
 };
 
 type Props = {
-    // eslint-disable-next-line no-unused-vars
-    handleClick: (location: Location) => void;
     locations: Location[] | undefined;
     isFetchingLocations: boolean;
 };
 
 const boundsOptions = {
     padding: [50, 50],
+    maxZoom: 12,
 };
+
+const useStyles = makeStyles(theme => ({
+    mapContainer: {
+        ...commonStyles(theme).mapContainer,
+    },
+}));
 
 const getLocationsBounds = (locations: Location[]) =>
     locations ? getLatLngBounds(locations) : null;
 
 export const ListMap: FunctionComponent<Props> = ({
-    handleClick,
     locations,
     isFetchingLocations,
 }) => {
     const mapContainer: any = useRef();
     const map: any = useRef();
+    const classes: Record<string, string> = useStyles();
     const theme = useTheme();
     const [selectedLocation, setSelectedLocation] = useState<
         Location | undefined
@@ -73,9 +87,7 @@ export const ListMap: FunctionComponent<Props> = ({
         }
     };
     const onClick = (selecteOrgunit: Location) => {
-        if (!selectedLocation) {
-            handleClick(selecteOrgunit);
-        }
+        setSelectedLocation(selecteOrgunit);
     };
 
     useEffect(() => {
@@ -86,7 +98,7 @@ export const ListMap: FunctionComponent<Props> = ({
     }, [isFetchingLocations, locations]);
     const isLoading = isFetchingLocations;
     return (
-        <section ref={mapContainer}>
+        <section ref={mapContainer} className={classes.mapContainer}>
             <Box position="relative">
                 <TilesSwitch
                     currentTile={currentTile}
@@ -98,13 +110,14 @@ export const ListMap: FunctionComponent<Props> = ({
                     zoomSnap={0.25}
                     maxZoom={currentTile.maxZoom}
                     ref={map}
-                    style={{ height: '72vh' }}
+                    style={{ height: '60vh' }}
                     center={defaultViewport.center}
                     zoom={defaultViewport.zoom}
                     scrollWheelZoom={false}
                     zoomControl={false}
                     contextmenu
                     onMovestart={() => setSelectedLocation(undefined)}
+                    refocusOnMap={false}
                 >
                     <ScaleControl imperial={false} />
                     <TileLayer
@@ -117,16 +130,22 @@ export const ListMap: FunctionComponent<Props> = ({
                                 fitToBounds={() => fitToBounds(locations)}
                             />
                             <Pane name="markers">
-                                <MarkersListComponent
-                                    items={locations || []}
-                                    onMarkerClick={shape => onClick(shape)}
-                                    markerProps={() => ({
-                                        ...circleColorMarkerOptions(
-                                            theme.palette.primary.main,
-                                        ),
-                                    })}
-                                    isCircle
-                                />
+                                <MarkerClusterGroup
+                                    iconCreateFunction={clusterCustomMarker}
+                                >
+                                    <MarkersListComponent
+                                        items={locations || []}
+                                        onMarkerClick={shape => onClick(shape)}
+                                        markerProps={() => ({
+                                            ...circleColorMarkerOptions(
+                                                theme.palette.primary.main,
+                                            ),
+                                        })}
+                                        popupProps={{ selectedLocation }}
+                                        PopupComponent={Popup}
+                                        isCircle
+                                    />
+                                </MarkerClusterGroup>
                             </Pane>
                         </>
                     )}

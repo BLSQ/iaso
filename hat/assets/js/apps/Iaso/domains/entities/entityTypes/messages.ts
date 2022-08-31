@@ -2,7 +2,7 @@ import { defineMessages } from 'react-intl';
 
 const MESSAGES = defineMessages({
     title: {
-        defaultMessage: 'Entity types',
+        defaultMessage: 'Beneficiary types',
         id: 'iaso.entityTypes.title',
     },
     referenceForm: {
@@ -10,7 +10,7 @@ const MESSAGES = defineMessages({
         id: 'iaso.entityTypes.referenceForm',
     },
     create: {
-        defaultMessage: 'Create entity type',
+        defaultMessage: 'Create beneficiary type',
         id: 'iaso.entityTypes.create',
     },
     cancel: {
@@ -23,7 +23,7 @@ const MESSAGES = defineMessages({
     },
     deleteError: {
         id: 'iaso.snackBar.deleteEntityTypeError',
-        defaultMessage: 'An error occurred while deleting entity type',
+        defaultMessage: 'An error occurred while deleting beneficiary type',
     },
     deleteSuccess: {
         id: 'iaso.snackBar.delete_successful',
@@ -38,12 +38,13 @@ const MESSAGES = defineMessages({
         id: 'iaso.label.name',
     },
     updateMessage: {
-        defaultMessage: 'Update entity type',
+        defaultMessage: 'Update beneficiary type',
         id: 'iaso.entityTypes.update',
     },
     deleteTitle: {
         id: 'iaso.entityTypes.dialog.deleteTitle',
-        defaultMessage: 'Are you sure you want to delete this entity type?',
+        defaultMessage:
+            'Are you sure you want to delete this beneficiary type?',
     },
     deleteText: {
         id: 'iaso.label.deleteText',
@@ -83,7 +84,7 @@ const MESSAGES = defineMessages({
     },
     entitiesCount: {
         id: 'iaso.entityTypes.count',
-        defaultMessage: 'Entities count',
+        defaultMessage: 'Beneficiaries count',
     },
     fieldsDetailInfoView: {
         id: 'iaso.entityTypes.fieldsDetailInfoView',

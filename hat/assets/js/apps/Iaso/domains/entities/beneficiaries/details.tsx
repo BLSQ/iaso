@@ -9,12 +9,10 @@ import {
     // @ts-ignore
     Table,
 } from 'bluesquare-components';
-import { Box, Grid, makeStyles, Paper } from '@material-ui/core';
-import EditIcon from '@material-ui/icons/Edit';
-
+import { Box, Grid, makeStyles } from '@material-ui/core';
 import { useDispatch, useSelector } from 'react-redux';
 import TopBar from '../../../components/nav/TopBarComponent';
-import MESSAGES from './messages';
+import MESSAGES from '../messages';
 
 import { redirectToReplace } from '../../../routing/actions';
 import { baseUrls } from '../../../constants/urls';
@@ -74,7 +72,7 @@ const useStyles = makeStyles(theme => ({
 export const Details: FunctionComponent<Props> = ({ router }) => {
     const { params } = router;
     const classes: Record<string, string> = useStyles();
-    const { beneficiaryId } = params;
+    const { entityId } = params;
     const { formatMessage } = useSafeIntl();
 
     // @ts-ignore
@@ -88,7 +86,7 @@ export const Details: FunctionComponent<Props> = ({ router }) => {
     }: {
         data?: Beneficiary;
         isLoading: boolean;
-    } = useGetBeneficiary(beneficiaryId);
+    } = useGetBeneficiary(entityId);
     const columns = useBeneficiariesDetailsColumns(
         beneficiary?.id ?? null,
         // @ts-ignore
@@ -148,7 +146,7 @@ export const Details: FunctionComponent<Props> = ({ router }) => {
     // );
 
     const { data: submissions, isLoading: isLoadingSubmissions } =
-        useGetSubmissions(beneficiaryId);
+        useGetSubmissions(entityId);
     return (
         <>
             <TopBar
@@ -185,7 +183,7 @@ export const Details: FunctionComponent<Props> = ({ router }) => {
                                     console.log(
                                         'Edit Beneficiary',
                                         beneficiary?.name,
-                                        beneficiaryId,
+                                        entityId,
                                     );
                                     // eslint-disable-next-line no-alert
                                     alert('Entity edition');
@@ -206,12 +204,12 @@ export const Details: FunctionComponent<Props> = ({ router }) => {
                     <Grid container item xs={5} justifyContent="flex-end">
                         <Box>
                             <CsvButton
-                                csvUrl={`/api/entity/beneficiary/?csv=true&id=${beneficiaryId}`}
+                                csvUrl={`/api/entity/beneficiary/?csv=true&id=${entityId}`}
                             />
                         </Box>
                         <Box>
                             <XlsxButton
-                                xlsxUrl={`/api/entity/beneficiary/?xlsx=true&id=${beneficiaryId}`}
+                                xlsxUrl={`/api/entity/beneficiary/?xlsx=true&id=${entityId}`}
                             />
                         </Box>
                     </Grid>

@@ -54,7 +54,7 @@ const openDialogForEntityIndex = index => {
     editButton.click();
     cy.get('#entity-dialog').should('be.visible');
 };
-describe('Entities', () => {
+describe.skip('Entities', () => {
     describe('Page', () => {
         it('should redirect to url with pagination params', () => {
             goToPage();

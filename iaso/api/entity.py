@@ -326,9 +326,7 @@ class EntityViewSet(ModelViewSet):
             if csv_format:
                 return export_beneficiary_as_csv(beneficiaries)
 
-        # entities = queryset if entity_type_id is None else Entity.objects.filter(entity_type=entity_type_id).order_by(*orders)
         entities = queryset
-        print(entities)
         count = 0
         result_list = []
 

@@ -12,7 +12,7 @@ import {
 import { Box, Grid, makeStyles } from '@material-ui/core';
 import { useDispatch, useSelector } from 'react-redux';
 import TopBar from '../../../components/nav/TopBarComponent';
-import MESSAGES from './messages';
+import MESSAGES from '../messages';
 
 import { redirectToReplace } from '../../../routing/actions';
 import { baseUrls } from '../../../constants/urls';

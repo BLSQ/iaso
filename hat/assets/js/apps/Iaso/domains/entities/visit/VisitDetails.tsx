@@ -17,7 +17,7 @@ import {
 } from '../beneficiaries/hooks/requests';
 import { BeneficiaryBaseInfo } from '../beneficiaries/components/BeneficiaryBaseInfo';
 import TopBar from '../../../components/nav/TopBarComponent';
-import MESSAGES from '../beneficiaries/messages';
+import MESSAGES from '../messages';
 import { redirectToReplace } from '../../../routing/actions';
 import WidgetPaper from '../../../components/papers/WidgetPaperComponent';
 import { baseUrls } from '../../../constants/urls';

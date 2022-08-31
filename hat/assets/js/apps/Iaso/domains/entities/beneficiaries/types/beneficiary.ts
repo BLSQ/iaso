@@ -1,13 +1,25 @@
 /* eslint-disable camelcase */
 import { OrgUnit } from '../../../orgUnits/types/orgUnit';
 
+type FileContent = {
+    name?: string;
+    age_type: '0' | '1';
+    birth_date?: string;
+    age?: string;
+    program?: string;
+    gender?: string;
+    vaccination_number?: string;
+    end?: string;
+};
+
 type Attributes = {
     name: string;
-    file_content: Record<string, string>;
+    file_content: FileContent;
     latitude: number;
     longitude: number;
     org_unit: OrgUnit;
 };
+
 export type Beneficiary = {
     id: number;
     uuid: string;

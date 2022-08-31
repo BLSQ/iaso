@@ -1,4 +1,3 @@
-import logging
 import sqlite3
 from copy import deepcopy
 from typing import Dict, List, Optional, Tuple, Union
@@ -9,6 +8,7 @@ from django.contrib.gis.geos import MultiPolygon, Point, Polygon
 from django.db import transaction
 from hat.audit import models as audit_models
 from iaso.models import DataSource, Group, OrgUnit, OrgUnitType, Project, SourceVersion
+from iaso.models.org_unit import get_or_create_org_unit_type
 
 try:  # only in 3.8
     from typing import TypedDict
@@ -16,21 +16,9 @@ except ImportError:
     TypedDict = type
 
 
-logger = logging.getLogger(__name__)
-
-
 def get_or_create_org_unit_type_and_assign_project(name: str, project: Project, depth: int) -> OrgUnitType:
-    all_projects_from_account = Project.objects.filter(account=project.account)
-    candidate_outs = OrgUnitType.objects.filter(projects__in=all_projects_from_account, name=name, depth=depth)
-    if len(candidate_outs) == 0:
-        # We need to create it
-        out = OrgUnitType.objects.create(name=name, short_name=name[:4], depth=depth)
-    elif len(candidate_outs) == 1:
-        # We can use the existing one
-        out = candidate_outs[0]
-    else:
-        logger.error(f"Data consistency issue: multiple OrgUnitType with name {name} in account {project.account}")
-
+    """Get or create the OUT '(in the scope of the project's account) then assign it to the project"""
+    out, _ = get_or_create_org_unit_type(name=name, depth=depth, account=project.account)
     out.projects.add(project)
     return out
 

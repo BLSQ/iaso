@@ -11,7 +11,7 @@ from django_ltree.fields import PathField
 from django.utils.translation import ugettext_lazy as _
 from django_ltree.models import TreeModel
 
-from .base import SourceVersion
+from .base import SourceVersion, Account
 from .project import Project
 
 
@@ -78,6 +78,18 @@ class OrgUnitType(models.Model):
                 ]
             res["sub_unit_types"] = sub_unit_types
         return res
+
+
+def get_or_create_org_unit_type(name: str, depth: int, account: Account) -> typing.Tuple[OrgUnitType, bool]:
+    """ ""Get the OUT if a similar one exist in the account, otherwise create it.
+
+    :return: a tuple of the OrgUnitType and a boolean indicating if it was created or not
+    :raises MultipleObjectsReturned: if multiple OUT with the same name and depth exist in the account
+    """
+    all_projects_from_account = Project.objects.filter(account=account)
+    return OrgUnitType.objects.get_or_create(
+        projects__in=all_projects_from_account, name=name, depth=depth, defaults={"short_name": name[:4]}
+    )
 
 
 # noinspection PyTypeChecker

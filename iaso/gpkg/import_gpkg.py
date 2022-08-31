@@ -1,3 +1,4 @@
+import logging
 import sqlite3
 from copy import deepcopy
 from typing import Dict, List, Optional, Tuple, Union
@@ -15,18 +16,22 @@ except ImportError:
     TypedDict = type
 
 
-def get_or_create_org_unit_type(name: str, project: Project, depth: int):
-    out = OrgUnitType.objects.filter(projects=project, name=name).first()
-    if not out:
-        count = OrgUnitType.objects.filter(name=name, short_name=name[:4], depth=depth).count()
-        if count == 0:
-            out = OrgUnitType.objects.create(name=name, short_name=name[:4], depth=depth)
-            out.save()
-        elif count > 1:
-            out = OrgUnitType.objects.filter(name=name, short_name=name[:4], depth=depth, projects=project).first()
-        else:
-            out = OrgUnitType.objects.get(name=name, short_name=name[:4], depth=depth)
-        out.projects.add(project)
+logger = logging.getLogger(__name__)
+
+
+def get_or_create_org_unit_type_and_assign_project(name: str, project: Project, depth: int) -> OrgUnitType:
+    all_projects_from_account = Project.objects.filter(account=project.account)
+    candidate_outs = OrgUnitType.objects.filter(projects__in=all_projects_from_account, name=name, depth=depth)
+    if len(candidate_outs) == 0:
+        # We need to create it
+        out = OrgUnitType.objects.create(name=name, short_name=name[:4], depth=depth)
+    elif len(candidate_outs) == 1:
+        # We can use the existing one
+        out = candidate_outs[0]
+    else:
+        logger.error(f"Data consistency issue: multiple OrgUnitType with name {name} in account {project.account}")
+
+    out.projects.add(project)
     return out
 
 
@@ -216,7 +221,7 @@ def import_gpkg_file2(
         colx = fiona.open(filename, mode="r", layer=layer_name)
 
         _, depth, name = layer_name.split("-", maxsplit=2)
-        org_unit_type = get_or_create_org_unit_type(name, project, depth)
+        org_unit_type = get_or_create_org_unit_type_and_assign_project(name, project, int(depth))
 
         # collect all the OrgUnit to create from this layer
         row: OrgUnitData

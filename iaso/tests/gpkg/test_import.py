@@ -202,8 +202,9 @@ class GPKGImport(TestCase):
         self.assertEqual(ou.name, "empty_geom")
 
     def test_import_orgunit_existing_orgunit_type(self):
+        """A similar (same name and depth) OUT already exists for the same account, so we reuse this one"""
         out: OrgUnitType
-        out = OrgUnitType.objects.create(name="AS", depth=100)
+        out = OrgUnitType.objects.create(name="AS", depth=4)
         out.projects.add(self.project)
         import_gpkg_file(
             "./iaso/tests/fixtures/gpkg/minimal_simplified.gpkg",
@@ -226,9 +227,29 @@ class GPKGImport(TestCase):
         out.refresh_from_db()
         self.assertEqual(out.projects.count(), 1)
 
-    def test_import_orgunit_fresh_instance(self):
-        # See https://bluesquare.atlassian.net/browse/IA-1512
-        # source = m.DataSource.objects.create(name="Hey")
+    def test_import_orgunit_duplicates_other_account(self):
+        """Regression test for IA-1512:
+
+        "'NoneType' object has no attribute 'projects'" happened when importing a GPKG in the following situation:
+        - several OUT already in the system similar (same name, shortname and depth) to the one being imported
+        - None of those OUT are linked to the import's project
+
+        This test function:
+
+        1) Ensures that the 'NoneType' object has no attribute 'projects' doesn't happen anymore
+        2) make sure that a new OUT gets created (because they are scoped per account, and the existing ones are in
+        another account) with the correct values
+
+        """
+        other_account = Account.objects.create(name="b")
+        project2 = Project.objects.create(name="Project 2", account=other_account, app_id="test_app_id3")
+        out_project2 = OrgUnitType.objects.create(name="FOSA", short_name="FOSA", depth=5)
+        out_project2.projects.add(project2)
+
+        project3 = Project.objects.create(name="Project 3", account=other_account, app_id="test_app_id4")
+        out_project3 = OrgUnitType.objects.create(name="FOSA", short_name="FOSA", depth=5)
+        out_project3.projects.add(project3)
+
         import_gpkg_file(
             "./iaso/tests/fixtures/gpkg/minimal.gpkg",
             project_id=self.project.id,
@@ -237,6 +258,15 @@ class GPKGImport(TestCase):
             validation_status="new",
             description="",
         )
+
+        # If it hasn't imploded in flight here, it means the "NoneType" exception doesn't happen anymore...
+        # Now checking the new OUT has been created with the correct values:
+        self.assertEqual(OrgUnitType.objects.count(), 5)  # Two in the test function, 3 from the GPKG file
+        fosa_from_gpkg = OrgUnitType.objects.filter(name="FOSA").latest("id")
+        self.assertEqual(fosa_from_gpkg.name, "FOSA")
+        self.assertEqual(fosa_from_gpkg.short_name, "FOSA")
+        self.assertEqual(fosa_from_gpkg.depth, 5)
+        self.assertEqual([p.name for p in fosa_from_gpkg.projects.all()], ["Project 1"])
 
     def test_import_orgunit_existing_orgunit_type_in_diff_proj(self):
         other_project = Project.objects.create(name="Project 2", account=self.account, app_id="test_app_id2")

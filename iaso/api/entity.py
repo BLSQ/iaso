@@ -232,6 +232,7 @@ class EntityViewSet(ModelViewSet):
         date_to = self.request.query_params.get("dateTo", None)
         order = self.request.query_params.get("order", "updated_at").split(",")
         entity_type = self.request.query_params.get("entity_type", None)
+        entity_type_id = self.request.query_params.get("entity_type_id", None)
         by_uuid = self.request.query_params.get("by_uuid", None)
         form_name = self.request.query_params.get("form_name", None)
         show_deleted = self.request.query_params.get("show_deleted", None)
@@ -247,6 +248,8 @@ class EntityViewSet(ModelViewSet):
             queryset = queryset.filter(uuid=by_uuid)
         if entity_type:
             queryset = queryset.filter(name=entity_type)
+        if entity_type_id:
+            queryset = queryset.filter(entity_type_id=entity_type_id)
         if org_unit_id:
             queryset = queryset.filter(attributes__org_unit__id=org_unit_id)
         if date_from:
@@ -304,11 +307,12 @@ class EntityViewSet(ModelViewSet):
         return Response(serializer.data)
 
     def list(self, request: Request, *args, **kwargs):
+        queryset = self.get_queryset()
         csv_format = request.GET.get("csv", None)
         xlsx_format = request.GET.get("xlsx", None)
         pk = request.query_params.get("id", None)
         account = self.request.user.iaso_profile.account
-        entity_type = request.query_params.get("entity_type", None)
+        entity_type_id = request.query_params.get("entity_type_id", None)
         orders = request.GET.get("order", "name").split(",")
 
         if xlsx_format or csv_format:
@@ -321,16 +325,13 @@ class EntityViewSet(ModelViewSet):
             if csv_format:
                 return export_beneficiary_as_csv(beneficiaries)
 
-        entities = (
-            Entity.objects.filter(account=account)
-            if entity_type is None
-            else Entity.objects.filter(account=account, entity_type=entity_type)
-        )
-        entities = entities.order_by(*orders)
+        # entities = queryset if entity_type_id is None else Entity.objects.filter(entity_type=entity_type_id).order_by(*orders)
+        entities = queryset
+        print(entities)
         count = 0
         result_list = []
 
-        if entity_type is None:
+        if entity_type_id is None:
             for entity in entities:
                 entity_serialized = EntitySerializer(entity, many=False)
                 file_content = entity_serialized.data.get("attributes").get("file_content")
@@ -353,7 +354,7 @@ class EntityViewSet(ModelViewSet):
             count += 1
             entity_serialized = EntitySerializer(entity, many=False)
             file_content = entity_serialized.data.get("attributes").get("file_content")
-            latest_form_version_id = EntityType.objects.get(pk=entity_type).reference_form.latest_version.pk
+            latest_form_version_id = EntityType.objects.get(pk=entity_type_id).reference_form.latest_version.pk
             form_version = FormVersion.objects.get(pk=latest_form_version_id)
             form_descriptor = form_version.get_or_save_form_descriptor()
             for k in form_descriptor:

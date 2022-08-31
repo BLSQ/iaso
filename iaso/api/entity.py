@@ -3,6 +3,7 @@ import io
 import json
 
 import xlsxwriter
+from django.core.paginator import Paginator
 from django.db.models import Q
 from django.http import JsonResponse, HttpResponse
 from django.shortcuts import get_object_or_404
@@ -313,7 +314,8 @@ class EntityViewSet(ModelViewSet):
         pk = request.query_params.get("id", None)
         account = self.request.user.iaso_profile.account
         entity_type_id = request.query_params.get("entity_type_id", None)
-        orders = request.GET.get("order", "name").split(",")
+        limit = request.GET.get("limit", None)
+        page_offset = request.GET.get("page", 1)
 
         if xlsx_format or csv_format:
             if pk:
@@ -346,6 +348,23 @@ class EntityViewSet(ModelViewSet):
                 }
                 result_list.append(result)
 
+            if limit:
+                limit = int(limit)
+                page_offset = int(page_offset)
+                paginator = Paginator(result_list, limit)
+                res = {"count": paginator.count}
+                if page_offset > paginator.num_pages:
+                    page_offset = paginator.num_pages
+                page = paginator.page(page_offset)
+
+                res["result"] = map(lambda x: x, page.object_list)
+                res["has_next"] = page.has_next()
+                res["has_previous"] = page.has_previous()
+                res["page"] = page_offset
+                res["pages"] = paginator.num_pages
+                res["limit"] = limit
+                return Response(res)
+
             return Response(result_list)
 
         columns_list = []
@@ -376,6 +395,25 @@ class EntityViewSet(ModelViewSet):
                     result[k] = v
             result_list.append(result)
         columns_list = [i for n, i in enumerate(columns_list) if i not in columns_list[n + 1:]]
+
+        if limit:
+            limit = int(limit)
+            page_offset = int(page_offset)
+            paginator = Paginator(result_list, limit)
+            res = {"count": paginator.count}
+            if page_offset > paginator.num_pages:
+                page_offset = paginator.num_pages
+            page = paginator.page(page_offset)
+
+            res["has_next"] = page.has_next()
+            res["has_previous"] = page.has_previous()
+            res["page"] = page_offset
+            res["pages"] = paginator.num_pages
+            res["limit"] = limit
+            res["colums"] = columns_list,
+            res["result"] = map(lambda x: x, page.object_list)
+            return Response(res)
+
         response = {
             "columns": columns_list,
             "result": result_list}

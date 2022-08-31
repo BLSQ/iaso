@@ -13,6 +13,7 @@
     "iaso.algo.addRun": "Exécuter un algorithme",
     "iaso.archived.title": "Archives",
     "iaso.area": "Aire de santé",
+    "iaso.entityTypes.referenceForm": "Formulaire de référence",
     "iaso.assignment.alreadyAssigned": "Déjà assigné",
     "iaso.assignment.alreadyAssignedTo": "Déjà assigné à",
     "iaso.assignment.assignationsCount": "Nombre d'assignations",

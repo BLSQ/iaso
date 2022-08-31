@@ -129,6 +129,7 @@
     "iaso.entityTypes.dialog.deleteTitle": "Are you sure you want to delete this entity type?",
     "iaso.entityTypes.fieldsDetailInfoView": "Detail info fields",
     "iaso.entityTypes.fieldsListView": "List fields",
+    "iaso.entityTypes.referenceForm": "Reference form",
     "iaso.entityTypes.title": "Entity types",
     "iaso.entityTypes.update": "Update entity type",
     "iaso.error.label.EndDateBeforeStartDate": "End date can't before start date",

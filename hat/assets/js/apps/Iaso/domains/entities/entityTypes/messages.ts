@@ -5,6 +5,10 @@ const MESSAGES = defineMessages({
         defaultMessage: 'Entity types',
         id: 'iaso.entityTypes.title',
     },
+    referenceForm: {
+        defaultMessage: 'reference form',
+        id: 'iaso.entityTypes.referenceForm',
+    },
     create: {
         defaultMessage: 'Create entity type',
         id: 'iaso.entityTypes.create',

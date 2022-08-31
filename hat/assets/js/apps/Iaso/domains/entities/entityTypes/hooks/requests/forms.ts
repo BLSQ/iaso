@@ -15,13 +15,26 @@ export const useGetForm = (
     if (fields) {
         url += `?fields=${fields}`;
     }
-    // @ts-ignore
     return useSnackQuery({
         queryKey,
         queryFn: () => getRequest(url),
         options: {
             retry: false,
             enabled,
+        },
+    });
+};
+
+export const useGetForms = (
+    enabled: boolean,
+): UseQueryResult<Form[], Error> => {
+    return useSnackQuery({
+        queryKey: ['forms'],
+        queryFn: () => getRequest('/api/forms/?fields=id,name'),
+        options: {
+            staleTime: 60000,
+            enabled,
+            select: data => data?.forms,
         },
     });
 };

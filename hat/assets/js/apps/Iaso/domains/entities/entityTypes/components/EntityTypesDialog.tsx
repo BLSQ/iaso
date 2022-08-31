@@ -18,7 +18,7 @@ import { EntityType } from '../types/entityType';
 
 import { baseUrls } from '../../../../constants/urls';
 
-import { useGetForm } from '../hooks/requests/forms';
+import { useGetForm, useGetForms } from '../hooks/requests/forms';
 
 import MESSAGES from '../messages';
 
@@ -37,7 +37,7 @@ type Props = {
     titleMessage: IntlMessage;
     // eslint-disable-next-line no-unused-vars
     renderTrigger: ({ openDialog }: RenderTriggerProps) => ReactNode;
-    initialData: EntityType | EmptyEntityType;
+    initialData?: EntityType;
     // eslint-disable-next-line no-unused-vars
     saveEntityType: (e: EntityType) => void;
 };
@@ -57,6 +57,7 @@ export const EntityTypesDialog: FunctionComponent<Props> = ({
     titleMessage,
     renderTrigger,
     initialData = {
+        id: undefined,
         name: undefined,
         reference_form: undefined,
         fields_detail_info_view: [],
@@ -102,6 +103,8 @@ export const EntityTypesDialog: FunctionComponent<Props> = ({
         Boolean(values?.reference_form) && isOpen,
         'possible_fields',
     );
+    const isNew = !initialData?.id;
+    const { data: formsList, isFetching: isFetchingForms } = useGetForms(isNew);
     const possibleFields = useMemo(
         () =>
             (currentForm?.possible_fields || []).map(field => ({
@@ -131,7 +134,7 @@ export const EntityTypesDialog: FunctionComponent<Props> = ({
                 onOpen={() => setIsOpen(true)}
                 onClosed={() => setIsOpen(false)}
             >
-                {values.reference_form && (
+                {!isNew && (
                     <Box className={classes.view}>
                         <IconButtonComponent
                             url={`/${baseUrls.formDetail}/formId/${values.reference_form}`}
@@ -150,10 +153,27 @@ export const EntityTypesDialog: FunctionComponent<Props> = ({
                         label={MESSAGES.name}
                         required
                     />
+                    {isNew && (
+                        <InputComponent
+                            keyValue="reference_form"
+                            onChange={setFieldValue}
+                            disabled={isFetchingForms}
+                            loading={isFetchingForms}
+                            value={values.reference_form || null}
+                            type="select"
+                            options={
+                                formsList?.map(t => ({
+                                    label: t.name,
+                                    value: t.id,
+                                })) || []
+                            }
+                            label={MESSAGES.referenceForm}
+                        />
+                    )}
                     <InputComponent
                         type="select"
                         multi
-                        disabled={isFetchingForm}
+                        disabled={isFetchingForm || !values.reference_form}
                         keyValue="fields_list_view"
                         onChange={(key, value) =>
                             setFieldValue(key, value ? value.split(',') : null)
@@ -165,7 +185,7 @@ export const EntityTypesDialog: FunctionComponent<Props> = ({
                     <InputComponent
                         type="select"
                         multi
-                        disabled={isFetchingForm}
+                        disabled={isFetchingForm || !values.reference_form}
                         loading={isFetchingForm}
                         keyValue="fields_detail_info_view"
                         onChange={(key, value) =>

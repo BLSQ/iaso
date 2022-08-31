@@ -2,9 +2,12 @@ import React, { useMemo, useEffect, useState } from 'react';
 import PropTypes from 'prop-types';
 import moment from 'moment';
 import { Box, makeStyles, Grid, Button } from '@material-ui/core';
-import { commonStyles, useSafeIntl } from 'bluesquare-components';
+import {
+    commonStyles,
+    useSafeIntl,
+    LoadingSpinner,
+} from 'bluesquare-components';
 import { useSelector } from 'react-redux';
-
 import TopBar from 'Iaso/components/nav/TopBarComponent';
 import domToPdf from 'dom-to-pdf';
 import { CampaignsCalendar } from '../components/campaignCalendar';
@@ -15,6 +18,8 @@ import {
     filterCampaigns,
     getCalendarData,
 } from '../components/campaignCalendar/utils';
+
+import { useGetMergedCampaignShapes } from '../hooks/useGetMergedCampaignShapes.ts';
 
 import {
     dateFormat,
@@ -56,7 +61,7 @@ const Calendar = ({ params }) => {
         ? moment(params.currentDate, dateFormat)
         : moment();
 
-    const [isCalendarLoaded, setCalendarLoaded] = useState(false);
+    const [isCalendarAndMapLoaded, setCalendarAndMapLoaded] = useState(false);
     const [isPdf, setPdf] = useState(false);
 
     const currentMonday = currentDate.clone().startOf('isoWeek');
@@ -76,28 +81,31 @@ const Calendar = ({ params }) => {
         [mappedCampaigns, calendarData.firstMonday, calendarData.lastSunday],
     );
 
+    const { data: mergedShapes } = useGetMergedCampaignShapes().query;
+
     const createPDF = async () => {
         const element = document.getElementById('pdf');
         const options = {
             filename: 'calendar.pdf',
             excludeTagNames: 'button',
         };
+
         await setPdf(true);
 
-        await domToPdf(element, options, () => {
-            console.log('pdf exported');
-        });
+        window.dispatchEvent(new Event('resize'));
 
         setTimeout(() => {
-            setPdf(false);
-        }, 20000);
+            domToPdf(element, options, () => {
+                setPdf(false);
+            });
+        }, 1000);
     };
 
     useEffect(() => {
-        if (mappedCampaigns.length > 0 && filteredCampaigns) {
-            setCalendarLoaded(true);
+        if (mergedShapes !== undefined && filteredCampaigns) {
+            setCalendarAndMapLoaded(true);
         }
-    }, [isCalendarLoaded, mappedCampaigns.length, filteredCampaigns]);
+    }, [mergedShapes, filteredCampaigns]);
 
     return (
         <div>
@@ -107,26 +115,27 @@ const Calendar = ({ params }) => {
                     displayBackButton={false}
                 />
             )}
+            {isPdf && <LoadingSpinner absolute />}
+
             <div id="pdf">
                 <Box
                     className={classes.containerFullHeightNoTabPadded}
-                    style={{ height: isPdf && 'auto' }}
+                    style={{ height: isPdf ? 'auto' : 'calc(100vh - 65px)' }}
                 >
                     {!isPdf && (
                         <Box mb={4}>
                             <Filters disableDates disableOnlyDeleted />
                         </Box>
                     )}
-                    <Box mb={2} mt={2}>
-                        {' '}
+                    <Box mb={2} mt={2} display="flex" justifyContent="flex-end">
                         <Button
                             onClick={createPDF}
-                            disabled={!isCalendarLoaded}
+                            disabled={!isCalendarAndMapLoaded}
                             type="button"
                             color="primary"
                             variant="contained"
                         >
-                            Export in pdf
+                            export in pdf
                         </Button>
                     </Box>
                     <Grid container spacing={2}>

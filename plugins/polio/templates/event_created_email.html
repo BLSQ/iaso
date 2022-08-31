@@ -18,7 +18,6 @@
         <![endif]-->
         <style>
             table, td, div, h1, p {font-family: Arial, sans-serif;}
-            {% comment %} table, td {border:2px solid #000000 !important;} {% endcomment %}
         </style>
     </head>
     <body style="margin:0;padding:0;width:100%;max-width:800px">
@@ -32,60 +31,22 @@
                 </td>
             </tr>
             {%if comment%}
-            <tr>
-                <td style="height:20px;padding:5px;font-size:0;line-height:0;">&nbsp;</td>
-            </tr>
-            <tr>
-                <td align="left" style="padding:0px 5px;">
-                Comments:
-                </td>
-            </tr>
-            <tr>
-                <td align="left" style="padding:0px 5px;">
-                {{comment}}
-                </td>
-            </tr>
+                <tr>
+                    <td style="height:20px;padding:5px;font-size:0;line-height:0;">&nbsp;</td>
+                </tr>
+                <tr>
+                    <td align="left" style="padding:0px 5px;">
+                    Comments:
+                    </td>
+                </tr>
+                <tr>
+                    <td align="left" style="padding:0px 5px;">
+                    {{comment}}
+                    </td>
+                </tr>
             {%endif%}
-            {%if files%}
-            <tr>
-                <td style="height:20px;padding:5px;font-size:0;line-height:0;">&nbsp;</td>
-            </tr>
-            <tr>
-                <td align="left" style="padding:0px 5px;">
-                    Files:
-                </td>
-            </tr>
-            <tr>
-                <td style="height:20px;padding:5px;font-size:0;line-height:0;">&nbsp;</td>
-            </tr>
-            {% for file in files%}
-            <tr>
-                <td align="left" style="padding:0px 5px;">
-                    <a href={{file.path}}>{{file.name}}</a>
-                </td>
-            </tr>
-            {% endfor %}
-            {%endif%}
-            {%if links%}
-            <tr>
-                <td style="height:20px;padding:5px;font-size:0;line-height:0;">&nbsp;</td>
-            </tr>
-            <tr>
-                <td align="left" style="padding:0px 5px;">
-                    Links:
-                </td>
-            </tr>
-            <tr>
-                <td style="height:20px;padding:5px;font-size:0;line-height:0;">&nbsp;</td>
-            </tr>
-            {% for l in links%}
-            <tr>
-                <td align="left" style="padding:0px 5px;">
-                    <a href={{l}}>{{l}}</a>
-                </td>
-            </tr>
-            {% endfor %}
-            {%endif%}
+            {%include "_files.html" with files=files only %}
+            {%include "_links.html" with links=links only %}
             <tr>
                 <td style="height:20px;padding:5px;font-size:0;line-height:0;">&nbsp;</td>
             </tr>

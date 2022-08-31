@@ -1,0 +1,20 @@
+{%if files%}
+    <tr>
+        <td style="height:20px;padding:5px;font-size:0;line-height:0;">&nbsp;</td>
+    </tr>
+    <tr>
+        <td align="left" style="padding:0px 5px;">
+            Files:
+        </td>
+    </tr>
+    <tr>
+        <td style="height:20px;padding:5px;font-size:0;line-height:0;">&nbsp;</td>
+    </tr>
+    {% for file in files%}
+        <tr>
+            <td align="left" style="padding:0px 5px;">
+                <a href={{file.path}}>{{file.name}}</a>
+            </td>
+        </tr>
+    {% endfor %}
+{%endif%}

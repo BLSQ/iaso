@@ -1463,7 +1463,7 @@ def send_approvers_email(
     approval_link: str,
     rejection_link: str,
     files_info: Union[List[Dict[str, Any]], None],
-    links_string: str,
+    links_string: Union[str, None],
 ) -> NoReturn:
     # if user is in other approval team, send the mail with the fat buttons
     subject = email_subject(event_type, event.campaign.obr_name)
@@ -1471,6 +1471,9 @@ def send_approvers_email(
     files_string = "None"
     if files_info:
         files_string = ",\n ".join([f["path"] for f in files_info])
+    links = None
+    if links_string:
+        links = links_string.split(",")
     auto_authentication_approval_link = generate_auto_authentication_link(approval_link, user)
     auto_authentication_rejection_link = generate_auto_authentication_link(rejection_link, user)
     text_content = creation_email_with_two_links(
@@ -1499,7 +1502,7 @@ def send_approvers_email(
             "sender": settings.DNS_DOMAIN,
             "event_type": event_type,
             "files": files_info,
-            "links": links_string.split(","),
+            "links": links,
         },
     )
     msg.attach_alternative(html_content, "text/html")
@@ -1691,6 +1694,9 @@ class BudgetEventViewset(ModelViewSet):
                         settings.DNS_DOMAIN,
                     )
                     msg = EmailMultiAlternatives(subject, text_content, DEFAULT_FROM_EMAIL, [user.email])
+                    links = event.links
+                    if links:
+                        links = links.split(",")
                     html_content = render_to_string(
                         "event_created_email.html",
                         {
@@ -1703,7 +1709,7 @@ class BudgetEventViewset(ModelViewSet):
                             "comment": event.comment,
                             "event_type": event_type,
                             "files": files_info,
-                            "links": event.links.split(","),
+                            "links": links,
                         },
                     )
                     msg.attach_alternative(html_content, "text/html")

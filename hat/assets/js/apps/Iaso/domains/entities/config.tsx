@@ -12,7 +12,7 @@ import { baseUrls } from '../../constants/urls';
 import { Entity } from './types/entity';
 import { Column } from '../../types/table';
 
-export const baseUrl = baseUrls.beneficiaries;
+export const baseUrl = baseUrls.entities;
 
 type Props = {
     // eslint-disable-next-line no-unused-vars

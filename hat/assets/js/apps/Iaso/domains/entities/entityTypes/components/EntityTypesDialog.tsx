@@ -13,7 +13,7 @@ import isEqual from 'lodash/isEqual';
 
 import InputComponent from '../../../../components/forms/InputComponent';
 import ConfirmCancelDialogComponent from '../../../../components/dialogs/ConfirmCancelDialogComponent';
-import { IntlMessage } from '../../../../types/intl';
+import { IntlMessage, IntlFormatMessage } from '../../../../types/intl';
 import { EntityType } from '../types/entityType';
 
 import { baseUrls } from '../../../../constants/urls';
@@ -67,7 +67,8 @@ export const EntityTypesDialog: FunctionComponent<Props> = ({
 }) => {
     const classes: Record<string, string> = useStyles();
     const [isOpen, setIsOpen] = useState<boolean>(false);
-    const { formatMessage } = useSafeIntl();
+    const { formatMessage }: { formatMessage: IntlFormatMessage } =
+        useSafeIntl();
 
     const getSchema = () =>
         yup.lazy(() =>
@@ -92,12 +93,19 @@ export const EntityTypesDialog: FunctionComponent<Props> = ({
         values,
         setFieldValue,
         errors,
+        touched,
+        setFieldTouched,
         isValid,
         initialValues,
         handleSubmit,
         resetForm,
     } = formik;
-    const getErrors = k => (errors[k] ? [errors[k]] : []);
+    const onChange = (keyValue, value) => {
+        setFieldTouched(keyValue, true);
+        setFieldValue(keyValue, value);
+    };
+
+    const getErrors = k => (errors[k] && touched[k] ? [errors[k]] : []);
     const { data: currentForm, isFetching: isFetchingForm } = useGetForm(
         values?.reference_form,
         Boolean(values?.reference_form) && isOpen,
@@ -146,7 +154,7 @@ export const EntityTypesDialog: FunctionComponent<Props> = ({
                 <div className={classes.root} id="entity-types-dialog">
                     <InputComponent
                         keyValue="name"
-                        onChange={setFieldValue}
+                        onChange={onChange}
                         value={values.name}
                         errors={getErrors('name')}
                         type="text"
@@ -156,7 +164,7 @@ export const EntityTypesDialog: FunctionComponent<Props> = ({
                     {isNew && (
                         <InputComponent
                             keyValue="reference_form"
-                            onChange={setFieldValue}
+                            onChange={onChange}
                             disabled={isFetchingForms}
                             loading={isFetchingForms}
                             value={values.reference_form || null}
@@ -176,11 +184,16 @@ export const EntityTypesDialog: FunctionComponent<Props> = ({
                         disabled={isFetchingForm || !values.reference_form}
                         keyValue="fields_list_view"
                         onChange={(key, value) =>
-                            setFieldValue(key, value ? value.split(',') : null)
+                            onChange(key, value ? value.split(',') : null)
                         }
                         value={!isFetchingForm ? values.fields_list_view : []}
                         label={MESSAGES.fieldsListView}
                         options={possibleFields}
+                        helperText={
+                            isNew && !values.reference_form
+                                ? formatMessage(MESSAGES.selectReferenceForm)
+                                : undefined
+                        }
                     />
                     <InputComponent
                         type="select"
@@ -189,7 +202,7 @@ export const EntityTypesDialog: FunctionComponent<Props> = ({
                         loading={isFetchingForm}
                         keyValue="fields_detail_info_view"
                         onChange={(key, value) =>
-                            setFieldValue(key, value ? value.split(',') : null)
+                            onChange(key, value ? value.split(',') : null)
                         }
                         value={
                             !isFetchingForm
@@ -198,6 +211,11 @@ export const EntityTypesDialog: FunctionComponent<Props> = ({
                         }
                         label={MESSAGES.fieldsDetailInfoView}
                         options={possibleFields}
+                        helperText={
+                            isNew && !values.reference_form
+                                ? formatMessage(MESSAGES.selectReferenceForm)
+                                : undefined
+                        }
                     />
                 </div>
             </ConfirmCancelDialogComponent>

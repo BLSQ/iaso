@@ -94,6 +94,10 @@ const MESSAGES = defineMessages({
         id: 'iaso.entityTypes.fieldsListView',
         defaultMessage: 'List fields',
     },
+    selectReferenceForm: {
+        id: 'iaso.entityTypes.selectReferenceForm',
+        defaultMessage: 'Select a reference form first',
+    },
 });
 
 export default MESSAGES;

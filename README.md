@@ -292,6 +292,7 @@ pattern to run a command is
 The following are some examples:
 
 * Run tests                    `docker-compose exec iaso ./manage.py test`
+* Check type hints             `docker-compose exec iaso mypy .`
 * Create a shell inside the container    `docker-compose run iaso bash`
 * Run a shell command          `docker-compose run iaso eval curl http://google.com`
 * Run Django manage.py         `docker-compose exec iaso ./manage.py help`

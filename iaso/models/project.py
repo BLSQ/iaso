@@ -35,6 +35,9 @@ class ProjectQuerySet(models.QuerySet):
         raise self.model.DoesNotExist(f"Could not find project for user {user} and app_id {app_id}")
 
 
+ProjectManager = models.Manager.from_queryset(ProjectQuerySet)
+
+
 class Project(models.Model):
     """A data collection project, associated with a single mobile application"""
 
@@ -48,7 +51,7 @@ class Project(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
     external_token = models.UUIDField(default=uuid4, null=True)
     min_version = models.IntegerField(null=True, blank=False)
-    objects = ProjectQuerySet.as_manager()
+    objects = ProjectManager()
 
     def __str__(self):
         return "%s " % (self.name,)

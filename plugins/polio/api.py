@@ -1,7 +1,7 @@
 import csv
 import functools
 import json
-from datetime import timedelta, datetime
+from datetime import timedelta, datetime, date
 from typing import Optional
 from collections import defaultdict
 from functools import lru_cache
@@ -356,7 +356,7 @@ DAYS_EVOLUTION = [
 ]
 
 
-def score_for_x_day_before(ssi_for_campaign, ref_date: datetime.date, n_day: int):
+def score_for_x_day_before(ssi_for_campaign, ref_date: date, n_day: int):
     day = ref_date - timedelta(days=n_day)
     try:
         ssi = ssi_for_campaign.filter(created_at__date=day).last()

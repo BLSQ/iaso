@@ -1,6 +1,7 @@
 import datetime
 import json
 import os
+from typing import List
 from unittest import mock
 from unittest.mock import patch
 
@@ -32,8 +33,18 @@ from ..serializers import CampaignSerializer
 
 
 class PolioAPITestCase(APITestCase):
+    data_source: m.DataSource
+    now: datetime.datetime
+    source_version_1: m.SourceVersion
+    source_version_2: m.SourceVersion
+    yoda: User
+    org_unit: m.OrgUnit
+    child_org_unit: m.OrgUnit
+    org_units: List[m.OrgUnit]
+    luke: User
+
     @classmethod
-    def setUpTestData(cls):
+    def setUpTestData(cls) -> None:
         cls.data_source = m.DataSource.objects.create(name="Default source")
 
         cls.now = now()
@@ -77,7 +88,7 @@ class PolioAPITestCase(APITestCase):
             username="luke", account=account, permissions=["iaso_forms"], org_units=[cls.child_org_unit]
         )
 
-    def setUp(self):
+    def setUp(self) -> None:
         """Make sure we have a fresh client at the beginning of each test"""
         self.client = APIClient()
         self.client.force_authenticate(self.yoda)
@@ -469,7 +480,7 @@ class LQASIMPolioTestCase(APITestCase):
                 version=self.star_wars.default_version,
             )
 
-        response = self.client.get("/api/polio/lqasstats/?country_id=29729".format(self.jedi_council_corruscant.pk))
+        response = self.client.get("/api/polio/lqasstats/?country_id=29729")
 
         self.assertEqual(response.status_code, 200)
 
@@ -492,7 +503,7 @@ class LQASIMPolioTestCase(APITestCase):
                 version=self.star_wars.default_version,
             )
 
-        response = self.client.get("/api/polio/lqasstats/?country_id=29729".format(self.jedi_council_corruscant.pk))
+        response = self.client.get("/api/polio/lqasstats/?country_id=29729")
 
         is_cached = True if cache.get("{0}-{1}-LQAS".format(self.yoda.pk, 29729), version=CACHE_VERSION) else False
 
@@ -518,7 +529,7 @@ class LQASIMPolioTestCase(APITestCase):
                 version=self.star_wars.default_version,
             )
 
-        response = self.client.get("/api/polio/imstats/?country_id=29729".format(self.jedi_council_corruscant.pk))
+        response = self.client.get("/api/polio/imstats/?country_id=29729")
 
         self.assertEqual(response.status_code, 200)
 
@@ -541,9 +552,7 @@ class LQASIMPolioTestCase(APITestCase):
                 version=self.star_wars.default_version,
             )
 
-        response = self.client.get(
-            "/api/polio/imstats/?country_id=29729".format(self.jedi_council_corruscant.pk), version=CACHE_VERSION
-        )
+        response = self.client.get("/api/polio/imstats/?country_id=29729")
 
         is_cached = True if cache.get("{0}-{1}-IM".format(self.yoda.pk, 29729), version=CACHE_VERSION) else False
 

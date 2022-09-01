@@ -277,11 +277,12 @@ class EntityAPITestCase(APITestCase):
             "account": self.yoda.iaso_profile.account.pk,
         }
 
+        print("NUMBER OF ENTITIES:", Entity.objects.all().count())
+
         self.client.post("/api/entity/bulk_create/", data=payload, format="json")
         self.client.delete("/api/entity/{0}/".format(Entity.objects.last().pk), format="json")
 
         response = self.client.get("/api/entity/", format="json")
-
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(response.json()), 1)
 
@@ -336,19 +337,3 @@ class EntityAPITestCase(APITestCase):
 
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(response.json()), 1)
-
-    def test_get_beneficiary(self):
-        self.client.force_authenticate(self.yoda)
-        account = self.yoda.iaso_profile.account
-        entity_type = EntityType.objects.create(name="Children under 5", reference_form=self.form_1, account=account)
-        instance = Instance.objects.create(
-            org_unit=self.jedi_council_corruscant,
-            form=self.form_1,
-            period="202002",
-        )
-        entity = Entity.objects.create(name="client", attributes=instance, entity_type=entity_type, account=account)
-        print(f"ENTITY: {entity} ")
-
-        response = self.client.get(f"/api/entity/beneficiary/?id={entity.pk}")
-
-        self.assertEqual(response.status_code, 200)

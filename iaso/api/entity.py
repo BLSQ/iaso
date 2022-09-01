@@ -239,7 +239,7 @@ class EntityViewSet(ModelViewSet):
         created_by_id = self.request.query_params.get("created_by_id", None)
         created_by_team_id = self.request.query_params.get("created_by_team_id", None)
 
-        queryset = Entity.objects.filter(account=self.request.user.iaso_profile.account)
+        queryset = Entity.objects.filter(account=self.request.user.iaso_profile.account, deleted_at__isnull=True)
         if form_name:
             queryset = queryset.filter(attributes__form__name__icontains=form_name)
         if search:
@@ -327,7 +327,6 @@ class EntityViewSet(ModelViewSet):
                 return export_beneficiary_as_csv(beneficiaries)
 
         entities = queryset
-        count = 0
         result_list = []
 
         if entity_type_id is None:
@@ -367,16 +366,15 @@ class EntityViewSet(ModelViewSet):
         columns_list = []
         form_key_list = []
         for entity in entities:
-            count += 1
             entity_serialized = EntitySerializer(entity, many=False)
             file_content = entity_serialized.data.get("attributes").get("file_content")
-            latest_form_version_id = EntityType.objects.get(pk=entity_type_id).reference_form.latest_version.pk
-            form_version = FormVersion.objects.get(pk=latest_form_version_id)
+            form_version = EntityType.objects.get(pk=entity_type_id).reference_form.latest_version
             form_descriptor = form_version.get_or_save_form_descriptor()
             for k in form_descriptor:
                 form_key_list.append(k)
             form_data_key = form_key_list[form_key_list.index("version") + 1]
             descriptor_list = form_descriptor[form_data_key]
+
             for d in descriptor_list:
                 for k, v in d.items():
                     if k == "children":
@@ -391,6 +389,7 @@ class EntityViewSet(ModelViewSet):
                 if k in list(entity.entity_type.fields_list_view):
                     result[k] = v
             result_list.append(result)
+
         columns_list = [i for n, i in enumerate(columns_list) if i not in columns_list[n + 1 :]]
 
         if limit:
@@ -407,7 +406,7 @@ class EntityViewSet(ModelViewSet):
             res["page"] = page_offset
             res["pages"] = paginator.num_pages
             res["limit"] = limit
-            res["colums"] = (columns_list,)
+            res["columns"] = (columns_list,)
             res["result"] = map(lambda x: x, page.object_list)
             return Response(res)
 

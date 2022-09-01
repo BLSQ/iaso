@@ -11,7 +11,8 @@ type Props = {
     country: string;
     region?: string;
     district?: string;
-    vaccine: string;
+    vaccine?: string;
+    vaccines?: string;
 };
 
 export const CalendarMapTooltip: FunctionComponent<Props> = ({
@@ -21,6 +22,7 @@ export const CalendarMapTooltip: FunctionComponent<Props> = ({
     region = '',
     district = '',
     vaccine,
+    vaccines,
 }) => {
     return (
         <>
@@ -45,10 +47,17 @@ export const CalendarMapTooltip: FunctionComponent<Props> = ({
                         </div>
                     </>
                 )}
-                <div>
-                    <FormattedMessage {...MESSAGES.vaccine} />
-                    {`: ${vaccine}`}
-                </div>
+                {vaccines ? (
+                    <div>
+                        <FormattedMessage {...MESSAGES.vaccines} />
+                        {`: ${vaccines}`}
+                    </div>
+                ) : (
+                    <div>
+                        <FormattedMessage {...MESSAGES.vaccine} />
+                        {`: ${vaccine}`}
+                    </div>
+                )}
             </Tooltip>
         </>
     );

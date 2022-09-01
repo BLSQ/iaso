@@ -1,21 +1,29 @@
 import { defineMessages } from 'react-intl';
 
 const MESSAGES = defineMessages({
-    age: {
-        defaultMessage: 'Age',
-        id: 'iaso.label.age',
+    beneficiaries: {
+        id: 'iaso.label.beneficiaries',
+        defaultMessage: 'Beneficiaries',
+    },
+    beneficiary: {
+        id: 'iaso.label.beneficiary',
+        defaultMessage: 'Beneficiary',
+    },
+    lastVisit: {
+        id: 'iaso.entities.lastVisit',
+        defaultMessage: 'Last visit',
+    },
+    program: {
+        id: 'iaso.entities.program',
+        defaultMessage: 'Program',
     },
     id: {
         defaultMessage: 'Identifier',
         id: 'iaso.label.id',
     },
-    title: {
-        defaultMessage: 'Entities',
-        id: 'iaso.entities.title',
-    },
-    create: {
-        defaultMessage: 'Create entity',
-        id: 'iaso.entities.create',
+    nameRequired: {
+        id: 'iaso.pages.errors.name',
+        defaultMessage: 'Name is required',
     },
     cancel: {
         id: 'iaso.label.cancel',
@@ -25,6 +33,114 @@ const MESSAGES = defineMessages({
         id: 'iaso.label.save',
         defaultMessage: 'Save',
     },
+    viewInstance: {
+        id: 'iaso.forms.viewInstance',
+        defaultMessage: 'View submission',
+    },
+    name: {
+        defaultMessage: 'Name',
+        id: 'iaso.label.name',
+    },
+    search: {
+        defaultMessage: 'Search',
+        id: 'iaso.search',
+    },
+    create: {
+        defaultMessage: 'Create entity',
+        id: 'iaso.entities.create',
+    },
+    years: {
+        defaultMessage: 'Years',
+        id: 'iaso.label.yearNoCap',
+    },
+    months: {
+        defaultMessage: 'Months',
+        id: 'iaso.label.monthsLower',
+    },
+    location: {
+        defaultMessage: 'Location',
+        id: 'iaso.forms.location',
+    },
+    dateFrom: {
+        defaultMessage: 'Start date',
+        id: 'iaso.label.dateFrom',
+    },
+    dateTo: {
+        defaultMessage: 'End date',
+        id: 'iaso.label.dateTo',
+    },
+    map: {
+        defaultMessage: 'Map',
+        id: 'iaso.label.map',
+    },
+    list: {
+        defaultMessage: 'List',
+        id: 'iaso.label.list',
+    },
+    firstName: {
+        defaultMessage: 'First name',
+        id: 'iaso.label.firstName',
+    },
+    lastName: {
+        defaultMessage: 'Last name',
+        id: 'iaso.label.lastName',
+    },
+    gender: {
+        id: 'iaso.entities.gender',
+        defaultMessage: 'Gender',
+    },
+    age: {
+        defaultMessage: 'Age',
+        id: 'iaso.label.age',
+    },
+    unknown: {
+        defaultMessage: 'Unknown',
+        id: 'iaso.label.unknown',
+    },
+    nfcCards: {
+        defaultMessage: 'NFC Cards',
+        id: 'iaso.entities.label.nfcCards',
+    },
+    edit: {
+        defaultMessage: 'Edit',
+        id: 'iaso.label.edit',
+    },
+    submitter: {
+        defaultMessage: 'Submitter',
+        id: 'iaso.entities.label.submitter',
+    },
+    submitterTeam: {
+        defaultMessage: 'Submitter team',
+        id: 'iaso.entities.label.submitterTeam',
+    },
+    details: {
+        defaultMessage: 'Details',
+        id: 'iaso.entities.label.details',
+    },
+    visitDetails: {
+        defaultMessage: 'Visit details',
+        id: 'iaso.entities.label.visitDetails',
+    },
+    beneficiaryInfo: {
+        defaultMessage: 'Beneficiary information',
+        id: 'iaso.entities.label.beneficiaryInfo',
+    },
+    uuid: {
+        defaultMessage: 'UUID',
+        id: 'iaso.label.uuid',
+    },
+    see: {
+        defaultMessage: 'See',
+        id: 'iaso.label.see',
+    },
+    orgUnit: {
+        id: 'iaso.instance.org_unit',
+        defaultMessage: 'Org unit',
+    },
+    title: {
+        defaultMessage: 'Entities',
+        id: 'iaso.entities.title',
+    },
     deleteError: {
         id: 'iaso.snackBar.deleteEntityError',
         defaultMessage: 'An error occurred while deleting entity',
@@ -32,14 +148,6 @@ const MESSAGES = defineMessages({
     deleteSuccess: {
         id: 'iaso.snackBar.delete_successful',
         defaultMessage: 'Deleted successfully',
-    },
-    search: {
-        defaultMessage: 'Search',
-        id: 'iaso.search',
-    },
-    name: {
-        defaultMessage: 'Name',
-        id: 'iaso.label.name',
     },
     updateMessage: {
         defaultMessage: 'Update entity',
@@ -52,14 +160,6 @@ const MESSAGES = defineMessages({
     deleteText: {
         id: 'iaso.label.deleteText',
         defaultMessage: 'This operation cannot be undone.',
-    },
-    edit: {
-        defaultMessage: 'Edit',
-        id: 'iaso.label.edit',
-    },
-    see: {
-        defaultMessage: 'See',
-        id: 'iaso.label.see',
     },
     actions: {
         defaultMessage: 'Action(s)',
@@ -81,29 +181,13 @@ const MESSAGES = defineMessages({
         id: 'iaso.forms.created_at',
         defaultMessage: 'Created',
     },
-    nameRequired: {
-        id: 'iaso.pages.errors.name',
-        defaultMessage: 'Name is required',
-    },
     attributes: {
         defaultMessage: 'Submission',
         id: 'iaso.instance.titleSingle',
     },
-    viewInstance: {
-        id: 'iaso.forms.viewInstance',
-        defaultMessage: 'View submission',
-    },
-    lastVisit: {
-        id: 'iaso.entities.lastVisit',
-        defaultMessage: 'Last visit',
-    },
     registrationDate: {
         id: 'iaso.entities.registrationDate',
         defaultMessage: 'Registration date',
-    },
-    gender: {
-        id: 'iaso.entities.gender',
-        defaultMessage: 'Gender',
     },
     female: {
         id: 'iaso.entities.female',
@@ -117,10 +201,6 @@ const MESSAGES = defineMessages({
         id: 'iaso.entities.vaccinationNumber',
         defaultMessage: 'Vaccination number',
     },
-    program: {
-        id: 'iaso.entities.program',
-        defaultMessage: 'Program',
-    },
     'org_unit.name': {
         id: 'iaso.instance.org_unit',
         defaultMessage: 'Org unit',
@@ -132,10 +212,6 @@ const MESSAGES = defineMessages({
     form: {
         id: 'iaso.instance.form',
         defaultMessage: 'Form',
-    },
-    submitter: {
-        id: 'iaso.entities.label.submitter',
-        defaultMessage: 'Submitter',
     },
     last_sync_at: {
         id: 'iaso.entities.label.last_sync_at',

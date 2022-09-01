@@ -164,8 +164,8 @@ const MESSAGES = defineMessages({
         id: 'iaso.permissions.assignments',
         defaultMessage: 'Assignments',
     },
-    iaso_beneficiaries: {
-        id: 'iaso.permissions.beneficiaries',
+    iaso_entities: {
+        id: 'iaso.permissions.entities',
         defaultMessage: 'Beneficiaries',
     },
     iaso_dhis2_link: {

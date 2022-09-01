@@ -3,7 +3,7 @@ import { useMemo } from 'react';
 
 type Props = {
     // age '0' is when the user input a birth date, age '1' when they gave an age (in months)
-    ageType: '0' | '1';
+    ageType?: '0' | '1';
     birthDate?: string;
     age?: string;
 };

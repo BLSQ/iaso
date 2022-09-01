@@ -39,6 +39,11 @@ class OrgUnitTypeQuerySet(models.QuerySet):
 
 
 class OrgUnitType(models.Model):
+    """A type of org unit, such as a country, a province, a district, a health facility, etc.
+
+    Note: they are scope at the account level: for a given name and depth, there can be only one OUT per account
+    """
+
     CATEGORIES = [
         ("COUNTRY", _("Country")),
         ("REGION", _("Region")),

@@ -1390,6 +1390,10 @@ const MESSAGES = defineMessages({
         id: 'iaso.polio.label.sentByTeam',
         defaultMessage: 'Sent by team',
     },
+    exportToPdf: {
+        id: 'iaso.polio.label.exportToPdf',
+        defaultMessage: 'Export to pdf',
+    },
 });
 
 export default MESSAGES;

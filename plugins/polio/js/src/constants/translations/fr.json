@@ -182,6 +182,7 @@
     "iaso.polio.label.enterOrCreateGoogleSheet": "Entrer un url de Google Sheet ou utiliser le bouton pour générer une nouvelle Google sheet",
     "iaso.polio.label.event": "Action",
     "iaso.polio.label.eventType": "Type",
+    "iaso.polio.label.exportToPdf": "Exporter en pdf",
     "iaso.polio.label.failed": "Echec",
     "iaso.polio.label.farm": "À la ferme",
     "iaso.polio.label.feedback": "Feedback",

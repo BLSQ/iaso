@@ -1,4 +1,5 @@
 import React, { ReactElement } from 'react';
+// @ts-ignore
 import { IconButton as IconButtonComponent } from 'bluesquare-components';
 import { EntityTypesDialog } from './components/EntityTypesDialog';
 import DeleteDialog from '../../../components/dialogs/DeleteDialogComponent';

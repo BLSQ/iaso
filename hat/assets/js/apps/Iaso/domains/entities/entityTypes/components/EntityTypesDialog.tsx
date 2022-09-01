@@ -34,8 +34,12 @@ type Props = {
     // eslint-disable-next-line no-unused-vars
     renderTrigger: ({ openDialog }: RenderTriggerProps) => ReactNode;
     initialData?: EntityType | EmptyEntityType;
-    // eslint-disable-next-line no-unused-vars
-    saveEntityType: (e: EntityType) => void;
+    saveEntityType: (
+        // eslint-disable-next-line no-unused-vars
+        e: EntityType | EmptyEntityType,
+        // eslint-disable-next-line no-unused-vars
+        options: Record<string, () => void>,
+    ) => void;
 };
 
 const useStyles = makeStyles(theme => ({
@@ -63,6 +67,7 @@ export const EntityTypesDialog: FunctionComponent<Props> = ({
 }) => {
     const classes: Record<string, string> = useStyles();
     const [isOpen, setIsOpen] = useState<boolean>(false);
+    const [closeModal, setCloseModal] = useState<any>();
     const { formatMessage }: { formatMessage: IntlFormatMessage } =
         useSafeIntl();
 
@@ -87,7 +92,13 @@ export const EntityTypesDialog: FunctionComponent<Props> = ({
         enableReinitialize: true,
         validateOnBlur: true,
         validationSchema: getSchema,
-        onSubmit: saveEntityType,
+        onSubmit: values =>
+            saveEntityType(values, {
+                onSuccess: () => {
+                    closeModal.closeDialog();
+                    resetForm();
+                },
+            }),
     });
     const {
         values,
@@ -100,12 +111,12 @@ export const EntityTypesDialog: FunctionComponent<Props> = ({
         handleSubmit,
         resetForm,
     } = formik;
+
     const onChange = (keyValue, value) => {
         setFieldTouched(keyValue, true);
         setFieldValue(keyValue, value);
     };
 
-    // const getErrors = k => (errors[k] && touched[k] ? [errors[k]] : []);
     const getErrors = useTranslatedErrors({
         errors,
         formatMessage,
@@ -133,7 +144,10 @@ export const EntityTypesDialog: FunctionComponent<Props> = ({
             <ConfirmCancelDialogComponent
                 allowConfirm={isValid && !isEqual(values, initialValues)}
                 titleMessage={titleMessage}
-                onConfirm={handleSubmit}
+                onConfirm={closeDialog => {
+                    setCloseModal({ closeDialog });
+                    handleSubmit();
+                }}
                 onCancel={closeDialog => {
                     closeDialog();
                     resetForm();

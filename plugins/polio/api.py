@@ -1705,10 +1705,10 @@ class BudgetEventViewset(ModelViewSet):
         return queryset.distinct()
 
     def perform_create(self, serializer):
-        #block event creation if user is not part of a team
+        # block event creation if user is not part of a team
         author_team = self.request.user.teams.filter(deleted_at=None).first()
         if not author_team:
-            raise serializers.ValidationError({"general":["userWithoutTeam"]})
+            raise serializers.ValidationError({"general": ["userWithoutTeam"]})
         event = serializer.save(author=self.request.user)
         serializer = BudgetEventSerializer(event, many=False)
         return Response(serializer.data)
@@ -1720,7 +1720,7 @@ class BudgetEventViewset(ModelViewSet):
             event = BudgetEvent.objects.get(pk=event_pk)
             author_team = event.author.teams.filter(deleted_at=None).first()
             if not author_team:
-                raise serializers.ValidationError({"general":["userWithoutTeam"]})
+                raise serializers.ValidationError({"general": ["userWithoutTeam"]})
             event.is_finalized = True if request.data["is_finalized"] else False
             event.save()
             current_user = self.request.user

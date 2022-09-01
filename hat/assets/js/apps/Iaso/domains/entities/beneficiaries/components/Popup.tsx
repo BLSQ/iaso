@@ -160,7 +160,7 @@ export const PopupComponent: FunctionComponent<Props> = ({
                                     >
                                         <Link
                                             target="_blank"
-                                            to={`/${baseUrls.beneficiariesDetails}/beneficiaryId/${location.id}`}
+                                            to={`/${baseUrls.entityDetails}/entityId/${location.id}`}
                                             className={classes.linkButton}
                                         >
                                             {formatMessage(MESSAGES.see)}

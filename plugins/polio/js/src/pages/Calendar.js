@@ -32,6 +32,10 @@ import { Filters } from '../components/campaignCalendar/Filters';
 
 const useStyles = makeStyles(theme => ({
     ...commonStyles(theme),
+    loadingSpinnerPdf: {
+        backgroundColor: 'rgba(255,255,255,1)',
+        zIndex: 2000,
+    },
 }));
 
 const Calendar = ({ params }) => {
@@ -115,7 +119,14 @@ const Calendar = ({ params }) => {
                     displayBackButton={false}
                 />
             )}
-            {isPdf && <LoadingSpinner absolute />}
+            {isPdf && (
+                <LoadingSpinner
+                    absolute
+                    classes={{
+                        rootAbsolute: classes.loadingSpinnerPdf,
+                    }}
+                />
+            )}
 
             <div id="pdf">
                 <Box
@@ -135,7 +146,7 @@ const Calendar = ({ params }) => {
                             color="primary"
                             variant="contained"
                         >
-                            export in pdf
+                            {formatMessage(MESSAGES.exportToPdf)}
                         </Button>
                     </Box>
                     <Grid container spacing={2}>

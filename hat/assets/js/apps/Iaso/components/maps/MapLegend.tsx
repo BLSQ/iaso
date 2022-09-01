@@ -8,11 +8,8 @@ import { IntlMessage } from '../../types/intl';
 
 const useStyles = makeStyles(theme => ({
     root: {
-        marginTop: theme.spacing(1),
         position: 'absolute', // assuming you have a parent relative
         zIndex: 1000,
-        right: theme.spacing(2),
-        top: 0,
     },
     mapLegendTitle: {
         fontSize: 14,
@@ -41,20 +38,34 @@ type Props = {
     titleMessage?: IntlMessage;
     options?: Array<Legend> | undefined;
     content?: ReactNode | undefined;
-    width?: number;
+    top?: number | 'auto';
+    right?: number | 'auto';
+    left?: number | 'auto';
+    bottom?: number | 'auto';
+    width?: number | 'auto';
+    padding?: number;
 };
 
 export const MapLegend: FunctionComponent<Props> = ({
     titleMessage,
     options,
     content,
+    top,
+    right,
+    left,
+    bottom,
     width,
+    padding,
 }) => {
     const classes = useStyles();
     const { formatMessage } = useSafeIntl();
     return (
-        <Paper elevation={1} className={classes.root}>
-            <Box p={2} width={width}>
+        <Paper
+            elevation={1}
+            className={classes.root}
+            style={{ top, left, right, bottom, width }}
+        >
+            <Box p={padding}>
                 {titleMessage && (
                     <Typography
                         variant="subtitle1"
@@ -63,9 +74,10 @@ export const MapLegend: FunctionComponent<Props> = ({
                         {formatMessage(titleMessage)}
                     </Typography>
                 )}
-                <Grid container spacing={1}>
-                    {options &&
-                        options.map((o, i) => (
+                {content}
+                {options && (
+                    <Grid container spacing={1}>
+                        {options.map((o, i) => (
                             <Box
                                 key={o.value}
                                 mb={i + 1 === options.length ? 0 : 1}
@@ -94,16 +106,18 @@ export const MapLegend: FunctionComponent<Props> = ({
                                 </Grid>
                             </Box>
                         ))}
-                    {content}
-                </Grid>
+                    </Grid>
+                )}
             </Box>
         </Paper>
     );
 };
 
 MapLegend.defaultProps = {
-    titleMessage: undefined,
-    options: undefined,
-    content: undefined,
+    top: 16,
+    right: 16,
+    left: 'auto',
+    bottom: 'auto',
     width: 200,
+    padding: 2,
 };

@@ -3,7 +3,7 @@ import { Box, Grid, makeStyles } from '@material-ui/core';
 import React, { FunctionComponent } from 'react';
 // @ts-ignore
 import { useSafeIntl } from 'bluesquare-components';
-import MESSAGES from '../messages';
+import MESSAGES from '../../messages';
 import { getAge } from '../../../../hooks/useGetAge';
 import { Beneficiary } from '../types/beneficiary';
 

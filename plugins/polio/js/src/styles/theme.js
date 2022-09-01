@@ -188,6 +188,6 @@ export const useStyles = makeStyles(() => ({
         paddingTop: 0,
         width: 175,
         position: 'relative',
-        left: -12,
+        left: -16,
     },
 }));

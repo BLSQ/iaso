@@ -156,7 +156,7 @@ export const Details: FunctionComponent<Props> = ({ router }) => {
                     if (prevPathname) {
                         router.goBack();
                     } else {
-                        dispatch(redirectToReplace(baseUrls.beneficiaries, {}));
+                        dispatch(redirectToReplace(baseUrls.entities, {}));
                     }
                 }}
             />

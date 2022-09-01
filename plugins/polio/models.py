@@ -2,6 +2,7 @@ from uuid import uuid4
 
 from django.contrib.auth.models import User
 from django.db import models
+from django.db.models import Count
 from django.utils.translation import gettext as _
 from gspread.utils import extract_id_from_url
 
@@ -20,7 +21,7 @@ VIRUSES = [
     ("WPV1", _("WPV1")),
 ]
 
-VACINES = [
+VACCINES = [
     ("mOPV2", _("mOPV2")),
     ("nOPV2", _("nOPV2")),
     ("bOPV", _("bOPV")),
@@ -65,19 +66,42 @@ PAYMENT = [
     ("DFC", _("DFC")),
 ]
 
-PREPARING = "PREPARING"
-ROUND1START = "ROUND1START"
-ROUND1DONE = "ROUND1DONE"
-ROUND2START = "ROUND2START"
-ROUND2DONE = "ROUND2DONE"
 
-ROUNDSTATUS = [
-    (PREPARING, _("Preparing")),
-    (ROUND1START, _("Round 1 started")),
-    (ROUND1DONE, _("Round 1 completed")),
-    (ROUND2START, _("Round 2 started")),
-    (ROUND2DONE, _("Round 2 completed")),
-]
+def make_group_round_scope():
+    return Group.objects.create(name="hidden roundScope")
+
+
+class RoundScope(models.Model):
+    "Scope (selection of orgunit) for a round and vaccines"
+
+    group = models.OneToOneField(
+        Group, on_delete=models.CASCADE, related_name="roundScope", default=make_group_round_scope
+    )
+    round = models.ForeignKey("Round", on_delete=models.CASCADE, related_name="scopes")
+
+    vaccine = models.CharField(max_length=5, choices=VACCINES)
+
+    class Meta:
+        unique_together = [("round", "vaccine")]
+        ordering = ["round", "vaccine"]
+
+
+def make_group_campaign_scope():
+    return Group.objects.create(name="hidden campaignScope")
+
+
+class CampaignScope(models.Model):
+    """Scope (selection of orgunit) for a campaign and vaccines"""
+
+    group = models.OneToOneField(
+        Group, on_delete=models.CASCADE, related_name="campaignScope", default=make_group_campaign_scope
+    )
+    campaign = models.ForeignKey("Campaign", on_delete=models.CASCADE, related_name="scopes")
+    vaccine = models.CharField(max_length=5, choices=VACCINES)
+
+    class Meta:
+        unique_together = [("campaign", "vaccine")]
+        ordering = ["campaign", "vaccine"]
 
 
 class Round(models.Model):
@@ -87,6 +111,7 @@ class Round(models.Model):
     started_at = models.DateField(null=True, blank=True)
     number = models.IntegerField(null=True, blank=True)
     campaign = models.ForeignKey("Campaign", related_name="rounds", on_delete=models.PROTECT, null=True)
+
     ended_at = models.DateField(null=True, blank=True)
     mop_up_started_at = models.DateField(null=True, blank=True)
     mop_up_ended_at = models.DateField(null=True, blank=True)
@@ -128,7 +153,7 @@ class Campaign(SoftDeletableModel):
     gpei_coordinator = models.CharField(max_length=255, null=True, blank=True)
     gpei_email = models.EmailField(max_length=254, null=True, blank=True)
     description = models.TextField(null=True, blank=True)
-
+    separate_scopes_per_round = models.BooleanField(default=False)
     initial_org_unit = models.ForeignKey(
         "iaso.orgunit", null=True, blank=True, on_delete=models.SET_NULL, related_name="campaigns"
     )
@@ -192,7 +217,8 @@ class Campaign(SoftDeletableModel):
     )
 
     virus = models.CharField(max_length=6, choices=VIRUSES, null=True, blank=True)
-    vacine = models.CharField(max_length=5, choices=VACINES, null=True, blank=True)
+    # Deprecated
+    vacine = models.CharField(max_length=5, choices=VACCINES, null=True, blank=True)
 
     # Detection
     detection_status = models.CharField(default="PENDING", max_length=10, choices=STATUS)
@@ -322,13 +348,26 @@ class Campaign(SoftDeletableModel):
     def get_item_by_key(self, key):
         return getattr(self, key)
 
-    def get_districts(self):
-        if self.group is None:
-            return OrgUnit.objects.none()
-        return self.group.org_units.all()
+    def get_districts_for_round_number(self, round_number):
+        round = self.rounds.get(number=round_number) if self.separate_scopes_per_round and round_number else None
+        return self.get_districts_for_round(round)
 
-    def get_regions(self):
-        return OrgUnit.objects.filter(id__in=self.get_districts().values_list("parent_id", flat=True).distinct())
+    def get_districts_for_round(self, round):
+        if self.separate_scopes_per_round:
+            districts = OrgUnit.objects.filter(groups__roundScope__round=round)
+        else:
+            districts = self.get_campaign_scope_districts()
+        return districts
+
+    def get_campaign_scope_districts(self):
+        # Get districts on campaign scope, make only sense if separate_scopes_per_round=True
+        return OrgUnit.objects.filter(groups__campaignScope__campaign=self)
+
+    def get_all_districts(self):
+        """District from all round merged as one"""
+        if self.separate_scopes_per_round:
+            return OrgUnit.objects.filter(groups__roundScope__round__campaign=self)
+        return self.get_campaign_scope_districts()
 
     def last_surge(self):
         spreadsheet_url = self.surge_spreadsheet_url
@@ -353,6 +392,24 @@ class Campaign(SoftDeletableModel):
                 pass
 
         super().save(*args, **kwargs)
+
+    @property
+    def vaccines(self):
+        if self.separate_scopes_per_round:
+            vaccines = set()
+            for round in self.rounds.all():
+                for scope in round.scopes.annotate(orgunits_count=Count("group__org_units")).filter(
+                    orgunits_count__gte=1
+                ):
+                    vaccines.add(scope.vaccine)
+            return ", ".join(list(vaccines))
+        else:
+            return ",".join(
+                scope.vaccine
+                for scope in self.scopes.annotate(orgunits_count=Count("group__org_units")).filter(
+                    orgunits_count__gte=1
+                )
+            )
 
     def get_round_one(self):
         try:
@@ -453,7 +510,7 @@ class URLCache(models.Model):
 class SpreadSheetImport(models.Model):
     """A copy of a Google Spreadsheet in the DB, in JSON format
 
-    This allow us to separate the parsing of the datasheet from it's retrieval
+    This allows us to separate the parsing of the datasheet from its retrieval
     and to keep a history.
     """
 

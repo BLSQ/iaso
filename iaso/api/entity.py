@@ -133,7 +133,7 @@ class EntityFilterBackend(filters.BaseFilterBackend):
         return queryset
 
 
-def export_beneficiary_as_xlsx(beneficiaries):
+def export_entity_as_xlsx(entities):
     mem_file = io.BytesIO()
     workbook = xlsxwriter.Workbook(mem_file)
     worksheet = workbook.add_worksheet("beneficiary")
@@ -142,21 +142,21 @@ def export_beneficiary_as_xlsx(beneficiaries):
     row = 0
     col = 0
     filename = ""
-    for beneficiary in beneficiaries:
-        res = {"beneficiaries": EntitySerializer(beneficiary, many=False).data}
+    for entity in entities:
+        res = {"entity": EntitySerializer(entity, many=False).data}
         worksheet.set_row(row, cell_format=row_color)
-        worksheet.write(row, col, f"{beneficiary.name.upper()}:")
+        worksheet.write(row, col, f"{entity.name.upper()}:")
         row += 1
-        for k, v in res["beneficiaries"].items():
+        for k, v in res["entity"].items():
             try:
-                fields_list = beneficiary.entity_type.fields_detail_view
+                fields_list = entity.entity_type.fields_detail_view
             except TypeError:
                 raise serializers.ValidationError(
-                    {"error": "You must provide a field details view list in order to export the beneficiaries."}
+                    {"error": "You must provide a field details view list in order to export the entities."}
                 )
             if k in fields_list or k == "attributes":
                 if k == "attributes":
-                    for k_, v_ in res["beneficiaries"]["attributes"]["file_content"].items():
+                    for k_, v_ in res["entity"]["attributes"]["file_content"].items():
                         worksheet.write(row, col, k_)
                         worksheet.write(row + 1, col, v_)
                         col += 1
@@ -166,8 +166,8 @@ def export_beneficiary_as_xlsx(beneficiaries):
                     col += 1
         col = 0
         row += 2
-        filename = beneficiary.name
-    filename = f"EXPORT_BENEFICIARIES.xlsx" if len(beneficiaries) > 1 else f"{filename.upper()}_BENEFICIARY.xlsx"
+        filename = entity.name
+    filename = f"EXPORT_ENTITIES.xlsx" if len(entities) > 1 else f"{filename.upper()}_ENTITY.xlsx"
     workbook.close()
     mem_file.seek(0)
     response = HttpResponse(mem_file, content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
@@ -175,25 +175,25 @@ def export_beneficiary_as_xlsx(beneficiaries):
     return response
 
 
-def export_beneficiary_as_csv(beneficiaries):
+def export_entity_as_csv(entities):
 
     header = []
     data = []
     filename = ""
 
-    for beneficiary in beneficiaries:
-        res = {"beneficiaries": EntitySerializer(beneficiary, many=False).data}
+    for entity in entities:
+        res = {"entity": EntitySerializer(entity, many=False).data}
         benef_data = []
-        for k, v in res["beneficiaries"].items():
+        for k, v in res["entity"].items():
             try:
-                fields_list = beneficiary.entity_type.fields_detail_view
+                fields_list = entity.entity_type.fields_detail_view
             except TypeError:
                 raise serializers.ValidationError(
-                    {"error": "You must provide a field details view list in order to export the beneficiaries."}
+                    {"error": "You must provide a field details view list in order to export the entities."}
                 )
             if k in fields_list or k == "attributes":
                 if k == "attributes":
-                    for k_, v_ in res["beneficiaries"]["attributes"]["file_content"].items():
+                    for k_, v_ in res["entity"]["attributes"]["file_content"].items():
                         if k_ not in header:
                             header.append(k_)
                         benef_data.append(v_)
@@ -202,8 +202,8 @@ def export_beneficiary_as_csv(beneficiaries):
                         header.append(k)
                     benef_data.append(v)
         data.append(benef_data)
-        filename = beneficiary.name
-    filename = f"EXPORT_BENEFICIARIES.csv" if len(beneficiaries) > 1 else f"{filename.upper()}_BENEFICIARY.csv"
+        filename = entity.name
+    filename = f"EXPORT_ENTITIES.csv" if len(entities) > 1 else f"{filename.upper()}_ENTITY.csv"
 
     response = HttpResponse(
         content_type="txt/csv",
@@ -318,13 +318,13 @@ class EntityViewSet(ModelViewSet):
 
         if xlsx_format or csv_format:
             if pk:
-                beneficiaries = Entity.objects.filter(account=account, pk=pk, deleted_at__isnull=True)
+                entities = Entity.objects.filter(account=account, pk=pk, deleted_at__isnull=True)
             else:
-                beneficiaries = Entity.objects.filter(account=account, deleted_at__isnull=True)
+                entities = Entity.objects.filter(account=account, deleted_at__isnull=True)
             if xlsx_format:
-                return export_beneficiary_as_xlsx(beneficiaries)
+                return export_entity_as_xlsx(entities)
             if csv_format:
-                return export_beneficiary_as_csv(beneficiaries)
+                return export_entity_as_csv(entities)
 
         entities = queryset
         result_list = []

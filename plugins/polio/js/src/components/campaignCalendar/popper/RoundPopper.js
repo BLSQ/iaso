@@ -17,6 +17,22 @@ import MESSAGES from '../../../constants/messages';
 import { useStyles } from '../Styles';
 import { CsvButton } from '../../../../../../../hat/assets/js/apps/Iaso/components/Buttons/CsvButton.tsx';
 
+const groupsForCampaignRound = (campaign, round) => {
+    if (!campaign.separate_scopes_per_round) {
+        return campaign.scopes
+            .filter(scope => scope.group)
+            .map(scope => scope.group.id)
+            .flat();
+    }
+    if (round) {
+        return round.scopes
+            .filter(scope => scope.group)
+            .map(scope => scope.group.id)
+            .flat();
+    }
+    return [];
+};
+
 const RoundPopper = ({
     campaign,
     handleClose,
@@ -28,8 +44,9 @@ const RoundPopper = ({
     const classes = useStyles();
     // We don't want to show the edit button if there is no connected user
     const isLogged = useSelector(state => Boolean(state.users.current));
-    const id = open ? `campaign-popover-${campaign.id}` : undefined;
-    const url = `/api/orgunits/?csv=true&group=${campaign.original?.group?.id}&app_id=com.poliooutbreaks.app`;
+    const id = open ? `campaign-popover-${campaign.id}-${round.id}` : undefined;
+    const groupIds = groupsForCampaignRound(campaign, round).join(',');
+    const url = `/api/orgunits/?csv=true&group=${groupIds}&app_id=com.poliooutbreaks.app`;
 
     return (
         <Popper
@@ -76,7 +93,7 @@ const RoundPopper = ({
                             <FormattedMessage {...MESSAGES.vaccine} />:
                         </Grid>
                         <Grid item sm={6} container justifyContent="flex-start">
-                            {campaign.original.vacine}
+                            {campaign.original.vaccines}
                         </Grid>
                         <Grid item sm={6} container justifyContent="flex-end">
                             <FormattedMessage {...MESSAGES.preventiveShort} />:
@@ -96,7 +113,7 @@ const RoundPopper = ({
                                 isLogged ? 'space-between' : 'flex-end'
                             }
                         >
-                            {campaign.original?.group?.id && (
+                            {groupIds && (
                                 <CsvButton csvUrl={url} variant="text" />
                             )}
                             {isLogged && (

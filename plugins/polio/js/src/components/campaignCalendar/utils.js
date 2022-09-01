@@ -212,6 +212,8 @@ const mapCampaigns = allCampaigns => {
             rounds,
             original: c,
             isPreventive: c.is_preventive,
+            separateScopesPerRound: c.separate_scopes_per_round,
+            scopes: c.scopes,
         };
     });
 };

@@ -28,6 +28,7 @@ from gspread.utils import extract_id_from_url
 from hat.settings import DEFAULT_FROM_EMAIL
 from rest_framework import routers, filters, viewsets, serializers, permissions, status
 from rest_framework.decorators import action
+from rest_framework.request import Request
 from rest_framework.response import Response
 from django.conf import settings
 import urllib.parse
@@ -59,7 +60,18 @@ from .forma import (
     find_orgunit_in_cache,
 )
 from .helpers import get_url_content
-from .models import Campaign, Config, LineListImport, SpreadSheetImport, Round, CampaignGroup, BudgetEvent, BudgetFiles
+from .models import (
+    Campaign,
+    Config,
+    LineListImport,
+    SpreadSheetImport,
+    Round,
+    CampaignGroup,
+    BudgetEvent,
+    BudgetFiles,
+    CampaignScope,
+    RoundScope,
+)
 from .models import CountryUsersGroup
 from .models import URLCache
 from .preparedness.calculator import preparedness_summary
@@ -67,7 +79,7 @@ from .preparedness.parser import get_preparedness
 
 logger = getLogger(__name__)
 
-CACHE_VERSION = 5
+CACHE_VERSION = 6
 
 
 class CustomFilterBackend(filters.BaseFilterBackend):
@@ -104,7 +116,6 @@ class CampaignViewSet(ModelViewSet):
         "obr_name",
         "cvdpv2_notified_at",
         "detection_status",
-        "vacine",
         "first_round_started_at",
         "last_round_started_at",
         "country__name",
@@ -118,7 +129,6 @@ class CampaignViewSet(ModelViewSet):
         "country__id": ["in"],
         "grouped_campaigns__id": ["in", "exact"],
         "obr_name": ["exact", "contains"],
-        "vacine": ["exact"],
         "cvdpv2_notified_at": ["gte", "lte", "range"],
         "created_at": ["gte", "lte", "range"],
         "rounds__started_at": ["gte", "lte", "range"],
@@ -183,8 +193,10 @@ class CampaignViewSet(ModelViewSet):
         return Response(get_current_preparedness(campaign, roundNumber))
 
     @action(methods=["POST"], detail=True, serializer_class=CampaignPreparednessSpreadsheetSerializer)
-    def create_preparedness_sheet(self, request, pk=None, **kwargs):
-        serializer = CampaignPreparednessSpreadsheetSerializer(data={"campaign": pk})
+    def create_preparedness_sheet(self, request: Request, pk=None, **kwargs):
+        data = request.data
+        data["campaign"] = pk
+        serializer = CampaignPreparednessSpreadsheetSerializer(data=data)
         serializer.is_valid(raise_exception=True)
         serializer.save()
         return Response(serializer.data)
@@ -273,47 +285,173 @@ Timeline tracker Automated message
         url_path="merged_shapes.geojson",
     )
     def shapes(self, request):
-        cached_response = None
-        # cached_response = cache.get("{0}-geo_shapes".format(request.user.id))
-        queryset = self.filter_queryset(self.get_queryset())
-        # Remove deleted and campaign with missing group
-        queryset = queryset.filter(deleted_at=None).exclude(group=None)
+        """GeoJson, one geojson per campaign
 
-        if cached_response and queryset:
-            parsed_cache_response = json.loads(cached_response)
-            cache_creation_date = make_aware(datetime.utcfromtimestamp(parsed_cache_response["cache_creation_date"]))
-            last_campaign_updated = queryset.order_by("updated_at").last()
-            last_org_unit_updated = OrgUnit.objects.filter(groups__campaigns__in=queryset).order_by("updated_at").last()
-            if (
-                last_org_unit_updated
-                and cache_creation_date > last_org_unit_updated.updated_at
-                and last_campaign_updated
-                and cache_creation_date > last_campaign_updated.updated_at
-            ):
-                return JsonResponse(json.loads(cached_response))
+        We use the django annotate feature to make a raw Postgis request that will generate the shape on the
+        postgresql server which is faster.
+        Campaign with and without scope per round are  handled separately"""
+        # FIXME: The cache ignore all the filter parameter which will return wrong result if used
+        key_name = "{0}-geo_shapes".format(request.user.id)
+        campaigns = self.filter_queryset(self.get_queryset())
+        # Remove deleted campaigns
+        campaigns = campaigns.filter(deleted_at=None)
 
-        queryset = queryset.annotate(
+        # Determine last modification date to see if we invalidate the cache
+        last_campaign_updated = campaigns.order_by("updated_at").last()
+        last_roundscope_org_unit_updated = (
+            OrgUnit.objects.order_by("updated_at").filter(groups__roundScope__round__campaign__in=campaigns).last()
+        )
+        last_org_unit_updated = (
+            OrgUnit.objects.order_by("updated_at").filter(groups__campaignScope__campaign__in=campaigns).last()
+        )
+
+        update_dates = [
+            last_org_unit_updated.updated_at if last_campaign_updated else None,
+            last_roundscope_org_unit_updated.updated_at if last_roundscope_org_unit_updated else None,
+            last_campaign_updated.updated_at if last_campaign_updated else None,
+        ]
+        cached_response = self.return_cached_response_if_valid(key_name, update_dates)
+        if cached_response:
+            return cached_response
+
+        round_scope_queryset = campaigns.filter(separate_scopes_per_round=True).annotate(
+            geom=RawSQL(
+                """select st_asgeojson(st_simplify(st_union(st_buffer(iaso_orgunit.geom::geometry, 0)), 0.01)::geography)
+from iaso_orgunit
+right join iaso_group_org_units ON iaso_group_org_units.orgunit_id = iaso_orgunit.id
+right join polio_roundscope ON iaso_group_org_units.group_id =  polio_roundscope.group_id
+right join polio_round ON polio_round.id = polio_roundscope.round_id
+where polio_round.campaign_id = polio_campaign.id""",
+                [],
+            )
+        )
+        # For campaign scope
+        campain_scope_queryset = campaigns.filter(separate_scopes_per_round=False).annotate(
+            geom=RawSQL(
+                """select st_asgeojson(st_simplify(st_union(st_buffer(iaso_orgunit.geom::geometry, 0)), 0.01)::geography)
+from iaso_orgunit
+right join iaso_group_org_units ON iaso_group_org_units.orgunit_id = iaso_orgunit.id
+right join polio_campaignscope ON iaso_group_org_units.group_id =  polio_campaignscope.group_id
+where polio_campaignscope.campaign_id = polio_campaign.id""",
+                [],
+            )
+        )
+
+        features = []
+        for queryset in (round_scope_queryset, campain_scope_queryset):
+            for c in queryset:
+                if c.geom:
+                    s = SmallCampaignSerializer(c)
+                    feature = {"type": "Feature", "geometry": json.loads(c.geom), "properties": s.data}
+                    features.append(feature)
+        res = {"type": "FeatureCollection", "features": features, "cache_creation_date": datetime.utcnow().timestamp()}
+
+        cache.set(key_name, json.dumps(res), 3600 * 24, version=CACHE_VERSION)
+        return JsonResponse(res)
+
+    @staticmethod
+    def return_cached_response_if_valid(cache_key, update_dates):
+        cached_response = cache.get(cache_key, version=CACHE_VERSION)
+        if not cached_response:
+            return None
+        parsed_cache_response = json.loads(cached_response)
+        cache_creation_date = make_aware(datetime.utcfromtimestamp(parsed_cache_response["cache_creation_date"]))
+        for update_date in update_dates:
+            if update_date and update_date > cache_creation_date:
+                return None
+        return JsonResponse(json.loads(cached_response))
+
+    @action(
+        methods=["GET", "HEAD"],
+        detail=False,
+        url_path="v2/merged_shapes.geojson",
+    )
+    def shapes_v2(self, request):
+        # FIXME: The cache ignore all the filter parameter which will return wrong result if used
+        key_name = "{0}-geo_shapes_v2".format(request.user.id)
+
+        campaigns = self.filter_queryset(self.get_queryset())
+        # Remove deleted campaigns
+        campaigns = campaigns.filter(deleted_at=None)
+
+        last_campaign_updated = campaigns.order_by("updated_at").last()
+        last_roundscope_org_unit_updated = (
+            OrgUnit.objects.order_by("updated_at").filter(groups__roundScope__round__campaign__in=campaigns).last()
+        )
+        last_org_unit_updated = (
+            OrgUnit.objects.order_by("updated_at").filter(groups__campaignScope__campaign__in=campaigns).last()
+        )
+
+        update_dates = [
+            last_org_unit_updated.updated_at if last_campaign_updated else None,
+            last_roundscope_org_unit_updated.updated_at if last_roundscope_org_unit_updated else None,
+            last_campaign_updated.updated_at if last_campaign_updated else None,
+        ]
+        cached_response = self.return_cached_response_if_valid(key_name, update_dates)
+        if cached_response:
+            return cached_response
+
+        campaign_scopes = CampaignScope.objects.filter(campaign__in=campaigns.filter(separate_scopes_per_round=False))
+        campaign_scopes = campaign_scopes.prefetch_related("campaign")
+        campaign_scopes = campaign_scopes.prefetch_related("campaign__country")
+        campaign_scopes = campaign_scopes.annotate(
             geom=RawSQL(
                 """select st_asgeojson(st_simplify(st_union(st_buffer(iaso_orgunit.geom::geometry, 0)), 0.01)::geography)
 from iaso_orgunit right join iaso_group_org_units ON iaso_group_org_units.orgunit_id = iaso_orgunit.id
-where group_id = polio_campaign.group_id""",
+where group_id = polio_campaignscope.group_id""",
                 [],
             )
         )
         # Check if the campaigns have been updated since the response has been cached
         features = []
-        for c in queryset:
-            if c.geom:
-                s = SmallCampaignSerializer(c)
-                feature = {"type": "Feature", "geometry": json.loads(c.geom), "properties": s.data}
+        scope: CampaignScope
+        for scope in campaign_scopes:
+            if scope.geom:
+                feature = {
+                    "type": "Feature",
+                    "geometry": json.loads(scope.geom),
+                    "properties": {
+                        "obr_name": scope.campaign.obr_name,
+                        "id": str(scope.campaign.id),
+                        "vaccine": scope.vaccine,
+                        "scope_key": f"campaignScope-{scope.id}",
+                        "top_level_org_unit_name": scope.campaign.country.name,
+                    },
+                }
                 features.append(feature)
+
+        round_scopes = RoundScope.objects.filter(round__campaign__in=campaigns.filter(separate_scopes_per_round=True))
+        round_scopes = round_scopes.prefetch_related("round__campaign")
+        round_scopes = round_scopes.prefetch_related("round__campaign__country")
+        round_scopes = round_scopes.annotate(
+            geom=RawSQL(
+                """select st_asgeojson(st_simplify(st_union(st_buffer(iaso_orgunit.geom::geometry, 0)), 0.01)::geography)
+from iaso_orgunit right join iaso_group_org_units ON iaso_group_org_units.orgunit_id = iaso_orgunit.id
+where group_id = polio_roundscope.group_id""",
+                [],
+            )
+        )
+
+        for scope in round_scopes:
+            scope: RoundScope
+            if scope.geom:
+                feature = {
+                    "type": "Feature",
+                    "geometry": json.loads(scope.geom),
+                    "properties": {
+                        "obr_name": scope.round.campaign.obr_name,
+                        "id": str(scope.round.campaign.id),
+                        "vaccine": scope.vaccine,
+                        "scope_key": f"roundScope-{scope.id}",
+                        "top_level_org_unit_name": scope.round.campaign.country.name,
+                        "round_number": scope.round.number,
+                    },
+                }
+                features.append(feature)
+
         res = {"type": "FeatureCollection", "features": features, "cache_creation_date": datetime.utcnow().timestamp()}
 
-        cache.set(
-            "{0}-geo_shapes".format(request.user.id),
-            json.dumps(res),
-            3600 * 24,
-        )
+        cache.set(key_name, json.dumps(res), 3600 * 24, version=CACHE_VERSION)
         return JsonResponse(res)
 
 
@@ -669,7 +807,8 @@ class IMStatsViewSet(viewsets.ViewSet):
                     debug_response.add((campaign.obr_name, form["Response"]))
                 if campaign:
                     campaign_name = campaign.obr_name
-                    scope = campaign.group.org_units.values_list("id", flat=True) if campaign.group else []
+                    # FIXME: We refetch the whole list for all submission this is probably a cause of slowness
+                    scope = campaign.get_all_districts().values_list("id", flat=True)
                     campaign_stats[campaign_name]["has_scope"] = len(scope) > 0
                     district = find_district(district_name, region_name, district_dict)
                     if not district:
@@ -781,28 +920,18 @@ def find_lqas_im_campaign(campaigns, today, country, round_number: Optional[int]
     return None
 
 
-def get_round_campaign(c, index):
-    if index == 0:
-        return c.get_round_one()
-    if index == 1:
-        return c.get_round_two()
-
-
-def find_campaign_on_day(campaigns, day, country, get_round_campaign_cached):
+def find_campaign_on_day(campaigns, day):
     for c in campaigns:
-        round_one = get_round_campaign_cached(c, 0)
-        round_two = get_round_campaign_cached(c, 1)
-        if not (round_one and round_one.started_at):
+        if not c.start_date:
             continue
-        round_end = round_two.ended_at if (round_two and round_two.ended_at) else round_one.ended_at
-        if round_end:
-            end_date = round_end + timedelta(days=+10)
+        start_date = c.start_date
+        end_date = c.end_date
+        if not end_date or end_date < c.last_start_date:
+            end_date = c.last_start_date + timedelta(days=+28)
         else:
-            end_date = round_one.started_at + timedelta(days=+28)
-
-        if c.country_id == country.id and round_one.started_at <= day < end_date:
+            end_date = end_date + timedelta(days=+10)
+        if start_date <= day < end_date:
             return c
-    return None
 
 
 def convert_dicts_to_table(list_of_dicts):
@@ -830,7 +959,6 @@ def handle_ona_request_with_key(request, key):
     campaigns = Campaign.objects.all().filter(deleted_at=None)
 
     form_count = 0
-    get_round_campaign_cached = functools.lru_cache(None)(get_round_campaign)
     find_campaign_on_day_cached = functools.lru_cache(None)(find_campaign_on_day)
     for config in config.content:
         forms = get_url_content(
@@ -844,12 +972,18 @@ def handle_ona_request_with_key(request, key):
             .prefetch_related("parent")
         )
         cache = make_orgunits_cache(facilities)
+        # Add fields to speed up detection of campaign day
+        campaign_qs = campaigns.filter(country_id=country.id).annotate(
+            last_start_date=Max("rounds__started_at"),
+            start_date=Min("rounds__started_at"),
+            end_date=Max("rounds__ended_at"),
+        )
 
         for form in forms:
             try:
                 today_string = form["today"]
                 today = datetime.strptime(today_string, "%Y-%m-%d").date()
-                campaign = find_campaign_on_day_cached(campaigns, today, country, get_round_campaign_cached)
+                campaign = find_campaign_on_day_cached(campaign_qs, today)
                 district_name = form.get("District", None)
                 if not district_name:
                     district_name = form.get("district", "")
@@ -936,7 +1070,8 @@ class OrgUnitsPerCampaignViewset(viewsets.ViewSet):
         queryset = OrgUnit.objects.none()
 
         for campaign in campaigns:
-            districts = OrgUnit.objects.filter(groups=campaign.group_id)
+            districts = campaign.get_all_districts()
+
             if districts:
                 all_facilities = OrgUnit.objects.hierarchy(districts)
                 if org_unit_type:
@@ -1236,7 +1371,8 @@ class LQASStatsViewSet(viewsets.ViewSet):
                             source_info = HH.get("Count_HH/Caregiver_Source_Info/" + source_info_key)
                             if source_info == "True":
                                 caregiver_counts_dict[source_info_key] += 1
-                scope = campaign.group.org_units.values_list("id", flat=True) if campaign.group else []
+                # FIXME: We refetch the whole list for all submission this is probably a cause of slowness
+                scope = campaign.get_all_districts().values_list("id", flat=True)
                 campaign_stats[campaign_name]["has_scope"] = len(scope) > 0
                 district = find_district(district_name, region_name, district_dict)
                 if not district:

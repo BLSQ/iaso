@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable camelcase */
 import React, { ReactElement, useMemo } from 'react';
 import {
@@ -32,7 +33,7 @@ import { baseUrls } from '../../../constants/urls';
 import { Column } from '../../../types/table';
 import getDisplayName from '../../../utils/usersUtils';
 
-export const baseUrl = baseUrls.beneficiaries;
+export const baseUrl = baseUrls.entities;
 
 // TODO: ADD program, vaccine number, gender columns
 export const useColumns = (): Array<Column> => {

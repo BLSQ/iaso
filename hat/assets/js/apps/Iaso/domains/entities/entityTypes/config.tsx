@@ -71,6 +71,7 @@ export const columns = ({
                             id={`edit-button-${settings.row.original.id}`}
                             onClick={openDialog}
                             icon="edit"
+                            dataTestId="edit-button"
                             tooltipMessage={MESSAGES.edit}
                         />
                     )}

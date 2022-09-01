@@ -96,7 +96,6 @@ export const EntityTypesDialog: FunctionComponent<Props> = ({
             saveEntityType(values, {
                 onSuccess: () => {
                     closeModal.closeDialog();
-                    resetForm();
                 },
             }),
     });
@@ -168,6 +167,7 @@ export const EntityTypesDialog: FunctionComponent<Props> = ({
                             url={`/${baseUrls.formDetail}/formId/${values.reference_form}`}
                             icon="remove-red-eye"
                             tooltipMessage={MESSAGES.viewForm}
+                            dataTestId="see-form-button"
                         />
                     </Box>
                 )}

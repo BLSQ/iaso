@@ -2,6 +2,7 @@ import React, { useMemo, useEffect, useState } from 'react';
 import PropTypes from 'prop-types';
 import moment from 'moment';
 import { Box, makeStyles, Grid, Button } from '@material-ui/core';
+import PictureAsPdfIcon from '@material-ui/icons/PictureAsPdf';
 import {
     commonStyles,
     useSafeIntl,
@@ -146,6 +147,7 @@ const Calendar = ({ params }) => {
                             color="primary"
                             variant="contained"
                         >
+                            <PictureAsPdfIcon style={{ marginRight: '8px' }} />;
                             {formatMessage(MESSAGES.exportToPdf)}
                         </Button>
                     </Box>

@@ -58,6 +58,7 @@ export const useCreateBudgetEvent = () =>
         snackSuccessMessage: MESSAGES.budgetEventCreated,
         invalidateQueryKey: ['budget-details'],
         showSucessSnackBar: false,
+        ignoreErrorCodes: [400],
     });
 // We don't need to invalidate the key here since the call to finalize will be called onSuccess in CreateEditBudgetEvent and will invalidate the key onSuccess.
 // There's no need to invalidate the key onError, since nothing will have changed then
@@ -66,6 +67,7 @@ export const useUpdateBudgetEvent = () =>
         mutationFn: patchEvent,
         snackSuccessMessage: MESSAGES.budgetEventCreated,
         showSucessSnackBar: false,
+        ignoreErrorCodes: [400],
     });
 
 // We don't invalidate the 'budget-details query key when uploading file, otherwise , the onSuccess call in CreateEditBudgetEvent gets short-circuited, and the call to finalize is not sent
@@ -74,6 +76,7 @@ export const useUploadBudgetFiles = () =>
         mutationFn: postEventFiles,
         snackSuccessMessage: MESSAGES.budgetFilesUploaded,
         showSucessSnackBar: false,
+        ignoreErrorCodes: [400],
     });
 
 export const useFinalizeBudgetEvent = () => {
@@ -82,6 +85,7 @@ export const useFinalizeBudgetEvent = () => {
         mutationFn: putBudgetFinalisation,
         snackSuccessMessage: MESSAGES.budgetEventFinalized,
         invalidateQueryKey: ['budget-details'],
+        ignoreErrorCodes: [400],
         // Since staleTime for ['teams'] is Infinity, we invalidate the cache when an event has been created to refresh the teams list
         options: {
             onSettled: () => {

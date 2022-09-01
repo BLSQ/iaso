@@ -1705,6 +1705,10 @@ class BudgetEventViewset(ModelViewSet):
         return queryset.distinct()
 
     def perform_create(self, serializer):
+        #block event creation if user is not part of a team
+        author_team = self.request.user.teams.filter(deleted_at=None).first()
+        if not author_team:
+            raise serializers.ValidationError({"general":["userWithoutTeam"]})
         event = serializer.save(author=self.request.user)
         serializer = BudgetEventSerializer(event, many=False)
         return Response(serializer.data)
@@ -1714,6 +1718,9 @@ class BudgetEventViewset(ModelViewSet):
         if request.method == "PUT":
             event_pk = request.data["event"]
             event = BudgetEvent.objects.get(pk=event_pk)
+            author_team = event.author.teams.filter(deleted_at=None).first()
+            if not author_team:
+                raise serializers.ValidationError({"general":["userWithoutTeam"]})
             event.is_finalized = True if request.data["is_finalized"] else False
             event.save()
             current_user = self.request.user
@@ -1734,11 +1741,12 @@ class BudgetEventViewset(ModelViewSet):
                 )
                 approval_link = link_to_send + "/action/confirmApproval"
                 rejection_link = link_to_send + "/action/addComment"
-                print("pre-filter", recipients)
                 # If other approval teams still have to approve the budget, notify their members with html email
                 if event_type == "approval" and not is_budget_approved(current_user, event):
                     # We're assuming a user can only be in one approval team
                     author_team = event.author.teams.filter(name__icontains="approval").filter(deleted_at=None).first()
+                    # if not author_team:
+                    #     raise serializers.ValidationError({"general":"userWithoutTeam"})
                     other_approval_teams = (
                         Team.objects.filter(name__icontains="approval")
                         .exclude(id=author_team.id)
@@ -1749,21 +1757,20 @@ class BudgetEventViewset(ModelViewSet):
                     for approver in approvers:
                         user = User.objects.get(id=approver["users"])
                         send_approvers_email(user, author_team, event, event_type, approval_link, rejection_link)
-                        # TODO check that this works
                         recipients.discard(user)
                 # Send email with link to all approvers if event is a submission
                 elif event_type == "submission" or event_type == "transmission":
                     author_team = event.author.teams.filter(name__icontains="approval").filter(deleted_at=None).first()
                     if not author_team:
                         author_team = event.author.teams.first()
+                    # if not author_team:
+                    #     raise serializers.ValidationError({"general":"userWithoutTeam"})
                     approval_teams = Team.objects.filter(name__icontains="approval").filter(deleted_at=None)
                     approvers = approval_teams.values("users")
                     for approver in approvers:
                         user = User.objects.get(id=approver["users"])
                         send_approvers_email(user, author_team, event, event_type, approval_link, rejection_link)
-                        # TODO check that this works
                         recipients.discard(user)
-                print("post-filter", recipients)
                 for user in recipients:
                     subject = email_subject(event_type, event.campaign.obr_name)
                     text_content = event_creation_email(

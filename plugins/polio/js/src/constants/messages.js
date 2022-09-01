@@ -1398,6 +1398,10 @@ const MESSAGES = defineMessages({
         id: 'iaso.polio.label.sentByTeam',
         defaultMessage: 'Sent by team',
     },
+    userWithoutTeam: {
+        id: 'iaso.polio.error.label.userWithoutTeam',
+        defaultMessage: 'User should be part of a team',
+    },
 });
 
 export default MESSAGES;

@@ -127,6 +127,7 @@
     "iaso.entityTypes.count": "Entities count",
     "iaso.entityTypes.create": "Create entity type",
     "iaso.entityTypes.dialog.deleteTitle": "Are you sure you want to delete this entity type?",
+    "iaso.entityTypes.errors.referenceForm": "Reference form is required",
     "iaso.entityTypes.fieldsDetailInfoView": "Detail info fields",
     "iaso.entityTypes.fieldsListView": "List fields",
     "iaso.entityTypes.referenceForm": "Reference form",

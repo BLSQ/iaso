@@ -19,6 +19,7 @@ import { EntityType } from '../types/entityType';
 import { baseUrls } from '../../../../constants/urls';
 
 import { useGetForm, useGetForms } from '../hooks/requests/forms';
+import { useTranslatedErrors } from '../../../../libs/validation';
 
 import MESSAGES from '../messages';
 
@@ -32,7 +33,7 @@ type Props = {
     titleMessage: IntlMessage;
     // eslint-disable-next-line no-unused-vars
     renderTrigger: ({ openDialog }: RenderTriggerProps) => ReactNode;
-    initialData?: EntityType;
+    initialData?: EntityType | EmptyEntityType;
     // eslint-disable-next-line no-unused-vars
     saveEntityType: (e: EntityType) => void;
 };
@@ -72,6 +73,10 @@ export const EntityTypesDialog: FunctionComponent<Props> = ({
                     .string()
                     .trim()
                     .required(formatMessage(MESSAGES.nameRequired)),
+                reference_form: yup
+                    .number()
+                    .nullable()
+                    .required(formatMessage(MESSAGES.referenceFormRequired)),
             }),
         );
 
@@ -100,7 +105,13 @@ export const EntityTypesDialog: FunctionComponent<Props> = ({
         setFieldValue(keyValue, value);
     };
 
-    const getErrors = k => (errors[k] && touched[k] ? [errors[k]] : []);
+    // const getErrors = k => (errors[k] && touched[k] ? [errors[k]] : []);
+    const getErrors = useTranslatedErrors({
+        errors,
+        formatMessage,
+        touched,
+        messages: MESSAGES,
+    });
     const { data: currentForm, isFetching: isFetchingForm } = useGetForm(
         values?.reference_form,
         Boolean(values?.reference_form) && isOpen,
@@ -158,7 +169,9 @@ export const EntityTypesDialog: FunctionComponent<Props> = ({
                     />
                     {isNew && (
                         <InputComponent
+                            required
                             keyValue="reference_form"
+                            errors={getErrors('reference_form')}
                             onChange={onChange}
                             disabled={isFetchingForms}
                             loading={isFetchingForms}

@@ -78,6 +78,10 @@ const MESSAGES = defineMessages({
         id: 'iaso.pages.errors.name',
         defaultMessage: 'Name is required',
     },
+    referenceFormRequired: {
+        id: 'iaso.entityTypes.errors.referenceForm',
+        defaultMessage: 'Reference form is required',
+    },
     viewForm: {
         id: 'iaso.forms.viewForm',
         defaultMessage: 'View form',

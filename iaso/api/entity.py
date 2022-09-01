@@ -384,6 +384,7 @@ class EntityViewSet(ModelViewSet):
                                 if _k == "name" or _k == "label":
                                     value_dict[_k] = _v
                             columns_list.append(value_dict)
+
             result = {}
             for k, v in file_content.items():
                 if k in list(entity.entity_type.fields_list_view):
@@ -391,6 +392,11 @@ class EntityViewSet(ModelViewSet):
             result_list.append(result)
 
         columns_list = [i for n, i in enumerate(columns_list) if i not in columns_list[n + 1 :]]
+
+        # remove dictionaries with "name" as only key
+        for col in columns_list:
+            if len(col) != 2:
+                columns_list.remove(col)
 
         if limit:
             limit = int(limit)

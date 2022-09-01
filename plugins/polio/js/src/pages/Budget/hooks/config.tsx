@@ -205,7 +205,11 @@ export const useBudgetDetailsColumns = ({ profiles, data }): Column[] => {
                                 {nameDisplayed}
                             </p>
                             {authorTeam && (
-                                <p className={classes.paragraph}>
+                                <p
+                                    className={`${getRowColor(settings)} ${
+                                        classes.paragraph
+                                    }`}
+                                >
                                     {authorTeam.name}
                                 </p>
                             )}

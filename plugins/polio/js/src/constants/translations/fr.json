@@ -30,6 +30,7 @@
     "iaso.polio.district": "District",
     "iaso.polio.districts": "Districts",
     "iaso.polio.editCampaign": "Editer une campagne",
+    "iaso.polio.error.label.userNeedsTeam": "Vous devez faire partie d'une équipe pour créer ou éditer les étapes d'un budget",
     "iaso.polio.error.label.userWithoutTeam": "L'utilisateur doit faire partie d'une équipe",
     "iaso.polio.form.fieldRequired": "Ce champs est requis",
     "iaso.polio.form.invalidDate": "Date invalide",

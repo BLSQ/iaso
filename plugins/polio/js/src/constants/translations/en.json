@@ -29,6 +29,7 @@
     "iaso.polio.district": "District",
     "iaso.polio.districts": "Districts",
     "iaso.polio.editCampaign": "Edit campaign",
+    "iaso.polio.error.label.userNeedsTeam": "You need to be part of a team to create or edit budget events",
     "iaso.polio.error.label.userWithoutTeam": "User should be part of a team",
     "iaso.polio.form.fieldRequired": "This field is required",
     "iaso.polio.form.invalidDate": "Date is invalid",

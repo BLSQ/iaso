@@ -5,7 +5,7 @@ import { useFormik, FormikProvider } from 'formik';
 import { isEqual } from 'lodash';
 // @ts-ignore
 import { useSafeIntl } from 'bluesquare-components';
-import { Box, Typography } from '@material-ui/core';
+import { Box, Divider, Typography } from '@material-ui/core';
 import ConfirmCancelDialogComponent from '../../../../../../../hat/assets/js/apps/Iaso/components/dialogs/ConfirmCancelDialogComponent';
 import MESSAGES from '../../../constants/messages';
 import InputComponent from '../../../../../../../hat/assets/js/apps/Iaso/components/forms/InputComponent';
@@ -21,6 +21,7 @@ import { useBudgetEventValidation } from '../hooks/validation';
 import {
     useGetTeamsDropDown,
     useGetApprovalTeams,
+    useUserHasTeam,
 } from '../../../hooks/useGetTeams';
 import { getTitleMessage, useRenderTrigger, makeEventsDropdown } from './utils';
 import {
@@ -52,6 +53,7 @@ export const CreateEditBudgetEvent: FunctionComponent<Props> = ({
         type,
     );
     const currentUser = useCurrentUser();
+    const { data: userHasTeam } = useUserHasTeam(currentUser?.user_id);
     const { formatMessage } = useSafeIntl();
     const { mutateAsync: saveBudgetEvent } = useSaveBudgetEvent(currentType);
     const { mutateAsync: uploadFiles } = useUploadBudgetFiles();
@@ -182,8 +184,6 @@ export const CreateEditBudgetEvent: FunctionComponent<Props> = ({
     );
     const renderTrigger = useRenderTrigger(type, isMobileLayout, iconColor);
 
-    // console.log('errors', errors);
-    // console.log('ApiErrors', apiErrors);
     return (
         <FormikProvider value={formik}>
             {/* @ts-ignore */}
@@ -191,115 +191,141 @@ export const CreateEditBudgetEvent: FunctionComponent<Props> = ({
                 allowConfirm={isValid && !isEqual(values, initialValues)}
                 titleMessage={titleMessage}
                 onConfirm={closeDialog => {
-                    setCloseModal({ closeDialog });
-                    handleSubmit();
+                    if (userHasTeam) {
+                        setCloseModal({ closeDialog });
+                        handleSubmit();
+                    } else {
+                        closeDialog();
+                    }
                 }}
                 onCancel={closeDialog => {
                     closeDialog();
-                    setCurrentType(type);
-                    resetForm();
+                    if (userHasTeam) {
+                        setCurrentType(type);
+                        resetForm();
+                    }
                 }}
                 maxWidth="sm"
                 cancelMessage={MESSAGES.cancel}
                 confirmMessage={MESSAGES.send}
                 renderTrigger={renderTrigger}
             >
-                {(currentType === 'create' || currentType === 'retry') && (
+                {userHasTeam && (
                     <>
-                        <InputComponent
-                            type="select"
-                            required
-                            keyValue="target_teams"
-                            multi
-                            disabled={currentType !== 'create'}
-                            onChange={(keyValue, value) => {
-                                onChange(
-                                    keyValue,
-                                    commaSeparatedIdsToArray(value),
-                                );
-                            }}
-                            value={values.target_teams}
-                            errors={getErrors('target_teams')}
-                            label={MESSAGES.destination}
-                            options={teamsDropdown}
-                            loading={isFetchingTeams}
-                        />
+                        {(currentType === 'create' ||
+                            currentType === 'retry') && (
+                            <>
+                                <InputComponent
+                                    type="select"
+                                    required
+                                    keyValue="target_teams"
+                                    multi
+                                    disabled={currentType !== 'create'}
+                                    onChange={(keyValue, value) => {
+                                        onChange(
+                                            keyValue,
+                                            commaSeparatedIdsToArray(value),
+                                        );
+                                    }}
+                                    value={values.target_teams}
+                                    errors={getErrors('target_teams')}
+                                    label={MESSAGES.destination}
+                                    options={teamsDropdown}
+                                    loading={isFetchingTeams}
+                                />
 
-                        <InputComponent
-                            type="select"
-                            required
-                            disabled={currentType !== 'create'}
-                            keyValue="type"
-                            onChange={(keyValue, value) => {
-                                onChange(keyValue, value);
-                            }}
-                            value={values.type}
-                            errors={getErrors('type')}
-                            label={MESSAGES.eventType}
-                            options={eventOptions}
-                        />
+                                <InputComponent
+                                    type="select"
+                                    required
+                                    disabled={currentType !== 'create'}
+                                    keyValue="type"
+                                    onChange={(keyValue, value) => {
+                                        onChange(keyValue, value);
+                                    }}
+                                    value={values.type}
+                                    errors={getErrors('type')}
+                                    label={MESSAGES.eventType}
+                                    options={eventOptions}
+                                />
 
-                        <InputComponent
-                            type="text"
-                            keyValue="comment"
-                            multiline
-                            disabled={currentType !== 'create'}
-                            onChange={onChange}
-                            value={values.comment}
-                            errors={getErrors('comment')}
-                            label={MESSAGES.notes}
-                        />
-                        <InputComponent
-                            type="number"
-                            keyValue="amount"
-                            disabled={currentType !== 'create'}
-                            onChange={onChange}
-                            value={values.amount}
-                            errors={getErrors('amount')}
-                            label={MESSAGES.amount}
-                        />
+                                <InputComponent
+                                    type="text"
+                                    keyValue="comment"
+                                    multiline
+                                    disabled={currentType !== 'create'}
+                                    onChange={onChange}
+                                    value={values.comment}
+                                    errors={getErrors('comment')}
+                                    label={MESSAGES.notes}
+                                />
+                                <InputComponent
+                                    type="number"
+                                    keyValue="amount"
+                                    disabled={currentType !== 'create'}
+                                    onChange={onChange}
+                                    value={values.amount}
+                                    errors={getErrors('amount')}
+                                    label={MESSAGES.amount}
+                                />
+                            </>
+                        )}
+                        <Box mt={2}>
+                            <FileInputComponent
+                                keyValue="files"
+                                required={currentType === 'edit'}
+                                multiple
+                                onChange={onChange}
+                                value={values.files}
+                                errors={getErrors('files')}
+                                label={MESSAGES.filesUpload}
+                            />
+                        </Box>
+                        {(currentType === 'create' ||
+                            currentType === 'retry') && (
+                            <InputComponent
+                                type="text"
+                                keyValue="links"
+                                multiline
+                                disabled={currentType !== 'create'}
+                                onChange={onChange}
+                                value={values.links}
+                                errors={getErrors('links')}
+                                label={MESSAGES.links}
+                            />
+                        )}
+                        {values.type !== 'validation' &&
+                            currentType !== 'edit' && (
+                                <InputComponent
+                                    type="checkbox"
+                                    keyValue="internal"
+                                    label={MESSAGES.internal}
+                                    onChange={onChange}
+                                    value={values.internal}
+                                />
+                            )}
+                        {/* @ts-ignore */}
+                        {(errors?.general ?? []).length > 0 && (
+                            <>
+                                {getErrors('general').map(e => (
+                                    <Typography
+                                        key={`${e}-error`}
+                                        color="error"
+                                    >
+                                        {e}
+                                    </Typography>
+                                ))}
+                            </>
+                        )}
                     </>
                 )}
-                <Box mt={2}>
-                    <FileInputComponent
-                        keyValue="files"
-                        required={currentType === 'edit'}
-                        multiple
-                        onChange={onChange}
-                        value={values.files}
-                        errors={getErrors('files')}
-                        label={MESSAGES.filesUpload}
-                    />
-                </Box>
-                {(currentType === 'create' || currentType === 'retry') && (
-                    <InputComponent
-                        type="text"
-                        keyValue="links"
-                        multiline
-                        disabled={currentType !== 'create'}
-                        onChange={onChange}
-                        value={values.links}
-                        errors={getErrors('links')}
-                        label={MESSAGES.links}
-                    />
-                )}
-                {values.type !== 'validation' && currentType !== 'edit' && (
-                    <InputComponent
-                        type="checkbox"
-                        keyValue="internal"
-                        label={MESSAGES.internal}
-                        onChange={onChange}
-                        value={values.internal}
-                    />
-                )}
-                {/* @ts-ignore */}
-                {(errors?.general ?? []).length > 0 && (
+                {!userHasTeam && (
                     <>
-                        {getErrors('general').map(e => (
-                            <Typography key={`${e}-error`} color="error">
-                                {e}
+                        <Divider />
+                        <Box mb={2} mt={2}>
+                            <Typography style={{ fontWeight: 'bold' }}>
+                                {formatMessage(MESSAGES.userNeedsTeam)}
                             </Typography>
-                        ))}
+                        </Box>
                     </>
                 )}
             </ConfirmCancelDialogComponent>

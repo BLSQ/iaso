@@ -1402,6 +1402,11 @@ const MESSAGES = defineMessages({
         id: 'iaso.polio.error.label.userWithoutTeam',
         defaultMessage: 'User should be part of a team',
     },
+    userNeedsTeam: {
+        id: 'iaso.polio.error.label.userNeedsTeam',
+        defaultMessage:
+            'You need to be part of a team to create or edit budget events',
+    },
 });
 
 export default MESSAGES;

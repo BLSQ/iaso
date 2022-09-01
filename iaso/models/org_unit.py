@@ -153,6 +153,9 @@ class OrgUnitQuerySet(models.QuerySet):
         return queryset
 
 
+OrgUnitManager = models.Manager.from_queryset(OrgUnitQuerySet)
+
+
 class OrgUnit(TreeModel):
     VALIDATION_NEW = "NEW"
     VALIDATION_VALID = "VALID"
@@ -192,7 +195,7 @@ class OrgUnit(TreeModel):
     updated_at = models.DateTimeField(auto_now=True)
     creator = models.ForeignKey(User, null=True, blank=True, on_delete=models.SET_NULL)
 
-    objects = OrgUnitQuerySet.as_manager()
+    objects = OrgUnitManager()
 
     class Meta:
         indexes = [GistIndex(fields=["path"], buffering=True)]

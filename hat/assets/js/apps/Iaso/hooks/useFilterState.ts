@@ -1,6 +1,6 @@
 import { useState, useCallback, useMemo, useEffect } from 'react';
 import { useDispatch } from 'react-redux';
-import { redirectTo } from '../routing/actions';
+import { redirectTo, redirectToReplace } from '../routing/actions';
 
 export type FilterState = {
     filters: Record<string, unknown>;
@@ -10,6 +10,13 @@ export type FilterState = {
     filtersUpdated: boolean;
     // eslint-disable-next-line no-unused-vars
     setFiltersUpdated: (updated: boolean) => void;
+};
+
+type FilterStateParams = {
+    baseUrl: string;
+    params: Record<string, unknown>;
+    withPagination?: boolean;
+    saveSearchInHistory?: boolean;
 };
 
 const paginationParams = ['pageSize', 'page', 'order'];
@@ -24,11 +31,12 @@ const removePaginationParams = params => {
     return newParams;
 };
 
-export const useFilterState = (
-    baseUrl: string,
-    params: Record<string, unknown>,
+export const useFilterState = ({
+    baseUrl,
+    params,
     withPagination = true,
-): FilterState => {
+    saveSearchInHistory = true,
+}: FilterStateParams): FilterState => {
     const [filtersUpdated, setFiltersUpdated] = useState(false);
     const dispatch = useDispatch();
     const [filters, setFilters] = useState({
@@ -45,9 +53,21 @@ export const useFilterState = (
             if (withPagination) {
                 tempParams.page = '1';
             }
-            dispatch(redirectTo(baseUrl, tempParams));
+            if (saveSearchInHistory) {
+                dispatch(redirectTo(baseUrl, tempParams));
+            } else {
+                dispatch(redirectToReplace(baseUrl, tempParams));
+            }
         }
-    }, [filtersUpdated, params, filters, dispatch, baseUrl, withPagination]);
+    }, [
+        filtersUpdated,
+        params,
+        filters,
+        withPagination,
+        saveSearchInHistory,
+        dispatch,
+        baseUrl,
+    ]);
 
     const handleChange = useCallback(
         (key, value) => {

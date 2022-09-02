@@ -69,9 +69,6 @@ export const ListMap: FunctionComponent<Props> = ({
     const map: any = useRef();
     const classes: Record<string, string> = useStyles();
     const theme = useTheme();
-    const [selectedLocation, setSelectedLocation] = useState<
-        Location | undefined
-    >(undefined);
 
     const [currentTile, setCurrentTile] = useState<Tile>(tiles.osm);
     const fitToBounds = (newLocations: Location[]) => {
@@ -85,9 +82,6 @@ export const ListMap: FunctionComponent<Props> = ({
                 }
             }
         }
-    };
-    const onClick = (selecteOrgunit: Location) => {
-        setSelectedLocation(selecteOrgunit);
     };
 
     useEffect(() => {
@@ -116,7 +110,6 @@ export const ListMap: FunctionComponent<Props> = ({
                     scrollWheelZoom={false}
                     zoomControl={false}
                     contextmenu
-                    onMovestart={() => setSelectedLocation(undefined)}
                     refocusOnMap={false}
                 >
                     <ScaleControl imperial={false} />
@@ -131,17 +124,20 @@ export const ListMap: FunctionComponent<Props> = ({
                             />
                             <Pane name="markers">
                                 <MarkerClusterGroup
+                                    spiderfyDistanceMultiplier={5}
                                     iconCreateFunction={clusterCustomMarker}
                                 >
                                     <MarkersListComponent
                                         items={locations || []}
-                                        onMarkerClick={shape => onClick(shape)}
                                         markerProps={() => ({
                                             ...circleColorMarkerOptions(
                                                 theme.palette.primary.main,
                                             ),
+                                            radius: 12,
                                         })}
-                                        popupProps={{ selectedLocation }}
+                                        popupProps={location => ({
+                                            location,
+                                        })}
                                         PopupComponent={Popup}
                                         isCircle
                                     />

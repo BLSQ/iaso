@@ -316,9 +316,9 @@ export const OrgUnitsMap: FunctionComponent<Props> = ({
                                                 onMarkerClick={o =>
                                                     setCurrentOrgUnitId(o.id)
                                                 }
-                                                popupProps={{
+                                                popupProps={() => ({
                                                     currentOrgUnit,
-                                                }}
+                                                })}
                                                 PopupComponent={
                                                     OrgUnitPopupComponent
                                                 }
@@ -352,9 +352,9 @@ export const OrgUnitsMap: FunctionComponent<Props> = ({
                                         onMarkerClick={o =>
                                             setCurrentOrgUnitId(o.id)
                                         }
-                                        popupProps={{
+                                        popupProps={() => ({
                                             currentOrgUnit,
-                                        }}
+                                        })}
                                         PopupComponent={OrgUnitPopupComponent}
                                         tooltipProps={e => ({
                                             children: [e.name],

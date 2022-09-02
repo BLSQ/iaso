@@ -3,9 +3,13 @@ import { useDispatch } from 'react-redux';
 import { makeStyles, Box, Grid } from '@material-ui/core';
 
 import {
+    // @ts-ignore
     commonStyles,
+    // @ts-ignore
     Table,
+    // @ts-ignore
     LoadingSpinner,
+    // @ts-ignore
     useSafeIntl,
     // AddButton as AddButtonComponent,
 } from 'bluesquare-components';
@@ -13,7 +17,7 @@ import {
 import TopBar from '../../components/nav/TopBarComponent';
 import { Filters } from './components/Filters';
 // import { EntityDialog } from './components/EntityDialog';
-import { useGetPaginated, useDelete, useSave } from './hooks/requests';
+import { useGetPaginated, useDelete, useSave } from './hooks/requests/entities';
 
 import { columns, baseUrl } from './config';
 import MESSAGES from './messages';

@@ -37,7 +37,7 @@ const CircleMarkerComponent = props => {
                 onContextmenu(event, item);
             }}
         >
-            {PopupComponent && <PopupComponent {...popupProps} />}
+            {PopupComponent && <PopupComponent {...popupProps(item)} />}
             {TooltipComponent && <TooltipComponent {...tooltipProps(item)} />}
         </CircleMarker>
     );
@@ -48,7 +48,7 @@ CircleMarkerComponent.defaultProps = {
     onDragend: () => null,
     PopupComponent: undefined,
     draggable: false,
-    popupProps: {},
+    popupProps: () => {},
     markerProps: () => {},
     TooltipComponent: undefined,
     tooltipProps: () => {},
@@ -61,7 +61,7 @@ CircleMarkerComponent.propTypes = {
     PopupComponent: PropTypes.oneOfType([PropTypes.object, PropTypes.func]),
     onDragend: PropTypes.func,
     draggable: PropTypes.bool,
-    popupProps: PropTypes.object,
+    popupProps: PropTypes.func,
     markerProps: PropTypes.func,
     TooltipComponent: PropTypes.elementType,
     tooltipProps: PropTypes.func,

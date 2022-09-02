@@ -1,15 +1,15 @@
 import { UseMutationResult, UseQueryResult } from 'react-query';
-import { useSnackMutation, useSnackQuery } from '../../../libs/apiHooks';
+import { useSnackMutation, useSnackQuery } from '../../../../libs/apiHooks';
 import {
     deleteRequest,
     getRequest,
     postRequest,
     patchRequest,
-} from '../../../libs/Api';
-import MESSAGES from '../messages';
+} from '../../../../libs/Api';
+import MESSAGES from '../../messages';
 
-import { PaginatedEntities } from '../types/paginatedEntities';
-import { Entity } from '../types/entity';
+import { PaginatedEntities } from '../../types/paginatedEntities';
+import { Entity } from '../../types/entity';
 
 type Params = {
     pageSize: string;
@@ -24,6 +24,7 @@ type NewParams = {
     order: string;
     page: string;
     search?: string;
+    // eslint-disable-next-line camelcase
     entity_types__ids?: string;
 };
 
@@ -56,20 +57,18 @@ export const useGet = (): UseQueryResult<Array<Entity>, Error> => {
 };
 
 export const useDelete = (): UseMutationResult =>
-    useSnackMutation(
-        body => deleteRequest(`/api/entity/${body.id}/`),
-        MESSAGES.deleteSuccess,
-        MESSAGES.deleteError,
-        ['entities'],
-    );
+    useSnackMutation({
+        mutationFn: body => deleteRequest(`/api/entity/${body.id}/`),
+        snackSuccessMessage: MESSAGES.deleteSuccess,
+        snackErrorMsg: MESSAGES.deleteError,
+        invalidateQueryKey: ['entities'],
+    });
 
 export const useSave = (): UseMutationResult =>
-    useSnackMutation(
-        body =>
+    useSnackMutation({
+        mutationFn: body =>
             body.id
                 ? patchRequest(`/api/entity/${body.id}/`, body)
                 : postRequest('/api/entity/', body),
-        undefined,
-        undefined,
-        ['entities'],
-    );
+        invalidateQueryKey: ['entities'],
+    });

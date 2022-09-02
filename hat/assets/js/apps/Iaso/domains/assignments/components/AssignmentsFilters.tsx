@@ -34,7 +34,7 @@ export const AssignmentsFilters: FunctionComponent<Props> = ({
     const { formatMessage }: { formatMessage: IntlFormatMessage } =
         useSafeIntl();
     const { filters, handleSearch, handleChange, filtersUpdated } =
-        useFilterState(baseUrl, params, false);
+        useFilterState({ baseUrl, params, withPagination: false });
     return (
         <>
             <Grid container spacing={2}>

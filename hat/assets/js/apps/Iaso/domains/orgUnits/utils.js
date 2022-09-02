@@ -242,11 +242,11 @@ export const getMarkerList = ({
             items={locationsList}
             onMarkerClick={fetchDetail}
             PopupComponent={PopupComponent}
-            popupProps={{
+            popupProps={() => ({
                 displayUseLocation: true,
                 replaceLocation: selectedOrgUnit =>
                     useOrgUnitLocation(selectedOrgUnit),
-            }}
+            })}
             isCircle
             markerProps={() => ({
                 ...circleColorMarkerOptions(color),

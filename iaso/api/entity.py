@@ -375,22 +375,33 @@ class EntityViewSet(ModelViewSet):
             form_data_key = form_key_list[form_key_list.index("version") + 1]
             descriptor_list = form_descriptor[form_data_key]
 
+            is_list = True
+
             for d in descriptor_list:
                 for k, v in d.items():
+                    data_list = v
                     if k == "children":
-                        for data in v:
-                            value_dict = {}
-                            for _k, _v in data.items():
-                                if _k == "name" or _k == "label":
-                                    value_dict[_k] = _v
-                            columns_list.append(value_dict)
-
+                        while is_list:
+                            for data in data_list:
+                                value_dict = {}
+                                for _k, _v in data.items():
+                                    if _k == "name" or _k == "label":
+                                        value_dict[_k] = _v
+                                        is_list = False
+                                    key_index = sorted(data.keys()).index(_k)
+                                    if key_index < len(sorted(data.keys())) - 1:
+                                        if sorted(data.keys())[key_index + 1] == "children":
+                                            data_list = data["children"]
+                                            is_list = True
+                                    if _k == "children":
+                                        data_list = _v
+                                        is_list = True
+                                columns_list.append(value_dict)
             result = {}
             for k, v in file_content.items():
                 if k in list(entity.entity_type.fields_list_view):
                     result[k] = v
             result_list.append(result)
-
         columns_list = [i for n, i in enumerate(columns_list) if i not in columns_list[n + 1 :]]
 
         # remove dictionaries with "name" as only key

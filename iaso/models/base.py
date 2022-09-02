@@ -451,6 +451,10 @@ class DomainGroupManager(models.Manager):
 
 
 class Group(models.Model):
+    """Group of OrgUnit.
+
+    Linked to a source_version, which is also used for tenancy"""
+
     name = models.TextField()
     source_ref = models.TextField(null=True, blank=True)
     org_units = models.ManyToManyField("OrgUnit", blank=True, related_name="groups")
@@ -465,6 +469,9 @@ class Group(models.Model):
     objects = DefaultGroupManager()
     all_objects = models.Manager()
     domain_objects = DomainGroupManager()
+
+    class Meta:
+        base_manager_name = "all_objects"
 
     def __str__(self):
         return "%s | %s " % (self.name, self.source_version)

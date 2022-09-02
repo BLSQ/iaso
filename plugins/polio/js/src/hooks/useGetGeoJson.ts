@@ -1,13 +1,16 @@
 import { getRequest } from 'Iaso/libs/Api';
 import { useSnackQuery } from 'Iaso/libs/apiHooks';
 
-export const useGetGeoJson = (country, orgUnitCategory) => {
+export const useGetGeoJson = (
+    topParentId: number | undefined,
+    orgUnitCategory: string,
+) => {
     const params = {
         validation_status: 'all',
         asLocation: true,
         limit: 3000,
         order: 'id',
-        orgUnitParentId: country,
+        orgUnitParentId: topParentId,
         orgUnitTypeCategory: orgUnitCategory,
     };
 
@@ -18,7 +21,7 @@ export const useGetGeoJson = (country, orgUnitCategory) => {
         () => getRequest(`/api/orgunits/?${queryString.toString()}`),
         undefined,
         {
-            enabled: Boolean(country),
+            enabled: Boolean(topParentId),
             staleTime: 1000 * 60 * 15, // in MS
             cacheTime: 1000 * 60 * 5,
         },

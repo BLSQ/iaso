@@ -1,5 +1,6 @@
 import React, { FunctionComponent, ReactNode } from 'react';
 import { Grid, Paper, Typography, makeStyles, Box } from '@material-ui/core';
+
 // @ts-ignore
 import { useSafeIntl } from 'bluesquare-components';
 
@@ -13,7 +14,6 @@ const useStyles = makeStyles(theme => ({
     mapLegendTitle: {
         fontSize: 14,
         fontWeight: 'bold',
-        marginBottom: theme.spacing(1),
     },
     roundColor: {
         borderRadius: theme.spacing(2),
@@ -36,8 +36,8 @@ type Legend = {
 
 type Props = {
     titleMessage?: IntlMessage;
-    options?: Array<Legend>;
-    content?: ReactNode;
+    options?: Array<Legend> | undefined;
+    content?: ReactNode | undefined;
     top?: number | 'auto';
     right?: number | 'auto';
     left?: number | 'auto';

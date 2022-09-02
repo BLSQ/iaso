@@ -5,7 +5,7 @@ import { Field, useFormikContext } from 'formik';
 import { useSafeIntl } from 'bluesquare-components';
 import { useStyles } from '../styles/theme';
 import { SendEmailButton } from '../components/Buttons/SendEmailButton';
-import { polioVacines, polioViruses } from '../constants/virus';
+import { polioViruses } from '../constants/virus.ts';
 import { OrgUnitsLevels } from '../components/Inputs/OrgUnitsSelect';
 import {
     BooleanInput,
@@ -75,9 +75,12 @@ export const BaseInfoForm = () => {
                         />
                         <Field
                             label={formatMessage(MESSAGES.vaccines)}
-                            name="vacine"
-                            options={polioVacines}
-                            component={Select}
+                            name="vaccines"
+                            disabled
+                            component={TextInput}
+                            title={formatMessage(
+                                MESSAGES.helpTextEditVaccineViaScope,
+                            )}
                         />
                     </Grid>
                 </Grid>

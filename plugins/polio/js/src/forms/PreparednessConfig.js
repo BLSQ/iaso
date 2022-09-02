@@ -39,7 +39,7 @@ export const PreparednessConfig = ({ roundNumber }) => {
         mutate: generateSpreadsheetMutation,
         isLoading: isGeneratingSpreadsheet,
         error: generationError,
-    } = useGeneratePreparednessSheet(values.id);
+    } = useGeneratePreparednessSheet(values.id, roundNumber);
     const {
         preparedness_spreadsheet_url,
         last_preparedness: preparednessForm,
@@ -65,7 +65,7 @@ export const PreparednessConfig = ({ roundNumber }) => {
     };
 
     const generateSpreadsheet = () => {
-        generateSpreadsheetMutation(null, {
+        generateSpreadsheetMutation(roundNumber, {
             onSuccess: data => {
                 setFieldValue(key, data.url);
             },

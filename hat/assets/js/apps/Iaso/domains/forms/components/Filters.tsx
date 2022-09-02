@@ -2,7 +2,7 @@ import React, { useState, FunctionComponent, useEffect } from 'react';
 
 import { Grid, Button, makeStyles } from '@material-ui/core';
 import SearchIcon from '@material-ui/icons/Search';
-
+// @ts-ignore
 import { commonStyles, useSafeIntl } from 'bluesquare-components';
 
 import InputComponent from '../../../components/forms/InputComponent';
@@ -41,7 +41,7 @@ const Filters: FunctionComponent<Props> = ({
     const classes: Record<string, string> = useStyles();
     const { formatMessage } = useSafeIntl();
     const { filters, handleSearch, handleChange, filtersUpdated } =
-        useFilterState(baseUrl, params);
+        useFilterState({ baseUrl, params });
     const [textSearchErrors, setTextSearchErrors] = useState<Array<string>>([]);
     const [hasError, setHasError] = useState<boolean>(false);
     const [showDeleted, setShowDeleted] = useState<boolean>(

@@ -32,8 +32,14 @@ import MESSAGES from '../messages';
 import { redirectTo } from '../../../routing/actions';
 import { ListMap } from './components/ListMap';
 
+import { MENU_HEIGHT_WITH_TABS } from '../../../constants/uiConstants';
+
 const useStyles = makeStyles(theme => ({
     ...commonStyles(theme),
+    container: {
+        height: `calc(100vh - ${MENU_HEIGHT_WITH_TABS}px)`,
+        overflow: 'auto',
+    },
     hiddenOpacity: {
         position: 'absolute',
         top: 0,
@@ -99,7 +105,7 @@ export const Beneficiaries: FunctionComponent<Props> = ({ params }) => {
                     <Tab value="map" label={formatMessage(MESSAGES.map)} />
                 </Tabs>
             </TopBar>
-            <Box p={2}>
+            <Box p={2} className={classes.container}>
                 <Filters params={params} />
                 <Grid
                     container

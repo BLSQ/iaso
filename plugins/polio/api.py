@@ -2,7 +2,8 @@ import csv
 import functools
 import json
 from datetime import timedelta, datetime, date
-from typing import Optional
+import logging
+from typing import Any, Dict, List, Optional, Union
 from collections import defaultdict
 from functools import lru_cache
 from logging import getLogger
@@ -28,6 +29,7 @@ from gspread.utils import extract_id_from_url
 from hat.settings import DEFAULT_FROM_EMAIL
 from rest_framework import routers, filters, viewsets, serializers, permissions, status
 from rest_framework.decorators import action
+from rest_framework.request import Request
 from rest_framework.response import Response
 from django.conf import settings
 import urllib.parse
@@ -59,7 +61,18 @@ from .forma import (
     find_orgunit_in_cache,
 )
 from .helpers import get_url_content
-from .models import Campaign, Config, LineListImport, SpreadSheetImport, Round, CampaignGroup, BudgetEvent, BudgetFiles
+from .models import (
+    Campaign,
+    Config,
+    LineListImport,
+    SpreadSheetImport,
+    Round,
+    CampaignGroup,
+    BudgetEvent,
+    BudgetFiles,
+    CampaignScope,
+    RoundScope,
+)
 from .models import CountryUsersGroup
 from .models import URLCache
 from .preparedness.calculator import preparedness_summary
@@ -67,7 +80,7 @@ from .preparedness.parser import get_preparedness
 
 logger = getLogger(__name__)
 
-CACHE_VERSION = 5
+CACHE_VERSION = 6
 
 
 class CustomFilterBackend(filters.BaseFilterBackend):
@@ -104,7 +117,6 @@ class CampaignViewSet(ModelViewSet):
         "obr_name",
         "cvdpv2_notified_at",
         "detection_status",
-        "vacine",
         "first_round_started_at",
         "last_round_started_at",
         "country__name",
@@ -118,7 +130,6 @@ class CampaignViewSet(ModelViewSet):
         "country__id": ["in"],
         "grouped_campaigns__id": ["in", "exact"],
         "obr_name": ["exact", "contains"],
-        "vacine": ["exact"],
         "cvdpv2_notified_at": ["gte", "lte", "range"],
         "created_at": ["gte", "lte", "range"],
         "rounds__started_at": ["gte", "lte", "range"],
@@ -183,8 +194,10 @@ class CampaignViewSet(ModelViewSet):
         return Response(get_current_preparedness(campaign, roundNumber))
 
     @action(methods=["POST"], detail=True, serializer_class=CampaignPreparednessSpreadsheetSerializer)
-    def create_preparedness_sheet(self, request, pk=None, **kwargs):
-        serializer = CampaignPreparednessSpreadsheetSerializer(data={"campaign": pk})
+    def create_preparedness_sheet(self, request: Request, pk=None, **kwargs):
+        data = request.data
+        data["campaign"] = pk
+        serializer = CampaignPreparednessSpreadsheetSerializer(data=data)
         serializer.is_valid(raise_exception=True)
         serializer.save()
         return Response(serializer.data)
@@ -273,47 +286,173 @@ Timeline tracker Automated message
         url_path="merged_shapes.geojson",
     )
     def shapes(self, request):
-        cached_response = None
-        # cached_response = cache.get("{0}-geo_shapes".format(request.user.id))
-        queryset = self.filter_queryset(self.get_queryset())
-        # Remove deleted and campaign with missing group
-        queryset = queryset.filter(deleted_at=None).exclude(group=None)
+        """GeoJson, one geojson per campaign
 
-        if cached_response and queryset:
-            parsed_cache_response = json.loads(cached_response)
-            cache_creation_date = make_aware(datetime.utcfromtimestamp(parsed_cache_response["cache_creation_date"]))
-            last_campaign_updated = queryset.order_by("updated_at").last()
-            last_org_unit_updated = OrgUnit.objects.filter(groups__campaigns__in=queryset).order_by("updated_at").last()
-            if (
-                last_org_unit_updated
-                and cache_creation_date > last_org_unit_updated.updated_at
-                and last_campaign_updated
-                and cache_creation_date > last_campaign_updated.updated_at
-            ):
-                return JsonResponse(json.loads(cached_response))
+        We use the django annotate feature to make a raw Postgis request that will generate the shape on the
+        postgresql server which is faster.
+        Campaign with and without scope per round are  handled separately"""
+        # FIXME: The cache ignore all the filter parameter which will return wrong result if used
+        key_name = "{0}-geo_shapes".format(request.user.id)
+        campaigns = self.filter_queryset(self.get_queryset())
+        # Remove deleted campaigns
+        campaigns = campaigns.filter(deleted_at=None)
 
-        queryset = queryset.annotate(
+        # Determine last modification date to see if we invalidate the cache
+        last_campaign_updated = campaigns.order_by("updated_at").last()
+        last_roundscope_org_unit_updated = (
+            OrgUnit.objects.order_by("updated_at").filter(groups__roundScope__round__campaign__in=campaigns).last()
+        )
+        last_org_unit_updated = (
+            OrgUnit.objects.order_by("updated_at").filter(groups__campaignScope__campaign__in=campaigns).last()
+        )
+
+        update_dates = [
+            last_org_unit_updated.updated_at if last_campaign_updated else None,
+            last_roundscope_org_unit_updated.updated_at if last_roundscope_org_unit_updated else None,
+            last_campaign_updated.updated_at if last_campaign_updated else None,
+        ]
+        cached_response = self.return_cached_response_if_valid(key_name, update_dates)
+        if cached_response:
+            return cached_response
+
+        round_scope_queryset = campaigns.filter(separate_scopes_per_round=True).annotate(
+            geom=RawSQL(
+                """select st_asgeojson(st_simplify(st_union(st_buffer(iaso_orgunit.geom::geometry, 0)), 0.01)::geography)
+from iaso_orgunit
+right join iaso_group_org_units ON iaso_group_org_units.orgunit_id = iaso_orgunit.id
+right join polio_roundscope ON iaso_group_org_units.group_id =  polio_roundscope.group_id
+right join polio_round ON polio_round.id = polio_roundscope.round_id
+where polio_round.campaign_id = polio_campaign.id""",
+                [],
+            )
+        )
+        # For campaign scope
+        campain_scope_queryset = campaigns.filter(separate_scopes_per_round=False).annotate(
+            geom=RawSQL(
+                """select st_asgeojson(st_simplify(st_union(st_buffer(iaso_orgunit.geom::geometry, 0)), 0.01)::geography)
+from iaso_orgunit
+right join iaso_group_org_units ON iaso_group_org_units.orgunit_id = iaso_orgunit.id
+right join polio_campaignscope ON iaso_group_org_units.group_id =  polio_campaignscope.group_id
+where polio_campaignscope.campaign_id = polio_campaign.id""",
+                [],
+            )
+        )
+
+        features = []
+        for queryset in (round_scope_queryset, campain_scope_queryset):
+            for c in queryset:
+                if c.geom:
+                    s = SmallCampaignSerializer(c)
+                    feature = {"type": "Feature", "geometry": json.loads(c.geom), "properties": s.data}
+                    features.append(feature)
+        res = {"type": "FeatureCollection", "features": features, "cache_creation_date": datetime.utcnow().timestamp()}
+
+        cache.set(key_name, json.dumps(res), 3600 * 24, version=CACHE_VERSION)
+        return JsonResponse(res)
+
+    @staticmethod
+    def return_cached_response_if_valid(cache_key, update_dates):
+        cached_response = cache.get(cache_key, version=CACHE_VERSION)
+        if not cached_response:
+            return None
+        parsed_cache_response = json.loads(cached_response)
+        cache_creation_date = make_aware(datetime.utcfromtimestamp(parsed_cache_response["cache_creation_date"]))
+        for update_date in update_dates:
+            if update_date and update_date > cache_creation_date:
+                return None
+        return JsonResponse(json.loads(cached_response))
+
+    @action(
+        methods=["GET", "HEAD"],
+        detail=False,
+        url_path="v2/merged_shapes.geojson",
+    )
+    def shapes_v2(self, request):
+        # FIXME: The cache ignore all the filter parameter which will return wrong result if used
+        key_name = "{0}-geo_shapes_v2".format(request.user.id)
+
+        campaigns = self.filter_queryset(self.get_queryset())
+        # Remove deleted campaigns
+        campaigns = campaigns.filter(deleted_at=None)
+
+        last_campaign_updated = campaigns.order_by("updated_at").last()
+        last_roundscope_org_unit_updated = (
+            OrgUnit.objects.order_by("updated_at").filter(groups__roundScope__round__campaign__in=campaigns).last()
+        )
+        last_org_unit_updated = (
+            OrgUnit.objects.order_by("updated_at").filter(groups__campaignScope__campaign__in=campaigns).last()
+        )
+
+        update_dates = [
+            last_org_unit_updated.updated_at if last_campaign_updated else None,
+            last_roundscope_org_unit_updated.updated_at if last_roundscope_org_unit_updated else None,
+            last_campaign_updated.updated_at if last_campaign_updated else None,
+        ]
+        cached_response = self.return_cached_response_if_valid(key_name, update_dates)
+        if cached_response:
+            return cached_response
+
+        campaign_scopes = CampaignScope.objects.filter(campaign__in=campaigns.filter(separate_scopes_per_round=False))
+        campaign_scopes = campaign_scopes.prefetch_related("campaign")
+        campaign_scopes = campaign_scopes.prefetch_related("campaign__country")
+        campaign_scopes = campaign_scopes.annotate(
             geom=RawSQL(
                 """select st_asgeojson(st_simplify(st_union(st_buffer(iaso_orgunit.geom::geometry, 0)), 0.01)::geography)
 from iaso_orgunit right join iaso_group_org_units ON iaso_group_org_units.orgunit_id = iaso_orgunit.id
-where group_id = polio_campaign.group_id""",
+where group_id = polio_campaignscope.group_id""",
                 [],
             )
         )
         # Check if the campaigns have been updated since the response has been cached
         features = []
-        for c in queryset:
-            if c.geom:
-                s = SmallCampaignSerializer(c)
-                feature = {"type": "Feature", "geometry": json.loads(c.geom), "properties": s.data}
+        scope: CampaignScope
+        for scope in campaign_scopes:
+            if scope.geom:
+                feature = {
+                    "type": "Feature",
+                    "geometry": json.loads(scope.geom),
+                    "properties": {
+                        "obr_name": scope.campaign.obr_name,
+                        "id": str(scope.campaign.id),
+                        "vaccine": scope.vaccine,
+                        "scope_key": f"campaignScope-{scope.id}",
+                        "top_level_org_unit_name": scope.campaign.country.name,
+                    },
+                }
                 features.append(feature)
+
+        round_scopes = RoundScope.objects.filter(round__campaign__in=campaigns.filter(separate_scopes_per_round=True))
+        round_scopes = round_scopes.prefetch_related("round__campaign")
+        round_scopes = round_scopes.prefetch_related("round__campaign__country")
+        round_scopes = round_scopes.annotate(
+            geom=RawSQL(
+                """select st_asgeojson(st_simplify(st_union(st_buffer(iaso_orgunit.geom::geometry, 0)), 0.01)::geography)
+from iaso_orgunit right join iaso_group_org_units ON iaso_group_org_units.orgunit_id = iaso_orgunit.id
+where group_id = polio_roundscope.group_id""",
+                [],
+            )
+        )
+
+        for scope in round_scopes:
+            scope: RoundScope
+            if scope.geom:
+                feature = {
+                    "type": "Feature",
+                    "geometry": json.loads(scope.geom),
+                    "properties": {
+                        "obr_name": scope.round.campaign.obr_name,
+                        "id": str(scope.round.campaign.id),
+                        "vaccine": scope.vaccine,
+                        "scope_key": f"roundScope-{scope.id}",
+                        "top_level_org_unit_name": scope.round.campaign.country.name,
+                        "round_number": scope.round.number,
+                    },
+                }
+                features.append(feature)
+
         res = {"type": "FeatureCollection", "features": features, "cache_creation_date": datetime.utcnow().timestamp()}
 
-        cache.set(
-            "{0}-geo_shapes".format(request.user.id),
-            json.dumps(res),
-            3600 * 24,
-        )
+        cache.set(key_name, json.dumps(res), 3600 * 24, version=CACHE_VERSION)
         return JsonResponse(res)
 
 
@@ -600,9 +739,7 @@ class IMStatsViewSet(viewsets.ViewSet):
                 nfm_abs_counts_dict = defaultdict(int)
                 done_something = False
                 if isinstance(form, str):
-                    print("------------")
                     print("wrong form format:", form, "in", country.name)
-                    print("------------")
                     continue
                 try:
                     round_number = form.get("roundNumber", None)
@@ -669,7 +806,8 @@ class IMStatsViewSet(viewsets.ViewSet):
                     debug_response.add((campaign.obr_name, form["Response"]))
                 if campaign:
                     campaign_name = campaign.obr_name
-                    scope = campaign.group.org_units.values_list("id", flat=True) if campaign.group else []
+                    # FIXME: We refetch the whole list for all submission this is probably a cause of slowness
+                    scope = campaign.get_all_districts().values_list("id", flat=True)
                     campaign_stats[campaign_name]["has_scope"] = len(scope) > 0
                     district = find_district(district_name, region_name, district_dict)
                     if not district:
@@ -702,9 +840,6 @@ class IMStatsViewSet(viewsets.ViewSet):
                 else:
                     day_country_not_found[country.name][today_string] += 1
                     form_campaign_not_found_count += 1
-            print("(----------------------------)")
-            print(country.name, debug_response)
-            print("(----------------------------)")
         skipped_forms.update(
             {"count": len(skipped_forms_list), "no_round": no_round_count, "unknown_round": unknown_round}
         )
@@ -781,28 +916,18 @@ def find_lqas_im_campaign(campaigns, today, country, round_number: Optional[int]
     return None
 
 
-def get_round_campaign(c, index):
-    if index == 0:
-        return c.get_round_one()
-    if index == 1:
-        return c.get_round_two()
-
-
-def find_campaign_on_day(campaigns, day, country, get_round_campaign_cached):
+def find_campaign_on_day(campaigns, day):
     for c in campaigns:
-        round_one = get_round_campaign_cached(c, 0)
-        round_two = get_round_campaign_cached(c, 1)
-        if not (round_one and round_one.started_at):
+        if not c.start_date:
             continue
-        round_end = round_two.ended_at if (round_two and round_two.ended_at) else round_one.ended_at
-        if round_end:
-            end_date = round_end + timedelta(days=+10)
+        start_date = c.start_date
+        end_date = c.end_date
+        if not end_date or end_date < c.last_start_date:
+            end_date = c.last_start_date + timedelta(days=+28)
         else:
-            end_date = round_one.started_at + timedelta(days=+28)
-
-        if c.country_id == country.id and round_one.started_at <= day < end_date:
+            end_date = end_date + timedelta(days=+10)
+        if start_date <= day < end_date:
             return c
-    return None
 
 
 def convert_dicts_to_table(list_of_dicts):
@@ -830,7 +955,6 @@ def handle_ona_request_with_key(request, key):
     campaigns = Campaign.objects.all().filter(deleted_at=None)
 
     form_count = 0
-    get_round_campaign_cached = functools.lru_cache(None)(get_round_campaign)
     find_campaign_on_day_cached = functools.lru_cache(None)(find_campaign_on_day)
     for config in config.content:
         forms = get_url_content(
@@ -844,12 +968,18 @@ def handle_ona_request_with_key(request, key):
             .prefetch_related("parent")
         )
         cache = make_orgunits_cache(facilities)
+        # Add fields to speed up detection of campaign day
+        campaign_qs = campaigns.filter(country_id=country.id).annotate(
+            last_start_date=Max("rounds__started_at"),
+            start_date=Min("rounds__started_at"),
+            end_date=Max("rounds__ended_at"),
+        )
 
         for form in forms:
             try:
                 today_string = form["today"]
                 today = datetime.strptime(today_string, "%Y-%m-%d").date()
-                campaign = find_campaign_on_day_cached(campaigns, today, country, get_round_campaign_cached)
+                campaign = find_campaign_on_day_cached(campaign_qs, today)
                 district_name = form.get("District", None)
                 if not district_name:
                     district_name = form.get("district", "")
@@ -936,7 +1066,8 @@ class OrgUnitsPerCampaignViewset(viewsets.ViewSet):
         queryset = OrgUnit.objects.none()
 
         for campaign in campaigns:
-            districts = OrgUnit.objects.filter(groups=campaign.group_id)
+            districts = campaign.get_all_districts()
+
             if districts:
                 all_facilities = OrgUnit.objects.hierarchy(districts)
                 if org_unit_type:
@@ -1236,7 +1367,8 @@ class LQASStatsViewSet(viewsets.ViewSet):
                             source_info = HH.get("Count_HH/Caregiver_Source_Info/" + source_info_key)
                             if source_info == "True":
                                 caregiver_counts_dict[source_info_key] += 1
-                scope = campaign.group.org_units.values_list("id", flat=True) if campaign.group else []
+                # FIXME: We refetch the whole list for all submission this is probably a cause of slowness
+                scope = campaign.get_all_districts().values_list("id", flat=True)
                 campaign_stats[campaign_name]["has_scope"] = len(scope) > 0
                 district = find_district(district_name, region_name, district_dict)
                 if not district:
@@ -1261,8 +1393,6 @@ class LQASStatsViewSet(viewsets.ViewSet):
                     d["total_sites_visited"] = d["total_sites_visited"] + total_sites_visited
                     d["district"] = district.id
                     d["region_name"] = district.parent.name
-            print("(----------------------------)")
-            print(country.name, debug_response)
         add_nfm_stats_for_rounds(campaign_stats, nfm_reasons_per_district_per_campaign, "nfm_stats")
         add_nfm_stats_for_rounds(campaign_stats, nfm_abs_reasons_per_district_per_campaign, "nfm_abs_stats")
         format_caregiver_stats(campaign_stats)
@@ -1334,21 +1464,27 @@ class CampaignGroupViewSet(ModelViewSet):
 
 
 class HasPoliobudgetPermission(permissions.BasePermission):
-    def has_permission(self, request, view):
+    def has_permission(self, request, view) -> bool:
         if not request.user.has_perm("menupermissions.iaso_polio_budget"):
             return False
         return True
 
 
-def email_subject(event_type, campaign_name):
+def email_subject(event_type: str, campaign_name: str) -> str:
     email_subject_template = "New {} for {}"
     return email_subject_template.format(event_type, campaign_name)
 
 
-def event_creation_email(event_type, first_name, last_name, comment, link, dns_domain):
+def event_creation_email(
+    event_type: str, first_name: str, last_name: str, comment: str, file: str, links: str, link: str, dns_domain: str
+) -> str:
     email_template = """%s by %s %s.
 
 Comment: %s
+
+Files: %s
+
+Links: %s
 
 ------------
 
@@ -1357,34 +1493,56 @@ you can access the history of this budget here: %s
 ------------    
 This is an automated email from %s
 """
-    return email_template % (event_type, first_name, last_name, comment, link, dns_domain)
+    return email_template % (event_type, first_name, last_name, comment, file, links, link, dns_domain)
 
 
 def creation_email_with_two_links(
-    event_type, first_name, last_name, comment, validation_link, rejection_link, dns_domain
-):
+    event_type: str,
+    first_name: str,
+    last_name: str,
+    comment: str,
+    files: str,
+    links: str,
+    validation_link: str,
+    rejection_link: str,
+    dns_domain: str,
+) -> str:
     email_template = """%s by %s %s.
 
 Comment: %s
+
+Files:  %s
+
+Links: %s
 
 ------------
 
 you can validate the budget here: %s
 
-you can reject and add a comment hre : %s
+you can reject and add a comment here : %s
 
 ------------    
 This is an automated email from %s
 """
-    return email_template % (event_type, first_name, last_name, comment, validation_link, rejection_link, dns_domain)
+    return email_template % (
+        event_type,
+        first_name,
+        last_name,
+        comment,
+        files,
+        links,
+        validation_link,
+        rejection_link,
+        dns_domain,
+    )
 
 
-def budget_approval_email_subject(campaign_name):
+def budget_approval_email_subject(campaign_name: str) -> str:
     email_subject_validation_template = "APPROVED: Budget For Campaign {}"
     return email_subject_validation_template.format(campaign_name)
 
 
-def budget_approval_email(campaign_name, link, dns_domain):
+def budget_approval_email(campaign_name: str, link: str, dns_domain: str) -> str:
     email_template = """
             
                     The budget for campaign {0} has been approved.
@@ -1397,7 +1555,7 @@ def budget_approval_email(campaign_name, link, dns_domain):
     return email_template.format(campaign_name, link, dns_domain)
 
 
-def send_approval_budget_mail(event):
+def send_approval_budget_mail(event: BudgetEvent) -> None:
     mails_list = list()
     events = BudgetEvent.objects.filter(campaign=event.campaign)
     link_to_send = "https://%s/dashboard/polio/budget/details/campaignId/%s/campaignName/%s/country/%d" % (
@@ -1431,18 +1589,27 @@ def send_approval_budget_mail(event):
                     )
                     msg.attach_alternative(html_content, "text/html")
                     msg.send(fail_silently=False)
-                    # send_mail(
-                    #     subject,
-                    #     text_content,
-                    #     DEFAULT_FROM_EMAIL,
-                    #     [user.email],
-                    # )
 
 
-def send_approvers_email(user, author_team, event, event_type, approval_link, rejection_link):
+def send_approvers_email(
+    user: User,
+    author_team: Team,
+    event: BudgetEvent,
+    event_type: str,
+    approval_link: str,
+    rejection_link: str,
+    files_info: Optional[List[Dict[str, Any]]],
+    links_string: Optional[str],
+) -> None:
     # if user is in other approval team, send the mail with the fat buttons
     subject = email_subject(event_type, event.campaign.obr_name)
     from_email = settings.DEFAULT_FROM_EMAIL
+    files_string = "None"
+    if files_info:
+        files_string = ",\n ".join([f["path"] for f in files_info])
+    links = None
+    if links_string:
+        links = links_string.split(",")
     auto_authentication_approval_link = generate_auto_authentication_link(approval_link, user)
     auto_authentication_rejection_link = generate_auto_authentication_link(rejection_link, user)
     text_content = creation_email_with_two_links(
@@ -1450,6 +1617,8 @@ def send_approvers_email(user, author_team, event, event_type, approval_link, re
         event.author.first_name,
         event.author.last_name,
         event.comment,
+        files_string,
+        links_string,
         auto_authentication_approval_link,
         auto_authentication_rejection_link,
         settings.DNS_DOMAIN,
@@ -1468,20 +1637,22 @@ def send_approvers_email(user, author_team, event, event_type, approval_link, re
             "team": author_team.name,
             "sender": settings.DNS_DOMAIN,
             "event_type": event_type,
+            "files": files_info,
+            "links": links,
         },
     )
     msg.attach_alternative(html_content, "text/html")
     msg.send(fail_silently=False)
 
 
-def send_approval_confirmation_to_users(event):
+def send_approval_confirmation_to_users(event: BudgetEvent) -> None:
     # modify campaign.budget_status instead of event.status
     event.status = "validated"
     event.save()
     send_approval_budget_mail(event)
 
 
-def is_budget_approved(user, event):
+def is_budget_approved(user: User, event: BudgetEvent) -> bool:
     val_teams = (
         Team.objects.filter(name__icontains="approval")
         .filter(project__account=user.iaso_profile.account)
@@ -1500,6 +1671,18 @@ def is_budget_approved(user, event):
     if validation_count == val_teams.count():
         return True
     return False
+
+
+def format_file_link(event_file: BudgetFiles) -> Dict:
+    serialized_file = BudgetFilesSerializer(event_file).data
+    return {"path": "https://" + settings.DNS_DOMAIN + serialized_file["file"], "name": event_file.file.name}
+
+
+def make_budget_event_file_links(event: BudgetEvent) -> Optional[str]:
+    event_files = event.event_files.all()
+    if not event_files:
+        return None
+    return [format_file_link(f) for f in event_files]
 
 
 class RecipientFilterBackend(filters.BaseFilterBackend):
@@ -1527,7 +1710,7 @@ class SenderTeamFilterBackend(filters.BaseFilterBackend):
                 sender_team = Team.objects.get(id=int(sender_team_id))
                 queryset = queryset.filter(author__in=list(sender_team.users.all()))
             except:
-                print("No team found for id ", sender_team_id)
+                logging.debug("No team found for id ", sender_team_id)
 
         return queryset
 
@@ -1580,6 +1763,11 @@ class BudgetEventViewset(ModelViewSet):
             event = BudgetEvent.objects.get(pk=event_pk)
             event.is_finalized = True if request.data["is_finalized"] else False
             event.save()
+            files_string = "None"
+            files_info = make_budget_event_file_links(event)
+            if files_info:
+                files_string = ",\n ".join([f["path"] for f in files_info])
+
             current_user = self.request.user
             event_type = "approval" if event.type == "validation" else event.type
 
@@ -1598,7 +1786,6 @@ class BudgetEventViewset(ModelViewSet):
                 )
                 approval_link = link_to_send + "/action/confirmApproval"
                 rejection_link = link_to_send + "/action/addComment"
-                print("pre-filter", recipients)
                 # If other approval teams still have to approve the budget, notify their members with html email
                 if event_type == "approval" and not is_budget_approved(current_user, event):
                     # We're assuming a user can only be in one approval team
@@ -1612,7 +1799,9 @@ class BudgetEventViewset(ModelViewSet):
 
                     for approver in approvers:
                         user = User.objects.get(id=approver["users"])
-                        send_approvers_email(user, author_team, event, event_type, approval_link, rejection_link)
+                        send_approvers_email(
+                            user, author_team, event, event_type, approval_link, rejection_link, files_info, event.links
+                        )
                         # TODO check that this works
                         recipients.discard(user)
                 # Send email with link to all approvers if event is a submission
@@ -1624,10 +1813,10 @@ class BudgetEventViewset(ModelViewSet):
                     approvers = approval_teams.values("users")
                     for approver in approvers:
                         user = User.objects.get(id=approver["users"])
-                        send_approvers_email(user, author_team, event, event_type, approval_link, rejection_link)
-                        # TODO check that this works
+                        send_approvers_email(
+                            user, author_team, event, event_type, approval_link, rejection_link, files_info, event.links
+                        )
                         recipients.discard(user)
-                print("post-filter", recipients)
                 for user in recipients:
                     subject = email_subject(event_type, event.campaign.obr_name)
                     text_content = event_creation_email(
@@ -1635,10 +1824,15 @@ class BudgetEventViewset(ModelViewSet):
                         event.author.first_name,
                         event.author.last_name,
                         event.comment,
+                        files_string,
+                        event.links,
                         generate_auto_authentication_link(link_to_send, user),
                         settings.DNS_DOMAIN,
                     )
                     msg = EmailMultiAlternatives(subject, text_content, DEFAULT_FROM_EMAIL, [user.email])
+                    links = event.links
+                    if links:
+                        links = links.split(",")
                     html_content = render_to_string(
                         "event_created_email.html",
                         {
@@ -1650,6 +1844,8 @@ class BudgetEventViewset(ModelViewSet):
                             "last_name": event.author.last_name,
                             "comment": event.comment,
                             "event_type": event_type,
+                            "files": files_info,
+                            "links": links,
                         },
                     )
                     msg.attach_alternative(html_content, "text/html")

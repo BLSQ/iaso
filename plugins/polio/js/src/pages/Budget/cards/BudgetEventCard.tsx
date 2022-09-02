@@ -48,6 +48,7 @@ import {
     shouldOpenModal,
     useActionMessage,
 } from './utils';
+import { formatThousand } from '../../../../../../../hat/assets/js/apps/Iaso/utils';
 
 type Props = {
     event: BudgetEvent;
@@ -97,6 +98,9 @@ export const BudgetEventCard: FunctionComponent<Props> = ({
         () => formatUserName(getProfileFromId(event.author, profiles)),
         [event.author, profiles],
     );
+    const amount = event.amount
+        ? formatThousand(parseInt(`${event.amount}`, 10)) // using parseInt to remove decimals before formatting
+        : '--';
     const formattedCreationDate = moment(event.created_at).format('L');
     const targetTeams = formatTargetTeams(event.target_teams, teams);
     const truncatedComment = formatComment(event.comment);
@@ -157,6 +161,15 @@ export const BudgetEventCard: FunctionComponent<Props> = ({
                                         )}: ${truncatedComment}`}
                                     </Typography>
                                 )}
+                                <Typography
+                                    // @ts-ignore
+                                    style={{ wordWrap: 'anywhere' }}
+                                >
+                                    {`${formatMessage(
+                                        MESSAGES.amount,
+                                    )}: ${amount}`}
+                                </Typography>
+
                                 <Typography
                                     variant="body2"
                                     className={classes.cta}

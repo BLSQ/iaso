@@ -42,7 +42,7 @@ export const BudgetFilters: FunctionComponent<Props> = ({
     buttonSize = 'medium',
 }) => {
     const { filters, handleSearch, handleChange, filtersUpdated } =
-        useFilterState(baseUrl, params);
+        useFilterState({ baseUrl, params });
     const { formatMessage } = useSafeIntl();
     const theme = useTheme();
     const isXSLayout = useMediaQuery(theme.breakpoints.down('xs'));

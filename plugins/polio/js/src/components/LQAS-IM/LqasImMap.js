@@ -70,7 +70,7 @@ export const LqasImMap = ({
         if (!selectedCampaign) return [];
         const determineStatusForDistrict =
             type === 'lqas' ? lqasDistrictStatus : imDistrictStatus;
-        const scopeIds = findScopeIds(selectedCampaign, campaigns);
+        const scopeIds = findScopeIds(selectedCampaign, campaigns, round);
         const hasScope = scopeIds.length > 0;
         const shapesInScope = hasScope
             ? shapes.filter(shape => scopeIds.includes(shape.id))

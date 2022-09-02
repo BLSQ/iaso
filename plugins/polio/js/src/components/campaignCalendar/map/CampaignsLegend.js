@@ -32,7 +32,7 @@ const CampaignsLegend = ({ campaigns }) => {
                         <FormattedMessage {...MESSAGES.noCampaign} />
                     )}
                     {campaigns.map(c => (
-                        <Grid container spacing={1} key={c.campaign.id}>
+                        <Grid container spacing={1} key={c.id}>
                             <Grid
                                 item
                                 sm={3}
@@ -43,7 +43,7 @@ const CampaignsLegend = ({ campaigns }) => {
                                 <span
                                     className={classes.roundColor}
                                     style={{
-                                        borderColor: c.campaign.color,
+                                        borderColor: c.color,
                                     }}
                                 />
                             </Grid>
@@ -54,7 +54,7 @@ const CampaignsLegend = ({ campaigns }) => {
                                 justifyContent="flex-end"
                                 alignItems="center"
                             >
-                                {c.campaign.name}
+                                {c.name}
                             </Grid>
                         </Grid>
                     ))}

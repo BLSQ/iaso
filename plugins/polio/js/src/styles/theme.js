@@ -43,7 +43,7 @@ export const useStyles = makeStyles(() => ({
     mainModal: {
         position: 'relative',
         '& .MuiPaper-root.MuiDialog-paper.MuiDialog-paperScrollBody': {
-            maxWidth: '1380px',
+            maxWidth: '80%',
         },
         // below rule to remove useless scrollbar
         '& .MuiTablePagination-root': {
@@ -148,6 +148,46 @@ export const useStyles = makeStyles(() => ({
     },
     tabPanel: {
         padding: 0,
+        width: '100%',
     },
     fullHeight: { height: '100%' },
+    vaccinesSelect: {
+        fontSize: 12,
+        positio: 'relative',
+        height: theme.spacing(5),
+        paddingTop: theme.spacing(1),
+        paddingBottom: theme.spacing(1),
+        display: 'flex',
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
+    vaccineName: {
+        fontWeight: 'bold',
+    },
+    roundColor: {
+        marginRight: theme.spacing(1),
+        width: 18,
+        height: 18,
+        borderRadius: '100%',
+        border: `1px solid ${theme.palette.primary.main}`,
+        display: 'inline-block',
+        position: 'relative',
+    },
+    roundColorInner: {
+        position: 'absolute',
+        top: 3,
+        left: 3,
+        width: 10,
+        height: 10,
+        borderRadius: '100%',
+        backgroundColor: theme.palette.primary.main,
+        opacity: 0.7,
+    },
+    vaccinesList: {
+        paddingBottom: 0,
+        paddingTop: 0,
+        width: 175,
+        position: 'relative',
+        left: -16,
+    },
 }));

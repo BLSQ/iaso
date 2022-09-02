@@ -11,7 +11,24 @@ export const useGetCampaignScope = ({ country, campaignId }) => {
                 const selectedCampaign = data?.find(
                     campaign => campaign.id === campaignId,
                 );
-                return selectedCampaign?.group?.org_units ?? [];
+                if (!selectedCampaign.separate_scopes_per_round) {
+                    return (
+                        (selectedCampaign?.scopes &&
+                            selectedCampaign.scopes
+                                .filter(scope => scope.group)
+                                .map(scope => scope.group.org_units)
+                                .flat()) ??
+                        []
+                    );
+                }
+                return selectedCampaign.rounds
+                    .map(round =>
+                        round.scopes
+                            .filter(scope => scope.group)
+                            .map(scope => scope.group.org_units)
+                            .flat(),
+                    )
+                    .flat();
             },
         },
     );

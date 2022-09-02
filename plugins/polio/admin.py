@@ -23,7 +23,7 @@ class CampaignAdmin(admin.ModelAdmin):
     formfield_overrides = {
         models.ForeignKey: {"widget": widgets.AdminTextInputWidget},
     }
-    list_filter = ["virus", "vacine", "detection_status", "risk_assessment_status", "budget_status"]
+    list_filter = ["virus", "detection_status", "risk_assessment_status", "budget_status"]
 
 
 class SpreadSheetImportAdmin(admin.ModelAdmin):

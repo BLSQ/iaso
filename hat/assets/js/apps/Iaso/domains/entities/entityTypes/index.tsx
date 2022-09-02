@@ -51,7 +51,7 @@ export const EntityTypes: FunctionComponent<Props> = ({ params }) => {
 
     const { data, isFetching: fetchingEntities } = useGetTypesPaginated(params);
     const { mutate: deleteEntityType, isLoading: deleting } = useDelete();
-    const { mutate: saveEntityType, isLoading: saving } = useSave();
+    const { mutateAsync: saveEntityType, isLoading: saving } = useSave();
 
     const isLoading = fetchingEntities || deleting || saving;
 

@@ -251,6 +251,74 @@ class PolioAPITestCase(APITestCase):
         r = self.assertJSONResponse(response, 200)
         self.assertEqual(len(r["rounds"]), 0)
 
+    def test_create_campaign_with_round_scopes(self):
+        self.assertEqual(Campaign.objects.count(), 0)
+
+        payload = {
+            "obr_name": "obr_name",
+            "detection_status": "PENDING",
+            "rounds": [
+                {
+                    "number": 1,
+                    "started_at": "2021-02-01",
+                    "ended_at": "2021-02-20",
+                    "scopes": [
+                        {"vaccine": "bOPV", "group": {"org_units": [self.org_unit.id]}},
+                        {"vaccine": "mOPV2", "group": {"org_units": [self.child_org_unit.id]}},
+                    ],
+                },
+                {
+                    "number": 2,
+                    "started_at": "2021-04-01",
+                    "ended_at": "2021-04-20",
+                },
+            ],
+        }
+
+        response = self.client.post("/api/polio/campaigns/", payload, format="json")
+
+        self.assertEqual(response.status_code, 201, response.content)
+        self.assertEqual(Campaign.objects.count(), 1)
+        c = Campaign.objects.first()
+        self.assertEqual(c.obr_name, "obr_name")
+        rounds = c.rounds.all().order_by("number")
+        self.assertEqual(2, rounds.count())
+        self.assertQuerysetEqual(rounds, [1, 2], lambda r: r.number)
+        first_round = c.rounds.filter(number=1).first()
+        self.assertQuerysetEqual(first_round.scopes.get(vaccine="bOPV").group.org_units.all(), [self.org_unit])
+        self.assertQuerysetEqual(first_round.scopes.get(vaccine="mOPV2").group.org_units.all(), [self.child_org_unit])
+        response = self.client.get(f"/api/polio/campaigns/{c.id}/", format="json")
+        r = self.assertJSONResponse(response, 200)
+        self.assertNotEqual(r["round_one"], None, r)
+        # self.assertHasField(r["round_one"], "started_at", r)
+        self.assertEqual(r["round_one"]["started_at"], "2021-02-01", r)
+        self.assertEqual(len(r["rounds"]), 2)
+        self.assertNotEqual(r["round_two"], None, r)
+        self.assertEqual(r["round_two"]["started_at"], "2021-04-01", r)
+        round_one = list(filter(lambda r: r["number"] == 1, r["rounds"]))[0]
+
+        self.assertEqual(
+            round_one["scopes"],
+            [
+                {
+                    "vaccine": "bOPV",
+                    "group": {
+                        "name": "hidden roundScope",
+                        "id": first_round.scopes.get(vaccine="bOPV").group.id,
+                        "org_units": [o.id for o in first_round.scopes.get(vaccine="bOPV").group.org_units.all()],
+                    },
+                },
+                {
+                    "vaccine": "mOPV2",
+                    "group": {
+                        "name": "hidden roundScope",
+                        "id": first_round.scopes.get(vaccine="mOPV2").group.id,
+                        "org_units": [o.id for o in first_round.scopes.get(vaccine="mOPV2").group.org_units.all()],
+                    },
+                },
+            ],
+        )
+
 
 class PreparednessAPITestCase(APITestCase):
     @classmethod

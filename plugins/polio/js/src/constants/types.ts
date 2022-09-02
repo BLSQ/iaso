@@ -131,4 +131,5 @@ export type BudgetEvent = {
     target_teams: number[];
     files: any;
     internal: boolean;
+    amount?: number;
 };

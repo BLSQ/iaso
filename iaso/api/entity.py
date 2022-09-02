@@ -27,7 +27,7 @@ class EntityTypeSerializer(serializers.ModelSerializer):
             "reference_form",
             "entities_count",
             "account",
-            "fields_detail_view",
+            "fields_detail_info_view",
             "fields_list_view",
         ]
 
@@ -233,7 +233,7 @@ def export_beneficiary_as_xlsx(beneficiaries):
         row += 1
         for k, v in res["beneficiaries"].items():
             try:
-                fields_list = beneficiary.entity_type.fields_detail_view
+                fields_list = beneficiary.entity_type.fields_detail_info_view
             except TypeError:
                 raise serializers.ValidationError(
                     {"error": "You must provide a field details view list in order to export the beneficiaries."}
@@ -270,7 +270,7 @@ def export_beneficiary_as_csv(beneficiaries):
         benef_data = []
         for k, v in res["beneficiaries"].items():
             try:
-                fields_list = beneficiary.entity_type.fields_detail_view
+                fields_list = beneficiary.entity_type.fields_detail_info_view
             except TypeError:
                 raise serializers.ValidationError(
                     {"error": "You must provide a field details view list in order to export the beneficiaries."}

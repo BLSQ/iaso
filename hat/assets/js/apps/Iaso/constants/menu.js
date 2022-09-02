@@ -15,7 +15,6 @@ import AssignmentRoundedIcon from '@material-ui/icons/AssignmentRounded';
 import ImportantDevicesRoundedIcon from '@material-ui/icons/ImportantDevicesRounded';
 import BookIcon from '@material-ui/icons/Book';
 import AssessmentIcon from '@material-ui/icons/Assessment';
-import EnityIcon from '@material-ui/icons/Domain';
 import GroupIcon from '@material-ui/icons/Group';
 import AssignmentIcon from '@material-ui/icons/Assignment';
 
@@ -138,16 +137,10 @@ const menuItems = defaultSourceId => [
         ],
     },
     {
-        label: MESSAGES.entitiesTitle,
+        label: MESSAGES.beneficiaries,
         key: 'entities',
-        icon: props => <EnityIcon {...props} />,
+        icon: props => <BeneficiarySvg {...props} />,
         subMenu: [
-            {
-                label: MESSAGES.beneficiaries,
-                permissions: paths.beneficiariesPath.permissions,
-                key: 'beneficiaries',
-                icon: props => <BeneficiarySvg {...props} />,
-            },
             {
                 label: MESSAGES.list,
                 permissions: paths.entitiesPath.permissions,

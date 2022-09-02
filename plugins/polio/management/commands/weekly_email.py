@@ -68,7 +68,7 @@ If there are missing data or dates; visit {url} to update
 
 * Notification date              : {c.cvdpv2_notified_at}
 * First round                    : {first_round.started_at if first_round and first_round.started_at else ''}
-* Vaccine Type                   : {c.vacine or ''}
+* Vaccine Type                   : {c.vaccines}
 * Target population              : {target_population} 
 * RA Status                      : {c.get_risk_assessment_status_display() or 'Pending'}
 * SIA Budget Status              : {c.get_budget_status_display() or 'Pending'}

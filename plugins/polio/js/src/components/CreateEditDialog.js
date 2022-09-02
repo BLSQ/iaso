@@ -24,7 +24,7 @@ import { useFormValidator } from '../hooks/useFormValidator';
 import { BaseInfoForm } from '../forms/BaseInfoForm';
 import { DetectionForm } from '../forms/DetectionForm';
 import { RiskAssessmentForm } from '../forms/RiskAssessmentForm';
-import { ScopeForm } from '../forms/ScopeForm';
+import { ScopeForm } from '../forms/ScopeForm.tsx';
 import { BudgetForm } from '../forms/BudgetForm';
 import { Form } from '../forms/Form';
 import { RoundsForm } from '../forms/RoundsForm';
@@ -61,6 +61,7 @@ const CreateEditDialog = ({
 
     const initialValues = {
         rounds: [],
+        scopes: [],
         group: {
             name: 'hidden group',
             org_units: [],
@@ -142,7 +143,7 @@ const CreateEditDialog = ({
     return (
         <Dialog
             fullWidth
-            maxWidth="lg"
+            maxWidth="xl"
             open={isOpen}
             onClose={(_event, reason) => {
                 if (reason === 'backdropClick') {
@@ -187,7 +188,7 @@ const CreateEditDialog = ({
                             )}
                         </Grid>
                     </Grid>
-                    {formik.errors.rounds && (
+                    {formik.errors?.rounds && (
                         <RoundsEmptyDates
                             roundErrors={formik.errors.rounds}
                             roundValues={formik.values.rounds}

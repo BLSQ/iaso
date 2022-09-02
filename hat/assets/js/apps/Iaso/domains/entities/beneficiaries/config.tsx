@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable camelcase */
 import React, { ReactElement, useMemo } from 'react';
 import {
@@ -5,7 +6,6 @@ import {
     IconButton as IconButtonComponent,
     // @ts-ignore
     useSafeIntl,
-    // @ts-ignore
 } from 'bluesquare-components';
 
 import moment from 'moment';
@@ -17,7 +17,11 @@ import {
     DateTimeCellRfc,
 } from '../../../components/Cells/DateTimeCell';
 
-import { AgeCell } from './components/AgeCell';
+import { Gender } from './components/fieldsValue/Gender';
+import { Age } from './components/fieldsValue/Age';
+import { LastVisit } from './components/fieldsValue/LastVisit';
+import { VaccinationNumber } from './components/fieldsValue/VaccinationNumber';
+import { RegistrationDate } from './components/fieldsValue/RegistrationDate';
 
 // import DeleteDialog from '../../../components/dialogs/DeleteDialogComponent';
 
@@ -29,7 +33,7 @@ import { baseUrls } from '../../../constants/urls';
 import { Column } from '../../../types/table';
 import getDisplayName from '../../../utils/usersUtils';
 
-export const baseUrl = baseUrls.beneficiaries;
+export const baseUrl = baseUrls.entities;
 
 // TODO: ADD program, vaccine number, gender columns
 export const useColumns = (): Array<Column> => {
@@ -61,23 +65,9 @@ export const useColumns = (): Array<Column> => {
                 // TODO: MAKE IT SORTABLE
                 sortable: false,
                 accessor: 'instances__created_at',
-                Cell: (settings): ReactElement => {
-                    const { instances } = settings.row.original;
-                    const sortedInstances = [...instances].sort((a, b) =>
-                        moment(a.created_at).isBefore(moment(b.created_at))
-                            ? 1
-                            : 0,
-                    );
-                    return (
-                        <section>
-                            {sortedInstances[0]
-                                ? moment(sortedInstances[0].created_at).format(
-                                      'LTS',
-                                  )
-                                : '-'}
-                        </section>
-                    );
-                },
+                Cell: (settings): ReactElement => (
+                    <LastVisit instances={settings.row.original.instances} />
+                ),
             },
             {
                 Header: formatMessage(MESSAGES.program),
@@ -111,27 +101,18 @@ export const useColumns = (): Array<Column> => {
             {
                 Header: formatMessage(MESSAGES.registrationDate),
                 accessor: 'attributes__file_content_end',
-                Cell: settings => {
-                    const cellInfo = {
-                        value: settings.row.original?.attributes?.file_content
-                            .end,
-                    };
-                    if (cellInfo) {
-                        return <DateCell value={cellInfo} />;
-                    }
-                    return <>--</>;
-                },
+                Cell: settings => (
+                    <RegistrationDate beneficiary={settings.row.original} />
+                ),
             },
             {
                 Header: formatMessage(MESSAGES.vaccinationNumber),
                 sortable: false,
                 accessor: 'attributes__file_content__vaccination_number',
                 id: 'attributes__file_content__vaccination_number',
-                Cell: settings => {
-                    const { vaccination_number } =
-                        settings.row.original?.attributes?.file_content ?? {};
-                    return <>{vaccination_number ?? '--'}</>;
-                },
+                Cell: settings => (
+                    <VaccinationNumber beneficiary={settings.row.original} />
+                ),
             },
             {
                 Header: formatMessage(MESSAGES.age),
@@ -139,21 +120,7 @@ export const useColumns = (): Array<Column> => {
                 sortable: false,
                 accessor: 'attributes__file_content__birth_date',
                 id: 'attributes__file_content__birth_date',
-                Cell: settings => (
-                    <AgeCell
-                        birthDate={
-                            settings.row.original?.attributes?.file_content
-                                .birth_date
-                        }
-                        age={
-                            settings.row.original?.attributes?.file_content.age
-                        }
-                        ageType={
-                            settings.row.original?.attributes?.file_content
-                                .age_type
-                        }
-                    />
-                ),
+                Cell: settings => <Age beneficiary={settings.row.original} />,
             },
             {
                 Header: formatMessage(MESSAGES.gender),
@@ -161,13 +128,9 @@ export const useColumns = (): Array<Column> => {
                 sortable: false,
                 accessor: 'attributes__file_content__gender',
                 id: 'attributes__file_content__gender',
-                Cell: settings => {
-                    const { gender } =
-                        settings.row.original?.attributes?.file_content ?? {};
-                    return (
-                        <>{gender ? formatMessage(MESSAGES[gender]) : '--'}</>
-                    );
-                },
+                Cell: settings => (
+                    <Gender beneficiary={settings.row.original} />
+                ),
             },
             {
                 Header: formatMessage(MESSAGES.actions),
@@ -178,7 +141,7 @@ export const useColumns = (): Array<Column> => {
                     // TODO: limit to user permissions
                     <section>
                         <IconButtonComponent
-                            url={`/${baseUrls.beneficiariesDetails}/beneficiaryId/${settings.row.original.id}`}
+                            url={`/${baseUrls.entityDetails}/entityId/${settings.row.original.id}`}
                             icon="remove-red-eye"
                             tooltipMessage={MESSAGES.see}
                         />
@@ -236,7 +199,7 @@ export const useColumnsFromFieldsList = (
 };
 
 export const useBeneficiariesDetailsColumns = (
-    beneficiaryId: number | null,
+    entityId: number | null,
     fields: Array<string> = [],
 ): Column[] => {
     const { formatMessage } = useSafeIntl();
@@ -280,6 +243,7 @@ export const useBeneficiariesDetailsColumns = (
                 sortable: false,
                 id: 'key_info',
                 accessor: 'key_info',
+                // eslint-disable-next-line no-unused-vars
                 Cell: _settings => {
                     return <>--</>;
                 },
@@ -304,15 +268,15 @@ export const useBeneficiariesDetailsColumns = (
                     // TODO: limit to user permissions
                     <section>
                         <IconButtonComponent
-                            url={`/${baseUrls.beneficiarySubmissionDetail}/instanceId/${settings.row.original.id}/beneficiaryId/${beneficiaryId}`}
+                            url={`/${baseUrls.entitySubmissionDetail}/instanceId/${settings.row.original.id}/entityId/${entityId}`}
                             icon="remove-red-eye"
                             tooltipMessage={MESSAGES.see}
-                            disabled={!beneficiaryId}
+                            disabled={!entityId}
                         />
                     </section>
                 ),
             },
         ],
-        [beneficiaryId, columnsFromList, formatMessage],
+        [entityId, columnsFromList, formatMessage],
     );
 };

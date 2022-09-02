@@ -37,7 +37,7 @@ const MarkerComponent = props => {
             {...markerProps(item)}
             onContextmenu={event => onContextmenu(event, item)}
         >
-            {PopupComponent && <PopupComponent {...popupProps} />}
+            {PopupComponent && <PopupComponent {...popupProps(item)} />}
             {TooltipComponent && <TooltipComponent {...tooltipProps(item)} />}
         </Marker>
     );
@@ -49,7 +49,7 @@ MarkerComponent.defaultProps = {
     PopupComponent: undefined,
     draggable: false,
     marker: null,
-    popupProps: {},
+    popupProps: () => {},
     markerProps: () => {},
     TooltipComponent: undefined,
     tooltipProps: () => {},
@@ -63,7 +63,7 @@ MarkerComponent.propTypes = {
     onDragend: PropTypes.func,
     draggable: PropTypes.bool,
     marker: PropTypes.object,
-    popupProps: PropTypes.object,
+    popupProps: PropTypes.func,
     markerProps: PropTypes.func,
     TooltipComponent: PropTypes.elementType,
     tooltipProps: PropTypes.func,

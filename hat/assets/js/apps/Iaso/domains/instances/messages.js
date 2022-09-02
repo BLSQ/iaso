@@ -501,6 +501,23 @@ const MESSAGES = defineMessages({
         id: 'iaso.label.seeAllVersions',
         defaultMessage: 'See all versions',
     },
+    editLocationWithInstanceGps: {
+        id: 'iaso.instances.editLocationWithInstanceGps',
+        defaultMessage: 'Push GPS from submission',
+    },
+    editGpsFromInstanceTitle: {
+        id: 'iaso.instance.dialog.editGpsFromInstanceTitle',
+        defaultMessage:
+            'Are you sure you want to apply GPS from submission into org unit. ?',
+    },
+    confirmApplyFormGpsToOrgUnit: {
+        id: 'iaso.label.confirmApplyFormGpsToOrgUnit',
+        defaultMessage: 'Apply directly gps from form to org unit',
+    },
+    editGpsFromInstanceWarning: {
+        id: 'iaso.instance.editGpsFromInstanceWarning',
+        defaultMessage: 'This operation can still be undone',
+    },
 });
 
 export default MESSAGES;

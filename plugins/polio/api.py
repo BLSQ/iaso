@@ -2,7 +2,8 @@ import csv
 import functools
 import json
 from datetime import timedelta, datetime
-from typing import Optional
+import logging
+from typing import Any, Dict, List, Optional, Union
 from collections import defaultdict
 from functools import lru_cache
 from logging import getLogger
@@ -738,9 +739,7 @@ class IMStatsViewSet(viewsets.ViewSet):
                 nfm_abs_counts_dict = defaultdict(int)
                 done_something = False
                 if isinstance(form, str):
-                    print("------------")
                     print("wrong form format:", form, "in", country.name)
-                    print("------------")
                     continue
                 try:
                     round_number = form.get("roundNumber", None)
@@ -841,9 +840,6 @@ class IMStatsViewSet(viewsets.ViewSet):
                 else:
                     day_country_not_found[country.name][today_string] += 1
                     form_campaign_not_found_count += 1
-            print("(----------------------------)")
-            print(country.name, debug_response)
-            print("(----------------------------)")
         skipped_forms.update(
             {"count": len(skipped_forms_list), "no_round": no_round_count, "unknown_round": unknown_round}
         )
@@ -1397,8 +1393,6 @@ class LQASStatsViewSet(viewsets.ViewSet):
                     d["total_sites_visited"] = d["total_sites_visited"] + total_sites_visited
                     d["district"] = district.id
                     d["region_name"] = district.parent.name
-            print("(----------------------------)")
-            print(country.name, debug_response)
         add_nfm_stats_for_rounds(campaign_stats, nfm_reasons_per_district_per_campaign, "nfm_stats")
         add_nfm_stats_for_rounds(campaign_stats, nfm_abs_reasons_per_district_per_campaign, "nfm_abs_stats")
         format_caregiver_stats(campaign_stats)
@@ -1470,21 +1464,27 @@ class CampaignGroupViewSet(ModelViewSet):
 
 
 class HasPoliobudgetPermission(permissions.BasePermission):
-    def has_permission(self, request, view):
+    def has_permission(self, request, view) -> bool:
         if not request.user.has_perm("menupermissions.iaso_polio_budget"):
             return False
         return True
 
 
-def email_subject(event_type, campaign_name):
+def email_subject(event_type: str, campaign_name: str) -> str:
     email_subject_template = "New {} for {}"
     return email_subject_template.format(event_type, campaign_name)
 
 
-def event_creation_email(event_type, first_name, last_name, comment, link, dns_domain):
+def event_creation_email(
+    event_type: str, first_name: str, last_name: str, comment: str, file: str, links: str, link: str, dns_domain: str
+) -> str:
     email_template = """%s by %s %s.
 
 Comment: %s
+
+Files: %s
+
+Links: %s
 
 ------------
 
@@ -1493,34 +1493,56 @@ you can access the history of this budget here: %s
 ------------    
 This is an automated email from %s
 """
-    return email_template % (event_type, first_name, last_name, comment, link, dns_domain)
+    return email_template % (event_type, first_name, last_name, comment, file, links, link, dns_domain)
 
 
 def creation_email_with_two_links(
-    event_type, first_name, last_name, comment, validation_link, rejection_link, dns_domain
-):
+    event_type: str,
+    first_name: str,
+    last_name: str,
+    comment: str,
+    files: str,
+    links: str,
+    validation_link: str,
+    rejection_link: str,
+    dns_domain: str,
+) -> str:
     email_template = """%s by %s %s.
 
 Comment: %s
+
+Files:  %s
+
+Links: %s
 
 ------------
 
 you can validate the budget here: %s
 
-you can reject and add a comment hre : %s
+you can reject and add a comment here : %s
 
 ------------    
 This is an automated email from %s
 """
-    return email_template % (event_type, first_name, last_name, comment, validation_link, rejection_link, dns_domain)
+    return email_template % (
+        event_type,
+        first_name,
+        last_name,
+        comment,
+        files,
+        links,
+        validation_link,
+        rejection_link,
+        dns_domain,
+    )
 
 
-def budget_approval_email_subject(campaign_name):
+def budget_approval_email_subject(campaign_name: str) -> str:
     email_subject_validation_template = "APPROVED: Budget For Campaign {}"
     return email_subject_validation_template.format(campaign_name)
 
 
-def budget_approval_email(campaign_name, link, dns_domain):
+def budget_approval_email(campaign_name: str, link: str, dns_domain: str) -> str:
     email_template = """
             
                     The budget for campaign {0} has been approved.
@@ -1533,7 +1555,7 @@ def budget_approval_email(campaign_name, link, dns_domain):
     return email_template.format(campaign_name, link, dns_domain)
 
 
-def send_approval_budget_mail(event):
+def send_approval_budget_mail(event: BudgetEvent) -> None:
     mails_list = list()
     events = BudgetEvent.objects.filter(campaign=event.campaign)
     link_to_send = "https://%s/dashboard/polio/budget/details/campaignId/%s/campaignName/%s/country/%d" % (
@@ -1567,18 +1589,27 @@ def send_approval_budget_mail(event):
                     )
                     msg.attach_alternative(html_content, "text/html")
                     msg.send(fail_silently=False)
-                    # send_mail(
-                    #     subject,
-                    #     text_content,
-                    #     DEFAULT_FROM_EMAIL,
-                    #     [user.email],
-                    # )
 
 
-def send_approvers_email(user, author_team, event, event_type, approval_link, rejection_link):
+def send_approvers_email(
+    user: User,
+    author_team: Team,
+    event: BudgetEvent,
+    event_type: str,
+    approval_link: str,
+    rejection_link: str,
+    files_info: Optional[List[Dict[str, Any]]],
+    links_string: Optional[str],
+) -> None:
     # if user is in other approval team, send the mail with the fat buttons
     subject = email_subject(event_type, event.campaign.obr_name)
     from_email = settings.DEFAULT_FROM_EMAIL
+    files_string = "None"
+    if files_info:
+        files_string = ",\n ".join([f["path"] for f in files_info])
+    links = None
+    if links_string:
+        links = links_string.split(",")
     auto_authentication_approval_link = generate_auto_authentication_link(approval_link, user)
     auto_authentication_rejection_link = generate_auto_authentication_link(rejection_link, user)
     text_content = creation_email_with_two_links(
@@ -1586,6 +1617,8 @@ def send_approvers_email(user, author_team, event, event_type, approval_link, re
         event.author.first_name,
         event.author.last_name,
         event.comment,
+        files_string,
+        links_string,
         auto_authentication_approval_link,
         auto_authentication_rejection_link,
         settings.DNS_DOMAIN,
@@ -1604,20 +1637,22 @@ def send_approvers_email(user, author_team, event, event_type, approval_link, re
             "team": author_team.name,
             "sender": settings.DNS_DOMAIN,
             "event_type": event_type,
+            "files": files_info,
+            "links": links,
         },
     )
     msg.attach_alternative(html_content, "text/html")
     msg.send(fail_silently=False)
 
 
-def send_approval_confirmation_to_users(event):
+def send_approval_confirmation_to_users(event: BudgetEvent) -> None:
     # modify campaign.budget_status instead of event.status
     event.status = "validated"
     event.save()
     send_approval_budget_mail(event)
 
 
-def is_budget_approved(user, event):
+def is_budget_approved(user: User, event: BudgetEvent) -> bool:
     val_teams = (
         Team.objects.filter(name__icontains="approval")
         .filter(project__account=user.iaso_profile.account)
@@ -1636,6 +1671,18 @@ def is_budget_approved(user, event):
     if validation_count == val_teams.count():
         return True
     return False
+
+
+def format_file_link(event_file: BudgetFiles) -> Dict:
+    serialized_file = BudgetFilesSerializer(event_file).data
+    return {"path": "https://" + settings.DNS_DOMAIN + serialized_file["file"], "name": event_file.file.name}
+
+
+def make_budget_event_file_links(event: BudgetEvent) -> Optional[str]:
+    event_files = event.event_files.all()
+    if not event_files:
+        return None
+    return [format_file_link(f) for f in event_files]
 
 
 class RecipientFilterBackend(filters.BaseFilterBackend):
@@ -1663,7 +1710,7 @@ class SenderTeamFilterBackend(filters.BaseFilterBackend):
                 sender_team = Team.objects.get(id=int(sender_team_id))
                 queryset = queryset.filter(author__in=list(sender_team.users.all()))
             except:
-                print("No team found for id ", sender_team_id)
+                logging.debug("No team found for id ", sender_team_id)
 
         return queryset
 
@@ -1723,6 +1770,11 @@ class BudgetEventViewset(ModelViewSet):
                 raise serializers.ValidationError({"general": ["userWithoutTeam"]})
             event.is_finalized = True if request.data["is_finalized"] else False
             event.save()
+            files_string = "None"
+            files_info = make_budget_event_file_links(event)
+            if files_info:
+                files_string = ",\n ".join([f["path"] for f in files_info])
+
             current_user = self.request.user
             event_type = "approval" if event.type == "validation" else event.type
 
@@ -1756,7 +1808,10 @@ class BudgetEventViewset(ModelViewSet):
 
                     for approver in approvers:
                         user = User.objects.get(id=approver["users"])
-                        send_approvers_email(user, author_team, event, event_type, approval_link, rejection_link)
+                        send_approvers_email(
+                            user, author_team, event, event_type, approval_link, rejection_link, files_info, event.links
+                        )
+                        # TODO check that this works
                         recipients.discard(user)
                 # Send email with link to all approvers if event is a submission
                 elif event_type == "submission" or event_type == "transmission":
@@ -1769,7 +1824,9 @@ class BudgetEventViewset(ModelViewSet):
                     approvers = approval_teams.values("users")
                     for approver in approvers:
                         user = User.objects.get(id=approver["users"])
-                        send_approvers_email(user, author_team, event, event_type, approval_link, rejection_link)
+                        send_approvers_email(
+                            user, author_team, event, event_type, approval_link, rejection_link, files_info, event.links
+                        )
                         recipients.discard(user)
                 for user in recipients:
                     subject = email_subject(event_type, event.campaign.obr_name)
@@ -1778,10 +1835,15 @@ class BudgetEventViewset(ModelViewSet):
                         event.author.first_name,
                         event.author.last_name,
                         event.comment,
+                        files_string,
+                        event.links,
                         generate_auto_authentication_link(link_to_send, user),
                         settings.DNS_DOMAIN,
                     )
                     msg = EmailMultiAlternatives(subject, text_content, DEFAULT_FROM_EMAIL, [user.email])
+                    links = event.links
+                    if links:
+                        links = links.split(",")
                     html_content = render_to_string(
                         "event_created_email.html",
                         {
@@ -1793,6 +1855,8 @@ class BudgetEventViewset(ModelViewSet):
                             "last_name": event.author.last_name,
                             "comment": event.comment,
                             "event_type": event_type,
+                            "files": files_info,
+                            "links": links,
                         },
                     )
                     msg.attach_alternative(html_content, "text/html")

@@ -18,6 +18,7 @@ type Attributes = {
     latitude: number;
     longitude: number;
     org_unit: OrgUnit;
+    nfc_cards?: number;
 };
 
 export type Beneficiary = {

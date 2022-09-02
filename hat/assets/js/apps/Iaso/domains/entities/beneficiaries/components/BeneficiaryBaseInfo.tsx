@@ -17,6 +17,7 @@ const useStyles = makeStyles(theme => ({
     leftCell: {
         // @ts-ignore
         borderRight: `1px solid ${theme.palette.ligthGray.border}`,
+        fontWeight: 'bold',
     },
 }));
 
@@ -31,42 +32,58 @@ export const BeneficiaryBaseInfo: FunctionComponent<Props> = ({
     const classes = useStyles();
     return (
         <>
-            <Table>
+            <Table size="small">
                 <TableBody>
-                    <TableRow>
-                        <TableCell className={classes.leftCell}>
-                            {formatMessage(MESSAGES.name)}
-                        </TableCell>
-                        <TableCell>
-                            {beneficiary?.attributes?.file_content?.name ??
-                                '--'}
-                        </TableCell>
-                    </TableRow>
-                    <TableRow>
-                        <TableCell className={classes.leftCell}>
-                            {formatMessage(MESSAGES.age)}
-                        </TableCell>
-                        <TableCell>
-                            {getAge({
-                                age: beneficiary?.attributes?.file_content?.age,
-                                ageType:
-                                    (beneficiary?.attributes?.file_content
-                                        ?.age_type as '0' | '1') ?? '0',
-                                birthDate:
-                                    beneficiary?.attributes?.file_content
-                                        ?.birth_date,
-                            }) ?? '--'}
-                        </TableCell>
-                    </TableRow>
-                    <TableRow>
-                        <TableCell className={classes.leftCell}>
-                            {formatMessage(MESSAGES.gender)}
-                        </TableCell>
-                        <TableCell>
-                            {beneficiary?.attributes?.file_content.gender ??
-                                formatMessage(MESSAGES.unknown)}
-                        </TableCell>
-                    </TableRow>
+                    {beneficiary?.attributes && (
+                        <>
+                            <TableRow>
+                                <TableCell className={classes.leftCell}>
+                                    {formatMessage(MESSAGES.name)}
+                                </TableCell>
+                                <TableCell>
+                                    {beneficiary?.attributes?.file_content
+                                        ?.name ?? '--'}
+                                </TableCell>
+                            </TableRow>
+                            <TableRow>
+                                <TableCell className={classes.leftCell}>
+                                    {formatMessage(MESSAGES.age)}
+                                </TableCell>
+                                <TableCell>
+                                    {getAge({
+                                        age: beneficiary?.attributes
+                                            ?.file_content?.age,
+                                        ageType:
+                                            (beneficiary?.attributes
+                                                ?.file_content?.age_type as
+                                                | '0'
+                                                | '1') ?? '0',
+                                        birthDate:
+                                            beneficiary?.attributes
+                                                ?.file_content?.birth_date,
+                                    }) ?? '--'}
+                                </TableCell>
+                            </TableRow>
+                            <TableRow>
+                                <TableCell className={classes.leftCell}>
+                                    {formatMessage(MESSAGES.gender)}
+                                </TableCell>
+                                <TableCell>
+                                    {beneficiary?.attributes?.file_content
+                                        .gender ??
+                                        formatMessage(MESSAGES.unknown)}
+                                </TableCell>
+                            </TableRow>
+                            <TableRow>
+                                <TableCell className={classes.leftCell}>
+                                    {formatMessage(MESSAGES.nfcCards)}
+                                </TableCell>
+                                <TableCell>
+                                    {beneficiary?.attributes?.nfc_cards ?? 0}
+                                </TableCell>
+                            </TableRow>
+                        </>
+                    )}
                     <TableRow>
                         <TableCell className={classes.leftCell}>
                             {formatMessage(MESSAGES.uuid)}

@@ -9,7 +9,7 @@ import {
     // @ts-ignore
     Table,
 } from 'bluesquare-components';
-import { Box, Grid, makeStyles } from '@material-ui/core';
+import { Box, Divider, Grid, makeStyles } from '@material-ui/core';
 import { useDispatch, useSelector } from 'react-redux';
 import TopBar from '../../../components/nav/TopBarComponent';
 import MESSAGES from '../messages';
@@ -90,7 +90,8 @@ export const Details: FunctionComponent<Props> = ({ router }) => {
     const columns = useBeneficiariesDetailsColumns(
         beneficiary?.id ?? null,
         // @ts-ignore
-        beneficiary?.entity_type?.fields_detail_info_view ?? [],
+        // beneficiary?.entity_type?.fields_detail_info_view ?? [],
+        [],
     );
     // Code to format table by looping through form to avoid hard coding values
     // TODO Handle dates (as all values are displayed as strings)
@@ -162,12 +163,12 @@ export const Details: FunctionComponent<Props> = ({ router }) => {
             />
             <Box className={`${classes.containerFullHeightNoTabPadded}`}>
                 {isLoadingBeneficiary && <LoadingSpinner />}
-                <Grid container>
+                <Grid container spacing={2}>
                     {/* TODO uncomment when we can extract key translation from form */}
                     {/* <Grid container item xs={3}>
                         {mapFileContent(beneficiary?.attributes?.file_content)}
                     </Grid> */}
-                    <Grid container item xs={3}>
+                    <Grid container item xs={4}>
                         <WidgetPaper
                             className={classes.fullWith}
                             title={formatMessage(MESSAGES.beneficiaryInfo)}
@@ -192,40 +193,41 @@ export const Details: FunctionComponent<Props> = ({ router }) => {
                             />
                         </Box>
                     </Grid> */}
-                    <Grid container item xs={3} justifyContent="center">
-                        <Box mt={1}>
-                            {`${formatMessage(MESSAGES.nfcCards)}: ${
-                                // TODO update when nfc data is available from backend
-                                // @ts-ignore
-                                beneficiary?.attributes?.nfc_cards ?? 0
-                            }`}
-                        </Box>
-                    </Grid>
-                    <Grid container item xs={5} justifyContent="flex-end">
-                        <Box>
+                </Grid>
+                <Box mt={2}>
+                    <WidgetPaper
+                        className={classes.fullWith}
+                        title={formatMessage(MESSAGES.submissions)}
+                    >
+                        <Table
+                            elevation={0}
+                            data={submissions ?? []}
+                            columns={columns}
+                            resetPageToOne={resetPageToOne}
+                            count={1}
+                            pages={1}
+                            params={params}
+                            marginBottom={false}
+                            marginTop={false}
+                            countOnTop={false}
+                            extraProps={{
+                                colums: columns,
+                                loading:
+                                    isLoadingBeneficiary ||
+                                    isLoadingSubmissions,
+                            }}
+                        />
+                        <Divider />
+                        <Box display="flex" py={2}>
                             <CsvButton
                                 csvUrl={`/api/entity/beneficiary/?csv=true&id=${entityId}`}
                             />
-                        </Box>
-                        <Box>
                             <XlsxButton
                                 xlsxUrl={`/api/entity/beneficiary/?xlsx=true&id=${entityId}`}
                             />
                         </Box>
-                    </Grid>
-                </Grid>
-                <Table
-                    data={submissions ?? []}
-                    columns={columns}
-                    resetPageToOne={resetPageToOne}
-                    count={1}
-                    pages={1}
-                    params={params}
-                    extraProps={{
-                        colums: columns,
-                        loading: isLoadingBeneficiary || isLoadingSubmissions,
-                    }}
-                />
+                    </WidgetPaper>
+                </Box>
             </Box>
         </>
     );

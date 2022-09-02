@@ -1,5 +1,7 @@
+from typing import Union, List
+
 from django.conf.urls import url
-from django.urls import path, include
+from django.urls import path, include, URLPattern, URLResolver
 from django.contrib import auth
 from rest_framework import routers
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
@@ -65,6 +67,9 @@ from .api.tasks.create.import_gpkg import ImportGPKGViewSet
 from .dhis2.authentication import dhis2_callback
 from hat.api.token_authentication import token_auth
 
+URL = Union[URLPattern, URLResolver]
+URLList = List[URL]
+
 router = routers.DefaultRouter()
 router.register(r"orgunits", OrgUnitViewSet, basename="orgunits")
 
@@ -119,7 +124,7 @@ router.register(r"mobile/plannings", MobilePlanningViewSet, basename="mobileplan
 
 router.registry.extend(plugins_router.registry)
 
-urlpatterns = [
+urlpatterns: URLList = [
     path(
         "fill/<form_uuid>/<org_unit_id>/<period>",
         view=enketo_public_launch,

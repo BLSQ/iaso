@@ -18,7 +18,7 @@ class EntityType(models.Model):
     is_active = models.BooleanField(default=False)
     # List of field we will show for this entity in list and detail view.
     fields_list_view = ArrayField(CITextField(max_length=255, blank=True), size=100, null=True, blank=True)
-    fields_detail_view = ArrayField(CITextField(max_length=255, blank=True), size=100, null=True, blank=True)
+    fields_detail_info_view = ArrayField(CITextField(max_length=255, blank=True), size=100, null=True, blank=True)
 
     class Meta:
         unique_together = ["name", "account"]

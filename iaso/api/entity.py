@@ -28,7 +28,7 @@ class EntityTypeSerializer(serializers.ModelSerializer):
             "reference_form",
             "entities_count",
             "account",
-            "fields_detail_view",
+            "fields_detail_info_view",
             "fields_list_view",
         ]
 

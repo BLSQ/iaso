@@ -626,6 +626,7 @@ class AnonymousCampaignSerializer(CampaignSerializer):
             "pv_notified_at",
             "pv2_notified_at",
             "virus",
+            "scopes",
             "vaccines",
             "detection_status",
             "detection_responsible",

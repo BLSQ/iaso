@@ -4,13 +4,15 @@ import {
     deleteRequest,
     postRequest,
     patchRequest,
-} from '../../../../libs/Api';
-import { useSnackQuery, useSnackMutation } from '../../../../libs/apiHooks';
+} from '../../../../../libs/Api';
+import { useSnackQuery, useSnackMutation } from '../../../../../libs/apiHooks';
 
-import { PaginatedEntityTypes } from '../types/paginatedEntityTypes';
-import { EntityType } from '../types/entityType';
+import { PaginatedEntityTypes } from '../../types/paginatedEntityTypes';
+import { EntityType } from '../../types/entityType';
 
-import MESSAGES from '../messages';
+import { useCurrentUser } from '../../../../../utils/usersUtils';
+
+import MESSAGES from '../../messages';
 
 export const useDelete = (): UseMutationResult =>
     useSnackMutation(
@@ -56,24 +58,26 @@ export const useGetTypesPaginated = (
 
 export const useGetTypes = (): UseQueryResult<Array<EntityType>, Error> => {
     // @ts-ignore
-    return useSnackQuery(
-        ['entitytypes'],
-        () => getRequest('/api/entitytype/'),
-        undefined,
-        {
-            // using this here to avoid multiple identical calls
+    return useSnackQuery({
+        queryKey: ['entitytypes'],
+        queryFn: () => getRequest('/api/entitytype/'),
+        options: {
             staleTime: 60000,
         },
-    );
+    });
 };
 
-export const useSave = (): UseMutationResult =>
-    useSnackMutation(
-        body =>
-            body.id
+export const useSave = (): UseMutationResult => {
+    const { account } = useCurrentUser();
+    return useSnackMutation({
+        mutationFn: body => {
+            return body.id
                 ? patchRequest(`/api/entitytype/${body.id}/`, body)
-                : postRequest('/api/entitytypes/', body),
-        undefined,
-        undefined,
-        ['entitytypes'],
-    );
+                : postRequest('/api/entitytype/', {
+                      ...body,
+                      account: account.id,
+                  });
+        },
+        invalidateQueryKey: ['entitytypes'],
+    });
+};

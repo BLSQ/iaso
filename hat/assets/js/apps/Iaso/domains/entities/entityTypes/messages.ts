@@ -5,6 +5,10 @@ const MESSAGES = defineMessages({
         defaultMessage: 'Beneficiary types',
         id: 'iaso.entityTypes.title',
     },
+    referenceForm: {
+        defaultMessage: 'reference form',
+        id: 'iaso.entityTypes.referenceForm',
+    },
     create: {
         defaultMessage: 'Create beneficiary type',
         id: 'iaso.entityTypes.create',
@@ -74,6 +78,10 @@ const MESSAGES = defineMessages({
         id: 'iaso.pages.errors.name',
         defaultMessage: 'Name is required',
     },
+    referenceFormRequired: {
+        id: 'iaso.entityTypes.errors.referenceForm',
+        defaultMessage: 'Reference form is required',
+    },
     viewForm: {
         id: 'iaso.forms.viewForm',
         defaultMessage: 'View form',
@@ -81,6 +89,18 @@ const MESSAGES = defineMessages({
     entitiesCount: {
         id: 'iaso.entityTypes.count',
         defaultMessage: 'Beneficiaries count',
+    },
+    fieldsDetailInfoView: {
+        id: 'iaso.entityTypes.fieldsDetailInfoView',
+        defaultMessage: 'Detail info fields',
+    },
+    fieldsListView: {
+        id: 'iaso.entityTypes.fieldsListView',
+        defaultMessage: 'List fields',
+    },
+    selectReferenceForm: {
+        id: 'iaso.entityTypes.selectReferenceForm',
+        defaultMessage: 'Select a reference form first',
     },
 });
 

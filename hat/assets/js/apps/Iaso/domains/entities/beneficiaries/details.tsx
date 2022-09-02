@@ -88,7 +88,6 @@ export const Details: FunctionComponent<Props> = ({ router }) => {
         isLoading: boolean;
     } = useGetBeneficiary(entityId);
     const columns = useBeneficiariesDetailsColumns(
-        beneficiary?.id ?? null,
         // @ts-ignore
         // beneficiary?.entity_type?.fields_detail_info_view ?? [],
         [],

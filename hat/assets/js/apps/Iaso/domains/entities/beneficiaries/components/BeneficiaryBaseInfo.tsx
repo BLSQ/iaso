@@ -30,6 +30,18 @@ export const BeneficiaryBaseInfo: FunctionComponent<Props> = ({
 }) => {
     const { formatMessage } = useSafeIntl();
     const classes = useStyles();
+    console.log('beneficiary', beneficiary);
+    let fields = [];
+    if (
+        beneficiary?.attributes?.file_content &&
+        beneficiary.entity_type.fields_detail_info_view
+    ) {
+        fields = beneficiary.entity_type.fields_detail_info_view.map(
+            fieldKey => {
+                return fieldKey;
+            },
+        );
+    }
     return (
         <>
             <Table size="small">

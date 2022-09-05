@@ -168,21 +168,21 @@ const ActionTableColumnComponent = ({ settings, user }) => {
                     </DialogContentText>
                 </ConfirmCancelDialogComponent>
             )}
+
             {settings.row.original.is_locked && (
                 <>
                     {settings.row.original.can_user_modify ? (
-                        <span
-                            style={{ verticalAlign: 'center' }}
-                            title={formatMessage(MESSAGES.lockedCanModify)}
-                        >
-                            <LockIcon color="primary" />
-                        </span>
+                        <IconButtonComponent
+                            url={getUrlInstance(settings)}
+                            overrideIcon={() => <LockIcon color="primary" />}
+                            tooltipMessage={MESSAGES.lockedCanModify}
+                        />
                     ) : (
-                        <span
-                            title={formatMessage(MESSAGES.lockedCannotModify)}
-                        >
-                            <LockIcon />
-                        </span>
+                        <IconButtonComponent
+                            url={getUrlInstance(settings)}
+                            overrideIcon={LockIcon}
+                            tooltipMessage={MESSAGES.lockedCannotModify}
+                        />
                     )}
                 </>
             )}

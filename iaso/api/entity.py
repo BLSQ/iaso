@@ -13,7 +13,7 @@ from rest_framework.decorators import action
 from rest_framework.request import Request
 from rest_framework.response import Response
 
-from iaso.api.common import TimestampField, ModelViewSet
+from iaso.api.common import TimestampField, ModelViewSet, DeletionFilterBackend
 from iaso.models import Entity, Instance, EntityType, FormVersion
 
 
@@ -98,23 +98,6 @@ class EntityTypeViewSet(ModelViewSet):
         queryset = EntityType.objects.filter(account=self.request.user.iaso_profile.account)
         if search:
             queryset = queryset.filter(name__icontains=search)
-        return queryset
-
-
-class EntityFilterBackend(filters.BaseFilterBackend):
-    def filter_queryset(self, request, queryset, view):
-        query_param = request.query_params.get("deletion_status", "active")
-
-        if query_param == "deleted":
-            query = Q(deleted_at__isnull=False)
-            return queryset.filter(query)
-
-        if query_param == "active":
-            query = Q(deleted_at__isnull=True)
-            return queryset.filter(query)
-
-        if query_param == "all":
-            return queryset
         return queryset
 
 
@@ -205,7 +188,7 @@ def export_entity_as_csv(entities):
 class EntityViewSet(ModelViewSet):
     results_key = "entities"
     remove_results_key_if_paginated = True
-    filter_backends = [filters.OrderingFilter, DjangoFilterBackend, EntityFilterBackend]
+    filter_backends = [filters.OrderingFilter, DjangoFilterBackend, DeletionFilterBackend]
 
     def get_serializer_class(self):
         return EntitySerializer
@@ -224,7 +207,7 @@ class EntityViewSet(ModelViewSet):
         created_by_id = self.request.query_params.get("created_by_id", None)
         created_by_team_id = self.request.query_params.get("created_by_team_id", None)
 
-        queryset = Entity.objects.filter(account=self.request.user.iaso_profile.account, deleted_at__isnull=True)
+        queryset = Entity.objects.filter(account=self.request.user.iaso_profile.account)
         if form_name:
             queryset = queryset.filter(attributes__form__name__icontains=form_name)
         if search:
@@ -251,7 +234,6 @@ class EntityViewSet(ModelViewSet):
 
         # location
 
-        queryset = queryset.order_by(*order)
         return queryset
 
     def create(self, request, *args, **kwargs):
@@ -292,7 +274,7 @@ class EntityViewSet(ModelViewSet):
         return Response(serializer.data)
 
     def list(self, request: Request, *args, **kwargs):
-        queryset = self.get_queryset()
+        queryset = self.filter_queryset(self.get_queryset())
         csv_format = request.GET.get("csv", None)
         xlsx_format = request.GET.get("xlsx", None)
         pk = request.query_params.get("id", None)
@@ -303,9 +285,9 @@ class EntityViewSet(ModelViewSet):
 
         if xlsx_format or csv_format:
             if pk:
-                entities = Entity.objects.filter(account=account, pk=pk, deleted_at__isnull=True)
+                entities = Entity.objects.filter(account=account, pk=pk)
             else:
-                entities = Entity.objects.filter(account=account, deleted_at__isnull=True)
+                entities = Entity.objects.filter(account=account)
             if xlsx_format:
                 return export_entity_as_xlsx(entities)
             if csv_format:

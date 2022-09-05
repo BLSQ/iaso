@@ -100,21 +100,6 @@ class EntityTypeViewSet(ModelViewSet):
             queryset = queryset.filter(name__icontains=search)
         return queryset
 
-    @action(detail=False, methods=["GET"])
-    def get_attribute_fields(self, request):
-        entity_type_id = self.request.query_params.get("id", None)
-        entity_type = get_object_or_404(EntityType, pk=entity_type_id)
-        latest_form_version_id = entity_type.reference_form.latest_version.pk
-        form_version = FormVersion.objects.get(pk=latest_form_version_id)
-        xpath = form_version.get_or_save_form_descriptor()["_xpath"]
-        fields = []
-
-        for k in xpath:
-            fields.append(k)
-        resp = {"fields": sorted(fields)}
-
-        return Response(resp)
-
 
 class EntityFilterBackend(filters.BaseFilterBackend):
     def filter_queryset(self, request, queryset, view):

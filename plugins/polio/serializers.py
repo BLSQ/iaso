@@ -532,6 +532,7 @@ class CampaignSerializer(serializers.ModelSerializer):
 class SmallCampaignSerializer(CampaignSerializer):
     class Meta:
         model = Campaign
+        # TODO: refactor to avoid duplication with AnonymousCampaignSerializer?
         fields = [
             "id",
             "epid",
@@ -583,6 +584,7 @@ class SmallCampaignSerializer(CampaignSerializer):
             "top_level_org_unit_name",
             "top_level_org_unit_id",
             "is_preventive",
+            "account",
         ]
         read_only_fields = fields
 
@@ -661,6 +663,7 @@ class AnonymousCampaignSerializer(CampaignSerializer):
             "top_level_org_unit_name",
             "top_level_org_unit_id",
             "is_preventive",
+            "account",
         ]
         read_only_fields = fields
 

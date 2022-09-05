@@ -287,7 +287,7 @@ Timeline tracker Automated message
 
         We use the django annotate feature to make a raw Postgis request that will generate the shape on the
         postgresql server which is faster.
-        Campaign with and without scope per round are  handled separately"""
+        Campaign with and without scope per round are handled separately"""
         # FIXME: The cache ignore all the filter parameter which will return wrong result if used
         key_name = "{0}-geo_shapes".format(request.user.id)
         campaigns = self.filter_queryset(self.get_queryset())

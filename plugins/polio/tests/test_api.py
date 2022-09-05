@@ -119,6 +119,23 @@ class PolioAPITestCase(APITestCase):
         self.assertEqual(response.status_code, 400)
         self.assertEqual(response.content, b'{"account":["This field is required."]}')
 
+    def test_cannot_create_campaigns_if_not_authenticated(self):
+        payload = {
+            "account": self.account.pk,
+            "obr_name": "obr_name",
+            "detection_status": "PENDING",
+            "rounds": [
+                {
+                    "number": 0,
+                    "started_at": "2021-02-01",
+                    "ended_at": "2021-02-20",
+                }
+            ],
+        }
+        response = self.client.post("/api/polio/campaigns/", payload, format="json")
+        self.assertEqual(response.status_code, 403)
+        self.assertEqual(Campaign.objects.count(), 0)
+
     def test_create_campaign(self):
         self.client.force_authenticate(self.yoda)
         self.assertEqual(Campaign.objects.count(), 0)

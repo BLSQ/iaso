@@ -25,7 +25,7 @@ from django.shortcuts import get_object_or_404
 from django.utils.timezone import now, make_aware
 from django_filters.rest_framework import DjangoFilterBackend
 from django.template.loader import render_to_string
-from gspread.utils import extract_id_from_url
+from gspread.utils import extract_id_from_url  # type: ignore
 from hat.settings import DEFAULT_FROM_EMAIL
 from rest_framework import routers, filters, viewsets, serializers, permissions, status
 from rest_framework.decorators import action

@@ -1,6 +1,14 @@
 /* eslint-disable camelcase */
 import React, { FunctionComponent } from 'react';
-import { Grid, Typography } from '@material-ui/core';
+import {
+    Grid,
+    Table,
+    TableBody,
+    TableCell,
+    TableHead,
+    TableRow,
+    Typography,
+} from '@material-ui/core';
 // @ts-ignore
 import {
     IconButton as IconButtonComponent,
@@ -33,11 +41,14 @@ const InstanceDetailsLocksHistory: FunctionComponent<{
     currentInstance: Instance;
 }> = ({ currentInstance }: { currentInstance: Instance }) => {
     const { formatMessage } = useSafeIntl();
-    const unlockMutation = useSnackMutation<Instance>(instanceLock => {
-        return postRequest('/api/instances/unlock_lock/', {
-            lock: instanceLock.id,
-        });
-    }, MESSAGES.lockSuccess);
+    const { isLoading, mutateAsync } = useSnackMutation<Instance>(
+        instanceLock => {
+            return postRequest('/api/instances/unlock_lock/', {
+                lock: instanceLock.id,
+            });
+        },
+        MESSAGES.lockSuccess,
+    );
     // @ts-ignore
     return (
         <WidgetPaper
@@ -45,7 +56,7 @@ const InstanceDetailsLocksHistory: FunctionComponent<{
             padded
             title={formatMessage(MESSAGES.instanceLocks)}
         >
-            {unlockMutation.isLoading && <LoadingSpinner fixed={false} />}
+            {isLoading && <LoadingSpinner fixed={false} />}
             {currentInstance.instance_locks.length === 0 && (
                 <Grid xs={5} container item justifyContent="center">
                     <Typography
@@ -58,31 +69,33 @@ const InstanceDetailsLocksHistory: FunctionComponent<{
                 </Grid>
             )}
             {currentInstance.instance_locks.length > 0 && (
-                <table>
-                    <thead>
-                        <tr>
-                            <th>{formatMessage(MESSAGES.lockAuthorLabel)}</th>
-                            <th>
+                <Table>
+                    <TableHead>
+                        <TableRow>
+                            <TableCell>
+                                {formatMessage(MESSAGES.lockAuthorLabel)}
+                            </TableCell>
+                            <TableCell>
                                 {' '}
                                 {formatMessage(MESSAGES.lockTopOrgUnitLabel)}
-                            </th>
-                            <th> {formatMessage(MESSAGES.lockStatusLabel)}</th>
-                        </tr>
-                    </thead>
-                    <tbody>
+                            </TableCell>
+                            <TableCell>
+                                {' '}
+                                {formatMessage(MESSAGES.lockStatusLabel)}
+                            </TableCell>
+                        </TableRow>
+                    </TableHead>
+                    <TableBody>
                         {currentInstance.instance_locks.map(instanceLock => (
-                            <tr
-                                key={instanceLock.id}
-                                style={{
-                                    height: '2em',
-                                    verticalAlign: 'text-bottom',
-                                }}
-                            >
-                                <td>
+                            <TableRow key={instanceLock.id}>
+                                <TableCell>
                                     {getDisplayName(instanceLock.locked_by)}
-                                </td>
-                                <td> {instanceLock.top_org_unit.name}</td>
-                                <td>
+                                </TableCell>
+                                <TableCell>
+                                    {' '}
+                                    {instanceLock.top_org_unit.name}
+                                </TableCell>
+                                <TableCell>
                                     {instanceLock.unlocked_by ? (
                                         <>
                                             <span
@@ -91,10 +104,10 @@ const InstanceDetailsLocksHistory: FunctionComponent<{
                                                 )}
                                             >
                                                 <LockOpenIcon />
+                                                {getDisplayName(
+                                                    instanceLock.unlocked_by,
+                                                )}
                                             </span>
-                                            {getDisplayName(
-                                                instanceLock.unlocked_by,
-                                            )}
                                         </>
                                     ) : (
                                         <ConfirmCancelDialogComponent
@@ -102,11 +115,11 @@ const InstanceDetailsLocksHistory: FunctionComponent<{
                                                 MESSAGES.removeLockAction
                                             }
                                             onConfirm={closeDialog => {
-                                                unlockMutation
-                                                    .mutateAsync(instanceLock)
-                                                    .then(() => {
+                                                mutateAsync(instanceLock).then(
+                                                    () => {
                                                         closeDialog();
-                                                    });
+                                                    },
+                                                );
                                             }}
                                             renderTrigger={({ openDialog }) => (
                                                 <IconButtonComponent
@@ -123,11 +136,11 @@ const InstanceDetailsLocksHistory: FunctionComponent<{
                                             )}
                                         />
                                     )}
-                                </td>
-                            </tr>
+                                </TableCell>
+                            </TableRow>
                         ))}
-                    </tbody>
-                </table>
+                    </TableBody>
+                </Table>
             )}
         </WidgetPaper>
     );

@@ -1,5 +1,5 @@
 /* eslint-disable react/jsx-props-no-spreading */
-import React, { Component } from 'react';
+import React, { FunctionComponent, useEffect, useState } from 'react';
 import { Link } from 'react-router';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
@@ -25,6 +25,7 @@ import {
     LoadingSpinner,
     IconButton as IconButtonComponent,
     ExportButton as ExportButtonComponent,
+    useSafeIntl,
 } from 'bluesquare-components';
 import { FormattedMessage } from 'react-intl';
 import omit from 'lodash/omit';
@@ -47,7 +48,7 @@ import CreateReAssignDialogComponent from './components/CreateReAssignDialogComp
 import InstanceDetailsInfos from './components/InstanceDetailsInfos';
 import InstanceDetailsLocation from './components/InstanceDetailsLocation';
 import InstanceDetailsExportRequests from './components/InstanceDetailsExportRequests';
-import InstanceDetailsLocksHistory from './components/InstanceDetailsLocksHistory.tsx';
+import InstanceDetailsLocksHistory from './components/InstanceDetailsLocksHistory';
 import InstancesFilesList from './components/InstancesFilesListComponent';
 import InstanceFileContent from './components/InstanceFileContent';
 import SpeedDialInstanceActions from './components/SpeedDialInstanceActions';
@@ -164,7 +165,6 @@ const actions = ({
     params,
     currentUser,
     redirectToActionInstance,
-    lockAgain,
 }) => {
     const hasSubmissionPermission = userHasPermission(
         'iaso_org_units',
@@ -252,12 +252,10 @@ const actions = ({
             <ConfirmCancelDialogComponent
                 titleMessage={MESSAGES.lockAction}
                 onConfirm={closeDialog => {
-                    confirmLockUnlockInstance(currentInstance, lockAgain).then(
-                        () => {
-                            closeDialog();
-                            window.location.reload(false);
-                        },
-                    );
+                    confirmLockUnlockInstance(currentInstance).then(() => {
+                        closeDialog();
+                        window.location.reload(false);
+                    });
                 }}
                 renderTrigger={({ openDialog }) => (
                     <LockIcon onClick={openDialog} />
@@ -399,282 +397,252 @@ const actions = ({
     ];
 };
 
-class InstanceDetails extends Component {
-    constructor(props) {
-        super(props);
-        props.setCurrentInstance(null);
-        this.state = {
-            orgUnitTypeIds: [],
-            showDial: true,
-            lockAgain: false,
-            showHistoryLink: true,
-        };
-    }
-
-    componentDidMount() {
+const InstanceDetails: FunctionComponent<any> = props => {
+    const [orgUnitTypeIds, setOrgUnitTypeIds] = useState([]);
+    const [showDial, setShowDial] = useState(true);
+    const [showHistoryLink, setShowHistoryLink] = useState(true);
+    const { formatMessage } = useSafeIntl();
+    const {
+        currentInstance,
+        classes,
+        fetching,
+        reAssignInstance,
+        router,
+        prevPathname,
+        redirectToReplace,
+        currentUser,
+        params,
+        redirectToActionInstance,
+    } = props;
+    useEffect(() => {
         const {
             params: { instanceId },
             fetchInstanceDetail,
             dispatch,
-        } = this.props;
+            setCurrentInstance,
+        } = props;
+        setCurrentInstance(null);
         fetchInstanceDetail(instanceId).then(instanceDetails => {
             fetchFormOrgUnitTypes(dispatch, instanceDetails.form_id).then(
-                orgUnitTypeIds => {
-                    this.setState({
-                        ...this.state,
-                        orgUnitTypeIds: orgUnitTypeIds.org_unit_type_ids,
-                    });
+                orgUnitTypeIds2 => {
+                    setOrgUnitTypeIds(orgUnitTypeIds2.org_unit_type_ids);
                 },
             );
         });
 
         // not showing history link in submission detail if there is only one version/log
+
         getRequest(
             `/api/logs/?objectId=${instanceId}&order=-created_at&contentType=iaso.instance`,
         ).then(instanceLogsDetails => {
             if (instanceLogsDetails.list.length === 1) {
-                this.setState({
-                    showHistoryLink: false,
-                });
+                setShowHistoryLink(false);
             }
         });
-    }
+    }, []);
 
-    onActionSelected(action) {
-        if (action.id === 'instanceEditAction' && this.props.currentInstance) {
-            this.props.fetchEditUrl(
-                this.props.currentInstance,
-                window.location,
-            );
+    const onActionSelected = action => {
+        if (action.id === 'instanceEditAction' && props.currentInstance) {
+            props.fetchEditUrl(props.currentInstance, window.location);
         }
 
-        if (
-            action.id === 'instanceDeleteAction' &&
-            this.props.currentInstance
-        ) {
-            this.props.softDelete(this.props.currentInstance);
+        if (action.id === 'instanceDeleteAction' && props.currentInstance) {
+            props.softDelete(props.currentInstance);
         }
-        if (
-            action.id === 'instanceRestoreAction' &&
-            this.props.currentInstance
-        ) {
-            this.props.restoreInstance(this.props.currentInstance);
+        if (action.id === 'instanceRestoreAction' && props.currentInstance) {
+            props.restoreInstance(props.currentInstance);
         }
-    }
+    };
 
-    onLightBoxToggled(open) {
-        this.setState({
-            showDial: !open,
-        });
-    }
+    const onLightBoxToggled = open => {
+        setShowDial(!open);
+    };
 
-    render() {
-        const {
-            classes,
-            fetching,
-            currentInstance,
-            reAssignInstance,
-            intl: { formatMessage },
-            router,
-            prevPathname,
-            redirectToReplace,
-            currentUser,
-            params,
-            redirectToActionInstance,
-        } = this.props;
-        const { showDial, lockAgain, showHistoryLink } = this.state;
-        const formId = currentInstance?.form_id;
-        const canEditEnketo = userHasPermission(
-            'iaso_update_submission',
-            currentUser,
-        );
+    const formId = currentInstance?.form_id;
+    const canEditEnketo = userHasPermission(
+        'iaso_update_submission',
+        currentUser,
+    );
 
-        return (
-            <section className={classes.relativeContainer}>
-                <TopBar
-                    title={
-                        currentInstance
-                            ? `${
-                                  currentInstance.form_name
-                              }: ${currentInstance.file_name.replace(
-                                  '.xml',
-                                  '',
-                              )}`
-                            : ''
+    return (
+        <section className={classes.relativeContainer}>
+            <TopBar
+                title={
+                    currentInstance
+                        ? `${
+                              currentInstance.form_name
+                          }: ${currentInstance.file_name.replace('.xml', '')}`
+                        : ''
+                }
+                displayBackButton
+                goBack={() => {
+                    if (prevPathname || !currentInstance) {
+                        router.goBack();
+                    } else {
+                        redirectToReplace(baseUrls.instances, {
+                            formIds: currentInstance.form_id,
+                        });
                     }
-                    displayBackButton
-                    goBack={() => {
-                        if (prevPathname || !currentInstance) {
-                            router.goBack();
-                        } else {
-                            redirectToReplace(baseUrls.instances, {
-                                formIds: currentInstance.form_id,
-                            });
-                        }
-                    }}
-                />
-                {fetching && <LoadingSpinner />}
-                {currentInstance && (
-                    <Box className={classes.containerFullHeightNoTabPadded}>
-                        {currentInstance.can_user_modify && showDial && (
-                            <SpeedDialInstanceActions
-                                actions={actions({
-                                    currentInstance,
-                                    reAssignInstance,
-                                    orgUnitTypeIds: this.state.orgUnitTypeIds,
-                                    canEditEnketo,
-                                    formId,
-                                    params,
-                                    currentUser,
-                                    redirectToActionInstance,
-                                    lockAgain,
-                                })}
-                                onActionSelected={action =>
-                                    this.onActionSelected(action)
-                                }
-                            />
-                        )}
-                        <Grid container spacing={4}>
-                            <Grid xs={12} md={4} item>
-                                {currentInstance.deleted && (
-                                    <Alert
-                                        severity="warning"
-                                        className={classes.alert}
-                                    >
-                                        {formatMessage(
-                                            MESSAGES.warningSoftDeleted,
-                                        )}
-                                        <br />
-                                        {formatMessage(
-                                            MESSAGES.warningSoftDeletedExport,
-                                        )}
-                                        <br />
-                                        {formatMessage(
-                                            MESSAGES.warningSoftDeletedDerived,
-                                        )}
-                                        <br />
-                                    </Alert>
-                                )}
-                                <WidgetPaper
-                                    title={formatMessage(MESSAGES.infos)}
-                                    padded
-                                    id="infos"
+                }}
+            />
+            {fetching && <LoadingSpinner />}
+            {currentInstance && (
+                <Box className={classes.containerFullHeightNoTabPadded}>
+                    {currentInstance.can_user_modify && showDial && (
+                        <SpeedDialInstanceActions
+                            actions={actions({
+                                currentInstance,
+                                reAssignInstance,
+                                orgUnitTypeIds: orgUnitTypeIds,
+                                canEditEnketo,
+                                formId,
+                                params,
+                                currentUser,
+                                redirectToActionInstance,
+                            })}
+                            onActionSelected={action =>
+                                onActionSelected(action)
+                            }
+                        />
+                    )}
+                    <Grid container spacing={4}>
+                        <Grid xs={12} md={4} item>
+                            {currentInstance.deleted && (
+                                <Alert
+                                    severity="warning"
+                                    className={classes.alert}
                                 >
-                                    <InstanceDetailsInfos
-                                        currentInstance={currentInstance}
-                                    />
+                                    {formatMessage(MESSAGES.warningSoftDeleted)}
+                                    <br />
+                                    {formatMessage(
+                                        MESSAGES.warningSoftDeletedExport,
+                                    )}
+                                    <br />
+                                    {formatMessage(
+                                        MESSAGES.warningSoftDeletedDerived,
+                                    )}
+                                    <br />
+                                </Alert>
+                            )}
+                            <WidgetPaper
+                                title={formatMessage(MESSAGES.infos)}
+                                padded
+                                id="infos"
+                            >
+                                <InstanceDetailsInfos
+                                    currentInstance={currentInstance}
+                                />
 
-                                    {currentInstance && showHistoryLink && (
-                                        <Grid container spacing={1}>
-                                            <Grid xs={5} item>
-                                                <div
-                                                    className={
-                                                        classes.labelContainer
-                                                    }
-                                                >
-                                                    <Typography
-                                                        variant="body2"
-                                                        noWrap
-                                                        color="inherit"
-                                                        title="Historique"
-                                                    >
-                                                        {formatMessage(
-                                                            MESSAGES.history,
-                                                        )}
-                                                    </Typography>
-                                                    :
-                                                </div>
-                                            </Grid>
-
-                                            <Grid
-                                                xs={7}
-                                                container
-                                                item
-                                                justifyContent="flex-start"
-                                                alignItems="center"
+                                {currentInstance && showHistoryLink && (
+                                    <Grid container spacing={1}>
+                                        <Grid xs={5} item>
+                                            <div
+                                                className={
+                                                    classes.labelContainer
+                                                }
                                             >
                                                 <Typography
-                                                    variant="body1"
+                                                    variant="body2"
+                                                    noWrap
                                                     color="inherit"
+                                                    title="Historique"
                                                 >
-                                                    <Link
-                                                        to={`${baseUrls.compareInstanceLogs}/instanceIds/${currentInstance.id}`}
-                                                    >
-                                                        {formatMessage(
-                                                            MESSAGES.seeAllVersions,
-                                                        )}
-                                                    </Link>
+                                                    {formatMessage(
+                                                        MESSAGES.history,
+                                                    )}
                                                 </Typography>
-                                            </Grid>
+                                                :
+                                            </div>
                                         </Grid>
-                                    )}
-                                </WidgetPaper>
-                                <WidgetPaper
-                                    title={formatMessage(MESSAGES.location)}
-                                    id="location"
-                                >
-                                    <InstanceDetailsLocation
-                                        currentInstance={currentInstance}
-                                    />
-                                </WidgetPaper>
-                                <InstanceDetailsExportRequests
-                                    currentInstance={currentInstance}
-                                    classes={classes}
-                                />
 
-                                <InstanceDetailsLocksHistory
-                                    currentInstance={currentInstance}
-                                    classes={classes}
-                                />
-
-                                {currentInstance.files.length > 0 && (
-                                    <WidgetPaper
-                                        title={formatMessage(MESSAGES.files)}
-                                        padded
-                                        id="files"
-                                    >
-                                        <InstancesFilesList
-                                            fetchDetails={false}
-                                            instanceDetail={currentInstance}
-                                            files={getInstancesFilesList([
-                                                currentInstance,
-                                            ])}
-                                            onLightBoxToggled={open =>
-                                                this.onLightBoxToggled(open)
-                                            }
-                                        />
-                                    </WidgetPaper>
+                                        <Grid
+                                            xs={7}
+                                            container
+                                            item
+                                            justifyContent="flex-start"
+                                            alignItems="center"
+                                        >
+                                            <Typography
+                                                variant="body1"
+                                                color="inherit"
+                                            >
+                                                <Link
+                                                    to={`${baseUrls.compareInstanceLogs}/instanceIds/${currentInstance.id}`}
+                                                >
+                                                    {formatMessage(
+                                                        MESSAGES.seeAllVersions,
+                                                    )}
+                                                </Link>
+                                            </Typography>
+                                        </Grid>
+                                    </Grid>
                                 )}
-                            </Grid>
+                            </WidgetPaper>
+                            <WidgetPaper
+                                title={formatMessage(MESSAGES.location)}
+                                id="location"
+                            >
+                                <InstanceDetailsLocation
+                                    currentInstance={currentInstance}
+                                />
+                            </WidgetPaper>
+                            <InstanceDetailsExportRequests
+                                currentInstance={currentInstance}
+                                classes={classes}
+                            />
 
-                            <Grid xs={12} md={8} item>
+                            <InstanceDetailsLocksHistory
+                                currentInstance={currentInstance}
+                                classes={classes}
+                            />
+
+                            {currentInstance.files.length > 0 && (
                                 <WidgetPaper
-                                    id="form-contents"
-                                    title={formatMessage(MESSAGES.submission)}
-                                    IconButton={IconButtonComponent}
-                                    iconButtonProps={{
-                                        onClick: () =>
-                                            window.open(
-                                                currentInstance.file_url,
-                                                '_blank',
-                                            ),
-                                        icon: 'xml',
-                                        color: 'secondary',
-                                        tooltipMessage: MESSAGES.downloadXml,
-                                    }}
+                                    title={formatMessage(MESSAGES.files)}
+                                    padded
+                                    id="files"
                                 >
-                                    <InstanceFileContent
-                                        instance={currentInstance}
+                                    <InstancesFilesList
+                                        fetchDetails={false}
+                                        instanceDetail={currentInstance}
+                                        files={getInstancesFilesList([
+                                            currentInstance,
+                                        ])}
+                                        onLightBoxToggled={open =>
+                                            onLightBoxToggled(open)
+                                        }
                                     />
                                 </WidgetPaper>
-                            </Grid>
+                            )}
                         </Grid>
-                    </Box>
-                )}
-            </section>
-        );
-    }
-}
+
+                        <Grid xs={12} md={8} item>
+                            <WidgetPaper
+                                id="form-contents"
+                                title={formatMessage(MESSAGES.submission)}
+                                IconButton={IconButtonComponent}
+                                iconButtonProps={{
+                                    onClick: () =>
+                                        window.open(
+                                            currentInstance.file_url,
+                                            '_blank',
+                                        ),
+                                    icon: 'xml',
+                                    color: 'secondary',
+                                    tooltipMessage: MESSAGES.downloadXml,
+                                }}
+                            >
+                                <InstanceFileContent
+                                    instance={currentInstance}
+                                />
+                            </WidgetPaper>
+                        </Grid>
+                    </Grid>
+                </Box>
+            )}
+        </section>
+    );
+};
 
 InstanceDetails.defaultProps = {
     prevPathname: null,
@@ -684,7 +652,6 @@ InstanceDetails.defaultProps = {
 
 InstanceDetails.propTypes = {
     classes: PropTypes.object.isRequired,
-    intl: PropTypes.object.isRequired,
     params: PropTypes.object.isRequired,
     fetching: PropTypes.bool.isRequired,
     router: PropTypes.object.isRequired,

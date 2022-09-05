@@ -147,6 +147,7 @@ class Campaign(SoftDeletableModel):
     class Meta:
         ordering = ["obr_name"]
 
+    account = models.ForeignKey("iaso.account", on_delete=models.CASCADE, related_name="campaigns")
     id = models.UUIDField(default=uuid4, primary_key=True, editable=False)
     epid = models.CharField(default=None, max_length=255, null=True, blank=True)
     obr_name = models.CharField(max_length=255, unique=True)

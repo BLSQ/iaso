@@ -4,6 +4,7 @@ import { useGetFieldValue } from './useGetFieldValue';
 
 import { Beneficiary } from '../types/beneficiary';
 import { Field } from '../types/fields';
+import { formatLabel } from '../../../instances/utils';
 
 export const useGetFields = (
     beneficiary?: Beneficiary,
@@ -29,7 +30,7 @@ export const useGetFields = (
                 );
                 fields.push({
                     value,
-                    label: possibleField.label,
+                    label: formatLabel(possibleField),
                     type: possibleField.type,
                     key: fieldKey,
                 });

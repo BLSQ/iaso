@@ -95,7 +95,7 @@ class LogsViewSet(viewsets.ViewSet):
                 return Response(
                     {
                         "error": _(
-                            "a contentType parameter is required. Can be one of iaso.orgunit, iaso.form, iaso.instance"
+                            "objectId and contentType parameters are required. contentType Can be one of iaso.orgunit, iaso.form, iaso.instance"
                         )
                     },
                     status=400,

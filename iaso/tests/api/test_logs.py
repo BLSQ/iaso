@@ -43,12 +43,13 @@ class LogsAPITestCase(APITestCase):
         self.assertJSONResponse(response, 403)
 
     def test_logs_list_with_auth_no_params(self):
-        """GET /logs/ with a normal user and no object instance specified should return a 401"""
+        """GET /logs/ with a normal user and no object instance specified should return a 400 explaining the
+        requested parameters"""
 
         self.client.force_authenticate(self.jane)
 
         response = self.client.get("/api/logs/")
-        self.assertJSONResponse(response, 401)
+        self.assertJSONResponse(response, 400)
 
     def test_logs_list_with_superuser_but_no_logs(self):
         """GET /logs/ with a superuser should return an empty paginated list if no modification in db"""

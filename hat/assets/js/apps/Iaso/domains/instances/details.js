@@ -379,15 +379,15 @@ class InstanceDetails extends Component {
         });
 
         // not showing history link in submission detail if there is only one version/log
-        getRequest(`/api/logs/?objectId=${instanceId}&order=-created_at`).then(
-            instanceLogsDetails => {
-                if (instanceLogsDetails.list.length === 1) {
-                    this.setState({
-                        showHistoryLink: false,
-                    });
-                }
-            },
-        );
+        getRequest(
+            `/api/logs/?objectId=${instanceId}&order=-created_at&contentType=iaso.instance`,
+        ).then(instanceLogsDetails => {
+            if (instanceLogsDetails.list.length === 1) {
+                this.setState({
+                    showHistoryLink: false,
+                });
+            }
+        });
     }
 
     onActionSelected(action) {

@@ -14,7 +14,9 @@ import { DropdownOptions } from '../../../../types/utils';
 const getInstanceLog = (
     instanceId: string | undefined,
 ): Promise<InstanceLogsDetail> => {
-    return getRequest(`/api/logs/?objectId=${instanceId}&order=-created_at`);
+    return getRequest(
+        `/api/logs/?objectId=${instanceId}&order=-created_at&contentType=iaso.instance`,
+    );
 };
 
 const getInstanceLogDetail = (

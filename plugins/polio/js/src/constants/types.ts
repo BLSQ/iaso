@@ -133,3 +133,16 @@ export type BudgetEvent = {
     internal: boolean;
     amount?: number;
 };
+
+export type CampaignLogDetail = {
+    id: number;
+    content_type: string;
+    object_id: string;
+    source: string;
+    user: Record<string, any>;
+    created_at: string;
+};
+
+export type CampaignLogData = {
+    new_value: Record<string, any>;
+};

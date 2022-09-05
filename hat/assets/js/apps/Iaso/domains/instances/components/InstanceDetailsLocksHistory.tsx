@@ -1,5 +1,5 @@
 /* eslint-disable camelcase */
-import React from 'react';
+import React, { FunctionComponent } from 'react';
 import { Grid, Typography } from '@material-ui/core';
 // @ts-ignore
 import {
@@ -29,11 +29,9 @@ type Instance = {
     can_user_modify: boolean;
 };
 
-const InstanceDetailsLocksHistory = ({
-    currentInstance,
-}: {
+const InstanceDetailsLocksHistory: FunctionComponent<{
     currentInstance: Instance;
-}) => {
+}> = ({ currentInstance }: { currentInstance: Instance }) => {
     const { formatMessage } = useSafeIntl();
     const unlockMutation = useSnackMutation<Instance>(instanceLock => {
         return postRequest('/api/instances/unlock_lock/', {

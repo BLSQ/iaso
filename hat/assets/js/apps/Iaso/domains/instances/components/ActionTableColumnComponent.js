@@ -12,7 +12,6 @@ import omit from 'lodash/omit';
 import { DialogContentText } from '@material-ui/core';
 import { FormattedMessage } from 'react-intl';
 import { useSaveOrgUnit } from '../../orgUnits/hooks';
-import { usePatchInstance } from '../hooks';
 import { baseUrls } from '../../../constants/urls';
 import { userHasPermission } from '../../users/utils';
 import MESSAGES from '../messages';
@@ -40,6 +39,7 @@ const initialFormState = (orgUnit, referenceSubmissionId) => {
 
 const ActionTableColumnComponent = ({ settings, user }) => {
     const { formatMessage } = useSafeIntl();
+    // eslint-disable-next-line no-unused-vars
     const [_formState, _setFieldValue, setFieldErrors] = useFormState(
         initialFormState(
             settings.row.original.org_unit,
@@ -48,7 +48,6 @@ const ActionTableColumnComponent = ({ settings, user }) => {
     );
 
     const { mutateAsync: saveOu } = useSaveOrgUnit(null, ['instances']);
-    const { mutateAsync: saveInstance } = usePatchInstance(null, ['instances']);
 
     const onError = () => {
         if (onError.status === 400) {
@@ -176,13 +175,13 @@ const ActionTableColumnComponent = ({ settings, user }) => {
                             style={{ verticalAlign: 'center' }}
                             title={formatMessage(MESSAGES.lockedCanModify)}
                         >
-                            <LockIcon color="primary"></LockIcon>
+                            <LockIcon color="primary" />
                         </span>
                     ) : (
                         <span
                             title={formatMessage(MESSAGES.lockedCannotModify)}
                         >
-                            <LockIcon></LockIcon>
+                            <LockIcon />
                         </span>
                     )}
                 </>

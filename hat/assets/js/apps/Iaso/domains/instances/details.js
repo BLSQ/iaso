@@ -5,6 +5,7 @@ import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 import DeleteIcon from '@material-ui/icons/Delete';
 import UpdateIcon from '@material-ui/icons/Update';
+import EditLocationIcon from '@material-ui/icons/EditLocation';
 import RestoreFromTrashIcon from '@material-ui/icons/RestoreFromTrash';
 import Alert from '@material-ui/lab/Alert';
 import {
@@ -83,8 +84,8 @@ const styles = theme => ({
     },
 });
 
-const initialFormState = (orgUnit, referenceSubmissionId) => {
-    return {
+const initialFormState = (orgUnit, value, key) => {
+    const orgUnitCopy = {
         id: orgUnit.id,
         name: orgUnit.name,
         org_unit_type_id: orgUnit?.org_unit_type_id ?? undefined,
@@ -94,8 +95,16 @@ const initialFormState = (orgUnit, referenceSubmissionId) => {
         aliases: orgUnit.aliases,
         parent_id: orgUnit.parent_id,
         source_ref: orgUnit.source_ref,
-        reference_instance_id: referenceSubmissionId,
     };
+
+    if (key === 'gps') {
+        orgUnitCopy.altitude = value.altitude;
+        orgUnitCopy.latitude = value.latitude;
+        orgUnitCopy.longitude = value.longitude;
+    } else {
+        orgUnitCopy.reference_instance_id = value;
+    }
+    return orgUnitCopy;
 };
 
 const linkOrLinkOffOrgUnitToReferenceSubmission = (
@@ -107,7 +116,11 @@ const linkOrLinkOffOrgUnitToReferenceSubmission = (
     referenceFormId,
 ) => {
     const currentOrgUnit = orgUnit;
-    const newOrgUnit = initialFormState(orgUnit, referenceSubmissionId);
+    const newOrgUnit = initialFormState(
+        orgUnit,
+        referenceSubmissionId,
+        'instance_reference',
+    );
     let orgUnitPayload = omit({ ...currentOrgUnit, ...newOrgUnit });
 
     orgUnitPayload = {
@@ -121,6 +134,24 @@ const linkOrLinkOffOrgUnitToReferenceSubmission = (
         const url = `${baseUrls.orgUnitDetails}/orgUnitId/${ou.id}/formId/${formId}/referenceFormId/${referenceFormId}/instanceId/${instanceId}`;
         redirectToActionInstance(url, {});
     });
+};
+
+const editGpsFromInstance = (instance, gps) => {
+    const currentOrgUnit = instance.org_unit;
+    const newOrgUnit = initialFormState(instance.org_unit, gps, 'gps');
+    let orgUnitPayload = omit({ ...currentOrgUnit, ...newOrgUnit });
+
+    orgUnitPayload = {
+        ...orgUnitPayload,
+        groups:
+            orgUnitPayload.groups.length > 0 && !orgUnitPayload.groups[0].id
+                ? orgUnitPayload.groups
+                : orgUnitPayload.groups.map(g => g.id),
+    };
+    saveOrgUnitWithDispatch(orgUnitPayload).then(() => {
+        window.location.reload(false);
+    });
+    return null;
 };
 
 const actions = ({
@@ -147,6 +178,49 @@ const actions = ({
         id: 'instanceEditAction',
         icon: <EnketoIcon />,
         disabled: currentInstance && currentInstance.deleted,
+    };
+
+    const renderTriggerEditGps = openDialog => {
+        return <EditLocationIcon onClick={openDialog} />;
+    };
+
+    const gpsEqual = instance => {
+        const orgUnit = instance.org_unit;
+        const formLat = instance?.latitude;
+        const formLong = instance?.longitude;
+        const formAltitude = instance?.altitude;
+        return (
+            formLat === orgUnit?.latitude &&
+            formLong === orgUnit?.longitude &&
+            formAltitude === orgUnit?.altitude
+        );
+    };
+
+    const editLocationWithInstanceGps = {
+        id: 'editLocationWithInstanceGps',
+        icon: (
+            <ConfirmCancelDialogComponent
+                titleMessage={MESSAGES.editGpsFromInstanceTitle}
+                onConfirm={() =>
+                    editGpsFromInstance(currentInstance, {
+                        altitude: currentInstance?.altitude,
+                        latitude: currentInstance?.latitude,
+                        longitude: currentInstance?.longitude,
+                    })
+                }
+                renderTrigger={({ openDialog }) =>
+                    renderTriggerEditGps(openDialog)
+                }
+            >
+                <DialogContentText id="alert-dialog-description">
+                    <FormattedMessage
+                        defaultMessage="This operation can still be undone"
+                        {...MESSAGES.editGpsFromInstanceWarning}
+                    />
+                </DialogContentText>
+            </ConfirmCancelDialogComponent>
+        ),
+        disabled: false,
     };
     const { referenceFormId } = params;
     const referenceSubmission = currentInstance.org_unit.reference_instance_id;
@@ -226,6 +300,16 @@ const actions = ({
             disabled: false,
         },
     ];
+
+    if (
+        currentInstance?.altitude !== null &&
+        currentInstance?.latitude !== null &&
+        currentInstance?.longitude !== null &&
+        hasSubmissionPermission !== null &&
+        !gpsEqual(currentInstance)
+    ) {
+        defaultActions = [editLocationWithInstanceGps, ...defaultActions];
+    }
 
     if (canEditEnketo) {
         defaultActions = [enketoAction, ...defaultActions];

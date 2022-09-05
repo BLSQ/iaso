@@ -167,7 +167,7 @@ def export_entity_as_xlsx(entities):
         col = 0
         row += 2
         filename = entity.name
-    filename = f"EXPORT_ENTITIES.xlsx" if len(entities) > 1 else f"{filename.upper()}_ENTITY.xlsx"
+    filename = "EXPORT_ENTITIES.xlsx" if len(entities) > 1 else f"{filename.upper()}_ENTITY.xlsx"
     workbook.close()
     mem_file.seek(0)
     response = HttpResponse(mem_file, content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")

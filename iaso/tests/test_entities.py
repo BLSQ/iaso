@@ -277,8 +277,6 @@ class EntityAPITestCase(APITestCase):
             "account": self.yoda.iaso_profile.account.pk,
         }
 
-        print("NUMBER OF ENTITIES:", Entity.objects.all().count())
-
         self.client.post("/api/entity/bulk_create/", data=payload, format="json")
         self.client.delete("/api/entity/{0}/".format(Entity.objects.last().pk), format="json")
 

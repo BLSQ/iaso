@@ -1398,6 +1398,14 @@ const MESSAGES = defineMessages({
         id: 'iaso.polio.label.sentByTeam',
         defaultMessage: 'Sent by team',
     },
+    campaignHistory: {
+        id: 'iaso.polio.campaign.campaignHistory',
+        defaultMessage: 'Campaign History',
+    },
+    campaingDropdownLabel: {
+        id: 'iaso.polio.label.campaignDropdownLabel',
+        defaultMessage: 'Modification date',
+    },
 });
 
 export default MESSAGES;

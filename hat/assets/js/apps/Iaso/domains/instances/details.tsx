@@ -10,20 +10,16 @@ import RestoreFromTrashIcon from '@material-ui/icons/RestoreFromTrash';
 import Alert from '@material-ui/lab/Alert';
 import LockIcon from '@material-ui/icons/Lock';
 import {
-    withStyles,
     Box,
     Grid,
     DialogContentText,
     Typography,
     makeStyles,
 } from '@material-ui/core';
-import PropTypes from 'prop-types';
 import LinkIcon from '@material-ui/icons/Link';
 import LinkOffIcon from '@material-ui/icons/LinkOff';
 
 import {
-    // @ts-ignore
-    injectIntl,
     // @ts-ignore
     commonStyles,
     // @ts-ignore
@@ -80,6 +76,7 @@ import {
 } from '../../utils/featureFlags';
 import { useCurrentUser } from '../../utils/usersUtils';
 import { Instance } from './types/instance';
+import { useGetInstance } from './compare/hooks/useGetInstance';
 
 const useStyles = makeStyles(theme => ({
     ...commonStyles(theme),
@@ -410,14 +407,11 @@ const actions = ({
 type Props = {
     currentInstance?: Instance;
     params: {
-        instanceId: number;
+        instanceId: string;
     };
-    fetching: boolean;
     router: any;
     redirectToReplace: any;
     prevPathname: any;
-    fetchInstanceDetail: any;
-    setCurrentInstance: CallableFunction;
     fetchEditUrl: CallableFunction;
     softDelete: CallableFunction;
     restoreInstance: CallableFunction;
@@ -434,30 +428,24 @@ const InstanceDetails: FunctionComponent<Props> = props => {
     const classes = useStyles();
     const dispatch = useDispatch();
     const {
-        currentInstance,
-        fetching,
         reAssignInstance,
         router,
         prevPathname,
         redirectToReplace,
+        params: { instanceId },
         params,
         redirectToActionInstance,
     } = props;
+    const { data: currentInstance, isLoading: fetching } =
+        useGetInstance(instanceId);
     useEffect(() => {
-        const {
-            params: { instanceId },
-            fetchInstanceDetail,
-            setCurrentInstance,
-        } = props;
-        setCurrentInstance(null);
-        fetchInstanceDetail(instanceId).then(instanceDetails => {
-            fetchFormOrgUnitTypes(dispatch, instanceDetails.form_id).then(
+        if (currentInstance?.form_id) {
+            fetchFormOrgUnitTypes(dispatch, currentInstance?.form_id).then(
                 orgUnitTypeIds2 => {
                     setOrgUnitTypeIds(orgUnitTypeIds2.org_unit_type_ids);
                 },
             );
-        });
-
+        }
         // not showing history link in submission detail if there is only one version/log
 
         getRequest(

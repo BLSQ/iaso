@@ -38,6 +38,7 @@ class LogsViewSet(viewsets.ViewSet):
         - new_value
         - field_diffs
 
+    contentType parameter can be one of:  iaso.orgunit, iaso.form, iaso.instance
 
     list:
     Returns the list of modifications
@@ -91,7 +92,14 @@ class LogsViewSet(viewsets.ViewSet):
         user: User = request.user
         if not user.is_superuser:
             if not (object_id and content_type):
-                return Response({"error": _("Unauthorized")}, status=401)
+                return Response(
+                    {
+                        "error": _(
+                            "a contentType parameter is required. Can be one of iaso.orgunit, iaso.form, iaso.instance"
+                        )
+                    },
+                    status=400,
+                )
             obj = content_type.get_object_for_this_type(pk=object_id)
             if not has_access_to(user, obj):
                 return Response({"error": _("Unauthorized")}, status=401)

@@ -24,7 +24,7 @@ describe('Instance details', () => {
         cy.intercept('GET', '/api/profiles/me/**', superUser);
         cy.intercept(
             'GET',
-            '/api/logs/?objectId=1007&order=-created_at',
+            '/api/logs/?objectId=1007&order=-created_at&contentType=iaso.form',
             submissionLogs,
         );
     });

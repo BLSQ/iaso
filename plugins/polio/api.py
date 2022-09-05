@@ -3,12 +3,11 @@ import functools
 import json
 from datetime import timedelta, datetime
 import logging
-from typing import Any, Dict, List, Optional, Union
+from typing import Any, Dict, List, Optional
 from collections import defaultdict
 from functools import lru_cache
 from logging import getLogger
 
-import requests
 from django.core.files import File
 from django.core.cache import cache
 from django.core.exceptions import ObjectDoesNotExist
@@ -73,7 +72,6 @@ from .models import (
     RoundScope,
 )
 from .models import CountryUsersGroup
-from .models import URLCache
 from .preparedness.calculator import preparedness_summary
 from .preparedness.parser import get_preparedness
 

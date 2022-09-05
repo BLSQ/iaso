@@ -2,7 +2,7 @@
 import { OrgUnit } from '../../../orgUnits/types/orgUnit';
 import { EntityType } from '../../entityTypes/types/entityType';
 
-type FileContent = {
+export type FileContent = {
     name?: string;
     age_type: '0' | '1';
     birth_date?: string;
@@ -20,6 +20,7 @@ type Attributes = {
     longitude: number;
     org_unit: OrgUnit;
     nfc_cards?: number;
+    form_id?: number;
 };
 
 export type Beneficiary = {

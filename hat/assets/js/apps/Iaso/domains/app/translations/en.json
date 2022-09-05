@@ -121,6 +121,7 @@
     "iaso.entities.registrationDate": "Registration date",
     "iaso.entities.title": "Entities",
     "iaso.entities.type": "Type",
+    "iaso.entities.typeNotSupported": "Type not supported yet: {type}",
     "iaso.entities.types": "Types",
     "iaso.entities.update": "Update entity",
     "iaso.entities.vaccinationNumber": "Vaccination number",

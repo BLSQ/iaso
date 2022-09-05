@@ -119,6 +119,7 @@
     "iaso.entities.registrationDate": "Date d'enregistrement",
     "iaso.entities.title": "Entités",
     "iaso.entities.type": "Type",
+    "iaso.entities.typeNotSupported": "Type non supporté: {type}",
     "iaso.entities.types": "Types",
     "iaso.entities.update": "Mettre l'entité à jour",
     "iaso.entities.vaccinationNumber": "Numéro de vaccination",

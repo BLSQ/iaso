@@ -229,6 +229,10 @@ const MESSAGES = defineMessages({
         id: 'iaso.instance.title',
         defaultMessage: 'Submissions',
     },
+    typeNotSupported: {
+        id: 'iaso.entities.typeNotSupported',
+        defaultMessage: 'Type not supported yet: {type}',
+    },
 });
 
 export default MESSAGES;

@@ -6,12 +6,15 @@ import {
     TableRow,
     TableCell,
 } from '@material-ui/core';
-import React, { FunctionComponent } from 'react';
+import React, { FunctionComponent, useMemo } from 'react';
 // @ts-ignore
 import { useSafeIntl } from 'bluesquare-components';
 import MESSAGES from '../../messages';
-import { getAge } from '../../../../hooks/useGetAge';
+import { useGetPossibleFields } from '../../entityTypes/hooks/useGetPossibleFields';
+import { useGetFields } from '../hooks/useGetFields';
+
 import { Beneficiary } from '../types/beneficiary';
+import { Field } from '../types/fields';
 
 const useStyles = makeStyles(theme => ({
     leftCell: {
@@ -21,88 +24,61 @@ const useStyles = makeStyles(theme => ({
     },
 }));
 
+type RowProps = {
+    field: Field;
+};
+
+const Row: FunctionComponent<RowProps> = ({ field }) => {
+    const { label, value } = field;
+    const classes = useStyles();
+    return (
+        <TableRow>
+            <TableCell className={classes.leftCell}>{label}</TableCell>
+            <TableCell>{value}</TableCell>
+        </TableRow>
+    );
+};
+
 type Props = {
     beneficiary?: Beneficiary;
 };
-
 export const BeneficiaryBaseInfo: FunctionComponent<Props> = ({
     beneficiary,
 }) => {
     const { formatMessage } = useSafeIntl();
-    const classes = useStyles();
-    console.log('beneficiary', beneficiary);
-    let fields = [];
-    if (
-        beneficiary?.attributes?.file_content &&
-        beneficiary.entity_type.fields_detail_info_view
-    ) {
-        fields = beneficiary.entity_type.fields_detail_info_view.map(
-            fieldKey => {
-                return fieldKey;
+
+    const { possibleFields, isFetchingForm } = useGetPossibleFields(
+        beneficiary?.attributes?.form_id,
+    );
+    const dynamicFields: Field[] = useGetFields(beneficiary, possibleFields);
+    const staticFields = useMemo(
+        () => [
+            {
+                label: formatMessage(MESSAGES.nfcCards),
+                value: `${beneficiary?.attributes?.nfc_cards ?? 0}`,
+                key: 'nfcCards',
             },
-        );
-    }
+            {
+                label: formatMessage(MESSAGES.uuid),
+                value: beneficiary?.uuid ? `${beneficiary.uuid}` : '--',
+                key: 'uuid',
+            },
+        ],
+        [beneficiary?.attributes?.nfc_cards, beneficiary?.uuid, formatMessage],
+    );
     return (
         <>
             <Table size="small">
-                <TableBody>
-                    {beneficiary?.attributes && (
-                        <>
-                            <TableRow>
-                                <TableCell className={classes.leftCell}>
-                                    {formatMessage(MESSAGES.name)}
-                                </TableCell>
-                                <TableCell>
-                                    {beneficiary?.attributes?.file_content
-                                        ?.name ?? '--'}
-                                </TableCell>
-                            </TableRow>
-                            <TableRow>
-                                <TableCell className={classes.leftCell}>
-                                    {formatMessage(MESSAGES.age)}
-                                </TableCell>
-                                <TableCell>
-                                    {getAge({
-                                        age: beneficiary?.attributes
-                                            ?.file_content?.age,
-                                        ageType:
-                                            (beneficiary?.attributes
-                                                ?.file_content?.age_type as
-                                                | '0'
-                                                | '1') ?? '0',
-                                        birthDate:
-                                            beneficiary?.attributes
-                                                ?.file_content?.birth_date,
-                                    }) ?? '--'}
-                                </TableCell>
-                            </TableRow>
-                            <TableRow>
-                                <TableCell className={classes.leftCell}>
-                                    {formatMessage(MESSAGES.gender)}
-                                </TableCell>
-                                <TableCell>
-                                    {beneficiary?.attributes?.file_content
-                                        .gender ??
-                                        formatMessage(MESSAGES.unknown)}
-                                </TableCell>
-                            </TableRow>
-                            <TableRow>
-                                <TableCell className={classes.leftCell}>
-                                    {formatMessage(MESSAGES.nfcCards)}
-                                </TableCell>
-                                <TableCell>
-                                    {beneficiary?.attributes?.nfc_cards ?? 0}
-                                </TableCell>
-                            </TableRow>
-                        </>
-                    )}
-                    <TableRow>
-                        <TableCell className={classes.leftCell}>
-                            {formatMessage(MESSAGES.uuid)}
-                        </TableCell>
-                        <TableCell>{beneficiary?.uuid ?? '--'}</TableCell>
-                    </TableRow>
-                </TableBody>
+                {!isFetchingForm && (
+                    <TableBody>
+                        {dynamicFields.map(field => (
+                            <Row field={field} key={field.key} />
+                        ))}
+                        {staticFields.map(field => (
+                            <Row field={field} key={field.key} />
+                        ))}
+                    </TableBody>
+                )}
             </Table>
         </>
     );

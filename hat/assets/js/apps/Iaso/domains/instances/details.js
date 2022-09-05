@@ -179,7 +179,7 @@ const actions = ({
     const enketoAction = {
         id: 'instanceEditAction',
         icon: <EnketoIcon />,
-        disabled: currentInstance && currentInstance.deleted,
+        disabled: currentInstance?.deleted,
     };
 
     const renderTriggerEditGps = openDialog => {

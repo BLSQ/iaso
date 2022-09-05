@@ -180,10 +180,6 @@ const MESSAGES = defineMessages({
         id: 'iaso.polio.form.label.preventive.short',
         defaultMessage: 'Preventive',
     },
-    selectInitialRegion: {
-        id: 'iaso.polio.form.label.selectInitialRegion',
-        defaultMessage: 'Select initial region',
-    },
     dateOfOnset: {
         id: 'iaso.polio.form.label.dateOfOnset',
         defaultMessage: 'Date of onset',
@@ -1544,6 +1540,13 @@ const MESSAGES = defineMessages({
         id: 'iaso.polio.label.scopeUnlockConditions',
         defaultMessage:
             'Select initial region and encode dates for at least one round to unlock Scope tab',
+    campaignHistory: {
+        id: 'iaso.polio.campaign.campaignHistory',
+        defaultMessage: 'Campaign History',
+    },
+    campaingDropdownLabel: {
+        id: 'iaso.polio.label.campaignDropdownLabel',
+        defaultMessage: 'Modification date',
     },
 });
 

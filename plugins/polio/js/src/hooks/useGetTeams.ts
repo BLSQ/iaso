@@ -43,3 +43,20 @@ export const useGetApprovalTeams = (): UseQueryResult<any, Error> => {
         },
     });
 };
+
+export const useUserHasTeam = (
+    userId?: number,
+): UseQueryResult<boolean, Error> => {
+    return useSnackQuery({
+        queryKey: ['getUserTeam', userId],
+        queryFn: () => getTeams(),
+        options: {
+            select: data => {
+                if (!data) return false;
+                return (
+                    data.filter(team => team.users.includes(userId)).length > 0
+                );
+            },
+        },
+    });
+};

@@ -1675,7 +1675,7 @@ def is_budget_approved(user: User, event: BudgetEvent) -> bool:
 
 def format_file_link(event_file: BudgetFiles) -> Dict:
     serialized_file = BudgetFilesSerializer(event_file).data
-    return {"path": "https://" + settings.DNS_DOMAIN + serialized_file["file"], "name": event_file.file.name}
+    return {"path": serialized_file["file"], "name": event_file.file.name}
 
 
 def make_budget_event_file_links(event: BudgetEvent) -> Optional[str]:
@@ -1752,6 +1752,9 @@ class BudgetEventViewset(ModelViewSet):
         return queryset.distinct()
 
     def perform_create(self, serializer):
+        # block event creation if user is not part of a team
+        if not self.request.user.iaso_profile.has_a_team():
+            raise serializers.ValidationError({"general": ["userWithoutTeam"]})
         event = serializer.save(author=self.request.user)
         serializer = BudgetEventSerializer(event, many=False)
         return Response(serializer.data)
@@ -1761,6 +1764,8 @@ class BudgetEventViewset(ModelViewSet):
         if request.method == "PUT":
             event_pk = request.data["event"]
             event = BudgetEvent.objects.get(pk=event_pk)
+            if not event.author.iaso_profile.has_a_team():
+                raise serializers.ValidationError({"general": ["userWithoutTeam"]})
             event.is_finalized = True if request.data["is_finalized"] else False
             event.save()
             files_string = "None"
@@ -1790,6 +1795,8 @@ class BudgetEventViewset(ModelViewSet):
                 if event_type == "approval" and not is_budget_approved(current_user, event):
                     # We're assuming a user can only be in one approval team
                     author_team = event.author.teams.filter(name__icontains="approval").filter(deleted_at=None).first()
+                    # if not author_team:
+                    #     raise serializers.ValidationError({"general":"userWithoutTeam"})
                     other_approval_teams = (
                         Team.objects.filter(name__icontains="approval")
                         .exclude(id=author_team.id)
@@ -1809,6 +1816,8 @@ class BudgetEventViewset(ModelViewSet):
                     author_team = event.author.teams.filter(name__icontains="approval").filter(deleted_at=None).first()
                     if not author_team:
                         author_team = event.author.teams.first()
+                    # if not author_team:
+                    #     raise serializers.ValidationError({"general":"userWithoutTeam"})
                     approval_teams = Team.objects.filter(name__icontains="approval").filter(deleted_at=None)
                     approvers = approval_teams.values("users")
                     for approver in approvers:

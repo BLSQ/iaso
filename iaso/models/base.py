@@ -1166,6 +1166,12 @@ class Profile(models.Model):
             "user_id": self.user.id,
         }
 
+    def has_a_team(self):
+        team = self.user.teams.filter(deleted_at=None).first()
+        if team:
+            return True
+        return False
+
 
 class ExportRequest(models.Model):
     id = models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name="ID")

@@ -1,22 +1,12 @@
-import json
-from unittest import mock
-
-from django.contrib.auth.models import User
-from django.core.cache import cache
 from django.utils.timezone import now
-from rest_framework import status
 from rest_framework.test import APIClient
-from django.contrib.gis.geos import Polygon, Point, MultiPolygon
 
 from iaso import models as m
-from iaso.models import Account, OrgUnit
-from iaso.test import APITestCase, TestCase
+from iaso.models import Account
+from iaso.test import APITestCase
 
-from plugins.polio.management.commands.weekly_email import send_notification_email
-from ..models import Config, Round
+from ..models import Round
 
-from ..preparedness.calculator import get_preparedness_score
-from ..preparedness.exceptions import InvalidFormatError
 from ..preparedness.spreadsheet_manager import *
 
 

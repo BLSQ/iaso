@@ -30,12 +30,12 @@ type Params = {
     logB: string;
 };
 
-type Router = {
-    goBack: () => void;
-};
+// type Router = {
+//     goBack: () => void;
+// };
 type Props = {
     params: Params;
-    router: Router;
+    // router: Router;
 };
 
 const useStyles = makeStyles((theme: Theme) => ({
@@ -44,7 +44,7 @@ const useStyles = makeStyles((theme: Theme) => ({
 
 export const CompareInstanceLogs: FunctionComponent<Props> = ({
     params,
-    router,
+    // router,
 }) => {
     const classes: Record<string, string> = useStyles();
     const { formatMessage }: { formatMessage: IntlFormatMessage } =
@@ -53,6 +53,9 @@ export const CompareInstanceLogs: FunctionComponent<Props> = ({
     const prevPathname: string | undefined = useSelector(
         (state: State) => state.routerCustom.prevPathname,
     );
+    // FIXME ugly fix to the back arrow bug. Caused by redirecting in useEffect. using useSkipEffectOnMount breaks the feature, so this is a workaround
+    // eslint-disable-next-line no-unused-vars
+    const [previous, _setPrevious] = useState<string | undefined>(prevPathname);
 
     const [logAInitialValue, setLogAInitialValue] = useState<
         number | undefined
@@ -115,15 +118,14 @@ export const CompareInstanceLogs: FunctionComponent<Props> = ({
             instanceLogsDropdown && instanceLogsDropdown[1]?.value,
         );
     }, [instanceLogsDropdown, isFetchingInstanceLogs]);
-
     return (
         <>
             <TopBar
                 title={formatMessage(MESSAGES.instanceLogsTitle)}
                 displayBackButton
                 goBack={() => {
-                    if (prevPathname) {
-                        router.goBack();
+                    if (previous) {
+                        dispatch(redirectToReplace(previous, {}));
                     } else {
                         dispatch(redirectToReplace(baseUrls.instances, {}));
                     }

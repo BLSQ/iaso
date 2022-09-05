@@ -1,7 +1,7 @@
 /* eslint-disable react/jsx-props-no-spreading */
 import React, { FunctionComponent, useEffect, useState } from 'react';
 import { Link } from 'react-router';
-import { connect } from 'react-redux';
+import { connect, useDispatch } from 'react-redux';
 import { bindActionCreators } from 'redux';
 import DeleteIcon from '@material-ui/icons/Delete';
 import UpdateIcon from '@material-ui/icons/Update';
@@ -15,16 +15,24 @@ import {
     Grid,
     DialogContentText,
     Typography,
+    makeStyles,
 } from '@material-ui/core';
 import PropTypes from 'prop-types';
 import LinkIcon from '@material-ui/icons/Link';
 import LinkOffIcon from '@material-ui/icons/LinkOff';
+
 import {
+    // @ts-ignore
     injectIntl,
+    // @ts-ignore
     commonStyles,
+    // @ts-ignore
     LoadingSpinner,
+    // @ts-ignore
     IconButton as IconButtonComponent,
+    // @ts-ignore
     ExportButton as ExportButtonComponent,
+    // @ts-ignore
     useSafeIntl,
 } from 'bluesquare-components';
 import { FormattedMessage } from 'react-intl';
@@ -70,8 +78,10 @@ import {
     hasFeatureFlag,
     SHOW_LINK_INSTANCE_REFERENCE,
 } from '../../utils/featureFlags';
+import { useCurrentUser } from '../../utils/usersUtils';
+import { Instance } from './types/instance';
 
-const styles = theme => ({
+const useStyles = makeStyles(theme => ({
     ...commonStyles(theme),
     alert: {
         marginBottom: theme.spacing(4),
@@ -84,7 +94,7 @@ const styles = theme => ({
         position: 'relative',
         top: 2,
     },
-});
+}));
 
 const initialFormState = (orgUnit, value, key) => {
     const orgUnitCopy = {
@@ -397,20 +407,39 @@ const actions = ({
     ];
 };
 
-const InstanceDetails: FunctionComponent<any> = props => {
+type Props = {
+    currentInstance?: Instance;
+    params: {
+        instanceId: number;
+    };
+    fetching: boolean;
+    router: any;
+    redirectToReplace: any;
+    prevPathname: any;
+    fetchInstanceDetail: any;
+    setCurrentInstance: CallableFunction;
+    fetchEditUrl: CallableFunction;
+    softDelete: CallableFunction;
+    restoreInstance: CallableFunction;
+    reAssignInstance: CallableFunction;
+    redirectToActionInstance: any;
+};
+
+const InstanceDetails: FunctionComponent<Props> = props => {
     const [orgUnitTypeIds, setOrgUnitTypeIds] = useState([]);
     const [showDial, setShowDial] = useState(true);
     const [showHistoryLink, setShowHistoryLink] = useState(true);
     const { formatMessage } = useSafeIntl();
+    const currentUser = useCurrentUser();
+    const classes = useStyles();
+    const dispatch = useDispatch();
     const {
         currentInstance,
-        classes,
         fetching,
         reAssignInstance,
         router,
         prevPathname,
         redirectToReplace,
-        currentUser,
         params,
         redirectToActionInstance,
     } = props;
@@ -418,7 +447,6 @@ const InstanceDetails: FunctionComponent<any> = props => {
         const {
             params: { instanceId },
             fetchInstanceDetail,
-            dispatch,
             setCurrentInstance,
         } = props;
         setCurrentInstance(null);
@@ -493,7 +521,7 @@ const InstanceDetails: FunctionComponent<any> = props => {
                             actions={actions({
                                 currentInstance,
                                 reAssignInstance,
-                                orgUnitTypeIds: orgUnitTypeIds,
+                                orgUnitTypeIds,
                                 canEditEnketo,
                                 formId,
                                 params,
@@ -646,25 +674,8 @@ const InstanceDetails: FunctionComponent<any> = props => {
 
 InstanceDetails.defaultProps = {
     prevPathname: null,
-    currentInstance: null,
+    currentInstance: undefined,
     currentUser: null,
-};
-
-InstanceDetails.propTypes = {
-    classes: PropTypes.object.isRequired,
-    params: PropTypes.object.isRequired,
-    fetching: PropTypes.bool.isRequired,
-    router: PropTypes.object.isRequired,
-    redirectToReplace: PropTypes.func.isRequired,
-    prevPathname: PropTypes.any,
-    currentInstance: PropTypes.object,
-    fetchInstanceDetail: PropTypes.func.isRequired,
-    setCurrentInstance: PropTypes.func.isRequired,
-    fetchEditUrl: PropTypes.func.isRequired,
-    softDelete: PropTypes.func.isRequired,
-    restoreInstance: PropTypes.func.isRequired,
-    reAssignInstance: PropTypes.func.isRequired,
-    currentUser: PropTypes.object,
 };
 
 const MapStateToProps = state => ({
@@ -690,6 +701,4 @@ const MapDispatchToProps = dispatch => ({
     ),
 });
 
-export default withStyles(styles)(
-    connect(MapStateToProps, MapDispatchToProps)(injectIntl(InstanceDetails)),
-);
+export default connect(MapStateToProps, MapDispatchToProps)(InstanceDetails);

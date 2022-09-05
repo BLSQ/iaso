@@ -118,6 +118,10 @@ const InstanceDetailsLocksHistory: FunctionComponent<{
                                                 mutateAsync(instanceLock).then(
                                                     () => {
                                                         closeDialog();
+                                                        // FIXME
+                                                        window.location.reload(
+                                                            false,
+                                                        );
                                                     },
                                                 );
                                             }}

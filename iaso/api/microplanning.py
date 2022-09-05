@@ -1,7 +1,7 @@
 from django.contrib.auth.models import User
 from django.db.models import Q
 from django.shortcuts import get_object_or_404
-from django_filters.rest_framework import DjangoFilterBackend
+from django_filters.rest_framework import DjangoFilterBackend  # type: ignore
 from rest_framework import serializers, filters, permissions
 from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated

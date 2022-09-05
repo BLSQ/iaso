@@ -2,7 +2,7 @@ import sqlite3
 from copy import deepcopy
 from typing import Dict, List, Optional, Tuple, Union
 
-import fiona
+import fiona  # type: ignore
 from django.contrib.auth.models import User
 from django.contrib.gis.geos import MultiPolygon, Point, Polygon
 from django.db import transaction

@@ -4,7 +4,7 @@ from django.conf.urls import url
 from django.urls import path, include, URLPattern, URLResolver
 from django.contrib import auth
 from rest_framework import routers
-from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
+from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView  # type: ignore
 
 from hat.api.authentication import WfpLogin, wfp_callback
 from .api.bulk_create_users import BulkCreateUserFromCsvViewSet
@@ -64,7 +64,7 @@ from iaso import matching
 import pkgutil
 
 from .api.tasks.create.import_gpkg import ImportGPKGViewSet
-from .dhis2.authentication import dhis2_callback
+from .dhis2.authentication import dhis2_callback  # type: ignore
 from hat.api.token_authentication import token_auth
 
 URL = Union[URLPattern, URLResolver]

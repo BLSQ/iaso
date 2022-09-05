@@ -2,7 +2,7 @@ from io import StringIO
 
 from django.core import management
 from os import environ
-import responses
+import responses  # type: ignore
 import json
 
 from iaso.models import OrgUnit, Group, GroupSet, Task, Account, DataSource, SUCCESS, Project

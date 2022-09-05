@@ -3,9 +3,9 @@ import time
 from datetime import datetime, timedelta
 from logging import getLogger
 
-import gspread
-from gspread import Client
-from gspread.exceptions import APIError
+import gspread  # type: ignore
+from gspread import Client  # type: ignore
+from gspread.exceptions import APIError  # type: ignore
 from oauth2client.service_account import ServiceAccountCredentials
 
 logger = getLogger(__name__)

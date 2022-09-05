@@ -1,4 +1,4 @@
-from bs4 import BeautifulSoup as Soup
+from bs4 import BeautifulSoup as Soup  # type: ignore
 from django.http import HttpResponse, JsonResponse, HttpResponseRedirect
 from django.shortcuts import get_object_or_404
 from rest_framework.views import APIView

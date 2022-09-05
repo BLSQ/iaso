@@ -8,7 +8,7 @@ from iaso.models import Instance, OrgUnit, Form, FormVersion, MappingVersion, Ex
 import iaso.models as models
 from timeit import default_timer as timer
 import itertools
-from .api_logger import ApiLogger
+from .api_logger import ApiLogger  # type: ignore
 import logging
 
 logger = logging.getLogger(__name__)

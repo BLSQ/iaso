@@ -1,11 +1,11 @@
 import csv
 import io
 
-import xlsxwriter
+import xlsxwriter  # type: ignore
 from django.db.models import Q
 from django.http import JsonResponse, HttpResponse
 from django.shortcuts import get_object_or_404
-from django_filters.rest_framework import DjangoFilterBackend
+from django_filters.rest_framework import DjangoFilterBackend  # type: ignore
 from rest_framework import permissions, filters
 from rest_framework import serializers
 from rest_framework.decorators import action

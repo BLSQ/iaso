@@ -1,6 +1,7 @@
 /* eslint-disable react/jsx-props-no-spreading */
 /* eslint-disable camelcase */
 import React, { useEffect, useState, useMemo } from 'react';
+import { Link } from 'react-router';
 import PropTypes from 'prop-types';
 import isEqual from 'lodash/isEqual';
 
@@ -17,6 +18,7 @@ import {
     Tabs,
     Typography,
     Tooltip,
+    Box,
 } from '@material-ui/core';
 
 import { useSafeIntl, LoadingSpinner } from 'bluesquare-components';
@@ -34,6 +36,8 @@ import { RoundsForm } from '../forms/RoundsForm';
 import { RoundsEmptyDates } from './Rounds/RoundsEmptyDates.tsx';
 
 import { useSaveCampaign } from '../hooks/useSaveCampaign';
+
+import { CAMPAIGN_HISTORY_URL } from '../constants/routes';
 
 import { useStyles } from '../styles/theme';
 import MESSAGES from '../constants/messages';
@@ -180,6 +184,19 @@ const CreateEditDialog = ({
                     ? formatMessage(MESSAGES.editCampaign)
                     : formatMessage(MESSAGES.createCampaign)}
             </DialogTitle>
+
+            {selectedCampaign && (
+                <Box pl={4}>
+                    <Typography variant="body1" color="inherit">
+                        <Link
+                            to={`${CAMPAIGN_HISTORY_URL}/campaignId/${selectedCampaign?.id}`}
+                        >
+                            {formatMessage(MESSAGES.campaignHistory)}
+                        </Link>
+                    </Typography>
+                </Box>
+            )}
+
             <DialogContent className={classes.content}>
                 <Tabs
                     value={selectedTab}

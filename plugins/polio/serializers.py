@@ -4,7 +4,6 @@ from datetime import datetime
 import pandas as pd
 from django.contrib.auth.models import User
 from django.db import transaction
-from django.db.models import Count
 from django.db.transaction import atomic
 from gspread.exceptions import APIError
 from gspread.exceptions import NoValidUrlKeyFound

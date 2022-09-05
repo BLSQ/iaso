@@ -3,7 +3,6 @@ from logging import getLogger
 from django.conf import settings
 from django.core.mail import send_mail
 from django.core.management.base import BaseCommand
-from django.db.models import Q
 from django.utils.timezone import now
 
 from plugins.polio.models import Campaign, CountryUsersGroup, Round

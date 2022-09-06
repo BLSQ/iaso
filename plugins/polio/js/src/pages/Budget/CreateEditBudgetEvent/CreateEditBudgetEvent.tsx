@@ -1,16 +1,11 @@
 /* eslint-disable react/require-default-props */
 /* eslint-disable react/no-unused-prop-types */
-import React, {
-    FunctionComponent,
-    useCallback,
-    useMemo,
-    useState,
-} from 'react';
+import React, { FunctionComponent, useMemo, useState } from 'react';
 import { useFormik, FormikProvider } from 'formik';
 import { isEqual } from 'lodash';
 // @ts-ignore
 import { useSafeIntl } from 'bluesquare-components';
-import { Box } from '@material-ui/core';
+import { Box, Divider, Typography } from '@material-ui/core';
 import ConfirmCancelDialogComponent from '../../../../../../../hat/assets/js/apps/Iaso/components/dialogs/ConfirmCancelDialogComponent';
 import MESSAGES from '../../../constants/messages';
 import InputComponent from '../../../../../../../hat/assets/js/apps/Iaso/components/forms/InputComponent';
@@ -26,8 +21,13 @@ import { useBudgetEventValidation } from '../hooks/validation';
 import {
     useGetTeamsDropDown,
     useGetApprovalTeams,
+    useUserHasTeam,
 } from '../../../hooks/useGetTeams';
 import { getTitleMessage, useRenderTrigger, makeEventsDropdown } from './utils';
+import {
+    useTranslatedErrors,
+    useApiErrorValidation,
+} from '../../../../../../../hat/assets/js/apps/Iaso/libs/validation';
 
 type Props = {
     campaignId: string;
@@ -53,13 +53,84 @@ export const CreateEditBudgetEvent: FunctionComponent<Props> = ({
         type,
     );
     const currentUser = useCurrentUser();
+    const { data: userHasTeam } = useUserHasTeam(currentUser?.user_id);
     const { formatMessage } = useSafeIntl();
     const { mutateAsync: saveBudgetEvent } = useSaveBudgetEvent(currentType);
     const { mutateAsync: uploadFiles } = useUploadBudgetFiles();
     const { mutateAsync: finalize } = useFinalizeBudgetEvent();
     const [closeModal, setCloseModal] = useState<any>();
-    const validationSchema = useBudgetEventValidation();
 
+    const onSubmitSuccess = (result: any) => {
+        if (type === 'create' || type === 'retry') {
+            if (formik.values.files) {
+                uploadFiles(
+                    // @ts-ignore
+                    { ...formik.values, id: result.id },
+                    {
+                        onSuccess: () => {
+                            finalize(result.id, {
+                                onSuccess: () => {
+                                    closeModal.closeDialog();
+                                    formik.resetForm();
+                                },
+                                onError: () =>
+                                    setCurrentType(value => {
+                                        if (value === 'create') return 'retry';
+                                        return value;
+                                    }),
+                            });
+                        },
+                        onError: () => setCurrentType('retry'),
+                    },
+                );
+            } else {
+                finalize(result.id, {
+                    onSuccess: () => {
+                        closeModal.closeDialog();
+                        formik.resetForm();
+                    },
+                    onError: () =>
+                        setCurrentType(value => {
+                            if (value === 'create') return 'retry';
+                            return value;
+                        }),
+                });
+            }
+        }
+        if (type === 'edit') {
+            finalize(formik.values.id, {
+                onSuccess: () => {
+                    closeModal.closeDialog();
+                    formik.resetForm();
+                },
+                onError: () =>
+                    setCurrentType(value => {
+                        if (value === 'create') return 'retry';
+                        return value;
+                    }),
+            });
+        }
+    };
+
+    const onSubmitError = () => {
+        setCurrentType(value => {
+            if (value === 'create') return 'retry';
+            return value;
+        });
+    };
+
+    const {
+        apiErrors,
+        payload,
+        mutation: save,
+    } = useApiErrorValidation<Partial<any>, any>({
+        mutationFn: saveBudgetEvent,
+        onSuccess: onSubmitSuccess,
+        onError: onSubmitError,
+
+        // convertError: convertAPIErrorsToState,
+    });
+    const validationSchema = useBudgetEventValidation(apiErrors, payload);
     const formik = useFormik({
         initialValues: {
             id: budgetEvent?.id,
@@ -72,70 +143,12 @@ export const CreateEditBudgetEvent: FunctionComponent<Props> = ({
             links: budgetEvent?.links ?? null,
             internal: budgetEvent?.internal ?? false,
             amount: budgetEvent?.amount ?? null,
+            general: null,
         },
         enableReinitialize: true,
         validateOnBlur: true,
         validationSchema,
-        onSubmit: values =>
-            saveBudgetEvent(values, {
-                onSuccess: (result: any) => {
-                    if (type === 'create' || type === 'retry') {
-                        if (values.files) {
-                            uploadFiles(
-                                // @ts-ignore
-                                { ...values, id: result.id },
-                                {
-                                    onSuccess: () => {
-                                        finalize(result.id, {
-                                            onSuccess: () => {
-                                                closeModal.closeDialog();
-                                                resetForm();
-                                            },
-                                            onError: () =>
-                                                setCurrentType(value => {
-                                                    if (value === 'create')
-                                                        return 'retry';
-                                                    return value;
-                                                }),
-                                        });
-                                    },
-                                    onError: () => setCurrentType('retry'),
-                                },
-                            );
-                        } else {
-                            finalize(result.id, {
-                                onSuccess: () => {
-                                    closeModal.closeDialog();
-                                    resetForm();
-                                },
-                                onError: () =>
-                                    setCurrentType(value => {
-                                        if (value === 'create') return 'retry';
-                                        return value;
-                                    }),
-                            });
-                        }
-                    }
-                    if (type === 'edit') {
-                        finalize(values.id, {
-                            onSuccess: () => {
-                                closeModal.closeDialog();
-                                resetForm();
-                            },
-                            onError: () =>
-                                setCurrentType(value => {
-                                    if (value === 'create') return 'retry';
-                                    return value;
-                                }),
-                        });
-                    }
-                },
-                onError: () =>
-                    setCurrentType(value => {
-                        if (value === 'create') return 'retry';
-                        return value;
-                    }),
-            }),
+        onSubmit: save,
     });
     const {
         values,
@@ -153,13 +166,13 @@ export const CreateEditBudgetEvent: FunctionComponent<Props> = ({
         setFieldTouched(keyValue, true);
         setFieldValue(keyValue, value);
     };
-    const getErrors = useCallback(
-        keyValue => {
-            if (!touched[keyValue]) return [];
-            return errors[keyValue] ? [errors[keyValue]] : [];
-        },
-        [errors, touched],
-    );
+    const getErrors = useTranslatedErrors({
+        touched,
+        errors,
+        messages: MESSAGES,
+        formatMessage,
+    });
+
     const titleMessage = useMemo(
         () => getTitleMessage(currentType),
         [currentType],
@@ -178,106 +191,142 @@ export const CreateEditBudgetEvent: FunctionComponent<Props> = ({
                 allowConfirm={isValid && !isEqual(values, initialValues)}
                 titleMessage={titleMessage}
                 onConfirm={closeDialog => {
-                    setCloseModal({ closeDialog });
-                    handleSubmit();
+                    if (userHasTeam) {
+                        setCloseModal({ closeDialog });
+                        handleSubmit();
+                    } else {
+                        closeDialog();
+                    }
                 }}
                 onCancel={closeDialog => {
                     closeDialog();
-                    setCurrentType(type);
-                    resetForm();
+                    if (userHasTeam) {
+                        setCurrentType(type);
+                        resetForm();
+                    }
                 }}
                 maxWidth="sm"
                 cancelMessage={MESSAGES.cancel}
                 confirmMessage={MESSAGES.send}
                 renderTrigger={renderTrigger}
             >
-                {(currentType === 'create' || currentType === 'retry') && (
+                {userHasTeam && (
                     <>
-                        <InputComponent
-                            type="select"
-                            required
-                            keyValue="target_teams"
-                            multi
-                            disabled={currentType !== 'create'}
-                            onChange={(keyValue, value) => {
-                                onChange(
-                                    keyValue,
-                                    commaSeparatedIdsToArray(value),
-                                );
-                            }}
-                            value={values.target_teams}
-                            errors={getErrors('target_teams')}
-                            label={MESSAGES.destination}
-                            options={teamsDropdown}
-                            loading={isFetchingTeams}
-                        />
+                        {(currentType === 'create' ||
+                            currentType === 'retry') && (
+                            <>
+                                <InputComponent
+                                    type="select"
+                                    required
+                                    keyValue="target_teams"
+                                    multi
+                                    disabled={currentType !== 'create'}
+                                    onChange={(keyValue, value) => {
+                                        onChange(
+                                            keyValue,
+                                            commaSeparatedIdsToArray(value),
+                                        );
+                                    }}
+                                    value={values.target_teams}
+                                    errors={getErrors('target_teams')}
+                                    label={MESSAGES.destination}
+                                    options={teamsDropdown}
+                                    loading={isFetchingTeams}
+                                />
 
-                        <InputComponent
-                            type="select"
-                            required
-                            disabled={currentType !== 'create'}
-                            keyValue="type"
-                            onChange={(keyValue, value) => {
-                                onChange(keyValue, value);
-                            }}
-                            value={values.type}
-                            errors={getErrors('type')}
-                            label={MESSAGES.eventType}
-                            options={eventOptions}
-                        />
+                                <InputComponent
+                                    type="select"
+                                    required
+                                    disabled={currentType !== 'create'}
+                                    keyValue="type"
+                                    onChange={(keyValue, value) => {
+                                        onChange(keyValue, value);
+                                    }}
+                                    value={values.type}
+                                    errors={getErrors('type')}
+                                    label={MESSAGES.eventType}
+                                    options={eventOptions}
+                                />
 
-                        <InputComponent
-                            type="text"
-                            keyValue="comment"
-                            multiline
-                            disabled={currentType !== 'create'}
-                            onChange={onChange}
-                            value={values.comment}
-                            errors={getErrors('comment')}
-                            label={MESSAGES.notes}
-                        />
-                        <InputComponent
-                            type="number"
-                            keyValue="amount"
-                            disabled={currentType !== 'create'}
-                            onChange={onChange}
-                            value={values.amount}
-                            errors={getErrors('amount')}
-                            label={MESSAGES.amount}
-                        />
+                                <InputComponent
+                                    type="text"
+                                    keyValue="comment"
+                                    multiline
+                                    disabled={currentType !== 'create'}
+                                    onChange={onChange}
+                                    value={values.comment}
+                                    errors={getErrors('comment')}
+                                    label={MESSAGES.notes}
+                                />
+                                <InputComponent
+                                    type="number"
+                                    keyValue="amount"
+                                    disabled={currentType !== 'create'}
+                                    onChange={onChange}
+                                    value={values.amount}
+                                    errors={getErrors('amount')}
+                                    label={MESSAGES.amount}
+                                />
+                            </>
+                        )}
+                        <Box mt={2}>
+                            <FileInputComponent
+                                keyValue="files"
+                                required={currentType === 'edit'}
+                                multiple
+                                onChange={onChange}
+                                value={values.files}
+                                errors={getErrors('files')}
+                                label={MESSAGES.filesUpload}
+                            />
+                        </Box>
+                        {(currentType === 'create' ||
+                            currentType === 'retry') && (
+                            <InputComponent
+                                type="text"
+                                keyValue="links"
+                                multiline
+                                disabled={currentType !== 'create'}
+                                onChange={onChange}
+                                value={values.links}
+                                errors={getErrors('links')}
+                                label={MESSAGES.links}
+                            />
+                        )}
+                        {values.type !== 'validation' &&
+                            currentType !== 'edit' && (
+                                <InputComponent
+                                    type="checkbox"
+                                    keyValue="internal"
+                                    label={MESSAGES.internal}
+                                    onChange={onChange}
+                                    value={values.internal}
+                                />
+                            )}
+                        {/* @ts-ignore */}
+                        {(errors?.general ?? []).length > 0 && (
+                            <>
+                                {getErrors('general').map(e => (
+                                    <Typography
+                                        key={`${e}-error`}
+                                        color="error"
+                                    >
+                                        {e}
+                                    </Typography>
+                                ))}
+                            </>
+                        )}
                     </>
                 )}
-                <Box mt={2}>
-                    <FileInputComponent
-                        keyValue="files"
-                        required={currentType === 'edit'}
-                        multiple
-                        onChange={onChange}
-                        value={values.files}
-                        errors={getErrors('files')}
-                        label={MESSAGES.filesUpload}
-                    />
-                </Box>
-                {(currentType === 'create' || currentType === 'retry') && (
-                    <InputComponent
-                        type="text"
-                        keyValue="links"
-                        multiline
-                        disabled={currentType !== 'create'}
-                        onChange={onChange}
-                        value={values.links}
-                        errors={getErrors('links')}
-                        label={MESSAGES.links}
-                    />
-                )}
-                {values.type !== 'validation' && currentType !== 'edit' && (
-                    <InputComponent
-                        type="checkbox"
-                        keyValue="internal"
-                        label={MESSAGES.internal}
-                        onChange={onChange}
-                        value={values.internal}
-                    />
+                {!userHasTeam && (
+                    <>
+                        <Divider />
+                        <Box mb={2} mt={2}>
+                            <Typography style={{ fontWeight: 'bold' }}>
+                                {formatMessage(MESSAGES.userNeedsTeam)}
+                            </Typography>
+                        </Box>
+                    </>
                 )}
             </ConfirmCancelDialogComponent>
         </FormikProvider>

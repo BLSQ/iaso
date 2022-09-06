@@ -49,7 +49,8 @@
                 "created_at": 15610777550.970094,
                 "updated_at": 1578885714.116637,
                 "depth": 1,
-                "sub_unit_types": [{
+                "sub_unit_types": [
+                    {
                         "id": 1,
                         "name": "Type1",
                         "short_name": "T1",
@@ -88,7 +89,8 @@
             "created_at": 1561020201.959638,
             "updated_at": 1610270106.540582,
             "depth": 3,
-            "sub_unit_types": [{
+            "sub_unit_types": [
+                {
                     "id": 2,
                     "name": "Type2",
                     "short_name": "T2",
@@ -129,5 +131,6 @@
     "correlation_id": null,
     "last_export_success_at": 1561062559.007373,
     "export_statuses": [],
+    "instance_locks_history": [],
     "deleted": false
 }

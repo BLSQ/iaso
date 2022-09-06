@@ -78,7 +78,7 @@ export const getInstancesColumns = (
     visibleColumns,
     showDeleted = false,
     user,
-    dispatch
+    dispatch,
 ) => {
     const metasColumns = [...instancesTableColumns(formatMessage, user)];
     if (showDeleted) {

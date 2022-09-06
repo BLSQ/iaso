@@ -48,9 +48,14 @@ export const CampaignLogDetail: FunctionComponent<Props> = ({ logId }) => {
         <>
             {campaignLogDetail && (
                 <WidgetPaper title={formatMessage(MESSAGES.campaignHistory)}>
-                    {Object.keys(campaignLogDetail).map(detail => (
-                        <p>{detail}</p>
-                    ))}
+                    <ul>
+                        {Object.entries(campaignLogDetail).map(detail => (
+                            <li>
+                                <span>{detail[0]}</span>
+                                <span>{detail[1]}</span>
+                            </li>
+                        ))}
+                    </ul>
                 </WidgetPaper>
             )}
         </>

@@ -111,21 +111,22 @@ def export_entity_as_xlsx(entities):
         row += 1
         for k, v in res["entity"].items():
             try:
-                fields_list = entity.entity_type.fields_detail_view
+                fields_list = entity.entity_type.fields_detail_info_view
             except TypeError:
                 raise serializers.ValidationError(
                     {"error": "You must provide a field details view list in order to export the entities."}
                 )
-            if k in fields_list or k == "attributes":
-                if k == "attributes":
-                    for k_, v_ in res["entity"]["attributes"]["file_content"].items():
-                        worksheet.write(row, col, k_)
-                        worksheet.write(row + 1, col, v_)
+            if fields_list is not None:
+                if k in fields_list or k == "attributes":
+                    if k == "attributes":
+                        for k_, v_ in res["entity"]["attributes"]["file_content"].items():
+                            worksheet.write(row, col, k_)
+                            worksheet.write(row + 1, col, v_)
+                            col += 1
+                    else:
+                        worksheet.write(row, col, k)
+                        worksheet.write(row + 1, col, v)
                         col += 1
-                else:
-                    worksheet.write(row, col, k)
-                    worksheet.write(row + 1, col, v)
-                    col += 1
         col = 0
         row += 2
         filename = entity.name
@@ -147,7 +148,7 @@ def export_entity_as_csv(entities):
         benef_data = []
         for k, v in res["entity"].items():
             try:
-                fields_list = entity.entity_type.fields_detail_view
+                fields_list = entity.entity_type.fields_detail_info_view
             except TypeError:
                 raise serializers.ValidationError(
                     {"error": "You must provide a field details view list in order to export the entities."}
@@ -278,7 +279,7 @@ class EntityViewSet(ModelViewSet):
 
         if xlsx_format or csv_format:
             if pk:
-                entities = Entity.objects.filter(account=account, pk=pk)
+                entities = Entity.objects.filter(account=account, entity_type_id=pk)
             else:
                 entities = Entity.objects.filter(account=account)
             if xlsx_format:

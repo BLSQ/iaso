@@ -289,6 +289,8 @@ class EntityViewSet(ModelViewSet):
 
         entities = queryset
         result_list = []
+        columns_list = []
+        form_key_list = []
 
         if entity_type_id is None:
             for entity in entities:
@@ -304,71 +306,50 @@ class EntityViewSet(ModelViewSet):
                     "entity_type": entity.entity_type.name,
                 }
                 result_list.append(result)
+        else:
+            for entity in entities:
+                entity_serialized = EntitySerializer(entity, many=False)
+                file_content = entity_serialized.data.get("attributes").get("file_content")
+                form_version = EntityType.objects.get(pk=entity_type_id).reference_form.latest_version
+                form_descriptor = form_version.get_or_save_form_descriptor()
+                for k in form_descriptor:
+                    form_key_list.append(k)
+                form_data_key = form_key_list[form_key_list.index("version") + 1]
+                descriptor_list = form_descriptor[form_data_key]
 
-            if limit:
-                limit = int(limit)
-                page_offset = int(page_offset)
-                paginator = Paginator(result_list, limit)
-                res = {"count": paginator.count}
-                if page_offset > paginator.num_pages:
-                    page_offset = paginator.num_pages
-                page = paginator.page(page_offset)
+                is_list = True
 
-                res["result"] = map(lambda x: x, page.object_list)
-                res["has_next"] = page.has_next()
-                res["has_previous"] = page.has_previous()
-                res["page"] = page_offset
-                res["pages"] = paginator.num_pages
-                res["limit"] = limit
-                return Response(res)
-
-            return Response(result_list)
-
-        columns_list = []
-        form_key_list = []
-        for entity in entities:
-            entity_serialized = EntitySerializer(entity, many=False)
-            file_content = entity_serialized.data.get("attributes").get("file_content")
-            form_version = EntityType.objects.get(pk=entity_type_id).reference_form.latest_version
-            form_descriptor = form_version.get_or_save_form_descriptor()
-            for k in form_descriptor:
-                form_key_list.append(k)
-            form_data_key = form_key_list[form_key_list.index("version") + 1]
-            descriptor_list = form_descriptor[form_data_key]
-
-            is_list = True
-
-            for d in descriptor_list:
-                for k, v in d.items():
-                    data_list = v
-                    if k == "children":
-                        while is_list:
-                            for data in data_list:
-                                value_dict = {}
-                                for _k, _v in data.items():
-                                    if _k == "name" or _k == "label":
-                                        value_dict[_k] = _v
-                                        is_list = False
-                                    key_index = sorted(data.keys()).index(_k)
-                                    if key_index < len(sorted(data.keys())) - 1:
-                                        if sorted(data.keys())[key_index + 1] == "children":
-                                            data_list = data["children"]
+                for d in descriptor_list:
+                    for k, v in d.items():
+                        data_list = v
+                        if k == "children":
+                            while is_list:
+                                for data in data_list:
+                                    value_dict = {}
+                                    for _k, _v in data.items():
+                                        if _k == "name" or _k == "label":
+                                            value_dict[_k] = _v
+                                            is_list = False
+                                        key_index = sorted(data.keys()).index(_k)
+                                        if key_index < len(sorted(data.keys())) - 1:
+                                            if sorted(data.keys())[key_index + 1] == "children":
+                                                data_list = data["children"]
+                                                is_list = True
+                                        if _k == "children":
+                                            data_list = _v
                                             is_list = True
-                                    if _k == "children":
-                                        data_list = _v
-                                        is_list = True
-                                columns_list.append(value_dict)
-            result = {}
-            for k, v in file_content.items():
-                if k in list(entity.entity_type.fields_list_view):
-                    result[k] = v
-            result_list.append(result)
-        columns_list = [i for n, i in enumerate(columns_list) if i not in columns_list[n + 1 :]]
+                                    columns_list.append(value_dict)
+                result = {}
+                for k, v in file_content.items():
+                    if k in list(entity.entity_type.fields_list_view):
+                        result[k] = v
+                result_list.append(result)
+            columns_list = [i for n, i in enumerate(columns_list) if i not in columns_list[n + 1 :]]
 
-        # remove dictionaries with "name" as only key
-        for col in columns_list:
-            if len(col) != 2:
-                columns_list.remove(col)
+            # remove dictionaries with "name" as only key
+            for col in columns_list:
+                if len(col) != 2:
+                    columns_list.remove(col)
 
         if limit:
             limit = int(limit)
@@ -378,7 +359,6 @@ class EntityViewSet(ModelViewSet):
             if page_offset > paginator.num_pages:
                 page_offset = paginator.num_pages
             page = paginator.page(page_offset)
-
             res["has_next"] = page.has_next()
             res["has_previous"] = page.has_previous()
             res["page"] = page_offset
@@ -387,7 +367,6 @@ class EntityViewSet(ModelViewSet):
             res["columns"] = (columns_list,)
             res["result"] = map(lambda x: x, page.object_list)
             return Response(res)
-
         response = {"columns": columns_list, "result": result_list}
 
         return Response(response)

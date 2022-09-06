@@ -48,6 +48,7 @@ import {
 } from '../../routing/actions';
 import WidgetPaper from '../../components/papers/WidgetPaperComponent';
 import CreateReAssignDialogComponent from './components/CreateReAssignDialogComponent';
+import snackMessages from '../../components/snackBars/messages';
 
 import InstanceDetailsInfos from './components/InstanceDetailsInfos';
 import InstanceDetailsLocation from './components/InstanceDetailsLocation';
@@ -65,7 +66,6 @@ import { getRequest } from '../../libs/Api';
 import MESSAGES from './messages';
 import { baseUrls } from '../../constants/urls';
 import {
-    fetchFormOrgUnitTypes,
     saveOrgUnitWithDispatch,
     lockInstanceWithDispatch,
 } from '../../utils/requests';
@@ -77,6 +77,8 @@ import {
 import { useCurrentUser } from '../../utils/usersUtils';
 import { Instance } from './types/instance';
 import { useGetInstance } from './compare/hooks/useGetInstance';
+import { UseQueryResult } from 'react-query';
+import { useSnackQuery } from '../../libs/apiHooks';
 
 const useStyles = makeStyles(theme => ({
     ...commonStyles(theme),
@@ -419,14 +421,50 @@ type Props = {
     redirectToActionInstance: any;
 };
 
+type FormOrgUnitTypes = {
+    org_unit_type_ids: number[];
+};
+// TODO move to hooks.js
+export const useGetOrgUnitTypes = (
+    formId: number | string | undefined,
+): UseQueryResult<FormOrgUnitTypes, Error> => {
+    return useSnackQuery<FormOrgUnitTypes, Error>(
+        ['form', formId, 'org_unit_types'],
+        () => getRequest(`/api/forms/${formId}/?fields=org_unit_type_ids`),
+        snackMessages.fetchFormError,
+        {
+            enabled: Boolean(formId),
+            retry: false,
+        },
+    );
+};
+
+type Logs = {
+    list: any[];
+};
+
+export const useGetInstanceLogs = (
+    instanceId: string | undefined,
+): UseQueryResult<Logs, Error> => {
+    return useSnackQuery<Logs, Error>(
+        ['instance', instanceId, 'logs'],
+        () =>
+            getRequest(
+                `/api/logs/?objectId=${instanceId}&order=-created_at&contentType=iaso.instance`,
+            ),
+        undefined,
+        {
+            enabled: Boolean(instanceId),
+            retry: false,
+        },
+    );
+};
+
 const InstanceDetails: FunctionComponent<Props> = props => {
-    const [orgUnitTypeIds, setOrgUnitTypeIds] = useState([]);
     const [showDial, setShowDial] = useState(true);
-    const [showHistoryLink, setShowHistoryLink] = useState(true);
     const { formatMessage } = useSafeIntl();
     const currentUser = useCurrentUser();
     const classes = useStyles();
-    const dispatch = useDispatch();
     const {
         reAssignInstance,
         router,
@@ -438,24 +476,16 @@ const InstanceDetails: FunctionComponent<Props> = props => {
     } = props;
     const { data: currentInstance, isLoading: fetching } =
         useGetInstance(instanceId);
-    useEffect(() => {
-        if (currentInstance?.form_id) {
-            fetchFormOrgUnitTypes(dispatch, currentInstance?.form_id).then(
-                orgUnitTypeIds2 => {
-                    setOrgUnitTypeIds(orgUnitTypeIds2.org_unit_type_ids);
-                },
-            );
-        }
-        // not showing history link in submission detail if there is only one version/log
 
-        getRequest(
-            `/api/logs/?objectId=${instanceId}&order=-created_at&contentType=iaso.instance`,
-        ).then(instanceLogsDetails => {
-            if (instanceLogsDetails.list.length === 1) {
-                setShowHistoryLink(false);
-            }
-        });
-    }, []);
+    const { data: formOrgUnitType } = useGetOrgUnitTypes(
+        currentInstance?.form_id,
+    );
+
+    const orgUnitTypeIds = formOrgUnitType?.org_unit_type_ids;
+    // not showing history link in submission detail if there is only one version/log
+    // in the futur. add this info directly in the instance api to not make another call;
+    const { data: instanceLogsDetails } = useGetInstanceLogs(instanceId);
+    const showHistoryLink = instanceLogsDetails?.list?.length ?? 0 > 1;
 
     const onActionSelected = action => {
         if (action.id === 'instanceEditAction' && props.currentInstance) {
@@ -509,7 +539,7 @@ const InstanceDetails: FunctionComponent<Props> = props => {
                             actions={actions({
                                 currentInstance,
                                 reAssignInstance,
-                                orgUnitTypeIds,
+                                orgUnitTypes: orgUnitTypeIds,
                                 canEditEnketo,
                                 formId,
                                 params,
@@ -662,15 +692,10 @@ const InstanceDetails: FunctionComponent<Props> = props => {
 
 InstanceDetails.defaultProps = {
     prevPathname: null,
-    currentInstance: undefined,
-    currentUser: null,
 };
 
 const MapStateToProps = state => ({
-    fetching: state.instances.fetching,
-    currentInstance: state.instances.current,
     prevPathname: state.routerCustom.prevPathname,
-    currentUser: state.users.current,
 });
 
 const MapDispatchToProps = dispatch => ({

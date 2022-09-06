@@ -37,6 +37,11 @@
                         A budget for campaign {{campaign}} has been submitted by {{author_first_name}} {{author_last_name}} from {{team}}, and needs approval.
                     </td>
                 {%endif%}
+                {%if event_type == "transmission"%}   
+                    <td align="left" style="padding:5px;">
+                        A budget for campaign {{campaign}} has been transmitted for approval by {{author_first_name}} {{author_last_name}} from {{team}}, and needs approval.
+                    </td>
+                {%endif%}
             </tr>
             {%if comment%}
                 <tr>

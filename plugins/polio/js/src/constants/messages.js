@@ -1406,6 +1406,10 @@ const MESSAGES = defineMessages({
         id: 'iaso.polio.label.campaignDropdownLabel',
         defaultMessage: 'Modification date',
     },
+    error: {
+        id: 'iaso.polio.campaign.campaignHistory.error',
+        defaultMessage: 'Error',
+    },
 });
 
 export default MESSAGES;

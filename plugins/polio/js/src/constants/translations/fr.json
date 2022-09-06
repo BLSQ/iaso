@@ -27,6 +27,7 @@
     "iaso.polio.campaign.restoreError": "Erreur lors de la restauration de la campagne",
     "iaso.polio.campaign.restoreSuccess": "Campagne restaurée",
     "iaso.polio.campaign.campaignHistory": "Historique de la campagne",
+    "iaso.polio.campaign.campaignHistory.error": "Erreur",
     "iaso.polio.label.campaignDropdownLabel": "Date de modification",
     "iaso.polio.createCampaign": "Créer une campagne",
     "iaso.polio.district": "District",

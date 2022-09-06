@@ -363,7 +363,7 @@ class EntityViewSet(ModelViewSet):
                 if k in list(entity.entity_type.fields_list_view):
                     result[k] = v
             result_list.append(result)
-        columns_list = [i for n, i in enumerate(columns_list) if i not in columns_list[n + 1:]]
+        columns_list = [i for n, i in enumerate(columns_list) if i not in columns_list[n + 1 :]]
 
         # remove dictionaries with "name" as only key
         for col in columns_list:
@@ -459,4 +459,3 @@ class EntityViewSet(ModelViewSet):
                 writer.writerow(data_list)
 
             return response
-

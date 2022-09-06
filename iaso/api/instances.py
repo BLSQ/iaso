@@ -407,7 +407,7 @@ class InstancesViewSet(viewsets.ViewSet):
             return True
 
         # can user access this orgunit
-        if highest_lock.top_org_unit in OrgUnit.objects.filter_for_user(user):
+        if OrgUnit.objects.filter_for_user(user).filter(id=highest_lock.top_org_unit.id).exists():
             return True
         if raise_exception:
             raise serializers.ValidationError({"error": "You don't have the permission to modify this instance."})

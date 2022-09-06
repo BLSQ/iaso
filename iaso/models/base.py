@@ -1121,7 +1121,7 @@ class Instance(models.Model):
         # can user access this orgunit
         from iaso.models import OrgUnit  # Local import to prevent loop
 
-        if highest_lock.top_org_unit in OrgUnit.objects.filter_for_user(user):
+        if OrgUnit.objects.filter_for_user(user).filter(id=highest_lock.top_org_unit.id).exists():
             return True
         return False
 

@@ -11,10 +11,7 @@ import { CampaignLogDetail } from './CampaignLogDetail';
 import ErrorPaperComponent from '../../../../../../hat/assets/js/apps/Iaso/components/papers/ErrorPaperComponent';
 import InputComponent from '../../../../../../hat/assets/js/apps/Iaso/components/forms/InputComponent';
 import TopBar from '../../../../../../hat/assets/js/apps/Iaso/components/nav/TopBarComponent';
-import {
-    redirectTo,
-    redirectToReplace,
-} from '../../../../../../hat/assets/js/apps/Iaso/routing/actions';
+import { redirectToReplace } from '../../../../../../hat/assets/js/apps/Iaso/routing/actions';
 import {
     CAMPAIGN_HISTORY_URL,
     DASHBOARD_BASE_URL,
@@ -81,7 +78,7 @@ export const CampaignHistory: FunctionComponent<Props> = ({
             ...params,
             [key]: value,
         };
-        dispatch(redirectTo(CAMPAIGN_HISTORY_URL, newParams));
+        dispatch(redirectToReplace(CAMPAIGN_HISTORY_URL, newParams));
     };
 
     useEffect(() => {
@@ -91,7 +88,9 @@ export const CampaignHistory: FunctionComponent<Props> = ({
                     ...params,
                     logId: campaignLogsDropdown[0]?.value,
                 };
-                dispatch(redirectTo(CAMPAIGN_HISTORY_URL, defaultParams));
+                dispatch(
+                    redirectToReplace(CAMPAIGN_HISTORY_URL, defaultParams),
+                );
             }
         }
         // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -144,9 +143,13 @@ export const CampaignHistory: FunctionComponent<Props> = ({
                             loading={isFetchingCampaignLogsDropdown}
                         />
                     </Box>
-                    <Box p={6}>
-                        <CampaignLogDetail logId={params.logId} />
-                    </Box>
+                </Grid>
+                <Grid container spacing={4}>
+                    <Grid xs={12} md={6} item>
+                        <Box p={6}>
+                            <CampaignLogDetail logId={params.logId} />
+                        </Box>
+                    </Grid>
                 </Grid>
             </Grid>
         </>

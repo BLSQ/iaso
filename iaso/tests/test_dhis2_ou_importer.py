@@ -58,7 +58,7 @@ class DHIS2TestMixin:
     def assertNoCreation(self):
         self.assertEqual(self.old_counts, self.counts())
 
-    def assertCreated(self: TestCase, createds: dict):
+    def assertCreated(self, createds: dict) -> None:
         new_counts = self.counts()
         diff = {}
 

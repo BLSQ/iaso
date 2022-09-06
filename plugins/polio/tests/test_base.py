@@ -5,7 +5,7 @@ from typing import List
 from unittest import mock
 from unittest.mock import patch
 
-import jwt
+import jwt  # type: ignore
 from django.contrib.auth.models import User
 from django.core.cache import cache
 from django.core.files import File

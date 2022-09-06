@@ -6,7 +6,7 @@ from logging import getLogger
 import gspread  # type: ignore
 from gspread import Client  # type: ignore
 from gspread.exceptions import APIError  # type: ignore
-from oauth2client.service_account import ServiceAccountCredentials
+from oauth2client.service_account import ServiceAccountCredentials  # type: ignore
 
 logger = getLogger(__name__)
 

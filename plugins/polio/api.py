@@ -23,7 +23,7 @@ from django.http import JsonResponse
 from django.http.response import HttpResponseBadRequest
 from django.shortcuts import get_object_or_404
 from django.utils.timezone import now, make_aware
-from django_filters.rest_framework import DjangoFilterBackend
+from django_filters.rest_framework import DjangoFilterBackend  # type: ignore
 from django.template.loader import render_to_string
 from gspread.utils import extract_id_from_url  # type: ignore
 from hat.settings import DEFAULT_FROM_EMAIL
@@ -559,7 +559,7 @@ def _make_prep(c: Campaign, round: Round):
             logger.info(f"Round mismatch on {c} {round}")
 
         campaign_prep["history"] = history_for_campaign(ssi_qs, round)
-    except Exception as e:
+    except Exception as e:  # FIXME: too broad Exception
         campaign_prep["status"] = "error"
         campaign_prep["details"] = str(e)
         logger.exception(e)
@@ -1500,9 +1500,9 @@ def creation_email_with_two_links(
     event_type: str,
     first_name: str,
     last_name: str,
-    comment: str,
+    comment: Optional[str],
     files: str,
-    links: str,
+    links: Optional[str],
     validation_link: str,
     rejection_link: str,
     dns_domain: str,

@@ -7,9 +7,9 @@ from django.contrib.gis.db.models.fields import PointField, MultiPolygonField
 from django.contrib.postgres.fields import ArrayField, CITextField
 from django.contrib.auth.models import User, AnonymousUser
 from django.db.models.expressions import RawSQL
-from django_ltree.fields import PathField
+from django_ltree.fields import PathField  # type: ignore
 from django.utils.translation import ugettext_lazy as _
-from django_ltree.models import TreeModel
+from django_ltree.models import TreeModel  # type: ignore
 
 from .base import SourceVersion
 from .project import Project

@@ -1,4 +1,5 @@
 import csv
+import datetime
 import io
 
 import xlsxwriter
@@ -78,13 +79,6 @@ class EntitySerializer(serializers.ModelSerializer):
         return obj.entity_type.name if obj.entity_type else None
 
 
-# To define
-class HasEntityPermission(permissions.BasePermission):
-    def has_permission(self, request: Request, view):
-        if request.method == "POST":
-            return True
-
-
 class EntityTypeViewSet(ModelViewSet):
     results_key = "types"
     remove_results_key_if_paginated = True
@@ -104,7 +98,7 @@ class EntityTypeViewSet(ModelViewSet):
 def export_entity_as_xlsx(entities):
     mem_file = io.BytesIO()
     workbook = xlsxwriter.Workbook(mem_file)
-    worksheet = workbook.add_worksheet("beneficiary")
+    worksheet = workbook.add_worksheet("entity")
     worksheet.set_column(0, 100, 30)
     row_color = workbook.add_format({"bg_color": "#FFC7CE"})
     row = 0
@@ -144,7 +138,6 @@ def export_entity_as_xlsx(entities):
 
 
 def export_entity_as_csv(entities):
-
     header = []
     data = []
     filename = ""
@@ -397,3 +390,46 @@ class EntityViewSet(ModelViewSet):
         response = {"columns": columns_list, "result": result_list}
 
         return Response(response)
+
+    @action(detail=False, methods=["GET"])
+    def export_entity_submissions_list(self, request):
+        entity_id = request.GET.get("id", None)
+        entity = get_object_or_404(Entity, pk=entity_id)
+        instances = Instance.objects.filter(entity=entity)
+
+        mem_file = io.BytesIO()
+        workbook = xlsxwriter.Workbook(mem_file)
+        worksheet = workbook.add_worksheet("entity")
+        worksheet.set_column(0, 100, 30)
+        row = 0
+        col = 0
+
+        fields = ["Submissions for the form", "Created", "Last Sync", "Org Unit", "Submitter", "Actions"]
+
+        for f in fields:
+            worksheet.write(row, col, f)
+            col += 1
+
+        for i in instances:
+            row += 1
+            col = 0
+            data = [
+                i.form.name,
+                i.created_at.strftime("%Y-%m-%d %H:%M:%S"),
+                i.updated_at.strftime("%Y-%m-%d %H:%M:%S"),
+                i.org_unit.name,
+                i.created_by.username,
+                "",
+            ]
+            for d in data:
+                worksheet.write(row, col, d)
+                col += 1
+        date = datetime.datetime.now().strftime("%Y-%m-%d")
+        filename = f"{entity}_details_list_{date}.xlsx"
+        workbook.close()
+        mem_file.seek(0)
+        response = HttpResponse(
+            mem_file, content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+        )
+        response["Content-Disposition"] = "attachment; filename=%s" % filename
+        return response

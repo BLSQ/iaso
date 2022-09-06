@@ -22,8 +22,8 @@ class PolioAPITestCase(APITestCase):
         cls.data_source = m.DataSource.objects.create(name="Default source")
         cls.now = now()
         cls.source_version_1 = m.SourceVersion.objects.create(data_source=cls.data_source, number=1)
-        account = Account.objects.create(name="polio", default_version=cls.source_version_1)
-        cls.yoda = cls.create_user_with_profile(username="yoda", account=account, permissions=["iaso_forms"])
+        polio_account = Account.objects.create(name="polio", default_version=cls.source_version_1)
+        cls.yoda = cls.create_user_with_profile(username="yoda", account=polio_account, permissions=["iaso_forms"])
 
         cls.org_unit = m.OrgUnit.objects.create(
             org_unit_type=m.OrgUnitType.objects.create(name="Jedi Council", short_name="Cnc"),
@@ -55,13 +55,14 @@ class PolioAPITestCase(APITestCase):
         ]
 
         cls.luke = cls.create_user_with_profile(
-            username="luke", account=account, permissions=["iaso_forms"], org_units=[cls.child_org_unit]
+            username="luke", account=polio_account, permissions=["iaso_forms"], org_units=[cls.child_org_unit]
         )
 
     def setUp(self):
         """Make sure we have a fresh client at the beginning of each test"""
         self.client = APIClient()
 
+    # TODO: consider moving all campaigns list tests to their own classes (for tighter/smaller test classes)
     def test_campaings_list_authenticated(self):
         """Basic tests for the campaigns list endpoint (while authenticated)
 
@@ -71,8 +72,9 @@ class PolioAPITestCase(APITestCase):
         - important data fields get returned
         """
         self.client.force_authenticate(self.yoda)
-        Campaign.objects.create(account=self.account, obr_name="obr_name", detection_status="PENDING")
-        Campaign.objects.create(account=self.account, obr_name="obr_name2", detection_status="PENDING")
+        yoda_account = self.yoda.iaso_profile.account
+        Campaign.objects.create(account=yoda_account, obr_name="obr_name", detection_status="PENDING")
+        Campaign.objects.create(account=yoda_account, obr_name="obr_name2", detection_status="PENDING")
 
         response = self.client.get("/api/polio/campaigns/")
         self.assertEqual(response.status_code, 200)
@@ -81,8 +83,63 @@ class PolioAPITestCase(APITestCase):
 
         for campaign_data in json_response:
             # Both are part of the same account
-            self.assertEqual(campaign_data["account"], self.account.pk)
+            self.assertEqual(campaign_data["account"], yoda_account.pk)
             # TODO: test other fields here
+
+    def test_campaings_list_authenticated_only_get_own_account(self):
+        """Campaigns list endpoint: authenticated users only see results linked to their account"""
+        self.client.force_authenticate(self.yoda)
+        yoda_account = self.yoda.iaso_profile.account
+
+        another_account = Account.objects.create(name="another_account")
+        Campaign.objects.create(account=yoda_account, obr_name="obr_name", detection_status="PENDING")
+        Campaign.objects.create(account=yoda_account, obr_name="obr_name2", detection_status="PENDING")
+        Campaign.objects.create(account=another_account, obr_name="obr_name_other_account", detection_status="PENDING")
+
+        json_response = self.client.get("/api/polio/campaigns/").json()
+        self.assertEqual(len(json_response), 2)
+        self.assertNotIn("obr_name_other_account", [c["obr_name"] for c in json_response])
+
+    def test_campaigns_list_anonymous_can_choose_account(self):
+        """Campaigns list endpoint: anonymous users only can use the account_id parameter to filter"""
+        another_account = Account.objects.create(name="another_account")
+        Campaign.objects.create(account=self.account, obr_name="obr_name", detection_status="PENDING")
+        Campaign.objects.create(account=self.account, obr_name="obr_name2", detection_status="PENDING")
+        Campaign.objects.create(account=another_account, obr_name="obr_name_other_account", detection_status="PENDING")
+
+        json_response = self.client.get(f"/api/polio/campaigns/?account_id={another_account.pk}").json()
+        self.assertEqual(len(json_response), 1)
+        self.assertEqual(json_response[0]["obr_name"], "obr_name_other_account")
+
+    def test_campaigns_list_anonymous_get_everything(self):
+        """Campaigns list endpoint: if they don't use the account_id, anonymous users get everything"""
+        another_account = Account.objects.create(name="another_account")
+        Campaign.objects.create(account=self.account, obr_name="obr_name", detection_status="PENDING")
+        Campaign.objects.create(account=self.account, obr_name="obr_name2", detection_status="PENDING")
+        Campaign.objects.create(account=another_account, obr_name="obr_name_other_account", detection_status="PENDING")
+
+        json_response = self.client.get("/api/polio/campaigns/").json()
+        self.assertEqual(len(json_response), 3)
+
+    def test_campaings_list_authenticated_account_id_ignored(self):
+        """Campaigns list endpoint: authenticated users cannot make use of the account_id parameter
+
+        Notes:
+            - This is a bit counterintuitive since anonymous users can BUT this is because more data fields are shown
+            to authenticated users
+            - in practice, no error is thrown but the account_id parameter just gets ignored
+        """
+        self.client.force_authenticate(self.yoda)
+        yoda_account = self.yoda.iaso_profile.account
+
+        another_account = Account.objects.create(name="another_account")
+        Campaign.objects.create(account=yoda_account, obr_name="obr_name", detection_status="PENDING")
+        Campaign.objects.create(account=yoda_account, obr_name="obr_name2", detection_status="PENDING")
+        Campaign.objects.create(account=another_account, obr_name="obr_name_other_account", detection_status="PENDING")
+
+        json_response = self.client.get(f"/api/polio/campaigns/?account_id={another_account.pk}").json()
+        self.assertEqual(len(json_response), 2)
+        self.assertNotIn("obr_name_other_account", [c["obr_name"] for c in json_response])
 
     def test_campaigns_list_anonymous(self):
         """Basic tests for the campaigns list endpoint (anonymous)

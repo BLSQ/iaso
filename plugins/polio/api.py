@@ -162,6 +162,16 @@ class CampaignViewSet(ModelViewSet):
             campaigns = campaigns.filter(is_preventive=False).filter(is_test=False)
         if campaign_groups:
             campaigns = campaigns.filter(grouped_campaigns__in=campaign_groups.split(","))
+
+        if self.request.user.is_authenticated:
+            # Authenticated users only get campaigns linked to their account
+            campaigns = campaigns.filter(account=self.request.user.iaso_profile.account)
+        else:
+            # Anonymous users *can* filter campaigns using account_id
+            account_id = self.request.query_params.get("account_id", None)
+            if account_id is not None:
+                campaigns = campaigns.filter(account_id=account_id)
+
         return campaigns.distinct()
 
     def get_queryset(self):

@@ -149,6 +149,11 @@ def export_entity_as_csv(entities):
         for k, v in res["entity"].items():
             try:
                 fields_list = entity.entity_type.fields_detail_info_view
+                for f in fields_list:
+                    if f is None:
+                        raise serializers.ValidationError(
+                            {"error": "You must provide a field details view list in order to export the entities."}
+                        )
             except TypeError:
                 raise serializers.ValidationError(
                     {"error": "You must provide a field details view list in order to export the entities."}

@@ -76,7 +76,7 @@ class HasPermission:
     """
     Permission class factory for simple permission checks.
 
-    If the user has any of the the provided permissions, he will be granted access
+    If the user has any of the provided permissions, he will be granted access
 
     Usage:
 

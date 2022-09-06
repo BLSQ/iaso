@@ -107,7 +107,7 @@ class OrgUnitQuerySet(models.QuerySet):
         # (https://github.com/mariocesar/django-ltree/issues/8)
         return self.filter(path__descendants=str(org_unit.path), path__depth__gt=len(org_unit.path))
 
-    def query_for_related_org_units(self, org_units) -> "RawSQL":
+    def query_for_related_org_units(self, org_units):
         ltree_list = ", ".join(list(map(lambda org_unit: f"'{org_unit.pk}'::ltree", org_units)))
 
         return RawSQL(f"array[{ltree_list}]", []) if len(ltree_list) > 0 else ""
@@ -195,7 +195,7 @@ class OrgUnit(TreeModel):
     updated_at = models.DateTimeField(auto_now=True)
     creator = models.ForeignKey(User, null=True, blank=True, on_delete=models.SET_NULL)
 
-    objects = OrgUnitManager()
+    objects: models.Manager = OrgUnitManager()
 
     class Meta:
         indexes = [GistIndex(fields=["path"], buffering=True)]

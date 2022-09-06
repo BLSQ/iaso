@@ -60,7 +60,7 @@ class OrgUnitTypeSerializer(DynamicFieldsModelSerializer):
         orgunits_count = orgUnits.count()
         return orgunits_count
 
-    def get_reference_form(self, obj: Form):
+    def get_reference_form(self, obj: OrgUnitType):
         form_def = Form.objects.filter_for_user_and_app_id(
             self.context["request"].user, self.context["request"].query_params.get("app_id")
         ).filter(id=obj.reference_form_id)

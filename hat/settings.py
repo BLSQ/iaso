@@ -11,6 +11,8 @@ https://docs.djangoproject.com/en/1.9/ref/settings/
 """
 
 import os
+from typing import Dict, Any
+
 import sentry_sdk
 from datetime import timedelta
 from django.utils.translation import ugettext_lazy as _
@@ -71,7 +73,7 @@ ENKETO = {
 
 TEST_RUNNER = "redgreenunittest.django.runner.RedGreenDiscoverRunner"
 
-LOGGING = {
+LOGGING: Dict[str, Any] = {
     "version": 1,
     "disable_existing_loggers": False,
     "formatters": {"default": {"format": "%(levelname)-8s %(asctime)s %(name)s -- %(message)s"}},
@@ -99,6 +101,7 @@ LOGGING = {
 
 # AWS expects python logs to be stored in this folder
 AWS_LOG_FOLDER = "/opt/python/log"
+
 if os.path.isdir(AWS_LOG_FOLDER):
     if os.access(AWS_LOG_FOLDER, os.W_OK):
         print("Logging to django log")

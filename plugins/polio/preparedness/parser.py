@@ -1,5 +1,5 @@
 from enum import Enum
-from typing import Optional
+from typing import Optional, Dict, Any
 
 from plugins.polio.preparedness.calculator import get_preparedness_score
 from plugins.polio.preparedness.client import get_client
@@ -175,7 +175,7 @@ def get_regional_level_preparedness(spread: CachedSpread):
         region_districts = sheet.get_line_start(start_region[0], start_region[1])
         # ignore last column since it the comments
         region_districts = region_districts[:-1]
-        districts_indicators = {}
+        districts_indicators: Dict[str, Any] = {}
 
         for rownum, colnum, name in region_districts:
             if not name:

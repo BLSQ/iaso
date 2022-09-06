@@ -4,7 +4,7 @@ from django.contrib.auth.models import User
 from django.db import models
 from django.db.models import Count
 from django.utils.translation import gettext as _
-from gspread.utils import extract_id_from_url
+from gspread.utils import extract_id_from_url  # type: ignore
 
 from iaso.models import Group, OrgUnit
 from iaso.models.microplanning import Team

@@ -1,6 +1,5 @@
 import typing
 
-from django.http.response import HttpResponseBadRequest
 from rest_framework import serializers, parsers, permissions, exceptions
 
 from iaso.models import Form, FormVersion

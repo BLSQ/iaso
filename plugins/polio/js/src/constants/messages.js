@@ -230,7 +230,7 @@ const MESSAGES = defineMessages({
     },
     dosesRequested: {
         id: 'iaso.polio.form.label.dosesRequested',
-        defaultMessage: 'Doses Requested (both rounds)',
+        defaultMessage: 'Doses Requested',
     },
     region: {
         id: 'iaso.polio.table.label.region',

@@ -28,7 +28,7 @@ from . import common
 from .common import safe_api_import, TimestampField
 from .instance_filters import parse_instance_filters
 from .comment import UserSerializer
-from iaso.api.serializers import OrgUnitSmallSearchSerializer
+from iaso.api.serializers import OrgUnitSmallSearchSerializer, OrgUnitSerializer
 
 
 class InstanceSerializer(serializers.ModelSerializer):
@@ -89,6 +89,16 @@ class InstanceFileSerializer(serializers.Serializer):
     created_at = TimestampField(read_only=True)
 
 
+class OrgUnitNestedSerializer(OrgUnitSerializer):
+    class Meta:
+        model = OrgUnit
+
+        fields = [
+            "id",
+            "name",
+        ]
+
+
 # For readonly use
 class InstanceLockSerializer(serializers.ModelSerializer):
     class Meta:
@@ -98,7 +108,7 @@ class InstanceLockSerializer(serializers.ModelSerializer):
 
     locked_by = UserSerializer(read_only=True)
     unlocked_by = UserSerializer(read_only=True)
-    top_org_unit = OrgUnitSmallSearchSerializer(read_only=True)
+    top_org_unit = OrgUnitNestedSerializer(read_only=True)
 
 
 class UnlockSerializer(serializers.Serializer):
@@ -393,26 +403,6 @@ class InstancesViewSet(viewsets.ViewSet):
         lock.unlocked_at = now()
         lock.save()
 
-    @staticmethod
-    def can_user_modify(instance, user, raise_exception=False):
-        """Will raise if user cannot modify
-
-        check only for lock, assume user have other perms"""
-        # active lock for instance
-        locks = instance.instancelock_set.filter(unlocked_by__isnull=True)
-        # highest lock
-        highest_lock = locks.order_by("top_org_unit__path__depth").first()
-        if not highest_lock:
-            # No lock anyone can modify
-            return True
-
-        # can user access this orgunit
-        if OrgUnit.objects.filter_for_user(user).filter(id=highest_lock.top_org_unit.id).exists():
-            return True
-        if raise_exception:
-            raise serializers.ValidationError({"error": "You don't have the permission to modify this instance."})
-        return False
-
     @safe_api_import("instance")
     def create(self, _, request):
         import_data(request.data, request.user, request.query_params.get("app_id"))
@@ -420,6 +410,7 @@ class InstancesViewSet(viewsets.ViewSet):
         return Response({"res": "ok"})
 
     def retrieve(self, request, pk=None):
+        self.get_queryset().prefetch_related("instance_locks", "instance_locks__top_org_unit", "instance_locks__user")
         instance: Instance = get_object_or_404(self.get_queryset(), pk=pk)
         self.check_object_permissions(request, instance)
         all_instance_locks = instance.instancelock_set.all()
@@ -427,7 +418,7 @@ class InstancesViewSet(viewsets.ViewSet):
         response = instance.as_full_model()
 
         # Logs(history) of all instance locks
-        response["instance_locks"] = InstanceLockSerializer(all_instance_locks.order_by("-locked_at"), many=True).data
+        response["instance_locks"] = InstanceLockSerializer(all_instance_locks, many=True).data
         # To display the Lock or unlock icon when the use has access to the two actions
         response["can_user_modify"] = instance.can_user_modify(request.user)
         # To display either the unlock or lock icon depending on if the instance is already lock or not

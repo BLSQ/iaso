@@ -1121,7 +1121,7 @@ class Instance(models.Model):
         # can user access this orgunit
         from iaso.models import OrgUnit  # Local import to prevent loop
 
-        if OrgUnit.objects.filter_for_user(user).filter(id=highest_lock.top_org_unit.id).exists():
+        if OrgUnit.objects.filter_for_user(user).filter(id=highest_lock.top_org_unit_id).exists():
             return True
         return False
 
@@ -1318,3 +1318,6 @@ class InstanceLock(models.Model):
         return (
             f"{self.instance} - {self.locked_by} " + f"UNLOCKED by {self.unlocked_by}" if self.unlocked_by else "LOCKED"
         )
+
+    class Meta:
+        ordering = ["-locked_at"]

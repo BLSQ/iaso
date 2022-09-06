@@ -44,7 +44,7 @@ class OrgUnitTypeSerializer(DynamicFieldsModelSerializer):
     updated_at = TimestampField(read_only=True)
     units_count = serializers.SerializerMethodField(read_only=True)
     reference_form = serializers.SerializerMethodField(read_only=True)
-    reference_form_id = serializers.PrimaryKeyRelatedField(
+    reference_form_id: serializers.PrimaryKeyRelatedField = serializers.PrimaryKeyRelatedField(
         source="reference_form",
         write_only=True,
         required=False,

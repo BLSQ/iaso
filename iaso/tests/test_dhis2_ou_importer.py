@@ -14,6 +14,8 @@ from iaso import models as m
 
 
 class DHIS2TestMixin:
+    old_counts: dict  # To be implemented in the class I'm being mixed into
+
     def fixture_json(self, name):
         with open("./iaso/tests/fixtures/dhis2/" + name + ".json") as json_file:
             return json.load(json_file)

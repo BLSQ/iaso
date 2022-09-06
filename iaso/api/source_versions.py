@@ -19,7 +19,9 @@ class SourceVersionSerializer(serializers.ModelSerializer):
     GET /api/sourceversions/
     """
 
-    data_source_name = serializers.SlugRelatedField(source="data_source", slug_field="name", read_only=True)
+    data_source_name: serializers.SlugRelatedField = serializers.SlugRelatedField(
+        source="data_source", slug_field="name", read_only=True
+    )
 
     # Default version for source not global
     is_default = serializers.SerializerMethodField()

@@ -11,6 +11,11 @@ from ..preparedness.spreadsheet_manager import *
 
 
 class PolioAPITestCase(APITestCase):
+    data_source: m.DataSource
+    source_version_1: m.SourceVersion
+    org_unit: m.OrgUnit
+    child_org_unit: m.OrgUnit
+
     @classmethod
     def setUpTestData(cls):
         cls.account = Account.objects.create(name="test")
@@ -266,7 +271,7 @@ class PolioAPITestCase(APITestCase):
             ],
         }
         response = self.client.patch(f"/api/polio/campaigns/{campaign.id}/", payload, format="json")
-        r = self.assertJSONResponse(response, 200)
+        self.assertJSONResponse(response, 200)
         campaign.refresh_from_db()
         self.assertEqual(campaign.obr_name, "obr_name2")
         self.assertEqual(campaign.rounds.count(), 2, campaign.rounds)
@@ -299,7 +304,7 @@ class PolioAPITestCase(APITestCase):
             ],
         }
         response = self.client.patch(f"/api/polio/campaigns/{campaign.id}/", payload, format="json")
-        r = self.assertJSONResponse(response, 200)
+        self.assertJSONResponse(response, 200)
         campaign.refresh_from_db()
         self.assertEqual(campaign.obr_name, "obr_name2")
         rounds = campaign.rounds.all().order_by("number")
@@ -321,7 +326,7 @@ class PolioAPITestCase(APITestCase):
             "rounds": [],
         }
         response = self.client.patch(f"/api/polio/campaigns/{campaign.id}/", payload, format="json")
-        r = self.assertJSONResponse(response, 200)
+        self.assertJSONResponse(response, 200)
         campaign.refresh_from_db()
         rounds = campaign.rounds.all().order_by("number")
         self.assertEqual(0, rounds.count())
@@ -401,6 +406,10 @@ class PolioAPITestCase(APITestCase):
 
 
 class PreparednessAPITestCase(APITestCase):
+    data_source: m.DataSource
+    source_version_1: m.SourceVersion
+    account: Account
+
     @classmethod
     def setUpTestData(cls):
         cls.data_source = m.DataSource.objects.create(name="Default source")
@@ -427,7 +436,7 @@ class PreparednessAPITestCase(APITestCase):
         self.assertEqual(len(r["rounds"]), 2)
 
         response = self.client.get(f"/api/polio/preparedness_dashboard/", format="json")
-        r = self.assertJSONResponse(response, 200)
+        self.assertJSONResponse(response, 200)
 
         round_one.preparedness_spreadsheet_url = "https://docs.google.com/spreadsheets/d/1"
         round_one.save()
@@ -437,6 +446,6 @@ class PreparednessAPITestCase(APITestCase):
         response = self.client.get(f"/api/polio/preparedness_dashboard/", format="json")
         r = self.assertJSONResponse(response, 200)
         self.assertEqual(len(r), 2)
-        for round in r:
-            self.assertEqual(round["status"], "not_sync")
+        for campaign_round in r:
+            self.assertEqual(campaign_round["status"], "not_sync")
         print(r)

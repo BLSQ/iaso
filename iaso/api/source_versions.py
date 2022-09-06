@@ -24,7 +24,7 @@ class SourceVersionSerializer(serializers.ModelSerializer):
     # Default version for source not global
     is_default = serializers.SerializerMethodField()
 
-    def get_is_default(self, source_version: SourceVersion):
+    def get_is_default(self, source_version: SourceVersion) -> bool:
         return source_version.data_source.default_version == source_version
 
     class Meta:

@@ -1,11 +1,10 @@
-import json
-
 from django.contrib.admin import widgets
 from django.contrib.gis import admin, forms
 from django.db import models
 from django.contrib.gis.db import models as geomodels
 from django.utils.html import format_html_join, format_html
 from django.utils.safestring import mark_safe
+from typing import Protocol, Any
 
 from .models import (
     OrgUnitType,
@@ -44,6 +43,18 @@ from .models import (
 from .models.microplanning import Team, Planning, Assignment
 
 
+class AdminAttributes(Protocol):
+    """Workaround to avoid mypy errors, see https://github.com/python/mypy/issues/2087#issuecomment-462726600"""
+
+    short_description: str
+    admin_order_field: str
+
+
+def admin_attr_decorator(func: Any) -> AdminAttributes:
+    return func
+
+
+@admin_attr_decorator
 class OrgUnitAdmin(admin.GeoModelAdmin):
     raw_id_fields = ("parent", "reference_instance")
     list_filter = ("org_unit_type", "custom", "validated", "sub_source", "version")
@@ -54,11 +65,13 @@ class OrgUnitAdmin(admin.GeoModelAdmin):
 admin.site.register(OrgUnit, OrgUnitAdmin)
 
 
+@admin_attr_decorator
 class OrgUnitTypeAdmin(admin.GeoModelAdmin):
     search_fields = ("name",)
     list_display = ("name", "projects_list", "short_name", "depth")
     list_filter = ("projects",)
 
+    @admin_attr_decorator
     def projects_list(self, obj):
         projects = obj.projects.all()
         return ", ".join(project.name for project in projects) if len(projects) > 0 else "-"
@@ -69,6 +82,7 @@ class OrgUnitTypeAdmin(admin.GeoModelAdmin):
 admin.site.register(OrgUnitType, OrgUnitTypeAdmin)
 
 
+@admin_attr_decorator
 class FormAdmin(admin.GeoModelAdmin):
     search_fields = ("name", "form_id")
     list_display = (
@@ -88,14 +102,17 @@ class FormAdmin(admin.GeoModelAdmin):
         return Form.objects_include_deleted.all()
 
 
+@admin_attr_decorator
 class FormVersionAdmin(admin.GeoModelAdmin):
     search_fields = ("form__name", "form__form_id")
     ordering = ("form__name",)
     list_display = ("form_name", "form_id", "version_id", "created_at", "updated_at")
 
+    @admin_attr_decorator
     def form_name(self, obj):
         return obj.form.name
 
+    @admin_attr_decorator
     def form_id(self, obj):
         return obj.form.form_id
 
@@ -114,6 +131,7 @@ class InstanceFileAdminInline(admin.TabularInline):
     }
 
 
+@admin_attr_decorator
 class InstanceAdmin(admin.GeoModelAdmin):
     raw_id_fields = ("org_unit",)
     search_fields = ("file_name", "uuid")
@@ -161,14 +179,17 @@ class InstanceAdmin(admin.GeoModelAdmin):
     ]
 
 
+@admin_attr_decorator
 class InstanceFileAdmin(admin.GeoModelAdmin):
     raw_id_fields = ("instance",)
     search_fields = ("name", "file")
 
 
+@admin_attr_decorator
 class ProjectAdmin(admin.ModelAdmin):
     list_display = ("name", "app_id", "account", "needs_authentication", "feature_flags_list")
 
+    @admin_attr_decorator
     def feature_flags_list(self, obj):
         flags = obj.feature_flags.all()
         return ", ".join(flag.name for flag in flags) if len(flags) > 0 else "-"
@@ -176,22 +197,27 @@ class ProjectAdmin(admin.ModelAdmin):
     feature_flags_list.short_description = "Feature flags"
 
 
+@admin_attr_decorator
 class FeatureFlagAdmin(admin.ModelAdmin):
     list_display = ("code", "name")
 
 
+@admin_attr_decorator
 class LinkAdmin(admin.GeoModelAdmin):
     raw_id_fields = ("source", "destination")
 
 
+@admin_attr_decorator
 class MappingAdmin(admin.GeoModelAdmin):
     list_filter = ("form_id",)
 
 
+@admin_attr_decorator
 class MappingVersionAdmin(admin.GeoModelAdmin):
     list_filter = ("form_version_id",)
 
 
+@admin_attr_decorator
 class GroupAdmin(admin.ModelAdmin):
     raw_id_fields = ("org_units",)
     search_fields = ("name", "source_version", "domain")
@@ -201,12 +227,14 @@ class GroupAdmin(admin.ModelAdmin):
         return obj.org_units.count()
 
 
+@admin_attr_decorator
 class UserAdmin(admin.GeoModelAdmin):
     search_fields = ("username", "email", "first_name", "last_name", "iaso_profile__account__name")
     list_filter = ("iaso_profile__account", "is_staff", "is_superuser", "is_active")
     list_display = ("username", "email", "first_name", "last_name", "iaso_profile", "is_superuser")
 
 
+@admin_attr_decorator
 class ProfileAdmin(admin.GeoModelAdmin):
     raw_id_fields = ("org_units",)
     search_fields = ("user__username", "user__first_name", "user__last_name", "account__name")
@@ -215,17 +243,20 @@ class ProfileAdmin(admin.GeoModelAdmin):
     list_display = ("id", "user", "account", "language")
 
 
+@admin_attr_decorator
 class ExportRequestAdmin(admin.GeoModelAdmin):
     list_filter = ("launcher", "status")
     list_display = ("status", "launcher", "params", "last_error_message")
     readonly_fields = list_display
 
 
+@admin_attr_decorator
 class ExportLogAdmin(admin.GeoModelAdmin):
     list_display = ("id", "http_status", "url", "sent", "received")
     readonly_fields = list_display
 
 
+@admin_attr_decorator
 class ExportStatusAdmin(admin.GeoModelAdmin):
     list_display = ("id", "status", "last_error_message")
     readonly_fields = (
@@ -243,19 +274,14 @@ class ExportStatusAdmin(admin.GeoModelAdmin):
     def http_requests(self, instance):
         # Write a get-method for a list of module names in the class Profile
         # return HTML string which will be display in the form
-        return (
-            format_html_join(
-                mark_safe("<br/><br/>"),
-                "{} http status: {} url : {} <br/> <ul> <li>sent <pre>{}</pre> </li><li>received <pre>{}</pre></li></ul>",
-                (
-                    (line.id, line.http_status, line.url, line.sent, line.received)
-                    for line in instance.export_logs.all()
-                ),
-            )
-            or mark_safe("<span>no logs available.</span>")
-        )
+        return format_html_join(
+            mark_safe("<br/><br/>"),
+            "{} http status: {} url : {} <br/> <ul> <li>sent <pre>{}</pre> </li><li>received <pre>{}</pre></li></ul>",
+            ((line.id, line.http_status, line.url, line.sent, line.received) for line in instance.export_logs.all()),
+        ) or mark_safe("<span>no logs available.</span>")
 
 
+@admin_attr_decorator
 class TaskAdmin(admin.ModelAdmin):
     list_display = ("name", "account", "status", "created_at", "launcher", "result_message")
     list_filter = ("account", "status", "name")
@@ -271,12 +297,14 @@ class TaskAdmin(admin.ModelAdmin):
         return format_html("<p>{}</p><pre>{}</pre>", task.result.get("message", ""), stack)
 
 
+@admin_attr_decorator
 class SourceVersionAdmin(admin.ModelAdmin):
     readonly_fields = ("created_at",)
     list_display = ("id", "data_source", "number", "created_at")
     list_filter = ("data_source",)
 
 
+@admin_attr_decorator
 class EntityAdmin(admin.ModelAdmin):
     readonly_fields = ("created_at",)
     list_display = (
@@ -289,6 +317,7 @@ class EntityAdmin(admin.ModelAdmin):
     raw_id_fields = ("attributes",)
 
 
+@admin_attr_decorator
 class EntityTypeAdmin(admin.ModelAdmin):
     readonly_fields = ("created_at",)
     list_display = (
@@ -298,6 +327,7 @@ class EntityTypeAdmin(admin.ModelAdmin):
     )
 
 
+@admin_attr_decorator
 class PlanningAdmin(admin.ModelAdmin):
     raw_id_fields = ("org_unit",)
     list_display = (
@@ -343,6 +373,7 @@ class PlanningAdmin(admin.ModelAdmin):
     readonly_fields = ("updated_at", "created_at")
 
 
+@admin_attr_decorator
 class TeamAdmin(admin.ModelAdmin):
     list_display = (
         "id",
@@ -357,6 +388,7 @@ class TeamAdmin(admin.ModelAdmin):
     date_hierarchy = "created_at"
 
 
+@admin_attr_decorator
 class AssignmentAdmin(admin.ModelAdmin):
     raw_id_fields = ("org_unit",)
     list_display = (

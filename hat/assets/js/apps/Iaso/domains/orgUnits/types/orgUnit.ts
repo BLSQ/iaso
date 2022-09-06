@@ -30,6 +30,7 @@ export type OrgUnit = {
     groups: Array<unknown>;
     org_unit_type: string;
     search_index?: number;
+    reference_instance_id: number;
 };
 
 export type OrgUnitParams = UrlParams & {

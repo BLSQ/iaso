@@ -7,16 +7,16 @@ import UpdateIcon from '@material-ui/icons/Update';
 import EditLocationIcon from '@material-ui/icons/EditLocation';
 import RestoreFromTrashIcon from '@material-ui/icons/RestoreFromTrash';
 import LockIcon from '@material-ui/icons/Lock';
-import { DialogContentText, makeStyles } from '@material-ui/core';
+import { DialogContentText } from '@material-ui/core';
 import LinkIcon from '@material-ui/icons/Link';
 import LinkOffIcon from '@material-ui/icons/LinkOff';
 
 import {
-    commonStyles,
+    // @ts-ignore
     ExportButton as ExportButtonComponent,
+    // @ts-ignore
     useSafeIntl,
 } from 'bluesquare-components';
-import { FormattedMessage } from 'react-intl';
 import omit from 'lodash/omit';
 import { UseQueryResult } from 'react-query';
 import {
@@ -53,21 +53,6 @@ import {
 import { useCurrentUser } from '../../utils/usersUtils';
 import { Instance } from './types/instance';
 import { useSnackQuery } from '../../libs/apiHooks';
-
-const useStyles = makeStyles(theme => ({
-    ...commonStyles(theme),
-    alert: {
-        marginBottom: theme.spacing(4),
-    },
-    labelContainer: {
-        display: 'flex',
-        width: '100%',
-        justifyContent: 'flex-end',
-        alignItems: 'center',
-        position: 'relative',
-        top: 2,
-    },
-}));
 
 const initialFormState = (orgUnit, value, key) => {
     const orgUnitCopy = {
@@ -139,17 +124,104 @@ const editGpsFromInstance = (instance, gps) => {
     return null;
 };
 
-const actions = ({
-    currentInstance,
-    reAssignInstance,
-    orgUnitTypes,
-    canEditEnketo,
-    formId,
-    params,
-    currentUser,
-    redirectToActionInstance,
-}) => {
-    const hasSubmissionPermission = userHasPermission(
+type FormOrgUnitTypes = {
+    // eslint-disable-next-line camelcase
+    org_unit_type_ids: number[];
+};
+// TODO move to hooks.js
+export const useGetOrgUnitTypes = (
+    formId: number | string | undefined,
+): UseQueryResult<FormOrgUnitTypes, Error> => {
+    return useSnackQuery<FormOrgUnitTypes, Error>(
+        ['form', formId, 'org_unit_types'],
+        () => getRequest(`/api/forms/${formId}/?fields=org_unit_type_ids`),
+        snackMessages.fetchFormError,
+        {
+            enabled: Boolean(formId),
+            retry: false,
+        },
+    );
+};
+type Props = {
+    currentInstance: Instance;
+    fetchEditUrl: CallableFunction;
+    softDelete: CallableFunction;
+    restoreInstance: CallableFunction;
+    reAssignInstance: CallableFunction;
+    redirectToActionInstance: any;
+    params: {
+        instanceId: string;
+        referenceFormId: string;
+    };
+};
+
+const SpeedDialInstance: FunctionComponent<Props> = props => {
+    const { formatMessage } = useSafeIntl();
+    const currentUser = useCurrentUser();
+    const {
+        reAssignInstance,
+        params,
+        redirectToActionInstance,
+        currentInstance,
+    } = props;
+    const { data: formOrgUnitType } = useGetOrgUnitTypes(
+        currentInstance.form_id,
+    );
+    const orgUnitTypeIds = formOrgUnitType?.org_unit_type_ids;
+    const formId = currentInstance.form_id;
+
+    let actions = [
+        {
+            id: 'instanceExportAction',
+            icon: (
+                <ExportInstancesDialogComponent
+                    renderTrigger={(openDialog, isInstancesFilterUpdated) => (
+                        <ExportButtonComponent
+                            onClick={openDialog}
+                            isDisabled={isInstancesFilterUpdated}
+                            batchExport={false}
+                        />
+                    )}
+                    getFilters={() => ({
+                        form_id: currentInstance.form_id,
+                        search: `ids:${currentInstance.id}`,
+                    })}
+                />
+            ),
+            disabled: currentInstance && currentInstance.deleted,
+        },
+        {
+            id: 'instanceReAssignAction',
+            icon: (
+                <CreateReAssignDialogComponent
+                    titleMessage={MESSAGES.reAssignInstance}
+                    confirmMessage={MESSAGES.reAssignInstanceAction}
+                    currentInstance={currentInstance}
+                    orgUnitTypes={orgUnitTypeIds}
+                    onCreateOrReAssign={reAssignInstance}
+                    renderTrigger={({ openDialog }) => (
+                        <UpdateIcon onClick={openDialog} />
+                    )}
+                />
+            ),
+            disabled: currentInstance && currentInstance.deleted,
+        },
+    ];
+
+    const onActionSelected = action => {
+        if (action.id === 'instanceEditAction' && props.currentInstance) {
+            props.fetchEditUrl(props.currentInstance, window.location);
+        }
+
+        if (action.id === 'instanceDeleteAction' && props.currentInstance) {
+            props.softDelete(props.currentInstance);
+        }
+        if (action.id === 'instanceRestoreAction' && props.currentInstance) {
+            props.restoreInstance(props.currentInstance);
+        }
+    };
+
+    const hasOrgUnitPermission = userHasPermission(
         'iaso_org_units',
         currentUser,
     );
@@ -163,10 +235,6 @@ const actions = ({
         id: 'instanceEditAction',
         icon: <EnketoIcon />,
         disabled: currentInstance?.deleted,
-    };
-
-    const renderTriggerEditGps = openDialog => {
-        return <EditLocationIcon onClick={openDialog} />;
     };
 
     const gpsEqual = instance => {
@@ -193,15 +261,12 @@ const actions = ({
                         longitude: currentInstance?.longitude,
                     })
                 }
-                renderTrigger={({ openDialog }) =>
-                    renderTriggerEditGps(openDialog)
-                }
+                renderTrigger={({ openDialog }) => (
+                    <EditLocationIcon onClick={openDialog} />
+                )}
             >
                 <DialogContentText id="alert-dialog-description">
-                    <FormattedMessage
-                        defaultMessage="This operation can still be undone"
-                        {...MESSAGES.editGpsFromInstanceWarning}
-                    />
+                    {formatMessage(MESSAGES.editGpsFromInstanceWarning)}
                 </DialogContentText>
             </ConfirmCancelDialogComponent>
         ),
@@ -245,13 +310,12 @@ const actions = ({
                 )}
             >
                 <DialogContentText id="alert-dialog-description">
-                    <FormattedMessage {...MESSAGES.lockActionDescription} />
+                    {formatMessage(MESSAGES.lockActionDescription)}
                     <br />
-                    {currentInstance.is_locked && (
-                        <FormattedMessage
-                            {...MESSAGES.lockActionExistingLockDescription}
-                        />
-                    )}
+                    {currentInstance.is_locked &&
+                        formatMessage(
+                            MESSAGES.lockActionExistingLockDescription,
+                        )}
                 </DialogContentText>
             </ConfirmCancelDialogComponent>
         ),
@@ -259,7 +323,7 @@ const actions = ({
     const { referenceFormId } = params;
     const referenceSubmission = currentInstance.org_unit.reference_instance_id;
     const linkOrgUnit =
-        formId !== referenceFormId && referenceSubmission !== null;
+        formId.toString() !== referenceFormId && referenceSubmission !== null;
     const orgUnitToReferenceSubmission = instance => {
         return linkOrLinkOffOrgUnitToReferenceSubmission(
             currentInstance.org_unit,
@@ -271,87 +335,31 @@ const actions = ({
         );
     };
 
-    const confirmCancelTitleMessage = isItLinked => {
-        return isItLinked
-            ? MESSAGES.linkOffOrgUnitToInstanceReferenceTitle
-            : MESSAGES.linkOrgUnitToInstanceReferenceTitle;
-    };
-
-    const renderTrigger = (isLinked, openDialog) => {
-        return isLinked ? (
-            <LinkOffIcon onClick={openDialog} />
-        ) : (
-            <LinkIcon onClick={openDialog} />
-        );
-    };
-
-    let defaultActions = [
-        {
-            id: 'instanceExportAction',
-            icon: (
-                <ExportInstancesDialogComponent
-                    renderTrigger={(openDialog, isInstancesFilterUpdated) => (
-                        <ExportButtonComponent
-                            onClick={openDialog}
-                            isDisabled={isInstancesFilterUpdated}
-                            batchExport={false}
-                        />
-                    )}
-                    getFilters={() => ({
-                        form_id: currentInstance.form_id,
-                        search: `ids:${currentInstance.id}`,
-                    })}
-                />
-            ),
-            disabled: currentInstance && currentInstance.deleted,
-        },
-        {
-            id: 'instanceReAssignAction',
-            icon: (
-                <CreateReAssignDialogComponent
-                    titleMessage={MESSAGES.reAssignInstance}
-                    confirmMessage={MESSAGES.reAssignInstanceAction}
-                    currentInstance={currentInstance}
-                    orgUnitTypes={orgUnitTypes}
-                    onCreateOrReAssign={reAssignInstance}
-                    renderTrigger={({ openDialog }) => (
-                        <UpdateIcon onClick={openDialog} />
-                    )}
-                />
-            ),
-            disabled: currentInstance && currentInstance.deleted,
-        },
-    ];
-
     if (
         currentInstance?.altitude !== null &&
         currentInstance?.latitude !== null &&
         currentInstance?.longitude !== null &&
-        hasSubmissionPermission !== null &&
+        hasOrgUnitPermission !== null &&
         !gpsEqual(currentInstance)
     ) {
-        defaultActions = [editLocationWithInstanceGps, ...defaultActions];
+        actions = [editLocationWithInstanceGps, ...actions];
     }
 
     if (currentInstance.can_user_modify) {
-        defaultActions = [...defaultActions, deleteRestore];
+        actions = [lockAction, enketoAction, ...actions, deleteRestore];
     }
 
-    if (canEditEnketo && currentInstance.can_user_modify) {
-        defaultActions = [enketoAction, ...defaultActions];
-    }
-
-    if (currentInstance.can_user_modify) {
-        defaultActions = [lockAction, ...defaultActions];
-    }
-
-    if (!hasSubmissionPermission || !hasfeatureFlag) return defaultActions;
-
-    if (formId.toString() !== referenceFormId) return defaultActions;
-
-    return [
-        ...defaultActions,
-        {
+    if (
+        hasOrgUnitPermission &&
+        hasfeatureFlag &&
+        formId.toString() === referenceFormId
+    ) {
+        const confirmCancelTitleMessage = isItLinked => {
+            return isItLinked
+                ? MESSAGES.linkOffOrgUnitToInstanceReferenceTitle
+                : MESSAGES.linkOrgUnitToInstanceReferenceTitle;
+        };
+        const linkOrgUnitAction = {
             id: linkOrgUnit
                 ? 'linkOffOrgUnitReferenceSubmission'
                 : 'linkOrgUnitReferenceSubmission',
@@ -364,101 +372,28 @@ const actions = ({
                             : orgUnitToReferenceSubmission(currentInstance.id)
                     }
                     renderTrigger={({ openDialog }) =>
-                        renderTrigger(linkOrgUnit, openDialog)
+                        linkOrgUnit ? (
+                            <LinkOffIcon onClick={openDialog} />
+                        ) : (
+                            <LinkIcon onClick={openDialog} />
+                        )
                     }
                 >
                     <DialogContentText id="alert-dialog-description">
-                        <FormattedMessage
-                            id="iaso.instance.linkOrgUnitToInstanceReferenceWarning"
-                            defaultMessage="This operation can still be undone"
-                            {...MESSAGES.linkOrgUnitToInstanceReferenceWarning}
-                        />
+                        {formatMessage(
+                            MESSAGES.linkOrgUnitToInstanceReferenceWarning,
+                        )}
                     </DialogContentText>
                 </ConfirmCancelDialogComponent>
             ),
-        },
-    ];
-};
-
-type FormOrgUnitTypes = {
-    // eslint-disable-next-line camelcase
-    org_unit_type_ids: number[];
-};
-// TODO move to hooks.js
-export const useGetOrgUnitTypes = (
-    formId: number | string | undefined,
-): UseQueryResult<FormOrgUnitTypes, Error> => {
-    return useSnackQuery<FormOrgUnitTypes, Error>(
-        ['form', formId, 'org_unit_types'],
-        () => getRequest(`/api/forms/${formId}/?fields=org_unit_type_ids`),
-        snackMessages.fetchFormError,
-        {
-            enabled: Boolean(formId),
-            retry: false,
-        },
-    );
-};
-type Props = {
-    currentInstance?: Instance;
-    fetchEditUrl: CallableFunction;
-    softDelete: CallableFunction;
-    restoreInstance: CallableFunction;
-    reAssignInstance: CallableFunction;
-    redirectToActionInstance: any;
-    params: {
-        instanceId: string;
-    };
-};
-
-const SpeedDialInstance: FunctionComponent<Props> = props => {
-    const { formatMessage } = useSafeIntl();
-    const currentUser = useCurrentUser();
-    const classes = useStyles();
-    const {
-        reAssignInstance,
-        params,
-        redirectToActionInstance,
-        currentInstance,
-    } = props;
-
-    const { data: formOrgUnitType } = useGetOrgUnitTypes(
-        currentInstance?.form_id,
-    );
-
-    const orgUnitTypeIds = formOrgUnitType?.org_unit_type_ids;
-
-    const onActionSelected = action => {
-        if (action.id === 'instanceEditAction' && props.currentInstance) {
-            props.fetchEditUrl(props.currentInstance, window.location);
-        }
-
-        if (action.id === 'instanceDeleteAction' && props.currentInstance) {
-            props.softDelete(props.currentInstance);
-        }
-        if (action.id === 'instanceRestoreAction' && props.currentInstance) {
-            props.restoreInstance(props.currentInstance);
-        }
-    };
-
-    const formId = currentInstance?.form_id;
-    const canEditEnketo = userHasPermission(
-        'iaso_update_submission',
-        currentUser,
-    );
+        };
+        actions = [...actions, linkOrgUnitAction];
+    }
 
     return (
         currentInstance?.can_user_modify && (
             <SpeedDialInstanceActions
-                actions={actions({
-                    currentInstance,
-                    reAssignInstance,
-                    orgUnitTypes: orgUnitTypeIds,
-                    canEditEnketo,
-                    formId,
-                    params,
-                    currentUser,
-                    redirectToActionInstance,
-                })}
+                actions={actions}
                 onActionSelected={action => onActionSelected(action)}
             />
         )

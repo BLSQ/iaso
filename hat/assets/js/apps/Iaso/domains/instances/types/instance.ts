@@ -38,6 +38,7 @@ export type Instance = {
     last_export_success_at: unknown;
     instance_locks: Lock[];
     can_user_modify: boolean;
+    is_locked: boolean;
 };
 
 export type InstanceLogDetail = {

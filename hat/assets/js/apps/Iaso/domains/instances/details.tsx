@@ -1,14 +1,18 @@
 /* eslint-disable react/jsx-props-no-spreading */
 import React, { FunctionComponent, useState } from 'react';
 import { Link } from 'react-router';
-import { connect } from 'react-redux';
+import { connect, useSelector } from 'react-redux';
 import Alert from '@material-ui/lab/Alert';
 import { Box, Grid, makeStyles, Typography } from '@material-ui/core';
 
 import {
+    // @ts-ignore
     commonStyles,
+    // @ts-ignore
     IconButton as IconButtonComponent,
+    // @ts-ignore
     LoadingSpinner,
+    // @ts-ignore
     useSafeIntl,
 } from 'bluesquare-components';
 import TopBar from '../../components/nav/TopBarComponent';
@@ -50,7 +54,6 @@ type Props = {
     };
     router: any;
     redirectToReplace: any;
-    prevPathname: any;
 };
 
 type Logs = {
@@ -81,13 +84,13 @@ const InstanceDetails: FunctionComponent<Props> = props => {
     const classes = useStyles();
     const {
         router,
-        prevPathname,
         redirectToReplace,
         params: { instanceId },
         params,
     } = props;
     const { data: currentInstance, isLoading: fetching } =
         useGetInstance(instanceId);
+    const prevPathname = useSelector(state => state.routerCustom.prevPathname);
 
     // not showing history link in submission detail if there is only one version/log
     // in the futur. add this info directly in the instance api to not make another call;
@@ -216,7 +219,6 @@ const InstanceDetails: FunctionComponent<Props> = props => {
 
                             <InstanceDetailsLocksHistory
                                 currentInstance={currentInstance}
-                                classes={classes}
                             />
 
                             {currentInstance.files.length > 0 && (
@@ -267,14 +269,4 @@ const InstanceDetails: FunctionComponent<Props> = props => {
     );
 };
 
-InstanceDetails.defaultProps = {
-    prevPathname: null,
-};
-
-const MapStateToProps = state => ({
-    prevPathname: state.routerCustom.prevPathname,
-});
-
-const MapDispatchToProps = _dispatch => ({});
-
-export default connect(MapStateToProps, MapDispatchToProps)(InstanceDetails);
+export default InstanceDetails;

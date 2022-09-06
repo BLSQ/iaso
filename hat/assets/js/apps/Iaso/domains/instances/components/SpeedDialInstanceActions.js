@@ -61,7 +61,7 @@ const SpeedDialInstanceActions = props => {
                         tooltipPlacement="bottom"
                         icon={action.icon}
                         tooltipTitle={formatMessage(MESSAGES[action.id])}
-                        disabled={action.disabled}
+                        disabled={action.disabled ?? false}
                         onClick={() => handleClick(action)}
                     />
                 ))}

@@ -390,14 +390,12 @@ const SpeedDialInstance: FunctionComponent<Props> = props => {
         actions = [...actions, linkOrgUnitAction];
     }
 
-    return (
-        currentInstance?.can_user_modify && (
-            <SpeedDialInstanceActions
-                actions={actions}
-                onActionSelected={action => onActionSelected(action)}
-            />
-        )
-    );
+    return currentInstance?.can_user_modify ? (
+        <SpeedDialInstanceActions
+            actions={actions}
+            onActionSelected={action => onActionSelected(action)}
+        />
+    ) : null;
 };
 
 const MapStateToProps = state => ({});

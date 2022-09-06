@@ -362,7 +362,7 @@ class EntityViewSet(ModelViewSet):
                 if k in list(entity.entity_type.fields_list_view):
                     result[k] = v
             result_list.append(result)
-        columns_list = [i for n, i in enumerate(columns_list) if i not in columns_list[n + 1 :]]
+        columns_list = [i for n, i in enumerate(columns_list) if i not in columns_list[n + 1:]]
 
         # remove dictionaries with "name" as only key
         for col in columns_list:
@@ -396,40 +396,66 @@ class EntityViewSet(ModelViewSet):
         entity_id = request.GET.get("id", None)
         entity = get_object_or_404(Entity, pk=entity_id)
         instances = Instance.objects.filter(entity=entity)
-
-        mem_file = io.BytesIO()
-        workbook = xlsxwriter.Workbook(mem_file)
-        worksheet = workbook.add_worksheet("entity")
-        worksheet.set_column(0, 100, 30)
-        row = 0
-        col = 0
-
+        xlsx = request.GET.get("xlsx", None)
+        csv_exp = request.GET.get("csv", None)
         fields = ["Submissions for the form", "Created", "Last Sync", "Org Unit", "Submitter", "Actions"]
-
-        for f in fields:
-            worksheet.write(row, col, f)
-            col += 1
-
-        for i in instances:
-            row += 1
-            col = 0
-            data = [
-                i.form.name,
-                i.created_at.strftime("%Y-%m-%d %H:%M:%S"),
-                i.updated_at.strftime("%Y-%m-%d %H:%M:%S"),
-                i.org_unit.name,
-                i.created_by.username,
-                "",
-            ]
-            for d in data:
-                worksheet.write(row, col, d)
-                col += 1
         date = datetime.datetime.now().strftime("%Y-%m-%d")
-        filename = f"{entity}_details_list_{date}.xlsx"
-        workbook.close()
-        mem_file.seek(0)
-        response = HttpResponse(
-            mem_file, content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
-        )
-        response["Content-Disposition"] = "attachment; filename=%s" % filename
-        return response
+
+        if xlsx:
+            mem_file = io.BytesIO()
+            workbook = xlsxwriter.Workbook(mem_file)
+            worksheet = workbook.add_worksheet("entity")
+            worksheet.set_column(0, 100, 30)
+            row = 0
+            col = 0
+
+            for f in fields:
+                worksheet.write(row, col, f)
+                col += 1
+
+            for i in instances:
+                row += 1
+                col = 0
+                data = [
+                    i.form.name,
+                    i.created_at.strftime("%Y-%m-%d %H:%M:%S"),
+                    i.updated_at.strftime("%Y-%m-%d %H:%M:%S"),
+                    i.org_unit.name,
+                    i.created_by.username,
+                    "",
+                ]
+                for d in data:
+                    worksheet.write(row, col, d)
+                    col += 1
+            filename = f"{entity}_details_list_{date}.xlsx"
+            workbook.close()
+            mem_file.seek(0)
+            response = HttpResponse(
+                mem_file, content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+            )
+            response["Content-Disposition"] = "attachment; filename=%s" % filename
+            return response
+
+        if csv_exp:
+            filename = f"{entity}_details_list_{date}.csv"
+            response = HttpResponse(
+                content_type="txt/csv",
+                headers={"Content-Disposition": f"attachment; filename={filename}"},
+            )
+
+            writer = csv.writer(response)
+            writer.writerow(fields)
+
+            for i in instances:
+                data_list = [
+                    i.form.name,
+                    i.created_at.strftime("%Y-%m-%d %H:%M:%S"),
+                    i.updated_at.strftime("%Y-%m-%d %H:%M:%S"),
+                    i.org_unit.name,
+                    i.created_by.username,
+                    "",
+                ]
+                writer.writerow(data_list)
+
+            return response
+

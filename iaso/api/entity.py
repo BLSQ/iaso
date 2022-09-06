@@ -192,7 +192,6 @@ class EntityViewSet(ModelViewSet):
         org_unit_id = self.request.query_params.get("orgUnitId", None)
         date_from = self.request.query_params.get("dateFrom", None)
         date_to = self.request.query_params.get("dateTo", None)
-        order = self.request.query_params.get("order", "updated_at").split(",")
         entity_type = self.request.query_params.get("entity_type", None)
         entity_type_id = self.request.query_params.get("entity_type_id", None)
         by_uuid = self.request.query_params.get("by_uuid", None)

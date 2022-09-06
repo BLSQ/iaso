@@ -282,7 +282,7 @@ class EntityAPITestCase(APITestCase):
 
         response = self.client.get("/api/entity/", format="json")
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(len(response.json()), 1)
+        self.assertEqual(len(response.json()["result"]), 1)
 
     def test_cant_create_entity_without_attributes(self):
         self.client.force_authenticate(self.yoda)
@@ -334,4 +334,4 @@ class EntityAPITestCase(APITestCase):
         response = self.client.get("/api/entity/", format="json")
 
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(len(response.json()), 1)
+        self.assertEqual(len(response.json()["result"]), 1)

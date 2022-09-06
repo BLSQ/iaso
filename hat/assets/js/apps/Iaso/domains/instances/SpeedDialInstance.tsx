@@ -1,73 +1,49 @@
 /* eslint-disable react/jsx-props-no-spreading */
-import React, { FunctionComponent, useEffect, useState } from 'react';
-import { Link } from 'react-router';
-import { connect, useDispatch } from 'react-redux';
+import React, { FunctionComponent } from 'react';
+import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 import DeleteIcon from '@material-ui/icons/Delete';
 import UpdateIcon from '@material-ui/icons/Update';
 import EditLocationIcon from '@material-ui/icons/EditLocation';
 import RestoreFromTrashIcon from '@material-ui/icons/RestoreFromTrash';
-import Alert from '@material-ui/lab/Alert';
 import LockIcon from '@material-ui/icons/Lock';
-import {
-    Box,
-    Grid,
-    DialogContentText,
-    Typography,
-    makeStyles,
-} from '@material-ui/core';
+import { DialogContentText, makeStyles } from '@material-ui/core';
 import LinkIcon from '@material-ui/icons/Link';
 import LinkOffIcon from '@material-ui/icons/LinkOff';
 
 import {
-    // @ts-ignore
     commonStyles,
-    // @ts-ignore
-    LoadingSpinner,
-    // @ts-ignore
-    IconButton as IconButtonComponent,
-    // @ts-ignore
     ExportButton as ExportButtonComponent,
-    // @ts-ignore
     useSafeIntl,
 } from 'bluesquare-components';
 import { FormattedMessage } from 'react-intl';
 import omit from 'lodash/omit';
-import TopBar from '../../components/nav/TopBarComponent';
+import { UseQueryResult } from 'react-query';
 import {
-    setCurrentInstance as setCurrentInstanceAction,
-    fetchInstanceDetail as fetchInstanceDetailAction,
     fetchEditUrl as fetchEditUrlAction,
-    softDeleteInstance as softDeleteAction,
-    restoreInstance as restoreInstanceAction,
+    fetchInstanceDetail as fetchInstanceDetailAction,
     reAssignInstance as reAssignInstanceAction,
+    restoreInstance as restoreInstanceAction,
+    setCurrentInstance as setCurrentInstanceAction,
+    softDeleteInstance as softDeleteAction,
 } from './actions';
 import {
-    redirectToReplace as redirectToReplaceAction,
     redirectTo as redirectToAction,
+    redirectToReplace as redirectToReplaceAction,
 } from '../../routing/actions';
-import WidgetPaper from '../../components/papers/WidgetPaperComponent';
 import CreateReAssignDialogComponent from './components/CreateReAssignDialogComponent';
 import snackMessages from '../../components/snackBars/messages';
-
-import InstanceDetailsInfos from './components/InstanceDetailsInfos';
-import InstanceDetailsLocation from './components/InstanceDetailsLocation';
-import InstanceDetailsExportRequests from './components/InstanceDetailsExportRequests';
-import InstanceDetailsLocksHistory from './components/InstanceDetailsLocksHistory';
-import InstancesFilesList from './components/InstancesFilesListComponent';
-import InstanceFileContent from './components/InstanceFileContent';
 import SpeedDialInstanceActions from './components/SpeedDialInstanceActions';
 import ExportInstancesDialogComponent from './components/ExportInstancesDialogComponent';
 import ConfirmCancelDialogComponent from '../../components/dialogs/ConfirmCancelDialogComponent';
 import EnketoIcon from './components/EnketoIcon';
-import { getInstancesFilesList } from './utils';
 import { userHasPermission } from '../users/utils';
 import { getRequest } from '../../libs/Api';
 import MESSAGES from './messages';
 import { baseUrls } from '../../constants/urls';
 import {
-    saveOrgUnitWithDispatch,
     lockInstanceWithDispatch,
+    saveOrgUnitWithDispatch,
 } from '../../utils/requests';
 
 import {
@@ -76,8 +52,6 @@ import {
 } from '../../utils/featureFlags';
 import { useCurrentUser } from '../../utils/usersUtils';
 import { Instance } from './types/instance';
-import { useGetInstance } from './compare/hooks/useGetInstance';
-import { UseQueryResult } from 'react-query';
 import { useSnackQuery } from '../../libs/apiHooks';
 
 const useStyles = makeStyles(theme => ({
@@ -406,22 +380,8 @@ const actions = ({
     ];
 };
 
-type Props = {
-    currentInstance?: Instance;
-    params: {
-        instanceId: string;
-    };
-    router: any;
-    redirectToReplace: any;
-    prevPathname: any;
-    fetchEditUrl: CallableFunction;
-    softDelete: CallableFunction;
-    restoreInstance: CallableFunction;
-    reAssignInstance: CallableFunction;
-    redirectToActionInstance: any;
-};
-
 type FormOrgUnitTypes = {
+    // eslint-disable-next-line camelcase
     org_unit_type_ids: number[];
 };
 // TODO move to hooks.js
@@ -438,54 +398,34 @@ export const useGetOrgUnitTypes = (
         },
     );
 };
-
-type Logs = {
-    list: any[];
+type Props = {
+    currentInstance?: Instance;
+    fetchEditUrl: CallableFunction;
+    softDelete: CallableFunction;
+    restoreInstance: CallableFunction;
+    reAssignInstance: CallableFunction;
+    redirectToActionInstance: any;
+    params: {
+        instanceId: string;
+    };
 };
 
-export const useGetInstanceLogs = (
-    instanceId: string | undefined,
-): UseQueryResult<Logs, Error> => {
-    return useSnackQuery<Logs, Error>(
-        ['instance', instanceId, 'logs'],
-        () =>
-            getRequest(
-                `/api/logs/?objectId=${instanceId}&order=-created_at&contentType=iaso.instance`,
-            ),
-        undefined,
-        {
-            enabled: Boolean(instanceId),
-            retry: false,
-        },
-    );
-};
-
-const InstanceDetails: FunctionComponent<Props> = props => {
-    const [showDial, setShowDial] = useState(true);
+const SpeedDialInstance: FunctionComponent<Props> = props => {
     const { formatMessage } = useSafeIntl();
     const currentUser = useCurrentUser();
     const classes = useStyles();
     const {
         reAssignInstance,
-        router,
-        prevPathname,
-        redirectToReplace,
-        params: { instanceId },
         params,
         redirectToActionInstance,
+        currentInstance,
     } = props;
-    const { data: currentInstance, isLoading: fetching } =
-        useGetInstance(instanceId);
 
     const { data: formOrgUnitType } = useGetOrgUnitTypes(
         currentInstance?.form_id,
     );
 
     const orgUnitTypeIds = formOrgUnitType?.org_unit_type_ids;
-    // not showing history link in submission detail if there is only one version/log
-    // in the futur. add this info directly in the instance api to not make another call;
-    const { data: instanceLogsDetails } = useGetInstanceLogs(instanceId);
-    const showHistoryLink = instanceLogsDetails?.list?.length ?? 0 > 1;
 
     const onActionSelected = action => {
         if (action.id === 'instanceEditAction' && props.currentInstance) {
@@ -500,10 +440,6 @@ const InstanceDetails: FunctionComponent<Props> = props => {
         }
     };
 
-    const onLightBoxToggled = open => {
-        setShowDial(!open);
-    };
-
     const formId = currentInstance?.form_id;
     const canEditEnketo = userHasPermission(
         'iaso_update_submission',
@@ -511,193 +447,25 @@ const InstanceDetails: FunctionComponent<Props> = props => {
     );
 
     return (
-        <section className={classes.relativeContainer}>
-            <TopBar
-                title={
-                    currentInstance
-                        ? `${
-                              currentInstance.form_name
-                          }: ${currentInstance.file_name.replace('.xml', '')}`
-                        : ''
-                }
-                displayBackButton
-                goBack={() => {
-                    if (prevPathname || !currentInstance) {
-                        router.goBack();
-                    } else {
-                        redirectToReplace(baseUrls.instances, {
-                            formIds: currentInstance.form_id,
-                        });
-                    }
-                }}
+        currentInstance?.can_user_modify && (
+            <SpeedDialInstanceActions
+                actions={actions({
+                    currentInstance,
+                    reAssignInstance,
+                    orgUnitTypes: orgUnitTypeIds,
+                    canEditEnketo,
+                    formId,
+                    params,
+                    currentUser,
+                    redirectToActionInstance,
+                })}
+                onActionSelected={action => onActionSelected(action)}
             />
-            {fetching && <LoadingSpinner />}
-            {currentInstance && (
-                <Box className={classes.containerFullHeightNoTabPadded}>
-                    {currentInstance.can_user_modify && showDial && (
-                        <SpeedDialInstanceActions
-                            actions={actions({
-                                currentInstance,
-                                reAssignInstance,
-                                orgUnitTypes: orgUnitTypeIds,
-                                canEditEnketo,
-                                formId,
-                                params,
-                                currentUser,
-                                redirectToActionInstance,
-                            })}
-                            onActionSelected={action =>
-                                onActionSelected(action)
-                            }
-                        />
-                    )}
-                    <Grid container spacing={4}>
-                        <Grid xs={12} md={4} item>
-                            {currentInstance.deleted && (
-                                <Alert
-                                    severity="warning"
-                                    className={classes.alert}
-                                >
-                                    {formatMessage(MESSAGES.warningSoftDeleted)}
-                                    <br />
-                                    {formatMessage(
-                                        MESSAGES.warningSoftDeletedExport,
-                                    )}
-                                    <br />
-                                    {formatMessage(
-                                        MESSAGES.warningSoftDeletedDerived,
-                                    )}
-                                    <br />
-                                </Alert>
-                            )}
-                            <WidgetPaper
-                                title={formatMessage(MESSAGES.infos)}
-                                padded
-                                id="infos"
-                            >
-                                <InstanceDetailsInfos
-                                    currentInstance={currentInstance}
-                                />
-
-                                {currentInstance && showHistoryLink && (
-                                    <Grid container spacing={1}>
-                                        <Grid xs={5} item>
-                                            <div
-                                                className={
-                                                    classes.labelContainer
-                                                }
-                                            >
-                                                <Typography
-                                                    variant="body2"
-                                                    noWrap
-                                                    color="inherit"
-                                                    title="Historique"
-                                                >
-                                                    {formatMessage(
-                                                        MESSAGES.history,
-                                                    )}
-                                                </Typography>
-                                                :
-                                            </div>
-                                        </Grid>
-
-                                        <Grid
-                                            xs={7}
-                                            container
-                                            item
-                                            justifyContent="flex-start"
-                                            alignItems="center"
-                                        >
-                                            <Typography
-                                                variant="body1"
-                                                color="inherit"
-                                            >
-                                                <Link
-                                                    to={`${baseUrls.compareInstanceLogs}/instanceIds/${currentInstance.id}`}
-                                                >
-                                                    {formatMessage(
-                                                        MESSAGES.seeAllVersions,
-                                                    )}
-                                                </Link>
-                                            </Typography>
-                                        </Grid>
-                                    </Grid>
-                                )}
-                            </WidgetPaper>
-                            <WidgetPaper
-                                title={formatMessage(MESSAGES.location)}
-                                id="location"
-                            >
-                                <InstanceDetailsLocation
-                                    currentInstance={currentInstance}
-                                />
-                            </WidgetPaper>
-                            <InstanceDetailsExportRequests
-                                currentInstance={currentInstance}
-                                classes={classes}
-                            />
-
-                            <InstanceDetailsLocksHistory
-                                currentInstance={currentInstance}
-                                classes={classes}
-                            />
-
-                            {currentInstance.files.length > 0 && (
-                                <WidgetPaper
-                                    title={formatMessage(MESSAGES.files)}
-                                    padded
-                                    id="files"
-                                >
-                                    <InstancesFilesList
-                                        fetchDetails={false}
-                                        instanceDetail={currentInstance}
-                                        files={getInstancesFilesList([
-                                            currentInstance,
-                                        ])}
-                                        onLightBoxToggled={open =>
-                                            onLightBoxToggled(open)
-                                        }
-                                    />
-                                </WidgetPaper>
-                            )}
-                        </Grid>
-
-                        <Grid xs={12} md={8} item>
-                            <WidgetPaper
-                                id="form-contents"
-                                title={formatMessage(MESSAGES.submission)}
-                                IconButton={IconButtonComponent}
-                                iconButtonProps={{
-                                    onClick: () =>
-                                        window.open(
-                                            currentInstance.file_url,
-                                            '_blank',
-                                        ),
-                                    icon: 'xml',
-                                    color: 'secondary',
-                                    tooltipMessage: MESSAGES.downloadXml,
-                                }}
-                            >
-                                <InstanceFileContent
-                                    instance={currentInstance}
-                                />
-                            </WidgetPaper>
-                        </Grid>
-                    </Grid>
-                </Box>
-            )}
-        </section>
+        )
     );
 };
 
-InstanceDetails.defaultProps = {
-    prevPathname: null,
-};
-
-const MapStateToProps = state => ({
-    prevPathname: state.routerCustom.prevPathname,
-});
-
+const MapStateToProps = state => ({});
 const MapDispatchToProps = dispatch => ({
     ...bindActionCreators(
         {
@@ -714,4 +482,4 @@ const MapDispatchToProps = dispatch => ({
     ),
 });
 
-export default connect(MapStateToProps, MapDispatchToProps)(InstanceDetails);
+export default connect(MapStateToProps, MapDispatchToProps)(SpeedDialInstance);

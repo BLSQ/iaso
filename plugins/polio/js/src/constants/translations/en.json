@@ -24,6 +24,7 @@
     "iaso.polio.calendar.r1StartDate": "R1 date",
     "iaso.polio.calendar.weeks": "week(s)",
     "iaso.polio.campaign.campaignHistory": "Campaign History",
+    "iaso.polio.campaign.campaignHistory.error": "Error",
     "iaso.polio.campaign.deleteError": "Error removing campaign",
     "iaso.polio.campaign.deleteSuccess": "Campaign successfully removed",
     "iaso.polio.campaign.restoreError": "Error restoring campaign",

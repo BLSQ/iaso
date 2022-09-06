@@ -36,7 +36,7 @@ import { formatComment } from '../cards/utils';
 
 const baseUrl = BUDGET_DETAILS;
 
-const styles = theme => {
+export const styles = theme => {
     return {
         deletedRow: {
             color: theme.palette.secondary.main,

@@ -48,6 +48,7 @@ import {
     shouldOpenModal,
     useActionMessage,
 } from './utils';
+import { styles as eventStyles } from '../hooks/config';
 import { formatThousand } from '../../../../../../../hat/assets/js/apps/Iaso/utils';
 
 type Props = {
@@ -56,6 +57,7 @@ type Props = {
 };
 
 const useStyles = makeStyles(theme => ({
+    ...eventStyles(theme),
     cardContent: {
         padding: `${theme.spacing(1)}px !important`,
     },
@@ -98,6 +100,7 @@ export const BudgetEventCard: FunctionComponent<Props> = ({
         () => formatUserName(getProfileFromId(event.author, profiles)),
         [event.author, profiles],
     );
+    const textColor = event.deleted_at ? classes.deletedRow : '';
     const amount = event.amount
         ? formatThousand(parseInt(`${event.amount}`, 10)) // using parseInt to remove decimals before formatting
         : '--';
@@ -132,21 +135,24 @@ export const BudgetEventCard: FunctionComponent<Props> = ({
                                 <Box>
                                     <Typography
                                         variant="h6"
-                                        className={classes.title}
+                                        className={`${classes.title} ${textColor}`}
                                     >
                                         {title}
                                         <LockIcon internal={event?.internal} />
                                     </Typography>
                                 </Box>
-                                <Typography variant="body2">
+                                <Typography
+                                    variant="body2"
+                                    className={`${textColor}`}
+                                >
                                     {formatMessage(MESSAGES.onDate, {
                                         date: formattedCreationDate,
                                     })}
                                 </Typography>
-                                <Typography>
+                                <Typography className={`${textColor}`}>
                                     {`${authorName} - ${authorTeam}`}
                                 </Typography>
-                                <Typography>
+                                <Typography className={`${textColor}`}>
                                     {`${formatMessage(
                                         MESSAGES.destination,
                                     )}: ${targetTeams}`}
@@ -155,6 +161,7 @@ export const BudgetEventCard: FunctionComponent<Props> = ({
                                     <Typography
                                         // @ts-ignore
                                         style={{ wordWrap: 'anywhere' }}
+                                        className={`${textColor}`}
                                     >
                                         {`${formatMessage(
                                             MESSAGES.comment,
@@ -164,6 +171,7 @@ export const BudgetEventCard: FunctionComponent<Props> = ({
                                 <Typography
                                     // @ts-ignore
                                     style={{ wordWrap: 'anywhere' }}
+                                    className={`${textColor}`}
                                 >
                                     {`${formatMessage(
                                         MESSAGES.amount,

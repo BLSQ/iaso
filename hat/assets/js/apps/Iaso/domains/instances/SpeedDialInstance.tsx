@@ -270,7 +270,7 @@ const SpeedDialInstance: FunctionComponent<Props> = props => {
                 </DialogContentText>
             </ConfirmCancelDialogComponent>
         ),
-        disabled: false,
+        disabled: currentInstance?.deleted,
     };
 
     const deleteRestore = {
@@ -296,6 +296,7 @@ const SpeedDialInstance: FunctionComponent<Props> = props => {
 
     const lockAction = {
         id: 'lockActionTooltip', // used by translation
+        disabled: currentInstance?.deleted,
         icon: (
             <ConfirmCancelDialogComponent
                 titleMessage={MESSAGES.lockAction}
@@ -345,9 +346,7 @@ const SpeedDialInstance: FunctionComponent<Props> = props => {
         actions = [editLocationWithInstanceGps, ...actions];
     }
 
-    if (currentInstance.can_user_modify) {
-        actions = [lockAction, enketoAction, ...actions, deleteRestore];
-    }
+    actions = [lockAction, enketoAction, ...actions, deleteRestore];
 
     if (
         hasOrgUnitPermission &&
@@ -386,6 +385,7 @@ const SpeedDialInstance: FunctionComponent<Props> = props => {
                     </DialogContentText>
                 </ConfirmCancelDialogComponent>
             ),
+            disabled: currentInstance?.deleted,
         };
         actions = [...actions, linkOrgUnitAction];
     }
@@ -398,7 +398,7 @@ const SpeedDialInstance: FunctionComponent<Props> = props => {
     ) : null;
 };
 
-const MapStateToProps = state => ({});
+const MapStateToProps = () => ({});
 const MapDispatchToProps = dispatch => ({
     ...bindActionCreators(
         {

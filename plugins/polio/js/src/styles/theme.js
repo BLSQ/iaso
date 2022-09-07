@@ -30,6 +30,11 @@ export const useStyles = makeStyles(() => ({
         flexDirection: 'column',
         alignItems: 'flex-start',
     },
+    historyLink: {
+        display: 'flex',
+        justifyContent: 'flex-end',
+        alignItems: 'flex-end',
+    },
     round1FormCalculations: {
         marginTop: theme.spacing(4),
         marginBottom: theme.spacing(4),

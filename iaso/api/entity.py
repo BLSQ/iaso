@@ -202,7 +202,6 @@ class EntityViewSet(ModelViewSet):
     **replace xlsx by csv to export as csv
     """
 
-
     results_key = "entities"
     remove_results_key_if_paginated = True
     filter_backends = [filters.OrderingFilter, DjangoFilterBackend, DeletionFilterBackend]

@@ -1,6 +1,7 @@
 import React, { useMemo, useEffect, useState } from 'react';
 import PropTypes from 'prop-types';
 import moment from 'moment';
+import classnames from 'classnames';
 import { Box, makeStyles, Grid, Button } from '@material-ui/core';
 import PictureAsPdfIcon from '@material-ui/icons/PictureAsPdf';
 import {
@@ -31,11 +32,19 @@ import { useGetCampaigns } from '../hooks/useGetCampaigns';
 import MESSAGES from '../constants/messages';
 import { Filters } from '../components/campaignCalendar/Filters';
 
+const pageWidth = 1980;
+
 const useStyles = makeStyles(theme => ({
     ...commonStyles(theme),
     loadingSpinnerPdf: {
         backgroundColor: 'rgba(255,255,255,1)',
         zIndex: 2000,
+    },
+    isPdf: {
+        height: 'auto',
+    },
+    isNotPdf: {
+        height: 'calc(100vh - 65px)',
     },
 }));
 
@@ -93,15 +102,18 @@ const Calendar = ({ params }) => {
         const options = {
             filename: 'calendar.pdf',
             excludeTagNames: 'button',
+            overrideWidth: pageWidth,
         };
 
         await setPdf(true);
 
+        document.body.style.width = `${pageWidth}px`;
         window.dispatchEvent(new Event('resize'));
-
         setTimeout(() => {
-            domToPdf(element, options, () => {
-                setPdf(false);
+            domToPdf(element, options, async () => {
+                await setPdf(false);
+                document.body.style.width = 'auto';
+                window.dispatchEvent(new Event('resize'));
             });
         }, 1000);
     };
@@ -131,8 +143,11 @@ const Calendar = ({ params }) => {
 
             <div id="pdf">
                 <Box
-                    className={classes.containerFullHeightNoTabPadded}
-                    style={{ height: isPdf ? 'auto' : 'calc(100vh - 65px)' }}
+                    className={classnames(
+                        classes.containerFullHeightNoTabPadded,
+                        isPdf && classes.isPdf,
+                        !isPdf && classes.isNotPdf,
+                    )}
                 >
                     {!isPdf && (
                         <Box mb={4}>
@@ -147,7 +162,7 @@ const Calendar = ({ params }) => {
                             color="primary"
                             variant="contained"
                         >
-                            <PictureAsPdfIcon style={{ marginRight: '8px' }} />;
+                            <PictureAsPdfIcon style={{ marginRight: '8px' }} />
                             {formatMessage(MESSAGES.exportToPdf)}
                         </Button>
                     </Box>

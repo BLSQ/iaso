@@ -21,8 +21,13 @@ import {
     Box,
 } from '@material-ui/core';
 
-import { useSafeIntl, LoadingSpinner } from 'bluesquare-components';
 import { FormattedMessage } from 'react-intl';
+
+import {
+    useSafeIntl,
+    LoadingSpinner,
+    IconButton as IconButtonComponent,
+} from 'bluesquare-components';
 import { convertEmptyStringToNull } from '../utils/convertEmptyStringToNull';
 import { PreparednessForm } from '../forms/PreparednessForm';
 import { useFormValidator } from '../hooks/useFormValidator';
@@ -179,13 +184,30 @@ const CreateEditDialog = ({
             className={classes.mainModal}
         >
             {isFetching && <LoadingSpinner absolute />}
-            <DialogTitle className={classes.title}>
-                {selectedCampaign?.id
-                    ? formatMessage(MESSAGES.editCampaign)
-                    : formatMessage(MESSAGES.createCampaign)}
-            </DialogTitle>
 
-            {selectedCampaign && (
+            <Grid container>
+                <Grid item xs={12} md={6}>
+                    <DialogTitle className={classes.title}>
+                        {selectedCampaign?.id
+                            ? formatMessage(MESSAGES.editCampaign)
+                            : formatMessage(MESSAGES.createCampaign)}
+                    </DialogTitle>
+                </Grid>
+
+                {selectedCampaign && (
+                    <Grid item xs={12} md={6}>
+                        <Box pr={4} className={classes.historyLink}>
+                            <IconButtonComponent
+                                url={`${CAMPAIGN_HISTORY_URL}/campaignId/${selectedCampaign?.id}`}
+                                icon="history"
+                                tooltipMessage={MESSAGES.campaignHistory}
+                            />
+                        </Box>
+                    </Grid>
+                )}
+            </Grid>
+
+            {/* {selectedCampaign && (
                 <Box pl={4}>
                     <Typography variant="body1" color="inherit">
                         <Link
@@ -195,7 +217,7 @@ const CreateEditDialog = ({
                         </Link>
                     </Typography>
                 </Box>
-            )}
+            )} */}
 
             <DialogContent className={classes.content}>
                 <Tabs

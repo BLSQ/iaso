@@ -1540,6 +1540,7 @@ const MESSAGES = defineMessages({
         id: 'iaso.polio.label.scopeUnlockConditions',
         defaultMessage:
             'Select initial region and encode dates for at least one round to unlock Scope tab',
+    },
     campaignHistory: {
         id: 'iaso.polio.campaign.campaignHistory',
         defaultMessage: 'Campaign History',

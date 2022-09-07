@@ -7,7 +7,6 @@ import { Box } from '@material-ui/core';
 
 import { useGetCampaignLogDetail } from '../../hooks/useGetCampaignHistory';
 
-import WidgetPaper from '../../../../../../hat/assets/js/apps/Iaso/components/papers/WidgetPaperComponent';
 import ErrorPaperComponent from '../../../../../../hat/assets/js/apps/Iaso/components/papers/ErrorPaperComponent';
 
 import MESSAGES from '../../constants/messages';
@@ -29,6 +28,20 @@ export const CampaignLogDetail: FunctionComponent<Props> = ({ logId }) => {
 
     const { formatMessage } = useSafeIntl();
 
+    const getValue = (valueType, value) => {
+        switch (valueType) {
+            // iterate inside rounds object and show keys/values
+            case 'object':
+                return 'TO DO';
+
+            case 'boolean':
+                return value.toString();
+
+            default:
+                return value;
+        }
+    };
+
     if (isLoading)
         return (
             <Box height="70vh">
@@ -47,16 +60,21 @@ export const CampaignLogDetail: FunctionComponent<Props> = ({ logId }) => {
     return (
         <>
             {campaignLogDetail && (
-                <WidgetPaper title={formatMessage(MESSAGES.campaignHistory)}>
-                    <ul>
-                        {Object.entries(campaignLogDetail).map(detail => (
-                            <li>
-                                <span>{detail[0]}</span>
-                                <span>{detail[1]}</span>
-                            </li>
-                        ))}
-                    </ul>
-                </WidgetPaper>
+                <Box pl={8}>
+                    {Object.entries(campaignLogDetail).map(([key, value]) => {
+                        if (value !== null) {
+                            return (
+                                <div key={key}>
+                                    <span style={{ marginRight: '8px' }}>
+                                        {key} :{' '}
+                                    </span>
+
+                                    <span>{getValue(typeof value, value)}</span>
+                                </div>
+                            );
+                        }
+                    })}
+                </Box>
             )}
         </>
     );

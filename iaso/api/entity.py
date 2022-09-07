@@ -185,6 +185,24 @@ def export_entity_as_csv(entities):
 
 
 class EntityViewSet(ModelViewSet):
+    """Entity API
+
+    list: /api/entity
+
+    list entity by entity type: /api/entity/?entity_type_id=id
+
+    details =/api/entity/<id>
+
+    export entity list: /api/entity/?xlsx=true
+
+    export entity by entity type: /api/entity/entity_type_id=id&?xlsx=true
+
+    export entity submissions list: /api/entity/export_entity_submissions_list/?id=id
+
+    **replace xlsx by csv to export as csv
+    """
+
+
     results_key = "entities"
     remove_results_key_if_paginated = True
     filter_backends = [filters.OrderingFilter, DjangoFilterBackend, DeletionFilterBackend]
@@ -442,3 +460,5 @@ class EntityViewSet(ModelViewSet):
                 writer.writerow(data_list)
 
             return response
+
+        return super().list(request)

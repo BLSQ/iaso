@@ -1,10 +1,10 @@
 /* eslint-disable camelcase */
 import React, { useState, useEffect, FunctionComponent } from 'react';
 // @ts-ignore
-import { useSafeIntl, LoadingSpinner } from 'bluesquare-components';
+import { useSafeIntl, commonStyles } from 'bluesquare-components';
 import { useSelector, useDispatch } from 'react-redux';
 
-import { Box, Grid } from '@material-ui/core';
+import { Box, Grid, makeStyles, Theme } from '@material-ui/core';
 
 import { CampaignLogDetail } from './CampaignLogDetail';
 
@@ -18,10 +18,7 @@ import {
 } from '../../constants/routes';
 
 import MESSAGES from '../../constants/messages';
-import {
-    useGetCampaignLogs,
-    useGetCampaignLogDetail,
-} from '../../hooks/useGetCampaignHistory';
+import { useGetCampaignLogs } from '../../hooks/useGetCampaignHistory';
 
 type RouterCustom = {
     prevPathname: string | undefined;
@@ -43,21 +40,27 @@ type Props = {
     router: Router;
 };
 
+const useStyles = makeStyles((theme: Theme) => ({
+    ...commonStyles(theme),
+}));
+
 export const CampaignHistory: FunctionComponent<Props> = ({
     params,
     router,
 }) => {
     const {
-        data: campaignHistoryDetail,
-        isLoading,
+        data: campaignLogsDropdown,
+        isFetching: isFetchingCampaignLogsDropdown,
         isError,
     }: {
         data?: Record<string, any> | undefined;
-        isLoading: boolean;
+        isFetching: boolean;
         isError: boolean;
-    } = useGetCampaignLogDetail(params.logId);
+    } = useGetCampaignLogs(params.campaignId);
 
     const { formatMessage } = useSafeIntl();
+
+    const classes: Record<string, string> = useStyles();
 
     const prevPathname: string | undefined = useSelector(
         (state: State) => state.routerCustom.prevPathname,
@@ -67,11 +70,6 @@ export const CampaignHistory: FunctionComponent<Props> = ({
     const [logIdInitialValue, setLogIdInitialValue] = useState<
         number | undefined
     >(undefined);
-
-    const {
-        data: campaignLogsDropdown,
-        isFetching: isFetchingCampaignLogsDropdown,
-    } = useGetCampaignLogs(params.campaignId);
 
     const handleChange = (key, value) => {
         const newParams = {
@@ -101,17 +99,7 @@ export const CampaignHistory: FunctionComponent<Props> = ({
             campaignLogsDropdown && campaignLogsDropdown[0]?.value,
         );
     }, [campaignLogsDropdown, isFetchingCampaignLogsDropdown]);
-    if (isLoading)
-        return (
-            <Box height="70vh">
-                <LoadingSpinner
-                    fixed={false}
-                    transparent
-                    padding={4}
-                    size={25}
-                />
-            </Box>
-        );
+
     if (isError) {
         return <ErrorPaperComponent message="Error" />;
     }
@@ -129,29 +117,28 @@ export const CampaignHistory: FunctionComponent<Props> = ({
                     }
                 }}
             />
-
-            <Grid container spacing={4}>
-                <Grid xs={12} md={6} item>
-                    <Box p={6}>
-                        <InputComponent
-                            type="select"
-                            keyValue="logId"
-                            onChange={handleChange}
-                            value={params.logId || logIdInitialValue}
-                            label={MESSAGES.campaingDropdownLabel}
-                            options={campaignLogsDropdown}
-                            loading={isFetchingCampaignLogsDropdown}
-                        />
-                    </Box>
-                </Grid>
+            <Box className={classes.containerFullHeightNoTabPadded}>
                 <Grid container spacing={4}>
                     <Grid xs={12} md={6} item>
                         <Box p={6}>
-                            <CampaignLogDetail logId={params.logId} />
+                            <InputComponent
+                                type="select"
+                                keyValue="logId"
+                                onChange={handleChange}
+                                value={params.logId || logIdInitialValue}
+                                label={MESSAGES.campaingDropdownLabel}
+                                options={campaignLogsDropdown}
+                                loading={isFetchingCampaignLogsDropdown}
+                            />
                         </Box>
                     </Grid>
+                    <Grid container spacing={4}>
+                        <Grid xs={12} md={6} item>
+                            <CampaignLogDetail logId={params.logId} />
+                        </Grid>
+                    </Grid>
                 </Grid>
-            </Grid>
+            </Box>
         </>
     );
 };

@@ -17,15 +17,15 @@ import {
 } from '../beneficiaries/hooks/requests';
 import { BeneficiaryBaseInfo } from '../beneficiaries/components/BeneficiaryBaseInfo';
 import TopBar from '../../../components/nav/TopBarComponent';
-import MESSAGES from '../beneficiaries/messages';
+import MESSAGES from '../messages';
 import { redirectToReplace } from '../../../routing/actions';
 import WidgetPaper from '../../../components/papers/WidgetPaperComponent';
 import { baseUrls } from '../../../constants/urls';
 
 type Props = {
     // instanceId: string;
-    // beneficiaryId: string;
-    params: { instanceId: string; beneficiaryId: string };
+    // entityId: string;
+    params: { instanceId: string; entityId: string };
     router: Record<string, any>;
 };
 
@@ -36,13 +36,13 @@ const useStyles = makeStyles(theme => {
 });
 
 export const VisitDetails: FunctionComponent<Props> = ({ params, router }) => {
-    const { instanceId, beneficiaryId } = params;
+    const { instanceId, entityId } = params;
     const classes = useStyles();
     const { formatMessage } = useSafeIntl();
     const { data: submission, isLoading: isLoadingSubmission } =
         useGetVisitSubmission(instanceId);
     const { data: beneficiary, isLoading: isLoadingbeneficiary } =
-        useGetBeneficiary(beneficiaryId);
+        useGetBeneficiary(entityId);
     // @ts-ignore
     const prevPathname = useSelector(state => state.routerCustom.prevPathname);
     const dispatch = useDispatch();
@@ -62,8 +62,8 @@ export const VisitDetails: FunctionComponent<Props> = ({ params, router }) => {
                         router.goBack();
                     } else {
                         dispatch(
-                            redirectToReplace(baseUrls.beneficiariesDetails, {
-                                beneficiaryId,
+                            redirectToReplace(baseUrls.entityDetails, {
+                                entityId,
                             }),
                         );
                     }

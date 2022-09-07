@@ -24,6 +24,7 @@ PLANNING = _("Planning")
 TEAMS = _("Equipes")
 ASSIGNMENTS = _("Attributions")
 POLIO_BUDGET = _("Budget Polio")
+ENTITIES = _("Entities")
 BENEFICIARIES = _("Beneficiaries")
 
 
@@ -74,5 +75,6 @@ class CustomPermissionSupport(models.Model):
             ("iaso_teams", TEAMS),
             ("iaso_assignments", ASSIGNMENTS),
             ("iaso_polio_budget", POLIO_BUDGET),
-            ("iaso_beneficiaries", PLANNING),
+            ("iaso_entities", ENTITIES),
+            ("iaso_beneficiaries", BENEFICIARIES),
         )

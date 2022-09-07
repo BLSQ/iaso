@@ -1,11 +1,12 @@
+import { useSnackQuery, useSnackMutation } from 'Iaso/libs/apiHooks.ts';
+import { getRequest, patchRequest } from 'Iaso/libs/Api';
 import {
     fetchOrgUnitsTypes,
     fetchDevices,
     fetchDevicesOwnerships,
 } from '../../utils/requests';
+import MESSAGES from './messages';
 import { setOrgUnitTypes } from '../orgUnits/actions';
-import { getRequest } from '../../libs/Api';
-import { useSnackQuery } from '../../libs/apiHooks';
 import {
     setDevicesList,
     setDevicesOwnershipList,
@@ -76,3 +77,12 @@ export const useGetPeriods = formId => {
         return getRequest(`/api/periods/?${queryString.toString()}`);
     });
 };
+
+export const usePatchInstance = (onSuccess, invalidateQueryKey = undefined) =>
+    useSnackMutation(
+        body => patchRequest(`/api/instances/${body.id}/`, body),
+        MESSAGES.patchInstanceSuccesfull,
+        MESSAGES.patchInstanceError,
+        invalidateQueryKey,
+        { onSuccess },
+    );

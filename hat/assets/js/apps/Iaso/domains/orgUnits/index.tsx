@@ -265,7 +265,7 @@ export const OrgUnits: FunctionComponent<Props> = ({ params }) => {
             setRefresh(false);
             handleSearch();
         }
-    }, [searches]);
+    }, [searches, refresh]);
 
     const isLoading =
         isFetchingOrgUnits ||

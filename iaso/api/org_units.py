@@ -361,6 +361,7 @@ class OrgUnitViewSet(viewsets.ViewSet):
                 org_unit.location = Point(x=longitude, y=latitude, z=altitude, srid=4326)
             else:
                 org_unit.location = None
+
         # doing reassignment below to avoid a test fail. Assigning a default value doesn't prevent the test to fail
         if "aliases" in request.data:
             aliases = request.data.get("aliases")
@@ -430,6 +431,7 @@ class OrgUnitViewSet(viewsets.ViewSet):
             org_unit.save()
             if new_groups is not None:
                 org_unit.groups.set(new_groups)
+
             audit_models.log_modification(original_copy, org_unit, source=audit_models.ORG_UNIT_API, user=request.user)
 
             res = org_unit.as_dict_with_parents()

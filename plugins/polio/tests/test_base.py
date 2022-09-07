@@ -135,14 +135,21 @@ class PolioAPITestCase(APITestCase):
             f"/api/polio/campaigns/" + str(campaign.id) + "/",
             data={
                 "obr_name": "campaign with org units",
-                "group": {"name": "hidden group", "org_units": list(map(lambda org_unit: org_unit.id, self.org_units))},
+                "scopes": [
+                    {
+                        "vaccine": "mOPV2",
+                        "group": {
+                            "org_units": list(map(lambda org_unit: org_unit.id, self.org_units)),
+                        },
+                    },
+                ],
             },
             format="json",
         )
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertJSONResponse(response, status.HTTP_200_OK)
 
         campaign.refresh_from_db()
-        self.assertEqual(campaign.group.org_units.count(), self.org_units.__len__())
+        self.assertEqual(campaign.get_all_districts().count(), self.org_units.__len__())
 
     def test_can_create_and_update_campaign_with_orgunits_group(self):
         """
@@ -155,7 +162,12 @@ class PolioAPITestCase(APITestCase):
             f"/api/polio/campaigns/",
             data={
                 "obr_name": "campaign with org units",
-                "group": {"name": "hidden group", "org_units": [self.org_units[0].id]},
+                "scopes": [
+                    {
+                        "vaccine": "mOPV2",
+                        "group": {"org_units": [self.org_units[0].id]},
+                    },
+                ],
             },
             format="json",
         )
@@ -163,20 +175,26 @@ class PolioAPITestCase(APITestCase):
         self.assertJSONResponse(response, status.HTTP_201_CREATED)
         self.assertEqual(Campaign.objects.count(), 1)
         self.assertEqual(Campaign.objects.get().obr_name, "campaign with org units")
-        self.assertEqual(Campaign.objects.get().group.name, "hidden group")
-        self.assertEqual(Campaign.objects.get().group.org_units.count(), 1)
+        self.assertEqual(Campaign.objects.get().scopes.first().group.org_units.count(), 1)
 
         response = self.client.put(
             f"/api/polio/campaigns/" + str(Campaign.objects.get().id) + "/",
             data={
                 "obr_name": "campaign with org units",
-                "group": {"name": "hidden group", "org_units": list(map(lambda org_unit: org_unit.id, self.org_units))},
+                "scopes": [
+                    {
+                        "vaccine": "mOPV2",
+                        "group": {
+                            "org_units": list(map(lambda org_unit: org_unit.id, self.org_units)),
+                        },
+                    },
+                ],
             },
             format="json",
         )
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(Campaign.objects.get().group.org_units.count(), 3)
+        self.assertEqual(Campaign.objects.get().get_all_districts().count(), 3)
 
     def test_can_only_see_campaigns_within_user_org_units_hierarchy(self):
         """
@@ -556,7 +574,7 @@ class LQASIMPolioTestCase(APITestCase):
 
         response = self.client.get("/api/polio/campaigns/merged_shapes.geojson/")
 
-        is_cached = True if cache.get("{0}-geo_shapes".format(self.yoda.id)) else False
+        is_cached = True if cache.get("{0}-geo_shapes".format(self.yoda.id), version=CACHE_VERSION) else False
 
         self.assertEqual(response.status_code, 200)
         self.assertEqual(is_cached, True)
@@ -638,7 +656,10 @@ class BudgetPolioTestCase(APITestCase):
 
         cls.project1 = project1 = account.project_set.create(name="project1")
         cls.team1 = Team.objects.create(project=project1, name="team1", manager=cls.yoda)
+        cls.team1.users.set([cls.yoda.iaso_profile.user_id])
         cls.team2 = Team.objects.create(project=project1, name="team2", manager=cls.grogu)
+        cls.approval_team = Team.objects.create(project=project1, name="approval team", manager=cls.yoda)
+        cls.approval_team.users.set([cls.yoda.iaso_profile.user_id])
 
     def test_create_polio_budget(self):
         self.client.force_authenticate(self.yoda)
@@ -719,7 +740,7 @@ class BudgetPolioTestCase(APITestCase):
         self.client.force_authenticate(self.grogu)
 
         budget = BudgetEvent.objects.create(
-            campaign=self.campaign_test, type="submission", author=self.grogu, status="validation_ongoing"
+            campaign=self.campaign_test, type="submission", author=self.yoda, status="validation_ongoing"
         )
 
         budget.target_teams.set([self.team1])

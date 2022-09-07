@@ -12,7 +12,7 @@ import MESSAGES from '../messages';
 
 import { baseUrl } from '../config';
 
-import { useGetTypes } from '../entityTypes/hooks/requests';
+import { useGetTypes } from '../entityTypes/hooks/requests/entitiyTypes';
 
 const useStyles = makeStyles(theme => ({
     ...commonStyles(theme),

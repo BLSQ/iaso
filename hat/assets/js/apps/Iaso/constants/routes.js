@@ -21,7 +21,6 @@ import Groups from '../domains/orgUnits/groups';
 import Types from '../domains/orgUnits/orgUnitTypes';
 import { Beneficiaries } from '../domains/entities/beneficiaries/index.tsx';
 import { Details as BeneficiaryDetail } from '../domains/entities/beneficiaries/details.tsx';
-import { Entities } from '../domains/entities/index.tsx';
 import { EntityTypes } from '../domains/entities/entityTypes/index.tsx';
 import PageError from '../components/errors/PageError';
 import { baseUrls } from './urls';
@@ -537,9 +536,9 @@ export const orgUnitTypesPath = {
         })),
     ],
 };
-export const beneficiariesPath = {
-    baseUrl: baseUrls.beneficiaries,
-    permissions: ['iaso_beneficiaries'],
+export const entitiesPath = {
+    baseUrl: baseUrls.entities,
+    permissions: ['iaso_entities'],
     component: props => <Beneficiaries {...props} />,
     params: [
         {
@@ -576,22 +575,22 @@ export const beneficiariesPath = {
         })),
     ],
 };
-export const beneficiariesDetailsPath = {
-    baseUrl: baseUrls.beneficiariesDetails,
-    permissions: ['iaso_beneficiaries'],
+export const entityDetailsPath = {
+    baseUrl: baseUrls.entityDetails,
+    permissions: ['iaso_entities'],
     component: props => <BeneficiaryDetail {...props} />,
     params: [
         {
             isRequired: true,
-            key: 'beneficiaryId',
+            key: 'entityId',
         },
         ...paginationPathParams,
     ],
 };
 
-export const beneficiarySubmissionDetailPath = {
-    baseUrl: baseUrls.beneficiarySubmissionDetail,
-    permissions: ['iaso_beneficiaries'],
+export const entitySubmissionDetailPath = {
+    baseUrl: baseUrls.entitySubmissionDetail,
+    permissions: ['iaso_entities'],
     component: props => <VisitDetails {...props} />,
     params: [
         {
@@ -600,30 +599,11 @@ export const beneficiarySubmissionDetailPath = {
         },
         {
             isRequired: true,
-            key: 'beneficiaryId',
+            key: 'entityId',
         },
     ],
 };
 
-export const entitiesPath = {
-    baseUrl: baseUrls.entities,
-    permissions: ['iaso_entities'],
-    component: props => <Entities {...props} />,
-    params: [
-        {
-            isRequired: false,
-            key: 'search',
-        },
-        {
-            isRequired: false,
-            key: 'entityTypes',
-        },
-        ...paginationPathParams.map(p => ({
-            ...p,
-            isRequired: true,
-        })),
-    ],
-};
 export const entityTypesPath = {
     baseUrl: baseUrls.entityTypes,
     permissions: ['iaso_entities'],
@@ -759,7 +739,6 @@ export const routeConfigs = [
     devicesPath,
     groupsPath,
     orgUnitTypesPath,
-    entitiesPath,
     entityTypesPath,
     pagesPath,
     page401,
@@ -767,7 +746,7 @@ export const routeConfigs = [
     teamsPath,
     planningPath,
     assignmentsPath,
-    beneficiariesPath,
-    beneficiariesDetailsPath,
-    beneficiarySubmissionDetailPath,
+    entitiesPath,
+    entityDetailsPath,
+    entitySubmissionDetailPath,
 ];

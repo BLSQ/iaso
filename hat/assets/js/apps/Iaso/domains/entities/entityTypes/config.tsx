@@ -1,4 +1,5 @@
 import React, { ReactElement } from 'react';
+// @ts-ignore
 import { IconButton as IconButtonComponent } from 'bluesquare-components';
 import { EntityTypesDialog } from './components/EntityTypesDialog';
 import DeleteDialog from '../../../components/dialogs/DeleteDialogComponent';
@@ -70,6 +71,7 @@ export const columns = ({
                             id={`edit-button-${settings.row.original.id}`}
                             onClick={openDialog}
                             icon="edit"
+                            dataTestId="edit-button"
                             tooltipMessage={MESSAGES.edit}
                         />
                     )}

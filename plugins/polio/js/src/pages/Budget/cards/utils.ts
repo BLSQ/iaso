@@ -46,8 +46,11 @@ export const useActionMessage = (
     if (comment.length > COMMENT_CHAR_LIMIT && files === 0) {
         message = `${commentsMessage}`;
     }
-    if (links) {
+    if (links && message) {
         message = `${message ?? formatMessage(MESSAGES.see)} + ${linkMessage}`;
+    }
+    if (links && !message) {
+        message = `${formatMessage(MESSAGES.see)} ${linkMessage.toLowerCase()}`;
     }
     return message;
 };

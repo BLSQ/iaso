@@ -16,7 +16,6 @@ import {
     useSaveBudgetEvent,
     useUploadBudgetFiles,
 } from '../../../hooks/useSaveBudgetEvent';
-import FileInputComponent from '../../../../../../../hat/assets/js/apps/Iaso/components/forms/FileInputComponent';
 import { useBudgetEventValidation } from '../hooks/validation';
 import {
     useGetTeamsDropDown,
@@ -28,6 +27,7 @@ import {
     useTranslatedErrors,
     useApiErrorValidation,
 } from '../../../../../../../hat/assets/js/apps/Iaso/libs/validation';
+import { FilesUpload } from '../../../../../../../hat/assets/js/apps/Iaso/components/FilesUpload';
 
 type Props = {
     campaignId: string;
@@ -270,14 +270,21 @@ export const CreateEditBudgetEvent: FunctionComponent<Props> = ({
                             </>
                         )}
                         <Box mt={2}>
-                            <FileInputComponent
-                                keyValue="files"
-                                required={currentType === 'edit'}
-                                multiple
-                                onChange={onChange}
-                                value={values.files}
-                                errors={getErrors('files')}
-                                label={MESSAGES.filesUpload}
+                            {/* <FileInputComponent
+                                    keyValue="files"
+                                    required={currentType === 'edit'}
+                                    multiple
+                                    onChange={onChange}
+                                    value={values.files}
+                                    errors={getErrors('files')}
+                                    label={MESSAGES.filesUpload}
+                                /> */}
+                            <FilesUpload
+                                files={values.files ?? []}
+                                onFilesSelect={files => {
+                                    setFieldTouched('files', true);
+                                    setFieldValue('files', files);
+                                }}
                             />
                         </Box>
                         {(currentType === 'create' ||

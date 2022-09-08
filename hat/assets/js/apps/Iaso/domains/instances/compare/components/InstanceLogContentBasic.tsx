@@ -40,7 +40,7 @@ const useStyles = makeStyles(styles);
 const getLabelFromKey = (descriptor, key) => {
     const field = descriptor.find(child => child.name === key);
 
-    // TO DO : find an efficient way to get label from group type fields (questions, meta, ...)
+    // TO DO: find an efficient way to get label from group type fields (questions, meta, ...)
     if (!field) {
         return key;
     }
@@ -116,7 +116,7 @@ export const InstanceLogContentBasic: FunctionComponent<Props> = ({
                                         className={classes.tableCell}
                                         align="left"
                                     >
-                                        {/* TO DO : find a way to search text values for "0" and "1" in questions */}
+                                        {/* TO DO : display section titles for groups */}
                                         {fileContent?.logA.json[labelKey]}
                                     </TableCell>
                                     <TableCell

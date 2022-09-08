@@ -33,6 +33,7 @@ import { Optional } from '../../../../../../../hat/assets/js/apps/Iaso/types/uti
 import { convertObjectToString } from '../../../utils';
 import { formatThousand } from '../../../../../../../hat/assets/js/apps/Iaso/utils';
 import { formatComment } from '../cards/utils';
+import { TestNewModal } from '../CreateEditBudgetEvent/TestNewModal';
 
 const baseUrl = BUDGET_DETAILS;
 
@@ -137,6 +138,7 @@ export const useBudgetDetailsColumns = ({ profiles, data }): Column[] => {
     const showInternalColumn = Boolean(
         data?.find(details => details.internal === true),
     );
+    const [openModal, setOpenModal] = useState<boolean>(false);
     return useMemo(() => {
         const defaultColumns = [
             {
@@ -289,7 +291,20 @@ export const useBudgetDetailsColumns = ({ profiles, data }): Column[] => {
                         .join(', ');
                     return (
                         <section>
-                            <BudgetFilesModal
+                            <IconButtonComponent
+                                onClick={() => setOpenModal(true)}
+                                icon="edit"
+                                tooltipMessage={MESSAGES.deleteBudgetEvent}
+                            />
+                            {openModal && (
+                                <TestNewModal
+                                    campaignId=""
+                                    closeDialog={() => setOpenModal(false)}
+                                    open={openModal}
+                                    id={settings.row.original.id}
+                                />
+                            )}
+                            {/* <BudgetFilesModal
                                 eventId={settings.row.original.id}
                                 note={settings.row.original.comment}
                                 date={settings.row.original.created_at}
@@ -302,7 +317,7 @@ export const useBudgetDetailsColumns = ({ profiles, data }): Column[] => {
                                         ? 'secondary'
                                         : 'action'
                                 }
-                            />
+                            /> */}
                             {!settings.row.original.is_finalized &&
                                 settings.row.original.author ===
                                     currentUser.user_id && (

@@ -1,18 +1,39 @@
+"""Entity and related models
+
+The entity concept might feel a bit abstract, so it might be useful to reason about them using a concrete example
+(beneficiaries):
+
+- Entities are used to track beneficiaries (=people who will benefit from the help provided by an organization). Those
+beneficiaries can be of different types (E.g.: Children under 5, Pregnant or lactating women, etc.).
+- Those beneficiaries are visited multiple times, so multiple submissions/instances (that we call "records") are
+attached to them via the entity_id foreign key of Instance.
+- In addition to those records, we also want to track some core metadata about the beneficiary, such as their name,
+age,... To avoid hardcoding those fields in the Entity model, we also reuse the form mechanism: each EntityType
+has a foreign key to a reference form, and each entity has a foreign key (attributes) to an instance/submission of that
+form.
+"""
 from django.db import models
 from django.contrib.postgres.fields import ArrayField, CITextField
 import uuid
 
-## Remove blank=True, null=True on FK once the modles are sets and validated
-from django.db.models import UniqueConstraint
+## TODO: Remove blank=True, null=True on FK once the models are sets and validated
 
 from iaso.models import Instance, Form, Account
 from iaso.utils.models.soft_deletable import SoftDeletableModel
 
 
 class EntityType(models.Model):
-    name = models.CharField(max_length=255)
+    """an Entity Type represents a type of person or object to which we want to attach multiple form submissions to be
+    able to track said submissions in time and across OrgUnits
+
+    Its reference form list core attributes/metadata about the entity type (in case it refers to a person: name,
+    age, ...)
+    """
+
+    name = models.CharField(max_length=255)  # Example: "Child under 5"
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+    # Link to the reference form that contains the core attribute/metadata specific to this entity type
     reference_form = models.ForeignKey(Form, blank=True, null=True, on_delete=models.PROTECT)
     account = models.ForeignKey(Account, on_delete=models.PROTECT, blank=True, null=True)
     # List of field we will show for this entity in list and detail view.
@@ -35,10 +56,14 @@ class EntityType(models.Model):
         }
 
 
-"""Define the clients """
-
-
 class Entity(SoftDeletableModel):
+    """An entity represents a physical object or person with a known Entity Type
+
+    Contrary to forms, they are not linked to a specific OrgUnit.
+    The core attributes that define this entity are not stored as fields in the Entity model, but in an Instance /
+    submission
+    """
+
     name = models.CharField(max_length=255)
     uuid = models.UUIDField(default=uuid.uuid4, editable=False)
     created_at = models.DateTimeField(auto_now_add=True)
@@ -56,7 +81,6 @@ class Entity(SoftDeletableModel):
         return f"{self.name}"
 
     def as_dict(self):
-
         instances = dict()
 
         for i in self.instances.all():

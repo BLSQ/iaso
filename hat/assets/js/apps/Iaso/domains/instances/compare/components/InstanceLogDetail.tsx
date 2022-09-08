@@ -4,6 +4,7 @@ import React, { FunctionComponent } from 'react';
 import { useSafeIntl, LoadingSpinner } from 'bluesquare-components';
 
 import { Box } from '@material-ui/core';
+import ErrorPaperComponent from '../../../../components/papers/ErrorPaperComponent';
 
 import {
     useGetInstanceLogDetail,
@@ -11,9 +12,9 @@ import {
 } from '../hooks/useGetInstanceLogs';
 
 import { FileContent, FormDescriptor } from '../../types/instance';
+import { IntlFormatMessage } from '../../../../types/intl';
 
 import { InstanceLogContentBasic } from './InstanceLogContentBasic';
-import ErrorPaperComponent from '../../../../components/papers/ErrorPaperComponent';
 
 import MESSAGES from '../messages';
 
@@ -24,9 +25,9 @@ type Props = {
 
 export const InstanceLogDetail: FunctionComponent<Props> = ({ logA, logB }) => {
     const {
-        data: instanceLogDetail,
-        isLoading,
-        isError,
+        data: instanceLogContent,
+        isLoading: isLogDetailLoading,
+        isError: isLogDetailError,
     }: {
         data?: FileContent;
         isLoading: boolean;
@@ -35,16 +36,19 @@ export const InstanceLogDetail: FunctionComponent<Props> = ({ logA, logB }) => {
 
     const {
         data: instanceLogDescriptor,
+        isLoading: isLogDescriptorLoading,
+        isError: isLogDescriptorError,
     }: {
         data?: FormDescriptor;
     } = useGetFormDescriptor(
-        instanceLogDetail?.logA?.json._version,
-        instanceLogDetail?.logA?.form,
+        instanceLogContent?.logA?.json._version,
+        instanceLogContent?.logA?.form,
     );
 
-    const { formatMessage } = useSafeIntl();
+    const { formatMessage }: { formatMessage: IntlFormatMessage } =
+        useSafeIntl();
 
-    if (isLoading)
+    if (isLogDetailLoading || isLogDescriptorLoading)
         return (
             <Box height="70vh">
                 <LoadingSpinner
@@ -56,18 +60,17 @@ export const InstanceLogDetail: FunctionComponent<Props> = ({ logA, logB }) => {
             </Box>
         );
 
-    // TO DO: add specific errors if instanceId does not exist or if log id does not exist
-    if (isError) {
-        return <ErrorPaperComponent message={formatMessage(MESSAGES.error)} />;
+    if (isLogDetailError || isLogDescriptorError) {
+        return (
+            <ErrorPaperComponent message={formatMessage(MESSAGES.errorLog)} />
+        );
     }
 
     return (
         <>
-            {instanceLogDetail && (
-                // TO DO: add fileDescriptor prop to get label from label key
-                // TO DO: add user name who did the modification
+            {instanceLogContent && (
                 <InstanceLogContentBasic
-                    fileContent={instanceLogDetail}
+                    fileContent={instanceLogContent}
                     fileDescriptor={instanceLogDescriptor}
                 />
             )}

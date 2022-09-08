@@ -19,6 +19,7 @@ import { usePrettyPeriod } from '../../../periods/utils';
 
 import InputComponent from '../../../../components/forms/InputComponent';
 import TopBar from '../../../../components/nav/TopBarComponent';
+import ErrorPaperComponent from '../../../../components/papers/ErrorPaperComponent';
 import WidgetPaper from '../../../../components/papers/WidgetPaperComponent';
 import { InstanceLogDetail } from './InstanceLogDetail';
 
@@ -47,7 +48,7 @@ type Params = {
 
 type Props = {
     params: Params;
-    // router: Router;
+    router: Router;
 };
 
 const useStyles = makeStyles((theme: Theme) => ({
@@ -65,8 +66,11 @@ export const CompareInstanceLogs: FunctionComponent<Props> = ({
 }) => {
     const { instanceIds: instanceId } = params;
 
-    const { data: instanceLogsDropdown, isFetching: isFetchingInstanceLogs } =
-        useGetInstanceLogs(instanceId);
+    const {
+        data: instanceLogsDropdown,
+        isFetching: isFetchingInstanceLogs,
+        isError,
+    } = useGetInstanceLogs(instanceId);
 
     const { data: userInstanceLogDetail, isLoading } = useGetUserInstanceLog(
         params.logA,
@@ -84,9 +88,6 @@ export const CompareInstanceLogs: FunctionComponent<Props> = ({
     const prevPathname: string | undefined = useSelector(
         (state: State) => state.routerCustom.prevPathname,
     );
-    // FIXME ugly fix to the back arrow bug. Caused by redirecting in useEffect. using useSkipEffectOnMount breaks the feature, so this is a workaround
-    // eslint-disable-next-line no-unused-vars
-    const [previous, _setPrevious] = useState<string | undefined>(prevPathname);
 
     const [instanceLogInfos, setInstanceLogInfos] = useState({
         logA: {
@@ -177,6 +178,12 @@ export const CompareInstanceLogs: FunctionComponent<Props> = ({
             },
         });
     }, [instanceLogFields?.logA, instanceLogFields?.logB]);
+
+    if (isError) {
+        return (
+            <ErrorPaperComponent message={formatMessage(MESSAGES.errorLog)} />
+        );
+    }
 
     return (
         <>

@@ -25,7 +25,7 @@ const Icon = (
     />
 );
 
-const dragzoneStyle = theme => ({
+export const dragzoneStyle = theme => ({
     outlined: {
         border: `2px dashed ${theme.palette.mediumGray.main}`,
         height: '100px',

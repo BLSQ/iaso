@@ -27,7 +27,7 @@ import {
     useTranslatedErrors,
     useApiErrorValidation,
 } from '../../../../../../../hat/assets/js/apps/Iaso/libs/validation';
-import { FilesUpload } from '../../../../../../../hat/assets/js/apps/Iaso/components/FilesUpload';
+import { FilesUpload } from '../../../../../../../hat/assets/js/apps/Iaso/components/DragAndDrop/FilesUpload';
 
 type Props = {
     campaignId: string;

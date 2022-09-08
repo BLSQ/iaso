@@ -195,7 +195,7 @@ class OrgUnit(TreeModel):
     updated_at = models.DateTimeField(auto_now=True)
     creator = models.ForeignKey(User, null=True, blank=True, on_delete=models.SET_NULL)
 
-    objects: models.Manager = OrgUnitManager()
+    objects: OrgUnitManager()
 
     class Meta:
         indexes = [GistIndex(fields=["path"], buffering=True)]

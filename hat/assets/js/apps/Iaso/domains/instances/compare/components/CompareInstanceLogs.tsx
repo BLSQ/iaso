@@ -389,8 +389,9 @@ export const CompareInstanceLogs: FunctionComponent<Props> = ({
                                                     variant="body2"
                                                     color="inherit"
                                                 >
-                                                    {/* // TO DO : find how to get translation */}
-                                                    {info[0]}
+                                                    {formatMessage(
+                                                        MESSAGES[info[0]],
+                                                    )}
                                                 </Typography>
                                                 :
                                             </Grid>
@@ -405,7 +406,13 @@ export const CompareInstanceLogs: FunctionComponent<Props> = ({
                                                     variant="body2"
                                                     color="inherit"
                                                 >
-                                                    {info[1]}
+                                                    {info[0] === 'period' ? (
+                                                        <PrettyPeriod
+                                                            value={info[1]}
+                                                        />
+                                                    ) : (
+                                                        info[1]
+                                                    )}
                                                 </Typography>
                                             </Grid>
                                         </Grid>

@@ -1,9 +1,22 @@
 /* eslint-disable camelcase */
 import React, { FunctionComponent } from 'react';
-// @ts-ignore
-import { useSafeIntl, LoadingSpinner } from 'bluesquare-components';
+// @ts-ignore,
+import {
+    useSafeIntl,
+    LoadingSpinner,
+    commonStyles,
+} from 'bluesquare-components';
 
-import { Box } from '@material-ui/core';
+import {
+    Box,
+    Table,
+    TableHead,
+    TableBody,
+    TableRow,
+    TableCell,
+    makeStyles,
+    Theme,
+} from '@material-ui/core';
 
 import { useGetCampaignLogDetail } from '../../hooks/useGetCampaignHistory';
 
@@ -14,6 +27,10 @@ import MESSAGES from '../../constants/messages';
 type Props = {
     logId: string | undefined;
 };
+
+const useStyles = makeStyles((theme: Theme) => ({
+    ...commonStyles(theme),
+}));
 
 export const CampaignLogDetail: FunctionComponent<Props> = ({ logId }) => {
     const {
@@ -28,9 +45,11 @@ export const CampaignLogDetail: FunctionComponent<Props> = ({ logId }) => {
 
     const { formatMessage } = useSafeIntl();
 
+    const classes: Record<string, string> = useStyles();
+
     const getValue = (valueType, value) => {
         switch (valueType) {
-            // iterate inside rounds object and show keys/values
+            // iterate inside rounds object and show keys/values. Create a section "rounds" ? like in instance detail
             case 'object':
                 return 'TO DO';
 
@@ -60,21 +79,49 @@ export const CampaignLogDetail: FunctionComponent<Props> = ({ logId }) => {
     return (
         <>
             {campaignLogDetail && (
-                <Box pl={8}>
-                    {Object.entries(campaignLogDetail).map(([key, value]) => {
-                        if (value !== null) {
-                            return (
-                                <div key={key}>
-                                    <span style={{ marginRight: '8px' }}>
-                                        {key} :{' '}
-                                    </span>
+                <Table>
+                    <TableHead>
+                        <TableRow>
+                            <TableCell
+                                width={150}
+                                className={classes.tableCellHead}
+                            >
+                                {formatMessage(MESSAGES.key)}
+                            </TableCell>
+                            <TableCell
+                                width={150}
+                                className={classes.tableCellHead}
+                            >
+                                {formatMessage(MESSAGES.value)}
+                            </TableCell>
+                        </TableRow>
+                    </TableHead>
 
-                                    <span>{getValue(typeof value, value)}</span>
-                                </div>
-                            );
-                        }
-                    })}
-                </Box>
+                    <TableBody>
+                        {Object.entries(campaignLogDetail).map(
+                            ([key, value]) => {
+                                if (value !== null) {
+                                    return (
+                                        <TableRow key={key}>
+                                            <TableCell
+                                                width={150}
+                                                className={classes.tableCell}
+                                            >
+                                                {key}
+                                            </TableCell>
+                                            <TableCell
+                                                width={150}
+                                                className={classes.tableCell}
+                                            >
+                                                {getValue(typeof value, value)}
+                                            </TableCell>
+                                        </TableRow>
+                                    );
+                                }
+                            },
+                        )}
+                    </TableBody>
+                </Table>
             )}
         </>
     );

@@ -101,7 +101,7 @@ export const CampaignHistory: FunctionComponent<Props> = ({
     }, [campaignLogsDropdown, isFetchingCampaignLogsDropdown]);
 
     if (isError) {
-        return <ErrorPaperComponent message="Error" />;
+        return <ErrorPaperComponent message={formatMessage(MESSAGES.error)} />;
     }
 
     return (
@@ -120,7 +120,7 @@ export const CampaignHistory: FunctionComponent<Props> = ({
             <Box className={classes.containerFullHeightNoTabPadded}>
                 <Grid container spacing={4}>
                     <Grid xs={12} md={6} item>
-                        <Box p={6}>
+                        <Box pl={6}>
                             <InputComponent
                                 type="select"
                                 keyValue="logId"
@@ -134,7 +134,9 @@ export const CampaignHistory: FunctionComponent<Props> = ({
                     </Grid>
                     <Grid container spacing={4}>
                         <Grid xs={12} md={6} item>
-                            <CampaignLogDetail logId={params.logId} />
+                            <Box pl={6}>
+                                <CampaignLogDetail logId={params.logId} />
+                            </Box>
                         </Grid>
                     </Grid>
                 </Grid>

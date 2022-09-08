@@ -42,9 +42,8 @@ export const useStyles = makeStyles(theme => ({
         height: 18,
     },
     title: {
-        padding: theme.spacing(1, 2),
-        fontSize: 14,
-        fontWeight: 'bold',
+        minHeight: `${theme.spacing(6)}px !important`,
+        height: theme.spacing(6),
     },
     listItem: {
         paddingLeft: theme.spacing(2),
@@ -59,6 +58,7 @@ export const useStyles = makeStyles(theme => ({
         fontSize: 10,
         top: theme.spacing(2),
         right: theme.spacing(2),
+        margin: '0 !important',
     },
     mapLegendCampaignTitle: {
         fontSize: 14,
@@ -79,7 +79,10 @@ export const TilesSwitch: FunctionComponent<Props> = ({
     const { formatMessage } = useSafeIntl();
     return (
         <Accordion elevation={1} className={classes.mapLegend}>
-            <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+            <AccordionSummary
+                expandIcon={<ExpandMoreIcon />}
+                className={classes.title}
+            >
                 <Typography
                     variant="subtitle1"
                     className={classes.mapLegendCampaignTitle}
@@ -88,7 +91,7 @@ export const TilesSwitch: FunctionComponent<Props> = ({
                 </Typography>
             </AccordionSummary>
             <AccordionDetails className={classes.content}>
-                <Box display="block">
+                <Box display="block" width="100%">
                     <List className={classes.list}>
                         {Object.keys(tiles).map(key => {
                             const tile = tiles[key];

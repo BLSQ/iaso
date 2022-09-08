@@ -36,8 +36,9 @@ class EntityType(models.Model):
     # Link to the reference form that contains the core attribute/metadata specific to this entity type
     reference_form = models.ForeignKey(Form, blank=True, null=True, on_delete=models.PROTECT)
     account = models.ForeignKey(Account, on_delete=models.PROTECT, blank=True, null=True)
-    # List of field we will show for this entity in list and detail view.
+    # Fields (subset of the fields from the reference form) that will be shown in the UI - entity list view
     fields_list_view = ArrayField(CITextField(max_length=255, blank=True), size=100, null=True, blank=True)
+    # Fields (subset of the fields from the reference form) that will be shown in the UI - entity detail view
     fields_detail_info_view = ArrayField(CITextField(max_length=255, blank=True), size=100, null=True, blank=True)
 
     class Meta:

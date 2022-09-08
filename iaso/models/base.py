@@ -13,6 +13,7 @@ from django.contrib.gis.geos import Point
 from django.contrib.postgres.aggregates import ArrayAgg
 from django.contrib.postgres.fields import ArrayField
 from django.core.paginator import Paginator
+from django.core.validators import MinLengthValidator
 from django.db import models
 from django.db.models import Q
 from django.shortcuts import get_object_or_404
@@ -92,7 +93,7 @@ class AccountFeatureFlag(models.Model):
 class Account(models.Model):
     """Account represent a tenant (=roughly a client organisation or a country)"""
 
-    name = models.TextField(null=True, blank=True)
+    name = models.TextField(unique=True, validators=[MinLengthValidator(1)])
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     users = models.ManyToManyField(User, blank=True)

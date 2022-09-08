@@ -45,6 +45,10 @@ const MESSAGES = defineMessages({
         id: 'iaso.instance.error',
         defaultMessage: 'Cannot find a submission with this Id',
     },
+    errorLog: {
+        id: 'iaso.instance.logs.error',
+        defaultMessage: 'Cannot find log with this Id',
+    },
     last_modified_by: {
         id: 'iaso.instance.last_modified_by',
         defaultMessage: 'Modified by',

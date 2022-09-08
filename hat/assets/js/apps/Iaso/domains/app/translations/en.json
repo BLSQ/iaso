@@ -260,6 +260,7 @@
     "iaso.instance.lockTopOrgUnitLabel": "Top org unit",
     "iaso.instance.logs": "Compare all versions",
     "iaso.instance.logs.date": "Date of submission",
+    "iaso.instance.logs.error": "Cannot find log with this Id",
     "iaso.instance.logs.versionA": "Version A",
     "iaso.instance.logs.versionB": "Version B",
     "iaso.instance.missingFile": "Cannot find an instance with a file",

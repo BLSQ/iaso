@@ -258,6 +258,7 @@
     "iaso.instance.lockTopOrgUnitLabel": "Unité d'org. de haut niveau ",
     "iaso.instance.logs": "Comparer les versions",
     "iaso.instance.logs.date": "Date de la soumission",
+    "iaso.instance.logs.error": "Aucun log de cette soumission n'a été trouvé",
     "iaso.instance.logs.versionA": "Version A",
     "iaso.instance.logs.versionB": "Version B",
     "iaso.instance.missingFile": "Aucun fichier trouvé",

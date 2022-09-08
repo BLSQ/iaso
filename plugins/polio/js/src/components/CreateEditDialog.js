@@ -1,7 +1,11 @@
 /* eslint-disable react/jsx-props-no-spreading */
 /* eslint-disable camelcase */
+<<<<<<< HEAD
 import React, { useEffect, useState, useMemo } from 'react';
 import { Link } from 'react-router';
+=======
+import React, { useEffect, useState } from 'react';
+>>>>>>> c96b3d4c2 (ui improvements + remove unused import)
 import PropTypes from 'prop-types';
 import isEqual from 'lodash/isEqual';
 
@@ -187,37 +191,30 @@ const CreateEditDialog = ({
 
             <Grid container>
                 <Grid item xs={12} md={6}>
-                    <DialogTitle className={classes.title}>
-                        {selectedCampaign?.id
-                            ? formatMessage(MESSAGES.editCampaign)
-                            : formatMessage(MESSAGES.createCampaign)}
-                    </DialogTitle>
+                    <Box pr={4} justifyContent="center" alignContent="center">
+                        <DialogTitle className={classes.title}>
+                            {selectedCampaign?.id
+                                ? formatMessage(MESSAGES.editCampaign)
+                                : formatMessage(MESSAGES.createCampaign)}
+                        </DialogTitle>
+                    </Box>
                 </Grid>
 
                 {selectedCampaign && (
-                    <Grid item xs={12} md={6}>
-                        <Box pr={4} className={classes.historyLink}>
+                    <Grid item xs={12} md={6} className={classes.historyLink}>
+                        <Box pr={4} alignItems="center">
                             <IconButtonComponent
                                 url={`${CAMPAIGN_HISTORY_URL}/campaignId/${selectedCampaign?.id}`}
                                 icon="history"
                                 tooltipMessage={MESSAGES.campaignHistory}
+                                classes={{
+                                    linkButton: classes.linkButton,
+                                }}
                             />
                         </Box>
                     </Grid>
                 )}
             </Grid>
-
-            {/* {selectedCampaign && (
-                <Box pl={4}>
-                    <Typography variant="body1" color="inherit">
-                        <Link
-                            to={`${CAMPAIGN_HISTORY_URL}/campaignId/${selectedCampaign?.id}`}
-                        >
-                            {formatMessage(MESSAGES.campaignHistory)}
-                        </Link>
-                    </Typography>
-                </Box>
-            )} */}
 
             <DialogContent className={classes.content}>
                 <Tabs

@@ -12,6 +12,7 @@ import {
 import { useSelector } from 'react-redux';
 import TopBar from 'Iaso/components/nav/TopBarComponent';
 import domToPdf from 'dom-to-pdf';
+import { collapseTextChangeRangesAcrossMultipleVersions } from 'typescript';
 import { CampaignsCalendar } from '../components/campaignCalendar';
 import { getCampaignColor } from '../constants/campaignsColors';
 import { CalendarMap } from '../components/campaignCalendar/map/CalendarMap';
@@ -20,8 +21,6 @@ import {
     filterCampaigns,
     getCalendarData,
 } from '../components/campaignCalendar/utils';
-
-import { useGetMergedCampaignShapes } from '../hooks/useGetMergedCampaignShapes.ts';
 
 import {
     dateFormat,
@@ -95,8 +94,6 @@ const Calendar = ({ params }) => {
         [mappedCampaigns, calendarData.firstMonday, calendarData.lastSunday],
     );
 
-    const { data: mergedShapes } = useGetMergedCampaignShapes().query;
-
     const createPDF = async () => {
         const element = document.getElementById('pdf');
         const options = {
@@ -119,10 +116,10 @@ const Calendar = ({ params }) => {
     };
 
     useEffect(() => {
-        if (mergedShapes !== undefined && filteredCampaigns) {
+        if (campaigns.length > 0) {
             setCalendarAndMapLoaded(true);
         }
-    }, [mergedShapes, filteredCampaigns]);
+    }, [campaigns]);
 
     return (
         <div>

@@ -1551,7 +1551,15 @@ const MESSAGES = defineMessages({
     },
     error: {
         id: 'iaso.polio.campaign.campaignHistory.error',
-        defaultMessage: 'Error',
+        defaultMessage: 'Can not find an history with this campaign or log id',
+    },
+    key: {
+        id: 'iaso.polio.campaign.key',
+        defaultMessage: 'Key',
+    },
+    value: {
+        id: 'iaso.polio.campaign.value',
+        defaultMessage: 'Value',
     },
 });
 

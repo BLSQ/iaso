@@ -329,6 +329,7 @@ class EntityViewSet(ModelViewSet):
                 result_list.append(result)
         else:
             for entity in entities:
+                etype_fields = entity.entity_type.fields_detail_info_view
                 entity_serialized = EntitySerializer(entity, many=False)
                 file_content = entity_serialized.data.get("attributes").get("file_content")
                 form_version = EntityType.objects.get(pk=entity_type_id).reference_form.latest_version
@@ -339,7 +340,9 @@ class EntityViewSet(ModelViewSet):
                 descriptor_list = form_descriptor[form_data_key]
 
                 is_list = True
+                previous_name = None
 
+                # Get columns from xlsform file content
                 for d in descriptor_list:
                     for k, v in d.items():
                         data_list = v
@@ -348,9 +351,17 @@ class EntityViewSet(ModelViewSet):
                                 for data in data_list:
                                     value_dict = {}
                                     for _k, _v in data.items():
-                                        if _k == "name" or _k == "label":
+                                        if (
+                                            _k == "name"
+                                            and _v in etype_fields
+                                            or _k == "label"
+                                            and previous_name is not None
+                                            or _k == "type"
+                                            and previous_name is not None
+                                        ):
                                             value_dict[_k] = _v
                                             is_list = False
+                                            previous_name = _v
                                         key_index = sorted(data.keys()).index(_k)
                                         if key_index < len(sorted(data.keys())) - 1:
                                             if sorted(data.keys())[key_index + 1] == "children":
@@ -361,16 +372,21 @@ class EntityViewSet(ModelViewSet):
                                             is_list = True
                                     columns_list.append(value_dict)
                 result = {}
+                result["id"] = entity.pk
+                result["uuid"] = entity.uuid
+                result["entity_type_name"] = entity.entity_type.name
+                result["created_at"] = entity.created_at
+                result["updated_at"] = entity.updated_at
+                # Get data from xlsform
                 for k, v in file_content.items():
                     if k in list(entity.entity_type.fields_list_view):
                         result[k] = v
                 result_list.append(result)
-            columns_list = [i for n, i in enumerate(columns_list) if i not in columns_list[n + 1 :]]
 
-            # remove dictionaries with "name" as only key
-            for col in columns_list:
-                if len(col) != 2:
-                    columns_list.remove(col)
+            # remove false doubles entries
+            columns_list = [i for n, i in enumerate(columns_list) if i not in columns_list[n + 1 :]]
+            # remove dictionaries with "name or label" as only key
+            columns_list = [c for c in columns_list if len(c) > 2]
 
         if limit:
             limit = int(limit)

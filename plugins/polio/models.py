@@ -1,3 +1,4 @@
+import pathlib
 from uuid import uuid4
 
 from django.contrib.auth.models import User
@@ -8,6 +9,7 @@ from gspread.utils import extract_id_from_url
 
 from iaso.models import Group, OrgUnit
 from iaso.models.microplanning import Team
+from iaso.utils import slugify_underscore
 from iaso.utils.models.soft_deletable import SoftDeletableModel
 from plugins.polio.preparedness.parser import open_sheet_by_url, surge_indicator_for_country
 
@@ -143,6 +145,13 @@ class Round(models.Model):
         return getattr(self, key)
 
 
+def _campaign_template_form_upload_to(instance: "Campaign", filename: str) -> str:
+    path = pathlib.Path(filename)
+    underscored_form_name = slugify_underscore(instance.obr_name)
+
+    return f"forms/{underscored_form_name}_{instance.id}{path.suffix}"
+
+
 class Campaign(SoftDeletableModel):
     class Meta:
         ordering = ["obr_name"]
@@ -157,6 +166,7 @@ class Campaign(SoftDeletableModel):
     initial_org_unit = models.ForeignKey(
         "iaso.orgunit", null=True, blank=True, on_delete=models.SET_NULL, related_name="campaigns"
     )
+    form_template = models.FileField(upload_to=_campaign_template_form_upload_to, null=True, blank=True)
 
     country = models.ForeignKey(
         "iaso.orgunit",

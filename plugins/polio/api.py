@@ -26,6 +26,7 @@ from django.utils.timezone import now, make_aware
 from django_filters.rest_framework import DjangoFilterBackend
 from django.template.loader import render_to_string
 from gspread.utils import extract_id_from_url
+
 from hat.settings import DEFAULT_FROM_EMAIL
 from rest_framework import routers, filters, viewsets, serializers, permissions, status
 from rest_framework.decorators import action
@@ -455,6 +456,20 @@ where group_id = polio_roundscope.group_id""",
         cache.set(key_name, json.dumps(res), 3600 * 24, version=CACHE_VERSION)
         return JsonResponse(res)
 
+    @action(methods=["GET", "POST"], detail=False)
+    def generate_xlsform(self, request):
+        campaign_id = request.query_params("campaign_id", None)
+        campaign = get_object_or_404(Campaign, id=campaign_id)
+        campaign_scope = get_object_or_404(CampaignScope, campaign=campaign)
+
+        # path = campaign.form_template.path
+        # wb_obj = openpyxl.load(path)
+        # sheet_obj = wb_obj.active
+        # row = sheet_obj.max_row
+        # column = sheet_obj.max_column
+        #
+        # print("Total Rows:", row)
+        # print("Total Columns:", column)
 
 class CountryUsersGroupViewSet(ModelViewSet):
     serializer_class = CountryUsersGroupSerializer

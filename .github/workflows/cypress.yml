@@ -124,25 +124,26 @@ jobs:
       #     token: ${{ secrets.GITHUB_TOKEN }}
       #     reaction: 'hooray'
 
-      # - name: Comment PR with failure
-      #   uses: actions/github-script@v6
-      #   if: failure()
-      #   with:
-      #     github-token: ${{ secrets.GITHUB_TOKEN }}
-      #     script: |
-      #       const { issue: { number: issue_number }, repo: { owner, repo }  } = context;
-      #       github.rest.issues.createComment({
-      #         issue_number,
-      #         owner,
-      #         repo,
-      #         body: 'Test failed: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}'
-      #       });  
-      # after the test run completes
-      # store videos and any screenshots
-      # NOTE: screenshots will be generated only if E2E test failed
-      # thus we store screenshots only on failures
-      # Alternative: create and commit an empty cypress/screenshots folder
-      # to always have something to upload
+      - name: Comment PR with failure
+        # uses: actions/github-script@v6
+        uses: quipper/comment-failure-action@v0.1.1
+        if: failure()
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const { issue: { number: issue_number }, repo: { owner, repo }  } = context;
+            github.rest.issues.createComment({
+              issue_number,
+              owner,
+              repo,
+              body: 'Test failed: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}'
+            });  
+      after the test run completes
+      store videos and any screenshots
+      NOTE: screenshots will be generated only if E2E test failed
+      thus we store screenshots only on failures
+      Alternative: create and commit an empty cypress/screenshots folder
+      to always have something to upload
       - uses: actions/upload-artifact@v2
         if: failure()
         with:

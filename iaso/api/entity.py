@@ -111,10 +111,10 @@ def export_entity_as_xlsx(entities):
         row += 1
         for k, v in res["entity"].items():
             try:
-                fields_list = entity.entity_type.fields_detail_info_view
+                fields_list = entity.entity_type.fields_list_view
             except TypeError:
                 raise serializers.ValidationError(
-                    {"error": "You must provide a field details view list in order to export the entities."}
+                    {"error": "You must provide a field view list in order to export the entities."}
                 )
             if fields_list is not None:
                 if k in fields_list or k == "attributes":
@@ -148,15 +148,15 @@ def export_entity_as_csv(entities):
         benef_data = []
         for k, v in res["entity"].items():
             try:
-                fields_list = entity.entity_type.fields_detail_info_view
+                fields_list = entity.entity_type.fields_list_view
                 for f in fields_list:
                     if f is None:
                         raise serializers.ValidationError(
-                            {"error": "You must provide a field details view list in order to export the entities."}
+                            {"error": "You must provide a field view list in order to export the entities."}
                         )
             except TypeError:
                 raise serializers.ValidationError(
-                    {"error": "You must provide a field details view list in order to export the entities."}
+                    {"error": "You must provide a field view list in order to export the entities."}
                 )
             if k in fields_list or k == "attributes":
                 if k == "attributes":
@@ -329,7 +329,7 @@ class EntityViewSet(ModelViewSet):
                 result_list.append(result)
         else:
             for entity in entities:
-                etype_fields = entity.entity_type.fields_detail_info_view
+                etype_fields = entity.entity_type.fields_list_view
                 entity_serialized = EntitySerializer(entity, many=False)
                 file_content = entity_serialized.data.get("attributes").get("file_content")
                 form_version = EntityType.objects.get(pk=entity_type_id).reference_form.latest_version

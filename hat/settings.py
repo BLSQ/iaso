@@ -307,17 +307,18 @@ REST_FRAMEWORK = {
 
 SIMPLE_JWT = {"ACCESS_TOKEN_LIFETIME": timedelta(days=3650), "REFRESH_TOKEN_LIFETIME": timedelta(days=3651)}
 
-AWS_S3_REGION_NAME = "eu-central-1"
+AWS_S3_REGION_NAME = os.getenv("AWS_S3_REGION_NAME", "eu-central-1")
 AWS_ACCESS_KEY_ID = os.getenv("AWS_ACCESS_KEY_ID")
 AWS_SECRET_ACCESS_KEY = os.getenv("AWS_SECRET_ACCESS_KEY")
 
 if USE_S3:
+    # https://django-storages.readthedocs.io/en/latest/backends/amazon-S3.html
     AWS_S3_OBJECT_PARAMETERS = {"CacheControl": "max-age=86400"}
     AWS_IS_GZIPPED = True
     AWS_S3_FILE_OVERWRITE = False
     S3_USE_SIGV4 = True
     AWS_S3_SIGNATURE_VERSION = "s3v4"
-    AWS_S3_HOST = "s3.eu-central-1.amazonaws.com"
+    AWS_S3_HOST = "s3.%s.amazonaws.com" % AWS_S3_REGION_NAME
     AWS_DEFAULT_ACL = None
 
     # s3 static settings

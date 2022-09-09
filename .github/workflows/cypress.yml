@@ -125,9 +125,7 @@ jobs:
       #     reaction: 'hooray'
 
       - name: Comment PR with failure
-        # uses: actions/github-script@v6
         uses: quipper/comment-failure-action@v0.1.1
-        if: failure()
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |

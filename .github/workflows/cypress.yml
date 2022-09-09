@@ -44,8 +44,6 @@ jobs:
           cache-from: type=registry,ref=ghcr.io/blsq/iaso:buildcache
           cache-to: type=registry,ref=ghcr.io/blsq/iaso:buildcache,mode=max
   test_cypress:
-    name: PR commented
-    if: github.event.issue.pull_request && contains(github.event.comment.body, '@cypress') == true
     runs-on: ubuntu-latest
     needs: build-and-push-image
     strategy:

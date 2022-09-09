@@ -6,9 +6,8 @@ from django.db import migrations
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('iaso', '0163_merge_20220902_1037'),
-        ('iaso', '0164_alter_instancelock_options'),
+        ("iaso", "0163_merge_20220902_1037"),
+        ("iaso", "0164_alter_instancelock_options"),
     ]
 
-    operations = [
-    ]
+    operations = []

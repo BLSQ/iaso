@@ -23,7 +23,6 @@ RUN npm ci
 
 COPY hat/ /opt/app/hat/
 COPY plugins/ /opt/app/plugins
-COPY plugins/ /opt/app/plugins
 COPY tsconfig.json /opt/app/tsconfig.json
 COPY babel-register.js /opt/app/babel-register.js
 

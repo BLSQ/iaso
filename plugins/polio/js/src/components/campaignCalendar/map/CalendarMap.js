@@ -114,9 +114,11 @@ const CalendarMap = ({ campaigns, loadingCampaigns, isPdf }) => {
             <Map
                 zoomSnap={0.25}
                 ref={map}
-                style={{ height: !isPdf ? '72vh' : '1000px' }}
-                center={defaultViewport.center}
-                zoom={defaultViewport.zoom}
+                style={{
+                    height: !isPdf ? '72vh' : '800px',
+                }}
+                center={viewport.center}
+                zoom={viewport.zoom}
                 scrollWheelZoom={false}
                 onViewportChanged={v => setViewPort(v)}
             >

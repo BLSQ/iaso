@@ -5,20 +5,13 @@ import { IconButton as IconButtonComponent } from 'bluesquare-components';
 
 import { IntlMessage } from '../../types/intl';
 
-// type Props = {
-// button: FunctionComponent<unknown & { onClick: () => void }>;
-// modal: FunctionComponent<
-//     unknown & { open: boolean; closeDialog: () => void }
-// >;
-// };
-
-type ModalComponentProps = { closeDialog: () => void; open: boolean };
+type ModalComponentProps = { closeDialog: () => void; isOpen: boolean };
 
 type FullModalProps<T extends ModalComponentProps> = {
     icon?: string;
     overrideIcon?: string;
     tooltipMessage: IntlMessage;
-} & Omit<T, 'closeDialog' | 'open'>;
+} & Omit<T, 'closeDialog' | 'isOpen'>;
 
 export const makeFullModal =
     <T extends ModalComponentProps>(
@@ -39,7 +32,7 @@ export const makeFullModal =
                     <ModalComponent
                         {...(modalProps as unknown as T)}
                         closeDialog={() => setOpenModal(false)}
-                        open={openModal}
+                        isOpen={openModal}
                     />
                 )}
             </>

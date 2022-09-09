@@ -4,7 +4,7 @@ import React, { FunctionComponent, useMemo, useState } from 'react';
 import { useFormik, FormikProvider } from 'formik';
 import { isEqual } from 'lodash';
 // @ts-ignore
-import { useSafeIntl } from 'bluesquare-components';
+import { useSafeIntl, useSkipEffectOnMount } from 'bluesquare-components';
 import { Box, Divider, Typography } from '@material-ui/core';
 import { ConfirmCancelModal } from '../../../../../../../hat/assets/js/apps/Iaso/components/DragAndDrop/ConfirmCancelModal';
 // import ConfirmCancelDialogComponent from '../../../../../../../hat/assets/js/apps/Iaso/components/dialogs/ConfirmCancelDialogComponent';
@@ -28,10 +28,16 @@ import {
     useTranslatedErrors,
     useApiErrorValidation,
 } from '../../../../../../../hat/assets/js/apps/Iaso/libs/validation';
-import { FilesUpload } from '../../../../../../../hat/assets/js/apps/Iaso/components/DragAndDrop/FilesUpload';
+// import { FilesUpload } from '../../../../../../../hat/assets/js/apps/Iaso/components/DragAndDrop/FilesUpload';
+
+import {
+    makeModalWithDnDField,
+    UsableDropzoneState,
+} from '../../../../../../../hat/assets/js/apps/Iaso/components/DragAndDrop/ModalWithDnDField';
+import { FilesUploadnoState } from '../../../../../../../hat/assets/js/apps/Iaso/components/DragAndDrop/FilesUploadNoState';
 import { makeFullModal } from '../../../../../../../hat/assets/js/apps/Iaso/components/DragAndDrop/ModalWithButton';
 
-type Props = {
+type Props = UsableDropzoneState & {
     campaignId: string;
     type?: 'create' | 'edit' | 'retry';
     budgetEvent?: any;
@@ -39,6 +45,8 @@ type Props = {
     isOpen: boolean;
     id?: string;
     isMobileLayout?: boolean;
+    // TODO use exporetd type when available
+    selectedFiles: File[];
 };
 
 const TestNewModal: FunctionComponent<Props> = ({
@@ -48,6 +56,8 @@ const TestNewModal: FunctionComponent<Props> = ({
     closeDialog,
     isOpen,
     id,
+    selectedFiles,
+    open: openFileSelection,
 }) => {
     const { data: teamsDropdown, isFetching: isFetchingTeams } =
         useGetTeamsDropDown();
@@ -187,6 +197,11 @@ const TestNewModal: FunctionComponent<Props> = ({
         [formatMessage, user, approvalTeams],
     );
 
+    useSkipEffectOnMount(() => {
+        setFieldTouched('files', true);
+        setFieldValue('files', selectedFiles);
+    }, [selectedFiles]);
+
     return (
         <FormikProvider value={formik}>
             <ConfirmCancelModal
@@ -281,12 +296,16 @@ const TestNewModal: FunctionComponent<Props> = ({
                                     errors={getErrors('files')}
                                     label={MESSAGES.filesUpload}
                                 /> */}
-                            <FilesUpload
+                            {/* <FilesUpload
                                 files={values.files ?? []}
                                 onFilesSelect={files => {
                                     setFieldTouched('files', true);
                                     setFieldValue('files', files);
                                 }}
+                            /> */}
+                            <FilesUploadnoState
+                                files={values.files ?? []}
+                                onClick={openFileSelection}
                             />
                         </Box>
                         {(currentType === 'create' ||
@@ -343,5 +362,8 @@ const TestNewModal: FunctionComponent<Props> = ({
 };
 
 const modalWithButton = makeFullModal(TestNewModal);
+// FIXME: mixing 2 layers of generics seems to confuse typescript
+// @ts-ignore
+const modalWithDnd = makeModalWithDnDField(modalWithButton);
 
-export { modalWithButton as TestNewModal };
+export { modalWithDnd as TestNewModalWithDnD };

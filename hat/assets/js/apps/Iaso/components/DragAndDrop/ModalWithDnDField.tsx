@@ -1,11 +1,13 @@
 /* eslint-disable react/jsx-props-no-spreading */
+import React, { ComponentType, FunctionComponent, useState } from 'react';
 import { makeStyles } from '@material-ui/styles';
-import React, { FunctionComponent, ReactNode, useState } from 'react';
-import { useDropzone } from 'react-dropzone';
-import {
-    ConfirmCancelModal,
-    ConfirmCancelModalProps,
-} from './ConfirmCancelModal';
+import { DropzoneOptions, DropzoneState, useDropzone } from 'react-dropzone';
+// @ts-ignore
+// import { IconButton as IconButtonComponent } from 'bluesquare-components';
+// import {
+//     ConfirmCancelModal,
+//     ConfirmCancelModalProps,
+// } from './ConfirmCancelModal';
 
 const styles = theme => ({
     cssGridContainer: {
@@ -16,8 +18,9 @@ const styles = theme => ({
         gridColumn: 1,
         gridRow: 1,
     },
+    test: { border: '2px solid red', backgroundColor: 'red', zIndex: 9999 },
     visible: { visibility: 'visible' },
-    hidden: { visibilioty: 'hidden' },
+    hidden: { visibility: 'hidden' },
     outlined: {
         border: `2px dashed ${theme.palette.mediumGray.main}`,
         backgroundColor: theme.palette.ligthGray.main,
@@ -29,78 +32,70 @@ const styles = theme => ({
 // @ts-ignore
 const useStyles = makeStyles(styles);
 
-type Props = ConfirmCancelModalProps & {
-    children: ReactNode;
+type Props<T extends ComponentProps> = T & {
     multi?: boolean; // eslint-disable-next-line no-unused-vars
-    onFilesSelect: (files: File[]) => void;
 };
 
-export const ModalWithDnDField: FunctionComponent<Props> = ({
-    open = false,
-    maxWidth = 'sm',
-    onClose,
-    id,
-    dataTestId,
-    titleMessage,
-    children,
-    closeDialog: closeDialogProp,
-    allowConfirm = true,
-    onConfirm,
-    confirmMessage,
-    onCancel,
-    cancelMessage,
-    additionalButton = false,
-    additionalMessage,
-    onAdditionalButtonClick,
-    allowConfirmAdditionalButton = true,
-    multi = true,
-    onFilesSelect,
-}) => {
-    const classes = useStyles();
-    const [showDropZone, setShowDropzone] = useState<boolean>(false);
-    const showChildren = showDropZone ? classes.hidden : classes.visible;
-    const showOverlay = showDropZone ? classes.visible : classes.hidden;
-    const { getRootProps, getInputProps } = useDropzone({
-        onDrop: onFilesSelect,
-        multiple: multi,
-        onDragLeave: () => {
-            setShowDropzone(false);
-        },
-        onDragEnter: () => {
-            setShowDropzone(true);
-        },
-        onDropAccepted: () => {
-            setShowDropzone(false);
-        },
-    });
-    return (
-        <div {...getRootProps()}>
-            <input {...getInputProps()} />
-            <ConfirmCancelModal
-                open={open}
-                maxWidth={maxWidth}
-                onClose={onClose}
-                id={id}
-                dataTestId={dataTestId}
-                titleMessage={titleMessage}
-                closeDialog={closeDialogProp}
-                allowConfirm={allowConfirm}
-                onConfirm={onConfirm}
-                confirmMessage={confirmMessage}
-                onCancel={onCancel}
-                cancelMessage={cancelMessage}
-                additionalButton={additionalButton}
-                additionalMessage={additionalMessage}
-                onAdditionalButtonClick={onAdditionalButtonClick}
-                allowConfirmAdditionalButton={allowConfirmAdditionalButton}
-            >
+export type UsableDropzoneState = Omit<
+    DropzoneState,
+    'getRootProps' | 'getInputProps'
+>;
+
+// TODO rename and export
+type ComponentProps = UsableDropzoneState & {
+    selectedFiles: File[];
+};
+
+export const makeModalWithDnDField =
+    <T extends ComponentProps>(
+        Component: ComponentType<T>,
+    ): FunctionComponent<Props<T>> =>
+    (props: Props<T>) => {
+        const { multi = true, ...rest } = props;
+        const classes = useStyles();
+        const [showDropZone, setShowDropzone] = useState<boolean>(false);
+        const [selectedFiles, setSelectedFiles] = useState<File | File[]>([]);
+        const { getRootProps, getInputProps, ...dropZoneProps } = useDropzone({
+            // onDrop: onFilesSelect,
+            noClick: true,
+            autoFocus: false,
+            onDrop: (files: File[]) => {
+                setSelectedFiles(files);
+            },
+            multiple: multi,
+            onDragLeave: () => {
+                setShowDropzone(false);
+            },
+            onDragEnter: () => {
+                setShowDropzone(true);
+            },
+            onDropAccepted: () => {
+                setShowDropzone(false);
+            },
+            onDragOver: () => {
+                setShowDropzone(true);
+            },
+        });
+        console.log('showDropZone', showDropZone);
+        const showChildren = showDropZone ? classes.hidden : classes.visible;
+        const showOverlay = showDropZone ? classes.visible : classes.hidden;
+        return (
+            <div {...getRootProps()}>
+                <input {...getInputProps()} />
                 <div className={classes.cssGridContainer}>
                     <div className={`${classes.layer} ${showChildren}`}>
-                        {children}
+                        <Component
+                            {...({
+                                ...rest,
+                                ...dropZoneProps,
+                                selectedFiles,
+                            } as unknown as T)}
+                        />
                     </div>
-                    <div className={`${classes.layer}r ${showOverlay}`} />
+                    <div
+                        className={`${classes.layer} ${showOverlay} ${classes.test}`}
+                    />
                 </div>
-            </ConfirmCancelModal>
-        </div>
-    );
-};
+            </div>
+        );
+    };

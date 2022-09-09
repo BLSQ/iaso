@@ -34,6 +34,7 @@ import { convertObjectToString } from '../../../utils';
 import { formatThousand } from '../../../../../../../hat/assets/js/apps/Iaso/utils';
 import { formatComment } from '../cards/utils';
 import { TestNewModal } from '../CreateEditBudgetEvent/TestNewModal';
+import { TestNewModalWithDnD } from '../CreateEditBudgetEvent/TestModalWithDnD';
 
 const baseUrl = BUDGET_DETAILS;
 
@@ -138,7 +139,6 @@ export const useBudgetDetailsColumns = ({ profiles, data }): Column[] => {
     const showInternalColumn = Boolean(
         data?.find(details => details.internal === true),
     );
-    const [openModal, setOpenModal] = useState<boolean>(false);
     return useMemo(() => {
         const defaultColumns = [
             {
@@ -291,19 +291,19 @@ export const useBudgetDetailsColumns = ({ profiles, data }): Column[] => {
                         .join(', ');
                     return (
                         <section>
-                            <IconButtonComponent
+                            {/* <IconButtonComponent
                                 onClick={() => setOpenModal(true)}
                                 icon="edit"
                                 tooltipMessage={MESSAGES.deleteBudgetEvent}
                             />
-                            {openModal && (
-                                <TestNewModal
-                                    campaignId=""
-                                    closeDialog={() => setOpenModal(false)}
-                                    open={openModal}
-                                    id={settings.row.original.id}
-                                />
-                            )}
+                            {openModal && ( */}
+                            <TestNewModalWithDnD
+                                campaignId=""
+                                id={settings.row.original.id}
+                                icon="edit"
+                                tooltipMessage={MESSAGES.Farm}
+                            />
+                            {/* )} */}
                             {/* <BudgetFilesModal
                                 eventId={settings.row.original.id}
                                 note={settings.row.original.comment}

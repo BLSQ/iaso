@@ -23,11 +23,7 @@ from iaso.utils.models.soft_deletable import SoftDeletableModel
 
 
 class EntityType(models.Model):
-    """an Entity Type represents a type of person or object to which we want to attach multiple form submissions to be
-    able to track said submissions in time and across OrgUnits
-
-    Its reference form list core attributes/metadata about the entity type (in case it refers to a person: name,
-    age, ...)
+    """Its `reference_form` describes the core attributes/metadata about the entity type (in case it refers to a person: name, age, ...)
     """
 
     name = models.CharField(max_length=255)  # Example: "Child under 5"

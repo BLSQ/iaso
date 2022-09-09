@@ -30,7 +30,11 @@ export const BudgetDetailsFilters: FunctionComponent<Props> = ({
     buttonSize = 'medium',
 }) => {
     const { filters, handleSearch, handleChange, filtersUpdated } =
-        useFilterState(BUDGET_DETAILS, params);
+        useFilterState({
+            baseUrl: BUDGET_DETAILS,
+            params,
+            saveSearchInHistory: false,
+        });
     const { data: teams, isFetching } = useGetTeamsDropDown();
     const eventList = useAllEventsOption();
     const theme = useTheme();

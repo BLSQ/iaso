@@ -27,7 +27,7 @@ const statusOptions = (formatMessage: IntlFormatMessage) => {
 const baseUrl = baseUrls.planning;
 export const PlanningFilters: FunctionComponent<Props> = ({ params }) => {
     const { filters, handleSearch, handleChange, filtersUpdated } =
-        useFilterState(baseUrl, params);
+        useFilterState({ baseUrl, params });
     const { formatMessage } = useSafeIntl();
     return (
         <>

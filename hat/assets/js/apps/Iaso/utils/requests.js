@@ -6,7 +6,7 @@ import {
     putRequest,
     restoreRequest,
 } from 'Iaso/libs/Api';
-import { useSnackQuery } from 'Iaso/libs/apiHooks';
+import { useSnackQuery } from 'Iaso/libs/apiHooks.ts';
 import { enqueueSnackbar } from '../redux/snackBarsReducer';
 import { errorSnackBar, succesfullSnackBar } from '../constants/snackBars';
 import { dispatch as storeDispatch } from '../redux/store';
@@ -406,3 +406,29 @@ const dispatchSaveOrgUnit = dispatch => orgUnit =>
         });
 
 export const saveOrgUnitWithDispatch = dispatchSaveOrgUnit(storeDispatch);
+
+const dispatchSaveInstance = dispatch => instance =>
+    patchRequest(`/api/instances/${instance.id}/`, instance)
+        .then(savedInstance => {
+            dispatch(enqueueSnackbar(succesfullSnackBar()));
+            return savedInstance;
+        })
+        .catch(error => {
+            dispatch(enqueueSnackbar(errorSnackBar(null, null, error)));
+            console.error('Error while saving instance:', error);
+        });
+
+export const saveInstanceWithDispatch = dispatchSaveInstance(storeDispatch);
+
+const lockInstance = dispatch => instance =>
+    postRequest(`/api/instances/${instance.id}/add_lock/`)
+        .then(savedInstance => {
+            dispatch(enqueueSnackbar(succesfullSnackBar()));
+            return savedInstance;
+        })
+        .catch(error => {
+            dispatch(enqueueSnackbar(errorSnackBar(null, null, error)));
+            console.error('Error while saving instance:', error);
+        });
+
+export const lockInstanceWithDispatch = lockInstance(storeDispatch);

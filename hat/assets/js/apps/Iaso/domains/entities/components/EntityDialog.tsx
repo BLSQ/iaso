@@ -11,7 +11,7 @@ import isEqual from 'lodash/isEqual';
 
 import InputComponent from '../../../components/forms/InputComponent';
 import ConfirmCancelDialogComponent from '../../../components/dialogs/ConfirmCancelDialogComponent';
-import { useGetTypes } from '../entityTypes/hooks/requests';
+import { useGetTypes } from '../entityTypes/hooks/requests/entitiyTypes';
 
 import { Entity } from '../types/entity';
 

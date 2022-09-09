@@ -30,7 +30,11 @@ export const AssignmentsMapSelectors: FunctionComponent<Props> = ({
     orgunitTypes,
     isFetchingOrgUnitTypes,
 }) => {
-    const { filters, handleChange } = useFilterState(baseUrl, params, false);
+    const { filters, handleChange } = useFilterState({
+        baseUrl,
+        params,
+        withPagination: false,
+    });
     const dispatch = useDispatch();
     const { formatMessage } = useSafeIntl();
 

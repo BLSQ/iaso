@@ -3,12 +3,12 @@
 The entity concept might feel a bit abstract, so it might be useful to reason about them using a concrete example
 (beneficiaries):
 
-- Entities are used to track beneficiaries (=people who will benefit from the help provided by an organization). Those
+- Entities are used to track beneficiaries (=people who will benefit from the help an organization provides). Those
 beneficiaries can be of different types (E.g.: Children under 5, Pregnant or lactating women, etc.).
 - Those beneficiaries are visited multiple times, so multiple submissions/instances (that we call "records") are
 attached to them via the entity_id foreign key of Instance.
 - In addition to those records, we also want to track some core metadata about the beneficiary, such as their name,
-age,... To avoid hardcoding those fields in the Entity model, we also reuse the form mechanism: each EntityType
+age,... Because entities can be of very different natures, we avoid hardcoding those fields in the Entity model, and also reuse the form mechanism: each EntityType
 has a foreign key to a reference form, and each entity has a foreign key (attributes) to an instance/submission of that
 form.
 """

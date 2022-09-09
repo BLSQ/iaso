@@ -76,7 +76,6 @@ export const makeModalWithDnDField =
                 setShowDropzone(true);
             },
         });
-        console.log('showDropZone', showDropZone);
         const showChildren = showDropZone ? classes.hidden : classes.visible;
         const showOverlay = showDropZone ? classes.visible : classes.hidden;
         return (

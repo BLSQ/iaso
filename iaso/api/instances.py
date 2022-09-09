@@ -293,9 +293,7 @@ class InstancesViewSet(viewsets.ViewSet):
                     sub_columns.append(label)
                     columns.append({"title": title, "width": 50})
             else:
-                file_content_template = queryset.first().as_dict()[
-                    "file_content"
-                ]  # Fixme: no form version / XLSForm? => 'NoneType' object has no attribute 'as_dict' (this can be reached by clicking the CSV/XLSX export button in the UI)
+                file_content_template = queryset.first().as_dict()["file_content"]
                 for title in file_content_template:
                     columns.append({"title": title, "width": 50})
                     sub_columns.append(questions_by_name.get(title, {}).get("label", ""))

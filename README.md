@@ -93,7 +93,8 @@ This is not (yet) the complete Data Model, but here are the main concepts/model 
     * Instance can be GeoTagged and/or linked to a OrgUnit
     * Note: We are moving to use Submission everywhere in the UI, but it is still in progress. please submit PR.
     * Submission cannot be done via the Iaso UI itself but through Enketo or the Mobile App.
-* `Entity` and `EntityType` are new models that allow, for example, to track beneficiaries over time. See examples in docstrings of `iaos.models.entities`.
+* `EntityType` represents a type of person or object to which we want to attach multiple submissions to track said submissions in time and across OrgUnits.
+* `Entity` represents an actual person or object, defined by its `EntityType`. A concrete example is given in the docstrings of [iaos.models.entity](iaso/models/entity.py)
 * `APIImport` are used to log some request from the mobile app so we can replay them in case of error. See [vector_control Readme](hat/vector_control/README.md)
 * `audit.Modification` are used to keep a history of modification on some models (mainly orgunit). See [audit readme](hat/audit/README.md)
 * `Link` are used to match two OrgUnit (in different sources or not) that should be the same in the real world. Links have a confidence score indicating how much we trust that the two OrgUnit are actually the same.

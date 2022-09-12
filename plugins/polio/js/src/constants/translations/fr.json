@@ -19,6 +19,7 @@
     "iaso.polio.button.label.removeDistrict": "Déselectionner district",
     "iaso.polio.button.label.removeRegion": "Déselectionner région",
     "iaso.polio.calendar": "Calendrier",
+    "iaso.polio.calendar.pdf.title": "Calendrier des campagnes",
     "iaso.polio.calendar.obrName": "Nom",
     "iaso.polio.calendar.r1StartDate": "Date de début R1",
     "iaso.polio.calendar.weeks": "semaine(s)",

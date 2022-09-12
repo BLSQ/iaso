@@ -2,7 +2,7 @@ import React, { useMemo, useEffect, useState } from 'react';
 import PropTypes from 'prop-types';
 import moment from 'moment';
 import classnames from 'classnames';
-import { Box, makeStyles, Grid, Button } from '@material-ui/core';
+import { Box, makeStyles, Grid, Button, Typography } from '@material-ui/core';
 import PictureAsPdfIcon from '@material-ui/icons/PictureAsPdf';
 import {
     commonStyles,
@@ -12,7 +12,6 @@ import {
 import { useSelector } from 'react-redux';
 import TopBar from 'Iaso/components/nav/TopBarComponent';
 import domToPdf from 'dom-to-pdf';
-import { collapseTextChangeRangesAcrossMultipleVersions } from 'typescript';
 import { CampaignsCalendar } from '../components/campaignCalendar';
 import { getCampaignColor } from '../constants/campaignsColors';
 import { CalendarMap } from '../components/campaignCalendar/map/CalendarMap';
@@ -164,6 +163,13 @@ const Calendar = ({ params }) => {
                         </Button>
                     </Box>
                     <Grid container spacing={2}>
+                        {isPdf && (
+                            <Grid item xs={12}>
+                                <Typography variant="h3" color="primary">
+                                    {formatMessage(MESSAGES.calendarPdfTitle)}
+                                </Typography>
+                            </Grid>
+                        )}
                         <Grid item xs={12} lg={!isPdf ? 8 : 12}>
                             <CampaignsCalendar
                                 currentDate={currentDate}

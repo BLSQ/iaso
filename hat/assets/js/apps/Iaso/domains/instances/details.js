@@ -8,6 +8,7 @@ import UpdateIcon from '@material-ui/icons/Update';
 import EditLocationIcon from '@material-ui/icons/EditLocation';
 import RestoreFromTrashIcon from '@material-ui/icons/RestoreFromTrash';
 import Alert from '@material-ui/lab/Alert';
+import LockIcon from '@material-ui/icons/Lock';
 import {
     withStyles,
     Box,
@@ -15,7 +16,6 @@ import {
     DialogContentText,
     Typography,
 } from '@material-ui/core';
-
 import PropTypes from 'prop-types';
 import LinkIcon from '@material-ui/icons/Link';
 import LinkOffIcon from '@material-ui/icons/LinkOff';
@@ -47,6 +47,7 @@ import CreateReAssignDialogComponent from './components/CreateReAssignDialogComp
 import InstanceDetailsInfos from './components/InstanceDetailsInfos';
 import InstanceDetailsLocation from './components/InstanceDetailsLocation';
 import InstanceDetailsExportRequests from './components/InstanceDetailsExportRequests';
+import InstanceDetailsLocksHistory from './components/InstanceDetailsLocksHistory.tsx';
 import InstancesFilesList from './components/InstancesFilesListComponent';
 import InstanceFileContent from './components/InstanceFileContent';
 import SpeedDialInstanceActions from './components/SpeedDialInstanceActions';
@@ -57,11 +58,11 @@ import { getInstancesFilesList } from './utils';
 import { userHasPermission } from '../users/utils';
 import { getRequest } from '../../libs/Api';
 import MESSAGES from './messages';
-
 import { baseUrls } from '../../constants/urls';
 import {
     fetchFormOrgUnitTypes,
     saveOrgUnitWithDispatch,
+    lockInstanceWithDispatch,
 } from '../../utils/requests';
 
 import {
@@ -163,6 +164,7 @@ const actions = ({
     params,
     currentUser,
     redirectToActionInstance,
+    lockAgain,
 }) => {
     const hasSubmissionPermission = userHasPermission(
         'iaso_org_units',
@@ -177,7 +179,7 @@ const actions = ({
     const enketoAction = {
         id: 'instanceEditAction',
         icon: <EnketoIcon />,
-        disabled: currentInstance && currentInstance.deleted,
+        disabled: currentInstance?.deleted,
     };
 
     const renderTriggerEditGps = openDialog => {
@@ -222,6 +224,57 @@ const actions = ({
         ),
         disabled: false,
     };
+
+    const deleteRestore = {
+        id:
+            currentInstance && currentInstance.deleted
+                ? 'instanceRestoreAction'
+                : 'instanceDeleteAction',
+        icon:
+            currentInstance && currentInstance.deleted ? (
+                <RestoreFromTrashIcon />
+            ) : (
+                <DeleteIcon />
+            ),
+        disabled: false,
+    };
+
+    const confirmLockUnlockInstance = instance => {
+        const instanceParams = {
+            id: instance.id,
+        };
+        return lockInstanceWithDispatch(instanceParams);
+    };
+
+    const lockAction = {
+        id: 'lockActionTooltip', // used by translation
+        icon: (
+            <ConfirmCancelDialogComponent
+                titleMessage={MESSAGES.lockAction}
+                onConfirm={closeDialog => {
+                    confirmLockUnlockInstance(currentInstance, lockAgain).then(
+                        () => {
+                            closeDialog();
+                            window.location.reload(false);
+                        },
+                    );
+                }}
+                renderTrigger={({ openDialog }) => (
+                    <LockIcon onClick={openDialog} />
+                )}
+            >
+                <DialogContentText id="alert-dialog-description">
+                    <FormattedMessage {...MESSAGES.lockActionDescription} />
+                    <br />
+                    {currentInstance.is_locked && (
+                        <FormattedMessage
+                            {...MESSAGES.lockActionExistingLockDescription}
+                        />
+                    )}
+                </DialogContentText>
+            </ConfirmCancelDialogComponent>
+        ),
+    };
     const { referenceFormId } = params;
     const referenceSubmission = currentInstance.org_unit.reference_instance_id;
     const linkOrgUnit =
@@ -250,6 +303,7 @@ const actions = ({
             <LinkIcon onClick={openDialog} />
         );
     };
+
     let defaultActions = [
         {
             id: 'instanceExportAction',
@@ -286,19 +340,6 @@ const actions = ({
             ),
             disabled: currentInstance && currentInstance.deleted,
         },
-        {
-            id:
-                currentInstance && currentInstance.deleted
-                    ? 'instanceRestoreAction'
-                    : 'instanceDeleteAction',
-            icon:
-                currentInstance && currentInstance.deleted ? (
-                    <RestoreFromTrashIcon />
-                ) : (
-                    <DeleteIcon />
-                ),
-            disabled: false,
-        },
     ];
 
     if (
@@ -311,8 +352,16 @@ const actions = ({
         defaultActions = [editLocationWithInstanceGps, ...defaultActions];
     }
 
-    if (canEditEnketo) {
+    if (currentInstance.can_user_modify) {
+        defaultActions = [...defaultActions, deleteRestore];
+    }
+
+    if (canEditEnketo && currentInstance.can_user_modify) {
         defaultActions = [enketoAction, ...defaultActions];
+    }
+
+    if (currentInstance.can_user_modify) {
+        defaultActions = [lockAction, ...defaultActions];
     }
 
     if (!hasSubmissionPermission || !hasfeatureFlag) return defaultActions;
@@ -357,6 +406,7 @@ class InstanceDetails extends Component {
         this.state = {
             orgUnitTypeIds: [],
             showDial: true,
+            lockAgain: false,
             showHistoryLink: true,
         };
     }
@@ -379,15 +429,15 @@ class InstanceDetails extends Component {
         });
 
         // not showing history link in submission detail if there is only one version/log
-        getRequest(`/api/logs/?objectId=${instanceId}&order=-created_at`).then(
-            instanceLogsDetails => {
-                if (instanceLogsDetails.list.length === 1) {
-                    this.setState({
-                        showHistoryLink: false,
-                    });
-                }
-            },
-        );
+        getRequest(
+            `/api/logs/?objectId=${instanceId}&order=-created_at&contentType=iaso.instance`,
+        ).then(instanceLogsDetails => {
+            if (instanceLogsDetails.list.length === 1) {
+                this.setState({
+                    showHistoryLink: false,
+                });
+            }
+        });
     }
 
     onActionSelected(action) {
@@ -432,7 +482,7 @@ class InstanceDetails extends Component {
             params,
             redirectToActionInstance,
         } = this.props;
-        const { showDial, showHistoryLink } = this.state;
+        const { showDial, lockAgain, showHistoryLink } = this.state;
         const formId = currentInstance?.form_id;
         const canEditEnketo = userHasPermission(
             'iaso_update_submission',
@@ -466,7 +516,7 @@ class InstanceDetails extends Component {
                 {fetching && <LoadingSpinner />}
                 {currentInstance && (
                     <Box className={classes.containerFullHeightNoTabPadded}>
-                        {showDial && (
+                        {currentInstance.can_user_modify && showDial && (
                             <SpeedDialInstanceActions
                                 actions={actions({
                                     currentInstance,
@@ -477,6 +527,7 @@ class InstanceDetails extends Component {
                                     params,
                                     currentUser,
                                     redirectToActionInstance,
+                                    lockAgain,
                                 })}
                                 onActionSelected={action =>
                                     this.onActionSelected(action)
@@ -570,6 +621,12 @@ class InstanceDetails extends Component {
                                     currentInstance={currentInstance}
                                     classes={classes}
                                 />
+
+                                <InstanceDetailsLocksHistory
+                                    currentInstance={currentInstance}
+                                    classes={classes}
+                                />
+
                                 {currentInstance.files.length > 0 && (
                                     <WidgetPaper
                                         title={formatMessage(MESSAGES.files)}

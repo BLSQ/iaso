@@ -1,9 +1,13 @@
 /* eslint-disable react/jsx-props-no-spreading */
 /* eslint-disable react/prop-types */
 import React from 'react';
-import { IconButton as IconButtonComponent } from 'bluesquare-components';
+import {
+    IconButton as IconButtonComponent,
+    useSafeIntl,
+} from 'bluesquare-components';
 import LinkIcon from '@material-ui/icons/Link';
 import LinkOffIcon from '@material-ui/icons/LinkOff';
+import LockIcon from '@material-ui/icons/Lock';
 import omit from 'lodash/omit';
 import { DialogContentText } from '@material-ui/core';
 import { FormattedMessage } from 'react-intl';
@@ -34,6 +38,8 @@ const initialFormState = (orgUnit, referenceSubmissionId) => {
 };
 
 const ActionTableColumnComponent = ({ settings, user }) => {
+    const { formatMessage } = useSafeIntl();
+    // eslint-disable-next-line no-unused-vars
     const [_formState, _setFieldValue, setFieldErrors] = useFormState(
         initialFormState(
             settings.row.original.org_unit,
@@ -161,6 +167,24 @@ const ActionTableColumnComponent = ({ settings, user }) => {
                         />
                     </DialogContentText>
                 </ConfirmCancelDialogComponent>
+            )}
+
+            {settings.row.original.is_locked && (
+                <>
+                    {settings.row.original.can_user_modify ? (
+                        <IconButtonComponent
+                            url={getUrlInstance(settings)}
+                            overrideIcon={() => <LockIcon color="primary" />}
+                            tooltipMessage={MESSAGES.lockedCanModify}
+                        />
+                    ) : (
+                        <IconButtonComponent
+                            url={getUrlInstance(settings)}
+                            overrideIcon={LockIcon}
+                            tooltipMessage={MESSAGES.lockedCannotModify}
+                        />
+                    )}
+                </>
             )}
         </section>
     );

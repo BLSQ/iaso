@@ -1,4 +1,4 @@
-import { FormikErrors, FormikHelpers } from 'formik';
+import { FormikErrors, FormikHelpers, FormikTouched } from 'formik';
 import { useCallback, useMemo, useState } from 'react';
 import { UseMutateAsyncFunction } from 'react-query';
 import { TestConfig, TestContext } from 'yup';
@@ -157,8 +157,8 @@ export const useAPIErrorValidator = <T,>(
 
 type GetErrorParams = {
     formatMessage: IntlFormatMessage;
-    touched: Record<string, boolean>;
-    errors: Record<string, string>;
+    touched: Record<string, boolean> | FormikTouched<any>;
+    errors: Record<string, string> | FormikErrors<any>;
     messages: Record<string, IntlMessage>;
 };
 
@@ -167,7 +167,7 @@ type GetErrorParams = {
  * messages is the usual MESSAGES dict of translations
  * formatMessage should come from useSafeIntl
  *
- * returns a callback that can be called in the `errors`props of an InputComponent to provide a trabslated error message
+ * returns a callback that can be called in the `errors`props of an InputComponent to provide a translated error message
  *
  * touched is used to prevent setting the fields in error before the user has had a chance to type
  *
@@ -184,9 +184,9 @@ GetErrorParams): ((keyValue: string) => string[]) => {
             if (!touched[keyValue]) return [];
             const errorKey = errors[keyValue];
             if (!errorKey) return [];
-            const message = messages[errorKey]
-                ? formatMessage(messages[errorKey])
-                : errorKey;
+            const message = messages[errorKey as string]
+                ? formatMessage(messages[errorKey as string])
+                : (errorKey as string);
             return [message];
         },
         [errors, formatMessage, messages, touched],

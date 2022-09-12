@@ -131,7 +131,7 @@
     "iaso.entityTypes.fieldsListView": "Champs liste",
     "iaso.entityTypes.referenceForm": "Formulaire de référence",
     "iaso.entityTypes.selectReferenceForm": "Sélectionnez un formulaire de référence d'abord",
-    "iaso.entityTypes.title": "Types d'entité",
+    "iaso.entityTypes.title": "Types de bénéficiaires",
     "iaso.entityTypes.update": "Mettre le type d'entité à jour",
     "iaso.error.label.EndDateBeforeStartDate": "La date de fin ne peut être avant la date de début",
     "iaso.error.label.planningAndForms": "Planning et formulaires doivent faure partie du même projet",

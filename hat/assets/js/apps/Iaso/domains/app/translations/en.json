@@ -133,7 +133,7 @@
     "iaso.entityTypes.fieldsListView": "List fields",
     "iaso.entityTypes.referenceForm": "Reference form",
     "iaso.entityTypes.selectReferenceForm": "Select a reference form first",
-    "iaso.entityTypes.title": "Entity types",
+    "iaso.entityTypes.title": "Beneficiary types",
     "iaso.entityTypes.update": "Update entity type",
     "iaso.error.label.EndDateBeforeStartDate": "End date can't before start date",
     "iaso.error.label.planningAndForms": "Planning and forms must be in the same project",

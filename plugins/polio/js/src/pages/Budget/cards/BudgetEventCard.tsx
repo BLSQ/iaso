@@ -24,6 +24,7 @@ import {
     LoadingSpinner,
 } from 'bluesquare-components';
 import moment from 'moment';
+import classNames from 'classnames';
 import MESSAGES from '../../../constants/messages';
 import {
     Profile,
@@ -135,7 +136,10 @@ export const BudgetEventCard: FunctionComponent<Props> = ({
                                 <Box>
                                     <Typography
                                         variant="h6"
-                                        className={`${classes.title} ${textColor}`}
+                                        className={classNames(
+                                            classes.title,
+                                            textColor,
+                                        )}
                                     >
                                         {title}
                                         <LockIcon internal={event?.internal} />
@@ -143,16 +147,16 @@ export const BudgetEventCard: FunctionComponent<Props> = ({
                                 </Box>
                                 <Typography
                                     variant="body2"
-                                    className={`${textColor}`}
+                                    className={textColor}
                                 >
                                     {formatMessage(MESSAGES.onDate, {
                                         date: formattedCreationDate,
                                     })}
                                 </Typography>
-                                <Typography className={`${textColor}`}>
+                                <Typography className={textColor}>
                                     {`${authorName} - ${authorTeam}`}
                                 </Typography>
-                                <Typography className={`${textColor}`}>
+                                <Typography className={textColor}>
                                     {`${formatMessage(
                                         MESSAGES.destination,
                                     )}: ${targetTeams}`}
@@ -161,7 +165,7 @@ export const BudgetEventCard: FunctionComponent<Props> = ({
                                     <Typography
                                         // @ts-ignore
                                         style={{ wordWrap: 'anywhere' }}
-                                        className={`${textColor}`}
+                                        className={textColor}
                                     >
                                         {`${formatMessage(
                                             MESSAGES.comment,

@@ -1,38 +1,45 @@
 /* eslint-disable react/jsx-props-no-spreading */
 import React, { ComponentType, FunctionComponent, useState } from 'react';
-// @ts-ignore
-import { IconButton as IconButtonComponent } from 'bluesquare-components';
-
-import { IntlMessage } from '../../types/intl';
 
 type ModalComponentProps = { closeDialog: () => void; isOpen: boolean };
+type ButtonComponentProps = { onClick: () => void };
 
-type FullModalProps<T extends ModalComponentProps> = {
-    icon?: string;
-    overrideIcon?: string;
-    tooltipMessage: IntlMessage;
-} & Omit<T, 'closeDialog' | 'isOpen'>;
+type ModalProps<T extends ModalComponentProps> = Omit<
+    T,
+    'closeDialog' | 'isOpen'
+>;
+type ButtonProps<T extends ButtonComponentProps> = Omit<T, 'onClick'>;
+
+type FullModalProps<
+    T extends ModalComponentProps,
+    U extends ButtonComponentProps,
+> = ModalProps<T> & {
+    iconProps: ButtonProps<U>;
+};
 
 export const makeFullModal =
-    <T extends ModalComponentProps>(
+    <T extends ModalComponentProps, U extends ButtonComponentProps>(
         ModalComponent: ComponentType<T>,
-    ): FunctionComponent<FullModalProps<T>> =>
-    (props: FullModalProps<T>) => {
-        const { icon, overrideIcon, tooltipMessage, ...modalProps } = props;
+        ButtonComponent: ComponentType<U>,
+    ): FunctionComponent<FullModalProps<T, U>> =>
+    (props: FullModalProps<T, U>) => {
+        const { iconProps, ...modalProps } = props;
         const [openModal, setOpenModal] = useState<boolean>(false);
         return (
             <>
-                <IconButtonComponent
-                    onClick={() => setOpenModal(true)}
-                    icon={icon}
-                    tooltipMessage={tooltipMessage}
-                    overrideIcon={overrideIcon}
+                <ButtonComponent
+                    {...({
+                        ...iconProps,
+                        onClick: () => setOpenModal(true),
+                    } as U)}
                 />
                 {openModal && (
                     <ModalComponent
-                        {...(modalProps as unknown as T)}
-                        closeDialog={() => setOpenModal(false)}
-                        isOpen={openModal}
+                        {...({
+                            ...modalProps,
+                            closeDialog: () => setOpenModal(false),
+                            isOpen: openModal,
+                        } as unknown as T)}
                     />
                 )}
             </>

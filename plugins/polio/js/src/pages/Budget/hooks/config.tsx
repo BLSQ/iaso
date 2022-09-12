@@ -33,8 +33,6 @@ import { Optional } from '../../../../../../../hat/assets/js/apps/Iaso/types/uti
 import { convertObjectToString } from '../../../utils';
 import { formatThousand } from '../../../../../../../hat/assets/js/apps/Iaso/utils';
 import { formatComment } from '../cards/utils';
-import { TestNewModal } from '../CreateEditBudgetEvent/TestNewModal';
-import { TestNewModalWithDnD } from '../CreateEditBudgetEvent/TestModalWithDnD';
 
 const baseUrl = BUDGET_DETAILS;
 
@@ -291,20 +289,7 @@ export const useBudgetDetailsColumns = ({ profiles, data }): Column[] => {
                         .join(', ');
                     return (
                         <section>
-                            {/* <IconButtonComponent
-                                onClick={() => setOpenModal(true)}
-                                icon="edit"
-                                tooltipMessage={MESSAGES.deleteBudgetEvent}
-                            />
-                            {openModal && ( */}
-                            <TestNewModalWithDnD
-                                campaignId=""
-                                id={settings.row.original.id}
-                                icon="edit"
-                                tooltipMessage={MESSAGES.Farm}
-                            />
-                            {/* )} */}
-                            {/* <BudgetFilesModal
+                            <BudgetFilesModal
                                 eventId={settings.row.original.id}
                                 note={settings.row.original.comment}
                                 date={settings.row.original.created_at}
@@ -317,7 +302,7 @@ export const useBudgetDetailsColumns = ({ profiles, data }): Column[] => {
                                         ? 'secondary'
                                         : 'action'
                                 }
-                            /> */}
+                            />
                             {!settings.row.original.is_finalized &&
                                 settings.row.original.author ===
                                     currentUser.user_id && (
@@ -327,11 +312,7 @@ export const useBudgetDetailsColumns = ({ profiles, data }): Column[] => {
                                         }
                                         type="edit"
                                         budgetEvent={settings.row.original}
-                                        iconColor={
-                                            settings.row.original.deleted_at
-                                                ? 'secondary'
-                                                : 'action'
-                                        }
+                                        iconProps={{ type: 'edit' }}
                                     />
                                 )}
                             {!settings.row.original.deleted_at &&

@@ -45,7 +45,6 @@ const DragZone = () => {
             elevation={0}
             variant="outlined"
             classes={{ outlined: classes.outlined }}
-            // style={{}}
         >
             <Grid
                 container

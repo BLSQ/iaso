@@ -205,9 +205,13 @@ export const BudgetEventCard: FunctionComponent<Props> = ({
                                 campaignId={event?.campaign}
                                 type="edit"
                                 budgetEvent={event}
-                                iconColor={
-                                    event?.deleted_at ? 'secondary' : 'action'
-                                }
+                                iconProps={{
+                                    type: 'edit',
+                                    isMobileLayout: true,
+                                    color: event?.deleted_at
+                                        ? 'secondary'
+                                        : 'action',
+                                }}
                             />
                         )}
                         {!event.deleted_at && userIsAuthor && (

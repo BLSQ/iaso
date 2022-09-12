@@ -43,9 +43,6 @@ import { useIsUserInApprovalTeam } from './hooks/useIsUserInApprovalTeam';
 import { handleTableDeepLink } from '../../../../../../hat/assets/js/apps/Iaso/utils/table';
 import { LinkToProcedure } from './LinkToProcedure';
 import { BudgetDetailsFilters } from './BudgetDetailsFilters';
-import { TestNewModal } from './CreateEditBudgetEvent/TestNewModal';
-import { TestNewModalWithDnD } from './CreateEditBudgetEvent/TestModalWithDnD';
-import { TestmodalWithHook } from './CreateEditBudgetEvent/TestmodalWithHook';
 
 type Props = {
     router: any;
@@ -204,11 +201,12 @@ export const BudgetDetails: FunctionComponent<Props> = ({ router }) => {
                                     campaignId={campaignId}
                                     isMobileLayout={isMobileLayout}
                                 /> */}
-                                <TestmodalWithHook
-                                    id={campaignId}
-                                    icon="edit"
-                                    tooltipMessage={MESSAGES.Farm}
+                                <CreateEditBudgetEvent
                                     campaignId={campaignId}
+                                    isMobileLayout={isMobileLayout}
+                                    iconProps={{
+                                        isMobileLayout,
+                                    }}
                                 />
                             </Grid>
                         )}

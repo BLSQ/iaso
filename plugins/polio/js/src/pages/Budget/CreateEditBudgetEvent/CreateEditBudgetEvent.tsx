@@ -45,7 +45,7 @@ type Props = {
     isMobileLayout?: boolean;
 };
 
-const TestNewModal: FunctionComponent<Props> = ({
+const CreateEditBudgetEvent: FunctionComponent<Props> = ({
     campaignId,
     budgetEvent,
     type = 'create',
@@ -346,6 +346,6 @@ const TestNewModal: FunctionComponent<Props> = ({
     );
 };
 
-const modalWithButton = makeFullModal(TestNewModal, CreatEditButton);
+const modalWithButton = makeFullModal(CreateEditBudgetEvent, CreatEditButton);
 
 export { modalWithButton as CreateEditBudgetEvent };

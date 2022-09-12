@@ -1,14 +1,17 @@
 import csv
 import functools
 import json
+import string
 from datetime import timedelta, datetime
 import logging
 from typing import Any, Dict, List, Optional, Union
 from collections import defaultdict
 from functools import lru_cache
 from logging import getLogger
+from io import BytesIO
+from tempfile import NamedTemporaryFile
 
-import requests
+import openpyxl
 from django.core.files import File
 from django.core.cache import cache
 from django.core.exceptions import ObjectDoesNotExist
@@ -33,7 +36,6 @@ from rest_framework.decorators import action
 from rest_framework.request import Request
 from rest_framework.response import Response
 from django.conf import settings
-import urllib.parse
 from hat.api.token_authentication import generate_auto_authentication_link
 from iaso.api.common import ModelViewSet, DeletionFilterBackend
 from iaso.models import OrgUnit
@@ -458,18 +460,42 @@ where group_id = polio_roundscope.group_id""",
 
     @action(methods=["GET", "POST"], detail=False)
     def generate_xlsform(self, request):
-        campaign_id = request.query_params("campaign_id", None)
-        campaign = get_object_or_404(Campaign, id=campaign_id)
-        campaign_scope = get_object_or_404(CampaignScope, campaign=campaign)
 
-        # path = campaign.form_template.path
-        # wb_obj = openpyxl.load(path)
-        # sheet_obj = wb_obj.active
-        # row = sheet_obj.max_row
-        # column = sheet_obj.max_column
-        #
-        # print("Total Rows:", row)
-        # print("Total Columns:", column)
+        campaign_id = request.query_params.get("id", None)
+        campaign = get_object_or_404(Campaign, id=campaign_id)
+        campaign_scope = get_object_or_404(CampaignScope, campaign=campaign).group.org_units.all()
+
+        try:
+            path = campaign.form_template.path
+        except ValueError:
+            raise serializers.ValidationError(
+                {
+                    "error": f"No template form is linked to the campaign {campaign}."
+                }
+            )
+
+        wb = openpyxl.load_workbook(path)
+        sheet = wb.get_sheet_by_name("choices")
+        row = 2
+        column = 1
+        cell = list(string.ascii_uppercase)
+        for ou in campaign_scope:
+            sheet[cell[column - 1] + str(row)] = "ou"
+            sheet[cell[column]+str(row)] = ou.id
+            sheet[cell[column + 1] + str(row)] = str(ou)
+            row += 1
+
+        filename = f"FORM_{campaign.obr_name}_{datetime.now().date()}.xlsx"
+
+        with NamedTemporaryFile() as tmp:
+            wb.save(tmp.name)
+            tmp.seek(0)
+            stream = tmp.read()
+
+            response = HttpResponse(stream,
+                                    content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
+            response["Content-Disposition"] = "attachment; filename=%s" % filename
+            return response
 
 class CountryUsersGroupViewSet(ModelViewSet):
     serializer_class = CountryUsersGroupSerializer

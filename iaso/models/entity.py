@@ -15,6 +15,7 @@ class EntityType(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
     reference_form = models.ForeignKey(Form, blank=True, null=True, on_delete=models.PROTECT)
     account = models.ForeignKey(Account, on_delete=models.PROTECT, blank=True, null=True)
+    is_active = models.BooleanField(default=False)
     # List of field we will show for this entity in list and detail view.
     fields_list_view = ArrayField(CITextField(max_length=255, blank=True), size=100, null=True, blank=True)
     fields_detail_info_view = ArrayField(CITextField(max_length=255, blank=True), size=100, null=True, blank=True)
@@ -30,7 +31,7 @@ class EntityType(models.Model):
             "name": self.name,
             "created_at": self.created_at,
             "updated_at": self.updated_at,
-            "reference_form": self.reference_form,
+            "reference_form": self.reference_form.as_dict(),
             "account": self.account.as_dict(),
         }
 

@@ -23,8 +23,7 @@ from iaso.utils.models.soft_deletable import SoftDeletableModel
 
 
 class EntityType(models.Model):
-    """Its `reference_form` describes the core attributes/metadata about the entity type (in case it refers to a person: name, age, ...)
-    """
+    """Its `reference_form` describes the core attributes/metadata about the entity type (in case it refers to a person: name, age, ...)"""
 
     name = models.CharField(max_length=255)  # Example: "Child under 5"
     created_at = models.DateTimeField(auto_now_add=True)

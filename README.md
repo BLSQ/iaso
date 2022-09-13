@@ -656,6 +656,31 @@ To run a Jupyter Notebook, just copy the env variable from runaisasdev.sh, activ
 python manage.py shell_plus --notebook
 ```
 
+Deployment in Production
+========================
+
+System requirements
+-------------------
+
+Recommended:
+  * Linux System X86_64 system
+  * Latest Ubuntu LTS Server (> 20.04)
+  * 16 GB ram
+  * 4 Threads @ 3 Ghz
+  * Docker
+
+External service dependencies:
+* PostgreSQL Server > 10.
+* Enketo > 4.0
+* Access to a SMTP server to send e-mail.
+
+
+The PostgreSQL database server and Enketo server can both be deployed in Docker on the same physical machine, it is advised to double the recommended values in that case.
+
+Each of theses services have their own requirements, that are available on their own documentation
+
+
+
 Deployment on AWS Elastic Beanstalk
 ====================================
 

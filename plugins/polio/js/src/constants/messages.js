@@ -81,6 +81,10 @@ const MESSAGES = defineMessages({
         id: 'iaso.polio.calendar',
         defaultMessage: 'Calendar',
     },
+    calendarPdfTitle: {
+        id: 'iaso.polio.calendar.pdf.title',
+        defaultMessage: 'Campaigns Calendar',
+    },
     weeks: {
         id: 'iaso.polio.calendar.weeks',
         defaultMessage: 'week(s) were',
@@ -230,7 +234,7 @@ const MESSAGES = defineMessages({
     },
     dosesRequested: {
         id: 'iaso.polio.form.label.dosesRequested',
-        defaultMessage: 'Doses Requested (both rounds)',
+        defaultMessage: 'Doses Requested',
     },
     region: {
         id: 'iaso.polio.table.label.region',
@@ -1397,6 +1401,19 @@ const MESSAGES = defineMessages({
     sentByTeam: {
         id: 'iaso.polio.label.sentByTeam',
         defaultMessage: 'Sent by team',
+    },
+    exportToPdf: {
+        id: 'iaso.polio.label.exportToPdf',
+        defaultMessage: 'Export to pdf',
+    },
+    userWithoutTeam: {
+        id: 'iaso.polio.error.label.userWithoutTeam',
+        defaultMessage: 'User should be part of a team',
+    },
+    userNeedsTeam: {
+        id: 'iaso.polio.error.label.userNeedsTeam',
+        defaultMessage:
+            'You need to be part of a team to create or edit budget events',
     },
 });
 

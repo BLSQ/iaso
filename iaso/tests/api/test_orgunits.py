@@ -775,3 +775,33 @@ class OrgUnitAPITestCase(APITestCase):
         self.assertEqual(ou.parent, old_ou.parent)
         self.assertEqual(ou.created_at, old_ou.created_at)
         self.assertEqual(ou.updated_at, old_ou.updated_at)
+
+    def test_edit_with_apply_directly_instance_gps_into_org_unit(self):
+        """Retrieve a orgunit data and push instance_gps_to_org_unit"""
+        org_unit = self.jedi_council_corruscant
+        org_unit.latitude = 8.32842671
+        org_unit.longitude = -11.681191
+        org_unit.altitude = 3
+        org_unit.save()
+        org_unit.refresh_from_db()
+        self.client.force_authenticate(self.yoda)
+        form_latitude = 8.21958686
+        form_longitude = -11.50405884
+        form_altitude = 1
+        data = {}
+        data["altitude"] = form_altitude
+        data["latitude"] = form_latitude
+        data["longitude"] = form_longitude
+
+        response = self.client.patch(
+            f"/api/orgunits/{org_unit.id}/",
+            format="json",
+            data=data,
+        )
+        jr = self.assertJSONResponse(response, 200)
+        self.assertValidOrgUnitData(jr)
+        self.assertCreated({Modification: 1})
+        ou = m.OrgUnit.objects.get(id=jr["id"])
+        self.assertEqual(ou.as_dict()["latitude"], form_latitude)
+        self.assertEqual(ou.as_dict()["longitude"], form_longitude)
+        self.assertEqual(ou.as_dict()["altitude"], form_altitude)

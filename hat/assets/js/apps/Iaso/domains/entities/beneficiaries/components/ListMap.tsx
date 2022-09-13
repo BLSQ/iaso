@@ -55,6 +55,8 @@ const boundsOptions = {
 const useStyles = makeStyles(theme => ({
     mapContainer: {
         ...commonStyles(theme).mapContainer,
+        height: '60vh',
+        marginBottom: 0,
     },
 }));
 

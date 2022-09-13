@@ -416,6 +416,83 @@ const MESSAGES = defineMessages({
         defaultMessage:
             'Are you sure you want to unlink this reference submission from the orgUnit ?',
     },
+    lockActionTooltip: {
+        id: 'iaso.instance.lockActionTooltip',
+        defaultMessage: 'Lock the instance',
+    },
+    lockAction: {
+        id: 'iaso.instance.lockAction',
+        defaultMessage: 'Lock the instance?',
+    },
+    removeLockAction: {
+        id: 'iaso.instance.removeLockAction',
+        defaultMessage: 'Open this lock',
+    },
+    lockedCanModify: {
+        id: 'iaso.instance.dialog.lockedCanModify',
+        defaultMessage:
+            'Instance modification is locked for some users however you have the right to modify still modify it',
+    },
+    lockedCannotModify: {
+        id: 'iaso.instance.dialog.lockedCannotModify',
+        defaultMessage:
+            'There is a lock on the instance and you cannot modify it',
+    },
+    lockSuccess: {
+        id: 'iaso.instance.dialog.lockSuccess',
+        defaultMessage: 'Lock added on the instance',
+    },
+    lockOpened: {
+        id: 'iaso.instance.dialog.lockOpened',
+        defaultMessage: 'This lock has been opened',
+    },
+    lockActionDescription: {
+        id: 'iaso.instance.dialog.lockActionDescription',
+        defaultMessage:
+            'This will preventing modification on the instance by any user having lower access than you.',
+    },
+    lockActionExistingLockDescription: {
+        id: 'iaso.instance.dialog.lockActionExistingLockDescription',
+        defaultMessage:
+            'This submission is already locked by one or mocked locks, locking again will add a supplementary lock.' +
+            ' Use the unlock action in the lock table on the bottom right to remove the lock on the submission',
+    },
+    patchInstanceSuccesfull: {
+        id: 'iaso.instance.patchInstanceSuccesfull',
+        defaultMessage: 'Submission saved successfully',
+    },
+    patchInstanceError: {
+        id: 'iaso.instance.patchInstanceError',
+        defaultMessage: 'An error occurred while saving submission',
+    },
+    instanceLocks: {
+        id: 'iaso.label.instanceLocks',
+        defaultMessage: 'Instance locks',
+    },
+    lockAuthorLabel: {
+        id: 'iaso.instance.lockAuthorLabel',
+        defaultMessage: 'Author',
+    },
+    lockTopOrgUnitLabel: {
+        id: 'iaso.instance.lockTopOrgUnitLabel',
+        defaultMessage: 'High level org unit',
+    },
+    lockStatusLabel: {
+        id: 'iaso.instance.lockStatusLabel',
+        defaultMessage: 'Status',
+    },
+    lockedTitle: {
+        id: 'iaso.instance.lockedTitle',
+        defaultMessage: 'Locked',
+    },
+    unlockedTitle: {
+        id: 'iaso.instance.unlockedTitle',
+        defaultMessage: 'Unlocked',
+    },
+    NoLocksHistory: {
+        defaultMessage: 'There is no locks History',
+        id: 'iaso.instance.NoLocksHistory',
+    },
     history: {
         id: 'iaso.label.history',
         defaultMessage: 'History',
@@ -423,6 +500,23 @@ const MESSAGES = defineMessages({
     seeAllVersions: {
         id: 'iaso.label.seeAllVersions',
         defaultMessage: 'See all versions',
+    },
+    editLocationWithInstanceGps: {
+        id: 'iaso.instances.editLocationWithInstanceGps',
+        defaultMessage: 'Push GPS from submission',
+    },
+    editGpsFromInstanceTitle: {
+        id: 'iaso.instance.dialog.editGpsFromInstanceTitle',
+        defaultMessage:
+            'Are you sure you want to apply GPS from submission into org unit. ?',
+    },
+    confirmApplyFormGpsToOrgUnit: {
+        id: 'iaso.label.confirmApplyFormGpsToOrgUnit',
+        defaultMessage: 'Apply directly gps from form to org unit',
+    },
+    editGpsFromInstanceWarning: {
+        id: 'iaso.instance.editGpsFromInstanceWarning',
+        defaultMessage: 'This operation can still be undone',
     },
 });
 

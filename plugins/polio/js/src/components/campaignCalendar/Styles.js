@@ -12,6 +12,13 @@ export const useStyles = makeStyles(theme => ({
             height: '71vh',
         },
     },
+    tableContainerPdf: {
+        overflow: 'hidden',
+        width: '100%',
+        [theme.breakpoints.up('lg')]: {
+            height: 'auto',
+        },
+    },
     tableRow: {
         height: cellHeight,
         '& th:last-child, & td:last-child': {

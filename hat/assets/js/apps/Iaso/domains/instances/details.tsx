@@ -15,6 +15,7 @@ import {
     // @ts-ignore
     useSafeIntl,
 } from 'bluesquare-components';
+import { UseQueryResult } from 'react-query';
 import TopBar from '../../components/nav/TopBarComponent';
 import WidgetPaper from '../../components/papers/WidgetPaperComponent';
 
@@ -29,9 +30,9 @@ import { getRequest } from '../../libs/Api';
 import MESSAGES from './messages';
 import { baseUrls } from '../../constants/urls';
 import { useGetInstance } from './compare/hooks/useGetInstance';
-import { UseQueryResult } from 'react-query';
 import { useSnackQuery } from '../../libs/apiHooks';
-import SpeedDialInstance from './SpeedDialInstance';
+import SpeedDialInstance from './components/SpeedDialInstance/SpeedDialInstance';
+import { ClassNames } from '../../types/utils';
 
 const useStyles = makeStyles(theme => ({
     ...commonStyles(theme),
@@ -81,7 +82,7 @@ export const useGetInstanceLogs = (
 const InstanceDetails: FunctionComponent<Props> = props => {
     const [showDial, setShowDial] = useState(true);
     const { formatMessage } = useSafeIntl();
-    const classes = useStyles();
+    const classes: ClassNames = useStyles();
     const {
         router,
         redirectToReplace,
@@ -90,16 +91,14 @@ const InstanceDetails: FunctionComponent<Props> = props => {
     } = props;
     const { data: currentInstance, isLoading: fetching } =
         useGetInstance(instanceId);
+    // @ts-ignore
     const prevPathname = useSelector(state => state.routerCustom.prevPathname);
+    console.log('params', params);
 
     // not showing history link in submission detail if there is only one version/log
-    // in the futur. add this info directly in the instance api to not make another call;
+    // in the future. add this info directly in the instance api to not make another call;
     const { data: instanceLogsDetails } = useGetInstanceLogs(instanceId);
     const showHistoryLink = instanceLogsDetails?.list?.length ?? 0 > 1;
-
-    const onLightBoxToggled = open => {
-        setShowDial(!open);
-    };
 
     return (
         <section className={classes.relativeContainer}>
@@ -234,7 +233,7 @@ const InstanceDetails: FunctionComponent<Props> = props => {
                                             currentInstance,
                                         ])}
                                         onLightBoxToggled={open =>
-                                            onLightBoxToggled(open)
+                                            setShowDial(!open)
                                         }
                                     />
                                 </WidgetPaper>

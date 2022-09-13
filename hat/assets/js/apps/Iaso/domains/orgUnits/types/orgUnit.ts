@@ -27,7 +27,7 @@ export type OrgUnit = {
     source: string;
     source_id: number;
     version: number;
-    groups: Array<unknown>;
+    groups: Array<(unknown & { id: number }) | number>;
     org_unit_type: string;
     search_index?: number;
     reference_instance_id: number;

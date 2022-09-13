@@ -1,5 +1,5 @@
 import { useSnackQuery, useSnackMutation } from 'Iaso/libs/apiHooks.ts';
-import { getRequest, patchRequest } from 'Iaso/libs/Api';
+import { getRequest, patchRequest, postRequest } from 'Iaso/libs/Api';
 import {
     fetchOrgUnitsTypes,
     fetchDevices,
@@ -86,3 +86,12 @@ export const usePatchInstance = (onSuccess, invalidateQueryKey = undefined) =>
         invalidateQueryKey,
         { onSuccess },
     );
+
+const postLockInstance = instance =>
+    postRequest(`/api/instances/${instance.id}/add_lock/`);
+
+export const usePostLockInstance = () => {
+    return useSnackMutation({
+        mutationFn: postLockInstance,
+    });
+};

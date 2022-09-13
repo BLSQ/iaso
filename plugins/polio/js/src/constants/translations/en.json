@@ -179,6 +179,7 @@
     "iaso.polio.label.enterOrCreateGoogleSheet": "Enter Google Sheet url or use the button to generate a new one",
     "iaso.polio.label.event": "Event",
     "iaso.polio.label.eventType": "Type",
+    "iaso.polio.label.exportToExcel": "Export to excel",
     "iaso.polio.label.exportToPdf": "Export to pdf",
     "iaso.polio.label.failed": "Failed",
     "iaso.polio.label.farm": "At the farm",

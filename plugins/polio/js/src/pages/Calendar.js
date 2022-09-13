@@ -4,6 +4,7 @@ import moment from 'moment';
 import classnames from 'classnames';
 import { Box, makeStyles, Grid, Button } from '@material-ui/core';
 import PictureAsPdfIcon from '@material-ui/icons/PictureAsPdf';
+import DownloadIcon from '@material-ui/icons/GetApp';
 import {
     commonStyles,
     useSafeIntl,
@@ -30,6 +31,7 @@ import { useGetCampaigns } from '../hooks/useGetCampaigns';
 // @ts-ignore
 import MESSAGES from '../constants/messages';
 import { Filters } from '../components/campaignCalendar/Filters';
+import { csvPreview } from '../../../../../hat/assets/js/apps/Iaso/domains/dataSources/requests';
 
 const pageWidth = 1980;
 
@@ -115,12 +117,16 @@ const Calendar = ({ params }) => {
         }, 1000);
     };
 
+    const createExcel = async () => {
+
+    }
+
     useEffect(() => {
         if (campaigns.length > 0) {
             setCalendarAndMapLoaded(true);
         }
     }, [campaigns]);
-
+    
     return (
         <div>
             {isLogged && !isPdf && (
@@ -151,18 +157,37 @@ const Calendar = ({ params }) => {
                             <Filters disableDates disableOnlyDeleted />
                         </Box>
                     )}
-                    <Box mb={2} mt={2} display="flex" justifyContent="flex-end">
-                        <Button
-                            onClick={createPDF}
-                            disabled={!isCalendarAndMapLoaded}
-                            type="button"
-                            color="primary"
-                            variant="contained"
-                        >
-                            <PictureAsPdfIcon style={{ marginRight: '8px' }} />
-                            {formatMessage(MESSAGES.exportToPdf)}
-                        </Button>
-                    </Box>
+                    
+                    <Grid container spacing={1} display="flex" justifyContent="flex-end">
+                        <Grid  item>
+                            <Box mb={2} mt={2}>
+                                <Button
+                                    onClick={createPDF}
+                                    disabled={!isCalendarAndMapLoaded}
+                                    type="button"
+                                    color="primary"
+                                    variant="contained"
+                                >
+                                    <PictureAsPdfIcon style={{ marginRight: '8px' }} />
+                                    {formatMessage(MESSAGES.exportToPdf)}
+                                </Button>
+                            </Box>
+                        </Grid>
+                        <Grid item>
+                            <Box mb={2} mt={2}>
+                                <Button
+                                    onClick={createExcel}
+                                    disabled={!isCalendarAndMapLoaded}
+                                    type="button"
+                                    color="primary"
+                                    variant="contained"
+                                >
+                                    <DownloadIcon style={{ marginRight: '8px' }} />
+                                    {formatMessage(MESSAGES.exportToExcel)}
+                                </Button>
+                            </Box>
+                        </Grid>
+                    </Grid>
                     <Grid container spacing={2}>
                         <Grid item xs={12} lg={!isPdf ? 8 : 12}>
                             <CampaignsCalendar

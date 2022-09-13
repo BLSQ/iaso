@@ -30,7 +30,7 @@ export const useGetTeamsDropDown = (): UseQueryResult<any, Error> => {
 };
 
 export const useGetApprovalTeams = (): UseQueryResult<any, Error> => {
-    const queryKey: any[] = ['teams'];
+    const queryKey: any[] = ['teamsList'];
     // @ts-ignore
     return useSnackQuery(queryKey, () => getTeams(), undefined, {
         // staleTime required to avoid infinite loop

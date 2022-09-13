@@ -655,7 +655,7 @@ To run a Jupyter Notebook, just copy the env variable from runaisasdev.sh, activ
 python manage.py shell_plus --notebook
 ```
 
-Deplyoment in Production
+Deployment in Production
 ========================
 
 System requirements

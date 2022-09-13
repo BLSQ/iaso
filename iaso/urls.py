@@ -7,7 +7,7 @@ from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 from hat.api.authentication import WfpLogin, wfp_callback
 from .api.bulk_create_users import BulkCreateUserFromCsvViewSet
 from .api.comment import CommentViewSet
-from .api.entity import EntityViewSet, EntityTypeViewSet, BeneficiaryViewset
+from .api.entity import EntityViewSet, EntityTypeViewSet
 from .api.logs import LogsViewSet
 from .api.microplanning import TeamViewSet, PlanningViewSet, AssignmentViewSet, MobilePlanningViewSet
 from .api.mobile.org_units import MobileOrgUnitViewSet
@@ -105,7 +105,6 @@ router.register(r"tasks/create/orgunitsbulkupdate", OrgUnitsBulkUpdate, basename
 router.register(r"tasks/create/importgpkg", ImportGPKGViewSet, basename="importgpkg")
 router.register(r"tasks", TaskSourceViewSet, basename="tasks")
 router.register(r"comments", CommentViewSet, basename="comments")
-router.register(r"entity/beneficiary", BeneficiaryViewset, basename="beneficiary")
 router.register(r"entity", EntityViewSet, basename="entity")
 router.register(r"entitytype", EntityTypeViewSet, basename="entitytype")
 # At the moment we use the same view set but separate it for the future for when we want to be able to

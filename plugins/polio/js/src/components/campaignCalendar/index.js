@@ -18,6 +18,7 @@ const CampaignsCalendar = ({
     params,
     orders,
     currentDate,
+    isPdf,
 }) => {
     const classes = useStyles();
     const { headers, currentWeekIndex, firstMonday, lastSunday } = calendarData;
@@ -29,7 +30,11 @@ const CampaignsCalendar = ({
                 params={params}
                 currentDate={currentDate}
             />
-            <TableContainer className={classes.tableContainer}>
+            <TableContainer
+                className={
+                    !isPdf ? classes.tableContainer : classes.tableContainerPdf
+                }
+            >
                 {loadingCampaigns && <LoadingSpinner absolute />}
                 <Table stickyHeader className={classes.table}>
                     <Head
@@ -53,6 +58,7 @@ const CampaignsCalendar = ({
 
 CampaignsCalendar.defaultProps = {
     campaigns: [],
+    isPdf: false,
 };
 
 CampaignsCalendar.propTypes = {
@@ -63,6 +69,7 @@ CampaignsCalendar.propTypes = {
     params: PropTypes.object.isRequired,
     orders: PropTypes.string.isRequired,
     currentDate: PropTypes.object.isRequired,
+    isPdf: PropTypes.bool,
 };
 
 export { CampaignsCalendar };

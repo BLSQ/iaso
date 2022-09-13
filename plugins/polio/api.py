@@ -644,17 +644,17 @@ class IMStatsViewSet(viewsets.ViewSet):
         if stats_types == "HH,OHH":
             im_request_type = ""
 
-        cached_response = cache.get(
-            "{0}-{1}-IM{2}".format(request.user.id, request.query_params["country_id"], im_request_type),
-            version=CACHE_VERSION,
-        )
+        # cached_response = cache.get(
+        #     "{0}-{1}-IM{2}".format(request.user.id, request.query_params["country_id"], im_request_type),
+        #     version=CACHE_VERSION,
+        # )
 
-        if not request.user.is_anonymous and cached_response and not no_cache:
-            response = json.loads(cached_response)
-            cached_date = make_aware(datetime.utcfromtimestamp(response["cache_creation_date"]))
+        # if not request.user.is_anonymous and cached_response and not no_cache:
+        #     response = json.loads(cached_response)
+        #     cached_date = make_aware(datetime.utcfromtimestamp(response["cache_creation_date"]))
 
-            if latest_campaign_update and cached_date > latest_campaign_update:
-                return JsonResponse(response)
+        #     if latest_campaign_update and cached_date > latest_campaign_update:
+        #         return JsonResponse(response)
 
         stats_types = stats_types.split(",")
         config = get_object_or_404(Config, slug="im-config")
@@ -807,7 +807,7 @@ class IMStatsViewSet(viewsets.ViewSet):
                 if campaign:
                     campaign_name = campaign.obr_name
                     # FIXME: We refetch the whole list for all submission this is probably a cause of slowness
-                    scope = campaign.get_all_districts().values_list("id", flat=True)
+                    scope = campaign.get_round_districts(round_number).values_list("id", flat=True)
                     campaign_stats[campaign_name]["has_scope"] = len(scope) > 0
                     district = find_district(district_name, region_name, district_dict)
                     if not district:
@@ -1368,7 +1368,7 @@ class LQASStatsViewSet(viewsets.ViewSet):
                             if source_info == "True":
                                 caregiver_counts_dict[source_info_key] += 1
                 # FIXME: We refetch the whole list for all submission this is probably a cause of slowness
-                scope = campaign.get_all_districts().values_list("id", flat=True)
+                scope = campaign.get_round_districts(round_number).values_list("id", flat=True)
                 campaign_stats[campaign_name]["has_scope"] = len(scope) > 0
                 district = find_district(district_name, region_name, district_dict)
                 if not district:

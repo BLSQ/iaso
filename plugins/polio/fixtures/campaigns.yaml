@@ -1,0 +1,126 @@
+- model: iaso.group
+  pk: 1
+  fields:
+    name: hidden campaignScope
+    source_ref: null
+    domain: null
+    source_version: null
+    created_at: 2022-09-13 14:31:31.538021+00:00
+    updated_at: 2022-09-13 14:31:31.538064+00:00
+    org_units:
+    - 4
+- model: iaso.group
+  pk: 2
+  fields:
+    name: hidden campaignScope
+    source_ref: null
+    domain: null
+    source_version: null
+    created_at: 2022-09-13 14:31:31.557366+00:00
+    updated_at: 2022-09-13 14:31:31.557421+00:00
+    org_units:
+    - 5
+- model: polio.campaignscope
+  pk: 1
+  fields:
+    group: 1
+    campaign: bef46d00-5bb9-488f-8b50-c80cf60ec03f
+    vaccine: mOPV2
+- model: polio.campaignscope
+  pk: 2
+  fields:
+    group: 2
+    campaign: bef46d00-5bb9-488f-8b50-c80cf60ec03f
+    vaccine: nOPV2
+- model: polio.round
+  pk: 1
+  fields:
+    started_at: 2022-08-01
+    number: 1
+    campaign: bef46d00-5bb9-488f-8b50-c80cf60ec03f
+    ended_at: 2022-09-12
+    mop_up_started_at: null
+    mop_up_ended_at: null
+    im_started_at: null
+    im_ended_at: null
+    lqas_started_at: null
+    lqas_ended_at: null
+    target_population: null
+    doses_requested: null
+    cost: '0.00'
+    im_percentage_children_missed_in_household: null
+    im_percentage_children_missed_out_household: null
+    im_percentage_children_missed_in_plus_out_household: null
+    awareness_of_campaign_planning: null
+    main_awareness_problem: null
+    lqas_district_passing: 0
+    lqas_district_failing: null
+    preparedness_spreadsheet_url: null
+    preparedness_sync_status: FINISHED
+- model: polio.campaign
+  pk: bef46d00-5bb9-488f-8b50-c80cf60ec03f
+  fields:
+    deleted_at: null
+    epid: fixture_campaign
+    obr_name: Fixture campaign
+    gpei_coordinator: null
+    gpei_email: null
+    description: Campaign created from fixtures
+    separate_scopes_per_round: false
+    initial_org_unit: 1
+    country: 1
+    creation_email_send_at: null
+    group: null
+    onset_at: null
+    three_level_call_at: null
+    cvdpv_notified_at: null
+    cvdpv2_notified_at: null
+    pv_notified_at: null
+    pv2_notified_at: null
+    virus: PV3
+    vacine: null
+    detection_status: PENDING
+    detection_responsible: null
+    detection_first_draft_submitted_at: null
+    detection_rrt_oprtt_approval_at: null
+    risk_assessment_status: SUBMITTED
+    risk_assessment_responsible: null
+    investigation_at: null
+    risk_assessment_first_draft_submitted_at: null
+    risk_assessment_rrt_oprtt_approval_at: null
+    ag_nopv_group_met_at: null
+    dg_authorized_at: null
+    verification_score: null
+    doses_requested: null
+    preperadness_spreadsheet_url: null
+    preperadness_sync_status: FINISHED
+    surge_spreadsheet_url: null
+    country_name_in_surge_spreadsheet: null
+    budget_status: null
+    budget_responsible: null
+    is_test: false
+    last_budget_event: null
+    who_disbursed_to_co_at: null
+    who_disbursed_to_moh_at: null
+    unicef_disbursed_to_co_at: null
+    unicef_disbursed_to_moh_at: null
+    eomg: null
+    no_regret_fund_amount: null
+    payment_mode: null
+    round_one: null
+    round_two: null
+    created_at: 2022-09-13 14:30:52.327848+00:00
+    updated_at: 2022-09-13 14:33:50.871497+00:00
+    district_count: null
+    budget_rrt_oprtt_approval_at: null
+    budget_submitted_at: null
+    is_preventive: false
+    enable_send_weekly_email: false
+- model: polio.countryusersgroup
+  pk: 1
+  fields:
+    country: 1
+    language: EN
+    created_at: 2022-09-13 14:30:54.593018+00:00
+    updated_at: 2022-09-13 14:30:54.593065+00:00
+    users: []

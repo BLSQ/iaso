@@ -79,15 +79,23 @@ export const RiskAssessmentForm = () => {
                         component={DateInput}
                         fullWidth
                     />
-
-                    <Field
-                        label={formatMessage(MESSAGES.dosesRequested)}
-                        name="doses_requested"
-                        component={TextInput}
-                        className={classes.input}
-                    />
                 </Grid>
                 <Grid item md={6}>
+                    {rounds.map((round, i) => {
+                        return (
+                            <Field
+                                key={round.number}
+                                label={`${formatMessage(
+                                    MESSAGES.dosesRequested,
+                                )} ${formatMessage(MESSAGES.round)} ${
+                                    round.number
+                                }`}
+                                name={`rounds[${i}].doses_requested`}
+                                component={TextInput}
+                                className={classes.input}
+                            />
+                        );
+                    })}
                     {rounds.map((round, i) => {
                         return (
                             <Field

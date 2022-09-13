@@ -40,7 +40,7 @@ const getShapeQuery = (loadingCampaigns, groupId, campaign, vaccine, round) => {
     };
 };
 
-const CalendarMap = ({ campaigns, loadingCampaigns }) => {
+const CalendarMap = ({ campaigns, loadingCampaigns, isPdf }) => {
     const classes = useStyles();
     const [viewport, setViewPort] = useState(defaultViewport);
     const map = useRef();
@@ -114,9 +114,11 @@ const CalendarMap = ({ campaigns, loadingCampaigns }) => {
             <Map
                 zoomSnap={0.25}
                 ref={map}
-                style={{ height: '72vh' }}
-                center={defaultViewport.center}
-                zoom={defaultViewport.zoom}
+                style={{
+                    height: !isPdf ? '72vh' : '800px',
+                }}
+                center={viewport.center}
+                zoom={viewport.zoom}
                 scrollWheelZoom={false}
                 onViewportChanged={v => setViewPort(v)}
             >
@@ -141,9 +143,14 @@ const CalendarMap = ({ campaigns, loadingCampaigns }) => {
     );
 };
 
+CalendarMap.defaultProps = {
+    isPdf: false,
+};
+
 CalendarMap.propTypes = {
     campaigns: PropTypes.array.isRequired,
     loadingCampaigns: PropTypes.bool.isRequired,
+    isPdf: PropTypes.bool,
 };
 
 export { CalendarMap };

@@ -476,26 +476,47 @@ where group_id = polio_roundscope.group_id""",
 
         wb = openpyxl.load_workbook(path)
         sheet = wb.get_sheet_by_name("choices")
-        row = 2
-        column = 1
+        choices_row = 2
+        choices_column = 1
         cell = list(string.ascii_uppercase)
+        q_sheet = wb.get_sheet_by_name("survey")
+        survey_columns = []
+        survey_last_empty_row = len(list(q_sheet.rows))
+        for l in cell:
+            survey_columns.append(q_sheet[f"{l}1"].value)
+
+        print(f"CONGO: {OrgUnit.objects.descendants(OrgUnit.objects.get(pk=38862))}")
+
         for ou in campaign_scope:
-            sheet[cell[column - 1] + str(row)] = "ou"
-            sheet[cell[column]+str(row)] = ou.id
-            sheet[cell[column + 1] + str(row)] = str(ou)
-            row += 1
+            ou_children = OrgUnit.objects.descendants(ou)
+            q_sheet[cell[0] + str(survey_last_empty_row)] = "select_one"
+            print(ou_children)
+            # if(ou_children):
+            #     last_empty_row = len(list(q_sheet.rows))
+            #     print(f"Found {ou_children}")
+            #     print(last_empty_row)
+
+
+
+            sheet[cell[choices_column - 1] + str(choices_row)] = "ou"
+            sheet[cell[choices_column]+ str(choices_row)] = ou.id
+            sheet[cell[choices_column + 1] + str(choices_row)] = str(ou)
+            choices_row += 1
+            survey_last_empty_row += 1
 
         filename = f"FORM_{campaign.obr_name}_{datetime.now().date()}.xlsx"
 
-        with NamedTemporaryFile() as tmp:
-            wb.save(tmp.name)
-            tmp.seek(0)
-            stream = tmp.read()
+        return HttpResponse("OK")
 
-            response = HttpResponse(stream,
-                                    content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
-            response["Content-Disposition"] = "attachment; filename=%s" % filename
-            return response
+        # with NamedTemporaryFile() as tmp:
+        #     wb.save(tmp.name)
+        #     tmp.seek(0)
+        #     stream = tmp.read()
+        #
+        #     response = HttpResponse(stream,
+        #                             content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
+        #     response["Content-Disposition"] = "attachment; filename=%s" % filename
+        #     return response
 
 class CountryUsersGroupViewSet(ModelViewSet):
     serializer_class = CountryUsersGroupSerializer

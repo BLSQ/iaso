@@ -1,7 +1,8 @@
 /* eslint-disable react/require-default-props */
 import React, { FunctionComponent } from 'react';
 import { makeStyles, Button } from '@material-ui/core';
-import SaveAlt from '@material-ui/icons/SaveAlt';
+// @ts-ignore
+import { CsvSvg } from 'bluesquare-components';
 
 type Props = {
     csvUrl: string;
@@ -32,7 +33,7 @@ export const CsvButton: FunctionComponent<Props> = ({
             color="primary"
             href={csvUrl}
         >
-            <SaveAlt />
+            <CsvSvg />
             CSV
         </Button>
     );

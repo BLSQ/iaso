@@ -30,7 +30,7 @@ export const useGetTeamsDropDown = (): UseQueryResult<any, Error> => {
 };
 
 export const useGetApprovalTeams = (): UseQueryResult<any, Error> => {
-    const queryKey: any[] = ['teams'];
+    const queryKey: any[] = ['teamsList'];
     // @ts-ignore
     return useSnackQuery(queryKey, () => getTeams(), undefined, {
         // staleTime required to avoid infinite loop
@@ -40,6 +40,23 @@ export const useGetApprovalTeams = (): UseQueryResult<any, Error> => {
             return data.filter(team =>
                 team.name.toLowerCase().includes('approval'),
             );
+        },
+    });
+};
+
+export const useUserHasTeam = (
+    userId?: number,
+): UseQueryResult<boolean, Error> => {
+    return useSnackQuery({
+        queryKey: ['getUserTeam', userId],
+        queryFn: () => getTeams(),
+        options: {
+            select: data => {
+                if (!data) return false;
+                return (
+                    data.filter(team => team.users.includes(userId)).length > 0
+                );
+            },
         },
     });
 };

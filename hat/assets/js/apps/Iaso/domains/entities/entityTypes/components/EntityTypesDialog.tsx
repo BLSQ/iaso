@@ -20,7 +20,7 @@ import { baseUrls } from '../../../../constants/urls';
 
 import { useGetForm, useGetForms } from '../hooks/requests/forms';
 import { useTranslatedErrors } from '../../../../libs/validation';
-
+import { useGetPossibleFields } from '../hooks/useGetPossibleFields';
 import MESSAGES from '../messages';
 
 type RenderTriggerProps = {
@@ -122,21 +122,12 @@ export const EntityTypesDialog: FunctionComponent<Props> = ({
         touched,
         messages: MESSAGES,
     });
-    const { data: currentForm, isFetching: isFetchingForm } = useGetForm(
-        values?.reference_form,
-        Boolean(values?.reference_form) && isOpen,
-        'possible_fields',
-    );
     const isNew = !initialData?.id;
     const { data: formsList, isFetching: isFetchingForms } = useGetForms(isNew);
-    const possibleFields = useMemo(
-        () =>
-            (currentForm?.possible_fields || []).map(field => ({
-                value: field.name,
-                label: field.label,
-            })),
-        [currentForm],
+    const { possibleFields, isFetchingForm } = useGetPossibleFields(
+        isOpen ? values?.reference_form : undefined,
     );
+
     return (
         <FormikProvider value={formik}>
             {/* @ts-ignore */}
@@ -210,7 +201,10 @@ export const EntityTypesDialog: FunctionComponent<Props> = ({
                         }
                         value={!isFetchingForm ? values.fields_list_view : []}
                         label={MESSAGES.fieldsListView}
-                        options={possibleFields}
+                        options={possibleFields.map(field => ({
+                            value: field.name,
+                            label: field.label,
+                        }))}
                         helperText={
                             isNew && !values.reference_form
                                 ? formatMessage(MESSAGES.selectReferenceForm)
@@ -232,7 +226,10 @@ export const EntityTypesDialog: FunctionComponent<Props> = ({
                                 : []
                         }
                         label={MESSAGES.fieldsDetailInfoView}
-                        options={possibleFields}
+                        options={possibleFields.map(field => ({
+                            value: field.name,
+                            label: field.label,
+                        }))}
                         helperText={
                             isNew && !values.reference_form
                                 ? formatMessage(MESSAGES.selectReferenceForm)

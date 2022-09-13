@@ -11,7 +11,9 @@ from django.contrib.auth.models import User
 from django.contrib.gis.db.models.fields import PointField
 from django.contrib.gis.geos import Point
 from django.contrib.postgres.aggregates import ArrayAgg
+from django.contrib.postgres.fields import ArrayField
 from django.core.paginator import Paginator
+from django.core.validators import MinLengthValidator
 from django.db import models
 from django.db.models import Q
 from django.shortcuts import get_object_or_404
@@ -23,6 +25,7 @@ from iaso.utils import flat_parse_xml_soup, as_soup, extract_form_version_id
 from .device import DeviceOwnership, Device
 from .forms import Form, FormVersion
 from ..utils.jsonlogic import jsonlogic_to_q
+from ..utils.models.soft_deletable import SoftDeletableModel
 
 logger = getLogger(__name__)
 
@@ -91,7 +94,7 @@ class AccountFeatureFlag(models.Model):
 class Account(models.Model):
     """Account represent a tenant (=roughly a client organisation or a country)"""
 
-    name = models.TextField(null=True, blank=True)
+    name = models.TextField(unique=True, validators=[MinLengthValidator(1)])
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     users = models.ManyToManyField(User, blank=True)
@@ -879,7 +882,6 @@ class Instance(models.Model):
         if f is None:
             f = self.form.location_field
 
-        if self.json and f:
             location = self.json.get(f, None)
             if location:
                 latitude, longitude, altitude, accuracy = [float(x) for x in location.split(" ")]
@@ -1047,6 +1049,7 @@ class Instance(models.Model):
         return {
             "uuid": self.uuid,
             "last_modified_by": last_modified_by,
+            "modification": True,
             "id": self.id,
             "device_id": self.device.imei if self.device else None,
             "file_name": self.file_name,
@@ -1114,6 +1117,23 @@ class Instance(models.Model):
         self.save()
         log_modification(original, self, INSTANCE_API, user=user)
 
+    def can_user_modify(self, user):
+        """Check only for lock, assume user have other perms"""
+        # active locks for instance
+        locks = self.instancelock_set.filter(unlocked_by__isnull=True)
+        # highest lock
+        highest_lock = locks.order_by("top_org_unit__path__depth").first()
+        if not highest_lock:
+            # No lock anyone can modify
+            return True
+
+        # can user access this orgunit
+        from iaso.models import OrgUnit  # Local import to prevent loop
+
+        if OrgUnit.objects.filter_for_user(user).filter(id=highest_lock.top_org_unit_id).exists():
+            return True
+        return False
+
 
 class InstanceFile(models.Model):
     UPLOADED_TO = "instancefiles/"
@@ -1173,6 +1193,12 @@ class Profile(models.Model):
             "language": self.language,
             "user_id": self.user.id,
         }
+
+    def has_a_team(self):
+        team = self.user.teams.filter(deleted_at=None).first()
+        if team:
+            return True
+        return False
 
 
 class ExportRequest(models.Model):
@@ -1285,3 +1311,28 @@ class BulkCreateUserCsvFile(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     created_by = models.ForeignKey(User, on_delete=models.PROTECT, null=True)
     account = models.ForeignKey(Account, on_delete=models.PROTECT, null=True)
+
+
+class InstanceLockQueryset(models.QuerySet):
+    def actives(self):
+        """Lock that don't have ben unlocked"""
+        return self.filter(unlocked_by__isnull=True)
+
+
+class InstanceLock(models.Model):
+    instance = models.ForeignKey("Instance", on_delete=models.CASCADE)
+    locked_at = models.DateTimeField(auto_now_add=True)
+    locked_by = models.ForeignKey(User, on_delete=models.PROTECT)
+    unlocked_at = models.DateTimeField(blank=True, null=True)
+    unlocked_by = models.ForeignKey(User, on_delete=models.PROTECT, blank=True, null=True, related_name="+")
+    top_org_unit = models.ForeignKey("OrgUnit", on_delete=models.PROTECT, related_name="instance_lock")
+
+    # We CASCADE if we delete the instance because the lock don't make sense then
+    # but if the user or orgunit is deleted we should probably worry hence protect
+    def __str__(self):
+        return (
+            f"{self.instance} - {self.locked_by} " + f"UNLOCKED by {self.unlocked_by}" if self.unlocked_by else "LOCKED"
+        )
+
+    class Meta:
+        ordering = ["-locked_at"]

@@ -1,0 +1,310 @@
+- model: iaso.datasource
+  pk: 1
+  fields:
+    name: Fixture DS
+    read_only: false
+    credentials: 1
+    description: ''
+    created_at: 2022-09-13 13:09:58.423543+00:00
+    updated_at: 2022-09-13 13:09:58.423566+00:00
+    default_version: null
+    projects:
+    - 1
+- model: iaso.sourceversion
+  pk: 1
+  fields:
+    data_source: 1
+    number: 1
+    description: null
+    created_at: 2022-09-13 13:11:21.450850+00:00
+    updated_at: 2022-09-13 13:11:21.450907+00:00
+- model: iaso.sourceversion
+  pk: 2
+  fields:
+    data_source: 1
+    number: 2
+    description: null
+    created_at: 2022-09-13 13:11:30.903884+00:00
+    updated_at: 2022-09-13 13:11:30.903932+00:00
+- model: iaso.externalcredentials
+  pk: 1
+  fields:
+    account: 4
+    name: ''
+    login: ''
+    password: ''
+    url: ''
+- model: iaso.orgunittype
+  pk: 1
+  fields:
+    name: Country
+    short_name: Count
+    created_at: 2022-09-13 13:12:18.488257+00:00
+    updated_at: 2022-09-13 13:16:27.655439+00:00
+    category: COUNTRY
+    reference_form: null
+    depth: 0
+    sub_unit_types:
+    - 2
+    projects:
+    - 1
+- model: iaso.orgunittype
+  pk: 2
+  fields:
+    name: Region
+    short_name: Regi
+    created_at: 2022-09-13 13:12:43.195513+00:00
+    updated_at: 2022-09-13 13:16:19.412231+00:00
+    category: REGION
+    reference_form: null
+    depth: 1
+    sub_unit_types:
+    - 3
+    projects:
+    - 1
+- model: iaso.orgunittype
+  pk: 3
+  fields:
+    name: District
+    short_name: Dist
+    created_at: 2022-09-13 13:13:01.221285+00:00
+    updated_at: 2022-09-13 13:16:39.603683+00:00
+    category: DISTRICT
+    reference_form: null
+    depth: 2
+    sub_unit_types:
+    - 4
+    - 5
+    projects:
+    - 1
+- model: iaso.orgunittype
+  pk: 4
+  fields:
+    name: Aire de Santé
+    short_name: Aire
+    created_at: 2022-09-13 13:14:13.166911+00:00
+    updated_at: 2022-09-13 13:16:02.321919+00:00
+    category: HF
+    reference_form: null
+    depth: 3
+    sub_unit_types: []
+    projects:
+    - 1
+- model: iaso.orgunittype
+  pk: 5
+  fields:
+    name: Hopital
+    short_name: Hopi
+    created_at: 2022-09-13 13:14:32.506181+00:00
+    updated_at: 2022-09-13 13:15:53.812547+00:00
+    category: HF
+    reference_form: null
+    depth: 3
+    sub_unit_types: []
+    projects:
+    - 1
+- model: iaso.orgunit
+  pk: 1
+  fields:
+    name: LaLaland
+    uuid: null
+    custom: false
+    validated: true
+    validation_status: VALID
+    version: 2
+    parent: null
+    path: '1'
+    aliases: '[]'
+    org_unit_type: 1
+    sub_source: null
+    source_ref: null
+    geom: SRID=4326;MULTIPOLYGON (((4.394863 50.68188, 4.6674 50.696023, 4.913351
+      50.345253, 4.219994 50.343499, 4.394863 50.68188)))
+    simplified_geom: SRID=4326;MULTIPOLYGON (((4.394863 50.68188, 4.6674 50.696023,
+      4.913351 50.345253, 4.219994 50.343499, 4.394863 50.68188)))
+    catchment: null
+    geom_ref: null
+    reference_instance: null
+    gps_source: null
+    location: null
+    created_at: 2022-09-13 13:18:36.563283+00:00
+    updated_at: 2022-09-13 13:21:35.305029+00:00
+    creator:
+    - test
+- model: iaso.orgunit
+  pk: 2
+  fields:
+    name: Region A
+    uuid: null
+    custom: false
+    validated: true
+    validation_status: VALID
+    version: 2
+    parent: 1
+    path: '1.2'
+    aliases: '[]'
+    org_unit_type: 2
+    sub_source: null
+    source_ref: null
+    geom: SRID=4326;MULTIPOLYGON (((4.522091 50.681622, 4.596232 50.67901, 4.593486
+      50.637209, 4.622319 50.57967, 4.522091 50.566584, 4.457561 50.634595, 4.47541
+      50.672046, 4.522091 50.681622)))
+    simplified_geom: SRID=4326;MULTIPOLYGON (((4.522091 50.681622, 4.596232 50.67901,
+      4.593486 50.637209, 4.622319 50.57967, 4.522091 50.566584, 4.457561 50.634595,
+      4.47541 50.672046, 4.522091 50.681622)))
+    catchment: null
+    geom_ref: null
+    reference_instance: null
+    gps_source: null
+    location: null
+    created_at: 2022-09-13 13:19:00.066115+00:00
+    updated_at: 2022-09-13 13:20:48.927882+00:00
+    creator:
+    - test
+- model: iaso.orgunit
+  pk: 3
+  fields:
+    name: Region B
+    uuid: null
+    custom: false
+    validated: true
+    validation_status: VALID
+    version: 2
+    parent: 1
+    path: '1.3'
+    aliases: '[]'
+    org_unit_type: 2
+    sub_source: null
+    source_ref: null
+    geom: SRID=4326;MULTIPOLYGON (((4.843329 50.362818, 4.700539 50.363694, 4.744475
+      50.430247, 4.843329 50.362818)))
+    simplified_geom: SRID=4326;MULTIPOLYGON (((4.843329 50.362818, 4.700539 50.363694,
+      4.744475 50.430247, 4.843329 50.362818)))
+    catchment: null
+    geom_ref: null
+    reference_instance: null
+    gps_source: null
+    location: null
+    created_at: 2022-09-13 13:19:25.745156+00:00
+    updated_at: 2022-09-13 13:21:51.133288+00:00
+    creator:
+    - test
+- model: iaso.orgunit
+  pk: 4
+  fields:
+    name: District A.A
+    uuid: null
+    custom: false
+    validated: true
+    validation_status: VALID
+    version: 2
+    parent: 2
+    path: 1.2.4
+    aliases: '[]'
+    org_unit_type: 3
+    sub_source: null
+    source_ref: null
+    geom: SRID=4326;MULTIPOLYGON (((4.744872 50.430061, 4.751566 50.363069, 4.700422
+      50.363617, 4.744872 50.430061)))
+    simplified_geom: SRID=4326;MULTIPOLYGON (((4.744872 50.430061, 4.751566 50.363069,
+      4.700422 50.363617, 4.744872 50.430061)))
+    catchment: null
+    geom_ref: null
+    reference_instance: null
+    gps_source: null
+    location: null
+    created_at: 2022-09-13 13:22:37.520358+00:00
+    updated_at: 2022-09-13 13:31:06.855831+00:00
+    creator:
+    - test
+- model: iaso.orgunit
+  pk: 5
+  fields:
+    name: District A.B
+    uuid: null
+    custom: false
+    validated: true
+    validation_status: VALID
+    version: 2
+    parent: 3
+    path: 1.3.5
+    aliases: '[]'
+    org_unit_type: 3
+    sub_source: null
+    source_ref: null
+    geom: SRID=4326;MULTIPOLYGON (((4.744529 50.43028, 4.763236 50.363507, 4.842354
+      50.362631, 4.744529 50.43028)))
+    simplified_geom: SRID=4326;MULTIPOLYGON (((4.744529 50.43028, 4.763236 50.363507,
+      4.842354 50.362631, 4.744529 50.43028)))
+    catchment: null
+    geom_ref: null
+    reference_instance: null
+    gps_source: null
+    location: null
+    created_at: 2022-09-13 13:29:16.457966+00:00
+    updated_at: 2022-09-13 13:33:44.975067+00:00
+    creator:
+    - test
+- model: iaso.orgunit
+  pk: 6
+  fields:
+    name: AS A.B.A
+    uuid: null
+    custom: false
+    validated: true
+    validation_status: VALID
+    version: 2
+    parent: 5
+    path: 1.3.5.6
+    aliases: '[]'
+    org_unit_type: 4
+    sub_source: null
+    source_ref: null
+    geom: null
+    simplified_geom: null
+    catchment: null
+    geom_ref: null
+    reference_instance: null
+    gps_source: null
+    location: null
+    created_at: 2022-09-13 13:30:33.732270+00:00
+    updated_at: 2022-09-13 13:33:36.392399+00:00
+    creator:
+    - test
+- model: iaso.orgunit
+  pk: 7
+  fields:
+    name: Hopital A.A.A
+    uuid: null
+    custom: false
+    validated: true
+    validation_status: VALID
+    version: 2
+    parent: 4
+    path: 1.2.4.7
+    aliases: '[]'
+    org_unit_type: 5
+    sub_source: null
+    source_ref: null
+    geom: null
+    simplified_geom: null
+    catchment: null
+    geom_ref: null
+    reference_instance: null
+    gps_source: null
+    location: SRID=4326;POINT Z (4.73404988 50.386067 0)
+    created_at: 2022-09-13 13:33:12.167913+00:00
+    updated_at: 2022-09-13 13:56:18.204311+00:00
+    creator:
+    - test
+- model: iaso.account
+  pk: 4
+  fields:
+    name: test
+    created_at: 2021-10-15 10:42:13.542692+00:00
+    updated_at: 2022-09-13 13:18:33.328634+00:00
+    default_version: 2
+    users:
+    - - test
+    feature_flags:
+    - ALLOW_SHAPE_EDITION

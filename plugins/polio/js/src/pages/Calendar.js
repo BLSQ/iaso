@@ -1,12 +1,17 @@
-import React, { useMemo } from 'react';
+import React, { useMemo, useEffect, useState } from 'react';
 import PropTypes from 'prop-types';
 import moment from 'moment';
-import { Box, makeStyles, Grid } from '@material-ui/core';
-import { commonStyles, useSafeIntl } from 'bluesquare-components';
+import classnames from 'classnames';
+import { Box, makeStyles, Grid, Button, Typography } from '@material-ui/core';
+import PictureAsPdfIcon from '@material-ui/icons/PictureAsPdf';
+import {
+    commonStyles,
+    useSafeIntl,
+    LoadingSpinner,
+} from 'bluesquare-components';
 import { useSelector } from 'react-redux';
-
 import TopBar from 'Iaso/components/nav/TopBarComponent';
-
+import domToPdf from 'dom-to-pdf';
 import { CampaignsCalendar } from '../components/campaignCalendar';
 import { getCampaignColor } from '../constants/campaignsColors';
 import { CalendarMap } from '../components/campaignCalendar/map/CalendarMap';
@@ -25,8 +30,20 @@ import { useGetCampaigns } from '../hooks/useGetCampaigns';
 import MESSAGES from '../constants/messages';
 import { Filters } from '../components/campaignCalendar/Filters';
 
+const pageWidth = 1980;
+
 const useStyles = makeStyles(theme => ({
     ...commonStyles(theme),
+    loadingSpinnerPdf: {
+        backgroundColor: 'rgba(255,255,255,1)',
+        zIndex: 2000,
+    },
+    isPdf: {
+        height: 'auto',
+    },
+    isNotPdf: {
+        height: 'calc(100vh - 65px)',
+    },
 }));
 
 const Calendar = ({ params }) => {
@@ -56,6 +73,9 @@ const Calendar = ({ params }) => {
         ? moment(params.currentDate, dateFormat)
         : moment();
 
+    const [isCalendarAndMapLoaded, setCalendarAndMapLoaded] = useState(false);
+    const [isPdf, setPdf] = useState(false);
+
     const currentMonday = currentDate.clone().startOf('isoWeek');
     const calendarData = useMemo(
         () => getCalendarData(currentMonday),
@@ -72,39 +92,106 @@ const Calendar = ({ params }) => {
             ).map((c, index) => ({ ...c, color: getCampaignColor(index) })),
         [mappedCampaigns, calendarData.firstMonday, calendarData.lastSunday],
     );
+
+    const createPDF = async () => {
+        const element = document.getElementById('pdf');
+        const options = {
+            filename: 'calendar.pdf',
+            excludeTagNames: 'button',
+            overrideWidth: pageWidth,
+        };
+
+        await setPdf(true);
+
+        document.body.style.width = `${pageWidth}px`;
+        window.dispatchEvent(new Event('resize'));
+        setTimeout(() => {
+            domToPdf(element, options, async () => {
+                await setPdf(false);
+                document.body.style.width = 'auto';
+                window.dispatchEvent(new Event('resize'));
+            });
+        }, 1000);
+    };
+
+    useEffect(() => {
+        if (campaigns.length > 0) {
+            setCalendarAndMapLoaded(true);
+        }
+    }, [campaigns]);
+
     return (
         <div>
-            {isLogged && (
+            {isLogged && !isPdf && (
                 <TopBar
                     title={formatMessage(MESSAGES.calendar)}
                     displayBackButton={false}
                 />
             )}
-            <Box className={classes.containerFullHeightNoTabPadded}>
-                <Box mb={4}>
-                    <Filters disableDates disableOnlyDeleted />
-                </Box>
+            {isPdf && (
+                <LoadingSpinner
+                    absolute
+                    classes={{
+                        rootAbsolute: classes.loadingSpinnerPdf,
+                    }}
+                />
+            )}
 
-                <Grid container spacing={2}>
-                    <Grid item xs={12} lg={8}>
-                        <CampaignsCalendar
-                            currentDate={currentDate}
-                            params={params}
-                            orders={orders}
-                            campaigns={filteredCampaigns}
-                            calendarData={calendarData}
-                            currentMonday={currentMonday}
-                            loadingCampaigns={isLoading}
-                        />
+            <div id="pdf">
+                <Box
+                    className={classnames(
+                        classes.containerFullHeightNoTabPadded,
+                        isPdf && classes.isPdf,
+                        !isPdf && classes.isNotPdf,
+                    )}
+                >
+                    {!isPdf && (
+                        <Box mb={4}>
+                            <Filters disableDates disableOnlyDeleted />
+                        </Box>
+                    )}
+                    <Box mb={2} mt={2} display="flex" justifyContent="flex-end">
+                        <Button
+                            onClick={createPDF}
+                            disabled={!isCalendarAndMapLoaded}
+                            type="button"
+                            color="primary"
+                            variant="contained"
+                        >
+                            <PictureAsPdfIcon style={{ marginRight: '8px' }} />
+                            {formatMessage(MESSAGES.exportToPdf)}
+                        </Button>
+                    </Box>
+                    <Grid container spacing={2}>
+                        {isPdf && (
+                            <Grid item xs={12}>
+                                <Typography variant="h3" color="primary">
+                                    {formatMessage(MESSAGES.calendarPdfTitle)}
+                                </Typography>
+                            </Grid>
+                        )}
+                        <Grid item xs={12} lg={!isPdf ? 8 : 12}>
+                            <CampaignsCalendar
+                                currentDate={currentDate}
+                                params={params}
+                                orders={orders}
+                                campaigns={filteredCampaigns}
+                                calendarData={calendarData}
+                                currentMonday={currentMonday}
+                                loadingCampaigns={isLoading}
+                                isPdf={isPdf}
+                            />
+                        </Grid>
+                        <Grid item xs={12} lg={!isPdf ? 4 : 12}>
+                            <CalendarMap
+                                campaigns={filteredCampaigns}
+                                loadingCampaigns={isLoading}
+                                isPdf={isPdf}
+                            />
+                        </Grid>
                     </Grid>
-                    <Grid item xs={12} lg={4}>
-                        <CalendarMap
-                            campaigns={filteredCampaigns}
-                            loadingCampaigns={isLoading}
-                        />
-                    </Grid>
-                </Grid>
-            </Box>
+                </Box>
+            </div>
         </div>
     );
 };

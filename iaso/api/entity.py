@@ -56,15 +56,22 @@ class EntitySerializer(serializers.ModelSerializer):
             "entity_type_name",
             "instances",
             "submitter",
+            "org_unit",
         ]
 
     entity_type_name = serializers.SerializerMethodField()
     attributes = serializers.SerializerMethodField()
+    org_unit = serializers.SerializerMethodField()
     submitter = serializers.SerializerMethodField()
 
     def get_attributes(self, entity: Entity):
         if entity.attributes:
             return entity.attributes.as_full_model()
+        return None
+
+    def get_org_unit(self, entity: Entity):
+        if entity.attributes.org_unit:
+            return entity.attributes.org_unit.as_location(with_parents=True)
         return None
 
     def get_submitter(self, entity: Entity):
@@ -325,13 +332,16 @@ class EntityViewSet(ModelViewSet):
                     "updated_at": entity.updated_at,
                     "attributes": entity.attributes.pk,
                     "entity_type": entity.entity_type.name,
+                    "org_unit": entity.attributes.org_unit.as_location(with_parents=True),
+                    "program": file_content.get("program"),
                 }
                 result_list.append(result)
         else:
             for entity in entities:
                 etype_fields = entity.entity_type.fields_list_view
                 entity_serialized = EntitySerializer(entity, many=False)
-                file_content = entity_serialized.data.get("attributes").get("file_content")
+                attributes = entity_serialized.data.get("attributes")
+                file_content = attributes.get("file_content")
                 form_version = EntityType.objects.get(pk=entity_type_id).reference_form.latest_version
                 form_descriptor = form_version.get_or_save_form_descriptor()
                 for k in form_descriptor:
@@ -377,6 +387,8 @@ class EntityViewSet(ModelViewSet):
                 result["entity_type_name"] = entity.entity_type.name
                 result["created_at"] = entity.created_at
                 result["updated_at"] = entity.updated_at
+                result["org_unit"] = entity.attributes.org_unit.as_location(with_parents=True)
+                result["program"] = file_content.get("program")
                 # Get data from xlsform
                 for k, v in file_content.items():
                     if k in list(entity.entity_type.fields_list_view):

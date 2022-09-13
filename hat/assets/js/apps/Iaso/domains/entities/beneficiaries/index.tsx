@@ -133,15 +133,12 @@ export const Beneficiaries: FunctionComponent<Props> = ({ params }) => {
                         {!isFetching && (
                             <ListMap
                                 locations={
-                                    data?.beneficiary?.map(beneficiary => ({
+                                    data?.result?.map(beneficiary => ({
                                         latitude:
-                                            beneficiary.attributes?.org_unit
-                                                ?.latitude,
+                                            beneficiary.org_unit?.latitude,
                                         longitude:
-                                            beneficiary.attributes?.org_unit
-                                                ?.longitude,
-                                        orgUnit:
-                                            beneficiary.attributes?.org_unit,
+                                            beneficiary.org_unit?.longitude,
+                                        orgUnit: beneficiary.org_unit,
                                         id: beneficiary.id,
                                         original: {
                                             ...beneficiary,
@@ -156,7 +153,7 @@ export const Beneficiaries: FunctionComponent<Props> = ({ params }) => {
                         <Box>
                             <Table
                                 marginTop={false}
-                                data={data?.beneficiary ?? []}
+                                data={data?.result ?? []}
                                 pages={data?.pages ?? 1}
                                 defaultSorted={[{ id: 'name', desc: false }]}
                                 columns={columns}

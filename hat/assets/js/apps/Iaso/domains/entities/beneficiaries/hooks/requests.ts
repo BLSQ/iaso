@@ -21,7 +21,7 @@ import getDisplayName, { Profile } from '../../../../utils/usersUtils';
 import { DropdownTeamsOptions, Team } from '../../../teams/types/team';
 
 export interface PaginatedBeneficiaries extends Pagination {
-    beneficiary: Array<Beneficiary>;
+    result: Array<Beneficiary>;
 }
 
 type Params = {
@@ -86,7 +86,7 @@ export const useGetBeneficiariesApiParams = (params: Params): GetAPiParams => {
     // @ts-ignore
     const searchParams = new URLSearchParams(apiParams);
     return {
-        url: `/api/entity/beneficiary/?${searchParams.toString()}`,
+        url: `/api/entity/?${searchParams.toString()}`,
         apiParams,
     };
 };
@@ -105,14 +105,14 @@ export const useGetBeneficiariesPaginated = (
     });
 };
 
-export const useGetBeneficiaries = (): UseQueryResult<
-    Array<Beneficiary>,
-    Error
-> =>
-    useSnackQuery({
-        queryKey: ['beneficiaries'],
-        queryFn: () => getRequest('/api/entity/beneficiary'),
-    });
+// export const useGetBeneficiaries = (): UseQueryResult<
+//     Array<Beneficiary>,
+//     Error
+// > =>
+//     useSnackQuery({
+//         queryKey: ['beneficiaries'],
+//         queryFn: () => getRequest('/api/entity'),
+//     });
 
 export const useDeleteBeneficiary = (): UseMutationResult =>
     useSnackMutation({
@@ -134,7 +134,7 @@ export const useSaveBeneficiary = (): UseMutationResult =>
     );
 
 const getBeneficiary = (entityId: string | undefined): Promise<Beneficiary> => {
-    return getRequest(`/api/entity/beneficiary/${entityId}`);
+    return getRequest(`/api/entity/${entityId}`);
 };
 export const useGetBeneficiary = (
     entityId: string | undefined,

@@ -22,11 +22,11 @@ import {
     mapPopupStyles,
 } from 'bluesquare-components';
 import PopupItemComponent from '../../../../components/maps/popups/PopupItemComponent';
-import { LastVisit } from './fieldsValue/LastVisit';
-import { RegistrationDate } from './fieldsValue/RegistrationDate';
-import { VaccinationNumber } from './fieldsValue/VaccinationNumber';
-import { Gender } from './fieldsValue/Gender';
-import { Age } from './fieldsValue/Age';
+// import { LastVisit } from './fieldsValue/LastVisit';
+// import { RegistrationDate } from './fieldsValue/RegistrationDate';
+// import { VaccinationNumber } from './fieldsValue/VaccinationNumber';
+// import { Gender } from './fieldsValue/Gender';
+// import { Age } from './fieldsValue/Age';
 import { LinkToOrgUnit } from '../../../orgUnits/components/LinkToOrgUnit';
 
 import { Location } from './ListMap';
@@ -87,15 +87,15 @@ export const PopupComponent: FunctionComponent<Props> = ({
                     )}
                     {location && (
                         <>
-                            <PopupItemComponent
+                            {/* <PopupItemComponent
                                 label={formatMessage(MESSAGES.name)}
                                 value={location.original.name}
                             />
                             <PopupItemComponent
                                 label={formatMessage(MESSAGES.id)}
                                 value={location.original.uuid}
-                            />
-                            <PopupItemComponent
+                            /> */}
+                            {/* <PopupItemComponent
                                 label={formatMessage(MESSAGES.lastVisit)}
                                 value={
                                     <LastVisit
@@ -104,21 +104,21 @@ export const PopupComponent: FunctionComponent<Props> = ({
                                         }
                                     />
                                 }
-                            />
-                            <PopupItemComponent
+                            /> */}
+                            {/* <PopupItemComponent
                                 label={formatMessage(MESSAGES.program)}
                                 value={
                                     location.original.attributes?.file_content
                                         ?.program
                                 }
-                            />
+                            /> */}
                             <PopupItemComponent
                                 label="HC"
                                 value={
                                     <LinkToOrgUnit orgUnit={location.orgUnit} />
                                 }
                             />
-                            <PopupItemComponent
+                            {/* <PopupItemComponent
                                 label={formatMessage(MESSAGES.registrationDate)}
                                 value={
                                     <RegistrationDate
@@ -135,8 +135,8 @@ export const PopupComponent: FunctionComponent<Props> = ({
                                         beneficiary={location?.original}
                                     />
                                 }
-                            />
-                            <PopupItemComponent
+                            /> */}
+                            {/* <PopupItemComponent
                                 label={formatMessage(MESSAGES.age)}
                                 value={<Age beneficiary={location?.original} />}
                             />
@@ -145,7 +145,7 @@ export const PopupComponent: FunctionComponent<Props> = ({
                                 value={
                                     <Gender beneficiary={location?.original} />
                                 }
-                            />
+                            /> */}
                             <Box className={classes.actionBox}>
                                 <Grid
                                     container

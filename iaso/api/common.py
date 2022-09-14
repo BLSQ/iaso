@@ -2,7 +2,6 @@ import logging
 from datetime import datetime, date
 from functools import wraps
 from traceback import format_exc
-from typing import List
 
 import pytz
 from django.db import transaction
@@ -73,51 +72,28 @@ def safe_api_import(key: str, fallback_status=200):
     return decorator
 
 
-class IasoPermissionClass(permissions.BasePermission):
-    def __init__(self, perms):
-        self.perms = perms
-
-    def has_permission(self, request, view):
-        return request.user and any(request.user.has_perm(perm) for perm in self.perms)
-
-
-def HasPermission(*perms):  # Getting rid of the return value avoids mypy error, but it's not ideal...
+class HasPermission:
     """
-    #     Permission class factory for simple permission checks.
-    #
-    #     If the user has any of the provided permissions, he will be granted access
-    #
-    #     Usage:
-    #
-    #     > class SomeViewSet(viewsets.ViewSet):
-    #     >     permission_classes=[HasPermission("perm_1", "perm_2)]
-    #     >     ...
-    #"""
-    return IasoPermissionClass(perms)
+    Permission class factory for simple permission checks.
 
+    If the user has any of the provided permissions, he will be granted access
 
-# class HasPermission:
-#     """
-#     Permission class factory for simple permission checks.
-#
-#     If the user has any of the provided permissions, he will be granted access
-#
-#     Usage:
-#
-#     > class SomeViewSet(viewsets.ViewSet):
-#     >     permission_classes=[HasPermission("perm_1", "perm_2)]
-#     >     ...
-#     """
-#
-#     def __init__(self, *perms):
-#         class PermissionClass(permissions.BasePermission):
-#             def has_permission(self, request, view):
-#                 return request.user and any(request.user.has_perm(perm) for perm in perms)
-#
-#         self._permission_class = PermissionClass
-#
-#     def __call__(self, *args, **kwargs):
-#         return self._permission_class()
+    Usage:
+
+    > class SomeViewSet(viewsets.ViewSet):
+    >     permission_classes=[HasPermission("perm_1", "perm_2)]
+    >     ...
+    """
+
+    def __init__(self, *perms):
+        class PermissionClass(permissions.BasePermission):
+            def has_permission(self, request, view):
+                return request.user and any(request.user.has_perm(perm) for perm in perms)
+
+        self._permission_class = PermissionClass
+
+    def __call__(self, *args, **kwargs) -> permissions.BasePermission:
+        return self._permission_class()
 
 
 class ReadOnlyOrHasPermission:

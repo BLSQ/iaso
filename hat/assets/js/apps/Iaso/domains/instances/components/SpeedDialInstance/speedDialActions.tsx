@@ -20,7 +20,6 @@ import ExportInstancesDialogComponent from '../ExportInstancesDialogComponent';
 import MESSAGES from '../../messages';
 import { Instance } from '../../types/instance';
 import ConfirmCancelDialogComponent from '../../../../components/dialogs/ConfirmCancelDialogComponent';
-import { prepareOrgUnitPayload } from './utils';
 import { useSaveOrgUnit } from '../../../orgUnits/hooks';
 import { usePostLockInstance } from '../../hooks';
 import { useLinkOrgUnitToReferenceSubmission } from './hooks';
@@ -91,16 +90,14 @@ export const useEditLocationWithGpsAction = (
 ): SpeedDialAction => {
     const { formatMessage } = useSafeIntl();
     const payload = useMemo(
-        () =>
-            prepareOrgUnitPayload(
-                currentInstance.org_unit,
-                {
-                    altitude: currentInstance?.altitude,
-                    latitude: currentInstance?.latitude,
-                    longitude: currentInstance?.longitude,
-                },
-                'gps',
-            ),
+        () => ({
+            id: currentInstance.org_unit.id,
+            gps: {
+                altitude: currentInstance?.altitude,
+                latitude: currentInstance?.latitude,
+                longitude: currentInstance?.longitude,
+            },
+        }),
         [
             currentInstance?.altitude,
             currentInstance?.latitude,
@@ -201,30 +198,30 @@ export const useEnketoAction = (currentInstance: Instance): SpeedDialAction => {
 
 type LinkToActionParams = {
     currentInstance: Instance;
-    isOrgUnitLinked: boolean;
+    isOrgUnitLinkable: boolean;
     formId: number;
     referenceFormId: number;
 };
 
 const renderTrigger =
-    (isLinked: boolean) =>
+    (isLinkable: boolean) =>
     ({ openDialog }) =>
-        isLinked ? (
-            <LinkOffIcon onClick={openDialog} />
-        ) : (
+        isLinkable ? (
             <LinkIcon onClick={openDialog} />
+        ) : (
+            <LinkOffIcon onClick={openDialog} />
         );
 
 export const useLinkToOrgUnitAction = ({
     currentInstance,
-    isOrgUnitLinked,
+    isOrgUnitLinkable,
     formId,
     referenceFormId,
 }: LinkToActionParams): SpeedDialAction => {
     const { formatMessage } = useSafeIntl();
-    const titleMessage = isOrgUnitLinked
-        ? MESSAGES.linkOffOrgUnitToInstanceReferenceTitle
-        : MESSAGES.linkOrgUnitToInstanceReferenceTitle;
+    const titleMessage = isOrgUnitLinkable
+        ? MESSAGES.linkOrgUnitToInstanceReferenceTitle
+        : MESSAGES.linkOffOrgUnitToInstanceReferenceTitle;
 
     const linkToSubmission = useLinkOrgUnitToReferenceSubmission({
         formId,
@@ -232,17 +229,17 @@ export const useLinkToOrgUnitAction = ({
     });
     return useMemo(() => {
         return {
-            id: isOrgUnitLinked
-                ? 'linkOffOrgUnitReferenceSubmission'
-                : 'linkOrgUnitReferenceSubmission',
+            id: isOrgUnitLinkable
+                ? 'linkOrgUnitReferenceSubmission'
+                : 'linkOffOrgUnitReferenceSubmission',
             icon: (
                 // @ts-ignore
                 <ConfirmCancelDialogComponent
                     titleMessage={titleMessage}
                     onConfirm={() =>
-                        linkToSubmission(currentInstance, isOrgUnitLinked)
+                        linkToSubmission(currentInstance, isOrgUnitLinkable)
                     }
-                    renderTrigger={renderTrigger(isOrgUnitLinked)}
+                    renderTrigger={renderTrigger(isOrgUnitLinkable)}
                 >
                     <DialogContentText id="alert-dialog-description">
                         {formatMessage(
@@ -256,7 +253,7 @@ export const useLinkToOrgUnitAction = ({
     }, [
         currentInstance,
         formatMessage,
-        isOrgUnitLinked,
+        isOrgUnitLinkable,
         linkToSubmission,
         titleMessage,
     ]);

@@ -1,5 +1,6 @@
 import { useCallback } from 'react';
 import { UseQueryResult } from 'react-query';
+import { useDispatch } from 'react-redux';
 import { baseUrls } from '../../../../constants/urls';
 import { getRequest } from '../../../../libs/Api';
 import { useSnackQuery } from '../../../../libs/apiHooks';
@@ -7,7 +8,6 @@ import { redirectTo } from '../../../../routing/actions';
 import { useSaveOrgUnit } from '../../../orgUnits/hooks';
 import { OrgUnit } from '../../../orgUnits/types/orgUnit';
 import { Instance } from '../../types/instance';
-import { prepareOrgUnitPayload } from './utils';
 import snackMessages from '../../../../components/snackBars/messages';
 
 type LinkToFormParams = {
@@ -19,29 +19,33 @@ type LinkToFormParams = {
 export const useLinkOrgUnitToReferenceSubmission = ({
     formId,
     referenceFormId,
-}: // eslint-disable-next-line no-unused-vars
-LinkToFormParams): ((instance: Instance, isOrgUnitLinked: boolean) => any) => {
+}: LinkToFormParams): ((
+    // eslint-disable-next-line no-unused-vars
+    instance: Instance,
+    // eslint-disable-next-line no-unused-vars
+    isOrgUnitLinkable: boolean,
+) => any) => {
     const { mutateAsync: saveOrgUnit } = useSaveOrgUnit(undefined, [
         'orgUnits',
     ]);
+    const dispatch = useDispatch();
     return useCallback(
-        (currentInstance: Instance, isOrgUnitLinked: boolean) => {
+        (currentInstance: Instance, isOrgUnitLinkable: boolean) => {
             const { org_unit: orgUnit, id: instanceId } = currentInstance ?? {};
-            const id = isOrgUnitLinked ? null : instanceId;
-            const orgUnitPayload: OrgUnit = prepareOrgUnitPayload(
-                orgUnit,
-                id,
-                'instance_reference',
-            );
+            const id = isOrgUnitLinkable ? instanceId : null;
+            const orgUnitPayload: Partial<OrgUnit> = {
+                id: orgUnit.id,
+                reference_instance_id: id,
+            };
 
             return saveOrgUnit(orgUnitPayload, {
                 onSuccess: (result: OrgUnit) => {
                     const url = `${baseUrls.orgUnitDetails}/orgUnitId/${result.id}/formId/${formId}/referenceFormId/${referenceFormId}/instanceId/${id}`;
-                    redirectTo(url, {});
+                    dispatch(redirectTo(url, {}));
                 },
             });
         },
-        [formId, referenceFormId, saveOrgUnit],
+        [formId, referenceFormId, saveOrgUnit, dispatch],
     );
 };
 

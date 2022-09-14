@@ -1,7 +1,7 @@
 /* eslint-disable react/jsx-props-no-spreading */
 import React, { FunctionComponent, useState } from 'react';
 import { Link } from 'react-router';
-import { connect, useSelector } from 'react-redux';
+import { connect, useDispatch, useSelector } from 'react-redux';
 import Alert from '@material-ui/lab/Alert';
 import { Box, Grid, makeStyles, Typography } from '@material-ui/core';
 
@@ -33,6 +33,7 @@ import { useGetInstance } from './compare/hooks/useGetInstance';
 import { useSnackQuery } from '../../libs/apiHooks';
 import SpeedDialInstance from './components/SpeedDialInstance/SpeedDialInstance';
 import { ClassNames } from '../../types/utils';
+import { redirectTo } from '../../routing/actions';
 
 const useStyles = makeStyles(theme => ({
     ...commonStyles(theme),
@@ -54,7 +55,6 @@ type Props = {
         instanceId: string;
     };
     router: any;
-    redirectToReplace: any;
 };
 
 type Logs = {
@@ -85,7 +85,6 @@ const InstanceDetails: FunctionComponent<Props> = props => {
     const classes: ClassNames = useStyles();
     const {
         router,
-        redirectToReplace,
         params: { instanceId },
         params,
     } = props;
@@ -93,7 +92,7 @@ const InstanceDetails: FunctionComponent<Props> = props => {
         useGetInstance(instanceId);
     // @ts-ignore
     const prevPathname = useSelector(state => state.routerCustom.prevPathname);
-    console.log('params', params);
+    const dispatch = useDispatch();
 
     // not showing history link in submission detail if there is only one version/log
     // in the future. add this info directly in the instance api to not make another call;
@@ -112,12 +111,14 @@ const InstanceDetails: FunctionComponent<Props> = props => {
                 }
                 displayBackButton
                 goBack={() => {
-                    if (prevPathname || !currentInstance) {
+                    if (prevPathname) {
                         router.goBack();
                     } else {
-                        redirectToReplace(baseUrls.instances, {
-                            formIds: currentInstance.form_id,
-                        });
+                        dispatch(
+                            redirectTo(baseUrls.instances, {
+                                formIds: currentInstance?.form_id,
+                            }),
+                        );
                     }
                 }}
             />

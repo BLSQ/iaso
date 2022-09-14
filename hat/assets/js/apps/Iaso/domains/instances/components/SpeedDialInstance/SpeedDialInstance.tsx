@@ -11,7 +11,6 @@ import {
     setCurrentInstance as setCurrentInstanceAction,
     softDeleteInstance as softDeleteAction,
 } from '../../actions';
-import { redirectToReplace as redirectToReplaceAction } from '../../../../routing/actions';
 import SpeedDialInstanceActions from '../SpeedDialInstanceActions';
 import { userHasPermission } from '../../../users/utils';
 import {
@@ -43,26 +42,25 @@ type Props = {
 };
 
 const SpeedDialInstance: FunctionComponent<Props> = props => {
+    const {
+        reAssignInstance,
+        params: { referenceFormId },
+        currentInstance,
+        currentInstance: { form_id: formId },
+    } = props;
+    const { data: orgUnitTypeIds } = useGetOrgUnitTypes(formId);
     const currentUser = useCurrentUser();
     const hasfeatureFlag = hasFeatureFlag(
         currentUser,
         SHOW_LINK_INSTANCE_REFERENCE,
     );
-    const {
-        reAssignInstance,
-        params,
-        currentInstance,
-        currentInstance: { form_id: formId },
-    } = props;
-    const { data: orgUnitTypeIds } = useGetOrgUnitTypes(formId);
     const hasOrgUnitPermission = userHasPermission(
         'iaso_org_units',
         currentUser,
     );
-    const { referenceFormId } = params;
-    const referenceSubmission = currentInstance.org_unit.reference_instance_id;
-    const isOrgUnitLinked =
-        formId.toString() !== referenceFormId && referenceSubmission !== null;
+    const isOrgUnitLinkable =
+        formId.toString() !== referenceFormId &&
+        currentInstance?.org_unit?.reference_instance_id !== null;
 
     const {
         org_unit: orgUnit,
@@ -80,6 +78,11 @@ const SpeedDialInstance: FunctionComponent<Props> = props => {
         formLong === orgUnit?.longitude &&
         formAltitude === orgUnit?.altitude;
 
+    const isLinkActionEnabled =
+        hasOrgUnitPermission &&
+        hasfeatureFlag &&
+        formId.toString() === referenceFormId;
+
     const baseActions = useBaseActions(
         currentInstance,
         orgUnitTypeIds as number[], // forcing the type cast as the select in react-query prevent it from being undefined
@@ -95,9 +98,10 @@ const SpeedDialInstance: FunctionComponent<Props> = props => {
     const lockAction = useLockAction(currentInstance);
 
     const enketoAction = useEnketoAction(currentInstance);
+
     const linkOrgUnitAction = useLinkToOrgUnitAction({
         currentInstance,
-        isOrgUnitLinked,
+        isOrgUnitLinkable,
         formId,
         referenceFormId: parseInt(referenceFormId, 10),
     });
@@ -115,20 +119,16 @@ const SpeedDialInstance: FunctionComponent<Props> = props => {
         }
     };
 
-    let actions = [...baseActions];
+    const actions = [...baseActions, deleteRestore];
 
     if (isGpsEqual) {
-        actions = [editLocationWithInstanceGps, ...actions];
+        actions.unshift(editLocationWithInstanceGps);
     }
 
-    actions = [lockAction, enketoAction, ...actions, deleteRestore];
+    actions.unshift(lockAction, enketoAction);
 
-    if (
-        hasOrgUnitPermission &&
-        hasfeatureFlag &&
-        formId.toString() === referenceFormId
-    ) {
-        actions = [...actions, linkOrgUnitAction];
+    if (isLinkActionEnabled) {
+        actions.push(linkOrgUnitAction);
     }
 
     return currentInstance?.can_user_modify ? (
@@ -147,7 +147,6 @@ const MapDispatchToProps = dispatch => ({
             fetchEditUrl: fetchEditUrlAction,
             softDelete: softDeleteAction,
             restoreInstance: restoreInstanceAction,
-            redirectToReplace: redirectToReplaceAction,
             setCurrentInstance: setCurrentInstanceAction,
             reAssignInstance: reAssignInstanceAction,
         },

@@ -58,10 +58,9 @@ const SpeedDialInstance: FunctionComponent<Props> = props => {
         'iaso_org_units',
         currentUser,
     );
-    const isOrgUnitLinkable =
-        formId.toString() !== referenceFormId &&
-        currentInstance?.org_unit?.reference_instance_id !== null;
-
+    const isOrgUnitAlreadyLinked =
+        currentInstance.org_unit.reference_instance_id !== null;
+    console.log('refinstance', currentInstance.org_unit.reference_instance_id);
     const {
         org_unit: orgUnit,
         latitude: formLat,
@@ -101,7 +100,7 @@ const SpeedDialInstance: FunctionComponent<Props> = props => {
 
     const linkOrgUnitAction = useLinkToOrgUnitAction({
         currentInstance,
-        isOrgUnitLinkable,
+        isOrgUnitAlreadyLinked,
         formId,
         referenceFormId: parseInt(referenceFormId, 10),
     });

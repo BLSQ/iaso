@@ -23,16 +23,16 @@ export const useLinkOrgUnitToReferenceSubmission = ({
     // eslint-disable-next-line no-unused-vars
     instance: Instance,
     // eslint-disable-next-line no-unused-vars
-    isOrgUnitLinkable: boolean,
+    isOrgUnitAlreadyLinked: boolean,
 ) => any) => {
     const { mutateAsync: saveOrgUnit } = useSaveOrgUnit(undefined, [
         'orgUnits',
     ]);
     const dispatch = useDispatch();
     return useCallback(
-        (currentInstance: Instance, isOrgUnitLinkable: boolean) => {
+        (currentInstance: Instance, isOrgUnitAlreadyLinked: boolean) => {
             const { org_unit: orgUnit, id: instanceId } = currentInstance ?? {};
-            const id = isOrgUnitLinkable ? instanceId : null;
+            const id = isOrgUnitAlreadyLinked ? null : instanceId;
             const orgUnitPayload: Partial<OrgUnit> = {
                 id: orgUnit.id,
                 reference_instance_id: id,
@@ -40,7 +40,7 @@ export const useLinkOrgUnitToReferenceSubmission = ({
 
             return saveOrgUnit(orgUnitPayload, {
                 onSuccess: (result: OrgUnit) => {
-                    const url = `${baseUrls.orgUnitDetails}/orgUnitId/${result.id}/formId/${formId}/referenceFormId/${referenceFormId}/instanceId/${id}`;
+                    const url = `${baseUrls.orgUnitDetails}/orgUnitId/${result.id}/formId/${formId}/referenceFormId/${referenceFormId}/instanceId/${instanceId}`;
                     dispatch(redirectTo(url, {}));
                 },
             });

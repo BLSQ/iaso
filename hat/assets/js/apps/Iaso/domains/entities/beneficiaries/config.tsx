@@ -31,29 +31,23 @@ import MESSAGES from '../messages';
 import { baseUrls } from '../../../constants/urls';
 
 import { Column } from '../../../types/table';
+import { Column as ExtraColumn } from './types/fields';
 import getDisplayName from '../../../utils/usersUtils';
+import { useGetFieldValue } from './hooks/useGetFieldValue';
 
 export const baseUrl = baseUrls.entities;
 
 // TODO: ADD program, vaccine number, gender columns
-export const useColumns = (): Array<Column> => {
+export const useColumns = (
+    entityTypeIds: string[],
+    extraColumns: Array<ExtraColumn>,
+): Array<Column> => {
     const { formatMessage }: { formatMessage: IntlFormatMessage } =
         useSafeIntl();
-    return useMemo(
-        () => [
-            // {
-            //     Header: formatMessage(MESSAGES.name),
-            //     id: 'name',
-            //     accessor: 'name',
-            //     Cell: settings => {
-            //         return (
-            //             <>
-            //                 {settings.row.original?.attributes?.file_content
-            //                     ?.name ?? '--'}
-            //             </>
-            //         );
-            //     },
-            // },
+
+    const getValue = useGetFieldValue();
+    return useMemo(() => {
+        const columns: Array<Column> = [
             {
                 Header: formatMessage(MESSAGES.id),
                 id: 'uuid',
@@ -91,66 +85,57 @@ export const useColumns = (): Array<Column> => {
                     );
                 },
             },
-            // {
-            //     Header: formatMessage(MESSAGES.registrationDate),
-            //     accessor: 'attributes__file_content_end',
-            //     Cell: settings => (
-            //         <RegistrationDate beneficiary={settings.row.original} />
-            //     ),
-            // },
-            // {
-            //     Header: formatMessage(MESSAGES.vaccinationNumber),
-            //     sortable: false,
-            //     accessor: 'attributes__file_content__vaccination_number',
-            //     id: 'attributes__file_content__vaccination_number',
-            //     Cell: settings => (
-            //         <VaccinationNumber beneficiary={settings.row.original} />
-            //     ),
-            // },
-            // {
-            //     Header: formatMessage(MESSAGES.age),
-            //     // TODO: MAKE IT SORTABLE
-            //     sortable: false,
-            //     accessor: 'attributes__file_content__birth_date',
-            //     id: 'attributes__file_content__birth_date',
-            //     Cell: settings => <Age beneficiary={settings.row.original} />,
-            // },
-            // {
-            //     Header: formatMessage(MESSAGES.gender),
-            //     // TODO: MAKE IT SORTABLE
-            //     sortable: false,
-            //     accessor: 'attributes__file_content__gender',
-            //     id: 'attributes__file_content__gender',
-            //     Cell: settings => (
-            //         <Gender beneficiary={settings.row.original} />
-            //     ),
-            // },
-            {
-                Header: formatMessage(MESSAGES.actions),
-                accessor: 'actions',
-                resizable: false,
-                sortable: false,
-                Cell: (settings): ReactElement => (
-                    // TODO: limit to user permissions
-                    <section>
-                        <IconButtonComponent
-                            url={`/${baseUrls.entityDetails}/entityId/${settings.row.original.id}`}
-                            icon="remove-red-eye"
-                            tooltipMessage={MESSAGES.see}
-                        />
-                        {/* <DeleteDialog
-                        keyName="entity"
-                        disabled={settings.row.original.instances_count > 0}
-                        titleMessage={MESSAGES.deleteTitle}
-                        message={MESSAGES.deleteText}
-                        onConfirm={() => deleteEntity(settings.row.original)}
-                    /> */}
-                    </section>
-                ),
-            },
-        ],
-        [formatMessage],
-    );
+        ];
+        if (entityTypeIds.length !== 1) {
+            columns.splice(1, 0, {
+                Header: formatMessage(MESSAGES.type),
+                id: 'entity_type',
+                accessor: 'entity_type',
+            });
+        }
+        extraColumns.forEach(extraColumn => {
+            columns.push({
+                Header: extraColumn.label,
+                id: extraColumn.name,
+                accessor: extraColumn.name,
+                Cell: settings => {
+                    return (
+                        <>
+                            {getValue(
+                                extraColumn.name,
+                                settings.row.original,
+                                extraColumn.type,
+                            )}
+                        </>
+                    );
+                },
+            });
+        });
+        columns.push({
+            Header: formatMessage(MESSAGES.actions),
+            accessor: 'actions',
+            resizable: false,
+            sortable: false,
+            Cell: (settings): ReactElement => (
+                // TODO: limit to user permissions
+                <section>
+                    <IconButtonComponent
+                        url={`/${baseUrls.entityDetails}/entityId/${settings.row.original.id}`}
+                        icon="remove-red-eye"
+                        tooltipMessage={MESSAGES.see}
+                    />
+                    {/* <DeleteDialog
+                            keyName="entity"
+                            disabled={settings.row.original.instances_count > 0}
+                            titleMessage={MESSAGES.deleteTitle}
+                            message={MESSAGES.deleteText}
+                            onConfirm={() => deleteEntity(settings.row.original)}
+                        /> */}
+                </section>
+            ),
+        });
+        return columns;
+    }, [formatMessage, entityTypeIds.length, extraColumns, getValue]);
 };
 
 const generateColumnsFromFieldsList = (

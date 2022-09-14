@@ -29,6 +29,7 @@ import { baseUrl } from '../../config';
 import { useGetOrgUnit } from '../../../orgUnits/components/TreeView/requests';
 import { useGetTeamsDropdown } from '../../../teams/hooks/requests/useGetTeams';
 import { useGetUsersDropDown } from '../hooks/requests';
+import { DropdownOptions } from '../../../../types/utils';
 
 const useStyles = makeStyles(theme => ({
     ...commonStyles(theme),
@@ -44,13 +45,15 @@ type Params = {
     dateTo?: string;
     submitterId?: string;
     submitterTeamId?: string;
+    entityTypeIds?: string;
 };
 
 type Props = {
     params: Params;
+    types: Array<DropdownOptions<number>>;
 };
 
-const Filters: FunctionComponent<Props> = ({ params }) => {
+const Filters: FunctionComponent<Props> = ({ params, types }) => {
     const classes: Record<string, string> = useStyles();
     const { formatMessage } = useSafeIntl();
     const dispatch = useDispatch();
@@ -61,6 +64,7 @@ const Filters: FunctionComponent<Props> = ({ params }) => {
         dateTo: params.dateTo,
         submitterId: params.submitterId,
         submitterTeamId: params.submitterTeamId,
+        entityTypeIds: params.entityTypeIds,
     });
     const [filtersUpdated, setFiltersUpdated] = useState(false);
     const [initialOrgUnitId, setInitialOrgUnitId] = useState(params?.location);
@@ -124,19 +128,15 @@ const Filters: FunctionComponent<Props> = ({ params }) => {
                         label={MESSAGES.search}
                         onEnterPressed={handleSearch}
                     />
-                    <Box id="ou-tree-input">
-                        <OrgUnitTreeviewModal
-                            toggleOnLabelClick={false}
-                            titleMessage={MESSAGES.location}
-                            onConfirm={orgUnit =>
-                                handleChange(
-                                    'location',
-                                    orgUnit ? [orgUnit.id] : undefined,
-                                )
-                            }
-                            initialSelection={initialOrgUnit}
-                        />
-                    </Box>
+                    <InputComponent
+                        keyValue="entityTypeIds"
+                        onChange={handleChange}
+                        value={filters.entityTypeIds}
+                        type="select"
+                        label={MESSAGES.types}
+                        options={types}
+                        multi
+                    />
                 </Grid>
                 <Grid item xs={3}>
                     <DatesRange
@@ -168,6 +168,21 @@ const Filters: FunctionComponent<Props> = ({ params }) => {
                         label={MESSAGES.submitter}
                         options={usersOptions}
                     />
+                </Grid>
+                <Grid item xs={3}>
+                    <Box id="ou-tree-input">
+                        <OrgUnitTreeviewModal
+                            toggleOnLabelClick={false}
+                            titleMessage={MESSAGES.location}
+                            onConfirm={orgUnit =>
+                                handleChange(
+                                    'location',
+                                    orgUnit ? [orgUnit.id] : undefined,
+                                )
+                            }
+                            initialSelection={initialOrgUnit}
+                        />
+                    </Box>
                 </Grid>
             </Grid>
             <Grid

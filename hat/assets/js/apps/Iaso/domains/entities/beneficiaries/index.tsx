@@ -1,4 +1,4 @@
-import React, { FunctionComponent, useState } from 'react';
+import React, { FunctionComponent, useState, useMemo } from 'react';
 import { useDispatch } from 'react-redux';
 import { makeStyles, Box, Grid, Tabs, Tab } from '@material-ui/core';
 
@@ -22,9 +22,11 @@ import DownloadButtonsComponent from '../../../components/DownloadButtonsCompone
 import {
     useGetBeneficiariesPaginated,
     useGetBeneficiariesApiParams,
+    useGetBeneficiaryTypesDropdown,
     // useDeleteBeneficiary,
     // useSaveBeneficiary,
 } from './hooks/requests';
+// import { useGetPossibleFields } from '../entityTypes/hooks/useGetPossibleFields';
 
 import { useColumns, baseUrl } from './config';
 import MESSAGES from '../messages';
@@ -56,6 +58,7 @@ type Params = {
     tab?: string;
     search?: string;
     entityTypes?: string;
+    entityTypeIds?: string;
 };
 
 type Props = {
@@ -66,9 +69,9 @@ export const Beneficiaries: FunctionComponent<Props> = ({ params }) => {
     const classes: Record<string, string> = useStyles();
     const { formatMessage } = useSafeIntl();
     const dispatch = useDispatch();
-    const columns = useColumns();
     const { url: apiUrl } = useGetBeneficiariesApiParams(params);
 
+    const { data: types } = useGetBeneficiaryTypesDropdown();
     const { data, isFetching } = useGetBeneficiariesPaginated(params);
     const [tab, setTab] = useState(params.tab ?? 'list');
     // const { mutate: deleteEntity, isLoading: deleting } =
@@ -85,7 +88,38 @@ export const Beneficiaries: FunctionComponent<Props> = ({ params }) => {
         };
         dispatch(redirectTo(baseUrl, newParams));
     };
-
+    const entityTypeIds = useMemo(
+        () => params.entityTypeIds?.split(',') || [],
+        [params.entityTypeIds],
+    );
+    // const formId = useMemo(() => {
+    //     if (entityTypeIds.length === 1 && types) {
+    //         const fullType = types.find(
+    //             type => type.value === parseInt(entityTypeIds[0], 10),
+    //         );
+    //         return fullType?.original?.reference_form;
+    //     }
+    //     return undefined;
+    // }, [entityTypeIds, types]);
+    // const { possibleFields } = useGetPossibleFields(formId);
+    // console.log('possibleFields', possibleFields);
+    const {
+        result,
+        pages,
+        count,
+        columns: extraColumns,
+    } = useMemo(() => {
+        if (!data) {
+            return {
+                result: [],
+                pages: 0,
+                count: 0,
+                columns: [],
+            };
+        }
+        return data;
+    }, [data]);
+    const columns = useColumns(entityTypeIds, extraColumns);
     return (
         <>
             {isLoading && <LoadingSpinner />}
@@ -106,7 +140,7 @@ export const Beneficiaries: FunctionComponent<Props> = ({ params }) => {
                 </Tabs>
             </TopBar>
             <Box p={2} className={classes.container} pb={2}>
-                <Filters params={params} />
+                <Filters params={params} types={types || []} />
                 <Grid
                     container
                     spacing={0}
@@ -153,11 +187,11 @@ export const Beneficiaries: FunctionComponent<Props> = ({ params }) => {
                         <Box>
                             <Table
                                 marginTop={false}
-                                data={data?.result ?? []}
-                                pages={data?.pages ?? 1}
+                                data={result ?? []}
+                                pages={pages ?? 1}
                                 defaultSorted={[{ id: 'name', desc: false }]}
                                 columns={columns}
-                                count={data?.count ?? 0}
+                                count={count ?? 0}
                                 baseUrl={baseUrl}
                                 params={params}
                                 onTableParamsChange={p =>

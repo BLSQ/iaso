@@ -13,15 +13,19 @@ import {
 } from '../../../../libs/Api';
 import MESSAGES from '../../messages';
 
+import { makeUrlWithParams } from '../../../../libs/utils';
+
 import { Beneficiary } from '../types/beneficiary';
 import { Pagination } from '../../../../types/table';
 import { Instance } from '../../../instances/types/instance';
 import { DropdownOptions } from '../../../../types/utils';
 import getDisplayName, { Profile } from '../../../../utils/usersUtils';
 import { DropdownTeamsOptions, Team } from '../../../teams/types/team';
+import { Column } from '../types/fields';
 
 export interface PaginatedBeneficiaries extends Pagination {
     result: Array<Beneficiary>;
+    columns: Array<Column>;
 }
 
 type Params = {
@@ -34,6 +38,7 @@ type Params = {
     dateTo?: string;
     submitterId?: string;
     submitterTeamId?: string;
+    entityTypeIds?: string;
 };
 
 type ApiParams = {
@@ -46,6 +51,7 @@ type ApiParams = {
     dateTo?: string;
     created_by_team_id?: string;
     created_by_id?: string;
+    entity_type_ids?: string;
 };
 
 type GetAPiParams = {
@@ -57,36 +63,21 @@ export const useGetBeneficiariesApiParams = (params: Params): GetAPiParams => {
         limit: params.pageSize || '20',
         order: params.order || 'id',
         page: params.page || '1',
+        search: params.search,
+        orgUnitId: params.location,
+        dateFrom:
+            params.dateFrom &&
+            moment(params.dateFrom, 'DD-MM-YYYY').format(apiDateFormat),
+        dateTo:
+            params.dateTo &&
+            moment(params.dateTo, 'DD-MM-YYYY').format(apiDateFormat),
+        created_by_id: params.submitterId,
+        created_by_team_id: params.submitterTeamId,
+        entity_type_ids: params.entityTypeIds,
     };
-    if (params.search) {
-        apiParams.search = params.search;
-    }
-
-    if (params.location) {
-        apiParams.orgUnitId = params.location;
-    }
-
-    if (params.dateFrom) {
-        apiParams.dateFrom = moment(params.dateFrom, 'DD-MM-YYYY').format(
-            apiDateFormat,
-        );
-    }
-    if (params.dateTo) {
-        apiParams.dateTo = moment(params.dateTo, 'DD-MM-YYYY').format(
-            apiDateFormat,
-        );
-    }
-    if (params.submitterId) {
-        apiParams.created_by_id = params.submitterId;
-    }
-    if (params.submitterTeamId) {
-        apiParams.created_by_team_id = params.submitterTeamId;
-    }
-
-    // @ts-ignore
-    const searchParams = new URLSearchParams(apiParams);
+    const url = makeUrlWithParams('/api/entity', apiParams);
     return {
-        url: `/api/entity/?${searchParams.toString()}`,
+        url,
         apiParams,
     };
 };
@@ -105,14 +96,25 @@ export const useGetBeneficiariesPaginated = (
     });
 };
 
-// export const useGetBeneficiaries = (): UseQueryResult<
-//     Array<Beneficiary>,
-//     Error
-// > =>
-//     useSnackQuery({
-//         queryKey: ['beneficiaries'],
-//         queryFn: () => getRequest('/api/entity'),
-//     });
+export const useGetBeneficiaryTypesDropdown = (): UseQueryResult<
+    Array<DropdownOptions<number>>,
+    Error
+> =>
+    useSnackQuery({
+        queryKey: ['beneficiaryTypes'],
+        queryFn: () => getRequest('/api/entitytype'),
+        options: {
+            select: data =>
+                data?.map(
+                    type =>
+                        ({
+                            label: type.name,
+                            value: type.id,
+                            original: type,
+                        } || []),
+                ),
+        },
+    });
 
 export const useDeleteBeneficiary = (): UseMutationResult =>
     useSnackMutation({

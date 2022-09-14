@@ -1,6 +1,5 @@
 /* eslint-disable camelcase */
 import { OrgUnit } from '../../../orgUnits/types/orgUnit';
-import { EntityType } from '../../entityTypes/types/entityType';
 
 export type FileContent = {
     name?: string;
@@ -29,7 +28,7 @@ export type Beneficiary = {
     updated_at: number;
     attributes: Attributes;
     org_unit: OrgUnit;
-    entity_type: EntityType;
+    entity_type: number;
     entity_type_name: string;
     submitter: string;
     instances: Record<string, any>[];

@@ -72,6 +72,7 @@ jobs:
         with:
           push: true
           tags: ${{ steps.version.outputs.IMAGE_TAG }}
+          target: dev
           file: docker/bundle/Dockerfile
           cache-from: type=registry,ref=ghcr.io/blsq/iaso:buildcache
           cache-to: type=registry,ref=ghcr.io/blsq/iaso:buildcache,mode=max

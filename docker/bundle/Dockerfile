@@ -51,6 +51,7 @@ RUN SECRET_KEY=NOT_SO_SECRET python manage.py compilemessages
 
 FROM base as dev
 # Tell iaso backend to Use the assets build by webpack
+# This stage is used by the test_cypres github action. Using --target dev
 ENV TEST_PROD=1
 # Disable ssl redirect by default
 ENV DISABLE_SSL_REDIRECT=1

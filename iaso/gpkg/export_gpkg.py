@@ -11,7 +11,7 @@ import geopandas as gpd
 from django.contrib.gis.geos import GEOSGeometry
 from django.db.models import QuerySet
 from pandas import DataFrame
-from shapely import wkt
+from shapely import wkt  # type: ignore
 from shapely.geometry.base import BaseGeometry
 
 from iaso.gpkg.import_gpkg import get_ref

@@ -170,7 +170,7 @@ class FormVersionQuerySet(models.QuerySet):
 
 
 def _reformat_questions(questions):
-    """ "Return all questions as a list instead of dict
+    """Return all questions as a list instead of dict
     remove fields of type 'note'
     keep only fields : name, label, type.
     label can contain html, to prevent injection and make them presentable in list we strip the tags

@@ -59,10 +59,11 @@ def convert_to_geography(geom_type: str, coordinates: list):
     Shapely normally can do this natively but is not compatible with geography col
     and geodjango don't support geo yay"""
     geom_type = geom_type.lower()
+    geom: Union[Point, MultiPolygon]
     if geom_type == "point":
         # For some reason point in iaso are in 3D
         if len(coordinates) == 2:
-            geom = Point(*coordinates, z=0)
+            geom = Point(*coordinates, z=0)  # type: ignore
         else:
             geom = Point(*coordinates)
     elif geom_type == "polygon":

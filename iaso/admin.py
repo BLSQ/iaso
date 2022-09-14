@@ -173,7 +173,7 @@ class InstanceAdmin(admin.GeoModelAdmin):
 
     formfield_overrides = {
         models.TextField: {"widget": widgets.AdminTextInputWidget},
-        geomodels.PointField: {"widget": forms.OSMWidget},
+        geomodels.PointField: {"widget": forms.OSMWidget},  # type: ignore
     }
     inlines = [
         InstanceFileAdminInline,

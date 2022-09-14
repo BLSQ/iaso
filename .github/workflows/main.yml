@@ -2,7 +2,7 @@ name: Iaso Automated CI testing
 # This workflow run automatically for every PR on github it checks the syntax and launch the tests.
 on:
   pull_request:
-    types: [review_requested, opened, synchronize, ready_for_review]
+    types: [opened, synchronize, ready_for_review]
 env:
   REGISTRY: ghcr.io
   IMAGE_NAME: ${{ github.repository }}

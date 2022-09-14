@@ -11,7 +11,7 @@ from django_ltree.fields import PathField
 from django.utils.translation import ugettext_lazy as _
 from django_ltree.models import TreeModel
 
-from .base import SourceVersion
+from iaso.models.data_source import SourceVersion
 from .project import Project
 
 

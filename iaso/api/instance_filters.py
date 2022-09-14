@@ -1,7 +1,9 @@
+from typing import Dict, Any
+
 from iaso.periods import Period
 
 
-def parse_instance_filters(req):
+def parse_instance_filters(req) -> Dict[str, Any]:
     if req.get("startPeriod", None) or req.get("endPeriod", None):
         periods = Period.range_string_with_sub_periods(req.get("startPeriod", None), req.get("endPeriod", None))
     else:

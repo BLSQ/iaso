@@ -92,6 +92,8 @@ export const Beneficiaries: FunctionComponent<Props> = ({ params }) => {
         () => params.entityTypeIds?.split(',') || [],
         [params.entityTypeIds],
     );
+
+    // TODO: use this for dynamic columns like on submissions
     // const formId = useMemo(() => {
     //     if (entityTypeIds.length === 1 && types) {
     //         const fullType = types.find(
@@ -101,8 +103,7 @@ export const Beneficiaries: FunctionComponent<Props> = ({ params }) => {
     //     }
     //     return undefined;
     // }, [entityTypeIds, types]);
-    // const { possibleFields } = useGetPossibleFields(formId);
-    // console.log('possibleFields', possibleFields);
+
     const {
         result,
         pages,
@@ -180,6 +181,7 @@ export const Beneficiaries: FunctionComponent<Props> = ({ params }) => {
                                     })) || []
                                 }
                                 isFetchingLocations={isFetching}
+                                extraColumns={extraColumns}
                             />
                         )}
                     </Box>

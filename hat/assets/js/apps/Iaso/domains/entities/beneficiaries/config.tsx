@@ -17,12 +17,6 @@ import {
     DateTimeCellRfc,
 } from '../../../components/Cells/DateTimeCell';
 
-// import { Gender } from './components/fieldsValue/Gender';
-// import { Age } from './components/fieldsValue/Age';
-// import { LastVisit } from './components/fieldsValue/LastVisit';
-// import { VaccinationNumber } from './components/fieldsValue/VaccinationNumber';
-// import { RegistrationDate } from './components/fieldsValue/RegistrationDate';
-
 // import DeleteDialog from '../../../components/dialogs/DeleteDialogComponent';
 
 import { IntlFormatMessage } from '../../../types/intl';
@@ -53,6 +47,7 @@ export const useColumns = (
                 id: 'uuid',
                 accessor: 'uuid',
             },
+            // TODO: last visit should be computed in the backend
             // {
             //     Header: formatMessage(MESSAGES.lastVisit),
             //     id: 'instances__created_at',

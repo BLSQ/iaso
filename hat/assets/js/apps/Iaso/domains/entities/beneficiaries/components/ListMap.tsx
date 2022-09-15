@@ -18,6 +18,7 @@ import { PopupComponent as Popup } from './Popup';
 import MarkersListComponent from '../../../../components/maps/markers/MarkersListComponent';
 
 import tiles from '../../../../constants/mapTiles';
+import { Column as ExtraColumn } from '../types/fields';
 
 import { Beneficiary } from '../types/beneficiary';
 
@@ -45,6 +46,7 @@ export type Location = {
 type Props = {
     locations: Location[] | undefined;
     isFetchingLocations: boolean;
+    extraColumns: Array<ExtraColumn>;
 };
 
 const boundsOptions = {
@@ -66,6 +68,7 @@ const getLocationsBounds = (locations: Location[]) =>
 export const ListMap: FunctionComponent<Props> = ({
     locations,
     isFetchingLocations,
+    extraColumns,
 }) => {
     const mapContainer: any = useRef();
     const map: any = useRef();
@@ -139,6 +142,7 @@ export const ListMap: FunctionComponent<Props> = ({
                                         })}
                                         popupProps={location => ({
                                             location,
+                                            extraColumns,
                                         })}
                                         PopupComponent={Popup}
                                         isCircle

@@ -1,5 +1,6 @@
-from typing import Dict, Any
+from typing import Dict, Any, Optional
 
+from iaso.models import Form
 from iaso.periods import Period
 
 
@@ -29,3 +30,25 @@ def parse_instance_filters(req) -> Dict[str, Any]:
         "show_deleted": show_deleted,
         "entity_id": req.get("entityId", None),
     }
+
+
+# TODO: if we end up with multiple function that deal with instance filters, we should probably move this to a class
+def get_form_from_instance_filters(instance_filters: Dict[str, Any]) -> Optional[Form]:
+    """
+    Inspect the form_id and form_ids fields of the filters and return a Form object
+
+    It assumes that either form_id is set, or forms_ids contains a single element.
+    Returns None if there's no form id, or if they are multiple entries in form_ids
+    """
+    form_id = instance_filters["form_id"]
+    form_ids = instance_filters["form_ids"]
+
+    form = None
+    if form_id:
+        form = Form.objects.get(pk=form_id)
+    elif form_ids:
+        form_ids = form_ids.split(",")
+        if len(form_ids) == 1:  # if there is only one form_ids specified
+            form = Form.objects.get(pk=form_ids[0])
+
+    return form

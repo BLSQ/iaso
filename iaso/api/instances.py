@@ -13,6 +13,7 @@ from django.db import transaction
 from django.db.models import Q, Count, QuerySet
 from django.http import StreamingHttpResponse, HttpResponse
 from django.utils.timezone import now
+from django_stubs_ext import WithAnnotations
 from rest_framework import serializers, status
 from rest_framework import viewsets, permissions
 from rest_framework.decorators import action
@@ -24,11 +25,20 @@ import iaso.periods as periods
 from hat.api.export_utils import Echo, generate_xlsx, iter_items, timestamp_to_utc_datetime
 from hat.audit.models import log_modification, INSTANCE_API
 from hat.common.utils import queryset_iterator
-from iaso.models import Instance, OrgUnit, Form, Project, InstanceFile, InstanceQuerySet, InstanceLock, Entity
+from iaso.models import (
+    Instance,
+    OrgUnit,
+    Form,
+    Project,
+    InstanceFile,
+    InstanceQuerySet,
+    InstanceLock,
+    Entity,
+)
 from iaso.utils import timestamp_to_datetime
 from . import common
 from .common import safe_api_import, TimestampField
-from .instance_filters import parse_instance_filters
+from .instance_filters import parse_instance_filters, get_form_from_instance_filters
 from .comment import UserSerializer
 from iaso.api.serializers import OrgUnitSerializer
 
@@ -182,16 +192,8 @@ class InstancesViewSet(viewsets.ViewSet):
 
         filename = "instances"
 
-        form_id = filters["form_id"]
-        form_ids = filters["form_ids"]
+        form = get_form_from_instance_filters(filters)
 
-        form = None
-        if form_id:
-            form = Form.objects.get(pk=form_id)
-        elif form_ids:
-            form_ids = form_ids.split(",")
-            if not len(form_ids) > 1:  # if there is only one form_ids specified
-                form = Form.objects.get(pk=form_ids[0])
         if form:
             filename = "%s-%s" % (filename, form.id)
             if form.correlatable:
@@ -200,7 +202,7 @@ class InstancesViewSet(viewsets.ViewSet):
         sub_columns = ["" for __ in columns]
         # TODO: Check the logic here, it's going to fail in any case if there is no form
         # Don't know what we are trying to achieve exactly
-        latest_form_version = form.form_versions.order_by("id").last()
+        latest_form_version = form.latest_version
         questions_by_name = latest_form_version.questions_by_name() if latest_form_version else {}
         if form and form.latest_version:
             file_content_template = questions_by_name
@@ -269,10 +271,10 @@ class InstancesViewSet(viewsets.ViewSet):
                 content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
             )
         elif file_format == FileFormatEnum.CSV:
+            filename = filename + ".csv"
             response = StreamingHttpResponse(
                 streaming_content=(iter_items(queryset, Echo(), columns, get_row)), content_type="text/csv"
             )
-            filename = filename + ".csv"
         else:
             raise ValueError(f"Unknown file format requested: {file_format}")
 
@@ -322,18 +324,11 @@ class InstancesViewSet(viewsets.ViewSet):
                     page_offset = paginator.num_pages
                 page = paginator.page(page_offset)
 
-                # It will check if the orgUnit is linked to an orgUnitType before getting the reference form id
-                def get_reference_form_id(org_unit):
-                    if org_unit.org_unit_type:
-                        return org_unit.org_unit_type.reference_form_id
-                    else:
-                        return None
-
-                def as_dict_formatter(instance):
+                def as_dict_formatter(instance: WithAnnotations[Instance]) -> Dict:
                     d = instance.as_dict()
                     d["can_user_modify"] = instance.count_lock_applying_to_user == 0
                     d["is_locked"] = instance.count_active_lock > 0
-                    reference_form_id = get_reference_form_id(instance.org_unit) if instance.has_org_unit else None
+                    reference_form_id = instance.org_unit.get_reference_form_id() if instance.has_org_unit else None
                     if reference_form_id:
                         d["reference_form_id"] = reference_form_id
                     return d
@@ -348,16 +343,14 @@ class InstancesViewSet(viewsets.ViewSet):
                 return Response(res)
             elif as_small_dict:
                 # TODO: document where/when this branch is used
-                queryset = queryset.annotate(instancefile_count=Count("instancefile"))
-                return Response(
-                    [
-                        instance.as_small_dict()
-                        for instance in queryset.filter(Q(location__isnull=False) | Q(instancefile_count__gt=0))
-                        .prefetch_related("instancefile_set")
-                        .prefetch_related("device")
-                        .defer("json")
-                    ]
+                queryset = (
+                    queryset.annotate(instancefile_count=Count("instancefile"))
+                    .filter(Q(location__isnull=False) | Q(instancefile_count__gt=0))
+                    .prefetch_related("instancefile_set")
+                    .prefetch_related("device")
+                    .defer("json")
                 )
+                return Response([instance.as_small_dict() for instance in queryset])
             else:
                 # TODO: document where/when this branch is used
                 return Response({"instances": [instance.as_dict() for instance in queryset]})

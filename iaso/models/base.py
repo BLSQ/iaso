@@ -247,7 +247,7 @@ class Task(models.Model):
 
     def report_progress_and_stop_if_killed(self, progress_value=None, progress_message=None, end_value=None):
         """Save progress and check if we have been killed
-        We use a separate transaction so we can report the progress even from a transaction, see services.py
+        We use a separate transaction, so we can report the progress even from a transaction, see services.py
         """
         logger.info(f"Task {self} reported {progress_message}")
         self.refresh_from_db()
@@ -1242,7 +1242,7 @@ class BulkCreateUserCsvFile(models.Model):
 
 class InstanceLockQueryset(models.QuerySet):
     def actives(self):
-        """Lock that don't have ben unlocked"""
+        """Lock that don't have been unlocked"""
         return self.filter(unlocked_by__isnull=True)
 
 

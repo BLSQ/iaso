@@ -11,7 +11,6 @@ from django.contrib.auth.models import User
 from django.contrib.gis.db.models.fields import PointField
 from django.contrib.gis.geos import Point
 from django.contrib.postgres.aggregates import ArrayAgg
-from django.contrib.postgres.fields import ArrayField
 from django.core.paginator import Paginator
 from django.core.validators import MinLengthValidator
 from django.db import models
@@ -24,7 +23,6 @@ from hat.audit.models import log_modification, INSTANCE_API
 from iaso.utils import flat_parse_xml_soup, as_soup, extract_form_version_id
 from .device import DeviceOwnership, Device
 from .forms import Form, FormVersion
-from ..utils.models.soft_deletable import SoftDeletableModel
 
 logger = getLogger(__name__)
 
@@ -826,7 +824,10 @@ InstanceManager = models.Manager.from_queryset(InstanceQuerySet)
 
 
 class Instance(models.Model):
-    """A series of answers by an individual for a specific form"""
+    """A series of answers by an individual for a specific form
+
+    Note that instances are called "Submissions" in the UI
+    """
 
     UPLOADED_TO = "instances/"
 

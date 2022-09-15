@@ -343,7 +343,8 @@ class InstancesViewSet(viewsets.ViewSet):
 
                 return Response(res)
             elif as_small_dict:
-                # TODO: document where/when this branch is used
+                # TODO: document where/when this branch is used (is it used at all?)
+                # TODO: check if it's normal that the queryset is filtered further here than in the other branches
                 queryset = (
                     queryset.annotate(instancefile_count=Count("instancefile"))
                     .filter(Q(location__isnull=False) | Q(instancefile_count__gt=0))
@@ -353,7 +354,7 @@ class InstancesViewSet(viewsets.ViewSet):
                 )
                 return Response([instance.as_small_dict() for instance in queryset])
             else:
-                # TODO: document where/when this branch is used
+                # TODO: document where/when this branch is used (is it used at all?)
                 return Response({"instances": [instance.as_dict() for instance in queryset]})
         else:  # This is a CSV/XLSX file export
             return self.list_file_export(filters=filters, queryset=queryset, file_format=file_format_export)

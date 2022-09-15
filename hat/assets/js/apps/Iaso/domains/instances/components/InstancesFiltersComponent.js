@@ -11,7 +11,6 @@ import InputComponent from '../../../components/forms/InputComponent';
 
 import { periodTypeOptions } from '../../periods/constants';
 import { isValidPeriod } from '../../periods/utils';
-import getDisplayName from '../../../utils/usersUtils';
 import DatesRange from '../../../components/filters/DatesRange';
 import PeriodPicker from '../../periods/components/PeriodPicker';
 import { Period } from '../../periods/models';

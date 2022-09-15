@@ -40,31 +40,33 @@ export const ShipmentForm: FunctionComponent<Props> = ({
         <>
             <Grid container item xs={12} spacing={2}>
                 <Field
-                    label={formatMessage(MESSAGES.vaccine)}
+                    label={formatMessage(MESSAGES.poNumbers)}
                     name={`round[${roundIndex}].shipment[${index}].po_numbers`}
                     component={TextInput}
                     className={classes.input}
                 />
                 <Field
-                    label={formatMessage(MESSAGES.vaccine)}
+                    label={formatMessage(MESSAGES.dosesShipped)}
                     name={`round[${roundIndex}].shipment[${index}].doses_shipped`}
                     component={TextInput}
                     className={classes.input}
                 />
                 <Field
-                    label={formatMessage(MESSAGES.vaccine)}
-                    name={`round[${roundIndex}].shipment[${index}].reception_pre_start`}
+                    label={formatMessage(MESSAGES.receptionPreAlert)}
+                    name={`round[${roundIndex}].shipment[${index}].reception_pre_alert`}
                     component={DateInput}
                     className={classes.input}
                 />
                 <Field
-                    label={formatMessage(MESSAGES.vaccine)}
+                    label={formatMessage(MESSAGES.estimatedDateOfArrival)}
                     name={`round[${roundIndex}].shipment[${index}].estimated_date_of_arrival`}
                     component={DateInput}
                     className={classes.input}
                 />
                 <Field
-                    label={formatMessage(MESSAGES.vaccine)}
+                    label={formatMessage(
+                        MESSAGES.receptionVaccineArrivalReport,
+                    )}
                     name={`round[${roundIndex}].shipment[${index}].date_of_reception`}
                     component={DateInput}
                     className={classes.input}

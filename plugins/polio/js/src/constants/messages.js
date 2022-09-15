@@ -1415,6 +1415,78 @@ const MESSAGES = defineMessages({
         defaultMessage:
             'You need to be part of a team to create or edit budget events',
     },
+    vialsDestroyed: {
+        id: 'iaso.polio.label.vialsDestroyed',
+        defaultMessage: 'Unusable vials destroyed',
+    },
+    destructionDate: {
+        id: 'iaso.polio.label.destructionDate',
+        defaultMessage: 'Reception of the destruction report',
+    },
+    dateSignedVrf: {
+        id: 'iaso.polio.label.dateSignedVrf',
+        defaultMessage: 'Date signed VRF received',
+    },
+    wastageRatio: {
+        id: 'iaso.polio.label.wastageRatio',
+        defaultMessage: 'Wastage ratio',
+    },
+    dosesPerVial: {
+        id: 'iaso.polio.label.dosesPerVial',
+        defaultMessage: 'Doses per vial',
+    },
+    reportingDelays: {
+        id: 'iaso.polio.label.reportingDelays',
+        defaultMessage: 'Reporting delays',
+    },
+    healthCentreToDistrict: {
+        id: 'iaso.polio.label.healthCentreToDistrict',
+        defaultMessage: 'Health centers to district',
+    },
+    districtToRegionalLevel: {
+        id: 'iaso.polio.label.districtToRegionalLevel',
+        defaultMessage: 'District to regional level',
+    },
+    regionalToNationalLevel: {
+        id: 'iaso.polio.label.regionalToNationalLevel',
+        defaultMessage: 'Regional to national level',
+    },
+    receptionPreAlert: {
+        id: 'iaso.polio.label.receptionPreAlert',
+        defaultMessage: 'Reception of the pre-alert',
+    },
+    receptionVaccineArrivalReport: {
+        id: 'iaso.polio.label.receptionVaccineArrivalReport',
+        defaultMessage: 'Reception of the Vaccine Arrival Report',
+    },
+    estimatedDateOfArrival: {
+        id: 'iaso.polio.label.estimatedDateOfArrival',
+        defaultMessage: 'Estimated date of arrival',
+    },
+    dosesShipped: {
+        id: 'iaso.polio.label.dosesShipped',
+        defaultMessage: 'Doses shipped',
+    },
+    poNumbers: {
+        id: 'iaso.polio.label.poNumbers',
+        defaultMessage: 'PO numbers',
+    },
+    formAReception: {
+        id: 'iaso.polio.label.formAReception',
+        defaultMessage: 'Reception of national Form A',
+    },
+    formAUsableVials: {
+        id: 'iaso.polio.label.formAUsableVials',
+        defaultMessage: 'Usable vials',
+    },
+    formAUnusableVials: {
+        id: 'iaso.polio.label.formAUnusableVials',
+        defaultMessage: 'Unusable vials',
+    },
+    formAMissingVials: {
+        id: 'iaso.polio.label.formAMissingVials',
+        defaultMessage: 'Number of missing vials from the national form',
+    },
 });
 
 export default MESSAGES;

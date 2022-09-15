@@ -61,25 +61,22 @@ export const RoundVaccineForm: FunctionComponent<Props> = () => {
                         component={Select}
                     />
                     <Field
-                        label={formatMessage(MESSAGES.virus)}
-                        // label={formatMessage(MESSAGES.dosesPerVial)} // TODO uncomment when translated
+                        label={formatMessage(MESSAGES.dosesPerVial)}
                         name="doses_per_vial" // TODO get correct path
                         className={classes.input}
                         options={[]} // TODO get options
                         component={Select}
                     />
                     <Field
-                        label={formatMessage(MESSAGES.epid)}
-                        // label={formatMessage(MESSAGES.wastageRatio)}// TODO uncomment when translated
+                        label={formatMessage(MESSAGES.wastageRatio)}
                         name="wastage_ratio" // TODO get correct path
                         component={TextInput}
                         className={classes.input}
                     />
                     <div>Table with editable fields</div>
                     <Field
-                        // label={formatMessage(MESSAGES.dateSignedVrf)}// TODO uncomment when translated
-                        label={formatMessage(MESSAGES.dateOfOnset)}
-                        // fullWidth
+                        label={formatMessage(MESSAGES.dateSignedVrf)}
+                        fullWidth
                         name="date_signed_vrf" // TODO get correct path
                         component={DateInput}
                     />
@@ -94,29 +91,25 @@ export const RoundVaccineForm: FunctionComponent<Props> = () => {
                 {/* third row: Form A */}
                 <Grid xs={12}>
                     <Field
-                        label={formatMessage(MESSAGES.epid)}
-                        // label={formatMessage(MESSAGES.wastageRatio)}// TODO uncomment when translated
+                        label={formatMessage(MESSAGES.wastageRatio)}
                         name="forma_reception" // TODO get correct path
                         component={TextInput}
                         className={classes.input}
                     />
                     <Field
-                        label={formatMessage(MESSAGES.epid)}
-                        // label={formatMessage(MESSAGES.wastageRatio)}// TODO uncomment when translated
+                        label={formatMessage(MESSAGES.formAUnusableVials)}
                         name="forma_unusable_vials" // TODO get correct path
                         component={TextInput}
                         className={classes.input}
                     />
                     <Field
-                        label={formatMessage(MESSAGES.epid)}
-                        // label={formatMessage(MESSAGES.wastageRatio)}// TODO uncomment when translated
-                        name="forma_missin_vials" // TODO get correct path
+                        label={formatMessage(MESSAGES.formAMissingVials)}
+                        name="forma_missing_vials" // TODO get correct path
                         component={TextInput}
                         className={classes.input}
                     />
                     <Field
-                        label={formatMessage(MESSAGES.epid)}
-                        // label={formatMessage(MESSAGES.wastageRatio)}// TODO uncomment when translated
+                        label={formatMessage(MESSAGES.formAUsableVials)}
                         name="forma_usable_vials" // TODO get correct path
                         component={TextInput}
                         className={classes.input}
@@ -127,13 +120,13 @@ export const RoundVaccineForm: FunctionComponent<Props> = () => {
                     {/* Not sure yet if this should not be a map */}
                     <Field
                         // label={formatMessage(MESSAGES.dateSignedVrf)}// TODO uncomment when translated
-                        label={formatMessage(MESSAGES.dateOfOnset)}
+                        label={formatMessage(MESSAGES.destructionDate)}
                         // fullWidth
                         name="date_destruction" // TODO get correct path
                         component={DateInput}
                     />
                     <Field
-                        label={formatMessage(MESSAGES.epid)}
+                        label={formatMessage(MESSAGES.vialsDestroyed)}
                         // label={formatMessage(MESSAGES.wastageRatio)}// TODO uncomment when translated
                         name="vials_destroyed" // TODO get correct path
                         component={TextInput}

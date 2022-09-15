@@ -22,6 +22,8 @@ import {
     getCalendarData,
 } from '../components/campaignCalendar/utils';
 
+import { useGetCalendarXlsx } from '../hooks/useGetCalendarXlsx';
+
 import {
     dateFormat,
     defaultOrder,
@@ -68,6 +70,11 @@ const Calendar = ({ params }) => {
         params.countries,
         params.search,
     ]);
+
+    const calendarXlsx = useGetCalendarXlsx();
+    const generateCalendarXlsx = () => {
+        calendarXlsx.mutate();
+    };
     const { data: campaigns = [], isLoading } =
         useGetCampaigns(queryOptions).query;
 
@@ -175,7 +182,7 @@ const Calendar = ({ params }) => {
                         <Grid item>
                             <Box mb={2} mt={2}>
                                 <Button
-                                    onClick={createExcel}
+                                    onClick={generateCalendarXlsx}
                                     disabled={!isCalendarAndMapLoaded}
                                     type="button"
                                     color="primary"

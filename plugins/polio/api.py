@@ -193,6 +193,10 @@ class CampaignViewSet(ModelViewSet):
         roundNumber = request.query_params.get("round", "")
         return Response(get_current_preparedness(campaign, roundNumber))
 
+    @action(methods=["POST"], detail=False, serializer_class=None)
+    def create_calendar_xlsx_sheet(self, request, **kwargs):
+        return Response(None)
+
     @action(methods=["POST"], detail=True, serializer_class=CampaignPreparednessSpreadsheetSerializer)
     def create_preparedness_sheet(self, request: Request, pk=None, **kwargs):
         data = request.data

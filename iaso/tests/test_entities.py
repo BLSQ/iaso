@@ -12,6 +12,7 @@ class EntityAPITestCase(APITestCase):
     @classmethod
     def setUpTestData(cls):
         star_wars = m.Account.objects.create(name="Star Wars")
+        cls.star_wars = star_wars
 
         space_balls = m.Account.objects.create(name="Space Balls")
 
@@ -158,7 +159,7 @@ class EntityAPITestCase(APITestCase):
     def test_retrieve_entity(self):
         self.client.force_authenticate(self.yoda)
 
-        entity_type = EntityType.objects.create(name="Type 1", reference_form=self.form_1)
+        entity_type = EntityType.objects.create(name="Type 1", reference_form=self.form_1, account=self.star_wars)
 
         instance = Instance.objects.create(
             org_unit=self.jedi_council_corruscant, form=self.form_1, period="202002", uuid=uuid.uuid4()
@@ -254,7 +255,7 @@ class EntityAPITestCase(APITestCase):
     def test_retrieve_only_non_deleted_entity(self):
         self.client.force_authenticate(self.yoda)
 
-        entity_type = EntityType.objects.create(name="Type 1", reference_form=self.form_1)
+        entity_type = EntityType.objects.create(name="Type 1", reference_form=self.form_1, account=self.star_wars)
 
         instance = Instance.objects.create(
             org_unit=self.jedi_council_corruscant, form=self.form_1, period="202002", uuid=uuid.uuid4()
@@ -302,7 +303,7 @@ class EntityAPITestCase(APITestCase):
     def test_retrieve_entity_only_same_account(self):
         self.client.force_authenticate(self.yoda)
 
-        entity_type = EntityType.objects.create(name="Type 1", reference_form=self.form_1)
+        entity_type = EntityType.objects.create(name="Type 1", reference_form=self.form_1, account=self.star_wars)
 
         instance = Instance.objects.create(
             org_unit=self.jedi_council_corruscant,

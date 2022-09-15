@@ -22,7 +22,7 @@
 # sys.path.insert(0, os.path.abspath('.'))
 
 # setup django
-from typing import List
+from typing import List, Dict
 
 import django
 
@@ -126,7 +126,7 @@ htmlhelp_basename = "SenseHATdoc"
 
 # -- Options for LaTeX output ---------------------------------------------
 
-latex_elements = {
+latex_elements: Dict[str, str] = {
     # The paper size ('letterpaper' or 'a4paper').
     #
     # 'papersize': 'letterpaper',

@@ -4,7 +4,7 @@ from dhis2 import RequestException
 from dhis2 import Api
 from .value_formatter import format_value
 import json
-from iaso.models import Instance, OrgUnit, Form, FormVersion, MappingVersion, ExportLog, RUNNING, ERRORED, EXPORTED
+from iaso.models import OrgUnit, MappingVersion, ExportLog, RUNNING, ERRORED, EXPORTED
 import iaso.models as models
 from timeit import default_timer as timer
 import itertools

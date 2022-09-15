@@ -1487,6 +1487,10 @@ const MESSAGES = defineMessages({
         id: 'iaso.polio.label.formAMissingVials',
         defaultMessage: 'Number of missing vials from the national form',
     },
+    days: {
+        id: 'iaso.polio.label.days',
+        defaultMessage: 'Days',
+    },
 });
 
 export default MESSAGES;

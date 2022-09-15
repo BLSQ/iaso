@@ -168,6 +168,7 @@
     "iaso.polio.label.csv": "CSV",
     "iaso.polio.label.dateSignedVrf": "Date de réception VRF signé",
     "iaso.polio.label.datesIgnored": "Dates non-prises en compte",
+    "iaso.polio.label.days": "Jours",
     "iaso.polio.label.deleteBudgetEvent": "Effacer l'étape du budget",
     "iaso.polio.label.deleteWarning": "Etes-vous sûr(e) de vouloir effacer cette campagne?",
     "iaso.polio.label.destination": "Destinataire(s)",

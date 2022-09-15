@@ -1,21 +1,55 @@
-import React, { FunctionComponent } from 'react';
-import { Grid } from '@material-ui/core';
+import React, { FunctionComponent, useState } from 'react';
+import { Grid, Tab, Tabs } from '@material-ui/core';
 import { Field, useFormikContext } from 'formik';
 // @ts-ignore
 import { useSafeIntl } from 'bluesquare-components';
 import { useStyles } from '../styles/theme';
 import MESSAGES from '../constants/messages';
 import { DateInput, Select, TextInput } from '../components/Inputs';
+import { ShipmentsForm } from './ShipmentsForm';
 
 type Props = {};
 
 export const RoundVaccineForm: FunctionComponent<Props> = () => {
     const classes: Record<string, string> = useStyles();
     const { formatMessage } = useSafeIntl();
-    const formik = useFormikContext();
+    const {
+        values: { rounds = [] },
+    } = useFormikContext();
+
+    const [currentRoundNumber, setCurrentRoundNumber] = useState(
+        rounds.length > 0 ? rounds[0].number : undefined,
+    );
+    const roundIndex = rounds.findIndex(r => r.number === currentRoundNumber);
+
+    const handleTabChange = (_, newValue) => {
+        setCurrentRoundNumber(newValue);
+    };
 
     return (
         <>
+            {rounds.length > 0 && (
+                <Tabs
+                    value={currentRoundNumber}
+                    className={classes.subTabs}
+                    textColor="primary"
+                    onChange={handleTabChange}
+                >
+                    {rounds.map(round => (
+                        <Tab
+                            key={round.number}
+                            className={classes.subTab}
+                            label={
+                                <span>
+                                    {formatMessage(MESSAGES.round)}{' '}
+                                    {round.number}
+                                </span>
+                            }
+                            value={round.number}
+                        />
+                    ))}
+                </Tabs>
+            )}
             <Grid container spacing={2}>
                 {/* First row: vaccine */}
                 <Grid xs={12}>
@@ -52,7 +86,10 @@ export const RoundVaccineForm: FunctionComponent<Props> = () => {
                 </Grid>
                 {/* second row: shipments */}
                 <Grid xs={12}>
-                    <div>{`Shipments.map((shipment, index) => <Shipment {...{shipment,index}}/>)`}</div>
+                    <ShipmentsForm
+                        roundIndex={roundIndex}
+                        round={rounds[roundIndex]}
+                    />
                 </Grid>
                 {/* third row: Form A */}
                 <Grid xs={12}>

@@ -485,7 +485,29 @@ where group_id = polio_roundscope.group_id""",
         for l in cell:
             survey_columns.append(q_sheet[f"{l}1"].value)
 
-        print(f"CONGO: {OrgUnit.objects.descendants(OrgUnit.objects.get(pk=38862))}")
+
+        country = []
+        region = []
+        district = []
+        health_facility = []
+
+        ou_hierarchy = OrgUnit.objects.hierarchy(OrgUnit.objects.get(pk=29728))
+
+        for ou in ou_hierarchy:
+            if ou.org_unit_type == "COUNTRY":
+                country.append(ou)
+            if ou.org_unit_type == "REGION":
+                region.append(ou)
+            if ou.org_unit_type == "DISTRICT":
+                district.append(ou)
+            if ou.org_unit_type == "HEALTH FACILITY":
+                health_facility.append(ou)
+
+        print(country)
+        print(region)
+        print(district)
+
+        print(f"CONGO: {OrgUnit.objects.hierarchy(OrgUnit.objects.get(pk=29728))}")
 
         for ou in campaign_scope:
             ou_children = OrgUnit.objects.descendants(ou)

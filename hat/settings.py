@@ -228,7 +228,7 @@ if os.environ.get("DB_READONLY_USERNAME"):
         "PASSWORD": os.environ.get("DB_READONLY_PASSWORD", None),
         "HOST": DB_HOST,
         "PORT": DB_PORT,
-        "OPTIONS": {"options": "-c default_transaction_read_only=on -c statement_timeout=10000"},
+        "OPTIONS": {"options": "-c default_transaction_read_only=on -c statement_timeout=10000"},  # type: ignore
     }
 
     INSTALLED_APPS.append("django_sql_dashboard")

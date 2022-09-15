@@ -381,12 +381,12 @@ class EntityAPITestCase(APITestCase):
         self.assertEquals(response.get("Content-Disposition"), "attachment; filename=NEW CLIENT_ENTITY.xlsx")
 
         # export specific entity type as xlsx
-        response = self.client.get(f"/api/entity/?entity_type_id={entity_type.pk}&xlsx=true/")
+        response = self.client.get(f"/api/entity/?entity_type_ids={entity_type.pk}&xlsx=true/")
         self.assertEqual(response.status_code, 200)
         self.assertEquals(response.get("Content-Disposition"), "attachment; filename=NEW CLIENT_ENTITY.xlsx")
 
         # export specific entity type as csv
-        response = self.client.get(f"/api/entity/?entity_type_id={entity_type.pk}&csv=true/")
+        response = self.client.get(f"/api/entity/?entity_type_ids={entity_type.pk}&csv=true/")
         self.assertEqual(response.status_code, 200)
         self.assertEquals(response.get("Content-Disposition"), "attachment; filename=NEW CLIENT_ENTITY.csv")
 

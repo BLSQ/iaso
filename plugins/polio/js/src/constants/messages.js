@@ -81,6 +81,10 @@ const MESSAGES = defineMessages({
         id: 'iaso.polio.calendar',
         defaultMessage: 'Calendar',
     },
+    calendarPdfTitle: {
+        id: 'iaso.polio.calendar.pdf.title',
+        defaultMessage: 'Campaigns Calendar',
+    },
     weeks: {
         id: 'iaso.polio.calendar.weeks',
         defaultMessage: 'week(s) were',
@@ -230,7 +234,7 @@ const MESSAGES = defineMessages({
     },
     dosesRequested: {
         id: 'iaso.polio.form.label.dosesRequested',
-        defaultMessage: 'Doses Requested (both rounds)',
+        defaultMessage: 'Doses Requested',
     },
     region: {
         id: 'iaso.polio.table.label.region',

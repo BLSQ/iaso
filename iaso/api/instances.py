@@ -204,7 +204,7 @@ class InstancesViewSet(viewsets.ViewSet):
         # Don't know what we are trying to achieve exactly
         latest_form_version = form.latest_version
         questions_by_name = latest_form_version.questions_by_name() if latest_form_version else {}
-        if form and form.latest_version:
+        if form and latest_form_version:
             file_content_template = questions_by_name
             for title in file_content_template:
                 # some form have dict as label to support MuliLang. So convert to String
@@ -219,6 +219,7 @@ class InstancesViewSet(viewsets.ViewSet):
             for title in file_content_template:
                 columns.append({"title": title, "width": 50})
                 sub_columns.append(questions_by_name.get(title, {}).get("label", ""))
+
         filename = "%s-%s" % (filename, strftime("%Y-%m-%d-%H-%M", gmtime()))
 
         def get_row(instance, **kwargs):

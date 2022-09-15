@@ -386,8 +386,6 @@ class EntityViewSet(ModelViewSet):
                 result["id"] = entity.pk
                 result["uuid"] = entity.uuid
                 result["entity_type_name"] = entity.entity_type.name
-                print("INSTANCES")
-                print(entity.instances)
                 result["created_at"] = entity.created_at
                 result["updated_at"] = entity.updated_at
                 result["org_unit"] = entity.attributes.org_unit.as_location(with_parents=True)

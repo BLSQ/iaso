@@ -54,9 +54,6 @@ const InstancesFiltersComponent = ({
 
     const [hasLocationLimitError, setHasLocationLimitError] = useState(false);
     const [fetchingOrgUnitTypes, setFetchingOrgUnitTypes] = useState(false);
-    const [fetchingDevices, setFetchingDevices] = useState(false);
-    const [fetchingDevicesOwnerships, setFetchingDevicesOwnerships] =
-        useState(false);
 
     const [formState, setFormState] = useFormState(filterDefault(params));
 
@@ -64,19 +61,12 @@ const InstancesFiltersComponent = ({
     const { data: initialOrgUnit } = useGetOrgUnit(initialOrgUnitId);
 
     const orgUnitTypes = useSelector(state => state.orgUnits.orgUnitTypes);
-    const devices = useSelector(state => state.devices.list);
-    const devicesOwnerships = useSelector(state => state.devices.ownershipList);
     const isInstancesFilterUpdated = useSelector(
         state => state.instances.isInstancesFilterUpdated,
     );
     const { data, isFetching: fetchingForms } = useGetForms();
     const formsList = (data && data.forms) || [];
-    useInstancesFiltersData(
-        formIds,
-        setFetchingOrgUnitTypes,
-        setFetchingDevices,
-        setFetchingDevicesOwnerships,
-    );
+    useInstancesFiltersData(formIds, setFetchingOrgUnitTypes);
     const handleSearch = useCallback(() => {
         if (isInstancesFilterUpdated) {
             dispatch(setInstancesFilterUpdated(false));
@@ -204,13 +194,6 @@ const InstancesFiltersComponent = ({
                         label={MESSAGES.org_unit_type_id}
                         loading={fetchingOrgUnitTypes}
                     />
-                    <Box mt={2}>
-                        <LocationLimit
-                            onChange={handleFormChange}
-                            value={formState.mapResults.value}
-                            setHasError={setHasLocationLimitError}
-                        />
-                    </Box>
                 </Grid>
                 <Grid item xs={4}>
                     <InputComponent
@@ -240,34 +223,13 @@ const InstancesFiltersComponent = ({
                         ]}
                         label={MESSAGES.location}
                     />
-                    <InputComponent
-                        keyValue="deviceId"
-                        clearable
-                        onChange={handleFormChange}
-                        value={formState.deviceId.value || null}
-                        type="select"
-                        loading={fetchingDevices}
-                        options={devices.map(d => ({
-                            label: d.imei,
-                            value: d.id,
-                        }))}
-                        label={MESSAGES.device}
-                    />
-                    <InputComponent
-                        keyValue="deviceOwnershipId"
-                        clearable
-                        onChange={handleFormChange}
-                        value={formState.deviceOwnershipId.value || null}
-                        type="select"
-                        loading={fetchingDevicesOwnerships}
-                        options={devicesOwnerships.map(o => ({
-                            label: `${getDisplayName(o.user)} - IMEI:${
-                                o.device.imei
-                            }`,
-                            value: o.id,
-                        }))}
-                        label={MESSAGES.deviceOwnership}
-                    />
+                    <Box mt={2}>
+                        <LocationLimit
+                            onChange={handleFormChange}
+                            value={formState.mapResults.value}
+                            setHasError={setHasLocationLimitError}
+                        />
+                    </Box>
                     <InputComponent
                         keyValue="showDeleted"
                         onChange={handleFormChange}

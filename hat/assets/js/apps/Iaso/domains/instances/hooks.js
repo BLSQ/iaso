@@ -26,16 +26,6 @@ export const useInstancesFiltersData = (
             setFetching: setFetchingOrgUnitTypes,
             setData: setOrgUnitTypes,
         },
-        {
-            fetch: fetchDevices,
-            setFetching: setFetchingDevices,
-            setData: setDevicesList,
-        },
-        {
-            fetch: fetchDevicesOwnerships,
-            setFetching: setFetchingDevicesOwnerships,
-            setData: setDevicesOwnershipList,
-        },
     ];
 
     useFetchOnMount(promisesArray);

@@ -1,6 +1,5 @@
 from django.db import InternalError, connections
 
-from iaso.models.org_unit import get_or_create_org_unit_type
 from iaso.test import TestCase
 from iaso import models as m
 
@@ -14,43 +13,6 @@ class OrgUnitTypeModelTestCase(TestCase):
         cls.project = m.Project.objects.create(name="Project 1", account=cls.account, app_id="test_app_id")
         cls.setup_out = m.OrgUnitType.objects.create(name="AS", depth=4)
         cls.setup_out.projects.add(cls.project)
-
-    def test_get_or_create_org_unit_type_new(self):
-        """Test that the function creates a new OrgUnitType if it does not exist"""
-        out, created = get_or_create_org_unit_type(name="Another one", depth=3, account=self.account)
-
-        self.assertTrue(created)
-        self.assertEqual(out.name, "Another one")
-        self.assertEqual(out.depth, 3)
-
-        self.assertEqual(m.OrgUnitType.objects.count(), 2)  # 1 from setUpTestData(), 1 added in this test
-
-    def test_get_or_create_org_unit_type_existing(self):
-        """Test that the function returns an existing OrgUnitType if it exists in the account"""
-        out, created = get_or_create_org_unit_type(name="AS", depth=4, account=self.account)
-        self.assertFalse(created)
-
-        # Ensure it's indeed the same record and values are unchanged
-        self.assertEqual(out.name, "AS")
-        self.assertEqual(out.depth, 4)
-        self.assertEqual(out.pk, self.setup_out.pk)
-        self.assertEqual(list(out.projects.all()), [self.project])
-
-        self.assertEqual(m.OrgUnitType.objects.count(), 1)
-
-    def test_get_or_create_org_unit_type_other_account(self):
-        """A similar OUT exists, but in another account => a new one is created"""
-        new_account = m.Account.objects.create(name="b")
-        out, created = get_or_create_org_unit_type(name="AS", depth=4, account=new_account)
-
-        self.assertEqual(out.name, "AS")
-        self.assertEqual(out.depth, 4)
-
-        # It's a new one, so PK and projects are different
-        self.assertNotEqual(out.pk, self.setup_out.pk)
-        self.assertFalse(out.projects.all().exists())
-
-        self.assertEqual(m.OrgUnitType.objects.count(), 2)
 
 
 class OrgUnitModelTestCase(TestCase):

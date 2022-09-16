@@ -18,7 +18,7 @@ except ImportError:
 
 def get_or_create_org_unit_type_and_assign_project(name: str, project: Project, depth: int) -> OrgUnitType:
     """Get or create the OUT '(in the scope of the project's account) then assign it to the project"""
-    out, _ = get_or_create_org_unit_type(name=name, depth=depth, account=project.account)
+    out = get_or_create_org_unit_type(name, project, depth)
     out.projects.add(project)
     return out
 
@@ -90,7 +90,7 @@ def create_or_update_orgunit(
     if not orgunit:
         orgunit = OrgUnit()
     else:
-        # Make a copy so we can do the audit log, otherwise we would edit in place
+        # Make a copy, so we can do the audit log, otherwise we would edit in place
         orgunit = deepcopy(orgunit)
 
     orgunit.name = props["name"]

@@ -11,8 +11,28 @@ from django_ltree.fields import PathField
 from django.utils.translation import ugettext_lazy as _
 from django_ltree.models import TreeModel
 
-from .base import SourceVersion, Account
+from .base import SourceVersion
 from .project import Project
+
+
+def get_or_create_org_unit_type(name: str, project: Project, depth: int) -> "OrgUnitType":
+    # Logic is very messy, but attempts to simplify were unsuccessful because there's messy data in production
+    # (maybe synced with other devices).
+    # This function has probably the potential to create more messy data, so I still suggest to refactor CAREFULLY.
+    out = OrgUnitType.objects.filter(projects=project, name=name).first()
+    if not out:
+        count = OrgUnitType.objects.filter(name=name, short_name=name[:4], depth=depth).count()
+        if count == 0:
+            out = OrgUnitType.objects.create(name=name, short_name=name[:4], depth=depth)
+            out.save()
+        elif count > 1:
+            out = OrgUnitType.objects.filter(name=name, short_name=name[:4], depth=depth, projects=project).first()
+            if out is None:
+                out = OrgUnitType.objects.filter(name=name, short_name=name[:4], depth=depth).first()
+        else:
+            out = OrgUnitType.objects.get(name=name, short_name=name[:4], depth=depth)
+
+    return out
 
 
 class OrgUnitTypeQuerySet(models.QuerySet):
@@ -85,16 +105,16 @@ class OrgUnitType(models.Model):
         return res
 
 
-def get_or_create_org_unit_type(name: str, depth: int, account: Account) -> typing.Tuple[OrgUnitType, bool]:
-    """ ""Get the OUT if a similar one exist in the account, otherwise create it.
-
-    :return: a tuple of the OrgUnitType and a boolean indicating if it was created or not
-    :raises MultipleObjectsReturned: if multiple OUT with the same name and depth exist in the account
-    """
-    all_projects_from_account = Project.objects.filter(account=account)
-    return OrgUnitType.objects.get_or_create(
-        projects__in=all_projects_from_account, name=name, depth=depth, defaults={"short_name": name[:4]}
-    )
+# def get_or_create_org_unit_type(name: str, depth: int, account: Account) -> typing.Tuple[OrgUnitType, bool]:
+#     """ ""Get the OUT if a similar one exist in the account, otherwise create it.
+#
+#     :return: a tuple of the OrgUnitType and a boolean indicating if it was created or not
+#     :raises MultipleObjectsReturned: if multiple OUT with the same name and depth exist in the account
+#     """
+#     all_projects_from_account = Project.objects.filter(account=account)
+#     return OrgUnitType.objects.get_or_create(
+#         projects__in=all_projects_from_account, name=name, depth=depth, defaults={"short_name": name[:4]}
+#     )
 
 
 # noinspection PyTypeChecker

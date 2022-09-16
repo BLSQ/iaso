@@ -260,13 +260,6 @@ class GPKGImport(TestCase):
         )
 
         # If it hasn't imploded in flight here, it means the "NoneType" exception doesn't happen anymore...
-        # Now checking the new OUT has been created with the correct values:
-        self.assertEqual(OrgUnitType.objects.count(), 5)  # Two in the test function, 3 from the GPKG file
-        fosa_from_gpkg = OrgUnitType.objects.filter(name="FOSA").latest("id")
-        self.assertEqual(fosa_from_gpkg.name, "FOSA")
-        self.assertEqual(fosa_from_gpkg.short_name, "FOSA")
-        self.assertEqual(fosa_from_gpkg.depth, 5)
-        self.assertEqual([p.name for p in fosa_from_gpkg.projects.all()], ["Project 1"])
 
     def test_import_orgunit_existing_orgunit_type_in_diff_proj(self):
         other_project = Project.objects.create(name="Project 2", account=self.account, app_id="test_app_id2")

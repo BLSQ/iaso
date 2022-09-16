@@ -78,7 +78,6 @@ const CreateEditDialog = ({
             ? [...selectedCampaign.rounds].sort((a, b) => a.number - b.number)
             : [],
     });
-
     const formik = useFormik({
         initialValues,
         enableReinitialize: true,
@@ -86,6 +85,11 @@ const CreateEditDialog = ({
         validationSchema: schema,
         onSubmit: handleSubmit,
     });
+
+    const handleClose = () => {
+        formik.resetForm();
+        onClose();
+    };
 
     const tabs = [
         {
@@ -147,7 +151,7 @@ const CreateEditDialog = ({
             open={isOpen}
             onClose={(_event, reason) => {
                 if (reason === 'backdropClick') {
-                    onClose();
+                    handleClose();
                 }
             }}
             scroll="body"
@@ -198,7 +202,7 @@ const CreateEditDialog = ({
             </DialogContent>
             <DialogActions className={classes.action}>
                 <Button
-                    onClick={onClose}
+                    onClick={handleClose}
                     color="primary"
                     disabled={formik.isSubmitting}
                 >

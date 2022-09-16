@@ -1,4 +1,4 @@
-FROM python:3.8
+FROM python:3.6
 
 RUN apt-get update && apt-get --yes install \
 		curl \

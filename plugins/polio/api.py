@@ -1673,12 +1673,12 @@ def is_budget_approved(user: User, event: BudgetEvent) -> bool:
     return False
 
 
-def format_file_link(event_file: BudgetFiles) -> Dict:
+def format_file_link(event_file: BudgetFiles) -> Dict[str, str]:
     serialized_file = BudgetFilesSerializer(event_file).data
     return {"path": serialized_file["file"], "name": event_file.file.name}
 
 
-def make_budget_event_file_links(event: BudgetEvent) -> Optional[str]:
+def make_budget_event_file_links(event: BudgetEvent) -> Optional[List[Dict[str, str]]]:
     event_files = event.event_files.all()
     if not event_files:
         return None

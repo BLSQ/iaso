@@ -88,5 +88,6 @@ export const getFirstAllowedUrl = (
     if (newPath) {
         return newPath.baseUrl;
     }
+    if (untestedPermissions.length === 0) return undefined;
     return getFirstAllowedUrl(rootPermissions, untestedPermissions, routes);
 };

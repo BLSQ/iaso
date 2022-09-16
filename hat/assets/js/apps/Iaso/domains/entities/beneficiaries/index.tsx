@@ -32,8 +32,14 @@ import MESSAGES from '../messages';
 import { redirectTo } from '../../../routing/actions';
 import { ListMap } from './components/ListMap';
 
+import { MENU_HEIGHT_WITH_TABS } from '../../../constants/uiConstants';
+
 const useStyles = makeStyles(theme => ({
     ...commonStyles(theme),
+    container: {
+        height: `calc(100vh - ${MENU_HEIGHT_WITH_TABS}px)`,
+        overflow: 'auto',
+    },
     hiddenOpacity: {
         position: 'absolute',
         top: 0,
@@ -99,7 +105,7 @@ export const Beneficiaries: FunctionComponent<Props> = ({ params }) => {
                     <Tab value="map" label={formatMessage(MESSAGES.map)} />
                 </Tabs>
             </TopBar>
-            <Box p={2}>
+            <Box p={2} className={classes.container} pb={2}>
                 <Filters params={params} />
                 <Grid
                     container
@@ -119,9 +125,8 @@ export const Beneficiaries: FunctionComponent<Props> = ({ params }) => {
                     /> */}
                 </Grid>
 
-                <Box position="relative" width="100%" pb={2}>
+                <Box position="relative" width="100%" mt={2}>
                     <Box
-                        pt={2}
                         width="100%"
                         className={tab === 'map' ? '' : classes.hiddenOpacity}
                     >
@@ -148,8 +153,9 @@ export const Beneficiaries: FunctionComponent<Props> = ({ params }) => {
                         )}
                     </Box>
                     {tab === 'list' && (
-                        <>
+                        <Box>
                             <Table
+                                marginTop={false}
                                 data={data?.beneficiary ?? []}
                                 pages={data?.pages ?? 1}
                                 defaultSorted={[{ id: 'name', desc: false }]}
@@ -165,7 +171,7 @@ export const Beneficiaries: FunctionComponent<Props> = ({ params }) => {
                                 csvUrl={`${apiUrl}&csv=true`}
                                 xlsxUrl={`${apiUrl}&xlsx=true`}
                             />
-                        </>
+                        </Box>
                     )}
                 </Box>
             </Box>

@@ -9,5 +9,27 @@
         "label_key_1",
         "label_key_2",
         "label_key_3"
-    ]
+    ],
+        "possible_fields": [
+            {
+                "name": "date",
+                "type": "date",
+                "label": "Date"
+            },
+            {
+                "name": "city",
+                "type": "text",
+                "label": "Ville"
+            },
+            {
+                "name": "firstname",
+                "type": "text",
+                "label": "Prénom"
+            },
+            {
+                "name": "name",
+                "type": "text",
+                "label": "Nom"
+            }
+        ]
 }

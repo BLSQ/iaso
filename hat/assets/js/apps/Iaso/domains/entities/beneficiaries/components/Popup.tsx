@@ -60,12 +60,12 @@ const useStyles = makeStyles(theme => ({
 
 type Props = {
     titleMessage: string;
-    selectedLocation?: Location;
+    location?: Location;
 };
 
 export const PopupComponent: FunctionComponent<Props> = ({
     titleMessage,
-    selectedLocation,
+    location,
 }) => {
     const { formatMessage } = useSafeIntl();
     const classes: Record<string, string> = useStyles();
@@ -85,23 +85,22 @@ export const PopupComponent: FunctionComponent<Props> = ({
                             <Divider />
                         </Box>
                     )}
-                    {selectedLocation && (
+                    {location && (
                         <>
                             <PopupItemComponent
                                 label={formatMessage(MESSAGES.name)}
-                                value={selectedLocation.original.name}
+                                value={location.original.name}
                             />
                             <PopupItemComponent
                                 label={formatMessage(MESSAGES.id)}
-                                value={selectedLocation.original.uuid}
+                                value={location.original.uuid}
                             />
                             <PopupItemComponent
                                 label={formatMessage(MESSAGES.lastVisit)}
                                 value={
                                     <LastVisit
                                         instances={
-                                            selectedLocation?.original
-                                                ?.instances || []
+                                            location?.original?.instances || []
                                         }
                                     />
                                 }
@@ -109,23 +108,21 @@ export const PopupComponent: FunctionComponent<Props> = ({
                             <PopupItemComponent
                                 label={formatMessage(MESSAGES.program)}
                                 value={
-                                    selectedLocation.original.attributes
-                                        ?.file_content?.program
+                                    location.original.attributes?.file_content
+                                        ?.program
                                 }
                             />
                             <PopupItemComponent
                                 label="HC"
                                 value={
-                                    <LinkToOrgUnit
-                                        orgUnit={selectedLocation.orgUnit}
-                                    />
+                                    <LinkToOrgUnit orgUnit={location.orgUnit} />
                                 }
                             />
                             <PopupItemComponent
                                 label={formatMessage(MESSAGES.registrationDate)}
                                 value={
                                     <RegistrationDate
-                                        beneficiary={selectedLocation?.original}
+                                        beneficiary={location?.original}
                                     />
                                 }
                             />
@@ -135,24 +132,18 @@ export const PopupComponent: FunctionComponent<Props> = ({
                                 )}
                                 value={
                                     <VaccinationNumber
-                                        beneficiary={selectedLocation?.original}
+                                        beneficiary={location?.original}
                                     />
                                 }
                             />
                             <PopupItemComponent
                                 label={formatMessage(MESSAGES.age)}
-                                value={
-                                    <Age
-                                        beneficiary={selectedLocation?.original}
-                                    />
-                                }
+                                value={<Age beneficiary={location?.original} />}
                             />
                             <PopupItemComponent
                                 label={formatMessage(MESSAGES.gender)}
                                 value={
-                                    <Gender
-                                        beneficiary={selectedLocation?.original}
-                                    />
+                                    <Gender beneficiary={location?.original} />
                                 }
                             />
                             <Box className={classes.actionBox}>
@@ -169,7 +160,7 @@ export const PopupComponent: FunctionComponent<Props> = ({
                                     >
                                         <Link
                                             target="_blank"
-                                            to={`/${baseUrls.beneficiariesDetails}/beneficiaryId/${selectedLocation.id}`}
+                                            to={`/${baseUrls.entityDetails}/entityId/${location.id}`}
                                             className={classes.linkButton}
                                         >
                                             {formatMessage(MESSAGES.see)}

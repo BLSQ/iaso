@@ -1,7 +1,6 @@
 import { Button, withStyles } from '@material-ui/core';
 import PublicIcon from '@material-ui/icons/Public';
-import SaveAlt from '@material-ui/icons/SaveAlt';
-import { ExcellSvg } from 'bluesquare-components';
+import { ExcellSvg, CsvSvg } from 'bluesquare-components';
 import PropTypes from 'prop-types';
 import React from 'react';
 
@@ -31,7 +30,7 @@ function DownloadButtonsComponent(props) {
                 color="primary"
                 href={csvUrl}
             >
-                <SaveAlt />
+                <CsvSvg />
                 CSV
             </Button>
             <Button

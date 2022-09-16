@@ -2,6 +2,8 @@
 
 import listFixture from '../../fixtures/entityTypes/list-paginated.json';
 import superUser from '../../fixtures/profiles/me/superuser.json';
+import formDetail from '../../fixtures/forms/detail.json';
+import formsList from '../../fixtures/forms/list.json';
 
 const siteBaseUrl = Cypress.env('siteBaseUrl');
 
@@ -26,6 +28,18 @@ const goToPage = (
     interceptFlag = false;
     cy.intercept('GET', '/sockjs-node/**');
     cy.intercept('GET', '/api/profiles/me/**', fakeUser);
+    cy.intercept(
+        'GET',
+        // eslint-disable-next-line max-len
+        '/api/forms/7/?fields=possible_fields',
+        formDetail,
+    );
+    cy.intercept(
+        'GET',
+        // eslint-disable-next-line max-len
+        '/api/forms/?fields=id,name',
+        formsList,
+    );
     const options = {
         method: 'GET',
         pathname: '/api/entitytype',
@@ -47,7 +61,7 @@ const openDialogForIndex = index => {
     table = cy.get('table');
     row = table.find('tbody').find('tr').eq(index);
     const actionCol = row.find('td').last();
-    const editButton = actionCol.find('button').eq(0);
+    const editButton = actionCol.find('[data-test=edit-button]');
     editButton.click();
     cy.get('#entity-types-dialog').should('be.visible');
 };
@@ -141,10 +155,10 @@ describe('Entities types', () => {
                     .eq(rowIndex)
                     .as('row');
                 cy.get('@row').find('td').last().as('actionCol');
-                cy.get('@actionCol').find('button').should('have.length', 2);
+                cy.get('@actionCol').find('button').should('have.length', 3);
                 cy.get('@actionCol')
                     .find(`#form-link-${listFixture.types[rowIndex].id}`)
-                    .should('not.exist');
+                    .should('be.visible');
                 cy.get('@actionCol')
                     .find(`#edit-button-${listFixture.types[rowIndex].id}`)
                     .should('be.visible');
@@ -200,14 +214,17 @@ describe('Entities types', () => {
     });
 
     describe('Dialog', () => {
-        it.skip('should display empty entity infos', () => {
-            // this will be tested when creation will be enabled
+        it('should display empty entity infos', () => {
             goToPage();
             cy.wait('@getEntitiesTypes').then(() => {
                 cy.get('[data-test="add-entity-button"]').click();
                 cy.get('#entity-types-dialog').should('be.visible');
 
                 cy.testInputValue('#input-text-name', '');
+                cy.testMultiSelect('#reference_form', []);
+                cy.testMultiSelect('#fields_detail_info_view', []);
+                cy.testMultiSelect('#fields_list_view', []);
+                cy.get('[data-test="see-form-button"]').should('not.exist');
             });
         });
         it('should display correct entity infos', () => {
@@ -220,6 +237,16 @@ describe('Entities types', () => {
                     '#input-text-name',
                     listFixture.types[entityTypeIndex].name,
                 );
+                cy.get('[data-test="see-form-button"]').should('be.visible');
+                cy.get('#reference_form').should('not.exist');
+                cy.testMultiSelect('#fields_detail_info_view', [
+                    { name: 'Date' },
+                    { name: 'Nom' },
+                ]);
+                cy.testMultiSelect('#fields_list_view', [
+                    { name: 'Date' },
+                    { name: 'Nom' },
+                ]);
             });
         });
 
@@ -231,6 +258,8 @@ describe('Entities types', () => {
                 const name = 'superman';
                 cy.get('#input-text-name').clear().type(name);
                 cy.testInputValue('#input-text-name', name);
+                cy.fillMultiSelect('#fields_list_view', [2, 3]);
+                cy.fillMultiSelect('#fields_detail_info_view', [2, 3]);
                 interceptFlag = false;
                 cy.intercept(
                     {
@@ -238,6 +267,12 @@ describe('Entities types', () => {
                         pathname: `/api/entitytype/${listFixture.types[entityTypeIndex].id}/`,
                     },
                     req => {
+                        expect(req.body).to.deep.equal({
+                            ...listFixture.types[entityTypeIndex],
+                            fields_detail_info_view: ['firstname', 'name'],
+                            fields_list_view: ['firstname', 'name'],
+                            name,
+                        });
                         interceptFlag = true;
                         req.reply({
                             statusCode: 200,

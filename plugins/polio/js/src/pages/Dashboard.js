@@ -191,11 +191,7 @@ const Dashboard = ({ router }) => {
                         <>
                             {row.rounds.map(r => (
                                 <li>
-                                    {r.number +
-                                        '. ' +
-                                        r.started_at +
-                                        ' -> ' +
-                                        r.ended_at}
+                                    {`${r.number}. ${r.started_at} -> ${r.ended_at}`}
                                     <br />
                                 </li>
                             ))}

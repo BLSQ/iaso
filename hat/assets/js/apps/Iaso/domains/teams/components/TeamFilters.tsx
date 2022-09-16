@@ -14,7 +14,7 @@ type Props = {
 const baseUrl = baseUrls.teams;
 export const TeamFilters: FunctionComponent<Props> = ({ params }) => {
     const { filters, handleSearch, handleChange, filtersUpdated } =
-        useFilterState(baseUrl, params);
+        useFilterState({ baseUrl, params });
     return (
         <>
             <Grid container spacing={0}>

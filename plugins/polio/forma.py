@@ -3,6 +3,7 @@ from datetime import timedelta
 from functools import lru_cache
 
 import pandas as pd
+from django.db.models import Max, Min
 from django.http import HttpResponse
 from pandas import DataFrame
 from rest_framework import viewsets
@@ -24,27 +25,16 @@ def forma_find_campaign_on_day(campaigns, day, country):
     FormA Submission are still considered on time 28 days after the round end at the campaign level
     So we are quite lenient on dates
     """
-
     for c in campaigns:
-        earliest_round = c.rounds.filter(started_at__isnull=False).order_by("started_at").first()
-        if not earliest_round:
+        start_date = c.start_date
+        if not start_date:
             continue
-        start_date = earliest_round.started_at
-        latest_round_start = c.rounds.filter(started_at__isnull=False).order_by("started_at").last()
-        if not latest_round_start:
-            continue  # should not happen if we have an earliest_round?
-        latest_round_end = c.rounds.filter(ended_at__isnull=False).order_by("ended_at").last()
-        end_date = None
-        if latest_round_end:
-            end_date = latest_round_end.ended_at
+        end_date = c.end_date
+        if not end_date or end_date < c.last_start_date:
+            end_date = c.last_start_date
 
-        if not end_date:
-            end_date = latest_round_start.started_at
-        else:
-            if latest_round_start.started_at > end_date:
-                end_date = latest_round_start.started_at
         end_date = end_date + timedelta(days=+60)
-        if c.country_id == country.id and start_date <= day < end_date:
+        if start_date <= day < end_date:
             return c
     return None
 
@@ -98,7 +88,7 @@ def parents_q(org_units):
 
 def make_find_orgunit_for_campaign(cs):
     districts = (
-        cs.group.org_units.all()
+        cs.get_all_districts()
         .prefetch_related("parent")
         .prefetch_related("parent__parent")
         .prefetch_related("parent__parent__parent")
@@ -147,7 +137,7 @@ def make_find_orgunit_for_campaign(cs):
 def find_campaign_orgunits(campaign_find_func, campaign, *args):
     if pd.isna(campaign):
         return
-    if not campaign.group or not campaign.group.org_units.count() > 0:
+    if not campaign.get_all_districts().count() > 0:
         # print(f"skipping {cs}, no scope")
         return
 
@@ -163,6 +153,12 @@ def handle_country(forms, country, campaign_qs) -> DataFrame:
     cache_campaign_find_func = {}
 
     df = DataFrame.from_records(forms)
+    # Add fields to speed up detection of campaign day
+    campaign_qs = campaign_qs.filter(country_id=country.id).annotate(
+        last_start_date=Max("rounds__started_at"),
+        start_date=Min("rounds__started_at"),
+        end_date=Max("rounds__ended_at"),
+    )
 
     df["today"] = pd.to_datetime(df["today"])
     if "District" not in df.columns:
@@ -174,6 +170,7 @@ def handle_country(forms, country, campaign_qs) -> DataFrame:
     df["country_config_name"] = country.name
     df["country_config"] = country
     print("Matching country", country)
+
     forma_find_campaign_on_day_cached = lru_cache(maxsize=None)(forma_find_campaign_on_day)
     df["campaign"] = df.apply(lambda r: forma_find_campaign_on_day_cached(campaign_qs, r["today"], country), axis=1)
     df["campaign_id"] = df["campaign"].apply(lambda c: str(c.id) if c else None)
@@ -244,46 +241,49 @@ def fetch_and_match_forma_data():
 def get_forma_scope_df(campaigns):
     scope_dfs = []
     for campaign in campaigns:
-        if not campaign.group or not campaign.group.org_units.count() > 0:
-            logger.info(f"skipping {campaign}, no scope")
-            continue
-        districts = campaign.group.org_units.all()
-        facilities = OrgUnit.objects.filter(parent__in=districts)
-        regions = OrgUnit.objects.filter(parents_q(districts)).filter(path__depth=2)
-        countries = OrgUnit.objects.filter(parents_q(districts)).filter(path__depth=1)
+        for round in campaign.rounds.all():
+            districts = campaign.get_districts_for_round(round)
 
-        for ous in [districts, facilities, regions, countries]:
-            scope_df = DataFrame.from_records(
-                ous.values(
+            if districts.count() == 0:
+                logger.info(f"skipping {campaign}, no scope")
+                continue
+            facilities = OrgUnit.objects.filter(parent__in=districts)
+            regions = OrgUnit.objects.filter(parents_q(districts)).filter(path__depth=2)
+            countries = OrgUnit.objects.filter(parents_q(districts)).filter(path__depth=1)
+
+            for ous in [districts, facilities, regions, countries]:
+                scope_df = DataFrame.from_records(
+                    ous.values(
+                        "name",
+                        "id",
+                        "parent",
+                        "parent__name",
+                        "parent__parent__name",
+                        "parent__parent_id",
+                        "parent__parent__parent__name",
+                        "parent__parent__parent_id",
+                        "org_unit_type__name",
+                    )
+                )
+                if scope_df.shape == (0, 0):
+                    continue
+
+                scope_df.columns = [
                     "name",
                     "id",
-                    "parent",
-                    "parent__name",
-                    "parent__parent__name",
-                    "parent__parent_id",
-                    "parent__parent__parent__name",
-                    "parent__parent__parent_id",
-                    "org_unit_type__name",
-                )
-            )
-            if scope_df.shape == (0, 0):
-                continue
-
-            scope_df.columns = [
-                "name",
-                "id",
-                "parent_name",
-                "parent_id",
-                "parent2_name",
-                "parent2_id",
-                "parent3_name",
-                "parent3_id",
-                "type",
-            ]
-            scope_df["campaign_id"] = str(campaign.id)
-            scope_df["campaign_obr_name"] = str(campaign.obr_name)
-            print(campaign, scope_df.shape)
-            scope_dfs.append(scope_df)
+                    "parent_name",
+                    "parent_id",
+                    "parent2_name",
+                    "parent2_id",
+                    "parent3_name",
+                    "parent3_id",
+                    "type",
+                ]
+                scope_df["campaign_id"] = str(campaign.id)
+                scope_df["campaign_obr_name"] = str(campaign.obr_name)
+                scope_df["round_number"] = str(round.number)
+                print(campaign, scope_df.shape)
+                scope_dfs.append(scope_df)
 
     all_scopes = pd.concat(scope_dfs)
     return all_scopes

@@ -14,7 +14,7 @@ class MappingsViewSet(viewsets.ViewSet):
     GET /api/mappings/
     """
 
-    permission_classes = [permissions.IsAuthenticated, HasPermission("menupermissions.iaso_mappings")]
+    permission_classes = [permissions.IsAuthenticated, HasPermission("menupermissions.iaso_mappings")]  # type: ignore
 
     def list(self, request):
         limit = request.GET.get("limit", None)

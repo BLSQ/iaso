@@ -6,6 +6,7 @@ from django.contrib.postgres.indexes import GistIndex
 from django.contrib.gis.db.models.fields import PointField, MultiPolygonField
 from django.contrib.postgres.fields import ArrayField, CITextField
 from django.contrib.auth.models import User, AnonymousUser
+from django.db.models import QuerySet
 from django.db.models.expressions import RawSQL
 from django_ltree.fields import PathField  # type: ignore
 from django.utils.translation import ugettext_lazy as _
@@ -89,7 +90,7 @@ class OrgUnitQuerySet(models.QuerySet):
         return self.filter(path__descendants=str(org_unit.path), path__depth=len(org_unit.path) + 1)
 
     def hierarchy(
-        self, org_unit: typing.Union[typing.List["OrgUnit"], "OrgUnitQuerySet", "OrgUnit"]
+        self, org_unit: typing.Union[typing.List["OrgUnit"], "QuerySet[OrgUnit]", "OrgUnit"]
     ) -> "OrgUnitQuerySet":
         """The OrgunitS and all their descendants"""
         # We need to cast PathValue instances to strings - this could be fixed upstream

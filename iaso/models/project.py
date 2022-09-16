@@ -5,7 +5,9 @@ from uuid import uuid4
 
 
 class ProjectQuerySet(models.QuerySet):
-    def get_for_user_and_app_id(self, user: typing.Union[User, AnonymousUser], app_id: typing.Optional[str]):
+    def get_for_user_and_app_id(
+        self, user: typing.Optional[typing.Union[User, AnonymousUser]], app_id: typing.Optional[str]
+    ):
         """Attempt to find a valid project to which the user has access, and that corresponds to the
         provided app_id. If the user is not authenticated, he can still access the project if it does not
         require authentication.
@@ -20,8 +22,7 @@ class ProjectQuerySet(models.QuerySet):
             try:
                 project = self.get(app_id=app_id)
                 if (
-                    user
-                    is None  # TODO: check usages of this method and make sure we don't want to use user.is_authenticated instead
+                    user is None
                     or not project.needs_authentication
                     or (
                         user.is_authenticated

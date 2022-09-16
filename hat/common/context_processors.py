@@ -1,9 +1,9 @@
-from typing import Dict
+from typing import Dict, Any
 from django.conf import settings
 from django.http.request import HttpRequest
 
 
-def appversions(request: HttpRequest) -> Dict[str, str]:
+def appversions(request: HttpRequest) -> Dict[str, bool]:
     prefix = "D-" if settings.DEBUG else ""
     return {"DEV_SERVER": settings.DEV_SERVER}
 
@@ -20,8 +20,9 @@ def logo_path(request: HttpRequest) -> Dict[str, str]:
     return {"logo_path": settings.LOGO_PATH}
 
 
-def theme(request: HttpRequest) -> Dict[str, str]:
+def theme(request: HttpRequest) -> Dict[str, Any]:
     return {
+        # TODO: Duplicated data: refactor?
         "THEME_PRIMARY_COLOR": settings.THEME_PRIMARY_COLOR,
         "THEME_SECONDARY_COLOR": settings.THEME_SECONDARY_COLOR,
         "THEME_PRIMARY_BACKGROUND_COLOR": settings.THEME_PRIMARY_BACKGROUND_COLOR,

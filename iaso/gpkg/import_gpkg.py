@@ -177,7 +177,8 @@ def import_gpkg_file2(
         source.default_version = version
         source.save()
 
-    account = source.projects.first().account
+    # TODO: check: what if the source has no projects? Throw an error? create one?
+    account = source.projects.first().account  # type: ignore
     if not account.default_version:
         account.default_version = version
         account.save()
@@ -202,7 +203,7 @@ def import_gpkg_file2(
         ref = get_ref(ou)
         ref_ou[ref] = ou
 
-    # The child may be created before the parent so we keep a list to update after creating them all
+    # The child may be created before the parent, so we keep a list to update after creating them all
     to_update_with_parent: List[Tuple[str, str]] = []
     modifications_to_log: List[Tuple[OrgUnit, OrgUnit]] = []
     total_org_unit = 0

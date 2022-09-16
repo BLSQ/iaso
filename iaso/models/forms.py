@@ -4,6 +4,7 @@ import typing
 from django.contrib.auth.models import AnonymousUser, User
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.db import models, transaction
+from django.db.models import QuerySet
 from django.utils.html import strip_tags
 from django.utils.translation import ugettext_lazy as _
 from django.contrib.postgres.fields import ArrayField, CITextField
@@ -159,7 +160,7 @@ def _form_version_upload_to(instance: "FormVersion", filename: str) -> str:
 
 
 class FormVersionQuerySet(models.QuerySet):
-    def latest_version(self, form: Form):
+    def latest_version(self, form: Form) -> "typing.Optional[FormVersion]":
         try:
             return self.filter(form=form).latest("created_at")
         except FormVersion.DoesNotExist:
@@ -187,10 +188,11 @@ def _reformat_questions(questions):
     return r
 
 
+# TODO: check if we really need a manager and a queryset for this model - some simplification would be good
 class FormVersionManager(models.Manager):
     def create_for_form_and_survey(self, *, form: "Form", survey: parsing.Survey, **kwargs):
         with transaction.atomic():
-            latest_version = self.latest_version(form)
+            latest_version = self.latest_version(form)  # type: ignore
 
             form_version = super().create(
                 **kwargs,

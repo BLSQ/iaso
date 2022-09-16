@@ -102,6 +102,7 @@ export const BaseInfoForm = () => {
                             name="initial_org_unit"
                             label={formatMessage(MESSAGES.selectInitialRegion)}
                             component={OrgUnitsLevels}
+                            clearable={false}
                         />
                     </Box>
                 </Grid>

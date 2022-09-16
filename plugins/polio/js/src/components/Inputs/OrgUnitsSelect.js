@@ -4,7 +4,7 @@ import PropTypes from 'prop-types';
 import { OrgUnitTreeviewModal } from 'Iaso/domains/orgUnits/components/TreeView/OrgUnitTreeviewModal';
 import { useGetOrgUnit } from 'Iaso/domains/orgUnits/components/TreeView/requests';
 
-export const OrgUnitsLevels = ({ field, form, label, required }) => {
+export const OrgUnitsLevels = ({ field, form, label, required, clearable }) => {
     const { name } = field;
     const {
         setFieldValue,
@@ -20,6 +20,7 @@ export const OrgUnitsLevels = ({ field, form, label, required }) => {
     return (
         <Box position="relative">
             <OrgUnitTreeviewModal
+                clearable={clearable}
                 titleMessage={label}
                 toggleOnLabelClick={false}
                 onConfirm={orgUnit => {
@@ -52,6 +53,7 @@ export const OrgUnitsLevels = ({ field, form, label, required }) => {
 
 OrgUnitsLevels.defaultProps = {
     required: false,
+    clearable: true,
 };
 
 OrgUnitsLevels.propTypes = {
@@ -67,4 +69,5 @@ OrgUnitsLevels.propTypes = {
     }).isRequired,
     label: PropTypes.string.isRequired,
     required: PropTypes.bool,
+    clearable: PropTypes.bool,
 };

@@ -67,7 +67,7 @@ export const ShipmentForm: FunctionComponent<Props> = ({
                     label={formatMessage(
                         MESSAGES.receptionVaccineArrivalReport,
                     )}
-                    name={`round[${roundIndex}].shipment[${index}].date_of_reception`}
+                    name={`round[${roundIndex}].shipment[${index}].date_reception`}
                     component={DateInput}
                     className={classes.input}
                 />

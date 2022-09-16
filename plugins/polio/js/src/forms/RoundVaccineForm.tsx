@@ -50,6 +50,7 @@ export const RoundVaccineForm: FunctionComponent<Props> = () => {
                     ))}
                 </Tabs>
             )}
+            {/* TODO adapt names to vary with selected tab */}
             <Grid container spacing={2}>
                 {/* First row: vaccine */}
                 <Grid xs={12}>

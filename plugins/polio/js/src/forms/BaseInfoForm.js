@@ -1,6 +1,6 @@
 /* eslint-disable camelcase */
 import React, { useMemo } from 'react';
-import { Grid, Typography } from '@material-ui/core';
+import { Grid, Typography, Box } from '@material-ui/core';
 import { Field, useFormikContext } from 'formik';
 import { useSafeIntl } from 'bluesquare-components';
 import { useStyles } from '../styles/theme';
@@ -43,7 +43,7 @@ export const BaseInfoForm = () => {
                         {formatMessage(MESSAGES.baseInfoFormTitle)}
                     </Typography>
                 </Grid>
-                <Grid container direction="row" item spacing={2}>
+                <Grid container item spacing={2}>
                     <Grid xs={12} md={6} item>
                         <Field
                             label={formatMessage(MESSAGES.epid)}
@@ -62,6 +62,7 @@ export const BaseInfoForm = () => {
                             label={formatMessage(MESSAGES.groupedCampaigns)}
                             name="grouped_campaigns"
                             options={groupedCampaignsOptions}
+                            withMarginTop={false}
                             component={MultiSelect}
                         />
                     </Grid>
@@ -92,17 +93,17 @@ export const BaseInfoForm = () => {
                         component={TextInput}
                     />
                     <Field
-                        className={classes.input}
                         label={formatMessage(MESSAGES.gpeiCoordinator)}
                         name="gpei_coordinator"
                         component={TextInput}
                     />
-                    <Field
-                        className={classes.input}
-                        name="initial_org_unit"
-                        label={formatMessage(MESSAGES.selectInitialRegion)}
-                        component={OrgUnitsLevels}
-                    />
+                    <Box mb={-2}>
+                        <Field
+                            name="initial_org_unit"
+                            label={formatMessage(MESSAGES.selectInitialRegion)}
+                            component={OrgUnitsLevels}
+                        />
+                    </Box>
                 </Grid>
                 <Grid item xs={6} md={6}>
                     <Field

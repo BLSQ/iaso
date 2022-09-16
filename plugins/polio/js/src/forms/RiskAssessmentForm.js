@@ -38,7 +38,6 @@ export const RiskAssessmentForm = () => {
                             label={formatMessage(MESSAGES.verificationScore)}
                             name="verification_score"
                             component={TextInput}
-                            className={classes.input}
                         />
                     </Grid>
                 </Grid>

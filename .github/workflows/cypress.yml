@@ -1,10 +1,6 @@
 name: Iaso Cypress manual testing
 # This workflow allows to launch cypress tests manually
-on:
-  pull_request
-
-#  issue_comment:
-#    types: [created]
+on: pull_request
 env:
   REGISTRY: ghcr.io
   IMAGE_NAME: ${{ github.repository }}

@@ -1,7 +1,7 @@
 /* eslint-disable react/jsx-props-no-spreading */
 import React, { FunctionComponent, useState } from 'react';
 import { Link } from 'react-router';
-import { connect, useDispatch, useSelector } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import Alert from '@material-ui/lab/Alert';
 import { Box, Grid, makeStyles, Typography } from '@material-ui/core';
 
@@ -31,7 +31,7 @@ import MESSAGES from './messages';
 import { baseUrls } from '../../constants/urls';
 import { useGetInstance } from './compare/hooks/useGetInstance';
 import { useSnackQuery } from '../../libs/apiHooks';
-import SpeedDialInstance from './components/SpeedDialInstance/SpeedDialInstance';
+import SpeedDialInstance from './components/SpeedDialInstance';
 import { ClassNames } from '../../types/utils';
 import { redirectTo } from '../../routing/actions';
 
@@ -228,6 +228,7 @@ const InstanceDetails: FunctionComponent<Props> = props => {
                                     id="files"
                                 >
                                     <InstancesFilesList
+                                        // @ts-ignore
                                         fetchDetails={false}
                                         instanceDetail={currentInstance}
                                         files={getInstancesFilesList([

@@ -1,19 +1,20 @@
 import { useCallback } from 'react';
 import { UseQueryResult } from 'react-query';
 import { useDispatch } from 'react-redux';
-import { baseUrls } from '../../../../constants/urls';
-import { getRequest } from '../../../../libs/Api';
-import { useSnackQuery } from '../../../../libs/apiHooks';
-import { redirectTo } from '../../../../routing/actions';
-import { useSaveOrgUnit } from '../../../orgUnits/hooks';
-import { OrgUnit } from '../../../orgUnits/types/orgUnit';
-import { Instance } from '../../types/instance';
-import snackMessages from '../../../../components/snackBars/messages';
+import { baseUrls } from '../../../constants/urls';
+import { getRequest } from '../../../libs/Api';
+import { useSnackQuery } from '../../../libs/apiHooks';
+import { redirectTo } from '../../../routing/actions';
+import { useSaveOrgUnit } from '../../orgUnits/hooks';
+import { OrgUnit } from '../../orgUnits/types/orgUnit';
+import { Instance } from '../types/instance';
+import snackMessages from '../../../components/snackBars/messages';
+import { Nullable } from '../../../types/utils';
 
 type LinkToFormParams = {
     // eslint-disable-next-line no-unused-vars
     formId: number;
-    referenceFormId: number;
+    referenceFormId: Nullable<number>;
 };
 
 export const useLinkOrgUnitToReferenceSubmission = ({
@@ -37,13 +38,15 @@ export const useLinkOrgUnitToReferenceSubmission = ({
                 id: orgUnit.id,
                 reference_instance_id: id,
             };
-
-            return saveOrgUnit(orgUnitPayload, {
-                onSuccess: (result: OrgUnit) => {
-                    const url = `${baseUrls.orgUnitDetails}/orgUnitId/${result.id}/formId/${formId}/referenceFormId/${referenceFormId}/instanceId/${instanceId}`;
-                    dispatch(redirectTo(url, {}));
-                },
-            });
+            if (referenceFormId) {
+                return saveOrgUnit(orgUnitPayload, {
+                    onSuccess: (result: OrgUnit) => {
+                        const url = `${baseUrls.orgUnitDetails}/orgUnitId/${result.id}/formId/${formId}/referenceFormId/${referenceFormId}/instanceId/${instanceId}`;
+                        dispatch(redirectTo(url, {}));
+                    },
+                });
+            }
+            return null;
         },
         [formId, referenceFormId, saveOrgUnit, dispatch],
     );

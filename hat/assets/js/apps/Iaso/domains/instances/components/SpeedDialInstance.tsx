@@ -10,15 +10,15 @@ import {
     restoreInstance as restoreInstanceAction,
     setCurrentInstance as setCurrentInstanceAction,
     softDeleteInstance as softDeleteAction,
-} from '../../actions';
-import SpeedDialInstanceActions from '../SpeedDialInstanceActions';
-import { userHasPermission } from '../../../users/utils';
+} from '../actions';
+import SpeedDialInstanceActions from './SpeedDialInstanceActions';
+import { userHasPermission } from '../../users/utils';
 import {
     hasFeatureFlag,
     SHOW_LINK_INSTANCE_REFERENCE,
-} from '../../../../utils/featureFlags';
-import { useCurrentUser } from '../../../../utils/usersUtils';
-import { Instance } from '../../types/instance';
+} from '../../../utils/featureFlags';
+import { useCurrentUser } from '../../../utils/usersUtils';
+import { Instance } from '../types/instance';
 import {
     useBaseActions,
     useDeleteAction,
@@ -26,8 +26,8 @@ import {
     useEnketoAction,
     useLinkToOrgUnitAction,
     useLockAction,
-} from './speedDialActions';
-import { useGetOrgUnitTypes } from './hooks';
+} from '../hooks/speedDialActions';
+import { useGetOrgUnitTypes } from '../hooks/speeddials';
 
 type Props = {
     currentInstance: Instance;
@@ -37,7 +37,7 @@ type Props = {
     reAssignInstance: CallableFunction;
     params: {
         instanceId: string;
-        referenceFormId: string;
+        referenceFormId?: string;
     };
 };
 
@@ -60,7 +60,6 @@ const SpeedDialInstance: FunctionComponent<Props> = props => {
     );
     const isOrgUnitAlreadyLinked =
         currentInstance.org_unit.reference_instance_id !== null;
-    console.log('refinstance', currentInstance.org_unit.reference_instance_id);
     const {
         org_unit: orgUnit,
         latitude: formLat,
@@ -102,7 +101,7 @@ const SpeedDialInstance: FunctionComponent<Props> = props => {
         currentInstance,
         isOrgUnitAlreadyLinked,
         formId,
-        referenceFormId: parseInt(referenceFormId, 10),
+        referenceFormId: referenceFormId ? parseInt(referenceFormId, 10) : null,
     });
 
     const onActionSelected = action => {

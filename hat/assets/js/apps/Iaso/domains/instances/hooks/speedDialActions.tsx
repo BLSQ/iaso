@@ -14,15 +14,16 @@ import {
     useSafeIntl,
 } from 'bluesquare-components';
 import { DialogContentText } from '@material-ui/core';
-import EnketoIcon from '../EnketoIcon';
-import CreateReAssignDialogComponent from '../CreateReAssignDialogComponent';
-import ExportInstancesDialogComponent from '../ExportInstancesDialogComponent';
-import MESSAGES from '../../messages';
-import { Instance } from '../../types/instance';
-import ConfirmCancelDialogComponent from '../../../../components/dialogs/ConfirmCancelDialogComponent';
-import { useSaveOrgUnit } from '../../../orgUnits/hooks';
-import { usePostLockInstance } from '../../hooks';
-import { useLinkOrgUnitToReferenceSubmission } from './hooks';
+import EnketoIcon from '../components/EnketoIcon';
+import CreateReAssignDialogComponent from '../components/CreateReAssignDialogComponent';
+import ExportInstancesDialogComponent from '../components/ExportInstancesDialogComponent';
+import MESSAGES from '../messages';
+import { Instance } from '../types/instance';
+import ConfirmCancelDialogComponent from '../../../components/dialogs/ConfirmCancelDialogComponent';
+import { useSaveOrgUnit } from '../../orgUnits/hooks';
+import { usePostLockInstance } from '../hooks';
+import { useLinkOrgUnitToReferenceSubmission } from './speeddials';
+import { Nullable } from '../../../types/utils';
 
 export type SpeedDialAction = {
     id: string;
@@ -200,7 +201,7 @@ type LinkToActionParams = {
     currentInstance: Instance;
     isOrgUnitAlreadyLinked: boolean;
     formId: number;
-    referenceFormId: number;
+    referenceFormId: Nullable<number>;
 };
 
 const renderTrigger =

@@ -344,10 +344,10 @@ class OrgUnitSerializer(serializers.ModelSerializer):
     country_parent = serializers.SerializerMethodField()
     root = serializers.SerializerMethodField()
 
-    def __init__(self, **kwargs):
+    def __init__(self, *args, **kwargs):
         for field in kwargs.pop("hidden_fields", []):
             self.fields.pop(field)
-        super().__init__(**kwargs)
+        super().__init__(*args, **kwargs)
 
     def get_country_parent(self, instance: OrgUnit):
         countries = instance.country_ancestors()

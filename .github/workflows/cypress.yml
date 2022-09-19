@@ -83,24 +83,24 @@ jobs:
           CYPRESS_PASSWORD: "test"
           CYPRESS_BASE_URL: "http://localhost:8081"
       
-      # - name: Mark comment as success
-      #   uses: dkershner6/reaction-action@v1
-      #   if: success()
-      #   with:
-      #     token: ${{ secrets.GITHUB_TOKEN }}
-      #     reaction: 'hooray'
+      - name: Mark comment as success
+        uses: dkershner6/reaction-action@v1
+        if: success()
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          reaction: 'hooray'
 
-      # - name: Comment PR with failure
-      #   uses: actions/github-script@v6
-      #   if: failure()
-      #   with:
-      #     github-token: ${{ secrets.GITHUB_TOKEN }}
-      #     script: |
-      #       const { issue: { number: issue_number }, repo: { owner, repo }  } = context;
-      #       github.rest.issues.createComment({
-      #         issue_number,
-      #         owner,
-      #         repo,
-      #         body: 'Test failed: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}'
-      #       });
+      - name: Comment PR with failure
+        uses: actions/github-script@v6
+        if: failure()
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const { issue: { number: issue_number }, repo: { owner, repo }  } = context;
+            github.rest.issues.createComment({
+              issue_number,
+              owner,
+              repo,
+              body: 'Test failed: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}'
+            });
 

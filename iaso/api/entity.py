@@ -130,7 +130,7 @@ def export_entity_as_xlsx(entities):
         col = 0
         row += 2
         filename = entity.name
-    filename = "EXPORT_ENTITIES.xlsx" if len(entities) > 1 else f"{filename.upper()}_ENTITY.csv"
+    filename = "EXPORT_ENTITIES.xlsx" if len(entities) > 1 else f"{filename.upper()}_ENTITY.xlsx"
     workbook.close()
     mem_file.seek(0)
     response = HttpResponse(mem_file, content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
@@ -309,6 +309,9 @@ class EntityViewSet(ModelViewSet):
         entity_type_id = request.query_params.get("entity_type_id", None)
         limit = request.GET.get("limit", None)
         page_offset = request.GET.get("page", 1)
+        orders = request.GET.get("order", "-created_at").split(",")
+
+        queryset = queryset.order_by(*orders)
 
         if xlsx_format or csv_format:
             if pk:
@@ -323,7 +326,6 @@ class EntityViewSet(ModelViewSet):
         entities = queryset
         result_list = []
         columns_list = []
-        form_key_list = []
 
         if entity_type_id is None:
             for entity in entities:
@@ -341,62 +343,14 @@ class EntityViewSet(ModelViewSet):
                 result_list.append(result)
         else:
             for entity in entities:
-                etype_fields = entity.entity_type.fields_list_view
                 entity_serialized = EntitySerializer(entity, many=False)
                 file_content = entity_serialized.data.get("attributes").get("file_content")
-                form_version = EntityType.objects.get(pk=entity_type_id).reference_form.latest_version
-                form_descriptor = form_version.get_or_save_form_descriptor()
-                for k in form_descriptor:
-                    form_key_list.append(k)
-                form_data_key = form_key_list[form_key_list.index("version") + 1]
-                descriptor_list = form_descriptor[form_data_key]
 
-                is_list = True
-                previous_name = None
-
-                # Get columns from xlsform file content
-                for d in descriptor_list:
-                    for k, v in d.items():
-                        data_list = v
-                        if k == "children":
-                            while is_list:
-                                for data in data_list:
-                                    value_dict = {}
-                                    for _k, _v in data.items():
-                                        if (
-                                            _k == "name"
-                                            and _v in etype_fields
-                                            or _k == "label"
-                                            and previous_name is not None
-                                            or _k == "type"
-                                            and previous_name is not None
-                                        ):
-                                            value_dict[_k] = _v
-                                            is_list = False
-                                            previous_name = _v
-                                        key_index = sorted(data.keys()).index(_k)
-                                        if key_index < len(sorted(data.keys())) - 1:
-                                            if sorted(data.keys())[key_index + 1] == "children":
-                                                data_list = data["children"]
-                                                is_list = True
-                                        if _k == "children":
-                                            data_list = _v
-                                            is_list = True
-                                    columns_list.append(value_dict)
-                if "end" in entity.entity_type.fields_list_view:
-                    value_dict = {"name": "end", "label": "Survey end time", "type": "end"}
-                    columns_list.append(value_dict)
-                if "start" in entity.entity_type.fields_list_view:
-                    value_dict = {"name": "start", "label": "Survey start time", "type": "start"}
-                    columns_list.append(value_dict)
+                columns_list.append(entity.entity_type.reference_form.possible_fields)
                 value_dict = {"name": "last_saved_instance", "label": "Last record date", "type": "date"}
                 columns_list.append(value_dict)
-                result = {}
-                result["id"] = entity.pk
-                result["uuid"] = entity.uuid
-                result["entity_type_name"] = entity.entity_type.name
-                result["created_at"] = entity.created_at
-                result["updated_at"] = entity.updated_at
+                result = {"id": entity.pk, "uuid": entity.uuid, "entity_type_name": entity.entity_type.name,
+                          "created_at": entity.created_at, "updated_at": entity.updated_at}
                 last_created_instance = Instance.objects.filter(entity=entity).last()
                 result["last_saved_instance"] = last_created_instance.created_at if last_created_instance is not None else None
                 # Get data from xlsform

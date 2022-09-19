@@ -317,6 +317,7 @@ class EntityViewSet(ModelViewSet):
         limit = request.GET.get("limit", None)
         page_offset = request.GET.get("page", 1)
         orders = request.GET.get("order", "-created_at").split(",")
+        order_columns = request.GET.get("order_columns", None)
 
         queryset = queryset.order_by(*orders)
         if xlsx_format or csv_format:
@@ -367,16 +368,15 @@ class EntityViewSet(ModelViewSet):
                     last_created_instance.created_at if last_created_instance is not None else None
                 )
                 # Get data from xlsform
-                for k, v in file_content.items():
+                for k, v in entity.attributes.json.items():
                     if k in list(entity.entity_type.fields_list_view):
                         result[k] = v
                 result_list.append(result)
 
-            # remove false doubles entries
             columns_list = [i for n, i in enumerate(columns_list) if i not in columns_list[n + 1 :]]
-            # remove dictionaries with "name or label" as only keys
             columns_list = [c for c in columns_list if len(c) > 2]
-
+        if order_columns is not None:
+            result_list = sorted(result_list, key=lambda d: d[order_columns])
         if limit:
             limit = int(limit)
             page_offset = int(page_offset)
@@ -395,8 +395,6 @@ class EntityViewSet(ModelViewSet):
             return Response(res)
         print(result_list)
         response = {"columns": columns_list, "result": result_list}
-
-
 
         return Response(response)
 

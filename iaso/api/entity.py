@@ -56,15 +56,22 @@ class EntitySerializer(serializers.ModelSerializer):
             "entity_type_name",
             "instances",
             "submitter",
+            "org_unit",
         ]
 
     entity_type_name = serializers.SerializerMethodField()
     attributes = serializers.SerializerMethodField()
     submitter = serializers.SerializerMethodField()
+    org_unit = serializers.SerializerMethodField()
 
     def get_attributes(self, entity: Entity):
         if entity.attributes:
             return entity.attributes.as_full_model()
+        return None
+
+    def get_org_unit(self, entity: Entity):
+        if entity.attributes.org_unit:
+            return entity.attributes.org_unit.as_location(with_parents=True)
         return None
 
     def get_submitter(self, entity: Entity):
@@ -201,13 +208,13 @@ class EntityViewSet(ModelViewSet):
 
     list: /api/entity
 
-    list entity by entity type: /api/entity/?entity_type_id=id
+    list entity by entity type: /api/entity/?entity_type_id=ids
 
     details =/api/entity/<id>
 
     export entity list: /api/entity/?xlsx=true
 
-    export entity by entity type: /api/entity/entity_type_id=id&?xlsx=true
+    export entity by entity type: /api/entity/entity_type_ids=ids&?xlsx=true
 
     export entity submissions list: /api/entity/export_entity_submissions_list/?id=id
 
@@ -227,7 +234,7 @@ class EntityViewSet(ModelViewSet):
         date_from = self.request.query_params.get("dateFrom", None)
         date_to = self.request.query_params.get("dateTo", None)
         entity_type = self.request.query_params.get("entity_type", None)
-        entity_type_id = self.request.query_params.get("entity_type_id", None)
+        entity_type_ids = self.request.query_params.get("entity_type_ids", None)
         by_uuid = self.request.query_params.get("by_uuid", None)
         form_name = self.request.query_params.get("form_name", None)
         show_deleted = self.request.query_params.get("show_deleted", None)
@@ -243,8 +250,8 @@ class EntityViewSet(ModelViewSet):
             queryset = queryset.filter(uuid=by_uuid)
         if entity_type:
             queryset = queryset.filter(name=entity_type)
-        if entity_type_id:
-            queryset = queryset.filter(entity_type_id=entity_type_id)
+        if entity_type_ids:
+            queryset = queryset.filter(entity_type_id__in=entity_type_ids.split(","))
         if org_unit_id:
             queryset = queryset.filter(attributes__org_unit__id=org_unit_id)
         if date_from:
@@ -306,16 +313,15 @@ class EntityViewSet(ModelViewSet):
         xlsx_format = request.GET.get("xlsx", None)
         pk = request.query_params.get("id", None)
         account = self.request.user.iaso_profile.account
-        entity_type_id = request.query_params.get("entity_type_id", None)
+        entity_type_ids = request.query_params.get("entity_type_ids", None)
         limit = request.GET.get("limit", None)
         page_offset = request.GET.get("page", 1)
         orders = request.GET.get("order", "-created_at").split(",")
 
         queryset = queryset.order_by(*orders)
-
         if xlsx_format or csv_format:
             if pk:
-                entities = Entity.objects.filter(account=account, entity_type_id=pk)
+                entities = Entity.objects.filter(account=account, entity_type_ids=pk)
             else:
                 entities = Entity.objects.filter(account=account)
             if xlsx_format:
@@ -327,7 +333,7 @@ class EntityViewSet(ModelViewSet):
         result_list = []
         columns_list = []
 
-        if entity_type_id is None:
+        if entity_type_ids is None or (entity_type_ids is not None and len(entity_type_ids.split(",")) > 1):
             for entity in entities:
                 entity_serialized = EntitySerializer(entity, many=False)
                 file_content = entity_serialized.data.get("attributes").get("file_content")

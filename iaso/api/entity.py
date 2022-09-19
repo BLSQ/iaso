@@ -130,7 +130,7 @@ def export_entity_as_xlsx(entities):
         col = 0
         row += 2
         filename = entity.name
-    filename = "EXPORT_ENTITIES.xlsx" if len(entities) > 1 else f"{filename.upper()}_ENTITY.xlsx"
+    filename = "EXPORT_ENTITIES.xlsx" if len(entities) > 1 else f"{filename.upper()}_ENTITY.csv"
     workbook.close()
     mem_file.seek(0)
     response = HttpResponse(mem_file, content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
@@ -142,7 +142,7 @@ def export_entity_as_csv(entities):
     header = []
     data = []
     filename = ""
-
+    # NOT WORKING ATM
     for entity in entities:
         res = {"entity": EntitySerializer(entity, many=False).data}
         benef_data = []
@@ -161,13 +161,26 @@ def export_entity_as_csv(entities):
             if k in fields_list or k == "attributes":
                 if k == "attributes":
                     for k_, v_ in res["entity"]["attributes"]["file_content"].items():
+                        iteration = 0
+
                         if k_ not in header:
                             header.append(k_)
-                        benef_data.append(v_)
+                        while str(k_) != (header[iteration]):
+                            print(benef_data)
+                            print(iteration)
+                            if benef_data[iteration] is not None:
+                                benef_data.append(None)
+                            print(f"{k_} dont match {header[iteration]}")
+                            iteration += 1
+                        if benef_data[iteration -1] is not None:
+                            benef_data.append(v_)
+                        else:
+                            benef_data[iteration -1] = v_
                 else:
                     if k not in header:
                         header.append(k)
-                    benef_data.append(v)
+                    else:
+                        benef_data.append(v)
         data.append(benef_data)
         filename = entity.name
     filename = f"EXPORT_ENTITIES.csv" if len(entities) > 1 else f"{filename.upper()}_ENTITY.csv"
@@ -176,7 +189,6 @@ def export_entity_as_csv(entities):
         content_type="txt/csv",
         headers={"Content-Disposition": f"attachment; filename={filename}"},
     )
-
     writer = csv.writer(response)
     writer.writerow(header)
     writer.writerows(data)
@@ -371,12 +383,22 @@ class EntityViewSet(ModelViewSet):
                                             data_list = _v
                                             is_list = True
                                     columns_list.append(value_dict)
+                if "end" in entity.entity_type.fields_list_view:
+                    value_dict = {"name": "end", "label": "Survey end time", "type": "end"}
+                    columns_list.append(value_dict)
+                if "start" in entity.entity_type.fields_list_view:
+                    value_dict = {"name": "start", "label": "Survey start time", "type": "start"}
+                    columns_list.append(value_dict)
+                value_dict = {"name": "last_saved_instance", "label": "Last record date", "type": "date"}
+                columns_list.append(value_dict)
                 result = {}
                 result["id"] = entity.pk
                 result["uuid"] = entity.uuid
                 result["entity_type_name"] = entity.entity_type.name
                 result["created_at"] = entity.created_at
                 result["updated_at"] = entity.updated_at
+                last_created_instance = Instance.objects.filter(entity=entity).last()
+                result["last_saved_instance"] = last_created_instance.created_at if last_created_instance is not None else None
                 # Get data from xlsform
                 for k, v in file_content.items():
                     if k in list(entity.entity_type.fields_list_view):
@@ -385,7 +407,7 @@ class EntityViewSet(ModelViewSet):
 
             # remove false doubles entries
             columns_list = [i for n, i in enumerate(columns_list) if i not in columns_list[n + 1 :]]
-            # remove dictionaries with "name or label" as only key
+            # remove dictionaries with "name or label" as only keys
             columns_list = [c for c in columns_list if len(c) > 2]
 
         if limit:

@@ -1,5 +1,5 @@
 /* eslint-disable camelcase */
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useMemo } from 'react';
 import PropTypes from 'prop-types';
 import isEqual from 'lodash/isEqual';
 
@@ -29,6 +29,7 @@ import { BudgetForm } from '../forms/BudgetForm';
 import { Form } from '../forms/Form';
 import { RoundsForm } from '../forms/RoundsForm';
 import { RoundsEmptyDates } from './Rounds/RoundsEmptyDates.tsx';
+
 import { useSaveCampaign } from '../hooks/useSaveCampaign';
 
 import { useStyles } from '../styles/theme';
@@ -50,7 +51,7 @@ const CreateEditDialog = ({
     const handleSubmit = async (values, helpers) => {
         saveCampaign(convertEmptyStringToNull(values), {
             onSuccess: () => {
-                // helpers.resetForm();
+                helpers.resetForm();
                 onClose();
             },
             onError: error => {
@@ -90,37 +91,39 @@ const CreateEditDialog = ({
         formik.resetForm();
         onClose();
     };
-
-    const tabs = [
-        {
-            title: formatMessage(MESSAGES.baseInfo),
-            form: BaseInfoForm,
-        },
-        {
-            title: formatMessage(MESSAGES.detection),
-            form: DetectionForm,
-        },
-        {
-            title: formatMessage(MESSAGES.riskAssessment),
-            form: RiskAssessmentForm,
-        },
-        {
-            title: formatMessage(MESSAGES.scope),
-            form: ScopeForm,
-        },
-        {
-            title: formatMessage(MESSAGES.budget),
-            form: BudgetForm,
-        },
-        {
-            title: formatMessage(MESSAGES.preparedness),
-            form: PreparednessForm,
-        },
-        {
-            title: formatMessage(MESSAGES.rounds),
-            form: RoundsForm,
-        },
-    ];
+    const tabs = useMemo(() => {
+        return [
+            {
+                title: formatMessage(MESSAGES.baseInfo),
+                form: BaseInfoForm,
+            },
+            {
+                title: formatMessage(MESSAGES.detection),
+                form: DetectionForm,
+            },
+            {
+                title: formatMessage(MESSAGES.riskAssessment),
+                form: RiskAssessmentForm,
+            },
+            {
+                title: formatMessage(MESSAGES.scope),
+                form: ScopeForm,
+                disabled: !formik.values.initial_org_unit,
+            },
+            {
+                title: formatMessage(MESSAGES.budget),
+                form: BudgetForm,
+            },
+            {
+                title: formatMessage(MESSAGES.preparedness),
+                form: PreparednessForm,
+            },
+            {
+                title: formatMessage(MESSAGES.rounds),
+                form: RoundsForm,
+            },
+        ];
+    }, [formatMessage, formik.values.initial_org_unit]);
 
     const [selectedTab, setSelectedTab] = useState(0);
 
@@ -173,8 +176,14 @@ const CreateEditDialog = ({
                     variant="scrollable"
                     scrollButtons="auto"
                 >
-                    {tabs.map(({ title }) => {
-                        return <Tab key={title} label={title} />;
+                    {tabs.map(({ title, disabled }) => {
+                        return (
+                            <Tab
+                                key={title}
+                                label={title}
+                                disabled={disabled || false}
+                            />
+                        );
                     })}
                 </Tabs>
                 <FormikProvider value={formik}>

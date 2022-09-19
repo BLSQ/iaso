@@ -22,28 +22,35 @@ jobs:
           - 5432:5432
         # needed because the postgres container does not provide a health check
         options: --health-cmd pg_isready --health-interval 10s --health-timeout 5s --health-retries 5
+
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
         with:
           fetch-depth: 0
+
       - name: Use node.js 14
         uses: actions/setup-node@v2
         with:
           node-version: '14'
           cache: npm
+
       - name: upgrade npm
         run: |
           npm install --global npm@8.5
+
       - run: npm ci
+
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v1
+
       - name: Log in to the Container registry
         uses: docker/login-action@f054a8b539a109f9f41c372932f1ae047eff08c9
         with:
           registry: ${{ env.REGISTRY }}
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
+
       - name: Build Docker image
         uses: docker/build-push-action@v2
         with:
@@ -53,54 +60,54 @@ jobs:
           cache-from: type=registry,ref=ghcr.io/blsq/iaso:buildcache
           cache-to: type=registry,ref=ghcr.io/blsq/iaso:buildcache,mode=max
      
-      # - name: Run IASO
-      #   uses: addnab/docker-run-action@v3
-      #   with:
-      #     image: ghcr.io/blsq/iaso:${{ github.sha }}
-      #   env:
-      #     TEST_PROD: true
-      #     IASO_ENVIRONMENT: development
-      #     RDS_DB_NAME: github_actions
-      #     SECRET_KEY: secret
-      #     DEBUG: true
-      #     DJANGO_SETTINGS_MODULE: hat.settings
-      #     RDS_PASSWORD: postgres
-      #     RDS_HOSTNAME: postgres
-      #     RDS_PORT: 5432
-      #     RDS_USERNAME: postgres
-      #     CACHE: false
-      #     DEV_SERVER: true
-      #     PLUGINS: polio
+      - name: Run IASO
+        uses: addnab/docker-run-action@v3
+        with:
+          image: ghcr.io/blsq/iaso:${{ github.sha }}
+        env:
+          TEST_PROD: true
+          IASO_ENVIRONMENT: development
+          RDS_DB_NAME: github_actions
+          SECRET_KEY: secret
+          DEBUG: true
+          DJANGO_SETTINGS_MODULE: hat.settings
+          RDS_PASSWORD: postgres
+          RDS_HOSTNAME: postgres
+          RDS_PORT: 5432
+          RDS_USERNAME: postgres
+          CACHE: false
+          DEV_SERVER: true
+          PLUGINS: polio
 
-      # - name: Cypress run
-      #   uses: cypress-io/github-action@v4
-      #   with:
-      #     browser: chrome
-      #     wait-on: 'http://localhost:8081'
-      #     spec: hat/assets/js/cypress/integration/**/*.spec.js
-      #     install: false
-      #   env:
-      #     CYPRESS_USERNAME: "test"
-      #     CYPRESS_PASSWORD: "test"
-      #     CYPRESS_BASE_URL: "http://localhost:8081"
+      - name: Cypress run
+        uses: cypress-io/github-action@v4
+        with:
+          browser: chrome
+          wait-on: 'http://localhost:8081'
+          spec: hat/assets/js/cypress/integration/**/*.spec.js
+          install: false
+        env:
+          CYPRESS_USERNAME: "test"
+          CYPRESS_PASSWORD: "test"
+          CYPRESS_BASE_URL: "http://localhost:8081"
       
-      # - name: Mark comment as success
-      #   uses: dkershner6/reaction-action@v1
-      #   if: success()
-      #   with:
-      #     token: ${{ secrets.GITHUB_TOKEN }}
-      #     reaction: 'hooray'
+      - name: Mark comment as success
+        uses: dkershner6/reaction-action@v1
+        if: success()
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          reaction: 'hooray'
 
-      # - name: Comment PR with failure
-      #   uses: actions/github-script@v6
-      #   if: failure()
-      #   with:
-      #     github-token: ${{ secrets.GITHUB_TOKEN }}
-      #     script: |
-      #       const { issue: { number: issue_number }, repo: { owner, repo }  } = context;
-      #       github.rest.issues.createComment({
-      #         issue_number,
-      #         owner,
-      #         repo,
-      #         body: 'Test failed: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}'
-      #       });
+      - name: Comment PR with failure
+        uses: actions/github-script@v6
+        if: failure()
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const { issue: { number: issue_number }, repo: { owner, repo }  } = context;
+            github.rest.issues.createComment({
+              issue_number,
+              owner,
+              repo,
+              body: 'Test failed: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}'
+            });

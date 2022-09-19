@@ -8,48 +8,11 @@ env:
   IMAGE_NAME: ${{ github.repository }}
 
 jobs:
-  pr-commented:
-    name: PR commented
-    if: github.event.issue.pull_request && contains(github.event.comment.body, '@cypress') == true
+  test_cypress:
     runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v3
-
-      - name: resolve pr refs
-        id: refs
-
-        uses: eficode/resolve-pr-refs@main
-        with:
-          token: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Log resolve
-        run: echo '${{ toJSON(steps.refs.outputs) }}'
-
-      - uses: actions/checkout@v3
-        with:
-          ref: ${{ steps.refs.outputs.head_ref }}
-      # ${GITHUB_REF#refs/heads/} will give 'main' for issue_comment event
-
-      - name: Mark comment as pending
-        uses: dkershner6/reaction-action@v1
-        with:
-          token: ${{ secrets.GITHUB_TOKEN }}
-          reaction: 'eyes'
-
-      - uses: ./.github/actions/cypress-run
-        with:
-          branch-path: 'review/${{ steps.refs.outputs.head_ref }}'
-          cypress-test-user-pwd: ${{ secrets.CYPRESS_TEST_USER_PWD }}
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Mark comment as success
-        uses: dkershner6/reaction-action@v1
-        if: success()
-  test:
-    runs-on: ubuntu-latest
-      permissions:
-        contents: read
-        packages: write
+    permissions: 
+      content: read
+      packages: write
     services:
       postgres:
         image: mdillon/postgis:10
@@ -134,4 +97,44 @@ jobs:
           CYPRESS_USERNAME: "test"
           CYPRESS_PASSWORD: "test"
           CYPRESS_BASE_URL: "http://localhost:8081"
-  
+      - name: PR commented
+      if: github.event.issue.pull_request && contains(github.event.comment.body, '@cypress') == true
+      runs-on: ubuntu-latest
+      steps:
+        - uses: actions/checkout@v3
+
+        - name: resolve pr refs
+          id: refs
+
+          uses: eficode/resolve-pr-refs@main
+          with:
+            token: ${{ secrets.GITHUB_TOKEN }}
+
+        - name: Log resolve
+          run: echo '${{ toJSON(steps.refs.outputs) }}'
+
+        - uses: actions/checkout@v3
+          with:
+            ref: ${{ steps.refs.outputs.head_ref }}
+        # ${GITHUB_REF#refs/heads/} will give 'main' for issue_comment event
+
+        - name: Mark comment as success
+          uses: dkershner6/reaction-action@v1
+          if: success()
+          with:
+            token: ${{ secrets.GITHUB_TOKEN }}
+            reaction: 'hooray'
+
+        - name: Comment PR with failure
+          uses: actions/github-script@v6
+          if: failure()
+          with:
+            github-token: ${{ secrets.GITHUB_TOKEN }}
+            script: |
+              const { issue: { number: issue_number }, repo: { owner, repo }  } = context;
+              github.rest.issues.createComment({
+                issue_number,
+                owner,
+                repo,
+                body: 'Test failed: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}'
+              });

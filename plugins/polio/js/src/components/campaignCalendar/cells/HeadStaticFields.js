@@ -16,7 +16,7 @@ import MESSAGES from '../../../constants/messages';
 import { genUrl } from '../../../utils/routing';
 import { useStaticFields } from '../../../hooks/useStaticFields';
 
-const HeadStaticFieldsCells = ({ orders, router }) => {
+const HeadStaticFieldsCells = ({ orders, router, isPdf }) => {
     const classes = useStyles();
     const { formatMessage } = useSafeIntl();
     const dispatch = useDispatch();
@@ -47,7 +47,7 @@ const HeadStaticFieldsCells = ({ orders, router }) => {
 
         dispatch(replace(url));
     };
-    const fields = useStaticFields();
+    const fields = useStaticFields(isPdf);
     return fields.map(f => {
         const sort = ordersArray.find(o => o.id === f.sortKey);
         const sortActive = Boolean(sort);
@@ -105,6 +105,7 @@ const HeadStaticFieldsCells = ({ orders, router }) => {
 
 HeadStaticFieldsCells.propTypes = {
     orders: PropTypes.string.isRequired,
+    isPdf: PropTypes.bool.isRequired,
 };
 
 const wrappedHeadStaticFieldsCells = withRouter(HeadStaticFieldsCells);

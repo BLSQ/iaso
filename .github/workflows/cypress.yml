@@ -24,18 +24,12 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
-        with:
-          fetch-depth: 0
 
       - name: Use node.js 14
         uses: actions/setup-node@v2
         with:
           node-version: '14'
           cache: npm
-
-      - name: upgrade npm
-        run: |
-          npm install --global npm@8.5
 
       - run: npm ci
 
@@ -61,7 +55,7 @@ jobs:
       - name: Run IASO
         uses: addnab/docker-run-action@v3
         with:
-          image: ghcr.io/blsq/iaso:${{ github.sha }}
+          image: blsq/iaso:${{ github.sha }}
         env:
           TEST_PROD: true
           IASO_ENVIRONMENT: development

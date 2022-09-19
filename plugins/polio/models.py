@@ -165,8 +165,6 @@ class Round(models.Model):
     preparedness_spreadsheet_url = models.URLField(null=True, blank=True)
     preparedness_sync_status = models.CharField(max_length=10, default="FINISHED", choices=PREPAREDNESS_SYNC_STATUS)
 
-    # Vaccines
-
     def get_item_by_key(self, key):
         return getattr(self, key)
 

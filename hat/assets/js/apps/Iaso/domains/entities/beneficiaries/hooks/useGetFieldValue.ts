@@ -31,6 +31,8 @@ export const useGetFieldValue = (): ((
                     ? moment(fileContent[fieldKey]).format('L')
                     : textPlaceholder;
             }
+            case 'start':
+            case 'end':
             case 'dateTime': {
                 return fileContent[fieldKey]
                     ? moment(fileContent[fieldKey]).format('LTS')

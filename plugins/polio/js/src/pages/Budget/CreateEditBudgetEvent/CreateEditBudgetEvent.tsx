@@ -9,7 +9,6 @@ import {
 } from 'bluesquare-components';
 import { Box, Divider, Typography } from '@material-ui/core';
 import { ConfirmCancelModal } from '../../../../../../../hat/assets/js/apps/Iaso/components/DragAndDrop/ConfirmCancelModal';
-// import ConfirmCancelDialogComponent from '../../../../../../../hat/assets/js/apps/Iaso/components/dialogs/ConfirmCancelDialogComponent';
 import MESSAGES from '../../../constants/messages';
 import InputComponent from '../../../../../../../hat/assets/js/apps/Iaso/components/forms/InputComponent';
 import { useCurrentUser } from '../../../../../../../hat/assets/js/apps/Iaso/utils/usersUtils';
@@ -276,15 +275,6 @@ const CreateEditBudgetEvent: FunctionComponent<Props> = ({
                             </>
                         )}
                         <Box mt={2}>
-                            {/* <FileInputComponent
-                                    keyValue="files"
-                                    required={currentType === 'edit'}
-                                    multiple
-                                    onChange={onChange}
-                                    value={values.files}
-                                    errors={getErrors('files')}
-                                    label={MESSAGES.filesUpload}
-                                /> */}
                             <FilesUpload
                                 files={values.files ?? []}
                                 onFilesSelect={files => {

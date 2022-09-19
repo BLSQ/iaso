@@ -2,9 +2,17 @@
 import React, { FunctionComponent, useState } from 'react';
 import { useDropzone } from 'react-dropzone';
 // @ts-ignore
-import { IconButton, useSafeIntl } from 'bluesquare-components';
+import { useSafeIntl } from 'bluesquare-components';
 import AttachmentIcon from '@material-ui/icons/Attachment';
-import { Box, Grid, makeStyles, Paper, Typography } from '@material-ui/core';
+import {
+    Box,
+    Grid,
+    makeStyles,
+    Paper,
+    Tooltip,
+    Typography,
+} from '@material-ui/core';
+import { FormattedMessage } from 'react-intl';
 import MESSAGES from './messages';
 import { CustomInput, useCustomInputTextStyle } from './CustomInput';
 
@@ -17,12 +25,9 @@ type Props = {
 };
 
 const Icon = (
-    <IconButton
-        size="small"
-        tooltipMessage={MESSAGES.clickOrDragFile}
-        overrideIcon={AttachmentIcon}
-        onClick={() => null}
-    />
+    <Tooltip title={<FormattedMessage {...MESSAGES.clickOrDragFile} />}>
+        <AttachmentIcon color="action" />
+    </Tooltip>
 );
 
 export const dragzoneStyle = theme => ({

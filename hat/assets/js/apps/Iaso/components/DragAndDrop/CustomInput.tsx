@@ -131,7 +131,12 @@ export const CustomInput: FunctionComponent<Props> = ({
             <Paper
                 variant="outlined"
                 elevation={0}
-                className={`${classes.paper} ${enabledStyle} ${errorStyle} ${additionalPaperStyle}`}
+                className={classnames(
+                    classes.paper,
+                    enabledStyle,
+                    errorStyle,
+                    additionalPaperStyle,
+                )}
                 onClick={disabled ? noOp : onClick}
             >
                 {!children && (

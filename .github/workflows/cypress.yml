@@ -71,9 +71,7 @@ jobs:
           cache-from: type=registry,ref=ghcr.io/blsq/iaso:buildcache
           cache-to: type=registry,ref=ghcr.io/blsq/iaso:buildcache,mode=max
      
-      - uses: addnab/docker-run-action@v3
-        with:
-          image: ghcr.io/blsq/iaso:${{ github.sha }}
+      
         
       - name: Cypress run
         uses: cypress-io/github-action@v4

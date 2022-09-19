@@ -33,6 +33,7 @@ import { useSaveCampaign } from '../hooks/useSaveCampaign';
 
 import { useStyles } from '../styles/theme';
 import MESSAGES from '../constants/messages';
+import { RoundVaccineForm } from '../forms/RoundVaccineForm.tsx';
 
 const CreateEditDialog = ({
     isOpen,
@@ -116,6 +117,10 @@ const CreateEditDialog = ({
             title: formatMessage(MESSAGES.rounds),
             form: RoundsForm,
         },
+        {
+            title: formatMessage(MESSAGES.vaccineManagement),
+            form: RoundVaccineForm,
+        },
     ];
 
     const [selectedTab, setSelectedTab] = useState(0);
@@ -139,6 +144,7 @@ const CreateEditDialog = ({
         !isFormChanged ||
         (isFormChanged && !formik.isValid) ||
         formik.isSubmitting;
+    console.log('values', formik.values);
 
     return (
         <Dialog

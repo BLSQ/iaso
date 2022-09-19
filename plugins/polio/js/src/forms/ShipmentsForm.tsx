@@ -1,57 +1,54 @@
 import { useFormikContext } from 'formik';
-import React, { FunctionComponent, useEffect, useState } from 'react';
+import React, { FunctionComponent } from 'react';
 import AddIcon from '@material-ui/icons/Add';
-import RemoveIcon from '@material-ui/icons/Clear';
-import { Box, Button, Tab, Tabs } from '@material-ui/core';
-// @ts-ignore
-import { useSafeIntl } from 'bluesquare-components';
-import { Optional } from '../../../../../hat/assets/js/apps/Iaso/types/utils';
-import MESSAGES from '../constants/messages';
-import { useStyles } from '../styles/theme';
+import { Box, Fab, Grid } from '@material-ui/core';
+// import { useStyles } from '../styles/theme';
 import { ShipmentForm } from './ShipmentForm';
 
 type Props = {
     roundIndex: number;
     round: any;
+    selectedVaccineIndex: number;
 };
 
 export const ShipmentsForm: FunctionComponent<Props> = ({
     roundIndex,
     round,
+    selectedVaccineIndex,
 }) => {
-    const classes: Record<string, string> = useStyles();
-    const { formatMessage } = useSafeIntl();
+    // const classes: Record<string, string> = useStyles();
     const { setFieldValue } = useFormikContext();
     // const selectedRound = rounds[roundIndex];
-    const { shipments } = round;
+    const { shipments = [{}] } = round?.vaccines[selectedVaccineIndex] ?? {};
 
     const handleAddShipment = () => {
         const newShipments = [...shipments, {}]; // TODO add shipment key values
-        setFieldValue(`rounds[${roundIndex}.shipments]`, newShipments);
+        setFieldValue(
+            `rounds[${roundIndex}]vaccines[${selectedVaccineIndex}].shipments`,
+            newShipments,
+        );
     };
 
     return (
         <>
             {shipments.map((shipment, index) => (
-                <Box mt={2}>
-                    <ShipmentForm
-                        index={index}
-                        roundIndex={roundIndex}
-                        round={round}
-                    />
-                </Box>
+                // eslint-disable-next-line react/no-array-index-key
+                <Grid item xs={12} key={`shipment${index}`}>
+                    <Box mt={2}>
+                        <ShipmentForm
+                            index={index}
+                            roundIndex={roundIndex}
+                            round={round}
+                            selectedVaccineIndex={selectedVaccineIndex}
+                        />
+                    </Box>
+                </Grid>
             ))}
+
             {/* TODO refactor to add shipment */}
-            <Button
-                className={classes.addRoundButton}
-                size="small"
-                color="secondary"
-                onClick={handleAddShipment}
-                startIcon={<AddIcon fontSize="small" />}
-                variant="outlined"
-            >
-                +
-            </Button>
+            <Fab size="small" onClick={handleAddShipment}>
+                <AddIcon />
+            </Fab>
         </>
     );
 };

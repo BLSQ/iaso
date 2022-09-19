@@ -1,7 +1,6 @@
 name: Iaso Cypress manual testing
 # This workflow allows to launch cypress tests manually
-on:
-  pull_request
+on: pull_request
 
 #  issue_comment:
 #    types: [created]
@@ -11,7 +10,6 @@ env:
 
 jobs:
   test_cypress:
-    if: github.event.issue.pull_request && contains(github.event.comment.body, '@cypress') == true
     runs-on: ubuntu-latest
     services:
       postgres:

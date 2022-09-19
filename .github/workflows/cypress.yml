@@ -1,67 +1,55 @@
 name: Iaso Cypress manual testing
 # This workflow allows to launch cypress tests manually
 on:
-  push
+  issue_comment:
+    types: [created]
 env:
   REGISTRY: ghcr.io
   IMAGE_NAME: ${{ github.repository }}
 
 jobs:
-  build-and-push-image:
+  pr-commented:
+    name: PR commented
+    if: github.event.issue.pull_request && contains(github.event.comment.body, '@cypress') == true
     runs-on: ubuntu-latest
-    permissions:
-      contents: read
-      packages: write
-
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v3
+      - uses: actions/checkout@v3
+
+      - name: resolve pr refs
+        id: refs
+
+        uses: eficode/resolve-pr-refs@main
         with:
-          fetch-depth: 0
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v1
-      - name: Determining version ${{ github.ref_name }}
-        id: version
-        run: |
-          export GITHUB_BRANCH=${GITHUB_REF##*heads/}
-          echo $GITHUB_BRANCH
-          git describe --tags
-          export VERSION_NAME=$(git describe --tags)--$GITHUB_BRANCH
-          echo "::set-output name=VERSION_NAME::$VERSION_NAME"
-          echo "::set-output name=IMAGE_TAG::${{ env.REGISTRY }}/blsq/iaso:$GITHUB_SHA"
-      - name: Log in to the Container registry
-        uses: docker/login-action@f054a8b539a109f9f41c372932f1ae047eff08c9
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Log resolve
+        run: echo '${{ toJSON(steps.refs.outputs) }}'
+
+      - uses: actions/checkout@v3
         with:
-          registry: ${{ env.REGISTRY }}
-          username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
-      - name: Build and push Docker image
-        uses: docker/build-push-action@v2
+          ref: ${{ steps.refs.outputs.head_ref }}
+      # ${GITHUB_REF#refs/heads/} will give 'main' for issue_comment event
+
+      - name: Mark comment as pending
+        uses: dkershner6/reaction-action@v1
         with:
-          push: true
-          tags: ${{ steps.version.outputs.IMAGE_TAG }}
-          file: docker/bundle/Dockerfile
-          cache-from: type=registry,ref=ghcr.io/blsq/iaso:buildcache
-          cache-to: type=registry,ref=ghcr.io/blsq/iaso:buildcache,mode=max
-  test_cypress:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          reaction: 'eyes'
+
+      - uses: ./.github/actions/cypress-run
+        with:
+          branch-path: 'review/${{ steps.refs.outputs.head_ref }}'
+          cypress-test-user-pwd: ${{ secrets.CYPRESS_TEST_USER_PWD }}
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Mark comment as success
+        uses: dkershner6/reaction-action@v1
+        if: success()
+  test:
     runs-on: ubuntu-latest
-    needs: build-and-push-image
-    strategy:
-      fail-fast: true
-      matrix:
-        containers:
-          - 01 - auth
-          - 02 - forms
-          - 03 - Users
-          - 04 - tasks
-          - 05 - orgUnits
-          - 06 - orgUnits tabs
-          - 07 - entities
-          - 08 - orgUnitTypes
-          - 09 - projects
-          - 10 - groups
-          - 11 - submissions
-          - 12 - datasources
+      permissions:
+        contents: read
+        packages: write
     services:
       postgres:
         image: mdillon/postgis:10
@@ -92,6 +80,35 @@ jobs:
         ports:
           - 8081:8081
     steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v1
+      - name: Determining version ${{ github.ref_name }}
+        id: version
+        run: |
+          export GITHUB_BRANCH=${GITHUB_REF##*heads/}
+          echo $GITHUB_BRANCH
+          git describe --tags
+          export VERSION_NAME=$(git describe --tags)--$GITHUB_BRANCH
+          echo "::set-output name=VERSION_NAME::$VERSION_NAME"
+          echo "::set-output name=IMAGE_TAG::${{ env.REGISTRY }}/blsq/iaso:$GITHUB_SHA"
+      - name: Log in to the Container registry
+        uses: docker/login-action@f054a8b539a109f9f41c372932f1ae047eff08c9
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v2
+        with:
+          push: true
+          tags: ${{ steps.version.outputs.IMAGE_TAG }}
+          file: docker/bundle/Dockerfile
+          cache-from: type=registry,ref=ghcr.io/blsq/iaso:buildcache
+          cache-to: type=registry,ref=ghcr.io/blsq/iaso:buildcache,mode=max
       - uses: actions/checkout@v2
       - name: docker ps
         run: docker ps
@@ -111,45 +128,10 @@ jobs:
         with:
           browser: chrome
           wait-on: 'http://localhost:8081'
-          spec: hat/assets/js/cypress/integration/${{ matrix.containers }}/*.spec.js
+          spec: hat/assets/js/cypress/integration/**/*.spec.js
           install: false
         env:
           CYPRESS_USERNAME: "test"
           CYPRESS_PASSWORD: "test"
           CYPRESS_BASE_URL: "http://localhost:8081"
-      # - name: Mark comment as success
-      #   uses: dkershner6/reaction-action@v1
-      #   if: success()
-      #   with:
-      #     token: ${{ secrets.GITHUB_TOKEN }}
-      #     reaction: 'hooray'
-
-      - name: Comment PR with failure
-        uses: quipper/comment-failure-action@v0.1.1
-        with:
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-          script: |
-            const { issue: { number: issue_number }, repo: { owner, repo }  } = context;
-            github.rest.issues.createComment({
-              issue_number,
-              owner,
-              repo,
-              body: 'Test failed: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}'
-            });  
-      after the test run completes
-      store videos and any screenshots
-      NOTE: screenshots will be generated only if E2E test failed
-      thus we store screenshots only on failures
-      Alternative: create and commit an empty cypress/screenshots folder
-      to always have something to upload
-      - uses: actions/upload-artifact@v2
-        if: failure()
-        with:
-          name: cypress-screenshots
-          path: /home/runner/work/iaso/iaso/hat/assets/js/cypress/screenshots/
-      # Test run video was always captured, so this action uses "always()" condition
-      - uses: actions/upload-artifact@v2
-        if: always()
-        with:
-          name: cypress-videos
-          path: /home/runner/work/iaso/iaso/hat/assets/js/cypress/videos/
+  

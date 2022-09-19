@@ -56,22 +56,15 @@ class EntitySerializer(serializers.ModelSerializer):
             "entity_type_name",
             "instances",
             "submitter",
-            "org_unit",
         ]
 
     entity_type_name = serializers.SerializerMethodField()
     attributes = serializers.SerializerMethodField()
-    org_unit = serializers.SerializerMethodField()
     submitter = serializers.SerializerMethodField()
 
     def get_attributes(self, entity: Entity):
         if entity.attributes:
             return entity.attributes.as_full_model()
-        return None
-
-    def get_org_unit(self, entity: Entity):
-        if entity.attributes.org_unit:
-            return entity.attributes.org_unit.as_location(with_parents=True)
         return None
 
     def get_submitter(self, entity: Entity):
@@ -137,7 +130,7 @@ def export_entity_as_xlsx(entities):
         col = 0
         row += 2
         filename = entity.name
-    filename = "EXPORT_ENTITIES.xlsx" if len(entities) > 1 else f"{filename.upper()}_ENTITY.csv"
+    filename = "EXPORT_ENTITIES.xlsx" if len(entities) > 1 else f"{filename.upper()}_ENTITY.xlsx"
     workbook.close()
     mem_file.seek(0)
     response = HttpResponse(mem_file, content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
@@ -179,10 +172,10 @@ def export_entity_as_csv(entities):
                                 benef_data.append(None)
                             print(f"{k_} dont match {header[iteration]}")
                             iteration += 1
-                        if benef_data[iteration -1] is not None:
+                        if benef_data[iteration - 1] is not None:
                             benef_data.append(v_)
                         else:
-                            benef_data[iteration -1] = v_
+                            benef_data[iteration - 1] = v_
                 else:
                     if k not in header:
                         header.append(k)
@@ -208,13 +201,13 @@ class EntityViewSet(ModelViewSet):
 
     list: /api/entity
 
-    list entity by entity type: /api/entity/?entity_type_ids=ids
+    list entity by entity type: /api/entity/?entity_type_id=id
 
     details =/api/entity/<id>
 
     export entity list: /api/entity/?xlsx=true
 
-    export entity by entity type: /api/entity/entity_type_ids=ids&?xlsx=true
+    export entity by entity type: /api/entity/entity_type_id=id&?xlsx=true
 
     export entity submissions list: /api/entity/export_entity_submissions_list/?id=id
 
@@ -234,7 +227,7 @@ class EntityViewSet(ModelViewSet):
         date_from = self.request.query_params.get("dateFrom", None)
         date_to = self.request.query_params.get("dateTo", None)
         entity_type = self.request.query_params.get("entity_type", None)
-        entity_type_ids = self.request.query_params.get("entity_type_ids", None)
+        entity_type_id = self.request.query_params.get("entity_type_id", None)
         by_uuid = self.request.query_params.get("by_uuid", None)
         form_name = self.request.query_params.get("form_name", None)
         show_deleted = self.request.query_params.get("show_deleted", None)
@@ -250,8 +243,8 @@ class EntityViewSet(ModelViewSet):
             queryset = queryset.filter(uuid=by_uuid)
         if entity_type:
             queryset = queryset.filter(name=entity_type)
-        if entity_type_ids:
-            queryset = queryset.filter(entity_type_id__in=entity_type_ids.split(","))
+        if entity_type_id:
+            queryset = queryset.filter(entity_type_id=entity_type_id)
         if org_unit_id:
             queryset = queryset.filter(attributes__org_unit__id=org_unit_id)
         if date_from:
@@ -313,13 +306,16 @@ class EntityViewSet(ModelViewSet):
         xlsx_format = request.GET.get("xlsx", None)
         pk = request.query_params.get("id", None)
         account = self.request.user.iaso_profile.account
-        entity_type_ids = request.query_params.get("entity_type_ids", None)
+        entity_type_id = request.query_params.get("entity_type_id", None)
         limit = request.GET.get("limit", None)
         page_offset = request.GET.get("page", 1)
+        orders = request.GET.get("order", "-created_at").split(",")
+
+        queryset = queryset.order_by(*orders)
 
         if xlsx_format or csv_format:
             if pk:
-                entities = Entity.objects.filter(account=account, entity_type_ids=pk)
+                entities = Entity.objects.filter(account=account, entity_type_id=pk)
             else:
                 entities = Entity.objects.filter(account=account)
             if xlsx_format:
@@ -330,13 +326,11 @@ class EntityViewSet(ModelViewSet):
         entities = queryset
         result_list = []
         columns_list = []
-        form_key_list = []
 
-        if entity_type_ids is None or (entity_type_ids is not None and len(entity_type_ids.split(",")) > 1):
+        if entity_type_id is None:
             for entity in entities:
                 entity_serialized = EntitySerializer(entity, many=False)
                 file_content = entity_serialized.data.get("attributes").get("file_content")
-                dict_entity = entity.as_dict()
                 result = {
                     "id": entity.id,
                     "uuid": entity.uuid,
@@ -345,73 +339,27 @@ class EntityViewSet(ModelViewSet):
                     "updated_at": entity.updated_at,
                     "attributes": entity.attributes.pk,
                     "entity_type": entity.entity_type.name,
-                    "org_unit": entity.attributes.org_unit.as_location(with_parents=True),
-                    "program": file_content.get("program"),
                 }
                 result_list.append(result)
         else:
             for entity in entities:
-                etype_fields = entity.entity_type.fields_list_view
                 entity_serialized = EntitySerializer(entity, many=False)
-                attributes = entity_serialized.data.get("attributes")
-                file_content = attributes.get("file_content")
-                form_version = EntityType.objects.get(pk__in=entity_type_ids.split(",")).reference_form.latest_version
-                form_descriptor = form_version.get_or_save_form_descriptor()
-                for k in form_descriptor:
-                    form_key_list.append(k)
-                form_data_key = form_key_list[form_key_list.index("version") + 1]
-                descriptor_list = form_descriptor[form_data_key]
+                file_content = entity_serialized.data.get("attributes").get("file_content")
 
-                is_list = True
-                previous_name = None
-
-                # Get columns from xlsform file content
-                for d in descriptor_list:
-                    for k, v in d.items():
-                        data_list = v
-                        if k == "children":
-                            while is_list:
-                                for data in data_list:
-                                    value_dict = {}
-                                    for _k, _v in data.items():
-                                        if (
-                                            _k == "name"
-                                            and _v in etype_fields
-                                            or _k == "label"
-                                            and previous_name is not None
-                                            or _k == "type"
-                                            and previous_name is not None
-                                        ):
-                                            value_dict[_k] = _v
-                                            is_list = False
-                                            previous_name = _v
-                                        key_index = sorted(data.keys()).index(_k)
-                                        if key_index < len(sorted(data.keys())) - 1:
-                                            if sorted(data.keys())[key_index + 1] == "children":
-                                                data_list = data["children"]
-                                                is_list = True
-                                        if _k == "children":
-                                            data_list = _v
-                                            is_list = True
-                                    columns_list.append(value_dict)
-                if "end" in entity.entity_type.fields_list_view:
-                    value_dict = {"name": "end", "label": "Survey end time", "type": "end"}
-                    columns_list.append(value_dict)
-                if "start" in entity.entity_type.fields_list_view:
-                    value_dict = {"name": "start", "label": "Survey start time", "type": "start"}
-                    columns_list.append(value_dict)
+                columns_list.append(entity.entity_type.reference_form.possible_fields)
                 value_dict = {"name": "last_saved_instance", "label": "Last record date", "type": "date"}
                 columns_list.append(value_dict)
-                result = {}
-                result["id"] = entity.pk
-                result["uuid"] = entity.uuid
-                result["entity_type_name"] = entity.entity_type.name
-                result["created_at"] = entity.created_at
-                result["updated_at"] = entity.updated_at
-                result["org_unit"] = entity.attributes.org_unit.as_location(with_parents=True)
-                result["program"] = file_content.get("program")
+                result = {
+                    "id": entity.pk,
+                    "uuid": entity.uuid,
+                    "entity_type_name": entity.entity_type.name,
+                    "created_at": entity.created_at,
+                    "updated_at": entity.updated_at,
+                }
                 last_created_instance = Instance.objects.filter(entity=entity).last()
-                result["last_saved_instance"] = last_created_instance.created_at if last_created_instance is not None else None
+                result["last_saved_instance"] = (
+                    last_created_instance.created_at if last_created_instance is not None else None
+                )
                 # Get data from xlsform
                 for k, v in file_content.items():
                     if k in list(entity.entity_type.fields_list_view):
@@ -436,10 +384,13 @@ class EntityViewSet(ModelViewSet):
             res["page"] = page_offset
             res["pages"] = paginator.num_pages
             res["limit"] = limit
-            res["columns"] = columns_list
+            res["columns"] = (columns_list,)
             res["result"] = map(lambda x: x, page.object_list)
             return Response(res)
+        print(result_list)
         response = {"columns": columns_list, "result": result_list}
+
+
 
         return Response(response)
 

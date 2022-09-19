@@ -251,16 +251,18 @@ class ShipmentSerializer(serializers.ModelSerializer):
 class RoundVaccineSerializer(serializers.ModelSerializer):
     class Meta:
         model = RoundVaccine
-        fields = ["__all__"]
+        fields = "__all__"
 
     shipments = ShipmentSerializer(many=True, required=False)
 
+    @atomic
     def create(self, validated_data):
         shipments = validated_data.pop("shipments")
         round_vaccine = RoundVaccine.objects.create(**validated_data)
         for shipment in shipments:
             Shipment.objects.create(round_vaccine=round_vaccine, **shipment)
 
+    @atomic
     def update(self, instance: RoundVaccine, validated_data):
         shipments = validated_data.pop("shipments")
         shipment_instances = []
@@ -292,6 +294,7 @@ class RoundSerializer(serializers.ModelSerializer):
     scopes = RoundScopeSerializer(many=True, required=False)
     vaccines = RoundVaccineSerializer(many=True, required=False)
 
+    @atomic
     def create(self, validated_data):
         vaccines = validated_data.pop("vaccines", [])
         round = Round.objects.create(*validated_data)
@@ -302,6 +305,7 @@ class RoundSerializer(serializers.ModelSerializer):
                 Shipment.objects.create(round_vaccine=round_vaccine, **shipment)
         return round
 
+    @atomic
     def update(self, instance, validated_data):
         vaccines = validated_data.pop("vaccines", [])
         vaccine_instances = []

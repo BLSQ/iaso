@@ -9,6 +9,7 @@ env:
 
 jobs:
   test_cypress:
+    if: github.event.issue.pull_request && contains(github.event.comment.body, '@cypress') == true
     runs-on: ubuntu-latest
     permissions: 
       content: read
@@ -47,6 +48,15 @@ jobs:
         uses: actions/checkout@v3
         with:
           fetch-depth: 0
+      - name: Use node.js 14
+        uses: actions/setup-node@v2
+        with:
+          node-version: '14'
+          cache: npm
+      - name: upgrade npm
+        run: |
+          npm install --global npm@8.5
+      - run: npm ci
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v1
       - name: Determining version ${{ github.ref_name }}
@@ -64,28 +74,14 @@ jobs:
           registry: ${{ env.REGISTRY }}
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
-      - name: Build and push Docker image
+      - name: Build Docker image
         uses: docker/build-push-action@v2
         with:
-          push: true
+          push: false
           tags: ${{ steps.version.outputs.IMAGE_TAG }}
           file: docker/bundle/Dockerfile
           cache-from: type=registry,ref=ghcr.io/blsq/iaso:buildcache
           cache-to: type=registry,ref=ghcr.io/blsq/iaso:buildcache,mode=max
-      - uses: actions/checkout@v2
-      - name: docker ps
-        run: docker ps
-      - name: docker logs
-        run: /usr/bin/docker ps --all --format={{.ID}}|xargs  -I {} /usr/bin/docker logs {}
-      - name: Use node.js 14
-        uses: actions/setup-node@v2
-        with:
-          node-version: '14'
-          cache: npm
-      - name: upgrade npm
-        run: |
-          npm install --global npm@8.5
-      - run: npm ci
       - name: Cypress run
         uses: cypress-io/github-action@v4
         with:
@@ -97,44 +93,24 @@ jobs:
           CYPRESS_USERNAME: "test"
           CYPRESS_PASSWORD: "test"
           CYPRESS_BASE_URL: "http://localhost:8081"
-      - name: PR commented
-      if: github.event.issue.pull_request && contains(github.event.comment.body, '@cypress') == true
-      runs-on: ubuntu-latest
-      steps:
-        - uses: actions/checkout@v3
+      
+      - name: Mark comment as success
+        uses: dkershner6/reaction-action@v1
+        if: success()
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          reaction: 'hooray'
 
-        - name: resolve pr refs
-          id: refs
-
-          uses: eficode/resolve-pr-refs@main
-          with:
-            token: ${{ secrets.GITHUB_TOKEN }}
-
-        - name: Log resolve
-          run: echo '${{ toJSON(steps.refs.outputs) }}'
-
-        - uses: actions/checkout@v3
-          with:
-            ref: ${{ steps.refs.outputs.head_ref }}
-        # ${GITHUB_REF#refs/heads/} will give 'main' for issue_comment event
-
-        - name: Mark comment as success
-          uses: dkershner6/reaction-action@v1
-          if: success()
-          with:
-            token: ${{ secrets.GITHUB_TOKEN }}
-            reaction: 'hooray'
-
-        - name: Comment PR with failure
-          uses: actions/github-script@v6
-          if: failure()
-          with:
-            github-token: ${{ secrets.GITHUB_TOKEN }}
-            script: |
-              const { issue: { number: issue_number }, repo: { owner, repo }  } = context;
-              github.rest.issues.createComment({
-                issue_number,
-                owner,
-                repo,
-                body: 'Test failed: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}'
-              });
+      - name: Comment PR with failure
+        uses: actions/github-script@v6
+        if: failure()
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const { issue: { number: issue_number }, repo: { owner, repo }  } = context;
+            github.rest.issues.createComment({
+              issue_number,
+              owner,
+              repo,
+              body: 'Test failed: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}'
+            });

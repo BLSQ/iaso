@@ -1,6 +1,10 @@
 name: Iaso Cypress manual testing
 # This workflow allows to launch cypress tests manually
-on: pull_request
+on:
+  pull_request
+
+#  issue_comment:
+#    types: [created]
 env:
   REGISTRY: ghcr.io
   IMAGE_NAME: ${{ github.repository }}
@@ -9,9 +13,6 @@ jobs:
   test_cypress:
     if: github.event.issue.pull_request && contains(github.event.comment.body, '@cypress') == true
     runs-on: ubuntu-latest
-    permissions: 
-      content: read
-      packages: write
     services:
       postgres:
         image: mdillon/postgis:10

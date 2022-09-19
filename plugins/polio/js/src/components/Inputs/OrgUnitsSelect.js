@@ -11,16 +11,15 @@ export const OrgUnitsLevels = ({ field, form, label, required, clearable }) => {
         touched,
         errors: formErrors,
         setFieldTouched,
+        values,
     } = form;
-    const initialOrgUnitId = form.initialValues[name];
+    const initialOrgUnitId = values[name];
     const errors =
         touched[name] && formErrors?.[name] ? [formErrors[name]] : [];
     const { data: initialOrgUnit, isLoading } = useGetOrgUnit(initialOrgUnitId);
-
     return (
         <Box position="relative">
             <OrgUnitTreeviewModal
-                clearable={clearable}
                 titleMessage={label}
                 toggleOnLabelClick={false}
                 onConfirm={orgUnit => {
@@ -32,6 +31,7 @@ export const OrgUnitsLevels = ({ field, form, label, required, clearable }) => {
                 showStatusIconInPicker={false}
                 errors={errors}
                 required={required}
+                clearable={clearable}
             />
             {isLoading && (
                 <Box
@@ -62,7 +62,7 @@ OrgUnitsLevels.propTypes = {
     }).isRequired,
     form: PropTypes.shape({
         setFieldValue: PropTypes.func.isRequired,
-        initialValues: PropTypes.object.isRequired,
+        values: PropTypes.object.isRequired,
         errors: PropTypes.object,
         touched: PropTypes.object.isRequired,
         setFieldTouched: PropTypes.func.isRequired,

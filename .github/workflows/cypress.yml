@@ -59,7 +59,7 @@ jobs:
       - name: Run IASO
         uses: addnab/docker-run-action@v3
         with:
-          image: blsq/iaso:${{ github.sha }}
+          image: ghcr.io/blsq/iaso:${{ github.sha }}
         env:
           TEST_PROD: true
           IASO_ENVIRONMENT: development

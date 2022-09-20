@@ -80,7 +80,7 @@ from .preparedness.parser import get_preparedness
 
 logger = getLogger(__name__)
 
-CACHE_VERSION = 6
+CACHE_VERSION = 7
 
 
 class CustomFilterBackend(filters.BaseFilterBackend):

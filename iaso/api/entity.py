@@ -179,20 +179,12 @@ def export_entity_as_csv(entities):
         for h in header:
             for k, v in res.items():
                 match = False
-                while not match:
-                    try:
-                        if k == h:
-                            match = True
-                            benef_data[i] = v
-                        else:
-                            match = False
-                            benef_data[i] = None
-                    except IndexError:
-                        benef_data.append(v)
-                    if i < len(header):
-                        i += 1
-                    else:
-                        i = 0
+                if k == h:
+                    benef_data.append(f"found at {k}")
+                if i < len(header):
+                    i += 1
+                else:
+                    i = 0
         data.append(benef_data)
         filename = entity.name
     filename = f"EXPORT_ENTITIES.csv" if len(entities) > 1 else f"{filename.upper()}_ENTITY.csv"
@@ -359,9 +351,14 @@ class EntityViewSet(ModelViewSet):
         else:
             for entity in entities:
                 entity_serialized = EntitySerializer(entity, many=False)
-                file_content = entity_serialized.data.get("attributes").get("file_content")
+                columns_list = []
 
-                columns_list = entity.entity_type.reference_form.possible_fields
+                possible_fields_list = entity.entity_type.reference_form.possible_fields
+                for items in possible_fields_list:
+                    for k,v in items.items():
+                        if k == "name":
+                            if v in entity.entity_type.fields_list_view:
+                                columns_list.append(items)
                 columns_list.append({"name": "last_saved_instance", "label": "Last record date", "type": "date"})
                 result = {
                     "id": entity.pk,
@@ -397,10 +394,9 @@ class EntityViewSet(ModelViewSet):
             res["page"] = page_offset
             res["pages"] = paginator.num_pages
             res["limit"] = limit
-            res["columns"] = (columns_list,)
+            res["columns"] = columns_list
             res["result"] = map(lambda x: x, page.object_list)
             return Response(res)
-        print(result_list)
         response = {"columns": columns_list, "result": result_list}
 
         return Response(response)

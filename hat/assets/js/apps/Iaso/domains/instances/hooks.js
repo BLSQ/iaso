@@ -1,40 +1,17 @@
-import { useSnackQuery, useSnackMutation } from 'Iaso/libs/apiHooks.ts';
+import { useSnackMutation, useSnackQuery } from 'Iaso/libs/apiHooks.ts';
 import { getRequest, patchRequest, postRequest } from 'Iaso/libs/Api';
-import {
-    fetchOrgUnitsTypes,
-    fetchDevices,
-    fetchDevicesOwnerships,
-} from '../../utils/requests';
+import { fetchOrgUnitsTypes } from '../../utils/requests';
 import MESSAGES from './messages';
 import { setOrgUnitTypes } from '../orgUnits/actions';
-import {
-    setDevicesList,
-    setDevicesOwnershipList,
-} from '../../redux/devicesReducer';
 
 import { useFetchOnMount } from '../../hooks/fetchOnMount';
 
-export const useInstancesFiltersData = (
-    formId,
-    setFetchingOrgUnitTypes,
-    setFetchingDevices,
-    setFetchingDevicesOwnerships,
-) => {
+export const useInstancesFiltersData = (formId, setFetchingOrgUnitTypes) => {
     const promisesArray = [
         {
             fetch: fetchOrgUnitsTypes,
             setFetching: setFetchingOrgUnitTypes,
             setData: setOrgUnitTypes,
-        },
-        {
-            fetch: fetchDevices,
-            setFetching: setFetchingDevices,
-            setData: setDevicesList,
-        },
-        {
-            fetch: fetchDevicesOwnerships,
-            setFetching: setFetchingDevicesOwnerships,
-            setData: setDevicesOwnershipList,
         },
     ];
 

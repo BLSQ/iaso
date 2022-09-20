@@ -12,7 +12,6 @@ import { instancesInitialState } from '../../apps/Iaso/domains/instances/reducer
 import { mappingsInitialState } from '../../apps/Iaso/domains/mappings/reducer';
 import { sidebarMenuInitialState } from '../../apps/Iaso/redux/sidebarMenuReducer';
 import { snackBarsInitialState } from '../../apps/Iaso/redux/snackBarsReducer';
-import { devicesInitialState } from '../../apps/Iaso/redux/devicesReducer';
 import { routerInitialState } from '../../apps/Iaso/redux/routerReducer';
 import { linksInitialState } from '../../apps/Iaso/domains/links/reducer';
 import { usersInitialState } from '../../apps/Iaso/domains/users/reducer';
@@ -33,7 +32,6 @@ const initialState = {
     instances: instancesInitialState,
     snackBar: snackBarsInitialState,
     map: mapInitialState,
-    devices: devicesInitialState,
     routerCustom: routerInitialState,
     links: linksInitialState,
     users: usersInitialState,

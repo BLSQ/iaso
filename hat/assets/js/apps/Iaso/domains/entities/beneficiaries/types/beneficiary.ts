@@ -1,7 +1,8 @@
 /* eslint-disable camelcase */
 import { OrgUnit } from '../../../orgUnits/types/orgUnit';
+import { EntityType } from '../../entityTypes/types/entityType';
 
-type FileContent = {
+export type FileContent = {
     name?: string;
     age_type: '0' | '1';
     birth_date?: string;
@@ -18,6 +19,8 @@ type Attributes = {
     latitude: number;
     longitude: number;
     org_unit: OrgUnit;
+    nfc_cards?: number;
+    form_id?: number;
 };
 
 export type Beneficiary = {
@@ -27,7 +30,7 @@ export type Beneficiary = {
     created_at: number;
     updated_at: number;
     attributes: Attributes;
-    entity_type: number;
+    entity_type: EntityType;
     entity_type_name: string;
     submitter: string;
     instances: Record<string, any>[];

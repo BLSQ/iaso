@@ -13,7 +13,7 @@ export const useGetForm = (
     const queryKey: any[] = ['form', formId];
     let url = `/api/forms/${formId}`;
     if (fields) {
-        url += `?fields=${fields}`;
+        url += `/?fields=${fields}`;
     }
     return useSnackQuery({
         queryKey,

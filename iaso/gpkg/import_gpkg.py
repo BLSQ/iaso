@@ -18,7 +18,7 @@ except ImportError:
 
 def get_or_create_org_unit_type_and_assign_project(name: str, project: Project, depth: int) -> OrgUnitType:
     """Get or create the OUT '(in the scope of the project's account) then assign it to the project"""
-    out = get_or_create_org_unit_type(name, project, depth)
+    out = get_or_create_org_unit_type(name=name, depth=depth, account=project.account, preferred_project=project)
     out.projects.add(project)
     return out
 

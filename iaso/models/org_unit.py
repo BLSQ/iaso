@@ -11,28 +11,42 @@ from django_ltree.fields import PathField
 from django.utils.translation import ugettext_lazy as _
 from django_ltree.models import TreeModel
 
-from .base import SourceVersion
+from .base import SourceVersion, Account
 from .project import Project
 
 
-def get_or_create_org_unit_type(name: str, project: Project, depth: int) -> "OrgUnitType":
-    # Logic is very messy, but attempts to simplify were unsuccessful because there's messy data in production
-    # (maybe synced with other devices).
-    # This function has probably the potential to create more messy data, so I still suggest to refactor CAREFULLY.
-    out = OrgUnitType.objects.filter(projects=project, name=name).first()
-    if not out:
-        count = OrgUnitType.objects.filter(name=name, short_name=name[:4], depth=depth).count()
-        if count == 0:
-            out = OrgUnitType.objects.create(name=name, short_name=name[:4], depth=depth)
-            out.save()
-        elif count > 1:
-            out = OrgUnitType.objects.filter(name=name, short_name=name[:4], depth=depth, projects=project).first()
-            if out is None:
-                out = OrgUnitType.objects.filter(name=name, short_name=name[:4], depth=depth).first()
-        else:
-            out = OrgUnitType.objects.get(name=name, short_name=name[:4], depth=depth)
+def get_or_create_org_unit_type(name: str, depth: int, account: Account, preferred_project: Project) -> "OrgUnitType":
+    """
+    Get or create the OUT (in the scope of the account).
 
-    return out
+    OUT are considered identical if they have the same name, depth and account.
+
+    Since the existing data is messy (sometimes there are multiple similar OUT in a given account) we are trying to be
+    smart but careful here: we first try to find an existing OUT for the preferred project, if not we look for another
+    one in the account, if not we create a new one.
+
+    :raises ValueError: if the preferred_project account is not consistent with the account parameter
+    """
+
+    if preferred_project.account != account:
+        raise ValueError("preferred_project.account and account parameters are inconsistent")
+
+    out_defining_fields = {"name": name, "depth": depth}
+
+    try:
+        # Let's first try to find a single entry for the preferred project
+        return OrgUnitType.objects.get(**out_defining_fields, projects=preferred_project)
+    except OrgUnitType.DoesNotExist:
+        all_projects_from_account = Project.objects.filter(account=preferred_project.account)
+        try:
+            # Maybe we have a single entry for the account?
+            return OrgUnitType.objects.get(**out_defining_fields, projects__in=all_projects_from_account)
+        except OrgUnitType.MultipleObjectsReturned:
+            # We have multiple similar OUT in the account and no way to choose the better one, so let's pick the first
+            return OrgUnitType.objects.filter(**out_defining_fields, projects__in=all_projects_from_account).first()
+        except OrgUnitType.DoesNotExist:
+            # We have no similar OUT in the account, so let's create a new one
+            return OrgUnitType.objects.create(**out_defining_fields, short_name=name[:4])
 
 
 class OrgUnitTypeQuerySet(models.QuerySet):

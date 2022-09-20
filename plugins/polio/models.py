@@ -350,8 +350,11 @@ class Campaign(SoftDeletableModel):
         return getattr(self, key)
 
     def get_districts_for_round_number(self, round_number):
-        round = self.rounds.get(number=round_number) if self.separate_scopes_per_round and round_number else None
-        return self.get_districts_for_round(round)
+        if self.separate_scopes_per_round:
+            return OrgUnit.objects.filter(groups__roundScope__round__number=round_number).filter(
+                groups__roundScope__round__campaign=self
+            )
+        return self.get_campaign_scope_districts()
 
     def get_districts_for_round(self, round):
         if self.separate_scopes_per_round:
@@ -368,14 +371,6 @@ class Campaign(SoftDeletableModel):
         """District from all round merged as one"""
         if self.separate_scopes_per_round:
             return OrgUnit.objects.filter(groups__roundScope__round__campaign=self)
-        return self.get_campaign_scope_districts()
-
-    def get_round_districts(self, round_number: int):
-        """District from a specific round"""
-        if self.separate_scopes_per_round:
-            return OrgUnit.objects.filter(groups__roundScope__round__number=self).filter(
-                groups__roundScope__round__campaign=self
-            )
         return self.get_campaign_scope_districts()
 
     def last_surge(self):

@@ -38,15 +38,15 @@ export const useLinkOrgUnitToReferenceSubmission = ({
                 id: orgUnit.id,
                 reference_instance_id: id,
             };
-            if (referenceFormId) {
-                return saveOrgUnit(orgUnitPayload, {
-                    onSuccess: (result: OrgUnit) => {
-                        const url = `${baseUrls.orgUnitDetails}/orgUnitId/${result.id}/formId/${formId}/referenceFormId/${referenceFormId}/instanceId/${instanceId}`;
-                        dispatch(redirectTo(url, {}));
-                    },
-                });
-            }
-            return null;
+            return saveOrgUnit(orgUnitPayload, {
+                onSuccess: (result: OrgUnit) => {
+                    const baseUrl = `${baseUrls.orgUnitDetails}/orgUnitId/${result.id}`;
+                    const url = referenceFormId
+                        ? `${baseUrl}/formId/${formId}/referenceFormId/${referenceFormId}/instanceId/${instanceId}`
+                        : baseUrl;
+                    dispatch(redirectTo(url, {}));
+                },
+            });
         },
         [formId, referenceFormId, saveOrgUnit, dispatch],
     );

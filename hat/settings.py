@@ -22,6 +22,7 @@ import hashlib
 import html
 import re
 import urllib.parse
+from urllib.parse import urlparse
 
 from plugins.wfp.wfp_pkce_generator import generate_pkce
 
@@ -38,6 +39,17 @@ SECRET_KEY = os.environ.get("SECRET_KEY")
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = os.environ.get("DEBUG", "").lower() == "true"
 USE_S3 = os.getenv("USE_S3") == "true"
+# Specifying the `STATIC_URL` means that the assets are available at that URL
+#
+# Currently WFP is deploying this way, where the assets are put on a
+# S3 in a seperate process, and a CDN (Cloudfront) is in front of
+# it. So we parse out the hostname, and then set that as the
+# CDN_URL, so that Django knows where to fetch them from.
+static_url = os.environ.get("STATIC_URL")
+if static_url:
+    CDN_URL = urlparse(static_url).hostname
+else:
+    CDN_URL = None
 
 DEV_SERVER = os.environ.get("DEV_SERVER", "").lower() == "true"
 ENVIRONMENT = os.environ.get("SENTRY_ENVIRONMENT", "development").lower()
@@ -307,23 +319,29 @@ REST_FRAMEWORK = {
 
 SIMPLE_JWT = {"ACCESS_TOKEN_LIFETIME": timedelta(days=3650), "REFRESH_TOKEN_LIFETIME": timedelta(days=3651)}
 
-AWS_S3_REGION_NAME = "eu-central-1"
+AWS_S3_REGION_NAME = os.getenv("AWS_S3_REGION_NAME", "eu-central-1")
 AWS_ACCESS_KEY_ID = os.getenv("AWS_ACCESS_KEY_ID")
 AWS_SECRET_ACCESS_KEY = os.getenv("AWS_SECRET_ACCESS_KEY")
 
 if USE_S3:
+    # https://django-storages.readthedocs.io/en/latest/backends/amazon-S3.html
     AWS_S3_OBJECT_PARAMETERS = {"CacheControl": "max-age=86400"}
     AWS_IS_GZIPPED = True
     AWS_S3_FILE_OVERWRITE = False
     S3_USE_SIGV4 = True
     AWS_S3_SIGNATURE_VERSION = "s3v4"
-    AWS_S3_HOST = "s3.eu-central-1.amazonaws.com"
+    AWS_S3_HOST = "s3.%s.amazonaws.com" % AWS_S3_REGION_NAME
     AWS_DEFAULT_ACL = None
 
     # s3 static settings
-    STATIC_LOCATION = "iasostatics"
-    STATICFILES_STORAGE = "iaso.storage.StaticStorage"
-    STATIC_URL = "https://%s.s3.amazonaws.com/%s/" % (AWS_STORAGE_BUCKET_NAME, STATIC_LOCATION)
+    if CDN_URL:
+        # Only static files, not media files
+        STATIC_URL = "//%s/static/" % (CDN_URL)
+    else:
+        STATIC_LOCATION = "iasostatics"
+        STATICFILES_STORAGE = "iaso.storage.StaticStorage"
+        STATIC_URL = "https://%s.s3.amazonaws.com/%s/" % (AWS_STORAGE_BUCKET_NAME, STATIC_LOCATION)
+
     MEDIA_URL = "https://%s.s3.amazonaws.com/" % AWS_STORAGE_BUCKET_NAME  # subdirectories will depend on field
     DEFAULT_FILE_STORAGE = "storages.backends.s3boto3.S3Boto3Storage"
 else:

@@ -244,14 +244,24 @@ class CampaignScopeSerializer(serializers.ModelSerializer):
 
 class ShipmentSerializer(serializers.ModelSerializer):
     class Meta:
-        model: Shipment
-        fields = "__all__"
+        model = Shipment
+        fields = ["po_numbers", "doses_received", "estimated_arrival_date", "reception_pre_alert", "date_reception"]
 
 
 class RoundVaccineSerializer(serializers.ModelSerializer):
     class Meta:
         model = RoundVaccine
-        fields = "__all__"
+        fields = [
+            "reporting_delays_region_to_national",
+            "reporting_delays_district_to_region",
+            "reporting_delays_hc_to_district",
+            "vials_destroyed",
+            "date_destruction",
+            "wastage_ratio",
+            "doses_per_vial",
+            "name",
+            "shipments",
+        ]
 
     shipments = ShipmentSerializer(many=True, required=False)
 
@@ -264,26 +274,26 @@ class RoundVaccineSerializer(serializers.ModelSerializer):
 
     @atomic
     def update(self, instance: RoundVaccine, validated_data):
-        shipments = validated_data.pop("shipments")
+        shipments = validated_data.pop("shipments", [])
         shipment_instances = []
         for shipment in shipments:
             # need scope id as no other field is unique
             if shipment.get("id"):
-                shipment_id = shipment.get("id")
+                shipment_id = shipment["id"]
                 shipment_data = Shipment.objects.get(pk=shipment_id)
                 if shipment_data.round_vaccine != instance:
                     raise serializers.ValidationError({"shipments": "shipment is attached to wrong vaccine"})
 
             else:
-                shipment_data = instance.shipment_set.create()
+                shipment_data = Shipment.objects.create()
 
             shipment_serializer = ShipmentSerializer(instance=shipment_data, data=shipment)
             shipment_serializer.is_valid(raise_exception=True)
             shipment_instance = shipment_serializer.save()
             shipment_instances.append(shipment_instance)
-            instance.shipments.set(shipment_instances)
-            round_vaccine = super().update(instance, validated_data)
-            return round_vaccine
+        instance.shipments.set(shipment_instances)
+        round_vaccine = super().update(instance, validated_data)
+        return round_vaccine
 
 
 class RoundSerializer(serializers.ModelSerializer):
@@ -299,7 +309,7 @@ class RoundSerializer(serializers.ModelSerializer):
         vaccines = validated_data.pop("vaccines", [])
         round = Round.objects.create(*validated_data)
         for vaccine in vaccines:
-            shipments = vaccine.pop("shipments")
+            shipments = vaccine.pop("shipments", [])
             round_vaccine = RoundVaccine.objects.create(round=round, **vaccine)
             for shipment in shipments:
                 Shipment.objects.create(round_vaccine=round_vaccine, **shipment)
@@ -311,14 +321,17 @@ class RoundSerializer(serializers.ModelSerializer):
         vaccine_instances = []
         for vaccine_data in vaccines:
             round_vaccine = None
+            # vaccine_name = vaccine_data.get("name")
+            # round_vaccine, create = instance.vaccines.get_or_create(vaccine__name=vaccine_name)
             if vaccine_data.get("id"):
                 round_vaccine_id = vaccine_data["id"]
+                print("VACCINE ID", round_vaccine_id)
                 round_vaccine = RoundVaccine.objects.get(pk=round_vaccine_id)
                 if round_vaccine.round != instance:
                     raise serializers.ValidationError({"vaccines": "vaccine is attached to wrong round"})
             elif vaccine_data.get("name"):
-                vaccine_name = vaccine_data.get("name")
-                round_vaccine, create = instance.vaccines.get_or_create(vaccine__name=vaccine_name)
+                vaccine_name = vaccine_data["name"]
+                round_vaccine, create = instance.vaccines.get_or_create(name=vaccine_name)
             round_vaccine_serializer = RoundVaccineSerializer(instance=round_vaccine, data=vaccine_data)
             round_vaccine_serializer.is_valid(raise_exception=True)
             round_vaccine_instance = round_vaccine_serializer.save()

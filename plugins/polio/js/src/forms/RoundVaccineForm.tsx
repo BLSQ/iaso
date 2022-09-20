@@ -1,4 +1,4 @@
-import React, { FunctionComponent, useState } from 'react';
+import React, { FunctionComponent, useEffect, useState } from 'react';
 import { Divider, Grid, Tab, Tabs, Typography } from '@material-ui/core';
 import { Field, useFormikContext } from 'formik';
 // @ts-ignore
@@ -74,6 +74,9 @@ export const RoundVaccineForm: FunctionComponent<Props> = () => {
         setSelectedVaccine(newValue);
         setFieldValue(`rounds[${roundIndex}].vaccines[${SelectedVaccineIndex[newValue]}].name`,newValue);
     };
+    useEffect(()=>{
+        setFieldValue(`rounds[${roundIndex}].vaccines[${SelectedVaccineIndex[selectedVaccine]}].name`,selectedVaccine);
+    },[])
 
     return (
         <>

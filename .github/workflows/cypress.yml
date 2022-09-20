@@ -31,6 +31,10 @@ jobs:
           node-version: '14'
           cache: npm
 
+      - name: upgrade npm
+        run: |
+          npm install --global npm@8.5
+
       - run: npm ci
 
       - name: Set up Docker Buildx

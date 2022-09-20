@@ -6,15 +6,17 @@ import { Box, Fab, Grid } from '@material-ui/core';
 import { ShipmentForm } from './ShipmentForm';
 
 type Props = {
-    roundIndex: number;
+    // roundIndex: number;
     round: any;
     selectedVaccineIndex: number;
+    accessor: string;
 };
 
 export const ShipmentsForm: FunctionComponent<Props> = ({
-    roundIndex,
+    // roundIndex,
     round,
     selectedVaccineIndex,
+    accessor,
 }) => {
     // const classes: Record<string, string> = useStyles();
     const { setFieldValue } = useFormikContext();
@@ -23,10 +25,7 @@ export const ShipmentsForm: FunctionComponent<Props> = ({
 
     const handleAddShipment = () => {
         const newShipments = [...shipments, {}]; // TODO add shipment key values
-        setFieldValue(
-            `rounds[${roundIndex}]vaccines[${selectedVaccineIndex}].shipments`,
-            newShipments,
-        );
+        setFieldValue(`${accessor}.shipments`, newShipments);
     };
 
     return (
@@ -37,7 +36,8 @@ export const ShipmentsForm: FunctionComponent<Props> = ({
                     <Box mt={2}>
                         <ShipmentForm
                             index={index}
-                            roundIndex={roundIndex}
+                            accessor={accessor}
+                            // roundIndex={roundIndex}
                             round={round}
                             selectedVaccineIndex={selectedVaccineIndex}
                         />

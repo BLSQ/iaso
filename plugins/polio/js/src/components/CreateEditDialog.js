@@ -144,7 +144,6 @@ const CreateEditDialog = ({
         !isFormChanged ||
         (isFormChanged && !formik.isValid) ||
         formik.isSubmitting;
-    console.log('values', formik.values);
 
     return (
         <Dialog

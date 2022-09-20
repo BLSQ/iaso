@@ -9,6 +9,7 @@ import { DateInput, Select, TextInput } from '../components/Inputs';
 import { ShipmentsForm } from './ShipmentsForm';
 import { VaccineName, VaccineNames, vaccineNames } from '../constants/virus';
 import { DropdownOptions } from '../../../../../hat/assets/js/apps/Iaso/types/utils';
+import { ReportingDelays } from './ReportingDelays';
 
 type Props = {};
 
@@ -74,6 +75,8 @@ export const RoundVaccineForm: FunctionComponent<Props> = () => {
         setSelectedVaccine(newValue);
         setFieldValue(`rounds[${roundIndex}].vaccines[${SelectedVaccineIndex[newValue]}].name`,newValue);
     };
+    const accessor= `rounds[${roundIndex}].vaccines[${selectedVaccineIndex}]`
+    // Set the vaccine name to the default name to prevent sending bad request
     useEffect(()=>{
         setFieldValue(`rounds[${roundIndex}].vaccines[${SelectedVaccineIndex[selectedVaccine]}].name`,selectedVaccine);
     },[])
@@ -152,7 +155,7 @@ export const RoundVaccineForm: FunctionComponent<Props> = () => {
                     <Grid item xs={3}>
                         <Field
                             label={formatMessage(MESSAGES.dosesPerVial)}
-                            name={`rounds[${roundIndex}].vaccines[${selectedVaccineIndex}].doses_per_vial`} // TODO get correct path
+                            name={`${accessor}.doses_per_vial`} // TODO get correct path
                             className={classes.input}
                             options={dosesOptions} // TODO get options
                             component={Select}
@@ -161,19 +164,19 @@ export const RoundVaccineForm: FunctionComponent<Props> = () => {
                     <Grid item xs={3}>
                         <Field
                             label={formatMessage(MESSAGES.wastageRatio)}
-                            name={`rounds[${roundIndex}].vaccines[${selectedVaccineIndex}].wastage_ratio`} // TODO get correct path
+                            name={`${accessor}.wastage_ratio`} // TODO get correct path
                             component={TextInput} // TODO make NumberInput
                             className={classes.input}
                         />
                     </Grid>
                     <Grid item xs={3}>
-                        <div>Table with editable fields</div>
+                        < ReportingDelays accessor={accessor}/>
                     </Grid>
                     <Grid item xs={3}>
                         <Field
                             label={formatMessage(MESSAGES.dateSignedVrf)}
                             fullWidth
-                            name={`rounds[${roundIndex}].vaccines[${selectedVaccineIndex}].date_signed_vrf`} // TODO get correct path
+                            name={`${accessor}.date_signed_vrf`} // TODO get correct path
                             component={DateInput}
                         />
                     </Grid>
@@ -187,7 +190,8 @@ export const RoundVaccineForm: FunctionComponent<Props> = () => {
                 </Grid>
                 <Grid container item xs={12}>
                     <ShipmentsForm
-                        roundIndex={roundIndex}
+                        // roundIndex={roundIndex}
+                        accessor={accessor}
                         round={rounds[roundIndex]}
                         selectedVaccineIndex={selectedVaccineIndex}
                     />
@@ -202,16 +206,16 @@ export const RoundVaccineForm: FunctionComponent<Props> = () => {
                 <Grid container direction="row" item xs={12} spacing={2}>
                     <Grid item xs={3}>
                         <Field
-                            label={formatMessage(MESSAGES.wastageRatio)}
-                            name={`rounds[${roundIndex}].vaccines[${selectedVaccineIndex}].forma_reception`} // TODO get correct path
-                            component={TextInput}
+                            label={formatMessage(MESSAGES.formAReception)}
+                            name={`${accessor}.forma_reception`} // TODO get correct path
+                            component={DateInput}
                             className={classes.input}
                         />
                     </Grid>
                     <Grid item xs={3}>
                         <Field
                             label={formatMessage(MESSAGES.formAUnusableVials)}
-                            name={`rounds[${roundIndex}].vaccines[${selectedVaccineIndex}].forma_unusable_vials`} // TODO get correct path
+                            name={`${accessor}.forma_unusable_vials`} // TODO get correct path
                             component={TextInput}
                             className={classes.input}
                         />
@@ -219,7 +223,7 @@ export const RoundVaccineForm: FunctionComponent<Props> = () => {
                     <Grid item xs={3}>
                         <Field
                             label={formatMessage(MESSAGES.formAMissingVials)}
-                            name={`rounds[${roundIndex}].vaccines[${selectedVaccineIndex}].forma_missing_vials`} // TODO get correct path
+                            name={`${accessor}.forma_missing_vials`} // TODO get correct path
                             component={TextInput}
                             className={classes.input}
                         />
@@ -227,7 +231,7 @@ export const RoundVaccineForm: FunctionComponent<Props> = () => {
                     <Grid item xs={3}>
                         <Field
                             label={formatMessage(MESSAGES.formAUsableVials)}
-                            name={`rounds[${roundIndex}].vaccines[${selectedVaccineIndex}].forma_usable_vials`} // TODO get correct path
+                            name={`${accessor}.forma_usable_vials`} // TODO get correct path
                             component={TextInput}
                             className={classes.input}
                         />
@@ -247,7 +251,7 @@ export const RoundVaccineForm: FunctionComponent<Props> = () => {
                             // label={formatMessage(MESSAGES.dateSignedVrf)}// TODO uncomment when translated
                             label={formatMessage(MESSAGES.destructionDate)}
                             // fullWidth
-                            name={`rounds[${roundIndex}].vaccines[${selectedVaccineIndex}].date_destruction`} // TODO get correct path
+                            name={`${accessor}.date_destruction`} // TODO get correct path
                             component={DateInput}
                         />
                     </Grid>
@@ -255,7 +259,7 @@ export const RoundVaccineForm: FunctionComponent<Props> = () => {
                         <Field
                             label={formatMessage(MESSAGES.vialsDestroyed)}
                             // label={formatMessage(MESSAGES.wastageRatio)}// TODO uncomment when translated
-                            name={`rounds[${roundIndex}].vaccines[${selectedVaccineIndex}].vials_destroyed`} // TODO get correct path
+                            name={`${accessor}.vials_destroyed`} // TODO get correct path
                             component={TextInput}
                             className={classes.input}
                         />

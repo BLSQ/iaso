@@ -193,9 +193,29 @@ class CampaignViewSet(ModelViewSet):
         roundNumber = request.query_params.get("round", "")
         return Response(get_current_preparedness(campaign, roundNumber))
 
-    @action(methods=["POST"], detail=False, serializer_class=None)
+    @action(methods=["GET"], detail=False, serializer_class=None)
     def create_calendar_xlsx_sheet(self, request, **kwargs):
-        return Response(None)
+        filename = "calendar"
+        filename = self.xlsx_file_name(filename, request.query_params)
+        response = HttpResponse(
+                    None,
+                    content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                )
+        response["Content-Disposition"] = "attachment; filename=%s" % filename
+        return response
+    
+    @staticmethod
+    def xlsx_file_name(name, params):
+        current_date = params.get("currentDate")
+        campaign_type = params.get("campaignType")
+        countries = params.get("countries").split(",")
+        campaign_groups = params.get("campaignGroups").split(",")
+        filename = name
+        filename += '_'+current_date if current_date is not None else ''
+        filename += '_'+campaign_type if campaign_type is not None else ''
+        filename += '_'+'_'.join(countries) if countries is not None else ''
+        filename += '_'+'_'.join(campaign_groups) if campaign_groups is not None else ''
+        return filename
 
     @action(methods=["POST"], detail=True, serializer_class=CampaignPreparednessSpreadsheetSerializer)
     def create_preparedness_sheet(self, request: Request, pk=None, **kwargs):

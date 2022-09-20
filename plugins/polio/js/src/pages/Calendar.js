@@ -33,6 +33,7 @@ import { useGetCampaigns } from '../hooks/useGetCampaigns';
 import MESSAGES from '../constants/messages';
 import { Filters } from '../components/campaignCalendar/Filters';
 import { csvPreview } from '../../../../../hat/assets/js/apps/Iaso/domains/dataSources/requests';
+import { getTableUrl } from 'bluesquare-components';
 
 const pageWidth = 1980;
 
@@ -123,9 +124,18 @@ const Calendar = ({ params }) => {
         }, 1000);
     };
 
-    const createExcel = async () => {
+    const urlParams = {
+        currentDate: params.currentDate,
+        countries: params.countries,
+        campaignType: params.campaignType,
+        campaignGroups: params.campaignGroups,
+        search: params.search
+    };
 
-    }
+    const xlsx_url = getTableUrl(
+        'polio/campaigns/create_calendar_xlsx_sheet',
+        urlParams,
+    );
 
     useEffect(() => {
         if (campaigns.length > 0) {
@@ -182,11 +192,11 @@ const Calendar = ({ params }) => {
                         <Grid item>
                             <Box mb={2} mt={2}>
                                 <Button
-                                    onClick={generateCalendarXlsx}
                                     disabled={!isCalendarAndMapLoaded}
                                     type="button"
                                     color="primary"
                                     variant="contained"
+                                    href={xlsx_url}
                                 >
                                     <DownloadIcon style={{ marginRight: '8px' }} />
                                     {formatMessage(MESSAGES.exportToExcel)}

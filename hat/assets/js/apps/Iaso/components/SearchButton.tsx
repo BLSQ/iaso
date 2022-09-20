@@ -1,5 +1,6 @@
 import React, { FunctionComponent } from 'react';
 import { Button, makeStyles } from '@material-ui/core';
+// @ts-ignore
 import { commonStyles, useSafeIntl } from 'bluesquare-components';
 import { defineMessages } from 'react-intl';
 import SearchIcon from '@material-ui/icons/Search';

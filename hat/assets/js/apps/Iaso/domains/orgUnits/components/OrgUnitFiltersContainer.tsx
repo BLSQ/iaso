@@ -19,7 +19,7 @@ import classnames from 'classnames';
 
 import { useCurrentUser } from '../../../utils/usersUtils';
 
-import { FilterButton } from '../../../components/FilterButton';
+import { SearchButton } from '../../../components/SearchButton';
 import { OrgUnitFilters as Filters } from './OrgUnitsFilters';
 import { redirectTo } from '../../../routing/actions';
 
@@ -233,13 +233,13 @@ export const OrgUnitFiltersContainer: FunctionComponent<Props> = ({
                         <Add className={classes.buttonIcon} />
                         {formatMessage(MESSAGES.create)}
                     </Button>
-                    <FilterButton
+                    <SearchButton
                         disabled={
                             !filtersUpdated ||
                             textSearchError ||
                             hasLocationLimitError
                         }
-                        onFilter={handleSearch}
+                        onSearch={handleSearch}
                     />
                 </Box>
             </Box>

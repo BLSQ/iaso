@@ -80,7 +80,7 @@ from .preparedness.parser import get_preparedness
 
 logger = getLogger(__name__)
 
-CACHE_VERSION = 6
+CACHE_VERSION = 7
 
 
 class CustomFilterBackend(filters.BaseFilterBackend):
@@ -807,7 +807,7 @@ class IMStatsViewSet(viewsets.ViewSet):
                 if campaign:
                     campaign_name = campaign.obr_name
                     # FIXME: We refetch the whole list for all submission this is probably a cause of slowness
-                    scope = campaign.get_all_districts().values_list("id", flat=True)
+                    scope = campaign.get_round_districts(round_number).values_list("id", flat=True)
                     campaign_stats[campaign_name]["has_scope"] = len(scope) > 0
                     district = find_district(district_name, region_name, district_dict)
                     if not district:
@@ -1010,7 +1010,6 @@ def handle_ona_request_with_key(request, key):
                 logger.exception(f"failed parsing of {form}", exc_info=e)
                 failure_count += 1
     print("parsed:", len(res), "failed:", failure_count)
-    # print("all_keys", all_keys)
     res = convert_dicts_to_table(res)
 
     if as_csv:
@@ -1368,7 +1367,7 @@ class LQASStatsViewSet(viewsets.ViewSet):
                             if source_info == "True":
                                 caregiver_counts_dict[source_info_key] += 1
                 # FIXME: We refetch the whole list for all submission this is probably a cause of slowness
-                scope = campaign.get_all_districts().values_list("id", flat=True)
+                scope = campaign.get_round_districts(round_number).values_list("id", flat=True)
                 campaign_stats[campaign_name]["has_scope"] = len(scope) > 0
                 district = find_district(district_name, region_name, district_dict)
                 if not district:

@@ -370,6 +370,14 @@ class Campaign(SoftDeletableModel):
             return OrgUnit.objects.filter(groups__roundScope__round__campaign=self)
         return self.get_campaign_scope_districts()
 
+    def get_round_districts(self, round_number: int):
+        """District from a specific round"""
+        if self.separate_scopes_per_round:
+            return OrgUnit.objects.filter(groups__roundScope__round__number=self).filter(
+                groups__roundScope__round__campaign=self
+            )
+        return self.get_campaign_scope_districts()
+
     def last_surge(self):
         spreadsheet_url = self.surge_spreadsheet_url
         ssi = SpreadSheetImport.last_for_url(spreadsheet_url)

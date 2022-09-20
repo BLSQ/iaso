@@ -407,6 +407,13 @@ class EntityViewSet(ModelViewSet):
                 else:
                     result_list = sorted(result_list, key=lambda d: d[order_columns])
 
+        for r in result_list:
+            for k, v in r.items():
+                if k == "last_saved_instance" and v == datetime.datetime(
+                    1, 1, 1, tzinfo=datetime.timezone(offset=datetime.timedelta())
+                ):
+                    r[k] = None
+
         if limit:
             limit = int(limit)
             page_offset = int(page_offset)

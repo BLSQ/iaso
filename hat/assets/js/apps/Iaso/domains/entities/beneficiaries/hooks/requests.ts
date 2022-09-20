@@ -43,7 +43,7 @@ type Params = {
 
 type ApiParams = {
     limit: string;
-    order: string;
+    order_columns: string;
     page: string;
     search?: string;
     orgUnitId?: string;
@@ -61,7 +61,7 @@ type GetAPiParams = {
 export const useGetBeneficiariesApiParams = (params: Params): GetAPiParams => {
     const apiParams: ApiParams = {
         limit: params.pageSize || '20',
-        order: params.order || 'id',
+        order_columns: params.order || 'id',
         page: params.page || '1',
         search: params.search,
         orgUnitId: params.location,

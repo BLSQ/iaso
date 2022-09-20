@@ -1,10 +1,10 @@
 import datetime
+import json
 import typing
 from uuid import uuid4
 
 import pytz
 from django.contrib.gis.geos import Point
-from django.test import tag
 from django.core.files import File
 from unittest import mock
 
@@ -478,6 +478,83 @@ class InstancesAPITestCase(APITestCase):
         last_modif = Modification.objects.all().order_by("created_at").last()
         self.assertTrue(last_modif.past_value[0]["fields"]["deleted"])
         self.assertFalse(last_modif.new_value[0]["fields"]["deleted"])
+
+    def test_instance_list_by_json_content(self):
+        """Search using the instance content (in JSON field)"""
+        self.create_form_instance(
+            form=self.form_1,
+            period="202001",
+            org_unit=self.jedi_council_corruscant,
+            project=self.project,
+            json={"name": "a", "age": 18, "gender": "M"},
+        )
+
+        b = self.create_form_instance(
+            form=self.form_1,
+            period="202001",
+            org_unit=self.jedi_council_corruscant,
+            project=self.project,
+            json={"name": "b", "age": 19, "gender": "F"},
+        )
+
+        self.create_form_instance(
+            form=self.form_1,
+            period="202001",
+            org_unit=self.jedi_council_corruscant,
+            project=self.project,
+            json={"name": "c", "age": 30, "gender": "F"},
+        )
+
+        self.client.force_authenticate(self.yoda)
+        json_filters = json.dumps({"and": [{"==": [{"var": "gender"}, "F"]}, {"<": [{"var": "age"}, 25]}]})
+        response = self.client.get(f"/api/instances/", {"jsonContent": json_filters})
+        self.assertJSONResponse(response, 200)
+        response_json = response.json()
+        self.assertValidInstanceListData(response_json, expected_length=1)
+        self.assertEqual(response_json["instances"][0]["id"], b.id)
+
+    def test_instance_list_by_json_content_nested(self):
+        """Search using the instance content (in JSON field) with nested and/or operators"""
+        a = self.create_form_instance(
+            form=self.form_1,
+            period="202001",
+            org_unit=self.jedi_council_corruscant,
+            project=self.project,
+            json={"name": "a", "age": 18, "gender": "M"},
+        )
+
+        b = self.create_form_instance(
+            form=self.form_1,
+            period="202001",
+            org_unit=self.jedi_council_corruscant,
+            project=self.project,
+            json={"name": "b", "age": 19, "gender": "F"},
+        )
+
+        self.create_form_instance(
+            form=self.form_1,
+            period="202001",
+            org_unit=self.jedi_council_corruscant,
+            project=self.project,
+            json={"name": "c", "age": 30, "gender": "F"},
+        )
+
+        self.client.force_authenticate(self.yoda)
+
+        # Either a male or a female under 20
+        filters = {
+            "or": [
+                {"==": [{"var": "gender"}, "M"]},
+                {"and": [{"==": [{"var": "gender"}, "F"]}, {"<": [{"var": "age"}, 20]}]},
+            ],
+        }
+
+        response = self.client.get(f"/api/instances/", {"jsonContent": json.dumps(filters)})
+        self.assertJSONResponse(response, 200)
+        response_json = response.json()
+        self.assertValidInstanceListData(response_json, expected_length=2)
+        for instance in response_json["instances"]:
+            self.assertIn(instance["id"], [a.id, b.id])
 
     def test_instance_list_by_form_id_and_status_ok(self):
         """GET /instances/?form_id=form_id&status="""

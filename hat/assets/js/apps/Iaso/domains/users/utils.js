@@ -71,13 +71,23 @@ export const listMenuPermission = (menuItem, permissions = []) => {
  * @param {Object} user
  * @return {String}
  */
-export const getFirstAllowedUrl = (rootPermissions, user, routes) => {
+export const getFirstAllowedUrl = (
+    rootPermissions,
+    userPermissions,
+    routes,
+) => {
+    const untestedPermissions = [...userPermissions];
     let newRoot;
-    user?.permissions.forEach(p => {
+    userPermissions.forEach((p, i) => {
         if (!newRoot && !rootPermissions.includes(p)) {
             newRoot = p;
+            untestedPermissions.splice(i, 1);
         }
     });
     const newPath = routes.find(p => p.permissions?.some(kp => kp === newRoot));
-    return newPath?.baseUrl;
+    if (newPath) {
+        return newPath.baseUrl;
+    }
+    if (untestedPermissions.length === 0) return undefined;
+    return getFirstAllowedUrl(rootPermissions, untestedPermissions, routes);
 };

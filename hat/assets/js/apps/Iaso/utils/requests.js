@@ -155,19 +155,6 @@ export const fetchForms = (dispatch, url = '/api/forms', signal) =>
             console.error('Error while fetching forms list:', error);
         });
 
-export const fetchFormOrgUnitTypes = (dispatch, formId) =>
-    getRequest(`/api/forms/${formId}/?fields=org_unit_type_ids`)
-        .then(form => form)
-        .catch(error => {
-            dispatch(
-                enqueueSnackbar(errorSnackBar('fetchFormError', null, error)),
-            );
-            console.error(
-                "Error while fetching form's org unit type ids:",
-                error,
-            );
-        });
-
 export const fetchOrgUnitDetail = (dispatch, orgUnitId) =>
     getRequest(`/api/orgunits/${orgUnitId}/`)
         .then(orgUnit => orgUnit)

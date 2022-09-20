@@ -1,5 +1,6 @@
 import { UrlParams } from '../../../types/table';
 import { Shape } from './shapes';
+import { Nullable } from '../../../types/utils';
 
 /* eslint-disable camelcase */
 export type OrgUnit = {
@@ -27,9 +28,10 @@ export type OrgUnit = {
     source: string;
     source_id: number;
     version: number;
-    groups: Array<unknown>;
+    groups: Array<(unknown & { id: number }) | number>;
     org_unit_type: string;
     search_index?: number;
+    reference_instance_id: Nullable<number>;
 };
 
 export type OrgUnitParams = UrlParams & {

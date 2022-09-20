@@ -9,6 +9,9 @@ env:
 jobs:
   test_cypress:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
     services:
       postgres:
         image: mdillon/postgis:10
@@ -59,7 +62,7 @@ jobs:
       - name: Run IASO
         uses: addnab/docker-run-action@v3
         with:
-          image: ghcr.io/blsq/iaso:${{ github.sha }}
+          image: blsq/iaso:${{ github.sha }}
         env:
           TEST_PROD: true
           IASO_ENVIRONMENT: development

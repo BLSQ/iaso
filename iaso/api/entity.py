@@ -335,8 +335,9 @@ class EntityViewSet(ModelViewSet):
             for entity in entities:
                 last_created_instance = Instance.objects.filter(entity=entity).last()
                 entity_serialized = EntitySerializer(entity, many=False)
-                file_content = entity_serialized.data.get("attributes").get("file_content")
                 last_created_instance = last_created_instance.created_at if last_created_instance is not None else None
+                attributes = entity_serialized.data.get("attributes")
+                file_content = attributes.get("file_content")
                 result = {
                     "id": entity.id,
                     "uuid": entity.uuid,
@@ -345,17 +346,20 @@ class EntityViewSet(ModelViewSet):
                     "updated_at": entity.updated_at,
                     "attributes": entity.attributes.pk,
                     "entity_type": entity.entity_type.name,
-                    "last_saved_instance": last_created_instance
+                    "last_saved_instance": last_created_instance,
+                    "org_unit": entity.attributes.org_unit.as_location(with_parents=True),
+                    "program": file_content.get("program"),
                 }
                 result_list.append(result)
         else:
             for entity in entities:
-                entity_serialized = EntitySerializer(entity, many=False)
                 columns_list = []
+                entity_serialized = EntitySerializer(entity, many=False)
+                file_content = entity_serialized.data.get("attributes").get("file_content")
 
                 possible_fields_list = entity.entity_type.reference_form.possible_fields
                 for items in possible_fields_list:
-                    for k,v in items.items():
+                    for k, v in items.items():
                         if k == "name":
                             if v in entity.entity_type.fields_list_view:
                                 columns_list.append(items)
@@ -366,10 +370,14 @@ class EntityViewSet(ModelViewSet):
                     "entity_type_name": entity.entity_type.name,
                     "created_at": entity.created_at,
                     "updated_at": entity.updated_at,
+                    "org_unit": entity.attributes.org_unit.as_location(with_parents=True),
+                    "program": file_content.get("program"),
                 }
                 last_created_instance = Instance.objects.filter(entity=entity).last()
                 result["last_saved_instance"] = (
-                    last_created_instance.created_at if last_created_instance is not None else None
+                    last_created_instance.created_at
+                    if last_created_instance is not None
+                    else datetime.datetime(1, 1, 1, tzinfo=datetime.timezone(offset=datetime.timedelta()))
                 )
                 # Get data from xlsform
                 for k, v in entity.attributes.json.items():
@@ -379,8 +387,26 @@ class EntityViewSet(ModelViewSet):
 
             columns_list = [i for n, i in enumerate(columns_list) if i not in columns_list[n + 1 :]]
             columns_list = [c for c in columns_list if len(c) > 2]
+
+        # Custom order for the specific case of entities with different data structure
         if order_columns is not None:
-            result_list = sorted(result_list, key=lambda d: d[order_columns])
+            try:
+                if order_columns[0] == "-":
+                    result_list = sorted(result_list, key=lambda d: d[order_columns[1:]])
+                    result_list.reverse()
+                else:
+                    result_list = sorted(result_list, key=lambda d: d[order_columns])
+            except (KeyError, TypeError):
+                field = order_columns[1:] if order_columns[0] == "-" else order_columns
+                for r in result_list:
+                    if field not in r:
+                        r[field] = "None"
+                if order_columns[0] == "-":
+                    result_list = sorted(result_list, key=lambda d: d[order_columns[1:]])
+                    result_list.reverse()
+                else:
+                    result_list = sorted(result_list, key=lambda d: d[order_columns])
+
         if limit:
             limit = int(limit)
             page_offset = int(page_offset)

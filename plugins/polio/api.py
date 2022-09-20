@@ -644,17 +644,17 @@ class IMStatsViewSet(viewsets.ViewSet):
         if stats_types == "HH,OHH":
             im_request_type = ""
 
-        # cached_response = cache.get(
-        #     "{0}-{1}-IM{2}".format(request.user.id, request.query_params["country_id"], im_request_type),
-        #     version=CACHE_VERSION,
-        # )
+        cached_response = cache.get(
+            "{0}-{1}-IM{2}".format(request.user.id, request.query_params["country_id"], im_request_type),
+            version=CACHE_VERSION,
+        )
 
-        # if not request.user.is_anonymous and cached_response and not no_cache:
-        #     response = json.loads(cached_response)
-        #     cached_date = make_aware(datetime.utcfromtimestamp(response["cache_creation_date"]))
+        if not request.user.is_anonymous and cached_response and not no_cache:
+            response = json.loads(cached_response)
+            cached_date = make_aware(datetime.utcfromtimestamp(response["cache_creation_date"]))
 
-        #     if latest_campaign_update and cached_date > latest_campaign_update:
-        #         return JsonResponse(response)
+            if latest_campaign_update and cached_date > latest_campaign_update:
+                return JsonResponse(response)
 
         stats_types = stats_types.split(",")
         config = get_object_or_404(Config, slug="im-config")
@@ -1010,7 +1010,6 @@ def handle_ona_request_with_key(request, key):
                 logger.exception(f"failed parsing of {form}", exc_info=e)
                 failure_count += 1
     print("parsed:", len(res), "failed:", failure_count)
-    # print("all_keys", all_keys)
     res = convert_dicts_to_table(res)
 
     if as_csv:

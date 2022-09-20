@@ -149,45 +149,50 @@ def export_entity_as_csv(entities):
     header = []
     data = []
     filename = ""
+    possible_field_list = []
     # NOT WORKING ATM
     for entity in entities:
-        res = {"entity": EntitySerializer(entity, many=False).data}
-        benef_data = []
-        for k, v in res["entity"].items():
-            try:
-                fields_list = entity.entity_type.fields_list_view
-                for f in fields_list:
-                    if f is None:
-                        raise serializers.ValidationError(
-                            {"error": "You must provide a field view list in order to export the entities."}
-                        )
-            except TypeError:
-                raise serializers.ValidationError(
-                    {"error": "You must provide a field view list in order to export the entities."}
-                )
-            if k in fields_list or k == "attributes":
-                if k == "attributes":
-                    for k_, v_ in res["entity"]["attributes"]["file_content"].items():
-                        iteration = 0
+        res = entity.attributes.json
+        benef_data = [None]
+        if res is not None:
+            for k, v in res.items():
+                try:
+                    fields_list = entity.entity_type.fields_list_view
+                    for f in fields_list:
+                        if f is None:
+                            raise serializers.ValidationError(
+                                {"error": "You must provide a field view list in order to export the entities."}
+                            )
+                except TypeError:
+                    raise serializers.ValidationError(
+                        {"error": "You must provide a field view list in order to export the entities."}
+                    )
 
-                        if k_ not in header:
-                            header.append(k_)
-                        while str(k_) != (header[iteration]):
-                            print(benef_data)
-                            print(iteration)
-                            if benef_data[iteration] is not None:
-                                benef_data.append(None)
-                            print(f"{k_} dont match {header[iteration]}")
-                            iteration += 1
-                        if benef_data[iteration - 1] is not None:
-                            benef_data.append(v_)
+                for f in entity.attributes.form.possible_fields:
+                    for k_, v_ in f.items():
+                        if k_ == "name" and v_ not in possible_field_list:
+                            possible_field_list.append(v_)
+                for h in possible_field_list:
+                    if h in fields_list and h not in header:
+                        header.append(h)
+        i = 0
+        for h in header:
+            for k, v in res.items():
+                match = False
+                while not match:
+                    try:
+                        if k == h:
+                            match = True
+                            benef_data[i] = v
                         else:
-                            benef_data[iteration - 1] = v_
-                else:
-                    if k not in header:
-                        header.append(k)
-                    else:
+                            match = False
+                            benef_data[i] = None
+                    except IndexError:
                         benef_data.append(v)
+                    if i < len(header):
+                        i += 1
+                    else:
+                        i = 0
         data.append(benef_data)
         filename = entity.name
     filename = f"EXPORT_ENTITIES.csv" if len(entities) > 1 else f"{filename.upper()}_ENTITY.csv"
@@ -336,8 +341,10 @@ class EntityViewSet(ModelViewSet):
 
         if entity_type_ids is None or (entity_type_ids is not None and len(entity_type_ids.split(",")) > 1):
             for entity in entities:
+                last_created_instance = Instance.objects.filter(entity=entity).last()
                 entity_serialized = EntitySerializer(entity, many=False)
                 file_content = entity_serialized.data.get("attributes").get("file_content")
+                last_created_instance = last_created_instance.created_at if last_created_instance is not None else None
                 result = {
                     "id": entity.id,
                     "uuid": entity.uuid,
@@ -346,6 +353,7 @@ class EntityViewSet(ModelViewSet):
                     "updated_at": entity.updated_at,
                     "attributes": entity.attributes.pk,
                     "entity_type": entity.entity_type.name,
+                    "last_saved_instance": last_created_instance
                 }
                 result_list.append(result)
         else:
@@ -353,9 +361,8 @@ class EntityViewSet(ModelViewSet):
                 entity_serialized = EntitySerializer(entity, many=False)
                 file_content = entity_serialized.data.get("attributes").get("file_content")
 
-                columns_list.append(entity.entity_type.reference_form.possible_fields)
-                value_dict = {"name": "last_saved_instance", "label": "Last record date", "type": "date"}
-                columns_list.append(value_dict)
+                columns_list = entity.entity_type.reference_form.possible_fields
+                columns_list.append({"name": "last_saved_instance", "label": "Last record date", "type": "date"})
                 result = {
                     "id": entity.pk,
                     "uuid": entity.uuid,

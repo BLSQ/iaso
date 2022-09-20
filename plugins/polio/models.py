@@ -128,6 +128,10 @@ class RoundVaccine(models.Model):
     reporting_delays_hc_to_district = models.IntegerField(null=True, blank=True)
     reporting_delays_district_to_region = models.IntegerField(null=True, blank=True)
     reporting_delays_region_to_national = models.IntegerField(null=True, blank=True)
+    forma_reception = models.DateField(null=True, blank=True)
+    forma_missing_vials = models.IntegerField(null=True, blank=True)
+    forma_usable_vials = models.IntegerField(null=True, blank=True)
+    forma_unusable_vials = models.IntegerField(null=True, blank=True)
 
 
 class Round(models.Model):

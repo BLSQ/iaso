@@ -260,6 +260,10 @@ class RoundVaccineSerializer(serializers.ModelSerializer):
             "wastage_ratio",
             "doses_per_vial",
             "name",
+            "forma_reception",
+            "forma_unusable_vials",
+            "forma_missing_vials",
+            "forma_usable_vials",
             "shipments",
         ]
 

@@ -4,20 +4,17 @@ import React, { FunctionComponent } from 'react';
 import { IconButton } from 'bluesquare-components';
 import AddIcon from '@material-ui/icons/Add';
 import { Box, Grid } from '@material-ui/core';
-// import { useStyles } from '../styles/theme';
 import { ShipmentForm } from './ShipmentForm';
 import MESSAGES from '../constants/messages';
 
 type Props = {
     round: any;
     accessor: string;
-    roundIndex: number;
 };
 
 export const ShipmentsForm: FunctionComponent<Props> = ({
     round,
     accessor,
-    roundIndex,
 }) => {
     const { setFieldValue } = useFormikContext();
     const { shipments = [] } = round ?? {};
@@ -34,23 +31,14 @@ export const ShipmentsForm: FunctionComponent<Props> = ({
                     // eslint-disable-next-line react/no-array-index-key
                     <Grid item xs={12} key={`shipment${index}`}>
                         <Box mt={2}>
-                            <ShipmentForm
-                                index={index}
-                                accessor={accessor}
-                                roundIndex={roundIndex}
-                                // round={round}
-                            />
+                            <ShipmentForm index={index} accessor={accessor} />
                         </Box>
                     </Grid>
                 ))}
             {shipments.length === 0 && (
                 <Grid item xs={12} key={`shipment${0}`}>
                     <Box mt={2}>
-                        <ShipmentForm
-                            index={0}
-                            accessor={accessor}
-                            roundIndex={roundIndex}
-                        />
+                        <ShipmentForm index={0} accessor={accessor} />
                     </Box>
                 </Grid>
             )}

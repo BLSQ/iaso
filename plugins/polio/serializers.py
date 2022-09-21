@@ -245,54 +245,24 @@ class CampaignScopeSerializer(serializers.ModelSerializer):
 class ShipmentSerializer(serializers.ModelSerializer):
     class Meta:
         model = Shipment
-        # fields = ["po_numbers", "doses_received", "estimated_arrival_date", "reception_pre_alert", "date_reception"]
-        fields = "__all__"
+        fields = [
+            "po_numbers",
+            "doses_received",
+            "estimated_arrival_date",
+            "reception_pre_alert",
+            "date_reception",
+            "vaccine_name",
+        ]
 
 
 class RoundVaccineSerializer(serializers.ModelSerializer):
     class Meta:
         model = RoundVaccine
-        # fields = "__all__"
-
         fields = [
             "wastage_ratio_forecast",
             "doses_per_vial",
             "name",
         ]
-
-    # shipments = ShipmentSerializer(many=True, required=False)
-
-    @atomic
-    def create(self, validated_data):
-        shipments = validated_data.pop("shipments")
-        round_vaccine = RoundVaccine.objects.create(**validated_data)
-        for shipment in shipments:
-            Shipment.objects.create(round_vaccine=round_vaccine, **shipment)
-
-    @atomic
-    def update(self, instance: RoundVaccine, validated_data):
-        shipments = validated_data.pop("shipments", [])
-        shipment_instances = []
-        # delete old shipments to avoid polluting DB
-        # or send id to front-end
-        for shipment in shipments:
-            # need scope id as no other field is unique
-            if shipment.get("id"):
-                shipment_id = shipment["id"]
-                shipment_data = Shipment.objects.get(pk=shipment_id)
-                if shipment_data.round_vaccine != instance:
-                    raise serializers.ValidationError({"shipments": "shipment is attached to wrong vaccine"})
-
-            else:
-                shipment_data = Shipment.objects.create()
-
-            shipment_serializer = ShipmentSerializer(instance=shipment_data, data=shipment)
-            shipment_serializer.is_valid(raise_exception=True)
-            shipment_instance = shipment_serializer.save()
-            shipment_instances.append(shipment_instance)
-        instance.shipments.set(shipment_instances)
-        round_vaccine = super().update(instance, validated_data)
-        return round_vaccine
 
 
 class RoundSerializer(serializers.ModelSerializer):
@@ -302,29 +272,30 @@ class RoundSerializer(serializers.ModelSerializer):
 
     scopes = RoundScopeSerializer(many=True, required=False)
     vaccines = RoundVaccineSerializer(many=True, required=False)
+    shipments = ShipmentSerializer(many=True, required=False)
 
     @atomic
     def create(self, validated_data):
         vaccines = validated_data.pop("vaccines", [])
+        shipments = validated_data.pop("shipments", [])
         round = Round.objects.create(*validated_data)
         for vaccine in vaccines:
-            shipments = vaccine.pop("shipments", [])
-            round_vaccine = RoundVaccine.objects.create(round=round, **vaccine)
-            for shipment in shipments:
-                Shipment.objects.create(round_vaccine=round_vaccine, **shipment)
+            RoundVaccine.objects.create(round=round, **vaccine)
+        for shipment in shipments:
+            Shipment.objects.create(round=round, **shipment)
         return round
 
     @atomic
     def update(self, instance, validated_data):
         vaccines = validated_data.pop("vaccines", [])
         vaccine_instances = []
+        shipments = validated_data.pop("shipments", [])
+        shipment_instances = []
+        current_shipment_ids = []
         for vaccine_data in vaccines:
             round_vaccine = None
-            # vaccine_name = vaccine_data.get("name")
-            # round_vaccine, create = instance.vaccines.get_or_create(vaccine__name=vaccine_name)
             if vaccine_data.get("id"):
                 round_vaccine_id = vaccine_data["id"]
-                print("VACCINE ID", round_vaccine_id)
                 round_vaccine = RoundVaccine.objects.get(pk=round_vaccine_id)
                 if round_vaccine.round != instance:
                     raise serializers.ValidationError({"vaccines": "vaccine is attached to wrong round"})
@@ -335,7 +306,27 @@ class RoundSerializer(serializers.ModelSerializer):
             round_vaccine_serializer.is_valid(raise_exception=True)
             round_vaccine_instance = round_vaccine_serializer.save()
             vaccine_instances.append(round_vaccine_instance)
+        for shipment_data in shipments:
+            shipment = None
+            if shipment_data.get("id"):
+                shipment_id = shipment_data["id"]
+                current_shipment_ids.append(shipment_id)
+                shipment = Shipment.objects.get(pk=shipment_id)
+                if shipment.round != instance:
+                    raise serializers.ValidationError({"shipments": "shipment is attached to wrong round"})
+            else:
+                shipment = Shipment.objects.create()
+            shipment_serializer = ShipmentSerializer(instance=shipment, data=shipment_data)
+            shipment_serializer.is_valid(raise_exception=True)
+            shipment_instance = shipment_serializer.save()
+            shipment_instances.append(shipment_instance)
+        # remove deleted shipments, ie existing shipments whose id wan't sent in the request
+        all_current_shipments = instance.shipments.all()
+        for current in all_current_shipments:
+            if current_shipment_ids.count(current.id) == 0:
+                current.delete()
         instance.vaccines.set(vaccine_instances)
+        instance.shipments.set(shipment_instances)
         round = super().update(instance, validated_data)
         return round
 

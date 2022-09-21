@@ -1,9 +1,9 @@
 /* eslint-disable camelcase */
-import React, { FunctionComponent, useEffect } from 'react';
+import React, { FunctionComponent } from 'react';
 // @ts-ignore
 import { useSafeIntl } from 'bluesquare-components';
 import { Grid } from '@material-ui/core';
-import { Field, useFormikContext } from 'formik';
+import { Field } from 'formik';
 // import RemoveIcon from '@material-ui/icons/Clear';
 import MESSAGES from '../constants/messages';
 import { useStyles } from '../styles/theme';
@@ -19,38 +19,14 @@ export type Shipment = {
 };
 
 type Props = {
-    roundIndex: number;
     index: number;
-    // round: any;
-    // selectedVaccineIndex: number;
     accessor: string;
 };
 
-export const ShipmentForm: FunctionComponent<Props> = ({
-    index,
-    roundIndex,
-    // round,
-    // selectedVaccineIndex,
-    accessor,
-}) => {
+export const ShipmentForm: FunctionComponent<Props> = ({ index, accessor }) => {
     const classes: Record<string, string> = useStyles();
     const { formatMessage } = useSafeIntl();
-    const {
-        // @ts-ignore
-        values: { rounds },
-        setFieldValue,
-    } = useFormikContext();
-    // const { shipments = [{}] } = round ?? {};
-    // const { setFieldValue } = useFormikContext();
 
-    // const handleDeleteShipment = useCallback(() => {
-    //     const updatedShipments = [...shipments];
-    //     setFieldValue(`${accessor}.shipments`, updatedShipments);
-    // }, [accessor, setFieldValue, shipments]);
-    useEffect(() => {
-        setFieldValue(`${accessor}.round`, rounds[roundIndex].id);
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, []);
     return (
         <>
             <Grid
@@ -96,7 +72,7 @@ export const ShipmentForm: FunctionComponent<Props> = ({
                 <Grid item xs={2}>
                     <Field
                         label={formatMessage(MESSAGES.estimatedDateOfArrival)}
-                        name={`${accessor}.shipments[${index}].estimated_date_of_arrival`}
+                        name={`${accessor}.shipments[${index}].estimated_arrival_date`}
                         component={DateInput}
                         className={classes.input}
                     />

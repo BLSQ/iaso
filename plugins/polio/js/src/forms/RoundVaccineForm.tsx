@@ -1,6 +1,6 @@
 import { Grid } from '@material-ui/core';
-import { Field, useFormikContext } from 'formik';
-import React, { FunctionComponent, useEffect } from 'react';
+import { Field } from 'formik';
+import React, { FunctionComponent } from 'react';
 // @ts-ignore
 import { useSafeIntl } from 'bluesquare-components';
 import { Select, TextInput } from '../components/Inputs';
@@ -39,18 +39,9 @@ export const RoundVaccineForm: FunctionComponent<Props> = ({
     vaccineOptions,
 }) => {
     const { formatMessage } = useSafeIntl();
-    const {
-        setFieldValue,
-        // @ts-ignore
-        values: { rounds },
-    } = useFormikContext();
     const classes: Record<string, string> = useStyles();
     const accessor = `rounds[${roundIndex}].vaccines[${vaccineIndex}]`;
 
-    useEffect(() => {
-        setFieldValue(`${accessor}.round`, rounds[roundIndex].id);
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, []);
     return (
         <Grid container item xs={12} spacing={2}>
             <Grid item xs={4}>

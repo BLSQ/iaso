@@ -13,25 +13,6 @@ import { RoundVaccineForms } from './RoundVaccineForms';
 
 type Props = any;
 
-// const defaultWastageRatio = (vaccine: VaccineName) => {
-//     switch (vaccine) {
-//         case VaccineNames.bOPV:
-//             return '1.18';
-//         case VaccineNames.mOPV2:
-//             return '1.15';
-//         case VaccineNames.nOPV2:
-//             return '1.33';
-//         default:
-//             return '';
-//     }
-// };
-
-// export enum SelectedVaccineIndex{
-//     "mOPV2"=0,
-//     "nOPV2"=1,
-//     "bOPV"=2,
-// }
-
 export const VaccineManangementForm: FunctionComponent<Props> = () => {
     const classes: Record<string, string> = useStyles();
     const { formatMessage } = useSafeIntl();
@@ -114,7 +95,7 @@ export const VaccineManangementForm: FunctionComponent<Props> = () => {
                         <Field
                             label={formatMessage(MESSAGES.dateSignedVrf)}
                             fullWidth
-                            name={`${accessor}.date_signed_vrf`}
+                            name={`${accessor}.date_signed_vrf_received`}
                             component={DateInput}
                         />
                     </Grid>
@@ -128,7 +109,6 @@ export const VaccineManangementForm: FunctionComponent<Props> = () => {
                 </Grid>
                 <Grid container item xs={12}>
                     <ShipmentsForm
-                        roundIndex={roundIndex}
                         accessor={accessor}
                         round={rounds[roundIndex]}
                     />

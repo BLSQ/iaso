@@ -1,13 +1,14 @@
 /* eslint-disable camelcase */
-import React, { FunctionComponent, useCallback } from 'react';
+import React, { FunctionComponent, useEffect } from 'react';
 // @ts-ignore
 import { useSafeIntl } from 'bluesquare-components';
 import { Grid } from '@material-ui/core';
 import { Field, useFormikContext } from 'formik';
-import RemoveIcon from '@material-ui/icons/Clear';
+// import RemoveIcon from '@material-ui/icons/Clear';
 import MESSAGES from '../constants/messages';
 import { useStyles } from '../styles/theme';
-import { DateInput, TextInput } from '../components/Inputs';
+import { DateInput, Select, TextInput } from '../components/Inputs';
+import { polioVaccines } from '../constants/virus';
 
 export type Shipment = {
     date_of_reception: string | number; // Date format to calrify with API
@@ -18,29 +19,38 @@ export type Shipment = {
 };
 
 type Props = {
-    // roundIndex: number;
+    roundIndex: number;
     index: number;
-    round: any;
-    selectedVaccineIndex: number;
+    // round: any;
+    // selectedVaccineIndex: number;
     accessor: string;
 };
 
 export const ShipmentForm: FunctionComponent<Props> = ({
     index,
-    // roundIndex,
-    round,
-    selectedVaccineIndex,
+    roundIndex,
+    // round,
+    // selectedVaccineIndex,
     accessor,
 }) => {
     const classes: Record<string, string> = useStyles();
     const { formatMessage } = useSafeIntl();
-    const { shipments = [{}] } = round?.vaccines[selectedVaccineIndex] ?? {};
-    const { setFieldValue } = useFormikContext();
+    const {
+        // @ts-ignore
+        values: { rounds },
+        setFieldValue,
+    } = useFormikContext();
+    // const { shipments = [{}] } = round ?? {};
+    // const { setFieldValue } = useFormikContext();
 
-    const handleDeleteShipment = useCallback(() => {
-        const updatedShipments = [...shipments];
-        setFieldValue(`${accessor}.shipments`, updatedShipments);
-    }, [accessor, setFieldValue, shipments]);
+    // const handleDeleteShipment = useCallback(() => {
+    //     const updatedShipments = [...shipments];
+    //     setFieldValue(`${accessor}.shipments`, updatedShipments);
+    // }, [accessor, setFieldValue, shipments]);
+    useEffect(() => {
+        setFieldValue(`${accessor}.round`, rounds[roundIndex].id);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
     return (
         <>
             <Grid
@@ -50,6 +60,15 @@ export const ShipmentForm: FunctionComponent<Props> = ({
                 spacing={2}
                 justifyContent="space-between"
             >
+                <Grid item xs={2}>
+                    <Field
+                        label={formatMessage(MESSAGES.vaccine)}
+                        name={`${accessor}.shipments[${index}].vaccine_name`}
+                        className={classes.input}
+                        options={polioVaccines}
+                        component={Select}
+                    />
+                </Grid>
                 <Grid item xs={2}>
                     <Field
                         label={formatMessage(MESSAGES.poNumbers)}
@@ -92,9 +111,9 @@ export const ShipmentForm: FunctionComponent<Props> = ({
                         className={classes.input}
                     />
                 </Grid>
-                <Grid item xs={1}>
+                {/* <Grid item xs={1}>
                     <RemoveIcon onClick={handleDeleteShipment} />
-                </Grid>
+                </Grid> */}
             </Grid>
         </>
     );

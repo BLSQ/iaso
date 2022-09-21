@@ -6,13 +6,13 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('polio', '0080_auto_20220921_0943'),
+        ("polio", "0080_auto_20220921_0943"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='roundvaccine',
-            name='wastage_ratio_forecast',
+            model_name="roundvaccine",
+            name="wastage_ratio_forecast",
             field=models.DecimalField(blank=True, decimal_places=2, max_digits=3, null=True),
         ),
     ]

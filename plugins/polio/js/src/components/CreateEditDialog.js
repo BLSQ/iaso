@@ -33,7 +33,7 @@ import { useSaveCampaign } from '../hooks/useSaveCampaign';
 
 import { useStyles } from '../styles/theme';
 import MESSAGES from '../constants/messages';
-import { RoundVaccineForm } from '../forms/RoundVaccineForm.tsx';
+import { VaccineManangementForm } from '../forms/VaccineManangementForm.tsx';
 
 const CreateEditDialog = ({
     isOpen,
@@ -119,7 +119,7 @@ const CreateEditDialog = ({
         },
         {
             title: formatMessage(MESSAGES.vaccineManagement),
-            form: RoundVaccineForm,
+            form: VaccineManangementForm,
         },
     ];
 

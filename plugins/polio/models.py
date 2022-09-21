@@ -110,7 +110,8 @@ class Shipment(models.Model):
     estimated_arrival_date = models.DateField(null=True, blank=True)
     reception_pre_alert = models.DateField(null=True, blank=True)
     date_reception = models.DateField(null=True, blank=True)
-    round_vaccine = models.ForeignKey("RoundVaccine", related_name="shipments", on_delete=models.CASCADE, null=True)
+    vaccine_name = models.CharField(max_length=5, choices=VACCINES)
+    round = models.ForeignKey("Round", related_name="shipments", on_delete=models.CASCADE, null=True)
 
 
 class RoundVaccine(models.Model):
@@ -121,17 +122,7 @@ class RoundVaccine(models.Model):
     name = models.CharField(max_length=5, choices=VACCINES)
     round = models.ForeignKey("Round", on_delete=models.CASCADE, related_name="vaccines", null=True, blank=True)
     doses_per_vial = models.IntegerField(null=True, blank=True)
-    wastage_ratio = models.IntegerField(null=True, blank=True)
-    date_signed_vrf_received = models.DateField(null=True, blank=True)
-    date_destruction = models.DateField(null=True, blank=True)
-    vials_destroyed = models.IntegerField(null=True, blank=True)
-    reporting_delays_hc_to_district = models.IntegerField(null=True, blank=True)
-    reporting_delays_district_to_region = models.IntegerField(null=True, blank=True)
-    reporting_delays_region_to_national = models.IntegerField(null=True, blank=True)
-    forma_reception = models.DateField(null=True, blank=True)
-    forma_missing_vials = models.IntegerField(null=True, blank=True)
-    forma_usable_vials = models.IntegerField(null=True, blank=True)
-    forma_unusable_vials = models.IntegerField(null=True, blank=True)
+    wastage_ratio_forecast = models.IntegerField(null=True, blank=True)
 
 
 class Round(models.Model):
@@ -168,6 +159,16 @@ class Round(models.Model):
     # Preparedness
     preparedness_spreadsheet_url = models.URLField(null=True, blank=True)
     preparedness_sync_status = models.CharField(max_length=10, default="FINISHED", choices=PREPAREDNESS_SYNC_STATUS)
+    date_signed_vrf_received = models.DateField(null=True, blank=True)
+    date_destruction = models.DateField(null=True, blank=True)
+    vials_destroyed = models.IntegerField(null=True, blank=True)
+    reporting_delays_hc_to_district = models.IntegerField(null=True, blank=True)
+    reporting_delays_district_to_region = models.IntegerField(null=True, blank=True)
+    reporting_delays_region_to_national = models.IntegerField(null=True, blank=True)
+    forma_reception = models.DateField(null=True, blank=True)
+    forma_missing_vials = models.IntegerField(null=True, blank=True)
+    forma_usable_vials = models.IntegerField(null=True, blank=True)
+    forma_unusable_vials = models.IntegerField(null=True, blank=True)
 
     def get_item_by_key(self, key):
         return getattr(self, key)

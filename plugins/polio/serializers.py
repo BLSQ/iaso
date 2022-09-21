@@ -245,27 +245,30 @@ class CampaignScopeSerializer(serializers.ModelSerializer):
 class ShipmentSerializer(serializers.ModelSerializer):
     class Meta:
         model = Shipment
-        fields = ["po_numbers", "doses_received", "estimated_arrival_date", "reception_pre_alert", "date_reception"]
+        # fields = ["po_numbers", "doses_received", "estimated_arrival_date", "reception_pre_alert", "date_reception"]
+        fields = "__all__"
 
 
 class RoundVaccineSerializer(serializers.ModelSerializer):
     class Meta:
         model = RoundVaccine
-        fields = [
-            "reporting_delays_region_to_national",
-            "reporting_delays_district_to_region",
-            "reporting_delays_hc_to_district",
-            "vials_destroyed",
-            "date_destruction",
-            "wastage_ratio",
-            "doses_per_vial",
-            "name",
-            "forma_reception",
-            "forma_unusable_vials",
-            "forma_missing_vials",
-            "forma_usable_vials",
-            "shipments",
-        ]
+        fields = "__all__"
+
+        # fields = [
+        #     "reporting_delays_region_to_national",
+        #     "reporting_delays_district_to_region",
+        #     "reporting_delays_hc_to_district",
+        #     "vials_destroyed",
+        #     "date_destruction",
+        #     "wastage_ratio",
+        #     "doses_per_vial",
+        #     "name",
+        #     "forma_reception",
+        #     "forma_unusable_vials",
+        #     "forma_missing_vials",
+        #     "forma_usable_vials",
+        #     "shipments",
+        # ]
 
     shipments = ShipmentSerializer(many=True, required=False)
 
@@ -280,6 +283,8 @@ class RoundVaccineSerializer(serializers.ModelSerializer):
     def update(self, instance: RoundVaccine, validated_data):
         shipments = validated_data.pop("shipments", [])
         shipment_instances = []
+        # delete old shipments to avoid polluting DB
+        # or send id to front-end
         for shipment in shipments:
             # need scope id as no other field is unique
             if shipment.get("id"):

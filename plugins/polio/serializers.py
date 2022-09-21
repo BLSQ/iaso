@@ -252,25 +252,15 @@ class ShipmentSerializer(serializers.ModelSerializer):
 class RoundVaccineSerializer(serializers.ModelSerializer):
     class Meta:
         model = RoundVaccine
-        fields = "__all__"
+        # fields = "__all__"
 
-        # fields = [
-        #     "reporting_delays_region_to_national",
-        #     "reporting_delays_district_to_region",
-        #     "reporting_delays_hc_to_district",
-        #     "vials_destroyed",
-        #     "date_destruction",
-        #     "wastage_ratio",
-        #     "doses_per_vial",
-        #     "name",
-        #     "forma_reception",
-        #     "forma_unusable_vials",
-        #     "forma_missing_vials",
-        #     "forma_usable_vials",
-        #     "shipments",
-        # ]
+        fields = [
+            "wastage_ratio_forecast",
+            "doses_per_vial",
+            "name",
+        ]
 
-    shipments = ShipmentSerializer(many=True, required=False)
+    # shipments = ShipmentSerializer(many=True, required=False)
 
     @atomic
     def create(self, validated_data):

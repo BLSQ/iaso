@@ -122,7 +122,7 @@ class RoundVaccine(models.Model):
     name = models.CharField(max_length=5, choices=VACCINES)
     round = models.ForeignKey("Round", on_delete=models.CASCADE, related_name="vaccines", null=True, blank=True)
     doses_per_vial = models.IntegerField(null=True, blank=True)
-    wastage_ratio_forecast = models.IntegerField(null=True, blank=True)
+    wastage_ratio_forecast = models.DecimalField(max_digits=3, decimal_places=2, null=True, blank=True)
 
 
 class Round(models.Model):

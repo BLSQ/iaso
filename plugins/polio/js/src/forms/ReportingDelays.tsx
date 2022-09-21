@@ -11,7 +11,7 @@ import React, { FunctionComponent } from 'react';
 // @ts-ignore
 import { useSafeIntl } from 'bluesquare-components';
 import classnames from 'classnames';
-import { Field, useFormikContext } from 'formik';
+import { Field } from 'formik';
 import MESSAGES from '../constants/messages';
 import { TextInput } from '../components/Inputs';
 
@@ -34,10 +34,6 @@ type Props = {
 export const ReportingDelays: FunctionComponent<Props> = ({ accessor }) => {
     const { formatMessage } = useSafeIntl();
     const classes = useStyles();
-    const {
-        values: { rounds = [] },
-        setFieldValue,
-    } = useFormikContext<any>(); // TODO add campaign typing
     return (
         <Paper elevation={0} variant="outlined">
             <Table size="small">

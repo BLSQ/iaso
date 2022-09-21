@@ -1507,6 +1507,14 @@ const MESSAGES = defineMessages({
         id: 'iaso.polio.label.destruction',
         defaultMessage: 'Destruction',
     },
+    addVaccine: {
+        id: 'iaso.polio.label.addVaccine',
+        defaultMessage: 'Add vaccine',
+    },
+    addShipment: {
+        id: 'iaso.polio.label.addShipment',
+        defaultMessage: 'Add shipment',
+    },
 });
 
 export default MESSAGES;

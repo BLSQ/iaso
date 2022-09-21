@@ -7,23 +7,27 @@ import django.db.models.deletion
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('polio', '0079_auto_20220921_0910'),
+        ("polio", "0079_auto_20220921_0910"),
     ]
 
     operations = [
         migrations.RemoveField(
-            model_name='shipment',
-            name='round_vaccine',
+            model_name="shipment",
+            name="round_vaccine",
         ),
         migrations.AddField(
-            model_name='shipment',
-            name='round',
-            field=models.ForeignKey(null=True, on_delete=django.db.models.deletion.CASCADE, related_name='shipments', to='polio.round'),
+            model_name="shipment",
+            name="round",
+            field=models.ForeignKey(
+                null=True, on_delete=django.db.models.deletion.CASCADE, related_name="shipments", to="polio.round"
+            ),
         ),
         migrations.AddField(
-            model_name='shipment',
-            name='vaccine_name',
-            field=models.CharField(choices=[('mOPV2', 'mOPV2'), ('nOPV2', 'nOPV2'), ('bOPV', 'bOPV')], default='mOPV2', max_length=5),
+            model_name="shipment",
+            name="vaccine_name",
+            field=models.CharField(
+                choices=[("mOPV2", "mOPV2"), ("nOPV2", "nOPV2"), ("bOPV", "bOPV")], default="mOPV2", max_length=5
+            ),
             preserve_default=False,
         ),
     ]

@@ -312,11 +312,7 @@ export const useBudgetDetailsColumns = ({ profiles, data }): Column[] => {
                                         }
                                         type="edit"
                                         budgetEvent={settings.row.original}
-                                        iconColor={
-                                            settings.row.original.deleted_at
-                                                ? 'secondary'
-                                                : 'action'
-                                        }
+                                        iconProps={{ type: 'edit' }}
                                     />
                                 )}
                             {!settings.row.original.deleted_at &&

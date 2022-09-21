@@ -1,7 +1,12 @@
+import json
+from typing import Dict
+
+from django.http import QueryDict
+
 from iaso.periods import Period
 
 
-def parse_instance_filters(req):
+def parse_instance_filters(req: QueryDict) -> Dict:
     if req.get("startPeriod", None) or req.get("endPeriod", None):
         periods = Period.range_string_with_sub_periods(req.get("startPeriod", None), req.get("endPeriod", None))
     else:
@@ -10,6 +15,11 @@ def parse_instance_filters(req):
     show_deleted = req.get("showDeleted", "false")
     if show_deleted == "false":
         show_deleted = None
+
+    json_content = req.get("jsonContent", None)
+    if json_content is not None:
+        # This filter is passed as a JsonLogic string in the URL, convert it to a Python dict already
+        json_content = json.loads(json_content)
     return {
         "form_id": req.get("form_id", None),
         "form_ids": req.get("form_ids", None),
@@ -26,4 +36,5 @@ def parse_instance_filters(req):
         "to_date": req.get("dateTo", None),
         "show_deleted": show_deleted,
         "entity_id": req.get("entityId", None),
+        "json_content": json_content,
     }

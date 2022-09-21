@@ -23,7 +23,6 @@ RUN npm ci
 
 COPY hat/ /opt/app/hat/
 COPY plugins/ /opt/app/plugins
-COPY plugins/ /opt/app/plugins
 COPY tsconfig.json /opt/app/tsconfig.json
 COPY babel-register.js /opt/app/babel-register.js
 
@@ -32,7 +31,7 @@ RUN ls ./hat/assets
 
 
 ########### Django Builder ########################################################################
-FROM python:3.6
+FROM python:3.6 as base
 
 RUN apt-get update && apt-get --yes  --no-install-recommends install \
 		gettext \
@@ -50,13 +49,25 @@ COPY . /opt/app
 RUN SECRET_KEY=NOT_SO_SECRET python manage.py collectstatic
 RUN SECRET_KEY=NOT_SO_SECRET python manage.py compilemessages
 
+FROM base as dev
 # Tell iaso backend to Use the assets build by webpack
+# This stage is used by the test_cypres github action. Using --target dev
 ENV TEST_PROD=1
 # Disable ssl redirect by default
 ENV DISABLE_SSL_REDIRECT=1
 EXPOSE 8081
-
 ENTRYPOINT ["./entrypoint.sh"]
 #CMD ["start"]
 # Needed for github action since we can't pass a command directly
 CMD ["manage", "testserver", "--no-input", "iaso/fixtures/user.yaml", "--addrport", "0.0.0.0:8081"]
+
+FROM base as prod
+USER root
+# Only install gunicorn for production
+RUN pip install gunicorn
+COPY --from=npmbuilder /opt/app/hat/assets /opt/app/hat/assets
+# Migrations are run by the start_gunicorn
+RUN SECRET_KEY=NOT_SO_SECRET python manage.py collectstatic --noinput
+EXPOSE 8081
+ENTRYPOINT ["./entrypoint.sh"]
+CMD ["start_gunicorn"]

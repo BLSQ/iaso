@@ -102,11 +102,6 @@ const MESSAGES = defineMessages({
         id: 'iaso.snackBar.fetchDevicesError',
         defaultMessage: 'An error occurred while fetching devices list',
     },
-    fetchDevicesOwnershipError: {
-        id: 'iaso.snackBar.fetchDevicesOwnershipError',
-        defaultMessage:
-            'An error occurred while fetching devices ownerships list',
-    },
     fetchInstanceError: {
         id: 'iaso.snackBar.fetchInstanceError',
         defaultMessage: 'An error occurred while fetching instance detail',

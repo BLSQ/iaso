@@ -11,7 +11,6 @@ from django.contrib.auth.models import User
 from django.contrib.gis.db.models.fields import PointField
 from django.contrib.gis.geos import Point
 from django.contrib.postgres.aggregates import ArrayAgg
-from django.contrib.postgres.fields import ArrayField
 from django.core.paginator import Paginator
 from django.core.validators import MinLengthValidator
 from django.db import models
@@ -24,6 +23,8 @@ from hat.audit.models import log_modification, INSTANCE_API
 from iaso.utils import flat_parse_xml_soup, as_soup, extract_form_version_id
 from .device import DeviceOwnership, Device
 from .forms import Form, FormVersion
+
+from ..utils.jsonlogic import jsonlogic_to_q
 from ..utils.models.soft_deletable import SoftDeletableModel
 
 logger = getLogger(__name__)
@@ -704,6 +705,7 @@ class InstanceQuerySet(models.QuerySet):
         to_date=None,
         show_deleted=None,
         entity_id=None,
+        json_content=None,
     ):
         queryset = self
 
@@ -727,6 +729,7 @@ class InstanceQuerySet(models.QuerySet):
             queryset = queryset.filter(org_unit_id=org_unit_id)
 
         if org_unit_parent_id:
+            # TODO: attempt to refactor this (so it's cleaner / more efficient and we're not limited to an arbitrary number of parents)
             queryset = queryset.filter(
                 Q(org_unit__id=org_unit_parent_id)
                 | Q(org_unit__parent__id=org_unit_parent_id)
@@ -792,6 +795,11 @@ class InstanceQuerySet(models.QuerySet):
         if status:
             statuses = status.split(",")
             queryset = queryset.filter(status__in=statuses)
+
+        if json_content:
+            q = jsonlogic_to_q(jsonlogic=json_content, field_prefix="json__")
+            queryset = queryset.filter(q)
+
         return queryset
 
     def for_org_unit_hierarchy(self, org_unit):
@@ -823,7 +831,10 @@ class InstanceQuerySet(models.QuerySet):
 
 
 class Instance(models.Model):
-    """A series of answers by an individual for a specific form"""
+    """A series of answers by an individual for a specific form
+
+    Note that instances are called "Submissions" in the UI
+    """
 
     UPLOADED_TO = "instances/"
 

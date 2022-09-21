@@ -93,17 +93,6 @@ export const Beneficiaries: FunctionComponent<Props> = ({ params }) => {
         [params.entityTypeIds],
     );
 
-    // TODO: use this for dynamic columns like on submissions
-    // const formId = useMemo(() => {
-    //     if (entityTypeIds.length === 1 && types) {
-    //         const fullType = types.find(
-    //             type => type.value === parseInt(entityTypeIds[0], 10),
-    //         );
-    //         return fullType?.original?.reference_form;
-    //     }
-    //     return undefined;
-    // }, [entityTypeIds, types]);
-
     const {
         result,
         pages,

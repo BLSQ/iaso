@@ -31,7 +31,6 @@ import { useGetFieldValue } from './hooks/useGetFieldValue';
 
 export const baseUrl = baseUrls.entities;
 
-// TODO: ADD program, vaccine number, gender columns
 export const useColumns = (
     entityTypeIds: string[],
     extraColumns: Array<ExtraColumn>,
@@ -47,17 +46,6 @@ export const useColumns = (
                 id: 'uuid',
                 accessor: 'uuid',
             },
-            // TODO: last visit should be computed in the backend
-            // {
-            //     Header: formatMessage(MESSAGES.lastVisit),
-            //     id: 'instances__created_at',
-            //     // TODO: MAKE IT SORTABLE
-            //     sortable: false,
-            //     accessor: 'instances__created_at',
-            //     Cell: (settings): ReactElement => (
-            //         <LastVisit instances={settings.row.original.instances} />
-            //     ),
-            // },
             {
                 Header: formatMessage(MESSAGES.program),
                 id: 'attributes__program',

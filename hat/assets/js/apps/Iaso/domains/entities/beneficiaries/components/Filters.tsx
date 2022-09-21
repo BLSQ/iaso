@@ -24,7 +24,7 @@ import { OrgUnitTreeviewModal } from '../../../orgUnits/components/TreeView/OrgU
 import { redirectTo } from '../../../../routing/actions';
 import MESSAGES from '../../messages';
 
-import { baseUrl } from '../../config';
+import { baseUrl } from '../config';
 
 import { useGetOrgUnit } from '../../../orgUnits/components/TreeView/requests';
 import { useGetTeamsDropdown } from '../../../teams/hooks/requests/useGetTeams';

@@ -1,5 +1,5 @@
-import React, { FunctionComponent, useEffect, useState } from 'react';
-import { Divider, Grid, Tab, Tabs, Typography } from '@material-ui/core';
+import React, { FunctionComponent, useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { Button, Divider, Grid, Tab, Tabs, TabsActions, Typography } from '@material-ui/core';
 import { Field, useFormikContext } from 'formik';
 // @ts-ignore
 import { useSafeIntl } from 'bluesquare-components';
@@ -8,7 +8,7 @@ import MESSAGES from '../constants/messages';
 import { DateInput, Select, TextInput } from '../components/Inputs';
 import { ShipmentsForm } from './ShipmentsForm';
 import { VaccineName, VaccineNames, vaccineNames } from '../constants/virus';
-import { DropdownOptions } from '../../../../../hat/assets/js/apps/Iaso/types/utils';
+import { DropdownOptions, Optional } from '../../../../../hat/assets/js/apps/Iaso/types/utils';
 import { ReportingDelays } from './ReportingDelays';
 
 type Props = {};
@@ -63,46 +63,61 @@ export const RoundVaccineForm: FunctionComponent<Props> = () => {
         rounds.length > 0 ? rounds[0].number : undefined,
     );
     const roundIndex = rounds.findIndex(r => r.number === currentRoundNumber);
-    const [selectedVaccine, setSelectedVaccine] = useState<VaccineNames>(
-        VaccineNames.mOPV2,
-    ); 
-    const selectedVaccineIndex = SelectedVaccineIndex[selectedVaccine];
 
-    const handleRoundTabChange = (_, newValue) => {
+    const selectedRound = useMemo(()=>{
+        return rounds.find(round=> round.number === currentRoundNumber)
+    },[rounds, currentRoundNumber])
+
+    const [vaccineTabs, setVaccineTabs] = useState(selectedRound.vaccines.map(vaccine=>vaccine.name));
+
+    const [selectedVaccine, setSelectedVaccine] = useState<Optional<VaccineNames>>(vaccineTabs[0]); 
+  
+    const [availableVaccineButtons, setAvailableVaccineButtons] = useState(vaccineNames.filter(vaccineName=>!selectedRound.vaccines.find(vaccine => vaccine.name === vaccineName)));
+
+   
+
+    const vaccineIndexesForRound = useMemo(()=>{
+        const result = {};
+        vaccineTabs.forEach((vaccineName,index)=>{
+            result[vaccineName]=index
+        })
+        return result
+    },[vaccineTabs])
+
+    // TODO check that this refactor works
+    const selectedVaccineIndex = selectedVaccine && vaccineIndexesForRound[selectedVaccine];
+
+    const handleRoundTabChange = useCallback((_, newValue) => {
         setCurrentRoundNumber(newValue);
-    };
-    const handleVaccineTabChange = (_, newValue) => {
+        const nextSelectedRound = rounds.find(round=> round.number === newValue)
+        // manually updating tabs and buttons here to avoid using useEffect
+        setVaccineTabs(nextSelectedRound.vaccines.map(vaccine=>vaccine.name))
+        setAvailableVaccineButtons(vaccineNames.filter(vaccineName=>!nextSelectedRound.vaccines.find(vaccine => vaccine.name === vaccineName)))
+    },[rounds]);
+
+    const handleVaccineTabChange = useCallback((_, newValue) => {
         setSelectedVaccine(newValue);
-        setFieldValue(`rounds[${roundIndex}].vaccines[${SelectedVaccineIndex[newValue]}].name`,newValue);
-    };
-    const accessor= `rounds[${roundIndex}].vaccines[${selectedVaccineIndex}]`
+        setFieldValue(`rounds[${roundIndex}].vaccines[${vaccineIndexesForRound[newValue]}].name`,newValue);
+    },[vaccineIndexesForRound,roundIndex]);
+
+    const handleTabButtonClick = (vaccineName) => {
+       setVaccineTabs([...vaccineTabs, vaccineName])
+       setAvailableVaccineButtons(availableVaccineButtons.filter(name=>name!==vaccineName))
+       setSelectedVaccine(vaccineName)
+    }
+    const accessor= `rounds[${roundIndex}].vaccines[${selectedVaccineIndex}]`;
     // Set the vaccine name to the default name to prevent sending bad request
     useEffect(()=>{
-        setFieldValue(`rounds[${roundIndex}].vaccines[${SelectedVaccineIndex[selectedVaccine]}].name`,selectedVaccine);
-    },[])
+        if(selectedVaccine){
+            setFieldValue(`rounds[${roundIndex}].vaccines[${vaccineIndexesForRound[selectedVaccine]}].name`,selectedVaccine);
+        }
+    },[vaccineIndexesForRound,selectedVaccine])
 
+    // TODO make render constional to at least one tab existing, i.e one vaccine selected
     return (
         <>
             {rounds.length > 0 && (
                 <Grid container justifyContent="flex-start">
-                    <Grid item>
-                        <Tabs
-                            value={selectedVaccine}
-                            className={classes.subTabs}
-                            textColor="primary"
-                            onChange={handleVaccineTabChange}
-                            orientation="vertical"
-                        >
-                            {vaccineNames.map(vaccine => (
-                                <Tab
-                                    key={vaccine}
-                                    className={classes.subTab}
-                                    label={<span>{vaccine}</span>}
-                                    value={vaccine}
-                                />
-                            ))}
-                        </Tabs>
-                    </Grid>
                     <Grid item>
                         <Tabs
                             value={currentRoundNumber}
@@ -124,7 +139,28 @@ export const RoundVaccineForm: FunctionComponent<Props> = () => {
                                 />
                             ))}
                         </Tabs>
+                        {/* <Tabs
+                            value={selectedVaccine}
+                            className={classes.subTabs}
+                            textColor="primary"
+                            onChange={handleVaccineTabChange}
+                        >
+                            {vaccineTabs.map(vaccine => (
+                                <Tab
+                                    key={vaccine}
+                                    className={classes.subTab}
+                                    label={<span>{vaccine}</span>}
+                                    value={vaccine}
+                                />
+                            ))}
+                        </Tabs> */}
                     </Grid>
+                    {/* <Grid item>
+                        {availableVaccineButtons.map(vaccineName=>(
+                            <Button variant='outlined' key={vaccineName} onClick={()=>handleTabButtonClick(vaccineName)}>{vaccineName}</Button>
+                        ))}
+
+                    </Grid> */}
                 </Grid>
             )}
             {/* TODO adapt names to vary with selected tab */}

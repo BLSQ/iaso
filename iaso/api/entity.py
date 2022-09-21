@@ -374,6 +374,8 @@ class EntityViewSet(ModelViewSet):
                     "program": file_content.get("program"),
                 }
                 last_created_instance = Instance.objects.filter(entity=entity).last()
+                # 1/1/1 is assigned temporarely instead of None as if the date is None it crash when ordering
+                # the response
                 result["last_saved_instance"] = (
                     last_created_instance.created_at
                     if last_created_instance is not None
@@ -407,6 +409,7 @@ class EntityViewSet(ModelViewSet):
                 else:
                     result_list = sorted(result_list, key=lambda d: d[order_columns])
 
+        # Apply None to date equal to 1/1/1
         for r in result_list:
             for k, v in r.items():
                 if k == "last_saved_instance" and v == datetime.datetime(

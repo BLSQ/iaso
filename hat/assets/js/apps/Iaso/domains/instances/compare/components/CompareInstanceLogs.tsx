@@ -1,6 +1,6 @@
 import React, { FunctionComponent, useEffect, useState } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
-import { Box, Grid, Theme, Typography } from '@material-ui/core';
+import { Box, Grid, Theme } from '@material-ui/core';
 import { makeStyles } from '@material-ui/core/styles';
 // @ts-ignore
 import {
@@ -15,12 +15,9 @@ import {
     useGetInstanceLogDetail,
 } from '../hooks/useGetInstanceLogs';
 
-import { usePrettyPeriod } from '../../../periods/utils';
-
 import InputComponent from '../../../../components/forms/InputComponent';
 import TopBar from '../../../../components/nav/TopBarComponent';
 import ErrorPaperComponent from '../../../../components/papers/ErrorPaperComponent';
-import WidgetPaper from '../../../../components/papers/WidgetPaperComponent';
 import { InstanceLogDetail } from './InstanceLogDetail';
 import { InstanceLogInfos } from './InstanceLogInfos';
 
@@ -47,7 +44,6 @@ type Params = {
     logA?: string;
     logB?: string;
 };
-
 type Props = {
     params: Params;
 };
@@ -63,23 +59,27 @@ export const CompareInstanceLogs: FunctionComponent<Props> = ({ params }) => {
         org_unit: undefined,
         period: undefined,
     };
+
     const {
         data: instanceLogsDropdown,
         isFetching: isFetchingInstanceLogs,
         isError,
     } = useGetInstanceLogs(instanceId);
-
-    const { userLogA, userLogB, isUserLoading } = useGetUserInstanceLog(
-        params.logA,
-        params.logB,
-    );
+    const {
+        userLogA,
+        userLogB,
+        isLoading: isUserLoading,
+    } = useGetUserInstanceLog(params.logA, params.logB);
     const { data: instanceLogsDetail, isLoading: isInstanceLogDetailLoading } =
         useGetInstanceLogDetail(params.logA, params.logB);
 
     const classes: Record<string, string> = useStyles();
+
     const { formatMessage }: { formatMessage: IntlFormatMessage } =
         useSafeIntl();
+
     const dispatch = useDispatch();
+
     const prevPathname: string | undefined = useSelector(
         (state: State) => state.routerCustom.prevPathname,
     );
@@ -135,7 +135,6 @@ export const CompareInstanceLogs: FunctionComponent<Props> = ({ params }) => {
         }
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [instanceLogsDropdown]);
-
     useEffect(() => {
         setLogAInitialValue(
             instanceLogsDropdown && instanceLogsDropdown[0]?.value,
@@ -144,7 +143,6 @@ export const CompareInstanceLogs: FunctionComponent<Props> = ({ params }) => {
             instanceLogsDropdown && instanceLogsDropdown[1]?.value,
         );
     }, [instanceLogsDropdown, isFetchingInstanceLogs]);
-
     useEffect(() => {
         setInstanceLogInfos({
             logA: {
@@ -163,7 +161,6 @@ export const CompareInstanceLogs: FunctionComponent<Props> = ({ params }) => {
             <ErrorPaperComponent message={formatMessage(MESSAGES.errorLog)} />
         );
     }
-
     return (
         <>
             <TopBar

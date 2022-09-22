@@ -85,14 +85,9 @@ export type InstanceLogFileContent = {
     isError: boolean;
 };
 
-export type User = {
-    logA: Record<string, any>;
-    logB: Record<string, any>;
-};
-
 export type InstanceUserLogDetail = {
     userLogA: string;
     userLogB: string;
     isLoading: boolean;
-    isEror: boolean;
+    isError: boolean;
 };

@@ -72,6 +72,7 @@ jobs:
       - name: Run IASO
         uses: addnab/docker-run-action@v3
         with:
+          options: --expose 8081
           image: iaso:${{ github.sha }}
         env:
           TEST_PROD: true

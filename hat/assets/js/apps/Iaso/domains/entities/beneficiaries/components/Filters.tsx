@@ -29,24 +29,14 @@ import { baseUrl } from '../config';
 import { useGetOrgUnit } from '../../../orgUnits/components/TreeView/requests';
 import { useGetTeamsDropdown } from '../../../teams/hooks/requests/useGetTeams';
 import { useGetUsersDropDown } from '../hooks/requests';
+import { useFiltersParams } from '../hooks/useFiltersParams';
+
 import { DropdownOptions } from '../../../../types/utils';
+import { Params, Filters as FilterType } from '../types/filters';
 
 const useStyles = makeStyles(theme => ({
     ...commonStyles(theme),
 }));
-
-type Params = {
-    pageSize: string;
-    order: string;
-    page: string;
-    search?: string;
-    location?: string;
-    dateFrom?: string;
-    dateTo?: string;
-    submitterId?: string;
-    submitterTeamId?: string;
-    entityTypeIds?: string;
-};
 
 type Props = {
     params: Params;
@@ -54,10 +44,11 @@ type Props = {
 };
 
 const Filters: FunctionComponent<Props> = ({ params, types }) => {
+    const getParams = useFiltersParams();
     const classes: Record<string, string> = useStyles();
     const { formatMessage } = useSafeIntl();
     const dispatch = useDispatch();
-    const [filters, setFilters] = useState({
+    const [filters, setFilters] = useState<FilterType>({
         search: params.search,
         location: params.location,
         dateFrom: params.dateFrom,
@@ -83,14 +74,10 @@ const Filters: FunctionComponent<Props> = ({ params, types }) => {
     const handleSearch = useCallback(() => {
         if (filtersUpdated) {
             setFiltersUpdated(false);
-            const tempParams = {
-                ...params,
-                ...filters,
-            };
-            tempParams.page = '1';
+            const tempParams = getParams(params, filters);
             dispatch(redirectTo(baseUrl, tempParams));
         }
-    }, [filtersUpdated, dispatch, filters, params]);
+    }, [filtersUpdated, getParams, params, filters, dispatch]);
 
     const handleChange = useCallback(
         (key, value) => {

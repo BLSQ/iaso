@@ -27,7 +27,7 @@ const addRoutes = (baseRoutes, overrideLanding) => {
         />,
         <Redirect
             path={baseUrls.entities}
-            to={`${baseUrls.entities}/order/id/pageSize/20/page/1`}
+            to={`${baseUrls.entities}/order/last_saved_instance/pageSize/20/page/1`}
         />,
         <Redirect
             path={baseUrls.entityTypes}

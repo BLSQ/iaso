@@ -6,8 +6,6 @@ import {
     // @ts-ignore
     commonStyles,
     // @ts-ignore
-    Table,
-    // @ts-ignore
     LoadingSpinner,
     // @ts-ignore
     useSafeIntl,
@@ -15,6 +13,7 @@ import {
     // AddButton as AddButtonComponent,
 } from 'bluesquare-components';
 
+import { TableWithDeepLink } from '../../../components/tables/TableWithDeepLink';
 import TopBar from '../../../components/nav/TopBarComponent';
 import { Filters } from './components/Filters';
 import DownloadButtonsComponent from '../../../components/DownloadButtonsComponent';
@@ -28,7 +27,7 @@ import {
 } from './hooks/requests';
 // import { useGetPossibleFields } from '../entityTypes/hooks/useGetPossibleFields';
 
-import { useColumns, baseUrl } from './config';
+import { useColumns, baseUrl, defaultSorted } from './config';
 import MESSAGES from '../messages';
 
 import { redirectTo } from '../../../routing/actions';
@@ -69,8 +68,8 @@ export const Beneficiaries: FunctionComponent<Props> = ({ params }) => {
     const classes: Record<string, string> = useStyles();
     const { formatMessage } = useSafeIntl();
     const dispatch = useDispatch();
-    const { url: apiUrl } = useGetBeneficiariesApiParams(params);
 
+    const { url: apiUrl } = useGetBeneficiariesApiParams(params);
     const { data: types } = useGetBeneficiaryTypesDropdown();
     const { data, isFetching } = useGetBeneficiariesPaginated(params);
     const [tab, setTab] = useState(params.tab ?? 'list');
@@ -112,7 +111,7 @@ export const Beneficiaries: FunctionComponent<Props> = ({ params }) => {
     const columns = useColumns(entityTypeIds, extraColumns);
     return (
         <>
-            {isLoading && <LoadingSpinner />}
+            {isLoading && tab === 'map' && <LoadingSpinner />}
             <TopBar
                 title={formatMessage(MESSAGES.beneficiaries)}
                 displayBackButton={false}
@@ -176,15 +175,16 @@ export const Beneficiaries: FunctionComponent<Props> = ({ params }) => {
                     </Box>
                     {tab === 'list' && (
                         <Box>
-                            <Table
+                            <TableWithDeepLink
                                 marginTop={false}
                                 data={result ?? []}
                                 pages={pages ?? 1}
-                                defaultSorted={[{ id: 'name', desc: false }]}
+                                defaultSorted={defaultSorted}
                                 columns={columns}
                                 count={count ?? 0}
                                 baseUrl={baseUrl}
                                 params={params}
+                                extraProps={{ loading: isFetching }}
                                 onTableParamsChange={p =>
                                     dispatch(redirectTo(baseUrl, p))
                                 }

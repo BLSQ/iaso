@@ -31,46 +31,69 @@ import { useGetFieldValue } from './hooks/useGetFieldValue';
 
 export const baseUrl = baseUrls.entities;
 
+export const defaultSorted = [{ id: 'last_saved_instance', desc: false }];
+
+export const useStaticColumns = (): Array<Column> => {
+    const getValue = useGetFieldValue();
+    const { formatMessage }: { formatMessage: IntlFormatMessage } =
+        useSafeIntl();
+    return [
+        {
+            Header: formatMessage(MESSAGES.id),
+            id: 'uuid',
+            accessor: 'uuid',
+        },
+        {
+            Header: formatMessage(MESSAGES.lastVisit),
+            id: 'last_saved_instance',
+            accessor: 'last_saved_instance',
+            Cell: settings => {
+                return (
+                    <>
+                        {getValue(
+                            'last_saved_instance',
+                            settings.row.original,
+                            'date',
+                        )}
+                    </>
+                );
+            },
+        },
+        {
+            Header: formatMessage(MESSAGES.program),
+            id: 'attributes__program',
+            accessor: 'attributes__program',
+            Cell: settings => {
+                return <>{settings.row.original?.program ?? '--'}</>;
+            },
+        },
+        {
+            Header: 'HC',
+            id: 'attributes__org_unit__name',
+            accessor: 'attributes__org_unit__name',
+            Cell: settings => {
+                return settings.row.original?.org_unit ? (
+                    <LinkToOrgUnit orgUnit={settings.row.original?.org_unit} />
+                ) : (
+                    <>--</>
+                );
+            },
+        },
+    ];
+};
+
 export const useColumns = (
     entityTypeIds: string[],
     extraColumns: Array<ExtraColumn>,
 ): Array<Column> => {
     const { formatMessage }: { formatMessage: IntlFormatMessage } =
         useSafeIntl();
-
+    const staticColumns = useStaticColumns();
     const getValue = useGetFieldValue();
     return useMemo(() => {
-        const columns: Array<Column> = [
-            {
-                Header: formatMessage(MESSAGES.id),
-                id: 'uuid',
-                accessor: 'uuid',
-            },
-            {
-                Header: formatMessage(MESSAGES.program),
-                id: 'attributes__program',
-                accessor: 'attributes__program',
-                Cell: settings => {
-                    return <>{settings.row.original?.program ?? '--'}</>;
-                },
-            },
-            {
-                Header: 'HC',
-                id: 'attributes__org_unit__name',
-                accessor: 'attributes__org_unit__name',
-                Cell: settings => {
-                    return settings.row.original?.org_unit ? (
-                        <LinkToOrgUnit
-                            orgUnit={settings.row.original?.org_unit}
-                        />
-                    ) : (
-                        <>--</>
-                    );
-                },
-            },
-        ];
+        const columns: Array<Column> = staticColumns;
         if (entityTypeIds.length !== 1) {
-            columns.splice(1, 0, {
+            columns.unshift({
                 Header: formatMessage(MESSAGES.type),
                 id: 'entity_type',
                 accessor: 'entity_type',
@@ -118,7 +141,13 @@ export const useColumns = (
             ),
         });
         return columns;
-    }, [formatMessage, entityTypeIds.length, extraColumns, getValue]);
+    }, [
+        staticColumns,
+        entityTypeIds.length,
+        extraColumns,
+        formatMessage,
+        getValue,
+    ]);
 };
 
 const generateColumnsFromFieldsList = (

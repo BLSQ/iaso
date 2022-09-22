@@ -8,6 +8,8 @@ import {
     TableHead,
 } from '@material-ui/core';
 import { useSafeIntl } from 'bluesquare-components';
+
+import { formatLabel } from '../../utils';
 import { FileContent, FormDescriptor } from '../../types/instance';
 import { IntlFormatMessage } from '../../../../types/intl';
 import MESSAGES from '../messages';
@@ -36,24 +38,6 @@ const styles = theme => ({
 });
 
 const useStyles = makeStyles(styles);
-
-const getLabelFromKey = (descriptor, key) => {
-    const field = descriptor.find(child => child.name === key);
-
-    // TO DO: find an efficient way to get label from group type fields (questions, meta, ...)
-    if (!field) {
-        return key;
-    }
-
-    let label = field.label.split(':')[0];
-
-    // useful for labels like "subscriberid ${subscriberid}"
-    if (label.includes('$')) {
-        label = label.split('$')[0];
-    }
-
-    return label;
-};
 
 export const InstanceLogContentBasic: FunctionComponent<Props> = ({
     fileContent,
@@ -94,6 +78,10 @@ export const InstanceLogContentBasic: FunctionComponent<Props> = ({
                 {fileContent.logA &&
                     fileContent.logB &&
                     Object.keys(fileContent.logA.json).map(labelKey => {
+                        const field = fileDescriptor?.children.find(
+                            child => child.name === labelKey,
+                        );
+
                         if (
                             labelKey !== 'meta' &&
                             labelKey !== 'uuid' &&
@@ -106,11 +94,9 @@ export const InstanceLogContentBasic: FunctionComponent<Props> = ({
                                         className={classes.tableCell}
                                         align="left"
                                     >
-                                        {fileDescriptor?.children &&
-                                            getLabelFromKey(
-                                                fileDescriptor.children,
-                                                labelKey,
-                                            )}
+                                        {fileDescriptor?.children && field
+                                            ? formatLabel(field)
+                                            : labelKey}
                                     </TableCell>
                                     <TableCell
                                         className={classes.tableCell}

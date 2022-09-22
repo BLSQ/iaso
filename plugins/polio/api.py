@@ -7,6 +7,7 @@ from typing import Any, Dict, List, Optional, Union
 from collections import defaultdict
 from functools import lru_cache
 from logging import getLogger
+from openpyxl.writer.excel import save_virtual_workbook
 
 import requests
 from django.core.files import File
@@ -77,7 +78,7 @@ from .models import CountryUsersGroup
 from .models import URLCache
 from .preparedness.calculator import preparedness_summary
 from .preparedness.parser import get_preparedness
-from .export_utils import get_url_content
+from .export_utils import generate_xlsx
 
 logger = getLogger(__name__)
 
@@ -197,12 +198,13 @@ class CampaignViewSet(ModelViewSet):
     @action(methods=["GET"], detail=False, serializer_class=None)
     def create_calendar_xlsx_sheet(self, request, **kwargs):
         filename = "calendar"
-        current_date = request.query_params.get("currentDate")
-        year = datetime.strptime(current_date, '%y-%m-%d').year if current_date is not None else datetime.datetime.now().year
-        columns = self.getColumns()
-        filename = self.xlsx_file_name(filename, request.query_params)
+        # current_date = request.query_params.get("currentDate")
+        # year = datetime.strptime(current_date, '%y-%m-%d').year if current_date is not None else datetime.datetime.now().year
+        # columns = self.getColumns()
+        filename  = self.xlsx_file_name(filename, request.query_params)
+        xlsx_file = generate_xlsx(filename)
         response = HttpResponse(
-                    None,
+                    save_virtual_workbook(xlsx_file),
                     content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
                 )
         response["Content-Disposition"] = "attachment; filename=%s" % filename
@@ -212,13 +214,11 @@ class CampaignViewSet(ModelViewSet):
     def xlsx_file_name(name, params):
         current_date = params.get("currentDate")
         campaign_type = params.get("campaignType")
-        countries = params.get("countries").split(",")
-        campaign_groups = params.get("campaignGroups").split(",")
         filename = name
         filename += '_'+current_date if current_date is not None else ''
         filename += '_'+campaign_type if campaign_type is not None else ''
-        filename += '_'+'_'.join(countries) if countries is not None else ''
-        filename += '_'+'_'.join(campaign_groups) if campaign_groups is not None else ''
+        filename += '_'+'_'.join(params.get("countries").split(",")) if params.get("countries") is not None else ''
+        filename += '_'+'_'.join(params.get("campaignGroups").split(",")) if params.get("campaignGroups") is not None else ''
         return filename
 
     @action(methods=["POST"], detail=True, serializer_class=CampaignPreparednessSpreadsheetSerializer)

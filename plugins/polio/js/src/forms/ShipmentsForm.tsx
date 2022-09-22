@@ -40,18 +40,10 @@ export const ShipmentsForm: FunctionComponent<Props> = ({
     }, [accessor, setFieldValue, shipments]);
 
     // determine whether to show delete button or not
+
     useEffect(() => {
         if (Number.isInteger(lastIndex)) {
-            const lastShipment = shipments[lastIndex as number];
-            if (
-                lastIndex >= 0 &&
-                !lastShipment.vaccine_name &&
-                !lastShipment.po_numbers &&
-                !lastShipment.doses_received &&
-                !lastShipment.reception_pre_alert &&
-                !lastShipment.estimated_arrival_date &&
-                !lastShipment.date_reception
-            ) {
+            if (lastIndex >= 0) {
                 setEnableRemoveButton(true);
             } else {
                 setEnableRemoveButton(false);
@@ -81,19 +73,32 @@ export const ShipmentsForm: FunctionComponent<Props> = ({
                 direction="column"
                 justifyContent="flex-end"
             >
-                <Grid container direction="row" justifyContent="flex-end">
-                    <Box mt={2} mb={1}>
-                        <Button onClick={handleAddShipment}>
-                            {formatMessage(MESSAGES.addShipment)}
-                        </Button>
-                        <Button
-                            onClick={handleRemoveLastShipment}
-                            disabled={!enableRemoveButton}
-                        >
-                            {formatMessage(MESSAGES.removeLastShipment)}
-                        </Button>
-                    </Box>
-                </Grid>
+                <Box mt={2} mb={2}>
+                    <Grid
+                        container
+                        direction="row"
+                        justifyContent="flex-end"
+                        spacing={2}
+                    >
+                        <Grid item>
+                            <Button
+                                onClick={handleAddShipment}
+                                variant="outlined"
+                            >
+                                {formatMessage(MESSAGES.addShipment)}
+                            </Button>
+                        </Grid>
+                        <Grid item>
+                            <Button
+                                onClick={handleRemoveLastShipment}
+                                disabled={!enableRemoveButton}
+                                variant="outlined"
+                            >
+                                {formatMessage(MESSAGES.removeLastShipment)}
+                            </Button>
+                        </Grid>
+                    </Grid>
+                </Box>
             </Grid>
         </>
     );

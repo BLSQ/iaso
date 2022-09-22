@@ -64,13 +64,7 @@ export const RoundVaccinesForm: FunctionComponent<Props> = ({
     // determine whether to show delete button or not
     useEffect(() => {
         if (Number.isInteger(lastIndex)) {
-            const lastVaccine = vaccines[lastIndex as number];
-            if (
-                lastIndex > 0 &&
-                !lastVaccine.name &&
-                !lastVaccine.wastage_ratio_forecast &&
-                !lastVaccine.doses_per_vial
-            ) {
+            if (lastIndex > 0) {
                 setEnableRemoveButton(true);
             } else {
                 setEnableRemoveButton(false);
@@ -210,22 +204,33 @@ export const RoundVaccinesForm: FunctionComponent<Props> = ({
                 direction="column"
                 justifyContent="flex-end"
             >
-                <Grid container direction="row" justifyContent="flex-end">
-                    <Box mt={2} mb={1}>
-                        <Button
-                            onClick={handleAddVaccine}
-                            disabled={!(vaccines.length < 3)}
-                        >
-                            {formatMessage(MESSAGES.addVaccine)}
-                        </Button>
-                        <Button
-                            onClick={handleRemoveLastVaccine}
-                            disabled={!enableRemoveButton}
-                        >
-                            {formatMessage(MESSAGES.removeLastVaccine)}
-                        </Button>
-                    </Box>
-                </Grid>
+                <Box mt={2} mb={2}>
+                    <Grid
+                        container
+                        direction="row"
+                        justifyContent="flex-end"
+                        spacing={2}
+                    >
+                        <Grid item>
+                            <Button
+                                onClick={handleAddVaccine}
+                                disabled={!(vaccines.length < 3)}
+                                variant="outlined"
+                            >
+                                {formatMessage(MESSAGES.addVaccine)}
+                            </Button>
+                        </Grid>{' '}
+                        <Grid item>
+                            <Button
+                                onClick={handleRemoveLastVaccine}
+                                disabled={!enableRemoveButton}
+                                variant="outlined"
+                            >
+                                {formatMessage(MESSAGES.removeLastVaccine)}
+                            </Button>
+                        </Grid>
+                    </Grid>
+                </Box>
             </Grid>
         </>
     );

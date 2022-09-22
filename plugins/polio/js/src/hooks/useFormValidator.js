@@ -1,3 +1,4 @@
+/* eslint-disable camelcase */
 import * as yup from 'yup';
 import moment from 'moment';
 import { useSafeIntl } from 'bluesquare-components';
@@ -88,9 +89,257 @@ yup.addMethod(
     },
 );
 
-// eslint-disable-next-line camelcase
+yup.addMethod(
+    yup.date,
+    'hasVialsFieldAndDestuctionDate',
+    function hasVialsFieldAndDestuctionDate(formatMessage) {
+        return this.test(
+            'hasVialsFieldAndDestuctionDate',
+            '',
+            (value, context) => {
+                const { path, createError, parent } = context;
+                const vialsDestroyed = parent.vials_destroyed;
+                if (!value && vialsDestroyed) {
+                    return createError({
+                        path,
+                        message: formatMessage(
+                            MESSAGES.destructionDateAndVialsDestroyed,
+                        ),
+                    });
+                }
+                return true;
+            },
+        );
+    },
+);
+yup.addMethod(
+    yup.number,
+    'hasDestuctionDateAndVialsField',
+    function hasDestuctionDateAndVialsField(formatMessage) {
+        return this.test(
+            'hasDestuctionDateAndVialsField',
+            '',
+            (value, context) => {
+                const { path, createError, parent } = context;
+                const destructionDate = parent.date_destruction;
+                if (!value && destructionDate) {
+                    return createError({
+                        path,
+                        message: formatMessage(
+                            MESSAGES.destructionDateAndVialsDestroyed,
+                        ),
+                    });
+                }
+                return true;
+            },
+        );
+    },
+);
+
+yup.addMethod(
+    yup.number,
+    'hasAllFormAFieldsNumber',
+    function hasAllFormAFieldsNumber(formatMessage) {
+        return this.test('hasAllFormAFieldsNumber', '', (value, context) => {
+            const { path, createError, parent } = context;
+            const { forma_reception } = parent;
+            const { forma_missing_vials } = parent;
+            const { forma_usable_vials } = parent;
+            const { forma_unusable_vials } = parent;
+            if (
+                !value &&
+                (forma_unusable_vials ||
+                    forma_usable_vials ||
+                    forma_missing_vials ||
+                    forma_reception)
+            ) {
+                return createError({
+                    path,
+                    message: formatMessage(MESSAGES.formaFieldsTogether),
+                });
+            }
+            return true;
+        });
+    },
+);
+yup.addMethod(
+    yup.date,
+    'hasAllFormAFieldsDate',
+    function hasAllFormAFieldsDate(formatMessage) {
+        return this.test('hasAllFormAFieldsDate', '', (value, context) => {
+            const { path, createError, parent } = context;
+            const { forma_reception } = parent;
+            const { forma_missing_vials } = parent;
+            const { forma_usable_vials } = parent;
+            const { forma_unusable_vials } = parent;
+            if (
+                !value &&
+                (forma_unusable_vials ||
+                    forma_usable_vials ||
+                    forma_missing_vials ||
+                    forma_reception)
+            ) {
+                return createError({
+                    path,
+                    message: formatMessage(MESSAGES.formaFieldsTogether),
+                });
+            }
+            return true;
+        });
+    },
+);
+yup.addMethod(
+    yup.date,
+    'hasAllShipmentFieldsDate',
+    function hasAllShipmentFieldsDate(formatMessage) {
+        return this.test('hasAllShipmentFieldsDate', '', (value, context) => {
+            const { path, createError, parent } = context;
+            const { date_reception } = parent;
+            const { estimated_arrival_date } = parent;
+            const { reception_pre_alert } = parent;
+            const { doses_received } = parent;
+            const { po_numbers } = parent;
+            const { vaccine_name } = parent;
+            if (
+                !value &&
+                (vaccine_name ||
+                    po_numbers ||
+                    doses_received ||
+                    reception_pre_alert ||
+                    estimated_arrival_date ||
+                    date_reception)
+            ) {
+                return createError({
+                    path,
+                    message: formatMessage(MESSAGES.formaFieldsTogether),
+                });
+            }
+            return true;
+        });
+    },
+);
+yup.addMethod(
+    yup.number,
+    'hasAllShipmentFieldsNumber',
+    function hasAllShipmentFieldsNumber(formatMessage) {
+        return this.test('hasAllShipmentFieldsNumber', '', (value, context) => {
+            const { path, createError, parent } = context;
+            const { date_reception } = parent;
+            const { estimated_arrival_date } = parent;
+            const { reception_pre_alert } = parent;
+            const { doses_received } = parent;
+            const { po_numbers } = parent;
+            const { vaccine_name } = parent;
+            if (
+                !value &&
+                (vaccine_name ||
+                    po_numbers ||
+                    doses_received ||
+                    reception_pre_alert ||
+                    estimated_arrival_date ||
+                    date_reception)
+            ) {
+                return createError({
+                    path,
+                    message: formatMessage(MESSAGES.formaFieldsTogether),
+                });
+            }
+            return true;
+        });
+    },
+);
+yup.addMethod(
+    yup.string,
+    'hasAllShipmentFieldsString',
+    function hasAllShipmentFieldsString(formatMessage) {
+        return this.test('hasAllShipmentFieldsString', '', (value, context) => {
+            const { path, createError, parent } = context;
+            const { date_reception } = parent;
+            const { estimated_arrival_date } = parent;
+            const { reception_pre_alert } = parent;
+            const { doses_received } = parent;
+            const { po_numbers } = parent;
+            const { vaccine_name } = parent;
+            if (
+                !value &&
+                (vaccine_name ||
+                    po_numbers ||
+                    doses_received ||
+                    reception_pre_alert ||
+                    estimated_arrival_date ||
+                    date_reception)
+            ) {
+                return createError({
+                    path,
+                    message: formatMessage(MESSAGES.formaFieldsTogether),
+                });
+            }
+            return true;
+        });
+    },
+);
+
+const useShipmentShape = () => {
+    const { formatMessage } = useSafeIntl();
+    return yup.object().shape({
+        vaccine_name: yup
+            .string() // TODO restrict string value to vaccines
+            .trim()
+            .hasAllShipmentFieldsString(formatMessage),
+        po_numbers: yup
+            .number()
+            .nullable()
+            .integer()
+            .min(0)
+            .typeError(formatMessage(MESSAGES.positiveNumber))
+            .hasAllShipmentFieldsNumber(formatMessage),
+        doses_received: yup
+            .number()
+            .nullable()
+            .integer()
+            .min(0)
+            .typeError(formatMessage(MESSAGES.positiveNumber))
+            .hasAllShipmentFieldsNumber(formatMessage),
+        reception_pre_alert: yup
+            .date()
+            .nullable()
+            .typeError(formatMessage(MESSAGES.invalidDate))
+            .hasAllShipmentFieldsDate(formatMessage),
+        estimated_arrival_date: yup
+            .date()
+            .nullable()
+            .typeError(formatMessage(MESSAGES.invalidDate))
+            .hasAllShipmentFieldsDate(formatMessage),
+        date_reception: yup
+            .date()
+            .nullable()
+            .typeError(formatMessage(MESSAGES.invalidDate))
+            .hasAllShipmentFieldsDate(formatMessage),
+    });
+};
+
+const useVaccineShape = () => {
+    const { formatMessage } = useSafeIntl();
+    return yup.object().shape({
+        name: yup.string().trim().required(), // TODO restrict string value to vaccines
+        wastage_ratio_forecast: yup
+            .number()
+            .nullable()
+            .min(0)
+            .typeError(formatMessage(MESSAGES.positiveNumber)),
+        doses_per_vial: yup
+            .number()
+            .nullable()
+            .integer()
+            .min(0)
+            .typeError(formatMessage(MESSAGES.positiveNumber)),
+    });
+};
+
 const useRoundShape = () => {
     const { formatMessage } = useSafeIntl();
+    const shipment = useShipmentShape();
+    const vaccine = useVaccineShape();
 
     return yup.object().shape({
         number: yup.number().integer().min(0),
@@ -176,6 +425,68 @@ const useRoundShape = () => {
             .nullable()
             .min(0)
             .typeError(formatMessage(MESSAGES.positiveNumber)),
+        forma_unusable_vials: yup
+            .number()
+            .integer()
+            .nullable()
+            .min(0)
+            .typeError(formatMessage(MESSAGES.positiveNumber))
+            .hasAllFormAFieldsNumber(formatMessage),
+        forma_usable_vials: yup
+            .number()
+            .integer()
+            .nullable()
+            .min(0)
+            .typeError(formatMessage(MESSAGES.positiveNumber))
+            .hasAllFormAFieldsNumber(formatMessage),
+        forma_missing_vials: yup
+            .number()
+            .integer()
+            .nullable()
+            .min(0)
+            .typeError(formatMessage(MESSAGES.positiveNumber))
+            .hasAllFormAFieldsNumber(formatMessage),
+        reporting_delays_hc_to_district: yup
+            .number()
+            .integer()
+            .nullable()
+            .min(0)
+            .typeError(formatMessage(MESSAGES.positiveNumber)),
+        reporting_delays_region_to_national: yup
+            .number()
+            .integer()
+            .nullable()
+            .min(0)
+            .typeError(formatMessage(MESSAGES.positiveNumber)),
+        reporting_delays_district_to_region: yup
+            .number()
+            .integer()
+            .nullable()
+            .min(0)
+            .typeError(formatMessage(MESSAGES.positiveNumber)),
+        vials_destroyed: yup
+            .number()
+            .integer()
+            .nullable()
+            .min(0)
+            .typeError(formatMessage(MESSAGES.positiveNumber))
+            .hasDestuctionDateAndVialsField(formatMessage),
+        forma_reception: yup
+            .date()
+            .typeError(formatMessage(MESSAGES.invalidDate))
+            .nullable()
+            .hasAllFormAFieldsDate(formatMessage),
+        date_destruction: yup
+            .date()
+            .typeError(formatMessage(MESSAGES.invalidDate))
+            .nullable()
+            .hasVialsFieldAndDestuctionDate(formatMessage),
+        date_signed_vrf_received: yup
+            .date()
+            .typeError(formatMessage(MESSAGES.invalidDate))
+            .nullable(),
+        shipments: yup.array(shipment).nullable(),
+        vaccines: yup.array(vaccine).nullable(),
     });
 };
 

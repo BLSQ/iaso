@@ -1,4 +1,4 @@
-import React, { FunctionComponent, useCallback } from 'react';
+import React, { FunctionComponent, useCallback, useEffect } from 'react';
 import { useFormikContext } from 'formik';
 // @ts-ignore
 import { IconButton } from 'bluesquare-components';
@@ -12,16 +12,79 @@ type Props = {
     roundIndex: number;
 };
 
+const DEFAULT_DELAY_HC = 3;
+const DEFAULT_DELAY_DISTRICT = 5;
+const DEFAULT_DELAY_REGION = 7;
+
+const DEFAULT_WASTAGE_RATIOS = {
+    mOPV2: 1.15,
+    nOPV2: 1.33,
+    bOPV2: 1.18,
+};
+
 export const RoundVaccineForms: FunctionComponent<Props> = ({
     round,
     roundIndex,
 }) => {
-    const { setFieldValue } = useFormikContext();
-    const { vaccines = [{}] } = round ?? {};
+    const {
+        setFieldValue,
+        // @ts-ignore
+        values: { rounds },
+    } = useFormikContext();
+    const HcDelay = rounds[roundIndex].reporting_delays_hc_to_district;
+    const DistrictDelay =
+        rounds[roundIndex].reporting_delays_district_to_region;
+    const RegionDelay = rounds[roundIndex].reporting_delays_region_to_national;
+    const { vaccines = [] } = round ?? {};
     const handleAddVaccine = useCallback(() => {
         const newShipments = [...vaccines, {}];
         setFieldValue(`rounds[${roundIndex}].vaccines`, newShipments);
     }, [roundIndex, setFieldValue, vaccines]);
+
+    // Fill in ReportingDelays table with default values when selecting the first vaccine
+    useEffect(() => {
+        if (vaccines.length === 1) {
+            if (!HcDelay) {
+                setFieldValue(
+                    `rounds[${roundIndex}].reporting_delays_hc_to_district`,
+                    DEFAULT_DELAY_HC,
+                );
+            }
+            if (!DistrictDelay) {
+                setFieldValue(
+                    `rounds[${roundIndex}].reporting_delays_district_to_region`,
+                    DEFAULT_DELAY_DISTRICT,
+                );
+            }
+            if (!RegionDelay) {
+                setFieldValue(
+                    `rounds[${roundIndex}].reporting_delays_region_to_national`,
+                    DEFAULT_DELAY_REGION,
+                );
+            }
+        }
+    }, [
+        DistrictDelay,
+        HcDelay,
+        RegionDelay,
+        roundIndex,
+        setFieldValue,
+        vaccines.length,
+    ]);
+
+    // Fill in wastage ratio with default value for vaccine when adding vaccine
+    useEffect(() => {
+        vaccines.forEach((vaccine, index) => {
+            const wastageRatio =
+                rounds[roundIndex].vaccines[index].wastage_ratio_forecast;
+            if (!wastageRatio) {
+                setFieldValue(
+                    `rounds[${roundIndex}].vaccines[${index}].wastage_ratio_forecast`,
+                    DEFAULT_WASTAGE_RATIOS[vaccine.name],
+                );
+            }
+        });
+    }, [roundIndex, rounds, setFieldValue, vaccines, vaccines.length]);
 
     return (
         <>

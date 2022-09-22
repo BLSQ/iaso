@@ -7,7 +7,6 @@ import { useStyles } from '../styles/theme';
 import MESSAGES from '../constants/messages';
 import { DateInput, TextInput } from '../components/Inputs';
 import { ShipmentsForm } from './ShipmentsForm';
-// import { VaccineName, VaccineNames } from '../constants/virus';
 import { ReportingDelays } from './ReportingDelays';
 import { RoundVaccineForms } from './RoundVaccineForms';
 
@@ -25,12 +24,6 @@ export const VaccineManangementForm: FunctionComponent<Props> = () => {
         rounds.length > 0 ? rounds[0].number : undefined,
     );
     const roundIndex = rounds.findIndex(r => r.number === currentRoundNumber);
-
-    // const selectedRound = useMemo(()=>{
-    //     return rounds.find(round=> round.number === currentRoundNumber)
-    // },[rounds, currentRoundNumber])
-
-    // const [selectedVaccine, setSelectedVaccine] = useState<Optional<VaccineNames>>(vaccineTabs[0]);
 
     const handleRoundTabChange = (_, newValue) => {
         setCurrentRoundNumber(newValue);

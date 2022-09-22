@@ -77,6 +77,7 @@ from .models import CountryUsersGroup
 from .models import URLCache
 from .preparedness.calculator import preparedness_summary
 from .preparedness.parser import get_preparedness
+from .export_utils import get_url_content
 
 logger = getLogger(__name__)
 
@@ -196,6 +197,9 @@ class CampaignViewSet(ModelViewSet):
     @action(methods=["GET"], detail=False, serializer_class=None)
     def create_calendar_xlsx_sheet(self, request, **kwargs):
         filename = "calendar"
+        current_date = request.query_params.get("currentDate")
+        year = datetime.strptime(current_date, '%y-%m-%d').year if current_date is not None else datetime.datetime.now().year
+        columns = self.getColumns()
         filename = self.xlsx_file_name(filename, request.query_params)
         response = HttpResponse(
                     None,

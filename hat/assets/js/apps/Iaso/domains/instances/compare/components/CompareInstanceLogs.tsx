@@ -22,6 +22,7 @@ import TopBar from '../../../../components/nav/TopBarComponent';
 import ErrorPaperComponent from '../../../../components/papers/ErrorPaperComponent';
 import WidgetPaper from '../../../../components/papers/WidgetPaperComponent';
 import { InstanceLogDetail } from './InstanceLogDetail';
+import { InstanceLogInfos } from './InstanceLogInfos';
 
 import { IntlFormatMessage } from '../../../../types/intl';
 
@@ -38,49 +39,38 @@ type State = {
 };
 type Params = {
     instanceIds: string;
-    logA: string;
-    logB: string;
+    logA?: string;
+    logB?: string;
 };
-
-// type Router = {
-//     goBack: () => void;
-// };
 
 type Props = {
     params: Params;
-    router: Router;
 };
 
 const useStyles = makeStyles((theme: Theme) => ({
     ...commonStyles(theme),
 }));
 
-const PrettyPeriod = ({ value }) => {
-    const formatPeriod = usePrettyPeriod();
-    return formatPeriod(value);
-};
-
-export const CompareInstanceLogs: FunctionComponent<Props> = ({
-    params,
-    // router,
-}) => {
+export const CompareInstanceLogs: FunctionComponent<Props> = ({ params }) => {
     const { instanceIds: instanceId } = params;
 
+    const logInfos = {
+        org_unit: undefined,
+        period: undefined,
+    };
     const {
         data: instanceLogsDropdown,
         isFetching: isFetchingInstanceLogs,
         isError,
     } = useGetInstanceLogs(instanceId);
 
-    const { data: userInstanceLogDetail, isLoading } = useGetUserInstanceLog(
+    const { userLogA, userLogB, isUserLoading } = useGetUserInstanceLog(
         params.logA,
         params.logB,
     );
+    const { data: instanceLogsDetail, isLoading: isInstanceLogDetailLoading } =
+        useGetInstanceLogDetail(params.logA, params.logB);
 
-    const { data: instanceLogFields } = useGetInstanceLogDetail(
-        params.logA,
-        params.logB,
-    );
     const classes: Record<string, string> = useStyles();
     const { formatMessage }: { formatMessage: IntlFormatMessage } =
         useSafeIntl();
@@ -89,17 +79,17 @@ export const CompareInstanceLogs: FunctionComponent<Props> = ({
         (state: State) => state.routerCustom.prevPathname,
     );
 
+    // FIXME ugly fix to the back arrow bug. Caused by redirecting in useEffect. using useSkipEffectOnMount breaks the feature, so this is a workaround
+    // eslint-disable-next-line no-unused-vars
+    const [previous, _setPrevious] = useState<string | undefined>(prevPathname);
     const [instanceLogInfos, setInstanceLogInfos] = useState({
         logA: {
-            org_unit: undefined,
-            period: undefined,
+            ...logInfos,
         },
         logB: {
-            org_unit: undefined,
-            period: undefined,
+            ...logInfos,
         },
     });
-
     const [logAInitialValue, setLogAInitialValue] = useState<
         number | undefined
     >(undefined);
@@ -155,7 +145,7 @@ export const CompareInstanceLogs: FunctionComponent<Props> = ({
             }
         }
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [instanceLogsDropdown, params]);
+    }, [instanceLogsDropdown, params.logA, params.logB]);
 
     useEffect(() => {
         setLogAInitialValue(
@@ -169,15 +159,15 @@ export const CompareInstanceLogs: FunctionComponent<Props> = ({
     useEffect(() => {
         setInstanceLogInfos({
             logA: {
-                org_unit: instanceLogFields?.logA?.org_unit,
-                period: instanceLogFields?.logA?.period,
+                org_unit: instanceLogsDetail?.logA?.org_unit,
+                period: instanceLogsDetail?.logA?.period,
             },
             logB: {
-                org_unit: instanceLogFields?.logB?.org_unit,
-                period: instanceLogFields?.logB?.period,
+                org_unit: instanceLogsDetail?.logB?.org_unit,
+                period: instanceLogsDetail?.logB?.period,
             },
         });
-    }, [instanceLogFields?.logA, instanceLogFields?.logB]);
+    }, [instanceLogsDetail]);
 
     if (isError) {
         return (
@@ -211,7 +201,7 @@ export const CompareInstanceLogs: FunctionComponent<Props> = ({
                             loading={isFetchingInstanceLogs}
                         />
 
-                        {isLoading ? (
+                        {isUserLoading || isInstanceLogDetailLoading ? (
                             <Box height="10vh">
                                 <LoadingSpinner
                                     fixed={false}
@@ -221,94 +211,10 @@ export const CompareInstanceLogs: FunctionComponent<Props> = ({
                                 />
                             </Box>
                         ) : (
-                            <WidgetPaper
-                                expandable
-                                isExpanded={false}
-                                title={formatMessage(MESSAGES.infos)}
-                                padded
-                            >
-                                <Grid container spacing={1}>
-                                    <Grid
-                                        xs={5}
-                                        container
-                                        alignItems="center"
-                                        item
-                                        justifyContent="flex-end"
-                                    >
-                                        <Typography
-                                            variant="body2"
-                                            color="inherit"
-                                        >
-                                            {formatMessage(
-                                                MESSAGES.last_modified_by,
-                                            )}
-                                        </Typography>
-                                        :
-                                    </Grid>
-                                    <Grid
-                                        xs={7}
-                                        container
-                                        item
-                                        justifyContent="flex-start"
-                                        alignItems="center"
-                                    >
-                                        <Typography
-                                            variant="body2"
-                                            color="inherit"
-                                        >
-                                            {
-                                                userInstanceLogDetail?.logA
-                                                    ?.user_name
-                                            }
-                                        </Typography>
-                                    </Grid>
-                                </Grid>
-
-                                {Object.entries(instanceLogInfos.logA).map(
-                                    info => (
-                                        <Grid container spacing={1}>
-                                            <Grid
-                                                xs={5}
-                                                container
-                                                alignItems="center"
-                                                item
-                                                justifyContent="flex-end"
-                                            >
-                                                <Typography
-                                                    variant="body2"
-                                                    color="inherit"
-                                                >
-                                                    {/* // TO DO : find api call to get org unit name from org unit id */}
-                                                    {formatMessage(
-                                                        MESSAGES[info[0]],
-                                                    )}
-                                                </Typography>
-                                                :
-                                            </Grid>
-                                            <Grid
-                                                xs={7}
-                                                container
-                                                item
-                                                justifyContent="flex-start"
-                                                alignItems="center"
-                                            >
-                                                <Typography
-                                                    variant="body2"
-                                                    color="inherit"
-                                                >
-                                                    {info[0] === 'period' ? (
-                                                        <PrettyPeriod
-                                                            value={info[1]}
-                                                        />
-                                                    ) : (
-                                                        info[1]
-                                                    )}
-                                                </Typography>
-                                            </Grid>
-                                        </Grid>
-                                    ),
-                                )}
-                            </WidgetPaper>
+                            <InstanceLogInfos
+                                user={userLogA}
+                                infos={instanceLogInfos.logA}
+                            />
                         )}
                     </Grid>
                     <Grid xs={12} md={6} item>
@@ -322,7 +228,7 @@ export const CompareInstanceLogs: FunctionComponent<Props> = ({
                             loading={isFetchingInstanceLogs}
                         />
 
-                        {isLoading ? (
+                        {isUserLoading || isInstanceLogDetailLoading ? (
                             <Box height="10vh">
                                 <LoadingSpinner
                                     fixed={false}
@@ -332,93 +238,10 @@ export const CompareInstanceLogs: FunctionComponent<Props> = ({
                                 />
                             </Box>
                         ) : (
-                            <WidgetPaper
-                                expandable
-                                isExpanded={false}
-                                title={formatMessage(MESSAGES.infos)}
-                                padded
-                            >
-                                <Grid container spacing={1}>
-                                    <Grid
-                                        xs={5}
-                                        container
-                                        alignItems="center"
-                                        item
-                                        justifyContent="flex-end"
-                                    >
-                                        <Typography
-                                            variant="body2"
-                                            color="inherit"
-                                        >
-                                            {formatMessage(
-                                                MESSAGES.last_modified_by,
-                                            )}
-                                        </Typography>
-                                        :
-                                    </Grid>
-                                    <Grid
-                                        xs={7}
-                                        container
-                                        item
-                                        justifyContent="flex-start"
-                                        alignItems="center"
-                                    >
-                                        <Typography
-                                            variant="body2"
-                                            color="inherit"
-                                        >
-                                            {
-                                                userInstanceLogDetail?.logB
-                                                    ?.user_name
-                                            }
-                                        </Typography>
-                                    </Grid>
-                                </Grid>
-
-                                {Object.entries(instanceLogInfos.logB).map(
-                                    info => (
-                                        <Grid container spacing={1}>
-                                            <Grid
-                                                xs={5}
-                                                container
-                                                alignItems="center"
-                                                item
-                                                justifyContent="flex-end"
-                                            >
-                                                <Typography
-                                                    variant="body2"
-                                                    color="inherit"
-                                                >
-                                                    {formatMessage(
-                                                        MESSAGES[info[0]],
-                                                    )}
-                                                </Typography>
-                                                :
-                                            </Grid>
-                                            <Grid
-                                                xs={7}
-                                                container
-                                                item
-                                                justifyContent="flex-start"
-                                                alignItems="center"
-                                            >
-                                                <Typography
-                                                    variant="body2"
-                                                    color="inherit"
-                                                >
-                                                    {info[0] === 'period' ? (
-                                                        <PrettyPeriod
-                                                            value={info[1]}
-                                                        />
-                                                    ) : (
-                                                        info[1]
-                                                    )}
-                                                </Typography>
-                                            </Grid>
-                                        </Grid>
-                                    ),
-                                )}
-                            </WidgetPaper>
+                            <InstanceLogInfos
+                                user={userLogB}
+                                infos={instanceLogInfos.logB}
+                            />
                         )}
                     </Grid>
 

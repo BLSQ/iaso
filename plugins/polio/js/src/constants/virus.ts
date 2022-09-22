@@ -30,41 +30,22 @@ const polioViruses = [
     },
 ];
 
-// linter shadow detection seems broken here
-// eslint-disable-next-line no-unused-vars, no-shadow
-enum VaccineNames {
-    // eslint-disable-next-line no-unused-vars
-    mOPV2 = 'mOPV2',
-    // eslint-disable-next-line no-unused-vars
-    nOPV2 = 'nOPV2',
-    // eslint-disable-next-line no-unused-vars
-    bOPV = 'bOPV',
-}
-type VaccineName = `${VaccineNames}`;
-const vaccineNames: VaccineName[] = Object.keys(VaccineNames) as VaccineName[];
-
-type Vaccine = {
-    value: VaccineName;
-    label: VaccineName;
-    color: string;
-};
-
-const polioVaccines: Vaccine[] = [
+const polioVaccines = [
     {
-        value: VaccineNames.mOPV2,
-        label: VaccineNames.mOPV2,
+        value: 'mOPV2',
+        label: 'mOPV2',
         color: '#66ff66',
     },
     {
-        value: VaccineNames.nOPV2,
-        label: VaccineNames.nOPV2,
+        value: 'nOPV2',
+        label: 'nOPV2',
         color: '#00b0f0',
     },
     {
-        value: VaccineNames.bOPV,
-        label: VaccineNames.bOPV,
+        value: 'bOPV',
+        label: 'bOPV',
         color: '#ffff00',
     },
 ];
 
-export { polioViruses, polioVaccines, VaccineNames, vaccineNames, VaccineName };
+export { polioViruses, polioVaccines };

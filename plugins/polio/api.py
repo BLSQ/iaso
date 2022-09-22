@@ -244,7 +244,8 @@ Timeline tracker Automated message
             virus_type=campaign.virus,
             onset_date=campaign.onset_at,
             initial_orgunit_name=campaign.initial_org_unit.name
-            + (", " + campaign.initial_org_unit.parent.name if campaign.initial_org_unit.parent else ""),
+                                 + (
+                                     ", " + campaign.initial_org_unit.parent.name if campaign.initial_org_unit.parent else ""),
             url=f"https://{domain}/dashboard/polio/list",
             url_campaign=f"https://{domain}/dashboard/polio/list/campaignId/{campaign.id}",
         )
@@ -465,6 +466,7 @@ where group_id = polio_roundscope.group_id""",
         campaign = get_object_or_404(Campaign, id=campaign_id)
         campaign_scope = get_object_or_404(CampaignScope, campaign=campaign).group.org_units.all()
 
+
         try:
             path = campaign.form_template.path
         except ValueError:
@@ -485,43 +487,44 @@ where group_id = polio_roundscope.group_id""",
         for l in cell:
             survey_columns.append(q_sheet[f"{l}1"].value)
 
-
-        country = []
-        region = []
-        district = []
-        health_facility = []
-
-        ou_hierarchy = OrgUnit.objects.hierarchy(OrgUnit.objects.get(pk=29728))
-
-        for ou in ou_hierarchy:
-            if ou.org_unit_type == "COUNTRY":
-                country.append(ou)
-            if ou.org_unit_type == "REGION":
-                region.append(ou)
-            if ou.org_unit_type == "DISTRICT":
-                district.append(ou)
-            if ou.org_unit_type == "HEALTH FACILITY":
-                health_facility.append(ou)
-
-        print(country)
-        print(region)
-        print(district)
-
-        print(f"CONGO: {OrgUnit.objects.hierarchy(OrgUnit.objects.get(pk=29728))}")
+        ou_tree_list = []
+        ou_tree_dict = {"Country": {}}
 
         for ou in campaign_scope:
-            ou_children = OrgUnit.objects.descendants(ou)
-            q_sheet[cell[0] + str(survey_last_empty_row)] = "select_one"
+            ou_tree_dict[ou.org_unit_type] = ou
+            print(ou)
+            ou_parent = ou.parent
+            print(ou_parent)
+            while ou_parent is not None:
+                ou_parent = ou_parent.parent
+                if ou_parent is not None:
+                    print(ou_parent)
+            ou_children = ou.calculate_paths()
             print(ou_children)
+            # print(ou)
+            # if ou.org_unit_type == "COUNTRY":
+            #     country.append(ou)
+            # if ou.org_unit_type == "REGION":
+            #     region.append(ou)
+            # if ou.org_unit_type == "DISTRICT":
+            #     district.append(ou)
+            # if ou.org_unit_type == "HEALTH FACILITY":
+            #     health_facility.append(ou)
+
+            # for ou in campaign_scope:
+            #     ou_hierarchy = OrgUnit.objects.hierarchy(ou)
+            #     print(f"OU: {ou}")
+            #     print(ou_hierarchy)
+            #     ou_children = OrgUnit.objects.descendants(ou)
+            #     q_sheet[cell[0] + str(survey_last_empty_row)] = "select_one"
+            # print(ou_children)
             # if(ou_children):
             #     last_empty_row = len(list(q_sheet.rows))
             #     print(f"Found {ou_children}")
             #     print(last_empty_row)
 
-
-
             sheet[cell[choices_column - 1] + str(choices_row)] = "ou"
-            sheet[cell[choices_column]+ str(choices_row)] = ou.id
+            sheet[cell[choices_column] + str(choices_row)] = ou.id
             sheet[cell[choices_column + 1] + str(choices_row)] = str(ou)
             choices_row += 1
             survey_last_empty_row += 1
@@ -539,6 +542,7 @@ where group_id = polio_roundscope.group_id""",
         #                             content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
         #     response["Content-Disposition"] = "attachment; filename=%s" % filename
         #     return response
+
 
 class CountryUsersGroupViewSet(ModelViewSet):
     serializer_class = CountryUsersGroupSerializer
@@ -807,9 +811,9 @@ class IMStatsViewSet(viewsets.ViewSet):
 
             districts_qs = (
                 OrgUnit.objects.hierarchy(country)
-                .filter(org_unit_type_id__category="DISTRICT")
-                .only("name", "id", "parent", "aliases")
-                .prefetch_related("parent")
+                    .filter(org_unit_type_id__category="DISTRICT")
+                    .only("name", "id", "parent", "aliases")
+                    .prefetch_related("parent")
             )
             district_dict = _build_district_cache(districts_qs)
             forms = get_url_content(country_config["url"], country_config["login"], country_config["password"])
@@ -911,7 +915,7 @@ class IMStatsViewSet(viewsets.ViewSet):
 
                         for key_abs in nfm_abs_counts_dict:
                             round_stats["nfm_abs_stats"][key_abs] = (
-                                round_stats["nfm_abs_stats"][key_abs] + nfm_abs_counts_dict[key_abs]
+                                    round_stats["nfm_abs_stats"][key_abs] + nfm_abs_counts_dict[key_abs]
                             )
                         d = round_stats["data"][district_name]
                         d["total_child_fmd"] = d["total_child_fmd"] + total_Child_FMD
@@ -1047,9 +1051,9 @@ def handle_ona_request_with_key(request, key):
         country = OrgUnit.objects.get(id=config["country_id"])
         facilities = (
             OrgUnit.objects.hierarchy(country)
-            .filter(org_unit_type_id__category="HF")
-            .only("name", "id", "parent", "aliases")
-            .prefetch_related("parent")
+                .filter(org_unit_type_id__category="HF")
+                .only("name", "id", "parent", "aliases")
+                .prefetch_related("parent")
         )
         cache = make_orgunits_cache(facilities)
         # Add fields to speed up detection of campaign day
@@ -1158,9 +1162,9 @@ class OrgUnitsPerCampaignViewset(viewsets.ViewSet):
                     all_facilities = all_facilities.filter(org_unit_type_id=org_unit_type)
                 all_facilities = (
                     all_facilities.prefetch_related("parent")
-                    .prefetch_related("parent__parent")
-                    .prefetch_related("parent__parent__parent")
-                    .prefetch_related("parent__parent__parent__parent")
+                        .prefetch_related("parent__parent")
+                        .prefetch_related("parent__parent__parent")
+                        .prefetch_related("parent__parent__parent__parent")
                 )
                 all_facilities = all_facilities.annotate(campaign_id=Value(campaign.id, UUIDField()))
                 all_facilities = all_facilities.annotate(campaign_obr=Value(campaign.obr_name, TextField()))
@@ -1201,7 +1205,7 @@ def find_district(district_name, region_name, district_dict):
     elif district_list and len(district_list) > 1:
         for di in district_list:
             if di.parent.name.lower() == region_name.lower() or (
-                di.parent.aliases and region_name in di.parent.aliases
+                    di.parent.aliases and region_name in di.parent.aliases
             ):
                 return di
     return None
@@ -1346,9 +1350,9 @@ class LQASStatsViewSet(viewsets.ViewSet):
 
             districts_qs = (
                 OrgUnit.objects.hierarchy(country)
-                .filter(org_unit_type_id__category="DISTRICT")
-                .only("name", "id", "parent", "aliases")
-                .prefetch_related("parent")
+                    .filter(org_unit_type_id__category="DISTRICT")
+                    .only("name", "id", "parent", "aliases")
+                    .prefetch_related("parent")
             )
             district_dict = _build_district_cache(districts_qs)
 
@@ -1472,7 +1476,7 @@ class LQASStatsViewSet(viewsets.ViewSet):
 
                     d["total_child_fmd"] = d["total_child_fmd"] + total_Child_FMD
                     d["total_child_checked"] = (
-                        d["total_child_checked"] + total_sites_visited
+                            d["total_child_checked"] + total_sites_visited
                     )  # ChildCehck always zero in Mali?
                     d["total_sites_visited"] = d["total_sites_visited"] + total_sites_visited
                     d["district"] = district.id
@@ -1560,7 +1564,8 @@ def email_subject(event_type: str, campaign_name: str) -> str:
 
 
 def event_creation_email(
-    event_type: str, first_name: str, last_name: str, comment: str, file: str, links: str, link: str, dns_domain: str
+        event_type: str, first_name: str, last_name: str, comment: str, file: str, links: str, link: str,
+        dns_domain: str
 ) -> str:
     email_template = """%s by %s %s.
 
@@ -1581,15 +1586,15 @@ This is an automated email from %s
 
 
 def creation_email_with_two_links(
-    event_type: str,
-    first_name: str,
-    last_name: str,
-    comment: str,
-    files: str,
-    links: str,
-    validation_link: str,
-    rejection_link: str,
-    dns_domain: str,
+        event_type: str,
+        first_name: str,
+        last_name: str,
+        comment: str,
+        files: str,
+        links: str,
+        validation_link: str,
+        rejection_link: str,
+        dns_domain: str,
 ) -> str:
     email_template = """%s by %s %s.
 
@@ -1676,14 +1681,14 @@ def send_approval_budget_mail(event: BudgetEvent) -> None:
 
 
 def send_approvers_email(
-    user: User,
-    author_team: Team,
-    event: BudgetEvent,
-    event_type: str,
-    approval_link: str,
-    rejection_link: str,
-    files_info: Optional[List[Dict[str, Any]]],
-    links_string: Optional[str],
+        user: User,
+        author_team: Team,
+        event: BudgetEvent,
+        event_type: str,
+        approval_link: str,
+        rejection_link: str,
+        files_info: Optional[List[Dict[str, Any]]],
+        links_string: Optional[str],
 ) -> None:
     # if user is in other approval team, send the mail with the fat buttons
     subject = email_subject(event_type, event.campaign.obr_name)
@@ -1739,8 +1744,8 @@ def send_approval_confirmation_to_users(event: BudgetEvent) -> None:
 def is_budget_approved(user: User, event: BudgetEvent) -> bool:
     val_teams = (
         Team.objects.filter(name__icontains="approval")
-        .filter(project__account=user.iaso_profile.account)
-        .filter(deleted_at=None)
+            .filter(project__account=user.iaso_profile.account)
+            .filter(deleted_at=None)
     )
     validation_count = 0
     for val_team in val_teams:
@@ -1883,8 +1888,8 @@ class BudgetEventViewset(ModelViewSet):
                     #     raise serializers.ValidationError({"general":"userWithoutTeam"})
                     other_approval_teams = (
                         Team.objects.filter(name__icontains="approval")
-                        .exclude(id=author_team.id)
-                        .filter(deleted_at=None)
+                            .exclude(id=author_team.id)
+                            .filter(deleted_at=None)
                     )
                     approvers = other_approval_teams.values("users")
 

@@ -6,10 +6,8 @@ import React, {
     useState,
 } from 'react';
 // @ts-ignore
-import { IconButton } from 'bluesquare-components';
-import RemoveIcon from '@material-ui/icons/Clear';
-import AddIcon from '@material-ui/icons/Add';
-import { Box, Grid } from '@material-ui/core';
+import { useSafeIntl } from 'bluesquare-components';
+import { Box, Button, Grid } from '@material-ui/core';
 import { ShipmentForm } from './ShipmentForm';
 import MESSAGES from '../constants/messages';
 
@@ -22,6 +20,7 @@ export const ShipmentsForm: FunctionComponent<Props> = ({
     round,
     accessor,
 }) => {
+    const { formatMessage } = useSafeIntl();
     const { setFieldValue } = useFormikContext();
     const { shipments = [] } = round ?? {};
     const [enableRemoveButton, setEnableRemoveButton] =
@@ -45,7 +44,7 @@ export const ShipmentsForm: FunctionComponent<Props> = ({
         if (Number.isInteger(lastIndex)) {
             const lastShipment = shipments[lastIndex as number];
             if (
-                lastIndex > 0 &&
+                lastIndex >= 0 &&
                 !lastShipment.vaccine_name &&
                 !lastShipment.po_numbers &&
                 !lastShipment.doses_received &&
@@ -57,6 +56,8 @@ export const ShipmentsForm: FunctionComponent<Props> = ({
             } else {
                 setEnableRemoveButton(false);
             }
+        } else {
+            setEnableRemoveButton(false);
         }
     }, [lastIndex, shipments]);
 
@@ -80,19 +81,18 @@ export const ShipmentsForm: FunctionComponent<Props> = ({
                 direction="column"
                 justifyContent="flex-end"
             >
-                <Grid container direction="row">
-                    <IconButton
-                        overrideIcon={AddIcon}
-                        tooltipMessage={MESSAGES.addShipment}
-                        onClick={handleAddShipment}
-                    />
-
-                    <IconButton
-                        overrideIcon={RemoveIcon}
-                        tooltipMessage={MESSAGES.removeLastShipment}
-                        onClick={handleRemoveLastShipment}
-                        disabled={!enableRemoveButton}
-                    />
+                <Grid container direction="row" justifyContent="flex-end">
+                    <Box mt={2} mb={1}>
+                        <Button onClick={handleAddShipment}>
+                            {formatMessage(MESSAGES.addShipment)}
+                        </Button>
+                        <Button
+                            onClick={handleRemoveLastShipment}
+                            disabled={!enableRemoveButton}
+                        >
+                            {formatMessage(MESSAGES.removeLastShipment)}
+                        </Button>
+                    </Box>
                 </Grid>
             </Grid>
         </>

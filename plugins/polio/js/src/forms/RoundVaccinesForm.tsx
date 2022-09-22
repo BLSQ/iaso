@@ -6,10 +6,8 @@ import React, {
 } from 'react';
 import { useFormikContext } from 'formik';
 // @ts-ignore
-import { IconButton } from 'bluesquare-components';
-import AddIcon from '@material-ui/icons/Add';
-import RemoveIcon from '@material-ui/icons/Clear';
-import { Grid } from '@material-ui/core';
+import { useSafeIntl } from 'bluesquare-components';
+import { Box, Button, Grid } from '@material-ui/core';
 import { RoundVaccineForm } from './RoundVaccineForm';
 import MESSAGES from '../constants/messages';
 import { polioVaccines } from '../constants/virus';
@@ -33,17 +31,21 @@ export const RoundVaccinesForm: FunctionComponent<Props> = ({
     round,
     roundIndex,
 }) => {
+    const { formatMessage } = useSafeIntl();
     const {
         setFieldValue,
         // @ts-ignore
         values: { rounds },
+        touched,
     } = useFormikContext();
     const [enableRemoveButton, setEnableRemoveButton] =
         useState<boolean>(false);
-    const HcDelay = rounds[roundIndex].reporting_delays_hc_to_district;
+
+    const HcDelay = rounds[roundIndex]?.reporting_delays_hc_to_district;
     const DistrictDelay =
-        rounds[roundIndex].reporting_delays_district_to_region;
-    const RegionDelay = rounds[roundIndex].reporting_delays_region_to_national;
+        rounds[roundIndex]?.reporting_delays_district_to_region;
+    const RegionDelay = rounds[roundIndex]?.reporting_delays_region_to_national;
+
     const { vaccines = [] } = round ?? {};
 
     const lastIndex = vaccines.length >= 1 && vaccines.length - 1;
@@ -79,19 +81,34 @@ export const RoundVaccinesForm: FunctionComponent<Props> = ({
     // Fill in ReportingDelays table with default values when selecting the first vaccine
     useEffect(() => {
         if (vaccines.length === 1) {
-            if (!HcDelay) {
+            if (
+                !HcDelay &&
+                // @ts-ignore
+                !(touched?.rounds ?? [])[roundIndex]
+                    ?.reporting_delays_hc_to_district
+            ) {
                 setFieldValue(
                     `rounds[${roundIndex}].reporting_delays_hc_to_district`,
                     DEFAULT_DELAY_HC,
                 );
             }
-            if (!DistrictDelay) {
+            if (
+                !DistrictDelay &&
+                // @ts-ignore
+                !(touched?.rounds ?? [])[roundIndex]
+                    ?.reporting_delays_district_to_region
+            ) {
                 setFieldValue(
                     `rounds[${roundIndex}].reporting_delays_district_to_region`,
                     DEFAULT_DELAY_DISTRICT,
                 );
             }
-            if (!RegionDelay) {
+            if (
+                !RegionDelay &&
+                // @ts-ignore
+                !(touched?.rounds ?? [])[roundIndex]
+                    ?.reporting_delays_region_to_national
+            ) {
                 setFieldValue(
                     `rounds[${roundIndex}].reporting_delays_region_to_national`,
                     DEFAULT_DELAY_REGION,
@@ -104,6 +121,8 @@ export const RoundVaccinesForm: FunctionComponent<Props> = ({
         RegionDelay,
         roundIndex,
         setFieldValue,
+        // @ts-ignore
+        touched?.rounds,
         vaccines.length,
     ]);
 
@@ -112,14 +131,28 @@ export const RoundVaccinesForm: FunctionComponent<Props> = ({
         vaccines.forEach((vaccine, index) => {
             const wastageRatio =
                 rounds[roundIndex].vaccines[index].wastage_ratio_forecast;
-            if (!wastageRatio) {
+            // I'm sorry for this, I really had to null check this value
+            const isTouched = Boolean(
+                // @ts-ignore
+                ((touched?.rounds ?? [])[roundIndex]?.vaccines ?? [])[index]
+                    ?.wastage_ratio_forecast,
+            );
+            if (!wastageRatio && !isTouched) {
                 setFieldValue(
                     `rounds[${roundIndex}].vaccines[${index}].wastage_ratio_forecast`,
                     DEFAULT_WASTAGE_RATIOS[vaccine.name],
                 );
             }
         });
-    }, [roundIndex, rounds, setFieldValue, vaccines, vaccines.length]);
+    }, [
+        roundIndex,
+        rounds,
+        setFieldValue,
+        // @ts-ignore
+        touched.rounds,
+        vaccines,
+        vaccines.length,
+    ]);
 
     // Add second vaccine row when adding a row over an empty first row
     // Making this a separate effect to avoid disrupting the autofill of ReportDelays
@@ -177,20 +210,21 @@ export const RoundVaccinesForm: FunctionComponent<Props> = ({
                 direction="column"
                 justifyContent="flex-end"
             >
-                <Grid container direction="row">
-                    <IconButton
-                        overrideIcon={AddIcon}
-                        tooltipMessage={MESSAGES.addVaccine}
-                        onClick={handleAddVaccine}
-                        disabled={!(vaccines.length < 3)}
-                    />
-
-                    <IconButton
-                        overrideIcon={RemoveIcon}
-                        tooltipMessage={MESSAGES.removeLastVaccine}
-                        onClick={handleRemoveLastVaccine}
-                        disabled={!enableRemoveButton}
-                    />
+                <Grid container direction="row" justifyContent="flex-end">
+                    <Box mt={2} mb={1}>
+                        <Button
+                            onClick={handleAddVaccine}
+                            disabled={!(vaccines.length < 3)}
+                        >
+                            {formatMessage(MESSAGES.addVaccine)}
+                        </Button>
+                        <Button
+                            onClick={handleRemoveLastVaccine}
+                            disabled={!enableRemoveButton}
+                        >
+                            {formatMessage(MESSAGES.removeLastVaccine)}
+                        </Button>
+                    </Box>
                 </Grid>
             </Grid>
         </>

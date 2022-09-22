@@ -85,7 +85,9 @@ export const VaccineManangementForm: FunctionComponent<Props> = () => {
                         />
                     </Grid>
                     <Grid item xs={3}>
-                        <ReportingDelays accessor={accessor} />
+                        <Box mb={2}>
+                            <ReportingDelays accessor={accessor} />
+                        </Box>
                     </Grid>
                     <Grid item xs={3}>
                         <Field

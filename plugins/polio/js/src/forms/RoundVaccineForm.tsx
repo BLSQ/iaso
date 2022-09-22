@@ -1,4 +1,4 @@
-import { Grid } from '@material-ui/core';
+import { Box, Grid } from '@material-ui/core';
 import { Field } from 'formik';
 import React, { FunctionComponent } from 'react';
 // @ts-ignore
@@ -43,24 +43,29 @@ export const RoundVaccineForm: FunctionComponent<Props> = ({
     const accessor = `rounds[${roundIndex}].vaccines[${vaccineIndex}]`;
 
     return (
-        <Grid container item xs={12} spacing={2}>
+        // <Grid container item xs={12} spacing={2}>
+        <>
             <Grid item xs={4}>
-                <Field
-                    label={formatMessage(MESSAGES.vaccine)}
-                    name={`${accessor}.name`}
-                    className={classes.input}
-                    options={vaccineOptions}
-                    component={Select}
-                />
+                <Box mr={2}>
+                    <Field
+                        label={formatMessage(MESSAGES.vaccine)}
+                        name={`${accessor}.name`}
+                        className={classes.input}
+                        options={vaccineOptions}
+                        component={Select}
+                    />
+                </Box>
             </Grid>
             <Grid item xs={4}>
-                <Field
-                    label={formatMessage(MESSAGES.dosesPerVial)}
-                    name={`${accessor}.doses_per_vial`}
-                    className={classes.input}
-                    options={dosesOptions}
-                    component={Select}
-                />
+                <Box mr={2}>
+                    <Field
+                        label={formatMessage(MESSAGES.dosesPerVial)}
+                        name={`${accessor}.doses_per_vial`}
+                        className={classes.input}
+                        options={dosesOptions}
+                        component={Select}
+                    />
+                </Box>
             </Grid>
             <Grid item xs={4}>
                 <Field
@@ -70,6 +75,7 @@ export const RoundVaccineForm: FunctionComponent<Props> = ({
                     className={classes.input}
                 />
             </Grid>
-        </Grid>
+        </>
+        // </Grid>
     );
 };

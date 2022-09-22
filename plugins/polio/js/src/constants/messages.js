@@ -1457,7 +1457,7 @@ const MESSAGES = defineMessages({
     },
     receptionVaccineArrivalReport: {
         id: 'iaso.polio.label.receptionVaccineArrivalReport',
-        defaultMessage: 'Reception of the Vaccine Arrival Report',
+        defaultMessage: 'Reception of Arrival Report',
     },
     estimatedDateOfArrival: {
         id: 'iaso.polio.label.estimatedDateOfArrival',

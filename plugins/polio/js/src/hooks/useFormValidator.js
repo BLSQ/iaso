@@ -211,7 +211,7 @@ yup.addMethod(
             ) {
                 return createError({
                     path,
-                    message: formatMessage(MESSAGES.formaFieldsTogether),
+                    message: formatMessage(MESSAGES.shipmentFieldsTogether),
                 });
             }
             return true;
@@ -241,7 +241,7 @@ yup.addMethod(
             ) {
                 return createError({
                     path,
-                    message: formatMessage(MESSAGES.formaFieldsTogether),
+                    message: formatMessage(MESSAGES.shipmentFieldsTogether),
                 });
             }
             return true;
@@ -271,7 +271,7 @@ yup.addMethod(
             ) {
                 return createError({
                     path,
-                    message: formatMessage(MESSAGES.formaFieldsTogether),
+                    message: formatMessage(MESSAGES.shipmentFieldsTogether),
                 });
             }
             return true;

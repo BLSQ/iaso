@@ -9,14 +9,6 @@ import { useStyles } from '../styles/theme';
 import { DateInput, Select, TextInput } from '../components/Inputs';
 import { polioVaccines } from '../constants/virus';
 
-export type Shipment = {
-    date_of_reception: string | number; // Date format to calrify with API
-    estimated_date_of_arrival: string | number; // Date format to calrify with API
-    reception_pre_start: string | number; // Date format to calrify with API
-    doses_shipped: number;
-    po_numbers: number;
-};
-
 type Props = {
     index: number;
     accessor: string;

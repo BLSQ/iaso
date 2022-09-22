@@ -105,12 +105,12 @@ class CampaignScope(models.Model):
 
 
 class Shipment(models.Model):
+    vaccine_name = models.CharField(max_length=5, choices=VACCINES)
     po_numbers = models.IntegerField(null=True, blank=True)
     doses_received = models.IntegerField(null=True, blank=True)
     estimated_arrival_date = models.DateField(null=True, blank=True)
     reception_pre_alert = models.DateField(null=True, blank=True)
     date_reception = models.DateField(null=True, blank=True)
-    vaccine_name = models.CharField(max_length=5, choices=VACCINES)
     round = models.ForeignKey("Round", related_name="shipments", on_delete=models.CASCADE, null=True)
 
 
@@ -122,7 +122,7 @@ class RoundVaccine(models.Model):
     name = models.CharField(max_length=5, choices=VACCINES)
     round = models.ForeignKey("Round", on_delete=models.CASCADE, related_name="vaccines", null=True, blank=True)
     doses_per_vial = models.IntegerField(null=True, blank=True)
-    wastage_ratio_forecast = models.DecimalField(max_digits=3, decimal_places=2, null=True, blank=True)
+    wastage_ratio_forecast = models.DecimalField(max_digits=5, decimal_places=2, null=True, blank=True)
 
 
 class Round(models.Model):
@@ -159,6 +159,7 @@ class Round(models.Model):
     # Preparedness
     preparedness_spreadsheet_url = models.URLField(null=True, blank=True)
     preparedness_sync_status = models.CharField(max_length=10, default="FINISHED", choices=PREPAREDNESS_SYNC_STATUS)
+    # Vaccine management
     date_signed_vrf_received = models.DateField(null=True, blank=True)
     date_destruction = models.DateField(null=True, blank=True)
     vials_destroyed = models.IntegerField(null=True, blank=True)

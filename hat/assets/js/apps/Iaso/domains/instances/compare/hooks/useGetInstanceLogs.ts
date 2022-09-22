@@ -1,18 +1,20 @@
 /* eslint-disable camelcase */
-import { useMemo } from 'react';
 import moment from 'moment';
+import { useMemo } from 'react';
 import { UseQueryResult } from 'react-query';
 import { getRequest } from '../../../../libs/Api';
-import { useSnackQuery } from '../../../../libs/apiHooks';
+import { useSnackQuery, useSnackQueries } from '../../../../libs/apiHooks';
 import {
     InstanceLogDetail,
     InstanceLogsDetail,
     InstanceLogData,
     InstanceLogFileContent,
-    FormDescriptor,
     InstanceUserLogDetail,
+    FormDescriptor,
 } from '../../types/instance';
 import { DropdownOptions } from '../../../../types/utils';
+
+import MESSAGES from '../messages';
 
 const getInstanceLog = (
     instanceId: string | undefined,
@@ -61,51 +63,54 @@ export const useGetInstanceLogDetail = (
     logA: string | undefined,
     logB: string | undefined,
 ): UseQueryResult<InstanceLogFileContent, Error> => {
-    const instanceLogADetail: Record<string, any> = useSnackQuery({
-        queryKey: ['logA', logA],
-        queryFn: () => getInstanceLogDetail(logA),
-        options: {
-            enabled: Boolean(logA),
-            select: data => {
-                if (data) {
-                    return data.new_value[0].fields;
-                }
-
-                return undefined;
+    const [
+        { data: instanceLogADetail, isFetching: isInstanceLogAFetching },
+        { data: instanceLogBDetail, isFetching: isInstanceLogBFetching },
+    ] = useSnackQueries([
+        {
+            queryKey: ['instanceLogADetail', logA],
+            queryFn: () => getInstanceLogDetail(logA),
+            snackErrorMsg: MESSAGES.fetchLogDetailError,
+            dispatchOnError: false,
+            options: {
+                enabled: Boolean(logA),
+                select: data => {
+                    if (data) {
+                        return data.new_value[0].fields;
+                    }
+                    return undefined;
+                },
             },
         },
-    });
-
-    const instanceLogBDetail: Record<string, any> = useSnackQuery({
-        queryKey: ['logB', logB],
-        queryFn: () => getInstanceLogDetail(logB),
-        options: {
-            enabled: Boolean(logB),
-            select: data => {
-                if (data) {
-                    return data.new_value[0].fields;
-                }
-
-                return undefined;
+        {
+            queryKey: ['instanceLogBDetail', logB],
+            queryFn: () => getInstanceLogDetail(logB),
+            snackErrorMsg: MESSAGES.fetchLogDetailError,
+            dispatchOnError: false,
+            options: {
+                enabled: Boolean(logA),
+                select: data => {
+                    if (data) {
+                        return data.new_value[0].fields;
+                    }
+                    return undefined;
+                },
             },
         },
-    });
+    ]);
 
     const instanceLogsDetail = useMemo(() => {
         const data = {
-            logA: instanceLogADetail.data,
-            logB: instanceLogBDetail.data,
+            logA: instanceLogADetail,
+            logB: instanceLogBDetail,
         };
 
         return data;
-    }, [instanceLogADetail?.data, instanceLogBDetail?.data]);
+    }, [instanceLogADetail, instanceLogBDetail]);
 
     return {
         data: instanceLogsDetail,
-        isLoading:
-            instanceLogADetail.data === undefined ||
-            instanceLogBDetail.data === undefined,
-        isError: !instanceLogADetail.data || !instanceLogBDetail.data,
+        isLoading: isInstanceLogAFetching || isInstanceLogBFetching,
     };
 };
 
@@ -113,53 +118,51 @@ export const useGetUserInstanceLog = (
     logA: string | undefined,
     logB: string | undefined,
 ): UseQueryResult<InstanceUserLogDetail, Error> => {
-    const userLogADetail: Record<string, any> = useSnackQuery({
-        queryKey: ['userlogA', logA],
-        queryFn: () => getInstanceLogDetail(logA),
-        options: {
-            enabled: Boolean(logA),
-            select: data => {
-                if (data) {
-                    return data.user;
-                }
+    const [
+        { data: userLogA, isFetching: isUserLogAFetching },
+        { data: userLogB, isFetching: isUserLogBFetching },
+    ] = useSnackQueries([
+        {
+            queryKey: ['userlogA'],
+            queryFn: () => getInstanceLogDetail(logA),
+            snackErrorMsg: MESSAGES.fetchLogUserError,
+            dispatchOnError: false,
+            options: {
+                enabled: Boolean(logA),
+                select: data => {
+                    if (data) {
+                        return data?.user?.user_name;
+                    }
 
-                return undefined;
+                    return undefined;
+                },
             },
         },
-    });
+        {
+            queryKey: ['userlogB'],
+            queryFn: () => getInstanceLogDetail(logB),
+            snackErrorMsg: MESSAGES.fetchLogUserError,
+            dispatchOnError: false,
+            options: {
+                enabled: Boolean(logB),
+                select: data => {
+                    if (data) {
+                        return data?.user?.user_name;
+                    }
 
-    const userLogBDetail: Record<string, any> = useSnackQuery({
-        queryKey: ['userlogB', logB],
-        queryFn: () => getInstanceLogDetail(logB),
-        options: {
-            enabled: Boolean(logB),
-            select: data => {
-                if (data) {
-                    return data.user;
-                }
-
-                return undefined;
+                    return undefined;
+                },
             },
         },
-    });
-
-    const userLogsDetail = useMemo(() => {
-        const data = {
-            logA: userLogADetail.data,
-            logB: userLogBDetail.data,
-        };
-
-        return data;
-    }, [userLogADetail?.data, userLogBDetail?.data]);
+    ]);
 
     return {
-        data: userLogsDetail,
-        isLoading:
-            userLogADetail.data === undefined ||
-            userLogBDetail.data === undefined,
-        isError: !userLogADetail.data || !userLogBDetail.data,
+        userLogA,
+        userLogB,
+        isLoading: isUserLogAFetching || isUserLogBFetching,
     };
 };
+
 export const useGetFormDescriptor = (
     versionId: string | undefined,
     formId: number | undefined,

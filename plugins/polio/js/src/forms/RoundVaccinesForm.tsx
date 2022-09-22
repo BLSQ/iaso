@@ -64,11 +64,13 @@ export const RoundVaccinesForm: FunctionComponent<Props> = ({
     // determine whether to show delete button or not
     useEffect(() => {
         if (Number.isInteger(lastIndex)) {
-            if (lastIndex > 0) {
+            if (lastIndex >= 0) {
                 setEnableRemoveButton(true);
             } else {
                 setEnableRemoveButton(false);
             }
+        } else {
+            setEnableRemoveButton(false);
         }
     }, [lastIndex, vaccines]);
 

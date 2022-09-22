@@ -63,6 +63,7 @@ jobs:
         uses: docker/build-push-action@v2
         with:
           push: false
+          load: true
           tags: iaso:${{ github.sha }}
           file: docker/bundle/Dockerfile
           cache-from: type=registry,ref=ghcr.io/blsq/iaso:buildcache

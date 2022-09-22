@@ -1532,6 +1532,10 @@ const MESSAGES = defineMessages({
         id: 'iaso.polio.label.formaFieldsTogether',
         defaultMessage: 'All Form A fields need to be filled together',
     },
+    shipmentFieldsTogether: {
+        id: 'iaso.polio.label.shipmentFieldsTogether',
+        defaultMessage: 'All shipment fields need to be filled together',
+    },
 });
 
 export default MESSAGES;

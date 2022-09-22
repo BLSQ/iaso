@@ -1515,6 +1515,14 @@ const MESSAGES = defineMessages({
         id: 'iaso.polio.label.addShipment',
         defaultMessage: 'Add shipment',
     },
+    removeLastVaccine: {
+        id: 'iaso.polio.label.removeLastVaccine',
+        defaultMessage: 'Remove last vaccine',
+    },
+    removeLastShipment: {
+        id: 'iaso.polio.label.removeLastShipment',
+        defaultMessage: 'Remove last shipment',
+    },
 });
 
 export default MESSAGES;

@@ -1,4 +1,5 @@
 {
+    "Remove last shipment": "Remove last shipment",
     "iaso.forms.options.budgetTypeError": "Value should be one of \"submission\", \"comments\" or \"validation\"",
     "iaso.forms.options.emailFormat": "Please use correctly formatted email addresses",
     "iaso.forms.options.urlFormat": "Please use correctly formatted URL",
@@ -263,6 +264,7 @@
     "iaso.polio.label.rejectBudget": "Reject budget?",
     "iaso.polio.label.rejectBudgetForCampaign": "Reject budget for campaign: {campaign}",
     "iaso.polio.label.rejected": "Rejected",
+    "iaso.polio.label.removeLastVaccine": "Remove last vaccine",
     "iaso.polio.label.reportingDelays": "Reporting delays",
     "iaso.polio.label.reportingDistricts": "Reporting districts",
     "iaso.polio.label.request": "Request",

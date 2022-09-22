@@ -273,6 +273,8 @@
     "iaso.polio.label.rejectBudget": "Rejeter le budget?",
     "iaso.polio.label.rejectBudgetForCampaign": "Rejeter le budget pour la campagne: {campaign}",
     "iaso.polio.label.rejected": "Rejeté",
+    "iaso.polio.label.removeLastShipment": "Effacer la dernière livraison",
+    "iaso.polio.label.removeLastVaccine": "Effacer le dernier vaccin",
     "iaso.polio.label.reportingDelays": "Délais de rapportage",
     "iaso.polio.label.reportingDistricts": "Districts rapportés",
     "iaso.polio.label.request": "Requête",

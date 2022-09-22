@@ -736,6 +736,7 @@
     "iaso.snackBar.fetchInstanceDictError": "An error occurred while fetching instances list",
     "iaso.snackBar.fetchInstanceError": "An error occurred while fetching instance detail",
     "iaso.snackBar.fetchInstanceLocationError": "An error occurred while fetching instances locations",
+    "iaso.snackBar.fetchInstanceLogUser": "An error occred while fetching instance log user",
     "iaso.snackBar.fetchLinkDetailError": "An error occurred while fetching link detail",
     "iaso.snackBar.fetchLinksError": "An error occurred while fetching links",
     "iaso.snackBar.fetchLogDetailError": "An error occurred while fetching log detail",

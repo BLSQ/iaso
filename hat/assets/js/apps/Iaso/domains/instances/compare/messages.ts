@@ -61,6 +61,14 @@ const MESSAGES = defineMessages({
         defaultMessage: 'Period',
         id: 'iaso.instance.period',
     },
+    fetchLogUserError: {
+        defaultMessage: 'User not found',
+        id: 'iaso.snackBar.fetchInstanceLogUser',
+    },
+    fetchLogDetailError: {
+        defaultMessage: 'An error occurred while fetching log detail',
+        id: 'iaso.snackBar.fetchingLogDetailError',
+    },
 });
 
 export default MESSAGES;

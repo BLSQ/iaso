@@ -53,8 +53,8 @@ jobs:
       - name: Build Docker image
         uses: docker/build-push-action@v2
         with:
-          push: true
-          tags: blsq/iaso:${{ github.sha }}
+          push: false
+          tags: iaso:${{ github.sha }}
           file: docker/bundle/Dockerfile
           cache-from: type=registry,ref=ghcr.io/blsq/iaso:buildcache
           cache-to: type=registry,ref=ghcr.io/blsq/iaso:buildcache,mode=max
@@ -62,7 +62,7 @@ jobs:
       - name: Run IASO
         uses: addnab/docker-run-action@v3
         with:
-          image: blsq/iaso:${{ github.sha }}
+          image: iaso:${{ github.sha }}
         env:
           TEST_PROD: true
           IASO_ENVIRONMENT: development

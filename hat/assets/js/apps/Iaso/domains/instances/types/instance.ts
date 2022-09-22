@@ -91,7 +91,8 @@ export type User = {
 };
 
 export type InstanceUserLogDetail = {
-    data: User;
+    userLogA: string;
+    userLogB: string;
     isLoading: boolean;
     isEror: boolean;
 };

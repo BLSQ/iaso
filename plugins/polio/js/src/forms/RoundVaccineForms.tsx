@@ -3,6 +3,7 @@ import { useFormikContext } from 'formik';
 // @ts-ignore
 import { IconButton } from 'bluesquare-components';
 import AddIcon from '@material-ui/icons/Add';
+import { Grid } from '@material-ui/core';
 import { RoundVaccineForm } from './RoundVaccineForm';
 import MESSAGES from '../constants/messages';
 import { polioVaccines } from '../constants/virus';
@@ -89,7 +90,7 @@ export const RoundVaccineForms: FunctionComponent<Props> = ({
     return (
         <>
             {vaccines.length > 0 &&
-                vaccines.map((vaccine, index) => {
+                vaccines.map((_vaccine, index) => {
                     return (
                         <RoundVaccineForm
                             // eslint-disable-next-line react/no-array-index-key
@@ -110,11 +111,20 @@ export const RoundVaccineForms: FunctionComponent<Props> = ({
                 />
             )}
             {vaccines.length < 3 && (
-                <IconButton
-                    overrideIcon={AddIcon}
-                    tooltipMessage={MESSAGES.addVaccine}
-                    onClick={handleAddVaccine}
-                />
+                <Grid
+                    container
+                    item
+                    xs={12}
+                    spacing={2}
+                    direction="column"
+                    justifyContent="flex-end"
+                >
+                    <IconButton
+                        overrideIcon={AddIcon}
+                        tooltipMessage={MESSAGES.addVaccine}
+                        onClick={handleAddVaccine}
+                    />
+                </Grid>
             )}
         </>
     );

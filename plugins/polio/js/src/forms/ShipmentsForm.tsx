@@ -27,7 +27,7 @@ export const ShipmentsForm: FunctionComponent<Props> = ({
     return (
         <>
             {shipments.length > 0 &&
-                shipments.map((shipment, index) => (
+                shipments.map((_shipment, index) => (
                     // eslint-disable-next-line react/no-array-index-key
                     <Grid item xs={12} key={`shipment${index}`}>
                         <Box mt={2}>
@@ -42,12 +42,20 @@ export const ShipmentsForm: FunctionComponent<Props> = ({
                     </Box>
                 </Grid>
             )}
-
-            <IconButton
-                overrideIcon={AddIcon}
-                tooltipMessage={MESSAGES.addShipment}
-                onClick={handleAddShipment}
-            />
+            <Grid
+                container
+                item
+                xs={12}
+                spacing={2}
+                direction="column"
+                justifyContent="flex-end"
+            >
+                <IconButton
+                    overrideIcon={AddIcon}
+                    tooltipMessage={MESSAGES.addShipment}
+                    onClick={handleAddShipment}
+                />
+            </Grid>
         </>
     );
 };

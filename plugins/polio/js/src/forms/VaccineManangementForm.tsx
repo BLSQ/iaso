@@ -1,5 +1,5 @@
 import React, { FunctionComponent, useState } from 'react';
-import { Divider, Grid, Tab, Tabs, Typography } from '@material-ui/core';
+import { Box, Divider, Grid, Tab, Tabs, Typography } from '@material-ui/core';
 import { Field, useFormikContext } from 'formik';
 // @ts-ignore
 import { useSafeIntl } from 'bluesquare-components';
@@ -36,26 +36,28 @@ export const VaccineManangementForm: FunctionComponent<Props> = () => {
             {rounds.length > 0 && (
                 <Grid container justifyContent="flex-start">
                     <Grid item>
-                        <Tabs
-                            value={currentRoundNumber}
-                            className={classes.subTabs}
-                            textColor="primary"
-                            onChange={handleRoundTabChange}
-                        >
-                            {rounds.map(round => (
-                                <Tab
-                                    key={round.number}
-                                    className={classes.subTab}
-                                    label={
-                                        <span>
-                                            {formatMessage(MESSAGES.round)}{' '}
-                                            {round.number}
-                                        </span>
-                                    }
-                                    value={round.number}
-                                />
-                            ))}
-                        </Tabs>
+                        <Box mb={2}>
+                            <Tabs
+                                value={currentRoundNumber}
+                                className={classes.subTabs}
+                                textColor="primary"
+                                onChange={handleRoundTabChange}
+                            >
+                                {rounds.map(round => (
+                                    <Tab
+                                        key={round.number}
+                                        className={classes.subTab}
+                                        label={
+                                            <span>
+                                                {formatMessage(MESSAGES.round)}{' '}
+                                                {round.number}
+                                            </span>
+                                        }
+                                        value={round.number}
+                                    />
+                                ))}
+                            </Tabs>
+                        </Box>
                     </Grid>
                 </Grid>
             )}
@@ -63,9 +65,11 @@ export const VaccineManangementForm: FunctionComponent<Props> = () => {
                 <Divider style={{ width: '100%' }} />
                 {/* First row: vaccine */}
                 <Grid item xs={12}>
-                    <Typography variant="body2">
-                        {formatMessage(MESSAGES.vaccine)}
-                    </Typography>
+                    <Box mt={1} mb={1}>
+                        <Typography variant="button">
+                            {formatMessage(MESSAGES.vaccines)}
+                        </Typography>
+                    </Box>
                 </Grid>
                 <Grid
                     container
@@ -96,9 +100,11 @@ export const VaccineManangementForm: FunctionComponent<Props> = () => {
                 {/* second row: shipments */}
                 <Divider style={{ width: '100%' }} />
                 <Grid item xs={12}>
-                    <Typography variant="body2">
-                        {formatMessage(MESSAGES.shipments)}
-                    </Typography>
+                    <Box mt={1} mb={1}>
+                        <Typography variant="button">
+                            {formatMessage(MESSAGES.shipments)}
+                        </Typography>
+                    </Box>
                 </Grid>
                 <Grid container item xs={12}>
                     <ShipmentsForm
@@ -109,9 +115,11 @@ export const VaccineManangementForm: FunctionComponent<Props> = () => {
                 {/* third row: Form A */}
                 <Divider style={{ width: '100%' }} />
                 <Grid item xs={12}>
-                    <Typography variant="body2">
-                        {formatMessage(MESSAGES.formA)}
-                    </Typography>
+                    <Box mt={1} mb={1}>
+                        <Typography variant="button">
+                            {formatMessage(MESSAGES.formA)}
+                        </Typography>
+                    </Box>
                 </Grid>
                 <Grid container direction="row" item xs={12} spacing={2}>
                     <Grid item xs={3}>
@@ -150,9 +158,11 @@ export const VaccineManangementForm: FunctionComponent<Props> = () => {
                 {/* fourth row: destruction */}
                 <Divider style={{ width: '100%' }} />
                 <Grid item xs={12}>
-                    <Typography variant="body2">
-                        {formatMessage(MESSAGES.destruction)}
-                    </Typography>
+                    <Box mt={1} mb={1}>
+                        <Typography variant="button">
+                            {formatMessage(MESSAGES.destruction)}
+                        </Typography>
+                    </Box>
                 </Grid>
                 <Grid container direction="row" spacing={2} item xs={12}>
                     {/* Not sure yet if this should not be a map */}

@@ -252,19 +252,14 @@ class ShipmentSerializer(serializers.ModelSerializer):
             "reception_pre_alert",
             "date_reception",
             "vaccine_name",
-            "id"
+            "id",
         ]
 
 
 class RoundVaccineSerializer(serializers.ModelSerializer):
     class Meta:
         model = RoundVaccine
-        fields = [
-            "wastage_ratio_forecast",
-            "doses_per_vial",
-            "name",
-            "id"
-        ]
+        fields = ["wastage_ratio_forecast", "doses_per_vial", "name", "id"]
 
 
 class RoundSerializer(serializers.ModelSerializer):

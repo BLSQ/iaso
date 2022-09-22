@@ -466,7 +466,6 @@ where group_id = polio_roundscope.group_id""",
         campaign = get_object_or_404(Campaign, id=campaign_id)
         campaign_scope = get_object_or_404(CampaignScope, campaign=campaign).group.org_units.all()
 
-
         try:
             path = campaign.form_template.path
         except ValueError:
@@ -488,60 +487,100 @@ where group_id = polio_roundscope.group_id""",
             survey_columns.append(q_sheet[f"{l}1"].value)
 
         ou_tree_list = []
-        ou_tree_dict = {"Country": {}}
 
         for ou in campaign_scope:
-            ou_tree_dict[ou.org_unit_type] = ou
-            print(ou)
+            ou_tree_dict = {ou.org_unit_type.name: ou}
             ou_parent = ou.parent
-            print(ou_parent)
+            ou_tree_dict[ou_parent.org_unit_type.name] = ou_parent
             while ou_parent is not None:
+                ou_tree_dict[ou_parent.org_unit_type.name] = ou_parent
                 ou_parent = ou_parent.parent
                 if ou_parent is not None:
-                    print(ou_parent)
-            ou_children = ou.calculate_paths()
-            print(ou_children)
-            # print(ou)
-            # if ou.org_unit_type == "COUNTRY":
-            #     country.append(ou)
-            # if ou.org_unit_type == "REGION":
-            #     region.append(ou)
-            # if ou.org_unit_type == "DISTRICT":
-            #     district.append(ou)
-            # if ou.org_unit_type == "HEALTH FACILITY":
-            #     health_facility.append(ou)
+                    ou_tree_dict[ou_parent.org_unit_type.name] = ou_parent
+            ou_tree_list.append(ou_tree_dict)
+            ou_children = ou.descendants()
+            for ou_child in ou_children:
+                ou_tree_dict[ou_child.org_unit_type.name] = ou_child
 
-            # for ou in campaign_scope:
-            #     ou_hierarchy = OrgUnit.objects.hierarchy(ou)
-            #     print(f"OU: {ou}")
-            #     print(ou_hierarchy)
-            #     ou_children = OrgUnit.objects.descendants(ou)
-            #     q_sheet[cell[0] + str(survey_last_empty_row)] = "select_one"
-            # print(ou_children)
-            # if(ou_children):
-            #     last_empty_row = len(list(q_sheet.rows))
-            #     print(f"Found {ou_children}")
-            #     print(last_empty_row)
+        added_countries = []
+        added_regions = []
+        added_district = []
+        region_added = False
+        district_added = False
 
-            sheet[cell[choices_column - 1] + str(choices_row)] = "ou"
-            sheet[cell[choices_column] + str(choices_row)] = ou.id
-            sheet[cell[choices_column + 1] + str(choices_row)] = str(ou)
-            choices_row += 1
-            survey_last_empty_row += 1
+
+        # last_empty_row = len(list(q_sheet.rows))
+
+        sheet[cell[choices_column - 1] + "1"] = "list name"
+        sheet[cell[choices_column] + "1"] = "name"
+        sheet[cell[choices_column + 1] + "1"] = "label"
+        sheet[cell[choices_column + 2] + "1"] = "id"
+        sheet[cell[choices_column + 3] + "1"] = "country"
+        sheet[cell[choices_column + 4] + "1"] = "region"
+        sheet[cell[choices_column + 5] + "1"] = "district"
+        sheet[cell[choices_column + 6] + "1"] = "health facility"
+
+        for ou_dic in ou_tree_list:
+            for k, v in ou_dic.items():
+                if k == "COUNTRY" and v not in added_countries:
+                    added_countries.append(v)
+                    q_sheet[cell[0] + str(5)] = "select_one ou_country"
+                    q_sheet[cell[1] + str(5)] = "ou_country"
+                    q_sheet[cell[2] + str(5)] = "Select Country"
+                    q_sheet[cell[3] + str(5)] = "yes"
+                    sheet[cell[choices_column - 1] + str(choices_row)] = "ou_country"
+                    sheet[cell[choices_column] + str(choices_row)] = v.id
+                    sheet[cell[choices_column + 1] + str(choices_row)] = str(v)
+                    choices_row += 1
+                    survey_last_empty_row += 1
+                if k == "REGION" and v not in added_regions:
+                    survey_last_empty_row += 2
+                    added_regions.append(v)
+                    if not region_added:
+                        q_sheet[cell[0] + str(6)] = "select_one ou_region"
+                        q_sheet[cell[1] + str(6)] = "ou_region"
+                        q_sheet[cell[2] + str(6)] = "Select a Region"
+                        q_sheet[cell[9] + str(6)] = "country=${ou_country}"
+                        region_added = True
+                    sheet[cell[choices_column - 1] + str(choices_row)] = "ou_region"
+                    sheet[cell[choices_column] + str(choices_row)] = v.id
+                    sheet[cell[choices_column + 1] + str(choices_row)] = str(v)
+                    sheet[cell[choices_column + 3] + str(choices_row)] = ou_dic.get("COUNTRY", None) if ou_dic.get("COUNTRY", None) is None else ou_dic.get("COUNTRY", None).pk
+                    choices_row += 1
+                    survey_last_empty_row += 1
+
+                if k == "DISTRICT" and v not in added_district:
+                    survey_last_empty_row += 4
+                    added_district.append(v)
+                    if not district_added:
+                        q_sheet[cell[0] + str(7)] = "select_one ou_district"
+                        q_sheet[cell[1] + str(7)] = "ou_district"
+                        q_sheet[cell[2] + str(7)] = "Select a District"
+                        q_sheet[cell[9] + str(7)] = "region=${ou_region}"
+                        district_added = True
+                    sheet[cell[choices_column - 1] + str(choices_row)] = "ou_district"
+                    sheet[cell[choices_column] + str(choices_row)] = v.id
+                    sheet[cell[choices_column + 1] + str(choices_row)] = str(v)
+                    sheet[cell[choices_column + 3] + str(choices_row)] = ou_dic.get("COUNTRY", None) if ou_dic.get(
+                        "COUNTRY", None) is None else ou_dic.get("COUNTRY", None).pk
+                    sheet[cell[choices_column + 4] + str(choices_row)] = ou_dic.get("REGION", None) if ou_dic.get("REGION", None) is None else ou_dic.get("REGION", None).pk
+                    # sheet[cell[choices_column + 5] + str(choices_row)] = ou_dic.get("DISTRICT", None) if ou_dic.get("DISTRICT", None) is None else ou_dic.get("DISTRICT", None).name
+                    # sheet[cell[choices_column + 6] + str(choices_row)] = ou_dic.get("HEALTH FACILITY", None) if ou_dic.get("HEALTH FACILITY", None) is None else ou_dic.get("HEALTH FACILITY", None).name
+                    choices_row += 1
+                    survey_last_empty_row += 1
 
         filename = f"FORM_{campaign.obr_name}_{datetime.now().date()}.xlsx"
+        print(ou_tree_list)
 
-        return HttpResponse("OK")
+        with NamedTemporaryFile() as tmp:
+            wb.save(tmp.name)
+            tmp.seek(0)
+            stream = tmp.read()
 
-        # with NamedTemporaryFile() as tmp:
-        #     wb.save(tmp.name)
-        #     tmp.seek(0)
-        #     stream = tmp.read()
-        #
-        #     response = HttpResponse(stream,
-        #                             content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
-        #     response["Content-Disposition"] = "attachment; filename=%s" % filename
-        #     return response
+            response = HttpResponse(stream,
+                                    content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
+            response["Content-Disposition"] = "attachment; filename=%s" % filename
+            return response
 
 
 class CountryUsersGroupViewSet(ModelViewSet):

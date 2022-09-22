@@ -39,33 +39,6 @@ export const fetchOrgUnitsTypes = dispatch =>
             console.error('Error while fetching org unit types list:', error);
         });
 
-export const fetchDevices = dispatch =>
-    getRequest('/api/devices/')
-        .then(res => res.devices)
-        .catch(error => {
-            dispatch(
-                enqueueSnackbar(
-                    errorSnackBar('fetchDevicesError', null, error),
-                ),
-            );
-            console.error('Error while fetching devices list:', error);
-        });
-
-export const fetchDevicesOwnerships = dispatch =>
-    getRequest('/api/devicesownership/')
-        .then(res => res.devicesownership)
-        .catch(error => {
-            dispatch(
-                enqueueSnackbar(
-                    errorSnackBar('fetchDevicesOwnershipError', null, error),
-                ),
-            );
-            console.error(
-                'Error while fetching devices ownership list:',
-                error,
-            );
-        });
-
 export const fetchOrgUnitsList = (dispatch, url) =>
     getRequest(url)
         .then(data => data)
@@ -153,19 +126,6 @@ export const fetchForms = (dispatch, url = '/api/forms', signal) =>
                 enqueueSnackbar(errorSnackBar('fetchFormsError', null, error)),
             );
             console.error('Error while fetching forms list:', error);
-        });
-
-export const fetchFormOrgUnitTypes = (dispatch, formId) =>
-    getRequest(`/api/forms/${formId}/?fields=org_unit_type_ids`)
-        .then(form => form)
-        .catch(error => {
-            dispatch(
-                enqueueSnackbar(errorSnackBar('fetchFormError', null, error)),
-            );
-            console.error(
-                "Error while fetching form's org unit type ids:",
-                error,
-            );
         });
 
 export const fetchOrgUnitDetail = (dispatch, orgUnitId) =>

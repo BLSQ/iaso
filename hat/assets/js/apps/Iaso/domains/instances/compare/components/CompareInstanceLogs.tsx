@@ -37,6 +37,11 @@ type RouterCustom = {
 type State = {
     routerCustom: RouterCustom;
 };
+type DefaultParams = {
+    instanceIds: string;
+    logA?: string;
+    logB?: string;
+};
 type Params = {
     instanceIds: string;
     logA?: string;
@@ -107,35 +112,19 @@ export const CompareInstanceLogs: FunctionComponent<Props> = ({ params }) => {
 
     useEffect(() => {
         if (instanceLogsDropdown) {
-            if (params.logA === undefined && params.logB === undefined) {
-                const defaultParams = {
-                    ...params,
-                    logA: instanceLogsDropdown[0]?.value,
-                    logB: instanceLogsDropdown[1]?.value,
-                };
-                dispatch(
-                    redirectToReplace(
-                        baseUrls.compareInstanceLogs,
-                        defaultParams,
-                    ),
-                );
-            } else if (params.logA === undefined) {
-                const defaultParams = {
-                    ...params,
-                    logA: instanceLogsDropdown[0]?.value,
-                };
-                dispatch(
-                    redirectToReplace(
-                        baseUrls.compareInstanceLogs,
-                        defaultParams,
-                    ),
-                );
-            } else if (params.logB === undefined) {
-                const defaultParams = {
-                    ...params,
-                    logB: instanceLogsDropdown[1]?.value,
-                };
-
+            const defaultParams: DefaultParams = {
+                ...params,
+            };
+            if (!params.logA && instanceLogsDropdown[0]?.value) {
+                defaultParams.logA = instanceLogsDropdown[0]?.value.toString();
+            }
+            if (!params.logB && instanceLogsDropdown[1]?.value) {
+                defaultParams.logB = instanceLogsDropdown[1]?.value.toString();
+            }
+            if (
+                (!params.logA && instanceLogsDropdown[0]?.value) ||
+                (!params.logB && instanceLogsDropdown[1]?.value)
+            ) {
                 dispatch(
                     redirectToReplace(
                         baseUrls.compareInstanceLogs,
@@ -145,7 +134,7 @@ export const CompareInstanceLogs: FunctionComponent<Props> = ({ params }) => {
             }
         }
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [instanceLogsDropdown, params.logA, params.logB]);
+    }, [instanceLogsDropdown]);
 
     useEffect(() => {
         setLogAInitialValue(

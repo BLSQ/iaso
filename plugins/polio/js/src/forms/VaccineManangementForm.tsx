@@ -8,7 +8,7 @@ import MESSAGES from '../constants/messages';
 import { DateInput, TextInput } from '../components/Inputs';
 import { ShipmentsForm } from './ShipmentsForm';
 import { ReportingDelays } from './ReportingDelays';
-import { RoundVaccineForms } from './RoundVaccineForms';
+import { RoundVaccinesForm } from './RoundVaccinesForm';
 
 type Props = any;
 
@@ -17,7 +17,6 @@ export const VaccineManangementForm: FunctionComponent<Props> = () => {
     const { formatMessage } = useSafeIntl();
     const {
         values: { rounds = [] },
-        // setFieldValue,
     } = useFormikContext<any>(); // TODO add campaign typing
 
     const [currentRoundNumber, setCurrentRoundNumber] = useState(
@@ -80,7 +79,7 @@ export const VaccineManangementForm: FunctionComponent<Props> = () => {
                     justifyContent="center"
                 >
                     <Grid container item xs={6}>
-                        <RoundVaccineForms
+                        <RoundVaccinesForm
                             roundIndex={roundIndex}
                             round={rounds[roundIndex]}
                         />

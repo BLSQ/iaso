@@ -1,8 +1,14 @@
-import React, { FunctionComponent, useCallback, useEffect } from 'react';
+import React, {
+    FunctionComponent,
+    useCallback,
+    useEffect,
+    useState,
+} from 'react';
 import { useFormikContext } from 'formik';
 // @ts-ignore
 import { IconButton } from 'bluesquare-components';
 import AddIcon from '@material-ui/icons/Add';
+import RemoveIcon from '@material-ui/icons/Clear';
 import { Grid } from '@material-ui/core';
 import { RoundVaccineForm } from './RoundVaccineForm';
 import MESSAGES from '../constants/messages';
@@ -23,7 +29,7 @@ const DEFAULT_WASTAGE_RATIOS = {
     bOPV2: 1.18,
 };
 
-export const RoundVaccineForms: FunctionComponent<Props> = ({
+export const RoundVaccinesForm: FunctionComponent<Props> = ({
     round,
     roundIndex,
 }) => {
@@ -32,15 +38,43 @@ export const RoundVaccineForms: FunctionComponent<Props> = ({
         // @ts-ignore
         values: { rounds },
     } = useFormikContext();
+    const [enableRemoveButton, setEnableRemoveButton] =
+        useState<boolean>(false);
     const HcDelay = rounds[roundIndex].reporting_delays_hc_to_district;
     const DistrictDelay =
         rounds[roundIndex].reporting_delays_district_to_region;
     const RegionDelay = rounds[roundIndex].reporting_delays_region_to_national;
     const { vaccines = [] } = round ?? {};
+
+    const lastIndex = vaccines.length >= 1 && vaccines.length - 1;
+
     const handleAddVaccine = useCallback(() => {
-        const newShipments = [...vaccines, {}];
-        setFieldValue(`rounds[${roundIndex}].vaccines`, newShipments);
+        const newVaccines = [...vaccines, {}];
+        setFieldValue(`rounds[${roundIndex}].vaccines`, newVaccines);
     }, [roundIndex, setFieldValue, vaccines]);
+
+    const handleRemoveLastVaccine = useCallback(() => {
+        const newVaccines = [...vaccines];
+        newVaccines.pop();
+        setFieldValue(`rounds[${roundIndex}].vaccines`, newVaccines);
+    }, [roundIndex, setFieldValue, vaccines]);
+
+    // determine whether to show delete button or not
+    useEffect(() => {
+        if (Number.isInteger(lastIndex)) {
+            const lastVaccine = vaccines[lastIndex as number];
+            if (
+                lastIndex > 0 &&
+                !lastVaccine.name &&
+                !lastVaccine.wastage_ratio_forecast &&
+                !lastVaccine.doses_per_vial
+            ) {
+                setEnableRemoveButton(true);
+            } else {
+                setEnableRemoveButton(false);
+            }
+        }
+    }, [lastIndex, vaccines]);
 
     // Fill in ReportingDelays table with default values when selecting the first vaccine
     useEffect(() => {
@@ -87,6 +121,30 @@ export const RoundVaccineForms: FunctionComponent<Props> = ({
         });
     }, [roundIndex, rounds, setFieldValue, vaccines, vaccines.length]);
 
+    // Add second vaccine row when adding a row over an empty first row
+    // Making this a separate effect to avoid disrupting the autofill of ReportDelays
+    useEffect(() => {
+        const currentVaccine = vaccines[0];
+        if (
+            vaccines.length === 1 &&
+            !currentVaccine.name &&
+            !currentVaccine.wastage_ratio_forecast &&
+            !currentVaccine.doses_per_vial &&
+            !HcDelay && // checking if ReportDelay has been autofilled to avoid recreating deleted vaccine row
+            !DistrictDelay &&
+            !RegionDelay
+        ) {
+            setFieldValue(`rounds[${roundIndex}].vaccines`, [...vaccines, {}]);
+        }
+    }, [
+        DistrictDelay,
+        HcDelay,
+        RegionDelay,
+        roundIndex,
+        setFieldValue,
+        vaccines,
+    ]);
+
     return (
         <>
             {vaccines.length > 0 &&
@@ -110,22 +168,31 @@ export const RoundVaccineForms: FunctionComponent<Props> = ({
                     vaccineOptions={polioVaccines}
                 />
             )}
-            {vaccines.length < 3 && (
-                <Grid
-                    container
-                    item
-                    xs={12}
-                    spacing={2}
-                    direction="column"
-                    justifyContent="flex-end"
-                >
+
+            <Grid
+                container
+                item
+                xs={12}
+                spacing={2}
+                direction="column"
+                justifyContent="flex-end"
+            >
+                <Grid container direction="row">
                     <IconButton
                         overrideIcon={AddIcon}
                         tooltipMessage={MESSAGES.addVaccine}
                         onClick={handleAddVaccine}
+                        disabled={!(vaccines.length < 3)}
+                    />
+
+                    <IconButton
+                        overrideIcon={RemoveIcon}
+                        tooltipMessage={MESSAGES.removeLastVaccine}
+                        onClick={handleRemoveLastVaccine}
+                        disabled={!enableRemoveButton}
                     />
                 </Grid>
-            )}
+            </Grid>
         </>
     );
 };

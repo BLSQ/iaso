@@ -4,7 +4,6 @@ import React, { FunctionComponent } from 'react';
 import { useSafeIntl } from 'bluesquare-components';
 import { Grid } from '@material-ui/core';
 import { Field } from 'formik';
-// import RemoveIcon from '@material-ui/icons/Clear';
 import MESSAGES from '../constants/messages';
 import { useStyles } from '../styles/theme';
 import { DateInput, Select, TextInput } from '../components/Inputs';
@@ -87,9 +86,6 @@ export const ShipmentForm: FunctionComponent<Props> = ({ index, accessor }) => {
                         className={classes.input}
                     />
                 </Grid>
-                {/* <Grid item xs={1}>
-                    <RemoveIcon onClick={handleDeleteShipment} />
-                </Grid> */}
             </Grid>
         </>
     );

@@ -1,7 +1,13 @@
 import { useFormikContext } from 'formik';
-import React, { FunctionComponent } from 'react';
+import React, {
+    FunctionComponent,
+    useCallback,
+    useEffect,
+    useState,
+} from 'react';
 // @ts-ignore
 import { IconButton } from 'bluesquare-components';
+import RemoveIcon from '@material-ui/icons/Clear';
 import AddIcon from '@material-ui/icons/Add';
 import { Box, Grid } from '@material-ui/core';
 import { ShipmentForm } from './ShipmentForm';
@@ -18,11 +24,41 @@ export const ShipmentsForm: FunctionComponent<Props> = ({
 }) => {
     const { setFieldValue } = useFormikContext();
     const { shipments = [] } = round ?? {};
+    const [enableRemoveButton, setEnableRemoveButton] =
+        useState<boolean>(false);
+
+    const lastIndex = shipments.length >= 1 && shipments.length - 1;
 
     const handleAddShipment = () => {
         const newShipments = [...shipments, {}];
         setFieldValue(`${accessor}.shipments`, newShipments);
     };
+
+    const handleRemoveLastShipment = useCallback(() => {
+        const newShipments = [...shipments];
+        newShipments.pop();
+        setFieldValue(`${accessor}.shipments`, newShipments);
+    }, [accessor, setFieldValue, shipments]);
+
+    // determine whether to show delete button or not
+    useEffect(() => {
+        if (Number.isInteger(lastIndex)) {
+            const lastShipment = shipments[lastIndex as number];
+            if (
+                lastIndex > 0 &&
+                !lastShipment.vaccine_name &&
+                !lastShipment.po_numbers &&
+                !lastShipment.doses_received &&
+                !lastShipment.reception_pre_alert &&
+                !lastShipment.estimated_arrival_date &&
+                !lastShipment.date_reception
+            ) {
+                setEnableRemoveButton(true);
+            } else {
+                setEnableRemoveButton(false);
+            }
+        }
+    }, [lastIndex, shipments]);
 
     return (
         <>
@@ -35,13 +71,7 @@ export const ShipmentsForm: FunctionComponent<Props> = ({
                         </Box>
                     </Grid>
                 ))}
-            {shipments.length === 0 && (
-                <Grid item xs={12} key={`shipment${0}`}>
-                    <Box mt={2}>
-                        <ShipmentForm index={0} accessor={accessor} />
-                    </Box>
-                </Grid>
-            )}
+
             <Grid
                 container
                 item
@@ -50,11 +80,20 @@ export const ShipmentsForm: FunctionComponent<Props> = ({
                 direction="column"
                 justifyContent="flex-end"
             >
-                <IconButton
-                    overrideIcon={AddIcon}
-                    tooltipMessage={MESSAGES.addShipment}
-                    onClick={handleAddShipment}
-                />
+                <Grid container direction="row">
+                    <IconButton
+                        overrideIcon={AddIcon}
+                        tooltipMessage={MESSAGES.addShipment}
+                        onClick={handleAddShipment}
+                    />
+
+                    <IconButton
+                        overrideIcon={RemoveIcon}
+                        tooltipMessage={MESSAGES.removeLastShipment}
+                        onClick={handleRemoveLastShipment}
+                        disabled={!enableRemoveButton}
+                    />
+                </Grid>
             </Grid>
         </>
     );

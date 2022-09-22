@@ -19,7 +19,6 @@ const useStyles = makeStyles(theme => ({
     rightCell: {
         // @ts-ignore
         borderLeft: `1px solid ${theme.palette.ligthGray.border}`,
-        // fontWeight: 'bold',
     },
     title: {
         fontWeight: 'bold',

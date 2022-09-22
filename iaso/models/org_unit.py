@@ -37,6 +37,7 @@ def get_or_create_org_unit_type(name: str, depth: int, account: Account, preferr
         # Let's first try to find a single entry for the preferred project
         return OrgUnitType.objects.get(**out_defining_fields, projects=preferred_project)
     except OrgUnitType.DoesNotExist:
+        # Nothing for the preferred project, let's try to find one in the account
         all_projects_from_account = Project.objects.filter(account=preferred_project.account)
         try:
             # Maybe we have a single entry for the account?
@@ -47,6 +48,9 @@ def get_or_create_org_unit_type(name: str, depth: int, account: Account, preferr
         except OrgUnitType.DoesNotExist:
             # We have no similar OUT in the account, so let's create a new one
             return OrgUnitType.objects.create(**out_defining_fields, short_name=name[:4])
+    except OrgUnitType.MultipleObjectsReturned:
+        # We have multiple similar OUT for the preferred project, so let's pick the first
+        return OrgUnitType.objects.filter(**out_defining_fields, projects=preferred_project).first()
 
 
 class OrgUnitTypeQuerySet(models.QuerySet):

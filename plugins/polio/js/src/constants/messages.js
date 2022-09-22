@@ -1523,6 +1523,15 @@ const MESSAGES = defineMessages({
         id: 'iaso.polio.label.removeLastShipment',
         defaultMessage: 'Remove last shipment',
     },
+    destructionDateAndVialsDestroyed: {
+        id: 'iaso.polio.label.destructionDateAndVialsDestroyed',
+        defaultMessage:
+            'Destruction date and Vials destroyed need to be filled together',
+    },
+    formaFieldsTogether: {
+        id: 'iaso.polio.label.formaFieldsTogether',
+        defaultMessage: 'All Form A fields need to be filled together',
+    },
 });
 
 export default MESSAGES;

@@ -335,7 +335,11 @@ class EntityViewSet(ModelViewSet):
             for entity in entities:
                 last_created_instance = Instance.objects.filter(entity=entity).last()
                 entity_serialized = EntitySerializer(entity, many=False)
-                last_created_instance = last_created_instance.created_at if last_created_instance is not None else datetime.datetime(1, 1, 1, tzinfo=datetime.timezone(offset=datetime.timedelta()))
+                last_created_instance = (
+                    last_created_instance.created_at
+                    if last_created_instance is not None
+                    else datetime.datetime(1, 1, 1, tzinfo=datetime.timezone(offset=datetime.timedelta()))
+                )
                 attributes = entity_serialized.data.get("attributes")
                 file_content = attributes.get("file_content")
                 result = {

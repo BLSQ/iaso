@@ -234,6 +234,7 @@ class BulkCreateCsvTestCase(APITestCase):
             "again. Use Orgunit ID instead of name.",
         )
 
+    # FIXME This test is flaky
     def test_users_profiles_have_right_ou(self):
         self.client.force_authenticate(self.yoda)
         self.sw_source.projects.set([self.project])

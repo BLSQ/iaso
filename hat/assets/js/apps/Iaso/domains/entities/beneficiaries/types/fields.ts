@@ -7,7 +7,7 @@ export type Field = {
     type?: FieldType;
 };
 
-export type Column = {
+export type ExtraColumn = {
     name: string;
     type: FieldType;
     label: string;

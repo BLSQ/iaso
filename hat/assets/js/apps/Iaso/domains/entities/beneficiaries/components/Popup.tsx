@@ -26,7 +26,7 @@ import { LinkToOrgUnit } from '../../../orgUnits/components/LinkToOrgUnit';
 
 import { Location } from './ListMap';
 import { baseUrls } from '../../../../constants/urls';
-import { Column as ExtraColumn } from '../types/fields';
+import { ExtraColumn } from '../types/fields';
 import { useGetFieldValue } from '../hooks/useGetFieldValue';
 
 import MESSAGES from '../../messages';

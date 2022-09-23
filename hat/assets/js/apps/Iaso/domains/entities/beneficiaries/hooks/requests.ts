@@ -21,11 +21,11 @@ import { Instance } from '../../../instances/types/instance';
 import { DropdownOptions } from '../../../../types/utils';
 import getDisplayName, { Profile } from '../../../../utils/usersUtils';
 import { DropdownTeamsOptions, Team } from '../../../teams/types/team';
-import { Column } from '../types/fields';
+import { ExtraColumn } from '../types/fields';
 
 export interface PaginatedBeneficiaries extends Pagination {
     result: Array<Beneficiary>;
-    columns: Array<Column>;
+    columns: Array<ExtraColumn>;
 }
 
 type Params = {

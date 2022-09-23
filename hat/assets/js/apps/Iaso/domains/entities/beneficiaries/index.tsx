@@ -9,23 +9,17 @@ import {
     LoadingSpinner,
     // @ts-ignore
     useSafeIntl,
-    // @ts-ignore
-    // AddButton as AddButtonComponent,
 } from 'bluesquare-components';
 
 import { TableWithDeepLink } from '../../../components/tables/TableWithDeepLink';
 import TopBar from '../../../components/nav/TopBarComponent';
 import { Filters } from './components/Filters';
 import DownloadButtonsComponent from '../../../components/DownloadButtonsComponent';
-// import { Dialog } from './components/Dialog';
 import {
     useGetBeneficiariesPaginated,
     useGetBeneficiariesApiParams,
     useGetBeneficiaryTypesDropdown,
-    // useDeleteBeneficiary,
-    // useSaveBeneficiary,
 } from './hooks/requests';
-// import { useGetPossibleFields } from '../entityTypes/hooks/useGetPossibleFields';
 
 import { useColumns, baseUrl, defaultSorted } from './config';
 import MESSAGES from '../messages';
@@ -73,11 +67,7 @@ export const Beneficiaries: FunctionComponent<Props> = ({ params }) => {
     const { data: types } = useGetBeneficiaryTypesDropdown();
     const { data, isFetching } = useGetBeneficiariesPaginated(params);
     const [tab, setTab] = useState(params.tab ?? 'list');
-    // const { mutate: deleteEntity, isLoading: deleting } =
-    //     useDeleteBeneficiary();
-    // const { mutate: saveEntity, isLoading: saving } = useSaveBeneficiary();
 
-    // const isLoading = fetchingEntities || deleting || saving;
     const isLoading = isFetching;
     const handleChangeTab = (newTab: string) => {
         setTab(newTab);
@@ -130,23 +120,6 @@ export const Beneficiaries: FunctionComponent<Props> = ({ params }) => {
             </TopBar>
             <Box p={2} className={classes.container} pb={2}>
                 <Filters params={params} types={types || []} />
-                <Grid
-                    container
-                    spacing={0}
-                    justifyContent="flex-end"
-                    alignItems="center"
-                >
-                    {/* <Dialog
-                        titleMessage={MESSAGES.create}
-                        renderTrigger={({ openDialog }) => (
-                            <AddButtonComponent
-                                dataTestId="add-beneficiary-button"
-                                onClick={openDialog}
-                            />
-                        )}
-                        saveEntity={saveEntity}
-                    /> */}
-                </Grid>
 
                 <Box position="relative" width="100%" mt={2}>
                     <Box

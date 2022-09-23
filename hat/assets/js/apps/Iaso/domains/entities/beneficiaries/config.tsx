@@ -17,15 +17,13 @@ import {
     DateTimeCellRfc,
 } from '../../../components/Cells/DateTimeCell';
 
-// import DeleteDialog from '../../../components/dialogs/DeleteDialogComponent';
-
 import { IntlFormatMessage } from '../../../types/intl';
 import MESSAGES from '../messages';
 
 import { baseUrls } from '../../../constants/urls';
 
 import { Column } from '../../../types/table';
-import { Column as ExtraColumn } from './types/fields';
+import { ExtraColumn } from './types/fields';
 import getDisplayName from '../../../utils/usersUtils';
 import { useGetFieldValue } from './hooks/useGetFieldValue';
 
@@ -124,20 +122,13 @@ export const useColumns = (
             sortable: false,
             Cell: (settings): ReactElement => (
                 // TODO: limit to user permissions
-                <section>
+                <>
                     <IconButtonComponent
                         url={`/${baseUrls.entityDetails}/entityId/${settings.row.original.id}`}
                         icon="remove-red-eye"
                         tooltipMessage={MESSAGES.see}
                     />
-                    {/* <DeleteDialog
-                            keyName="entity"
-                            disabled={settings.row.original.instances_count > 0}
-                            titleMessage={MESSAGES.deleteTitle}
-                            message={MESSAGES.deleteText}
-                            onConfirm={() => deleteEntity(settings.row.original)}
-                        /> */}
-                </section>
+                </>
             ),
         });
         return columns;

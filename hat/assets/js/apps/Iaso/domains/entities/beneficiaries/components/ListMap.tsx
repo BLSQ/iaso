@@ -18,7 +18,7 @@ import { PopupComponent as Popup } from './Popup';
 import MarkersListComponent from '../../../../components/maps/markers/MarkersListComponent';
 
 import tiles from '../../../../constants/mapTiles';
-import { Column as ExtraColumn } from '../types/fields';
+import { ExtraColumn } from '../types/fields';
 
 import { Beneficiary } from '../types/beneficiary';
 
@@ -129,7 +129,6 @@ export const ListMap: FunctionComponent<Props> = ({
                             />
                             <Pane name="markers">
                                 <MarkerClusterGroup
-                                    spiderfyDistanceMultiplier={5}
                                     iconCreateFunction={clusterCustomMarker}
                                 >
                                     <MarkersListComponent

@@ -147,7 +147,7 @@ export const useOrgUnitDetailData = (
     };
 };
 
-export const useSaveOrgUnit = (onSuccess, invalidateQueryKey = undefined) =>
+export const useSaveOrgUnit = (onSuccess, invalidateQueryKey) =>
     useSnackMutation(
         body =>
             body.id

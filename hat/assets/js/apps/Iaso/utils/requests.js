@@ -6,7 +6,7 @@ import {
     putRequest,
     restoreRequest,
 } from 'Iaso/libs/Api';
-import { useSnackQuery } from 'Iaso/libs/apiHooks';
+import { useSnackQuery } from 'Iaso/libs/apiHooks.ts';
 import { enqueueSnackbar } from '../redux/snackBarsReducer';
 import { errorSnackBar, succesfullSnackBar } from '../constants/snackBars';
 import { dispatch as storeDispatch } from '../redux/store';
@@ -37,33 +37,6 @@ export const fetchOrgUnitsTypes = dispatch =>
                 ),
             );
             console.error('Error while fetching org unit types list:', error);
-        });
-
-export const fetchDevices = dispatch =>
-    getRequest('/api/devices/')
-        .then(res => res.devices)
-        .catch(error => {
-            dispatch(
-                enqueueSnackbar(
-                    errorSnackBar('fetchDevicesError', null, error),
-                ),
-            );
-            console.error('Error while fetching devices list:', error);
-        });
-
-export const fetchDevicesOwnerships = dispatch =>
-    getRequest('/api/devicesownership/')
-        .then(res => res.devicesownership)
-        .catch(error => {
-            dispatch(
-                enqueueSnackbar(
-                    errorSnackBar('fetchDevicesOwnershipError', null, error),
-                ),
-            );
-            console.error(
-                'Error while fetching devices ownership list:',
-                error,
-            );
         });
 
 export const fetchOrgUnitsList = (dispatch, url) =>
@@ -153,19 +126,6 @@ export const fetchForms = (dispatch, url = '/api/forms', signal) =>
                 enqueueSnackbar(errorSnackBar('fetchFormsError', null, error)),
             );
             console.error('Error while fetching forms list:', error);
-        });
-
-export const fetchFormOrgUnitTypes = (dispatch, formId) =>
-    getRequest(`/api/forms/${formId}/?fields=org_unit_type_ids`)
-        .then(form => form)
-        .catch(error => {
-            dispatch(
-                enqueueSnackbar(errorSnackBar('fetchFormError', null, error)),
-            );
-            console.error(
-                "Error while fetching form's org unit type ids:",
-                error,
-            );
         });
 
 export const fetchOrgUnitDetail = (dispatch, orgUnitId) =>
@@ -406,3 +366,29 @@ const dispatchSaveOrgUnit = dispatch => orgUnit =>
         });
 
 export const saveOrgUnitWithDispatch = dispatchSaveOrgUnit(storeDispatch);
+
+const dispatchSaveInstance = dispatch => instance =>
+    patchRequest(`/api/instances/${instance.id}/`, instance)
+        .then(savedInstance => {
+            dispatch(enqueueSnackbar(succesfullSnackBar()));
+            return savedInstance;
+        })
+        .catch(error => {
+            dispatch(enqueueSnackbar(errorSnackBar(null, null, error)));
+            console.error('Error while saving instance:', error);
+        });
+
+export const saveInstanceWithDispatch = dispatchSaveInstance(storeDispatch);
+
+const lockInstance = dispatch => instance =>
+    postRequest(`/api/instances/${instance.id}/add_lock/`)
+        .then(savedInstance => {
+            dispatch(enqueueSnackbar(succesfullSnackBar()));
+            return savedInstance;
+        })
+        .catch(error => {
+            dispatch(enqueueSnackbar(errorSnackBar(null, null, error)));
+            console.error('Error while saving instance:', error);
+        });
+
+export const lockInstanceWithDispatch = lockInstance(storeDispatch);

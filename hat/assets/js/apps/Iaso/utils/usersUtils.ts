@@ -11,11 +11,12 @@ export type Profile = {
     user_id: number;
 };
 
-type User = {
+export type User = {
     id: number;
     first_name: string;
     last_name: string;
     user_name: string;
+    username: string;
     email: string;
     account: {
         name: string;
@@ -56,10 +57,12 @@ type User = {
 };
 
 export const getDisplayName = (user: User | Profile): string => {
+    // Some endpoint have user_name and some username (without the _, fun)
+    const userName = user.user_name ?? user?.username;
     if (!user.first_name && !user.last_name) {
-        return user.user_name;
+        return userName;
     }
-    return `${user.user_name} (${user.first_name ? `${user.first_name}` : ''}${
+    return `${userName} (${user.first_name ? `${user.first_name}` : ''}${
         user.first_name && user.last_name ? ' ' : ''
     }${user.last_name ? `${user.last_name}` : ''}) `;
 };

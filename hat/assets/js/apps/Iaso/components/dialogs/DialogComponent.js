@@ -108,10 +108,11 @@ DialogComponent.defaultProps = {
     titleMessage: null,
     id: undefined,
     dataTestId: '',
+    children: null,
 };
 DialogComponent.propTypes = {
     classes: PropTypes.object.isRequired,
-    children: PropTypes.node.isRequired,
+    children: PropTypes.node,
     titleMessage: PropTypes.oneOfType([
         PropTypes.shape({
             id: PropTypes.string.isRequired,

@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from 'react';
-import { useSelector } from 'react-redux';
 import { Grid, makeStyles, Box, Typography } from '@material-ui/core';
 import { useTheme } from '@material-ui/core/styles';
 import PropTypes from 'prop-types';
@@ -28,7 +27,7 @@ import {
     SEMESTERS_RANGE,
 } from '../constants';
 import MESSAGES from '../messages';
-import { useCurrentUser } from '../../../utils/usersUtils';
+import { useCurrentUser } from '../../../utils/usersUtils.ts';
 
 const useStyles = makeStyles(theme => ({
     ...commonStyles(theme),
@@ -104,7 +103,7 @@ const PeriodPicker = ({
                 <DatePicker
                     label={title}
                     clearMessage={MESSAGES.clear}
-                    currentDate={activePeriodString}
+                    currentDate={currentPeriod?.day}
                     errors={hasError ? [''] : []}
                     hideError
                     onChange={date =>

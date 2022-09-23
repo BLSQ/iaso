@@ -72,7 +72,13 @@ export const BudgetFilters: FunctionComponent<Props> = ({
                     />
                 </Grid>
                 <Grid item xs={12} sm={12} md={6}>
-                    <Box mt={isSmLayout && !isXSLayout ? -3 : 0}>
+                    <Box
+                        mt={
+                            isSmLayout && !isXSLayout
+                                ? -5
+                                : (isXSLayout && -2) || 0
+                        }
+                    >
                         <DatesRange
                             onChangeDate={handleChange}
                             dateFrom={filters.startdateFrom}

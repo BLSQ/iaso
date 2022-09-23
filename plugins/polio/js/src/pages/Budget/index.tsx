@@ -176,7 +176,7 @@ export const Budget: FunctionComponent<Props> = ({ router }) => {
                     </>
                 )}
             </Box>
-            {isMobileLayout && (
+            {!isMobileLayout && (
                 <PolioCreateEditDialog
                     isOpen={campaignDialogOpen}
                     onClose={() => setCampaignDialogOpen(false)}

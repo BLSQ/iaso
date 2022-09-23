@@ -3,12 +3,14 @@ import ntpath
 from time import gmtime, strftime
 
 import pandas as pd
+from django.contrib.auth.models import User
 from django.contrib.gis.geos import Point
 from django.core.paginator import Paginator
 from django.db import connection
 from django.db import transaction
-from django.db.models import Q, Count
+from django.db.models import Q, Count, FilteredRelation
 from django.http import StreamingHttpResponse, HttpResponse
+from django.utils.timezone import now
 from rest_framework import serializers, status
 from rest_framework import viewsets, permissions
 from rest_framework.decorators import action
@@ -20,11 +22,13 @@ import iaso.periods as periods
 from hat.api.export_utils import Echo, generate_xlsx, iter_items, timestamp_to_utc_datetime
 from hat.audit.models import log_modification, INSTANCE_API
 from hat.common.utils import queryset_iterator
-from iaso.models import Instance, OrgUnit, Form, Project, InstanceFile, InstanceQuerySet, Entity
+from iaso.models import Instance, OrgUnit, Form, Project, InstanceFile, InstanceQuerySet, InstanceLock, Entity
 from iaso.utils import timestamp_to_datetime
 from . import common
 from .common import safe_api_import, TimestampField
 from .instance_filters import parse_instance_filters
+from .comment import UserSerializer
+from iaso.api.serializers import OrgUnitSmallSearchSerializer, OrgUnitSerializer
 
 
 class InstanceSerializer(serializers.ModelSerializer):
@@ -33,7 +37,7 @@ class InstanceSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Instance
-        fields = ["org_unit", "period", "deleted"]
+        fields = ["org_unit", "period", "deleted", "last_modified_by"]
 
     def validate_org_unit(self, value):
         """Check if user has access to this org_unit."""
@@ -69,14 +73,47 @@ class HasInstancePermission(permissions.BasePermission):
         )
 
     def has_object_permission(self, request: Request, view, obj: Instance):
-        # TODO: should not be necessary once the instances viewset uses a get_queryset that handle accounts
-        return request.user.iaso_profile.account in [p.account for p in obj.form.projects.all()]
+        # Depends on the Queryset having been filtered previously
+        self.has_permission(request, view)
+        if request.method in permissions.SAFE_METHODS:
+            return True
+        # if request.user.has_perm("menupermission.iaso_update_submission") and obj.can_user_modify(request.user):
+        if obj.can_user_modify(request.user):
+            return True
+        return False
 
 
 class InstanceFileSerializer(serializers.Serializer):
     instance_id = serializers.IntegerField()
     file = serializers.FileField(use_url=True)
     created_at = TimestampField(read_only=True)
+
+
+class OrgUnitNestedSerializer(OrgUnitSerializer):
+    class Meta:
+        model = OrgUnit
+
+        fields = [
+            "id",
+            "name",
+        ]
+
+
+# For readonly use
+class InstanceLockSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = InstanceLock
+        fields = ["id", "top_org_unit", "locked_by", "locked_at", "unlocked_by", "locked_by"]
+        read_only_fields = ["locked_at", "locked_by"]
+
+    locked_by = UserSerializer(read_only=True)
+    unlocked_by = UserSerializer(read_only=True)
+    top_org_unit = OrgUnitNestedSerializer(read_only=True)
+
+
+class UnlockSerializer(serializers.Serializer):
+    lock = serializers.PrimaryKeyRelatedField(queryset=InstanceLock.objects.all())
+    # we will  check that the user can access from the directly in remove_lock()
 
 
 class InstancesViewSet(viewsets.ViewSet):
@@ -116,6 +153,7 @@ class InstancesViewSet(viewsets.ViewSet):
         return Response(serializer.data)
 
     def list(self, request):
+        # TODO: method is way too long, refactor
         limit = request.GET.get("limit", None)
         as_small_dict = request.GET.get("asSmallDict", None)
         page_offset = request.GET.get("page", 1)
@@ -128,6 +166,7 @@ class InstancesViewSet(viewsets.ViewSet):
         queryset = queryset.exclude(file="").exclude(device__test_device=True)
 
         queryset = queryset.prefetch_related("org_unit")
+        queryset = queryset.prefetch_related("org_unit__version", "org_unit__version__data_source")
         queryset = queryset.prefetch_related("org_unit__org_unit_type")
         queryset = queryset.prefetch_related("form")
         queryset = queryset.prefetch_related("created_by")
@@ -139,12 +178,28 @@ class InstancesViewSet(viewsets.ViewSet):
             if limit:
                 limit = int(limit)
                 page_offset = int(page_offset)
+                # Make the Lock calculation via annotation so it's a lot faster
+                # count_lock_applying_to_user = Number of lock that prevent user to modify the instance
+                queryset = queryset.annotate(
+                    lock_applying_to_user=FilteredRelation(
+                        "instancelock",
+                        condition=Q(
+                            ~Q(instancelock__top_org_unit__in=OrgUnit.objects.filter_for_user(request.user)),
+                            Q(instancelock__unlocked_by__isnull=True),
+                        ),
+                    )
+                ).annotate(count_lock_applying_to_user=Count("lock_applying_to_user"))
+                # count_active_lock = Number of lock on instance that are not unlocked
+                queryset = queryset.annotate(
+                    count_active_lock=Count("instancelock", Q(instancelock__unlocked_by__isnull=True))
+                )
 
                 paginator = Paginator(queryset, limit)
                 res = {"count": paginator.count}
                 if page_offset > paginator.num_pages:
                     page_offset = paginator.num_pages
                 page = paginator.page(page_offset)
+
                 # check if the instance is linked to an org unit
                 def has_org_unit(instance):
                     return instance.org_unit if instance.org_unit else None
@@ -159,6 +214,9 @@ class InstancesViewSet(viewsets.ViewSet):
                 def as_dict_formatter(x):
                     dict = x.as_dict()
                     reference_form_id = get_reference_form_id(x.org_unit) if has_org_unit(x) else None
+
+                    dict["can_user_modify"] = x.count_lock_applying_to_user == 0
+                    dict["is_locked"] = x.count_active_lock > 0
                     if reference_form_id:
                         dict["reference_form_id"] = reference_form_id
                     return dict
@@ -301,6 +359,51 @@ class InstancesViewSet(viewsets.ViewSet):
             response["Content-Disposition"] = "attachment; filename=%s" % filename
             return response
 
+    # @action(detail=True,methods=["POST"], serializer_class=serializers.Serializer)
+    @action(detail=True, methods=["POST"])
+    def add_lock(self, request, pk):
+        # would use get_object usually, but we are not in a ModelViewSet
+        instance = get_object_or_404(self.get_queryset(), pk=pk)
+        self.check_object_permissions(request, instance)
+        new_lock = self.add_lock_instance(instance, request.user)
+        return Response({"status": "lock added", "lock_id": new_lock.id})
+
+    # @action(detail=False, methods=["POST"], serializer_class = UnlockSerializer)
+    @action(detail=False, methods=["POST"])
+    def unlock_lock(self, request):
+
+        serializer = UnlockSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        lock = serializer.validated_data["lock"]
+        self.check_object_permissions(request, lock.instance)
+        self._unlock_lock(request.user, lock)
+        return Response({"status": "lock removed", "lock_id": lock.id})
+
+    def add_lock_instance(self, instance: Instance, user):
+        #  OrgUnit in the user org unit that's the highest
+        user_orgunits = user.iaso_profile.org_units
+        # user orgunit that contain the instance's orgunit and is the highest level.
+        if not user_orgunits.exists():
+            # user is not restricted to any orgunit, use the root that contain the instance
+            top_level = OrgUnit.objects.filter(path__ancestors=instance.org_unit.path).order_by("path__depth").first()
+        else:
+            top_level = user_orgunits.filter(path__ancestors=instance.org_unit.path).order_by("path__depth").first()
+        assert top_level, "No intersection found"  # should not happen
+
+        lock = InstanceLock.objects.create(locked_by=user, top_org_unit=top_level, instance=instance)
+        return lock
+
+    def _unlock_lock(self, user: User, lock):
+        # Can user modify this instance
+
+        # is lock actually locked, should not happen in the ui normally
+        if lock.unlocked_by is not None:
+            raise serializers.ValidationError({"lock": "Lock already unlocked"})
+
+        lock.unlocked_by = user
+        lock.unlocked_at = now()
+        lock.save()
+
     @safe_api_import("instance")
     def create(self, _, request):
         import_data(request.data, request.user, request.query_params.get("app_id"))
@@ -308,10 +411,21 @@ class InstancesViewSet(viewsets.ViewSet):
         return Response({"res": "ok"})
 
     def retrieve(self, request, pk=None):
-        instance = get_object_or_404(self.get_queryset(), pk=pk)
+        self.get_queryset().prefetch_related("instance_locks", "instance_locks__top_org_unit", "instance_locks__user")
+        instance: Instance = get_object_or_404(self.get_queryset(), pk=pk)
         self.check_object_permissions(request, instance)
+        all_instance_locks = instance.instancelock_set.all()
 
-        return Response(instance.as_full_model())
+        response = instance.as_full_model()
+
+        # Logs(history) of all instance locks
+        response["instance_locks"] = InstanceLockSerializer(all_instance_locks, many=True).data
+        # To display the Lock or unlock icon when the use has access to the two actions
+        response["can_user_modify"] = instance.can_user_modify(request.user)
+        # To display either the unlock or lock icon depending on if the instance is already lock or not
+        response["is_locked"] = any(lock.unlocked_by is None for lock in all_instance_locks)
+
+        return Response(response)
 
     def delete(self, request, pk=None):
         instance = get_object_or_404(self.get_queryset(), pk=pk)
@@ -323,18 +437,26 @@ class InstancesViewSet(viewsets.ViewSet):
         original = get_object_or_404(self.get_queryset(), pk=pk)
         instance = get_object_or_404(self.get_queryset(), pk=pk)
         self.check_object_permissions(request, instance)
-        instance_serializer = InstanceSerializer(
-            instance, data=request.data, partial=True, context={"request": self.request}
-        )
+        data = {
+            **request.data,
+            "last_modified_by": request.user.id,
+        }
+        instance_serializer = InstanceSerializer(instance, data=data, partial=True, context={"request": self.request})
         instance_serializer.is_valid(raise_exception=True)
+        access_ou = OrgUnit.objects.filter_for_user_and_app_id(request.user, None)
+        data_org_unit = request.data.get("org_unit", None)
 
-        if original.org_unit.reference_instance and original.org_unit_id != request.data["org_unit"]:
-            previousOrgUnit = original.org_unit
-            previousOrgUnit.reference_instance = None
-            previousOrgUnit.save()
+        if instance.org_unit not in access_ou:
+            raise serializers.ValidationError({"error": "You don't have the permission to modify this instance."})
 
+        if original.org_unit.reference_instance and original.org_unit_id != data_org_unit:
+            previous_orgunit = original.org_unit
+            previous_orgunit.reference_instance = None
+            previous_orgunit.save()
         instance_serializer.save()
 
+        instance.last_modified_by = request.user
+        instance.save()
         log_modification(original, instance, INSTANCE_API, user=request.user)
         return Response(instance.as_full_model())
 
@@ -354,6 +476,8 @@ class InstancesViewSet(viewsets.ViewSet):
             instances_query = instances_query.filter(pk__in=selected_ids)
         else:
             instances_query = instances_query.exclude(pk__in=unselected_ids)
+        for instance in instances_query:
+            self.check_object_permissions(request, instance)
 
         try:
 
@@ -362,7 +486,7 @@ class InstancesViewSet(viewsets.ViewSet):
                     if is_deletion == True:
                         instance.soft_delete(request.user)
                     else:
-                        instance.restore()
+                        instance.restore(request.user)
 
         except Exception as e:
             print(f"Error : {e}")

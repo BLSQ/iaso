@@ -1,10 +1,10 @@
 import datetime
+import json
 import typing
 from uuid import uuid4
 
 import pytz
 from django.contrib.gis.geos import Point
-from django.test import tag
 from django.core.files import File
 from unittest import mock
 
@@ -13,6 +13,7 @@ from django.utils.timezone import now
 
 from hat.api.export_utils import timestamp_to_utc_datetime
 from iaso import models as m
+from iaso.models import OrgUnit, Instance, InstanceLock
 from iaso.test import APITestCase
 from hat.audit.models import Modification
 
@@ -33,11 +34,24 @@ class InstancesAPITestCase(APITestCase):
         cls.sw_version = sw_version
 
         cls.yoda = cls.create_user_with_profile(username="yoda", account=star_wars, permissions=["iaso_submissions"])
+        cls.guest = cls.create_user_with_profile(username="guest", account=star_wars, permissions=["iaso_submissions"])
+        cls.supervisor = cls.create_user_with_profile(
+            username="supervisor", account=star_wars, permissions=["iaso_submissions", "iaso_forms"]
+        )
 
         cls.jedi_council = m.OrgUnitType.objects.create(name="Jedi Council", short_name="Cnc")
 
         cls.jedi_council_corruscant = m.OrgUnit.objects.create(
-            name="Coruscant Jedi Council", source_ref="jedi_council_corruscant_ref"
+            name="Coruscant Jedi Council", source_ref="jedi_council_corruscant_ref", version=sw_version
+        )
+        cls.ou_top_1 = m.OrgUnit.objects.create(
+            name="ou_top_1", source_ref="jedi_council_corruscant_ref", version=sw_version
+        )
+        cls.ou_top_2 = m.OrgUnit.objects.create(
+            name="ou_top_2", source_ref="jedi_council_corruscant_ref", parent=cls.ou_top_1, version=sw_version
+        )
+        cls.ou_top_3 = m.OrgUnit.objects.create(
+            name="ou_top_3", source_ref="jedi_council_corruscant_ref", parent=cls.ou_top_2, version=sw_version
         )
         cls.jedi_council_endor = m.OrgUnit.objects.create(
             name="Endor Jedi Council", source_ref="jedi_council_endor_ref"
@@ -49,6 +63,8 @@ class InstancesAPITestCase(APITestCase):
         cls.project = m.Project.objects.create(
             name="Hydroponic gardens", app_id="stars.empire.agriculture.hydroponics", account=star_wars
         )
+
+        sw_source.projects.add(cls.project)
 
         cls.form_1 = m.Form.objects.create(name="Hydroponics study", period_type=m.MONTH, single_per_period=True)
 
@@ -463,6 +479,83 @@ class InstancesAPITestCase(APITestCase):
         self.assertTrue(last_modif.past_value[0]["fields"]["deleted"])
         self.assertFalse(last_modif.new_value[0]["fields"]["deleted"])
 
+    def test_instance_list_by_json_content(self):
+        """Search using the instance content (in JSON field)"""
+        self.create_form_instance(
+            form=self.form_1,
+            period="202001",
+            org_unit=self.jedi_council_corruscant,
+            project=self.project,
+            json={"name": "a", "age": 18, "gender": "M"},
+        )
+
+        b = self.create_form_instance(
+            form=self.form_1,
+            period="202001",
+            org_unit=self.jedi_council_corruscant,
+            project=self.project,
+            json={"name": "b", "age": 19, "gender": "F"},
+        )
+
+        self.create_form_instance(
+            form=self.form_1,
+            period="202001",
+            org_unit=self.jedi_council_corruscant,
+            project=self.project,
+            json={"name": "c", "age": 30, "gender": "F"},
+        )
+
+        self.client.force_authenticate(self.yoda)
+        json_filters = json.dumps({"and": [{"==": [{"var": "gender"}, "F"]}, {"<": [{"var": "age"}, 25]}]})
+        response = self.client.get(f"/api/instances/", {"jsonContent": json_filters})
+        self.assertJSONResponse(response, 200)
+        response_json = response.json()
+        self.assertValidInstanceListData(response_json, expected_length=1)
+        self.assertEqual(response_json["instances"][0]["id"], b.id)
+
+    def test_instance_list_by_json_content_nested(self):
+        """Search using the instance content (in JSON field) with nested and/or operators"""
+        a = self.create_form_instance(
+            form=self.form_1,
+            period="202001",
+            org_unit=self.jedi_council_corruscant,
+            project=self.project,
+            json={"name": "a", "age": 18, "gender": "M"},
+        )
+
+        b = self.create_form_instance(
+            form=self.form_1,
+            period="202001",
+            org_unit=self.jedi_council_corruscant,
+            project=self.project,
+            json={"name": "b", "age": 19, "gender": "F"},
+        )
+
+        self.create_form_instance(
+            form=self.form_1,
+            period="202001",
+            org_unit=self.jedi_council_corruscant,
+            project=self.project,
+            json={"name": "c", "age": 30, "gender": "F"},
+        )
+
+        self.client.force_authenticate(self.yoda)
+
+        # Either a male or a female under 20
+        filters = {
+            "or": [
+                {"==": [{"var": "gender"}, "M"]},
+                {"and": [{"==": [{"var": "gender"}, "F"]}, {"<": [{"var": "age"}, 20]}]},
+            ],
+        }
+
+        response = self.client.get(f"/api/instances/", {"jsonContent": json.dumps(filters)})
+        self.assertJSONResponse(response, 200)
+        response_json = response.json()
+        self.assertValidInstanceListData(response_json, expected_length=2)
+        for instance in response_json["instances"]:
+            self.assertIn(instance["id"], [a.id, b.id])
+
     def test_instance_list_by_form_id_and_status_ok(self):
         """GET /instances/?form_id=form_id&status="""
         self.client.force_authenticate(self.yoda)
@@ -551,6 +644,8 @@ class InstancesAPITestCase(APITestCase):
         new_org_unit = m.OrgUnit.objects.create(
             name="Coruscant Jedi Council New New", version=self.sw_version, org_unit_type=self.jedi_council
         )
+        self.jedi_council_corruscant.version = self.sw_version
+        self.jedi_council_corruscant.save()
         instance_to_patch = self.form_2.instances.first()
 
         response = self.client.patch(
@@ -581,6 +676,9 @@ class InstancesAPITestCase(APITestCase):
         new_org_unit = m.OrgUnit.objects.create(
             name="Coruscant Jedi Council Hospital", version=self.sw_version, org_unit_type=self.jedi_council
         )
+
+        self.jedi_council_corruscant.version = self.sw_version
+        self.jedi_council_corruscant.save()
         instance_to_patch = self.form_3.instances.first()
 
         response = self.client.patch(
@@ -589,7 +687,6 @@ class InstancesAPITestCase(APITestCase):
             format="json",
             HTTP_ACCEPT="application/json",
         )
-
         self.assertJSONResponse(response, 200)
 
         instance_to_patch.refresh_from_db()
@@ -638,7 +735,8 @@ class InstancesAPITestCase(APITestCase):
     def test_instance_patch_restore(self):
         """PATCH /instances/:pk"""
         self.client.force_authenticate(self.yoda)
-
+        self.jedi_council_corruscant.version = self.sw_version
+        self.jedi_council_corruscant.save()
         instance_to_patch = self.form_4.instances.first()
         self.assertTrue(instance_to_patch.deleted)
         self.assertEqual(0, Modification.objects.count())
@@ -871,6 +969,151 @@ class InstancesAPITestCase(APITestCase):
 
         response = self.client.get(f"/api/instances/stats_sum/")
         r = self.assertJSONResponse(response, 200)
+
+    def test_lock_instance(self):
+        self.client.force_authenticate(self.yoda)
+
+        instance = self.create_form_instance(
+            org_unit=self.jedi_council_corruscant,
+            period="202002",
+            project=self.project,
+            form=self.form_1,
+        )
+
+        response = self.client.post(f"/api/instances/{instance.pk}/add_lock/")
+
+        lock = instance.instancelock_set.last()
+
+        j = self.assertJSONResponse(response, 200)
+        lock_id = j["lock_id"]
+        self.assertEqual(lock.instance, instance)
+        self.assertEqual(lock.id, lock_id)
+        response = self.client.get(f"/api/instances/{instance.pk}/")
+        j = self.assertJSONResponse(response, 200)
+        self.assertEqual(j["is_locked"], True)
+        response = self.client.get(f"/api/instances/?limit=100")
+        j = self.assertJSONResponse(response, 200)
+
+        json_instance = list(filter(lambda x: x["id"] == instance.id, j["instances"]))[0]
+        self.assertEqual(json_instance["is_locked"], True)
+
+    def test_lock_scenario(self):
+        """Mega test case for lock which test a lot of thing.
+        A tree with 3 org units, 3 user and they add and remove lock.
+        Between each step we ask the API (both detail and list) who has write access
+        And we check by trying to modify the submission
+        """
+        instance = self.create_form_instance(
+            org_unit=self.ou_top_3, project=self.project, form=self.form_1, period="202001"
+        )
+        alice = self.create_user_with_profile(
+            username="alice", account=self.star_wars, permissions=["iaso_submissions", "iaso_update_submission"]
+        )
+        alice.iaso_profile.org_units.set([self.ou_top_1])
+        bob = self.create_user_with_profile(
+            username="bob", account=self.star_wars, permissions=["iaso_submissions", "iaso_update_submission"]
+        )
+        bob.iaso_profile.org_units.set([self.ou_top_2, self.ou_top_3])
+        chris = self.create_user_with_profile(
+            username="chris", account=self.star_wars, permissions=["iaso_submissions", "iaso_update_submission"]
+        )
+        chris.iaso_profile.org_units.set([self.ou_top_3])
+        # Check that all user can modify, there is no lock
+        for user in [alice, bob, chris]:
+            self._check_via_api(instance, user, can_user_modify=True, is_locked=False)
+
+        # Bob add a lock
+        self.client.force_authenticate(bob)
+        response = self.client.post(f"/api/instances/{instance.pk}/add_lock/")
+        j = self.assertJSONResponse(response, 200)
+        # Lock should be on ou_top_2
+        lock = InstanceLock.objects.get(pk=j["lock_id"])
+        self.assertEqual(lock.instance, instance)
+        self.assertEqual(lock.top_org_unit, self.ou_top_2)
+        # Alice, bob can modify but not chris
+        self._check_via_api(instance, alice, can_user_modify=True, is_locked=True)
+        self._check_via_api(instance, bob, can_user_modify=True, is_locked=True)
+        self._check_via_api(instance, chris, can_user_modify=False, is_locked=True)
+        # Alice add lock
+        self.client.force_authenticate(alice)
+        response = self.client.post(f"/api/instances/{instance.pk}/add_lock/")
+        j = self.assertJSONResponse(response, 200)
+        # Lock should be on ou_top_1
+        lock = InstanceLock.objects.get(pk=j["lock_id"])
+        self.assertEqual(lock.instance, instance)
+        self.assertEqual(lock.top_org_unit, self.ou_top_1)
+        self._check_via_api(instance, alice, can_user_modify=True, is_locked=True)
+        self._check_via_api(instance, bob, can_user_modify=False, is_locked=True)
+        self._check_via_api(instance, chris, can_user_modify=False, is_locked=True)
+        # Bob cannot remove Alice's lock
+        self.client.force_authenticate(bob)
+        response = self.client.post(
+            f"/api/instances/unlock_lock/", {"lock": instance.instancelock_set.get(locked_by=alice).id}, json=True
+        )
+        self.assertJSONResponse(response, 403)
+        # Alice remove her lock
+        self.client.force_authenticate(alice)
+        response = self.client.post(
+            f"/api/instances/unlock_lock/", {"lock": instance.instancelock_set.get(locked_by=alice).id}, json=True
+        )
+        self.assertJSONResponse(response, 200)
+        self._check_via_api(instance, alice, can_user_modify=True, is_locked=True)
+        self._check_via_api(instance, bob, can_user_modify=True, is_locked=True)
+        self._check_via_api(instance, chris, can_user_modify=False, is_locked=True)
+
+        # Alice remove Bob's lock. No active lock, anyone can modify
+        self.client.force_authenticate(alice)
+        response = self.client.post(
+            f"/api/instances/unlock_lock/", {"lock": instance.instancelock_set.get(locked_by=bob).id}, json=True
+        )
+        self.assertJSONResponse(response, 200)
+        self._check_via_api(instance, alice, can_user_modify=True, is_locked=False)
+        self._check_via_api(instance, bob, can_user_modify=True, is_locked=False)
+        self._check_via_api(instance, chris, can_user_modify=True, is_locked=False)
+
+        # Error if trying to unlock a lock already unlocked
+        self.client.force_authenticate(alice)
+        response = self.client.post(
+            f"/api/instances/unlock_lock/", {"lock": instance.instancelock_set.get(locked_by=bob).id}, json=True
+        )
+        self.assertJSONResponse(response, 400)
+        # Chris add lock. Anyone can modify
+        self.client.force_authenticate(chris)
+        response = self.client.post(f"/api/instances/{instance.pk}/add_lock/")
+        j = self.assertJSONResponse(response, 200)
+        # Lock should be on ou_top_3
+        lock = InstanceLock.objects.get(pk=j["lock_id"])
+        self.assertEqual(lock.instance, instance)
+        self.assertEqual(lock.top_org_unit, self.ou_top_3)
+        self._check_via_api(instance, alice, can_user_modify=True, is_locked=True)
+        self._check_via_api(instance, bob, can_user_modify=True, is_locked=True)
+        self._check_via_api(instance, chris, can_user_modify=True, is_locked=True)
+
+    def _check_via_api(self, instance, user, can_user_modify, is_locked):
+        self.client.force_authenticate(user)
+        response = self.client.get(f"/api/instances/{instance.pk}/")
+        json = self.assertJSONResponse(response, 200)
+        self.assertEqual(json["can_user_modify"], can_user_modify)
+        self.assertEqual(json["is_locked"], is_locked)
+        self.assertGreaterEqual(len(json["instance_locks"]), 1 if is_locked else 0, json["instance_locks"])
+        # check from list view
+        response = self.client.get(f"/api/instances/?limit=100")
+        j = self.assertJSONResponse(response, 200)
+        json_instance = list(filter(lambda x: x["id"] == instance.id, j["instances"]))[0]
+        self.assertEqual(json_instance["is_locked"], is_locked)
+        self.assertEqual(json_instance["can_user_modify"], can_user_modify)
+        # Try to modify the instance
+        response = self.client.patch(
+            f"/api/instances/{instance.pk}/",
+            {
+                "period": "202201",
+            },
+            format="json",
+        )
+        if can_user_modify:
+            j = self.assertJSONResponse(response, 200)
+        else:
+            j = self.assertJSONResponse(response, 403)
 
     def test_instance_create_entity(self):
         """POST /api/instances/ with an entity that don't exist in db, it create it"""

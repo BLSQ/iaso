@@ -120,6 +120,7 @@ class Round(models.Model):
     lqas_started_at = models.DateField(null=True, blank=True)
     lqas_ended_at = models.DateField(null=True, blank=True)
     target_population = models.IntegerField(null=True, blank=True)
+    doses_requested = models.IntegerField(null=True, blank=True)
     cost = models.DecimalField(max_digits=10, decimal_places=2, default=0.0, null=True, blank=True)
     im_percentage_children_missed_in_household = models.DecimalField(
         max_digits=10, decimal_places=2, null=True, blank=True
@@ -350,8 +351,11 @@ class Campaign(SoftDeletableModel):
         return getattr(self, key)
 
     def get_districts_for_round_number(self, round_number):
-        round = self.rounds.get(number=round_number) if self.separate_scopes_per_round and round_number else None
-        return self.get_districts_for_round(round)
+        if self.separate_scopes_per_round:
+            return OrgUnit.objects.filter(groups__roundScope__round__number=round_number).filter(
+                groups__roundScope__round__campaign=self
+            )
+        return self.get_campaign_scope_districts()
 
     def get_districts_for_round(self, round):
         if self.separate_scopes_per_round:

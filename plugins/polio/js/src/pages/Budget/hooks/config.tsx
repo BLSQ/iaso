@@ -36,7 +36,7 @@ import { formatComment } from '../cards/utils';
 
 const baseUrl = BUDGET_DETAILS;
 
-const styles = theme => {
+export const styles = theme => {
     return {
         deletedRow: {
             color: theme.palette.secondary.main,
@@ -312,11 +312,7 @@ export const useBudgetDetailsColumns = ({ profiles, data }): Column[] => {
                                         }
                                         type="edit"
                                         budgetEvent={settings.row.original}
-                                        iconColor={
-                                            settings.row.original.deleted_at
-                                                ? 'secondary'
-                                                : 'action'
-                                        }
+                                        iconProps={{ type: 'edit' }}
                                     />
                                 )}
                             {!settings.row.original.deleted_at &&

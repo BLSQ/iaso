@@ -1,6 +1,16 @@
 /* eslint-disable camelcase */
 import { OrgUnit } from '../../orgUnits/types/orgUnit';
 import { Pagination } from '../../../types/table';
+import { User } from '../../../utils/usersUtils';
+
+type Lock = {
+    id: number;
+    locked_by: User;
+    unlocked_by?: User;
+    top_org_unit: {
+        name: string;
+    };
+};
 
 export type Instance = {
     uuid: string;
@@ -26,6 +36,9 @@ export type Instance = {
     file_content: Record<string, string>;
     form_descriptor: unknown;
     last_export_success_at: unknown;
+    instance_locks: Lock[];
+    can_user_modify: boolean;
+    is_locked: boolean;
 };
 
 export type InstanceLogDetail = {

@@ -174,7 +174,6 @@ class CampaignViewSet(ModelViewSet):
     def filter_calendar_data(self, queryset):
         if self.action in ("update", "partial_update", "retrieve", "destroy"):
             return queryset
-        print(self.request.query_params)
         campaign_type = self.request.query_params.get("campaignType")
         campaign_groups = self.request.query_params.get("campaignGroups")
         countries = self.request.query_params.get("countries")
@@ -234,9 +233,11 @@ class CampaignViewSet(ModelViewSet):
             today = dt.date.today()
             current_year = today.year
         columns = self.get_columns_names()
-        calendar_data = self.get_calendar_data(self.filter_calendar_data(self.get_queryset()))
-        print(calendar_data)
-        filename  = self.xlsx_file_name(filename, request.query_params)
+        params = request.query_params
+        countries = params.get("countries") if params.get("countries") is not None else None
+        campaign_groups = params.get("campaignGroups") if params.get("campaignGroups") is not None else None
+        calendar_data = self.get_calendar_data(current_year, countries, campaign_groups)
+        filename  = self.xlsx_file_name(filename, params)
         xlsx_file = generate_xlsx(filename, columns, calendar_data)
         response = HttpResponse(
                     save_virtual_workbook(xlsx_file),
@@ -255,20 +256,61 @@ class CampaignViewSet(ModelViewSet):
         return columns_names
 
     @staticmethod
-    def get_calendar_data(all_campains):
-        data = []
-        aleady_in = []
-        for campain in all_campains:
-            data_c = {}
-            if campain.country.id not in aleady_in:
-                aleady_in.append(campain.country.id)
-                data_c[campain.country.id] = {"country_name": campain.country.name}  
-            if data_c: 
-                data_c[campain.country.id]["rounds"] = {}
-                for month_num in range(1, 13): 
-                    data_c[campain.country.id]["rounds"][str(month_num)] = ["round one", "round two"]
-                data.append(data_c)
-        return data
+    def get_calendar_data(year, countries, campaign_groups):
+        rounds = Round.objects.filter(started_at__year=year)
+        if countries:
+            rounds = rounds.filter(campaign__country_id__in=countries.split(","))
+        if campaign_groups:
+            rounds = rounds.filter(campaign__group_id__in =campaign_groups.split(","))
+        rounds = rounds.order_by("campaign__country__name","started_at")
+        data_row = []
+        for round in rounds:
+            if round.campaign is not None:
+                if not any(d['country_id'] == round.campaign.country.id for d in data_row):
+                    row = {"country_id": round.campaign.country.id, "country_name": round.campaign.country.name}
+                    month = round.started_at.month
+                    row["rounds"] = {}
+                    row["rounds"][str(month)] = []
+                    row["rounds"][str(month)].append({
+                        "started_at": dt.datetime.strftime(round.started_at, "%Y-%m-%d"), 
+                        "ended_at": dt.datetime.strftime(round.ended_at, "%Y-%m-%d"),
+                        "obr_name": round.campaign.obr_name,
+                        "vacine": round.campaign.vacine
+                        })
+                    data_row.append(row)
+                else:
+                    row = [sub for sub in data_row if sub["country_id"] == round.campaign.country.id][0]
+                    row["rounds"][str(month)].append({
+                        "started_at": dt.datetime.strftime(round.started_at, "%Y-%m-%d"), 
+                        "ended_at": dt.datetime.strftime(round.ended_at, "%Y-%m-%d"),
+                        "obr_name": round.campaign.obr_name,
+                        "vacine": round.campaign.vacine
+                        })
+                    data_row.append(row)
+        print(data_row[0])                
+        
+        # data = []
+        # aleady_in = []
+        # for campaign in all_campaigns:
+        #     data_c = {}
+        #     if campaign.country.id not in aleady_in:
+        #         aleady_in.append(campaign.country.id)
+        #         data_c[campaign.country.id] = {"country_name": campaign.country.name}  
+        #     if data_c: 
+        #         data_c[campaign.country.id]["rounds"] = {}
+        #         for month_num in range(1, 13): 
+        #             data_c[campaign.country.id]["rounds"][str(month_num)] = self.get_compain_rounds(month_num, campaign)
+        #         data.append(data_c)
+        return rounds
+
+    @staticmethod
+    def get_compain_rounds(month_num, campaign):
+        print(campaign)
+        print("rounds ==", campaign.rounds.all())
+        all_rounds_for_month = campaign.rounds.filter()
+        Round.objects.filter(campaign__country_id= country_id).filter(started_at__month=month_num)
+        return ["round one", "round two"]
+
 
     @staticmethod
     def xlsx_file_name(name, params):

@@ -1,3 +1,5 @@
+from typing import Dict, Any, TextIO
+
 from bs4 import BeautifulSoup as Soup
 from datetime import datetime
 from django.utils.text import slugify
@@ -53,7 +55,7 @@ def parse_xml_file(file):
     return get_children_tree(soup)
 
 
-def as_soup(file):
+def as_soup(file: TextIO):
     return Soup(file.read(), "xml")
 
 
@@ -68,7 +70,7 @@ def extract_form_version_id(soup):
     return None
 
 
-def flat_parse_xml_soup(soup, repeat_groups, allowed_paths):
+def flat_parse_xml_soup(soup, repeat_groups, allowed_paths) -> Dict[str, Any]:
     skipped_paths = []
     flat_xml_dict = {}
     get_flat_children_tree("", soup, flat_xml_dict, repeat_groups, allowed_paths, skipped_paths)

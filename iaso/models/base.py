@@ -25,7 +25,6 @@ from .device import DeviceOwnership, Device
 from .forms import Form, FormVersion
 
 from ..utils.jsonlogic import jsonlogic_to_q
-from ..utils.models.soft_deletable import SoftDeletableModel
 
 logger = getLogger(__name__)
 
@@ -943,7 +942,7 @@ class Instance(models.Model):
                         soup, [rg["name"] for rg in form_version.repeat_groups()], allowed_paths
                     )
                     if len(flat_results["skipped_paths"]) > 0:
-                        print(
+                        logger.warning(
                             f"skipped {len(flat_results['skipped_paths'])} paths while parsing instance {self.id}",
                             flat_results,
                         )

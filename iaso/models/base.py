@@ -938,7 +938,7 @@ class Instance(models.Model):
                     allowed_paths.add("meta")
                     allowed_paths.add("meta/instanceID")
                     allowed_paths.add("meta/editUserID")
-                    allowed_paths.add("meta/deprecatedID ")
+                    allowed_paths.add("meta/deprecatedID")
                     flat_results = flat_parse_xml_soup(
                         soup, [rg["name"] for rg in form_version.repeat_groups()], allowed_paths
                     )

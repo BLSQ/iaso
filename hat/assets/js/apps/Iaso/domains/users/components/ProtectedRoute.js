@@ -31,7 +31,7 @@ class ProtectedRoute extends Component {
             if (!isAuthorized && isRootUrl) {
                 const newBaseUrl = getFirstAllowedUrl(
                     permissions,
-                    currentUser,
+                    currentUser?.permissions ?? [],
                     allRoutes,
                 );
                 if (newBaseUrl) {

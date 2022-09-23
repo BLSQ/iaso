@@ -153,6 +153,7 @@ class InstancesViewSet(viewsets.ViewSet):
         return Response(serializer.data)
 
     def list(self, request):
+        # TODO: method is way too long, refactor
         limit = request.GET.get("limit", None)
         as_small_dict = request.GET.get("asSmallDict", None)
         page_offset = request.GET.get("page", 1)

@@ -3,46 +3,54 @@
 import React, { FunctionComponent, useMemo, useState } from 'react';
 import { useFormik, FormikProvider } from 'formik';
 import { isEqual } from 'lodash';
-// @ts-ignore
-import { useSafeIntl } from 'bluesquare-components';
+import {
+    // @ts-ignore
+    useSafeIntl,
+} from 'bluesquare-components';
 import { Box, Divider, Typography } from '@material-ui/core';
-import ConfirmCancelDialogComponent from '../../../../../../../hat/assets/js/apps/Iaso/components/dialogs/ConfirmCancelDialogComponent';
+import { ConfirmCancelModal } from '../../../../../../../hat/assets/js/apps/Iaso/components/DragAndDrop/ConfirmCancelModal';
 import MESSAGES from '../../../constants/messages';
 import InputComponent from '../../../../../../../hat/assets/js/apps/Iaso/components/forms/InputComponent';
 import { useCurrentUser } from '../../../../../../../hat/assets/js/apps/Iaso/utils/usersUtils';
 import { commaSeparatedIdsToArray } from '../../../../../../../hat/assets/js/apps/Iaso/utils/forms';
+
 import {
     useFinalizeBudgetEvent,
     useSaveBudgetEvent,
     useUploadBudgetFiles,
 } from '../../../hooks/useSaveBudgetEvent';
-import FileInputComponent from '../../../../../../../hat/assets/js/apps/Iaso/components/forms/FileInputComponent';
 import { useBudgetEventValidation } from '../hooks/validation';
 import {
     useGetTeamsDropDown,
     useGetApprovalTeams,
     useUserHasTeam,
 } from '../../../hooks/useGetTeams';
-import { getTitleMessage, useRenderTrigger, makeEventsDropdown } from './utils';
+import { getTitleMessage, makeEventsDropdown } from './utils';
 import {
     useTranslatedErrors,
     useApiErrorValidation,
 } from '../../../../../../../hat/assets/js/apps/Iaso/libs/validation';
+import { FilesUpload } from '../../../../../../../hat/assets/js/apps/Iaso/components/DragAndDrop/FilesUpload';
+import { makeFullModal } from '../../../../../../../hat/assets/js/apps/Iaso/components/DragAndDrop/ModalWithButton';
+import { CreatEditButton } from './CreateEditButton';
 
 type Props = {
     campaignId: string;
     type?: 'create' | 'edit' | 'retry';
     budgetEvent?: any;
-    iconColor?: string;
+    closeDialog: () => void;
+    isOpen: boolean;
+    id?: string;
     isMobileLayout?: boolean;
 };
 
-export const CreateEditBudgetEvent: FunctionComponent<Props> = ({
+const CreateEditBudgetEvent: FunctionComponent<Props> = ({
     campaignId,
     budgetEvent,
     type = 'create',
-    iconColor = 'action',
-    isMobileLayout = false,
+    closeDialog,
+    isOpen,
+    id,
 }) => {
     const { data: teamsDropdown, isFetching: isFetchingTeams } =
         useGetTeamsDropDown();
@@ -58,7 +66,6 @@ export const CreateEditBudgetEvent: FunctionComponent<Props> = ({
     const { mutateAsync: saveBudgetEvent } = useSaveBudgetEvent(currentType);
     const { mutateAsync: uploadFiles } = useUploadBudgetFiles();
     const { mutateAsync: finalize } = useFinalizeBudgetEvent();
-    const [closeModal, setCloseModal] = useState<any>();
 
     const onSubmitSuccess = (result: any) => {
         if (type === 'create' || type === 'retry') {
@@ -70,7 +77,7 @@ export const CreateEditBudgetEvent: FunctionComponent<Props> = ({
                         onSuccess: () => {
                             finalize(result.id, {
                                 onSuccess: () => {
-                                    closeModal.closeDialog();
+                                    closeDialog();
                                     formik.resetForm();
                                 },
                                 onError: () =>
@@ -86,7 +93,7 @@ export const CreateEditBudgetEvent: FunctionComponent<Props> = ({
             } else {
                 finalize(result.id, {
                     onSuccess: () => {
-                        closeModal.closeDialog();
+                        closeDialog();
                         formik.resetForm();
                     },
                     onError: () =>
@@ -100,7 +107,7 @@ export const CreateEditBudgetEvent: FunctionComponent<Props> = ({
         if (type === 'edit') {
             finalize(formik.values.id, {
                 onSuccess: () => {
-                    closeModal.closeDialog();
+                    closeDialog();
                     formik.resetForm();
                 },
                 onError: () =>
@@ -182,24 +189,18 @@ export const CreateEditBudgetEvent: FunctionComponent<Props> = ({
         () => makeEventsDropdown(user, approvalTeams, formatMessage),
         [formatMessage, user, approvalTeams],
     );
-    const renderTrigger = useRenderTrigger(type, isMobileLayout, iconColor);
 
     return (
         <FormikProvider value={formik}>
-            {/* @ts-ignore */}
-            <ConfirmCancelDialogComponent
+            <ConfirmCancelModal
                 allowConfirm={isValid && !isEqual(values, initialValues)}
                 titleMessage={titleMessage}
-                onConfirm={closeDialog => {
+                onConfirm={() => {
                     if (userHasTeam) {
-                        setCloseModal({ closeDialog });
                         handleSubmit();
-                    } else {
-                        closeDialog();
                     }
                 }}
-                onCancel={closeDialog => {
-                    closeDialog();
+                onCancel={() => {
                     if (userHasTeam) {
                         setCurrentType(type);
                         resetForm();
@@ -208,7 +209,11 @@ export const CreateEditBudgetEvent: FunctionComponent<Props> = ({
                 maxWidth="sm"
                 cancelMessage={MESSAGES.cancel}
                 confirmMessage={MESSAGES.send}
-                renderTrigger={renderTrigger}
+                open={isOpen}
+                closeDialog={closeDialog}
+                id={id ?? ''}
+                dataTestId="Test-modal"
+                onClose={() => null}
             >
                 {userHasTeam && (
                     <>
@@ -270,14 +275,12 @@ export const CreateEditBudgetEvent: FunctionComponent<Props> = ({
                             </>
                         )}
                         <Box mt={2}>
-                            <FileInputComponent
-                                keyValue="files"
-                                required={currentType === 'edit'}
-                                multiple
-                                onChange={onChange}
-                                value={values.files}
-                                errors={getErrors('files')}
-                                label={MESSAGES.filesUpload}
+                            <FilesUpload
+                                files={values.files ?? []}
+                                onFilesSelect={files => {
+                                    setFieldTouched('files', true);
+                                    setFieldValue('files', files);
+                                }}
                             />
                         </Box>
                         {(currentType === 'create' ||
@@ -328,7 +331,11 @@ export const CreateEditBudgetEvent: FunctionComponent<Props> = ({
                         </Box>
                     </>
                 )}
-            </ConfirmCancelDialogComponent>
+            </ConfirmCancelModal>
         </FormikProvider>
     );
 };
+
+const modalWithButton = makeFullModal(CreateEditBudgetEvent, CreatEditButton);
+
+export { modalWithButton as CreateEditBudgetEvent };

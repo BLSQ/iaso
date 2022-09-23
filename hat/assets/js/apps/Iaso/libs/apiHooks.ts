@@ -254,7 +254,7 @@ type SnackQueryDict<QueryFnData, Data, QueryKeyExtended extends QueryKey> = {
 };
 
 export const useSnackQuery = <
-    QueryFnData = unknown,
+    QueryFnData = any,
     Error = unknown,
     Data = QueryFnData,
     QueryKeyExtended extends QueryKey = QueryKey,

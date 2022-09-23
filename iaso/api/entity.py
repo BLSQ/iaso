@@ -70,7 +70,7 @@ class EntitySerializer(serializers.ModelSerializer):
         return None
 
     def get_org_unit(self, entity: Entity):
-        if entity.attributes.org_unit:
+        if entity.attributes and entity.attributes.org_unit:
             return entity.attributes.org_unit.as_location(with_parents=True)
         return None
 

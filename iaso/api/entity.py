@@ -4,7 +4,7 @@ import io
 
 import xlsxwriter
 from django.core.paginator import Paginator
-from django.db.models import Q
+from django.db.models import Q, Max
 from django.http import JsonResponse, HttpResponse
 from django.shortcuts import get_object_or_404
 from django_filters.rest_framework import DjangoFilterBackend
@@ -327,19 +327,36 @@ class EntityViewSet(ModelViewSet):
             if csv_format:
                 return export_entity_as_csv(entities)
 
-        entities = queryset
+        # annotate with last instance on Entity, to allow ordering by it
+        entities = queryset.annotate(last_saved_instance=Max("instances__created_at"))
         result_list = []
         columns_list = []
 
+        # -- Allow ordering by the field inside the Entity.
+        fields_on_entity = [f.name for f in Entity._meta.get_fields()]
+        # add field in the annotation
+        fields_on_entity += entities.query.annotations.keys()
+        # check if the ordering column is on Entity or annotation,
+        # otherwise assume it's part of the attributes
+        new_order_columns = []
+        if order_columns:
+            order_columns = order_columns.split(",")
+            for order_column in order_columns:
+                # Remove eventual leading -
+                order_column_name = order_column.lstrip("-")
+                if order_column_name in fields_on_entity:
+                    new_order_columns.append(order_column)
+                else:
+                    new_name = "-" if order_column.startswith("-") else ""
+                    new_name += "attributes__json__" + order_column_name
+                    new_order_columns.append(new_name)
+
+        entities = entities.order_by(*new_order_columns)
+
         if entity_type_ids is None or (entity_type_ids is not None and len(entity_type_ids.split(",")) > 1):
             for entity in entities:
-                last_created_instance = Instance.objects.filter(entity=entity).last()
                 entity_serialized = EntitySerializer(entity, many=False)
-                last_created_instance = (
-                    last_created_instance.created_at
-                    if last_created_instance is not None
-                    else datetime.datetime(1, 1, 1, tzinfo=datetime.timezone(offset=datetime.timedelta()))
-                )
+
                 attributes = entity_serialized.data.get("attributes")
                 file_content = attributes.get("file_content")
                 result = {
@@ -350,7 +367,7 @@ class EntityViewSet(ModelViewSet):
                     "updated_at": entity.updated_at,
                     "attributes": entity.attributes.pk,
                     "entity_type": entity.entity_type.name,
-                    "last_saved_instance": last_created_instance,
+                    "last_saved_instance": entity.last_saved_instance,
                     "org_unit": entity.attributes.org_unit.as_location(with_parents=True),
                     "program": file_content.get("program"),
                 }
@@ -374,16 +391,10 @@ class EntityViewSet(ModelViewSet):
                     "created_at": entity.created_at,
                     "updated_at": entity.updated_at,
                     "org_unit": entity.attributes.org_unit.as_location(with_parents=True),
+                    "last_saved_instance": entity.last_saved_instance,
                     "program": file_content.get("program"),
                 }
-                last_created_instance = Instance.objects.filter(entity=entity).last()
-                # 1/1/1 is assigned temporarely instead of None as if the date is None it crash when ordering
-                # the response
-                result["last_saved_instance"] = (
-                    last_created_instance.created_at
-                    if last_created_instance is not None
-                    else datetime.datetime(1, 1, 1, tzinfo=datetime.timezone(offset=datetime.timedelta()))
-                )
+
                 # Get data from xlsform
                 for k, v in entity.attributes.json.items():
                     if k in list(entity.entity_type.fields_list_view):
@@ -392,33 +403,6 @@ class EntityViewSet(ModelViewSet):
 
             columns_list = [i for n, i in enumerate(columns_list) if i not in columns_list[n + 1 :]]
             columns_list = [c for c in columns_list if len(c) > 2]
-
-        # Custom order for the specific case of entities with different data structure
-        if order_columns is not None:
-            try:
-                if order_columns[0] == "-":
-                    result_list = sorted(result_list, key=lambda d: d[order_columns[1:]])
-                    result_list.reverse()
-                else:
-                    result_list = sorted(result_list, key=lambda d: d[order_columns])
-            except (KeyError, TypeError):
-                field = order_columns[1:] if order_columns[0] == "-" else order_columns
-                for r in result_list:
-                    if field not in r:
-                        r[field] = "None"
-                if order_columns[0] == "-":
-                    result_list = sorted(result_list, key=lambda d: d[order_columns[1:]])
-                    result_list.reverse()
-                else:
-                    result_list = sorted(result_list, key=lambda d: d[order_columns])
-
-        # Apply None to date equal to 1/1/1
-        for r in result_list:
-            for k, v in r.items():
-                if k == "last_saved_instance" and v == datetime.datetime(
-                    1, 1, 1, tzinfo=datetime.timezone(offset=datetime.timedelta())
-                ):
-                    r[k] = None
 
         if limit:
             limit = int(limit)

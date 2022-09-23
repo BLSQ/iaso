@@ -190,8 +190,6 @@ export const RoundVaccinesForm: FunctionComponent<Props> = ({
                 })}
             {vaccines.length === 0 && (
                 <RoundVaccineForm
-                    // eslint-disable-next-line react/no-array-index-key
-                    key={`vaccine${0}`}
                     vaccineIndex={0}
                     roundIndex={roundIndex}
                     vaccineOptions={polioVaccines}

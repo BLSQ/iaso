@@ -78,18 +78,18 @@ export const VaccineManangementForm: FunctionComponent<Props> = () => {
                     spacing={2}
                     justifyContent="center"
                 >
-                    <Grid container item xs={6}>
+                    <Grid container item lg={6} md={12}>
                         <RoundVaccinesForm
                             roundIndex={roundIndex}
                             round={rounds[roundIndex]}
                         />
                     </Grid>
-                    <Grid item xs={3}>
+                    <Grid item lg={3} md={6}>
                         <Box mb={1}>
                             <ReportingDelays accessor={accessor} />
                         </Box>
                     </Grid>
-                    <Grid item xs={3}>
+                    <Grid item lg={3} md={6}>
                         <Field
                             label={formatMessage(MESSAGES.dateSignedVrf)}
                             fullWidth
@@ -123,7 +123,7 @@ export const VaccineManangementForm: FunctionComponent<Props> = () => {
                     </Box>
                 </Grid>
                 <Grid container direction="row" item xs={12} spacing={2}>
-                    <Grid item xs={3}>
+                    <Grid item lg={3} md={6}>
                         <Field
                             label={formatMessage(MESSAGES.formAReception)}
                             name={`${accessor}.forma_reception`}
@@ -131,7 +131,7 @@ export const VaccineManangementForm: FunctionComponent<Props> = () => {
                             className={classes.input}
                         />
                     </Grid>
-                    <Grid item xs={3}>
+                    <Grid item lg={3} md={6}>
                         <Field
                             label={formatMessage(MESSAGES.formAUnusableVials)}
                             name={`${accessor}.forma_unusable_vials`}
@@ -139,7 +139,7 @@ export const VaccineManangementForm: FunctionComponent<Props> = () => {
                             className={classes.input}
                         />
                     </Grid>
-                    <Grid item xs={3}>
+                    <Grid item lg={3} md={6}>
                         <Field
                             label={formatMessage(MESSAGES.formAMissingVials)}
                             name={`${accessor}.forma_missing_vials`}
@@ -147,7 +147,7 @@ export const VaccineManangementForm: FunctionComponent<Props> = () => {
                             className={classes.input}
                         />
                     </Grid>
-                    <Grid item xs={3}>
+                    <Grid item lg={3} md={6}>
                         <Field
                             label={formatMessage(MESSAGES.formAUsableVials)}
                             name={`${accessor}.forma_usable_vials`}

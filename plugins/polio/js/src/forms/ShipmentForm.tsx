@@ -27,7 +27,7 @@ export const ShipmentForm: FunctionComponent<Props> = ({ index, accessor }) => {
                 spacing={2}
                 justifyContent="space-between"
             >
-                <Grid item xs={2}>
+                <Grid item lg={2} md={4}>
                     <Field
                         label={formatMessage(MESSAGES.vaccine)}
                         name={`${accessor}.shipments[${index}].vaccine_name`}
@@ -36,7 +36,7 @@ export const ShipmentForm: FunctionComponent<Props> = ({ index, accessor }) => {
                         component={Select}
                     />
                 </Grid>
-                <Grid item xs={2}>
+                <Grid item lg={2} md={4}>
                     <Field
                         label={formatMessage(MESSAGES.poNumbers)}
                         name={`${accessor}.shipments[${index}].po_numbers`}
@@ -44,7 +44,7 @@ export const ShipmentForm: FunctionComponent<Props> = ({ index, accessor }) => {
                         className={classes.input}
                     />
                 </Grid>
-                <Grid item xs={2}>
+                <Grid item lg={2} md={4}>
                     <Field
                         label={formatMessage(MESSAGES.dosesShipped)}
                         name={`${accessor}.shipments[${index}].doses_received`}
@@ -52,7 +52,7 @@ export const ShipmentForm: FunctionComponent<Props> = ({ index, accessor }) => {
                         className={classes.input}
                     />
                 </Grid>
-                <Grid item xs={2}>
+                <Grid item lg={2} md={4}>
                     <Field
                         label={formatMessage(MESSAGES.receptionPreAlert)}
                         name={`${accessor}.shipments[${index}].reception_pre_alert`}
@@ -60,7 +60,7 @@ export const ShipmentForm: FunctionComponent<Props> = ({ index, accessor }) => {
                         className={classes.input}
                     />
                 </Grid>
-                <Grid item xs={2}>
+                <Grid item lg={2} md={4}>
                     <Field
                         label={formatMessage(MESSAGES.estimatedDateOfArrival)}
                         name={`${accessor}.shipments[${index}].estimated_arrival_date`}
@@ -68,7 +68,7 @@ export const ShipmentForm: FunctionComponent<Props> = ({ index, accessor }) => {
                         className={classes.input}
                     />
                 </Grid>
-                <Grid item xs={2}>
+                <Grid item lg={2} md={4}>
                     <Field
                         label={formatMessage(
                             MESSAGES.receptionVaccineArrivalReport,

@@ -43,7 +43,6 @@ export const RoundVaccineForm: FunctionComponent<Props> = ({
     const accessor = `rounds[${roundIndex}].vaccines[${vaccineIndex}]`;
 
     return (
-        // <Grid container item xs={12} spacing={2}>
         <>
             <Grid item xs={4}>
                 <Box mr={2}>
@@ -76,6 +75,5 @@ export const RoundVaccineForm: FunctionComponent<Props> = ({
                 />
             </Grid>
         </>
-        // </Grid>
     );
 };

@@ -142,10 +142,12 @@ yup.addMethod(
     function hasAllFormAFieldsNumber(formatMessage) {
         return this.test('hasAllFormAFieldsNumber', '', (value, context) => {
             const { path, createError, parent } = context;
-            const { forma_reception } = parent;
-            const { forma_missing_vials } = parent;
-            const { forma_usable_vials } = parent;
-            const { forma_unusable_vials } = parent;
+            const {
+                forma_reception,
+                forma_missing_vials,
+                forma_usable_vials,
+                forma_unusable_vials,
+            } = parent;
             if (
                 !value &&
                 (forma_unusable_vials ||
@@ -168,10 +170,12 @@ yup.addMethod(
     function hasAllFormAFieldsDate(formatMessage) {
         return this.test('hasAllFormAFieldsDate', '', (value, context) => {
             const { path, createError, parent } = context;
-            const { forma_reception } = parent;
-            const { forma_missing_vials } = parent;
-            const { forma_usable_vials } = parent;
-            const { forma_unusable_vials } = parent;
+            const {
+                forma_reception,
+                forma_missing_vials,
+                forma_usable_vials,
+                forma_unusable_vials,
+            } = parent;
             if (
                 !value &&
                 (forma_unusable_vials ||
@@ -194,12 +198,14 @@ yup.addMethod(
     function hasAllShipmentFieldsDate(formatMessage) {
         return this.test('hasAllShipmentFieldsDate', '', (value, context) => {
             const { path, createError, parent } = context;
-            const { date_reception } = parent;
-            const { estimated_arrival_date } = parent;
-            const { reception_pre_alert } = parent;
-            const { doses_received } = parent;
-            const { po_numbers } = parent;
-            const { vaccine_name } = parent;
+            const {
+                date_reception,
+                estimated_arrival_date,
+                reception_pre_alert,
+                doses_received,
+                po_numbers,
+                vaccine_name,
+            } = parent;
             if (
                 !value &&
                 (vaccine_name ||
@@ -224,12 +230,14 @@ yup.addMethod(
     function hasAllShipmentFieldsNumber(formatMessage) {
         return this.test('hasAllShipmentFieldsNumber', '', (value, context) => {
             const { path, createError, parent } = context;
-            const { date_reception } = parent;
-            const { estimated_arrival_date } = parent;
-            const { reception_pre_alert } = parent;
-            const { doses_received } = parent;
-            const { po_numbers } = parent;
-            const { vaccine_name } = parent;
+            const {
+                date_reception,
+                estimated_arrival_date,
+                reception_pre_alert,
+                doses_received,
+                po_numbers,
+                vaccine_name,
+            } = parent;
             if (
                 !value &&
                 (vaccine_name ||
@@ -254,12 +262,14 @@ yup.addMethod(
     function hasAllShipmentFieldsString(formatMessage) {
         return this.test('hasAllShipmentFieldsString', '', (value, context) => {
             const { path, createError, parent } = context;
-            const { date_reception } = parent;
-            const { estimated_arrival_date } = parent;
-            const { reception_pre_alert } = parent;
-            const { doses_received } = parent;
-            const { po_numbers } = parent;
-            const { vaccine_name } = parent;
+            const {
+                date_reception,
+                estimated_arrival_date,
+                reception_pre_alert,
+                doses_received,
+                po_numbers,
+                vaccine_name,
+            } = parent;
             if (
                 !value &&
                 (vaccine_name ||

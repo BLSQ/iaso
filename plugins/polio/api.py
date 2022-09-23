@@ -171,6 +171,30 @@ class CampaignViewSet(ModelViewSet):
             campaigns = campaigns.filter(grouped_campaigns__in=campaign_groups.split(","))
         return campaigns.distinct()
 
+    def filter_calendar_data(self, queryset):
+        if self.action in ("update", "partial_update", "retrieve", "destroy"):
+            return queryset
+        print(self.request.query_params)
+        campaign_type = self.request.query_params.get("campaignType")
+        campaign_groups = self.request.query_params.get("campaignGroups")
+        countries = self.request.query_params.get("countries")
+        show_test = self.request.query_params.get("show_test", "false")
+        campaigns = queryset
+        if show_test == "false":
+            campaigns = campaigns.filter(is_test=False)
+        campaigns.prefetch_related("rounds", "group", "grouped_campaigns")
+        if campaign_type == "preventive":
+            campaigns = campaigns.filter(is_preventive=True)
+        if campaign_type == "test":
+            campaigns = campaigns.filter(is_test=True)
+        if campaign_type == "regular":
+            campaigns = campaigns.filter(is_preventive=False).filter(is_test=False)
+        if campaign_groups:
+            campaigns = campaigns.filter(grouped_campaigns__in=campaign_groups.split(","))
+        if countries:
+            campaigns = campaigns.filter(country_id__in=countries.split(","))
+        return campaigns.distinct()
+
     def get_queryset(self):
         user = self.request.user
         campaigns = Campaign.objects.all()
@@ -210,8 +234,10 @@ class CampaignViewSet(ModelViewSet):
             today = dt.date.today()
             current_year = today.year
         columns = self.get_columns_names()
+        calendar_data = self.get_calendar_data(self.filter_calendar_data(self.get_queryset()))
+        print(calendar_data)
         filename  = self.xlsx_file_name(filename, request.query_params)
-        xlsx_file = generate_xlsx(filename, columns)
+        xlsx_file = generate_xlsx(filename, columns, calendar_data)
         response = HttpResponse(
                     save_virtual_workbook(xlsx_file),
                     content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
@@ -228,8 +254,22 @@ class CampaignViewSet(ModelViewSet):
         columns_names.insert(0, "COUNTRY")
         return columns_names
 
+    @staticmethod
+    def get_calendar_data(all_campains):
+        data = []
+        aleady_in = []
+        for campain in all_campains:
+            data_c = {}
+            if campain.country.id not in aleady_in:
+                aleady_in.append(campain.country.id)
+                data_c[campain.country.id] = {"country_name": campain.country.name}  
+            if data_c: 
+                data_c[campain.country.id]["rounds"] = {}
+                for month_num in range(1, 13): 
+                    data_c[campain.country.id]["rounds"][str(month_num)] = ["round one", "round two"]
+                data.append(data_c)
+        return data
 
-    
     @staticmethod
     def xlsx_file_name(name, params):
         current_date = params.get("currentDate")

@@ -466,6 +466,18 @@ where group_id = polio_roundscope.group_id""",
         campaign = get_object_or_404(Campaign, id=campaign_id)
         campaign_scope = get_object_or_404(CampaignScope, campaign=campaign).group.org_units.all()
 
+        authorized_fields = ["id", "epid", "obr_name", "gpei_email", "description",
+                             "creation_email_send_at", "onset_at", "three_level_call_at",
+                             "cvdpv_notified_at", "cvdpv2_notified_at", "pv_notified_at",
+                             "pv2_notified_at", "virus", "detection_status", "detection_responsible",
+                             "detection_first_draft_submitted_at", "detection_rrt_oprtt_approval_at",
+                             "risk_assessment_status", "risk_assessment_responsible", "investigation_at",
+                             "risk_assessment_first_draft_submitted_at", "risk_assessment_rrt_oprtt_approval_at",
+                             "ag_nopv_group_met_at", "dg_authorized_at", "verification_score", "doses_requested",
+                             "preperadness_spreadsheet_url", "preperadness_sync_status", "surge_spreadsheet_url",
+                             "country_name_in_surge_spreadsheet", "budget_status", "budget_responsible",
+                             "created_at", "updated_at", "district_count", "round_pne", "round_two", "vacine"]
+
         try:
             path = campaign.form_template.path
         except ValueError:
@@ -488,6 +500,7 @@ where group_id = polio_roundscope.group_id""",
 
         ou_tree_list = []
 
+        # create dictionary with OU tree
         for ou in campaign_scope:
             ou_tree_dict = {ou.org_unit_type.name: ou}
             ou_parent = ou.parent
@@ -505,12 +518,12 @@ where group_id = polio_roundscope.group_id""",
         added_countries = []
         added_regions = []
         added_district = []
+        added_facilities = []
         region_added = False
         district_added = False
+        facility_added = False
 
-
-        # last_empty_row = len(list(q_sheet.rows))
-
+        # create xls column
         sheet[cell[choices_column - 1] + "1"] = "list name"
         sheet[cell[choices_column] + "1"] = "name"
         sheet[cell[choices_column + 1] + "1"] = "label"
@@ -520,14 +533,15 @@ where group_id = polio_roundscope.group_id""",
         sheet[cell[choices_column + 5] + "1"] = "district"
         sheet[cell[choices_column + 6] + "1"] = "health facility"
 
+        # populate csv with OU
         for ou_dic in ou_tree_list:
             for k, v in ou_dic.items():
                 if k == "COUNTRY" and v not in added_countries:
                     added_countries.append(v)
-                    q_sheet[cell[0] + str(5)] = "select_one ou_country"
-                    q_sheet[cell[1] + str(5)] = "ou_country"
-                    q_sheet[cell[2] + str(5)] = "Select Country"
-                    q_sheet[cell[3] + str(5)] = "yes"
+                    q_sheet[cell[0] + str(16)] = "select_one ou_country"
+                    q_sheet[cell[1] + str(16)] = "ou_country"
+                    q_sheet[cell[2] + str(16)] = "Select Country"
+                    q_sheet[cell[3] + str(16)] = "yes"
                     sheet[cell[choices_column - 1] + str(choices_row)] = "ou_country"
                     sheet[cell[choices_column] + str(choices_row)] = v.id
                     sheet[cell[choices_column + 1] + str(choices_row)] = str(v)
@@ -537,15 +551,16 @@ where group_id = polio_roundscope.group_id""",
                     survey_last_empty_row += 2
                     added_regions.append(v)
                     if not region_added:
-                        q_sheet[cell[0] + str(6)] = "select_one ou_region"
-                        q_sheet[cell[1] + str(6)] = "ou_region"
-                        q_sheet[cell[2] + str(6)] = "Select a Region"
-                        q_sheet[cell[9] + str(6)] = "country=${ou_country}"
+                        q_sheet[cell[0] + str(17)] = "select_one ou_region"
+                        q_sheet[cell[1] + str(17)] = "ou_region"
+                        q_sheet[cell[2] + str(17)] = "Select a Region"
+                        q_sheet[cell[9] + str(17)] = "country=${ou_country}"
                         region_added = True
                     sheet[cell[choices_column - 1] + str(choices_row)] = "ou_region"
                     sheet[cell[choices_column] + str(choices_row)] = v.id
                     sheet[cell[choices_column + 1] + str(choices_row)] = str(v)
-                    sheet[cell[choices_column + 3] + str(choices_row)] = ou_dic.get("COUNTRY", None) if ou_dic.get("COUNTRY", None) is None else ou_dic.get("COUNTRY", None).pk
+                    sheet[cell[choices_column + 3] + str(choices_row)] = ou_dic.get("COUNTRY", None) if ou_dic.get(
+                        "COUNTRY", None) is None else ou_dic.get("COUNTRY", None).pk
                     choices_row += 1
                     survey_last_empty_row += 1
 
@@ -553,21 +568,76 @@ where group_id = polio_roundscope.group_id""",
                     survey_last_empty_row += 4
                     added_district.append(v)
                     if not district_added:
-                        q_sheet[cell[0] + str(7)] = "select_one ou_district"
-                        q_sheet[cell[1] + str(7)] = "ou_district"
-                        q_sheet[cell[2] + str(7)] = "Select a District"
-                        q_sheet[cell[9] + str(7)] = "region=${ou_region}"
+                        q_sheet[cell[0] + str(18)] = "select_one ou_district"
+                        q_sheet[cell[1] + str(18)] = "ou_district"
+                        q_sheet[cell[2] + str(18)] = "Select a District"
+                        q_sheet[cell[9] + str(18)] = "region=${ou_region}"
                         district_added = True
                     sheet[cell[choices_column - 1] + str(choices_row)] = "ou_district"
                     sheet[cell[choices_column] + str(choices_row)] = v.id
                     sheet[cell[choices_column + 1] + str(choices_row)] = str(v)
                     sheet[cell[choices_column + 3] + str(choices_row)] = ou_dic.get("COUNTRY", None) if ou_dic.get(
                         "COUNTRY", None) is None else ou_dic.get("COUNTRY", None).pk
-                    sheet[cell[choices_column + 4] + str(choices_row)] = ou_dic.get("REGION", None) if ou_dic.get("REGION", None) is None else ou_dic.get("REGION", None).pk
+                    sheet[cell[choices_column + 4] + str(choices_row)] = ou_dic.get("REGION", None) if ou_dic.get(
+                        "REGION", None) is None else ou_dic.get("REGION", None).pk
                     # sheet[cell[choices_column + 5] + str(choices_row)] = ou_dic.get("DISTRICT", None) if ou_dic.get("DISTRICT", None) is None else ou_dic.get("DISTRICT", None).name
                     # sheet[cell[choices_column + 6] + str(choices_row)] = ou_dic.get("HEALTH FACILITY", None) if ou_dic.get("HEALTH FACILITY", None) is None else ou_dic.get("HEALTH FACILITY", None).name
                     choices_row += 1
                     survey_last_empty_row += 1
+
+                if k == "HEALTH FACILITY" and v not in added_facilities:
+                    survey_last_empty_row += 6
+                    added_facilities.append(v)
+                    if not facility_added:
+                        q_sheet[cell[0] + str(19)] = "select_one ou_facility"
+                        q_sheet[cell[1] + str(19)] = "ou_facility"
+                        q_sheet[cell[2] + str(19)] = "Select a Health Facility"
+                        q_sheet[cell[9] + str(19)] = "district=${ou_district}"
+                        district_added = True
+                    sheet[cell[choices_column - 1] + str(choices_row)] = ""
+                    sheet[cell[choices_column] + str(choices_row)] = v.id
+                    sheet[cell[choices_column + 1] + str(choices_row)] = str(v)
+                    sheet[cell[choices_column + 3] + str(choices_row)] = ou_dic.get("COUNTRY", None) if ou_dic.get(
+                        "COUNTRY", None) is None else ou_dic.get("COUNTRY", None).pk
+                    sheet[cell[choices_column + 4] + str(choices_row)] = ou_dic.get("REGION", None) if ou_dic.get(
+                        "REGION", None) is None else ou_dic.get("REGION", None).pk
+                    sheet[cell[choices_column + 5] + str(choices_row)] = ou_dic.get("DISTRICT", None) if ou_dic.get(
+                        "DISTRICT", None) is None else ou_dic.get("DISTRICT", None).name
+                    # sheet[cell[choices_column + 6] + str(choices_row)] = ou_dic.get("HEALTH FACILITY", None) if ou_dic.get("HEALTH FACILITY", None) is None else ou_dic.get("HEALTH FACILITY", None).name
+                    choices_row += 1
+                    survey_last_empty_row += 1
+
+        row = q_sheet.max_row
+        column = q_sheet.max_column
+
+        q_sheet[cell[0] + str(11)] = "note"
+        q_sheet[cell[1] + str(11)] = "note_obr_name"
+        q_sheet[cell[2] + str(11)] = f"Outbreak Name: {campaign.obr_name} "
+
+        number_of_round = 0 if campaign.round_one.started_at is None else 1
+        number_of_round = number_of_round if campaign.round_two.started_at is None else 2
+        q_sheet[cell[0] + str(12)] = "note"
+        q_sheet[cell[1] + str(12)] = "note_round_number"
+        q_sheet[cell[2] + str(12)] = f"Number of rounds: {number_of_round} "
+
+        q_sheet[cell[0] + str(13)] = "note"
+        q_sheet[cell[1] + str(13)] = "note_first_round_date"
+        q_sheet[cell[2] + str(13)] = f"First Round Date: {campaign.round_one.started_at} "
+        q_sheet[cell[0] + str(14)] = "note"
+        q_sheet[cell[1] + str(14)] = "note_vaccine_type"
+        q_sheet[cell[2] + str(14)] = f"Vaccine Type: {campaign.vacine} "
+        # Insert data as notes
+        for i in range(2, row + 1):
+            cell_obj = q_sheet.cell(row=i, column=2)
+            print(cell_obj.value)
+            cell_value_start = cell_obj.value[:7] if cell_obj.value is not None else ""
+            if (cell_value_start == "survey_"):
+                str_request = cell_obj.value[7:]
+                if str_request in authorized_fields:
+                    cell_obj = q_sheet.cell(row=i, column=3)
+                    print(cell_obj.value)
+                    cell_obj.value = str(getattr(campaign, str_request, print("NOT FOUND")))
+                    break
 
         filename = f"FORM_{campaign.obr_name}_{datetime.now().date()}.xlsx"
         print(ou_tree_list)

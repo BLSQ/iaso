@@ -1,7 +1,9 @@
+import calendar
 import csv
 import functools
 import json
 from datetime import timedelta, datetime
+import datetime as dt
 import logging
 from typing import Any, Dict, List, Optional, Union
 from collections import defaultdict
@@ -198,17 +200,35 @@ class CampaignViewSet(ModelViewSet):
     @action(methods=["GET"], detail=False, serializer_class=None)
     def create_calendar_xlsx_sheet(self, request, **kwargs):
         filename = "calendar"
-        # current_date = request.query_params.get("currentDate")
-        # year = datetime.strptime(current_date, '%y-%m-%d').year if current_date is not None else datetime.datetime.now().year
-        # columns = self.getColumns()
+        current_year = None
+        current_date = request.query_params.get("currentDate")
+        if current_date is not None:
+            current_date = dt.datetime.strptime(current_date, "%Y-%m-%d")
+            current_date = current_date.date()
+            current_year = current_date.year
+        else:
+            today = dt.date.today()
+            current_year = today.year
+        columns = self.get_columns_names()
         filename  = self.xlsx_file_name(filename, request.query_params)
-        xlsx_file = generate_xlsx(filename)
+        xlsx_file = generate_xlsx(filename, columns)
         response = HttpResponse(
                     save_virtual_workbook(xlsx_file),
                     content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
                 )
         response["Content-Disposition"] = "attachment; filename=%s" % filename
         return response
+
+    @staticmethod
+    def get_columns_names():
+        columns_names = []
+        for month_num in range(1, 13):
+            month_name = calendar.month_name[month_num]
+            columns_names.append(month_name)
+        columns_names.insert(0, "COUNTRY")
+        return columns_names
+
+
     
     @staticmethod
     def xlsx_file_name(name, params):

@@ -112,7 +112,7 @@ class PolioOrgunitViewSet(ModelViewSet):
     GET /api/polio/orgunits
     """
 
-    results_key = "org_units"
+    results_key = "results"
     permission_classes = [permissions.IsAuthenticated]
     remove_results_key_if_paginated = True
     http_method_names = ["get"]
@@ -121,11 +121,6 @@ class PolioOrgunitViewSet(ModelViewSet):
         return OrgUnitSerializer
 
     def get_queryset(self):
-        # user = self.request.user
-        # if user.is_authenticated and user.iaso_profile.org_units.count():
-        #     org_units = OrgUnit.objects.hierarchy(user.iaso_profile.org_units.all())
-        #     return org_units
-        print("USER", self.request.user)
         return OrgUnit.objects.filter_for_user_and_app_id(self.request.user, self.request.query_params.get("app_id"))
 
 

@@ -236,7 +236,7 @@ class CampaignViewSet(ModelViewSet):
         params = request.query_params
         countries = params.get("countries") if params.get("countries") is not None else None
         campaign_groups = params.get("campaignGroups") if params.get("campaignGroups") is not None else None
-        calendar_data = self.get_calendar_data(current_year, countries, campaign_groups)
+        calendar_data = self.get_calendar_data(self, current_year, countries, campaign_groups)
         filename  = self.xlsx_file_name(filename, params)
         xlsx_file = generate_xlsx(filename, columns, calendar_data)
         response = HttpResponse(
@@ -256,7 +256,7 @@ class CampaignViewSet(ModelViewSet):
         return columns_names
 
     @staticmethod
-    def get_calendar_data(year, countries, campaign_groups):
+    def get_calendar_data(self, year, countries, campaign_groups):
         rounds = Round.objects.filter(started_at__year=year)
         if countries:
             rounds = rounds.filter(campaign__country_id__in=countries.split(","))
@@ -271,46 +271,24 @@ class CampaignViewSet(ModelViewSet):
                     month = round.started_at.month
                     row["rounds"] = {}
                     row["rounds"][str(month)] = []
-                    row["rounds"][str(month)].append({
-                        "started_at": dt.datetime.strftime(round.started_at, "%Y-%m-%d"), 
-                        "ended_at": dt.datetime.strftime(round.ended_at, "%Y-%m-%d"),
-                        "obr_name": round.campaign.obr_name,
-                        "vacine": round.campaign.vacine
-                        })
+                    row["rounds"][str(month)].append(self.get_round(round))
                     data_row.append(row)
                 else:
                     row = [sub for sub in data_row if sub["country_id"] == round.campaign.country.id][0]
-                    row["rounds"][str(month)].append({
-                        "started_at": dt.datetime.strftime(round.started_at, "%Y-%m-%d"), 
-                        "ended_at": dt.datetime.strftime(round.ended_at, "%Y-%m-%d"),
-                        "obr_name": round.campaign.obr_name,
-                        "vacine": round.campaign.vacine
-                        })
-                    data_row.append(row)
-        print(data_row[0])                
-        
-        # data = []
-        # aleady_in = []
-        # for campaign in all_campaigns:
-        #     data_c = {}
-        #     if campaign.country.id not in aleady_in:
-        #         aleady_in.append(campaign.country.id)
-        #         data_c[campaign.country.id] = {"country_name": campaign.country.name}  
-        #     if data_c: 
-        #         data_c[campaign.country.id]["rounds"] = {}
-        #         for month_num in range(1, 13): 
-        #             data_c[campaign.country.id]["rounds"][str(month_num)] = self.get_compain_rounds(month_num, campaign)
-        #         data.append(data_c)
-        return rounds
+                    row_index = data_row.index(row)
+                    if row is not None:
+                        row["rounds"][str(month)].append(self.get_round(round))
+                        data_row[row_index]["rounds"] = row["rounds"]              
+        return data_row
 
     @staticmethod
-    def get_compain_rounds(month_num, campaign):
-        print(campaign)
-        print("rounds ==", campaign.rounds.all())
-        all_rounds_for_month = campaign.rounds.filter()
-        Round.objects.filter(campaign__country_id= country_id).filter(started_at__month=month_num)
-        return ["round one", "round two"]
-
+    def get_round(round):
+        return {
+            "started_at": dt.datetime.strftime(round.started_at, "%Y-%m-%d"), 
+            "ended_at": dt.datetime.strftime(round.ended_at, "%Y-%m-%d"),
+            "obr_name": round.campaign.obr_name,
+            "vacine": round.campaign.vacine
+            }
 
     @staticmethod
     def xlsx_file_name(name, params):

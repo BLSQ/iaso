@@ -9,7 +9,6 @@ def generate_xlsx(filename, columns, datas):
     for data in datas:
         data_to_display = []
         data_to_display.append(data["country_name"])
-        print(data["rounds"])
         for month in range(1,13):
             if str(month) in data["rounds"].keys():
                 data_to_display.append(get_cell_data(data["rounds"][str(month)]))
@@ -20,8 +19,9 @@ def generate_xlsx(filename, columns, datas):
     return file
 
 def get_cell_data(rounds):
+    cell_data = ""
     for round in rounds:
-        cell_data = round["obr_name"]+"\n"
+        cell_data += round["obr_name"]+"\n"
         cell_data += "Dates: "+round["started_at"]+"-"+round["ended_at"]+"\n"
-        cell_data += round["vacine"]
-        return cell_data
+        cell_data += round["vacine"]+"\n" if round["vacine"] is not None else "\n"
+    return cell_data

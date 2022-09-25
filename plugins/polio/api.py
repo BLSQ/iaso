@@ -262,7 +262,11 @@ class CampaignViewSet(ModelViewSet):
             rounds = rounds.filter(campaign__country_id__in=countries.split(","))
         if campaign_groups:
             rounds = rounds.filter(campaign__group_id__in =campaign_groups.split(","))
-        rounds = rounds.order_by("campaign__country__name","started_at")
+        rounds = rounds.order_by("campaign__country__name","started_at")             
+        return self.loop_on_rounds(self, rounds)
+
+    @staticmethod
+    def loop_on_rounds(self, rounds):
         data_row = []
         for round in rounds:
             if round.campaign is not None:
@@ -277,8 +281,12 @@ class CampaignViewSet(ModelViewSet):
                     row = [sub for sub in data_row if sub["country_id"] == round.campaign.country.id][0]
                     row_index = data_row.index(row)
                     if row is not None:
-                        row["rounds"][str(month)].append(self.get_round(round))
-                        data_row[row_index]["rounds"] = row["rounds"]              
+                        month = round.started_at.month
+                        if str(month) in data_row[row_index]["rounds"]:
+                            data_row[row_index]["rounds"][str(month)].append(self.get_round(round))
+                        else:
+                            data_row[row_index]["rounds"][str(month)] = []
+                            data_row[row_index]["rounds"][str(month)].append(self.get_round(round))
         return data_row
 
     @staticmethod

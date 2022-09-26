@@ -65,6 +65,7 @@ jobs:
           push: false
           load: true
           tags: iaso:${{ github.sha }}
+          target: dev
           file: docker/bundle/Dockerfile
           cache-from: type=registry,ref=ghcr.io/blsq/iaso:buildcache
           cache-to: type=registry,ref=ghcr.io/blsq/iaso:buildcache,mode=max
@@ -91,6 +92,12 @@ jobs:
       
       - run: |
           curl http://localhost:8081
+
+      - run: 
+        docker ps
+
+      - name: Docker logs
+      run: /usr/bin/docker ps --all --format={{.ID}} |xargs --verbose -I {} /usr/bin/docker logs {}
 
       - name: Cypress run
         uses: cypress-io/github-action@v4

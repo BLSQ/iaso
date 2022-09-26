@@ -75,6 +75,7 @@ from .models import (
     BudgetFiles,
     CampaignScope,
     RoundScope,
+    CampaignFormTemplate,
 )
 from .models import CountryUsersGroup
 from .models import URLCache
@@ -244,8 +245,7 @@ Timeline tracker Automated message
             virus_type=campaign.virus,
             onset_date=campaign.onset_at,
             initial_orgunit_name=campaign.initial_org_unit.name
-                                 + (
-                                     ", " + campaign.initial_org_unit.parent.name if campaign.initial_org_unit.parent else ""),
+            + (", " + campaign.initial_org_unit.parent.name if campaign.initial_org_unit.parent else ""),
             url=f"https://{domain}/dashboard/polio/list",
             url_campaign=f"https://{domain}/dashboard/polio/list/campaignId/{campaign.id}",
         )
@@ -465,27 +465,53 @@ where group_id = polio_roundscope.group_id""",
         campaign_id = request.query_params.get("id", None)
         campaign = get_object_or_404(Campaign, id=campaign_id)
         campaign_scope = get_object_or_404(CampaignScope, campaign=campaign).group.org_units.all()
+        form_name = request.query_params.get("form_name", None)
 
-        authorized_fields = ["id", "epid", "obr_name", "gpei_email", "description",
-                             "creation_email_send_at", "onset_at", "three_level_call_at",
-                             "cvdpv_notified_at", "cvdpv2_notified_at", "pv_notified_at",
-                             "pv2_notified_at", "virus", "detection_status", "detection_responsible",
-                             "detection_first_draft_submitted_at", "detection_rrt_oprtt_approval_at",
-                             "risk_assessment_status", "risk_assessment_responsible", "investigation_at",
-                             "risk_assessment_first_draft_submitted_at", "risk_assessment_rrt_oprtt_approval_at",
-                             "ag_nopv_group_met_at", "dg_authorized_at", "verification_score", "doses_requested",
-                             "preperadness_spreadsheet_url", "preperadness_sync_status", "surge_spreadsheet_url",
-                             "country_name_in_surge_spreadsheet", "budget_status", "budget_responsible",
-                             "created_at", "updated_at", "district_count", "round_pne", "round_two", "vacine"]
+        authorized_fields = [
+            "id",
+            "epid",
+            "obr_name",
+            "gpei_email",
+            "description",
+            "creation_email_send_at",
+            "onset_at",
+            "three_level_call_at",
+            "cvdpv_notified_at",
+            "cvdpv2_notified_at",
+            "pv_notified_at",
+            "pv2_notified_at",
+            "virus",
+            "detection_status",
+            "detection_responsible",
+            "detection_first_draft_submitted_at",
+            "detection_rrt_oprtt_approval_at",
+            "risk_assessment_status",
+            "risk_assessment_responsible",
+            "investigation_at",
+            "risk_assessment_first_draft_submitted_at",
+            "risk_assessment_rrt_oprtt_approval_at",
+            "ag_nopv_group_met_at",
+            "dg_authorized_at",
+            "verification_score",
+            "doses_requested",
+            "preperadness_spreadsheet_url",
+            "preperadness_sync_status",
+            "surge_spreadsheet_url",
+            "country_name_in_surge_spreadsheet",
+            "budget_status",
+            "budget_responsible",
+            "created_at",
+            "updated_at",
+            "district_count",
+            "round_pne",
+            "round_two",
+            "vacine",
+        ]
 
         try:
-            path = campaign.form_template.path
+            path = CampaignFormTemplate.objects.get(name=form_name).form_template.path
         except ValueError:
-            raise serializers.ValidationError(
-                {
-                    "error": f"No template form is linked to the campaign {campaign}."
-                }
-            )
+            raise serializers.ValidationError({"error": f"No template form is linked to the campaign {campaign}."})
 
         wb = openpyxl.load_workbook(path)
         sheet = wb.get_sheet_by_name("choices")
@@ -559,8 +585,11 @@ where group_id = polio_roundscope.group_id""",
                     sheet[cell[choices_column - 1] + str(choices_row)] = "ou_region"
                     sheet[cell[choices_column] + str(choices_row)] = v.id
                     sheet[cell[choices_column + 1] + str(choices_row)] = str(v)
-                    sheet[cell[choices_column + 3] + str(choices_row)] = ou_dic.get("COUNTRY", None) if ou_dic.get(
-                        "COUNTRY", None) is None else ou_dic.get("COUNTRY", None).pk
+                    sheet[cell[choices_column + 3] + str(choices_row)] = (
+                        ou_dic.get("COUNTRY", None)
+                        if ou_dic.get("COUNTRY", None) is None
+                        else ou_dic.get("COUNTRY", None).pk
+                    )
                     choices_row += 1
                     survey_last_empty_row += 1
 
@@ -576,10 +605,16 @@ where group_id = polio_roundscope.group_id""",
                     sheet[cell[choices_column - 1] + str(choices_row)] = "ou_district"
                     sheet[cell[choices_column] + str(choices_row)] = v.id
                     sheet[cell[choices_column + 1] + str(choices_row)] = str(v)
-                    sheet[cell[choices_column + 3] + str(choices_row)] = ou_dic.get("COUNTRY", None) if ou_dic.get(
-                        "COUNTRY", None) is None else ou_dic.get("COUNTRY", None).pk
-                    sheet[cell[choices_column + 4] + str(choices_row)] = ou_dic.get("REGION", None) if ou_dic.get(
-                        "REGION", None) is None else ou_dic.get("REGION", None).pk
+                    sheet[cell[choices_column + 3] + str(choices_row)] = (
+                        ou_dic.get("COUNTRY", None)
+                        if ou_dic.get("COUNTRY", None) is None
+                        else ou_dic.get("COUNTRY", None).pk
+                    )
+                    sheet[cell[choices_column + 4] + str(choices_row)] = (
+                        ou_dic.get("REGION", None)
+                        if ou_dic.get("REGION", None) is None
+                        else ou_dic.get("REGION", None).pk
+                    )
                     # sheet[cell[choices_column + 5] + str(choices_row)] = ou_dic.get("DISTRICT", None) if ou_dic.get("DISTRICT", None) is None else ou_dic.get("DISTRICT", None).name
                     # sheet[cell[choices_column + 6] + str(choices_row)] = ou_dic.get("HEALTH FACILITY", None) if ou_dic.get("HEALTH FACILITY", None) is None else ou_dic.get("HEALTH FACILITY", None).name
                     choices_row += 1
@@ -597,12 +632,21 @@ where group_id = polio_roundscope.group_id""",
                     sheet[cell[choices_column - 1] + str(choices_row)] = ""
                     sheet[cell[choices_column] + str(choices_row)] = v.id
                     sheet[cell[choices_column + 1] + str(choices_row)] = str(v)
-                    sheet[cell[choices_column + 3] + str(choices_row)] = ou_dic.get("COUNTRY", None) if ou_dic.get(
-                        "COUNTRY", None) is None else ou_dic.get("COUNTRY", None).pk
-                    sheet[cell[choices_column + 4] + str(choices_row)] = ou_dic.get("REGION", None) if ou_dic.get(
-                        "REGION", None) is None else ou_dic.get("REGION", None).pk
-                    sheet[cell[choices_column + 5] + str(choices_row)] = ou_dic.get("DISTRICT", None) if ou_dic.get(
-                        "DISTRICT", None) is None else ou_dic.get("DISTRICT", None).name
+                    sheet[cell[choices_column + 3] + str(choices_row)] = (
+                        ou_dic.get("COUNTRY", None)
+                        if ou_dic.get("COUNTRY", None) is None
+                        else ou_dic.get("COUNTRY", None).pk
+                    )
+                    sheet[cell[choices_column + 4] + str(choices_row)] = (
+                        ou_dic.get("REGION", None)
+                        if ou_dic.get("REGION", None) is None
+                        else ou_dic.get("REGION", None).pk
+                    )
+                    sheet[cell[choices_column + 5] + str(choices_row)] = (
+                        ou_dic.get("DISTRICT", None)
+                        if ou_dic.get("DISTRICT", None) is None
+                        else ou_dic.get("DISTRICT", None).name
+                    )
                     # sheet[cell[choices_column + 6] + str(choices_row)] = ou_dic.get("HEALTH FACILITY", None) if ou_dic.get("HEALTH FACILITY", None) is None else ou_dic.get("HEALTH FACILITY", None).name
                     choices_row += 1
                     survey_last_empty_row += 1
@@ -631,7 +675,7 @@ where group_id = polio_roundscope.group_id""",
             cell_obj = q_sheet.cell(row=i, column=2)
             print(cell_obj.value)
             cell_value_start = cell_obj.value[:7] if cell_obj.value is not None else ""
-            if (cell_value_start == "survey_"):
+            if cell_value_start == "survey_":
                 str_request = cell_obj.value[7:]
                 if str_request in authorized_fields:
                     cell_obj = q_sheet.cell(row=i, column=3)
@@ -642,13 +686,16 @@ where group_id = polio_roundscope.group_id""",
         filename = f"FORM_{campaign.obr_name}_{datetime.now().date()}.xlsx"
         print(ou_tree_list)
 
+        # TODO: REWORK MODEL (remove form from campaign, create separate model tenancy +
+
         with NamedTemporaryFile() as tmp:
             wb.save(tmp.name)
             tmp.seek(0)
             stream = tmp.read()
 
-            response = HttpResponse(stream,
-                                    content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
+            response = HttpResponse(
+                stream, content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+            )
             response["Content-Disposition"] = "attachment; filename=%s" % filename
             return response
 
@@ -920,9 +967,9 @@ class IMStatsViewSet(viewsets.ViewSet):
 
             districts_qs = (
                 OrgUnit.objects.hierarchy(country)
-                    .filter(org_unit_type_id__category="DISTRICT")
-                    .only("name", "id", "parent", "aliases")
-                    .prefetch_related("parent")
+                .filter(org_unit_type_id__category="DISTRICT")
+                .only("name", "id", "parent", "aliases")
+                .prefetch_related("parent")
             )
             district_dict = _build_district_cache(districts_qs)
             forms = get_url_content(country_config["url"], country_config["login"], country_config["password"])
@@ -1024,7 +1071,7 @@ class IMStatsViewSet(viewsets.ViewSet):
 
                         for key_abs in nfm_abs_counts_dict:
                             round_stats["nfm_abs_stats"][key_abs] = (
-                                    round_stats["nfm_abs_stats"][key_abs] + nfm_abs_counts_dict[key_abs]
+                                round_stats["nfm_abs_stats"][key_abs] + nfm_abs_counts_dict[key_abs]
                             )
                         d = round_stats["data"][district_name]
                         d["total_child_fmd"] = d["total_child_fmd"] + total_Child_FMD
@@ -1160,9 +1207,9 @@ def handle_ona_request_with_key(request, key):
         country = OrgUnit.objects.get(id=config["country_id"])
         facilities = (
             OrgUnit.objects.hierarchy(country)
-                .filter(org_unit_type_id__category="HF")
-                .only("name", "id", "parent", "aliases")
-                .prefetch_related("parent")
+            .filter(org_unit_type_id__category="HF")
+            .only("name", "id", "parent", "aliases")
+            .prefetch_related("parent")
         )
         cache = make_orgunits_cache(facilities)
         # Add fields to speed up detection of campaign day
@@ -1271,9 +1318,9 @@ class OrgUnitsPerCampaignViewset(viewsets.ViewSet):
                     all_facilities = all_facilities.filter(org_unit_type_id=org_unit_type)
                 all_facilities = (
                     all_facilities.prefetch_related("parent")
-                        .prefetch_related("parent__parent")
-                        .prefetch_related("parent__parent__parent")
-                        .prefetch_related("parent__parent__parent__parent")
+                    .prefetch_related("parent__parent")
+                    .prefetch_related("parent__parent__parent")
+                    .prefetch_related("parent__parent__parent__parent")
                 )
                 all_facilities = all_facilities.annotate(campaign_id=Value(campaign.id, UUIDField()))
                 all_facilities = all_facilities.annotate(campaign_obr=Value(campaign.obr_name, TextField()))
@@ -1314,7 +1361,7 @@ def find_district(district_name, region_name, district_dict):
     elif district_list and len(district_list) > 1:
         for di in district_list:
             if di.parent.name.lower() == region_name.lower() or (
-                    di.parent.aliases and region_name in di.parent.aliases
+                di.parent.aliases and region_name in di.parent.aliases
             ):
                 return di
     return None
@@ -1459,9 +1506,9 @@ class LQASStatsViewSet(viewsets.ViewSet):
 
             districts_qs = (
                 OrgUnit.objects.hierarchy(country)
-                    .filter(org_unit_type_id__category="DISTRICT")
-                    .only("name", "id", "parent", "aliases")
-                    .prefetch_related("parent")
+                .filter(org_unit_type_id__category="DISTRICT")
+                .only("name", "id", "parent", "aliases")
+                .prefetch_related("parent")
             )
             district_dict = _build_district_cache(districts_qs)
 
@@ -1585,7 +1632,7 @@ class LQASStatsViewSet(viewsets.ViewSet):
 
                     d["total_child_fmd"] = d["total_child_fmd"] + total_Child_FMD
                     d["total_child_checked"] = (
-                            d["total_child_checked"] + total_sites_visited
+                        d["total_child_checked"] + total_sites_visited
                     )  # ChildCehck always zero in Mali?
                     d["total_sites_visited"] = d["total_sites_visited"] + total_sites_visited
                     d["district"] = district.id
@@ -1673,8 +1720,7 @@ def email_subject(event_type: str, campaign_name: str) -> str:
 
 
 def event_creation_email(
-        event_type: str, first_name: str, last_name: str, comment: str, file: str, links: str, link: str,
-        dns_domain: str
+    event_type: str, first_name: str, last_name: str, comment: str, file: str, links: str, link: str, dns_domain: str
 ) -> str:
     email_template = """%s by %s %s.
 
@@ -1695,15 +1741,15 @@ This is an automated email from %s
 
 
 def creation_email_with_two_links(
-        event_type: str,
-        first_name: str,
-        last_name: str,
-        comment: str,
-        files: str,
-        links: str,
-        validation_link: str,
-        rejection_link: str,
-        dns_domain: str,
+    event_type: str,
+    first_name: str,
+    last_name: str,
+    comment: str,
+    files: str,
+    links: str,
+    validation_link: str,
+    rejection_link: str,
+    dns_domain: str,
 ) -> str:
     email_template = """%s by %s %s.
 
@@ -1790,14 +1836,14 @@ def send_approval_budget_mail(event: BudgetEvent) -> None:
 
 
 def send_approvers_email(
-        user: User,
-        author_team: Team,
-        event: BudgetEvent,
-        event_type: str,
-        approval_link: str,
-        rejection_link: str,
-        files_info: Optional[List[Dict[str, Any]]],
-        links_string: Optional[str],
+    user: User,
+    author_team: Team,
+    event: BudgetEvent,
+    event_type: str,
+    approval_link: str,
+    rejection_link: str,
+    files_info: Optional[List[Dict[str, Any]]],
+    links_string: Optional[str],
 ) -> None:
     # if user is in other approval team, send the mail with the fat buttons
     subject = email_subject(event_type, event.campaign.obr_name)
@@ -1853,8 +1899,8 @@ def send_approval_confirmation_to_users(event: BudgetEvent) -> None:
 def is_budget_approved(user: User, event: BudgetEvent) -> bool:
     val_teams = (
         Team.objects.filter(name__icontains="approval")
-            .filter(project__account=user.iaso_profile.account)
-            .filter(deleted_at=None)
+        .filter(project__account=user.iaso_profile.account)
+        .filter(deleted_at=None)
     )
     validation_count = 0
     for val_team in val_teams:
@@ -1997,8 +2043,8 @@ class BudgetEventViewset(ModelViewSet):
                     #     raise serializers.ValidationError({"general":"userWithoutTeam"})
                     other_approval_teams = (
                         Team.objects.filter(name__icontains="approval")
-                            .exclude(id=author_team.id)
-                            .filter(deleted_at=None)
+                        .exclude(id=author_team.id)
+                        .filter(deleted_at=None)
                     )
                     approvers = other_approval_teams.values("users")
 

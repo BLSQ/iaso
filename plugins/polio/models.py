@@ -7,7 +7,7 @@ from django.db.models import Count
 from django.utils.translation import gettext as _
 from gspread.utils import extract_id_from_url
 
-from iaso.models import Group, OrgUnit
+from iaso.models import Group, OrgUnit, Account
 from iaso.models.microplanning import Team
 from iaso.utils import slugify_underscore
 from iaso.utils.models.soft_deletable import SoftDeletableModel
@@ -153,6 +153,29 @@ def _campaign_template_form_upload_to(instance: "Campaign", filename: str) -> st
     return f"forms/{underscored_form_name}_{instance.id}{path.suffix}"
 
 
+class CampaignFormTemplate(SoftDeletableModel):
+    form_template = models.FileField(upload_to=_campaign_template_form_upload_to, null=True, blank=True)
+    name = models.CharField(max_length=255, unique=True)
+    account = models.ForeignKey(Account, blank=False, null=False, on_delete=models.PROTECT)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        unique_together = ["name", "account"]
+
+    def __str__(self):
+        return f"{self.account} {self.name}"
+
+    def as_dict(self):
+        return {
+            "name": self.name,
+            "created_at": self.created_at,
+            "updated_at": self.updated_at,
+            "form_template": self.form_template,
+            "account": self.account.as_dict(),
+        }
+
+
 class Campaign(SoftDeletableModel):
     class Meta:
         ordering = ["obr_name"]
@@ -167,7 +190,6 @@ class Campaign(SoftDeletableModel):
     initial_org_unit = models.ForeignKey(
         "iaso.orgunit", null=True, blank=True, on_delete=models.SET_NULL, related_name="campaigns"
     )
-    form_template = models.FileField(upload_to=_campaign_template_form_upload_to, null=True, blank=True)
 
     country = models.ForeignKey(
         "iaso.orgunit",

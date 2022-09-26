@@ -7,13 +7,15 @@ import plugins.polio.models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('polio', '0073_merge_20220902_0833'),
+        ("polio", "0073_merge_20220902_0833"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='campaign',
-            name='form_template',
-            field=models.FileField(blank=True, null=True, upload_to=plugins.polio.models._campaign_template_form_upload_to),
+            model_name="campaign",
+            name="form_template",
+            field=models.FileField(
+                blank=True, null=True, upload_to=plugins.polio.models._campaign_template_form_upload_to
+            ),
         ),
     ]

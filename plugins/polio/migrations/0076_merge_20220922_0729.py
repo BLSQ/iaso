@@ -6,9 +6,8 @@ from django.db import migrations
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('polio', '0074_campaign_form_template'),
-        ('polio', '0075_migrate_doses_requested'),
+        ("polio", "0074_campaign_form_template"),
+        ("polio", "0075_migrate_doses_requested"),
     ]
 
-    operations = [
-    ]
+    operations = []

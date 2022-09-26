@@ -14,7 +14,8 @@ from .models import (
     SpreadSheetImport,
     CampaignGroup,
     BudgetEvent,
-    BudgetFiles, CampaignFormTemplate,
+    BudgetFiles,
+    CampaignFormTemplate,
 )
 
 

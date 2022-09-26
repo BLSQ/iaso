@@ -107,7 +107,7 @@ class CustomFilterBackend(filters.BaseFilterBackend):
 class PolioOrgunitViewSet(ModelViewSet):
     """Org units API for Polio
 
-    This API is use by polio plugin to fetch country related to an org unit
+    This API is use by polio plugin to fetch country related to an org unit. Read only
 
     GET /api/polio/orgunits
     """

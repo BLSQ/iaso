@@ -482,7 +482,11 @@ where group_id = polio_roundscope.group_id""",
 
     @action(methods=["GET", "POST"], detail=False)
     def generate_xlsform(self, request):
-
+        """
+        Export a xlsform out of a campaign. A template is required. Specific data can be extracted from campaigns by
+        starting the name variable by 'survey_' in the xls file in "calculate" row. The data will be saved in the
+        calculation column.
+        """
         campaign_id = request.query_params.get("id", None)
         campaign = get_object_or_404(Campaign, id=campaign_id)
         campaign_scope = get_object_or_404(CampaignScope, campaign=campaign).group.org_units.all()

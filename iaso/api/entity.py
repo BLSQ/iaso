@@ -4,6 +4,7 @@ import io
 
 import xlsxwriter  # type: ignore
 from django.core.paginator import Paginator
+from django.db import models
 from django.db.models import Q, Max
 from django.http import JsonResponse, HttpResponse
 from django.shortcuts import get_object_or_404

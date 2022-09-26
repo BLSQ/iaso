@@ -11,6 +11,7 @@
       <div id="app"></div>
       <script>
         window.STATIC_URL = "{{ STATIC_URL }}";
+        window.IASO_VERSION = "{{ VERSION }}";
         const PLUGINS_ENABLED = {{ PLUGINS_ENABLED|safe }};
         const USER_HOME_PAGE = "{{ USER_HOME_PAGE |default:"" }}";
         // From context processor

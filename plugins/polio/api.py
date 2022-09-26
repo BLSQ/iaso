@@ -53,7 +53,8 @@ from plugins.polio.serializers import (
     BudgetEventSerializer,
     BudgetFilesSerializer,
     serialize_campaign,
-    log_campaign_modification, CampaignFormTemplateSerializer,
+    log_campaign_modification,
+    CampaignFormTemplateSerializer,
 )
 from plugins.polio.serializers import (
     CountryUsersGroupSerializer,
@@ -266,8 +267,7 @@ Timeline tracker Automated message
             virus_type=campaign.virus,
             onset_date=campaign.onset_at,
             initial_orgunit_name=campaign.initial_org_unit.name
-                                 + (
-                                     ", " + campaign.initial_org_unit.parent.name if campaign.initial_org_unit.parent else ""),
+            + (", " + campaign.initial_org_unit.parent.name if campaign.initial_org_unit.parent else ""),
             url=f"https://{domain}/dashboard/polio/list",
             url_campaign=f"https://{domain}/dashboard/polio/list/campaignId/{campaign.id}",
         )
@@ -998,9 +998,9 @@ class IMStatsViewSet(viewsets.ViewSet):
 
             districts_qs = (
                 OrgUnit.objects.hierarchy(country)
-                    .filter(org_unit_type_id__category="DISTRICT")
-                    .only("name", "id", "parent", "aliases")
-                    .prefetch_related("parent")
+                .filter(org_unit_type_id__category="DISTRICT")
+                .only("name", "id", "parent", "aliases")
+                .prefetch_related("parent")
             )
             district_dict = _build_district_cache(districts_qs)
             forms = get_url_content(country_config["url"], country_config["login"], country_config["password"])
@@ -1102,7 +1102,7 @@ class IMStatsViewSet(viewsets.ViewSet):
 
                         for key_abs in nfm_abs_counts_dict:
                             round_stats["nfm_abs_stats"][key_abs] = (
-                                    round_stats["nfm_abs_stats"][key_abs] + nfm_abs_counts_dict[key_abs]
+                                round_stats["nfm_abs_stats"][key_abs] + nfm_abs_counts_dict[key_abs]
                             )
                         d = round_stats["data"][district_name]
                         d["total_child_fmd"] = d["total_child_fmd"] + total_Child_FMD
@@ -1238,9 +1238,9 @@ def handle_ona_request_with_key(request, key):
         country = OrgUnit.objects.get(id=config["country_id"])
         facilities = (
             OrgUnit.objects.hierarchy(country)
-                .filter(org_unit_type_id__category="HF")
-                .only("name", "id", "parent", "aliases")
-                .prefetch_related("parent")
+            .filter(org_unit_type_id__category="HF")
+            .only("name", "id", "parent", "aliases")
+            .prefetch_related("parent")
         )
         cache = make_orgunits_cache(facilities)
         # Add fields to speed up detection of campaign day
@@ -1348,9 +1348,9 @@ class OrgUnitsPerCampaignViewset(viewsets.ViewSet):
                     all_facilities = all_facilities.filter(org_unit_type_id=org_unit_type)
                 all_facilities = (
                     all_facilities.prefetch_related("parent")
-                        .prefetch_related("parent__parent")
-                        .prefetch_related("parent__parent__parent")
-                        .prefetch_related("parent__parent__parent__parent")
+                    .prefetch_related("parent__parent")
+                    .prefetch_related("parent__parent__parent")
+                    .prefetch_related("parent__parent__parent__parent")
                 )
                 all_facilities = all_facilities.annotate(campaign_id=Value(campaign.id, UUIDField()))
                 all_facilities = all_facilities.annotate(campaign_obr=Value(campaign.obr_name, TextField()))
@@ -1391,7 +1391,7 @@ def find_district(district_name, region_name, district_dict):
     elif district_list and len(district_list) > 1:
         for di in district_list:
             if di.parent.name.lower() == region_name.lower() or (
-                    di.parent.aliases and region_name in di.parent.aliases
+                di.parent.aliases and region_name in di.parent.aliases
             ):
                 return di
     return None
@@ -1536,9 +1536,9 @@ class LQASStatsViewSet(viewsets.ViewSet):
 
             districts_qs = (
                 OrgUnit.objects.hierarchy(country)
-                    .filter(org_unit_type_id__category="DISTRICT")
-                    .only("name", "id", "parent", "aliases")
-                    .prefetch_related("parent")
+                .filter(org_unit_type_id__category="DISTRICT")
+                .only("name", "id", "parent", "aliases")
+                .prefetch_related("parent")
             )
             district_dict = _build_district_cache(districts_qs)
 
@@ -1662,7 +1662,7 @@ class LQASStatsViewSet(viewsets.ViewSet):
 
                     d["total_child_fmd"] = d["total_child_fmd"] + total_Child_FMD
                     d["total_child_checked"] = (
-                            d["total_child_checked"] + total_sites_visited
+                        d["total_child_checked"] + total_sites_visited
                     )  # ChildCehck always zero in Mali?
                     d["total_sites_visited"] = d["total_sites_visited"] + total_sites_visited
                     d["district"] = district.id
@@ -1750,8 +1750,7 @@ def email_subject(event_type: str, campaign_name: str) -> str:
 
 
 def event_creation_email(
-        event_type: str, first_name: str, last_name: str, comment: str, file: str, links: str, link: str,
-        dns_domain: str
+    event_type: str, first_name: str, last_name: str, comment: str, file: str, links: str, link: str, dns_domain: str
 ) -> str:
     email_template = """%s by %s %s.
 
@@ -1772,15 +1771,15 @@ This is an automated email from %s
 
 
 def creation_email_with_two_links(
-        event_type: str,
-        first_name: str,
-        last_name: str,
-        comment: Optional[str],
-        files: str,
-        links: Optional[str],
-        validation_link: str,
-        rejection_link: str,
-        dns_domain: str,
+    event_type: str,
+    first_name: str,
+    last_name: str,
+    comment: Optional[str],
+    files: str,
+    links: Optional[str],
+    validation_link: str,
+    rejection_link: str,
+    dns_domain: str,
 ) -> str:
     email_template = """%s by %s %s.
 
@@ -1867,14 +1866,14 @@ def send_approval_budget_mail(event: BudgetEvent) -> None:
 
 
 def send_approvers_email(
-        user: User,
-        author_team: Team,
-        event: BudgetEvent,
-        event_type: str,
-        approval_link: str,
-        rejection_link: str,
-        files_info: Optional[List[Dict[str, Any]]],
-        links_string: Optional[str],
+    user: User,
+    author_team: Team,
+    event: BudgetEvent,
+    event_type: str,
+    approval_link: str,
+    rejection_link: str,
+    files_info: Optional[List[Dict[str, Any]]],
+    links_string: Optional[str],
 ) -> None:
     # if user is in other approval team, send the mail with the fat buttons
     subject = email_subject(event_type, event.campaign.obr_name)
@@ -1930,8 +1929,8 @@ def send_approval_confirmation_to_users(event: BudgetEvent) -> None:
 def is_budget_approved(user: User, event: BudgetEvent) -> bool:
     val_teams = (
         Team.objects.filter(name__icontains="approval")
-            .filter(project__account=user.iaso_profile.account)
-            .filter(deleted_at=None)
+        .filter(project__account=user.iaso_profile.account)
+        .filter(deleted_at=None)
     )
     validation_count = 0
     for val_team in val_teams:
@@ -2074,8 +2073,8 @@ class BudgetEventViewset(ModelViewSet):
                     #     raise serializers.ValidationError({"general":"userWithoutTeam"})
                     other_approval_teams = (
                         Team.objects.filter(name__icontains="approval")
-                            .exclude(id=author_team.id)
-                            .filter(deleted_at=None)
+                        .exclude(id=author_team.id)
+                        .filter(deleted_at=None)
                     )
                     approvers = other_approval_teams.values("users")
 
@@ -2187,9 +2186,7 @@ class CampaignFormTemplateViewSet(ModelViewSet):
     remove_results_key_if_paginated = True
 
     def get_queryset(self):
-        queryset = CampaignFormTemplate.objects.filter(
-            account=self.request.user.iaso_profile.account
-        )
+        queryset = CampaignFormTemplate.objects.filter(account=self.request.user.iaso_profile.account)
         return queryset
 
 

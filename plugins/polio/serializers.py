@@ -275,7 +275,6 @@ class RoundSerializer(serializers.ModelSerializer):
     def create(self, validated_data):
         vaccines = validated_data.pop("vaccines", [])
         shipments = validated_data.pop("shipments", [])
-        print("VALIDATED DATA", validated_data)
         round = Round.objects.create(**validated_data)
         for vaccine in vaccines:
             RoundVaccine.objects.create(round=round, **vaccine)

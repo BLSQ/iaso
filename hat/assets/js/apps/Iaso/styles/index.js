@@ -52,5 +52,10 @@ export const getOverriddenTheme = (theme, themeConfig) => {
                 },
             },
         },
+        props: {
+            MuiTextField: {
+                variant: 'outlined',
+            },
+        },
     };
 };

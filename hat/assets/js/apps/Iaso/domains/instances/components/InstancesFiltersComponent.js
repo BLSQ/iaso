@@ -6,7 +6,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import { Box, Button, Grid, makeStyles, Typography } from '@material-ui/core';
 
 import Search from '@material-ui/icons/Search';
-import { commonStyles, useSafeIntl } from 'bluesquare-components';
+import { commonStyles, useSafeIntl, QueryBuilder } from 'bluesquare-components';
 import InputComponent from '../../../components/forms/InputComponent';
 
 import { periodTypeOptions } from '../../periods/constants';
@@ -27,6 +27,8 @@ import { useGetOrgUnit } from '../../orgUnits/components/TreeView/requests';
 
 import { LocationLimit } from '../../../utils/map/LocationLimit';
 import { UserOrgUnitRestriction } from './UserOrgUnitRestriction';
+
+// import { Demo } from './Query.tsx';
 
 export const instanceStatusOptions = INSTANCE_STATUSES.map(status => ({
     value: status,
@@ -141,6 +143,7 @@ const InstancesFiltersComponent = ({
 
     return (
         <div className={classes.marginBottomBig}>
+            <QueryBuilder />
             <UserOrgUnitRestriction />
             <Grid container spacing={4}>
                 <Grid item xs={4}>

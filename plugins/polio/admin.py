@@ -14,7 +14,7 @@ from .models import (
     SpreadSheetImport,
     CampaignGroup,
     BudgetEvent,
-    BudgetFiles,
+    BudgetFiles, CampaignFormTemplate,
 )
 
 
@@ -85,3 +85,4 @@ admin.site.register(URLCache)
 admin.site.register(SpreadSheetImport, SpreadSheetImportAdmin)
 admin.site.register(BudgetEvent)
 admin.site.register(BudgetFiles)
+admin.site.register(CampaignFormTemplate)

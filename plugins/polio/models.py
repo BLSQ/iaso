@@ -146,9 +146,9 @@ class Round(models.Model):
         return getattr(self, key)
 
 
-def _campaign_template_form_upload_to(instance: "Campaign", filename: str) -> str:
+def _campaign_template_form_upload_to(instance: "CampaignFormTemplate", filename: str) -> str:
     path = pathlib.Path(filename)
-    underscored_form_name = slugify_underscore(instance.obr_name)
+    underscored_form_name = slugify_underscore(instance.name)
 
     return f"forms/{underscored_form_name}_{instance.id}{path.suffix}"
 

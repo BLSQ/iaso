@@ -6,7 +6,7 @@ from django.contrib.auth.models import User
 from django.db import transaction
 from django.db.models import Count
 from django.db.transaction import atomic
-from gspread.exceptions import APIError
+from gspread.exceptions import APIError  # type: ignore
 from gspread.exceptions import NoValidUrlKeyFound
 from rest_framework import serializers
 from rest_framework.validators import UniqueValidator

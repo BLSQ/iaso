@@ -1,4 +1,4 @@
-from bs4 import BeautifulSoup as Soup
+from bs4 import BeautifulSoup as Soup  # type: ignore
 from datetime import datetime
 from django.utils.text import slugify
 

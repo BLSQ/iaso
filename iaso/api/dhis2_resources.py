@@ -2,7 +2,6 @@ from time import process_time
 from rest_framework import status, permissions
 from rest_framework.response import Response
 from rest_framework import viewsets
-from django.core.exceptions import PermissionDenied
 
 from dhis2 import Api
 
@@ -19,6 +18,7 @@ class Dhis2ViewSet(viewsets.ViewSet):
     GET /api/datasources/programs/
     """
 
+    resource: str
     permission_classes = [permissions.IsAuthenticated]
 
     def list(self, request, datasource_id, format="json"):

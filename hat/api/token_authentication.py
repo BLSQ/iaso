@@ -7,8 +7,8 @@ from django.conf import settings
 from django.contrib.auth import login
 from django.contrib.auth.models import User
 from django.http import HttpResponseRedirect
-from rest_framework_simplejwt import authentication
-from rest_framework_simplejwt.tokens import RefreshToken
+from rest_framework_simplejwt import authentication  # type: ignore
+from rest_framework_simplejwt.tokens import RefreshToken  # type: ignore
 
 
 def token_auth(request):

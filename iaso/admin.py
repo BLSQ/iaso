@@ -43,6 +43,7 @@ from .models import (
     InstanceLock,
 )
 from .models.microplanning import Team, Planning, Assignment
+from .utils.gis import convert_2d_point_to_3d
 
 
 class AdminAttributes(Protocol):
@@ -179,6 +180,12 @@ class InstanceAdmin(admin.GeoModelAdmin):
     inlines = [
         InstanceFileAdminInline,
     ]
+
+    def save_model(self, request, obj, form, change):
+        if obj.location:  # GeoDjango's map return a 2D point, but the database expect a Z value
+            obj.location = convert_2d_point_to_3d(obj.location)
+
+        super().save_model(request, obj, form, change)
 
 
 @admin_attr_decorator

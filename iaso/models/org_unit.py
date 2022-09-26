@@ -6,10 +6,11 @@ from django.contrib.postgres.indexes import GistIndex
 from django.contrib.gis.db.models.fields import PointField, MultiPolygonField
 from django.contrib.postgres.fields import ArrayField, CITextField
 from django.contrib.auth.models import User, AnonymousUser
+from django.db.models import QuerySet
 from django.db.models.expressions import RawSQL
-from django_ltree.fields import PathField
+from django_ltree.fields import PathField  # type: ignore
 from django.utils.translation import ugettext_lazy as _
-from django_ltree.models import TreeModel
+from django_ltree.models import TreeModel  # type: ignore
 
 from .base import SourceVersion, Account
 from .project import Project
@@ -144,7 +145,7 @@ class OrgUnitQuerySet(models.QuerySet):
         return self.filter(path__descendants=str(org_unit.path), path__depth=len(org_unit.path) + 1)
 
     def hierarchy(
-        self, org_unit: typing.Union[typing.List["OrgUnit"], "OrgUnitQuerySet", "OrgUnit"]
+        self, org_unit: typing.Union[typing.List["OrgUnit"], "QuerySet[OrgUnit]", "OrgUnit"]
     ) -> "OrgUnitQuerySet":
         """The OrgunitS and all their descendants"""
         # We need to cast PathValue instances to strings - this could be fixed upstream
@@ -163,7 +164,7 @@ class OrgUnitQuerySet(models.QuerySet):
         # (https://github.com/mariocesar/django-ltree/issues/8)
         return self.filter(path__descendants=str(org_unit.path), path__depth__gt=len(org_unit.path))
 
-    def query_for_related_org_units(self, org_units) -> "RawSQL":
+    def query_for_related_org_units(self, org_units):
         ltree_list = ", ".join(list(map(lambda org_unit: f"'{org_unit.pk}'::ltree", org_units)))
 
         return RawSQL(f"array[{ltree_list}]", []) if len(ltree_list) > 0 else ""
@@ -212,6 +213,9 @@ class OrgUnitQuerySet(models.QuerySet):
         return queryset
 
 
+OrgUnitManager = models.Manager.from_queryset(OrgUnitQuerySet)
+
+
 class OrgUnit(TreeModel):
     VALIDATION_NEW = "NEW"
     VALIDATION_VALID = "VALID"
@@ -251,7 +255,7 @@ class OrgUnit(TreeModel):
     updated_at = models.DateTimeField(auto_now=True)
     creator = models.ForeignKey(User, null=True, blank=True, on_delete=models.SET_NULL)
 
-    objects = OrgUnitQuerySet.as_manager()
+    objects = OrgUnitManager()  # type: ignore
 
     class Meta:
         indexes = [GistIndex(fields=["path"], buffering=True)]

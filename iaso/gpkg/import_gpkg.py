@@ -2,7 +2,7 @@ import sqlite3
 from copy import deepcopy
 from typing import Dict, List, Optional, Tuple, Union
 
-import fiona
+import fiona  # type: ignore
 from django.contrib.auth.models import User
 from django.contrib.gis.geos import MultiPolygon, Point, Polygon
 from django.db import transaction
@@ -52,10 +52,11 @@ def convert_to_geography(geom_type: str, coordinates: list):
     Shapely normally can do this natively but is not compatible with geography col
     and geodjango don't support geo yay"""
     geom_type = geom_type.lower()
+    geom: Union[Point, MultiPolygon]
     if geom_type == "point":
         # For some reason point in iaso are in 3D
         if len(coordinates) == 2:
-            geom = Point(*coordinates, z=0)
+            geom = Point(*coordinates, z=0)  # type: ignore
         else:
             geom = Point(*coordinates)
     elif geom_type == "polygon":
@@ -169,7 +170,8 @@ def import_gpkg_file2(
         source.default_version = version
         source.save()
 
-    account = source.projects.first().account
+    # TODO: check: what if the source has no projects? Throw an error? create one?
+    account = source.projects.first().account  # type: ignore
     if not account.default_version:
         account.default_version = version
         account.save()
@@ -194,7 +196,7 @@ def import_gpkg_file2(
         ref = get_ref(ou)
         ref_ou[ref] = ou
 
-    # The child may be created before the parent so we keep a list to update after creating them all
+    # The child may be created before the parent, so we keep a list to update after creating them all
     to_update_with_parent: List[Tuple[str, str]] = []
     modifications_to_log: List[Tuple[OrgUnit, OrgUnit]] = []
     total_org_unit = 0

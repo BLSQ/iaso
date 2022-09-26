@@ -19,12 +19,14 @@ class SourceVersionSerializer(serializers.ModelSerializer):
     GET /api/sourceversions/
     """
 
-    data_source_name = serializers.SlugRelatedField(source="data_source", slug_field="name", read_only=True)
+    data_source_name: serializers.SlugRelatedField = serializers.SlugRelatedField(
+        source="data_source", slug_field="name", read_only=True
+    )
 
     # Default version for source not global
     is_default = serializers.SerializerMethodField()
 
-    def get_is_default(self, source_version: SourceVersion):
+    def get_is_default(self, source_version: SourceVersion) -> bool:
         return source_version.data_source.default_version == source_version
 
     class Meta:

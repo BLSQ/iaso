@@ -1,4 +1,4 @@
-import gspread.utils
+import gspread.utils  # type: ignore
 from django.contrib import admin
 from django.contrib.admin import widgets
 from django.db import models

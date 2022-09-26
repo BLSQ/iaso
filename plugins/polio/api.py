@@ -1,7 +1,7 @@
 import csv
 import functools
 import json
-from datetime import timedelta, datetime
+from datetime import timedelta, datetime, date
 import logging
 from typing import Any, Dict, List, Optional, Union
 from collections import defaultdict
@@ -23,9 +23,9 @@ from django.http import JsonResponse
 from django.http.response import HttpResponseBadRequest
 from django.shortcuts import get_object_or_404
 from django.utils.timezone import now, make_aware
-from django_filters.rest_framework import DjangoFilterBackend
+from django_filters.rest_framework import DjangoFilterBackend  # type: ignore
 from django.template.loader import render_to_string
-from gspread.utils import extract_id_from_url
+from gspread.utils import extract_id_from_url  # type: ignore
 from hat.settings import DEFAULT_FROM_EMAIL
 from rest_framework import routers, filters, viewsets, serializers, permissions, status
 from rest_framework.decorators import action
@@ -516,7 +516,7 @@ DAYS_EVOLUTION = [
 ]
 
 
-def score_for_x_day_before(ssi_for_campaign, ref_date: datetime.date, n_day: int):
+def score_for_x_day_before(ssi_for_campaign, ref_date: date, n_day: int):
     day = ref_date - timedelta(days=n_day)
     try:
         ssi = ssi_for_campaign.filter(created_at__date=day).last()
@@ -580,7 +580,7 @@ def _make_prep(c: Campaign, round: Round):
             logger.info(f"Round mismatch on {c} {round}")
 
         campaign_prep["history"] = history_for_campaign(ssi_qs, round)
-    except Exception as e:
+    except Exception as e:  # FIXME: too broad Exception
         campaign_prep["status"] = "error"
         campaign_prep["details"] = str(e)
         logger.exception(e)
@@ -1520,9 +1520,9 @@ def creation_email_with_two_links(
     event_type: str,
     first_name: str,
     last_name: str,
-    comment: str,
+    comment: Optional[str],
     files: str,
-    links: str,
+    links: Optional[str],
     validation_link: str,
     rejection_link: str,
     dns_domain: str,
@@ -1693,12 +1693,12 @@ def is_budget_approved(user: User, event: BudgetEvent) -> bool:
     return False
 
 
-def format_file_link(event_file: BudgetFiles) -> Dict:
+def format_file_link(event_file: BudgetFiles) -> Dict[str, str]:
     serialized_file = BudgetFilesSerializer(event_file).data
     return {"path": serialized_file["file"], "name": event_file.file.name}
 
 
-def make_budget_event_file_links(event: BudgetEvent) -> Optional[str]:
+def make_budget_event_file_links(event: BudgetEvent) -> Optional[List[Dict[str, str]]]:
     event_files = event.event_files.all()
     if not event_files:
         return None

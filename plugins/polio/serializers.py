@@ -20,6 +20,8 @@ from .models import (
     Round,
     LineListImport,
     VIRUSES,
+    RoundVaccine,
+    Shipment,
     SpreadSheetImport,
     CampaignGroup,
     BudgetEvent,
@@ -240,12 +242,91 @@ class CampaignScopeSerializer(serializers.ModelSerializer):
     group = GroupSerializer()
 
 
+class ShipmentSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Shipment
+        fields = [
+            "po_numbers",
+            "doses_received",
+            "estimated_arrival_date",
+            "reception_pre_alert",
+            "date_reception",
+            "vaccine_name",
+            "id",
+        ]
+
+
+class RoundVaccineSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = RoundVaccine
+        fields = ["wastage_ratio_forecast", "doses_per_vial", "name", "id"]
+
+
 class RoundSerializer(serializers.ModelSerializer):
     class Meta:
         model = Round
         fields = "__all__"
 
     scopes = RoundScopeSerializer(many=True, required=False)
+    vaccines = RoundVaccineSerializer(many=True, required=False)
+    shipments = ShipmentSerializer(many=True, required=False)
+
+    @atomic
+    def create(self, validated_data):
+        vaccines = validated_data.pop("vaccines", [])
+        shipments = validated_data.pop("shipments", [])
+        print("VALIDATED DATA", validated_data)
+        round = Round.objects.create(**validated_data)
+        for vaccine in vaccines:
+            RoundVaccine.objects.create(round=round, **vaccine)
+        for shipment in shipments:
+            Shipment.objects.create(round=round, **shipment)
+        return round
+
+    @atomic
+    def update(self, instance, validated_data):
+        vaccines = validated_data.pop("vaccines", [])
+        vaccine_instances = []
+        shipments = validated_data.pop("shipments", [])
+        shipment_instances = []
+        current_shipment_ids = []
+        for vaccine_data in vaccines:
+            round_vaccine = None
+            if vaccine_data.get("id"):
+                round_vaccine_id = vaccine_data["id"]
+                round_vaccine = RoundVaccine.objects.get(pk=round_vaccine_id)
+                if round_vaccine.round != instance:
+                    raise serializers.ValidationError({"vaccines": "vaccine is attached to wrong round"})
+            elif vaccine_data.get("name"):
+                vaccine_name = vaccine_data["name"]
+                round_vaccine, create = instance.vaccines.get_or_create(name=vaccine_name)
+            round_vaccine_serializer = RoundVaccineSerializer(instance=round_vaccine, data=vaccine_data)
+            round_vaccine_serializer.is_valid(raise_exception=True)
+            round_vaccine_instance = round_vaccine_serializer.save()
+            vaccine_instances.append(round_vaccine_instance)
+        for shipment_data in shipments:
+            shipment = None
+            if shipment_data.get("id"):
+                shipment_id = shipment_data["id"]
+                current_shipment_ids.append(shipment_id)
+                shipment = Shipment.objects.get(pk=shipment_id)
+                if shipment.round != instance:
+                    raise serializers.ValidationError({"shipments": "shipment is attached to wrong round"})
+            else:
+                shipment = Shipment.objects.create()
+            shipment_serializer = ShipmentSerializer(instance=shipment, data=shipment_data)
+            shipment_serializer.is_valid(raise_exception=True)
+            shipment_instance = shipment_serializer.save()
+            shipment_instances.append(shipment_instance)
+        # remove deleted shipments, ie existing shipments whose id wan't sent in the request
+        all_current_shipments = instance.shipments.all()
+        for current in all_current_shipments:
+            if current_shipment_ids.count(current.id) == 0:
+                current.delete()
+        instance.vaccines.set(vaccine_instances)
+        instance.shipments.set(shipment_instances)
+        round = super().update(instance, validated_data)
+        return round
 
 
 # Don't display the url for Anonymous users

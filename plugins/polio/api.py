@@ -570,7 +570,7 @@ where group_id = polio_roundscope.group_id""",
                     q_sheet[cell[3] + str(16)] = "yes"
                     sheet[cell[choices_column - 1] + str(choices_row)] = "ou_country"
                     sheet[cell[choices_column] + str(choices_row)] = v.id
-                    sheet[cell[choices_column + 1] + str(choices_row)] = str(v)
+                    sheet[cell[choices_column + 1] + str(choices_row)] = str(v.name)
                     choices_row += 1
                     survey_last_empty_row += 1
                 if k == "REGION" and v not in added_regions:
@@ -584,7 +584,7 @@ where group_id = polio_roundscope.group_id""",
                         region_added = True
                     sheet[cell[choices_column - 1] + str(choices_row)] = "ou_region"
                     sheet[cell[choices_column] + str(choices_row)] = v.id
-                    sheet[cell[choices_column + 1] + str(choices_row)] = str(v)
+                    sheet[cell[choices_column + 1] + str(choices_row)] = str(v.name)
                     sheet[cell[choices_column + 3] + str(choices_row)] = (
                         ou_dic.get("COUNTRY", None)
                         if ou_dic.get("COUNTRY", None) is None
@@ -604,7 +604,7 @@ where group_id = polio_roundscope.group_id""",
                         district_added = True
                     sheet[cell[choices_column - 1] + str(choices_row)] = "ou_district"
                     sheet[cell[choices_column] + str(choices_row)] = v.id
-                    sheet[cell[choices_column + 1] + str(choices_row)] = str(v)
+                    sheet[cell[choices_column + 1] + str(choices_row)] = str(v.name)
                     sheet[cell[choices_column + 3] + str(choices_row)] = (
                         ou_dic.get("COUNTRY", None)
                         if ou_dic.get("COUNTRY", None) is None
@@ -615,8 +615,6 @@ where group_id = polio_roundscope.group_id""",
                         if ou_dic.get("REGION", None) is None
                         else ou_dic.get("REGION", None).pk
                     )
-                    # sheet[cell[choices_column + 5] + str(choices_row)] = ou_dic.get("DISTRICT", None) if ou_dic.get("DISTRICT", None) is None else ou_dic.get("DISTRICT", None).name
-                    # sheet[cell[choices_column + 6] + str(choices_row)] = ou_dic.get("HEALTH FACILITY", None) if ou_dic.get("HEALTH FACILITY", None) is None else ou_dic.get("HEALTH FACILITY", None).name
                     choices_row += 1
                     survey_last_empty_row += 1
 
@@ -631,7 +629,7 @@ where group_id = polio_roundscope.group_id""",
                         district_added = True
                     sheet[cell[choices_column - 1] + str(choices_row)] = ""
                     sheet[cell[choices_column] + str(choices_row)] = v.id
-                    sheet[cell[choices_column + 1] + str(choices_row)] = str(v)
+                    sheet[cell[choices_column + 1] + str(choices_row)] = str(v.name)
                     sheet[cell[choices_column + 3] + str(choices_row)] = (
                         ou_dic.get("COUNTRY", None)
                         if ou_dic.get("COUNTRY", None) is None
@@ -670,7 +668,18 @@ where group_id = polio_roundscope.group_id""",
         q_sheet[cell[0] + str(14)] = "note"
         q_sheet[cell[1] + str(14)] = "note_vaccine_type"
         q_sheet[cell[2] + str(14)] = f"Vaccine Type: {campaign.vacine} "
-        # Insert data as notes
+
+        # Get Calculation column position
+        calculation_index = 0
+        for row_calc in q_sheet.rows:
+            iterator = 0
+            for cell in row_calc:
+                iterator += 1
+                if cell.value == "calculation":
+                    calculation_index = iterator
+                    break
+
+        # Insert data as calculation
         for i in range(2, row + 1):
             cell_obj = q_sheet.cell(row=i, column=2)
             print(cell_obj.value)
@@ -678,15 +687,11 @@ where group_id = polio_roundscope.group_id""",
             if cell_value_start == "survey_":
                 str_request = cell_obj.value[7:]
                 if str_request in authorized_fields:
-                    cell_obj = q_sheet.cell(row=i, column=3)
-                    print(cell_obj.value)
+                    cell_obj = q_sheet.cell(row=i, column=calculation_index)
                     cell_obj.value = str(getattr(campaign, str_request, print("NOT FOUND")))
-                    break
 
         filename = f"FORM_{campaign.obr_name}_{datetime.now().date()}.xlsx"
         print(ou_tree_list)
-
-        # TODO: REWORK MODEL (remove form from campaign, create separate model tenancy +
 
         with NamedTemporaryFile() as tmp:
             wb.save(tmp.name)

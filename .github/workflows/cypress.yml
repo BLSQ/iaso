@@ -93,8 +93,8 @@ jobs:
       - run: |
           curl http://localhost:8081
 
-      - run: 
-        docker ps
+      - run: |
+          docker ps
 
       - name: Docker logs
       run: /usr/bin/docker ps --all --format={{.ID}} |xargs --verbose -I {} /usr/bin/docker logs {}

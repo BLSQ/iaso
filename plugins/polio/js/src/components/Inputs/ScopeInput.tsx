@@ -19,8 +19,6 @@ import {
     FormControlLabel,
     FormGroup,
     Grid,
-    Radio,
-    RadioGroup,
     Switch,
     Table as MuiTable,
     TableBody,
@@ -37,19 +35,24 @@ import {
 } from '@material-ui/core';
 import cloneDeep from 'lodash/cloneDeep';
 import sortBy from 'lodash/sortBy';
+
 import { FieldProps } from 'formik/dist/Field';
+
 import { MapComponent } from '../MapComponent/MapComponent';
-import { useGetGeoJson } from '../../hooks/useGetGeoJson';
+import { MapLegend } from '../../../../../../hat/assets/js/apps/Iaso/components/maps/MapLegend';
+
 import MESSAGES from '../../constants/messages';
 import { polioVaccines } from '../../constants/virus';
+
+import { useGetParentOrgUnit } from '../../hooks/useGetParentOrgUnit';
+import { useGetGeoJson } from '../../hooks/useGetGeoJson';
+
 import {
     initialDistrict,
     selectedPathOptions,
     unselectedPathOptions,
 } from '../../styles/constants';
 import { useStyles } from '../../styles/theme';
-
-import { MapLegend } from '../../../../../../hat/assets/js/apps/Iaso/components/maps/MapLegend';
 
 type Scope = {
     vaccine: string;
@@ -86,6 +89,7 @@ const findScopeWithOrgUnit = (scopes: Scope[], orgUnitId: number) => {
 type Values = {
     scopes?: Scope[];
     org_unit: Shape;
+    initial_org_unit: number;
 };
 
 export const ScopeInput: FunctionComponent<FieldProps<Scope[], Values>> = ({
@@ -115,16 +119,17 @@ export const ScopeInput: FunctionComponent<FieldProps<Scope[], Values>> = ({
     const [rowsPerPage, setRowsPerPage] = useState(10);
     const [orderBy, setOrderBy] = useState('asc');
     const [sortFocus, setSortFocus] = useState('DISTRICT');
-    const country =
-        values.org_unit?.country_parent?.id ||
-        values.org_unit?.root?.id ||
-        values.org_unit?.id;
+
+    const { data: country } = useGetParentOrgUnit(values.initial_org_unit);
+
+    const parentCountryId =
+        country?.country_parent?.id || country?.root?.id || country?.id;
 
     const { data: districtShapes, isFetching: isFetchingDistricts } =
-        useGetGeoJson(country, 'DISTRICT');
+        useGetGeoJson(parentCountryId, 'DISTRICT');
 
     const { data: regionShapes, isFetching: isFetchingRegions } = useGetGeoJson(
-        country,
+        parentCountryId,
         'REGION',
     );
 

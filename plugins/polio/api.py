@@ -39,6 +39,7 @@ from iaso.models import OrgUnit
 from iaso.models.microplanning import Team
 from iaso.models.org_unit import OrgUnitType
 from plugins.polio.serializers import (
+    OrgUnitSerializer,
     CampaignSerializer,
     PreparednessPreviewSerializer,
     LineListImportSerializer,
@@ -101,6 +102,26 @@ class CustomFilterBackend(filters.BaseFilterBackend):
             return queryset.filter(query)
 
         return queryset
+
+
+class PolioOrgunitViewSet(ModelViewSet):
+    """Org units API for Polio
+
+    This API is use by polio plugin to fetch country related to an org unit. Read only
+
+    GET /api/polio/orgunits
+    """
+
+    results_key = "results"
+    permission_classes = [permissions.IsAuthenticated]
+    remove_results_key_if_paginated = True
+    http_method_names = ["get"]
+
+    def get_serializer_class(self):
+        return OrgUnitSerializer
+
+    def get_queryset(self):
+        return OrgUnit.objects.filter_for_user_and_app_id(self.request.user, self.request.query_params.get("app_id"))
 
 
 class CampaignViewSet(ModelViewSet):
@@ -1906,6 +1927,7 @@ class BudgetFilesViewset(ModelViewSet):
 
 
 router = routers.SimpleRouter()
+router.register(r"polio/orgunits", PolioOrgunitViewSet, basename="PolioOrgunit")
 router.register(r"polio/campaigns", CampaignViewSet, basename="Campaign")
 router.register(r"polio/campaignsgroup", CampaignGroupViewSet, basename="campaigngroup")
 router.register(r"polio/preparedness_dashboard", PreparednessDashboardViewSet, basename="preparedness_dashboard")

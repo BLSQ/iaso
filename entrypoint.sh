@@ -26,6 +26,11 @@ case "$1" in
     ./scripts/wait_for_dbs.sh
     ./manage.py migrate --noinput
     ./manage.py runserver 0.0.0.0:8081
+    ;;
+  "start_gunicorn")
+    ./scripts/wait_for_dbs.sh
+    ./manage.py migrate --noinput
+    gunicorn hat.wsgi --bind=0.0.0.0:8081
   ;;
   "test" )
     export TESTING=true

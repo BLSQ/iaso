@@ -1,6 +1,7 @@
 import csv
 import functools
 import json
+from datetime import timedelta, datetime, date
 import string
 from datetime import timedelta, datetime
 import logging
@@ -26,10 +27,9 @@ from django.http import JsonResponse
 from django.http.response import HttpResponseBadRequest
 from django.shortcuts import get_object_or_404
 from django.utils.timezone import now, make_aware
-from django_filters.rest_framework import DjangoFilterBackend
+from django_filters.rest_framework import DjangoFilterBackend  # type: ignore
 from django.template.loader import render_to_string
-from gspread.utils import extract_id_from_url
-
+from gspread.utils import extract_id_from_url  # type: ignore
 from hat.settings import DEFAULT_FROM_EMAIL
 from rest_framework import routers, filters, viewsets, serializers, permissions, status
 from rest_framework.decorators import action
@@ -42,6 +42,7 @@ from iaso.models import OrgUnit
 from iaso.models.microplanning import Team
 from iaso.models.org_unit import OrgUnitType
 from plugins.polio.serializers import (
+    OrgUnitSerializer,
     CampaignSerializer,
     PreparednessPreviewSerializer,
     LineListImportSerializer,
@@ -84,7 +85,7 @@ from .preparedness.parser import get_preparedness
 
 logger = getLogger(__name__)
 
-CACHE_VERSION = 6
+CACHE_VERSION = 7
 
 
 class CustomFilterBackend(filters.BaseFilterBackend):
@@ -105,6 +106,26 @@ class CustomFilterBackend(filters.BaseFilterBackend):
             return queryset.filter(query)
 
         return queryset
+
+
+class PolioOrgunitViewSet(ModelViewSet):
+    """Org units API for Polio
+
+    This API is use by polio plugin to fetch country related to an org unit. Read only
+
+    GET /api/polio/orgunits
+    """
+
+    results_key = "results"
+    permission_classes = [permissions.IsAuthenticated]
+    remove_results_key_if_paginated = True
+    http_method_names = ["get"]
+
+    def get_serializer_class(self):
+        return OrgUnitSerializer
+
+    def get_queryset(self):
+        return OrgUnit.objects.filter_for_user_and_app_id(self.request.user, self.request.query_params.get("app_id"))
 
 
 class CampaignViewSet(ModelViewSet):
@@ -744,7 +765,7 @@ DAYS_EVOLUTION = [
 ]
 
 
-def score_for_x_day_before(ssi_for_campaign, ref_date: datetime.date, n_day: int):
+def score_for_x_day_before(ssi_for_campaign, ref_date: date, n_day: int):
     day = ref_date - timedelta(days=n_day)
     try:
         ssi = ssi_for_campaign.filter(created_at__date=day).last()
@@ -808,7 +829,7 @@ def _make_prep(c: Campaign, round: Round):
             logger.info(f"Round mismatch on {c} {round}")
 
         campaign_prep["history"] = history_for_campaign(ssi_qs, round)
-    except Exception as e:
+    except Exception as e:  # FIXME: too broad Exception
         campaign_prep["status"] = "error"
         campaign_prep["details"] = str(e)
         logger.exception(e)
@@ -1056,7 +1077,7 @@ class IMStatsViewSet(viewsets.ViewSet):
                 if campaign:
                     campaign_name = campaign.obr_name
                     # FIXME: We refetch the whole list for all submission this is probably a cause of slowness
-                    scope = campaign.get_all_districts().values_list("id", flat=True)
+                    scope = campaign.get_districts_for_round_number(round_number).values_list("id", flat=True)
                     campaign_stats[campaign_name]["has_scope"] = len(scope) > 0
                     district = find_district(district_name, region_name, district_dict)
                     if not district:
@@ -1259,7 +1280,6 @@ def handle_ona_request_with_key(request, key):
                 logger.exception(f"failed parsing of {form}", exc_info=e)
                 failure_count += 1
     print("parsed:", len(res), "failed:", failure_count)
-    # print("all_keys", all_keys)
     res = convert_dicts_to_table(res)
 
     if as_csv:
@@ -1617,7 +1637,7 @@ class LQASStatsViewSet(viewsets.ViewSet):
                             if source_info == "True":
                                 caregiver_counts_dict[source_info_key] += 1
                 # FIXME: We refetch the whole list for all submission this is probably a cause of slowness
-                scope = campaign.get_all_districts().values_list("id", flat=True)
+                scope = campaign.get_districts_for_round_number(round_number).values_list("id", flat=True)
                 campaign_stats[campaign_name]["has_scope"] = len(scope) > 0
                 district = find_district(district_name, region_name, district_dict)
                 if not district:
@@ -1749,9 +1769,9 @@ def creation_email_with_two_links(
     event_type: str,
     first_name: str,
     last_name: str,
-    comment: str,
+    comment: Optional[str],
     files: str,
-    links: str,
+    links: Optional[str],
     validation_link: str,
     rejection_link: str,
     dns_domain: str,
@@ -1922,12 +1942,12 @@ def is_budget_approved(user: User, event: BudgetEvent) -> bool:
     return False
 
 
-def format_file_link(event_file: BudgetFiles) -> Dict:
+def format_file_link(event_file: BudgetFiles) -> Dict[str, str]:
     serialized_file = BudgetFilesSerializer(event_file).data
     return {"path": serialized_file["file"], "name": event_file.file.name}
 
 
-def make_budget_event_file_links(event: BudgetEvent) -> Optional[str]:
+def make_budget_event_file_links(event: BudgetEvent) -> Optional[List[Dict[str, str]]]:
     event_files = event.event_files.all()
     if not event_files:
         return None
@@ -2156,6 +2176,7 @@ class BudgetFilesViewset(ModelViewSet):
 
 
 router = routers.SimpleRouter()
+router.register(r"polio/orgunits", PolioOrgunitViewSet, basename="PolioOrgunit")
 router.register(r"polio/campaigns", CampaignViewSet, basename="Campaign")
 router.register(r"polio/campaignsgroup", CampaignGroupViewSet, basename="campaigngroup")
 router.register(r"polio/preparedness_dashboard", PreparednessDashboardViewSet, basename="preparedness_dashboard")

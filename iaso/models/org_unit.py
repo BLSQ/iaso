@@ -5,15 +5,53 @@ from functools import reduce
 from django.contrib.auth.models import User, AnonymousUser
 from django.contrib.gis.db.models.fields import PointField, MultiPolygonField
 from django.contrib.postgres.fields import ArrayField, CITextField
-from django.contrib.postgres.indexes import GistIndex
-from django.db import models, transaction
+from django.contrib.auth.models import User, AnonymousUser
+from django.db.models import QuerySet
 from django.db.models.expressions import RawSQL
+from django_ltree.fields import PathField  # type: ignore
 from django.utils.translation import ugettext_lazy as _
-from django_ltree.fields import PathField
-from django_ltree.models import TreeModel
+from django_ltree.models import TreeModel  # type: ignore
 
-from .base import SourceVersion
+from .base import SourceVersion, Account
 from .project import Project
+
+
+def get_or_create_org_unit_type(name: str, depth: int, account: Account, preferred_project: Project) -> "OrgUnitType":
+    """
+    Get or create the OUT (in the scope of the account).
+
+    OUT are considered identical if they have the same name, depth and account.
+
+    Since the existing data is messy (sometimes there are multiple similar OUT in a given account) we are trying to be
+    smart but careful here: we first try to find an existing OUT for the preferred project, if not we look for another
+    one in the account, if not we create a new one.
+
+    :raises ValueError: if the preferred_project account is not consistent with the account parameter
+    """
+
+    if preferred_project.account != account:
+        raise ValueError("preferred_project.account and account parameters are inconsistent")
+
+    out_defining_fields = {"name": name, "depth": depth}
+
+    try:
+        # Let's first try to find a single entry for the preferred project
+        return OrgUnitType.objects.get(**out_defining_fields, projects=preferred_project)
+    except OrgUnitType.DoesNotExist:
+        # Nothing for the preferred project, let's try to find one in the account
+        all_projects_from_account = Project.objects.filter(account=preferred_project.account)
+        try:
+            # Maybe we have a single entry for the account?
+            return OrgUnitType.objects.get(**out_defining_fields, projects__in=all_projects_from_account)
+        except OrgUnitType.MultipleObjectsReturned:
+            # We have multiple similar OUT in the account and no way to choose the better one, so let's pick the first
+            return OrgUnitType.objects.filter(**out_defining_fields, projects__in=all_projects_from_account).first()
+        except OrgUnitType.DoesNotExist:
+            # We have no similar OUT in the account, so let's create a new one
+            return OrgUnitType.objects.create(**out_defining_fields, short_name=name[:4])
+    except OrgUnitType.MultipleObjectsReturned:
+        # We have multiple similar OUT for the preferred project, so let's pick the first
+        return OrgUnitType.objects.filter(**out_defining_fields, projects=preferred_project).first()
 
 
 class OrgUnitTypeQuerySet(models.QuerySet):
@@ -40,6 +78,11 @@ class OrgUnitTypeQuerySet(models.QuerySet):
 
 
 class OrgUnitType(models.Model):
+    """A type of org unit, such as a country, a province, a district, a health facility, etc.
+
+    Note: they are scope at the account level: for a given name and depth, there can be only one OUT per account
+    """
+
     CATEGORIES = [
         ("COUNTRY", _("Country")),
         ("REGION", _("Region")),
@@ -81,6 +124,18 @@ class OrgUnitType(models.Model):
         return res
 
 
+# def get_or_create_org_unit_type(name: str, depth: int, account: Account) -> typing.Tuple[OrgUnitType, bool]:
+#     """ ""Get the OUT if a similar one exist in the account, otherwise create it.
+#
+#     :return: a tuple of the OrgUnitType and a boolean indicating if it was created or not
+#     :raises MultipleObjectsReturned: if multiple OUT with the same name and depth exist in the account
+#     """
+#     all_projects_from_account = Project.objects.filter(account=account)
+#     return OrgUnitType.objects.get_or_create(
+#         projects__in=all_projects_from_account, name=name, depth=depth, defaults={"short_name": name[:4]}
+#     )
+
+
 # noinspection PyTypeChecker
 class OrgUnitQuerySet(models.QuerySet):
     def children(self, org_unit: "OrgUnit") -> "OrgUnitQuerySet":
@@ -90,7 +145,7 @@ class OrgUnitQuerySet(models.QuerySet):
         return self.filter(path__descendants=str(org_unit.path), path__depth=len(org_unit.path) + 1)
 
     def hierarchy(
-        self, org_unit: typing.Union[typing.List["OrgUnit"], "OrgUnitQuerySet", "OrgUnit"]
+        self, org_unit: typing.Union[typing.List["OrgUnit"], "QuerySet[OrgUnit]", "OrgUnit"]
     ) -> "OrgUnitQuerySet":
         """The OrgunitS and all their descendants"""
         # We need to cast PathValue instances to strings - this could be fixed upstream
@@ -109,7 +164,7 @@ class OrgUnitQuerySet(models.QuerySet):
         # (https://github.com/mariocesar/django-ltree/issues/8)
         return self.filter(path__descendants=str(org_unit.path), path__depth__gt=len(org_unit.path))
 
-    def query_for_related_org_units(self, org_units) -> "RawSQL":
+    def query_for_related_org_units(self, org_units):
         ltree_list = ", ".join(list(map(lambda org_unit: f"'{org_unit.pk}'::ltree", org_units)))
 
         return RawSQL(f"array[{ltree_list}]", []) if len(ltree_list) > 0 else ""
@@ -158,6 +213,9 @@ class OrgUnitQuerySet(models.QuerySet):
         return queryset
 
 
+OrgUnitManager = models.Manager.from_queryset(OrgUnitQuerySet)
+
+
 class OrgUnit(TreeModel):
     VALIDATION_NEW = "NEW"
     VALIDATION_VALID = "VALID"
@@ -197,7 +255,7 @@ class OrgUnit(TreeModel):
     updated_at = models.DateTimeField(auto_now=True)
     creator = models.ForeignKey(User, null=True, blank=True, on_delete=models.SET_NULL)
 
-    objects = OrgUnitQuerySet.as_manager()
+    objects = OrgUnitManager()  # type: ignore
 
     class Meta:
         indexes = [GistIndex(fields=["path"], buffering=True)]

@@ -1,4 +1,4 @@
-from lxml import etree
+from lxml import etree  # type: ignore
 
 ENKETO_FORM_ID_SEPARATOR = "-"
 

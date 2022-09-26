@@ -6,3 +6,9 @@ export type Field = {
     key?: string;
     type?: FieldType;
 };
+
+export type ExtraColumn = {
+    name: string;
+    type: FieldType;
+    label: string;
+};

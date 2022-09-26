@@ -12,6 +12,7 @@ import { useSafeIntl } from 'bluesquare-components';
 import MESSAGES from '../../messages';
 import { useGetPossibleFields } from '../../entityTypes/hooks/useGetPossibleFields';
 import { useGetFields } from '../hooks/useGetFields';
+import { useGetBeneficiaryTypesDropdown } from '../hooks/requests';
 
 import { Beneficiary } from '../types/beneficiary';
 import { Field } from '../types/fields';
@@ -47,10 +48,25 @@ export const BeneficiaryBaseInfo: FunctionComponent<Props> = ({
 }) => {
     const { formatMessage } = useSafeIntl();
 
+    const { data: types } = useGetBeneficiaryTypesDropdown();
     const { possibleFields, isFetchingForm } = useGetPossibleFields(
         beneficiary?.attributes?.form_id,
     );
-    const dynamicFields: Field[] = useGetFields(beneficiary, possibleFields);
+    const detailFields = useMemo(() => {
+        let fields = [];
+        if (types && beneficiary) {
+            const fullType = types.find(
+                type => type.value === beneficiary.entity_type,
+            );
+            fields = fullType?.original?.fields_detail_info_view || [];
+        }
+        return fields;
+    }, [types, beneficiary]);
+    const dynamicFields: Field[] = useGetFields(
+        detailFields,
+        beneficiary,
+        possibleFields,
+    );
     const staticFields = useMemo(
         () => [
             {
@@ -69,16 +85,18 @@ export const BeneficiaryBaseInfo: FunctionComponent<Props> = ({
     return (
         <>
             <Table size="small">
-                {!isFetchingForm && (
-                    <TableBody>
-                        {dynamicFields.map(field => (
-                            <Row field={field} key={field.key} />
-                        ))}
-                        {staticFields.map(field => (
-                            <Row field={field} key={field.key} />
-                        ))}
-                    </TableBody>
-                )}
+                <TableBody>
+                    {!isFetchingForm && beneficiary && (
+                        <>
+                            {dynamicFields.map(field => (
+                                <Row field={field} key={field.key} />
+                            ))}
+                            {staticFields.map(field => (
+                                <Row field={field} key={field.key} />
+                            ))}
+                        </>
+                    )}
+                </TableBody>
             </Table>
         </>
     );

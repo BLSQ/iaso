@@ -1,60 +1,9 @@
-import React, { useCallback, ReactNode } from 'react';
 // @ts-ignore
-import { AddButton, IconButton, useSafeIntl } from 'bluesquare-components';
-import { makeStyles } from '@material-ui/core';
-import AutorenewIcon from '@material-ui/icons/Autorenew';
+import { useSafeIntl } from 'bluesquare-components';
 import MESSAGES from '../../../constants/messages';
 import { IntlMessage } from '../../../../../../../hat/assets/js/apps/Iaso/types/intl';
 import { DropdownOptions } from '../../../../../../../hat/assets/js/apps/Iaso/types/utils';
 import { BudgetEventType } from '../../../constants/types';
-
-const style = theme => {
-    return {
-        addButton: {
-            [theme.breakpoints.down('md')]: {
-                marginLeft: theme.spacing(1),
-            },
-        },
-    };
-};
-
-const useButtonStyles = makeStyles(style);
-
-export const useRenderTrigger = (
-    type: 'create' | 'edit' | 'retry' = 'create',
-    isMobileLayout: boolean,
-    color = 'action',
-): ReactNode => {
-    const classes = useButtonStyles();
-    return useCallback(
-        ({ openDialog }) => {
-            if (type === 'edit' || type === 'retry') {
-                return (
-                    <IconButton
-                        color={color}
-                        onClick={openDialog}
-                        overrideIcon={AutorenewIcon}
-                        tooltipMessage={MESSAGES.resendFiles}
-                    />
-                );
-            }
-            return (
-                // The div prevents the Button from being too big on small screens
-                <div className={classes.addButton}>
-                    <AddButton
-                        onClick={openDialog}
-                        dataTestId="create-budgetStep-button"
-                        size={isMobileLayout ? 'small' : 'medium'}
-                        message={
-                            isMobileLayout ? MESSAGES.add : MESSAGES.addStep
-                        }
-                    />
-                </div>
-            );
-        },
-        [classes.addButton, color, type, isMobileLayout],
-    );
-};
 
 export const getTitleMessage = (
     type: 'create' | 'edit' | 'retry',

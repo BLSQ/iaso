@@ -551,7 +551,7 @@ class OrgUnitAPITestCase(APITestCase):
         # we didn't create any new orgunit
         self.assertNoCreation()
 
-    def test_create_org_unit_group_not_in_same_version(self):
+    def test_create_org_unit_group_not_in_same_version_2(self):
         group = m.Group.objects.create(name="bla")
         self.client.force_authenticate(self.yoda)
         response = self.client.post(

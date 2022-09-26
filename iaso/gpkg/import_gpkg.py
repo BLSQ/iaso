@@ -2,12 +2,13 @@ import sqlite3
 from copy import deepcopy
 from typing import Dict, List, Optional, Tuple, Union
 
-import fiona
+import fiona  # type: ignore
 from django.contrib.auth.models import User
 from django.contrib.gis.geos import MultiPolygon, Point, Polygon
 from django.db import transaction
 from hat.audit import models as audit_models
 from iaso.models import DataSource, Group, OrgUnit, OrgUnitType, Project, SourceVersion
+from iaso.models.org_unit import get_or_create_org_unit_type
 
 try:  # only in 3.8
     from typing import TypedDict
@@ -15,18 +16,10 @@ except ImportError:
     TypedDict = type
 
 
-def get_or_create_org_unit_type(name: str, project: Project, depth: int):
-    out = OrgUnitType.objects.filter(projects=project, name=name).first()
-    if not out:
-        count = OrgUnitType.objects.filter(name=name, short_name=name[:4], depth=depth).count()
-        if count == 0:
-            out = OrgUnitType.objects.create(name=name, short_name=name[:4], depth=depth)
-            out.save()
-        elif count > 1:
-            out = OrgUnitType.objects.filter(name=name, short_name=name[:4], depth=depth, projects=project).first()
-        else:
-            out = OrgUnitType.objects.get(name=name, short_name=name[:4], depth=depth)
-        out.projects.add(project)
+def get_or_create_org_unit_type_and_assign_project(name: str, project: Project, depth: int) -> OrgUnitType:
+    """Get or create the OUT '(in the scope of the project's account) then assign it to the project"""
+    out = get_or_create_org_unit_type(name=name, depth=depth, account=project.account, preferred_project=project)
+    out.projects.add(project)
     return out
 
 
@@ -59,10 +52,11 @@ def convert_to_geography(geom_type: str, coordinates: list):
     Shapely normally can do this natively but is not compatible with geography col
     and geodjango don't support geo yay"""
     geom_type = geom_type.lower()
+    geom: Union[Point, MultiPolygon]
     if geom_type == "point":
         # For some reason point in iaso are in 3D
         if len(coordinates) == 2:
-            geom = Point(*coordinates, z=0)
+            geom = Point(*coordinates, z=0)  # type: ignore
         else:
             geom = Point(*coordinates)
     elif geom_type == "polygon":
@@ -97,7 +91,7 @@ def create_or_update_orgunit(
     if not orgunit:
         orgunit = OrgUnit()
     else:
-        # Make a copy so we can do the audit log, otherwise we would edit in place
+        # Make a copy, so we can do the audit log, otherwise we would edit in place
         orgunit = deepcopy(orgunit)
 
     orgunit.name = props["name"]
@@ -176,7 +170,8 @@ def import_gpkg_file2(
         source.default_version = version
         source.save()
 
-    account = source.projects.first().account
+    # TODO: check: what if the source has no projects? Throw an error? create one?
+    account = source.projects.first().account  # type: ignore
     if not account.default_version:
         account.default_version = version
         account.save()
@@ -201,7 +196,7 @@ def import_gpkg_file2(
         ref = get_ref(ou)
         ref_ou[ref] = ou
 
-    # The child may be created before the parent so we keep a list to update after creating them all
+    # The child may be created before the parent, so we keep a list to update after creating them all
     to_update_with_parent: List[Tuple[str, str]] = []
     modifications_to_log: List[Tuple[OrgUnit, OrgUnit]] = []
     total_org_unit = 0
@@ -216,7 +211,7 @@ def import_gpkg_file2(
         colx = fiona.open(filename, mode="r", layer=layer_name)
 
         _, depth, name = layer_name.split("-", maxsplit=2)
-        org_unit_type = get_or_create_org_unit_type(name, project, depth)
+        org_unit_type = get_or_create_org_unit_type_and_assign_project(name, project, int(depth))
 
         # collect all the OrgUnit to create from this layer
         row: OrgUnitData

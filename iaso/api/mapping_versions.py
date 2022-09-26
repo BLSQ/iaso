@@ -177,7 +177,7 @@ class MappingVersionsViewSet(ModelViewSet):
     PATCH /api/mappingversions/<id>
     """
 
-    permission_classes = [permissions.IsAuthenticated, HasPermission("menupermissions.iaso_mappings")]
+    permission_classes = [permissions.IsAuthenticated, HasPermission("menupermissions.iaso_mappings")]  # type: ignore
     serializer_class = MappingVersionSerializer
     results_key = "mapping_versions"
     queryset = MappingVersion.objects.all()

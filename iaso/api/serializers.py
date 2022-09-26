@@ -32,7 +32,7 @@ class OrgUnitTypeSerializer(TimestampSerializerMixin, serializers.ModelSerialize
 class OrgUnitSerializer(TimestampSerializerMixin, serializers.ModelSerializer):
     """Master Serializer for OrgUnit
 
-    This allow us to keep the conversion in one place, subclass if you want to serialize
+    This allows us to keep the conversion in one place, subclass if you want to serialize
     less or more field. See OrgUnitSearchParentSerializer for an example
     """
 

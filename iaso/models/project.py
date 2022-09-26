@@ -1,11 +1,13 @@
 import typing
-from django.contrib.auth.models import User
+from django.contrib.auth.models import User, AnonymousUser
 from django.db import models
 from uuid import uuid4
 
 
 class ProjectQuerySet(models.QuerySet):
-    def get_for_user_and_app_id(self, user: User, app_id: typing.Optional[str]):
+    def get_for_user_and_app_id(
+        self, user: typing.Optional[typing.Union[User, AnonymousUser]], app_id: typing.Optional[str]
+    ):
         """Attempt to find a valid project to which the user has access, and that corresponds to the
         provided app_id. If the user is not authenticated, he can still access the project if it does not
         require authentication.
@@ -35,6 +37,9 @@ class ProjectQuerySet(models.QuerySet):
         raise self.model.DoesNotExist(f"Could not find project for user {user} and app_id {app_id}")
 
 
+ProjectManager = models.Manager.from_queryset(ProjectQuerySet)
+
+
 class Project(models.Model):
     """A data collection project, associated with a single mobile application"""
 
@@ -48,7 +53,7 @@ class Project(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
     external_token = models.UUIDField(default=uuid4, null=True)
     min_version = models.IntegerField(null=True, blank=False)
-    objects = ProjectQuerySet.as_manager()
+    objects = ProjectManager()
 
     def __str__(self):
         return "%s " % (self.name,)

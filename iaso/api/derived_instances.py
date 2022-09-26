@@ -4,7 +4,7 @@ from rest_framework import serializers, permissions
 
 from .common import ModelViewSet, HasPermission
 from iaso.models import ExportRequest, Form, DERIVED
-from iaso.dhis2.derived_instance_generator import generate_instances
+from iaso.dhis2.derived_instance_generator import generate_instances  # type: ignore
 
 
 class DerivedInstanceSerializer(serializers.Serializer):
@@ -52,7 +52,7 @@ class DerivedInstancesViewSet(ModelViewSet):
     POST /api/derivedinstances/
     """
 
-    permission_classes = [permissions.IsAuthenticated, HasPermission("menupermissions.iaso_completeness")]
+    permission_classes = [permissions.IsAuthenticated, HasPermission("menupermissions.iaso_completeness")]  # type: ignore
     serializer_class = DerivedInstanceSerializer
     results_key = "export_instances"
     queryset = ExportRequest.objects.all()

@@ -72,11 +72,12 @@ def safe_api_import(key: str, fallback_status=200):
     return decorator
 
 
+# Typing: it seems quite hard to type this, so I'm not doing it for now. Use "type: ignore" comment to silence mypy
 class HasPermission:
     """
     Permission class factory for simple permission checks.
 
-    If the user has any of the the provided permissions, he will be granted access
+    If the user has any of the provided permissions, he will be granted access
 
     Usage:
 
@@ -92,7 +93,7 @@ class HasPermission:
 
         self._permission_class = PermissionClass
 
-    def __call__(self, *args, **kwargs):
+    def __call__(self, *args, **kwargs) -> permissions.BasePermission:
         return self._permission_class()
 
 

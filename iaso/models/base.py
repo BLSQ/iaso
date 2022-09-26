@@ -830,6 +830,9 @@ class InstanceQuerySet(models.QuerySet):
         return self
 
 
+InstanceManager = models.Manager.from_queryset(InstanceQuerySet)
+
+
 class Instance(models.Model):
     """A series of answers by an individual for a specific form
 
@@ -872,7 +875,7 @@ class Instance(models.Model):
 
     last_export_success_at = models.DateTimeField(null=True, blank=True)
 
-    objects = InstanceQuerySet.as_manager()
+    objects = InstanceManager()
 
     deleted = models.BooleanField(default=False)
     to_export = models.BooleanField(default=False)

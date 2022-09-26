@@ -9,7 +9,7 @@ import { IntlMessage } from '../../types/intl';
 const useStyles = makeStyles(theme => ({
     root: {
         position: 'absolute', // assuming you have a parent relative
-        zIndex: 1000,
+        zIndex: 500,
     },
     mapLegendTitle: {
         fontSize: 14,

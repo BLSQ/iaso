@@ -1,7 +1,7 @@
 from django.contrib.auth.models import User
 from django.db.models import Q
 from django.shortcuts import get_object_or_404
-from django_filters.rest_framework import DjangoFilterBackend
+from django_filters.rest_framework import DjangoFilterBackend  # type: ignore
 from rest_framework import serializers, filters, permissions
 from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated
@@ -359,7 +359,7 @@ class PublishingStatusFilterBackend(filters.BaseFilterBackend):
 
 class PlanningViewSet(AuditMixin, ModelViewSet):
     remove_results_key_if_paginated = True
-    permission_classes = [ReadOnlyOrHasPermission("menupermissions.iaso_planning")]
+    permission_classes = [ReadOnlyOrHasPermission("menupermissions.iaso_planning")]  # type: ignore
     serializer_class = PlanningSerializer
     queryset = Planning.objects.all()
     filter_backends = [
@@ -504,7 +504,7 @@ class AssignmentViewSet(AuditMixin, ModelViewSet):
     sense outside of it's planning."""
 
     remove_results_key_if_paginated = True
-    permission_classes = [IsAuthenticated, ReadOnlyOrHasPermission("menupermissions.iaso_planning")]
+    permission_classes = [IsAuthenticated, ReadOnlyOrHasPermission("menupermissions.iaso_planning")]  # type: ignore
     serializer_class = AssignmentSerializer
     queryset = Assignment.objects.all()
     filter_backends = [

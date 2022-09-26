@@ -48,7 +48,7 @@ class Dhis2OuImporterSerializer(serializers.Serializer):
 
 # noinspection PyMethodMayBeStatic
 class Dhis2OuImporterViewSet(viewsets.ViewSet):
-    permission_classes = [permissions.IsAuthenticated, HasPermission("menupermissions.iaso_sources")]
+    permission_classes = [permissions.IsAuthenticated, HasPermission("menupermissions.iaso_sources")]  # type: ignore
     serializer_class = Dhis2OuImporterSerializer
 
     def create(self, request):

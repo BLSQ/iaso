@@ -45,7 +45,7 @@ class AccountViewSet(ModelViewSet):
 
     permission_classes = [
         permissions.IsAuthenticated,
-        HasPermission("menupermissions.iaso_sources"),
+        HasPermission("menupermissions.iaso_sources"),  # type: ignore
         HasAccountPermission,
     ]
     serializer_class = AccountSerializer

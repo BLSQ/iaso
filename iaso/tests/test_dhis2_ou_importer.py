@@ -2,7 +2,7 @@ from io import StringIO
 
 from django.core import management
 from os import environ
-import responses
+import responses  # type: ignore
 import json
 
 from iaso.models import OrgUnit, Group, GroupSet, Task, Account, DataSource, SUCCESS, Project
@@ -14,6 +14,8 @@ from iaso import models as m
 
 
 class DHIS2TestMixin:
+    old_counts: dict  # To be implemented in the class I'm being mixed into
+
     def fixture_json(self, name):
         with open("./iaso/tests/fixtures/dhis2/" + name + ".json") as json_file:
             return json.load(json_file)
@@ -58,7 +60,7 @@ class DHIS2TestMixin:
     def assertNoCreation(self):
         self.assertEqual(self.old_counts, self.counts())
 
-    def assertCreated(self: TestCase, createds: dict):
+    def assertCreated(self, createds: dict) -> None:
         new_counts = self.counts()
         diff = {}
 

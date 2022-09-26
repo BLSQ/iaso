@@ -2,10 +2,10 @@ import csv
 import io
 from datetime import datetime
 
-import xlsxwriter
+import xlsxwriter  # type: ignore
 from django.conf import settings
 from django.utils import timezone
-from xlsxwriter.utility import xl_rowcol_to_cell
+from xlsxwriter.utility import xl_rowcol_to_cell  # type: ignore
 from hat.common.utils import queryset_iterator
 
 

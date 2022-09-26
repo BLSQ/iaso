@@ -41,7 +41,6 @@ jobs:
           path: ./node_modules
           key: node_modules-${{ hashFiles('package-lock.json') }}
 
-
       - name: upgrade npm
         run: |
           npm install --global npm@8.5
@@ -97,7 +96,7 @@ jobs:
           docker ps
 
       - name: Docker logs
-      run: /usr/bin/docker ps --all --format={{.ID}} |xargs --verbose -I {} /usr/bin/docker logs {}
+        run: /usr/bin/docker ps --all --format={{.ID}} |xargs --verbose -I {} /usr/bin/docker logs {}
 
       - name: Cypress run
         uses: cypress-io/github-action@v4

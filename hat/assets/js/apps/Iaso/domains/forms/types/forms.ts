@@ -35,6 +35,8 @@ export type FieldType =
     | 'date'
     | 'time'
     | 'dateTime'
+    | 'start'
+    | 'end'
     | 'image'
     | 'audio'
     | 'background-audio'

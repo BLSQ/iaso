@@ -1,4 +1,4 @@
-import React, { FunctionComponent, useState } from 'react';
+import React, { FunctionComponent, useState, useMemo } from 'react';
 import { useDispatch } from 'react-redux';
 import { makeStyles, Box, Grid, Tabs, Tab } from '@material-ui/core';
 
@@ -6,27 +6,22 @@ import {
     // @ts-ignore
     commonStyles,
     // @ts-ignore
-    Table,
-    // @ts-ignore
     LoadingSpinner,
     // @ts-ignore
     useSafeIntl,
-    // @ts-ignore
-    // AddButton as AddButtonComponent,
 } from 'bluesquare-components';
 
+import { TableWithDeepLink } from '../../../components/tables/TableWithDeepLink';
 import TopBar from '../../../components/nav/TopBarComponent';
 import { Filters } from './components/Filters';
 import DownloadButtonsComponent from '../../../components/DownloadButtonsComponent';
-// import { Dialog } from './components/Dialog';
 import {
     useGetBeneficiariesPaginated,
     useGetBeneficiariesApiParams,
-    // useDeleteBeneficiary,
-    // useSaveBeneficiary,
+    useGetBeneficiaryTypesDropdown,
 } from './hooks/requests';
 
-import { useColumns, baseUrl } from './config';
+import { useColumns, baseUrl, defaultSorted } from './config';
 import MESSAGES from '../messages';
 
 import { redirectTo } from '../../../routing/actions';
@@ -56,6 +51,7 @@ type Params = {
     tab?: string;
     search?: string;
     entityTypes?: string;
+    entityTypeIds?: string;
 };
 
 type Props = {
@@ -66,16 +62,12 @@ export const Beneficiaries: FunctionComponent<Props> = ({ params }) => {
     const classes: Record<string, string> = useStyles();
     const { formatMessage } = useSafeIntl();
     const dispatch = useDispatch();
-    const columns = useColumns();
-    const { url: apiUrl } = useGetBeneficiariesApiParams(params);
 
+    const { url: apiUrl } = useGetBeneficiariesApiParams(params);
+    const { data: types } = useGetBeneficiaryTypesDropdown();
     const { data, isFetching } = useGetBeneficiariesPaginated(params);
     const [tab, setTab] = useState(params.tab ?? 'list');
-    // const { mutate: deleteEntity, isLoading: deleting } =
-    //     useDeleteBeneficiary();
-    // const { mutate: saveEntity, isLoading: saving } = useSaveBeneficiary();
 
-    // const isLoading = fetchingEntities || deleting || saving;
     const isLoading = isFetching;
     const handleChangeTab = (newTab: string) => {
         setTab(newTab);
@@ -85,10 +77,31 @@ export const Beneficiaries: FunctionComponent<Props> = ({ params }) => {
         };
         dispatch(redirectTo(baseUrl, newParams));
     };
+    const entityTypeIds = useMemo(
+        () => params.entityTypeIds?.split(',') || [],
+        [params.entityTypeIds],
+    );
 
+    const {
+        result,
+        pages,
+        count,
+        columns: extraColumns,
+    } = useMemo(() => {
+        if (!data) {
+            return {
+                result: [],
+                pages: 0,
+                count: 0,
+                columns: [],
+            };
+        }
+        return data;
+    }, [data]);
+    const columns = useColumns(entityTypeIds, extraColumns);
     return (
         <>
-            {isLoading && <LoadingSpinner />}
+            {isLoading && tab === 'map' && <LoadingSpinner />}
             <TopBar
                 title={formatMessage(MESSAGES.beneficiaries)}
                 displayBackButton={false}
@@ -106,24 +119,7 @@ export const Beneficiaries: FunctionComponent<Props> = ({ params }) => {
                 </Tabs>
             </TopBar>
             <Box p={2} className={classes.container} pb={2}>
-                <Filters params={params} />
-                <Grid
-                    container
-                    spacing={0}
-                    justifyContent="flex-end"
-                    alignItems="center"
-                >
-                    {/* <Dialog
-                        titleMessage={MESSAGES.create}
-                        renderTrigger={({ openDialog }) => (
-                            <AddButtonComponent
-                                dataTestId="add-beneficiary-button"
-                                onClick={openDialog}
-                            />
-                        )}
-                        saveEntity={saveEntity}
-                    /> */}
-                </Grid>
+                <Filters params={params} types={types || []} />
 
                 <Box position="relative" width="100%" mt={2}>
                     <Box
@@ -133,15 +129,12 @@ export const Beneficiaries: FunctionComponent<Props> = ({ params }) => {
                         {!isFetching && (
                             <ListMap
                                 locations={
-                                    data?.beneficiary?.map(beneficiary => ({
+                                    data?.result?.map(beneficiary => ({
                                         latitude:
-                                            beneficiary.attributes?.org_unit
-                                                ?.latitude,
+                                            beneficiary.org_unit?.latitude,
                                         longitude:
-                                            beneficiary.attributes?.org_unit
-                                                ?.longitude,
-                                        orgUnit:
-                                            beneficiary.attributes?.org_unit,
+                                            beneficiary.org_unit?.longitude,
+                                        orgUnit: beneficiary.org_unit,
                                         id: beneficiary.id,
                                         original: {
                                             ...beneficiary,
@@ -149,20 +142,22 @@ export const Beneficiaries: FunctionComponent<Props> = ({ params }) => {
                                     })) || []
                                 }
                                 isFetchingLocations={isFetching}
+                                extraColumns={extraColumns}
                             />
                         )}
                     </Box>
                     {tab === 'list' && (
                         <Box>
-                            <Table
+                            <TableWithDeepLink
                                 marginTop={false}
-                                data={data?.beneficiary ?? []}
-                                pages={data?.pages ?? 1}
-                                defaultSorted={[{ id: 'name', desc: false }]}
+                                data={result ?? []}
+                                pages={pages ?? 1}
+                                defaultSorted={defaultSorted}
                                 columns={columns}
-                                count={data?.count ?? 0}
+                                count={count ?? 0}
                                 baseUrl={baseUrl}
                                 params={params}
+                                extraProps={{ loading: isFetching }}
                                 onTableParamsChange={p =>
                                     dispatch(redirectTo(baseUrl, p))
                                 }

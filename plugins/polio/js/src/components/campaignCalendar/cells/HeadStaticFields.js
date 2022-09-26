@@ -3,14 +3,18 @@ import classnames from 'classnames';
 import PropTypes from 'prop-types';
 import { useDispatch } from 'react-redux';
 
-import { useKeyPressListener, useSafeIntl } from 'bluesquare-components';
+import {
+    useKeyPressListener,
+    useSafeIntl,
+    getOrderArray,
+    getSort,
+} from 'bluesquare-components';
 
 import { TableCell, TableSortLabel } from '@material-ui/core';
 
 import { replace } from 'react-router-redux';
 import { withRouter } from 'react-router';
 import { colSpanTitle, defaultStaticColWidth } from '../constants';
-import { getOrderArray, getSort } from '../utils';
 import { useStyles } from '../Styles';
 import MESSAGES from '../../../constants/messages';
 import { genUrl } from '../../../utils/routing';

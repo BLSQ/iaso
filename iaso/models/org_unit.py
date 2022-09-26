@@ -11,8 +11,46 @@ from django_ltree.fields import PathField
 from django.utils.translation import ugettext_lazy as _
 from django_ltree.models import TreeModel
 
-from .base import SourceVersion
+from .base import SourceVersion, Account
 from .project import Project
+
+
+def get_or_create_org_unit_type(name: str, depth: int, account: Account, preferred_project: Project) -> "OrgUnitType":
+    """
+    Get or create the OUT (in the scope of the account).
+
+    OUT are considered identical if they have the same name, depth and account.
+
+    Since the existing data is messy (sometimes there are multiple similar OUT in a given account) we are trying to be
+    smart but careful here: we first try to find an existing OUT for the preferred project, if not we look for another
+    one in the account, if not we create a new one.
+
+    :raises ValueError: if the preferred_project account is not consistent with the account parameter
+    """
+
+    if preferred_project.account != account:
+        raise ValueError("preferred_project.account and account parameters are inconsistent")
+
+    out_defining_fields = {"name": name, "depth": depth}
+
+    try:
+        # Let's first try to find a single entry for the preferred project
+        return OrgUnitType.objects.get(**out_defining_fields, projects=preferred_project)
+    except OrgUnitType.DoesNotExist:
+        # Nothing for the preferred project, let's try to find one in the account
+        all_projects_from_account = Project.objects.filter(account=preferred_project.account)
+        try:
+            # Maybe we have a single entry for the account?
+            return OrgUnitType.objects.get(**out_defining_fields, projects__in=all_projects_from_account)
+        except OrgUnitType.MultipleObjectsReturned:
+            # We have multiple similar OUT in the account and no way to choose the better one, so let's pick the first
+            return OrgUnitType.objects.filter(**out_defining_fields, projects__in=all_projects_from_account).first()
+        except OrgUnitType.DoesNotExist:
+            # We have no similar OUT in the account, so let's create a new one
+            return OrgUnitType.objects.create(**out_defining_fields, short_name=name[:4])
+    except OrgUnitType.MultipleObjectsReturned:
+        # We have multiple similar OUT for the preferred project, so let's pick the first
+        return OrgUnitType.objects.filter(**out_defining_fields, projects=preferred_project).first()
 
 
 class OrgUnitTypeQuerySet(models.QuerySet):
@@ -39,6 +77,11 @@ class OrgUnitTypeQuerySet(models.QuerySet):
 
 
 class OrgUnitType(models.Model):
+    """A type of org unit, such as a country, a province, a district, a health facility, etc.
+
+    Note: they are scope at the account level: for a given name and depth, there can be only one OUT per account
+    """
+
     CATEGORIES = [
         ("COUNTRY", _("Country")),
         ("REGION", _("Region")),
@@ -78,6 +121,18 @@ class OrgUnitType(models.Model):
                 ]
             res["sub_unit_types"] = sub_unit_types
         return res
+
+
+# def get_or_create_org_unit_type(name: str, depth: int, account: Account) -> typing.Tuple[OrgUnitType, bool]:
+#     """ ""Get the OUT if a similar one exist in the account, otherwise create it.
+#
+#     :return: a tuple of the OrgUnitType and a boolean indicating if it was created or not
+#     :raises MultipleObjectsReturned: if multiple OUT with the same name and depth exist in the account
+#     """
+#     all_projects_from_account = Project.objects.filter(account=account)
+#     return OrgUnitType.objects.get_or_create(
+#         projects__in=all_projects_from_account, name=name, depth=depth, defaults={"short_name": name[:4]}
+#     )
 
 
 # noinspection PyTypeChecker

@@ -190,7 +190,7 @@ const Dashboard = ({ router }) => {
                     const allRounds = (
                         <>
                             {row.rounds.map(r => (
-                                <li key={r.number}>
+                                <li key={`${r.number}-${r.started_at}`}>
                                     {`${r.number}. ${r.started_at} -> ${r.ended_at}`}
                                     <br />
                                 </li>
@@ -265,6 +265,7 @@ const Dashboard = ({ router }) => {
         formatMessage,
         params.showOnlyDeleted,
     ]);
+
     return (
         <>
             <TopBar

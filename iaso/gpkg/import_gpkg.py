@@ -8,6 +8,7 @@ from django.contrib.gis.geos import MultiPolygon, Point, Polygon
 from django.db import transaction
 from hat.audit import models as audit_models
 from iaso.models import DataSource, Group, OrgUnit, OrgUnitType, Project, SourceVersion
+from iaso.models.org_unit import get_or_create_org_unit_type
 
 try:  # only in 3.8
     from typing import TypedDict
@@ -15,18 +16,10 @@ except ImportError:
     TypedDict = type
 
 
-def get_or_create_org_unit_type(name: str, project: Project, depth: int):
-    out = OrgUnitType.objects.filter(projects=project, name=name).first()
-    if not out:
-        count = OrgUnitType.objects.filter(name=name, short_name=name[:4], depth=depth).count()
-        if count == 0:
-            out = OrgUnitType.objects.create(name=name, short_name=name[:4], depth=depth)
-            out.save()
-        elif count > 1:
-            out = OrgUnitType.objects.filter(name=name, short_name=name[:4], depth=depth, projects=project).first()
-        else:
-            out = OrgUnitType.objects.get(name=name, short_name=name[:4], depth=depth)
-        out.projects.add(project)
+def get_or_create_org_unit_type_and_assign_project(name: str, project: Project, depth: int) -> OrgUnitType:
+    """Get or create the OUT '(in the scope of the project's account) then assign it to the project"""
+    out = get_or_create_org_unit_type(name=name, depth=depth, account=project.account, preferred_project=project)
+    out.projects.add(project)
     return out
 
 
@@ -97,7 +90,7 @@ def create_or_update_orgunit(
     if not orgunit:
         orgunit = OrgUnit()
     else:
-        # Make a copy so we can do the audit log, otherwise we would edit in place
+        # Make a copy, so we can do the audit log, otherwise we would edit in place
         orgunit = deepcopy(orgunit)
 
     orgunit.name = props["name"]
@@ -216,7 +209,7 @@ def import_gpkg_file2(
         colx = fiona.open(filename, mode="r", layer=layer_name)
 
         _, depth, name = layer_name.split("-", maxsplit=2)
-        org_unit_type = get_or_create_org_unit_type(name, project, depth)
+        org_unit_type = get_or_create_org_unit_type_and_assign_project(name, project, int(depth))
 
         # collect all the OrgUnit to create from this layer
         row: OrgUnitData

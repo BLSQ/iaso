@@ -233,6 +233,10 @@ const MESSAGES = defineMessages({
         id: 'iaso.entities.typeNotSupported',
         defaultMessage: 'Type not supported yet: {type}',
     },
+    all: {
+        id: 'iaso.forms.all',
+        defaultMessage: 'All',
+    },
 });
 
 export default MESSAGES;

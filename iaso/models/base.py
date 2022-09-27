@@ -868,7 +868,7 @@ class Instance(models.Model):
     )
     project = models.ForeignKey("Project", blank=True, null=True, on_delete=models.DO_NOTHING)
     json = models.JSONField(null=True, blank=True)
-    accuracy = models.DecimalField(null=True, decimal_places=2, max_digits=7)
+    accuracy = models.DecimalField(null=True, blank=True, decimal_places=2, max_digits=7)
     device = models.ForeignKey("Device", null=True, blank=True, on_delete=models.DO_NOTHING)
     period = models.TextField(null=True, blank=True, db_index=True)
     entity = models.ForeignKey("Entity", null=True, blank=True, on_delete=models.DO_NOTHING, related_name="instances")

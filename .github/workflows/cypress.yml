@@ -88,15 +88,15 @@ jobs:
           CACHE: false
           DEV_SERVER: true
           PLUGINS: polio
-      
-      - run: |
-          curl localhost:8081
 
       - run: |
           docker ps
 
       - name: Docker logs
         run: /usr/bin/docker ps --all --format={{.ID}} |xargs --verbose -I {} /usr/bin/docker logs {}
+      
+      - run: |
+          curl localhost:8081
 
       - name: Cypress run
         uses: cypress-io/github-action@v4

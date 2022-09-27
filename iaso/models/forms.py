@@ -4,7 +4,6 @@ import typing
 from django.contrib.auth.models import AnonymousUser, User
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.db import models, transaction
-from django.db.models import QuerySet
 from django.utils.html import strip_tags
 from django.utils.translation import ugettext_lazy as _
 from django.contrib.postgres.fields import ArrayField, CITextField

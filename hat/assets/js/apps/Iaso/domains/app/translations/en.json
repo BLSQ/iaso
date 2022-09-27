@@ -739,7 +739,7 @@
     "iaso.snackBar.fetchInstanceLogUser": "An error occred while fetching instance log user",
     "iaso.snackBar.fetchLinkDetailError": "An error occurred while fetching link detail",
     "iaso.snackBar.fetchLinksError": "An error occurred while fetching links",
-    "iaso.snackBar.fetchLogDetailError": "An error occurred while fetching log detail",
+    "iaso.snackBar.fetchLogDetailError": "An error occurred while fetching log details",
     "iaso.snackBar.fetchLogsError": "An error occurred while fetching logs",
     "iaso.snackBar.fetchMappingsError": "An error occurred while fetching mappings",
     "iaso.snackBar.fetchOrgUnitError": "An error occurred while fetching org unit detail",

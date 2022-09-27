@@ -1,4 +1,6 @@
-from typing import Dict, Any, TextIO
+"""This module provides various utils and helpers for IASO"""
+
+from typing import Dict, Any, TextIO, List
 
 from bs4 import BeautifulSoup as Soup
 from datetime import datetime
@@ -12,7 +14,6 @@ def timestamp_to_datetime(timestamp):
 
 def get_flat_children_tree(current_path, el, flat_xml_dict, repeat_groups, allowed_paths, skipped_path):
     for children in el.findChildren(None, {}, False):
-        node_current_path = ""
         if el.name == "[document]":
             node_current_path = ""
         elif el.name == "data":
@@ -70,7 +71,12 @@ def extract_form_version_id(soup):
     return None
 
 
-def flat_parse_xml_soup(soup, repeat_groups, allowed_paths) -> Dict[str, Any]:
+def flat_parse_xml_soup(soup: Soup, repeat_groups: List[Any], allowed_paths: List[str]) -> Dict[str, Any]:
+    """
+    Parse XML data in a BeautifulSoup and return a flattened JSON-serializable representation of the data.
+
+    :return: a dict with two keys: the flattened xml data in "flat_json", and a list of skipped paths in "skipped_paths"
+    """
     skipped_paths = []
     flat_xml_dict = {}
     get_flat_children_tree("", soup, flat_xml_dict, repeat_groups, allowed_paths, skipped_paths)
@@ -92,13 +98,16 @@ sql_injection_geom_regex = re.compile(r"[^a-zA-Z0-9_]")
 
 
 def geojson_queryset(queryset, geometry_field, pk_field="id", fields=[]):
+    # FIXME: the "fields" (not currently used by consuming code) parameter probably doesn't work as expected (see https://florimond.dev/en/posts/2018/08/python-mutable-defaults-are-the-source-of-all-evil/)
     """
-    This method is fast way to serialize to GeoJSON a queryset. The regular serializer is extremely slow and will need
-    to be parsed from text to return in a Response object. This method is roughly 20x faster.
+    This method is a faster way to serialize to GeoJSON a queryset. The regular serializer is extremely slow and will
+    need to be parsed from text to return in a Response object. This method is roughly 20x faster.
+
     :param queryset: queryset to return data from
     :param geometry_field: the field to be serialized to geojson
     :param pk_field: GeoJSON requires a primary key value, defaults to 'id'
     :param fields: List of fields to include in the result
+
     :return: a GeoJSON FeatureCollection with the requested data.
     """
     all_fields = [pk_field, *fields, "geojson_queryset_result"]

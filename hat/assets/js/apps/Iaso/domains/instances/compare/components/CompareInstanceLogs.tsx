@@ -22,6 +22,7 @@ import { InstanceLogDetail } from './InstanceLogDetail';
 import { InstanceLogInfos } from './InstanceLogInfos';
 
 import { IntlFormatMessage } from '../../../../types/intl';
+import { FileContent } from '../../types/instance';
 
 import { redirectToReplace } from '../../../../routing/actions';
 
@@ -44,21 +45,28 @@ type Params = {
     logA?: string;
     logB?: string;
 };
+type Router = {
+    goBack: () => void;
+};
+
 type Props = {
     params: Params;
+    router: Router;
 };
 
 const useStyles = makeStyles((theme: Theme) => ({
     ...commonStyles(theme),
 }));
 
-export const CompareInstanceLogs: FunctionComponent<Props> = ({ params }) => {
+const logInfos = {
+    org_unit: undefined,
+    period: undefined,
+};
+export const CompareInstanceLogs: FunctionComponent<Props> = ({
+    params,
+    router,
+}) => {
     const { instanceIds: instanceId } = params;
-
-    const logInfos = {
-        org_unit: undefined,
-        period: undefined,
-    };
 
     const {
         data: instanceLogsDropdown,
@@ -86,8 +94,7 @@ export const CompareInstanceLogs: FunctionComponent<Props> = ({ params }) => {
 
     // FIXME ugly fix to the back arrow bug. Caused by redirecting in useEffect. using useSkipEffectOnMount breaks the feature, so this is a workaround
     // eslint-disable-next-line no-unused-vars
-    const [previous, _setPrevious] = useState<string | undefined>(prevPathname);
-    const [instanceLogInfos, setInstanceLogInfos] = useState({
+    const [instanceLogInfos, setInstanceLogInfos] = useState<FileContent>({
         logA: {
             ...logInfos,
         },
@@ -134,7 +141,7 @@ export const CompareInstanceLogs: FunctionComponent<Props> = ({ params }) => {
             }
         }
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [instanceLogsDropdown]);
+    }, [instanceLogsDropdown, params]);
     useEffect(() => {
         setLogAInitialValue(
             instanceLogsDropdown && instanceLogsDropdown[0]?.value,
@@ -161,14 +168,15 @@ export const CompareInstanceLogs: FunctionComponent<Props> = ({ params }) => {
             <ErrorPaperComponent message={formatMessage(MESSAGES.errorLog)} />
         );
     }
+
     return (
         <>
             <TopBar
                 title={formatMessage(MESSAGES.instanceLogsTitle)}
                 displayBackButton
                 goBack={() => {
-                    if (previous) {
-                        dispatch(redirectToReplace(previous, {}));
+                    if (prevPathname) {
+                        router.goBack();
                     } else {
                         dispatch(redirectToReplace(baseUrls.instances, {}));
                     }
@@ -183,7 +191,14 @@ export const CompareInstanceLogs: FunctionComponent<Props> = ({ params }) => {
                             onChange={handleChange}
                             value={params.logA || logAInitialValue}
                             label={MESSAGES.instanceLogsVersionA}
-                            options={instanceLogsDropdown}
+                            options={instanceLogsDropdown?.filter(
+                                instance =>
+                                    instance.value !==
+                                    parseInt(
+                                        params.logB || logBInitialValue,
+                                        10,
+                                    ),
+                            )}
                             loading={isFetchingInstanceLogs}
                         />
 
@@ -210,7 +225,14 @@ export const CompareInstanceLogs: FunctionComponent<Props> = ({ params }) => {
                             onChange={handleChange}
                             value={params.logB || logBInitialValue}
                             label={MESSAGES.instanceLogsVersionB}
-                            options={instanceLogsDropdown}
+                            options={instanceLogsDropdown?.filter(
+                                instance =>
+                                    instance.value !==
+                                    parseInt(
+                                        params.logA || logAInitialValue,
+                                        10,
+                                    ),
+                            )}
                             loading={isFetchingInstanceLogs}
                         />
 

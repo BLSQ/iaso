@@ -1,6 +1,10 @@
-"""Generation of the Preparedness Google Sheet
+"""Generation of the Preparedness Google Sheet for a Campaign
 
-Use a template configured in polio.Config preparedness_template_id
+Use a template configured in polio.Config preparedness_template_id.
+
+The general logic is that we copy a template Spreadsheet file stored in Google Spreadsheet,
+and we adapt the value for the particular campaign we are generating to.
+We copy the Regional worksheet for each region in the Campaign scope, then add a column for each district.
 """
 import copy
 from typing import Optional
@@ -20,7 +24,7 @@ logger = getLogger(__name__)
 
 # you need to create a polio.Config object with this key in the DB
 PREPAREDNESS_TEMPLATE_CONFIG_KEY = "preparedness_template_id"
-TEMPLATE_VERSION = "v3"
+TEMPLATE_VERSION = "v3.1"
 
 
 def create_spreadsheet(title: str, lang: str):
@@ -113,14 +117,22 @@ def copy_protected_range_to_sheet(template_protected_ranges, new_sheet):
     for template_protected_range in template_protected_ranges:
         new_protected_range = copy.deepcopy(template_protected_range)
         del new_protected_range["protectedRangeId"]
-        # skip those as they are added when copy the file but don't work because of permissions issue.
+        # Parameter "requestingUserCanEdit" is read only
         if "requestingUserCanEdit" in new_protected_range:
             del new_protected_range["requestingUserCanEdit"]
-        if "editors" in new_protected_range:
-            del new_protected_range["editors"]
+        # Editor property not allowed in warningOnly protection
+        #  The original editors list from the template is keep otherwise the protection is listed but don't actually
+        #  prevent edition. Seems a bug in Google Sheet, probably related to the fact that the new owner is a Service
+        #  Account.
+        if new_protected_range.get("warningOnly"):
+            if "editors" in new_protected_range:
+                del new_protected_range["editors"]
         new_protected_range["range"]["sheetId"] = new_sheet_id
+        if "unprotectedRanges" in new_protected_range:
+            for unprotected_range in new_protected_range["unprotectedRanges"]:
+                unprotected_range["sheetId"] = new_sheet_id
         new_protected_ranges.append(new_protected_range)
-    # Return request don't execute them so we can do all of them at the end
+    # Return requests, don't execute them in order to batch execute all of them at the end
     requests = []
     for pr in new_protected_ranges:
         requests.append({"addProtectedRange": {"protectedRange": pr}})

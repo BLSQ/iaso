@@ -2186,6 +2186,13 @@ class CampaignFormTemplateViewSet(ModelViewSet):
         queryset = CampaignFormTemplate.objects.filter(account=self.request.user.iaso_profile.account)
         return queryset
 
+    def create(self, request, *args, **kwargs):
+        name = request.data["name"]
+        account = request.user.iaso_profile.account
+        form_template = request.data["form_template"]
+
+        return super().create(request, name, account, form_template)
+
 
 router = routers.SimpleRouter()
 router.register(r"polio/orgunits", PolioOrgunitViewSet, basename="PolioOrgunit")
@@ -2202,4 +2209,4 @@ router.register(r"polio/linelistimport", LineListImportViewSet, basename="lineli
 router.register(r"polio/orgunitspercampaign", OrgUnitsPerCampaignViewset, basename="orgunitspercampaign")
 router.register(r"polio/budgetevent", BudgetEventViewset, basename="budget")
 router.register(r"polio/budgetfiles", BudgetFilesViewset, basename="budgetfiles")
-router.register(r"polio/campaigntemplateform", CampaignFormTemplateViewSet, basename="campaigntemplateform")
+router.register(r"polio/campaignformtemplate", CampaignFormTemplateViewSet, basename="campaigntemplateform")

@@ -88,6 +88,9 @@ jobs:
           CACHE: false
           DEV_SERVER: true
           PLUGINS: polio
+
+      - name: Publish port
+        run : docker run --publish 8081:8081 docker-gs-ping
       
       - run: |
           curl http://localhost:8081

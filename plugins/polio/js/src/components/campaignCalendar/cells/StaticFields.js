@@ -8,10 +8,10 @@ import { colSpanTitle } from '../constants';
 import { useStyles } from '../Styles';
 import { useStaticFields } from '../../../hooks/useStaticFields';
 
-const StaticFieldsCells = ({ campaign }) => {
+const StaticFieldsCells = ({ campaign, isPdf }) => {
     const classes = useStyles();
     const defaultCellStyles = [classes.tableCell, classes.tableCellBordered];
-    const fields = useStaticFields();
+    const fields = useStaticFields(isPdf);
     return fields.map(field => (
         <TableCell
             key={field.key}
@@ -33,6 +33,7 @@ const StaticFieldsCells = ({ campaign }) => {
 
 StaticFieldsCells.propTypes = {
     campaign: PropTypes.object.isRequired,
+    isPdf: PropTypes.bool.isRequired,
 };
 
 export { StaticFieldsCells };

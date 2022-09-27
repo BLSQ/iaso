@@ -5,9 +5,9 @@ Use a template configured in polio.Config preparedness_template_id
 import copy
 from typing import Optional
 
-import gspread
+import gspread  # type: ignore
 from django.utils.translation import gettext_lazy as _
-from gspread.utils import rowcol_to_a1, Dimension, a1_range_to_grid_range
+from gspread.utils import rowcol_to_a1, Dimension, a1_range_to_grid_range  # type: ignore
 from rest_framework import exceptions
 
 from iaso.models import OrgUnit

@@ -3,7 +3,7 @@ import PropTypes from 'prop-types';
 import { Box } from '@material-ui/core';
 import { DatePicker } from 'bluesquare-components';
 import { get } from 'lodash';
-import { apiDateFormat } from 'Iaso/utils/dates';
+import { apiDateFormat } from 'Iaso/utils/dates.ts';
 
 import MESSAGES from '../../constants/messages';
 

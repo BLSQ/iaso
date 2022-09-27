@@ -4,7 +4,7 @@ import { Grid, Paper, Box, Typography } from '@material-ui/core';
 import { useStyles } from '../Styles';
 
 import MESSAGES from '../../../constants/messages';
-import { polioVaccines } from '../../../constants/virus';
+import { polioVaccines } from '../../../constants/virus.ts';
 
 const VaccinesLegend = () => {
     const classes = useStyles();

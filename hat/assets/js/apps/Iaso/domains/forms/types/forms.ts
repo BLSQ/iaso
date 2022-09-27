@@ -17,11 +17,41 @@ type Project = {
     updated_at: string;
     needs_authentication: boolean;
 };
+// https://xlsform.org/en/#question-types
+export type FieldType =
+    | 'integer'
+    | 'decimal'
+    | 'range'
+    | 'text'
+    | 'select_one'
+    | 'select_multiple'
+    | 'select_one_from_file'
+    | 'select_multiple_from_file'
+    | 'rank'
+    | 'note'
+    | 'geopoint'
+    | 'geotrace'
+    | 'geoshape'
+    | 'date'
+    | 'time'
+    | 'dateTime'
+    | 'start'
+    | 'end'
+    | 'image'
+    | 'audio'
+    | 'background-audio'
+    | 'video'
+    | 'file'
+    | 'barcode'
+    | 'calculate'
+    | 'acknowledge'
+    | 'hidden'
+    | 'xml-external';
 
-type PossibleField = {
+export type PossibleField = {
     label: string;
     name: string;
-    type: string;
+    type: FieldType;
 };
 
 export type Form = {

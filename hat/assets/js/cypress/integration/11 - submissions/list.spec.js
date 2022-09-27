@@ -69,18 +69,6 @@ const newFilters = {
         selector: '#withLocation',
         type: 'multi',
     },
-    deviceId: {
-        value: [0],
-        urlValue: '1',
-        selector: '#deviceId',
-        type: 'multi',
-    },
-    deviceOwnershipId: {
-        value: [0],
-        urlValue: '1',
-        selector: '#deviceOwnershipId',
-        type: 'multi',
-    },
     dateFrom: {
         value: '10032022',
         urlValue: '10-03-2022',
@@ -110,10 +98,6 @@ const goToPage = (
     cy.intercept('GET', '/api/orgunittypes', {
         fixture: 'orgunittypes/list.json',
     });
-    cy.intercept('GET', '/api/devices', {
-        fixture: 'devices/list.json',
-    });
-
     cy.intercept(
         'GET',
         '/api/forms/?all=true&order=name&fields=name%2Cperiod_type%2Clabel_keys%2Cid',
@@ -121,9 +105,6 @@ const goToPage = (
             fixture: 'forms/list.json',
         },
     );
-    cy.intercept('GET', '/api/devicesownership', {
-        fixture: 'devicesownership/list.json',
-    });
     cy.intercept('GET', '/api/formversions/**', {
         fixture: 'devicesownership/list.json',
     });
@@ -331,10 +312,7 @@ describe('Submissions', () => {
                         ...defaultQuery,
                         withLocation: newFilters.withLocation.urlValue,
                         orgUnitTypeId: newFilters.orgUnitTypeId.urlValue,
-                        deviceId: newFilters.deviceId.urlValue,
                         status: newFilters.status.urlValue,
-                        deviceOwnershipId:
-                            newFilters.deviceOwnershipId.urlValue,
                         search: newFilters.search.urlValue,
                         orgUnitParentId: newFilters.levels.urlValue,
                         dateFrom: newFilters.dateFrom.apiValue,

@@ -225,6 +225,18 @@ const MESSAGES = defineMessages({
         id: 'iaso.snackBar.fetchProjectsError',
         defaultMessage: 'An error occurred while fetching projects list',
     },
+    submissions: {
+        id: 'iaso.instance.title',
+        defaultMessage: 'Submissions',
+    },
+    typeNotSupported: {
+        id: 'iaso.entities.typeNotSupported',
+        defaultMessage: 'Type not supported yet: {type}',
+    },
+    all: {
+        id: 'iaso.forms.all',
+        defaultMessage: 'All',
+    },
 });
 
 export default MESSAGES;

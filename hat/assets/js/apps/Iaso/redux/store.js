@@ -28,7 +28,6 @@ import {
     sidebarMenuInitialState,
 } from './sidebarMenuReducer';
 import { snackBarsInitialState, snackBarsReducer } from './snackBarsReducer';
-import { devicesInitialState, devicesReducer } from './devicesReducer';
 import { routerInitialState, routerReducer } from './routerReducer';
 import { linksInitialState, linksReducer } from '../domains/links/reducer';
 import { usersReducer, usersInitialState } from '../domains/users/reducer';
@@ -50,7 +49,6 @@ const store = createStore(
         instances: instancesInitialState,
         snackBar: snackBarsInitialState,
         map: mapInitialState,
-        devices: devicesInitialState,
         routerCustom: routerInitialState,
         links: linksInitialState,
         users: usersInitialState,
@@ -65,7 +63,6 @@ const store = createStore(
         instances: instancesReducer,
         snackBar: snackBarsReducer,
         map: mapReducer,
-        devices: devicesReducer,
         routerCustom: routerReducer,
         links: linksReducer,
         users: usersReducer,

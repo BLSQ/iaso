@@ -7,7 +7,7 @@ Explain what problem this PR is resolving
 - [ ] Are my typescript files well typed
 - [ ] Did I add translations
 - [ ] My migrations file are included
-
+- [ ] Are there enough tests
 ## Changes
 
 Explain the changes that were made. The idea is not to list exhaustively all the changes made (Github already provides a full diff), but to help the reviewers better understand:

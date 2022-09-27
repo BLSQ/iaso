@@ -15,6 +15,7 @@ const Body = ({
     firstMonday,
     lastSunday,
     loadingCampaigns,
+    isPdf,
 }) => {
     const classes = useStyles();
     return (
@@ -29,7 +30,10 @@ const Body = ({
                             className={classes.tableRow}
                             key={`row-${campaign.id}}`}
                         >
-                            <StaticFieldsCells campaign={campaign} />
+                            <StaticFieldsCells
+                                campaign={campaign}
+                                isPdf={isPdf}
+                            />
                             {getCells(
                                 campaign,
                                 currentWeekIndex,
@@ -50,6 +54,7 @@ Body.propTypes = {
     firstMonday: PropTypes.object.isRequired,
     lastSunday: PropTypes.object.isRequired,
     loadingCampaigns: PropTypes.bool.isRequired,
+    isPdf: PropTypes.bool.isRequired,
 };
 
 export { Body };

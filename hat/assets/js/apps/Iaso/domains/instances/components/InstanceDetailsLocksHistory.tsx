@@ -19,23 +19,11 @@ import LockIcon from '@material-ui/icons/Lock';
 import LockOpenIcon from '@material-ui/icons/LockOpen';
 import MESSAGES from '../messages';
 import WidgetPaper from '../../../components/papers/WidgetPaperComponent';
-import getDisplayName, { User } from '../../../utils/usersUtils';
+import getDisplayName from '../../../utils/usersUtils';
 import ConfirmCancelDialogComponent from '../../../components/dialogs/ConfirmCancelDialogComponent';
 import { postRequest } from '../../../libs/Api';
 import { useSnackMutation } from '../../../libs/apiHooks';
-
-type Lock = {
-    id: number;
-    locked_by: User;
-    unlocked_by?: User;
-    top_org_unit: {
-        name: string;
-    };
-};
-type Instance = {
-    instance_locks: Lock[];
-    can_user_modify: boolean;
-};
+import { Instance } from '../types/instance';
 
 const InstanceDetailsLocksHistory: FunctionComponent<{
     currentInstance: Instance;

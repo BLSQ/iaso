@@ -9,6 +9,7 @@ const staticFields = [
         key: 'edit',
         hideHeadTitle: true,
         render: campaign => <EditCampaignCell campaign={campaign} />,
+        exportHide: true,
     },
     {
         key: 'country',

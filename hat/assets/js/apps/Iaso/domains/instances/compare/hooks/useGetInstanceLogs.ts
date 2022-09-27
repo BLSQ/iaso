@@ -74,11 +74,9 @@ export const useGetInstanceLogDetail = (
             dispatchOnError: false,
             options: {
                 enabled: Boolean(logA),
-                select: data => {
-                    if (data) {
-                        return data.new_value[0].fields;
-                    }
-                    return undefined;
+                select: (data: InstanceLogData | undefined) => {
+                    if (!data) return data;
+                    return data.new_value[0].fields;
                 },
             },
         },
@@ -88,20 +86,21 @@ export const useGetInstanceLogDetail = (
             snackErrorMsg: MESSAGES.fetchLogDetailError,
             dispatchOnError: false,
             options: {
-                enabled: Boolean(logA),
-                select: data => {
-                    if (data) {
-                        return data.new_value[0].fields;
-                    }
-                    return undefined;
+                enabled: Boolean(logB),
+                select: (data: InstanceLogData | undefined) => {
+                    if (!data) return data;
+                    return data.new_value[0].fields;
                 },
             },
         },
     ]);
 
+    /* To do : find how to type instanceLogsDetails in useQueries result */
     const instanceLogsDetail = useMemo(() => {
         const data = {
+            /* @ts-ignore */
             logA: instanceLogADetail,
+            /* @ts-ignore */
             logB: instanceLogBDetail,
         };
 
@@ -109,6 +108,7 @@ export const useGetInstanceLogDetail = (
     }, [instanceLogADetail, instanceLogBDetail]);
 
     return {
+        /* @ts-ignore */
         data: instanceLogsDetail,
         isLoading: isInstanceLogAFetching || isInstanceLogBFetching,
     };
@@ -129,12 +129,9 @@ export const useGetUserInstanceLog = (
             dispatchOnError: false,
             options: {
                 enabled: Boolean(logA),
-                select: data => {
-                    if (data) {
-                        return data?.user?.user_name;
-                    }
-
-                    return undefined;
+                select: (data: InstanceLogData | undefined) => {
+                    if (!data) return data;
+                    return data.user.user_name;
                 },
             },
         },
@@ -145,12 +142,9 @@ export const useGetUserInstanceLog = (
             dispatchOnError: false,
             options: {
                 enabled: Boolean(logB),
-                select: data => {
-                    if (data) {
-                        return data?.user?.user_name;
-                    }
-
-                    return undefined;
+                select: (data: InstanceLogData | undefined) => {
+                    if (!data) return data;
+                    return data.user.user_name;
                 },
             },
         },
@@ -174,11 +168,8 @@ export const useGetFormDescriptor = (
         options: {
             enabled: Boolean(versionId),
             select: (data: FormDescriptor | undefined) => {
-                if (data) {
-                    return data.form_versions[0].descriptor;
-                }
-
-                return undefined;
+                if (!data) return data;
+                return data.form_versions[0].descriptor;
             },
         },
     });

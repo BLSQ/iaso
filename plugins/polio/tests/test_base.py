@@ -827,7 +827,7 @@ class CampaignFormTemplateTestCase(APITestCase):
             "testcampaignformtemplate.xlsx", data.read(), content_type="multipart/form-data"
         )
 
-        payload = {"name": "test_form", "form_template": upload_file, "account": self.lucy.pk}
+        payload = {"name": "test_form", "form_template": upload_file, "account": 1}
 
         response = self.client.post("/api/polio/campaignformtemplate/", data=payload, format="multipart")
 

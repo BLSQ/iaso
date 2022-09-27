@@ -24,7 +24,7 @@ from iaso.test import APITestCase, TestCase
 
 from plugins.polio.management.commands.weekly_email import send_notification_email
 from ..api import CACHE_VERSION
-from ..models import Config, BudgetEvent, BudgetFiles
+from ..models import Config, BudgetEvent, BudgetFiles, CampaignFormTemplate
 
 from ..preparedness.calculator import get_preparedness_score
 from ..preparedness.exceptions import InvalidFormatError
@@ -349,6 +349,9 @@ class PolioAPITestCase(APITestCase):
         payload = {"id": "bd656a6b-f67e-4a1e-95ee-1bef8f36239a"}
         response = self.client.patch("/api/polio/campaigns/restore_deleted_campaigns/", payload, format="json")
         self.assertEqual(response.status_code, 404)
+
+    def tesst_export_campaign_as_xlsform(self):
+        pass
 
 
 class CampaignCalculatorTestCase(TestCase):
@@ -800,3 +803,72 @@ class BudgetPolioTestCase(APITestCase):
         self.assertEqual(self.grogu.pk, user_id_from_token)
         self.assertEqual(token_type, "access")
         self.assertEqual(link, final_link[final_link.find("next=") + 5 :])
+
+
+class CampaignFormTemplateTestCase(APITestCase):
+    @classmethod
+    def setUpTestData(cls):
+        cls.data_source = m.DataSource.objects.create(name="Default source")
+        cls.now = now()
+        cls.source_version_1 = m.SourceVersion.objects.create(data_source=cls.data_source, number=1)
+        cls.source_version_2 = m.SourceVersion.objects.create(data_source=cls.data_source, number=2)
+
+        account = Account.objects.create(name="Global Health Initiative", default_version=cls.source_version_1)
+        second_account = Account.objects.create(name="WHO", default_version=cls.source_version_1)
+
+        cls.lucy = cls.create_user_with_profile(username="lucy", account=account)
+        cls.rebecca = cls.create_user_with_profile(username="rebecca", account=second_account)
+
+    def test_upload_form_template(self):
+        self.client.force_authenticate(self.lucy)
+
+        data = File(open("iaso/tests/fixtures/testcampaignformtemplate.xlsx", "rb"))
+        upload_file = SimpleUploadedFile(
+            "testcampaignformtemplate.xlsx", data.read(), content_type="multipart/form-data"
+        )
+
+        payload = {"name": "test_form", "form_template": upload_file, "account": self.lucy.pk}
+
+        response = self.client.post("/api/polio/campaignformtemplate/", data=payload, format="multipart")
+
+        print(response.json())
+        self.assertEqual(response.status_code, 201)
+
+    def test_name_and_account_unique_together(self):
+        self.client.force_authenticate(self.lucy)
+
+        data = File(open("iaso/tests/fixtures/testcampaignformtemplate.xlsx", "rb"))
+        upload_file = SimpleUploadedFile(
+            "testcampaignformtemplate.xlsx", data.read(), content_type="multipart/form-data"
+        )
+
+        payload = {"name": "test_form", "form_template": upload_file, "account": self.lucy.pk}
+
+        self.client.post("/api/polio/campaignformtemplate/", data=payload, format="multipart")
+        response = self.client.post("/api/polio/campaignformtemplate/", data=payload, format="multipart")
+
+        self.assertEqual(response.status_code, 400)
+
+    def test_template_respect_multi_tenancy(self):
+        self.client.force_authenticate(self.rebecca)
+
+        file = File(open("iaso/tests/fixtures/testcampaignformtemplate.xlsx", "rb"))
+        upload_file = SimpleUploadedFile(
+            "testcampaignformtemplate.xlsx", file.read(), content_type="multipart/form-data"
+        )
+        payload = {"name": "test_form", "form_template": upload_file, "account": 1}
+
+        self.client.post("/api/polio/campaignformtemplate/", data=payload, format="multipart")
+
+        upload_file = SimpleUploadedFile(
+            "testcampaignformtemplate.xlsx", file.read(), content_type="multipart/form-data"
+        )
+        payload = {"name": "test_form", "form_template": upload_file, "account": 2}
+        self.client.post("/api/polio/campaignformtemplate/", data=payload, format="multipart")
+
+        payload = {"name": "test_form_A", "form_template": upload_file, "account": 2}
+        self.client.post("/api/polio/campaignformtemplate/", data=payload, format="multipart")
+        response = self.client.get("/api/polio/campaignformtemplate/")
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(len(response.json()), 0)

@@ -1,5 +1,6 @@
 from openpyxl import Workbook
 from openpyxl.writer.excel import save_virtual_workbook
+from openpyxl.utils import get_column_letter
 
 def generate_xlsx(filename, columns, datas):
     file = Workbook()
@@ -8,13 +9,13 @@ def generate_xlsx(filename, columns, datas):
     sheet.append(columns)
     for data in datas:
         data_to_display = []
-        data_to_display.append(data["country_name"])
-        for month in range(1,13):
-            if str(month) in data["rounds"].keys():
-                data_to_display.append(get_cell_data(data["rounds"][str(month)]))
-            else:
-                data_to_display.append("")
-        sheet.append(data_to_display)
+        for row in range(1, len(datas)):
+            _ = sheet.cell(column=1, row=row+1, value=datas[row-1]["country_name"].format(get_column_letter(1)))
+            for month in range(1,13):
+                if str(month) in datas[row-1]["rounds"].keys():
+                    _ = sheet.cell(column=month+1, row=row+1, value=get_cell_data(datas[row-1]["rounds"][str(month)]).format(get_column_letter(month+1)))
+                else:
+                    _ = sheet.cell(column=month+1, row=row+1, value="".format(get_column_letter(month+1)))
     file.save(filename+".xlsx")
     return file
 

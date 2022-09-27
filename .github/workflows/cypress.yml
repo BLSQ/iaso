@@ -89,8 +89,8 @@ jobs:
           DEV_SERVER: true
           PLUGINS: polio
       
-      # - run: |
-      #     curl http://localhost:8081
+      - run: |
+          curl http://localhost:8081
 
       - run: |
           docker ps

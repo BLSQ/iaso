@@ -2,7 +2,7 @@ import typing
 
 from django.contrib.auth.models import User
 from django.db import models, transaction
-from django_ltree.fields import PathField
+from django_ltree.fields import PathField  # type: ignore
 
 from iaso.models import Project, Form, OrgUnit
 from iaso.utils.models.soft_deletable import SoftDeletableModel

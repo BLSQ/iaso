@@ -13,15 +13,19 @@ import {
 } from '../../../../libs/Api';
 import MESSAGES from '../../messages';
 
+import { makeUrlWithParams } from '../../../../libs/utils';
+
 import { Beneficiary } from '../types/beneficiary';
 import { Pagination } from '../../../../types/table';
 import { Instance } from '../../../instances/types/instance';
 import { DropdownOptions } from '../../../../types/utils';
 import getDisplayName, { Profile } from '../../../../utils/usersUtils';
 import { DropdownTeamsOptions, Team } from '../../../teams/types/team';
+import { ExtraColumn } from '../types/fields';
 
 export interface PaginatedBeneficiaries extends Pagination {
-    beneficiary: Array<Beneficiary>;
+    result: Array<Beneficiary>;
+    columns: Array<ExtraColumn>;
 }
 
 type Params = {
@@ -34,11 +38,12 @@ type Params = {
     dateTo?: string;
     submitterId?: string;
     submitterTeamId?: string;
+    entityTypeIds?: string;
 };
 
 type ApiParams = {
     limit: string;
-    order: string;
+    order_columns: string;
     page: string;
     search?: string;
     orgUnitId?: string;
@@ -46,6 +51,7 @@ type ApiParams = {
     dateTo?: string;
     created_by_team_id?: string;
     created_by_id?: string;
+    entity_type_ids?: string;
 };
 
 type GetAPiParams = {
@@ -55,38 +61,23 @@ type GetAPiParams = {
 export const useGetBeneficiariesApiParams = (params: Params): GetAPiParams => {
     const apiParams: ApiParams = {
         limit: params.pageSize || '20',
-        order: params.order || 'id',
+        order_columns: params.order || 'id',
         page: params.page || '1',
+        search: params.search,
+        orgUnitId: params.location,
+        dateFrom:
+            params.dateFrom &&
+            moment(params.dateFrom, 'DD-MM-YYYY').format(apiDateFormat),
+        dateTo:
+            params.dateTo &&
+            moment(params.dateTo, 'DD-MM-YYYY').format(apiDateFormat),
+        created_by_id: params.submitterId,
+        created_by_team_id: params.submitterTeamId,
+        entity_type_ids: params.entityTypeIds,
     };
-    if (params.search) {
-        apiParams.search = params.search;
-    }
-
-    if (params.location) {
-        apiParams.orgUnitId = params.location;
-    }
-
-    if (params.dateFrom) {
-        apiParams.dateFrom = moment(params.dateFrom, 'DD-MM-YYYY').format(
-            apiDateFormat,
-        );
-    }
-    if (params.dateTo) {
-        apiParams.dateTo = moment(params.dateTo, 'DD-MM-YYYY').format(
-            apiDateFormat,
-        );
-    }
-    if (params.submitterId) {
-        apiParams.created_by_id = params.submitterId;
-    }
-    if (params.submitterTeamId) {
-        apiParams.created_by_team_id = params.submitterTeamId;
-    }
-
-    // @ts-ignore
-    const searchParams = new URLSearchParams(apiParams);
+    const url = makeUrlWithParams('/api/entity', apiParams);
     return {
-        url: `/api/entity/beneficiary/?${searchParams.toString()}`,
+        url,
         apiParams,
     };
 };
@@ -105,13 +96,24 @@ export const useGetBeneficiariesPaginated = (
     });
 };
 
-export const useGetBeneficiaries = (): UseQueryResult<
-    Array<Beneficiary>,
+export const useGetBeneficiaryTypesDropdown = (): UseQueryResult<
+    Array<DropdownOptions<number>>,
     Error
 > =>
     useSnackQuery({
-        queryKey: ['beneficiaries'],
-        queryFn: () => getRequest('/api/entity/beneficiary'),
+        queryKey: ['beneficiaryTypes'],
+        queryFn: () => getRequest('/api/entitytype'),
+        options: {
+            select: data =>
+                data?.map(
+                    type =>
+                        ({
+                            label: type.name,
+                            value: type.id,
+                            original: type,
+                        } || []),
+                ),
+        },
     });
 
 export const useDeleteBeneficiary = (): UseMutationResult =>
@@ -134,7 +136,7 @@ export const useSaveBeneficiary = (): UseMutationResult =>
     );
 
 const getBeneficiary = (entityId: string | undefined): Promise<Beneficiary> => {
-    return getRequest(`/api/entity/beneficiary/${entityId}`);
+    return getRequest(`/api/entity/${entityId}`);
 };
 export const useGetBeneficiary = (
     entityId: string | undefined,

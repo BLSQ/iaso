@@ -4,6 +4,7 @@ from django.shortcuts import render
 from django.http.request import HttpRequest
 from django.http import HttpResponse
 from django.conf import settings
+from hat.__version__ import VERSION
 
 
 def _base_iaso(request: HttpRequest) -> HttpResponse:
@@ -11,7 +12,12 @@ def _base_iaso(request: HttpRequest) -> HttpResponse:
     return render(
         request,
         "iaso/index.html",
-        {"PLUGINS_ENABLED": settings.PLUGINS, "STATIC_URL": settings.STATIC_URL, "USER_HOME_PAGE": USER_HOME_PAGE},
+        {
+            "PLUGINS_ENABLED": settings.PLUGINS,
+            "STATIC_URL": settings.STATIC_URL,
+            "USER_HOME_PAGE": USER_HOME_PAGE,
+            "VERSION": VERSION,
+        },
     )
 
 

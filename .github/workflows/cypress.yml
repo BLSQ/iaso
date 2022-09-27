@@ -89,11 +89,11 @@ jobs:
           DEV_SERVER: true
           PLUGINS: polio
 
-      - name: Publish port
-        run : docker run --publish 8081:8081 docker-gs-ping
+      # - name: Publish port
+      #   run : docker run --publish 8081:8081 docker-gs-ping
       
       - run: |
-          curl http://localhost:8081
+          curl http://app:8081
 
       - run: |
           docker ps

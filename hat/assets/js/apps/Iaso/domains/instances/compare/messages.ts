@@ -66,7 +66,7 @@ const MESSAGES = defineMessages({
         id: 'iaso.snackBar.fetchInstanceLogUser',
     },
     fetchLogDetailError: {
-        defaultMessage: 'An error occurred while fetching log detail',
+        defaultMessage: 'An error occurred while fetching log details',
         id: 'iaso.snackBar.fetchingLogDetailError',
     },
 });

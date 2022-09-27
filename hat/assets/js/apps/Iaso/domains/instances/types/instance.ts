@@ -59,11 +59,11 @@ type NewValue = {
 };
 
 export type InstanceLogData = {
-    fields: Record<string, any>;
-    json: Record<string, any>;
-    _version: string;
-    form: number;
+    id: number;
+    content_type: string;
+    object_id: string;
     new_value: NewValue[];
+    source: string;
     user: Record<string, any>;
 };
 
@@ -90,4 +90,9 @@ export type InstanceUserLogDetail = {
     userLogB: string;
     isLoading: boolean;
     isError: boolean;
+};
+
+export type Logs = {
+    logA: FileContent;
+    logB: FileContent;
 };

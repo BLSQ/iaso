@@ -1,5 +1,5 @@
 import json
-from typing import Dict
+from typing import Dict, Optional
 
 from django.http import QueryDict
 
@@ -12,7 +12,7 @@ def parse_instance_filters(req: QueryDict) -> Dict:
     else:
         periods = req.get("period_ids", req.get("periods", req.get("period", None)))
     # the front end sends "true" or "false" so we need to check against the string values for the filter to work
-    show_deleted = req.get("showDeleted", "false")
+    show_deleted: Optional[str] = req.get("showDeleted", "false")
     if show_deleted == "false":
         show_deleted = None
 

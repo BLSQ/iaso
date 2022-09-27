@@ -877,6 +877,7 @@ class Instance(models.Model):
 
     objects = InstanceManager()
 
+    # TODO: investigate why this model doesn't use SoftDeletableModel as other models and if it thi should be changed
     deleted = models.BooleanField(default=False)
     to_export = models.BooleanField(default=False)
 

@@ -20,7 +20,7 @@ import json
 import time
 
 try:  # only in 3.8
-    from typing import TypedDict
+    from typing import TypedDict  # type: ignore
 except ImportError:
     TypedDict = type
 

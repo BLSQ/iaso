@@ -11,7 +11,7 @@ from iaso.models import DataSource, Group, OrgUnit, OrgUnitType, Project, Source
 from iaso.models.org_unit import get_or_create_org_unit_type
 
 try:  # only in 3.8
-    from typing import TypedDict
+    from typing import TypedDict  # type: ignore
 except ImportError:
     TypedDict = type
 

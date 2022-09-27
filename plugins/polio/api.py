@@ -671,12 +671,11 @@ where group_id = polio_roundscope.group_id""",
                         if ou_dic.get("DISTRICT", None) is None
                         else ou_dic.get("DISTRICT", None).name
                     )
-                    # sheet[cell[choices_column + 6] + str(choices_row)] = ou_dic.get("HEALTH FACILITY", None) if ou_dic.get("HEALTH FACILITY", None) is None else ou_dic.get("HEALTH FACILITY", None).name
                     choices_row += 1
                     survey_last_empty_row += 1
 
+        # Add default data to the xlsform
         row = q_sheet.max_row
-        column = q_sheet.max_column
 
         q_sheet[cell[0] + str(11)] = "note"
         q_sheet[cell[1] + str(11)] = "note_obr_name"
@@ -708,16 +707,14 @@ where group_id = polio_roundscope.group_id""",
         # Insert data as calculation
         for i in range(2, row + 1):
             cell_obj = q_sheet.cell(row=i, column=2)
-            print(cell_obj.value)
             cell_value_start = cell_obj.value[:7] if cell_obj.value is not None else ""
             if cell_value_start == "survey_":
                 str_request = cell_obj.value[7:]
                 if str_request in authorized_fields:
                     cell_obj = q_sheet.cell(row=i, column=calculation_index)
-                    cell_obj.value = str(getattr(campaign, str_request, print("NOT FOUND")))
+                    cell_obj.value = str(getattr(campaign, str_request))
 
         filename = f"FORM_{campaign.obr_name}_{datetime.now().date()}.xlsx"
-        print(ou_tree_list)
 
         with NamedTemporaryFile() as tmp:
             wb.save(tmp.name)

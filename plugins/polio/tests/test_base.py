@@ -354,7 +354,7 @@ class PolioAPITestCase(APITestCase):
         pass
 
     def test_export_campaign_xls_form(self):
-        self.client.force_autenticate(self.yoda)
+        self.client.force_authenticate(self.yoda)
 
 
 class CampaignCalculatorTestCase(TestCase):
@@ -882,4 +882,4 @@ class CampaignFormTemplateTestCase(APITestCase):
         print(response.json())
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(response.json()), 1)
-        self.assertEqual(response.json()[0]["account"], self.rebecca.iaso_profile.account)
+        self.assertEqual(response.json()[0]["account"], self.rebecca.iaso_profile.account.pk)

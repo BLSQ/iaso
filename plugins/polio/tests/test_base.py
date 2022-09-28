@@ -833,7 +833,7 @@ class CampaignFormTemplateTestCase(APITestCase):
         payload = {
             "name": "test_form",
             "form_template": upload_file,
-            "account": self.client.lucy.iaso_profile.account.pk,
+            "account": self.lucy.iaso_profile.account.pk,
         }
 
         response = self.client.post("/api/polio/campaignformtemplate/", data=payload, format="multipart")

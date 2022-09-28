@@ -155,7 +155,74 @@ const InstancesFiltersComponent = ({
                         label={MESSAGES.textSearch}
                         onEnterPressed={() => handleSearch()}
                     />
-                    <QueryBuilderInput label={MESSAGES.queryBuilder} />
+                    <QueryBuilderInput
+                        label={MESSAGES.queryBuilder}
+                        onChange={newLogic => {
+                            console.log(
+                                'handle change for new logic',
+                                newLogic,
+                            );
+                        }}
+                        initialLogic={{
+                            and: [
+                                {
+                                    '==': [
+                                        { var: 'datetime' },
+                                        '2002-10-22T20:22:00.000Z',
+                                    ],
+                                },
+                                { '>': [{ var: 'price' }, 47] },
+                            ],
+                        }}
+                        fields={{
+                            datetime: {
+                                label: 'DateTime',
+                                type: 'datetime',
+                                valueSources: ['value'],
+                            },
+                            price: {
+                                label: 'Price',
+                                type: 'number',
+                                valueSources: ['value'],
+                                // fieldSettings: {
+                                //     min: 10,
+                                //     max: 100,
+                                // },
+                            },
+                            color: {
+                                label: 'Color',
+                                type: 'select',
+                                valueSources: ['value'],
+                                fieldSettings: {
+                                    listValues: [
+                                        { value: 'yellow', title: 'Yellow' },
+                                        { value: 'green', title: 'Green' },
+                                        { value: 'orange', title: 'Orange' },
+                                    ],
+                                },
+                            },
+                            is_promotion: {
+                                label: 'Promo?',
+                                type: 'boolean',
+                                operators: ['equal'],
+                                valueSources: ['value'],
+                            },
+                        }}
+                        iconProps={{
+                            label: MESSAGES.queryBuilder,
+                            value: JSON.stringify({
+                                and: [
+                                    {
+                                        '==': [
+                                            { var: 'datetime' },
+                                            '2002-10-22T20:22:00.000Z',
+                                        ],
+                                    },
+                                    { '>': [{ var: 'price' }, 47] },
+                                ],
+                            }),
+                        }}
+                    />
                     <InputComponent
                         keyValue="formIds"
                         clearable

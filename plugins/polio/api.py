@@ -80,7 +80,7 @@ from .models import CountryUsersGroup
 from .models import URLCache
 from .preparedness.calculator import preparedness_summary
 from .preparedness.parser import get_preparedness
-from .export_utils import generate_xlsx
+from .export_utils import generate_xlsx, xlsx_file_name
 
 logger = getLogger(__name__)
 
@@ -237,13 +237,13 @@ class CampaignViewSet(ModelViewSet):
         countries = params.get("countries") if params.get("countries") is not None else None
         campaign_groups = params.get("campaignGroups") if params.get("campaignGroups") is not None else None
         calendar_data = self.get_calendar_data(self, current_year, countries, campaign_groups)
-        filename  = self.xlsx_file_name(filename, params)
+        filename = xlsx_file_name(filename, params)
         xlsx_file = generate_xlsx(filename, columns, calendar_data)
         response = HttpResponse(
-                    save_virtual_workbook(xlsx_file),
-                    content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-                )
-        response["Content-Disposition"] = "attachment; filename=%s" % filename+".xlsx"
+            save_virtual_workbook(xlsx_file),
+            content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        )
+        response["Content-Disposition"] = "attachment; filename=%s" % filename + ".xlsx"
         return response
 
     @staticmethod
@@ -261,8 +261,8 @@ class CampaignViewSet(ModelViewSet):
         if countries:
             rounds = rounds.filter(campaign__country_id__in=countries.split(","))
         if campaign_groups:
-            rounds = rounds.filter(campaign__group_id__in =campaign_groups.split(","))
-        rounds = rounds.order_by("campaign__country__name","started_at")             
+            rounds = rounds.filter(campaign__group_id__in=campaign_groups.split(","))
+        rounds = rounds.order_by("campaign__country__name", "started_at")
         return self.loop_on_rounds(self, rounds)
 
     @staticmethod
@@ -270,7 +270,7 @@ class CampaignViewSet(ModelViewSet):
         data_row = []
         for round in rounds:
             if round.campaign is not None:
-                if not any(d['country_id'] == round.campaign.country.id for d in data_row):
+                if not any(d["country_id"] == round.campaign.country.id for d in data_row):
                     row = {"country_id": round.campaign.country.id, "country_name": round.campaign.country.name}
                     month = round.started_at.month
                     row["rounds"] = {}
@@ -292,22 +292,11 @@ class CampaignViewSet(ModelViewSet):
     @staticmethod
     def get_round(round):
         return {
-            "started_at": dt.datetime.strftime(round.started_at, "%Y-%m-%d"), 
+            "started_at": dt.datetime.strftime(round.started_at, "%Y-%m-%d"),
             "ended_at": dt.datetime.strftime(round.ended_at, "%Y-%m-%d"),
             "obr_name": round.campaign.obr_name,
-            "vacine": round.campaign.vacine
-            }
-
-    @staticmethod
-    def xlsx_file_name(name, params):
-        current_date = params.get("currentDate")
-        campaign_type = params.get("campaignType")
-        filename = name
-        filename += '_'+current_date if current_date is not None else ''
-        filename += '_'+campaign_type if campaign_type is not None else ''
-        filename += '_'+'_'.join(params.get("countries").split(",")) if params.get("countries") is not None else ''
-        filename += '_'+'_'.join(params.get("campaignGroups").split(",")) if params.get("campaignGroups") is not None else ''
-        return filename
+            "vacine": round.campaign.vacine,
+        }
 
     @action(methods=["POST"], detail=True, serializer_class=CampaignPreparednessSpreadsheetSerializer)
     def create_preparedness_sheet(self, request: Request, pk=None, **kwargs):

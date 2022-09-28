@@ -6,8 +6,9 @@ import { useDispatch, useSelector } from 'react-redux';
 import { Box, Button, Grid, makeStyles, Typography } from '@material-ui/core';
 
 import Search from '@material-ui/icons/Search';
-import { commonStyles, useSafeIntl, QueryBuilder } from 'bluesquare-components';
+import { commonStyles, useSafeIntl } from 'bluesquare-components';
 import InputComponent from '../../../components/forms/InputComponent';
+import { QueryBuilderField } from '../../../components/forms/QueryBuilderField/index.tsx';
 
 import { periodTypeOptions } from '../../periods/constants';
 import { isValidPeriod } from '../../periods/utils';
@@ -27,8 +28,6 @@ import { useGetOrgUnit } from '../../orgUnits/components/TreeView/requests';
 
 import { LocationLimit } from '../../../utils/map/LocationLimit';
 import { UserOrgUnitRestriction } from './UserOrgUnitRestriction';
-
-// import { Demo } from './Query.tsx';
 
 export const instanceStatusOptions = INSTANCE_STATUSES.map(status => ({
     value: status,
@@ -140,10 +139,8 @@ const InstancesFiltersComponent = ({
         }
         return false;
     }, [formState.startPeriod, formState.endPeriod]);
-
     return (
         <div className={classes.marginBottomBig}>
-            <QueryBuilder />
             <UserOrgUnitRestriction />
             <Grid container spacing={4}>
                 <Grid item xs={4}>
@@ -155,6 +152,7 @@ const InstancesFiltersComponent = ({
                         label={MESSAGES.textSearch}
                         onEnterPressed={() => handleSearch()}
                     />
+                    <QueryBuilderField label={MESSAGES.queryBuilder} />
                     <InputComponent
                         keyValue="formIds"
                         clearable

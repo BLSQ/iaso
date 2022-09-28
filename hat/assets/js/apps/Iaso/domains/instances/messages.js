@@ -518,6 +518,10 @@ const MESSAGES = defineMessages({
         id: 'iaso.instance.editGpsFromInstanceWarning',
         defaultMessage: 'This operation can still be undone',
     },
+    queryBuilder: {
+        id: 'iaso.instance.queryBuilder',
+        defaultMessage: 'Search in submitted fields',
+    },
 });
 
 export default MESSAGES;

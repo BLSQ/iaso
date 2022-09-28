@@ -6,9 +6,12 @@ import { useDispatch, useSelector } from 'react-redux';
 import { Box, Button, Grid, makeStyles, Typography } from '@material-ui/core';
 
 import Search from '@material-ui/icons/Search';
-import { commonStyles, useSafeIntl } from 'bluesquare-components';
+import {
+    commonStyles,
+    useSafeIntl,
+    QueryBuilderInput,
+} from 'bluesquare-components';
 import InputComponent from '../../../components/forms/InputComponent';
-import { QueryBuilderField } from '../../../components/forms/QueryBuilderField/index.tsx';
 
 import { periodTypeOptions } from '../../periods/constants';
 import { isValidPeriod } from '../../periods/utils';
@@ -152,7 +155,7 @@ const InstancesFiltersComponent = ({
                         label={MESSAGES.textSearch}
                         onEnterPressed={() => handleSearch()}
                     />
-                    <QueryBuilderField label={MESSAGES.queryBuilder} />
+                    <QueryBuilderInput label={MESSAGES.queryBuilder} />
                     <InputComponent
                         keyValue="formIds"
                         clearable

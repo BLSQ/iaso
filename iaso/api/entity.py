@@ -4,11 +4,11 @@ import io
 
 import xlsxwriter  # type: ignore
 from django.core.paginator import Paginator
-from django.db.models import Q, Max
+from django.db.models import Max
 from django.http import JsonResponse, HttpResponse
 from django.shortcuts import get_object_or_404
 from django_filters.rest_framework import DjangoFilterBackend  # type: ignore
-from rest_framework import permissions, filters
+from rest_framework import filters
 from rest_framework import serializers
 from rest_framework.decorators import action
 from rest_framework.request import Request
@@ -405,23 +405,27 @@ class EntityViewSet(ModelViewSet):
             columns_list = [c for c in columns_list if len(c) > 2]
 
         if limit:
-            limit = int(limit)
+            limit_int = int(limit)
             page_offset = int(page_offset)
-            paginator = Paginator(result_list, limit)
-            res = {"count": paginator.count}
+            paginator = Paginator(result_list, limit_int)
+
             if page_offset > paginator.num_pages:
                 page_offset = paginator.num_pages
             page = paginator.page(page_offset)
-            res["has_next"] = page.has_next()
-            res["has_previous"] = page.has_previous()
-            res["page"] = page_offset
-            res["pages"] = paginator.num_pages
-            res["limit"] = limit
-            res["columns"] = columns_list
-            res["result"] = map(lambda x: x, page.object_list)
-            return Response(res)
-        response = {"columns": columns_list, "result": result_list}
+            return Response(
+                {
+                    "count": paginator.count,
+                    "has_next": page.has_next(),
+                    "has_previous": page.has_previous(),
+                    "page": page_offset,
+                    "pages": paginator.num_pages,
+                    "limit": limit_int,
+                    "columns": columns_list,
+                    "result": map(lambda x: x, page.object_list),
+                }
+            )
 
+        response = {"columns": columns_list, "result": result_list}
         return Response(response)
 
     @action(detail=False, methods=["GET"])

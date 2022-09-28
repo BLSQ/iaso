@@ -256,7 +256,7 @@ class OrgUnitViewSet(viewsets.ViewSet):
             user_account_name = request.user.iaso_profile.account.name
             environment = settings.ENVIRONMENT
             filename = "org_units"
-            filename = "%s-%s-%s-%s" % (filename, strftime("%Y-%m-%d-%H-%M", gmtime()), user_account_name, environment)
+            filename = "%s-%s-%s-%s" % (environment, user_account_name, filename, strftime("%Y-%m-%d-%H-%M", gmtime()))
 
             def get_row(org_unit, **kwargs):
                 location = org_unit.get("location", None)

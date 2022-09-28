@@ -357,8 +357,6 @@ class PolioAPITestCase(APITestCase):
         self.client.force_autenticate(self.yoda)
 
 
-
-
 class CampaignCalculatorTestCase(TestCase):
     def setUp(self) -> None:
         with open("./plugins/polio/preparedness/test_data/example1.json", "r") as json_data:

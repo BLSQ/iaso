@@ -6,7 +6,7 @@ import { useSnackQuery } from '../../../../../hat/assets/js/apps/Iaso/libs/apiHo
 import { DropdownOptions } from '../../../../../hat/assets/js/apps/Iaso/types/utils';
 import { CampaignLogDetail, CampaignLogData } from '../constants/types';
 
-const getCampaignLog = (
+export const getCampaignLog = (
     campaignId: string | undefined,
 ): Promise<CampaignLogDetail> => {
     return getRequest(

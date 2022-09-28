@@ -54,7 +54,9 @@ def get_cell_data(rounds):
         started_at = format_date(round["started_at"], False)
         ended_at = format_date(round["ended_at"], True)
         obr_name = round["obr_name"] if round["obr_name"] is not None else ""
+        round_number = round["round_number"] if round["round_number"] is not None else ""
         cell_data += obr_name + "\n"
+        cell_data += "Round " + str(round_number) + "\n"
         cell_data += "Dates: " + started_at + " - " + ended_at + "\n"
         cell_data += round["vacine"] + "\n\n" if round["vacine"] is not None else "\n"
     return cell_data

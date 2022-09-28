@@ -296,6 +296,7 @@ class CampaignViewSet(ModelViewSet):
             "ended_at": dt.datetime.strftime(round.ended_at, "%Y-%m-%d"),
             "obr_name": round.campaign.obr_name,
             "vacine": round.campaign.vacine,
+            "round_number": round.number,
         }
 
     @action(methods=["POST"], detail=True, serializer_class=CampaignPreparednessSpreadsheetSerializer)

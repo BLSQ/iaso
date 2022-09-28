@@ -353,6 +353,11 @@ class PolioAPITestCase(APITestCase):
     def tesst_export_campaign_as_xlsform(self):
         pass
 
+    def test_export_campaign_xls_form(self):
+        self.client.force_autenticate(self.yoda)
+
+
+
 
 class CampaignCalculatorTestCase(TestCase):
     def setUp(self) -> None:
@@ -830,7 +835,7 @@ class CampaignFormTemplateTestCase(APITestCase):
         payload = {"name": "test_form", "form_template": upload_file, "account": 1}
 
         response = self.client.post("/api/polio/campaignformtemplate/", data=payload, format="multipart")
-
+        print(response.json())
         self.assertEqual(response.status_code, 201)
 
     def test_name_and_account_unique_together(self):
@@ -879,4 +884,4 @@ class CampaignFormTemplateTestCase(APITestCase):
         print(response.json())
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(response.json()), 1)
-        self.assertEqual(response.json()[0]["account"], 2)
+        self.assertEqual(response.json()[0]["account"], self.rebecca.iaso_profile.account)

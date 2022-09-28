@@ -86,7 +86,7 @@ def cell_dimension_pattern_fill(sheet, cell, width, height, pattern_fill):
 
 
 def format_cell(cell, size, alignement, border):
-    cell.alignment = Alignment(horizontal=alignement["horizontal"], vertical=alignement["vertical"])
+    cell.alignment = Alignment(horizontal=alignement["horizontal"], vertical=alignement["vertical"], wrap_text=True)
     cell.border = border_style(border["left"], border["right"], border["top"], border["bottom"])
     cell.font = Font(size=size)
     return cell

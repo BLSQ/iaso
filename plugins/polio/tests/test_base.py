@@ -831,7 +831,6 @@ class CampaignFormTemplateTestCase(APITestCase):
 
         response = self.client.post("/api/polio/campaignformtemplate/", data=payload, format="multipart")
 
-        print(response.json())
         self.assertEqual(response.status_code, 201)
 
     def test_name_and_account_unique_together(self):
@@ -842,7 +841,7 @@ class CampaignFormTemplateTestCase(APITestCase):
             "testcampaignformtemplate.xlsx", data.read(), content_type="multipart/form-data"
         )
 
-        payload = {"name": "test_form", "form_template": upload_file, "account": self.lucy.pk}
+        payload = {"name": "test_form", "form_template": upload_file, "account": self.lucy.iaso_profile.account.pk}
 
         self.client.post("/api/polio/campaignformtemplate/", data=payload, format="multipart")
         response = self.client.post("/api/polio/campaignformtemplate/", data=payload, format="multipart")
@@ -850,25 +849,34 @@ class CampaignFormTemplateTestCase(APITestCase):
         self.assertEqual(response.status_code, 400)
 
     def test_template_respect_multi_tenancy(self):
+
+        data = File(open("iaso/tests/fixtures/testcampaignformtemplate.xlsx", "rb"))
+        upload_file = SimpleUploadedFile(
+            "testcampaignformtemplate.xlsx", data.read(), content_type="multipart/form-data"
+        )
+
+        CampaignFormTemplate.objects.create(
+            name="A_FORM", account=self.lucy.iaso_profile.account, form_template=upload_file
+        )
+
+        CampaignFormTemplate.objects.create(
+            name="B_FORM", account=self.lucy.iaso_profile.account, form_template=upload_file
+        )
+
         self.client.force_authenticate(self.rebecca)
 
-        file = File(open("iaso/tests/fixtures/testcampaignformtemplate.xlsx", "rb"))
+        data = File(open("iaso/tests/fixtures/testcampaignformtemplate.xlsx", "rb"))
         upload_file = SimpleUploadedFile(
-            "testcampaignformtemplate.xlsx", file.read(), content_type="multipart/form-data"
+            "testcampaignformtemplate.xlsx", data.read(), content_type="multipart/form-data"
         )
-        payload = {"name": "test_form", "form_template": upload_file, "account": 1}
+
+        payload = {"name": "test_form", "form_template": upload_file, "account": self.rebecca.iaso_profile.account.pk}
 
         self.client.post("/api/polio/campaignformtemplate/", data=payload, format="multipart")
 
-        upload_file = SimpleUploadedFile(
-            "testcampaignformtemplate.xlsx", file.read(), content_type="multipart/form-data"
-        )
-        payload = {"name": "test_form", "form_template": upload_file, "account": 2}
-        self.client.post("/api/polio/campaignformtemplate/", data=payload, format="multipart")
-
-        payload = {"name": "test_form_A", "form_template": upload_file, "account": 2}
-        self.client.post("/api/polio/campaignformtemplate/", data=payload, format="multipart")
         response = self.client.get("/api/polio/campaignformtemplate/")
 
+        print(response.json())
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(len(response.json()), 0)
+        self.assertEqual(len(response.json()), 1)
+        self.assertEqual(response.json()[0]["account"], 2)

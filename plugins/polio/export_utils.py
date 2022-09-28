@@ -51,8 +51,8 @@ def generate_xlsx(filename, columns, datas):
 def get_cell_data(rounds):
     cell_data = ""
     for round in rounds:
-        started_at = format_date(round["started_at"])
-        ended_at = format_date(round["ended_at"])
+        started_at = format_date(round["started_at"], False)
+        ended_at = format_date(round["ended_at"], True)
         obr_name = round["obr_name"] if round["obr_name"] is not None else ""
         cell_data += obr_name + "\n"
         cell_data += "Dates: " + started_at + " - " + ended_at + "\n"
@@ -60,9 +60,12 @@ def get_cell_data(rounds):
     return cell_data
 
 
-def format_date(date):
+def format_date(date, with_year):
+    date_format = "%d %B"
+    if with_year:
+        date_format += " %Y"
     formated_date = dt.datetime.strptime(date, "%Y-%m-%d")
-    return formated_date.strftime("%d %B")
+    return formated_date.strftime(date_format)
 
 
 def get_max_rounds_length(rounds):

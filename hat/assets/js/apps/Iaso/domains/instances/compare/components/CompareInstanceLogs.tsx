@@ -35,15 +35,10 @@ type RouterCustom = {
 type State = {
     routerCustom: RouterCustom;
 };
-type DefaultParams = {
-    instanceIds: string;
-    logA?: string;
-    logB?: string;
-};
 type Params = {
     instanceIds: string;
-    logA?: string;
-    logB?: string;
+    logA: string;
+    logB: string;
 };
 type Router = {
     goBack: () => void;
@@ -119,24 +114,21 @@ export const CompareInstanceLogs: FunctionComponent<Props> = ({
 
     useEffect(() => {
         if (instanceLogsDropdown) {
-            const defaultParams: DefaultParams = {
+            const newParams: Params = {
                 ...params,
             };
             if (!params.logA && instanceLogsDropdown[0]?.value) {
-                defaultParams.logA = instanceLogsDropdown[0]?.value.toString();
+                newParams.logA = instanceLogsDropdown[0]?.value.toString();
             }
             if (!params.logB && instanceLogsDropdown[1]?.value) {
-                defaultParams.logB = instanceLogsDropdown[1]?.value.toString();
+                newParams.logB = instanceLogsDropdown[1]?.value.toString();
             }
             if (
                 (!params.logA && instanceLogsDropdown[0]?.value) ||
                 (!params.logB && instanceLogsDropdown[1]?.value)
             ) {
                 dispatch(
-                    redirectToReplace(
-                        baseUrls.compareInstanceLogs,
-                        defaultParams,
-                    ),
+                    redirectToReplace(baseUrls.compareInstanceLogs, newParams),
                 );
             }
         }
@@ -194,10 +186,8 @@ export const CompareInstanceLogs: FunctionComponent<Props> = ({
                             options={instanceLogsDropdown?.filter(
                                 instance =>
                                     instance.value !==
-                                    parseInt(
-                                        params.logB || logBInitialValue,
-                                        10,
-                                    ),
+                                    (parseInt(params.logB, 10) ||
+                                        logBInitialValue),
                             )}
                             loading={isFetchingInstanceLogs}
                         />
@@ -228,10 +218,8 @@ export const CompareInstanceLogs: FunctionComponent<Props> = ({
                             options={instanceLogsDropdown?.filter(
                                 instance =>
                                     instance.value !==
-                                    parseInt(
-                                        params.logA || logAInitialValue,
-                                        10,
-                                    ),
+                                    (parseInt(params.logA, 10) ||
+                                        logAInitialValue),
                             )}
                             loading={isFetchingInstanceLogs}
                         />

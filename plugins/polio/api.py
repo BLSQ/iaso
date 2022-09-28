@@ -556,7 +556,8 @@ where group_id = polio_roundscope.group_id""",
         for ou in campaign_scope:
             ou_tree_dict = {ou.org_unit_type.name: ou}
             ou_parent = ou.parent
-            ou_tree_dict[ou_parent.org_unit_type.name] = ou_parent
+            if ou_parent is not None:
+                ou_tree_dict[ou_parent.org_unit_type.name] = ou_parent
             while ou_parent is not None:
                 ou_tree_dict[ou_parent.org_unit_type.name] = ou_parent
                 ou_parent = ou_parent.parent
@@ -681,15 +682,18 @@ where group_id = polio_roundscope.group_id""",
         q_sheet[cell[1] + str(11)] = "note_obr_name"
         q_sheet[cell[2] + str(11)] = f"Outbreak Name: {campaign.obr_name} "
 
-        number_of_round = 0 if campaign.round_one.started_at is None else 1
-        number_of_round = number_of_round if campaign.round_two.started_at is None else 2
+        number_of_round = 0 if campaign.round_one is None else 1
+        number_of_round = number_of_round if campaign.round_two is None else 2
         q_sheet[cell[0] + str(12)] = "note"
         q_sheet[cell[1] + str(12)] = "note_round_number"
         q_sheet[cell[2] + str(12)] = f"Number of rounds: {number_of_round} "
 
         q_sheet[cell[0] + str(13)] = "note"
         q_sheet[cell[1] + str(13)] = "note_first_round_date"
-        q_sheet[cell[2] + str(13)] = f"First Round Date: {campaign.round_one.started_at} "
+        if campaign.round_one is not None:
+            q_sheet[cell[2] + str(13)] = f"First Round Date: {campaign.round_one.started_at} "
+        else:
+            q_sheet[cell[2] + str(13)] = f"First Round Date: {None}"
         q_sheet[cell[0] + str(14)] = "note"
         q_sheet[cell[1] + str(14)] = "note_vaccine_type"
         q_sheet[cell[2] + str(14)] = f"Vaccine Type: {campaign.vacine} "

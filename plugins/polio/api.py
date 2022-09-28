@@ -243,7 +243,7 @@ class CampaignViewSet(ModelViewSet):
                     save_virtual_workbook(xlsx_file),
                     content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
                 )
-        response["Content-Disposition"] = "attachment; filename=%s" % filename
+        response["Content-Disposition"] = "attachment; filename=%s" % filename+".xlsx"
         return response
 
     @staticmethod

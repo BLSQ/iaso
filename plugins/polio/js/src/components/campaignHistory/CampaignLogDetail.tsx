@@ -30,6 +30,9 @@ type Props = {
 
 const useStyles = makeStyles((theme: Theme) => ({
     ...commonStyles(theme),
+    tableCellHead: {
+        fontWeight: 'bold',
+    },
 }));
 
 export const CampaignLogDetail: FunctionComponent<Props> = ({ logId }) => {
@@ -118,6 +121,8 @@ export const CampaignLogDetail: FunctionComponent<Props> = ({ logId }) => {
                                         </TableRow>
                                     );
                                 }
+
+                                return undefined;
                             },
                         )}
                     </TableBody>

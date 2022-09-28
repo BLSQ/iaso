@@ -45,6 +45,7 @@ import { RoundsForm } from '../forms/RoundsForm';
 import { RoundsEmptyDates } from './Rounds/RoundsEmptyDates.tsx';
 
 import { useSaveCampaign } from '../hooks/useSaveCampaign';
+import { useGetCampaignLogs } from '../hooks/useGetCampaignHistory.ts';
 
 import { CAMPAIGN_HISTORY_URL } from '../constants/routes';
 
@@ -59,6 +60,8 @@ const CreateEditDialog = ({
     isFetching,
 }) => {
     const { mutate: saveCampaign } = useSaveCampaign();
+
+    const { data: campaignLogs } = useGetCampaignLogs(selectedCampaign?.id);
 
     const schema = useFormValidator();
     const { formatMessage } = useSafeIntl();
@@ -200,7 +203,7 @@ const CreateEditDialog = ({
                     </Box>
                 </Grid>
 
-                {selectedCampaign && (
+                {selectedCampaign && campaignLogs?.length > 0 && (
                     <Grid item xs={12} md={6} className={classes.historyLink}>
                         <Box pr={4} alignItems="center">
                             <IconButtonComponent

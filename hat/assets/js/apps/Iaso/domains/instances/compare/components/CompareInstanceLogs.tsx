@@ -1,17 +1,16 @@
-import React, { FunctionComponent, useEffect, useState } from 'react';
+import React, { FunctionComponent, useEffect, useState, useMemo } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { Box, Grid, Theme } from '@material-ui/core';
 import { makeStyles } from '@material-ui/core/styles';
-// @ts-ignore
 import {
+    // @ts-ignore
     useSafeIntl,
+    // @ts-ignore
     commonStyles,
-    LoadingSpinner,
 } from 'bluesquare-components';
 
 import {
     useGetInstanceLogs,
-    useGetUserInstanceLog,
     useGetInstanceLogDetail,
 } from '../hooks/useGetInstanceLogs';
 
@@ -22,7 +21,6 @@ import { InstanceLogDetail } from './InstanceLogDetail';
 import { InstanceLogInfos } from './InstanceLogInfos';
 
 import { IntlFormatMessage } from '../../../../types/intl';
-import { FileContent } from '../../types/instance';
 
 import { redirectToReplace } from '../../../../routing/actions';
 
@@ -53,10 +51,6 @@ const useStyles = makeStyles((theme: Theme) => ({
     ...commonStyles(theme),
 }));
 
-const logInfos = {
-    org_unit: undefined,
-    period: undefined,
-};
 export const CompareInstanceLogs: FunctionComponent<Props> = ({
     params,
     router,
@@ -68,14 +62,29 @@ export const CompareInstanceLogs: FunctionComponent<Props> = ({
         isFetching: isFetchingInstanceLogs,
         isError,
     } = useGetInstanceLogs(instanceId);
-    const {
-        userLogA,
-        userLogB,
-        isLoading: isUserLoading,
-    } = useGetUserInstanceLog(params.logA, params.logB);
-    const { data: instanceLogsDetail, isLoading: isInstanceLogDetailLoading } =
-        useGetInstanceLogDetail(params.logA, params.logB);
 
+    const [
+        {
+            data: instanceLogA,
+            isFetching: isInstanceLogAFetching,
+            isError: isInstanceLogAError,
+        },
+        {
+            data: instanceLogB,
+            isFetching: isInstanceLogBFetching,
+            isError: isInstanceLogBError,
+        },
+    ] = useGetInstanceLogDetail([params.logA, params.logB]);
+
+    const instanceLogContent = useMemo(
+        () => ({
+            logA: instanceLogA?.new_value[0]?.fields,
+            logB: instanceLogB?.new_value[0]?.fields,
+        }),
+        [instanceLogA, instanceLogB],
+    );
+    const isLogDetailLoading = isInstanceLogAFetching || isInstanceLogBFetching;
+    const isLogDetailError = isInstanceLogAError || isInstanceLogBError;
     const classes: Record<string, string> = useStyles();
 
     const { formatMessage }: { formatMessage: IntlFormatMessage } =
@@ -87,16 +96,6 @@ export const CompareInstanceLogs: FunctionComponent<Props> = ({
         (state: State) => state.routerCustom.prevPathname,
     );
 
-    // FIXME ugly fix to the back arrow bug. Caused by redirecting in useEffect. using useSkipEffectOnMount breaks the feature, so this is a workaround
-    // eslint-disable-next-line no-unused-vars
-    const [instanceLogInfos, setInstanceLogInfos] = useState<FileContent>({
-        logA: {
-            ...logInfos,
-        },
-        logB: {
-            ...logInfos,
-        },
-    });
     const [logAInitialValue, setLogAInitialValue] = useState<
         number | undefined
     >(undefined);
@@ -142,18 +141,6 @@ export const CompareInstanceLogs: FunctionComponent<Props> = ({
             instanceLogsDropdown && instanceLogsDropdown[1]?.value,
         );
     }, [instanceLogsDropdown, isFetchingInstanceLogs]);
-    useEffect(() => {
-        setInstanceLogInfos({
-            logA: {
-                org_unit: instanceLogsDetail?.logA?.org_unit,
-                period: instanceLogsDetail?.logA?.period,
-            },
-            logB: {
-                org_unit: instanceLogsDetail?.logB?.org_unit,
-                period: instanceLogsDetail?.logB?.period,
-            },
-        });
-    }, [instanceLogsDetail]);
 
     if (isError) {
         return (
@@ -175,7 +162,7 @@ export const CompareInstanceLogs: FunctionComponent<Props> = ({
                 }}
             />
             <Box className={classes.containerFullHeightNoTabPadded}>
-                <Grid container spacing={4}>
+                <Grid container spacing={2}>
                     <Grid xs={12} md={6} item>
                         <InputComponent
                             type="select"
@@ -191,22 +178,11 @@ export const CompareInstanceLogs: FunctionComponent<Props> = ({
                             )}
                             loading={isFetchingInstanceLogs}
                         />
-
-                        {isUserLoading || isInstanceLogDetailLoading ? (
-                            <Box height="10vh">
-                                <LoadingSpinner
-                                    fixed={false}
-                                    transparent
-                                    padding={4}
-                                    size={25}
-                                />
-                            </Box>
-                        ) : (
-                            <InstanceLogInfos
-                                user={userLogA}
-                                infos={instanceLogInfos.logA}
-                            />
-                        )}
+                        <InstanceLogInfos
+                            user={instanceLogA?.user}
+                            infos={instanceLogA?.new_value[0]?.fields}
+                            loading={isInstanceLogAFetching}
+                        />
                     </Grid>
                     <Grid xs={12} md={6} item>
                         <InputComponent
@@ -224,27 +200,18 @@ export const CompareInstanceLogs: FunctionComponent<Props> = ({
                             loading={isFetchingInstanceLogs}
                         />
 
-                        {isUserLoading || isInstanceLogDetailLoading ? (
-                            <Box height="10vh">
-                                <LoadingSpinner
-                                    fixed={false}
-                                    transparent
-                                    padding={4}
-                                    size={25}
-                                />
-                            </Box>
-                        ) : (
-                            <InstanceLogInfos
-                                user={userLogB}
-                                infos={instanceLogInfos.logB}
-                            />
-                        )}
+                        <InstanceLogInfos
+                            user={instanceLogA?.user}
+                            infos={instanceLogA?.new_value[0]?.fields}
+                            loading={isInstanceLogBFetching}
+                        />
                     </Grid>
 
                     <Grid xs={12} md={12} item>
                         <InstanceLogDetail
-                            logA={params.logA}
-                            logB={params.logB}
+                            instanceLogContent={instanceLogContent}
+                            isLogDetailLoading={isLogDetailLoading}
+                            isLogDetailError={isLogDetailError}
                         />
                     </Grid>
                 </Grid>

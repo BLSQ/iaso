@@ -31,7 +31,6 @@ export type Instance = {
     correlation_id?: string;
     deleted: boolean;
     org_unit: OrgUnit;
-
     period: unknown;
     file_content: Record<string, string>;
     form_descriptor: unknown;
@@ -46,7 +45,7 @@ export type InstanceLogDetail = {
     content_type: string;
     object_id: string;
     source: string;
-    user: Record<string, any>;
+    user: User | undefined;
     created_at: string;
 };
 
@@ -64,7 +63,7 @@ export type InstanceLogData = {
     object_id: string;
     new_value: NewValue[];
     source: string;
-    user: Record<string, any>;
+    user: User;
 };
 
 type FormVersions = {
@@ -77,22 +76,4 @@ export type FormDescriptor = {
 export type FileContent = {
     logA: Record<string, any>;
     logB: Record<string, any>;
-};
-
-export type InstanceLogFileContent = {
-    data: FileContent;
-    isLoading: boolean;
-    isError: boolean;
-};
-
-export type InstanceUserLogDetail = {
-    userLogA: string;
-    userLogB: string;
-    isLoading: boolean;
-    isError: boolean;
-};
-
-export type Logs = {
-    logA: FileContent;
-    logB: FileContent;
 };

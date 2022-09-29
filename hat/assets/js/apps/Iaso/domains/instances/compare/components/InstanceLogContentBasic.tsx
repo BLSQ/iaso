@@ -7,25 +7,27 @@ import {
     TableRow,
     TableHead,
 } from '@material-ui/core';
+// @ts-ignore
 import { useSafeIntl } from 'bluesquare-components';
 
 import { formatLabel } from '../../utils';
-import { FileContent, FormDescriptor } from '../../types/instance';
+import { FileContent } from '../../types/instance';
 import { IntlFormatMessage } from '../../../../types/intl';
 import MESSAGES from '../messages';
 
 type Props = {
     fileContent: FileContent;
-    fileDescriptor: FormDescriptor;
+    fileDescriptor: Record<string, any> | undefined;
 };
 
-const styles = theme => ({
+const useStyles = makeStyles(theme => ({
     tableCellHead: {
         fontWeight: 'bold',
         backgroundColor: 'transparent',
         borderTop: 'none !important',
         borderLeft: 'none !important',
         borderRight: 'none !important',
+        // @ts-ignore
         borderBottom: `1px solid ${theme.palette.ligthGray.border}  !important`,
     },
     tableCell: {
@@ -33,11 +35,10 @@ const styles = theme => ({
         borderTop: 'none !important',
         borderLeft: 'none !important',
         borderRight: 'none !important',
+        // @ts-ignore
         borderBottom: `1px solid ${theme.palette.ligthGray.border}  !important`,
     },
-});
-
-const useStyles = makeStyles(styles);
+}));
 
 export const InstanceLogContentBasic: FunctionComponent<Props> = ({
     fileContent,
@@ -52,24 +53,16 @@ export const InstanceLogContentBasic: FunctionComponent<Props> = ({
             <TableHead>
                 <TableRow>
                     <TableCell
-                        width={150}
+                        width={80}
                         align="left"
                         className={classes.tableCellHead}
                     >
                         {formatMessage(MESSAGES.label)}
                     </TableCell>
-                    <TableCell
-                        width={150}
-                        align="left"
-                        className={classes.tableCellHead}
-                    >
+                    <TableCell align="left" className={classes.tableCellHead}>
                         {formatMessage(MESSAGES.instanceLogsVersionA)}
                     </TableCell>
-                    <TableCell
-                        width={150}
-                        align="left"
-                        className={classes.tableCellHead}
-                    >
+                    <TableCell align="left" className={classes.tableCellHead}>
                         {formatMessage(MESSAGES.instanceLogsVersionB)}
                     </TableCell>
                 </TableRow>

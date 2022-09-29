@@ -1,6 +1,5 @@
 /* eslint-disable camelcase */
 import moment from 'moment';
-import { useMemo } from 'react';
 import { UseQueryResult } from 'react-query';
 import { getRequest } from '../../../../libs/Api';
 import { useSnackQuery, useSnackQueries } from '../../../../libs/apiHooks';
@@ -8,8 +7,6 @@ import {
     InstanceLogDetail,
     InstanceLogsDetail,
     InstanceLogData,
-    InstanceLogFileContent,
-    InstanceUserLogDetail,
     FormDescriptor,
 } from '../../types/instance';
 import { DropdownOptions } from '../../../../types/utils';
@@ -23,19 +20,6 @@ const getInstanceLog = (
         `/api/logs/?objectId=${instanceId}&order=-created_at&contentType=iaso.instance`,
     );
 };
-
-const getInstanceLogDetail = (
-    logId: string | undefined,
-): Promise<InstanceLogData> => {
-    return getRequest(`/api/logs/${logId}`);
-};
-
-const getVersion = (versionId, formId) => {
-    return getRequest(
-        `/api/formversions/?version_id=${versionId}&form_id=${formId}&fields=descriptor`,
-    );
-};
-
 export const useGetInstanceLogs = (
     instanceId: string | undefined,
 ): UseQueryResult<DropdownOptions<number>[], Error> => {
@@ -59,104 +43,36 @@ export const useGetInstanceLogs = (
     });
 };
 
+const getInstanceLogDetail = (
+    logId: string | undefined,
+): Promise<InstanceLogData> => {
+    return getRequest(`/api/logs/${logId}/`);
+};
 export const useGetInstanceLogDetail = (
-    logA: string | undefined,
-    logB: string | undefined,
-): UseQueryResult<InstanceLogFileContent, Error> => {
-    const [
-        { data: instanceLogADetail, isFetching: isInstanceLogAFetching },
-        { data: instanceLogBDetail, isFetching: isInstanceLogBFetching },
-    ] = useSnackQueries([
-        {
-            queryKey: ['instanceLogADetail', logA],
-            queryFn: () => getInstanceLogDetail(logA),
+    logIds: string[],
+): Array<UseQueryResult<InstanceLogData, unknown>> => {
+    // @ts-ignore => ignoring this, useQueies is wornnking with unknown type as you can have multiple calls with multiple types
+    return useSnackQueries<InstanceLogData>(
+        logIds.map(logId => ({
+            queryKey: ['instanceLogADetail', logId],
+            queryFn: () => getInstanceLogDetail(logId),
             snackErrorMsg: MESSAGES.fetchLogDetailError,
             dispatchOnError: false,
             options: {
-                enabled: Boolean(logA),
-                select: (data: InstanceLogData | undefined) => {
-                    if (!data) return data;
-                    return data.new_value[0].fields;
-                },
+                enabled: Boolean(logId),
             },
-        },
-        {
-            queryKey: ['instanceLogBDetail', logB],
-            queryFn: () => getInstanceLogDetail(logB),
-            snackErrorMsg: MESSAGES.fetchLogDetailError,
-            dispatchOnError: false,
-            options: {
-                enabled: Boolean(logB),
-                select: (data: InstanceLogData | undefined) => {
-                    if (!data) return data;
-                    return data.new_value[0].fields;
-                },
-            },
-        },
-    ]);
-
-    /* To do : find how to type instanceLogsDetails in useQueries result */
-    const instanceLogsDetail = useMemo(() => {
-        const data = {
-            /* @ts-ignore */
-            logA: instanceLogADetail,
-            /* @ts-ignore */
-            logB: instanceLogBDetail,
-        };
-
-        return data;
-    }, [instanceLogADetail, instanceLogBDetail]);
-
-    return {
-        /* @ts-ignore */
-        data: instanceLogsDetail,
-        isLoading: isInstanceLogAFetching || isInstanceLogBFetching,
-    };
+        })),
+    );
 };
 
-export const useGetUserInstanceLog = (
-    logA: string | undefined,
-    logB: string | undefined,
-): UseQueryResult<InstanceUserLogDetail, Error> => {
-    const [
-        { data: userLogA, isFetching: isUserLogAFetching },
-        { data: userLogB, isFetching: isUserLogBFetching },
-    ] = useSnackQueries([
-        {
-            queryKey: ['userlogA'],
-            queryFn: () => getInstanceLogDetail(logA),
-            snackErrorMsg: MESSAGES.fetchLogUserError,
-            dispatchOnError: false,
-            options: {
-                enabled: Boolean(logA),
-                select: (data: InstanceLogData | undefined) => {
-                    if (!data) return data;
-                    return data.user.user_name;
-                },
-            },
-        },
-        {
-            queryKey: ['userlogB'],
-            queryFn: () => getInstanceLogDetail(logB),
-            snackErrorMsg: MESSAGES.fetchLogUserError,
-            dispatchOnError: false,
-            options: {
-                enabled: Boolean(logB),
-                select: (data: InstanceLogData | undefined) => {
-                    if (!data) return data;
-                    return data.user.user_name;
-                },
-            },
-        },
-    ]);
-
-    return {
-        userLogA,
-        userLogB,
-        isLoading: isUserLogAFetching || isUserLogBFetching,
-    };
+const getVersion = (
+    versionId: string | undefined,
+    formId: number | undefined,
+): Promise<Record<string, any>> => {
+    return getRequest(
+        `/api/formversions/?version_id=${versionId}&form_id=${formId}&fields=descriptor`,
+    );
 };
-
 export const useGetFormDescriptor = (
     versionId: string | undefined,
     formId: number | undefined,

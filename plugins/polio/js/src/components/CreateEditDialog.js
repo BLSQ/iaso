@@ -1,3 +1,4 @@
+/* eslint-disable react/jsx-props-no-spreading */
 /* eslint-disable camelcase */
 import React, { useEffect, useState, useMemo } from 'react';
 import PropTypes from 'prop-types';
@@ -15,9 +16,11 @@ import {
     Tab,
     Tabs,
     Typography,
+    Tooltip,
 } from '@material-ui/core';
 
 import { useSafeIntl, LoadingSpinner } from 'bluesquare-components';
+import { FormattedMessage } from 'react-intl';
 import { convertEmptyStringToNull } from '../utils/convertEmptyStringToNull';
 import { PreparednessForm } from '../forms/PreparednessForm';
 import { useFormValidator } from '../hooks/useFormValidator';
@@ -109,7 +112,9 @@ const CreateEditDialog = ({
             {
                 title: formatMessage(MESSAGES.scope),
                 form: ScopeForm,
-                disabled: !formik.values.initial_org_unit,
+                disabled:
+                    !formik.values.initial_org_unit ||
+                    formik.values.rounds.length === 0,
             },
             {
                 title: formatMessage(MESSAGES.budget),
@@ -128,7 +133,11 @@ const CreateEditDialog = ({
                 form: VaccineManangementForm,
             },
         ];
-    }, [formatMessage, formik.values.initial_org_unit]);
+    }, [
+        formatMessage,
+        formik.values.initial_org_unit,
+        formik.values.rounds.length,
+    ]);
 
     const [selectedTab, setSelectedTab] = useState(0);
 
@@ -182,6 +191,29 @@ const CreateEditDialog = ({
                     scrollButtons="auto"
                 >
                     {tabs.map(({ title, disabled }) => {
+                        if (
+                            disabled &&
+                            title === formatMessage(MESSAGES.scope)
+                        ) {
+                            return (
+                                <Tooltip
+                                    title={
+                                        <FormattedMessage
+                                            {...MESSAGES.scopeUnlockConditions}
+                                        />
+                                    }
+                                >
+                                    {/* the wrapping span is to enable the tooltip while the tab is disabled */}
+                                    <span>
+                                        <Tab
+                                            key={title}
+                                            label={title}
+                                            disabled={disabled || false}
+                                        />
+                                    </span>
+                                </Tooltip>
+                            );
+                        }
                         return (
                             <Tab
                                 key={title}

@@ -1536,6 +1536,11 @@ const MESSAGES = defineMessages({
         id: 'iaso.polio.label.shipmentFieldsTogether',
         defaultMessage: 'All shipment fields need to be filled together',
     },
+    scopeUnlockConditions: {
+        id: 'iaso.polio.label.scopeUnlockConditions',
+        defaultMessage:
+            'Select initial region and encode dates for at least one round to unlock Scope tab',
+    },
 });
 
 export default MESSAGES;

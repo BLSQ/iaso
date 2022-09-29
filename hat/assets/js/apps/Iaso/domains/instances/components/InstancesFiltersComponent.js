@@ -24,6 +24,7 @@ import { setInstancesFilterUpdated } from '../actions';
 
 import { useGetForms, useInstancesFiltersData } from '../hooks';
 import { getInstancesFilterValues, useFormState } from '../../../hooks/form';
+import { useGetQueryBuildersFields } from '../hooks/useGetQueryBuildersFields.ts';
 
 import MESSAGES from '../messages';
 import { OrgUnitTreeviewModal } from '../../orgUnits/components/TreeView/OrgUnitTreeviewModal';
@@ -68,6 +69,11 @@ const InstancesFiltersComponent = ({
         state => state.instances.isInstancesFilterUpdated,
     );
     const { data, isFetching: fetchingForms } = useGetForms();
+    const fields = useGetQueryBuildersFields(
+        formState.formIds.value?.split(',').length === 1
+            ? formState.formIds.value.split(',')
+            : undefined,
+    );
     const formsList = (data && data.forms) || [];
     useInstancesFiltersData(formIds, setFetchingOrgUnitTypes);
     const handleSearch = useCallback(() => {
@@ -107,6 +113,9 @@ const InstancesFiltersComponent = ({
     const handleFormChange = useCallback(
         (key, value) => {
             // checking only as value can be null or false
+            if (key === 'formIds') {
+                setFormState('fieldsSearch', null);
+            }
             if (key) {
                 setFormState(key, value);
                 if (key === 'periodType') {
@@ -120,7 +129,7 @@ const InstancesFiltersComponent = ({
             }
             dispatch(setInstancesFilterUpdated(true));
         },
-        [setFormState, dispatch],
+        [dispatch, setFormState],
     );
     const startPeriodError = useMemo(() => {
         if (formState.startPeriod?.value && formState.periodType?.value) {
@@ -196,46 +205,7 @@ const InstancesFiltersComponent = ({
                                     ? JSON.parse(formState.fieldsSearch.value)
                                     : undefined
                             }
-                            fields={{
-                                datetime: {
-                                    label: 'DateTime',
-                                    type: 'datetime',
-                                    valueSources: ['value'],
-                                },
-                                price: {
-                                    label: 'Price',
-                                    type: 'number',
-                                    valueSources: ['value'],
-                                    // fieldSettings: {
-                                    //     min: 10,
-                                    //     max: 100,
-                                    // },
-                                },
-                                color: {
-                                    label: 'Color',
-                                    type: 'select',
-                                    valueSources: ['value'],
-                                    fieldSettings: {
-                                        listValues: [
-                                            {
-                                                value: 'yellow',
-                                                title: 'Yellow',
-                                            },
-                                            { value: 'green', title: 'Green' },
-                                            {
-                                                value: 'orange',
-                                                title: 'Orange',
-                                            },
-                                        ],
-                                    },
-                                },
-                                is_promotion: {
-                                    label: 'Promo?',
-                                    type: 'boolean',
-                                    operators: ['equal'],
-                                    valueSources: ['value'],
-                                },
-                            }}
+                            fields={fields}
                             iconProps={{
                                 label: MESSAGES.queryBuilder,
                                 value: formState.fieldsSearch.value,

@@ -1,6 +1,6 @@
-import { useGetForm } from './requests/forms';
+import { useGetForm } from '../../entities/entityTypes/hooks/requests/forms';
 
-import { PossibleField } from '../../../forms/types/forms';
+import { PossibleField } from '../types/forms';
 
 type Result = {
     possibleFields: PossibleField[];

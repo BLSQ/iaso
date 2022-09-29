@@ -222,23 +222,16 @@ class CampaignViewSet(ModelViewSet):
 
     @action(methods=["GET"], detail=False, serializer_class=None)
     def create_calendar_xlsx_sheet(self, request, **kwargs):
-        filename = "calendar"
-        current_year = None
         current_date = request.query_params.get("currentDate")
-        if current_date is not None:
-            current_date = dt.datetime.strptime(current_date, "%Y-%m-%d")
-            current_date = current_date.date()
-            current_year = current_date.year
-        else:
-            today = dt.date.today()
-            current_year = today.year
-        columns = self.get_columns_names()
+        current_year = self.get_year(current_date)
+
         params = request.query_params
-        countries = params.get("countries") if params.get("countries") is not None else None
-        campaign_groups = params.get("campaignGroups") if params.get("campaignGroups") is not None else None
-        calendar_data = self.get_calendar_data(self, current_year, countries, campaign_groups)
-        filename = xlsx_file_name(filename, params)
+
+        calendar_data = self.get_calendar_data(self, current_year, request.query_params)
+        filename = xlsx_file_name("calendar", params)
+        columns = self.get_columns_names()
         xlsx_file = generate_xlsx(filename, columns, calendar_data)
+
         response = HttpResponse(
             save_virtual_workbook(xlsx_file),
             content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
@@ -247,21 +240,45 @@ class CampaignViewSet(ModelViewSet):
         return response
 
     @staticmethod
+    def get_year(current_date):
+        if current_date is not None:
+            current_date = dt.datetime.strptime(current_date, "%Y-%m-%d")
+            current_date = current_date.date()
+            return current_date.year
+        else:
+            today = dt.date.today()
+            return today.year
+
+    @staticmethod
     def get_columns_names():
         columns_names = []
         for month_num in range(1, 13):
             month_name = calendar.month_name[month_num]
             columns_names.append(month_name)
         columns_names.insert(0, "COUNTRY")
+
         return columns_names
 
     @staticmethod
-    def get_calendar_data(self, year, countries, campaign_groups):
+    def get_calendar_data(self, year, params):
+        countries = params.get("countries") if params.get("countries") is not None else None
+        campaign_groups = params.get("campaignGroups") if params.get("campaignGroups") is not None else None
+        campaign_type = params.get("campaignType") if params.get("campaignType") is not None else None
+        search = params.get("search")
         rounds = Round.objects.filter(started_at__year=year)
         if countries:
             rounds = rounds.filter(campaign__country_id__in=countries.split(","))
         if campaign_groups:
             rounds = rounds.filter(campaign__group_id__in=campaign_groups.split(","))
+        if campaign_type == "preventive":
+            rounds = rounds.filter(campaign__is_preventive=True)
+        if campaign_type == "test":
+            rounds = rounds.filter(campaign__is_test=True)
+        if campaign_type == "regular":
+            rounds = rounds.filter(campaign__is_preventive=False).filter(campaign__is_test=False)
+        if search:
+            rounds = rounds.filter(Q(campaign__obr_name__icontains=search) | Q(campaign__epid__icontains=search))
+
         rounds = rounds.order_by("campaign__country__name", "started_at")
         return self.loop_on_rounds(self, rounds)
 

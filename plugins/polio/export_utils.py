@@ -15,34 +15,30 @@ def generate_xlsx(filename, columns, datas):
     file = Workbook()
     sheet = file.active
     sheet.title = filename
-    alignment = {"horizontal": "left", "vertical": "top"}
     header_border = {"left": "thin", "right": "thin", "top": "thin", "bottom": "medium"}
     cell_border = {"left": "thin", "right": "thin", "top": "thin", "bottom": "thin"}
     # display columns in the xlsx file
     for row in range(1, 2):
         for column in range(1, len(columns) + 1):
             cell_header = sheet.cell(column=column, row=row, value=columns[column - 1])
-            cell_header = format_cell(cell_header, "12", alignment, header_border)
+            cell_header = format_cell(cell_header, "12", True)
             sheet = cell_dimension_pattern_fill(sheet, cell_header, None, 25.75, True)
-    # display calendar data in the xlsx file
-    for data in datas:
-        # loop over each row representing a country campaign rounds
-        for row in range(1, len(datas)):
-            # max_length = get_max_rounds_length(datas[row-1]["rounds"])
-            cell_country = sheet.cell(column=1, row=row + 1, value=datas[row - 1]["country_name"])
-            cell_country = format_cell(cell_country, "12", alignment, header_border)
-            sheet = cell_dimension_pattern_fill(sheet, cell_country, 35.00, 50.75, True)
-            # loop over rounds for each month
-            for month in range(1, 13):
-                cell = None
-                if str(month) in datas[row - 1]["rounds"].keys():
-                    cell = sheet.cell(
-                        column=month + 1, row=row + 1, value=get_cell_data(datas[row - 1]["rounds"][str(month)])
-                    )
-                else:
-                    cell = sheet.cell(column=month + 1, row=row + 1, value="")
-                cell = format_cell(cell, "10", alignment, cell_border)
-                sheet = cell_dimension_pattern_fill(sheet, cell, 22.00, 80.00, False)
+    # display calendar data in the xlsx file by looping over each row representing a country campaign rounds
+    for row in range(1, len(datas) + 1):
+        cell_country = sheet.cell(column=1, row=row + 1, value=datas[row - 1]["country_name"])
+        cell_country = format_cell(cell_country, "12", True)
+        sheet = cell_dimension_pattern_fill(sheet, cell_country, 35.00, 50.75, True)
+        # loop over rounds for each month
+        for month in range(1, 13):
+            cell = None
+            if str(month) in datas[row - 1]["rounds"].keys():
+                cell = sheet.cell(
+                    column=month + 1, row=row + 1, value=get_cell_data(datas[row - 1]["rounds"][str(month)])
+                )
+            else:
+                cell = sheet.cell(column=month + 1, row=row + 1, value="")
+            cell = format_cell(cell, "10")
+            sheet = cell_dimension_pattern_fill(sheet, cell, 22.00, 80.00)
 
     file.save(filename)
     return file
@@ -70,14 +66,7 @@ def format_date(date, with_year):
     return formated_date.strftime(date_format)
 
 
-def get_max_rounds_length(rounds):
-    rounds_lenth = []
-    for x in rounds:
-        rounds_lenth.append(len(rounds[x]))
-    return max(rounds_lenth)
-
-
-def cell_dimension_pattern_fill(sheet, cell, width, height, pattern_fill):
+def cell_dimension_pattern_fill(sheet, cell, width, height, pattern_fill=False):
     if width is not None:
         sheet.column_dimensions[cell.column_letter].width = float(width)
     if height is not None:
@@ -87,15 +76,20 @@ def cell_dimension_pattern_fill(sheet, cell, width, height, pattern_fill):
     return sheet
 
 
-def format_cell(cell, size, alignement, border):
-    cell.alignment = Alignment(horizontal=alignement["horizontal"], vertical=alignement["vertical"], wrap_text=True)
-    cell.border = border_style(border["left"], border["right"], border["top"], border["bottom"])
+def format_cell(cell, size, is_header=False):
+    cell.alignment = Alignment(horizontal="left", vertical="top", wrap_text=True)
+    cell.border = border_style(is_header)
     cell.font = Font(size=size)
     return cell
 
 
-def border_style(left, right, top, bottom):
-    return Border(left=Side(style=left), right=Side(style=right), top=Side(style=top), bottom=Side(style=bottom))
+def border_style(is_header):
+    return Border(
+        left=Side(style="thin"),
+        right=Side(style="thin"),
+        top=Side(style="thin"),
+        bottom=Side(style="thin" if not is_header else "medium"),
+    )
 
 
 def xlsx_file_name(name, params):

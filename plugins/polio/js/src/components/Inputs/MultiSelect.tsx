@@ -7,6 +7,7 @@ type Props = {
     label: string;
     field: Record<string, any>;
     form: Record<string, any>;
+    withMarginTop: boolean;
 };
 
 export const MultiSelect: FunctionComponent<Props> = ({
@@ -14,14 +15,14 @@ export const MultiSelect: FunctionComponent<Props> = ({
     label,
     field,
     form,
+    withMarginTop = true,
 }) => {
-    // console.log('field', field);
-    // console.log('form', form);
     return (
         <InputComponent
             keyValue={field.name}
             type="select"
             multi
+            withMarginTop={withMarginTop}
             value={field.value}
             options={options}
             labelString={label}

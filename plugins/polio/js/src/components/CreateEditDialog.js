@@ -1,5 +1,6 @@
+/* eslint-disable react/jsx-props-no-spreading */
 /* eslint-disable camelcase */
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useMemo } from 'react';
 import PropTypes from 'prop-types';
 import isEqual from 'lodash/isEqual';
 
@@ -15,9 +16,11 @@ import {
     Tab,
     Tabs,
     Typography,
+    Tooltip,
 } from '@material-ui/core';
 
 import { useSafeIntl, LoadingSpinner } from 'bluesquare-components';
+import { FormattedMessage } from 'react-intl';
 import { convertEmptyStringToNull } from '../utils/convertEmptyStringToNull';
 import { PreparednessForm } from '../forms/PreparednessForm';
 import { useFormValidator } from '../hooks/useFormValidator';
@@ -29,10 +32,12 @@ import { BudgetForm } from '../forms/BudgetForm';
 import { Form } from '../forms/Form';
 import { RoundsForm } from '../forms/RoundsForm';
 import { RoundsEmptyDates } from './Rounds/RoundsEmptyDates.tsx';
+
 import { useSaveCampaign } from '../hooks/useSaveCampaign';
 
 import { useStyles } from '../styles/theme';
 import MESSAGES from '../constants/messages';
+import { VaccineManangementForm } from '../forms/VaccineManangementForm.tsx';
 
 const CreateEditDialog = ({
     isOpen,
@@ -50,7 +55,7 @@ const CreateEditDialog = ({
     const handleSubmit = async (values, helpers) => {
         saveCampaign(convertEmptyStringToNull(values), {
             onSuccess: () => {
-                // helpers.resetForm();
+                helpers.resetForm();
                 onClose();
             },
             onError: error => {
@@ -78,7 +83,6 @@ const CreateEditDialog = ({
             ? [...selectedCampaign.rounds].sort((a, b) => a.number - b.number)
             : [],
     });
-
     const formik = useFormik({
         initialValues,
         enableReinitialize: true,
@@ -87,36 +91,53 @@ const CreateEditDialog = ({
         onSubmit: handleSubmit,
     });
 
-    const tabs = [
-        {
-            title: formatMessage(MESSAGES.baseInfo),
-            form: BaseInfoForm,
-        },
-        {
-            title: formatMessage(MESSAGES.detection),
-            form: DetectionForm,
-        },
-        {
-            title: formatMessage(MESSAGES.riskAssessment),
-            form: RiskAssessmentForm,
-        },
-        {
-            title: formatMessage(MESSAGES.scope),
-            form: ScopeForm,
-        },
-        {
-            title: formatMessage(MESSAGES.budget),
-            form: BudgetForm,
-        },
-        {
-            title: formatMessage(MESSAGES.preparedness),
-            form: PreparednessForm,
-        },
-        {
-            title: formatMessage(MESSAGES.rounds),
-            form: RoundsForm,
-        },
-    ];
+    const handleClose = () => {
+        formik.resetForm();
+        onClose();
+    };
+    const tabs = useMemo(() => {
+        return [
+            {
+                title: formatMessage(MESSAGES.baseInfo),
+                form: BaseInfoForm,
+            },
+            {
+                title: formatMessage(MESSAGES.detection),
+                form: DetectionForm,
+            },
+            {
+                title: formatMessage(MESSAGES.riskAssessment),
+                form: RiskAssessmentForm,
+            },
+            {
+                title: formatMessage(MESSAGES.scope),
+                form: ScopeForm,
+                disabled:
+                    !formik.values.initial_org_unit ||
+                    formik.values.rounds.length === 0,
+            },
+            {
+                title: formatMessage(MESSAGES.budget),
+                form: BudgetForm,
+            },
+            {
+                title: formatMessage(MESSAGES.preparedness),
+                form: PreparednessForm,
+            },
+            {
+                title: formatMessage(MESSAGES.rounds),
+                form: RoundsForm,
+            },
+            {
+                title: formatMessage(MESSAGES.vaccineManagement),
+                form: VaccineManangementForm,
+            },
+        ];
+    }, [
+        formatMessage,
+        formik.values.initial_org_unit,
+        formik.values.rounds.length,
+    ]);
 
     const [selectedTab, setSelectedTab] = useState(0);
 
@@ -147,7 +168,7 @@ const CreateEditDialog = ({
             open={isOpen}
             onClose={(_event, reason) => {
                 if (reason === 'backdropClick') {
-                    onClose();
+                    handleClose();
                 }
             }}
             scroll="body"
@@ -169,8 +190,37 @@ const CreateEditDialog = ({
                     variant="scrollable"
                     scrollButtons="auto"
                 >
-                    {tabs.map(({ title }) => {
-                        return <Tab key={title} label={title} />;
+                    {tabs.map(({ title, disabled }) => {
+                        if (
+                            disabled &&
+                            title === formatMessage(MESSAGES.scope)
+                        ) {
+                            return (
+                                <Tooltip
+                                    title={
+                                        <FormattedMessage
+                                            {...MESSAGES.scopeUnlockConditions}
+                                        />
+                                    }
+                                >
+                                    {/* the wrapping span is to enable the tooltip while the tab is disabled */}
+                                    <span>
+                                        <Tab
+                                            key={title}
+                                            label={title}
+                                            disabled={disabled || false}
+                                        />
+                                    </span>
+                                </Tooltip>
+                            );
+                        }
+                        return (
+                            <Tab
+                                key={title}
+                                label={title}
+                                disabled={disabled || false}
+                            />
+                        );
                     })}
                 </Tabs>
                 <FormikProvider value={formik}>
@@ -198,7 +248,7 @@ const CreateEditDialog = ({
             </DialogContent>
             <DialogActions className={classes.action}>
                 <Button
-                    onClick={onClose}
+                    onClick={handleClose}
                     color="primary"
                     disabled={formik.isSubmitting}
                 >

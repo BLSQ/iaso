@@ -12,6 +12,7 @@ class EntityAPITestCase(APITestCase):
     @classmethod
     def setUpTestData(cls):
         star_wars = m.Account.objects.create(name="Star Wars")
+        cls.star_wars = star_wars
 
         space_balls = m.Account.objects.create(name="Space Balls")
 
@@ -158,7 +159,7 @@ class EntityAPITestCase(APITestCase):
     def test_retrieve_entity(self):
         self.client.force_authenticate(self.yoda)
 
-        entity_type = EntityType.objects.create(name="Type 1", reference_form=self.form_1)
+        entity_type = EntityType.objects.create(name="Type 1", reference_form=self.form_1, account=self.star_wars)
 
         instance = Instance.objects.create(
             org_unit=self.jedi_council_corruscant, form=self.form_1, period="202002", uuid=uuid.uuid4()
@@ -254,7 +255,7 @@ class EntityAPITestCase(APITestCase):
     def test_retrieve_only_non_deleted_entity(self):
         self.client.force_authenticate(self.yoda)
 
-        entity_type = EntityType.objects.create(name="Type 1", reference_form=self.form_1)
+        entity_type = EntityType.objects.create(name="Type 1", reference_form=self.form_1, account=self.star_wars)
 
         instance = Instance.objects.create(
             org_unit=self.jedi_council_corruscant, form=self.form_1, period="202002", uuid=uuid.uuid4()
@@ -302,7 +303,7 @@ class EntityAPITestCase(APITestCase):
     def test_retrieve_entity_only_same_account(self):
         self.client.force_authenticate(self.yoda)
 
-        entity_type = EntityType.objects.create(name="Type 1", reference_form=self.form_1)
+        entity_type = EntityType.objects.create(name="Type 1", reference_form=self.form_1, account=self.star_wars)
 
         instance = Instance.objects.create(
             org_unit=self.jedi_council_corruscant,
@@ -381,12 +382,12 @@ class EntityAPITestCase(APITestCase):
         self.assertEquals(response.get("Content-Disposition"), "attachment; filename=NEW CLIENT_ENTITY.xlsx")
 
         # export specific entity type as xlsx
-        response = self.client.get(f"/api/entity/?entity_type_id={entity_type.pk}&xlsx=true/")
+        response = self.client.get(f"/api/entity/?entity_type_ids={entity_type.pk}&xlsx=true/")
         self.assertEqual(response.status_code, 200)
         self.assertEquals(response.get("Content-Disposition"), "attachment; filename=NEW CLIENT_ENTITY.xlsx")
 
         # export specific entity type as csv
-        response = self.client.get(f"/api/entity/?entity_type_id={entity_type.pk}&csv=true/")
+        response = self.client.get(f"/api/entity/?entity_type_ids={entity_type.pk}&csv=true/")
         self.assertEqual(response.status_code, 200)
         self.assertEquals(response.get("Content-Disposition"), "attachment; filename=NEW CLIENT_ENTITY.csv")
 

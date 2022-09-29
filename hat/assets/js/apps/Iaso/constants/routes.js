@@ -569,6 +569,10 @@ export const entitiesPath = {
             isRequired: false,
             key: 'submitterTeamId',
         },
+        {
+            isRequired: false,
+            key: 'entityTypeIds',
+        },
         ...paginationPathParams.map(p => ({
             ...p,
             isRequired: true,

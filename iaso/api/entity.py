@@ -2,12 +2,12 @@ import csv
 import datetime
 import io
 
-import xlsxwriter
+import xlsxwriter  # type: ignore
 from django.core.paginator import Paginator
-from django.db.models import Q
+from django.db.models import Q, Max
 from django.http import JsonResponse, HttpResponse
 from django.shortcuts import get_object_or_404
-from django_filters.rest_framework import DjangoFilterBackend
+from django_filters.rest_framework import DjangoFilterBackend  # type: ignore
 from rest_framework import permissions, filters
 from rest_framework import serializers
 from rest_framework.decorators import action
@@ -56,15 +56,22 @@ class EntitySerializer(serializers.ModelSerializer):
             "entity_type_name",
             "instances",
             "submitter",
+            "org_unit",
         ]
 
     entity_type_name = serializers.SerializerMethodField()
     attributes = serializers.SerializerMethodField()
     submitter = serializers.SerializerMethodField()
+    org_unit = serializers.SerializerMethodField()
 
     def get_attributes(self, entity: Entity):
         if entity.attributes:
             return entity.attributes.as_full_model()
+        return None
+
+    def get_org_unit(self, entity: Entity):
+        if entity.attributes and entity.attributes.org_unit:
+            return entity.attributes.org_unit.as_location(with_parents=True)
         return None
 
     def get_submitter(self, entity: Entity):
@@ -142,32 +149,42 @@ def export_entity_as_csv(entities):
     header = []
     data = []
     filename = ""
-
+    possible_field_list = []
+    # NOT WORKING ATM
     for entity in entities:
-        res = {"entity": EntitySerializer(entity, many=False).data}
-        benef_data = []
-        for k, v in res["entity"].items():
-            try:
-                fields_list = entity.entity_type.fields_list_view
-                for f in fields_list:
-                    if f is None:
-                        raise serializers.ValidationError(
-                            {"error": "You must provide a field view list in order to export the entities."}
-                        )
-            except TypeError:
-                raise serializers.ValidationError(
-                    {"error": "You must provide a field view list in order to export the entities."}
-                )
-            if k in fields_list or k == "attributes":
-                if k == "attributes":
-                    for k_, v_ in res["entity"]["attributes"]["file_content"].items():
-                        if k_ not in header:
-                            header.append(k_)
-                        benef_data.append(v_)
+        res = entity.attributes.json
+        benef_data = [None]
+        if res is not None:
+            for k, v in res.items():
+                try:
+                    fields_list = entity.entity_type.fields_list_view
+                    for f in fields_list:
+                        if f is None:
+                            raise serializers.ValidationError(
+                                {"error": "You must provide a field view list in order to export the entities."}
+                            )
+                except TypeError:
+                    raise serializers.ValidationError(
+                        {"error": "You must provide a field view list in order to export the entities."}
+                    )
+
+                for f in entity.attributes.form.possible_fields:
+                    for k_, v_ in f.items():
+                        if k_ == "name" and v_ not in possible_field_list:
+                            possible_field_list.append(v_)
+                for h in possible_field_list:
+                    if h in fields_list and h not in header:
+                        header.append(h)
+        i = 0
+        for h in header:
+            for k, v in res.items():
+                match = False
+                if k == h:
+                    benef_data.append(f"found at {k}")
+                if i < len(header):
+                    i += 1
                 else:
-                    if k not in header:
-                        header.append(k)
-                    benef_data.append(v)
+                    i = 0
         data.append(benef_data)
         filename = entity.name
     filename = f"EXPORT_ENTITIES.csv" if len(entities) > 1 else f"{filename.upper()}_ENTITY.csv"
@@ -176,7 +193,6 @@ def export_entity_as_csv(entities):
         content_type="txt/csv",
         headers={"Content-Disposition": f"attachment; filename={filename}"},
     )
-
     writer = csv.writer(response)
     writer.writerow(header)
     writer.writerows(data)
@@ -189,13 +205,13 @@ class EntityViewSet(ModelViewSet):
 
     list: /api/entity
 
-    list entity by entity type: /api/entity/?entity_type_id=id
+    list entity by entity type: /api/entity/?entity_type_id=ids
 
     details =/api/entity/<id>
 
     export entity list: /api/entity/?xlsx=true
 
-    export entity by entity type: /api/entity/entity_type_id=id&?xlsx=true
+    export entity by entity type: /api/entity/entity_type_ids=ids&?xlsx=true
 
     export entity submissions list: /api/entity/export_entity_submissions_list/?id=id
 
@@ -215,7 +231,7 @@ class EntityViewSet(ModelViewSet):
         date_from = self.request.query_params.get("dateFrom", None)
         date_to = self.request.query_params.get("dateTo", None)
         entity_type = self.request.query_params.get("entity_type", None)
-        entity_type_id = self.request.query_params.get("entity_type_id", None)
+        entity_type_ids = self.request.query_params.get("entity_type_ids", None)
         by_uuid = self.request.query_params.get("by_uuid", None)
         form_name = self.request.query_params.get("form_name", None)
         show_deleted = self.request.query_params.get("show_deleted", None)
@@ -231,8 +247,8 @@ class EntityViewSet(ModelViewSet):
             queryset = queryset.filter(uuid=by_uuid)
         if entity_type:
             queryset = queryset.filter(name=entity_type)
-        if entity_type_id:
-            queryset = queryset.filter(entity_type_id=entity_type_id)
+        if entity_type_ids:
+            queryset = queryset.filter(entity_type_id__in=entity_type_ids.split(","))
         if org_unit_id:
             queryset = queryset.filter(attributes__org_unit__id=org_unit_id)
         if date_from:
@@ -294,13 +310,16 @@ class EntityViewSet(ModelViewSet):
         xlsx_format = request.GET.get("xlsx", None)
         pk = request.query_params.get("id", None)
         account = self.request.user.iaso_profile.account
-        entity_type_id = request.query_params.get("entity_type_id", None)
+        entity_type_ids = request.query_params.get("entity_type_ids", None)
         limit = request.GET.get("limit", None)
         page_offset = request.GET.get("page", 1)
+        orders = request.GET.get("order", "-created_at").split(",")
+        order_columns = request.GET.get("order_columns", None)
 
+        queryset = queryset.order_by(*orders)
         if xlsx_format or csv_format:
             if pk:
-                entities = Entity.objects.filter(account=account, entity_type_id=pk)
+                entities = Entity.objects.filter(account=account, entity_type_ids=pk)
             else:
                 entities = Entity.objects.filter(account=account)
             if xlsx_format:
@@ -308,15 +327,38 @@ class EntityViewSet(ModelViewSet):
             if csv_format:
                 return export_entity_as_csv(entities)
 
-        entities = queryset
+        # annotate with last instance on Entity, to allow ordering by it
+        entities = queryset.annotate(last_saved_instance=Max("instances__created_at"))
         result_list = []
         columns_list = []
-        form_key_list = []
 
-        if entity_type_id is None:
+        # -- Allow ordering by the field inside the Entity.
+        fields_on_entity = [f.name for f in Entity._meta.get_fields()]
+        # add field in the annotation
+        fields_on_entity += entities.query.annotations.keys()
+        # check if the ordering column is on Entity or annotation,
+        # otherwise assume it's part of the attributes
+        new_order_columns = []
+        if order_columns:
+            order_columns = order_columns.split(",")
+            for order_column in order_columns:
+                # Remove eventual leading -
+                order_column_name = order_column.lstrip("-")
+                if order_column_name in fields_on_entity:
+                    new_order_columns.append(order_column)
+                else:
+                    new_name = "-" if order_column.startswith("-") else ""
+                    new_name += "attributes__json__" + order_column_name
+                    new_order_columns.append(new_name)
+
+        entities = entities.order_by(*new_order_columns)
+
+        if entity_type_ids is None or (entity_type_ids is not None and len(entity_type_ids.split(",")) > 1):
             for entity in entities:
                 entity_serialized = EntitySerializer(entity, many=False)
-                file_content = entity_serialized.data.get("attributes").get("file_content")
+
+                attributes = entity_serialized.data.get("attributes")
+                file_content = attributes.get("file_content")
                 result = {
                     "id": entity.id,
                     "uuid": entity.uuid,
@@ -325,67 +367,41 @@ class EntityViewSet(ModelViewSet):
                     "updated_at": entity.updated_at,
                     "attributes": entity.attributes.pk,
                     "entity_type": entity.entity_type.name,
+                    "last_saved_instance": entity.last_saved_instance,
+                    "org_unit": entity.attributes.org_unit.as_location(with_parents=True),
+                    "program": file_content.get("program"),
                 }
                 result_list.append(result)
         else:
             for entity in entities:
-                etype_fields = entity.entity_type.fields_list_view
+                columns_list = []
                 entity_serialized = EntitySerializer(entity, many=False)
                 file_content = entity_serialized.data.get("attributes").get("file_content")
-                form_version = EntityType.objects.get(pk=entity_type_id).reference_form.latest_version
-                form_descriptor = form_version.get_or_save_form_descriptor()
-                for k in form_descriptor:
-                    form_key_list.append(k)
-                form_data_key = form_key_list[form_key_list.index("version") + 1]
-                descriptor_list = form_descriptor[form_data_key]
 
-                is_list = True
-                previous_name = None
+                possible_fields_list = entity.entity_type.reference_form.possible_fields
+                for items in possible_fields_list:
+                    for k, v in items.items():
+                        if k == "name":
+                            if v in entity.entity_type.fields_list_view:
+                                columns_list.append(items)
+                result = {
+                    "id": entity.pk,
+                    "uuid": entity.uuid,
+                    "entity_type_name": entity.entity_type.name,
+                    "created_at": entity.created_at,
+                    "updated_at": entity.updated_at,
+                    "org_unit": entity.attributes.org_unit.as_location(with_parents=True),
+                    "last_saved_instance": entity.last_saved_instance,
+                    "program": file_content.get("program"),
+                }
 
-                # Get columns from xlsform file content
-                for d in descriptor_list:
-                    for k, v in d.items():
-                        data_list = v
-                        if k == "children":
-                            while is_list:
-                                for data in data_list:
-                                    value_dict = {}
-                                    for _k, _v in data.items():
-                                        if (
-                                            _k == "name"
-                                            and _v in etype_fields
-                                            or _k == "label"
-                                            and previous_name is not None
-                                            or _k == "type"
-                                            and previous_name is not None
-                                        ):
-                                            value_dict[_k] = _v
-                                            is_list = False
-                                            previous_name = _v
-                                        key_index = sorted(data.keys()).index(_k)
-                                        if key_index < len(sorted(data.keys())) - 1:
-                                            if sorted(data.keys())[key_index + 1] == "children":
-                                                data_list = data["children"]
-                                                is_list = True
-                                        if _k == "children":
-                                            data_list = _v
-                                            is_list = True
-                                    columns_list.append(value_dict)
-                result = {}
-                result["id"] = entity.pk
-                result["uuid"] = entity.uuid
-                result["entity_type_name"] = entity.entity_type.name
-                result["created_at"] = entity.created_at
-                result["updated_at"] = entity.updated_at
                 # Get data from xlsform
-                for k, v in file_content.items():
+                for k, v in entity.attributes.json.items():
                     if k in list(entity.entity_type.fields_list_view):
                         result[k] = v
                 result_list.append(result)
 
-            # remove false doubles entries
             columns_list = [i for n, i in enumerate(columns_list) if i not in columns_list[n + 1 :]]
-            # remove dictionaries with "name or label" as only key
             columns_list = [c for c in columns_list if len(c) > 2]
 
         if limit:
@@ -401,7 +417,7 @@ class EntityViewSet(ModelViewSet):
             res["page"] = page_offset
             res["pages"] = paginator.num_pages
             res["limit"] = limit
-            res["columns"] = (columns_list,)
+            res["columns"] = columns_list
             res["result"] = map(lambda x: x, page.object_list)
             return Response(res)
         response = {"columns": columns_list, "result": result_list}

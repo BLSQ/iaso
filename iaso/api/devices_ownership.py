@@ -15,7 +15,7 @@ class DevicesOwnershipViewSet(viewsets.ViewSet):
 
     permission_classes = [
         permissions.IsAuthenticated,
-        HasPermission("menupermissions.iaso_forms", "menupermissions.iaso_submissions"),
+        HasPermission("menupermissions.iaso_forms", "menupermissions.iaso_submissions"),  # type: ignore
     ]
 
     def list(self, request):

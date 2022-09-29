@@ -1,13 +1,11 @@
 /* eslint-disable camelcase */
 import { OrgUnit } from '../../../orgUnits/types/orgUnit';
-import { EntityType } from '../../entityTypes/types/entityType';
 
 export type FileContent = {
     name?: string;
     age_type: '0' | '1';
     birth_date?: string;
     age?: string;
-    program?: string;
     gender?: string;
     vaccination_number?: string;
     end?: string;
@@ -18,7 +16,6 @@ type Attributes = {
     file_content: FileContent;
     latitude: number;
     longitude: number;
-    org_unit: OrgUnit;
     nfc_cards?: number;
     form_id?: number;
 };
@@ -30,8 +27,10 @@ export type Beneficiary = {
     created_at: number;
     updated_at: number;
     attributes: Attributes;
-    entity_type: EntityType;
+    org_unit: OrgUnit;
+    entity_type: number;
     entity_type_name: string;
     submitter: string;
     instances: Record<string, any>[];
+    program?: string;
 };

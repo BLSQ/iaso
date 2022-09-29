@@ -7,18 +7,15 @@ import { Field } from '../types/fields';
 import { formatLabel } from '../../../instances/utils';
 
 export const useGetFields = (
+    fieldsKeys: string[],
     beneficiary?: Beneficiary,
     possibleFields?: PossibleField[],
 ): Field[] => {
     const fields: Field[] = [];
     const getValue = useGetFieldValue();
-    if (
-        possibleFields &&
-        beneficiary?.attributes?.file_content &&
-        beneficiary.entity_type.fields_detail_info_view
-    ) {
+    if (possibleFields && beneficiary?.attributes?.file_content) {
         const fileContent = beneficiary.attributes.file_content;
-        beneficiary.entity_type.fields_detail_info_view.forEach(fieldKey => {
+        fieldsKeys.forEach(fieldKey => {
             const possibleField = possibleFields.find(
                 pf => pf.name === fieldKey,
             );

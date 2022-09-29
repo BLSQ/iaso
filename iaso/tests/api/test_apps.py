@@ -5,6 +5,13 @@ from iaso import models as m
 
 
 class AppsAPITestCase(APITestCase):
+    yoda: m.User
+    project_1: m.Project
+    project_2: m.Project
+    flag_1: m.FeatureFlag
+    flag_2: m.FeatureFlag
+    flag_3: m.FeatureFlag
+
     @classmethod
     def setUpTestData(cls):
         account = m.Account.objects.create(name="Global Health Initiative")
@@ -108,7 +115,7 @@ class AppsAPITestCase(APITestCase):
         self.assertValidAppData(response_data)
         self.assertEqual(1, len(response_data["feature_flags"]))
 
-    def test_app_create_ok_with_auth(self):
+    def test_app_create_ok_with_auth_2(self):
         candidated_app = {
             "name": "This is a new app",
             "app_id": "com.this.is.new.app",
@@ -199,7 +206,7 @@ class AppsAPITestCase(APITestCase):
         response = self.client.put(f"/api/apps/{self.project_1.app_id}/", candidated_app, format="json")
         self.assertJSONResponse(response, 200)
 
-    def test_app_update_auto_commit_require_auth_true_when_flag_auth_ok(self):
+    def test_app_update_auto_commit_require_auth_true_when_flag_auth_ok(self) -> None:
         candidated_app = {
             "name": "This is a new app",
             "app_id": "com.this.is.new.app",
@@ -213,7 +220,7 @@ class AppsAPITestCase(APITestCase):
         self.assertTrue("REQUIRE_AUTHENTICATION" in list(ff["code"] for ff in response_data["feature_flags"]))
         self.assertEqual(True, response_data["needs_authentication"])
 
-    def assertValidAppData(self, app_data: typing.Mapping):
+    def assertValidAppData(self, app_data: typing.Mapping) -> None:
         self.assertHasField(app_data, "id", str)
         self.assertHasField(app_data, "name", str)
         self.assertHasField(app_data, "feature_flags", list)

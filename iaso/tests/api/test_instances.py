@@ -1,10 +1,10 @@
 import datetime
+import json
 import typing
 from uuid import uuid4
 
 import pytz
 from django.contrib.gis.geos import Point
-from django.test import tag
 from django.core.files import File
 from unittest import mock
 
@@ -478,6 +478,83 @@ class InstancesAPITestCase(APITestCase):
         last_modif = Modification.objects.all().order_by("created_at").last()
         self.assertTrue(last_modif.past_value[0]["fields"]["deleted"])
         self.assertFalse(last_modif.new_value[0]["fields"]["deleted"])
+
+    def test_instance_list_by_json_content(self):
+        """Search using the instance content (in JSON field)"""
+        self.create_form_instance(
+            form=self.form_1,
+            period="202001",
+            org_unit=self.jedi_council_corruscant,
+            project=self.project,
+            json={"name": "a", "age": 18, "gender": "M"},
+        )
+
+        b = self.create_form_instance(
+            form=self.form_1,
+            period="202001",
+            org_unit=self.jedi_council_corruscant,
+            project=self.project,
+            json={"name": "b", "age": 19, "gender": "F"},
+        )
+
+        self.create_form_instance(
+            form=self.form_1,
+            period="202001",
+            org_unit=self.jedi_council_corruscant,
+            project=self.project,
+            json={"name": "c", "age": 30, "gender": "F"},
+        )
+
+        self.client.force_authenticate(self.yoda)
+        json_filters = json.dumps({"and": [{"==": [{"var": "gender"}, "F"]}, {"<": [{"var": "age"}, 25]}]})
+        response = self.client.get(f"/api/instances/", {"jsonContent": json_filters})
+        self.assertJSONResponse(response, 200)
+        response_json = response.json()
+        self.assertValidInstanceListData(response_json, expected_length=1)
+        self.assertEqual(response_json["instances"][0]["id"], b.id)
+
+    def test_instance_list_by_json_content_nested(self):
+        """Search using the instance content (in JSON field) with nested and/or operators"""
+        a = self.create_form_instance(
+            form=self.form_1,
+            period="202001",
+            org_unit=self.jedi_council_corruscant,
+            project=self.project,
+            json={"name": "a", "age": 18, "gender": "M"},
+        )
+
+        b = self.create_form_instance(
+            form=self.form_1,
+            period="202001",
+            org_unit=self.jedi_council_corruscant,
+            project=self.project,
+            json={"name": "b", "age": 19, "gender": "F"},
+        )
+
+        self.create_form_instance(
+            form=self.form_1,
+            period="202001",
+            org_unit=self.jedi_council_corruscant,
+            project=self.project,
+            json={"name": "c", "age": 30, "gender": "F"},
+        )
+
+        self.client.force_authenticate(self.yoda)
+
+        # Either a male or a female under 20
+        filters = {
+            "or": [
+                {"==": [{"var": "gender"}, "M"]},
+                {"and": [{"==": [{"var": "gender"}, "F"]}, {"<": [{"var": "age"}, 20]}]},
+            ],
+        }
+
+        response = self.client.get(f"/api/instances/", {"jsonContent": json.dumps(filters)})
+        self.assertJSONResponse(response, 200)
+        response_json = response.json()
+        self.assertValidInstanceListData(response_json, expected_length=2)
+        for instance in response_json["instances"]:
+            self.assertIn(instance["id"], [a.id, b.id])
 
     def test_instance_list_by_form_id_and_status_ok(self):
         """GET /instances/?form_id=form_id&status="""
@@ -1114,45 +1191,6 @@ class InstancesAPITestCase(APITestCase):
 
         self.assertEqual(pre_existing_instance_count + 1, m.Instance.objects.count())  # One added instance
         self.assertEqual(pre_existing_entity_count, m.Entity.objects.count())  # No added enity
-        entity = m.Entity.objects.get(uuid=entity_uuid)
-        instance = m.Instance.objects.get(uuid=instance_uuid)
-        self.assertEqual(entity.attributes, None)
-        self.assertQuerysetEqual(entity.instances.all(), [instance], ordered=False)
-        self.assertEqual(instance.entity, entity)
-        self.assertEqual(entity.entity_type, entity_type)
-        self.assertEqual(entity.account, self.star_wars)
-
-    def test_instance_create_entity(self):
-        """POST /api/instances/ with an entity that don't exist in db, it create it"""
-
-        instance_uuid = str(uuid4())
-        entity_uuid = str(uuid4())
-        entity_type = m.EntityType.objects.create(account=self.star_wars)
-
-        pre_existing_instance_count = m.Instance.objects.count()
-        pre_existing_entity_count = m.Entity.objects.count()
-        body = [
-            {
-                "id": instance_uuid,
-                "created_at": 1565258153704,
-                "updated_at": 1565258153704,
-                "orgUnitId": self.jedi_council_corruscant.id,
-                "formId": self.form_1.id,
-                "file": "\/storage\/emulated\/0\/odk\/instances\/RDC Collecte Data DPS_2_2019-08-08_11-54-46\/RDC Collecte Data DPS_2_2019-08-08_11-54-46.xml",
-                "entityUuid": entity_uuid,
-                "entityTypeId": entity_type.id,
-                "name": "Mobile app name i2",
-            },
-        ]
-        response = self.client.post(
-            f"/api/instances/?app_id=stars.empire.agriculture.hydroponics", data=body, format="json"
-        )
-        self.assertEqual(response.status_code, 200)
-
-        self.assertAPIImport("instance", request_body=body, has_problems=False)
-
-        self.assertEqual(pre_existing_instance_count + 1, m.Instance.objects.count())  # One added instance
-        self.assertEqual(pre_existing_entity_count + 1, m.Entity.objects.count())  # One added instance
         entity = m.Entity.objects.get(uuid=entity_uuid)
         instance = m.Instance.objects.get(uuid=instance_uuid)
         self.assertEqual(entity.attributes, None)

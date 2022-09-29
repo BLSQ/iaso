@@ -2,7 +2,7 @@ import mock
 from django.contrib.auth.models import User
 from django.test import TransactionTestCase
 from django.utils.timezone import now
-from django_ltree.fields import PathValue
+from django_ltree.fields import PathValue  # type: ignore
 
 from hat.audit.models import Modification
 from iaso.api.microplanning import TeamSerializer, PlanningSerializer, AssignmentSerializer

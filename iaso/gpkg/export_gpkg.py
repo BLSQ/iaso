@@ -7,12 +7,12 @@ import tempfile
 import uuid
 from typing import Optional
 
-import geopandas as gpd
+import geopandas as gpd  # type: ignore
 from django.contrib.gis.geos import GEOSGeometry
 from django.db.models import QuerySet
 from pandas import DataFrame
-from shapely import wkt
-from shapely.geometry.base import BaseGeometry
+from shapely import wkt  # type: ignore
+from shapely.geometry.base import BaseGeometry  # type: ignore
 
 from iaso.gpkg.import_gpkg import get_ref
 from iaso.models import Group

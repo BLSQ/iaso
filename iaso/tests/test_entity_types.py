@@ -170,25 +170,6 @@ class EntityTypeAPITestCase(APITestCase):
 
         self.assertEqual(response.status_code, 400)
 
-    def test_entity_type_are_unique_per_account(self):
-        self.client.force_authenticate(self.yoda)
-
-        EntityType.objects.create(
-            name="beneficiary", reference_form=self.form_1, account=self.yoda.iaso_profile.account
-        )
-
-        payload = {
-            "name": "beneficiary",
-            "reference_form": self.form_1.id,
-            "account": self.yoda.iaso_profile.account.pk,
-        }
-
-        response = self.client.post("/api/entitytype/", data=payload, format="json")
-
-        print(response.json())
-
-        self.assertEqual(response.status_code, 400)
-
     def test_entity_types_are_multitenancy(self):
 
         self.client.force_authenticate(self.yoda)

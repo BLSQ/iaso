@@ -119,7 +119,7 @@ const SpeedDialInstance: FunctionComponent<Props> = props => {
 
     const actions = [...baseActions, deleteRestore];
 
-    if (isGpsEqual) {
+    if (!isGpsEqual) {
         actions.unshift(editLocationWithInstanceGps);
     }
 

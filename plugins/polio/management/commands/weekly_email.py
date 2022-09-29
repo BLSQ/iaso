@@ -28,6 +28,8 @@ def get_last_preparedness(campaign):
 def send_notification_email(campaign):
     country = campaign.country
     domain = settings.DNS_DOMAIN
+    from_email = settings.DEFAULT_FROM_EMAIL
+
     if not (campaign.obr_name and campaign.virus and country and campaign.onset_at and campaign.deleted_at is None):
         return False
     try:
@@ -88,7 +90,7 @@ Timeline tracker Automated message.
     send_mail(
         "Update on Campaign {}".format(campaign.obr_name),
         email_text,
-        "no-reply@%s" % domain,
+        from_email,
         emails,
     )
 

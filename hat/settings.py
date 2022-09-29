@@ -28,6 +28,11 @@ from urllib.parse import urlparse
 
 from plugins.wfp.wfp_pkce_generator import generate_pkce
 
+# This should the the naked domain (no http or https prefix) that is
+# hosting Iaso, this is used when sending out emails that need a link
+# back to the Iaso application.
+#
+# This should be the same as the one set on: `/admin/sites/site/1/change/`
 DNS_DOMAIN = os.environ.get("DNS_DOMAIN", "localhost:8081")
 TESTING = os.environ.get("TESTING", "").lower() == "true"
 PLUGINS = os.environ["PLUGINS"].split(",") if os.environ.get("PLUGINS", "") else []

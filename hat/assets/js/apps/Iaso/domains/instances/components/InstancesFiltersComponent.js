@@ -43,7 +43,7 @@ const useStyles = makeStyles(theme => ({
 
 const filterDefault = params => ({
     ...params,
-    mapResults: params.mapResults === undefined ? 3000 : params.mapResults,
+    mapResults: params.mapResults ? 3000 : params.mapResults,
 });
 
 const InstancesFiltersComponent = ({
@@ -80,8 +80,8 @@ const InstancesFiltersComponent = ({
             };
             // removing columns params to refetch correct columns
             const newFormIdsString = formState.formIds.value;
+            const newFormIds = formState.formIds.value?.split(',');
             if (newFormIdsString) {
-                const newFormIds = formState.formIds.value.split(',');
                 if (
                     formState.formIds.value !== params?.formIds &&
                     newFormIds.length === 1
@@ -89,9 +89,20 @@ const InstancesFiltersComponent = ({
                     delete searchParams.columns;
                 }
             }
+            if (newFormIds?.length !== 1) {
+                delete searchParams.fieldsSearch;
+                setFormState('fieldsSearch', null);
+            }
             onSearch(searchParams);
         }
-    }, [params, onSearch, dispatch, formState, isInstancesFilterUpdated]);
+    }, [
+        isInstancesFilterUpdated,
+        dispatch,
+        params,
+        formState,
+        onSearch,
+        setFormState,
+    ]);
 
     const handleFormChange = useCallback(
         (key, value) => {
@@ -155,74 +166,6 @@ const InstancesFiltersComponent = ({
                         label={MESSAGES.textSearch}
                         onEnterPressed={() => handleSearch()}
                     />
-                    <QueryBuilderInput
-                        label={MESSAGES.queryBuilder}
-                        onChange={newLogic => {
-                            console.log(
-                                'handle change for new logic',
-                                newLogic,
-                            );
-                        }}
-                        initialLogic={{
-                            and: [
-                                {
-                                    '==': [
-                                        { var: 'datetime' },
-                                        '2002-10-22T20:22:00.000Z',
-                                    ],
-                                },
-                                { '>': [{ var: 'price' }, 47] },
-                            ],
-                        }}
-                        fields={{
-                            datetime: {
-                                label: 'DateTime',
-                                type: 'datetime',
-                                valueSources: ['value'],
-                            },
-                            price: {
-                                label: 'Price',
-                                type: 'number',
-                                valueSources: ['value'],
-                                // fieldSettings: {
-                                //     min: 10,
-                                //     max: 100,
-                                // },
-                            },
-                            color: {
-                                label: 'Color',
-                                type: 'select',
-                                valueSources: ['value'],
-                                fieldSettings: {
-                                    listValues: [
-                                        { value: 'yellow', title: 'Yellow' },
-                                        { value: 'green', title: 'Green' },
-                                        { value: 'orange', title: 'Orange' },
-                                    ],
-                                },
-                            },
-                            is_promotion: {
-                                label: 'Promo?',
-                                type: 'boolean',
-                                operators: ['equal'],
-                                valueSources: ['value'],
-                            },
-                        }}
-                        iconProps={{
-                            label: MESSAGES.queryBuilder,
-                            value: JSON.stringify({
-                                and: [
-                                    {
-                                        '==': [
-                                            { var: 'datetime' },
-                                            '2002-10-22T20:22:00.000Z',
-                                        ],
-                                    },
-                                    { '>': [{ var: 'price' }, 47] },
-                                ],
-                            }),
-                        }}
-                    />
                     <InputComponent
                         keyValue="formIds"
                         clearable
@@ -237,6 +180,69 @@ const InstancesFiltersComponent = ({
                         label={MESSAGES.forms}
                         loading={fetchingForms}
                     />
+                    {formState.formIds.value?.split(',').length === 1 && (
+                        <QueryBuilderInput
+                            label={MESSAGES.queryBuilder}
+                            onChange={newLogic =>
+                                handleFormChange(
+                                    'fieldsSearch',
+                                    newLogic
+                                        ? JSON.stringify(newLogic)
+                                        : undefined,
+                                )
+                            }
+                            initialLogic={
+                                formState.fieldsSearch.value
+                                    ? JSON.parse(formState.fieldsSearch.value)
+                                    : undefined
+                            }
+                            fields={{
+                                datetime: {
+                                    label: 'DateTime',
+                                    type: 'datetime',
+                                    valueSources: ['value'],
+                                },
+                                price: {
+                                    label: 'Price',
+                                    type: 'number',
+                                    valueSources: ['value'],
+                                    // fieldSettings: {
+                                    //     min: 10,
+                                    //     max: 100,
+                                    // },
+                                },
+                                color: {
+                                    label: 'Color',
+                                    type: 'select',
+                                    valueSources: ['value'],
+                                    fieldSettings: {
+                                        listValues: [
+                                            {
+                                                value: 'yellow',
+                                                title: 'Yellow',
+                                            },
+                                            { value: 'green', title: 'Green' },
+                                            {
+                                                value: 'orange',
+                                                title: 'Orange',
+                                            },
+                                        ],
+                                    },
+                                },
+                                is_promotion: {
+                                    label: 'Promo?',
+                                    type: 'boolean',
+                                    operators: ['equal'],
+                                    valueSources: ['value'],
+                                },
+                            }}
+                            iconProps={{
+                                label: MESSAGES.queryBuilder,
+                                value: formState.fieldsSearch.value,
+                            }}
+                        />
+                    )}
+
                     <Box id="ou-tree-input">
                         <OrgUnitTreeviewModal
                             toggleOnLabelClick={false}

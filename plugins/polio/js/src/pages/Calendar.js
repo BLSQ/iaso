@@ -129,7 +129,7 @@ const Calendar = ({ params }) => {
         countries: params.countries,
         campaignType: params.campaignType,
         campaignGroups: params.campaignGroups,
-        search: params.search
+        search: params.search,
     };
 
     const xlsx_url = getTableUrl(
@@ -142,7 +142,7 @@ const Calendar = ({ params }) => {
             setCalendarAndMapLoaded(true);
         }
     }, [campaigns]);
-    
+
     return (
         <div>
             {isLogged && !isPdf && (
@@ -173,9 +173,14 @@ const Calendar = ({ params }) => {
                             <Filters disableDates disableOnlyDeleted />
                         </Box>
                     )}
-                    
-                    <Grid container spacing={1} display="flex" justifyContent="flex-end">
-                        <Grid  item>
+
+                    <Grid
+                        container
+                        spacing={1}
+                        display="flex"
+                        justifyContent="flex-end"
+                    >
+                        <Grid item>
                             <Box mb={2} mt={2}>
                                 <Button
                                     onClick={createPDF}
@@ -184,7 +189,9 @@ const Calendar = ({ params }) => {
                                     color="primary"
                                     variant="contained"
                                 >
-                                    <PictureAsPdfIcon style={{ marginRight: '8px' }} />
+                                    <PictureAsPdfIcon
+                                        style={{ marginRight: '8px' }}
+                                    />
                                     {formatMessage(MESSAGES.exportToPdf)}
                                 </Button>
                             </Box>
@@ -198,7 +205,9 @@ const Calendar = ({ params }) => {
                                     variant="contained"
                                     href={xlsx_url}
                                 >
-                                    <DownloadIcon style={{ marginRight: '8px' }} />
+                                    <DownloadIcon
+                                        style={{ marginRight: '8px' }}
+                                    />
                                     {formatMessage(MESSAGES.exportToExcel)}
                                 </Button>
                             </Box>

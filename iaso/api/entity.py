@@ -344,7 +344,7 @@ class EntityViewSet(ModelViewSet):
             for order_column in order_columns:
                 # Remove eventual leading -
                 order_column_name = order_column.lstrip("-")
-                if order_column_name in fields_on_entity:
+                if order_column_name.split("__")[0] in fields_on_entity:
                     new_order_columns.append(order_column)
                 else:
                     new_name = "-" if order_column.startswith("-") else ""

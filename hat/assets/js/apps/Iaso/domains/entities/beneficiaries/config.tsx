@@ -59,8 +59,8 @@ export const useStaticColumns = (): Array<Column> => {
         },
         {
             Header: formatMessage(MESSAGES.program),
-            id: 'attributes__program',
-            accessor: 'attributes__program',
+            id: 'program',
+            accessor: 'program',
             Cell: settings => {
                 return <>{settings.row.original?.program ?? '--'}</>;
             },

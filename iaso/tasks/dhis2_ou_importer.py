@@ -206,14 +206,13 @@ def get_group_set(dhis2_group_set, group_set_dict, source_version):
 
 
 def load_groupsets(api: Api, version, group_dict):
-    group_set_dict = {}
     dhis2_group_sets = api.get(
         "organisationUnitGroupSets", params={"paging": "false", "fields": "id,name,organisationUnitGroups[id,name]"}
     )
     dhis2_group_sets = dhis2_group_sets.json()["organisationUnitGroupSets"]
 
     for dhis2_group_set in dhis2_group_sets:
-        group_set = get_group_set(dhis2_group_set, group_set_dict, version)
+        group_set = get_group_set(dhis2_group_set, {}, version)
 
         for ougroup in dhis2_group_set["organisationUnitGroups"]:
             group = get_or_create_group(ougroup, group_dict, version)

@@ -302,7 +302,7 @@ Timeline tracker Automated message
             return Response("Campaign already active.", status=status.HTTP_400_BAD_REQUEST)
 
     @action(
-        methods=["GET", "HEAD"],
+        methods=["GET", "HEAD"],  # type: ignore # HEAD is missing in djangorestframework-stubs
         detail=False,
         url_path="merged_shapes.geojson",
     )
@@ -384,7 +384,7 @@ where polio_campaignscope.campaign_id = polio_campaign.id""",
         return JsonResponse(json.loads(cached_response))
 
     @action(
-        methods=["GET", "HEAD"],
+        methods=["GET", "HEAD"],  # type: ignore # HEAD is missing in djangorestframework-stubs
         detail=False,
         url_path="v2/merged_shapes.geojson",
     )

@@ -1,4 +1,3 @@
-import calendar
 import csv
 import functools
 import json
@@ -229,8 +228,7 @@ class CampaignViewSet(ModelViewSet):
 
         calendar_data = self.get_calendar_data(self, current_year, request.query_params)
         filename = xlsx_file_name("calendar", params)
-        columns = self.get_columns_names()
-        xlsx_file = generate_xlsx(filename, columns, calendar_data)
+        xlsx_file = generate_xlsx(filename, calendar_data)
 
         response = HttpResponse(
             save_virtual_workbook(xlsx_file),
@@ -248,16 +246,6 @@ class CampaignViewSet(ModelViewSet):
         else:
             today = dt.date.today()
             return today.year
-
-    @staticmethod
-    def get_columns_names():
-        columns_names = []
-        for month_num in range(1, 13):
-            month_name = calendar.month_name[month_num]
-            columns_names.append(month_name)
-        columns_names.insert(0, "COUNTRY")
-
-        return columns_names
 
     @staticmethod
     def get_calendar_data(self, year, params):

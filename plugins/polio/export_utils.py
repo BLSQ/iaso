@@ -7,16 +7,16 @@ from openpyxl.utils import get_column_letter
 from openpyxl.styles import Alignment, Font, PatternFill
 from openpyxl.styles.borders import Border, Side
 import datetime as dt
+import calendar
 
 # from datetime import datetime
 
 
-def generate_xlsx(filename, columns, datas):
+def generate_xlsx(filename, datas):
     file = Workbook()
     sheet = file.active
     sheet.title = filename
-    header_border = {"left": "thin", "right": "thin", "top": "thin", "bottom": "medium"}
-    cell_border = {"left": "thin", "right": "thin", "top": "thin", "bottom": "thin"}
+    columns = get_columns_names()
     # display columns in the xlsx file
     for row in range(1, 2):
         for column in range(1, len(columns) + 1):
@@ -90,6 +90,15 @@ def border_style(is_header):
         top=Side(style="thin"),
         bottom=Side(style="thin" if not is_header else "medium"),
     )
+
+
+def get_columns_names():
+    columns_names = []
+    for month_num in range(1, 13):
+        month_name = calendar.month_name[month_num]
+        columns_names.append(month_name)
+    columns_names.insert(0, "COUNTRY")
+    return columns_names
 
 
 def xlsx_file_name(name, params):

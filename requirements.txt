@@ -24,7 +24,7 @@ requests==2.22.0
 
 # postgresql and sql
 psycopg2-binary==2.8.5
-django-ltree==0.5.2
+django-ltree==0.5.3
 
 # webpack loader
 # This is our custom version of webpack loader to handle S3 better.

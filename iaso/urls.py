@@ -38,6 +38,7 @@ from .api.groups import GroupsViewSet
 from .api.periods import PeriodsViewSet
 from .api.completeness import CompletenessViewSet
 from .api.export_requests import ExportRequestsViewSet
+from .api.storage import StorageLogViewSet
 
 from .api.tasks import TaskSourceViewSet
 from .api.accounts import AccountViewSet
@@ -120,6 +121,7 @@ router.register(r"microplanning/teams", TeamViewSet, basename="teams")
 router.register(r"microplanning/planning", PlanningViewSet, basename="planning")
 router.register(r"microplanning/assignments", AssignmentViewSet, basename="assignments")
 router.register(r"mobile/plannings", MobilePlanningViewSet, basename="mobileplanning")
+router.register(r"mobile/storage/logs", StorageLogViewSet, basename="storagelogs")
 
 router.registry.extend(plugins_router.registry)
 

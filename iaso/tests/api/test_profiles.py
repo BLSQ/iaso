@@ -265,9 +265,10 @@ class ProfileAPITestCase(APITestCase):
         self.assertEqual(response.status_code, 200)
 
         domain = settings.DNS_DOMAIN
+        from_email = settings.DEFAULT_FROM_EMAIL
         self.assertEqual(len(mail.outbox), 1)
         self.assertEqual(mail.outbox[0].subject, f"Set up a password for your new account on {domain}")
-        self.assertEqual(mail.outbox[0].from_email, "no-reply@%s" % domain)
+        self.assertEqual(mail.outbox[0].from_email, from_email)
         self.assertEqual(mail.outbox[0].to, ["test@test.com"])
 
     def test_create_profile_with_no_password_and_not_send_email(self):

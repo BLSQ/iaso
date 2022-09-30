@@ -251,6 +251,8 @@ Timeline tracker Automated message
         country = campaign.country
 
         domain = settings.DNS_DOMAIN
+        from_email = settings.DEFAULT_FROM_EMAIL
+
         if campaign.creation_email_send_at:
             raise serializers.ValidationError("Notification Email already sent")
         if not (campaign.obr_name and campaign.virus and country and campaign.onset_at):
@@ -281,7 +283,7 @@ Timeline tracker Automated message
         send_mail(
             "New Campaign {}".format(campaign.obr_name),
             email_text,
-            "no-reply@%s" % domain,
+            from_email,
             emails,
         )
         campaign.creation_email_send_at = now()

@@ -151,6 +151,7 @@ class ProfilesViewSet(viewsets.ViewSet):
     @staticmethod
     def send_email_invitation(self, profile, email_subject, email_message):
         domain = settings.DNS_DOMAIN
+        from_email = settings.DEFAULT_FROM_EMAIL
 
         token_generator = PasswordResetTokenGenerator()
         token = token_generator.make_token(profile.user)
@@ -164,7 +165,7 @@ class ProfilesViewSet(viewsets.ViewSet):
 
         email_subject_text = email_subject.format(dns_domain=f"{domain}")
 
-        send_mail(email_subject_text, email_message_text, "no-reply@%s" % domain, [profile.user.email])
+        send_mail(email_subject_text, email_message_text, from_email, [profile.user.email])
 
     @staticmethod
     def get_message_by_language(self, request_languange="en"):

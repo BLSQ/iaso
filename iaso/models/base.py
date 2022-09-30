@@ -826,7 +826,7 @@ class InstanceQuerySet(models.QuerySet):
             orgunits = OrgUnit.objects.hierarchy(profile.org_units.all())
 
             self = self.filter(org_unit__in=orgunits)
-        self = self.filter(project__account=profile.account)
+        self = self.filter(project__account=profile.account_id)
         return self
 
 

@@ -41,6 +41,8 @@ from .models import (
     Entity,
     BulkCreateUserCsvFile,
     InstanceLock,
+    StorageDevice,
+    StorageLogEntry,
 )
 from .models.microplanning import Team, Planning, Assignment
 from .utils.gis import convert_2d_point_to_3d
@@ -283,17 +285,11 @@ class ExportStatusAdmin(admin.GeoModelAdmin):
     def http_requests(self, instance):
         # Write a get-method for a list of module names in the class Profile
         # return HTML string which will be display in the form
-        return (
-            format_html_join(
-                mark_safe("<br/><br/>"),
-                "{} http status: {} url : {} <br/> <ul> <li>sent <pre>{}</pre> </li><li>received <pre>{}</pre></li></ul>",
-                (
-                    (line.id, line.http_status, line.url, line.sent, line.received)
-                    for line in instance.export_logs.all()
-                ),
-            )
-            or mark_safe("<span>no logs available.</span>")
-        )
+        return format_html_join(
+            mark_safe("<br/><br/>"),
+            "{} http status: {} url : {} <br/> <ul> <li>sent <pre>{}</pre> </li><li>received <pre>{}</pre></li></ul>",
+            ((line.id, line.http_status, line.url, line.sent, line.received) for line in instance.export_logs.all()),
+        ) or mark_safe("<span>no logs available.</span>")
 
 
 @admin_attr_decorator
@@ -428,6 +424,20 @@ class InstanceLockAdmin(admin.ModelAdmin):
     date_hierarchy = "locked_at"
 
 
+class StorageLogEntryInline(admin.TabularInline):
+    model = StorageLogEntry
+    raw_id_fields = ("instances", "org_unit")
+
+
+class StorageDeviceAdmin(admin.ModelAdmin):
+    fields = ("account", "customer_chosen_id", "type")
+    list_display = ("account", "type", "customer_chosen_id")
+    list_filter = ("account", "type")
+    inlines = [
+        StorageLogEntryInline,
+    ]
+
+
 admin.site.register(Link, LinkAdmin)
 admin.site.register(Form, FormAdmin)
 admin.site.register(Instance, InstanceAdmin)
@@ -462,3 +472,4 @@ admin.site.register(Planning, PlanningAdmin)
 admin.site.register(BulkCreateUserCsvFile)
 admin.site.register(Assignment, AssignmentAdmin)
 admin.site.register(InstanceLock, InstanceLockAdmin)
+admin.site.register(StorageDevice, StorageDeviceAdmin)

@@ -106,7 +106,7 @@ const Calendar = ({ params }) => {
         const element = document.getElementById('pdf');
         const options = {
             filename: 'calendar.pdf',
-            excludeTagNames: ['button', 'a'],
+            excludeClassNames: ['createPDF', 'createXlsx'],
             overrideWidth: pageWidth,
         };
 
@@ -188,6 +188,7 @@ const Calendar = ({ params }) => {
                                     type="button"
                                     color="primary"
                                     variant="contained"
+                                    className="createPDF"
                                 >
                                     <PictureAsPdfIcon
                                         style={{ marginRight: '8px' }}
@@ -203,6 +204,7 @@ const Calendar = ({ params }) => {
                                     type="button"
                                     color="primary"
                                     variant="contained"
+                                    className="createXlsx"
                                     href={xlsx_url}
                                 >
                                     <ExcellSvg

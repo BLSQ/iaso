@@ -72,10 +72,8 @@ const Calendar = ({ params }) => {
         params.search,
     ]);
 
-    const calendarXlsx = useGetCalendarXlsx();
-    const generateCalendarXlsx = () => {
-        calendarXlsx.mutate();
-    };
+    const { mutate: generateCalendarXlsx } = useGetCalendarXlsx();
+
     const { data: campaigns = [], isLoading } =
         useGetCampaigns(queryOptions).query;
 

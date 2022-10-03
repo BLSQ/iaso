@@ -218,7 +218,11 @@ class InstanceModelTestCase(TestCase):
         )
 
     def test_xml_to_json_with_repeat_group(self):
+        """Test that the repeat group is correctly handled
 
+        Note: this also indirectly tests that some paths are always allowed in the XML (see ALWAYS_ALLOWED_PATHS_XML):
+        if not, the JSON representation will lack the uuid field.
+        """
         instance = m.Instance.objects.create(
             form=self.form_1,
             period="202001",

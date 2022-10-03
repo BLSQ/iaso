@@ -6,9 +6,14 @@ import { isEqual } from 'lodash';
 import {
     // @ts-ignore
     useSafeIntl,
+    // @ts-ignore
+    ConfirmCancelModal,
+    // @ts-ignore
+    FilesUpload,
+    // @ts-ignore
+    makeFullModal,
 } from 'bluesquare-components';
 import { Box, Divider, Typography } from '@material-ui/core';
-import { ConfirmCancelModal } from '../../../../../../../hat/assets/js/apps/Iaso/components/DragAndDrop/ConfirmCancelModal';
 import MESSAGES from '../../../constants/messages';
 import InputComponent from '../../../../../../../hat/assets/js/apps/Iaso/components/forms/InputComponent';
 import { useCurrentUser } from '../../../../../../../hat/assets/js/apps/Iaso/utils/usersUtils';
@@ -30,8 +35,6 @@ import {
     useTranslatedErrors,
     useApiErrorValidation,
 } from '../../../../../../../hat/assets/js/apps/Iaso/libs/validation';
-import { FilesUpload } from '../../../../../../../hat/assets/js/apps/Iaso/components/DragAndDrop/FilesUpload';
-import { makeFullModal } from '../../../../../../../hat/assets/js/apps/Iaso/components/DragAndDrop/ModalWithButton';
 import { CreatEditButton } from './CreateEditButton';
 
 type Props = {

@@ -15,6 +15,7 @@ from rest_framework import viewsets, permissions, serializers
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.serializers import ValidationError
+from django.conf import settings
 
 from hat.api.export_utils import Echo, generate_xlsx, iter_items, timestamp_to_utc_datetime
 from hat.audit import models as audit_models
@@ -252,8 +253,10 @@ class OrgUnitViewSet(viewsets.ViewSet):
                 "instances_count",
             )
 
+            user_account_name = request.user.iaso_profile.account.name
+            environment = settings.ENVIRONMENT
             filename = "org_units"
-            filename = "%s-%s" % (filename, strftime("%Y-%m-%d-%H-%M", gmtime()))
+            filename = "%s-%s-%s-%s" % (environment, user_account_name, filename, strftime("%Y-%m-%d-%H-%M", gmtime()))
 
             def get_row(org_unit, **kwargs):
                 location = org_unit.get("location", None)

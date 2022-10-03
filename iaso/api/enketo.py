@@ -347,6 +347,7 @@ class EnketoSubmissionAPIView(APIView):
                     return Response(
                         {
                             "result": "error",
+                            "step": "export",
                             "message": error.message,
                             "description": error.descriptions,
                         },

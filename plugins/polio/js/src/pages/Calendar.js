@@ -107,7 +107,7 @@ const Calendar = ({ params }) => {
         const element = document.getElementById('pdf');
         const options = {
             filename: 'calendar.pdf',
-            excludeTagNames: 'button',
+            excludeTagNames: ['button', 'a'],
             overrideWidth: pageWidth,
         };
 

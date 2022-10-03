@@ -245,9 +245,23 @@ class CampaignViewSet(ModelViewSet):
             today = dt.date.today()
             return today.year
 
-    # @staticmethod
-    # def get_order_by(order_by):
-    #     if order_by
+    @staticmethod
+    def get_order_by(order_by):
+        field = None
+        start_with = order_by.startswith("-")
+        if "first_round_started_at" in order_by:
+            field = "campaign_round_one__started_at"
+        elif "obr_name" in order_by:
+            field = "campaign__obr_name"
+        elif "country__name" in order_by:
+            field = "campaign__country__name"
+
+        if start_with and field != "campaign_round_one__started_at":
+            field = "-" + field
+        elif not start_with and field == "campaign_round_one__started_at":
+            field = "-" + field
+
+        return field
 
     @staticmethod
     def get_calendar_data(self, year, params):
@@ -269,11 +283,10 @@ class CampaignViewSet(ModelViewSet):
             rounds = rounds.filter(campaign__is_preventive=False).filter(campaign__is_test=False)
         if search:
             rounds = rounds.filter(Q(campaign__obr_name__icontains=search) | Q(campaign__epid__icontains=search))
-        # if order_by is None:
-        #     rounds = rounds.order_by("campaign_round_one__started_at")
-        # else:
-        #     print("campain__"+order_by)
-        #     rounds = rounds.order_by("campain__"+order_by)
+        if order_by is None:
+            rounds = rounds.order_by("-campaign_round_one__started_at")
+        else:
+            rounds = rounds.order_by(self.get_order_by(order_by))
         return self.loop_on_rounds(self, rounds)
 
     @staticmethod

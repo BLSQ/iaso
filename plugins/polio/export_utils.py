@@ -9,10 +9,12 @@ from openpyxl.styles.borders import Border, Side
 import datetime as dt
 import calendar
 
-# from datetime import datetime
 
-
-def generate_xlsx(filename, datas):
+def generate_xlsx_campaigns_calendar(filename, datas):
+    """Takes two parameters: 1. The Xlsx filename 2. An array of datas to display in Xlsx file
+    The method will loop over datas and assign values to cells in the Xlsx file
+    After assignement it will save the Xlsx file
+    It will return the saved xlsx file"""
     file = Workbook()
     sheet = file.active
     sheet.title = filename

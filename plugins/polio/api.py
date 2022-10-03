@@ -80,7 +80,7 @@ from .models import CountryUsersGroup
 from .models import URLCache
 from .preparedness.calculator import preparedness_summary
 from .preparedness.parser import get_preparedness
-from .export_utils import generate_xlsx, xlsx_file_name
+from .export_utils import generate_xlsx_campaigns_calendar, xlsx_file_name
 
 logger = getLogger(__name__)
 
@@ -191,29 +191,6 @@ class CampaignViewSet(ModelViewSet):
             campaigns = campaigns.filter(grouped_campaigns__in=campaign_groups.split(","))
         return campaigns.distinct()
 
-    def filter_calendar_data(self, queryset):
-        if self.action in ("update", "partial_update", "retrieve", "destroy"):
-            return queryset
-        campaign_type = self.request.query_params.get("campaignType")
-        campaign_groups = self.request.query_params.get("campaignGroups")
-        countries = self.request.query_params.get("countries")
-        show_test = self.request.query_params.get("show_test", "false")
-        campaigns = queryset
-        if show_test == "false":
-            campaigns = campaigns.filter(is_test=False)
-        campaigns.prefetch_related("rounds", "group", "grouped_campaigns")
-        if campaign_type == "preventive":
-            campaigns = campaigns.filter(is_preventive=True)
-        if campaign_type == "test":
-            campaigns = campaigns.filter(is_test=True)
-        if campaign_type == "regular":
-            campaigns = campaigns.filter(is_preventive=False).filter(is_test=False)
-        if campaign_groups:
-            campaigns = campaigns.filter(grouped_campaigns__in=campaign_groups.split(","))
-        if countries:
-            campaigns = campaigns.filter(country_id__in=countries.split(","))
-        return campaigns.distinct()
-
     def get_queryset(self):
         user = self.request.user
         campaigns = Campaign.objects.all()
@@ -249,7 +226,7 @@ class CampaignViewSet(ModelViewSet):
 
         calendar_data = self.get_calendar_data(self, current_year, request.query_params)
         filename = xlsx_file_name("calendar", params)
-        xlsx_file = generate_xlsx(filename, calendar_data)
+        xlsx_file = generate_xlsx_campaigns_calendar(filename, calendar_data)
 
         response = HttpResponse(
             save_virtual_workbook(xlsx_file),
@@ -268,11 +245,16 @@ class CampaignViewSet(ModelViewSet):
             today = dt.date.today()
             return today.year
 
+    # @staticmethod
+    # def get_order_by(order_by):
+    #     if order_by
+
     @staticmethod
     def get_calendar_data(self, year, params):
         countries = params.get("countries") if params.get("countries") is not None else None
         campaign_groups = params.get("campaignGroups") if params.get("campaignGroups") is not None else None
         campaign_type = params.get("campaignType") if params.get("campaignType") is not None else None
+        order_by = params.get("order") if params.get("order") is not None else None
         search = params.get("search")
         rounds = Round.objects.filter(started_at__year=year)
         if countries:
@@ -287,8 +269,11 @@ class CampaignViewSet(ModelViewSet):
             rounds = rounds.filter(campaign__is_preventive=False).filter(campaign__is_test=False)
         if search:
             rounds = rounds.filter(Q(campaign__obr_name__icontains=search) | Q(campaign__epid__icontains=search))
-
-        rounds = rounds.order_by("campaign__country__name", "started_at")
+        # if order_by is None:
+        #     rounds = rounds.order_by("campaign_round_one__started_at")
+        # else:
+        #     print("campain__"+order_by)
+        #     rounds = rounds.order_by("campain__"+order_by)
         return self.loop_on_rounds(self, rounds)
 
     @staticmethod
@@ -317,12 +302,17 @@ class CampaignViewSet(ModelViewSet):
 
     @staticmethod
     def get_round(round):
+        started_at = dt.datetime.strftime(round.started_at, "%Y-%m-%d") if round.started_at is not None else ""
+        ended_at = dt.datetime.strftime(round.ended_at, "%Y-%m-%d") if round.ended_at is not None else ""
+        obr_name = round.campaign.obr_name if round.campaign.obr_name is not None else ""
+        vacine = round.campaign.vacine if round.campaign.vacine is not None else ""
+        round_number = round.number if round.number is not None else ""
         return {
-            "started_at": dt.datetime.strftime(round.started_at, "%Y-%m-%d"),
-            "ended_at": dt.datetime.strftime(round.ended_at, "%Y-%m-%d"),
-            "obr_name": round.campaign.obr_name,
-            "vacine": round.campaign.vacine,
-            "round_number": round.number,
+            "started_at": started_at,
+            "ended_at": ended_at,
+            "obr_name": obr_name,
+            "vacine": vacine,
+            "round_number": round_number,
         }
 
     @action(methods=["POST"], detail=True, serializer_class=CampaignPreparednessSpreadsheetSerializer)

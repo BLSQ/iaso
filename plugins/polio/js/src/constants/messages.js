@@ -1408,7 +1408,7 @@ const MESSAGES = defineMessages({
     },
     exportToExcel: {
         id: 'iaso.polio.label.exportToExcel',
-        defaultMessage: 'Export to excel',
+        defaultMessage: 'Export to XLSX',
     },
     userWithoutTeam: {
         id: 'iaso.polio.error.label.userWithoutTeam',

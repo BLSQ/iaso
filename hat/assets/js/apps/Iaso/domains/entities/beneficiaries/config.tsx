@@ -207,8 +207,8 @@ export const useBeneficiariesDetailsColumns = (
                 // TODO make sortable
                 // TODO get correct key when implemented on backend
                 sortable: false,
-                id: 'last_sync_at',
-                accessor: 'last_sync_at',
+                id: 'updated_at',
+                accessor: 'updated_at',
                 Cell: DateTimeCell,
             },
             {

@@ -4,11 +4,12 @@ import moment from 'moment';
 import classnames from 'classnames';
 import { Box, makeStyles, Grid, Button, Typography } from '@material-ui/core';
 import PictureAsPdfIcon from '@material-ui/icons/PictureAsPdf';
-import { ExcellSvg } from 'bluesquare-components';
 import {
     commonStyles,
     useSafeIntl,
     LoadingSpinner,
+    ExcellSvg,
+    getTableUrl
 } from 'bluesquare-components';
 import { useSelector } from 'react-redux';
 import TopBar from 'Iaso/components/nav/TopBarComponent';
@@ -32,8 +33,6 @@ import { useGetCampaigns } from '../hooks/useGetCampaigns';
 // @ts-ignore
 import MESSAGES from '../constants/messages';
 import { Filters } from '../components/campaignCalendar/Filters';
-import { csvPreview } from '../../../../../hat/assets/js/apps/Iaso/domains/dataSources/requests';
-import { getTableUrl } from 'bluesquare-components';
 
 const pageWidth = 1980;
 

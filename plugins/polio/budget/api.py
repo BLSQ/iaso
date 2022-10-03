@@ -1,11 +1,13 @@
 from django.db.models import QuerySet
 from django_filters.rest_framework import DjangoFilterBackend
 from drf_yasg.utils import swagger_auto_schema
-from rest_framework import permissions, filters
+from rest_framework import permissions, filters, status
+from rest_framework.decorators import action
+from rest_framework.response import Response
 
 from iaso.api.common import ModelViewSet, DeletionFilterBackend
 from iaso.models import OrgUnit
-from plugins.polio.budget.serializers import CampaignBudgetSerializer
+from plugins.polio.budget.serializers import CampaignBudgetSerializer, TransitionToSerializer
 from plugins.polio.models import Campaign
 
 
@@ -21,7 +23,8 @@ class BudgetCampaignViewSet(ModelViewSet):
     permission_classes = [permissions.IsAuthenticated]
 
     # Make this read only
-    http_method_names = ["get", "head"]
+    # FIXME : rmeove POST
+    http_method_names = ["get", "head", "post"]
     filter_backends = [
         filters.OrderingFilter,
         DjangoFilterBackend,
@@ -63,3 +66,11 @@ class BudgetCampaignViewSet(ModelViewSet):
         "created_at": ["gte", "lte", "range"],
         "rounds__started_at": ["gte", "lte", "range"],
     }
+
+    @action(detail=False, methods=["POST", "GET"], serializer_class=TransitionToSerializer)
+    def transition_to(self, request):
+        serializer = TransitionToSerializer(data=request.data, context={"request": request})
+        serializer.is_valid(raise_exception=True)
+        budget_step = serializer.save()
+
+        return Response({"result": "success", "id": budget_step.id}, status=status.HTTP_201_CREATED)

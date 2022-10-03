@@ -30,6 +30,19 @@ class Workflow:
     transitions: List[Transition]
     nodes: List[Transition]
 
+    def get_node_by_key(self, key):
+        nodes = [node for node in self.nodes if node.key == key]
+        if not nodes:
+            raise ValueError("Node not found")
+        return nodes[0]
+
+    def self_check(self):
+        for transition in self.transitions:
+            if transition.from_node:
+                self.get_node_by_key(transition.to_node)
+            if transition.to_node:
+                self.get_node_by_key(transition.to_node)
+
 
 def next_transitions(transitions, current_node_key):
     nexts = [t for t in transitions if t.from_node == current_node_key]
@@ -40,7 +53,7 @@ def can_user_transition(transition: Transition, user):
     if not transition.teams_ids_can_transition:
         return True
     # is user is in one of the teams
-    if Team.objects.filter(id__in=transition.teams_ids_can_transition).filter(users=user):
+    if Team.objects.filter(id__in=transition.teams_ids_can_transition).filter(users=user).exists():
         return True
     return False
 
@@ -51,18 +64,19 @@ transition_defs = [
     {
         "key": "submit_budget",
         "label": "Submit budget",
-        "required_fields": ["files"],
+        # "required_fields": ["files"],
+        "required_fields": [],
         "displayed_fields": ["comment"],
         "from_node": None,
         "to_node": "budget_submitted",
-        "teams_ids_can_transition": [100],
+        "teams_ids_can_transition": [],
     },
     {
         "key": "accept_budget",
         "label": "Accept budget",
         "required_fields": [],
         "displayed_fields": ["comment"],
-        "from_node": "budget_submited",
+        "from_node": "budget_submitted",
         "to_node": "accepted",
     },
     {

@@ -4,7 +4,7 @@ import moment from 'moment';
 import classnames from 'classnames';
 import { Box, makeStyles, Grid, Button, Typography } from '@material-ui/core';
 import PictureAsPdfIcon from '@material-ui/icons/PictureAsPdf';
-import DownloadIcon from '@material-ui/icons/GetApp';
+import { ExcellSvg } from 'bluesquare-components';
 import {
     commonStyles,
     useSafeIntl,
@@ -130,6 +130,7 @@ const Calendar = ({ params }) => {
         campaignType: params.campaignType,
         campaignGroups: params.campaignGroups,
         search: params.search,
+        order: params.order
     };
 
     const xlsx_url = getTableUrl(
@@ -205,7 +206,7 @@ const Calendar = ({ params }) => {
                                     variant="contained"
                                     href={xlsx_url}
                                 >
-                                    <DownloadIcon
+                                    <ExcellSvg
                                         style={{ marginRight: '8px' }}
                                     />
                                     {formatMessage(MESSAGES.exportToExcel)}

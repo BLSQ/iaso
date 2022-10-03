@@ -310,9 +310,15 @@ class InstancesViewSet(viewsets.ViewSet):
         queryset = queryset.order_by(*orders)
         # IA-1023 = allow to sort instances by form version
 
+        # TODO: this function would deserve some more thorough refactor, see the discussion at
+        #  https://bluesquare.atlassian.net/browse/IA-1547. Some things were cleaned already, but it would make sense
+        #  to change it so:
+        #  - 1) the same queryset is prepared at the beginning of the function, then used in all cases (searches,
+        #       exports, paginated or not, as small dict or not)
+        #  - 2) the limit and asSmallDict parameters are independent from each other (the consumer can choose to use
+        #       one, both or None and get predictable results)
         if not file_export:
             if limit:
-                # TODO: document where/when this branch is used
                 limit = int(limit)
                 page_offset = int(page_offset)
 
@@ -342,8 +348,7 @@ class InstancesViewSet(viewsets.ViewSet):
 
                 return Response(res)
             elif as_small_dict:
-                # TODO: document where/when this branch is used (is it used at all?)
-                # TODO: check if it's normal that the queryset is filtered further here than in the other branches
+                # TODO: apparently, this branch is not used by the frontend nor the mobile app
                 queryset = (
                     queryset.annotate(instancefile_count=Count("instancefile"))
                     .filter(Q(location__isnull=False) | Q(instancefile_count__gt=0))
@@ -353,7 +358,6 @@ class InstancesViewSet(viewsets.ViewSet):
                 )
                 return Response([instance.as_small_dict() for instance in queryset])
             else:
-                # TODO: document where/when this branch is used (is it used at all?)
                 return Response({"instances": [instance.as_dict() for instance in queryset]})
         else:  # This is a CSV/XLSX file export
             return self.list_file_export(filters=filters, queryset=queryset, file_format=file_format_export)

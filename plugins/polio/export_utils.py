@@ -1,9 +1,6 @@
 from ctypes import alignment
 from curses import start_color
-from turtle import color
 from openpyxl import Workbook
-from openpyxl.writer.excel import save_virtual_workbook
-from openpyxl.utils import get_column_letter
 from openpyxl.styles import Alignment, Font, PatternFill
 from openpyxl.styles.borders import Border, Side
 import datetime as dt

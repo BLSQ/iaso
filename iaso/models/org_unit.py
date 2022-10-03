@@ -16,7 +16,7 @@ from iaso.models.data_source import SourceVersion
 from .project import Project
 
 
-def get_or_create_org_unit_type(name: str, depth: int, account: Account, preferred_project: Project) -> "OrgUnitType":
+def get_or_create_org_unit_type(name: str, depth: int, account: "Account", preferred_project: Project) -> "OrgUnitType":
     """
     Get or create the OUT (in the scope of the account).
 

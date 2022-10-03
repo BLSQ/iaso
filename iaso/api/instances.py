@@ -28,7 +28,6 @@ from hat.common.utils import queryset_iterator
 from iaso.models import (
     Instance,
     OrgUnit,
-    Form,
     Project,
     InstanceFile,
     InstanceQuerySet,
@@ -170,7 +169,7 @@ class InstancesViewSet(viewsets.ViewSet):
         return Response(serializer.data)
 
     @staticmethod
-    def list_file_export(filters: Dict[str, Any], queryset: QuerySet[Instance], file_format: FileFormatEnum):
+    def list_file_export(filters: Dict[str, Any], queryset: "QuerySet[Instance]", file_format: FileFormatEnum):
         """WIP: Helper function to divide the huge list method"""
         columns = [
             {"title": "ID du formulaire", "width": 20},

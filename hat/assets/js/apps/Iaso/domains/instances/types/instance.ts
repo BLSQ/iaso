@@ -45,7 +45,7 @@ export type InstanceLogDetail = {
     content_type: string;
     object_id: string;
     source: string;
-    user: User | undefined;
+    user?: User;
     created_at: string;
 };
 

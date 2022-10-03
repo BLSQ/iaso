@@ -165,6 +165,7 @@ export const CompareInstanceLogs: FunctionComponent<Props> = ({
                 <Grid container spacing={2}>
                     <Grid xs={12} md={6} item>
                         <InputComponent
+                            clearable={false}
                             type="select"
                             keyValue="logA"
                             onChange={handleChange}
@@ -180,12 +181,13 @@ export const CompareInstanceLogs: FunctionComponent<Props> = ({
                         />
                         <InstanceLogInfos
                             user={instanceLogA?.user}
-                            infos={instanceLogA?.new_value[0]?.fields}
+                            infos={instanceLogContent.logA}
                             loading={isInstanceLogAFetching}
                         />
                     </Grid>
                     <Grid xs={12} md={6} item>
                         <InputComponent
+                            clearable={false}
                             type="select"
                             keyValue="logB"
                             onChange={handleChange}
@@ -202,7 +204,7 @@ export const CompareInstanceLogs: FunctionComponent<Props> = ({
 
                         <InstanceLogInfos
                             user={instanceLogA?.user}
-                            infos={instanceLogA?.new_value[0]?.fields}
+                            infos={instanceLogContent.logB}
                             loading={isInstanceLogBFetching}
                         />
                     </Grid>

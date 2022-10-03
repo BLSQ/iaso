@@ -39,28 +39,30 @@ export const InstanceLogDetail: FunctionComponent<Props> = ({
     const hasError = isLogDetailError || isLogDescriptorError;
     const isLoading = isLogDetailLoading || isLogDescriptorLoading;
     return (
-        <Paper>
+        <>
             {hasError && (
                 <ErrorPaperComponent
                     message={formatMessage(MESSAGES.errorLog)}
                 />
             )}
-            {isLoading && (
-                <Box height="30vh">
-                    <LoadingSpinner
-                        fixed={false}
-                        transparent
-                        padding={4}
-                        size={25}
+            <Paper>
+                {isLoading && (
+                    <Box height="30vh">
+                        <LoadingSpinner
+                            fixed={false}
+                            transparent
+                            padding={4}
+                            size={25}
+                        />
+                    </Box>
+                )}
+                {!hasError && !isLoading && instanceLogContent && (
+                    <InstanceLogContentBasic
+                        fileContent={instanceLogContent}
+                        fileDescriptor={instanceLogDescriptor}
                     />
-                </Box>
-            )}
-            {!hasError && !isLoading && instanceLogContent && (
-                <InstanceLogContentBasic
-                    fileContent={instanceLogContent}
-                    fileDescriptor={instanceLogDescriptor}
-                />
-            )}
-        </Paper>
+                )}
+            </Paper>
+        </>
     );
 };

@@ -51,10 +51,10 @@ const getInstanceLogDetail = (
 export const useGetInstanceLogDetail = (
     logIds: string[],
 ): Array<UseQueryResult<InstanceLogData, unknown>> => {
-    // @ts-ignore => ignoring this, useQueies is wornnking with unknown type as you can have multiple calls with multiple types
+    // @ts-ignore => ignoring this, useQueies is working with unknown type as you can have multiple calls with multiple types
     return useSnackQueries<InstanceLogData>(
         logIds.map(logId => ({
-            queryKey: ['instanceLogADetail', logId],
+            queryKey: ['instanceLogDetail', logId],
             queryFn: () => getInstanceLogDetail(logId),
             snackErrorMsg: MESSAGES.fetchLogDetailError,
             dispatchOnError: false,
@@ -74,8 +74,8 @@ const getVersion = (
     );
 };
 export const useGetFormDescriptor = (
-    versionId: string | undefined,
-    formId: number | undefined,
+    versionId?: string,
+    formId?: number,
 ): UseQueryResult<Record<string, any> | undefined, Error> => {
     const queryKey: any[] = ['instanceDescriptor', versionId];
     return useSnackQuery({

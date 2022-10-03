@@ -17,7 +17,7 @@ import MESSAGES from '../messages';
 
 type Props = {
     fileContent: FileContent;
-    fileDescriptor: Record<string, any> | undefined;
+    fileDescriptor?: Record<string, any>;
 };
 
 const useStyles = makeStyles(theme => ({

@@ -97,7 +97,7 @@ const InstanceDetails: FunctionComponent<Props> = props => {
     // not showing history link in submission detail if there is only one version/log
     // in the future. add this info directly in the instance api to not make another call;
     const { data: instanceLogsDetails } = useGetInstanceLogs(instanceId);
-    const showHistoryLink = instanceLogsDetails?.list?.length > 1;
+    const showHistoryLink = (instanceLogsDetails?.list?.length || 0) > 1;
 
     return (
         <section className={classes.relativeContainer}>

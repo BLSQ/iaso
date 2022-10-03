@@ -31,7 +31,6 @@ export type Instance = {
     correlation_id?: string;
     deleted: boolean;
     org_unit: OrgUnit;
-
     period: unknown;
     file_content: Record<string, string>;
     form_descriptor: unknown;
@@ -46,7 +45,7 @@ export type InstanceLogDetail = {
     content_type: string;
     object_id: string;
     source: string;
-    user: Record<string, any>;
+    user?: User;
     created_at: string;
 };
 
@@ -59,11 +58,12 @@ type NewValue = {
 };
 
 export type InstanceLogData = {
-    fields: Record<string, any>;
-    json: Record<string, any>;
-    _version: string;
-    form: number;
+    id: number;
+    content_type: string;
+    object_id: string;
     new_value: NewValue[];
+    source: string;
+    user: User;
 };
 
 type FormVersions = {
@@ -71,4 +71,9 @@ type FormVersions = {
 };
 export type FormDescriptor = {
     form_versions: FormVersions[];
+};
+
+export type FileContent = {
+    logA: Record<string, any>;
+    logB: Record<string, any>;
 };

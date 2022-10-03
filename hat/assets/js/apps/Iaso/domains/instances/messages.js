@@ -497,6 +497,10 @@ const MESSAGES = defineMessages({
         id: 'iaso.label.history',
         defaultMessage: 'History',
     },
+    onlyOneExistingVersion: {
+        id: 'iaso.label.onlyOneExisitingVersion',
+        defaultMessagbe: 'Only one existing version',
+    },
     seeAllVersions: {
         id: 'iaso.label.seeAllVersions',
         defaultMessage: 'See all versions',

@@ -405,13 +405,11 @@ export const OrgUnitFilters: FunctionComponent<Props> = ({
                 </Box>
                 {(filters?.hasInstances === 'true' ||
                     filters?.hasInstances === 'duplicates') && (
-                    <Box mt={-3}>
-                        <DatesRange
-                            onChangeDate={handleChange}
-                            dateFrom={filters?.dateFrom}
-                            dateTo={filters?.dateTo}
-                        />
-                    </Box>
+                    <DatesRange
+                        onChangeDate={handleChange}
+                        dateFrom={filters?.dateFrom}
+                        dateTo={filters?.dateTo}
+                    />
                 )}
             </Grid>
         </Grid>

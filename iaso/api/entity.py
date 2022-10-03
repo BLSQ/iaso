@@ -357,29 +357,44 @@ class EntityViewSet(ModelViewSet):
 
         if entity_type_ids is None or (entity_type_ids is not None and len(entity_type_ids.split(",")) > 1):
             for entity in entities:
-                entity_serialized = EntitySerializer(entity, many=False)
-
-                attributes = entity_serialized.data.get("attributes")
-                file_content = attributes.get("file_content")
+                attributes = entity.attributes
+                attributes_pk = None
+                attributes_ou = None
+                file_content = None
+                if attributes is not None:
+                    file_content = entity.attributes.get_and_save_json_of_xml().get("file_content", None)
+                    attributes_pk = attributes.pk
+                    attributes_ou = entity.attributes.org_unit.as_location(with_parents=True)
+                name = None
+                program = None
+                if file_content is not None:
+                    name = file_content.get("name")
+                    program = file_content.get("program")
                 result = {
                     "id": entity.id,
                     "uuid": entity.uuid,
-                    "name": file_content.get("name"),
+                    "name": name,
                     "created_at": entity.created_at,
                     "updated_at": entity.updated_at,
-                    "attributes": entity.attributes.pk,
+                    "attributes": attributes_pk,
                     "entity_type": entity.entity_type.name,
                     "last_saved_instance": entity.last_saved_instance,
-                    "org_unit": entity.attributes.org_unit.as_location(with_parents=True),
-                    "program": file_content.get("program"),
+                    "org_unit": attributes_ou,
+                    "program": program,
                 }
                 result_list.append(result)
         else:
             for entity in entities:
+                attributes = entity.attributes
+                attributes_ou = None
+                file_content = None
+                if attributes is not None:
+                    file_content = entity.attributes.get_and_save_json_of_xml().get("file_content", None)
+                    attributes_ou = entity.attributes.org_unit.as_location(with_parents=True)
                 columns_list = []
-                entity_serialized = EntitySerializer(entity, many=False)
-                file_content = entity_serialized.data.get("attributes").get("file_content")
-
+                program = None
+                if file_content is not None:
+                    program = file_content.get("program")
                 possible_fields_list = entity.entity_type.reference_form.possible_fields
                 for items in possible_fields_list:
                     for k, v in items.items():
@@ -392,16 +407,17 @@ class EntityViewSet(ModelViewSet):
                     "entity_type_name": entity.entity_type.name,
                     "created_at": entity.created_at,
                     "updated_at": entity.updated_at,
-                    "org_unit": entity.attributes.org_unit.as_location(with_parents=True),
+                    "org_unit": attributes_ou,
                     "last_saved_instance": entity.last_saved_instance,
-                    "program": file_content.get("program"),
+                    "program": program,
                 }
 
                 # Get data from xlsform
-                for k, v in entity.attributes.json.items():
-                    if k in list(entity.entity_type.fields_list_view):
-                        result[k] = v
-                result_list.append(result)
+                if attributes is not None:
+                    for k, v in entity.attributes.json.items():
+                        if k in list(entity.entity_type.fields_list_view):
+                            result[k] = v
+                    result_list.append(result)
 
             columns_list = [i for n, i in enumerate(columns_list) if i not in columns_list[n + 1 :]]
             columns_list = [c for c in columns_list if len(c) > 2]

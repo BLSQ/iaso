@@ -242,7 +242,9 @@ class EntityViewSet(ModelViewSet):
         if form_name:
             queryset = queryset.filter(attributes__form__name__icontains=form_name)
         if search:
-            queryset = queryset.filter(name__icontains=search)
+            queryset = queryset.filter(
+                Q(name__icontains=search) | Q(uuid__icontains=search) | Q(attributes__json__icontains=search)
+            )
         if by_uuid:
             queryset = queryset.filter(uuid=by_uuid)
         if entity_type:

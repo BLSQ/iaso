@@ -23,6 +23,8 @@ export type FieldType =
     | 'decimal'
     | 'range'
     | 'text'
+    | 'select one'
+    | 'select multiple'
     | 'select_one'
     | 'select_multiple'
     | 'select_one_from_file'

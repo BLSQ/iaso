@@ -308,6 +308,7 @@ export const getFilters = params => {
         dateTo: getToDateString(params.dateTo),
         showDeleted: params.showDeleted,
         form_ids: params.formIds,
+        jsonContent: params.fieldsSearch,
     };
     const filters = {};
     Object.keys(allFilters).forEach(k => {

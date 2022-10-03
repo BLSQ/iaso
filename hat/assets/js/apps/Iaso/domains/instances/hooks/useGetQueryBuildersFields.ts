@@ -14,6 +14,8 @@ export const useGetQueryBuildersFields = (
             case 'text':
             case 'note':
             case 'select_one': // TODO: use select field for this, need to have list of possible fields
+            case 'select one':
+            case 'select multiple':
             case 'select_multiple': {
                 Fields[field.name] = {
                     label: formatLabel(field),

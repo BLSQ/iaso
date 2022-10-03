@@ -102,7 +102,7 @@ jobs:
         uses: cypress-io/github-action@v4
         with:
           browser: chrome
-          wait-on: 'localhost:8081'
+          wait-on: 'http://host.docker.internal:8081'
           spec: hat/assets/js/cypress/integration/**/*.spec.js
           install: false
         env:

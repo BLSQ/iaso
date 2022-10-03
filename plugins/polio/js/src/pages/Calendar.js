@@ -48,6 +48,7 @@ const useStyles = makeStyles(theme => ({
     isNotPdf: {
         height: 'calc(100vh - 65px)',
     },
+    exportIcon: { marginRight: '8px' }
 }));
 
 const Calendar = ({ params }) => {
@@ -191,7 +192,7 @@ const Calendar = ({ params }) => {
                                     className="createPDF"
                                 >
                                     <PictureAsPdfIcon
-                                        style={{ marginRight: '8px' }}
+                                        className={classes.exportIcon}
                                     />
                                     {formatMessage(MESSAGES.exportToPdf)}
                                 </Button>
@@ -208,7 +209,8 @@ const Calendar = ({ params }) => {
                                     href={xlsx_url}
                                 >
                                     <ExcellSvg
-                                        style={{ marginRight: '8px' }}
+                                        className={classes.exportIcon}
+
                                     />
                                     {formatMessage(MESSAGES.exportToExcel)}
                                 </Button>

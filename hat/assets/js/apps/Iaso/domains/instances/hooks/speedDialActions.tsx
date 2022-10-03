@@ -92,7 +92,7 @@ export const useEditLocationWithGpsAction = (
     const { formatMessage } = useSafeIntl();
     const payload = useMemo(
         () => ({
-            id: currentInstance.org_unit.id,
+            id: currentInstance.org_unit?.id,
             gps: {
                 altitude: currentInstance?.altitude,
                 latitude: currentInstance?.latitude,
@@ -127,9 +127,15 @@ export const useEditLocationWithGpsAction = (
                     </DialogContentText>
                 </ConfirmCancelDialogComponent>
             ),
-            disabled: currentInstance?.deleted,
+            disabled: currentInstance?.deleted || !currentInstance.org_unit,
         }),
-        [currentInstance?.deleted, formatMessage, payload, saveOrgUnit],
+        [
+            currentInstance?.deleted,
+            currentInstance.org_unit,
+            formatMessage,
+            payload,
+            saveOrgUnit,
+        ],
     );
 };
 

@@ -1,86 +1,68 @@
 /* eslint-disable camelcase */
-import React, { FunctionComponent, useState, useEffect } from 'react';
+import React, { FunctionComponent } from 'react';
 // @ts-ignore
 import { useSafeIntl, LoadingSpinner } from 'bluesquare-components';
 
-import { Box } from '@material-ui/core';
-
-import {
-    useGetInstanceLogDetail,
-    useGetFormDescriptor,
-} from '../hooks/useGetInstanceLogs';
-
-import InstanceFileContent from '../../components/InstanceFileContent';
-import WidgetPaper from '../../../../components/papers/WidgetPaperComponent';
+import { Box, Paper } from '@material-ui/core';
 import ErrorPaperComponent from '../../../../components/papers/ErrorPaperComponent';
+
+import { useGetFormDescriptor } from '../hooks/useGetInstanceLogs';
+
+import { IntlFormatMessage } from '../../../../types/intl';
+
+import { InstanceLogContentBasic } from './InstanceLogContentBasic';
 
 import MESSAGES from '../messages';
 
 type Props = {
-    logId: string | undefined;
+    instanceLogContent: any;
+    isLogDetailLoading: boolean;
+    isLogDetailError: boolean;
 };
 
-export const InstanceLogDetail: FunctionComponent<Props> = ({ logId }) => {
+export const InstanceLogDetail: FunctionComponent<Props> = ({
+    instanceLogContent,
+    isLogDetailLoading,
+    isLogDetailError,
+}) => {
     const {
-        data: instanceLogDetail,
-        isLoading,
-        isError,
-    }: {
-        data?: Record<string, any> | undefined;
-        isLoading: boolean;
-        isError: boolean;
-    } = useGetInstanceLogDetail(logId);
-
-    const {
-        data: instanceFormDescriptor,
-    }: {
-        data?: Record<string, any> | undefined;
+        data: instanceLogDescriptor,
+        isLoading: isLogDescriptorLoading,
+        isError: isLogDescriptorError,
     } = useGetFormDescriptor(
-        instanceLogDetail?.json._version,
-        instanceLogDetail?.form,
+        instanceLogContent?.logA?.json?._version,
+        instanceLogContent?.logA?.form,
     );
 
-    const { formatMessage } = useSafeIntl();
-
-    const [instanceLog, setInstanceLog] = useState<{
-        form_descriptor: Record<string, any> | undefined;
-        file_content: Record<string, any> | undefined;
-    }>({
-        form_descriptor: undefined,
-        file_content: undefined,
-    });
-
-    useEffect(() => {
-        if (instanceLogDetail && instanceFormDescriptor) {
-            setInstanceLog({
-                form_descriptor: instanceFormDescriptor,
-                file_content: instanceLogDetail.json,
-            });
-        }
-    }, [instanceLogDetail, instanceFormDescriptor]);
-
-    if (isLoading)
-        return (
-            <Box height="70vh">
-                <LoadingSpinner
-                    fixed={false}
-                    transparent
-                    padding={4}
-                    size={25}
-                />
-            </Box>
-        );
-    if (isError) {
-        return <ErrorPaperComponent message={formatMessage(MESSAGES.error)} />;
-    }
-
+    const { formatMessage }: { formatMessage: IntlFormatMessage } =
+        useSafeIntl();
+    const hasError = isLogDetailError || isLogDescriptorError;
+    const isLoading = isLogDetailLoading || isLogDescriptorLoading;
     return (
         <>
-            {instanceLog.form_descriptor && instanceLog.file_content && (
-                <WidgetPaper title={formatMessage(MESSAGES.submissionTitle)}>
-                    <InstanceFileContent instance={instanceLog} logId={logId} />
-                </WidgetPaper>
+            {hasError && (
+                <ErrorPaperComponent
+                    message={formatMessage(MESSAGES.errorLog)}
+                />
             )}
+            <Paper>
+                {isLoading && (
+                    <Box height="30vh">
+                        <LoadingSpinner
+                            fixed={false}
+                            transparent
+                            padding={4}
+                            size={25}
+                        />
+                    </Box>
+                )}
+                {!hasError && !isLoading && instanceLogContent && (
+                    <InstanceLogContentBasic
+                        fileContent={instanceLogContent}
+                        fileDescriptor={instanceLogDescriptor}
+                    />
+                )}
+            </Paper>
         </>
     );
 };

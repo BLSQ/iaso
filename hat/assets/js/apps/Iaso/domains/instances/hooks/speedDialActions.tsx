@@ -93,11 +93,9 @@ export const useEditLocationWithGpsAction = (
     const payload = useMemo(
         () => ({
             id: currentInstance.org_unit?.id,
-            gps: {
-                altitude: currentInstance?.altitude,
-                latitude: currentInstance?.latitude,
-                longitude: currentInstance?.longitude,
-            },
+            altitude: currentInstance?.altitude,
+            latitude: currentInstance?.latitude,
+            longitude: currentInstance?.longitude,
         }),
         [
             currentInstance?.altitude,

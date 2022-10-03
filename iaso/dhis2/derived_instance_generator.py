@@ -2,7 +2,7 @@ from io import BytesIO
 from timeit import default_timer as timer
 from uuid import uuid4
 
-from lxml import etree
+from lxml import etree  # type: ignore
 
 
 from django.contrib.postgres.fields.jsonb import KeyTextTransform

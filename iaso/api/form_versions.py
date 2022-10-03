@@ -1,6 +1,5 @@
 import typing
 
-from django.http.response import HttpResponseBadRequest
 from rest_framework import serializers, parsers, permissions, exceptions
 
 from iaso.models import Form, FormVersion
@@ -147,7 +146,7 @@ class FormVersionsViewSet(ModelViewSet):
     serializer_class = FormVersionSerializer
     permission_classes = [
         permissions.IsAuthenticated,
-        HasPermission("menupermissions.iaso_forms", "menupermissions.iaso_submissions"),
+        HasPermission("menupermissions.iaso_forms", "menupermissions.iaso_submissions"),  # type: ignore
     ]
     results_key = "form_versions"
     queryset = FormVersion.objects.all()

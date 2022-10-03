@@ -1,7 +1,7 @@
 import csv
 import functools
 import json
-from datetime import timedelta, datetime
+from datetime import timedelta, datetime, date
 import logging
 from typing import Any, Dict, List, Optional, Union
 from collections import defaultdict
@@ -23,9 +23,9 @@ from django.http import JsonResponse
 from django.http.response import HttpResponseBadRequest
 from django.shortcuts import get_object_or_404
 from django.utils.timezone import now, make_aware
-from django_filters.rest_framework import DjangoFilterBackend
+from django_filters.rest_framework import DjangoFilterBackend  # type: ignore
 from django.template.loader import render_to_string
-from gspread.utils import extract_id_from_url
+from gspread.utils import extract_id_from_url  # type: ignore
 from hat.settings import DEFAULT_FROM_EMAIL
 from rest_framework import routers, filters, viewsets, serializers, permissions, status
 from rest_framework.decorators import action
@@ -39,6 +39,7 @@ from iaso.models import OrgUnit
 from iaso.models.microplanning import Team
 from iaso.models.org_unit import OrgUnitType
 from plugins.polio.serializers import (
+    OrgUnitSerializer,
     CampaignSerializer,
     PreparednessPreviewSerializer,
     LineListImportSerializer,
@@ -101,6 +102,26 @@ class CustomFilterBackend(filters.BaseFilterBackend):
             return queryset.filter(query)
 
         return queryset
+
+
+class PolioOrgunitViewSet(ModelViewSet):
+    """Org units API for Polio
+
+    This API is use by polio plugin to fetch country related to an org unit. Read only
+
+    GET /api/polio/orgunits
+    """
+
+    results_key = "results"
+    permission_classes = [permissions.IsAuthenticated]
+    remove_results_key_if_paginated = True
+    http_method_names = ["get"]
+
+    def get_serializer_class(self):
+        return OrgUnitSerializer
+
+    def get_queryset(self):
+        return OrgUnit.objects.filter_for_user_and_app_id(self.request.user, self.request.query_params.get("app_id"))
 
 
 class CampaignViewSet(ModelViewSet):
@@ -230,6 +251,8 @@ Timeline tracker Automated message
         country = campaign.country
 
         domain = settings.DNS_DOMAIN
+        from_email = settings.DEFAULT_FROM_EMAIL
+
         if campaign.creation_email_send_at:
             raise serializers.ValidationError("Notification Email already sent")
         if not (campaign.obr_name and campaign.virus and country and campaign.onset_at):
@@ -260,7 +283,7 @@ Timeline tracker Automated message
         send_mail(
             "New Campaign {}".format(campaign.obr_name),
             email_text,
-            "no-reply@%s" % domain,
+            from_email,
             emails,
         )
         campaign.creation_email_send_at = now()
@@ -495,7 +518,7 @@ DAYS_EVOLUTION = [
 ]
 
 
-def score_for_x_day_before(ssi_for_campaign, ref_date: datetime.date, n_day: int):
+def score_for_x_day_before(ssi_for_campaign, ref_date: date, n_day: int):
     day = ref_date - timedelta(days=n_day)
     try:
         ssi = ssi_for_campaign.filter(created_at__date=day).last()
@@ -559,7 +582,7 @@ def _make_prep(c: Campaign, round: Round):
             logger.info(f"Round mismatch on {c} {round}")
 
         campaign_prep["history"] = history_for_campaign(ssi_qs, round)
-    except Exception as e:
+    except Exception as e:  # FIXME: too broad Exception
         campaign_prep["status"] = "error"
         campaign_prep["details"] = str(e)
         logger.exception(e)
@@ -1499,9 +1522,9 @@ def creation_email_with_two_links(
     event_type: str,
     first_name: str,
     last_name: str,
-    comment: str,
+    comment: Optional[str],
     files: str,
-    links: str,
+    links: Optional[str],
     validation_link: str,
     rejection_link: str,
     dns_domain: str,
@@ -1672,12 +1695,12 @@ def is_budget_approved(user: User, event: BudgetEvent) -> bool:
     return False
 
 
-def format_file_link(event_file: BudgetFiles) -> Dict:
+def format_file_link(event_file: BudgetFiles) -> Dict[str, str]:
     serialized_file = BudgetFilesSerializer(event_file).data
     return {"path": serialized_file["file"], "name": event_file.file.name}
 
 
-def make_budget_event_file_links(event: BudgetEvent) -> Optional[str]:
+def make_budget_event_file_links(event: BudgetEvent) -> Optional[List[Dict[str, str]]]:
     event_files = event.event_files.all()
     if not event_files:
         return None
@@ -1906,6 +1929,7 @@ class BudgetFilesViewset(ModelViewSet):
 
 
 router = routers.SimpleRouter()
+router.register(r"polio/orgunits", PolioOrgunitViewSet, basename="PolioOrgunit")
 router.register(r"polio/campaigns", CampaignViewSet, basename="Campaign")
 router.register(r"polio/campaignsgroup", CampaignGroupViewSet, basename="campaigngroup")
 router.register(r"polio/preparedness_dashboard", PreparednessDashboardViewSet, basename="preparedness_dashboard")

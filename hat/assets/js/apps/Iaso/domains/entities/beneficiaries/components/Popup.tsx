@@ -22,15 +22,12 @@ import {
     mapPopupStyles,
 } from 'bluesquare-components';
 import PopupItemComponent from '../../../../components/maps/popups/PopupItemComponent';
-import { LastVisit } from './fieldsValue/LastVisit';
-import { RegistrationDate } from './fieldsValue/RegistrationDate';
-import { VaccinationNumber } from './fieldsValue/VaccinationNumber';
-import { Gender } from './fieldsValue/Gender';
-import { Age } from './fieldsValue/Age';
 import { LinkToOrgUnit } from '../../../orgUnits/components/LinkToOrgUnit';
 
 import { Location } from './ListMap';
 import { baseUrls } from '../../../../constants/urls';
+import { ExtraColumn } from '../types/fields';
+import { useGetFieldValue } from '../hooks/useGetFieldValue';
 
 import MESSAGES from '../../messages';
 
@@ -61,15 +58,18 @@ const useStyles = makeStyles(theme => ({
 type Props = {
     titleMessage: string;
     location?: Location;
+    extraColumns?: Array<ExtraColumn>;
 };
 
 export const PopupComponent: FunctionComponent<Props> = ({
     titleMessage,
     location,
+    extraColumns,
 }) => {
     const { formatMessage } = useSafeIntl();
     const classes: Record<string, string> = useStyles();
     const popup = createRef();
+    const getValue = useGetFieldValue();
     return (
         <Popup className={classes.popup} ref={popup}>
             <Card className={classes.popupCard}>
@@ -88,64 +88,30 @@ export const PopupComponent: FunctionComponent<Props> = ({
                     {location && (
                         <>
                             <PopupItemComponent
-                                label={formatMessage(MESSAGES.name)}
-                                value={location.original.name}
-                            />
-                            <PopupItemComponent
-                                label={formatMessage(MESSAGES.id)}
-                                value={location.original.uuid}
-                            />
-                            <PopupItemComponent
-                                label={formatMessage(MESSAGES.lastVisit)}
-                                value={
-                                    <LastVisit
-                                        instances={
-                                            location?.original?.instances || []
-                                        }
-                                    />
-                                }
-                            />
-                            <PopupItemComponent
-                                label={formatMessage(MESSAGES.program)}
-                                value={
-                                    location.original.attributes?.file_content
-                                        ?.program
-                                }
-                            />
-                            <PopupItemComponent
                                 label="HC"
                                 value={
                                     <LinkToOrgUnit orgUnit={location.orgUnit} />
                                 }
                             />
                             <PopupItemComponent
-                                label={formatMessage(MESSAGES.registrationDate)}
-                                value={
-                                    <RegistrationDate
-                                        beneficiary={location?.original}
-                                    />
-                                }
+                                label={formatMessage(MESSAGES.type)}
+                                value={location.original.entity_type_name}
                             />
                             <PopupItemComponent
-                                label={formatMessage(
-                                    MESSAGES.vaccinationNumber,
-                                )}
-                                value={
-                                    <VaccinationNumber
-                                        beneficiary={location?.original}
-                                    />
-                                }
+                                label={formatMessage(MESSAGES.program)}
+                                value={location.original.program}
                             />
-                            <PopupItemComponent
-                                label={formatMessage(MESSAGES.age)}
-                                value={<Age beneficiary={location?.original} />}
-                            />
-                            <PopupItemComponent
-                                label={formatMessage(MESSAGES.gender)}
-                                value={
-                                    <Gender beneficiary={location?.original} />
-                                }
-                            />
+                            {extraColumns?.map(extraColumn => (
+                                <PopupItemComponent
+                                    key={extraColumn.name}
+                                    label={extraColumn.label}
+                                    value={getValue(
+                                        extraColumn.name,
+                                        location.original,
+                                        extraColumn.type,
+                                    )}
+                                />
+                            ))}
                             <Box className={classes.actionBox}>
                                 <Grid
                                     container

@@ -22,6 +22,7 @@ services:
       - ./README.md:/opt/app/README.md
       - ./tsconfig.json:/opt/app/tsconfig.json
       - ./babel-register.js:/opt/app/babel-register.js
+      - ./mypy.ini:/opt/app/mypy.ini
       # test data
       - ./testdata:/opt/app/testdata
       # jupyter notebooks

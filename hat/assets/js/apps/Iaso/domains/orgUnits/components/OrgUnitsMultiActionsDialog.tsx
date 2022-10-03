@@ -336,6 +336,9 @@ export const OrgUnitsMultiActionsDialog: FunctionComponent<Props> = ({
                                         <Typography variant="body2">
                                             {formatMessage(
                                                 MESSAGES.bulkChangeCount,
+                                                {
+                                                    count: `${selectedItems.length}`,
+                                                },
                                             )}
                                         </Typography>
                                     </Box>

@@ -2,7 +2,7 @@
 import moment from 'moment';
 import { UseQueryResult } from 'react-query';
 import { getRequest } from '../../../../libs/Api';
-import { useSnackQuery } from '../../../../libs/apiHooks';
+import { useSnackQuery, useSnackQueries } from '../../../../libs/apiHooks';
 import {
     InstanceLogDetail,
     InstanceLogsDetail,
@@ -11,6 +11,8 @@ import {
 } from '../../types/instance';
 import { DropdownOptions } from '../../../../types/utils';
 
+import MESSAGES from '../messages';
+
 const getInstanceLog = (
     instanceId: string | undefined,
 ): Promise<InstanceLogsDetail> => {
@@ -18,19 +20,6 @@ const getInstanceLog = (
         `/api/logs/?objectId=${instanceId}&order=-created_at&contentType=iaso.instance`,
     );
 };
-
-const getInstanceLogDetail = (
-    logId: string | undefined,
-): Promise<InstanceLogData> => {
-    return getRequest(`/api/logs/${logId}`);
-};
-
-const getVersion = (versionId, formId) => {
-    return getRequest(
-        `/api/formversions/?version_id=${versionId}&form_id=${formId}&fields=descriptor`,
-    );
-};
-
 export const useGetInstanceLogs = (
     instanceId: string | undefined,
 ): UseQueryResult<DropdownOptions<number>[], Error> => {
@@ -54,29 +43,39 @@ export const useGetInstanceLogs = (
     });
 };
 
-export const useGetInstanceLogDetail = (
+const getInstanceLogDetail = (
     logId: string | undefined,
-): UseQueryResult<Record<string, any> | undefined, Error> => {
-    const queryKey: any[] = ['instanceLogDetail', logId];
-    return useSnackQuery({
-        queryKey,
-        queryFn: () => getInstanceLogDetail(logId),
-        options: {
-            enabled: Boolean(logId),
-            select: data => {
-                if (data) {
-                    return data.new_value[0].fields;
-                }
-
-                return undefined;
+): Promise<InstanceLogData> => {
+    return getRequest(`/api/logs/${logId}/`);
+};
+export const useGetInstanceLogDetail = (
+    logIds: string[],
+): Array<UseQueryResult<InstanceLogData, unknown>> => {
+    // @ts-ignore => ignoring this, useQueies is working with unknown type as you can have multiple calls with multiple types
+    return useSnackQueries<InstanceLogData>(
+        logIds.map(logId => ({
+            queryKey: ['instanceLogDetail', logId],
+            queryFn: () => getInstanceLogDetail(logId),
+            snackErrorMsg: MESSAGES.fetchLogDetailError,
+            dispatchOnError: false,
+            options: {
+                enabled: Boolean(logId),
             },
-        },
-    });
+        })),
+    );
 };
 
-export const useGetFormDescriptor = (
+const getVersion = (
     versionId: string | undefined,
     formId: number | undefined,
+): Promise<Record<string, any>> => {
+    return getRequest(
+        `/api/formversions/?version_id=${versionId}&form_id=${formId}&fields=descriptor`,
+    );
+};
+export const useGetFormDescriptor = (
+    versionId?: string,
+    formId?: number,
 ): UseQueryResult<Record<string, any> | undefined, Error> => {
     const queryKey: any[] = ['instanceDescriptor', versionId];
     return useSnackQuery({
@@ -85,11 +84,8 @@ export const useGetFormDescriptor = (
         options: {
             enabled: Boolean(versionId),
             select: (data: FormDescriptor | undefined) => {
-                if (data) {
-                    return data.form_versions[0].descriptor;
-                }
-
-                return undefined;
+                if (!data) return data;
+                return data.form_versions[0].descriptor;
             },
         },
     });

@@ -48,6 +48,8 @@ class InputComponent extends Component {
             renderOption,
             className,
             helperText,
+            min,
+            max,
         } = this.props;
         const { isFocused, displayPassword } = this.state;
         const labelText =
@@ -99,6 +101,8 @@ class InputComponent extends Component {
                     // TODO remove inputValue if not needed for number
                     return (
                         <NumberInput
+                            min={min}
+                            max={max}
                             value={inputValue}
                             keyValue={keyValue}
                             label={labelText}
@@ -211,6 +215,8 @@ InputComponent.defaultProps = {
     renderOption: null,
     className: '',
     helperText: undefined,
+    min: undefined,
+    max: undefined,
 };
 InputComponent.propTypes = {
     type: PropTypes.string,
@@ -236,6 +242,8 @@ InputComponent.propTypes = {
     renderOption: PropTypes.oneOfType([PropTypes.object, PropTypes.func]),
     className: PropTypes.string,
     helperText: PropTypes.string,
+    min: PropTypes.number,
+    max: PropTypes.number,
 };
 
 const translated = injectIntl(InputComponent);

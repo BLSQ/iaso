@@ -12,6 +12,7 @@ class EntityAPITestCase(APITestCase):
     @classmethod
     def setUpTestData(cls):
         star_wars = m.Account.objects.create(name="Star Wars")
+        cls.star_wars = star_wars
 
         space_balls = m.Account.objects.create(name="Space Balls")
 
@@ -50,33 +51,6 @@ class EntityAPITestCase(APITestCase):
         cls.create_form_instance(
             form=cls.form_1, period="202003", org_unit=cls.jedi_council_corruscant, project=cls.project, uuid=uuid.uuid4
         )
-
-        # form_2_file_mock = mock.MagicMock(spec=File)
-        # form_2_file_mock.name = "test.xml"
-        # cls.form_2.form_versions.create(file=form_2_file_mock, version_id="2020022401")
-        # cls.form_2.org_unit_types.add(cls.jedi_council)
-        # cls.create_form_instance(form=cls.form_2, period="202001", org_unit=cls.jedi_council_corruscant)
-        # cls.form_2.save()
-        #
-        # # Instance saved without period
-        # cls.form_3.form_versions.create(file=form_2_file_mock, version_id="2020022401")
-        # cls.form_3.org_unit_types.add(cls.jedi_council)
-        # cls.create_form_instance(form=cls.form_3, org_unit=cls.jedi_council_corruscant)
-        # cls.form_3.save()
-        #
-        # # A deleted Instance
-        # cls.form_4.form_versions.create(file=form_2_file_mock, version_id="2020022402")
-        # cls.form_4.org_unit_types.add(cls.jedi_council)
-        # cls.create_form_instance(form=cls.form_4, period="2020Q1", org_unit=cls.jedi_council_corruscant, deleted=True)
-        # cls.form_4.save()
-        #
-        # cls.project.unit_types.add(cls.jedi_council)
-        # cls.project.forms.add(cls.form_1)
-        # cls.project.forms.add(cls.form_2)
-        # cls.project.forms.add(cls.form_3)
-        # cls.project.forms.add(cls.form_4)
-        # sw_source.projects.add(cls.project)
-        # cls.project.save()
 
     def test_create_single_entity(self):
         self.client.force_authenticate(self.yoda)
@@ -158,7 +132,7 @@ class EntityAPITestCase(APITestCase):
     def test_retrieve_entity(self):
         self.client.force_authenticate(self.yoda)
 
-        entity_type = EntityType.objects.create(name="Type 1", reference_form=self.form_1)
+        entity_type = EntityType.objects.create(name="Type 1", reference_form=self.form_1, account=self.star_wars)
 
         instance = Instance.objects.create(
             org_unit=self.jedi_council_corruscant, form=self.form_1, period="202002", uuid=uuid.uuid4()
@@ -186,6 +160,53 @@ class EntityAPITestCase(APITestCase):
 
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(response.json()), 2)
+
+    def test_retrieve_entity_without_attributes(self):
+        self.client.force_authenticate(self.yoda)
+
+        entity_type = EntityType.objects.create(name="Type 1", reference_form=self.form_1, account=self.star_wars)
+
+        instance = Instance.objects.create(
+            org_unit=self.jedi_council_corruscant, form=self.form_1, period="202002", uuid=uuid.uuid4()
+        )
+
+        second_instance = Instance.objects.create(
+            org_unit=self.jedi_council_corruscant, form=self.form_1, period="202002", uuid=uuid.uuid4()
+        )
+
+        payload = {
+            "name": "New Client",
+            "entity_type": entity_type.pk,
+            "attributes": instance.uuid,
+            "account": self.yoda.iaso_profile.account.pk,
+        }, {
+            "name": "New Client 2",
+            "entity_type": entity_type.pk,
+            "attributes": second_instance.uuid,
+            "account": self.yoda.iaso_profile.account.pk,
+        }
+
+        self.client.post("/api/entity/bulk_create/", data=payload, format="json")
+
+        entity = Entity.objects.create(
+            name="New Client 3", entity_type=entity_type, account=self.yoda.iaso_profile.account
+        )
+
+        entity.refresh_from_db()
+
+        response = self.client.get("/api/entity/", format="json")
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(len(response.json()["result"]), 3)
+
+        response = self.client.get(f"/api/entity/?entity_type_id={entity_type.pk}", format="json")
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(len(response.json()["result"]), 3)
+
+        response = self.client.get(f"/api/entity/{entity.pk}/")
+
+        self.assertEqual(response.status_code, 200)
 
     def test_get_entity_by_id(self):
         self.client.force_authenticate(self.yoda)
@@ -254,7 +275,7 @@ class EntityAPITestCase(APITestCase):
     def test_retrieve_only_non_deleted_entity(self):
         self.client.force_authenticate(self.yoda)
 
-        entity_type = EntityType.objects.create(name="Type 1", reference_form=self.form_1)
+        entity_type = EntityType.objects.create(name="Type 1", reference_form=self.form_1, account=self.star_wars)
 
         instance = Instance.objects.create(
             org_unit=self.jedi_council_corruscant, form=self.form_1, period="202002", uuid=uuid.uuid4()
@@ -302,7 +323,7 @@ class EntityAPITestCase(APITestCase):
     def test_retrieve_entity_only_same_account(self):
         self.client.force_authenticate(self.yoda)
 
-        entity_type = EntityType.objects.create(name="Type 1", reference_form=self.form_1)
+        entity_type = EntityType.objects.create(name="Type 1", reference_form=self.form_1, account=self.star_wars)
 
         instance = Instance.objects.create(
             org_unit=self.jedi_council_corruscant,
@@ -381,12 +402,12 @@ class EntityAPITestCase(APITestCase):
         self.assertEquals(response.get("Content-Disposition"), "attachment; filename=NEW CLIENT_ENTITY.xlsx")
 
         # export specific entity type as xlsx
-        response = self.client.get(f"/api/entity/?entity_type_id={entity_type.pk}&xlsx=true/")
+        response = self.client.get(f"/api/entity/?entity_type_ids={entity_type.pk}&xlsx=true/")
         self.assertEqual(response.status_code, 200)
         self.assertEquals(response.get("Content-Disposition"), "attachment; filename=NEW CLIENT_ENTITY.xlsx")
 
         # export specific entity type as csv
-        response = self.client.get(f"/api/entity/?entity_type_id={entity_type.pk}&csv=true/")
+        response = self.client.get(f"/api/entity/?entity_type_ids={entity_type.pk}&csv=true/")
         self.assertEqual(response.status_code, 200)
         self.assertEquals(response.get("Content-Disposition"), "attachment; filename=NEW CLIENT_ENTITY.csv")
 

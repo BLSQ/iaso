@@ -1,4 +1,4 @@
-from bs4 import BeautifulSoup as Soup
+from bs4 import BeautifulSoup as Soup  # type: ignore
 from django.http import HttpResponse, JsonResponse, HttpResponseRedirect
 from django.shortcuts import get_object_or_404
 from rest_framework.views import APIView
@@ -227,7 +227,7 @@ def _build_url_for_edition(request, instance, user_id=None):
 
 
 @api_view(["GET"])
-@permission_classes([HasPermission("menupermissions.iaso_update_submission")])
+@permission_classes([HasPermission("menupermissions.iaso_update_submission")])  # type: ignore
 def enketo_edit_url(request, instance_uuid):
     instance = Instance.objects.filter(uuid=instance_uuid, project__account=request.user.iaso_profile.account).first()
 

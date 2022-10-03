@@ -17,147 +17,128 @@ import {
     DateTimeCellRfc,
 } from '../../../components/Cells/DateTimeCell';
 
-import { Gender } from './components/fieldsValue/Gender';
-import { Age } from './components/fieldsValue/Age';
-import { LastVisit } from './components/fieldsValue/LastVisit';
-import { VaccinationNumber } from './components/fieldsValue/VaccinationNumber';
-import { RegistrationDate } from './components/fieldsValue/RegistrationDate';
-
-// import DeleteDialog from '../../../components/dialogs/DeleteDialogComponent';
-
 import { IntlFormatMessage } from '../../../types/intl';
 import MESSAGES from '../messages';
 
 import { baseUrls } from '../../../constants/urls';
 
 import { Column } from '../../../types/table';
+import { ExtraColumn } from './types/fields';
 import getDisplayName from '../../../utils/usersUtils';
+import { useGetFieldValue } from './hooks/useGetFieldValue';
 
 export const baseUrl = baseUrls.entities;
 
-// TODO: ADD program, vaccine number, gender columns
-export const useColumns = (): Array<Column> => {
+export const defaultSorted = [{ id: 'last_saved_instance', desc: false }];
+
+export const useStaticColumns = (): Array<Column> => {
+    const getValue = useGetFieldValue();
     const { formatMessage }: { formatMessage: IntlFormatMessage } =
         useSafeIntl();
-    return useMemo(
-        () => [
-            {
-                Header: formatMessage(MESSAGES.name),
-                id: 'name',
-                accessor: 'name',
+    return [
+        {
+            Header: formatMessage(MESSAGES.id),
+            id: 'uuid',
+            accessor: 'uuid',
+        },
+        {
+            Header: formatMessage(MESSAGES.lastVisit),
+            id: 'last_saved_instance',
+            accessor: 'last_saved_instance',
+            Cell: settings => {
+                return (
+                    <>
+                        {getValue(
+                            'last_saved_instance',
+                            settings.row.original,
+                            'date',
+                        )}
+                    </>
+                );
+            },
+        },
+        {
+            Header: formatMessage(MESSAGES.program),
+            id: 'program',
+            accessor: 'program',
+            Cell: settings => {
+                return <>{settings.row.original?.program ?? '--'}</>;
+            },
+        },
+        {
+            Header: 'HC',
+            id: 'attributes__org_unit__name',
+            accessor: 'attributes__org_unit__name',
+            Cell: settings => {
+                return settings.row.original?.org_unit ? (
+                    <LinkToOrgUnit orgUnit={settings.row.original?.org_unit} />
+                ) : (
+                    <>--</>
+                );
+            },
+        },
+    ];
+};
+
+export const useColumns = (
+    entityTypeIds: string[],
+    extraColumns: Array<ExtraColumn>,
+): Array<Column> => {
+    const { formatMessage }: { formatMessage: IntlFormatMessage } =
+        useSafeIntl();
+    const staticColumns = useStaticColumns();
+    const getValue = useGetFieldValue();
+    return useMemo(() => {
+        const columns: Array<Column> = staticColumns;
+        if (entityTypeIds.length !== 1) {
+            columns.unshift({
+                Header: formatMessage(MESSAGES.type),
+                id: 'entity_type',
+                accessor: 'entity_type',
+            });
+        }
+        extraColumns.forEach(extraColumn => {
+            columns.push({
+                Header: extraColumn.label,
+                id: extraColumn.name,
+                accessor: extraColumn.name,
                 Cell: settings => {
                     return (
                         <>
-                            {settings.row.original?.attributes?.file_content
-                                ?.name ?? '--'}
+                            {getValue(
+                                extraColumn.name,
+                                settings.row.original,
+                                extraColumn.type,
+                            )}
                         </>
                     );
                 },
-            },
-            {
-                Header: formatMessage(MESSAGES.id),
-                id: 'uuid',
-                accessor: 'uuid',
-            },
-            {
-                Header: formatMessage(MESSAGES.lastVisit),
-                id: 'instances__created_at',
-                // TODO: MAKE IT SORTABLE
-                sortable: false,
-                accessor: 'instances__created_at',
-                Cell: (settings): ReactElement => (
-                    <LastVisit instances={settings.row.original.instances} />
-                ),
-            },
-            {
-                Header: formatMessage(MESSAGES.program),
-                id: 'attributes__program',
-                accessor: 'attributes__program',
-                Cell: settings => {
-                    return (
-                        <>
-                            {settings.row.original?.attributes?.file_content
-                                ?.program ?? '--'}
-                        </>
-                    );
-                },
-            },
-            {
-                Header: 'HC',
-                id: 'attributes__org_unit__name',
-                accessor: 'attributes__org_unit__name',
-                Cell: settings => {
-                    return settings.row.original?.attributes?.org_unit ? (
-                        <LinkToOrgUnit
-                            orgUnit={
-                                settings.row.original?.attributes?.org_unit
-                            }
-                        />
-                    ) : (
-                        <>--</>
-                    );
-                },
-            },
-            {
-                Header: formatMessage(MESSAGES.registrationDate),
-                accessor: 'attributes__file_content_end',
-                Cell: settings => (
-                    <RegistrationDate beneficiary={settings.row.original} />
-                ),
-            },
-            {
-                Header: formatMessage(MESSAGES.vaccinationNumber),
-                sortable: false,
-                accessor: 'attributes__file_content__vaccination_number',
-                id: 'attributes__file_content__vaccination_number',
-                Cell: settings => (
-                    <VaccinationNumber beneficiary={settings.row.original} />
-                ),
-            },
-            {
-                Header: formatMessage(MESSAGES.age),
-                // TODO: MAKE IT SORTABLE
-                sortable: false,
-                accessor: 'attributes__file_content__birth_date',
-                id: 'attributes__file_content__birth_date',
-                Cell: settings => <Age beneficiary={settings.row.original} />,
-            },
-            {
-                Header: formatMessage(MESSAGES.gender),
-                // TODO: MAKE IT SORTABLE
-                sortable: false,
-                accessor: 'attributes__file_content__gender',
-                id: 'attributes__file_content__gender',
-                Cell: settings => (
-                    <Gender beneficiary={settings.row.original} />
-                ),
-            },
-            {
-                Header: formatMessage(MESSAGES.actions),
-                accessor: 'actions',
-                resizable: false,
-                sortable: false,
-                Cell: (settings): ReactElement => (
-                    // TODO: limit to user permissions
-                    <section>
-                        <IconButtonComponent
-                            url={`/${baseUrls.entityDetails}/entityId/${settings.row.original.id}`}
-                            icon="remove-red-eye"
-                            tooltipMessage={MESSAGES.see}
-                        />
-                        {/* <DeleteDialog
-                        keyName="entity"
-                        disabled={settings.row.original.instances_count > 0}
-                        titleMessage={MESSAGES.deleteTitle}
-                        message={MESSAGES.deleteText}
-                        onConfirm={() => deleteEntity(settings.row.original)}
-                    /> */}
-                    </section>
-                ),
-            },
-        ],
-        [formatMessage],
-    );
+            });
+        });
+        columns.push({
+            Header: formatMessage(MESSAGES.actions),
+            accessor: 'actions',
+            resizable: false,
+            sortable: false,
+            Cell: (settings): ReactElement => (
+                // TODO: limit to user permissions
+                <>
+                    <IconButtonComponent
+                        url={`/${baseUrls.entityDetails}/entityId/${settings.row.original.id}`}
+                        icon="remove-red-eye"
+                        tooltipMessage={MESSAGES.see}
+                    />
+                </>
+            ),
+        });
+        return columns;
+    }, [
+        staticColumns,
+        entityTypeIds.length,
+        extraColumns,
+        formatMessage,
+        getValue,
+    ]);
 };
 
 const generateColumnsFromFieldsList = (
@@ -226,8 +207,8 @@ export const useBeneficiariesDetailsColumns = (
                 // TODO make sortable
                 // TODO get correct key when implemented on backend
                 sortable: false,
-                id: 'last_sync_at',
-                accessor: 'last_sync_at',
+                id: 'updated_at',
+                accessor: 'updated_at',
                 Cell: DateTimeCell,
             },
             {

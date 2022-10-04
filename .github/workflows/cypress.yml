@@ -84,7 +84,7 @@ jobs:
           run: |
             ./scripts/wait_for_dbs.sh
             ./manage.py migrate --noinput
-            gunicorn hat.wsgi --bind=0.0.0.0:8081
+            gunicorn hat.wsgi --bind=0.0.0.0:8081 --daemon
         env:
           TEST_PROD: true
           IASO_ENVIRONMENT: development

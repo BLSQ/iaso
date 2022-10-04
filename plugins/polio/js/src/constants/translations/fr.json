@@ -197,6 +197,7 @@
     "iaso.polio.label.estimatedDateOfArrival": "Date d'arrivée estimée",
     "iaso.polio.label.event": "Action",
     "iaso.polio.label.eventType": "Type",
+    "iaso.polio.label.exportToExcel": "Exporter en XLSX",
     "iaso.polio.label.exportToPdf": "Exporter en pdf",
     "iaso.polio.label.failed": "Echec",
     "iaso.polio.label.farm": "À la ferme",

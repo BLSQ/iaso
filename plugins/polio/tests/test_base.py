@@ -334,6 +334,12 @@ class PolioAPITestCase(APITestCase):
         restored_campaign = Campaign.objects.get(id=campaign.id)
         self.assertIsNone(restored_campaign.deleted_at)
 
+    def test_create_calendar_xlsx_sheet(self):
+        self.create_multiple_campaigns(10)
+        response = self.client.get("/api/polio/campaigns/create_calendar_xlsx_sheet/")
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.get("Content-Disposition"), "attachment; filename=calendar.xlsx")
+
     def test_handle_restore_active_campaign(self):
         self.create_multiple_campaigns(1)
         campaign = Campaign.objects.get()

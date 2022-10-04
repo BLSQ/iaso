@@ -129,9 +129,13 @@ class Round(models.Model):
     class Meta:
         ordering = ["number", "started_at"]
 
+    # With the current situation/UI, all rounds must have a start date. However, there might be legacy campaigns/rounds
+    # floating around in production, and therefore consumer code must assume that this field might be NULL
     started_at = models.DateField(null=True, blank=True)
     number = models.IntegerField(null=True, blank=True)
     campaign = models.ForeignKey("Campaign", related_name="rounds", on_delete=models.PROTECT, null=True)
+    # With the current situation/UI, all rounds must have an end date. However, there might be legacy campaigns/rounds
+    # floating around in production, and therefore consumer code must assume that this field might be NULL
     ended_at = models.DateField(null=True, blank=True)
     mop_up_started_at = models.DateField(null=True, blank=True)
     mop_up_ended_at = models.DateField(null=True, blank=True)

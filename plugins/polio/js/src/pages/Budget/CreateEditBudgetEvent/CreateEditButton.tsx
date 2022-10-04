@@ -60,7 +60,7 @@ type CreateEditButtonProps = {
     onClick: () => void;
 };
 
-export const CreatEditButton: FunctionComponent<CreateEditButtonProps> = ({
+export const CreateEditButton: FunctionComponent<CreateEditButtonProps> = ({
     type = 'create',
     isMobileLayout = false,
     color = 'action',

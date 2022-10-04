@@ -35,7 +35,7 @@ import {
     useTranslatedErrors,
     useApiErrorValidation,
 } from '../../../../../../../hat/assets/js/apps/Iaso/libs/validation';
-import { CreatEditButton } from './CreateEditButton';
+import { CreateEditButton } from './CreateEditButton';
 
 type Props = {
     campaignId: string;
@@ -339,6 +339,6 @@ const CreateEditBudgetEvent: FunctionComponent<Props> = ({
     );
 };
 
-const modalWithButton = makeFullModal(CreateEditBudgetEvent, CreatEditButton);
+const modalWithButton = makeFullModal(CreateEditBudgetEvent, CreateEditButton);
 
 export { modalWithButton as CreateEditBudgetEvent };

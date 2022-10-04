@@ -77,7 +77,10 @@ jobs:
         uses: addnab/docker-run-action@v3
         with:
           options: -p 0.0.0.0:8081:8081/tcp -e TEST_PROD=true -e IASO_ENVIRONMENT=development -e RDS_DB_NAME=github_actions -e SECRET_KEY=secret -e DEBUG=true -e DJANGO_SETTINGS_MODULE=hat.settings -e RDS_PASSWORD=postgres -e RDS_HOSTNAME=postgres -e RDS_PORT=${{ job.services.postgres.ports[5432] }} -e RDS_USERNAME=postgres -e CACHE=false -e DEV_SERVER=true -e PLUGINS=polio
-          image: blsq/iaso:latest
+          image: blsq/iaso
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+          registry: ${{ env.REGISTRY }}
           run: |
             ./scripts/wait_for_dbs.sh
             ./manage.py migrate --noinput

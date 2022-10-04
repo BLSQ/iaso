@@ -246,24 +246,6 @@ class CampaignViewSet(ModelViewSet):
             return today.year
 
     @staticmethod
-    def get_order_by(order_by):
-        field = None
-        start_with = order_by.startswith("-")
-        if "first_round_started_at" in order_by:
-            field = "campaign_round_one__started_at"
-        elif "obr_name" in order_by:
-            field = "campaign__obr_name"
-        elif "country__name" in order_by:
-            field = "campaign__country__name"
-
-        if start_with and field != "campaign_round_one__started_at":
-            field = "-" + field
-        elif not start_with and field == "campaign_round_one__started_at":
-            field = "-" + field
-
-        return field
-
-    @staticmethod
     def get_calendar_data(self, year, params):
         countries = params.get("countries") if params.get("countries") is not None else None
         campaign_groups = params.get("campaignGroups") if params.get("campaignGroups") is not None else None
@@ -283,10 +265,7 @@ class CampaignViewSet(ModelViewSet):
             rounds = rounds.filter(campaign__is_preventive=False).filter(campaign__is_test=False)
         if search:
             rounds = rounds.filter(Q(campaign__obr_name__icontains=search) | Q(campaign__epid__icontains=search))
-        if order_by is None:
-            rounds = rounds.order_by("-campaign_round_one__started_at")
-        else:
-            rounds = rounds.order_by(self.get_order_by(order_by))
+
         return self.loop_on_rounds(self, rounds)
 
     @staticmethod
@@ -294,23 +273,24 @@ class CampaignViewSet(ModelViewSet):
         data_row = []
         for round in rounds:
             if round.campaign is not None:
-                if not any(d["country_id"] == round.campaign.country.id for d in data_row):
-                    row = {"country_id": round.campaign.country.id, "country_name": round.campaign.country.name}
-                    month = round.started_at.month
-                    row["rounds"] = {}
-                    row["rounds"][str(month)] = []
-                    row["rounds"][str(month)].append(self.get_round(round))
-                    data_row.append(row)
-                else:
-                    row = [sub for sub in data_row if sub["country_id"] == round.campaign.country.id][0]
-                    row_index = data_row.index(row)
-                    if row is not None:
+                if round.campaign.country is not None:
+                    if not any(d["country_id"] == round.campaign.country.id for d in data_row):
+                        row = {"country_id": round.campaign.country.id, "country_name": round.campaign.country.name}
                         month = round.started_at.month
-                        if str(month) in data_row[row_index]["rounds"]:
-                            data_row[row_index]["rounds"][str(month)].append(self.get_round(round))
-                        else:
-                            data_row[row_index]["rounds"][str(month)] = []
-                            data_row[row_index]["rounds"][str(month)].append(self.get_round(round))
+                        row["rounds"] = {}
+                        row["rounds"][str(month)] = []
+                        row["rounds"][str(month)].append(self.get_round(round))
+                        data_row.append(row)
+                    else:
+                        row = [sub for sub in data_row if sub["country_id"] == round.campaign.country.id][0]
+                        row_index = data_row.index(row)
+                        if row is not None:
+                            month = round.started_at.month
+                            if str(month) in data_row[row_index]["rounds"]:
+                                data_row[row_index]["rounds"][str(month)].append(self.get_round(round))
+                            else:
+                                data_row[row_index]["rounds"][str(month)] = []
+                                data_row[row_index]["rounds"][str(month)].append(self.get_round(round))
         return data_row
 
     @staticmethod

@@ -1,5 +1,3 @@
-from ctypes import alignment
-from curses import start_color
 from openpyxl import Workbook
 from openpyxl.styles import Alignment, Font, PatternFill
 from openpyxl.styles.borders import Border, Side
@@ -28,7 +26,6 @@ def generate_xlsx_campaigns_calendar(filename, datas):
         sheet = cell_dimension_pattern_fill(sheet, cell_country, 35.00, 50.75, True)
         # loop over rounds for each month
         for month in range(1, 13):
-            cell = None
             if str(month) in datas[row - 1]["rounds"].keys():
                 cell = sheet.cell(
                     column=month + 1, row=row + 1, value=get_cell_data(datas[row - 1]["rounds"][str(month)])
@@ -60,8 +57,8 @@ def format_date(date, with_year):
     date_format = "%d %B"
     if with_year:
         date_format += " %Y"
-    formated_date = dt.datetime.strptime(date, "%Y-%m-%d")
-    return formated_date.strftime(date_format)
+    formatted_date = dt.datetime.strptime(date, "%Y-%m-%d")
+    return formatted_date.strftime(date_format)
 
 
 def cell_dimension_pattern_fill(sheet, cell, width, height, pattern_fill=False):

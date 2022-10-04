@@ -843,17 +843,20 @@ class Instance(models.Model):
     STATUS_READY = "READY"
     STATUS_DUPLICATED = "DUPLICATED"
     STATUS_EXPORTED = "EXPORTED"
-
     ALWAYS_ALLOWED_PATHS_XML = set(
         ["formhub", "formhub/uuid", "meta", "meta/instanceID", "meta/editUserID", "meta/deprecatedID"]
     )
 
-    created_at = models.DateTimeField(auto_now_add=True)
+    # Previously created_at and update_at where filled by the mobile, now they have been replaced by source_created_at
+    # and update_created_at. The created_at and update_at are from the server POV, like on the other models
+    created_at = models.DateTimeField(auto_now_add=True, editable=False)
+    source_created_at = models.DateTimeField(null=True, blank=True, help_text="Creation time on the device")
     created_by = models.ForeignKey(User, on_delete=models.PROTECT, blank=True, null=True)
     last_modified_by = models.ForeignKey(
         User, on_delete=models.PROTECT, blank=True, null=True, related_name="last_modified_by"
     )
-    updated_at = models.DateTimeField(auto_now=True)
+    updated_at = models.DateTimeField(auto_now=True, editable=False)
+    source_updated_at = models.DateTimeField(null=True, blank=True, help_text="Update time on the device")
     uuid = models.TextField(null=True, blank=True)
     export_id = models.TextField(null=True, blank=True, default=generate_id_for_dhis_2)
     correlation_id = models.BigIntegerField(null=True, blank=True)

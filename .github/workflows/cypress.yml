@@ -24,7 +24,7 @@ jobs:
         uses: docker/build-push-action@v2
         with:
           push: true
-          tags: ${{ env.REGISTRY }}/blsq/iaso:${{github.sha}}
+          tags: ghcr.io/blsq/iaso:${{github.sha}}
           target: dev
           file: docker/bundle/Dockerfile
           cache-from: type=registry,ref=ghcr.io/blsq/iaso:buildcache
@@ -48,7 +48,7 @@ jobs:
         # needed because the postgres container does not provide a health check
         options: --health-cmd pg_isready --health-interval 10s --health-timeout 5s --health-retries 5
       iaso:
-        image: ${{ env.REGISTRY }}/blsq/iaso:${{github.sha}}
+        image: ghcr.io/blsq/iaso:${{ github.sha }}
         env:
           TEST_PROD: true
           IASO_ENVIRONMENT: development

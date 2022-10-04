@@ -8,7 +8,7 @@ import InputComponent from '../../../../../../hat/assets/js/apps/Iaso/components
 import { useFilterState } from '../../../../../../hat/assets/js/apps/Iaso/hooks/useFilterState';
 import MESSAGES from '../../constants/messages';
 import { FilterButton } from '../../../../../../hat/assets/js/apps/Iaso/components/FilterButton';
-import { useGetTeamsDropDown } from '../../hooks/useGetTeams';
+// import { useGetTeamsDropDown } from '../../hooks/useGetTeams';
 import { useAllEventsOption } from './CreateEditBudgetEvent/utils';
 
 type Props = {
@@ -35,14 +35,18 @@ export const BudgetDetailsFilters: FunctionComponent<Props> = ({
             params,
             saveSearchInHistory: false,
         });
-    const { data: teams, isFetching } = useGetTeamsDropDown();
+    // const { data: teams, isFetching } = useGetTeamsDropDown();
     const eventList = useAllEventsOption();
     const theme = useTheme();
     const isXSLayout = useMediaQuery(theme.breakpoints.down('xs'));
     return (
         <Box mb={4}>
-            <Grid container spacing={isXSLayout ? 0 : 2}>
-                <Grid item xs={12} sm={6} md={3}>
+            <Grid
+                container
+                spacing={isXSLayout ? 0 : 2}
+                justifyContent="flex-end"
+            >
+                {/* <Grid item xs={12} sm={6} md={3}>
                     <InputComponent
                         keyValue="senderTeam"
                         onChange={handleChange}
@@ -65,7 +69,7 @@ export const BudgetDetailsFilters: FunctionComponent<Props> = ({
                         label={MESSAGES.sentToTeam}
                         loading={isFetching}
                     />
-                </Grid>
+                </Grid> */}
                 <Grid item xs={12} sm={6} md={3}>
                     <InputComponent
                         keyValue="type"

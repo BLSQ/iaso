@@ -52,12 +52,12 @@ export const extractFileName = (fileUrl: string): string => {
     return removedSlashes[removedSlashes.length - 1];
 };
 
-export const makeFileLinks = (files: { file: string }[]): React.ReactNode => {
+export const makeFileLinks = (files: string[]): React.ReactNode => {
     return files.map((file, index) => {
-        const fileName = extractFileName(file.file) || file.file;
+        const fileName = extractFileName(file) || file;
         return (
             // eslint-disable-next-line react/no-array-index-key
-            <Link key={`${fileName}_${index}`} download href={file.file}>
+            <Link key={`${fileName}_${index}`} download href={file}>
                 {/* @ts-ignore */}
                 <Typography style={{ wordWrap: 'anywhere' }}>
                     {fileName}
@@ -67,10 +67,10 @@ export const makeFileLinks = (files: { file: string }[]): React.ReactNode => {
     });
 };
 
-export const makeLinks = (links: Nullable<string>): Nullable<any[]> => {
+export const makeLinks = (links: Nullable<string[]>): Nullable<any[]> => {
     if (!links) return null;
-    const linksArray = links.split(',');
-    return linksArray.map((link, index) => {
+    // const linksArray = links.split(',');
+    return links.map((link, index) => {
         const trimmedLink = link.trim();
         return (
             // eslint-disable-next-line react/no-array-index-key

@@ -27,24 +27,6 @@ const styles = theme => ({
 // @ts-ignore
 const useStyles = makeStyles(styles);
 
-export const sortBudgetEventByUpdate = budgetEvents => {
-    if (!budgetEvents) return [];
-    const sorted = budgetEvents.sort(
-        (
-            a: { created_at: moment.MomentInput },
-            b: { created_at: moment.MomentInput },
-        ) => {
-            return moment(a.created_at).isSameOrBefore(moment(b.created_at));
-        },
-    );
-    return sorted;
-};
-
-export const findBudgetStatus = budgetEvents => {
-    const orderedEvents = sortBudgetEventByUpdate([...(budgetEvents ?? [])]);
-    return orderedEvents[0]?.status ?? 'noBudgetSubmitted';
-};
-
 export const BudgetStatus: FunctionComponent<Props> = ({ budgetStatus }) => {
     const { formatMessage } = useSafeIntl();
     const classes = useStyles();
@@ -57,13 +39,17 @@ export const BudgetStatus: FunctionComponent<Props> = ({ budgetStatus }) => {
             >
                 {`${formatMessage(MESSAGES.status)}:`}
             </Typography>
-            <Typography
-                variant="h5"
-                className={`${classes.title} ${classes[budgetStatus]}`}
-                color="primary"
-            >
-                {`${formatMessage(MESSAGES[budgetStatus])}`}
-            </Typography>
+            {budgetStatus && (
+                <Typography
+                    variant="h5"
+                    className={`${classes.title}`}
+                    color="primary"
+                >
+                    {/* TODO get color based on key, delete unused messages */}
+                    {/* {`${formatMessage(MESSAGES[budgetStatus])}`} */}
+                    {budgetStatus}
+                </Typography>
+            )}
         </>
     );
 };

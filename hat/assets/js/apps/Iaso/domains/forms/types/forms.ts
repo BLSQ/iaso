@@ -55,6 +55,12 @@ export type PossibleField = {
     name: string;
     type: FieldType;
 };
+export type Children = {
+    label: string;
+    name: string;
+    type: FieldType;
+    children: Children[];
+};
 
 export type Form = {
     id: number;
@@ -79,4 +85,14 @@ export type Form = {
     derived: boolean;
     label_keys: string[];
     possible_fields: PossibleField[];
+};
+
+export type FormDescriptor = {
+    default_language: string;
+    id_string: string;
+    name: string;
+    title: string;
+    version: string;
+    type: string;
+    children: Children[];
 };

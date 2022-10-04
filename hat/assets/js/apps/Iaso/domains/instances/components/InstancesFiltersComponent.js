@@ -22,6 +22,7 @@ import { Period } from '../../periods/models';
 import { INSTANCE_STATUSES } from '../constants';
 import { setInstancesFilterUpdated } from '../actions';
 
+import { useGetFormDescriptor } from '../compare/hooks/useGetInstanceLogs.ts';
 import { useGetForms, useInstancesFiltersData } from '../hooks';
 import { getInstancesFilterValues, useFormState } from '../../../hooks/form';
 import { useGetQueryBuildersFields } from '../hooks/useGetQueryBuildersFields.ts';
@@ -69,12 +70,25 @@ const InstancesFiltersComponent = ({
         state => state.instances.isInstancesFilterUpdated,
     );
     const { data, isFetching: fetchingForms } = useGetForms();
-    const fields = useGetQueryBuildersFields(
+    const formsList = useMemo(() => (data && data.forms) || [], [data]);
+
+    const formId =
         formState.formIds.value?.split(',').length === 1
-            ? formState.formIds.value.split(',')
-            : undefined,
+            ? formState.formIds.value.split(',')[0]
+            : undefined;
+    const currentForm = useMemo(() => {
+        if (formId) {
+            return formsList.find(form => parseInt(formId, 10) === form.id);
+        }
+        return undefined;
+    }, [formId, formsList]);
+
+    const { data: formDescriptor } = useGetFormDescriptor(
+        currentForm?.latest_form_version?.version_id, // by default using last form version
+        currentForm?.id,
     );
-    const formsList = (data && data.forms) || [];
+    const fields = useGetQueryBuildersFields(formId, formDescriptor);
+
     useInstancesFiltersData(formIds, setFetchingOrgUnitTypes);
     const handleSearch = useCallback(() => {
         if (isInstancesFilterUpdated) {
@@ -131,6 +145,7 @@ const InstancesFiltersComponent = ({
         },
         [dispatch, setFormState],
     );
+
     const startPeriodError = useMemo(() => {
         if (formState.startPeriod?.value && formState.periodType?.value) {
             return !isValidPeriod(

@@ -203,35 +203,11 @@ const routes = [
             ...paginationPathParams,
             {
                 isRequired: false,
-                key: 'campaign',
-            },
-            {
-                isRequired: false,
-                key: 'country',
-            },
-            {
-                isRequired: false,
                 key: 'search',
             },
             {
                 isRequired: false,
-                key: 'showOnlyDeleted',
-            },
-            {
-                isRequired: false,
-                key: 'campaignType',
-            },
-            {
-                isRequired: false,
-                key: 'campaignGroups',
-            },
-            {
-                isRequired: false,
-                key: 'show_test',
-            },
-            {
-                isRequired: false,
-                key: 'last_budget_event__status',
+                key: 'current_state__key',
             },
             {
                 isRequired: false,
@@ -249,10 +225,7 @@ const routes = [
         permissions: ['iaso_polio_budget'],
         params: [
             ...paginationPathParams,
-            {
-                isRequired: false,
-                key: 'campaignId',
-            },
+
             {
                 isRequired: false,
                 key: 'campaignName',
@@ -269,14 +242,14 @@ const routes = [
                 isRequired: false,
                 key: 'action',
             },
-            {
-                isRequired: false,
-                key: 'senderTeam',
-            },
-            {
-                isRequired: false,
-                key: 'recipient',
-            },
+            // {
+            //     isRequired: false,
+            //     key: 'senderTeam',
+            // },
+            // {
+            //     isRequired: false,
+            //     key: 'recipient',
+            // },
             {
                 isRequired: false,
                 key: 'type',

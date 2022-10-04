@@ -224,6 +224,8 @@ const InstancesFiltersComponent = ({
                             iconProps={{
                                 label: MESSAGES.queryBuilder,
                                 value: formState.fieldsSearch.value,
+                                onClear: () =>
+                                    handleFormChange('fieldsSearch', undefined),
                             }}
                         />
                     )}

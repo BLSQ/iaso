@@ -4,7 +4,10 @@ import React from 'react';
 import { Link } from 'react-router';
 import { Profile } from '../../../../../../hat/assets/js/apps/Iaso/utils/usersUtils';
 import { fileExtensions } from '../../constants/fileExtensions';
-import { Nullable } from '../../../../../../hat/assets/js/apps/Iaso/types/utils';
+import {
+    Nullable,
+    Optional,
+} from '../../../../../../hat/assets/js/apps/Iaso/types/utils';
 import { Team } from '../../../../../../hat/assets/js/apps/Iaso/domains/teams/types/team';
 
 export const findApprovalTeams = (teams: any[]): number[] => {
@@ -67,7 +70,9 @@ export const makeFileLinks = (files: string[]): React.ReactNode => {
     });
 };
 
-export const makeLinks = (links: Nullable<string[]>): Nullable<any[]> => {
+export const makeLinks = (
+    links: Optional<Nullable<string[]>>,
+): Nullable<any[]> => {
     if (!links) return null;
     // const linksArray = links.split(',');
     return links.map((link, index) => {

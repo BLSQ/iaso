@@ -1,6 +1,6 @@
 /* eslint-disable react/require-default-props */
 /* eslint-disable react/no-unused-prop-types */
-import React, { FunctionComponent, useMemo, useState } from 'react';
+import React, { FunctionComponent } from 'react';
 import { useFormik, FormikProvider } from 'formik';
 import { isEqual } from 'lodash';
 import {
@@ -17,7 +17,6 @@ import { Box, Divider, Typography } from '@material-ui/core';
 import MESSAGES from '../../../constants/messages';
 import InputComponent from '../../../../../../../hat/assets/js/apps/Iaso/components/forms/InputComponent';
 import { useCurrentUser } from '../../../../../../../hat/assets/js/apps/Iaso/utils/usersUtils';
-import { commaSeparatedIdsToArray } from '../../../../../../../hat/assets/js/apps/Iaso/utils/forms';
 
 import { useBudgetEventValidation } from '../hooks/validation';
 import { useUserHasTeam } from '../../../hooks/useGetTeams';

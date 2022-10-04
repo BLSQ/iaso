@@ -25,26 +25,15 @@ import TopBar from '../../../../../../hat/assets/js/apps/Iaso/components/nav/Top
 import MESSAGES from '../../constants/messages';
 import { useStyles } from '../../styles/theme';
 import { TableWithDeepLink } from '../../../../../../hat/assets/js/apps/Iaso/components/tables/TableWithDeepLink';
-import {
-    useGetAllBudgetDetails,
-    // useGetBudgetDetails,
-} from '../../hooks/useGetBudgetDetails';
 import { BUDGET, BUDGET_DETAILS } from '../../constants/routes';
 import { useTableState } from './hooks/config';
-import { useGetProfiles } from '../../components/CountryNotificationsConfig/requests';
 import { GraphTitle } from '../../components/LQAS-IM/GraphTitle';
-import { BudgetStatus, findBudgetStatus } from './BudgetStatus';
-import { CreateEditBudgetEvent } from './CreateEditBudgetEvent/CreateEditBudgetEvent';
+import { BudgetStatus } from './BudgetStatus';
 import { redirectToReplace } from '../../../../../../hat/assets/js/apps/Iaso/routing/actions';
-import { useCurrentUser } from '../../../../../../hat/assets/js/apps/Iaso/utils/usersUtils';
 import InputComponent from '../../../../../../hat/assets/js/apps/Iaso/components/forms/InputComponent';
-import { BudgetValidationPopUp } from './pop-ups/BudgetValidationPopUp';
-import { BudgetRejectionPopUp } from './pop-ups/BudgetRejectionPopUp';
 import { BudgetEventCard } from './cards/BudgetEventCard';
 import { useBoundState } from '../../../../../../hat/assets/js/apps/Iaso/hooks/useBoundState';
 import { Optional } from '../../../../../../hat/assets/js/apps/Iaso/types/utils';
-// import { BudgetMap } from './Map/BudgetMap';
-import { useIsUserInApprovalTeam } from './hooks/useIsUserInApprovalTeam';
 import { handleTableDeepLink } from '../../../../../../hat/assets/js/apps/Iaso/utils/table';
 import { LinkToProcedure } from './LinkToProcedure';
 import { BudgetDetailsFilters } from './BudgetDetailsFilters';
@@ -84,27 +73,18 @@ export const BudgetDetails: FunctionComponent<Props> = ({ router }) => {
     // @ts-ignore
     const prevPathname = useSelector(state => state.routerCustom.prevPathname);
     const dispatch = useDispatch();
-    // const { user_id: userId } = useCurrentUser();
-    // const isUserInApprovalTeam = useIsUserInApprovalTeam(userId);
-    // const [page, setPage] = useBoundState<Optional<number | string>>(
-    //     1,
-    //     apiParams?.page,
-    // );
+
     const theme = useTheme();
     const isMobileLayout = useMediaQuery(theme.breakpoints.down('md'));
-    // const { data: budgetDetails, isFetching } = useGetBudgetDetails(userId, {
-    //     ...apiParams,
-    //     campaign_id: campaignId,
-    //     order: apiParams.order ?? '-created_at',
-    //     show_deleted: showDeleted,
-    //     page,
-    // });
-    const { data: budgetDetails, isFetching } = useGetBudgetDetails(apiParams);
-    console.log('budget details', budgetDetails?.results?.[0]);
 
-    const { data: budgetInfos, isFetching: isFetchingInfos } =
-        useGetBudgetForCampaign(params?.campaignName);
-    console.log('budgetInfos', budgetInfos);
+    const { data: budgetDetails, isFetching } = useGetBudgetDetails(apiParams);
+
+    const [page, setPage] = useBoundState<Optional<number | string>>(
+        1,
+        apiParams?.page,
+    );
+
+    const { data: budgetInfos } = useGetBudgetForCampaign(params?.campaignName);
 
     const budgetStatus = budgetInfos?.current_state.label ?? '--';
 
@@ -120,13 +100,13 @@ export const BudgetDetails: FunctionComponent<Props> = ({ router }) => {
         events: budgetDetails?.results,
         params,
     });
-    // const onCardPaginationChange = useCallback(
-    //     (_value, newPage) => {
-    //         setPage(newPage);
-    //         handleTableDeepLink(BUDGET_DETAILS)({ ...params, page: newPage });
-    //     },
-    //     [params, setPage],
-    // );
+    const onCardPaginationChange = useCallback(
+        (_value, newPage) => {
+            setPage(newPage);
+            handleTableDeepLink(BUDGET_DETAILS)({ ...params, page: newPage });
+        },
+        [params, setPage],
+    );
 
     return (
         <>
@@ -249,7 +229,7 @@ export const BudgetDetails: FunctionComponent<Props> = ({ router }) => {
                         }}
                         value={showDeleted}
                     />
-                    {/* {isMobileLayout && (
+                    {isMobileLayout && (
                         <>
                             <Grid container justifyContent="space-between">
                                 <Grid item>
@@ -271,18 +251,18 @@ export const BudgetDetails: FunctionComponent<Props> = ({ router }) => {
                                 />
                             </Collapse>
                         </>
-                    )} */}
+                    )}
                 </Box>
                 <Grid container spacing={2}>
-                    {/* {isMobileLayout && budgetDetails && (
+                    {isMobileLayout && budgetDetails && (
                         <Grid item xs={12}>
                             {budgetDetails?.results.map(budgetEvent => {
                                 return (
-                                    <Box mb={1} key={`event-${budgetEvent.id}`}>
-                                        <BudgetEventCard
-                                            event={budgetEvent}
-                                            // profiles={profiles?.profiles}
-                                        />
+                                    <Box
+                                        mb={1}
+                                        key={`event-${budgetEvent.transition_key}`}
+                                    >
+                                        <BudgetEventCard event={budgetEvent} />
                                     </Box>
                                 );
                             })}
@@ -304,7 +284,7 @@ export const BudgetDetails: FunctionComponent<Props> = ({ router }) => {
                                 />
                             )}
                         </Grid>
-                    )} */}
+                    )}
                     {!isMobileLayout && (
                         <Grid item xs={12}>
                             <Paper elevation={2}>

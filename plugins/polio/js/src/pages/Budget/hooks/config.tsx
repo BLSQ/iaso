@@ -34,11 +34,11 @@ import {
     makeFileLinks,
     makeLinks,
 } from '../utils';
-import { BudgetEvent } from '../../../constants/types';
 import { Optional } from '../../../../../../../hat/assets/js/apps/Iaso/types/utils';
 import { convertObjectToString } from '../../../utils';
 import { formatThousand } from '../../../../../../../hat/assets/js/apps/Iaso/utils';
 import { formatComment } from '../cards/utils';
+import { BudgetStep } from '../mockAPI/useGetBudgetDetails';
 
 const baseUrl = BUDGET_DETAILS;
 
@@ -373,7 +373,7 @@ export const useBudgetDetailsColumns = ({ data }): Column[] => {
 };
 
 type Params = {
-    events: Optional<BudgetEvent[]>;
+    events: Optional<BudgetStep[]>;
     // profiles: Profile[];
     params: Record<string, any>;
 };

@@ -41,12 +41,12 @@ jobs:
           path: ./node_modules
           key: node_modules-${{ hashFiles('package-lock.json') }}
 
-      - name: upgrade npm
-        run: |
-          npm install --global npm@8.5
+      # - name: upgrade npm
+      #   run: |
+      #     npm install --global npm@8.5
 
-      - run: npm ci --ignore-scripts
-        if: steps.cache.outputs.cache-hit != 'true'
+      # - run: npm ci --ignore-scripts
+      #   if: steps.cache.outputs.cache-hit != 'true'
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v1
@@ -58,22 +58,26 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Build Docker image
-        uses: docker/build-push-action@v2
-        with:
-          push: false
-          load: true
-          tags: iaso:${{ github.sha }}
-          target: dev
-          file: docker/bundle/Dockerfile
-          cache-from: type=registry,ref=ghcr.io/blsq/iaso:buildcache
-          cache-to: type=registry,ref=ghcr.io/blsq/iaso:buildcache,mode=max
+      # - name: Build Docker image
+      #   uses: docker/build-push-action@v2
+      #   with:
+      #     push: false
+      #     load: true
+      #     tags: iaso:${{ github.sha }}
+      #     target: dev
+      #     file: docker/bundle/Dockerfile
+      #     cache-from: type=registry,ref=ghcr.io/blsq/iaso:buildcache
+      #     cache-to: type=registry,ref=ghcr.io/blsq/iaso:buildcache,mode=max
      
       - name: Run IASO
         uses: addnab/docker-run-action@v3
         with:
           options: -p 0.0.0.0:8081:8081/tcp
-          image: iaso:${{ github.sha }}
+          image: ghcr.io/blsq/iaso:latest
+          run: |
+            ./scripts/wait_for_dbs.sh
+            ./manage.py migrate --noinput
+            gunicorn hat.wsgi --bind=0.0.0.0:8081
         env:
           TEST_PROD: true
           IASO_ENVIRONMENT: development
@@ -97,6 +101,8 @@ jobs:
       
       - run: |
           curl localhost:8081
+          curl http://host.docker.internal:8081
+          curl 127.0.0.1:8081
 
       - name: Cypress run
         uses: cypress-io/github-action@v4

@@ -57,7 +57,12 @@ def format_date(date, with_year):
     date_format = "%d %B"
     if with_year:
         date_format += " %Y"
-    formatted_date = dt.datetime.strptime(date, "%Y-%m-%d")
+    # There are some legacy campaigns which have rounds without started_at and ended_at date(None)
+    # This check(if date is None) helps to avoid to format a None date
+    if date is None:
+        formatted_date = ""
+    else:
+        formatted_date = dt.datetime.strptime(date, "%Y-%m-%d")
     return formatted_date.strftime(date_format)
 
 

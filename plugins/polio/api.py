@@ -295,8 +295,8 @@ class CampaignViewSet(ModelViewSet):
 
     @staticmethod
     def get_round(round):
-        started_at = dt.datetime.strftime(round.started_at, "%Y-%m-%d") if round.started_at is not None else ""
-        ended_at = dt.datetime.strftime(round.ended_at, "%Y-%m-%d") if round.ended_at is not None else ""
+        started_at = dt.datetime.strftime(round.started_at, "%Y-%m-%d") if round.started_at is not None else None
+        ended_at = dt.datetime.strftime(round.ended_at, "%Y-%m-%d") if round.ended_at is not None else None
         obr_name = round.campaign.obr_name if round.campaign.obr_name is not None else ""
         vacine = round.campaign.vacine if round.campaign.vacine is not None else ""
         round_number = round.number if round.number is not None else ""

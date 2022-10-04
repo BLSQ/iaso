@@ -253,8 +253,6 @@ class OrgUnit(TreeModel):
     location = PointField(null=True, blank=True, geography=True, dim=3, srid=4326)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
-    source_created_at = models.DateTimeField(null=True, blank=True, help_text="Creation time on the client device")
-    source_updated_at = models.DateTimeField(null=True, blank=True, help_text="Update time on the client device")
     creator = models.ForeignKey(User, null=True, blank=True, on_delete=models.SET_NULL)
 
     objects = OrgUnitManager()  # type: ignore

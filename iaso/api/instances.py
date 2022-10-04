@@ -602,11 +602,13 @@ def import_data(instances, user, app_id):
                 entity.save()
 
         created_at_ts = instance_data.get("created_at", None)
-        instance.created_at = timestamp_to_utc_datetime(int(created_at_ts)) if created_at_ts is not None else None
+        instance.source_created_at = (
+            timestamp_to_utc_datetime(int(created_at_ts)) if created_at_ts is not None else None
+        )
 
         updated_at_ts = instance_data.get("updated_at", None)
-        instance.updated_at = (
-            timestamp_to_utc_datetime(int(updated_at_ts)) if updated_at_ts is not None else instance.created_at
+        instance.source_updated_at = (
+            timestamp_to_utc_datetime(int(updated_at_ts)) if updated_at_ts is not None else instance.source_created_at
         )
 
         latitude = instance_data.get("latitude", None)

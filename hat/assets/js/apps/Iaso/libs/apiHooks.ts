@@ -312,7 +312,7 @@ export const useSnackQueries = <QueryFnData>(
         options: UseQueryOptions;
         dispatchOnError: boolean;
     }[],
-): UseQueryResult[] => {
+): Array<UseQueryResult<unknown, unknown>> => {
     const dispatch = useDispatch();
     const newQueries = queries.map(query => {
         const {
@@ -337,7 +337,7 @@ export const useSnackQueries = <QueryFnData>(
         };
         return { ...query, ...newOptions };
     });
-    return useQueries(newQueries);
+    return useQueries<Array<UseQueryResult<unknown, unknown>>>(newQueries);
 };
 
 export const useAbortController = ():

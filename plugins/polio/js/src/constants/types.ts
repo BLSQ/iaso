@@ -125,7 +125,7 @@ export type BudgetEvent = {
     // legacy. should be deleted backend side
     cc_emails: null;
     comment: Nullable<string>;
-    links: Nullable<string>;
+    links: Nullable<string[]>;
     is_finalized: boolean;
     is_email_sent: boolean;
     target_teams: number[];

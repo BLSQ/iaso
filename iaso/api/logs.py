@@ -18,10 +18,10 @@ from iaso.models import OrgUnit, Instance, Form
 def has_access_to(user: User, obj: Union[OrgUnit, Instance, models.Model]):
     if isinstance(obj, OrgUnit):
         ous = OrgUnit.objects.filter_for_user_and_app_id(user, None)
-        return obj in ous
+        return ous.filter(id=obj.id).exists()
     if isinstance(obj, Instance):
         instances = Instance.objects.filter_for_user(user)
-        return user.has_perm("menupermissions.iaso_submissions") and obj in instances
+        return user.has_perm("menupermissions.iaso_submissions") and instances.filter(id=obj.id).exists()
     if isinstance(obj, Form):
         forms = Form.objects.filter_for_user_and_app_id(user)
         return obj in forms

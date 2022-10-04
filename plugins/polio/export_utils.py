@@ -62,8 +62,8 @@ def format_date(date, with_year):
     if date is None:
         formatted_date = ""
     else:
-        formatted_date = dt.datetime.strptime(date, "%Y-%m-%d")
-    return formatted_date.strftime(date_format)
+        formatted_date = dt.datetime.strptime(date, "%Y-%m-%d").strftime(date_format)
+    return formatted_date
 
 
 def cell_dimension_pattern_fill(sheet, cell, width, height, pattern_fill=False):

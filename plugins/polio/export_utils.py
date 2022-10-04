@@ -17,11 +17,10 @@ def generate_xlsx_campaigns_calendar(filename, datas):
     sheet.title = filename
     columns = get_columns_names()
     # display columns in the xlsx file
-    for row in range(1, 2):
-        for column in range(1, len(columns) + 1):
-            cell_header = sheet.cell(column=column, row=row, value=columns[column - 1])
-            cell_header = format_cell(cell_header, "12", True)
-            sheet = cell_dimension_pattern_fill(sheet, cell_header, None, 25.75, True)
+    for column in range(1, len(columns) + 1):
+        cell_header = sheet.cell(column=column, row=1, value=columns[column - 1])
+        cell_header = format_cell(cell_header, "12", True)
+        sheet = cell_dimension_pattern_fill(sheet, cell_header, None, 25.75, True)
     # display calendar data in the xlsx file by looping over each row representing a country campaign rounds
     for row in range(1, len(datas) + 1):
         cell_country = sheet.cell(column=1, row=row + 1, value=datas[row - 1]["country_name"])

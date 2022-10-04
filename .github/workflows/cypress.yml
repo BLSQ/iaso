@@ -98,7 +98,7 @@ jobs:
         with:
           browser: chrome
           wait-on: 'http://localhost:8081'
-          spec: hat/assets/js/cypress/integration/${{ matrix.containers }}/*.spec.js
+          spec: hat/assets/js/cypress/integration/**/*.spec.js
           install: false
         env:
           CYPRESS_USERNAME: "test"

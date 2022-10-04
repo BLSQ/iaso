@@ -91,8 +91,7 @@ class BasicAPITestCase(APITestCase):
         self.assertEqual(1, len(units))  # two org units but only one for default version
         velpo_json = units[0]
         self.assertEqual(velpo_json["name"], name)
-        # self.assertEqual(floor(velpo_json["created_at"]), floor(1565194077692 / 1000))
-        self.assertTrue(floor(velpo_json["created_at"]) > floor(1565194077693 / 1000))
+        self.assertEqual(floor(velpo_json["created_at"]), floor(1565194077692 / 1000))
         self.assertTrue(floor(velpo_json["updated_at"]) > floor(1565194077693 / 1000))
         self.assertEqual(velpo_json["org_unit_type_id"], hospital_unit_type.id)
         self.assertEqual(velpo_json["parent_id"], None)
@@ -185,9 +184,7 @@ class BasicAPITestCase(APITestCase):
         units = json_response["orgUnits"]
         velpo_json = units[0]
         self.assertEqual(velpo_json["name"], name)
-        # We now auto fill from the backend. The original value is in source_created_at
-        # self.assertEqual(floor(velpo_json["created_at"]), floor(1565194077692 / 1000))
-        self.assertTrue(floor(velpo_json["created_at"]) > floor(1565194077693 / 1000))
+        self.assertEqual(floor(velpo_json["created_at"]), floor(1565194077692 / 1000))
         self.assertTrue(floor(velpo_json["updated_at"]) > floor(1565194077693 / 1000))
         self.assertEqual(velpo_json["org_unit_type_id"], hospital_unit_type.id)
         self.assertEqual(velpo_json["parent_id"], None)

@@ -171,7 +171,6 @@ class InstancesAPITestCase(APITestCase):
                 "name": "1",
             }
         ]
-
         response = self.client.post(
             f"/api/instances/?app_id=stars.empire.agriculture.hydroponics", data=body, format="json"
         )
@@ -189,8 +188,8 @@ class InstancesAPITestCase(APITestCase):
         self.assertEqual(50.2, last_instance.location.y)
         self.assertEqual(self.jedi_council_corruscant, last_instance.org_unit)
         self.assertEqual(self.form_1, last_instance.form)
-        self.assertEqual(timestamp_to_utc_datetime(1565258153704), last_instance.source_created_at)
-        self.assertEqual(datetime.datetime(2019, 8, 8, 9, 55, 53, tzinfo=timezone.utc), last_instance.source_created_at)
+        self.assertEqual(timestamp_to_utc_datetime(1565258153704), last_instance.created_at)
+        self.assertEqual(datetime.datetime(2019, 8, 8, 9, 55, 53, tzinfo=timezone.utc), last_instance.created_at)
         # TODO: the assertion below will fail because our API does not store properly the updated_at property
         # TODO: (See IA-278: https://bluesquare.atlassian.net/browse/IA-278)
         # self.assertEqual(
@@ -240,9 +239,13 @@ class InstancesAPITestCase(APITestCase):
         self.assertEqual(50.2, last_instance.location.y)
         self.assertEqual(self.jedi_council_corruscant, last_instance.org_unit)
         self.assertEqual(self.form_1, last_instance.form)
-        self.assertEqual(timestamp_to_utc_datetime(1565258153704), last_instance.source_created_at)
-        self.assertEqual(datetime.datetime(2019, 8, 8, 9, 55, 53, tzinfo=timezone.utc), last_instance.source_created_at)
-        self.assertEqual(timestamp_to_utc_datetime(1565258153709), last_instance.source_updated_at)
+        self.assertEqual(timestamp_to_utc_datetime(1565258153704), last_instance.created_at)
+        self.assertEqual(datetime.datetime(2019, 8, 8, 9, 55, 53, tzinfo=timezone.utc), last_instance.created_at)
+        # TODO: the assertion below will fail because our API does not store properly the updated_at property
+        # TODO: (See IA-278: https://bluesquare.atlassian.net/browse/IA-278)
+        # self.assertEqual(
+        #     timestamp_to_utc_datetime(1565258153709), last_instance.updated_at
+        # )
         self.assertEqual(self.form_1, last_instance.form)
         self.assertIsNotNone(last_instance.project)
 
@@ -362,8 +365,6 @@ class InstancesAPITestCase(APITestCase):
             f"/api/instances/?app_id=stars.empire.agriculture.hydroponics", data=body, format="json"
         )
         self.assertEqual(response.status_code, 200)
-        j = response.json()
-        self.assertFalse("problem" in j["res"], j)
 
         self.assertEqual(pre_existing_instance_count, m.Instance.objects.count())  # No-added instance
         pre_existing_instance.refresh_from_db()

@@ -41,6 +41,7 @@ import { PolioCreateEditDialog } from '../../components/CreateEditDialog';
 import { BudgetCard, CardCampaign } from './cards/BudgetCard';
 
 import { handleTableDeepLink } from '../../../../../../hat/assets/js/apps/Iaso/utils/table';
+import { useBudgetParams, useGetBudgets } from './mockAPI/useGetBudget';
 
 type Props = {
     router: any;
@@ -64,16 +65,12 @@ export const Budget: FunctionComponent<Props> = ({ router }) => {
     const classes = useStyles();
     const [resetPageToOne, setResetPageToOne] = useState<string>('');
     const [expand, setExpand] = useState<boolean>(false);
-    const [campaignDialogOpen, setCampaignDialogOpen] =
-        useState<boolean>(false);
 
-    const apiParams = useCampaignParams({
-        ...params,
-        show_test: params.show_test ?? false,
-        pageSize: params.pageSize ?? 10,
-    });
+    const apiParams = useBudgetParams(params);
 
-    const { data: campaigns, isFetching } = useGetCampaigns(apiParams).query;
+    // const { data: campaigns, isFetching: isFetchingCampaigns } =
+    //     useGetCampaigns(apiParams).query;
+    const { data: budgets, isFetching } = useGetBudgets(apiParams);
     const columns = useBudgetColumns();
     const theme = useTheme();
     const isMobileLayout = useMediaQuery(theme.breakpoints.down('md'));
@@ -85,14 +82,14 @@ export const Budget: FunctionComponent<Props> = ({ router }) => {
         delete newParams.page;
         delete newParams.order;
         setResetPageToOne(convertObjectToString(newParams));
-    }, [apiParams.pageSize, apiParams.countries, apiParams.search]);
+    }, [apiParams.pageSize, apiParams.search]);
 
-    const onCardPaginationChange = useCallback(
-        (_value, newPage) => {
-            handleTableDeepLink(BUDGET)({ ...apiParams, page: newPage });
-        },
-        [apiParams],
-    );
+    // const onCardPaginationChange = useCallback(
+    //     (_value, newPage) => {
+    //         handleTableDeepLink(BUDGET)({ ...apiParams, page: newPage });
+    //     },
+    //     [apiParams],
+    // );
 
     return (
         <>
@@ -123,20 +120,11 @@ export const Budget: FunctionComponent<Props> = ({ router }) => {
                 {!isMobileLayout && (
                     <>
                         <BudgetFilters params={params} />
-                        <Grid container item justifyContent="flex-end">
-                            <AddButton
-                                onClick={() => {
-                                    setCampaignDialogOpen(true);
-                                }}
-                                dataTestId="create-campaign-button"
-                                message={MESSAGES.addCampaign}
-                            />
-                        </Grid>
 
                         <TableWithDeepLink
-                            data={campaigns?.campaigns ?? []}
-                            count={campaigns?.count}
-                            pages={campaigns?.pages}
+                            data={budgets?.results ?? []}
+                            count={budgets?.count}
+                            pages={budgets?.pages}
                             params={apiParams}
                             columns={columns}
                             baseUrl={BUDGET}
@@ -148,23 +136,21 @@ export const Budget: FunctionComponent<Props> = ({ router }) => {
                         />
                     </>
                 )}
-                {isMobileLayout && (
+                {/* {isMobileLayout && (
                     <>
                         {isFetching && <LoadingSpinner />}
-                        {campaigns?.campaigns &&
-                            campaigns.campaigns.map(
-                                (campaign: CardCampaign) => (
-                                    <Box key={campaign.id} mb={1}>
-                                        <BudgetCard campaign={campaign} />
-                                    </Box>
-                                ),
-                            )}
+                        {budgets?.results &&
+                            budgets.results.map((campaign: CardCampaign) => (
+                                <Box key={budget.id} mb={1}>
+                                    <BudgetCard campaign={campaign} />
+                                </Box>
+                            ))}
 
-                        {campaigns && (
+                        {budgets && (
                             <Pagination
                                 className={paginationStyle.pagination}
-                                page={campaigns.page}
-                                count={campaigns.pages}
+                                page={budgets.page}
+                                count={budgets.pages}
                                 showLastButton
                                 showFirstButton
                                 onChange={onCardPaginationChange}
@@ -174,14 +160,8 @@ export const Budget: FunctionComponent<Props> = ({ router }) => {
                             />
                         )}
                     </>
-                )}
+                )} */}
             </Box>
-            {!isMobileLayout && (
-                <PolioCreateEditDialog
-                    isOpen={campaignDialogOpen}
-                    onClose={() => setCampaignDialogOpen(false)}
-                />
-            )}
         </>
     );
 };

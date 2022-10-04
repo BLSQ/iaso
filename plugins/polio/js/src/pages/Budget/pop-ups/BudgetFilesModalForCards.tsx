@@ -71,7 +71,7 @@ export const BudgetFilesModalForCards: FunctionComponent<Props> = ({
                     {!isFetching && (
                         <Box mt={2}>
                             {makeFileLinks(budgetEventFiles)}
-                            {makeLinks(links)}
+                            {/* {makeLinks(links)} */}
                             {note && (
                                 <>
                                     {(budgetEventFiles?.length > 0 ||

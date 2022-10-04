@@ -1,4 +1,9 @@
-import React, { FunctionComponent, useCallback, useState } from 'react';
+import React, {
+    FunctionComponent,
+    useCallback,
+    useMemo,
+    useState,
+} from 'react';
 // @ts-ignore
 import { useSafeIntl } from 'bluesquare-components';
 import {
@@ -22,7 +27,7 @@ import { useStyles } from '../../styles/theme';
 import { TableWithDeepLink } from '../../../../../../hat/assets/js/apps/Iaso/components/tables/TableWithDeepLink';
 import {
     useGetAllBudgetDetails,
-    useGetBudgetDetails,
+    // useGetBudgetDetails,
 } from '../../hooks/useGetBudgetDetails';
 import { BUDGET, BUDGET_DETAILS } from '../../constants/routes';
 import { useTableState } from './hooks/config';
@@ -38,11 +43,14 @@ import { BudgetRejectionPopUp } from './pop-ups/BudgetRejectionPopUp';
 import { BudgetEventCard } from './cards/BudgetEventCard';
 import { useBoundState } from '../../../../../../hat/assets/js/apps/Iaso/hooks/useBoundState';
 import { Optional } from '../../../../../../hat/assets/js/apps/Iaso/types/utils';
-import { BudgetMap } from './Map/BudgetMap';
+// import { BudgetMap } from './Map/BudgetMap';
 import { useIsUserInApprovalTeam } from './hooks/useIsUserInApprovalTeam';
 import { handleTableDeepLink } from '../../../../../../hat/assets/js/apps/Iaso/utils/table';
 import { LinkToProcedure } from './LinkToProcedure';
 import { BudgetDetailsFilters } from './BudgetDetailsFilters';
+import { useGetBudgetForCampaign } from './mockAPI/useGetBudget';
+import { useGetBudgetDetails } from './mockAPI/useGetBudgetDetails';
+import { CreateBudgetStep } from './CreateBudgetStep/CreateBudgetStep';
 
 type Props = {
     router: any;
@@ -66,7 +74,7 @@ export const BudgetDetails: FunctionComponent<Props> = ({ router }) => {
     const { params } = router;
     const classes = useStyles();
     const paginationStyle = useBudgetDetailsStyles();
-    const { campaignName, campaignId, country, ...apiParams } = router.params;
+    const { campaignName, ...apiParams } = router.params;
     const { formatMessage } = useSafeIntl();
     const [showDeleted, setShowDeleted] = useState(
         apiParams.show_deleted ?? false,
@@ -76,48 +84,49 @@ export const BudgetDetails: FunctionComponent<Props> = ({ router }) => {
     // @ts-ignore
     const prevPathname = useSelector(state => state.routerCustom.prevPathname);
     const dispatch = useDispatch();
-    const { user_id: userId } = useCurrentUser();
-    const isUserInApprovalTeam = useIsUserInApprovalTeam(userId);
-    const [page, setPage] = useBoundState<Optional<number | string>>(
-        1,
-        apiParams?.page,
-    );
+    // const { user_id: userId } = useCurrentUser();
+    // const isUserInApprovalTeam = useIsUserInApprovalTeam(userId);
+    // const [page, setPage] = useBoundState<Optional<number | string>>(
+    //     1,
+    //     apiParams?.page,
+    // );
     const theme = useTheme();
     const isMobileLayout = useMediaQuery(theme.breakpoints.down('md'));
-    const { data: budgetDetails, isFetching } = useGetBudgetDetails(userId, {
-        ...apiParams,
-        campaign_id: campaignId,
-        order: apiParams.order ?? '-created_at',
-        show_deleted: showDeleted,
-        page,
-    });
-    // Using all details (non paginated) to determine status
-    const { data: allBudgetDetails, isFetching: isFetchingAll } =
-        useGetAllBudgetDetails(campaignId, showDeleted);
+    // const { data: budgetDetails, isFetching } = useGetBudgetDetails(userId, {
+    //     ...apiParams,
+    //     campaign_id: campaignId,
+    //     order: apiParams.order ?? '-created_at',
+    //     show_deleted: showDeleted,
+    //     page,
+    // });
+    const { data: budgetDetails, isFetching } = useGetBudgetDetails(apiParams);
+    console.log('budget details', budgetDetails?.results?.[0]);
 
-    const budgetStatus = findBudgetStatus(allBudgetDetails);
+    const { data: budgetInfos, isFetching: isFetchingInfos } =
+        useGetBudgetForCampaign(params?.campaignName);
+    console.log('budgetInfos', budgetInfos);
 
-    const budgetHasSubmission = Boolean(
-        allBudgetDetails?.find(
-            budgetEvent =>
-                budgetEvent.type === 'submission' && !budgetEvent.deleted_at,
-        ),
-    );
-    const { data: profiles, isFetching: isFetchingProfiles } = useGetProfiles();
+    const budgetStatus = budgetInfos?.current_state.label ?? '--';
+
+    const nextSteps = useMemo(() => {
+        return budgetInfos?.next_transitions;
+    }, [budgetInfos?.next_transitions]);
+
+    // const { data: profiles, isFetching: isFetchingProfiles } = useGetProfiles();
     const [expand, setExpand] = useState<boolean>(false);
 
     const { resetPageToOne, columns } = useTableState({
-        profiles,
+        // profiles,
         events: budgetDetails?.results,
         params,
     });
-    const onCardPaginationChange = useCallback(
-        (_value, newPage) => {
-            setPage(newPage);
-            handleTableDeepLink(BUDGET_DETAILS)({ ...params, page: newPage });
-        },
-        [params, setPage],
-    );
+    // const onCardPaginationChange = useCallback(
+    //     (_value, newPage) => {
+    //         setPage(newPage);
+    //         handleTableDeepLink(BUDGET_DETAILS)({ ...params, page: newPage });
+    //     },
+    //     [params, setPage],
+    // );
 
     return (
         <>
@@ -159,22 +168,24 @@ export const BudgetDetails: FunctionComponent<Props> = ({ router }) => {
                     </Grid>
 
                     <Grid container justifyContent="space-between" spacing={1}>
-                        <Grid container item xs={6} spacing={1}>
-                            {!isFetchingAll && (
-                                <BudgetStatus budgetStatus={budgetStatus} />
-                            )}
+                        <Grid container item xs={12} lg={6} spacing={1}>
+                            <BudgetStatus
+                                budgetStatus={
+                                    budgetInfos?.current_state?.label ?? '--'
+                                }
+                            />
                         </Grid>
                         {budgetStatus !== 'validated' && (
                             <Grid
                                 container
                                 item
                                 direction="row"
-                                xs={6}
+                                xs={12}
+                                lg={6}
                                 justifyContent="flex-end"
                             >
-                                {budgetStatus !== 'approved' &&
-                                    isUserInApprovalTeam &&
-                                    budgetHasSubmission && (
+                                {/* {budgetStatus !== 'approved' &&
+                                    isUserInApprovalTeam && (
                                         <Box
                                             mr={isMobileLayout ? 0 : 4}
                                             mb={isMobileLayout ? 1 : 0}
@@ -196,18 +207,36 @@ export const BudgetDetails: FunctionComponent<Props> = ({ router }) => {
                                                 params={params}
                                             />
                                         </Box>
-                                    )}
-                                {/* <CreateEditBudgetEvent
-                                    campaignId={campaignId}
-                                    isMobileLayout={isMobileLayout}
-                                /> */}
-                                <CreateEditBudgetEvent
-                                    campaignId={campaignId}
-                                    isMobileLayout={isMobileLayout}
-                                    iconProps={{
-                                        isMobileLayout,
-                                    }}
-                                />
+                                    )} */}
+                                {nextSteps && (
+                                    <Grid
+                                        container
+                                        item
+                                        xs={12}
+                                        spacing={2}
+                                        justifyContent="flex-end"
+                                    >
+                                        {nextSteps.map(step => {
+                                            return (
+                                                <Grid item key={step.key}>
+                                                    <CreateBudgetStep
+                                                        isMobileLayout={
+                                                            isMobileLayout
+                                                        }
+                                                        // displayedFields={step.displayed_fields}
+                                                        // requiredFields={step.required_fields}
+                                                        campaignId=""
+                                                        iconProps={{
+                                                            label: step.label,
+                                                            // tooltipText={step.reason_not_allowed}
+                                                            // disabled={step.allowed}
+                                                        }}
+                                                    />
+                                                </Grid>
+                                            );
+                                        })}
+                                    </Grid>
+                                )}
                             </Grid>
                         )}
                     </Grid>
@@ -220,7 +249,7 @@ export const BudgetDetails: FunctionComponent<Props> = ({ router }) => {
                         }}
                         value={showDeleted}
                     />
-                    {isMobileLayout && (
+                    {/* {isMobileLayout && (
                         <>
                             <Grid container justifyContent="space-between">
                                 <Grid item>
@@ -242,17 +271,17 @@ export const BudgetDetails: FunctionComponent<Props> = ({ router }) => {
                                 />
                             </Collapse>
                         </>
-                    )}
+                    )} */}
                 </Box>
                 <Grid container spacing={2}>
-                    {isMobileLayout && budgetDetails && profiles && (
+                    {/* {isMobileLayout && budgetDetails && (
                         <Grid item xs={12}>
                             {budgetDetails?.results.map(budgetEvent => {
                                 return (
                                     <Box mb={1} key={`event-${budgetEvent.id}`}>
                                         <BudgetEventCard
                                             event={budgetEvent}
-                                            profiles={profiles?.profiles}
+                                            // profiles={profiles?.profiles}
                                         />
                                     </Box>
                                 );
@@ -275,9 +304,9 @@ export const BudgetDetails: FunctionComponent<Props> = ({ router }) => {
                                 />
                             )}
                         </Grid>
-                    )}
+                    )} */}
                     {!isMobileLayout && (
-                        <Grid item xs={8}>
+                        <Grid item xs={12}>
                             <Paper elevation={2}>
                                 <Box
                                     ml={2}
@@ -322,9 +351,7 @@ export const BudgetDetails: FunctionComponent<Props> = ({ router }) => {
                                         baseUrl={BUDGET_DETAILS}
                                         marginTop={false}
                                         extraProps={{
-                                            loading:
-                                                isFetching ||
-                                                isFetchingProfiles,
+                                            loading: isFetching,
                                             columns,
                                         }}
                                         resetPageToOne={resetPageToOne}
@@ -334,9 +361,6 @@ export const BudgetDetails: FunctionComponent<Props> = ({ router }) => {
                             </Paper>
                         </Grid>
                     )}
-                    <Grid item xs={12} lg={4}>
-                        <BudgetMap country={country} campaignId={campaignId} />
-                    </Grid>
                 </Grid>
             </Box>
         </>

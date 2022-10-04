@@ -8,26 +8,32 @@ import {
     // @ts-ignore
     useSkipEffectOnMount,
 } from 'bluesquare-components';
-import moment from 'moment';
-import { makeStyles } from '@material-ui/core';
+// import moment from 'moment';
+import { Box, makeStyles } from '@material-ui/core';
 import LockIcon from '@material-ui/icons/Lock';
+// import Settings from '@material-ui/icons/Settings';
 import MESSAGES from '../../../constants/messages';
 import { Column } from '../../../../../../../hat/assets/js/apps/Iaso/types/table';
 import { BUDGET_DETAILS } from '../../../constants/routes';
 import { DateTimeCellRfc } from '../../../../../../../hat/assets/js/apps/Iaso/components/Cells/DateTimeCell';
-import { BudgetFilesModal } from '../BudgetFilesModal';
-import { CreateEditBudgetEvent } from '../CreateEditBudgetEvent/CreateEditBudgetEvent';
+// import { BudgetFilesModal } from '../BudgetFilesModal';
+// import { CreateEditBudgetEvent } from '../CreateEditBudgetEvent/CreateEditBudgetEvent';
+// import {
+//     Profile,
+//     useCurrentUser,
+// } from '../../../../../../../hat/assets/js/apps/Iaso/utils/usersUtils';
+// import DeleteDialog from '../../../../../../../hat/assets/js/apps/Iaso/components/dialogs/DeleteDialogComponent';
+// import {
+//     useDeleteBudgetEvent,
+//     useRestoreBudgetEvent,
+// } from '../../../hooks/useDeleteBudgetEvent';
+// import { useGetTeams } from '../../../hooks/useGetTeams';
 import {
-    Profile,
-    useCurrentUser,
-} from '../../../../../../../hat/assets/js/apps/Iaso/utils/usersUtils';
-import DeleteDialog from '../../../../../../../hat/assets/js/apps/Iaso/components/dialogs/DeleteDialogComponent';
-import {
-    useDeleteBudgetEvent,
-    useRestoreBudgetEvent,
-} from '../../../hooks/useDeleteBudgetEvent';
-import { useGetTeams } from '../../../hooks/useGetTeams';
-import { formatTargetTeams, formatUserName } from '../utils';
+    // formatTargetTeams,
+    // formatUserName,
+    makeFileLinks,
+    makeLinks,
+} from '../utils';
 import { BudgetEvent } from '../../../constants/types';
 import { Optional } from '../../../../../../../hat/assets/js/apps/Iaso/types/utils';
 import { convertObjectToString } from '../../../utils';
@@ -62,51 +68,43 @@ export const useBudgetColumns = (): Column[] => {
             },
             {
                 Header: formatMessage(MESSAGES.country),
-                id: 'country__name',
-                accessor: 'top_level_org_unit_name',
+                accessor: 'country_name',
                 sortable: true,
             },
-            {
-                Header: formatMessage(MESSAGES.virusNotificationDate),
-                accessor: 'cvdpv2_notified_at',
-            },
+
             {
                 Header: formatMessage(MESSAGES.status),
                 sortable: true,
-                accessor: 'last_budget_event__status',
-                Cell: settings => {
-                    const status =
-                        settings.row.original.last_budget_event?.status;
-                    return status
-                        ? formatMessage(MESSAGES[status])
-                        : formatMessage(MESSAGES.noBudgetSubmitted);
-                },
+                accessor: 'current_state__label',
+                Cell: settings =>
+                    settings.row.original.current_state?.label ?? '--',
             },
-            {
-                Header: formatMessage(MESSAGES.latestEvent),
-                sortable: true,
-                accessor: 'last_budget_event__type',
-                Cell: settings => {
-                    const type = settings.row.original.last_budget_event?.type;
-                    if (type) {
-                        return formatMessage(MESSAGES[type]);
-                    }
-                    return '--';
-                },
-            },
-            {
-                Header: formatMessage(MESSAGES.latestEventDate),
-                sortable: true,
-                accessor: 'last_budget_event__created_at',
-                Cell: settings => {
-                    const date =
-                        settings.row.original.last_budget_event?.created_at;
-                    if (date) {
-                        return moment(date).format('LTS');
-                    }
-                    return '--';
-                },
-            },
+            // TODO delete translation keys along with dead code
+            // {
+            //     Header: formatMessage(MESSAGES.latestEvent),
+            //     sortable: true,
+            //     accessor: 'last_budget_event__type',
+            //     Cell: settings => {
+            //         const type = settings.row.original.last_budget_event?.type;
+            //         if (type) {
+            //             return formatMessage(MESSAGES[type]);
+            //         }
+            //         return '--';
+            //     },
+            // },
+            // {
+            //     Header: formatMessage(MESSAGES.latestEventDate),
+            //     sortable: true,
+            //     accessor: 'last_budget_event__created_at',
+            //     Cell: settings => {
+            //         const date =
+            //             settings.row.original.last_budget_event?.created_at;
+            //         if (date) {
+            //             return moment(date).format('LTS');
+            //         }
+            //         return '--';
+            //     },
+            // },
             {
                 Header: formatMessage(MESSAGES.actions),
                 accessor: 'id',
@@ -116,7 +114,7 @@ export const useBudgetColumns = (): Column[] => {
                         <IconButtonComponent
                             icon="remove-red-eye"
                             tooltipMessage={MESSAGES.details}
-                            url={`${baseUrl}/campaignId/${settings.row.original.id}/campaignName/${settings.row.original.obr_name}/country/${settings.row.original.country}`}
+                            url={`${baseUrl}/campaignName/${settings.row.original.obr_name}/`}
                         />
                     );
                 },
@@ -126,14 +124,14 @@ export const useBudgetColumns = (): Column[] => {
     }, [formatMessage]);
 };
 
-export const useBudgetDetailsColumns = ({ profiles, data }): Column[] => {
+export const useBudgetDetailsColumns = ({ data }): Column[] => {
     const classes = useStyles();
-    const { data: teams = [] } = useGetTeams();
     const getRowColor = getStyle(classes);
     const { formatMessage } = useSafeIntl();
-    const currentUser = useCurrentUser();
-    const { mutateAsync: deleteBudgetEvent } = useDeleteBudgetEvent();
-    const { mutateAsync: restoreBudgetEvent } = useRestoreBudgetEvent();
+    // const { data: teams = [] } = useGetTeams();
+    // const currentUser = useCurrentUser();
+    // const { mutateAsync: deleteBudgetEvent } = useDeleteBudgetEvent();
+    // const { mutateAsync: restoreBudgetEvent } = useRestoreBudgetEvent();
     const showInternalColumn = Boolean(
         data?.find(details => details.internal === true),
     );
@@ -141,15 +139,13 @@ export const useBudgetDetailsColumns = ({ profiles, data }): Column[] => {
         const defaultColumns = [
             {
                 Header: formatMessage(MESSAGES.event),
-                id: 'type',
-                accessor: 'type',
-                sortable: true,
+                id: 'transition_label',
+                accessor: 'transition_label',
+                sortable: false,
                 Cell: settings => {
                     return (
                         <span className={getRowColor(settings)}>
-                            {formatMessage(
-                                MESSAGES[settings.row.original.type],
-                            )}
+                            {settings.row.original.transition_label}
                         </span>
                     );
                 },
@@ -158,7 +154,7 @@ export const useBudgetDetailsColumns = ({ profiles, data }): Column[] => {
                 Header: formatMessage(MESSAGES.comment),
                 id: 'comment',
                 accessor: 'comment',
-                sortable: true,
+                sortable: false,
                 Cell: settings => {
                     const { comment } = settings.row.original;
                     return (
@@ -170,31 +166,15 @@ export const useBudgetDetailsColumns = ({ profiles, data }): Column[] => {
             },
             {
                 Header: formatMessage(MESSAGES.author),
-                id: 'author',
-                accessor: 'author',
-                sortable: true,
+                id: 'created_by',
+                accessor: 'created_by',
+                sortable: false,
                 Cell: settings => {
-                    const { author, type } = settings.row.original;
-                    const authorProfile = profiles?.profiles?.find(
-                        profile => profile.user_id === author,
-                    );
-                    const nameDisplayed = formatUserName(authorProfile);
+                    const {
+                        created_by: authorName,
+                        created_by_team: authorTeam,
+                    } = settings.row.original;
 
-                    const authorTeams = useMemo(
-                        () => teams.filter(team => team.users.includes(author)),
-                        [author],
-                    );
-                    const authorTeam =
-                        type === 'validation'
-                            ? authorTeams.find(team =>
-                                  team.name.toLowerCase().includes('approval'),
-                              )
-                            : authorTeams.find(
-                                  team =>
-                                      !team.name
-                                          .toLowerCase()
-                                          .includes('approval'),
-                              ) ?? authorTeams[0];
                     return (
                         <>
                             <p
@@ -202,7 +182,7 @@ export const useBudgetDetailsColumns = ({ profiles, data }): Column[] => {
                                     classes.paragraph
                                 }`}
                             >
-                                {nameDisplayed}
+                                {authorName}
                             </p>
                             {authorTeam && (
                                 <p
@@ -210,36 +190,36 @@ export const useBudgetDetailsColumns = ({ profiles, data }): Column[] => {
                                         classes.paragraph
                                     }`}
                                 >
-                                    {authorTeam.name}
+                                    {authorTeam}
                                 </p>
                             )}
                         </>
                     );
                 },
             },
-            {
-                Header: formatMessage(MESSAGES.destination),
-                id: 'target_teams',
-                accessor: 'target_teams',
-                sortable: false,
-                Cell: settings => {
-                    const { target_teams } = settings.row.original;
-                    const teamsToDisplay = formatTargetTeams(
-                        target_teams,
-                        teams,
-                    );
-                    return (
-                        <span className={getRowColor(settings)}>
-                            {teamsToDisplay}
-                        </span>
-                    );
-                },
-            },
+            // {
+            //     Header: formatMessage(MESSAGES.destination),
+            //     id: 'target_teams',
+            //     accessor: 'target_teams',
+            //     sortable: false,
+            //     Cell: settings => {
+            //         const { target_teams } = settings.row.original;
+            //         const teamsToDisplay = formatTargetTeams(
+            //             target_teams,
+            //             teams,
+            //         );
+            //         return (
+            //             <span className={getRowColor(settings)}>
+            //                 {teamsToDisplay}
+            //             </span>
+            //         );
+            //     },
+            // },
             {
                 Header: formatMessage(MESSAGES.created_at),
                 id: 'created_at',
                 accessor: 'created_at',
-                sortable: true,
+                sortable: false,
                 Cell: settings => {
                     return (
                         <span className={getRowColor(settings)}>
@@ -267,86 +247,103 @@ export const useBudgetDetailsColumns = ({ profiles, data }): Column[] => {
                 },
             },
             {
-                Header: formatMessage(MESSAGES.actions),
-                id: 'id',
-                accessor: 'id',
+                Header: `${formatMessage(MESSAGES.actions)}`,
+                id: 'files',
+                accessor: 'files',
                 sortable: false,
                 Cell: settings => {
-                    const { author } = settings.row.original;
-                    const authorProfile = profiles?.profiles?.find(
-                        profile => profile.user_id === author,
-                    );
-                    const authorName =
-                        authorProfile?.first_name && authorProfile?.last_name
-                            ? `${authorProfile.first_name} ${authorProfile.last_name}`
-                            : authorProfile?.user_name ?? '';
-                    const { target_teams } = settings.row.original;
-                    const userIsAuthor =
-                        authorProfile?.user_id === currentUser.user_id;
-                    const teamNames = teams
-                        ?.filter(team => target_teams.includes(team.id))
-                        .map(team => team.name)
-                        .join(', ');
+                    const { files, links } = settings.row.original;
                     return (
-                        <section>
-                            <BudgetFilesModal
-                                eventId={settings.row.original.id}
-                                note={settings.row.original.comment}
-                                date={settings.row.original.created_at}
-                                type={settings.row.original.type}
-                                links={settings.row.original.links}
-                                author={authorName}
-                                recipients={teamNames}
-                                iconColor={
-                                    settings.row.original.deleted_at
-                                        ? 'secondary'
-                                        : 'action'
-                                }
-                            />
-                            {!settings.row.original.is_finalized &&
-                                settings.row.original.author ===
-                                    currentUser.user_id && (
-                                    <CreateEditBudgetEvent
-                                        campaignId={
-                                            settings.row.original.campaign
-                                        }
-                                        type="edit"
-                                        budgetEvent={settings.row.original}
-                                        iconProps={{ type: 'edit' }}
-                                    />
-                                )}
-                            {!settings.row.original.deleted_at &&
-                                userIsAuthor && (
-                                    <DeleteDialog
-                                        titleMessage={
-                                            MESSAGES.deleteBudgetEvent
-                                        }
-                                        message={MESSAGES.deleteBudgetEvent}
-                                        onConfirm={() =>
-                                            deleteBudgetEvent(
-                                                settings.row.original.id,
-                                            )
-                                        }
-                                        keyName={`deleteBudgetEvent-${settings.row.original.id}`}
-                                    />
-                                )}
-                            {settings.row.original.deleted_at &&
-                                userIsAuthor && (
-                                    <IconButtonComponent
-                                        color="secondary"
-                                        icon="restore-from-trash"
-                                        tooltipMessage={MESSAGES.restore}
-                                        onClick={() =>
-                                            restoreBudgetEvent(
-                                                settings.row.original.id,
-                                            )
-                                        }
-                                    />
-                                )}
-                        </section>
+                        <Box mt={2}>
+                            {makeFileLinks(files)}
+                            {makeLinks(links)}
+                        </Box>
                     );
                 },
             },
+            // TODO delete unused messages
+            // {
+            //     Header: formatMessage(MESSAGES.actions),
+            //     id: 'id',
+            //     accessor: 'id',
+            //     sortable: false,
+            //     Cell: settings => {
+            //         // const { author } = settings.row.original;
+            //         // const authorProfile = profiles?.profiles?.find(
+            //         //     profile => profile.user_id === author,
+            //         // );
+            //         // const authorName =
+            //         //     authorProfile?.first_name && authorProfile?.last_name
+            //         //         ? `${authorProfile.first_name} ${authorProfile.last_name}`
+            //         //         : authorProfile?.user_name ?? '';
+            //         // const userIsAuthor =
+            //         //     authorProfile?.user_id === currentUser.user_id;
+            //         // const { target_teams } = settings.row.original;
+            //         // const teamNames = teams
+            //         //     ?.filter(team => target_teams.includes(team.id))
+            //         //     .map(team => team.name)
+            //         //     .join(', ');
+            //         return (
+            //             <section>
+            //                 <BudgetFilesModal
+            //                     eventId={settings.row.original.id}
+            //                     note={settings.row.original.comment}
+            //                     date={settings.row.original.created_at}
+            //                     type={settings.row.original.type}
+            //                     links={settings.row.original.links}
+            //                     author={settings.row.original.created_by}
+            //                     files={settings.row.original.files}
+            //                     // recipients={teamNames}
+            //                     iconColor={
+            //                         settings.row.original.deleted_at
+            //                             ? 'secondary'
+            //                             : 'action'
+            //                     }
+            //                 />
+            //                 {/* {!settings.row.original.is_finalized &&
+            //                     settings.row.original.author ===
+            //                         currentUser.user_id && (
+            //                         <CreateEditBudgetEvent
+            //                             campaignId={
+            //                                 settings.row.original.campaign
+            //                             }
+            //                             type="edit"
+            //                             budgetEvent={settings.row.original}
+            //                             iconProps={{ type: 'edit' }}
+            //                         />
+            //                     )} */}
+            //                 {/* {!settings.row.original.deleted_at &&
+            //                     userIsAuthor && (
+            //                         <DeleteDialog
+            //                             titleMessage={
+            //                                 MESSAGES.deleteBudgetEvent
+            //                             }
+            //                             message={MESSAGES.deleteBudgetEvent}
+            //                             onConfirm={() =>
+            //                                 deleteBudgetEvent(
+            //                                     settings.row.original.id,
+            //                                 )
+            //                             }
+            //                             keyName={`deleteBudgetEvent-${settings.row.original.id}`}
+            //                         />
+            //                     )}
+            //                 {settings.row.original.deleted_at &&
+            //                     userIsAuthor && (
+            //                         <IconButtonComponent
+            //                             color="secondary"
+            //                             icon="restore-from-trash"
+            //                             tooltipMessage={MESSAGES.restore}
+            //                             onClick={() =>
+            //                                 restoreBudgetEvent(
+            //                                     settings.row.original.id,
+            //                                 )
+            //                             }
+            //                         />
+            //                     )} */}
+            //             </section>
+            //         );
+            //     },
+            // },
         ];
         if (showInternalColumn) {
             return [
@@ -372,28 +369,18 @@ export const useBudgetDetailsColumns = ({ profiles, data }): Column[] => {
             ];
         }
         return defaultColumns;
-    }, [
-        formatMessage,
-        showInternalColumn,
-        getRowColor,
-        profiles?.profiles,
-        classes.paragraph,
-        teams,
-        currentUser.user_id,
-        deleteBudgetEvent,
-        restoreBudgetEvent,
-    ]);
+    }, [formatMessage, showInternalColumn, getRowColor, classes.paragraph]);
 };
 
 type Params = {
     events: Optional<BudgetEvent[]>;
-    profiles: Profile[];
+    // profiles: Profile[];
     params: Record<string, any>;
 };
 
 export const useTableState = ({
     events,
-    profiles,
+    // profiles,
     params,
 }: Params): { resetPageToOne: unknown; columns: Column[] } => {
     const { campaignName, campaignId } = params;
@@ -409,7 +396,7 @@ export const useTableState = ({
     }, [params.pageSize, campaignId, campaignName]);
 
     const columns = useBudgetDetailsColumns({
-        profiles,
+        // profiles,
         data: events,
     });
 

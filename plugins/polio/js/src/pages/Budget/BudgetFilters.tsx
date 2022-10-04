@@ -64,14 +64,14 @@ export const BudgetFilters: FunctionComponent<Props> = ({
                     <InputComponent
                         type="select"
                         multi={false}
-                        keyValue="last_budget_event__status"
+                        keyValue="current_state__key"
                         onChange={handleChange}
-                        value={filters.last_budget_event__status}
+                        value={filters.current_state__key}
                         options={statusOptions(formatMessage)}
                         label={MESSAGES.status}
                     />
                 </Grid>
-                <Grid item xs={12} sm={12} md={6}>
+                {/* <Grid item xs={12} sm={12} md={6}>
                     <Box
                         mt={
                             isSmLayout && !isXSLayout
@@ -90,7 +90,7 @@ export const BudgetFilters: FunctionComponent<Props> = ({
                             xs={12}
                         />
                     </Box>
-                </Grid>
+                </Grid> */}
                 <Grid container item xs={12} justifyContent="flex-end">
                     <Box mt={2}>
                         <FilterButton

@@ -90,20 +90,20 @@ jobs:
         run: |
           npm install --global npm@8.5
 
-      - run: npm ci --ignore-scripts
+      - run: npm ci
         if: steps.cache.outputs.cache-hit != 'true'
 
       - name: Cypress run
         uses: cypress-io/github-action@v4
         with:
           browser: chrome
-          wait-on: 'localhost:8081'
-          spec: hat/assets/js/cypress/integration/**/*.spec.js
+          wait-on: 'http://localhost:8081'
+          spec: hat/assets/js/cypress/integration/${{ matrix.containers }}/*.spec.js
           install: false
         env:
           CYPRESS_USERNAME: "test"
           CYPRESS_PASSWORD: "test"
-          CYPRESS_BASE_URL: "localhost:8081"
+          CYPRESS_BASE_URL: "http://localhost:8081"
       
       - name: Mark comment as success
         uses: dkershner6/reaction-action@v1

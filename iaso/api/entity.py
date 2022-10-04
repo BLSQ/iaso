@@ -404,7 +404,7 @@ class EntityViewSet(ModelViewSet):
                 result = {
                     "id": entity.pk,
                     "uuid": entity.uuid,
-                    "entity_type_name": entity.entity_type.name,
+                    "entity_type": entity.entity_type.name,
                     "created_at": entity.created_at,
                     "updated_at": entity.updated_at,
                     "org_unit": attributes_ou,

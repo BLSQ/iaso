@@ -26,9 +26,20 @@ class CampaignBudgetSerializer(CampaignSerializer):
     # Todo set dynamic serializer
     class Meta:
         model = Campaign
-        fields = ["created_at", "id", "obr_name", "country_name", "current_state", "next_transitions"]
+        fields = [
+            "created_at",
+            "id",
+            "obr_name",
+            "country_name",
+            "current_state",
+            "next_transitions",
+            "budget_last_updated_at",
+        ]
 
+    # added via annotation
+    budget_last_updated_at = serializers.DateTimeField(required=False)
     current_state = serializers.SerializerMethodField()
+
     next_transitions = serializers.SerializerMethodField()
     # will need to use country__name for sorting
     country_name = serializers.SlugRelatedField(source="country", slug_field="name", read_only=True)

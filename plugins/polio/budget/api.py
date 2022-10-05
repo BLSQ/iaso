@@ -1,4 +1,4 @@
-from django.db.models import QuerySet
+from django.db.models import QuerySet, Max
 from django_filters.rest_framework import DjangoFilterBackend
 from drf_yasg.utils import swagger_auto_schema
 from rest_framework import permissions, filters, status
@@ -36,6 +36,7 @@ class BudgetCampaignViewSet(ModelViewSet):
         # Fixme refactor in function
         user = self.request.user
         campaigns = Campaign.objects.all()
+        campaigns = campaigns.annotate(budget_last_updated_at=Max("budget_steps__created_at"))
         if user.is_authenticated and user.iaso_profile.org_units.count():
             org_units = OrgUnit.objects.hierarchy(user.iaso_profile.org_units.all())
             return campaigns.filter(initial_org_unit__in=org_units)

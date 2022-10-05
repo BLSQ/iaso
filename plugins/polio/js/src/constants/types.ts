@@ -112,24 +112,3 @@ export type BudgetEventType =
     | 'transmission'
     | 'feedback'
     | 'review';
-
-export type BudgetEvent = {
-    id: number;
-    campaign: string;
-    author: number;
-    type: BudgetEventType;
-    status: BudgetStatus;
-    created_at: string;
-    updated_at: string;
-    deleted_at: Nullable<string>;
-    // legacy. should be deleted backend side
-    cc_emails: null;
-    comment: Nullable<string>;
-    links: Nullable<string[]>;
-    is_finalized: boolean;
-    is_email_sent: boolean;
-    target_teams: number[];
-    files: any;
-    internal: boolean;
-    amount?: number;
-};

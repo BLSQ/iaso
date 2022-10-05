@@ -3,7 +3,6 @@ import React, { FunctionComponent } from 'react';
 import { makeStyles, Typography } from '@material-ui/core';
 // @ts-ignore
 import { useSafeIntl } from 'bluesquare-components';
-import moment from 'moment';
 import MESSAGES from '../../constants/messages';
 import { WARNING_COLOR } from '../../styles/constants';
 

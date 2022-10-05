@@ -196,9 +196,12 @@ export const BudgetDetails: FunctionComponent<Props> = ({ router }) => {
                                         spacing={2}
                                         justifyContent="flex-end"
                                     >
-                                        {nextSteps.map(step => {
+                                        {nextSteps.map((step, index) => {
                                             return (
-                                                <Grid item key={step.key}>
+                                                <Grid
+                                                    item
+                                                    key={`${step.key}-${index}`}
+                                                >
                                                     <CreateBudgetStep
                                                         isMobileLayout={
                                                             isMobileLayout

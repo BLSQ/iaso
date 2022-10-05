@@ -246,6 +246,14 @@ const routes = [
                 isRequired: false,
                 key: 'action',
             },
+            {
+                isRequired: false,
+                key: 'quickTransition',
+            },
+            {
+                isRequired: false,
+                key: 'previousStep',
+            },
             // {
             //     isRequired: false,
             //     key: 'senderTeam',

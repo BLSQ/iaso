@@ -5,8 +5,10 @@ from django.db import models
 
 class BudgetStepQuerySet(models.QuerySet):
     def filter_for_user(self, user: User):
-        # FIXME TODO
-        return self.all()
+        from plugins.polio.models import Campaign
+
+        campaigns = Campaign.objects.filter_for_user(user)
+        return self.filter(campaign__in=campaigns)
 
 
 class BudgetStep(models.Model):

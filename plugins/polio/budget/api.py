@@ -35,13 +35,9 @@ class BudgetCampaignViewSet(ModelViewSet):
     def get_queryset(self) -> QuerySet:
         # Fixme refactor in function
         user = self.request.user
-        campaigns = Campaign.objects.all()
+        campaigns = Campaign.objects.filter_for_user(user)
         campaigns = campaigns.annotate(budget_last_updated_at=Max("budget_steps__created_at"))
-        if user.is_authenticated and user.iaso_profile.org_units.count():
-            org_units = OrgUnit.objects.hierarchy(user.iaso_profile.org_units.all())
-            return campaigns.filter(initial_org_unit__in=org_units)
-        else:
-            return campaigns.filter()
+        return campaigns
 
     def filter_queryset(self, queryset):
         queryset = super().filter_queryset(queryset)

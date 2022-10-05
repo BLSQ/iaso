@@ -178,10 +178,20 @@ class Round(models.Model):
         return getattr(self, key)
 
 
+class CampaignQuerySet(models.QuerySet):
+    def filter_for_user(self, user: User):
+        qs = self
+        if user.is_authenticated and user.iaso_profile.org_units.count():
+            org_units = OrgUnit.objects.hierarchy(user.iaso_profile.org_units.all())
+            qs = qs.filter(initial_org_unit__in=org_units)
+        return qs
+
+
 class Campaign(SoftDeletableModel):
     class Meta:
         ordering = ["obr_name"]
 
+    objects = CampaignQuerySet.as_manager()
     id = models.UUIDField(default=uuid4, primary_key=True, editable=False)
     epid = models.CharField(default=None, max_length=255, null=True, blank=True)
     obr_name = models.CharField(max_length=255, unique=True)

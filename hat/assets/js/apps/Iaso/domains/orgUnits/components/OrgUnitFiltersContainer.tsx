@@ -43,8 +43,6 @@ type Props = {
     // eslint-disable-next-line no-unused-vars
     onSearch: (searches: any) => void;
     currentTab: string;
-    filtersUpdated: boolean;
-    setFiltersUpdated: React.Dispatch<React.SetStateAction<boolean>>;
     orgunitTypes: DropdownOptions<string>[];
     isFetchingOrgunitTypes: boolean;
     counts: Count[];
@@ -83,8 +81,6 @@ export const OrgUnitFiltersContainer: FunctionComponent<Props> = ({
     params,
     onSearch,
     currentTab,
-    filtersUpdated,
-    setFiltersUpdated,
     defaultSearches,
     orgunitTypes,
     isFetchingOrgunitTypes,
@@ -109,15 +105,13 @@ export const OrgUnitFiltersContainer: FunctionComponent<Props> = ({
     const currentSearchIndex = parseInt(params.searchTabIndex, 10);
 
     const handleSearch = useCallback(() => {
-        if (filtersUpdated) {
-            const tempParams = {
-                ...params,
-                page: 1,
-                searches,
-            };
-            onSearch(tempParams);
-        }
-    }, [filtersUpdated, params, searches, onSearch]);
+        const tempParams = {
+            ...params,
+            page: 1,
+            searches,
+        };
+        onSearch(tempParams);
+    }, [params, searches, onSearch]);
 
     const handleChangeColor = useCallback(
         (color: string, searchIndex: number) => {
@@ -143,10 +137,9 @@ export const OrgUnitFiltersContainer: FunctionComponent<Props> = ({
     const handleAddDynamicTab = useCallback(
         newParams => {
             dispatch(redirectTo(baseUrl, newParams));
-            setFiltersUpdated(true);
             setSearches(decodeSearch(decodeURI(newParams.searches)));
         },
-        [dispatch, setFiltersUpdated],
+        [dispatch],
     );
 
     return (
@@ -202,13 +195,11 @@ export const OrgUnitFiltersContainer: FunctionComponent<Props> = ({
                             currentSearch={searches[searchIndex]}
                             searches={searches}
                             setTextSearchError={setTextSearchError}
-                            setFiltersUpdated={setFiltersUpdated}
                             setSearches={setSearches}
                             onChangeColor={handleChangeColor}
                             currentTab={currentTab}
                             params={params}
                             setHasLocationLimitError={setHasLocationLimitError}
-                            filtersUpdated={filtersUpdated}
                             orgunitTypes={orgunitTypes}
                             isFetchingOrgunitTypes={isFetchingOrgunitTypes}
                         />
@@ -234,11 +225,7 @@ export const OrgUnitFiltersContainer: FunctionComponent<Props> = ({
                         {formatMessage(MESSAGES.create)}
                     </Button>
                     <SearchButton
-                        disabled={
-                            !filtersUpdated ||
-                            textSearchError ||
-                            hasLocationLimitError
-                        }
+                        disabled={textSearchError || hasLocationLimitError}
                         onSearch={handleSearch}
                     />
                 </Box>

@@ -108,7 +108,6 @@ export const OrgUnits: FunctionComponent<Props> = ({ params }) => {
     const [resetPageToOne, setResetPageToOne] = useState<string>('');
     const [deletedTab, setDeletedTab] = useState<boolean>(false);
     const [refresh, setRefresh] = useState<boolean>(false);
-    const [filtersUpdated, setFiltersUpdated] = useState<boolean>(true);
     const [multiActionPopupOpen, setMultiActionPopupOpen] =
         useState<boolean>(false);
     const [tab, setTab] = useState<string>(params.tab ?? 'list');
@@ -150,9 +149,6 @@ export const OrgUnits: FunctionComponent<Props> = ({ params }) => {
         refetch: fetchOrgUnits,
     } = useGetOrgUnits({
         params: apiParams,
-        callback: () => {
-            setFiltersUpdated(false);
-        },
     });
     const {
         data: orgUnitsDataLocation,
@@ -290,9 +286,7 @@ export const OrgUnits: FunctionComponent<Props> = ({ params }) => {
                     params={params}
                     onSearch={onSearch}
                     currentTab={tab}
-                    filtersUpdated={filtersUpdated}
                     defaultSearches={searches}
-                    setFiltersUpdated={setFiltersUpdated}
                     orgunitTypes={orgunitTypes || []}
                     isFetchingOrgunitTypes={isFetchingOrgunitTypes}
                     counts={(!isLoading && orgUnitsData?.counts) || []}

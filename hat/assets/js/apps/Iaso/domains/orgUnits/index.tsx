@@ -6,16 +6,11 @@ import React, {
     useCallback,
 } from 'react';
 import { makeStyles, Box, Tabs, Tab } from '@material-ui/core';
-import EditIcon from '@material-ui/icons/Edit';
 import {
     // @ts-ignore
     commonStyles,
     // @ts-ignore
     useSafeIntl,
-    // @ts-ignore
-    selectionInitialState,
-    // @ts-ignore
-    setTableSelection,
     // @ts-ignore
     LoadingSpinner,
     // @ts-ignore
@@ -26,17 +21,15 @@ import { useQueryClient } from 'react-query';
 
 // COMPONENTS
 import DownloadButtonsComponent from '../../components/DownloadButtonsComponent';
-import { OrgUnitsMultiActionsDialog } from './components/OrgUnitsMultiActionsDialog';
 import { OrgUnitFiltersContainer } from './components/OrgUnitFiltersContainer';
 import TopBar from '../../components/nav/TopBarComponent';
-import { TableWithDeepLink } from '../../components/tables/TableWithDeepLink';
 import { OrgUnitsMap } from './components/OrgUnitsMap';
+import { TableList } from './components/TableList';
 // COMPONENTS
 
 // TYPES
-import { OrgUnit, OrgUnitParams } from './types/orgUnit';
+import { OrgUnitParams } from './types/orgUnit';
 import { Search } from './types/search';
-import { Selection } from './types/selection';
 // TYPES
 
 // UTILS
@@ -56,7 +49,6 @@ import {
     useGetOrgUnits,
     useGetOrgUnitsLocations,
 } from './hooks/requests/useGetOrgUnits';
-import { useGetOrgUnitsTableColumns } from './hooks/useGetOrgUnitsTableColumns';
 import { useBulkSaveOrgUnits } from './hooks/requests/useBulkSaveOrgUnits';
 import { useGetApiParams } from './hooks/useGetApiParams';
 import { useGetOrgUnitTypes } from './hooks/requests/useGetOrgUnitTypes';
@@ -108,12 +100,7 @@ export const OrgUnits: FunctionComponent<Props> = ({ params }) => {
     const [resetPageToOne, setResetPageToOne] = useState<string>('');
     const [deletedTab, setDeletedTab] = useState<boolean>(false);
     const [refresh, setRefresh] = useState<boolean>(false);
-    const [multiActionPopupOpen, setMultiActionPopupOpen] =
-        useState<boolean>(false);
     const [tab, setTab] = useState<string>(params.tab ?? 'list');
-    const [selection, setSelection] = useState<Selection<OrgUnit>>(
-        selectionInitialState,
-    );
     // STATE
 
     // MEMO
@@ -128,7 +115,6 @@ export const OrgUnits: FunctionComponent<Props> = ({ params }) => {
     // MEMO
 
     // CUSTOM HOOKS
-    const columns = useGetOrgUnitsTableColumns(searches);
     const { getUrl, apiParams } = useGetApiParams(searches, params);
     const { apiParams: apiParamsLocations } = useGetApiParams(
         searches,
@@ -160,35 +146,6 @@ export const OrgUnits: FunctionComponent<Props> = ({ params }) => {
     });
     // REQUESTS HOOKS
 
-    // SELECTION
-    const multiEditDisabled =
-        !selection.selectAll && selection.selectedItems.length === 0;
-
-    const handleTableSelection = useCallback(
-        (selectionType, items = [], totalCount = 0) => {
-            const newSelection: Selection<OrgUnit> = setTableSelection(
-                selection,
-                selectionType,
-                items,
-                totalCount,
-            );
-            setSelection(newSelection);
-        },
-        [selection],
-    );
-    const selectionActions = useMemo(
-        () => [
-            {
-                icon: <EditIcon />,
-                label: formatMessage(MESSAGES.multiSelectionAction),
-                onClick: () => setMultiActionPopupOpen(true),
-                disabled: multiEditDisabled,
-            },
-        ],
-        [multiEditDisabled, formatMessage],
-    );
-    // SELECTION
-
     const handleSearch = useCallback(() => {
         fetchOrgUnits();
         fetchOrgUnitsLocations();
@@ -196,7 +153,7 @@ export const OrgUnits: FunctionComponent<Props> = ({ params }) => {
 
     const onSearch = useCallback(
         newParams => {
-            handleTableSelection('reset');
+            // handleTableSelection('reset');
             const tempParams = {
                 ...newParams,
                 searches: JSON.stringify(newParams.searches),
@@ -208,7 +165,7 @@ export const OrgUnits: FunctionComponent<Props> = ({ params }) => {
             dispatch(redirectTo(baseUrl, tempParams));
             setRefresh(true);
         },
-        [handleTableSelection, dispatch],
+        [dispatch],
     );
 
     // TABS
@@ -271,13 +228,6 @@ export const OrgUnits: FunctionComponent<Props> = ({ params }) => {
             isFetchingOrgunitTypes);
     return (
         <>
-            <OrgUnitsMultiActionsDialog
-                open={multiActionPopupOpen}
-                params={params}
-                closeDialog={() => setMultiActionPopupOpen(false)}
-                selection={selection}
-                saveMulti={saveMulti}
-            />
             {isLoading && <LoadingSpinner fixed={false} absolute />}
             <TopBar title={formatMessage(MESSAGES.title)} />
 
@@ -333,54 +283,32 @@ export const OrgUnits: FunctionComponent<Props> = ({ params }) => {
                                 />
                             </Tabs>
                             {tab === 'list' && (
-                                <Box mt={-4}>
-                                    <TableWithDeepLink
-                                        resetPageToOne={resetPageToOne}
-                                        data={orgUnitsData?.orgunits || []}
-                                        count={orgUnitsData?.count}
-                                        pages={orgUnitsData?.pages}
-                                        params={params}
-                                        columns={columns}
-                                        baseUrl={baseUrl}
-                                        marginTop={false}
-                                        extraProps={{
-                                            columns,
-                                        }}
-                                        multiSelect
-                                        selection={selection}
-                                        selectionActions={selectionActions}
-                                        setTableSelection={(
-                                            selectionType,
-                                            items,
-                                            totalCount,
-                                        ) =>
-                                            handleTableSelection(
-                                                selectionType,
-                                                items,
-                                                totalCount,
-                                            )
-                                        }
-                                    />
-                                </Box>
+                                <TableList
+                                    params={params}
+                                    saveMulti={saveMulti}
+                                    resetPageToOne={resetPageToOne}
+                                    orgUnitsData={orgUnitsData}
+                                />
                             )}
 
-                            {!isFetchingOrgunitTypes && orgUnitsDataLocation && (
-                                <div
-                                    className={
-                                        tab === 'map'
-                                            ? ''
-                                            : classes.hiddenOpacity
-                                    }
-                                >
-                                    <div className={classes.containerMarginNeg}>
-                                        <OrgUnitsMap
-                                            params={params}
-                                            orgUnitTypes={orgunitTypes || []}
-                                            orgUnits={orgUnitsDataLocation}
-                                        />
-                                    </div>
+                            <div
+                                className={
+                                    tab === 'map' ? '' : classes.hiddenOpacity
+                                }
+                            >
+                                <div className={classes.containerMarginNeg}>
+                                    <OrgUnitsMap
+                                        params={params}
+                                        orgUnitTypes={orgunitTypes || []}
+                                        orgUnits={
+                                            orgUnitsDataLocation || {
+                                                locations: [],
+                                                shapes: [],
+                                            }
+                                        }
+                                    />
                                 </div>
-                            )}
+                            </div>
                         </>
                     )}
                 </Box>

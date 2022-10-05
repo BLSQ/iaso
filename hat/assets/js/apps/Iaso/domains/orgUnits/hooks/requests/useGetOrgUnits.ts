@@ -17,7 +17,7 @@ export type Count = {
     index: number;
     count: number;
 };
-type Result = Pagination & {
+export type Result = Pagination & {
     orgunits: OrgUnit[];
     counts: Count[];
 };

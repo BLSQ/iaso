@@ -7,7 +7,8 @@ from rest_framework.response import Response
 
 from iaso.api.common import ModelViewSet, DeletionFilterBackend
 from iaso.models import OrgUnit
-from plugins.polio.budget.serializers import CampaignBudgetSerializer, TransitionToSerializer
+from plugins.polio.budget.models import BudgetStep
+from plugins.polio.budget.serializers import CampaignBudgetSerializer, TransitionToSerializer, BudgetStepSerializer
 from plugins.polio.models import Campaign
 
 
@@ -74,3 +75,35 @@ class BudgetCampaignViewSet(ModelViewSet):
         budget_step = serializer.save()
 
         return Response({"result": "success", "id": budget_step.id}, status=status.HTTP_201_CREATED)
+
+
+@swagger_auto_schema(tags=["budget"])
+class BudgetStepViewSet(ModelViewSet):
+    """
+    Step on a campaign
+    """
+
+    serializer_class = BudgetStepSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+    http_method_names = ["get", "head"]
+    filter_backends = [
+        filters.OrderingFilter,
+        DjangoFilterBackend,
+    ]
+
+    def get_queryset(self) -> QuerySet:
+        return BudgetStep.objects.filter_for_user(self.request.user)
+
+    def filter_queryset(self, queryset):
+        queryset = super().filter_queryset(queryset)
+        return queryset
+
+    ordering_fields = [
+        "campaign_id",
+        "created_at",
+        "created_by",
+    ]
+    filterset_fields = {
+        "campaign_id": ["exact"],
+    }

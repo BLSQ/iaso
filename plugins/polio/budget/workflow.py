@@ -28,13 +28,23 @@ class Node:
 @dataclass
 class Workflow:
     transitions: List[Transition]
-    nodes: List[Transition]
+    nodes: List[Node]
+    _transitions_dict = None
 
     def get_node_by_key(self, key):
         nodes = [node for node in self.nodes if node.key == key]
         if not nodes:
             raise ValueError("Node not found")
         return nodes[0]
+
+    @property
+    def transitions_dict(self):
+        if not self._transitions_dict:
+            self._transitions_dict = {t.key: t for t in self.transitions}
+        return self._transitions_dict
+
+    def get_transition_by_key(self, key):
+        return self.transitions_dict[key]
 
     def self_check(self):
         for transition in self.transitions:

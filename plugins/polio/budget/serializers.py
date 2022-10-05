@@ -117,3 +117,29 @@ class TransitionToSerializer(serializers.Serializer):
             campaign.save()
 
         return step
+
+
+class BudgetStepSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = BudgetStep
+        fields = [
+            "id",
+            "created_at",
+            "created_by_team",
+            "created_by",
+            "campaign_id",
+            "comment",
+            "links",
+            "files",
+            "amount",
+            "transition_key",
+            "transition_label",
+        ]
+
+    transition_label = serializers.SerializerMethodField()
+
+    @swagger_serializer_method(serializer_or_field=serializers.CharField)
+    def get_transition_label(self, budget_step: BudgetStep):
+        workflow = get_workflow()
+        transition = workflow.get_transition_by_key(budget_step.transition_key)
+        return transition.label

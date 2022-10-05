@@ -1,8 +1,16 @@
+from django.contrib.auth.models import User
 from django.contrib.postgres.fields import ArrayField, CITextField
 from django.db import models
 
 
+class BudgetStepQuerySet(models.QuerySet):
+    def filter_for_user(self, user: User):
+        # FIXME TODO
+        return self.all()
+
+
 class BudgetStep(models.Model):
+    objects = BudgetStepQuerySet.as_manager()
     campaign = models.ForeignKey("Campaign", on_delete=models.PROTECT, related_name="budget_steps")
     transition_key = models.CharField(max_length=30)
     created_at = models.DateTimeField(auto_now_add=True)

@@ -8,38 +8,33 @@ import React, {
 import { useSafeIntl } from 'bluesquare-components';
 import {
     Box,
-    Collapse,
-    Divider,
     Grid,
     makeStyles,
-    Paper,
     Typography,
     useMediaQuery,
     useTheme,
 } from '@material-ui/core';
 
 import { useDispatch, useSelector } from 'react-redux';
-import MoreHorizIcon from '@material-ui/icons/MoreHoriz';
-import { Pagination } from '@material-ui/lab';
 import TopBar from '../../../../../../hat/assets/js/apps/Iaso/components/nav/TopBarComponent';
 import MESSAGES from '../../constants/messages';
 import { useStyles } from '../../styles/theme';
-import { TableWithDeepLink } from '../../../../../../hat/assets/js/apps/Iaso/components/tables/TableWithDeepLink';
 import { BUDGET, BUDGET_DETAILS } from '../../constants/routes';
 import { useTableState } from './hooks/config';
-import { GraphTitle } from '../../components/LQAS-IM/GraphTitle';
 import { BudgetStatus } from './BudgetStatus';
 import { redirectToReplace } from '../../../../../../hat/assets/js/apps/Iaso/routing/actions';
 import InputComponent from '../../../../../../hat/assets/js/apps/Iaso/components/forms/InputComponent';
-import { BudgetEventCard } from './cards/BudgetEventCard';
 import { useBoundState } from '../../../../../../hat/assets/js/apps/Iaso/hooks/useBoundState';
 import { Optional } from '../../../../../../hat/assets/js/apps/Iaso/types/utils';
 import { handleTableDeepLink } from '../../../../../../hat/assets/js/apps/Iaso/utils/table';
-import { LinkToProcedure } from './LinkToProcedure';
 import { BudgetDetailsFilters } from './BudgetDetailsFilters';
 import { useGetBudgetForCampaign } from './mockAPI/useGetBudget';
 import { useGetBudgetDetails } from './mockAPI/useGetBudgetDetails';
 import { CreateBudgetStep } from './CreateBudgetStep/CreateBudgetStep';
+import { CreateOverrideStep } from './CreateBudgetStep/CreateOverrideStep';
+import { BudgetDetailsCardsLayout } from './BudgetDetailsCardsLayout';
+import { BudgetDetailsTableLayout } from './BudgetDetailsTableLayout';
+import { BudgetDetailsFiltersMobile } from './BudgetDetailsFiltersMobile';
 
 type Props = {
     router: any;
@@ -62,8 +57,14 @@ const useBudgetDetailsStyles = makeStyles(theme => ({
 export const BudgetDetails: FunctionComponent<Props> = ({ router }) => {
     const { params } = router;
     const classes = useStyles();
-    const paginationStyle = useBudgetDetailsStyles();
-    const { campaignName, ...apiParams } = router.params;
+    const budgetDetailsClasses = useBudgetDetailsStyles();
+    const {
+        campaignName,
+        campaignId,
+        quickTransition,
+        previousStep,
+        ...apiParams
+    } = router.params;
     const { formatMessage } = useSafeIntl();
     const [showDeleted, setShowDeleted] = useState(
         apiParams.show_deleted ?? false,
@@ -79,27 +80,35 @@ export const BudgetDetails: FunctionComponent<Props> = ({ router }) => {
 
     const { data: budgetDetails, isFetching } = useGetBudgetDetails(apiParams);
 
-    const [page, setPage] = useBoundState<Optional<number | string>>(
-        1,
-        apiParams?.page,
-    );
+    const previousBudgetStep = useMemo(() => {
+        if (!quickTransition) return null;
+        return (budgetDetails?.results ?? []).find(
+            step => step.id === parseInt(previousStep, 10),
+        );
+    }, [budgetDetails?.results, previousStep, quickTransition]);
 
     const { data: budgetInfos } = useGetBudgetForCampaign(params?.campaignName);
 
     const budgetStatus = budgetInfos?.current_state.label ?? '--';
 
     const nextSteps = useMemo(() => {
-        return budgetInfos?.next_transitions;
+        const regular = budgetInfos?.next_transitions?.filter(
+            transition => transition.key !== 'override',
+        );
+        const override = budgetInfos?.next_transitions?.find(
+            transition => transition.key === 'override',
+        );
+        return { regular, override };
     }, [budgetInfos?.next_transitions]);
 
-    // const { data: profiles, isFetching: isFetchingProfiles } = useGetProfiles();
-    const [expand, setExpand] = useState<boolean>(false);
-
     const { resetPageToOne, columns } = useTableState({
-        // profiles,
         events: budgetDetails?.results,
         params,
     });
+    const [page, setPage] = useBoundState<Optional<number | string>>(
+        1,
+        apiParams?.page,
+    );
     const onCardPaginationChange = useCallback(
         (_value, newPage) => {
             setPage(newPage);
@@ -131,7 +140,7 @@ export const BudgetDetails: FunctionComponent<Props> = ({ router }) => {
                         <Grid item xs={isMobileLayout ? 12 : 6}>
                             <Box mb={4}>
                                 <Typography
-                                    className={paginationStyle.title}
+                                    className={budgetDetailsClasses.title}
                                     variant="h4"
                                 >
                                     {`${formatMessage(
@@ -164,30 +173,6 @@ export const BudgetDetails: FunctionComponent<Props> = ({ router }) => {
                                 lg={6}
                                 justifyContent="flex-end"
                             >
-                                {/* {budgetStatus !== 'approved' &&
-                                    isUserInApprovalTeam && (
-                                        <Box
-                                            mr={isMobileLayout ? 0 : 4}
-                                            mb={isMobileLayout ? 1 : 0}
-                                        >
-                                            <BudgetValidationPopUp
-                                                campaignName={campaignName}
-                                                campaignId={campaignId}
-                                                params={params}
-                                            />
-                                        </Box>
-                                    )}
-                                {params.action === 'addComment' &&
-                                    budgetStatus !== 'approved' &&
-                                    isUserInApprovalTeam && (
-                                        <Box mr={isMobileLayout ? 0 : 4}>
-                                            <BudgetRejectionPopUp
-                                                campaignName={campaignName}
-                                                campaignId={campaignId}
-                                                params={params}
-                                            />
-                                        </Box>
-                                    )} */}
                                 {nextSteps && (
                                     <Grid
                                         container
@@ -196,28 +181,81 @@ export const BudgetDetails: FunctionComponent<Props> = ({ router }) => {
                                         spacing={2}
                                         justifyContent="flex-end"
                                     >
-                                        {nextSteps.map((step, index) => {
-                                            return (
-                                                <Grid
-                                                    item
-                                                    key={`${step.key}-${index}`}
-                                                >
-                                                    <CreateBudgetStep
-                                                        isMobileLayout={
-                                                            isMobileLayout
-                                                        }
-                                                        // displayedFields={step.displayed_fields}
-                                                        // requiredFields={step.required_fields}
-                                                        campaignId=""
-                                                        iconProps={{
-                                                            label: step.label,
-                                                            // tooltipText={step.reason_not_allowed}
-                                                            // disabled={step.allowed}
-                                                        }}
-                                                    />
-                                                </Grid>
-                                            );
-                                        })}
+                                        {nextSteps.regular &&
+                                            nextSteps.regular.map(
+                                                (step, index) => {
+                                                    const isQuickTransition =
+                                                        step.key ===
+                                                        quickTransition;
+
+                                                    return (
+                                                        <Grid
+                                                            item
+                                                            key={`${step.key}-${index}`}
+                                                        >
+                                                            <CreateBudgetStep
+                                                                isMobileLayout={
+                                                                    isMobileLayout
+                                                                }
+                                                                // displayedFields={step.displayed_fields}
+                                                                // requiredFields={step.required_fields}
+                                                                campaignId={
+                                                                    campaignId
+                                                                }
+                                                                iconProps={{
+                                                                    label: step.label,
+                                                                    color: 'primary',
+                                                                    disabled:
+                                                                        !step.allowed,
+                                                                    // tooltipText={step.reason_not_allowed}
+                                                                    // disabled={step.allowed}
+                                                                }}
+                                                                transitionKey={
+                                                                    step.key
+                                                                }
+                                                                transitionLabel={
+                                                                    step.label
+                                                                }
+                                                                defaultOpen={
+                                                                    isQuickTransition
+                                                                }
+                                                                previousStep={
+                                                                    isQuickTransition
+                                                                        ? previousBudgetStep
+                                                                        : undefined
+                                                                }
+                                                            />
+                                                        </Grid>
+                                                    );
+                                                },
+                                            )}
+                                        {nextSteps.override?.allowed && (
+                                            <Grid item>
+                                                <CreateOverrideStep
+                                                    isMobileLayout={
+                                                        isMobileLayout
+                                                    }
+                                                    // displayedFields={step.displayed_fields}
+                                                    // requiredFields={step.required_fields}
+                                                    campaignId={campaignId}
+                                                    iconProps={{
+                                                        label: nextSteps
+                                                            .override.label,
+                                                        color: 'red',
+
+                                                        // tooltipText={step.reason_not_allowed}
+                                                        // disabled={step.allowed}
+                                                    }}
+                                                    transitionKey={
+                                                        nextSteps.override
+                                                            .transition_key
+                                                    }
+                                                    transitionLabel={
+                                                        nextSteps.override.label
+                                                    }
+                                                />
+                                            </Grid>
+                                        )}
                                     </Grid>
                                 )}
                             </Grid>
@@ -233,115 +271,28 @@ export const BudgetDetails: FunctionComponent<Props> = ({ router }) => {
                         value={showDeleted}
                     />
                     {isMobileLayout && (
-                        <>
-                            <Grid container justifyContent="space-between">
-                                <Grid item>
-                                    <LinkToProcedure />
-                                </Grid>
-                                <Grid item>
-                                    <MoreHorizIcon
-                                        color="action"
-                                        onClick={() => {
-                                            setExpand(value => !value);
-                                        }}
-                                    />
-                                </Grid>
-                            </Grid>
-                            <Collapse in={expand}>
-                                <BudgetDetailsFilters
-                                    params={params}
-                                    buttonSize="small"
-                                />
-                            </Collapse>
-                        </>
+                        <BudgetDetailsFiltersMobile params={params} />
                     )}
                 </Box>
                 <Grid container spacing={2}>
                     {isMobileLayout && budgetDetails && (
                         <Grid item xs={12}>
-                            {budgetDetails?.results.map(budgetEvent => {
-                                return (
-                                    <Box
-                                        mb={1}
-                                        key={`event-${budgetEvent.transition_key}`}
-                                    >
-                                        <BudgetEventCard event={budgetEvent} />
-                                    </Box>
-                                );
-                            })}
-                            {budgetDetails && (
-                                <Pagination
-                                    className={paginationStyle.pagination}
-                                    page={
-                                        Number.isSafeInteger(page)
-                                            ? (page as number)
-                                            : parseInt(page as string, 10)
-                                    }
-                                    count={budgetDetails?.pages}
-                                    showLastButton
-                                    showFirstButton
-                                    onChange={onCardPaginationChange}
-                                    hidePrevButton={false}
-                                    hideNextButton={false}
-                                    size="small"
-                                />
-                            )}
+                            <BudgetDetailsCardsLayout
+                                onCardPaginationChange={onCardPaginationChange}
+                                page={page}
+                                budgetDetails={budgetDetails}
+                            />
                         </Grid>
                     )}
                     {!isMobileLayout && (
                         <Grid item xs={12}>
-                            <Paper elevation={2}>
-                                <Box
-                                    ml={2}
-                                    pt={2}
-                                    mr={2}
-                                    pb={
-                                        budgetDetails?.results.length === 0
-                                            ? 1
-                                            : 0
-                                    }
-                                >
-                                    <Grid
-                                        container
-                                        justifyContent="space-between"
-                                    >
-                                        <Grid item lg={8}>
-                                            <GraphTitle
-                                                text={formatMessage(
-                                                    MESSAGES.steps,
-                                                )}
-                                                displayTrigger
-                                            />
-                                        </Grid>
-                                        <Grid
-                                            container
-                                            item
-                                            xs={4}
-                                            justifyContent="flex-end"
-                                        >
-                                            <LinkToProcedure />
-                                        </Grid>
-                                    </Grid>
-                                    <Box mt={2} mb={1}>
-                                        <Divider />
-                                    </Box>
-                                    <TableWithDeepLink
-                                        data={budgetDetails?.results ?? []}
-                                        count={budgetDetails?.count}
-                                        pages={budgetDetails?.pages}
-                                        params={params}
-                                        columns={columns}
-                                        baseUrl={BUDGET_DETAILS}
-                                        marginTop={false}
-                                        extraProps={{
-                                            loading: isFetching,
-                                            columns,
-                                        }}
-                                        resetPageToOne={resetPageToOne}
-                                        elevation={0}
-                                    />
-                                </Box>
-                            </Paper>
+                            <BudgetDetailsTableLayout
+                                budgetDetails={budgetDetails}
+                                params={params}
+                                columns={columns}
+                                isFetching={isFetching}
+                                resetPageToOne={resetPageToOne}
+                            />
                         </Grid>
                     )}
                 </Grid>

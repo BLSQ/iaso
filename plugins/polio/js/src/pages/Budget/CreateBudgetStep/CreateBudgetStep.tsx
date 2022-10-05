@@ -13,12 +13,12 @@ import {
     // @ts-ignore
     makeFullModal,
 } from 'bluesquare-components';
-import { Box, Divider, Typography } from '@material-ui/core';
+import { Box, Typography } from '@material-ui/core';
 import MESSAGES from '../../../constants/messages';
 import InputComponent from '../../../../../../../hat/assets/js/apps/Iaso/components/forms/InputComponent';
 import { useCurrentUser } from '../../../../../../../hat/assets/js/apps/Iaso/utils/usersUtils';
 
-import { useBudgetEventValidation } from '../hooks/validation';
+import { useBudgetStepValidation } from '../hooks/validation';
 import { useUserHasTeam } from '../../../hooks/useGetTeams';
 
 import {
@@ -27,10 +27,14 @@ import {
 } from '../../../../../../../hat/assets/js/apps/Iaso/libs/validation';
 import { useSaveBudgetStep } from '../mockAPI/useSaveBudgetStep';
 import { AddStepButton } from './AddStepButton';
+import { BudgetStep } from '../mockAPI/useGetBudgetDetails';
+import { UserHasTeamWarning } from './UserHasTeamWarning';
 
 type Props = {
     campaignId: string;
-    budgetEvent?: any;
+    previousStep?: BudgetStep;
+    transitionKey: string;
+    transitionLabel: string;
     closeDialog: () => void;
     isOpen: boolean;
     id?: string;
@@ -39,9 +43,11 @@ type Props = {
 
 const CreateBudgetStep: FunctionComponent<Props> = ({
     campaignId,
-    budgetEvent,
+    previousStep,
     closeDialog,
     isOpen,
+    transitionKey,
+    transitionLabel,
     id,
 }) => {
     const currentUser = useCurrentUser();
@@ -56,15 +62,15 @@ const CreateBudgetStep: FunctionComponent<Props> = ({
     } = useApiErrorValidation<Partial<any>, any>({
         mutationFn: saveBudgetStep,
     });
-    const validationSchema = useBudgetEventValidation(apiErrors, payload);
+    const validationSchema = useBudgetStepValidation(apiErrors, payload);
     const formik = useFormik({
         initialValues: {
+            transition_key: transitionKey,
             campaign: campaignId,
-            comment: budgetEvent?.comment ?? null,
-            files: budgetEvent?.files ?? null,
-            links: budgetEvent?.links ?? null,
-            // internal: budgetEvent?.internal ?? false,
-            amount: budgetEvent?.amount ?? null,
+            comment: null,
+            files: previousStep?.files ?? null,
+            links: previousStep?.links ?? null,
+            amount: previousStep?.amount ?? null,
             general: null,
         },
         enableReinitialize: true,
@@ -95,7 +101,8 @@ const CreateBudgetStep: FunctionComponent<Props> = ({
         formatMessage,
     });
 
-    const titleMessage = MESSAGES.newBudgetStep;
+    const titleMessage = transitionLabel;
+    // const titleMessage = MESSAGES.newBudgetStep;
 
     return (
         <FormikProvider value={formik}>
@@ -162,17 +169,6 @@ const CreateBudgetStep: FunctionComponent<Props> = ({
                             errors={getErrors('links')}
                             label={MESSAGES.links}
                         />
-
-                        {/* {values.type !== 'validation' &&
-                             (
-                                <InputComponent
-                                    type="checkbox"
-                                    keyValue="internal"
-                                    label={MESSAGES.internal}
-                                    onChange={onChange}
-                                    value={values.internal}
-                                />
-                            )} */}
                         {/* @ts-ignore */}
                         {(errors?.general ?? []).length > 0 && (
                             <>
@@ -188,16 +184,7 @@ const CreateBudgetStep: FunctionComponent<Props> = ({
                         )}
                     </>
                 )}
-                {!userHasTeam && (
-                    <>
-                        <Divider />
-                        <Box mb={2} mt={2}>
-                            <Typography style={{ fontWeight: 'bold' }}>
-                                {formatMessage(MESSAGES.userNeedsTeam)}
-                            </Typography>
-                        </Box>
-                    </>
-                )}
+                {!userHasTeam && <UserHasTeamWarning />}
             </ConfirmCancelModal>
         </FormikProvider>
     );

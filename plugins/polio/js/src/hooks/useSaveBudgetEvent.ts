@@ -106,18 +106,3 @@ export const useSaveBudgetEvent = (
     if (type === 'retry') return updateBudgetEvent;
     return createBudgetEvent;
 };
-
-const quickPostBudget = (data: QueryData) => {
-    return createEvent(data).then(response =>
-        putBudgetFinalisation(response.id),
-    );
-};
-
-export const useQuickApproveBudgetEvent = (): UseMutationResult => {
-    return useSnackMutation({
-        mutationFn: quickPostBudget,
-        invalidateQueryKey: ['budget-details'],
-        snackSuccessMessage: MESSAGES.budgetEventFinalized,
-    });
-};
-export const useQuickRejectBudgetEvent = () => useQuickApproveBudgetEvent();

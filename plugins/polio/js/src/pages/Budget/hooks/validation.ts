@@ -17,7 +17,7 @@ export const useBudgetEventValidation = (
     payload: any,
 ): ObjectSchema<any> => {
     const { formatMessage } = useSafeIntl();
-    const fieldRequired = formatMessage(MESSAGES.requiredField);
+    // const fieldRequired = formatMessage(MESSAGES.requiredField);
     const urlFormat = formatMessage(MESSAGES.urlFormat);
     const typeError = formatMessage(MESSAGES.budgetTypeError);
     const apiValidator = useAPIErrorValidator<Partial<any>>(errors, payload);
@@ -30,26 +30,26 @@ export const useBudgetEventValidation = (
                     multipleUrlsValidator(urlFormat, 'multiple url validation'),
                 ),
             comments: string().nullable(),
-            internal: bool().nullable().required(fieldRequired),
-            target_teams: array()
-                .min(1, fieldRequired)
-                .nullable()
-                .required(fieldRequired),
-            type: string()
-                .oneOf([
-                    'submission',
-                    'comments',
-                    'validation',
-                    'request',
-                    'feedback',
-                    'review',
-                    'transmission',
-                ]) // TODO add translation for this error
-                .nullable()
-                .required(fieldRequired)
-                .typeError(typeError),
+            // internal: bool().nullable().required(fieldRequired),
+            // target_teams: array()
+            //     .min(1, fieldRequired)
+            //     .nullable()
+            //     .required(fieldRequired),
+            // type: string()
+            //     .oneOf([
+            //         'submission',
+            //         'comments',
+            //         'validation',
+            //         'request',
+            //         'feedback',
+            //         'review',
+            //         'transmission',
+            //     ]) // TODO add translation for this error
+            //     .nullable()
+            //     .required(fieldRequired)
+            //     .typeError(typeError),
             amount: number().nullable().typeError(typeError),
             general: mixed().nullable().test(apiValidator('general')),
         });
-    }, [apiValidator, fieldRequired, typeError, urlFormat]);
+    }, [apiValidator, typeError, urlFormat]);
 };

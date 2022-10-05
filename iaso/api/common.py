@@ -249,7 +249,7 @@ class ModelViewSet(BaseModelViewSet):
         return self.results_key
 
     def list(self, request: Request, *args, **kwargs):
-        """Override to return responses with {"result_key": data} structure"""
+        # """Override to return responses with {"result_key": data} structure"""
 
         queryset = self.filter_queryset(self.get_queryset())
 

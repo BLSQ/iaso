@@ -24,7 +24,7 @@ class BudgetCampaignViewSet(ModelViewSet):
     permission_classes = [permissions.IsAuthenticated]
 
     # Make this read only
-    # FIXME : rmeove POST
+    # FIXME : remove POST
     http_method_names = ["get", "head", "post"]
     filter_backends = [
         filters.OrderingFilter,
@@ -69,8 +69,9 @@ class BudgetCampaignViewSet(ModelViewSet):
         "rounds__started_at": ["gte", "lte", "range"],
     }
 
-    @action(detail=False, methods=["POST", "GET"], serializer_class=TransitionToSerializer)
+    @action(detail=False, methods=["POST"], serializer_class=TransitionToSerializer)
     def transition_to(self, request):
+        "Transition campaign to next state. Use multipart/form-data to send files"
         serializer = TransitionToSerializer(data=request.data, context={"request": request})
         serializer.is_valid(raise_exception=True)
         budget_step = serializer.save()
@@ -81,7 +82,7 @@ class BudgetCampaignViewSet(ModelViewSet):
 @swagger_auto_schema(tags=["budget"])
 class BudgetStepViewSet(ModelViewSet):
     """
-    Step on a campaign
+    Step on a campaign, to progress the budget workflow
     """
 
     serializer_class = BudgetStepSerializer

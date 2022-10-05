@@ -13,7 +13,7 @@ class Transition:
     from_node: str = ""
     to_node: str = ""
     teams_ids_can_transition: Union[list, None] = None
-    teams_ids_can_read: Union[list, None] = None
+    teams_ids_can_view: Union[list, None] = None  # if none unrestricted
     help_text: str = ""
     allowed: Optional[bool] = None
     reason_not_allowed: Optional[str] = None

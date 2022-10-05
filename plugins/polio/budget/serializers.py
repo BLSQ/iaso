@@ -37,7 +37,7 @@ class CampaignBudgetSerializer(CampaignSerializer):
         ]
 
     # added via annotation
-    budget_last_updated_at = serializers.DateTimeField(required=False)
+    budget_last_updated_at = serializers.DateTimeField(required=False, help_text="Last budget update on the campaign")
     current_state = serializers.SerializerMethodField()
 
     next_transitions = serializers.SerializerMethodField()

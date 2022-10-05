@@ -33,8 +33,8 @@ import { Lqas } from './src/pages/LQAS';
 import { ImStats } from './src/pages/IM';
 import { paginationPathParams } from '../../../hat/assets/js/apps/Iaso/routing/common';
 import { GroupedCampaigns } from './src/pages/GroupedCampaigns/GroupedCampaigns.tsx';
-import { Budget } from './src/pages/Budget/index.tsx';
 import { BudgetDetails } from './src/pages/Budget/BudgetDetails.tsx';
+import { BudgetList } from './src/pages/Budget/index.tsx';
 
 const campaignsFilters = [
     {
@@ -197,7 +197,7 @@ const routes = [
     },
     {
         baseUrl: BUDGET,
-        component: props => <Budget {...props} />,
+        component: props => <BudgetList {...props} />,
         permissions: ['iaso_polio_budget'],
         params: [
             ...paginationPathParams,

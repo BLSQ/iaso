@@ -7,7 +7,8 @@ import { getApiParamDateString } from '../../../../../../../hat/assets/js/apps/I
 import { makePaginatedResponse, pageOneTemplate } from './utils';
 import { Nullable } from '../../../../../../../hat/assets/js/apps/Iaso/types/utils';
 
-type Budget = {
+export type Budget = {
+    id: number;
     obr_name: string;
     country_name: string;
     current_state: {
@@ -28,11 +29,13 @@ type Budget = {
 
 const mockBudgets: Budget[] = [
     {
+        id: 1,
         obr_name: 'SEN-3DS-2022',
         country_name: 'SENEGAL',
         current_state: { key: 'submitted_rrt', label: 'Submitted to RRT' },
     },
     {
+        id: 2,
         obr_name: 'MWI-2DS-2022',
         country_name: 'MALAWI',
         current_state: {
@@ -44,6 +47,7 @@ const mockBudgets: Budget[] = [
 
 const mockBudgetsForCampaigns = {
     'SEN-3DS-2022': {
+        id: 1,
         obr_name: 'SEN-3DS-2022',
         country_name: 'SENEGAL',
         current_state: { key: 'submitted_rrt', label: 'Submitted to RRT' },
@@ -69,6 +73,7 @@ const mockBudgetsForCampaigns = {
         ],
     },
     'MWI-2DS-2022': {
+        id: 2,
         obr_name: 'MWI-2DS-2022',
         country_name: 'MALAWI',
         current_state: {
@@ -107,7 +112,7 @@ const getBudgets = async (params): Promise<Paginated<Budget>> => {
     return response;
 };
 
-export const useGetBudgets = (options = {}) => {
+export const useGetBudgets = (options: any): any => {
     const params = {
         limit: options.pageSize,
         page: options.page,

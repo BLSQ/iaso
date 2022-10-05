@@ -5,13 +5,10 @@ import {
     // @ts-ignore
     useSkipEffectOnMount,
     // @ts-ignore
-    AddButton,
-    // @ts-ignore
     LoadingSpinner,
 } from 'bluesquare-components';
 import {
     Box,
-    Grid,
     useMediaQuery,
     useTheme,
     Collapse,
@@ -24,11 +21,6 @@ import { Pagination } from '@material-ui/lab';
 import TopBar from 'Iaso/components/nav/TopBarComponent';
 import { TableWithDeepLink } from '../../../../../../hat/assets/js/apps/Iaso/components/tables/TableWithDeepLink';
 
-import {
-    useCampaignParams,
-    useGetCampaigns,
-} from '../../hooks/useGetCampaigns';
-
 import { useStyles } from '../../styles/theme';
 import { BUDGET } from '../../constants/routes';
 import MESSAGES from '../../constants/messages';
@@ -37,11 +29,11 @@ import { useBudgetColumns } from './hooks/config';
 import { convertObjectToString } from '../../utils';
 
 import { BudgetFilters } from './BudgetFilters';
-import { PolioCreateEditDialog } from '../../components/CreateEditDialog';
-import { BudgetCard, CardCampaign } from './cards/BudgetCard';
+import { BudgetCard } from './cards/BudgetCard';
+
+import { Budget, useBudgetParams, useGetBudgets } from './mockAPI/useGetBudget';
 
 import { handleTableDeepLink } from '../../../../../../hat/assets/js/apps/Iaso/utils/table';
-import { useBudgetParams, useGetBudgets } from './mockAPI/useGetBudget';
 
 type Props = {
     router: any;
@@ -58,7 +50,7 @@ const style = () => {
 
 const usePaginationStyles = makeStyles(style);
 
-export const Budget: FunctionComponent<Props> = ({ router }) => {
+export const BudgetList: FunctionComponent<Props> = ({ router }) => {
     const { params } = router;
     const { formatMessage } = useSafeIntl();
     const paginationStyle = usePaginationStyles();
@@ -84,12 +76,12 @@ export const Budget: FunctionComponent<Props> = ({ router }) => {
         setResetPageToOne(convertObjectToString(newParams));
     }, [apiParams.pageSize, apiParams.search]);
 
-    // const onCardPaginationChange = useCallback(
-    //     (_value, newPage) => {
-    //         handleTableDeepLink(BUDGET)({ ...apiParams, page: newPage });
-    //     },
-    //     [apiParams],
-    // );
+    const onCardPaginationChange = useCallback(
+        (_value, newPage) => {
+            handleTableDeepLink(BUDGET)({ ...apiParams, page: newPage });
+        },
+        [apiParams],
+    );
 
     return (
         <>
@@ -136,13 +128,13 @@ export const Budget: FunctionComponent<Props> = ({ router }) => {
                         />
                     </>
                 )}
-                {/* {isMobileLayout && (
+                {isMobileLayout && (
                     <>
                         {isFetching && <LoadingSpinner />}
                         {budgets?.results &&
-                            budgets.results.map((campaign: CardCampaign) => (
+                            budgets.results.map((budget: Budget) => (
                                 <Box key={budget.id} mb={1}>
-                                    <BudgetCard campaign={campaign} />
+                                    <BudgetCard budget={budget} />
                                 </Box>
                             ))}
 
@@ -160,7 +152,7 @@ export const Budget: FunctionComponent<Props> = ({ router }) => {
                             />
                         )}
                     </>
-                )} */}
+                )}
             </Box>
         </>
     );

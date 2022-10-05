@@ -19,7 +19,7 @@ class BudgetStep(models.Model):
     # Keep trace of the Team the user was acting on behalf of in case they get remove from it.
     created_by_team = models.ForeignKey("iaso.Team", on_delete=models.PROTECT, blank=True, null=True)
     # file via Foreign keys
-    comment = models.TextField()
+    comment = models.TextField(blank=True, null=True)
     links = ArrayField(CITextField(max_length=255, blank=True), size=100, null=True, blank=True)
     amount = models.DecimalField(blank=True, null=True, decimal_places=2, max_digits=14)
     is_email_sent = models.BooleanField(default=False)

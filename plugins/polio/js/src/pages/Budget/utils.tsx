@@ -10,12 +10,6 @@ import {
 } from '../../../../../../hat/assets/js/apps/Iaso/types/utils';
 import { Team } from '../../../../../../hat/assets/js/apps/Iaso/domains/teams/types/team';
 
-export const findApprovalTeams = (teams: any[]): number[] => {
-    return teams
-        .filter(team => team.name.toLowerCase().includes('approval'))
-        .map(team => team.id);
-};
-
 export const formatUserName = (profile: Profile): string => {
     return profile?.first_name && profile?.last_name
         ? `${profile.first_name} ${profile.last_name}`

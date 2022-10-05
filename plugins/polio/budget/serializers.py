@@ -7,7 +7,7 @@ from rest_framework import serializers
 from iaso.models.microplanning import Team
 from plugins.polio.models import Campaign
 from plugins.polio.serializers import CampaignSerializer
-from .models import BudgetStep
+from .models import BudgetStep, BudgetStepFile
 from .workflow import get_workflow, next_transitions, can_user_transition
 
 
@@ -74,7 +74,7 @@ class TransitionError(Enum):
 class TransitionToSerializer(serializers.Serializer):
     transition_key = serializers.CharField()
     campaign = serializers.PrimaryKeyRelatedField(queryset=Campaign.objects.all())
-    comment = serializers.CharField()
+    comment = serializers.CharField(required=False)
     files = serializers.ListField(child=serializers.FileField(), required=False)
     links = serializers.ListField(child=serializers.CharField(), required=False)
     amount = serializers.FloatField(required=False)
@@ -123,11 +123,22 @@ class TransitionToSerializer(serializers.Serializer):
                 transition_key=transition.key,
             )
             campaign.budget_current_state_key = transition.to_node
-
+            for file in data.get("files"):
+                step.files.create(file=file, filename=file.name)
             campaign.budget_current_state_label = node.label
             campaign.save()
 
         return step
+
+
+class BudgetFileSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = BudgetStepFile
+        fields = [
+            "id",
+            "file",  # url
+            "filename",
+        ]
 
 
 class BudgetStepSerializer(serializers.ModelSerializer):
@@ -148,6 +159,7 @@ class BudgetStepSerializer(serializers.ModelSerializer):
         ]
 
     transition_label = serializers.SerializerMethodField()
+    files = BudgetFileSerializer(many=True)
 
     @swagger_serializer_method(serializer_or_field=serializers.CharField)
     def get_transition_label(self, budget_step: BudgetStep):

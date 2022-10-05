@@ -14,7 +14,7 @@ from plugins.polio.preparedness.parser import open_sheet_by_url, surge_indicator
 from plugins.polio.preparedness.spread_cache import CachedSpread
 
 # noinspection PyUnresolvedReferences
-from .budget.models import BudgetStep, BudgetStepFiles
+from .budget.models import BudgetStep, BudgetStepFile
 
 VIRUSES = [
     ("PV1", _("PV1")),

@@ -10,6 +10,7 @@ import { Nullable } from '../../../../../../../hat/assets/js/apps/Iaso/types/uti
 export type Budget = {
     id: number;
     obr_name: string;
+    campaign_id: string;
     country_name: string;
     current_state: {
         key: string;
@@ -30,12 +31,14 @@ export type Budget = {
 const mockBudgets: Budget[] = [
     {
         id: 1,
+        campaign_id: 'uuid-blablabla-lotastuff',
         obr_name: 'SEN-3DS-2022',
         country_name: 'SENEGAL',
         current_state: { key: 'submitted_rrt', label: 'Submitted to RRT' },
     },
     {
         id: 2,
+        campaign_id: 'uuid-blablabla-wawawa',
         obr_name: 'MWI-2DS-2022',
         country_name: 'MALAWI',
         current_state: {
@@ -48,6 +51,7 @@ const mockBudgets: Budget[] = [
 const mockBudgetsForCampaigns = {
     'SEN-3DS-2022': {
         id: 1,
+        campaign_id: 'uuid-blablabla-lotastuff',
         obr_name: 'SEN-3DS-2022',
         country_name: 'SENEGAL',
         current_state: { key: 'submitted_rrt', label: 'Submitted to RRT' },
@@ -59,6 +63,7 @@ const mockBudgetsForCampaigns = {
                 reason_not_allowed: null,
                 required_fields: ['files'],
                 help_text: 'attach file to submit to ORPG',
+                color: 'red',
                 displayed_fields: ['comment', 'files', 'links', 'amount'],
             },
             {
@@ -74,6 +79,7 @@ const mockBudgetsForCampaigns = {
     },
     'MWI-2DS-2022': {
         id: 2,
+        campaign_id: 'uuid-blablabla-wawawa',
         obr_name: 'MWI-2DS-2022',
         country_name: 'MALAWI',
         current_state: {
@@ -88,6 +94,15 @@ const mockBudgetsForCampaigns = {
                 reason_not_allowed: 'User is not in authorised team',
                 required_fields: ['files'],
                 help_text: 'attach file to send to GPEI',
+                displayed_fields: ['comment', 'files', 'links', 'amount'],
+            },
+            {
+                key: 'override',
+                label: 'Override',
+                allowed: true,
+                reason_not_allowed: '',
+                required_fields: [],
+                help_text: '',
                 displayed_fields: ['comment', 'files', 'links', 'amount'],
             },
         ],

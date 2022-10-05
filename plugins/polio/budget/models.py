@@ -28,9 +28,11 @@ class BudgetStep(models.Model):
         return f"{self.campaign}, {self.transition_key}"
 
 
-class BudgetStepFiles(models.Model):
+class BudgetStepFile(models.Model):
     step = models.ForeignKey(BudgetStep, on_delete=models.PROTECT, related_name="files")
     file = models.FileField()
+    # to keep original file name
+    filename = models.CharField(blank=True, null=True, max_length=100)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 

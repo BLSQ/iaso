@@ -1,14 +1,6 @@
 /* eslint-disable camelcase */
-import { useMemo } from 'react';
-import {
-    useSnackMutation,
-    useSnackQuery,
-} from '../../../../../../../hat/assets/js/apps/Iaso/libs/apiHooks';
-import { Paginated } from '../../../../../../../hat/assets/js/apps/Iaso/types/table';
+import { useSnackMutation } from '../../../../../../../hat/assets/js/apps/Iaso/libs/apiHooks';
 import { waitFor } from '../../../../../../../hat/assets/js/apps/Iaso/utils';
-import { getApiParamDateString } from '../../../../../../../hat/assets/js/apps/Iaso/utils/dates';
-import { makePaginatedResponse, pageOneTemplate } from './utils';
-import { Nullable } from '../../../../../../../hat/assets/js/apps/Iaso/types/utils';
 import { BudgetStep } from './useGetBudgetDetails';
 import MESSAGES from '../../../constants/messages';
 
@@ -24,6 +16,7 @@ type Payload = {
 const postBudgetStep = async (body: Payload): Promise<BudgetStep> => {
     await waitFor(1000);
     return {
+        id: 5,
         created_at: '2022-10-04T16:14:08.957908Z',
         created_by: 'Marty McFly',
         created_by_team: 'Team McFly',

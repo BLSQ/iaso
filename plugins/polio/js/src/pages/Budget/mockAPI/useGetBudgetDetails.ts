@@ -1,13 +1,11 @@
 /* eslint-disable camelcase */
-import { useMemo } from 'react';
 import { useSnackQuery } from '../../../../../../../hat/assets/js/apps/Iaso/libs/apiHooks';
 import { Paginated } from '../../../../../../../hat/assets/js/apps/Iaso/types/table';
 import { waitFor } from '../../../../../../../hat/assets/js/apps/Iaso/utils';
-import { getApiParamDateString } from '../../../../../../../hat/assets/js/apps/Iaso/utils/dates';
 import { makePaginatedResponse, pageOneTemplate } from './utils';
-import { Nullable } from '../../../../../../../hat/assets/js/apps/Iaso/types/utils';
 
 export type BudgetStep = {
+    id: number;
     created_at: string; // Date in string form
     created_by: string; /// created_by
     created_by_team: string;
@@ -21,6 +19,7 @@ export type BudgetStep = {
 
 const mockBudgetEvents = [
     {
+        id: 3,
         created_at: '2022-09-06T07:14:08.957908Z',
         created_by: 'Marty McFly',
         created_by_team: 'Team McFly',
@@ -35,6 +34,7 @@ const mockBudgetEvents = [
         transition_label: 'Submit to RRT',
     },
     {
+        id: 4,
         created_at: '2022-09-04T07:11:08.957908Z',
         created_by: 'Emmett Brown',
         created_by_team: 'Team Verne',

@@ -43,4 +43,19 @@ class BudgetStepFile(models.Model):
         verbose_name_plural = "Budget Step Files"
 
     def __repr__(self):
-        return f"{self.step}, {self.file.name}"
+        return f"{self.step}, {self.filename}"
+
+
+class BudgetStepLink(models.Model):
+    step = models.ForeignKey(BudgetStep, on_delete=models.PROTECT, related_name="links")
+    # to keep original file name
+    url = models.CharField(max_length=500)
+    alias = models.CharField(max_length=500)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        verbose_name = "Budget Step Link"
+        verbose_name_plural = "Budget Step Link"
+
+    def __repr__(self):
+        return f"{self.step}, {self.alias}"

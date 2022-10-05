@@ -7,7 +7,7 @@ from rest_framework import serializers
 from iaso.models.microplanning import Team
 from plugins.polio.models import Campaign
 from plugins.polio.serializers import CampaignSerializer
-from .models import BudgetStep, BudgetStepFile
+from .models import BudgetStep, BudgetStepFile, BudgetStepLink
 from .workflow import get_workflow, next_transitions, can_user_transition
 
 
@@ -71,13 +71,31 @@ class TransitionError(Enum):
     MISSING_FIELD = "missing_field"
 
 
+class BudgetLinkSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = BudgetStepLink
+        fields = [
+            "id",
+            "url",
+            "alias",
+        ]
+
+
 class TransitionToSerializer(serializers.Serializer):
     transition_key = serializers.CharField()
     campaign = serializers.PrimaryKeyRelatedField(queryset=Campaign.objects.all())
     comment = serializers.CharField(required=False)
     files = serializers.ListField(child=serializers.FileField(), required=False)
-    links = serializers.ListField(child=serializers.CharField(), required=False)
+    links = serializers.ListField(child=BudgetLinkSerializer(required=False), required=False)
+    # links = BudgetLinkSerializer(required=False, many=True)
     amount = serializers.FloatField(required=False)
+
+    def validate(self, attrs):
+        return attrs
+        pass
+
+    def validate_links(self, value):
+        return value
 
     def save(self, **kwargs):
         data = self.validated_data
@@ -116,12 +134,14 @@ class TransitionToSerializer(serializers.Serializer):
         with transaction.atomic():
             step = BudgetStep.objects.create(
                 amount=data.get("amount"),
-                links=data.get("links"),
                 created_by=user,
                 created_by_team=created_by_team,
                 campaign=campaign,
                 transition_key=transition.key,
             )
+            links_data = data.get("links", [])
+            [step.links.create(**d) for d in links_data]
+
             campaign.budget_current_state_key = transition.to_node
             for file in data.get("files"):
                 step.files.create(file=file, filename=file.name)
@@ -138,6 +158,16 @@ class BudgetFileSerializer(serializers.ModelSerializer):
             "id",
             "file",  # url
             "filename",
+        ]
+
+
+class BudgetLinkSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = BudgetStepLink
+        fields = [
+            "id",
+            "url",
+            "alias",
         ]
 
 
@@ -160,6 +190,7 @@ class BudgetStepSerializer(serializers.ModelSerializer):
 
     transition_label = serializers.SerializerMethodField()
     files = BudgetFileSerializer(many=True)
+    links = BudgetLinkSerializer(many=True)
 
     @swagger_serializer_method(serializer_or_field=serializers.CharField)
     def get_transition_label(self, budget_step: BudgetStep):

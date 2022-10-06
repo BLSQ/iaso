@@ -1545,6 +1545,22 @@ const MESSAGES = defineMessages({
         defaultMessage:
             'Select initial region and encode dates for at least one round to unlock Scope tab',
     },
+    attachments: {
+        id: 'iaso.polio.label.attachments',
+        defaultMessage: 'Attachments',
+    },
+    clickToHide: {
+        id: 'iaso.polio.label.clickToHide',
+        defaultMessage: 'Click to hide',
+    },
+    clickToShow: {
+        id: 'iaso.polio.label.clickToShow',
+        defaultMessage: 'Click to show',
+    },
+    showHidden: {
+        id: 'iaso.polio.label.showHidden',
+        defaultMessage: 'Show hidden',
+    },
 });
 
 export default MESSAGES;

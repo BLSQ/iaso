@@ -1561,6 +1561,10 @@ const MESSAGES = defineMessages({
         id: 'iaso.polio.campaign.value',
         defaultMessage: 'Value',
     },
+    typeNotSupported: {
+        id: 'iaso.polio.campaign.typeNotSupported',
+        defaultMessage: 'Type not supported yet: {type}',
+    },
 });
 
 export default MESSAGES;

@@ -30,6 +30,7 @@
     "iaso.polio.campaign.key": "Clé",
     "iaso.polio.campaign.restoreError": "Erreur lors de la restauration de la campagne",
     "iaso.polio.campaign.restoreSuccess": "Campagne restaurée",
+    "iaso.polio.campaign.typeNotSupported": "Ce type de valeur n'est pas encore supporté: {type}",
     "iaso.polio.campaign.value": "Valeur",
     "iaso.polio.label.campaignDropdownLabel": "Date de modification",
     "iaso.polio.createCampaign": "Créer une campagne",

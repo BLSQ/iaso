@@ -3,6 +3,7 @@ from openpyxl.styles import Alignment, Font, PatternFill
 from openpyxl.styles.borders import Border, Side
 import datetime as dt
 import calendar
+from typing import Any, Optional, Union
 
 CALENDAR_COLUMNS_CELL_WIDTH = 25.75
 CALENDAR_FIRST_COLUMN_CELL_WIDTH = 35.00
@@ -56,7 +57,7 @@ def generate_xlsx_campaigns_calendar(filename, datas):
     return file
 
 
-def get_cell_data(rounds):
+def get_cell_data(rounds: Any) -> str:
     """
     Returns a value(string of rounds in same month) to be assigned in an XLSX cell
 
@@ -80,7 +81,7 @@ def get_cell_data(rounds):
     return cell_data
 
 
-def format_date(date, with_year=False):
+def format_date(date: str, with_year: Optional[bool] = False) -> str:
     """
     Returns a formatted date into "%d %B" or "%d %B %Y" format
 
@@ -102,7 +103,9 @@ def format_date(date, with_year=False):
     return formatted_date
 
 
-def cell_dimension_pattern_fill(sheet, cell, width, height, pattern_fill=False):
+def cell_dimension_pattern_fill(
+    sheet: Any, cell: Any, width: Union[None, float], height: Union[None, float], pattern_fill: Optional[bool] = False
+) -> Any:
     """
     Return the openpyxl.worksheet object after applying fill color on a cell
 
@@ -122,10 +125,11 @@ def cell_dimension_pattern_fill(sheet, cell, width, height, pattern_fill=False):
         sheet.row_dimensions[cell.row].height = float(height)
     if pattern_fill:
         sheet[cell.column_letter + str(cell.row)].fill = PatternFill("solid", start_color="999791")
+
     return sheet
 
 
-def format_cell(cell, size, is_header=False):
+def format_cell(cell: Any, size: str, is_header: Optional[bool] = False) -> Any:
     """
     Return the openpyxl.cell object after applying alignement, border and font
 
@@ -144,7 +148,7 @@ def format_cell(cell, size, is_header=False):
     return cell
 
 
-def border_style(is_header):
+def border_style(is_header: bool) -> Border:
     """
     Return the border(openpyxl.styles.borders.Border) object for each cell
 
@@ -162,7 +166,7 @@ def border_style(is_header):
     )
 
 
-def get_columns_names():
+def get_columns_names() -> list:
     """
     Return the list of columns name(COUNTRY and year's months)
 
@@ -180,7 +184,7 @@ def get_columns_names():
     return columns_names
 
 
-def xlsx_file_name(name, params):
+def xlsx_file_name(name: str, params: Any) -> str:
     """
     Return the exported XLSX file name
 

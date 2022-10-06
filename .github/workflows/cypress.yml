@@ -32,7 +32,6 @@ jobs:
         uses: dkershner6/reaction-action@v1
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
-          commentId: ${{  }}
           reaction: 'eyes'
 
       - name: Set up Docker Buildx

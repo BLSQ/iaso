@@ -12,7 +12,7 @@ class Transition:
     displayed_fields: []
     from_node: str = ""
     to_node: str = ""
-    teams_ids_can_transition: Union[list, None] = None
+    teams_ids_can_transition: Union[list, None] = None  # if none unrestricted
     teams_ids_can_view: Union[list, None] = None  # if none unrestricted
     help_text: str = ""
     allowed: Optional[bool] = None
@@ -91,7 +91,7 @@ transition_defs = [
         "to_node": "accepted",
     },
     {
-        "key": "reject budget",
+        "key": "reject_budget",
         "label": "Provide feedback",
         "required_fields": [],
         "displayed_fields": ["comment"],

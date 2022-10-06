@@ -127,11 +127,13 @@ class TransitionToSerializer(serializers.Serializer):
             if field not in data:
                 raise Exception(TransitionError.MISSING_FIELD)
 
+        created_by_team = None
         # first team the user belong to that can make the event
-        created_by_team = Team.objects.filter(id__in=transition.teams_ids_can_transition).filter(users=user).first()
+        if transition.teams_ids_can_transition:
+            created_by_team = Team.objects.filter(id__in=transition.teams_ids_can_transition).filter(users=user).first()
         if not created_by_team:
             created_by_team = Team.objects.filter(users=user).first()
-        # this will raise if not found, sould only happen for invalid workflow.
+        # this will raise if not found, should only happen for invalid workflow.
         node = workflow.get_node_by_key(transition.to_node)
         with transaction.atomic():
             step = BudgetStep.objects.create(
@@ -145,7 +147,7 @@ class TransitionToSerializer(serializers.Serializer):
             [step.links.create(**d) for d in links_data]
 
             campaign.budget_current_state_key = transition.to_node
-            for file in data.get("files"):
+            for file in data.get("files", []):
                 step.files.create(file=file, filename=file.name)
             campaign.budget_current_state_label = node.label
             campaign.save()

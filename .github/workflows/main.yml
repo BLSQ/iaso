@@ -3,6 +3,9 @@ name: Iaso Automated CI testing
 on:
   pull_request:
     types: [opened, synchronize, ready_for_review]
+concurrency: 
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 env:
   REGISTRY: ghcr.io
   IMAGE_NAME: ${{ github.repository }}

@@ -4,6 +4,10 @@ on:
   issue_comment:
     types: [created]
 
+concurrency: 
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 env:
   REGISTRY: ghcr.io
   IMAGE_NAME: ${{ github.repository }}
@@ -11,6 +15,12 @@ env:
 jobs:
   build-image:
     if: github.event.issue.pull_request && contains(github.event.comment.body, '@cypress') == true
+    permissions:
+      issues: write
+      contents: read
+      packages: write
+      pull-requests: write
+
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
@@ -22,6 +32,7 @@ jobs:
         uses: dkershner6/reaction-action@v1
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
+          commentId: ${{  }}
           reaction: 'eyes'
 
       - name: Set up Docker Buildx
@@ -64,6 +75,8 @@ jobs:
     permissions:
       contents: read
       packages: write
+      pull-requests: write
+      issues: write
     services:
       postgres:
         image: mdillon/postgis:10

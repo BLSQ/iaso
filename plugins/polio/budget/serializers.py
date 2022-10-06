@@ -165,16 +165,6 @@ class BudgetFileSerializer(serializers.ModelSerializer):
         ]
 
 
-class BudgetLinkSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = BudgetStepLink
-        fields = [
-            "id",
-            "url",
-            "alias",
-        ]
-
-
 class BudgetStepSerializer(serializers.ModelSerializer):
     class Meta:
         model = BudgetStep

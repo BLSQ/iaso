@@ -1,5 +1,4 @@
 from django.contrib.auth.models import User
-from django.contrib.postgres.fields import ArrayField, CITextField
 from django.db import models
 
 from iaso.utils.models.soft_deletable import SoftDeletableModel

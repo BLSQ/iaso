@@ -146,3 +146,33 @@ export type CampaignLogDetail = {
 export type CampaignLogData = {
     new_value: Record<string, any>;
 };
+
+export type CampaignFieldType =
+    | 'integer'
+    | 'decimal'
+    | 'range'
+    | 'text'
+    | 'select_one'
+    | 'select_multiple'
+    | 'select_one_from_file'
+    | 'select_multiple_from_file'
+    | 'rank'
+    | 'note'
+    | 'geopoint'
+    | 'geotrace'
+    | 'geoshape'
+    | 'date'
+    | 'time'
+    | 'dateTime'
+    | 'start'
+    | 'end'
+    | 'image'
+    | 'audio'
+    | 'background-audio'
+    | 'video'
+    | 'file'
+    | 'barcode'
+    | 'calculate'
+    | 'acknowledge'
+    | 'hidden'
+    | 'xml-external';

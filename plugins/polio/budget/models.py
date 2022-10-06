@@ -1,5 +1,9 @@
 from django.contrib.auth.models import User
+from django.core.exceptions import ValidationError
 from django.db import models
+from django.template import Engine, TemplateSyntaxError
+from django.template.backends import django
+from django.utils.translation import ugettext_lazy as _
 
 from iaso.utils.models.soft_deletable import SoftDeletableModel
 
@@ -12,7 +16,7 @@ class BudgetStepQuerySet(models.QuerySet):
         return self.filter(campaign__in=campaigns)
 
 
-class BudgetStep(models.Model):
+class BudgetStep(SoftDeletableModel):
     objects = BudgetStepQuerySet.as_manager()
     campaign = models.ForeignKey("Campaign", on_delete=models.PROTECT, related_name="budget_steps")
     transition_key = models.CharField(max_length=30)
@@ -60,3 +64,32 @@ class BudgetStepLink(SoftDeletableModel):
 
     def __repr__(self):
         return f"{self.step}, {self.alias}"
+
+
+# this validator is here to show a proper error in the Django admin if the template is invalid
+def validator_template(value: str):
+
+    try:
+        # this will raise an error if the template cannot be parsed
+        template = Engine.get_default().from_string(value)
+    except TemplateSyntaxError as e:
+        raise ValidationError(_("Error in template: %(error)s"), code="invalid_template", params={"error": str(e)})
+
+
+class MailTemplate(models.Model):
+    slug = models.SlugField(unique=True)
+    template_subject = models.TextField(
+        validators=[validator_template],
+        help_text="Template for the Email subject, use the Django Template language, "
+        "see https://docs.djangoproject.com/en/4.1/ref/templates/language/ for reference. Please keep it as one line.",
+    )
+    template = models.TextField(
+        validators=[validator_template],
+        help_text="Template for the Email body, use the Django Template language, "
+        "see https://docs.djangoproject.com/en/4.1/ref/templates/language/ for reference",
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return str(self.slug)

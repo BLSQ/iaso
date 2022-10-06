@@ -2029,7 +2029,7 @@ router.register(r"polio/campaigns", CampaignViewSet, basename="Campaign")
 from .budget.api import BudgetCampaignViewSet, BudgetStepViewSet
 
 router.register(r"polio/budget", BudgetCampaignViewSet, basename="BudgetCampaign")
-router.register(r"polio/budgetsteps", BudgetStepViewSet, basename="BudgetCampaign")
+router.register(r"polio/budgetsteps", BudgetStepViewSet, basename="BudgetStep")
 router.register(r"polio/campaignsgroup", CampaignGroupViewSet, basename="campaigngroup")
 router.register(r"polio/preparedness_dashboard", PreparednessDashboardViewSet, basename="preparedness_dashboard")
 router.register(r"polio/imstats", IMStatsViewSet, basename="imstats")

@@ -23,6 +23,11 @@ class TransitionSerializer(serializers.Serializer):
     color = serializers.ChoiceField(choices=["primary", "green", "red"], required=False)
 
 
+class NodeSerializer(serializers.Serializer):
+    key = serializers.CharField()
+    label = serializers.CharField()
+
+
 # noinspection PyMethodMayBeStatic
 class CampaignBudgetSerializer(CampaignSerializer):
     # Todo set dynamic serializer
@@ -36,11 +41,14 @@ class CampaignBudgetSerializer(CampaignSerializer):
             "current_state",
             "next_transitions",
             "budget_last_updated_at",
+            "possible_states",
         ]
 
     # added via annotation
     budget_last_updated_at = serializers.DateTimeField(required=False, help_text="Last budget update on the campaign")
     current_state = serializers.SerializerMethodField()
+    # To be used for override
+    possible_states = serializers.SerializerMethodField()
 
     next_transitions = serializers.SerializerMethodField()
     # will need to use country__name for sorting
@@ -65,6 +73,12 @@ class CampaignBudgetSerializer(CampaignSerializer):
                 transition.reason_not_allowed = "User doesn't have permission"
 
         return TransitionSerializer(transitions, many=True).data
+
+    @swagger_serializer_method(serializer_or_field=NodeSerializer)
+    def get_possible_states(self, _campaign):
+        workflow = get_workflow()
+        nodes = workflow.nodes
+        return NodeSerializer(nodes, many=True).data
 
 
 class TransitionError(Enum):

@@ -19,6 +19,7 @@ import {
 } from '@material-ui/core';
 
 import { useGetCampaignLogDetail } from '../../hooks/useGetCampaignHistory';
+import { useGetCampaignFieldValue } from '../../hooks/useGetCampaignFieldValue';
 
 import ErrorPaperComponent from '../../../../../../hat/assets/js/apps/Iaso/components/papers/ErrorPaperComponent';
 
@@ -50,19 +51,21 @@ export const CampaignLogDetail: FunctionComponent<Props> = ({ logId }) => {
 
     const classes: Record<string, string> = useStyles();
 
-    const getValue = (valueType, value) => {
-        switch (valueType) {
-            // iterate inside rounds object and show keys/values. Create a section "rounds" ? like in instance detail
-            case 'object':
-                return 'TO DO';
+    // const getValue = (valueType, value) => {
+    //     switch (valueType) {
+    //         // iterate inside rounds object and show keys/values. Create a section "rounds" ? like in instance detail
+    //         case 'object':
+    //             return 'TO DO';
 
-            case 'boolean':
-                return value.toString();
+    //         case 'boolean':
+    //             return value.toString();
 
-            default:
-                return value;
-        }
-    };
+    //         default:
+    //             return value;
+    //     }
+    // };
+
+        const getValue = useGetCampaignFieldValue();
 
     if (isLoading)
         return (
@@ -78,6 +81,8 @@ export const CampaignLogDetail: FunctionComponent<Props> = ({ logId }) => {
     if (isError) {
         return <ErrorPaperComponent message={formatMessage(MESSAGES.error)} />;
     }
+
+    console.log('campaign log details', campaignLogDetail)
 
     return (
         <>
@@ -116,7 +121,7 @@ export const CampaignLogDetail: FunctionComponent<Props> = ({ logId }) => {
                                                 width={150}
                                                 className={classes.tableCell}
                                             >
-                                                {getValue(typeof value, value)}
+                                                {getValue(key, campaignLogDetail, typeof value)}
                                             </TableCell>
                                         </TableRow>
                                     );

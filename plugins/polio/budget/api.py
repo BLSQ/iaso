@@ -90,6 +90,7 @@ class BudgetStepViewSet(ModelViewSet):
     http_method_names = ["get", "head"]
     filter_backends = [
         filters.OrderingFilter,
+        DeletionFilterBackend,
         DjangoFilterBackend,
     ]
 

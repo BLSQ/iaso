@@ -2,6 +2,8 @@ from django.contrib.auth.models import User
 from django.contrib.postgres.fields import ArrayField, CITextField
 from django.db import models
 
+from iaso.utils.models.soft_deletable import SoftDeletableModel
+
 
 class BudgetStepQuerySet(models.QuerySet):
     def filter_for_user(self, user: User):
@@ -46,7 +48,7 @@ class BudgetStepFile(models.Model):
         return f"{self.step}, {self.filename}"
 
 
-class BudgetStepLink(models.Model):
+class BudgetStepLink(SoftDeletableModel):
     step = models.ForeignKey(BudgetStep, on_delete=models.PROTECT, related_name="links")
     # to keep original file name
     url = models.CharField(max_length=500)

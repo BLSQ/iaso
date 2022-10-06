@@ -13,7 +13,7 @@ import {
     // @ts-ignore
     makeFullModal,
 } from 'bluesquare-components';
-import { Box, Typography } from '@material-ui/core';
+import { Box, Divider, Typography } from '@material-ui/core';
 import MESSAGES from '../../../constants/messages';
 import InputComponent from '../../../../../../../hat/assets/js/apps/Iaso/components/forms/InputComponent';
 import { useCurrentUser } from '../../../../../../../hat/assets/js/apps/Iaso/utils/usersUtils';
@@ -160,8 +160,17 @@ const CreateBudgetStep: FunctionComponent<Props> = ({
                                 }}
                             />
                         </Box>
-
-                        <AddMultipleLinks />
+                        <Box mt={2}>
+                            <Divider />
+                        </Box>
+                        <Box mt={2}>
+                            <Typography>
+                                {formatMessage(MESSAGES.links)}
+                            </Typography>
+                        </Box>
+                        <Box mt={2}>
+                            <AddMultipleLinks />
+                        </Box>
                         {/* @ts-ignore */}
                         {(errors?.general ?? []).length > 0 && (
                             <>

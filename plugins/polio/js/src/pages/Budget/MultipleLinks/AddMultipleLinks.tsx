@@ -1,4 +1,4 @@
-import { Box, Button, Grid } from '@material-ui/core';
+import { Box, Grid } from '@material-ui/core';
 import { useFormikContext } from 'formik';
 import React, { FunctionComponent, useCallback, useMemo } from 'react';
 // @ts-ignore
@@ -38,26 +38,14 @@ export const AddMultipleLinks: FunctionComponent = () => {
     return (
         <>
             {links.length > 0 &&
-                links.map((_shipment, index) => (
+                links.map((_link, index) => (
                     // eslint-disable-next-line react/no-array-index-key
-                    <Grid item xs={12} key={`lonk-${index}`}>
-                        <Box mt={2}>
-                            <NamedLink index={index} />
-                        </Box>
-                    </Grid>
+                    <NamedLink index={index} key={`lonk-${index}`} />
                 ))}
-            {links.length === 0 && (
-                <Grid item xs={12}>
-                    <Box mt={2}>
-                        <NamedLink index={0} />
-                    </Box>
-                </Grid>
-            )}
+            {links.length === 0 && <NamedLink index={0} />}
 
             <Grid
                 container
-                item
-                xs={12}
                 spacing={2}
                 direction="column"
                 justifyContent="flex-end"
@@ -65,9 +53,11 @@ export const AddMultipleLinks: FunctionComponent = () => {
                 <Box mt={2} mb={2}>
                     <Grid
                         container
+                        item
                         direction="row"
                         justifyContent="flex-end"
                         spacing={2}
+                        xs={12}
                     >
                         <Grid item>
                             <IconButton

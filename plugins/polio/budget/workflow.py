@@ -89,6 +89,7 @@ transition_defs = [
         "displayed_fields": ["comment"],
         "from_node": "budget_submitted",
         "to_node": "accepted",
+        "color": "green",
     },
     {
         "key": "reject_budget",
@@ -97,6 +98,7 @@ transition_defs = [
         "displayed_fields": ["comment"],
         "from_node": "budget_submitted",
         "to_node": "rejected",
+        "color": "red",
     },
 ]
 

@@ -80,7 +80,7 @@ def get_cell_data(rounds):
     return cell_data
 
 
-def format_date(date, with_year):
+def format_date(date, with_year=False):
     """
     Returns a formatted date into "%d %B" or "%d %B %Y" format
 

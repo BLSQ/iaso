@@ -17,6 +17,13 @@ jobs:
         uses: actions/checkout@v3
         with:
           fetch-depth: 0
+
+      - name: Mark comment as success
+        uses: dkershner6/reaction-action@v1
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          reaction: 'eyes'
+
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v1
       - name: Log in to the Container registry
@@ -34,6 +41,21 @@ jobs:
           file: docker/bundle/Dockerfile
           cache-from: type=registry,ref=ghcr.io/blsq/iaso:buildcache
           cache-to: type=registry,ref=ghcr.io/blsq/iaso:buildcache,mode=max
+
+      - name: Comment PR with failure
+        uses: actions/github-script@v6
+        if: failure()
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const { issue: { number: issue_number }, repo: { owner, repo }  } = context;
+            github.rest.issues.createComment({
+              issue_number,
+              owner,
+              repo,
+              body: 'Test failed: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}'
+            });
+
   test_cypress:
     if: github.event.issue.pull_request && contains(github.event.comment.body, '@cypress') == true
     timeout-minutes: 60
@@ -82,7 +104,7 @@ jobs:
         with:
           node-version: '14'
           cache: npm
-            
+
       - name: Cache dependencies
         id: cache
         uses: actions/cache@v3

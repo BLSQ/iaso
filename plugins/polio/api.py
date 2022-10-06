@@ -8,7 +8,7 @@ from typing import Any, Dict, List, Optional, Union
 from collections import defaultdict
 from functools import lru_cache
 from logging import getLogger
-from openpyxl.writer.excel import save_virtual_workbook
+from openpyxl.writer.excel import save_virtual_workbook  # type: ignore
 
 import requests
 from django.core.files import File

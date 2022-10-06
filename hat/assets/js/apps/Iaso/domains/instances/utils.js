@@ -150,7 +150,7 @@ const localizeLabel = field => {
 };
 
 export const formatLabel = field => {
-    if (field.label.charAt(0) === '{') return localizeLabel(field);
+    if (field.label?.charAt(0) === '{') return localizeLabel(field);
     if (!field.label) return field.name;
     if (!field.label.trim()) return field.name;
     if (field.label.includes(':')) return field.label.split(':')[0];

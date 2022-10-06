@@ -751,15 +751,18 @@ class InstanceQuerySet(models.QuerySet):
 
     def filter_for_user(self, user):
         profile = user.iaso_profile
+        # Do a relative import to avoid an import loop
         from .org_unit import OrgUnit
+
+        new_qs = self
 
         # If user is restricted to some org unit, filter on thoses
         if profile.org_units.exists():
             orgunits = OrgUnit.objects.hierarchy(profile.org_units.all())
 
-            self = self.filter(org_unit__in=orgunits)
-        self = self.filter(project__account=profile.account)
-        return self
+            new_qs = new_qs.filter(org_unit__in=orgunits)
+        new_qs = new_qs.filter(project__account=profile.account_id)
+        return new_qs
 
 
 InstanceManager = models.Manager.from_queryset(InstanceQuerySet)
@@ -776,6 +779,10 @@ class Instance(models.Model):
     STATUS_READY = "READY"
     STATUS_DUPLICATED = "DUPLICATED"
     STATUS_EXPORTED = "EXPORTED"
+
+    ALWAYS_ALLOWED_PATHS_XML = set(
+        ["formhub", "formhub/uuid", "meta", "meta/instanceID", "meta/editUserID", "meta/deprecatedID"]
+    )
 
     created_at = models.DateTimeField(auto_now_add=True)
     created_by = models.ForeignKey(User, on_delete=models.PROTECT, blank=True, null=True)
@@ -852,47 +859,53 @@ class Instance(models.Model):
             self.correlation_id = identifier + random_number + suffix
             self.save()
 
+    def xml_file_to_json(self, file: typing.TextIO) -> typing.Dict[str, typing.Any]:
+        soup = as_soup(file)
+        form_version_id = extract_form_version_id(soup)
+        if form_version_id:
+            form_versions = self.form.form_versions.filter(version_id=form_version_id)
+            form_version = form_versions.first()
+            if form_version:
+                questions_by_path = form_version.questions_by_path()
+                allowed_paths = set(questions_by_path.keys())
+                allowed_paths.update(self.ALWAYS_ALLOWED_PATHS_XML)
+                flat_results = flat_parse_xml_soup(
+                    soup, [rg["name"] for rg in form_version.repeat_groups()], allowed_paths
+                )
+                if len(flat_results["skipped_paths"]) > 0:
+                    logger.warning(
+                        f"skipped {len(flat_results['skipped_paths'])} paths while parsing instance {self.id}",
+                        flat_results,
+                    )
+                return flat_results["flat_json"]
+            else:
+                # warn old form, but keep it working ? or throw error
+                return flat_parse_xml_soup(soup, [], None)["flat_json"]
+        else:
+            return flat_parse_xml_soup(soup, [], None)["flat_json"]
+
     def get_and_save_json_of_xml(self):
+        """
+        Convert the xml file to json and save it to the instance (if necessary)
+
+        :return: in all cases, return the JSON representation of the instance
+        """
         if self.json:
-            file_content = self.json
+            # already converted, we can use this one
+            return self.json
         elif self.file:
+            # not converted yet, but we have a file, so we can convert it
             if "amazonaws" in self.file.url:
                 file = urlopen(self.file.url)
             else:
                 file = self.file
-            soup = as_soup(file)
-            form_version_id = extract_form_version_id(soup)
-            if form_version_id:
-                form_versions = self.form.form_versions.filter(version_id=form_version_id)
-                form_version = form_versions.first()
-                if form_version:
-                    questions_by_path = form_version.questions_by_path()
-                    allowed_paths = set(questions_by_path.keys())
-                    allowed_paths.add("formhub")
-                    allowed_paths.add("formhub/uuid")
-                    allowed_paths.add("meta")
-                    allowed_paths.add("meta/instanceID")
-                    allowed_paths.add("meta/editUserID")
-                    allowed_paths.add("meta/deprecatedID ")
-                    flat_results = flat_parse_xml_soup(
-                        soup, [rg["name"] for rg in form_version.repeat_groups()], allowed_paths
-                    )
-                    if len(flat_results["skipped_paths"]) > 0:
-                        print(
-                            f"skipped {len(flat_results['skipped_paths'])} paths while parsing instance {self.id}",
-                            flat_results,
-                        )
-                    self.json = flat_results["flat_json"]
-                else:
-                    # warn old form, but keep it working ? or throw error
-                    self.json = flat_parse_xml_soup(soup, [], None)["flat_json"]
-            else:
-                self.json = flat_parse_xml_soup(soup, [], None)["flat_json"]
-            file_content = self.json
+
+            self.json = self.xml_file_to_json(file)
             self.save()
+            return self.json
         else:
-            file_content = {}
-        return file_content
+            # no file, no json, when/why does this happen?
+            return {}
 
     def get_form_version(self):
         json = self.get_and_save_json_of_xml()

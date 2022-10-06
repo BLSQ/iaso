@@ -19,6 +19,8 @@ class TransitionSerializer(serializers.Serializer):
     reason_not_allowed = serializers.CharField(required=False)
     required_fields = serializers.ListField(child=serializers.CharField())
     displayed_fields = serializers.ListField(child=serializers.CharField())
+    # Note : implemented as a Css class in the frontend
+    color = serializers.ChoiceField(choices=["primary", "green", "red"], required=False)
 
 
 # noinspection PyMethodMayBeStatic

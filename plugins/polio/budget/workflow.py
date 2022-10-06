@@ -17,6 +17,7 @@ class Transition:
     help_text: str = ""
     allowed: Optional[bool] = None
     reason_not_allowed: Optional[str] = None
+    color: Optional[str] = None  # one of primary, red, green
 
 
 @dataclass

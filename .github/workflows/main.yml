@@ -112,7 +112,7 @@ jobs:
       - name: Environment info
         run: |
           pip list
-      - name: Check formatting with black
+      - name: Check formatting with Black
         run: |
           . ./venv/bin/activate && black --check .
       - name: Django tests
@@ -122,6 +122,9 @@ jobs:
           . ./venv/bin/activate &&  python manage.py test
           # check we don't have missing migration
           . ./venv/bin/activate &&  python manage.py makemigrations --check
+      - name: Check types with mypy
+        run: |
+          . ./venv/bin/activate &&  mypy .
         env:
           IASO_ENVIRONMENT: development
           RDS_DB_NAME: github_actions

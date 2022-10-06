@@ -13,6 +13,9 @@ from plugins.polio.preparedness.parser import open_sheet_by_url, surge_indicator
 
 from plugins.polio.preparedness.spread_cache import CachedSpread
 
+# noinspection PyUnresolvedReferences
+from .budget.models import BudgetStep, BudgetStepFile
+
 VIRUSES = [
     ("PV1", _("PV1")),
     ("PV2", _("PV2")),
@@ -179,10 +182,20 @@ class Round(models.Model):
         return getattr(self, key)
 
 
+class CampaignQuerySet(models.QuerySet):
+    def filter_for_user(self, user: User):
+        qs = self
+        if user.is_authenticated and user.iaso_profile.org_units.count():
+            org_units = OrgUnit.objects.hierarchy(user.iaso_profile.org_units.all())
+            qs = qs.filter(initial_org_unit__in=org_units)
+        return qs
+
+
 class Campaign(SoftDeletableModel):
     class Meta:
         ordering = ["obr_name"]
 
+    objects = CampaignQuerySet.as_manager()
     id = models.UUIDField(default=uuid4, primary_key=True, editable=False)
     epid = models.CharField(default=None, max_length=255, null=True, blank=True)
     obr_name = models.CharField(max_length=255, unique=True)
@@ -310,9 +323,13 @@ class Campaign(SoftDeletableModel):
     budget_status = models.CharField(max_length=10, choices=RA_BUDGET_STATUSES, null=True, blank=True)
     budget_responsible = models.CharField(max_length=10, choices=RESPONSIBLES, null=True, blank=True)
     is_test = models.BooleanField(default=False)
+
     last_budget_event = models.ForeignKey(
         "BudgetEvent", null=True, blank=True, on_delete=models.SET_NULL, related_name="lastbudgetevent"
     )
+
+    budget_current_state_key = models.CharField(max_length=30, null=True, blank=True)
+    budget_current_state_label = models.CharField(max_length=100, null=True, blank=True)
 
     who_disbursed_to_co_at = models.DateField(
         null=True,

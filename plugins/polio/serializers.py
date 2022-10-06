@@ -95,16 +95,48 @@ class BudgetStatusSerializer(serializers.ModelSerializer):
 # the following serializer are used so we can audit the modification on a campaign.
 # The related Scope and Round can be modified in the same request but are modelised as separate ORM Object
 # and DjangoSerializer don't serialize relation, DRF Serializer is used
+class AuditGroupSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Group
+        fields = "__all__"
+
+
+class AuditRoundVaccineSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = RoundVaccine
+        fields = "__all__"
+
+
+class AuditShipmentSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Shipment
+        fields = "__all__"
+
+
+class AuditRoundScopeSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = RoundScope
+        fields = "__all__"
+
+    group = AuditGroupSerializer()
+
+
 class AuditRoundSerializer(serializers.ModelSerializer):
     class Meta:
         model = Round
         fields = "__all__"
 
+    vaccines = AuditRoundVaccineSerializer(many=True)
+    scopes = AuditRoundScopeSerializer(many=True)
+    shipments = AuditShipmentSerializer(many=True)
 
-class AuditGroupSerializer(serializers.ModelSerializer):
+
+class AuditCampaignScopeSerializer(serializers.ModelSerializer):
     class Meta:
-        model = Group
+        model = CampaignScope
         fields = "__all__"
+
+    group = AuditGroupSerializer()
 
 
 class AuditCampaignSerializer(serializers.ModelSerializer):
@@ -114,6 +146,7 @@ class AuditCampaignSerializer(serializers.ModelSerializer):
 
     group = AuditGroupSerializer()
     rounds = AuditRoundSerializer(many=True)
+    scopes = AuditCampaignScopeSerializer(many=True)
 
 
 def serialize_campaign(campaign):

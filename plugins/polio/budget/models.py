@@ -16,7 +16,7 @@ class BudgetStepQuerySet(models.QuerySet):
         return self.filter(campaign__in=campaigns)
 
 
-class BudgetStep(models.Model):
+class BudgetStep(SoftDeletableModel):
     objects = BudgetStepQuerySet.as_manager()
     campaign = models.ForeignKey("Campaign", on_delete=models.PROTECT, related_name="budget_steps")
     transition_key = models.CharField(max_length=30)

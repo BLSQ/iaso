@@ -1,6 +1,7 @@
 import csv
 import datetime
 import io
+from typing import List, Any
 
 import xlsxwriter  # type: ignore
 from django.core.paginator import Paginator
@@ -76,7 +77,8 @@ class EntitySerializer(serializers.ModelSerializer):
 
     def get_submitter(self, entity: Entity):
         try:
-            submitter = entity.attributes.created_by.username
+            # TODO: investigate type issue on next line
+            submitter = entity.attributes.created_by.username  # type: ignore
         except AttributeError:
             submitter = None
         return submitter
@@ -311,7 +313,8 @@ class EntityViewSet(ModelViewSet):
         csv_format = request.GET.get("csv", None)
         xlsx_format = request.GET.get("xlsx", None)
         pk = request.query_params.get("id", None)
-        account = self.request.user.iaso_profile.account
+        # TODO: investigate if request.user can be anonymous here
+        account = self.request.user.iaso_profile.account  # type: ignore
         entity_type_ids = request.query_params.get("entity_type_ids", None)
         limit = request.GET.get("limit", None)
         page_offset = request.GET.get("page", 1)
@@ -321,7 +324,8 @@ class EntityViewSet(ModelViewSet):
         queryset = queryset.order_by(*orders)
         if xlsx_format or csv_format:
             if pk:
-                entities = Entity.objects.filter(account=account, entity_type_ids=pk)
+                # FIXME: the next line references a non-existing field? (entity_type_ids instead of entity_type_id?)
+                entities = Entity.objects.filter(account=account, entity_type_ids=pk)  # type: ignore
             else:
                 entities = Entity.objects.filter(account=account)
             if xlsx_format:
@@ -332,7 +336,7 @@ class EntityViewSet(ModelViewSet):
         # annotate with last instance on Entity, to allow ordering by it
         entities = queryset.annotate(last_saved_instance=Max("instances__created_at"))
         result_list = []
-        columns_list = []
+        columns_list: List[Any] = []
 
         # -- Allow ordering by the field inside the Entity.
         fields_on_entity = [f.name for f in Entity._meta.get_fields()]
@@ -342,7 +346,8 @@ class EntityViewSet(ModelViewSet):
         # otherwise assume it's part of the attributes
         new_order_columns = []
         if order_columns:
-            order_columns = order_columns.split(",")
+            # FIXME: next line: a string variable is reused for a list, cna we avoid that?
+            order_columns = order_columns.split(",")  # type: ignore
             for order_column in order_columns:
                 # Remove eventual leading -
                 order_column_name = order_column.lstrip("-")
@@ -362,9 +367,10 @@ class EntityViewSet(ModelViewSet):
                 attributes_ou = None
                 file_content = None
                 if attributes is not None:
-                    file_content = entity.attributes.get_and_save_json_of_xml().get("file_content", None)
+                    file_content = entity.attributes.get_and_save_json_of_xml().get("file_content", None)  # type: ignore
                     attributes_pk = attributes.pk
-                    attributes_ou = entity.attributes.org_unit.as_location(with_parents=True)
+                    # FIXME: what if entity.attributes.org_unit is None?
+                    attributes_ou = entity.attributes.org_unit.as_location(with_parents=True)  # type: ignore
                 name = None
                 program = None
                 if file_content is not None:
@@ -378,7 +384,8 @@ class EntityViewSet(ModelViewSet):
                     "updated_at": entity.updated_at,
                     "attributes": attributes_pk,
                     "entity_type": entity.entity_type.name,
-                    "last_saved_instance": entity.last_saved_instance,
+                    # TODO: investigate typing issue on next line
+                    "last_saved_instance": entity.last_saved_instance,  # type: ignore
                     "org_unit": attributes_ou,
                     "program": program,
                 }
@@ -389,17 +396,22 @@ class EntityViewSet(ModelViewSet):
                 attributes_ou = None
                 file_content = None
                 if attributes is not None:
-                    file_content = entity.attributes.get_and_save_json_of_xml().get("file_content", None)
-                    attributes_ou = entity.attributes.org_unit.as_location(with_parents=True)
+                    # FIXME: what if entity.attributes is None?
+                    file_content = entity.attributes.get_and_save_json_of_xml().get("file_content", None)  # type: ignore
+                    # FIXME: what if entity.attributes.org_unit is None?
+                    attributes_ou = entity.attributes.org_unit.as_location(with_parents=True)  # type: ignore
                 columns_list = []
                 program = None
                 if file_content is not None:
                     program = file_content.get("program")
-                possible_fields_list = entity.entity_type.reference_form.possible_fields
-                for items in possible_fields_list:
+                # FIXME: what if entity.entity_type.reference_form is None?
+                possible_fields_list = entity.entity_type.reference_form.possible_fields  # type: ignore
+                # FIXME: investigate typing error on next line
+                for items in possible_fields_list:  # type: ignore
                     for k, v in items.items():
                         if k == "name":
-                            if v in entity.entity_type.fields_list_view:
+                            # FIXME: investigate typing error on next line
+                            if v in entity.entity_type.fields_list_view:  # type: ignore
                                 columns_list.append(items)
                 result = {
                     "id": entity.pk,
@@ -408,14 +420,16 @@ class EntityViewSet(ModelViewSet):
                     "created_at": entity.created_at,
                     "updated_at": entity.updated_at,
                     "org_unit": attributes_ou,
-                    "last_saved_instance": entity.last_saved_instance,
+                    # FIXME: investigate typing error on next line
+                    "last_saved_instance": entity.last_saved_instance,  # type: ignore
                     "program": program,
                 }
 
                 # Get data from xlsform
                 if attributes is not None:
-                    for k, v in entity.attributes.json.items():
-                        if k in list(entity.entity_type.fields_list_view):
+                    # TODO: investigate typing error on next line
+                    for k, v in entity.attributes.json.items():  # type: ignore
+                        if k in list(entity.entity_type.fields_list_view):  # type: ignore
                             result[k] = v
                     result_list.append(result)
 

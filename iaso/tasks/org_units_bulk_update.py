@@ -55,14 +55,16 @@ def org_units_bulk_update(
 
     # Restrict qs to org units accessible to the user
     user = task.launcher
-    queryset = OrgUnit.objects.filter_for_user_and_app_id(user, app_id)
+    # TODO: investigate type error on next line
+    queryset = OrgUnit.objects.filter_for_user_and_app_id(user, app_id)  # type: ignore
 
     if not select_all:
         queryset = queryset.filter(pk__in=selected_ids)
     else:
         queryset = queryset.exclude(pk__in=unselected_ids)
         if searches:
-            profile = user.iaso_profile
+            # TODO: investigate: can the user be anonymous on next line?
+            profile = user.iaso_profile  # type: ignore
             base_queryset = queryset
             queryset = OrgUnit.objects.none()
             for search in searches:

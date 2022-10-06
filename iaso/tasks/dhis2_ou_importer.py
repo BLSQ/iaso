@@ -244,8 +244,8 @@ def get_api_config(
 @task_decorator(task_name="dhis2_ou_importer")
 def dhis2_ou_importer(
     source_id: int,
-    source_version_number: Optional[str],
-    force: bool,
+    source_version_number: Optional[int],
+    force: bool,  # FIXME: force parameter is not used?
     validate: bool,
     continue_on_error: bool,
     url: Optional[str],
@@ -263,7 +263,8 @@ def dhis2_ou_importer(
     connection_config = get_api_config(url, login, password, source)
     api = get_api(connection_config)
 
-    the_task.report_progress_and_stop_if_killed(progress_message="Fetching org units")
+    # FIXME: the task parameter (of dhis2_ou_importer) is optional, but the code seems to assume it is not
+    the_task.report_progress_and_stop_if_killed(progress_message="Fetching org units")  # type: ignore
 
     if source_version_number is None:
         last_version = source.versions.all().order_by("number").last()
@@ -278,10 +279,13 @@ def dhis2_ou_importer(
     if not source.default_version:
         source.default_version = version
         source.save()
-    account = source.projects.first().account
-    if not account.default_version:
-        account.default_version = version
-        account.save()
+
+    # TODO: investigate: what happens if source.projects is None here?
+    account = source.projects.first().account  # type: ignore
+    # TODO: investigate: what happens if account is None here?
+    if not account.default_version:  # type: ignore
+        account.default_version = version  # type: ignore
+        account.save()  # type: ignore
 
     # name of group to a orgunit type. If a orgunit belong to one of these group it will get that type
     group_type_dict: Dict[str, OrgUnitType] = {}
@@ -299,8 +303,9 @@ def dhis2_ou_importer(
     if error_count:
         logger.error(f"{error_count} import errors were ignored")
 
-    the_task.report_success(message=res_string)
-    return the_task
+    # TODO: investigate type errors on next two lines
+    the_task.report_success(message=res_string)  # type: ignore
+    return the_task  # type: ignore
 
 
 def import_orgunits_and_groups(

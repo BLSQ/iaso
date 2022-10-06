@@ -574,8 +574,9 @@ def _make_prep(c: Campaign, round: Round):
             campaign_prep["status"] = "not_sync"
             campaign_prep["details"] = "This spreadsheet has not been synchronised yet"
             return campaign_prep
-        campaign_prep["date"] = ssi_qs.last().created_at
-        cs = ssi_qs.last().cached_spreadsheet
+        # FIXME: what if ssi_qs.last() is None?
+        campaign_prep["date"] = ssi_qs.last().created_at  # type: ignore
+        cs = ssi_qs.last().cached_spreadsheet  # type: ignore
         last_p = get_preparedness(cs)
         campaign_prep.update(preparedness_summary(last_p))
         if round.number != last_p["national"]["round"]:
@@ -1584,7 +1585,8 @@ def send_approval_budget_mail(event: BudgetEvent) -> None:
         settings.DNS_DOMAIN,
         event.campaign.id,
         event.campaign.obr_name,
-        event.campaign.country.id,
+        # FIXME: check if the country might be None
+        event.campaign.country.id,  # type: ignore
     )
     subject = budget_approval_email_subject(event.campaign.obr_name)
     for e in events:

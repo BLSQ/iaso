@@ -38,7 +38,8 @@ def form_upload(request: HttpRequest) -> HttpResponse:
     instances = Instance.objects.filter(file_name=main_file.name)
     i: Instance
     if instances:
-        i = instances.first()
+        # TODO: investigate: can we have an empty QS here?
+        i = instances.first()  # type: ignore
     else:
         i = Instance(file_name=main_file.name)
 

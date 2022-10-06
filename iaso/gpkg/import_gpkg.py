@@ -18,7 +18,8 @@ except ImportError:
 
 def get_or_create_org_unit_type_and_assign_project(name: str, project: Project, depth: int) -> OrgUnitType:
     """Get or create the OUT '(in the scope of the project's account) then assign it to the project"""
-    out = get_or_create_org_unit_type(name=name, depth=depth, account=project.account, preferred_project=project)
+    # TODO: check what happens if the project has no account?
+    out = get_or_create_org_unit_type(name=name, depth=depth, account=project.account, preferred_project=project)  # type: ignore
     out.projects.add(project)
     return out
 
@@ -170,11 +171,11 @@ def import_gpkg_file2(
         source.default_version = version
         source.save()
 
-    # TODO: check: what if the source has no projects? Throw an error? create one?
+    # TODO: check: what if the source has no projects? Or the project has no account?
     account = source.projects.first().account  # type: ignore
-    if not account.default_version:
-        account.default_version = version
-        account.save()
+    if not account.default_version:  # type: ignore
+        account.default_version = version  # type: ignore
+        account.save()  # type: ignore
 
     # Create and update all the groups and put them in a dict indexed by ref
     # Do it in sqlite because Fiona is not great with Attributes table (without geom)
@@ -185,7 +186,8 @@ def import_gpkg_file2(
         for ref, name in rows:
             # Log modification done on group
             old_group = deepcopy(ref_group.get(ref))
-            group = create_or_update_group(ref_group.get(ref), ref, name, version)
+            # TODO: investigate type error on next line?
+            group = create_or_update_group(ref_group.get(ref), ref, name, version)  # type: ignore
             ref_group[get_ref(group)] = group
             audit_models.log_modification(old_group, group, source=audit_models.GPKG_IMPORT, user=user)
 
@@ -198,7 +200,7 @@ def import_gpkg_file2(
 
     # The child may be created before the parent, so we keep a list to update after creating them all
     to_update_with_parent: List[Tuple[str, str]] = []
-    modifications_to_log: List[Tuple[OrgUnit, OrgUnit]] = []
+    modifications_to_log: List[Tuple[Optional[OrgUnit], OrgUnit]] = []
     total_org_unit = 0
 
     # Layer are OrgUnit's Type

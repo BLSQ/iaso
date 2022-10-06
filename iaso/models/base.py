@@ -928,7 +928,8 @@ class Instance(models.Model):
         soup = as_soup(file)
         form_version_id = extract_form_version_id(soup)
         if form_version_id:
-            form_versions = self.form.form_versions.filter(version_id=form_version_id)
+            # TODO: investigate: can self.form be None here? What's the expected behavior?
+            form_versions = self.form.form_versions.filter(version_id=form_version_id)  # type: ignore
             form_version = form_versions.first()
             if form_version:
                 questions_by_path = form_version.questions_by_path()

@@ -1,5 +1,6 @@
 from io import StringIO
 from typing import List, Dict
+from unittest import skip
 
 from django.contrib.auth.models import User
 from django.core.exceptions import ValidationError
@@ -233,7 +234,7 @@ class TeamAPITestCase(APITestCase):
         text = """
         hello, {{user}}
         """
-        mt = MailTemplate(slug="hello", template=text)
+        mt = MailTemplate(slug="hello", template=text, template_subject="hey")
         mt.full_clean()
         mt.save()
         template = Engine.get_default().from_string(mt.template)
@@ -250,7 +251,29 @@ class TeamAPITestCase(APITestCase):
         text = """
         hello, {{user:dwadwa}}
         """
-        mt = MailTemplate(slug="hello", template=text)
+        mt = MailTemplate(slug="hello", template=text, template_subject="hey")
         with self.assertRaises(ValidationError):
             mt.full_clean()
             mt.save()
+
+    @skip
+    def test_mail_template_include(self):
+        # Just to check if include works inside string template
+        text = """  hello, {{user}}
+        
+    {%include "_files.html" with files=files only %}
+    {%include "_links.html" with links=links only %}
+        """
+        mt = MailTemplate(slug="hello", template=text, template_subject="hey")
+        mt.full_clean()
+        mt.save()
+        template = Engine.get_default().from_string(mt.template)
+        context = Context({"user": "olivier", "files": [{"path": "http://example.com/test.txt", "name": "test.txt"}]})
+        r = template.render(context)
+        print(r)
+        self.assertEqual(
+            r,
+            """
+        hello, olivier
+        """,
+        )

@@ -2,9 +2,11 @@ from io import StringIO
 from typing import List, Dict
 
 from django.contrib.auth.models import User
+from django.core.exceptions import ValidationError
+from django.template import Template, Engine, Context
 
 from iaso.test import APITestCase
-from plugins.polio.budget.models import BudgetStep
+from plugins.polio.budget.models import BudgetStep, MailTemplate
 from plugins.polio.models import Campaign
 
 
@@ -226,3 +228,29 @@ class TeamAPITestCase(APITestCase):
 
         # Final transition there is none after
         self.assertEqual(len(j["next_transitions"]), 0)
+
+    def test_mail_template_init(self):
+        text = """
+        hello, {{user}}
+        """
+        mt = MailTemplate(slug="hello", template=text)
+        mt.full_clean()
+        mt.save()
+        template = Engine.get_default().from_string(mt.template)
+        context = Context({"user": "olivier"})
+        r = template.render(context)
+        self.assertEqual(
+            r,
+            """
+        hello, olivier
+        """,
+        )
+
+    def test_mail_template_invalid(self):
+        text = """
+        hello, {{user:dwadwa}}
+        """
+        mt = MailTemplate(slug="hello", template=text)
+        with self.assertRaises(ValidationError):
+            mt.full_clean()
+            mt.save()

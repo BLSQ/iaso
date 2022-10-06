@@ -4,6 +4,7 @@ from django.contrib.admin import widgets
 from django.db import models
 from django.utils.safestring import mark_safe
 
+from .budget.models import MailTemplate
 from .models import (
     Campaign,
     Surge,
@@ -75,6 +76,10 @@ class CampaignGroupAdmin(admin.ModelAdmin):
     pass
 
 
+class MailTemplateAdmin(admin.ModelAdmin):
+    pass
+
+
 admin.site.register(Campaign, CampaignAdmin)
 admin.site.register(CampaignGroup, CampaignGroupAdmin)
 admin.site.register(Config)
@@ -85,3 +90,4 @@ admin.site.register(URLCache)
 admin.site.register(SpreadSheetImport, SpreadSheetImportAdmin)
 admin.site.register(BudgetEvent)
 admin.site.register(BudgetFiles)
+admin.site.register(MailTemplate, MailTemplateAdmin)

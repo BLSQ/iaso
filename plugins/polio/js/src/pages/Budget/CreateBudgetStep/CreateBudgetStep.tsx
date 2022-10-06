@@ -29,6 +29,7 @@ import { useSaveBudgetStep } from '../mockAPI/useSaveBudgetStep';
 import { AddStepButton } from './AddStepButton';
 import { BudgetStep } from '../mockAPI/useGetBudgetDetails';
 import { UserHasTeamWarning } from './UserHasTeamWarning';
+import { AddMultipleLinks } from '../MultipleLinks/AddMultipleLinks';
 
 type Props = {
     campaignId: string;
@@ -160,15 +161,7 @@ const CreateBudgetStep: FunctionComponent<Props> = ({
                             />
                         </Box>
 
-                        <InputComponent
-                            type="text"
-                            keyValue="links"
-                            multiline
-                            onChange={onChange}
-                            value={values.links}
-                            errors={getErrors('links')}
-                            label={MESSAGES.links}
-                        />
+                        <AddMultipleLinks />
                         {/* @ts-ignore */}
                         {(errors?.general ?? []).length > 0 && (
                             <>

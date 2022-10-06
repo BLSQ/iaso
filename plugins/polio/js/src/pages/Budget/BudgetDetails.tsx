@@ -58,19 +58,19 @@ export const BudgetDetails: FunctionComponent<Props> = ({ router }) => {
     const { params } = router;
     const classes = useStyles();
     const budgetDetailsClasses = useBudgetDetailsStyles();
-    const {
-        campaignName,
-        campaignId,
-        quickTransition,
-        previousStep,
-        ...apiParams
-    } = router.params;
+    const { campaignName, campaignId, quickTransition, previousStep, ...rest } =
+        router.params;
     const { formatMessage } = useSafeIntl();
-    const [showDeleted, setShowDeleted] = useState(
-        apiParams.show_deleted ?? false,
-    );
+    const [showHidden, setShowHidden] = useState(rest.show_hidden ?? false);
 
-    const checkBoxLabel = formatMessage(MESSAGES.showDeleted);
+    const apiParams = useMemo(() => {
+        return {
+            ...rest,
+            show_hidden: showHidden,
+        };
+    }, [rest, showHidden]);
+
+    const checkBoxLabel = formatMessage(MESSAGES.showHidden);
     // @ts-ignore
     const prevPathname = useSelector(state => state.routerCustom.prevPathname);
     const dispatch = useDispatch();
@@ -263,12 +263,12 @@ export const BudgetDetails: FunctionComponent<Props> = ({ router }) => {
                     </Grid>
                     <InputComponent
                         type="checkbox"
-                        keyValue="showDeleted"
+                        keyValue="showHidden"
                         labelString={checkBoxLabel}
                         onChange={(_keyValue, newValue) => {
-                            setShowDeleted(newValue);
+                            setShowHidden(newValue);
                         }}
-                        value={showDeleted}
+                        value={showHidden}
                     />
                     {isMobileLayout && (
                         <BudgetDetailsFiltersMobile params={params} />

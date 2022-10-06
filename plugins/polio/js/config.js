@@ -240,7 +240,7 @@ const routes = [
             },
             {
                 isRequired: false,
-                key: 'show_deleted',
+                key: 'show_hidden',
             },
             {
                 isRequired: false,

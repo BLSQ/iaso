@@ -9,9 +9,11 @@ import {
     useSkipEffectOnMount,
 } from 'bluesquare-components';
 // import moment from 'moment';
-import { Box, makeStyles } from '@material-ui/core';
+import { Box, makeStyles, Tooltip } from '@material-ui/core';
 import LockIcon from '@material-ui/icons/Lock';
+import RemoveCircleIcon from '@material-ui/icons/RemoveCircle';
 // import Settings from '@material-ui/icons/Settings';
+import { PlaylistAdd } from '@material-ui/icons';
 import MESSAGES from '../../../constants/messages';
 import { Column } from '../../../../../../../hat/assets/js/apps/Iaso/types/table';
 import { BUDGET_DETAILS } from '../../../constants/routes';
@@ -44,7 +46,7 @@ const baseUrl = BUDGET_DETAILS;
 
 export const styles = theme => {
     return {
-        deletedRow: {
+        hiddenRow: {
             color: theme.palette.secondary.main,
         },
         paragraph: { margin: 0 },
@@ -54,8 +56,8 @@ export const styles = theme => {
 // @ts-ignore
 const useStyles = makeStyles(styles);
 const getStyle = classes => settings => {
-    const isDeleted = Boolean(settings.row.original.deleted_at);
-    return isDeleted ? classes.deletedRow : '';
+    const isHidden = Boolean(settings.row.original.deleted_at);
+    return isHidden ? classes.hiddenRow : '';
 };
 
 export const useBudgetColumns = (): Column[] => {
@@ -114,7 +116,7 @@ export const useBudgetColumns = (): Column[] => {
                         <IconButtonComponent
                             icon="remove-red-eye"
                             tooltipMessage={MESSAGES.details}
-                            url={`${baseUrl}/campaignName/${settings.row.original.obr_name}/`}
+                            url={`${baseUrl}/campaignName/${settings.row.original.obr_name}/campaignId/${settings.row.original.campaign_id}`}
                         />
                     );
                 },
@@ -132,9 +134,9 @@ export const useBudgetDetailsColumns = ({ data }): Column[] => {
     // const currentUser = useCurrentUser();
     // const { mutateAsync: deleteBudgetEvent } = useDeleteBudgetEvent();
     // const { mutateAsync: restoreBudgetEvent } = useRestoreBudgetEvent();
-    const showInternalColumn = Boolean(
-        data?.find(details => details.internal === true),
-    );
+    // const showInternalColumn = Boolean(
+    //     data?.find(details => details.internal === true),
+    // );
     return useMemo(() => {
         const defaultColumns = [
             {
@@ -247,7 +249,7 @@ export const useBudgetDetailsColumns = ({ data }): Column[] => {
                 },
             },
             {
-                Header: `${formatMessage(MESSAGES.actions)}`,
+                Header: `${formatMessage(MESSAGES.attachments)}`,
                 id: 'files',
                 accessor: 'files',
                 sortable: false,
@@ -258,6 +260,48 @@ export const useBudgetDetailsColumns = ({ data }): Column[] => {
                             {makeFileLinks(files)}
                             {makeLinks(links)}
                         </Box>
+                    );
+                },
+            },
+            {
+                Header: formatMessage(MESSAGES.actions),
+                id: 'id',
+                accessor: 'id',
+                sortable: false,
+                Cell: settings => {
+                    return (
+                        <>
+                            {!settings.row.original.deleted_at && (
+                                <Tooltip
+                                    title={formatMessage(MESSAGES.clickToHide)}
+                                >
+                                    <RemoveCircleIcon
+                                        color="action"
+                                        onClick={() => {
+                                            console.log(
+                                                'hide step',
+                                                settings.row.original.id,
+                                            );
+                                        }}
+                                    />
+                                </Tooltip>
+                            )}
+                            {settings.row.original.deleted_at && (
+                                <Tooltip
+                                    title={formatMessage(MESSAGES.clickToShow)}
+                                >
+                                    <PlaylistAdd
+                                        className={getRowColor(settings)}
+                                        onClick={() => {
+                                            console.log(
+                                                'show step',
+                                                settings.row.original.id,
+                                            );
+                                        }}
+                                    />
+                                </Tooltip>
+                            )}
+                        </>
                     );
                 },
             },
@@ -345,31 +389,31 @@ export const useBudgetDetailsColumns = ({ data }): Column[] => {
             //     },
             // },
         ];
-        if (showInternalColumn) {
-            return [
-                {
-                    Header: '',
-                    id: 'internal',
-                    accessor: 'internal',
-                    sortable: false,
-                    width: 1,
-                    Cell: settings => {
-                        const { internal } = settings.row.original;
-                        return internal ? (
-                            <LockIcon
-                                className={getRowColor(settings)}
-                                color="action"
-                            />
-                        ) : (
-                            <></>
-                        );
-                    },
-                },
-                ...defaultColumns,
-            ];
-        }
+        // if (showInternalColumn) {
+        //     return [
+        //         {
+        //             Header: '',
+        //             id: 'internal',
+        //             accessor: 'internal',
+        //             sortable: false,
+        //             width: 1,
+        //             Cell: settings => {
+        //                 const { internal } = settings.row.original;
+        //                 return internal ? (
+        //                     <LockIcon
+        //                         className={getRowColor(settings)}
+        //                         color="action"
+        //                     />
+        //                 ) : (
+        //                     <></>
+        //                 );
+        //             },
+        //         },
+        //         ...defaultColumns,
+        //     ];
+        // }
         return defaultColumns;
-    }, [formatMessage, showInternalColumn, getRowColor, classes.paragraph]);
+    }, [formatMessage, getRowColor, classes.paragraph]);
 };
 
 type Params = {

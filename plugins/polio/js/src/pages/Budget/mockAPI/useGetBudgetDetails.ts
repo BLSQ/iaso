@@ -10,7 +10,7 @@ export type BudgetStep = {
     created_by: string; /// created_by
     created_by_team: string;
     comment?: string;
-    links?: string[];
+    links?: { alias: string; url: string }[];
     files?: string[];
     amount?: number;
     transition_key: string; // (step name)
@@ -32,6 +32,7 @@ const mockBudgetEvents = [
         amount: 1000,
         transition_key: 'submit_to_rrt',
         transition_label: 'Submit to RRT',
+        deleted_at: 'false', // deleted_at: string | null
     },
     {
         id: 4,
@@ -44,6 +45,7 @@ const mockBudgetEvents = [
         amount: 1050,
         transition_key: 'send_to_GPEI',
         transition_label: 'Send to GPEI',
+        deleted_at: null,
     },
 ];
 
@@ -57,10 +59,13 @@ const getBudgetDetails = async (params): Promise<Paginated<BudgetStep>> => {
     ).toString();
     console.log('query string', queryString);
     await waitFor(1000);
+    const data = params.show_hidden
+        ? mockBudgetEvents
+        : mockBudgetEvents.filter(event => !event.deleted_at);
     const response = makePaginatedResponse<BudgetStep>({
         ...pageOneTemplate,
         dataKey: 'results',
-        data: mockBudgetEvents,
+        data,
     });
     return response;
 };

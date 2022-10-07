@@ -28,7 +28,7 @@ export const formatComment = (comment: Optional<string>): Nullable<string> => {
 export const useActionMessage = (
     comment = '',
     files = 0,
-    links = [] as string[],
+    links = [] as { alias: string; url: string }[],
 ): Nullable<string> => {
     const { formatMessage } = useSafeIntl();
     const fileMsg = `${files} ${formatMessage(MESSAGES.files)}`;
@@ -76,7 +76,7 @@ export const findAuthorTeam = (
 
 export const shouldOpenModal = (
     files: Nullable<number> = 0,
-    links: Nullable<string[]> = [],
+    links: Nullable<{ alias: string; url: string }[]> = [],
     comments: Nullable<string> = '',
 ): boolean => {
     if (files || (links ?? []).length > 0 || comments) return true;

@@ -1,4 +1,6 @@
 from django.db.models import QuerySet, Max
+from django.http import HttpResponse
+from django.template.loader import get_template
 from django_filters.rest_framework import DjangoFilterBackend
 from drf_yasg.utils import swagger_auto_schema
 from rest_framework import permissions, filters, status
@@ -7,7 +9,7 @@ from rest_framework.response import Response
 
 from iaso.api.common import ModelViewSet, DeletionFilterBackend
 from iaso.models import OrgUnit
-from plugins.polio.budget.models import BudgetStep
+from plugins.polio.budget.models import BudgetStep, MailTemplate
 from plugins.polio.budget.serializers import CampaignBudgetSerializer, TransitionToSerializer, BudgetStepSerializer
 from plugins.polio.models import Campaign
 
@@ -84,6 +86,9 @@ class BudgetStepViewSet(ModelViewSet):
     Step on a campaign, to progress the budget workflow
     """
 
+    # FIXME : add DELETE
+    # filter perms on campaign
+
     serializer_class = BudgetStepSerializer
     permission_classes = [permissions.IsAuthenticated]
 
@@ -109,3 +114,14 @@ class BudgetStepViewSet(ModelViewSet):
     filterset_fields = {
         "campaign_id": ["exact"],
     }
+
+    @action(detail=True, permission_classes=[permissions.IsAdminUser])
+    def mail_template(self, request, pk):
+        step = self.get_queryset().get(pk=pk)
+        template_id = request.query_params.get("template_id")
+        print(template_id)
+        template = MailTemplate.objects.get(id=template_id)
+
+        html = template.render_for_step(step, request.user, request)
+
+        return HttpResponse(html)

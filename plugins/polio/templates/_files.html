@@ -4,7 +4,7 @@
     </tr>
     <tr>
         <td align="left" style="padding:0px 5px;">
-            Files:
+            Attached Files:
         </td>
     </tr>
     <tr>
@@ -13,7 +13,7 @@
     {% for file in files%}
         <tr>
             <td align="left" style="padding:0px 5px;">
-                <a href={{file.path}}>{{file.name}}</a>
+                · <a href={{file.file.url}}>{{file.filename}}</a>
             </td>
         </tr>
     {% endfor %}

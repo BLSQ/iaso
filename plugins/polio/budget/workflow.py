@@ -44,7 +44,7 @@ class Workflow:
             self._transitions_dict = {t.key: t for t in self.transitions}
         return self._transitions_dict
 
-    def get_transition_by_key(self, key):
+    def get_transition_by_key(self, key) -> Transition:
         return self.transitions_dict[key]
 
     def self_check(self):
@@ -109,6 +109,7 @@ node_defs = [
 ]
 
 
+# FIXME Add cache
 def get_workflow():
     transitions = [Transition(**transition_def) for transition_def in transition_defs]
     nodes = [Node(**node_def) for node_def in node_defs]

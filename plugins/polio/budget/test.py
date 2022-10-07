@@ -43,6 +43,7 @@ class TeamAPITestCase(APITestCase):
             self.assertEqual(c["obr_name"], "test campaign")
 
     def test_transition_to(self):
+        "With file and links"
         self.client.force_login(self.user)
         prev_budget_step_count = BudgetStep.objects.count()
         r = self.client.get("/api/polio/budget/")

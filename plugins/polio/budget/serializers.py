@@ -6,7 +6,7 @@ from rest_framework import serializers
 
 from iaso.models.microplanning import Team
 from plugins.polio.models import Campaign
-from plugins.polio.serializers import CampaignSerializer
+from plugins.polio.serializers import CampaignSerializer, UserSerializer
 from .models import BudgetStep, BudgetStepFile, BudgetStepLink
 from .workflow import get_workflow, next_transitions, can_user_transition
 
@@ -23,6 +23,11 @@ class TransitionSerializer(serializers.Serializer):
     color = serializers.ChoiceField(choices=["primary", "green", "red"], required=False)
 
 
+class NodeSerializer(serializers.Serializer):
+    key = serializers.CharField()
+    label = serializers.CharField()
+
+
 # noinspection PyMethodMayBeStatic
 class CampaignBudgetSerializer(CampaignSerializer):
     # Todo set dynamic serializer
@@ -36,11 +41,14 @@ class CampaignBudgetSerializer(CampaignSerializer):
             "current_state",
             "next_transitions",
             "budget_last_updated_at",
+            "possible_states",
         ]
 
     # added via annotation
     budget_last_updated_at = serializers.DateTimeField(required=False, help_text="Last budget update on the campaign")
     current_state = serializers.SerializerMethodField()
+    # To be used for override
+    possible_states = serializers.SerializerMethodField()
 
     next_transitions = serializers.SerializerMethodField()
     # will need to use country__name for sorting
@@ -65,6 +73,12 @@ class CampaignBudgetSerializer(CampaignSerializer):
                 transition.reason_not_allowed = "User doesn't have permission"
 
         return TransitionSerializer(transitions, many=True).data
+
+    @swagger_serializer_method(serializer_or_field=NodeSerializer)
+    def get_possible_states(self, _campaign):
+        workflow = get_workflow()
+        nodes = workflow.nodes
+        return NodeSerializer(nodes, many=True).data
 
 
 class TransitionError(Enum):
@@ -165,16 +179,6 @@ class BudgetFileSerializer(serializers.ModelSerializer):
         ]
 
 
-class BudgetLinkSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = BudgetStepLink
-        fields = [
-            "id",
-            "url",
-            "alias",
-        ]
-
-
 class BudgetStepSerializer(serializers.ModelSerializer):
     class Meta:
         model = BudgetStep
@@ -195,6 +199,8 @@ class BudgetStepSerializer(serializers.ModelSerializer):
     transition_label = serializers.SerializerMethodField()
     files = BudgetFileSerializer(many=True)
     links = BudgetLinkSerializer(many=True)
+    created_by_team = serializers.SlugRelatedField(slug_field="name", read_only=True)
+    created_by = UserSerializer()
 
     @swagger_serializer_method(serializer_or_field=serializers.CharField)
     def get_transition_label(self, budget_step: BudgetStep):

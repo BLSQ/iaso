@@ -18,12 +18,12 @@ import MESSAGES from '../../../constants/messages';
 import InputComponent from '../../../../../../../hat/assets/js/apps/Iaso/components/forms/InputComponent';
 import { useCurrentUser } from '../../../../../../../hat/assets/js/apps/Iaso/utils/usersUtils';
 
-import { useBudgetStepValidation } from '../hooks/validation';
+// import { useBudgetStepValidation } from '../hooks/validation';
 import { useUserHasTeam } from '../../../hooks/useGetTeams';
 
 import {
     useTranslatedErrors,
-    useApiErrorValidation,
+    // useApiErrorValidation,
 } from '../../../../../../../hat/assets/js/apps/Iaso/libs/validation';
 import { useSaveBudgetStep } from '../mockAPI/useSaveBudgetStep';
 import { AddStepButton } from './AddStepButton';
@@ -56,28 +56,30 @@ const CreateBudgetStep: FunctionComponent<Props> = ({
     const { formatMessage } = useSafeIntl();
     const { mutateAsync: saveBudgetStep } = useSaveBudgetStep();
 
-    const {
-        apiErrors,
-        payload,
-        mutation: save,
-    } = useApiErrorValidation<Partial<any>, any>({
-        mutationFn: saveBudgetStep,
-    });
-    const validationSchema = useBudgetStepValidation(apiErrors, payload);
+    // temporarily removing validation
+    // const {
+    //     apiErrors,
+    //     payload,
+    //     mutation: save,
+    // } = useApiErrorValidation<Partial<any>, any>({
+    //     mutationFn: saveBudgetStep,
+    // });
+    // const validationSchema = useBudgetStepValidation(apiErrors, payload);
     const formik = useFormik({
         initialValues: {
             transition_key: transitionKey,
             campaign: campaignId,
-            comment: null,
-            files: previousStep?.files ?? null,
-            links: previousStep?.links ?? null,
-            amount: previousStep?.amount ?? null,
+            comment: undefined,
+            files: previousStep?.files,
+            links: previousStep?.links,
+            amount: previousStep?.amount,
             general: null,
         },
         enableReinitialize: true,
         validateOnBlur: true,
-        validationSchema,
-        onSubmit: save,
+        // removing validation for now. Needs to be refactored to be compatible with workflow
+        // validationSchema,
+        onSubmit: (values, _helpers) => saveBudgetStep(values),
     });
     const {
         values,

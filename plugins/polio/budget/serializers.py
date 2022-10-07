@@ -6,7 +6,7 @@ from rest_framework import serializers
 
 from iaso.models.microplanning import Team
 from plugins.polio.models import Campaign
-from plugins.polio.serializers import CampaignSerializer
+from plugins.polio.serializers import CampaignSerializer, UserSerializer
 from .models import BudgetStep, BudgetStepFile, BudgetStepLink
 from .workflow import get_workflow, next_transitions, can_user_transition
 
@@ -199,6 +199,8 @@ class BudgetStepSerializer(serializers.ModelSerializer):
     transition_label = serializers.SerializerMethodField()
     files = BudgetFileSerializer(many=True)
     links = BudgetLinkSerializer(many=True)
+    created_by_team = serializers.SlugRelatedField(slug_field="name", read_only=True)
+    created_by = UserSerializer()
 
     @swagger_serializer_method(serializer_or_field=serializers.CharField)
     def get_transition_label(self, budget_step: BudgetStep):

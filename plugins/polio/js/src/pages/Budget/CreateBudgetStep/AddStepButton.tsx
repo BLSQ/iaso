@@ -41,7 +41,9 @@ export const AddStepButton: FunctionComponent<AddStepButtonProps> = ({
     disabled = false,
 }: AddStepButtonProps) => {
     const classes = useButtonStyles();
-    const className = color !== 'primary' ? classes[color] : undefined;
+    const usableColor = color ?? 'primary';
+    const className =
+        usableColor !== 'primary' ? classes[usableColor] : undefined;
     // The div prevents the Button from being too big on small screens
     return (
         <div className={classes.addButton}>
@@ -50,7 +52,7 @@ export const AddStepButton: FunctionComponent<AddStepButtonProps> = ({
                 size="medium"
                 variant="contained"
                 component="button"
-                color={color === 'primary' ? color : undefined}
+                color={usableColor === 'primary' ? usableColor : undefined}
                 className={className}
                 disabled={disabled}
             >

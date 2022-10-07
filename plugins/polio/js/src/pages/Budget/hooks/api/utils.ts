@@ -1,5 +1,3 @@
-import { Paginated } from '../../../../../../../../hat/assets/js/apps/Iaso/types/table';
-
 type PaginatedResponseParams<T> = {
     hasPrevious?: boolean;
     hasNext?: boolean;

@@ -49,9 +49,7 @@ const useStyles = makeStyles(theme => ({
 
 export const BudgetEventCard: FunctionComponent<Props> = ({ event }) => {
     const { formatMessage } = useSafeIntl();
-    // const currentUser = useCurrentUser();
     const classes = useStyles();
-    // const userIsAuthor = event?.author === currentUser.user_id;
     const { files } = event;
     const eventLinks = (event?.links ?? []) as { alias: string; url: string }[];
     const eventComment = event?.comment ?? '';
@@ -90,7 +88,6 @@ export const BudgetEventCard: FunctionComponent<Props> = ({ event }) => {
                     <CardActionArea
                         className={allowOpenModal ? '' : classes.inactiveCard}
                         disableRipple={!allowOpenModal}
-                        // disabled={isLoading}
                     >
                         <CardContent
                             onClick={onClick}
@@ -105,7 +102,6 @@ export const BudgetEventCard: FunctionComponent<Props> = ({ event }) => {
                                     )}
                                 >
                                     {title}
-                                    {/* <LockIcon internal={event?.internal} /> */}
                                 </Typography>
                             </Box>
                             <Typography variant="body2" className={textColor}>
@@ -166,24 +162,8 @@ export const BudgetEventCard: FunctionComponent<Props> = ({ event }) => {
                     }}
                 >
                     <Divider orientation="vertical" />
-                    {!event.deleted_at && (
-                        <RemoveCircleIcon
-                            color="action"
-                            // onClick={() => {
-                            //     // Send delete on budgetstep
-                            //     console.log('hide step', event.id);
-                            // }}
-                        />
-                    )}
-                    {event.deleted_at && (
-                        <PlaylistAdd
-                            className={textColor}
-                            // restore on budget step
-                            // onClick={() => {
-                            //     console.log('show step', event.id);
-                            // }}
-                        />
-                    )}
+                    {!event.deleted_at && <RemoveCircleIcon color="action" />}
+                    {event.deleted_at && <PlaylistAdd className={textColor} />}
                 </Grid>
             </Grid>
         </Card>

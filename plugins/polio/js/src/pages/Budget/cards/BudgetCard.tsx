@@ -97,7 +97,7 @@ export const BudgetCard: FunctionComponent<Props> = ({ budget }) => {
                     <IconButtonComponent
                         icon="remove-red-eye"
                         tooltipMessage={MESSAGES.details}
-                        url={`${baseUrl}/campaignName/${budget.obr_name}/country/${budget.country_name}`}
+                        url={`${baseUrl}/campaignName/${budget.obr_name}/campaignId/${budget.id}`}
                     />
                 </Grid>
             </Grid>

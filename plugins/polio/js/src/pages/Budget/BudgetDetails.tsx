@@ -67,8 +67,9 @@ export const BudgetDetails: FunctionComponent<Props> = ({ router }) => {
         return {
             ...rest,
             show_hidden: showHidden,
+            campaign_id: campaignId,
         };
-    }, [rest, showHidden]);
+    }, [campaignId, rest, showHidden]);
 
     const checkBoxLabel = formatMessage(MESSAGES.showHidden);
     // @ts-ignore

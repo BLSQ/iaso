@@ -25,7 +25,7 @@ export const NamedLink: FunctionComponent<Props> = ({ index }) => {
     const { formatMessage } = useSafeIntl();
     return (
         <Grid container spacing={2}>
-            <Grid item xs={6}>
+            <Grid item xs={4}>
                 <Field
                     label={formatMessage(MESSAGES.alias)}
                     name={`links[${index}].alias`}
@@ -33,7 +33,7 @@ export const NamedLink: FunctionComponent<Props> = ({ index }) => {
                     component={TextInput}
                 />
             </Grid>
-            <Grid item xs={6}>
+            <Grid item xs={8}>
                 <Field
                     label={formatMessage(MESSAGES.url)}
                     name={`links[${index}].url`}

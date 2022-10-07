@@ -108,7 +108,7 @@ export const BudgetDetails: FunctionComponent<Props> = ({ router }) => {
     });
     const [page, setPage] = useBoundState<Optional<number | string>>(
         1,
-        apiParams?.page,
+        apiParams?.page ?? 1,
     );
     const onCardPaginationChange = useCallback(
         (_value, newPage) => {

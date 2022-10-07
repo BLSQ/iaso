@@ -25,6 +25,9 @@ export const BudgetDetailsCardsLayout: FunctionComponent<Props> = ({
     onCardPaginationChange,
 }) => {
     const classes = useStyles();
+    const safePage = Number.isSafeInteger(page)
+        ? (page as number)
+        : parseInt(page as string, 10);
     return (
         <>
             {budgetDetails?.results.map((budgetStep, i) => {
@@ -37,11 +40,7 @@ export const BudgetDetailsCardsLayout: FunctionComponent<Props> = ({
             {budgetDetails && (
                 <Pagination
                     className={classes.pagination}
-                    page={
-                        Number.isSafeInteger(page)
-                            ? (page as number)
-                            : parseInt(page as string, 10)
-                    }
+                    page={safePage}
                     count={budgetDetails?.pages}
                     showLastButton
                     showFirstButton

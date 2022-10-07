@@ -105,7 +105,6 @@ const CreateBudgetStep: FunctionComponent<Props> = ({
     });
 
     const titleMessage = transitionLabel;
-    // const titleMessage = MESSAGES.newBudgetStep;
 
     return (
         <FormikProvider value={formik}>

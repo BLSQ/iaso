@@ -14,7 +14,7 @@ CALENDAR_COLUMN_FONT_SIZE = "12"
 CALENDAR_CELL_FONT_SIZE = "10"
 
 
-def generate_xlsx_campaigns_calendar(filename, datas):
+def generate_xlsx_campaigns_calendar(filename: str, datas: Any) -> Workbook:
     """
     Create the XLSX file for the campaigns calendar
 
@@ -69,7 +69,7 @@ def get_cell_data(rounds: Any) -> str:
     """
     cell_data = ""
     for round in rounds:
-        started_at = format_date(round["started_at"], False)
+        started_at = format_date(round["started_at"])
         ended_at = format_date(round["ended_at"], True)
         obr_name = round["obr_name"] if round["obr_name"] is not None else ""
         round_number = round["round_number"] if round["round_number"] is not None else ""
@@ -81,7 +81,7 @@ def get_cell_data(rounds: Any) -> str:
     return cell_data
 
 
-def format_date(date: str, with_year: Optional[bool] = False) -> str:
+def format_date(date: str, with_year: bool = False) -> str:
     """
     Returns a formatted date into "%d %B" or "%d %B %Y" format
 
@@ -129,7 +129,7 @@ def cell_dimension_pattern_fill(
     return sheet
 
 
-def format_cell(cell: Any, size: str, is_header: Optional[bool] = False) -> Any:
+def format_cell(cell: Any, size: str, is_header: bool = False) -> Any:
     """
     Return the openpyxl.cell object after applying alignement, border and font
 

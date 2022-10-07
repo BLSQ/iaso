@@ -340,6 +340,15 @@ class PolioAPITestCase(APITestCase):
         self.assertIsNone(restored_campaign.deleted_at)
 
     def test_create_calendar_xlsx_sheet(self):
+        """
+        It tests the whole export XLSX calendar feature when everything happens correctly:
+            1. If the export succeed
+            2. If it return the right header
+            3. If the columns names are correct
+            4. If the data in cells are correct:
+                a. If there is on rounds in a cell
+                b. If there are two rounds in a cell(it can be more than two rounds)
+        """
         org_unit = OrgUnit.objects.create(
             id=5455,
             name="Country name",
@@ -383,6 +392,10 @@ class PolioAPITestCase(APITestCase):
         )
 
     def test_create_calendar_xlsx_sheet_campaign_without_country(self):
+        """
+        When a campaign was not linked to a country, export XLSX calendar triggered an error('NoneType' object has no attribute 'id'):
+            - This test checks if the error does not occur even when a campaign is not linked to country
+        """
         c = Campaign.objects.create(obr_name="orb campaign", vacine="vacin")
         c.rounds.create(number=1, started_at=datetime.date(2022, 1, 1), ended_at=datetime.date(2022, 1, 2))
 
@@ -394,6 +407,10 @@ class PolioAPITestCase(APITestCase):
         self.assertEqual(len(data_dict["COUNTRY"]), 0)
 
     def test_create_calendar_xlsx_sheet_round_with_no_end_date(self):
+        """
+        When a round had None in started_at or ended_at, it triggered an error('time data '' does not match format '%Y-%m-%d''):
+            - This test checks if the error does not occur even when a round has None in started_at or ended_at
+        """
         org_unit = OrgUnit.objects.create(
             id=5455,
             name="Country name",

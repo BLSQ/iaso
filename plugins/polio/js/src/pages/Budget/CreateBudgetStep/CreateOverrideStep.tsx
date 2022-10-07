@@ -28,10 +28,10 @@ import {
     useTranslatedErrors,
     useApiErrorValidation,
 } from '../../../../../../../hat/assets/js/apps/Iaso/libs/validation';
-import { useSaveBudgetStep } from '../mockAPI/useSaveBudgetStep';
+import { useSaveBudgetStep } from '../hooks/api/useSaveBudgetStep';
 import { AddStepButton } from './AddStepButton';
 import { commaSeparatedIdsToArray } from '../../../../../../../hat/assets/js/apps/Iaso/utils/forms';
-import { useGetStatusDropDown } from '../mockAPI/useGetStatusDropDown';
+import { useGetStatusDropDown } from '../hooks/api/useGetStatusDropDown';
 import { UserHasTeamWarning } from './UserHasTeamWarning';
 
 type Props = {

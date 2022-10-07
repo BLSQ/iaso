@@ -1,8 +1,8 @@
 /* eslint-disable camelcase */
-import { useSnackMutation } from '../../../../../../../hat/assets/js/apps/Iaso/libs/apiHooks';
+import { useSnackMutation } from '../../../../../../../../hat/assets/js/apps/Iaso/libs/apiHooks';
 import { BudgetStep } from './useGetBudgetDetails';
-import MESSAGES from '../../../constants/messages';
-import { postRequest } from '../../../../../../../hat/assets/js/apps/Iaso/libs/Api';
+import MESSAGES from '../../../../constants/messages';
+import { postRequest } from '../../../../../../../../hat/assets/js/apps/Iaso/libs/Api';
 
 type Payload = {
     transition_key: string; // key

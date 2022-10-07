@@ -20,7 +20,7 @@ import { Optional } from '../../../../../../../hat/assets/js/apps/Iaso/types/uti
 import { convertObjectToString } from '../../../utils';
 import { formatThousand } from '../../../../../../../hat/assets/js/apps/Iaso/utils';
 import { formatComment } from '../cards/utils';
-import { BudgetStep } from '../mockAPI/useGetBudgetDetails';
+import { BudgetStep } from './api/useGetBudgetDetails';
 import getDisplayName from '../../../../../../../hat/assets/js/apps/Iaso/utils/usersUtils';
 
 const baseUrl = BUDGET_DETAILS;

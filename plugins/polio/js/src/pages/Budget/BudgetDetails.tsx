@@ -28,8 +28,8 @@ import { useBoundState } from '../../../../../../hat/assets/js/apps/Iaso/hooks/u
 import { Optional } from '../../../../../../hat/assets/js/apps/Iaso/types/utils';
 import { handleTableDeepLink } from '../../../../../../hat/assets/js/apps/Iaso/utils/table';
 import { BudgetDetailsFilters } from './BudgetDetailsFilters';
-import { useGetBudgetForCampaign } from './mockAPI/useGetBudget';
-import { useGetBudgetDetails } from './mockAPI/useGetBudgetDetails';
+import { useGetBudgetForCampaign } from './hooks/api/useGetBudget';
+import { useGetBudgetDetails } from './hooks/api/useGetBudgetDetails';
 import { CreateBudgetStep } from './CreateBudgetStep/CreateBudgetStep';
 import { CreateOverrideStep } from './CreateBudgetStep/CreateOverrideStep';
 import { BudgetDetailsCardsLayout } from './BudgetDetailsCardsLayout';

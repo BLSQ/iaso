@@ -25,9 +25,9 @@ import {
     useTranslatedErrors,
     // useApiErrorValidation,
 } from '../../../../../../../hat/assets/js/apps/Iaso/libs/validation';
-import { useSaveBudgetStep } from '../mockAPI/useSaveBudgetStep';
+import { useSaveBudgetStep } from '../hooks/api/useSaveBudgetStep';
 import { AddStepButton } from './AddStepButton';
-import { BudgetStep } from '../mockAPI/useGetBudgetDetails';
+import { BudgetStep } from '../hooks/api/useGetBudgetDetails';
 import { UserHasTeamWarning } from './UserHasTeamWarning';
 import { AddMultipleLinks } from '../MultipleLinks/AddMultipleLinks';
 

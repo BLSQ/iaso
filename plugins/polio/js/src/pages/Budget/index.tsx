@@ -31,7 +31,11 @@ import { convertObjectToString } from '../../utils';
 import { BudgetFilters } from './BudgetFilters';
 import { BudgetCard } from './cards/BudgetCard';
 
-import { Budget, useBudgetParams, useGetBudgets } from './mockAPI/useGetBudget';
+import {
+    Budget,
+    useBudgetParams,
+    useGetBudgets,
+} from './hooks/api/useGetBudget';
 
 import { handleTableDeepLink } from '../../../../../../hat/assets/js/apps/Iaso/utils/table';
 

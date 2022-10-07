@@ -1,6 +1,6 @@
 /* eslint-disable camelcase */
-import { getRequest } from '../../../../../../../hat/assets/js/apps/Iaso/libs/Api';
-import { useSnackQuery } from '../../../../../../../hat/assets/js/apps/Iaso/libs/apiHooks';
+import { getRequest } from '../../../../../../../../hat/assets/js/apps/Iaso/libs/Api';
+import { useSnackQuery } from '../../../../../../../../hat/assets/js/apps/Iaso/libs/apiHooks';
 // import { Paginated } from '../../../../../../../hat/assets/js/apps/Iaso/types/table';
 // import { waitFor } from '../../../../../../../hat/assets/js/apps/Iaso/utils';
 // import { makePaginatedResponse, pageOneTemplate } from './utils';

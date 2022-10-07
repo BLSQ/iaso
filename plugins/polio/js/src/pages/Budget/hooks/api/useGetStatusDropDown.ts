@@ -1,5 +1,5 @@
-import { useSnackQuery } from '../../../../../../../hat/assets/js/apps/Iaso/libs/apiHooks';
-import { waitFor } from '../../../../../../../hat/assets/js/apps/Iaso/utils';
+import { useSnackQuery } from '../../../../../../../../hat/assets/js/apps/Iaso/libs/apiHooks';
+import { waitFor } from '../../../../../../../../hat/assets/js/apps/Iaso/utils';
 
 const getSteps = async () => {
     await waitFor(1000);

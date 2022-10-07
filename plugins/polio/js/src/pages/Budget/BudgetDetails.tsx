@@ -87,9 +87,9 @@ export const BudgetDetails: FunctionComponent<Props> = ({ router }) => {
         );
     }, [budgetDetails?.results, previousStep, quickTransition]);
 
-    const { data: budgetInfos } = useGetBudgetForCampaign(params?.campaignName);
+    const { data: budgetInfos } = useGetBudgetForCampaign(params?.campaignId);
 
-    const budgetStatus = budgetInfos?.current_state.label ?? '--';
+    const budgetStatus = budgetInfos?.current_state?.label ?? '--';
 
     const nextSteps = useMemo(() => {
         const regular = budgetInfos?.next_transitions?.filter(
@@ -204,7 +204,7 @@ export const BudgetDetails: FunctionComponent<Props> = ({ router }) => {
                                                                 }
                                                                 iconProps={{
                                                                     label: step.label,
-                                                                    color: 'primary',
+                                                                    color: step.color,
                                                                     disabled:
                                                                         !step.allowed,
                                                                     // tooltipText={step.reason_not_allowed}
@@ -241,7 +241,8 @@ export const BudgetDetails: FunctionComponent<Props> = ({ router }) => {
                                                     iconProps={{
                                                         label: nextSteps
                                                             .override.label,
-                                                        color: 'red',
+                                                        color: nextSteps
+                                                            .override.color,
 
                                                         // tooltipText={step.reason_not_allowed}
                                                         // disabled={step.allowed}

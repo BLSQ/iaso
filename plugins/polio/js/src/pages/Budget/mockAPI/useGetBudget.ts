@@ -1,11 +1,12 @@
 /* eslint-disable camelcase */
 import { useMemo } from 'react';
 import { useSnackQuery } from '../../../../../../../hat/assets/js/apps/Iaso/libs/apiHooks';
-import { Paginated } from '../../../../../../../hat/assets/js/apps/Iaso/types/table';
-import { waitFor } from '../../../../../../../hat/assets/js/apps/Iaso/utils';
+// import { Paginated } from '../../../../../../../hat/assets/js/apps/Iaso/types/table';
+// import { waitFor } from '../../../../../../../hat/assets/js/apps/Iaso/utils';
 import { getApiParamDateString } from '../../../../../../../hat/assets/js/apps/Iaso/utils/dates';
-import { makePaginatedResponse, pageOneTemplate } from './utils';
+// import { makePaginatedResponse, pageOneTemplate } from './utils';
 import { Nullable } from '../../../../../../../hat/assets/js/apps/Iaso/types/utils';
+import { getRequest } from '../../../../../../../hat/assets/js/apps/Iaso/libs/Api';
 
 export type Budget = {
     id: number;
@@ -28,88 +29,108 @@ export type Budget = {
     }[];
 };
 
-const mockBudgets: Budget[] = [
-    {
-        id: 1,
-        campaign_id: 'uuid-blablabla-lotastuff',
-        obr_name: 'SEN-3DS-2022',
-        country_name: 'SENEGAL',
-        current_state: { key: 'submitted_rrt', label: 'Submitted to RRT' },
-    },
-    {
-        id: 2,
-        campaign_id: 'uuid-blablabla-wawawa',
-        obr_name: 'MWI-2DS-2022',
-        country_name: 'MALAWI',
-        current_state: {
-            key: 'budget_requested',
-            label: 'Budget requested',
-        },
-    },
-];
+// const mockBudgets: Budget[] = [
+//     {
+//         id: 1,
+//         campaign_id: 'uuid-blablabla-lotastuff',
+//         obr_name: 'SEN-3DS-2022',
+//         country_name: 'SENEGAL',
+//         current_state: { key: 'submitted_rrt', label: 'Submitted to RRT' },
+//     },
+//     {
+//         id: 2,
+//         campaign_id: 'uuid-blablabla-wawawa',
+//         obr_name: 'MWI-2DS-2022',
+//         country_name: 'MALAWI',
+//         current_state: {
+//             key: 'budget_requested',
+//             label: 'Budget requested',
+//         },
+//     },
+// ];
 
-const mockBudgetsForCampaigns = {
-    'SEN-3DS-2022': {
-        id: 1,
-        campaign_id: 'uuid-blablabla-lotastuff',
-        obr_name: 'SEN-3DS-2022',
-        country_name: 'SENEGAL',
-        current_state: { key: 'submitted_rrt', label: 'Submitted to RRT' },
-        next_transitions: [
-            {
-                key: 'submit_to_ORPG',
-                label: 'Submit to ORPG',
-                allowed: true,
-                reason_not_allowed: null,
-                required_fields: ['files'],
-                help_text: 'attach file to submit to ORPG',
-                color: 'red',
-                displayed_fields: ['comment', 'files', 'links', 'amount'],
-            },
-            {
-                key: 'give_feedback_gpei',
-                label: 'Send feedback to GPEI',
-                allowed: true,
-                reason_not_allowed: null,
-                required_fields: ['files'],
-                help_text: 'send file with comments to GPEI',
-                displayed_fields: ['comment', 'files', 'links', 'amount'],
-            },
-        ],
-    },
-    'MWI-2DS-2022': {
-        id: 2,
-        campaign_id: 'uuid-blablabla-wawawa',
-        obr_name: 'MWI-2DS-2022',
-        country_name: 'MALAWI',
-        current_state: {
-            key: 'budget_requested',
-            label: 'Budget requested',
-        },
-        next_transitions: [
-            {
-                key: 'send_to_GPEI',
-                label: 'Send to GPEI',
-                allowed: false,
-                reason_not_allowed: 'User is not in authorised team',
-                required_fields: ['files'],
-                help_text: 'attach file to send to GPEI',
-                displayed_fields: ['comment', 'files', 'links', 'amount'],
-            },
-            {
-                key: 'override',
-                label: 'Override',
-                allowed: true,
-                reason_not_allowed: '',
-                required_fields: [],
-                help_text: '',
-                displayed_fields: ['comment', 'files', 'links', 'amount'],
-            },
-        ],
-    },
-};
+// const mockBudgetsForCampaigns = {
+//     'SEN-3DS-2022': {
+//         id: 1,
+//         campaign_id: 'uuid-blablabla-lotastuff',
+//         obr_name: 'SEN-3DS-2022',
+//         country_name: 'SENEGAL',
+//         current_state: { key: 'submitted_rrt', label: 'Submitted to RRT' },
+//         next_transitions: [
+//             {
+//                 key: 'submit_to_ORPG',
+//                 label: 'Submit to ORPG',
+//                 allowed: true,
+//                 reason_not_allowed: null,
+//                 required_fields: ['files'],
+//                 help_text: 'attach file to submit to ORPG',
+//                 color: 'red',
+//                 displayed_fields: ['comment', 'files', 'links', 'amount'],
+//             },
+//             {
+//                 key: 'give_feedback_gpei',
+//                 label: 'Send feedback to GPEI',
+//                 allowed: true,
+//                 reason_not_allowed: null,
+//                 required_fields: ['files'],
+//                 help_text: 'send file with comments to GPEI',
+//                 displayed_fields: ['comment', 'files', 'links', 'amount'],
+//             },
+//         ],
+//     },
+//     'MWI-2DS-2022': {
+//         id: 2,
+//         campaign_id: 'uuid-blablabla-wawawa',
+//         obr_name: 'MWI-2DS-2022',
+//         country_name: 'MALAWI',
+//         current_state: {
+//             key: 'budget_requested',
+//             label: 'Budget requested',
+//         },
+//         next_transitions: [
+//             {
+//                 key: 'send_to_GPEI',
+//                 label: 'Send to GPEI',
+//                 allowed: false,
+//                 reason_not_allowed: 'User is not in authorised team',
+//                 required_fields: ['files'],
+//                 help_text: 'attach file to send to GPEI',
+//                 displayed_fields: ['comment', 'files', 'links', 'amount'],
+//             },
+//             {
+//                 key: 'override',
+//                 label: 'Override',
+//                 allowed: true,
+//                 reason_not_allowed: '',
+//                 required_fields: [],
+//                 help_text: '',
+//                 displayed_fields: ['comment', 'files', 'links', 'amount'],
+//             },
+//         ],
+//     },
+// };
 
-const getBudgets = async (params): Promise<Paginated<Budget>> => {
+// const getMockBudgets = async (params): Promise<Paginated<Budget>> => {
+//     const filteredParams = Object.entries(params).filter(
+//         // eslint-disable-next-line no-unused-vars
+//         ([_key, value]) => value !== undefined,
+//     );
+//     const queryString = new URLSearchParams(
+//         Object.fromEntries(filteredParams) as Record<string, any>,
+//     ).toString();
+//     console.log('query string', queryString);
+//     await waitFor(1000);
+//     const response = makePaginatedResponse<Budget>({
+//         ...pageOneTemplate,
+//         dataKey: 'results',
+//         data: mockBudgets,
+//     });
+//     return response;
+// };
+
+// const fields = 'fields=campaign_id,obr_name,country_name,current_state';
+
+const getBudgets = (params: any) => {
     const filteredParams = Object.entries(params).filter(
         // eslint-disable-next-line no-unused-vars
         ([_key, value]) => value !== undefined,
@@ -117,14 +138,7 @@ const getBudgets = async (params): Promise<Paginated<Budget>> => {
     const queryString = new URLSearchParams(
         Object.fromEntries(filteredParams) as Record<string, any>,
     ).toString();
-    console.log('query string', queryString);
-    await waitFor(1000);
-    const response = makePaginatedResponse<Budget>({
-        ...pageOneTemplate,
-        dataKey: 'results',
-        data: mockBudgets,
-    });
-    return response;
+    return getRequest(`/api/polio/budget/?${queryString}`);
 };
 
 export const useGetBudgets = (options: any): any => {
@@ -162,16 +176,19 @@ export const useBudgetParams = params => {
     ]);
 };
 
-const getBudgetForCampaign = async obrName => {
-    await waitFor(1000);
-    const result = mockBudgetsForCampaigns[obrName];
-    return result;
+// const getMockBudgetForCampaign = async obrName => {
+//     await waitFor(1000);
+//     const result = mockBudgetsForCampaigns[obrName];
+//     return result;
+// };
+const getBudgetForCampaign = (id?: string) => {
+    return getRequest(`/api/polio/budget/${id}/`);
 };
 
-export const useGetBudgetForCampaign = (obrName?: string) => {
+export const useGetBudgetForCampaign = (id?: string) => {
     return useSnackQuery({
-        queryFn: () => getBudgetForCampaign(obrName),
-        queryKey: ['budget', 'campaign', obrName],
-        options: { enabled: Boolean(obrName) },
+        queryFn: () => getBudgetForCampaign(id),
+        queryKey: ['budget', 'campaign', id],
+        options: { enabled: Boolean(id) },
     });
 };

@@ -49,15 +49,25 @@ export const extractFileName = (fileUrl: string): string => {
     return removedSlashes[removedSlashes.length - 1];
 };
 
-export const makeFileLinks = (files: string[]): React.ReactNode => {
+const truncateFileName = (fileName: string) => {
+    if (fileName.length <= 30) return fileName;
+    const separator = '...';
+    const end = fileName.substring(fileName.length - 5, fileName.length);
+    const start = fileName.substring(0, 22);
+    return `${start}${separator}${end}`;
+};
+
+export const makeFileLinks = (
+    files: { file: string; filename: string }[],
+): React.ReactNode => {
     return files.map((file, index) => {
-        const fileName = extractFileName(file) || file;
+        // const fileName = extractFileName(file) || file;
         return (
             // eslint-disable-next-line react/no-array-index-key
-            <Link key={`${fileName}_${index}`} download href={file}>
+            <Link key={`${file.filename}_${index}`} download href={file.file}>
                 {/* @ts-ignore */}
-                <Typography style={{ wordWrap: 'anywhere' }}>
-                    {fileName}
+                <Typography variant="body2" style={{ wordWrap: 'anywhere' }}>
+                    {truncateFileName(file.filename)}
                 </Typography>
             </Link>
         );
@@ -65,18 +75,17 @@ export const makeFileLinks = (files: string[]): React.ReactNode => {
 };
 
 export const makeLinks = (
-    links: Optional<Nullable<string[]>>,
+    links: Optional<Nullable<{ alias: string; url: string }[]>>,
 ): Nullable<any[]> => {
     if (!links) return null;
     // const linksArray = links.split(',');
     return links.map((link, index) => {
-        const trimmedLink = link.trim();
         return (
             // eslint-disable-next-line react/no-array-index-key
-            <Link key={`${trimmedLink}_${index}`} download href={trimmedLink}>
+            <Link key={`${link.alias}_${index}`} download href={link.url}>
                 {/* @ts-ignore */}
-                <Typography style={{ wordWrap: 'anywhere' }}>
-                    {trimmedLink}
+                <Typography variant="body2" style={{ wordWrap: 'anywhere' }}>
+                    {link.alias}
                 </Typography>
             </Link>
         );

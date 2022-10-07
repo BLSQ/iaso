@@ -37,12 +37,13 @@ export const AddMultipleLinks: FunctionComponent = () => {
 
     return (
         <>
-            {links.length > 0 &&
+            {links.length > 1 &&
                 links.map((_link, index) => (
                     // eslint-disable-next-line react/no-array-index-key
                     <NamedLink index={index} key={`lonk-${index}`} />
                 ))}
-            {links.length === 0 && <NamedLink index={0} />}
+            {/* if the condition is on length === 0 the UI will flicker and the field lose focus because of re-render */}
+            {links.length <= 1 && <NamedLink index={0} />}
 
             <Grid
                 container
@@ -50,7 +51,7 @@ export const AddMultipleLinks: FunctionComponent = () => {
                 direction="column"
                 justifyContent="flex-end"
             >
-                <Box mt={2} mb={2}>
+                <Box mb={2}>
                     <Grid
                         container
                         item

@@ -5,7 +5,6 @@ import React, { FunctionComponent } from 'react';
 import { useSafeIntl } from 'bluesquare-components';
 import { IntlFormatMessage } from '../../../../../../hat/assets/js/apps/Iaso/types/intl';
 import { FilterButton } from '../../../../../../hat/assets/js/apps/Iaso/components/FilterButton';
-import DatesRange from '../../../../../../hat/assets/js/apps/Iaso/components/filters/DatesRange';
 import InputComponent from '../../../../../../hat/assets/js/apps/Iaso/components/forms/InputComponent';
 import { useFilterState } from '../../../../../../hat/assets/js/apps/Iaso/hooks/useFilterState';
 import MESSAGES from '../../constants/messages';
@@ -46,7 +45,7 @@ export const BudgetFilters: FunctionComponent<Props> = ({
     const { formatMessage } = useSafeIntl();
     const theme = useTheme();
     const isXSLayout = useMediaQuery(theme.breakpoints.down('xs'));
-    const isSmLayout = useMediaQuery(theme.breakpoints.down('sm'));
+    // const isSmLayout = useMediaQuery(theme.breakpoints.down('sm'));
     return (
         <Box mb={4}>
             <Grid container spacing={isXSLayout ? 0 : 2}>

@@ -5,13 +5,16 @@ import { useSafeIntl } from 'bluesquare-components';
 import { TableWithDeepLink } from '../../../../../../../hat/assets/js/apps/Iaso/components/tables/TableWithDeepLink';
 import { GraphTitle } from '../../../components/LQAS-IM/GraphTitle';
 import { LinkToProcedure } from './LinkToProcedure';
-import { PaginatedBudgetDetails } from '../../../hooks/useGetBudgetDetails';
 import MESSAGES from '../../../constants/messages';
 import { BUDGET_DETAILS } from '../../../constants/routes';
-import { Column } from '../../../../../../../hat/assets/js/apps/Iaso/types/table';
+import {
+    Column,
+    Paginated,
+} from '../../../../../../../hat/assets/js/apps/Iaso/types/table';
+import { BudgetStep } from '../types';
 
 type Props = {
-    budgetDetails?: PaginatedBudgetDetails;
+    budgetDetails?: Paginated<BudgetStep>;
     resetPageToOne: any;
     isFetching: boolean;
     columns: Column[];

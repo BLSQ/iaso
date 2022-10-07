@@ -44,8 +44,6 @@ export const BudgetStatus: FunctionComponent<Props> = ({ budgetStatus }) => {
                     className={`${classes.title}`}
                     color="primary"
                 >
-                    {/* TODO get color based on key, delete unused messages */}
-                    {/* {`${formatMessage(MESSAGES[budgetStatus])}`} */}
                     {budgetStatus}
                 </Typography>
             )}

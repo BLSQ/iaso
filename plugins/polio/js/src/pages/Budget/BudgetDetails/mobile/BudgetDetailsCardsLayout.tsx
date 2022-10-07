@@ -1,11 +1,12 @@
 import { Box, makeStyles } from '@material-ui/core';
 import { Pagination } from '@material-ui/lab';
 import React, { FunctionComponent } from 'react';
-import { PaginatedBudgetDetails } from '../../../../hooks/useGetBudgetDetails';
+import { Paginated } from '../../../../../../../../hat/assets/js/apps/Iaso/types/table';
 import { BudgetEventCard } from '../../cards/BudgetEventCard';
+import { BudgetStep } from '../../types';
 
 type Props = {
-    budgetDetails: PaginatedBudgetDetails;
+    budgetDetails: Paginated<BudgetStep>;
     page?: number | string;
     // eslint-disable-next-line no-unused-vars
     onCardPaginationChange: (value: any, newPage: number) => void;

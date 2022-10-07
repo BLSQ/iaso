@@ -4,7 +4,7 @@ from django.contrib.admin import widgets
 from django.db import models
 from django.utils.safestring import mark_safe
 
-from .budget.models import MailTemplate
+from .budget.models import MailTemplate, BudgetStepLink, BudgetStepFile, BudgetStep
 from .models import (
     Campaign,
     Surge,
@@ -80,6 +80,24 @@ class MailTemplateAdmin(admin.ModelAdmin):
     pass
 
 
+class BudgetStepLinkAdminInline(admin.TabularInline):
+    model = BudgetStepLink
+    extra = 0
+
+
+class BudgetStepFileAdminInline(admin.TabularInline):
+    model = BudgetStepFile
+    extra = 0
+
+
+class BudgetStepAdmin(admin.ModelAdmin):
+    inlines = [
+        BudgetStepFileAdminInline,
+        BudgetStepLinkAdminInline,
+    ]
+    list_display = ["campaign", "transition_key", "created_by", "created_at", "deleted_at"]
+
+
 admin.site.register(Campaign, CampaignAdmin)
 admin.site.register(CampaignGroup, CampaignGroupAdmin)
 admin.site.register(Config)
@@ -88,6 +106,5 @@ admin.site.register(Round)
 admin.site.register(CountryUsersGroup)
 admin.site.register(URLCache)
 admin.site.register(SpreadSheetImport, SpreadSheetImportAdmin)
-admin.site.register(BudgetEvent)
-admin.site.register(BudgetFiles)
+admin.site.register(BudgetStep, BudgetStepAdmin)
 admin.site.register(MailTemplate, MailTemplateAdmin)

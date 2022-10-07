@@ -874,7 +874,7 @@ class Instance(models.Model):
     )
     project = models.ForeignKey("Project", blank=True, null=True, on_delete=models.DO_NOTHING)
     json = models.JSONField(null=True, blank=True)
-    accuracy = models.DecimalField(null=True, decimal_places=2, max_digits=7)
+    accuracy = models.DecimalField(null=True, blank=True, decimal_places=2, max_digits=7)
     device = models.ForeignKey("Device", null=True, blank=True, on_delete=models.DO_NOTHING)
     period = models.TextField(null=True, blank=True, db_index=True)
     entity = models.ForeignKey("Entity", null=True, blank=True, on_delete=models.DO_NOTHING, related_name="instances")
@@ -883,6 +883,7 @@ class Instance(models.Model):
 
     objects = InstanceManager()
 
+    # TODO: investigate why this model doesn't use SoftDeletableModel as other models and if it thi should be changed
     deleted = models.BooleanField(default=False)
     to_export = models.BooleanField(default=False)
 
@@ -930,7 +931,8 @@ class Instance(models.Model):
         soup = as_soup(file)
         form_version_id = extract_form_version_id(soup)
         if form_version_id:
-            form_versions = self.form.form_versions.filter(version_id=form_version_id)
+            # TODO: investigate: can self.form be None here? What's the expected behavior?
+            form_versions = self.form.form_versions.filter(version_id=form_version_id)  # type: ignore
             form_version = form_versions.first()
             if form_version:
                 questions_by_path = form_version.questions_by_path()

@@ -4,11 +4,11 @@ from datetime import datetime
 import pandas as pd
 from django.contrib.auth.models import User
 from django.db import transaction
-from django.db.models import Count
 from django.db.transaction import atomic
 from gspread.exceptions import APIError  # type: ignore
 from gspread.exceptions import NoValidUrlKeyFound
 from rest_framework import serializers
+from rest_framework.fields import Field
 from rest_framework.validators import UniqueValidator
 from django.utils.translation import gettext as _
 from django.utils import timezone
@@ -50,7 +50,7 @@ class UserSerializer(serializers.ModelSerializer):
 
 class CountryUsersGroupSerializer(serializers.ModelSerializer):
     read_only_users_field = UserSerializer(source="users", many=True, read_only=True)
-    country_name = serializers.SlugRelatedField(source="country", slug_field="name", read_only=True)
+    country_name: Field = serializers.SlugRelatedField(source="country", slug_field="name", read_only=True)
 
     class Meta:
         model = CountryUsersGroup
@@ -422,7 +422,7 @@ class SurgePreviewSerializer(serializers.Serializer):
 
 class OrgUnitSerializer(serializers.ModelSerializer):
     country_parent = serializers.SerializerMethodField()
-    root = serializers.SerializerMethodField()
+    root = serializers.SerializerMethodField()  # type: ignore
 
     def __init__(self, *args, **kwargs):
         for field in kwargs.pop("hidden_fields", []):
@@ -479,9 +479,9 @@ class CampaignSerializer(serializers.ModelSerializer):
             return None
 
     rounds = RoundSerializer(many=True, required=False)
-    org_unit = OrgUnitSerializer(source="initial_org_unit", read_only=True)
-    top_level_org_unit_name = serializers.SlugRelatedField(source="country", slug_field="name", read_only=True)
-    top_level_org_unit_id = serializers.SlugRelatedField(source="country", slug_field="id", read_only=True)
+    org_unit: Field = OrgUnitSerializer(source="initial_org_unit", read_only=True)
+    top_level_org_unit_name: Field = serializers.SlugRelatedField(source="country", slug_field="name", read_only=True)
+    top_level_org_unit_id: Field = serializers.SlugRelatedField(source="country", slug_field="id", read_only=True)
     general_status = serializers.SerializerMethodField()
     grouped_campaigns = serializers.PrimaryKeyRelatedField(
         many=True, queryset=CampaignGroup.objects.all(), required=False

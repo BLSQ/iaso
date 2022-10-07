@@ -21,6 +21,6 @@ const getBudgetDetails = (params: any) => {
 export const useGetBudgetDetails = params => {
     return useSnackQuery({
         queryFn: () => getBudgetDetails(params),
-        queryKey: ['budgetDetails', params],
+        queryKey: ['budget', 'details', params],
     });
 };

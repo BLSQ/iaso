@@ -73,7 +73,11 @@ export const basePostRequest = (url, data, fileData = {}, signal) => {
             formData.append(key, value);
         });
         Object.entries(fileData).forEach(([key, value]) => {
-            formData.append(key, value);
+            if (Array.isArray(value)) {
+                value.forEach(file => formData.append(key, file));
+            } else {
+                formData.append(key, value);
+            }
         });
         init = { method: 'POST', body: formData, signal };
     } else {

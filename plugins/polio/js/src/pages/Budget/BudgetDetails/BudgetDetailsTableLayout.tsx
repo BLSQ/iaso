@@ -2,13 +2,13 @@ import { Box, Divider, Grid, Paper } from '@material-ui/core';
 import React, { FunctionComponent } from 'react';
 // @ts-ignore
 import { useSafeIntl } from 'bluesquare-components';
-import { TableWithDeepLink } from '../../../../../../hat/assets/js/apps/Iaso/components/tables/TableWithDeepLink';
-import { GraphTitle } from '../../components/LQAS-IM/GraphTitle';
+import { TableWithDeepLink } from '../../../../../../../hat/assets/js/apps/Iaso/components/tables/TableWithDeepLink';
+import { GraphTitle } from '../../../components/LQAS-IM/GraphTitle';
 import { LinkToProcedure } from './LinkToProcedure';
-import { PaginatedBudgetDetails } from '../../hooks/useGetBudgetDetails';
-import MESSAGES from '../../constants/messages';
-import { BUDGET_DETAILS } from '../../constants/routes';
-import { Column } from '../../../../../../hat/assets/js/apps/Iaso/types/table';
+import { PaginatedBudgetDetails } from '../../../hooks/useGetBudgetDetails';
+import MESSAGES from '../../../constants/messages';
+import { BUDGET_DETAILS } from '../../../constants/routes';
+import { Column } from '../../../../../../../hat/assets/js/apps/Iaso/types/table';
 
 type Props = {
     budgetDetails?: PaginatedBudgetDetails;

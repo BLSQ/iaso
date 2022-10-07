@@ -1,8 +1,8 @@
 import React, { FunctionComponent, useState } from 'react';
 import { Collapse, Grid } from '@material-ui/core';
 import MoreHorizIcon from '@material-ui/icons/MoreHoriz';
-import { BudgetDetailsFilters } from './BudgetDetailsFilters';
-import { LinkToProcedure } from './LinkToProcedure';
+import { BudgetDetailsFilters } from '../BudgetDetailsFilters';
+import { LinkToProcedure } from '../LinkToProcedure';
 
 type Props = { params: any };
 

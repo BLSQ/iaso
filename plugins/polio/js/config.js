@@ -33,7 +33,7 @@ import { Lqas } from './src/pages/LQAS';
 import { ImStats } from './src/pages/IM';
 import { paginationPathParams } from '../../../hat/assets/js/apps/Iaso/routing/common';
 import { GroupedCampaigns } from './src/pages/GroupedCampaigns/GroupedCampaigns.tsx';
-import { BudgetDetails } from './src/pages/Budget/BudgetDetails.tsx';
+import { BudgetDetails } from './src/pages/Budget/BudgetDetails/BudgetDetails.tsx';
 import { BudgetList } from './src/pages/Budget/index.tsx';
 
 const campaignsFilters = [

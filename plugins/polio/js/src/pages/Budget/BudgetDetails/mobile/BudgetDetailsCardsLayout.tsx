@@ -1,8 +1,8 @@
 import { Box, makeStyles } from '@material-ui/core';
 import { Pagination } from '@material-ui/lab';
 import React, { FunctionComponent } from 'react';
-import { PaginatedBudgetDetails } from '../../hooks/useGetBudgetDetails';
-import { BudgetEventCard } from './cards/BudgetEventCard';
+import { PaginatedBudgetDetails } from '../../../../hooks/useGetBudgetDetails';
+import { BudgetEventCard } from '../../cards/BudgetEventCard';
 
 type Props = {
     budgetDetails: PaginatedBudgetDetails;

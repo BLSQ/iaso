@@ -16,25 +16,25 @@ import {
 } from '@material-ui/core';
 
 import { useDispatch, useSelector } from 'react-redux';
-import TopBar from '../../../../../../hat/assets/js/apps/Iaso/components/nav/TopBarComponent';
-import MESSAGES from '../../constants/messages';
-import { useStyles } from '../../styles/theme';
-import { BUDGET, BUDGET_DETAILS } from '../../constants/routes';
-import { useTableState } from './hooks/config';
-import { BudgetStatus } from './BudgetStatus';
-import { redirectToReplace } from '../../../../../../hat/assets/js/apps/Iaso/routing/actions';
-import InputComponent from '../../../../../../hat/assets/js/apps/Iaso/components/forms/InputComponent';
-import { useBoundState } from '../../../../../../hat/assets/js/apps/Iaso/hooks/useBoundState';
-import { Optional } from '../../../../../../hat/assets/js/apps/Iaso/types/utils';
-import { handleTableDeepLink } from '../../../../../../hat/assets/js/apps/Iaso/utils/table';
+import TopBar from '../../../../../../../hat/assets/js/apps/Iaso/components/nav/TopBarComponent';
+import MESSAGES from '../../../constants/messages';
+import { useStyles } from '../../../styles/theme';
+import { BUDGET, BUDGET_DETAILS } from '../../../constants/routes';
+import { useTableState } from '../hooks/config';
+import { BudgetStatus } from '../BudgetStatus';
+import { redirectToReplace } from '../../../../../../../hat/assets/js/apps/Iaso/routing/actions';
+import InputComponent from '../../../../../../../hat/assets/js/apps/Iaso/components/forms/InputComponent';
+import { useBoundState } from '../../../../../../../hat/assets/js/apps/Iaso/hooks/useBoundState';
+import { Optional } from '../../../../../../../hat/assets/js/apps/Iaso/types/utils';
+import { handleTableDeepLink } from '../../../../../../../hat/assets/js/apps/Iaso/utils/table';
 import { BudgetDetailsFilters } from './BudgetDetailsFilters';
-import { useGetBudgetForCampaign } from './hooks/api/useGetBudget';
-import { useGetBudgetDetails } from './hooks/api/useGetBudgetDetails';
-import { CreateBudgetStep } from './CreateBudgetStep/CreateBudgetStep';
-import { CreateOverrideStep } from './CreateBudgetStep/CreateOverrideStep';
-import { BudgetDetailsCardsLayout } from './BudgetDetailsCardsLayout';
+import { useGetBudgetForCampaign } from '../hooks/api/useGetBudget';
+import { useGetBudgetDetails } from '../hooks/api/useGetBudgetDetails';
+import { CreateBudgetStep } from '../CreateBudgetStep/CreateBudgetStep';
+import { CreateOverrideStep } from '../CreateBudgetStep/CreateOverrideStep';
+import { BudgetDetailsCardsLayout } from './mobile/BudgetDetailsCardsLayout';
 import { BudgetDetailsTableLayout } from './BudgetDetailsTableLayout';
-import { BudgetDetailsFiltersMobile } from './BudgetDetailsFiltersMobile';
+import { BudgetDetailsFiltersMobile } from './mobile/BudgetDetailsFiltersMobile';
 
 type Props = {
     router: any;

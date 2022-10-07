@@ -3,8 +3,8 @@ import { Link } from 'react-router';
 // @ts-ignore
 import { useSafeIntl } from 'bluesquare-components';
 import { Typography } from '@material-ui/core';
-import { WHO_AFRO_PROCEDURE } from './constants';
-import MESSAGES from '../../constants/messages';
+import { WHO_AFRO_PROCEDURE } from '../constants';
+import MESSAGES from '../../../constants/messages';
 
 export const LinkToProcedure: FunctionComponent = () => {
     const { formatMessage } = useSafeIntl();

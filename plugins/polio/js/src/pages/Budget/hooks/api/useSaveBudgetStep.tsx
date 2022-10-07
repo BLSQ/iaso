@@ -16,7 +16,7 @@ type Payload = {
 type PostRequestBody = {
     url: string;
     data: Record<string, any>;
-    fileData?: Record<string, File>[];
+    fileData?: Record<string, File[] | File>;
 };
 
 const postBudgetStep = (body: Payload): Promise<BudgetStep> => {
@@ -33,9 +33,7 @@ const postBudgetStep = (body: Payload): Promise<BudgetStep> => {
     if (body.files) {
         // eslint-disable-next-line @typescript-eslint/no-unused-vars
         const { files, ...data } = filteredParams;
-        const fileData = body.files.map(file => {
-            return { [file.name as string]: file };
-        });
+        const fileData = { files: body.files };
         requestBody.data = data;
         requestBody.fileData = fileData;
     }

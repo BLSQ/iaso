@@ -10,8 +10,8 @@ CALENDAR_FIRST_COLUMN_CELL_WIDTH = 35.00
 CALENDAR_FIRST_COLUMN_CELL_HEIGHT = 50.75
 CALENDAR_CELL_WIDTH = 22.00
 CALENDAR_CELL_HEIGHT = 80.00
-CALENDAR_COLUMN_FONT_SIZE = "12"
-CALENDAR_CELL_FONT_SIZE = "10"
+CALENDAR_COLUMN_FONT_SIZE = 12
+CALENDAR_CELL_FONT_SIZE = 10
 
 
 def generate_xlsx_campaigns_calendar(filename: str, datas: Any) -> Workbook:
@@ -129,7 +129,7 @@ def cell_dimension_pattern_fill(
     return sheet
 
 
-def format_cell(cell: Any, size: str, is_header: bool = False) -> Any:
+def format_cell(cell: Any, size: int, is_header: bool = False) -> Any:
     """
     Return the openpyxl.cell object after applying alignement, border and font
 

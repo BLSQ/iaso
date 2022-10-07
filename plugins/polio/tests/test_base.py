@@ -55,8 +55,8 @@ class PolioAPITestCase(APITestCase):
 
         cls.source_version_1 = m.SourceVersion.objects.create(data_source=cls.data_source, number=1)
         cls.source_version_2 = m.SourceVersion.objects.create(data_source=cls.data_source, number=2)
-        cls.star_wars = star_wars = m.Account.objects.create(name="Star Wars")
-        cls.jedi_squad = m.OrgUnitType.objects.create(name="Jedi Squad", short_name="Jds")
+        cls.star_wars = m.Account.objects.create(name="Star Wars")  # type: ignore
+        cls.jedi_squad = m.OrgUnitType.objects.create(name="Jedi Squad", short_name="Jds")  # type: ignore
         account = Account.objects.create(name="Global Health Initiative", default_version=cls.source_version_1)
         cls.yoda = cls.create_user_with_profile(username="yoda", account=account, permissions=["iaso_forms"])
 

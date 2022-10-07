@@ -7,6 +7,7 @@ import {
 import { Profile } from '../../../../../../../hat/assets/js/apps/Iaso/utils/usersUtils';
 import MESSAGES from '../../../constants/messages';
 import { BudgetEventType } from '../../../constants/types';
+import { LinkWithAlias } from '../types';
 
 export const COMMENT_CHAR_LIMIT = 50;
 export const getProfileFromId = (
@@ -28,7 +29,7 @@ export const formatComment = (comment: Optional<string>): Nullable<string> => {
 export const useActionMessage = (
     comment = '',
     files = 0,
-    links = [] as { alias: string; url: string }[],
+    links = [] as LinkWithAlias[],
 ): Nullable<string> => {
     const { formatMessage } = useSafeIntl();
     const fileMsg = `${files} ${formatMessage(MESSAGES.files)}`;
@@ -76,7 +77,7 @@ export const findAuthorTeam = (
 
 export const shouldOpenModal = (
     files: Nullable<number> = 0,
-    links: Nullable<{ alias: string; url: string }[]> = [],
+    links: Nullable<LinkWithAlias[]> = [],
     comments: Nullable<string> = '',
 ): boolean => {
     if (files || (links ?? []).length > 0 || comments) return true;

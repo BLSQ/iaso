@@ -17,13 +17,14 @@ import {
     Nullable,
     Optional,
 } from '../../../../../../../hat/assets/js/apps/Iaso/types/utils';
+import { LinkWithAlias, FileWithName } from '../types';
 
 type Props = {
     open: boolean;
     setOpen: React.Dispatch<React.SetStateAction<boolean>>;
     note?: Nullable<string>;
-    links: Optional<Nullable<{ alias: string; url: string }[]>>;
-    files: { file: string; filename: string }[];
+    links: Optional<Nullable<LinkWithAlias[]>>;
+    files: FileWithName[];
 };
 
 export const BudgetFilesModalForCards: FunctionComponent<Props> = ({

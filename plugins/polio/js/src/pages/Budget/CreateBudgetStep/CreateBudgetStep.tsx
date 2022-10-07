@@ -27,7 +27,7 @@ import {
 } from '../../../../../../../hat/assets/js/apps/Iaso/libs/validation';
 import { useSaveBudgetStep } from '../hooks/api/useSaveBudgetStep';
 import { AddStepButton } from './AddStepButton';
-import { BudgetStep } from '../hooks/api/useGetBudgetDetails';
+import { BudgetStep } from '../types';
 import { UserHasTeamWarning } from './UserHasTeamWarning';
 import { AddMultipleLinks } from '../MultipleLinks/AddMultipleLinks';
 

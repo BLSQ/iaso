@@ -25,7 +25,7 @@ import { BudgetFilesModalForCards } from '../pop-ups/BudgetFilesModalForCards';
 import { formatComment, shouldOpenModal, useActionMessage } from './utils';
 import { styles as eventStyles } from '../hooks/config';
 import { formatThousand } from '../../../../../../../hat/assets/js/apps/Iaso/utils';
-import { BudgetStep } from '../hooks/api/useGetBudgetDetails';
+import { BudgetStep, LinkWithAlias } from '../types';
 import getDisplayName from '../../../../../../../hat/assets/js/apps/Iaso/utils/usersUtils';
 
 type Props = {
@@ -51,7 +51,7 @@ export const BudgetEventCard: FunctionComponent<Props> = ({ event }) => {
     const { formatMessage } = useSafeIntl();
     const classes = useStyles();
     const { files } = event;
-    const eventLinks = (event?.links ?? []) as { alias: string; url: string }[];
+    const eventLinks = (event?.links ?? []) as LinkWithAlias[];
     const eventComment = event?.comment ?? '';
 
     const actionMessage = useActionMessage(

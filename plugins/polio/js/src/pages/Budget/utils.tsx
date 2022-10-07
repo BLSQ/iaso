@@ -9,6 +9,7 @@ import {
     Optional,
 } from '../../../../../../hat/assets/js/apps/Iaso/types/utils';
 import { Team } from '../../../../../../hat/assets/js/apps/Iaso/domains/teams/types/team';
+import { FileWithName, LinkWithAlias } from './types';
 
 export const formatUserName = (profile: Profile): string => {
     return profile?.first_name && profile?.last_name
@@ -57,9 +58,7 @@ const truncateFileName = (fileName: string) => {
     return `${start}${separator}${end}`;
 };
 
-export const makeFileLinks = (
-    files: { file: string; filename: string }[],
-): React.ReactNode => {
+export const makeFileLinks = (files: FileWithName[]): React.ReactNode => {
     return files.map((file, index) => {
         // const fileName = extractFileName(file) || file;
         return (
@@ -75,7 +74,7 @@ export const makeFileLinks = (
 };
 
 export const makeLinks = (
-    links: Optional<Nullable<{ alias: string; url: string }[]>>,
+    links: Optional<Nullable<LinkWithAlias[]>>,
 ): Nullable<any[]> => {
     if (!links) return null;
     // const linksArray = links.split(',');

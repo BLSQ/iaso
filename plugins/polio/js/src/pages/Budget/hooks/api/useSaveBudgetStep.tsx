@@ -1,6 +1,5 @@
 /* eslint-disable camelcase */
-import { useSnackMutation } from '../../../../../../../../hat/assets/js/apps/Iaso/libs/apiHooks';
-import { BudgetStep } from './useGetBudgetDetails';
+import { BudgetStep, LinkWithAlias } from '../../types';
 import MESSAGES from '../../../../constants/messages';
 import { postRequest } from '../../../../../../../../hat/assets/js/apps/Iaso/libs/Api';
 
@@ -8,27 +7,12 @@ type Payload = {
     transition_key: string; // key
     comment?: string;
     files?: File[]; // for some transitions, one of files or links will have to have a value
-    links?: { alias: string; url: string }[];
+    links?: LinkWithAlias[];
     amount?: number;
     campaign_id: string; // uuid
 };
 
-// const postMockBudgetStep = async (body: Payload): Promise<BudgetStep> => {
-//     await waitFor(1000);
-//     return {
-//         id: 5,
-//         created_at: '2022-10-04T16:14:08.957908Z',
-//         created_by: 'Marty McFly',
-//         created_by_team: 'Team McFly',
-//         comment: body?.comment,
-//         links: body?.links,
-//         amount: body?.amount,
-//         transition_key: body.transition_key,
-//         transition_label: body.transition_key, // using key for the time being
-//     };
-// };
-
-export type PostRequestBody = {
+type PostRequestBody = {
     url: string;
     data: Record<string, any>;
     fileData?: Record<string, File>[];

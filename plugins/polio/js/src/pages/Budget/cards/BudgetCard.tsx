@@ -21,7 +21,7 @@ import { BUDGET_DETAILS } from '../../../constants/routes';
 import { IntlFormatMessage } from '../../../../../../../hat/assets/js/apps/Iaso/types/intl';
 import MESSAGES from '../../../constants/messages';
 import { WARNING_COLOR } from '../../../styles/constants';
-import { Budget } from '../hooks/api/useGetBudget';
+import { Budget } from '../types';
 
 type Props = {
     budget: Budget;

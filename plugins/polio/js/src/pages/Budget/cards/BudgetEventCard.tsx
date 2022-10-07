@@ -4,6 +4,7 @@ import {
     Card,
     CardActionArea,
     CardContent,
+    Divider,
     Grid,
     makeStyles,
     Typography,
@@ -15,6 +16,8 @@ import {
 } from 'bluesquare-components';
 import moment from 'moment';
 import classNames from 'classnames';
+import RemoveCircleIcon from '@material-ui/icons/RemoveCircle';
+import { PlaylistAdd } from '@material-ui/icons';
 import MESSAGES from '../../../constants/messages';
 
 import { BudgetFilesModalForCards } from '../pop-ups/BudgetFilesModalForCards';
@@ -23,6 +26,7 @@ import { formatComment, shouldOpenModal, useActionMessage } from './utils';
 import { styles as eventStyles } from '../hooks/config';
 import { formatThousand } from '../../../../../../../hat/assets/js/apps/Iaso/utils';
 import { BudgetStep } from '../mockAPI/useGetBudgetDetails';
+import getDisplayName from '../../../../../../../hat/assets/js/apps/Iaso/utils/usersUtils';
 
 type Props = {
     event: BudgetStep;
@@ -49,7 +53,7 @@ export const BudgetEventCard: FunctionComponent<Props> = ({ event }) => {
     const classes = useStyles();
     // const userIsAuthor = event?.author === currentUser.user_id;
     const { files } = event;
-    const eventLinks = (event?.links ?? []) as string[];
+    const eventLinks = (event?.links ?? []) as { alias: string; url: string }[];
     const eventComment = event?.comment ?? '';
 
     const actionMessage = useActionMessage(
@@ -60,9 +64,9 @@ export const BudgetEventCard: FunctionComponent<Props> = ({ event }) => {
     const [openModal, setOpenModal] = useState<boolean>(false);
     const title = event.transition_label;
 
-    const authorName = event?.created_by;
+    const authorName = getDisplayName(event?.created_by);
 
-    const textColor = '';
+    const textColor = event.deleted_at ? classes.hiddenRow : '';
     const amount = event.amount
         ? formatThousand(parseInt(`${event.amount}`, 10)) // using parseInt to remove decimals before formatting
         : '--';
@@ -82,7 +86,7 @@ export const BudgetEventCard: FunctionComponent<Props> = ({ event }) => {
     return (
         <Card>
             <Grid container>
-                <Grid item xs={12}>
+                <Grid item xs={10}>
                     <CardActionArea
                         className={allowOpenModal ? '' : classes.inactiveCard}
                         disableRipple={!allowOpenModal}
@@ -139,32 +143,48 @@ export const BudgetEventCard: FunctionComponent<Props> = ({ event }) => {
                     <BudgetFilesModalForCards
                         open={openModal}
                         setOpen={setOpenModal}
-                        author={authorName}
                         files={event.files ?? []}
                         note={event.comment}
-                        date={event.created_at}
                         links={event.links}
-                        type={event.transition_label}
                     />
                 </Grid>
-                {/* {userIsAuthor && (
-                    <Grid
-                        container
-                        item
-                        xs={2}
-                        direction="column"
-                        justifyContent="center"
-                    >
-                        <Divider orientation="vertical" />
 
-                        <DeleteDialog
-                            titleMessage={MESSAGES.deleteBudgetEvent}
-                            message={MESSAGES.deleteBudgetEvent}
-                            onConfirm={() => deleteBudgetEvent(event?.id)}
-                            keyName={`deleteBudgetEvent-card-${event?.id}`}
+                <Grid
+                    container
+                    item
+                    xs={2}
+                    direction="column"
+                    justifyContent="center"
+                    onClick={() => {
+                        if (event.deleted_at) {
+                            // Send delete on budgetstep
+                            console.log('hide step', event.id);
+                        } else {
+                            // restore on budget step
+                            console.log('show step', event.id);
+                        }
+                    }}
+                >
+                    <Divider orientation="vertical" />
+                    {!event.deleted_at && (
+                        <RemoveCircleIcon
+                            color="action"
+                            // onClick={() => {
+                            //     // Send delete on budgetstep
+                            //     console.log('hide step', event.id);
+                            // }}
                         />
-                    </Grid>
-                )} */}
+                    )}
+                    {event.deleted_at && (
+                        <PlaylistAdd
+                            className={textColor}
+                            // restore on budget step
+                            // onClick={() => {
+                            //     console.log('show step', event.id);
+                            // }}
+                        />
+                    )}
+                </Grid>
             </Grid>
         </Card>
     );

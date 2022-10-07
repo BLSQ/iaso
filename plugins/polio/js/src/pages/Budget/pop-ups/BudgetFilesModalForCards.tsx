@@ -11,7 +11,6 @@ import {
 } from '@material-ui/core';
 // @ts-ignore
 import { useSafeIntl } from 'bluesquare-components';
-import moment from 'moment';
 import MESSAGES from '../../../constants/messages';
 import { makeFileLinks, makeLinks } from '../utils';
 import {
@@ -22,23 +21,17 @@ import {
 type Props = {
     open: boolean;
     setOpen: React.Dispatch<React.SetStateAction<boolean>>;
-    // eslint-disable-next-line react/require-default-props
     note?: Nullable<string>;
-    date: string;
-    links: Optional<Nullable<string[]>>;
-    files: string[];
-    author: string;
-    type?: string;
+    links: Optional<Nullable<{ alias: string; url: string }[]>>;
+    files: { file: string; filename: string }[];
 };
 
 export const BudgetFilesModalForCards: FunctionComponent<Props> = ({
     open,
     setOpen,
     note,
-    date,
     links,
-    author,
-    type = '',
+
     files,
 }) => {
     const { formatMessage } = useSafeIntl();
@@ -55,12 +48,7 @@ export const BudgetFilesModalForCards: FunctionComponent<Props> = ({
                 aria-describedby="alert-dialog-description"
             >
                 <DialogTitle id="alert-dialog-title">
-                    {formatMessage(MESSAGES.budgetFiles, {
-                        type,
-                        date: moment(date).format('L'),
-                        author,
-                        recipients: [],
-                    })}
+                    {formatMessage(MESSAGES.attachments)}
                 </DialogTitle>
                 <DialogContent>
                     <Divider />

@@ -44,6 +44,13 @@ const useCurrentBreakPointSpacing = (xs, sm, md, lg) => {
 
     return 0;
 };
+/**
+ * There's a conflict of format between the way we display it in the picker (DD-MM-YYY) and the way we should send it to the server (YYY-MM-DD)
+ * The workaround is to convert the output (DD-MM-YYYY) to the YYY-MM-DD expected format when saving the form/when sending the request to the backend
+ * with `dateRangePickerToDateApi` /iaso/hat/assets/js/apps/Iaso/utils/dates.ts.
+ * Similarly, when setting the value of the `dateFrom `and `dateTo` props from url params, it should be converted using dateApiToDateRangePicker from the same file.
+ *
+ */
 
 const DatesRange = ({
     dateFrom,

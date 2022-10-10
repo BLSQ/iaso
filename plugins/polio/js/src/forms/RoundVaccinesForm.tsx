@@ -188,7 +188,8 @@ export const RoundVaccinesForm: FunctionComponent<Props> = ({
                         />
                     );
                 })}
-            {vaccines.length === 0 && (
+            {/* if the condition is on length === 0 the UI will flicker and the field lose focus because of re-render */}
+            {vaccines.length <= 1 && (
                 <RoundVaccineForm
                     vaccineIndex={0}
                     roundIndex={roundIndex}

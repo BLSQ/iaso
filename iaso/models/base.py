@@ -818,15 +818,18 @@ class InstanceQuerySet(models.QuerySet):
 
     def filter_for_user(self, user):
         profile = user.iaso_profile
+        # Do a relative import to avoid an import loop
         from .org_unit import OrgUnit
+
+        new_qs = self
 
         # If user is restricted to some org unit, filter on thoses
         if profile.org_units.exists():
             orgunits = OrgUnit.objects.hierarchy(profile.org_units.all())
 
-            self = self.filter(org_unit__in=orgunits)
-        self = self.filter(project__account=profile.account)
-        return self
+            new_qs = new_qs.filter(org_unit__in=orgunits)
+        new_qs = new_qs.filter(project__account=profile.account_id)
+        return new_qs
 
 
 InstanceManager = models.Manager.from_queryset(InstanceQuerySet)

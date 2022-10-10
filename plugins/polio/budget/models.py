@@ -25,6 +25,9 @@ class BudgetStepQuerySet(models.QuerySet):
 
 
 class BudgetStep(SoftDeletableModel):
+    class Meta:
+        ordering = ["updated_at"]
+
     objects = BudgetStepQuerySet.as_manager()
     campaign = models.ForeignKey("Campaign", on_delete=models.PROTECT, related_name="budget_steps")
     transition_key = models.CharField(max_length=30)

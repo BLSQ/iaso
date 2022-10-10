@@ -1406,6 +1406,10 @@ const MESSAGES = defineMessages({
         id: 'iaso.polio.label.exportToPdf',
         defaultMessage: 'Export to pdf',
     },
+    exportToExcel: {
+        id: 'iaso.polio.label.exportToExcel',
+        defaultMessage: 'Export to XLSX',
+    },
     userWithoutTeam: {
         id: 'iaso.polio.error.label.userWithoutTeam',
         defaultMessage: 'User should be part of a team',
@@ -1511,17 +1515,25 @@ const MESSAGES = defineMessages({
         id: 'iaso.polio.label.addVaccine',
         defaultMessage: 'Add vaccine',
     },
-    addShipment: {
-        id: 'iaso.polio.label.addShipment',
-        defaultMessage: 'Add shipment',
-    },
     removeLastVaccine: {
         id: 'iaso.polio.label.removeLastVaccine',
         defaultMessage: 'Remove last vaccine',
     },
+    addShipment: {
+        id: 'iaso.polio.label.addShipment',
+        defaultMessage: 'Add shipment',
+    },
     removeLastShipment: {
         id: 'iaso.polio.label.removeLastShipment',
         defaultMessage: 'Remove last shipment',
+    },
+    addLink: {
+        id: 'iaso.polio.label.addLink',
+        defaultMessage: 'Add link',
+    },
+    removeLastLink: {
+        id: 'iaso.polio.label.removeLastLink',
+        defaultMessage: 'Remove last link',
     },
     destructionDateAndVialsDestroyed: {
         id: 'iaso.polio.label.destructionDateAndVialsDestroyed',
@@ -1540,6 +1552,30 @@ const MESSAGES = defineMessages({
         id: 'iaso.polio.label.scopeUnlockConditions',
         defaultMessage:
             'Select initial region and encode dates for at least one round to unlock Scope tab',
+    },
+    attachments: {
+        id: 'iaso.polio.label.attachments',
+        defaultMessage: 'Attachments',
+    },
+    clickToHide: {
+        id: 'iaso.polio.label.clickToHide',
+        defaultMessage: 'Click to hide',
+    },
+    clickToShow: {
+        id: 'iaso.polio.label.clickToShow',
+        defaultMessage: 'Click to show',
+    },
+    showHidden: {
+        id: 'iaso.polio.label.showHidden',
+        defaultMessage: 'Show hidden',
+    },
+    url: {
+        id: 'iaso.polio.label.url',
+        defaultMessage: 'Url',
+    },
+    alias: {
+        id: 'iaso.polio.label.alias',
+        defaultMessage: 'Alias',
     },
 });
 

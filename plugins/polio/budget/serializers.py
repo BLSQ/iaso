@@ -102,8 +102,7 @@ class TransitionToSerializer(serializers.Serializer):
     campaign = serializers.PrimaryKeyRelatedField(queryset=Campaign.objects.all())
     comment = serializers.CharField(required=False)
     files = serializers.ListField(child=serializers.FileField(), required=False)
-    links = serializers.ListField(child=BudgetLinkSerializer(required=False), required=False)
-    # links = BudgetLinkSerializer(required=False, many=True)
+    links = serializers.JSONField(required=False)
     amount = serializers.FloatField(required=False)
 
     def validate(self, attrs):
@@ -157,8 +156,10 @@ class TransitionToSerializer(serializers.Serializer):
                 campaign=campaign,
                 transition_key=transition.key,
             )
-            links_data = data.get("links", [])
-            [step.links.create(**d) for d in links_data]
+            for link_data in data.get("links", []):
+                link_serializer = BudgetLinkSerializer(data=link_data)
+                link_serializer.is_valid(raise_exception=True)
+                link_serializer.save(step=step)
 
             campaign.budget_current_state_key = transition.to_node
             for file in data.get("files", []):

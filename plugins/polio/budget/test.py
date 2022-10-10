@@ -1,3 +1,4 @@
+import json
 from io import StringIO
 from typing import List, Dict
 from unittest import skip
@@ -107,10 +108,18 @@ class TeamAPITestCase(APITestCase):
                 "campaign": self.c.id,
                 "comment": "hello world2",
                 "files": [fake_file],
-                "links[0]url": "http://helloworld",
-                "links[0]alias": "hello world",
-                "links[1]alias": "mon petit lien",
-                "links[1]url": "https://lien.com",
+                "links": json.dumps(
+                    [
+                        {
+                            "url": "http://helloworld",
+                            "alias": "hello world",
+                        },
+                        {
+                            "alias": "mon petit lien",
+                            "url": "https://lien.com",
+                        },
+                    ]
+                ),
             },
         )
         j = self.assertJSONResponse(r, 201)
@@ -139,6 +148,67 @@ class TeamAPITestCase(APITestCase):
         f = j["files"][0]
         self.assertTrue(f["file"].startswith("http"))  # should be an url
         self.assertEqual(f["filename"], fake_file.name)
+
+        links = j["links"]
+        self.jsonListContains(
+            links,
+            [
+                {"url": "http://helloworld", "alias": "hello world"},
+                {"alias": "mon petit lien", "url": "https://lien.com"},
+            ],
+        )
+
+    def test_transition_to_link_json(self):
+        # check it work when sending json too
+        self.client.force_login(self.user)
+        prev_budget_step_count = BudgetStep.objects.count()
+        r = self.client.get("/api/polio/budget/")
+        j = self.assertJSONResponse(r, 200)
+        campaigns = j["results"]
+        for c in campaigns:
+            self.assertEqual(c["obr_name"], "test campaign")
+
+        r = self.client.post(
+            "/api/polio/budget/transition_to/",
+            data={
+                "transition_key": "submit_budget",
+                "campaign": self.c.id,
+                "comment": "hello world2",
+                "links": [
+                    {
+                        "url": "http://helloworld",
+                        "alias": "hello world",
+                    },
+                    {
+                        "alias": "mon petit lien",
+                        "url": "https://lien.com",
+                    },
+                ],
+            },
+            format="json",
+        )
+        j = self.assertJSONResponse(r, 201)
+        self.assertEqual(j["result"], "success")
+        step_id = j["id"]
+        s = BudgetStep.objects.get(id=step_id)
+
+        # check the new state of campaign
+        c = self.c
+        c.refresh_from_db()
+        self.assertEqual(c.budget_current_state_key, "budget_submitted")
+        r = self.client.get(f"/api/polio/budget/{c.id}/")
+        j = self.assertJSONResponse(r, 200)
+
+        self.assertEqual(j["current_state"]["key"], "budget_submitted")
+        # fixme serialization
+        # self.assertEqual(j['budget_last_updated_at'], s.created_at.isoformat())
+
+        # check that we have only created one step
+        new_budget_step_count = BudgetStep.objects.count()
+        self.assertEqual(prev_budget_step_count + 1, new_budget_step_count)
+
+        r = self.client.get(f"/api/polio/budgetsteps/{s.id}/")
+        j = self.assertJSONResponse(r, 200)
 
         links = j["links"]
         self.jsonListContains(

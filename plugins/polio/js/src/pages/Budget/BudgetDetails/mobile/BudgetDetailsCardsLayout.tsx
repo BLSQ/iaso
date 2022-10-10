@@ -34,7 +34,7 @@ export const BudgetDetailsCardsLayout: FunctionComponent<Props> = ({
             {budgetDetails?.results.map((budgetStep, i) => {
                 return (
                     <Box mb={1} key={`event-${budgetStep.transition_key}-${i}`}>
-                        <BudgetEventCard event={budgetStep} />
+                        <BudgetEventCard step={budgetStep} />
                     </Box>
                 );
             })}

@@ -27,9 +27,10 @@ import { styles as eventStyles } from '../hooks/config';
 import { formatThousand } from '../../../../../../../hat/assets/js/apps/Iaso/utils';
 import { BudgetStep, LinkWithAlias } from '../types';
 import getDisplayName from '../../../../../../../hat/assets/js/apps/Iaso/utils/usersUtils';
+import { useDeleteRestoreBudgetStep } from '../hooks/api/useGetBudgetDetails';
 
 type Props = {
-    event: BudgetStep;
+    step: BudgetStep;
 };
 
 const useStyles = makeStyles(theme => ({
@@ -47,39 +48,46 @@ const useStyles = makeStyles(theme => ({
     },
 }));
 
-export const BudgetEventCard: FunctionComponent<Props> = ({ event }) => {
+export const BudgetEventCard: FunctionComponent<Props> = ({ step }) => {
     const { formatMessage } = useSafeIntl();
     const classes = useStyles();
-    const { files } = event;
-    const eventLinks = (event?.links ?? []) as LinkWithAlias[];
-    const eventComment = event?.comment ?? '';
+    const { files } = step;
+    const stepLinks = (step?.links ?? []) as LinkWithAlias[];
+    const stepComment = step?.comment ?? '';
+    const isStepDeleted = Boolean(step.deleted_at);
+
+    const { mutateAsync: toggleStatus } =
+        useDeleteRestoreBudgetStep(isStepDeleted);
 
     const actionMessage = useActionMessage(
-        eventComment,
+        stepComment,
         files?.length,
-        eventLinks,
+        stepLinks,
     );
     const [openModal, setOpenModal] = useState<boolean>(false);
-    const title = event.transition_label;
+    const title = step.transition_label;
 
-    const authorName = getDisplayName(event?.created_by);
-
-    const textColor = event.deleted_at ? classes.hiddenRow : '';
-    const amount = event.amount
-        ? formatThousand(parseInt(`${event.amount}`, 10)) // using parseInt to remove decimals before formatting
+    const authorName = getDisplayName(step?.created_by);
+    const textColor = isStepDeleted ? classes.hiddenRow : '';
+    const amount = step.amount
+        ? formatThousand(parseInt(`${step.amount}`, 10)) // using parseInt to remove decimals before formatting
         : '--';
-    const formattedCreationDate = moment(event.created_at).format('L');
+    const formattedCreationDate = moment(step.created_at).format('L');
 
-    const truncatedComment = formatComment(event.comment);
-    const authorTeam = event.created_by_team;
+    const truncatedComment = formatComment(step.comment);
+    const authorTeam = step.created_by_team;
     const allowOpenModal = shouldOpenModal(
         files?.length,
-        eventLinks,
-        eventComment,
+        stepLinks,
+        stepComment,
     );
     const onClick = useCallback(() => {
         if (allowOpenModal) setOpenModal(true);
     }, [allowOpenModal]);
+
+    const toggleStepStatus = useCallback(() => {
+        return toggleStatus(step.id);
+    }, [step.id, toggleStatus]);
 
     return (
         <Card>
@@ -139,9 +147,9 @@ export const BudgetEventCard: FunctionComponent<Props> = ({ event }) => {
                     <BudgetFilesModalForCards
                         open={openModal}
                         setOpen={setOpenModal}
-                        files={event.files ?? []}
-                        note={event.comment}
-                        links={event.links}
+                        files={step.files ?? []}
+                        note={step.comment}
+                        links={step.links}
                     />
                 </Grid>
 
@@ -151,19 +159,11 @@ export const BudgetEventCard: FunctionComponent<Props> = ({ event }) => {
                     xs={2}
                     direction="column"
                     justifyContent="center"
-                    onClick={() => {
-                        if (event.deleted_at) {
-                            // Send delete on budgetstep
-                            console.log('hide step', event.id);
-                        } else {
-                            // restore on budget step
-                            console.log('show step', event.id);
-                        }
-                    }}
+                    onClick={toggleStepStatus}
                 >
                     <Divider orientation="vertical" />
-                    {!event.deleted_at && <RemoveCircleIcon color="action" />}
-                    {event.deleted_at && <PlaylistAdd className={textColor} />}
+                    {!isStepDeleted && <RemoveCircleIcon color="action" />}
+                    {isStepDeleted && <PlaylistAdd className={textColor} />}
                 </Grid>
             </Grid>
         </Card>

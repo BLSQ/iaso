@@ -8,9 +8,7 @@ import {
     // @ts-ignore
     useSkipEffectOnMount,
 } from 'bluesquare-components';
-import { Box, makeStyles, Tooltip } from '@material-ui/core';
-import RemoveCircleIcon from '@material-ui/icons/RemoveCircle';
-import { PlaylistAdd } from '@material-ui/icons';
+import { Box, makeStyles } from '@material-ui/core';
 import MESSAGES from '../../../constants/messages';
 import { Column } from '../../../../../../../hat/assets/js/apps/Iaso/types/table';
 import { BUDGET_DETAILS } from '../../../constants/routes';
@@ -22,6 +20,7 @@ import { formatThousand } from '../../../../../../../hat/assets/js/apps/Iaso/uti
 import { formatComment } from '../cards/utils';
 import { BudgetStep } from '../types';
 import getDisplayName from '../../../../../../../hat/assets/js/apps/Iaso/utils/usersUtils';
+import { DeleteRestoreButton } from '../BudgetDetails/DeleteRestoreButton';
 
 const baseUrl = BUDGET_DETAILS;
 
@@ -36,8 +35,8 @@ export const styles = theme => {
 
 // @ts-ignore
 const useStyles = makeStyles(styles);
-const getStyle = classes => settings => {
-    const isHidden = Boolean(settings.row.original.deleted_at);
+const getStyle = classes => isHidden => {
+    // const isHidden = Boolean(settings.row.original.deleted_at);
     return isHidden ? classes.hiddenRow : '';
 };
 
@@ -93,7 +92,11 @@ export const useBudgetDetailsColumns = (): Column[] => {
                 sortable: false,
                 Cell: settings => {
                     return (
-                        <span className={getRowColor(settings)}>
+                        <span
+                            className={getRowColor(
+                                Boolean(settings.row.original.deleted_at),
+                            )}
+                        >
                             {settings.row.original.transition_label}
                         </span>
                     );
@@ -107,7 +110,11 @@ export const useBudgetDetailsColumns = (): Column[] => {
                 Cell: settings => {
                     const { comment } = settings.row.original;
                     return (
-                        <span className={getRowColor(settings)}>
+                        <span
+                            className={getRowColor(
+                                Boolean(settings.row.original.deleted_at),
+                            )}
+                        >
                             {comment ? formatComment(comment) : '--'}
                         </span>
                     );
@@ -125,17 +132,19 @@ export const useBudgetDetailsColumns = (): Column[] => {
                     return (
                         <>
                             <p
-                                className={`${getRowColor(settings)} ${
-                                    classes.paragraph
-                                }`}
+                                className={`${getRowColor(
+                                    Boolean(settings.row.original.deleted_at),
+                                )} ${classes.paragraph}`}
                             >
                                 {getDisplayName(author)}
                             </p>
                             {authorTeam && (
                                 <p
-                                    className={`${getRowColor(settings)} ${
-                                        classes.paragraph
-                                    }`}
+                                    className={`${getRowColor(
+                                        Boolean(
+                                            settings.row.original.deleted_at,
+                                        ),
+                                    )} ${classes.paragraph}`}
                                 >
                                     {authorTeam}
                                 </p>
@@ -151,7 +160,11 @@ export const useBudgetDetailsColumns = (): Column[] => {
                 sortable: false,
                 Cell: settings => {
                     return (
-                        <span className={getRowColor(settings)}>
+                        <span
+                            className={getRowColor(
+                                Boolean(settings.row.original.deleted_at),
+                            )}
+                        >
                             {DateTimeCellRfc(settings)}
                         </span>
                     );
@@ -167,12 +180,24 @@ export const useBudgetDetailsColumns = (): Column[] => {
 
                     if (amount) {
                         return (
-                            <span className={getRowColor(settings)}>
+                            <span
+                                className={getRowColor(
+                                    Boolean(settings.row.original.deleted_at),
+                                )}
+                            >
                                 {formatThousand(parseInt(amount, 10))}
                             </span>
                         );
                     }
-                    return <span className={getRowColor(settings)}>--</span>;
+                    return (
+                        <span
+                            className={getRowColor(
+                                Boolean(settings.row.original.deleted_at),
+                            )}
+                        >
+                            --
+                        </span>
+                    );
                 },
             },
             {
@@ -196,41 +221,15 @@ export const useBudgetDetailsColumns = (): Column[] => {
                 accessor: 'id',
                 sortable: false,
                 Cell: settings => {
+                    const isStepDeleted = Boolean(
+                        settings.row.original.deleted_at,
+                    );
                     return (
-                        <>
-                            {!settings.row.original.deleted_at && (
-                                <Tooltip
-                                    title={formatMessage(MESSAGES.clickToHide)}
-                                >
-                                    <RemoveCircleIcon
-                                        color="action"
-                                        onClick={() => {
-                                            // Send delete on budgetstep
-                                            console.log(
-                                                'hide step',
-                                                settings.row.original.id,
-                                            );
-                                        }}
-                                    />
-                                </Tooltip>
-                            )}
-                            {settings.row.original.deleted_at && (
-                                <Tooltip
-                                    title={formatMessage(MESSAGES.clickToShow)}
-                                >
-                                    <PlaylistAdd
-                                        className={getRowColor(settings)}
-                                        // restore on budget step
-                                        onClick={() => {
-                                            console.log(
-                                                'show step',
-                                                settings.row.original.id,
-                                            );
-                                        }}
-                                    />
-                                </Tooltip>
-                            )}
-                        </>
+                        <DeleteRestoreButton
+                            stepId={settings.row.original.id}
+                            className={getRowColor(isStepDeleted)}
+                            isStepDeleted={isStepDeleted}
+                        />
                     );
                 },
             },

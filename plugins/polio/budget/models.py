@@ -1,12 +1,18 @@
+import logging
+
 from django.conf import settings
 from django.contrib.auth.models import User
+from django.contrib.sites.shortcuts import get_current_site
 from django.core.exceptions import ValidationError
+from django.core.mail import EmailMultiAlternatives
 from django.db import models
 from django.template import Engine, TemplateSyntaxError, Context
 
 # from django.template.loader import get_template
 from django.utils.translation import ugettext_lazy as _
 
+from hat.api.token_authentication import generate_auto_authentication_link
+from iaso.models.microplanning import Team
 from iaso.utils.models.soft_deletable import SoftDeletableModel
 from plugins.polio.budget.workflow import next_transitions, get_workflow, can_user_transition
 
@@ -86,7 +92,7 @@ DEFAUL_MAIL_TEMPLATE = """{% extends "base_budget_email.html" %}
 
 class MailTemplate(models.Model):
     slug = models.SlugField(unique=True)
-    template_subject = models.TextField(
+    subject_template = models.TextField(
         validators=[validator_template],
         help_text="Template for the Email subject, use the Django Template language, "
         "see https://docs.djangoproject.com/en/4.1/ref/templates/language/ for reference. Please keep it as one line.",
@@ -108,9 +114,7 @@ class MailTemplate(models.Model):
     def __str__(self):
         return str(self.slug)
 
-    def render_for_step(self, step: BudgetStep, receiver: User, request=None):
-        from django.contrib.sites.shortcuts import get_current_site
-
+    def render_for_step(self, step: BudgetStep, receiver: User, request=None) -> EmailMultiAlternatives:
         site = get_current_site(request)
         base_url = "https://" if settings.SSL_ON else "http://"
         base_url += site.domain
@@ -127,18 +131,18 @@ class MailTemplate(models.Model):
         for transition in transitions:
             transition_url_template = "/quickTransition/{transition_key}/previousStep/{step_id}"
             button_url = campaign_url + transition_url_template.format(transition_key=transition.key, step_id=step.id)
+            # link that will auto auth
+
             buttons.append(
                 {
-                    "url": button_url,
+                    "base_url": button_url,
+                    "url": generate_auto_authentication_link(button_url, receiver),
                     "label": transition.label,
                     "color": transition.color,
                     "allowed": can_user_transition(transition, receiver),
                 }
             )
-
         transition = workflow.get_transition_by_key(step.transition_key)
-        template = Engine.get_default().from_string(self.template)
-        # template = get_template('validation_email.html')
         context = Context(
             {
                 "author": step.created_by,
@@ -148,7 +152,7 @@ class MailTemplate(models.Model):
                 "team": step.created_by_team,
                 "step": step,
                 "campaign": campaign,
-                "budget_link": "",
+                "budget_link": campaign_url,
                 "site_url": base_url,
                 "site_name": site.name,
                 "comment": step.comment,
@@ -158,5 +162,37 @@ class MailTemplate(models.Model):
             }
         )
 
-        r = template.render(context)
-        return r
+        html_template = Engine.get_default().from_string(self.html_template)
+        html_content = html_template.render(context)
+        text_template = Engine.get_default().from_string(self.text_template)
+        text_content = text_template.render(context)
+        subject_template = Engine.get_default().from_string(self.subject_template)
+        subject_content = subject_template.render(context)
+
+        msg = EmailMultiAlternatives(subject_content, text_content, settings.DEFAULT_FROM_EMAIL, [receiver.email])
+        msg.attach_alternative(html_content, "text/html")
+        return msg
+
+
+logger = logging.getLogger(__name__)
+
+
+def send_budget_mail(step: BudgetStep, transition, request) -> None:
+
+    for side_effect in transition.side_effects:
+        try:
+            mt = MailTemplate.objects.get(side_effect["templated_it"])
+        except MailTemplate.DoesNotExist as e:
+            logger.exception(e)
+            continue
+
+        teams = Team.objects(ids_in=side_effect["team_ids"])
+        # Ensure we don't send an email twice to the same user
+        users = User.objects.filter(teams__in=teams).distinct()
+        for user in users:
+            if not user.email:
+                logger.info(f"sending email for {step}, user {user} doesn't have an email address configured")
+                continue
+
+            msg = mt.render_for_step(step, user, request)
+            msg.send(fail_silently=False)

@@ -122,6 +122,8 @@ class BudgetStepViewSet(ModelViewSet):
         print(template_id)
         template = MailTemplate.objects.get(id=template_id)
 
-        html = template.render_for_step(step, request.user, request)
+        email_template = template.render_for_step(step, request.user, request)
+        # html = email_template.alternatives[0][0]
+        html = email_template.message().as_string()
 
         return HttpResponse(html)

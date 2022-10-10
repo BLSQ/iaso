@@ -91,11 +91,17 @@ class MailTemplate(models.Model):
         help_text="Template for the Email subject, use the Django Template language, "
         "see https://docs.djangoproject.com/en/4.1/ref/templates/language/ for reference. Please keep it as one line.",
     )
-    template = models.TextField(
+    html_template = models.TextField(
         validators=[validator_template],
-        help_text="Template for the Email body, use the Django Template language, "
+        help_text="HTML Template for the Email body, use the Django Template language, "
         "see https://docs.djangoproject.com/en/4.1/ref/templates/language/ for reference",
     )
+    text_template = models.TextField(
+        validators=[validator_template],
+        help_text="Plain text Template for the Email body, use the Django Template language, "
+        "see https://docs.djangoproject.com/en/4.1/ref/templates/language/ for reference",
+    )
+
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 

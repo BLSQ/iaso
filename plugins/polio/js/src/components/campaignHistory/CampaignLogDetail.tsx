@@ -24,6 +24,7 @@ import { useGetCampaignFieldValue } from '../../hooks/useGetCampaignFieldValue';
 import ErrorPaperComponent from '../../../../../../hat/assets/js/apps/Iaso/components/papers/ErrorPaperComponent';
 
 import MESSAGES from '../../constants/messages';
+import { useGetCampaignFieldLabel } from '../../hooks/useGetCampaignFieldLabel';
 
 type Props = {
     logId: string | undefined;
@@ -64,8 +65,8 @@ export const CampaignLogDetail: FunctionComponent<Props> = ({ logId }) => {
     //             return value;
     //     }
     // };
-
-        const getValue = useGetCampaignFieldValue();
+    const getLabel = useGetCampaignFieldLabel();
+    const getValue = useGetCampaignFieldValue();
 
     if (isLoading)
         return (
@@ -82,7 +83,7 @@ export const CampaignLogDetail: FunctionComponent<Props> = ({ logId }) => {
         return <ErrorPaperComponent message={formatMessage(MESSAGES.error)} />;
     }
 
-    console.log('campaign log details', campaignLogDetail)
+    console.log('campaign log details', campaignLogDetail);
 
     return (
         <>
@@ -94,7 +95,7 @@ export const CampaignLogDetail: FunctionComponent<Props> = ({ logId }) => {
                                 width={150}
                                 className={classes.tableCellHead}
                             >
-                                {formatMessage(MESSAGES.key)}
+                                {formatMessage(MESSAGES.label)}
                             </TableCell>
                             <TableCell
                                 width={150}
@@ -108,24 +109,26 @@ export const CampaignLogDetail: FunctionComponent<Props> = ({ logId }) => {
                     <TableBody>
                         {Object.entries(campaignLogDetail).map(
                             ([key, value]) => {
-                                if (value !== null) {
-                                    return (
-                                        <TableRow key={key}>
-                                            <TableCell
-                                                width={150}
-                                                className={classes.tableCell}
-                                            >
-                                                {key}
-                                            </TableCell>
-                                            <TableCell
-                                                width={150}
-                                                className={classes.tableCell}
-                                            >
-                                                {getValue(key, campaignLogDetail, typeof value)}
-                                            </TableCell>
-                                        </TableRow>
-                                    );
-                                }
+                                return (
+                                    <TableRow key={key}>
+                                        <TableCell
+                                            width={150}
+                                            className={classes.tableCell}
+                                        >
+                                            {getLabel(key, MESSAGES)}
+                                        </TableCell>
+                                        <TableCell
+                                            width={150}
+                                            className={classes.tableCell}
+                                        >
+                                            {getValue(
+                                                key,
+                                                campaignLogDetail,
+                                                typeof value,
+                                            )}
+                                        </TableCell>
+                                    </TableRow>
+                                );
 
                                 return undefined;
                             },

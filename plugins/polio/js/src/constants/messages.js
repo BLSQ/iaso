@@ -1557,6 +1557,10 @@ const MESSAGES = defineMessages({
         id: 'iaso.polio.campaign.key',
         defaultMessage: 'Key',
     },
+    label: {
+        id: 'iaso.polio.label.labl',
+        defaultMessage: 'Label',
+    },
     value: {
         id: 'iaso.polio.campaign.value',
         defaultMessage: 'Value',

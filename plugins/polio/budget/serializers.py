@@ -7,7 +7,7 @@ from rest_framework import serializers
 from iaso.models.microplanning import Team
 from plugins.polio.models import Campaign
 from plugins.polio.serializers import CampaignSerializer, UserSerializer
-from .models import BudgetStep, BudgetStepFile, BudgetStepLink
+from .models import BudgetStep, BudgetStepFile, BudgetStepLink, send_budget_mails
 from .workflow import get_workflow, next_transitions, can_user_transition
 
 
@@ -165,6 +165,10 @@ class TransitionToSerializer(serializers.Serializer):
                 step.files.create(file=file, filename=file.name)
             campaign.budget_current_state_label = node.label
             campaign.save()
+
+        send_budget_mails(step, transition, self.context["request"])
+        step.is_email_sent = True
+        step.save()
 
         return step
 

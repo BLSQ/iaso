@@ -1,5 +1,5 @@
-from dataclasses import dataclass
-from typing import Union, List, Optional
+from dataclasses import dataclass, field
+from typing import Union, List, Optional, Tuple
 
 from iaso.models.microplanning import Team
 
@@ -18,6 +18,8 @@ class Transition:
     allowed: Optional[bool] = None
     reason_not_allowed: Optional[str] = None
     color: Optional[str] = None  # one of primary, red, green
+    # mail_template_slug, [team_ids]
+    emails_to_send: List[Tuple[str, List[int]]] = field(default_factory=list)
 
 
 @dataclass

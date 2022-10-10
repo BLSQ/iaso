@@ -178,22 +178,23 @@ class MailTemplate(models.Model):
 logger = logging.getLogger(__name__)
 
 
-def send_budget_mail(step: BudgetStep, transition, request) -> None:
-
-    for side_effect in transition.side_effects:
+def send_budget_mails(step: BudgetStep, transition, request) -> None:
+    for email_to_send in transition.emails_to_send:
+        template_id, team_ids = email_to_send
         try:
-            mt = MailTemplate.objects.get(side_effect["templated_it"])
+            mt = MailTemplate.objects.get(template_id)
         except MailTemplate.DoesNotExist as e:
             logger.exception(e)
             continue
 
-        teams = Team.objects(ids_in=side_effect["team_ids"])
+        teams = Team.objects(ids_in=team_ids)
         # Ensure we don't send an email twice to the same user
         users = User.objects.filter(teams__in=teams).distinct()
         for user in users:
             if not user.email:
-                logger.info(f"sending email for {step}, user {user} doesn't have an email address configured")
+                logger.info(f"skip sending email for {step}, user {user} doesn't have an email address configured")
                 continue
 
             msg = mt.render_for_step(step, user, request)
+            logger.debug("sending", msg)
             msg.send(fail_silently=False)

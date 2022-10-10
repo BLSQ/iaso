@@ -9,7 +9,7 @@ from rest_framework.response import Response
 
 from iaso.api.common import ModelViewSet, DeletionFilterBackend
 from iaso.models import OrgUnit
-from plugins.polio.budget.models import BudgetStep, MailTemplate
+from plugins.polio.budget.models import BudgetStep, MailTemplate, send_budget_mails
 from plugins.polio.budget.serializers import CampaignBudgetSerializer, TransitionToSerializer, BudgetStepSerializer
 from plugins.polio.models import Campaign
 

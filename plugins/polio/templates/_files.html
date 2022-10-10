@@ -13,7 +13,7 @@
     {% for file in files%}
         <tr>
             <td align="left" style="padding:0px 5px;">
-                · <a href={{file.file.url}}>{{file.filename}}</a>
+                {{ forloop.counter }}. <a href={{file.file.url}}>{{file.filename}}</a>
             </td>
         </tr>
     {% endfor %}

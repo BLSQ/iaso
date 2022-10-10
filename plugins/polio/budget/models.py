@@ -8,7 +8,6 @@ from django.core.mail import EmailMultiAlternatives
 from django.db import models
 from django.template import Engine, TemplateSyntaxError, Context
 
-# from django.template.loader import get_template
 from django.utils.translation import ugettext_lazy as _
 
 from hat.api.token_authentication import generate_auto_authentication_link
@@ -96,6 +95,7 @@ class MailTemplate(models.Model):
         validators=[validator_template],
         help_text="Template for the Email subject, use the Django Template language, "
         "see https://docs.djangoproject.com/en/4.1/ref/templates/language/ for reference. Please keep it as one line.",
+        default="{{author_name}} updated the the budget  for campaign {{campaign.obr_name}}",
     )
     html_template = models.TextField(
         validators=[validator_template],
@@ -161,11 +161,12 @@ class MailTemplate(models.Model):
                 "links": step.links.all(),
             }
         )
-
-        html_template = Engine.get_default().from_string(self.html_template)
+        DEFAULT_HTML_TEMPLATE = '{% extends "base_budget_email.html" %}'
+        DEFAULT_TEXT_TEMPLATE = '{% extends "base_budget_email.html" %}'
+        html_template = Engine.get_default().from_string(self.html_template or DEFAULT_HTML_TEMPLATE)
         html_content = html_template.render(context)
-        text_template = Engine.get_default().from_string(self.text_template)
-        text_content = text_template.render(context)
+        text_template = Engine.get_default().from_string(self.text_template or DEFAULT_TEXT_TEMPLATE)
+        text_content = text_template.render(context).strip()
         subject_template = Engine.get_default().from_string(self.subject_template)
         subject_content = subject_template.render(context)
 

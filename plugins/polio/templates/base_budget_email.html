@@ -31,10 +31,6 @@ Base file to be reused in the MailTemplate for the budget workflow engine
   <table role="presentation"
          style="width:100%;max-width:600px;border-collapse:collapse;border:0;border-spacing:0;background:#ffffff;">
 
-{#  <tr>#}
-{#    <td style="height:20px;padding:0;font-size:0;line-height:0;">&nbsp;</td>#}
-{#  </tr>#}
-
   <tr>
     <td align="left" style="padding:5px;">
       {% block text %}
@@ -67,12 +63,21 @@ Base file to be reused in the MailTemplate for the budget workflow engine
   </tr>
   <tr>
     <td align="left" style="padding:5px;">
+      Consult the <a href="{{ budget_url }}">campaign page</a> for the complet budget history and more information.
+    </td>
+  <tr>
+  <tr>
+    <td style="height:20px;padding:0;font-size:0;line-height:0;">&nbsp;</td>
+  </tr>
+  <tr>
+    <td align="left" style="padding:5px;">
       You can follow up using one of the button below:
     </td>
   </tr>
   <tr>
     <td style="height:20px;padding:0;font-size:0;line-height:0;">&nbsp;</td>
   </tr>
+  {% if buttons %}
   <table role="presentation"
          style="width:100%;max-width:600px;border-collapse:collapse;border:0;border-spacing:0;background:#ffffff;">
     <tr>
@@ -80,6 +85,7 @@ Base file to be reused in the MailTemplate for the budget workflow engine
 
     </tr>
   </table>
+  {% endif %}
 {% endblock content %}
 <table role="presentation" style="width:100%;max-width:600px;">
   <tr>

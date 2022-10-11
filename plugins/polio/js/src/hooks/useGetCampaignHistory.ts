@@ -21,9 +21,8 @@ const getCampaignLogDetail = (logId?: string): Promise<CampaignLogData> => {
 export const useGetCampaignLogs = (
     campaignId?: string,
 ): UseQueryResult<DropdownOptions<number>[], Error> => {
-    const queryKey: any[] = ['campaignLog', campaignId];
     return useSnackQuery({
-        queryKey,
+        queryKey: ['campaignLog', campaignId],
         queryFn: () => getCampaignLog(campaignId),
         options: {
             enabled: Boolean(campaignId),
@@ -44,9 +43,8 @@ export const useGetCampaignLogs = (
 export const useGetCampaignLogDetail = (
     logId?: string,
 ): UseQueryResult<Record<string, any> | undefined, Error> => {
-    const queryKey: any[] = ['campaignLogDetail', logId];
     return useSnackQuery({
-        queryKey,
+        queryKey: ['campaignLogDetail', logId],
         queryFn: () => getCampaignLogDetail(logId),
         options: {
             enabled: Boolean(logId),

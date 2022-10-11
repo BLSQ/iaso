@@ -486,6 +486,8 @@
     "iaso.label.startPeriod": "Start period",
     "iaso.label.stopDelete": "Stop delete",
     "iaso.label.stopEdit": "Stop edit",
+    "iaso.label.storages": "Storages",
+    "iaso.label.storageType": "Storage type",
     "iaso.label.tasks": "Tasks",
     "iaso.label.team": "Team",
     "iaso.label.teams": "Teams",

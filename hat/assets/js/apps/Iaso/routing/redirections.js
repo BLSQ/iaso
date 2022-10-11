@@ -49,6 +49,10 @@ const addRoutes = (baseRoutes, overrideLanding) => {
             path={baseUrls.teams}
             to={`${baseUrls.teams}/order/name/pageSize/20/page/1`}
         />,
+        <Redirect
+            path={baseUrls.storages}
+            to={`${baseUrls.storages}/order/performed_at/pageSize/20/page/1`}
+        />,
         // Keep compatibility with the olds url for instance as they got renamed in Nov 2021
         <Redirect
             path="/instance/instanceId/:instanceId"

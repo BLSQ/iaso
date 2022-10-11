@@ -9,7 +9,7 @@ import OrgUnitDetail from '../domains/orgUnits/detail';
 import Completeness from '../domains/completeness';
 import Instances from '../domains/instances';
 import CompareSubmissions from '../domains/instances/compare/index.tsx';
-import InstanceDetail from '../domains/instances/details';
+import InstanceDetail from '../domains/instances/details.tsx';
 import Mappings from '../domains/mappings';
 import MappingDetails from '../domains/mappings/details';
 import Users from '../domains/users';
@@ -29,6 +29,7 @@ import { linksFiltersWithPrefix, orgUnitFiltersWithPrefix } from './filters';
 import Pages from '../domains/pages';
 import { Planning } from '../domains/plannings/index.tsx';
 import { Teams } from '../domains/teams/index.tsx';
+import { Storages } from '../domains/storages/index.tsx';
 import { Assignments } from '../domains/assignments/index.tsx';
 import { CompareInstanceLogs } from '../domains/instances/compare/components/CompareInstanceLogs.tsx';
 
@@ -702,6 +703,21 @@ export const teamsPath = {
         })),
     ],
 };
+export const storagesPath = {
+    baseUrl: baseUrls.storages,
+    permissions: ['iaso_storages'],
+    component: props => <Storages {...props} />,
+    params: [
+        {
+            isRequired: false,
+            key: 'search',
+        },
+        ...paginationPathParams.map(p => ({
+            ...p,
+            isRequired: true,
+        })),
+    ],
+};
 
 export const page401 = {
     baseUrl: baseUrls.error401,
@@ -753,4 +769,5 @@ export const routeConfigs = [
     entitiesPath,
     entityDetailsPath,
     entitySubmissionDetailPath,
+    storagesPath,
 ];

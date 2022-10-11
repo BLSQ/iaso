@@ -27,6 +27,8 @@ const DEFAULT_WASTAGE_RATIOS = {
     bOPV2: 1.18,
 };
 
+const DEFAULT_DOSES_PER_VIAL = 50;
+
 export const RoundVaccinesForm: FunctionComponent<Props> = ({
     round,
     roundIndex,
@@ -137,6 +139,34 @@ export const RoundVaccinesForm: FunctionComponent<Props> = ({
                 setFieldValue(
                     `rounds[${roundIndex}].vaccines[${index}].wastage_ratio_forecast`,
                     DEFAULT_WASTAGE_RATIOS[vaccine.name],
+                );
+            }
+        });
+    }, [
+        roundIndex,
+        rounds,
+        setFieldValue,
+        // @ts-ignore
+        touched.rounds,
+        vaccines,
+        vaccines.length,
+    ]);
+
+    // Fill in number of doses with default value when adding vaccine
+    useEffect(() => {
+        vaccines.forEach((vaccine, index) => {
+            const dosesPerVial =
+                rounds[roundIndex].vaccines[index].doses_per_vial;
+            // I'm sorry for this, I really had to null check this value
+            const isTouched = Boolean(
+                // @ts-ignore
+                ((touched?.rounds ?? [])[roundIndex]?.vaccines ?? [])[index]
+                    ?.doses_per_vial,
+            );
+            if (!dosesPerVial && !isTouched) {
+                setFieldValue(
+                    `rounds[${roundIndex}].vaccines[${index}].doses_per_vial`,
+                    DEFAULT_DOSES_PER_VIAL,
                 );
             }
         });

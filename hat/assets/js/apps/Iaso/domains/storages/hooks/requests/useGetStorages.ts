@@ -9,7 +9,7 @@ import {
     StorageParams,
 } from '../../types/storages';
 
-import { logs } from './logs';
+import { Storages } from './fixtures';
 
 const getStorage = async (
     options: StorageParams | StorageFilterParams,
@@ -23,8 +23,8 @@ const getStorage = async (
     }
 
     // const url = makeUrlWithParams('/api/storage', params);
-    return new Promise(resolve => resolve(logs));
     // return getRequest(url) as Promise<StoragePaginated>;
+    return new Promise(resolve => resolve(Storages));
 };
 
 export const useGetStorages = (

@@ -36,12 +36,14 @@ type Log = {
 };
 
 export type Storage = {
-    uuid: string;
     storage_id: string;
+    updated_at: number;
+    created_at: number;
     storage_type: 'NFC' | 'USB' | 'SD';
     storage_status: StorageStatus;
     entity: Entity;
-    logs: Array<Log>;
+    logs?: Array<Log>;
+    org_unit: ShortOrgUnit;
 };
 
 export type Storages = Array<Storage>;

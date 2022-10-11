@@ -14,7 +14,7 @@ import { redirectTo } from '../../routing/actions';
 
 import { baseUrls } from '../../constants/urls';
 import MESSAGES from './messages';
-import { Columns } from './config';
+import { useGetColumns, defaultSorted } from './config';
 
 const useStyles = makeStyles(theme => ({
     ...commonStyles(theme),
@@ -30,6 +30,7 @@ export const Storages: FunctionComponent<Props> = ({ params }) => {
     const classes: Record<string, string> = useStyles();
     const { formatMessage } = useSafeIntl();
     const { data, isFetching } = useGetStorages(params);
+    const columns = useGetColumns();
     return (
         <>
             <TopBar
@@ -42,8 +43,8 @@ export const Storages: FunctionComponent<Props> = ({ params }) => {
                     baseUrl={baseUrl}
                     data={data?.results ?? []}
                     pages={data?.pages ?? 1}
-                    defaultSorted={[{ id: 'name', desc: false }]}
-                    columns={Columns(formatMessage)}
+                    defaultSorted={defaultSorted}
+                    columns={columns}
                     count={data?.count ?? 0}
                     params={params}
                     onTableParamsChange={p => dispatch(redirectTo(baseUrl, p))}

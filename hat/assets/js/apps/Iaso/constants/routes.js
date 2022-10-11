@@ -712,6 +712,18 @@ export const storagesPath = {
             isRequired: false,
             key: 'search',
         },
+        {
+            isRequired: false,
+            key: 'type',
+        },
+        {
+            isRequired: false,
+            key: 'status',
+        },
+        {
+            isRequired: false,
+            key: 'reason',
+        },
         ...paginationPathParams.map(p => ({
             ...p,
             isRequired: true,

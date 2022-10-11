@@ -148,7 +148,16 @@ export type CampaignLogData = {
 };
 
 export type CampaignFieldType =
+    | 'string'
+    | 'number'
+    | 'boolean'
+    | 'object'
+    | 'string'
+    | 'undefined'
+    | 'function'
+    | 'symbol'
     | 'integer'
+    | 'bigint'
     | 'decimal'
     | 'range'
     | 'text'

@@ -1,4 +1,4 @@
-from typing import Tuple, Optional
+from typing import Tuple, Optional, List
 
 PERIOD_TYPE_MONTH = "MONTH"
 PERIOD_TYPE_QUARTER = "QUARTER"
@@ -63,7 +63,7 @@ class Period:
         return [str(p) for p in range_periods]
 
     @staticmethod
-    def range_string_with_sub_periods(from_string: str, to_string: str):
+    def range_string_with_sub_periods(from_string: Optional[str], to_string: Optional[str]) -> List[str]:
         from_period, to_period = Period.bound_range(from_string, to_string)
         range_periods = from_period.range_period_to(to_period)
         sub_periods = []

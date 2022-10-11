@@ -1,13 +1,13 @@
 import logging
+from typing import Union
 
 from django.conf import settings
-from django.contrib.auth.models import User
+from django.contrib.auth.models import User, AnonymousUser
 from django.contrib.sites.shortcuts import get_current_site
 from django.core.exceptions import ValidationError
 from django.core.mail import EmailMultiAlternatives
 from django.db import models
 from django.template import Engine, TemplateSyntaxError, Context
-
 from django.utils.translation import ugettext_lazy as _
 
 from hat.api.token_authentication import generate_auto_authentication_link
@@ -17,18 +17,22 @@ from plugins.polio.budget.workflow import next_transitions, get_workflow, can_us
 
 
 class BudgetStepQuerySet(models.QuerySet):
-    def filter_for_user(self, user: User):
+    def filter_for_user(self, user: Union[User, AnonymousUser]):
         from plugins.polio.models import Campaign
 
-        campaigns = Campaign.objects.filter_for_user(user)
+        campaigns = Campaign.objects.filter_for_user(user)  # type: ignore
         return self.filter(campaign__in=campaigns)
+
+
+# workaround for MyPy
+BudgetManager = models.Manager.from_queryset(BudgetStepQuerySet)
 
 
 class BudgetStep(SoftDeletableModel):
     class Meta:
         ordering = ["updated_at"]
 
-    objects = BudgetStepQuerySet.as_manager()
+    objects = BudgetManager()
     campaign = models.ForeignKey("Campaign", on_delete=models.PROTECT, related_name="budget_steps")
     transition_key = models.CharField(max_length=30)
     created_at = models.DateTimeField(auto_now_add=True)

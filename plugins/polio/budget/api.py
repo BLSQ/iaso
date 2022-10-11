@@ -1,15 +1,13 @@
 from django.db.models import QuerySet, Max
 from django.http import HttpResponse
-from django.template.loader import get_template
-from django_filters.rest_framework import DjangoFilterBackend
+from django_filters.rest_framework import DjangoFilterBackend  # type: ignore
 from drf_yasg.utils import swagger_auto_schema
 from rest_framework import permissions, filters, status
 from rest_framework.decorators import action
 from rest_framework.response import Response
 
 from iaso.api.common import ModelViewSet, DeletionFilterBackend
-from iaso.models import OrgUnit
-from plugins.polio.budget.models import BudgetStep, MailTemplate, send_budget_mails
+from plugins.polio.budget.models import BudgetStep, MailTemplate
 from plugins.polio.budget.serializers import CampaignBudgetSerializer, TransitionToSerializer, BudgetStepSerializer
 from plugins.polio.models import Campaign
 

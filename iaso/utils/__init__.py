@@ -1,6 +1,6 @@
 """This module provides various utils and helpers for IASO"""
 
-from typing import Dict, Any, TextIO, List
+from typing import Dict, Any, TextIO, List, Optional, Iterable
 
 from bs4 import BeautifulSoup as Soup  # type: ignore
 from datetime import datetime
@@ -71,21 +71,20 @@ def extract_form_version_id(soup):
     return None
 
 
-def flat_parse_xml_soup(soup: Soup, repeat_groups: List[Any], allowed_paths: List[str]) -> Dict[str, Any]:
+def flat_parse_xml_soup(soup: Soup, repeat_groups: List[Any], allowed_paths: Optional[Iterable[str]]) -> Dict[str, Any]:
     """
     Parse XML data in a BeautifulSoup and return a flattened JSON-serializable representation of the data.
 
     :return: a dict with two keys: the flattened xml data in "flat_json", and a list of skipped paths in "skipped_paths"
     """
-    skipped_paths = []
-    flat_xml_dict = {}
-    get_flat_children_tree("", soup, flat_xml_dict, repeat_groups, allowed_paths, skipped_paths)
+    flat_xml_dict: Dict[str, Any] = {}
+    get_flat_children_tree("", soup, flat_xml_dict, repeat_groups, allowed_paths, [])
 
     version_id = extract_form_version_id(soup)
     if version_id:
         flat_xml_dict["_version"] = version_id
 
-    return {"flat_json": flat_xml_dict, "skipped_paths": skipped_paths}
+    return {"flat_json": flat_xml_dict, "skipped_paths": []}
 
 
 def slugify_underscore(filename):

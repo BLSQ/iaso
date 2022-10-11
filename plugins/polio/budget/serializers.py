@@ -13,8 +13,9 @@ from .workflow import get_workflow, next_transitions, can_user_transition
 
 class TransitionSerializer(serializers.Serializer):
     key = serializers.CharField()
-    label = serializers.CharField()
-    help_text = serializers.CharField()
+    # https://github.com/typeddjango/djangorestframework-stubs/issues/78 bug in mypy remove in future
+    label = serializers.CharField()  # type: ignore
+    help_text = serializers.CharField()  # type: ignore
     allowed = serializers.BooleanField()
     reason_not_allowed = serializers.CharField(required=False)
     required_fields = serializers.ListField(child=serializers.CharField())
@@ -25,7 +26,8 @@ class TransitionSerializer(serializers.Serializer):
 
 class NodeSerializer(serializers.Serializer):
     key = serializers.CharField()
-    label = serializers.CharField()
+    # https://github.com/typeddjango/djangorestframework-stubs/issues/78 bug in mypy remove in future
+    label = serializers.CharField()  # type: ignore
 
 
 # noinspection PyMethodMayBeStatic
@@ -52,7 +54,9 @@ class CampaignBudgetSerializer(CampaignSerializer):
 
     next_transitions = serializers.SerializerMethodField()
     # will need to use country__name for sorting
-    country_name = serializers.SlugRelatedField(source="country", slug_field="name", read_only=True)
+    country_name: serializers.SlugRelatedField = serializers.SlugRelatedField(
+        source="country", slug_field="name", read_only=True
+    )
 
     def get_current_state(self, campaign: Campaign):
         return {
@@ -204,7 +208,7 @@ class BudgetStepSerializer(serializers.ModelSerializer):
     transition_label = serializers.SerializerMethodField()
     files = BudgetFileSerializer(many=True)
     links = BudgetLinkSerializer(many=True)
-    created_by_team = serializers.SlugRelatedField(slug_field="name", read_only=True)
+    created_by_team: serializers.SlugRelatedField = serializers.SlugRelatedField(slug_field="name", read_only=True)
     created_by = UserSerializer()
 
     @swagger_serializer_method(serializer_or_field=serializers.CharField)

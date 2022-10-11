@@ -26,6 +26,7 @@ import { Column } from '../../../types/table';
 import { ExtraColumn } from './types/fields';
 import getDisplayName from '../../../utils/usersUtils';
 import { useGetFieldValue } from './hooks/useGetFieldValue';
+import { formatLabel } from '../../instances/utils';
 
 export const baseUrl = baseUrls.entities;
 
@@ -99,7 +100,7 @@ export const useColumns = (
         }
         extraColumns.forEach(extraColumn => {
             columns.push({
-                Header: extraColumn.label,
+                Header: formatLabel(extraColumn),
                 id: extraColumn.name,
                 accessor: extraColumn.name,
                 Cell: settings => {

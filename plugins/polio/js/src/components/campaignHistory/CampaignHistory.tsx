@@ -21,7 +21,7 @@ import MESSAGES from '../../constants/messages';
 import { useGetCampaignLogs } from '../../hooks/useGetCampaignHistory';
 
 type RouterCustom = {
-    prevPathname: string | undefined;
+    prevPathname?: string;
 };
 type State = {
     routerCustom: RouterCustom;
@@ -80,19 +80,14 @@ export const CampaignHistory: FunctionComponent<Props> = ({
     };
 
     useEffect(() => {
-        if (campaignLogsDropdown) {
-            if (params.logId === undefined) {
-                const defaultParams = {
-                    ...params,
-                    logId: campaignLogsDropdown[0]?.value,
-                };
-                dispatch(
-                    redirectToReplace(CAMPAIGN_HISTORY_URL, defaultParams),
-                );
-            }
+        if (campaignLogsDropdown && params.logId === undefined) {
+            const defaultParams = {
+                ...params,
+                logId: campaignLogsDropdown[0]?.value,
+            };
+            dispatch(redirectToReplace(CAMPAIGN_HISTORY_URL, defaultParams));
         }
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [campaignLogsDropdown, params]);
+    }, [campaignLogsDropdown, params, dispatch]);
 
     useEffect(() => {
         setLogIdInitialValue(

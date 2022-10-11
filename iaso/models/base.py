@@ -728,17 +728,11 @@ class InstanceQuerySet(models.QuerySet):
             queryset = queryset.filter(org_unit_id=org_unit_id)
 
         if org_unit_parent_id:
-            # TODO: attempt to refactor this (so it's cleaner / more efficient and we're not limited to an arbitrary number of parents)
-            queryset = queryset.filter(
-                Q(org_unit__id=org_unit_parent_id)
-                | Q(org_unit__parent__id=org_unit_parent_id)
-                | Q(org_unit__parent__parent__id=org_unit_parent_id)
-                | Q(org_unit__parent__parent__parent__id=org_unit_parent_id)
-                | Q(org_unit__parent__parent__parent__parent__id=org_unit_parent_id)
-                | Q(org_unit__parent__parent__parent__parent__parent__id=org_unit_parent_id)
-                | Q(org_unit__parent__parent__parent__parent__parent__parent__id=org_unit_parent_id)
-                | Q(org_unit__parent__parent__parent__parent__parent__parent__parent__id=org_unit_parent_id)
-            )
+            # Local import to avoid loop
+            from iaso.models import OrgUnit
+
+            parent = OrgUnit.objects.get(id=org_unit_parent_id)
+            queryset = queryset.filter(org_unit__path__descendants=parent.path)
 
         if with_location == "true":
             queryset = queryset.filter(location__isnull=False)

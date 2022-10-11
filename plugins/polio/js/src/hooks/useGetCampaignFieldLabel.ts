@@ -12,11 +12,11 @@ export const useGetCampaignFieldLabel = (): ((
     const { formatMessage } = useSafeIntl();
     const getLabel = (fieldKey, messages): any => {
         if (!messages[fieldKey]) {
+            // TO FIX
             const field = Object.entries(messages).find(message =>
                 message.filter(obj => obj.key === fieldKey),
             );
-
-            console.log('field', field);
+            // TOF FIX
             return formatMessage(messages[field[0]]);
         }
 

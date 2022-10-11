@@ -364,11 +364,6 @@ const OrgUnitDetail = ({ params, router }) => {
         sourcesSelected,
     ]);
 
-    useEffect(() => {
-        if (tab !== params.tab && params.tab) {
-            setTab(params.tab);
-        }
-    }, [tab, params.tab]);
     return (
         <section className={classes.root}>
             <TopBar
@@ -518,7 +513,6 @@ const OrgUnitDetail = ({ params, router }) => {
                                 }
                             >
                                 <SingleTable
-                                    paramsPrefix="childrenParams"
                                     apiParams={{
                                         ...onlyChildrenParams(
                                             'childrenParams',
@@ -527,9 +521,6 @@ const OrgUnitDetail = ({ params, router }) => {
                                         ),
                                     }}
                                     propsToWatch={params.orgUnitId}
-                                    baseUrl={baseUrl}
-                                    endPointPath="orgunits"
-                                    fetchItems={fetchOrgUnitsList}
                                     filters={orgUnitFiltersWithPrefix(
                                         'childrenParams',
                                         true,
@@ -537,6 +528,11 @@ const OrgUnitDetail = ({ params, router }) => {
                                         groups,
                                         orgUnitTypes,
                                     )}
+                                    params={params}
+                                    paramsPrefix="childrenParams"
+                                    baseUrl={baseUrl}
+                                    endPointPath="orgunits"
+                                    fetchItems={fetchOrgUnitsList}
                                     columns={orgUnitsTableColumns(
                                         formatMessage,
                                         classes,
@@ -553,7 +549,6 @@ const OrgUnitDetail = ({ params, router }) => {
                                     apiParams={{
                                         orgUnitId: params.orgUnitId,
                                     }}
-                                    hideGpkg
                                     propsToWatch={params.orgUnitId}
                                     filters={linksFiltersWithPrefix(
                                         'linksParams',
@@ -563,6 +558,7 @@ const OrgUnitDetail = ({ params, router }) => {
                                         algorithms,
                                         sources,
                                     )}
+                                    params={params}
                                     paramsPrefix="linksParams"
                                     baseUrl={baseUrl}
                                     endPointPath="links"
@@ -589,6 +585,7 @@ const OrgUnitDetail = ({ params, router }) => {
                                             />
                                         ) : null
                                     }
+                                    hideGpkg
                                 />
                             </div>
                             {tab === 'comments' && (

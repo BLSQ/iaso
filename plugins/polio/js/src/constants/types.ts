@@ -176,3 +176,7 @@ export type CampaignFieldType =
     | 'acknowledge'
     | 'hidden'
     | 'xml-external';
+
+export type Translations = {
+    messages: Record<string, any>;
+};

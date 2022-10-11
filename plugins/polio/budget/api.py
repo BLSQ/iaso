@@ -1,5 +1,5 @@
 from django.db.models import QuerySet, Max
-from django_filters.rest_framework import DjangoFilterBackend
+from django_filters.rest_framework import DjangoFilterBackend  # type: ignore
 from drf_yasg.utils import swagger_auto_schema
 from rest_framework import permissions, filters, status
 from rest_framework.decorators import action

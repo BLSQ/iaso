@@ -326,7 +326,7 @@ class TeamAPITestCase(APITestCase):
             mt.full_clean()
             mt.save()
 
-    @skip
+    @skip("for debug")
     def test_mail_template_include(self):
         # Just to check if include works inside string template
         text = """  hello, {{user}}

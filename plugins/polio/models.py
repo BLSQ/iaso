@@ -1,8 +1,11 @@
+from typing import Union
 from uuid import uuid4
 
-from django.contrib.auth.models import User
+from django.contrib.auth.models import User, AnonymousUser
 from django.db import models
-from django.db.models import Count
+from django.db.models import Count, Manager
+import django.db.models.manager
+
 from django.utils.translation import gettext as _
 from gspread.utils import extract_id_from_url  # type: ignore
 
@@ -183,7 +186,7 @@ class Round(models.Model):
 
 
 class CampaignQuerySet(models.QuerySet):
-    def filter_for_user(self, user: User):
+    def filter_for_user(self, user: Union[User, AnonymousUser]):
         qs = self
         if user.is_authenticated and user.iaso_profile.org_units.count():
             org_units = OrgUnit.objects.hierarchy(user.iaso_profile.org_units.all())
@@ -191,11 +194,17 @@ class CampaignQuerySet(models.QuerySet):
         return qs
 
 
+# workaround for MyPy detection
+CampaignManager = models.Manager.from_queryset(CampaignQuerySet)
+
+
 class Campaign(SoftDeletableModel):
     class Meta:
         ordering = ["obr_name"]
 
-    objects = CampaignQuerySet.as_manager()
+    objects = CampaignManager()
+    scopes: "django.db.models.manager.RelatedManager[CampaignScope]"
+    rounds: "django.db.models.manager.RelatedManager[Round]"
     id = models.UUIDField(default=uuid4, primary_key=True, editable=False)
     epid = models.CharField(default=None, max_length=255, null=True, blank=True)
     obr_name = models.CharField(max_length=255, unique=True)

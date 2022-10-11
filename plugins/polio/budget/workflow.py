@@ -8,8 +8,8 @@ from iaso.models.microplanning import Team
 class Transition:
     label: str
     key: str
-    required_fields: []
-    displayed_fields: []
+    required_fields: List[str]
+    displayed_fields: List[str]
     from_node: str = ""
     to_node: str = ""
     teams_ids_can_transition: Union[list, None] = None  # if none unrestricted

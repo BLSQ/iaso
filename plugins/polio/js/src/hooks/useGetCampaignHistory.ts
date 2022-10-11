@@ -7,21 +7,19 @@ import { DropdownOptions } from '../../../../../hat/assets/js/apps/Iaso/types/ut
 import { CampaignLogDetail, CampaignLogData } from '../constants/types';
 
 export const getCampaignLog = (
-    campaignId: string | undefined,
+    campaignId?: string,
 ): Promise<CampaignLogDetail> => {
     return getRequest(
         `/api/logs/?objectId=${campaignId}&contentType=polio.campaign`,
     );
 };
 
-const getCampaignLogDetail = (
-    logId: string | undefined,
-): Promise<CampaignLogData> => {
+const getCampaignLogDetail = (logId?: string): Promise<CampaignLogData> => {
     return getRequest(`/api/logs/${logId}`);
 };
 
 export const useGetCampaignLogs = (
-    campaignId: string | undefined,
+    campaignId?: string,
 ): UseQueryResult<DropdownOptions<number>[], Error> => {
     const queryKey: any[] = ['campaignLog', campaignId];
     return useSnackQuery({
@@ -44,7 +42,7 @@ export const useGetCampaignLogs = (
 };
 
 export const useGetCampaignLogDetail = (
-    logId: string | undefined,
+    logId?: string,
 ): UseQueryResult<Record<string, any> | undefined, Error> => {
     const queryKey: any[] = ['campaignLogDetail', logId];
     return useSnackQuery({

@@ -1,9 +1,11 @@
 /* eslint-disable camelcase */
 import React, { FunctionComponent } from 'react';
-// @ts-ignore,
 import {
+    // @ts-ignore
     useSafeIntl,
+    // @ts-ignore
     LoadingSpinner,
+    // @ts-ignore
     commonStyles,
 } from 'bluesquare-components';
 
@@ -27,7 +29,7 @@ import MESSAGES from '../../constants/messages';
 import { useGetCampaignFieldLabel } from '../../hooks/useGetCampaignFieldLabel';
 
 type Props = {
-    logId: string | undefined;
+    logId?: string;
 };
 
 const useStyles = makeStyles((theme: Theme) => ({
@@ -52,19 +54,6 @@ export const CampaignLogDetail: FunctionComponent<Props> = ({ logId }) => {
 
     const classes: Record<string, string> = useStyles();
 
-    // const getValue = (valueType, value) => {
-    //     switch (valueType) {
-    //         // iterate inside rounds object and show keys/values. Create a section "rounds" ? like in instance detail
-    //         case 'object':
-    //             return 'TO DO';
-
-    //         case 'boolean':
-    //             return value.toString();
-
-    //         default:
-    //             return value;
-    //     }
-    // };
     const getLabel = useGetCampaignFieldLabel();
     const getValue = useGetCampaignFieldValue();
 
@@ -82,8 +71,6 @@ export const CampaignLogDetail: FunctionComponent<Props> = ({ logId }) => {
     if (isError) {
         return <ErrorPaperComponent message={formatMessage(MESSAGES.error)} />;
     }
-
-    console.log('campaign log details', campaignLogDetail);
 
     return (
         <>
@@ -129,8 +116,6 @@ export const CampaignLogDetail: FunctionComponent<Props> = ({ logId }) => {
                                         </TableCell>
                                     </TableRow>
                                 );
-
-                                return undefined;
                             },
                         )}
                     </TableBody>

@@ -25,6 +25,8 @@ import { useGetCampaignFieldValue } from '../../hooks/useGetCampaignFieldValue';
 
 import ErrorPaperComponent from '../../../../../../hat/assets/js/apps/Iaso/components/papers/ErrorPaperComponent';
 
+import { CampaignLogData } from '../../constants/types';
+
 import MESSAGES from '../../constants/messages';
 import { useGetCampaignFieldLabel } from '../../hooks/useGetCampaignFieldLabel';
 
@@ -45,7 +47,7 @@ export const CampaignLogDetail: FunctionComponent<Props> = ({ logId }) => {
         isLoading,
         isError,
     }: {
-        data?: Record<string, any> | undefined;
+        data?: CampaignLogData;
         isLoading: boolean;
         isError: boolean;
     } = useGetCampaignLogDetail(logId);

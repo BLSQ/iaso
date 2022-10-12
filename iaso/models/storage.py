@@ -79,7 +79,7 @@ class StorageLogEntry(models.Model):
     ]
 
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    device = models.ForeignKey(StorageDevice, on_delete=models.CASCADE)
+    device = models.ForeignKey(StorageDevice, on_delete=models.CASCADE, related_name="log_entries")
     operation_type = models.CharField(max_length=32, choices=OPERATION_TYPE_CHOICES)
     # when as te data read/written on the storage device. This is chosen by the mobile app, that can happen earlier than
     # when the backend knows about it.

@@ -9,6 +9,10 @@ const MESSAGES = defineMessages({
         defaultMessage: 'Separate scope per round',
         id: 'iaso.polio.label.scope_per_round',
     },
+    infos: {
+        defaultMessage: 'Infos',
+        id: 'iaso.label.infos',
+    },
     separate_scopes_per_round: {
         defaultMessage: 'Separate scope per round',
         id: 'iaso.polio.label.scope_per_round',
@@ -242,7 +246,7 @@ const MESSAGES = defineMessages({
     },
     verification_score: {
         id: 'iaso.polio.form.label.verificationScore',
-        defaultMessage: 'Verification Score (/20)',
+        defaultMessage: 'Verif',
     },
     fieldInvestigationDate: {
         id: 'iaso.polio.form.label.fieldInvestigationDate',
@@ -1705,6 +1709,21 @@ const MESSAGES = defineMessages({
     typeNotSupported: {
         id: 'iaso.polio.campaign.typeNotSupported',
         defaultMessage: 'Type not supported yet: {type}',
+    },
+    // to do : add translations
+    last_modified_by: {
+        id: 'iaso.instance.last_modified_by',
+        defaultMessage: 'Modified By',
+    },
+    // to do : add translations
+    seeLogDetail: {
+        id: 'iaso.polio.seeLogDetail',
+        defaultMessage: 'See more details',
+    },
+    // to do : add translations
+    campaignLogDetails: {
+        id: 'iaso.polio;campaignLogDetails',
+        defaultMessage: 'Campaign log details',
     },
 });
 

@@ -59,7 +59,7 @@ export const useBudgetColumns = (): Column[] => {
             {
                 Header: formatMessage(MESSAGES.status),
                 sortable: true,
-                accessor: 'current_state__label',
+                accessor: 'budget_current_state_key',
                 Cell: settings =>
                     settings.row.original.current_state?.label ?? '--',
             },

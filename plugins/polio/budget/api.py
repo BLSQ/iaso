@@ -8,7 +8,7 @@ from rest_framework import permissions, filters, status, serializers
 from rest_framework.decorators import action
 from rest_framework.response import Response
 
-from iaso.api.common import ModelViewSet, DeletionFilterBackend
+from iaso.api.common import ModelViewSet, DeletionFilterBackend, HasPermission
 from plugins.polio.budget.models import BudgetStep, MailTemplate
 from plugins.polio.budget.serializers import (
     CampaignBudgetSerializer,
@@ -30,7 +30,7 @@ class BudgetCampaignViewSet(ModelViewSet):
     """
 
     serializer_class = CampaignBudgetSerializer
-    permission_classes = [permissions.IsAuthenticated]
+    permission_classes = [HasPermission("menupermissions.iaso_polio_budget")]  # type: ignore
 
     # Make this read only
     # FIXME : remove POST
@@ -62,6 +62,7 @@ class BudgetCampaignViewSet(ModelViewSet):
         "last_budget_event__created_at",
         "last_budget_event__type",
         "last_budget_event__status",
+        "budget_current_state_key",
     ]
     filterset_fields = {
         "last_budget_event__status": ["exact"],
@@ -72,6 +73,7 @@ class BudgetCampaignViewSet(ModelViewSet):
         "cvdpv2_notified_at": ["gte", "lte", "range"],
         "created_at": ["gte", "lte", "range"],
         "rounds__started_at": ["gte", "lte", "range"],
+        "budget_current_state_key": ["exact", "in"],
     }
 
     @action(detail=False, methods=["POST"], serializer_class=TransitionToSerializer)
@@ -102,7 +104,7 @@ class BudgetStepViewSet(ModelViewSet):
             return UpdateBudgetStepSerializer
         return BudgetStepSerializer
 
-    permission_classes = [permissions.IsAuthenticated]
+    permission_classes = [HasPermission("menupermissions.iaso_polio_budget")]
 
     http_method_names = ["get", "head", "delete", "patch"]
     filter_backends = [
@@ -132,7 +134,6 @@ class BudgetStepViewSet(ModelViewSet):
     def mail_template(self, request, pk):
         step = self.get_queryset().get(pk=pk)
         template_id = request.query_params.get("template_id")
-        print(template_id)
         template = MailTemplate.objects.get(id=template_id)
         email_template = template.render_for_step(step, request.user, request)
         format = request.query_params.get("as", "all")

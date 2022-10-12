@@ -8,15 +8,9 @@ import {
     string,
     number,
     ObjectSchema,
-    StringSchema,
-    NumberSchema,
+    addMethod,
 } from 'yup';
-import { MixedSchema } from 'yup/lib/mixed';
 import MESSAGES from '../../../constants/messages';
-// import {
-//     makeRegexValidator,
-//     urlRegex,
-// } from '../../../../../../../hat/assets/js/apps/Iaso/libs/utils';
 import { ValidationError } from '../../../../../../../hat/assets/js/apps/Iaso/types/utils';
 import { useAPIErrorValidator } from '../../../../../../../hat/assets/js/apps/Iaso/libs/validation';
 
@@ -26,6 +20,41 @@ const makeRequired = (validator, required: boolean, errorMsg: string) => {
     }
     return validator;
 };
+
+addMethod(
+    mixed,
+    'fileOrLinks',
+    function fileOrLinks(enableTest, formatMessage) {
+        return this.test('fileOrLinks', '', (_value, context) => {
+            if (!enableTest) return true;
+            const { path, createError, parent } = context;
+            if (!parent.files && !parent.links) {
+                return createError({
+                    path,
+                    message: formatMessage(MESSAGES.linksOrFilesRequired),
+                });
+            }
+            return true;
+        });
+    },
+);
+addMethod(
+    array,
+    'linksOrFiles',
+    function fileOrLinks(enableTest, formatMessage) {
+        return this.test('linksOrFiles', '', (_value, context) => {
+            if (!enableTest) return true;
+            const { path, createError, parent } = context;
+            if (!parent.files && !parent.links) {
+                return createError({
+                    path,
+                    message: formatMessage(MESSAGES.linksOrFilesRequired),
+                });
+            }
+            return true;
+        });
+    },
+);
 
 export const useBudgetStepValidation = (
     errors: ValidationError = {},
@@ -42,7 +71,10 @@ export const useBudgetStepValidation = (
                 mixed().nullable(),
                 requiredFields.includes('files'),
                 fieldRequired,
-            ) as MixedSchema, // .test(linkOrFile)
+            ).fileOrLinks(
+                requiredFields.includes('attachments'),
+                formatMessage,
+            ),
             links: makeRequired(
                 array().of(
                     object({
@@ -52,38 +84,21 @@ export const useBudgetStepValidation = (
                 ),
                 requiredFields.includes('files'),
                 fieldRequired,
+            ).linksOrFiles(
+                requiredFields.includes('attachments'),
+                formatMessage,
             ),
             comment: makeRequired(
                 string().nullable(),
                 requiredFields.includes('comment'),
                 fieldRequired,
-            ) as StringSchema,
-            // internal: bool().nullable().required(fieldRequired),
-            // target_teams: array()
-            //     .min(1, fieldRequired)
-            //     .nullable()
-            //     .required(fieldRequired),
-            // type: string()
-            //     .oneOf([
-            //         'submission',
-            //         'comments',
-            //         'validation',
-            //         'request',
-            //         'feedback',
-            //         'review',
-            //         'transmission',
-            //     ]) // TODO add translation for this error
-            //     .nullable()
-            //     .required(fieldRequired)
-            //     .typeError(typeError),
-            amount: (
-                makeRequired(
-                    number().nullable(),
-                    requiredFields.includes('amount'),
-                    fieldRequired,
-                ) as NumberSchema
+            ),
+            amount: makeRequired(
+                number().nullable(),
+                requiredFields.includes('amount'),
+                fieldRequired,
             ).typeError(typeError),
             general: mixed().nullable().test(apiValidator('general')),
         });
-    }, [apiValidator, fieldRequired, requiredFields, typeError]);
+    }, [apiValidator, fieldRequired, formatMessage, requiredFields, typeError]);
 };

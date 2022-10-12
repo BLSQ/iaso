@@ -74,7 +74,7 @@ class CampaignBudgetSerializer(CampaignSerializer):
             "label": node.label,
         }
 
-    @swagger_serializer_method(serializer_or_field=TransitionSerializer)
+    @swagger_serializer_method(serializer_or_field=TransitionSerializer(many=True))
     def get_next_transitions(self, campaign):
         # // get transition from workflow engine.
         workflow = get_workflow()
@@ -89,14 +89,14 @@ class CampaignBudgetSerializer(CampaignSerializer):
         return TransitionSerializer(transitions, many=True).data
 
     # this is used for filter dropdown
-    @swagger_serializer_method(serializer_or_field=NodeSerializer)
+    @swagger_serializer_method(serializer_or_field=NodeSerializer(many=True))
     def get_possible_states(self, _campaign):
         workflow = get_workflow()
         nodes = workflow.nodes
         return NodeSerializer(nodes, many=True).data
 
     # this is used for filter dropdown
-    @swagger_serializer_method(serializer_or_field=NodeSerializer)
+    @swagger_serializer_method(serializer_or_field=TransitionSerializer(many=True))
     def get_possible_transitions(self, _campaign):
         workflow = get_workflow()
         transitions = workflow.transitions

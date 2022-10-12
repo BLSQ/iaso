@@ -8,7 +8,7 @@ from rest_framework import permissions, filters, status, serializers
 from rest_framework.decorators import action
 from rest_framework.response import Response
 
-from iaso.api.common import ModelViewSet, DeletionFilterBackend
+from iaso.api.common import ModelViewSet, DeletionFilterBackend, HasPermission
 from plugins.polio.budget.models import BudgetStep, MailTemplate
 from plugins.polio.budget.serializers import (
     CampaignBudgetSerializer,
@@ -30,7 +30,7 @@ class BudgetCampaignViewSet(ModelViewSet):
     """
 
     serializer_class = CampaignBudgetSerializer
-    permission_classes = [permissions.IsAuthenticated]
+    permission_classes = [HasPermission("menupermissions.iaso_polio_budget")]  # type: ignore
 
     # Make this read only
     # FIXME : remove POST
@@ -102,7 +102,7 @@ class BudgetStepViewSet(ModelViewSet):
             return UpdateBudgetStepSerializer
         return BudgetStepSerializer
 
-    permission_classes = [permissions.IsAuthenticated]
+    permission_classes = [HasPermission("menupermissions.iaso_polio_budget")]
 
     http_method_names = ["get", "head", "delete", "patch"]
     filter_backends = [

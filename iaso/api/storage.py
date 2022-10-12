@@ -1,7 +1,7 @@
 from datetime import datetime
 
 from rest_framework import viewsets, permissions, serializers, status
-from rest_framework.mixins import CreateModelMixin
+from rest_framework.mixins import CreateModelMixin, ListModelMixin
 from rest_framework.response import Response
 
 from iaso.models import StorageLogEntry, StorageDevice, Instance, OrgUnit, Entity
@@ -26,6 +26,25 @@ class StorageLogSerializer(serializers.ModelSerializer):
 
     def create(self, validated_data):
         pass
+
+
+class StorageSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = StorageDevice
+        fields = "__all__"
+
+
+class StorageViewSet(ListModelMixin, viewsets.GenericViewSet):
+    # TODO: clarify permissions (the doc says "permission to see storage)
+    # For now we'll check that user is authenticated, and we filter by account
+    permission_classes = [
+        permissions.IsAuthenticated,
+    ]
+    serializer_class = StorageSerializer
+
+    def get_queryset(self):
+        # We'll only return results for the account of the user
+        return StorageDevice.objects.filter(account=self.request.user.iaso_profile.account)
 
 
 # This could be rewritten in more idiomatic DRF (serializers, ...). On the other hand, I quite like the explicitness

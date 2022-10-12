@@ -117,3 +117,4 @@ class StorageAPITestCase(APITestCase):
     # TODO: POST test mandatory fields are checked on POST
     # TODO: POST test an error is returned if incorrect value for instances, org unit or entity (400)
     # TODO: POST: that the non mandatory fields are actually non mandatory
+    # TODO: POST: make sure the device is created in the OK status

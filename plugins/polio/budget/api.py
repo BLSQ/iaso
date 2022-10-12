@@ -17,7 +17,9 @@ from plugins.polio.models import Campaign
 @swagger_auto_schema(tags=["budget"])
 class BudgetCampaignViewSet(ModelViewSet):
     """
-    Campaign endpoint with budget information
+    Campaign endpoint with budget information.
+
+    You can request specific field by using the ?fields paramter
     """
 
     serializer_class = CampaignBudgetSerializer

@@ -4,6 +4,7 @@ from django.db import transaction
 from drf_yasg.utils import swagger_serializer_method
 from rest_framework import serializers
 
+from iaso.api.common import DynamicFieldsModelSerializer
 from iaso.models.microplanning import Team
 from plugins.polio.models import Campaign
 from plugins.polio.serializers import CampaignSerializer, UserSerializer
@@ -37,8 +38,7 @@ class NodeSerializer(serializers.Serializer):
 
 
 # noinspection PyMethodMayBeStatic
-class CampaignBudgetSerializer(CampaignSerializer):
-    # Todo set dynamic serializer
+class CampaignBudgetSerializer(CampaignSerializer, DynamicFieldsModelSerializer):
     class Meta:
         model = Campaign
         fields = [
@@ -51,6 +51,14 @@ class CampaignBudgetSerializer(CampaignSerializer):
             "budget_last_updated_at",
             "possible_states",
             "possible_transitions",
+        ]
+        default_fields = [
+            "created_at",
+            "id",
+            "obr_name",
+            "country_name",
+            "current_state",
+            "budget_last_updated_at",
         ]
 
     # added via annotation

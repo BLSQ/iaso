@@ -46,6 +46,7 @@ transition_defs = [
 ]
 
 node_defs = [
+    {"key": None, "label": "No budget"},
     {"key": "budget_submitted", "label": "Budget submitted"},
     {"key": "accepted", "label": "Budget accepted"},
     {"key": "rejected", "label": "Budget rejected"},
@@ -90,6 +91,17 @@ class TeamAPITestCase(APITestCase):
         campaigns = j["results"]
         for c in campaigns:
             self.assertEqual(c["obr_name"], "test campaign")
+
+    def test_list_select_fields(self):
+        self.client.force_login(self.user)
+
+        r = self.client.get("/api/polio/budget/?fields=obr_name,country_name")
+        j = self.assertJSONResponse(r, 200)
+        campaigns = j["results"]
+        for c in campaigns:
+            self.assertEqual(c["obr_name"], "test campaign")
+            self.assertEqual(c["country_name"], None)
+            self.assertEqual(list(c.keys()), ["obr_name", "country_name"])
 
     def test_transition_to(self):
         "With file and links"
@@ -272,7 +284,7 @@ class TeamAPITestCase(APITestCase):
         self.client.force_login(self.user)
         prev_budget_step_count = BudgetStep.objects.count()
         c = self.c
-        r = self.client.get(f"/api/polio/budget/{c.id}/")
+        r = self.client.get(f"/api/polio/budget/{c.id}/?fields=:all")
         j = self.assertJSONResponse(r, 200)
 
         # check initial status and possible transition on campaign
@@ -299,7 +311,7 @@ class TeamAPITestCase(APITestCase):
         s = BudgetStep.objects.get(id=step_id)
 
         # Check new status on campaign
-        r = self.client.get(f"/api/polio/budget/{c.id}/")
+        r = self.client.get(f"/api/polio/budget/{c.id}/?fields=:all")
         j = self.assertJSONResponse(r, 200)
 
         self.assertEqual(j["obr_name"], "test campaign")
@@ -338,7 +350,7 @@ class TeamAPITestCase(APITestCase):
         self.assertEqual(prev_budget_step_count + 2, new_budget_step_count)
 
         # Check new status on campaign
-        r = self.client.get(f"/api/polio/budget/{c.id}/")
+        r = self.client.get(f"/api/polio/budget/{c.id}/?fields=:all")
         j = self.assertJSONResponse(r, 200)
 
         self.assertEqual(j["obr_name"], "test campaign")

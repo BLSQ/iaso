@@ -5,6 +5,7 @@ import { getRequest } from '../../../../../hat/assets/js/apps/Iaso/libs/Api';
 import { useSnackQuery } from '../../../../../hat/assets/js/apps/Iaso/libs/apiHooks';
 import { DropdownOptions } from '../../../../../hat/assets/js/apps/Iaso/types/utils';
 import { CampaignLogDetail, CampaignLogData } from '../constants/types';
+import { Profile } from '../../../../../hat/assets/js/apps/Iaso/utils/usersUtils';
 
 export const getCampaignLog = (
     campaignId?: string,
@@ -40,9 +41,14 @@ export const useGetCampaignLogs = (
     });
 };
 
+export type CampaignLogDetailResult = {
+    user: Profile;
+    logDetail: CampaignLogData;
+};
+
 export const useGetCampaignLogDetail = (
     logId?: string,
-): UseQueryResult<Record<string, any> | undefined, Error> => {
+): UseQueryResult<CampaignLogDetailResult | undefined, Error> => {
     return useSnackQuery({
         queryKey: ['campaignLogDetail', logId],
         queryFn: () => getCampaignLogDetail(logId),
@@ -50,7 +56,7 @@ export const useGetCampaignLogDetail = (
             enabled: Boolean(logId),
             select: data => {
                 if (data) {
-                    return data.new_value[0];
+                    return { user: data.user, logDetail: data.new_value[0] };
                 }
 
                 return undefined;

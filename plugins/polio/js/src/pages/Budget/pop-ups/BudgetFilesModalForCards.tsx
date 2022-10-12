@@ -7,6 +7,7 @@ import {
     DialogContent,
     DialogTitle,
     Divider,
+    makeStyles,
     Typography,
 } from '@material-ui/core';
 // @ts-ignore
@@ -27,6 +28,10 @@ type Props = {
     files: FileWithName[];
 };
 
+const useStyles = makeStyles({
+    minModalWidth: { minWidth: '250px' },
+});
+
 export const BudgetFilesModalForCards: FunctionComponent<Props> = ({
     open,
     setOpen,
@@ -36,6 +41,7 @@ export const BudgetFilesModalForCards: FunctionComponent<Props> = ({
     files,
 }) => {
     const { formatMessage } = useSafeIntl();
+    const classes = useStyles();
 
     const handleClose = useCallback(() => {
         setOpen(false);
@@ -50,11 +56,11 @@ export const BudgetFilesModalForCards: FunctionComponent<Props> = ({
             >
                 <DialogTitle id="alert-dialog-title">
                     {formatMessage(MESSAGES.attachments)}
-                </DialogTitle>
-                <DialogContent>
                     <Divider />
-
-                    <Box mt={2}>
+                </DialogTitle>
+                {/* setting the minWith on the DilaogContent as it won't work on Dialog */}
+                <DialogContent className={classes.minModalWidth}>
+                    <Box>
                         {makeFileLinks(files)}
                         {makeLinks(links)}
                         {note && (

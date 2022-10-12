@@ -152,7 +152,16 @@ export const BudgetDetails: FunctionComponent<Props> = ({ router }) => {
                         </Grid>
                         {!isMobileLayout && (
                             <Grid item xs={6}>
-                                <BudgetDetailsFilters params={params} />
+                                <BudgetDetailsFilters
+                                    params={params}
+                                    // FIXME: should come in the right format from backend
+                                    stepsList={(
+                                        budgetInfos?.possible_transitions ?? []
+                                    ).map(transition => ({
+                                        value: transition.key,
+                                        label: transition.label,
+                                    }))}
+                                />
                             </Grid>
                         )}
                     </Grid>
@@ -226,7 +235,7 @@ export const BudgetDetails: FunctionComponent<Props> = ({ router }) => {
                                                                         : undefined
                                                                 }
                                                                 requiredFields={
-                                                                    step.requiredFields
+                                                                    step.required_fields
                                                                 }
                                                             />
                                                         </Grid>
@@ -252,15 +261,14 @@ export const BudgetDetails: FunctionComponent<Props> = ({ router }) => {
                                                         // disabled={step.allowed}
                                                     }}
                                                     transitionKey={
-                                                        nextSteps.override
-                                                            .transition_key
+                                                        nextSteps.override.key
                                                     }
                                                     transitionLabel={
                                                         nextSteps.override.label
                                                     }
                                                     requiredFields={
                                                         nextSteps.override
-                                                            .requiredFields
+                                                            .required_fields
                                                     }
                                                 />
                                             </Grid>

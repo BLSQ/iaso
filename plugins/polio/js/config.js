@@ -264,7 +264,7 @@ const routes = [
             // },
             {
                 isRequired: false,
-                key: 'type',
+                key: 'transition_key',
             },
         ],
     },

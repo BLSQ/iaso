@@ -1,4 +1,9 @@
-import React, { FunctionComponent, useState, useCallback } from 'react';
+import React, {
+    FunctionComponent,
+    useState,
+    useCallback,
+    useMemo,
+} from 'react';
 import {
     // @ts-ignore
     useSafeIntl,
@@ -83,6 +88,15 @@ export const BudgetList: FunctionComponent<Props> = ({ router }) => {
         },
         [apiParams],
     );
+    // FIXME: should come with right format from backend
+    const possibleStates = useMemo(() => {
+        const apiPossibleStates =
+            (budgets?.results ?? [])[0]?.possible_states ?? [];
+        return apiPossibleStates.map(possibleState => ({
+            value: possibleState.key,
+            label: possibleState.label,
+        }));
+    }, [budgets?.results]);
 
     return (
         <>
@@ -106,13 +120,20 @@ export const BudgetList: FunctionComponent<Props> = ({ router }) => {
             <Box className={classes.containerFullHeightNoTabPadded}>
                 {isMobileLayout && (
                     <Collapse in={expand}>
-                        <BudgetFilters params={params} buttonSize="small" />
+                        <BudgetFilters
+                            params={params}
+                            buttonSize="small"
+                            statesList={possibleStates}
+                        />
                     </Collapse>
                 )}
 
                 {!isMobileLayout && (
                     <>
-                        <BudgetFilters params={params} />
+                        <BudgetFilters
+                            params={params}
+                            statesList={possibleStates}
+                        />
 
                         <TableWithDeepLink
                             data={budgets?.results ?? []}

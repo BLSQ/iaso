@@ -1,9 +1,6 @@
 /* eslint-disable react/require-default-props */
 import { Box, Grid, useMediaQuery, useTheme } from '@material-ui/core';
 import React, { FunctionComponent } from 'react';
-// @ts-ignore
-import { useSafeIntl } from 'bluesquare-components';
-import { IntlFormatMessage } from '../../../../../../hat/assets/js/apps/Iaso/types/intl';
 import { FilterButton } from '../../../../../../hat/assets/js/apps/Iaso/components/FilterButton';
 import InputComponent from '../../../../../../hat/assets/js/apps/Iaso/components/forms/InputComponent';
 import { useFilterState } from '../../../../../../hat/assets/js/apps/Iaso/hooks/useFilterState';
@@ -11,7 +8,7 @@ import MESSAGES from '../../constants/messages';
 import { BUDGET } from '../../constants/routes';
 import { UrlParams } from '../../../../../../hat/assets/js/apps/Iaso/types/table';
 import { BudgetStatus } from '../../constants/types';
-import { BUDGET_STATUSES } from '../../constants/statuses';
+import { DropdownOptions } from '../../../../../../hat/assets/js/apps/Iaso/types/utils';
 
 type Props = {
     params: UrlParams & {
@@ -24,25 +21,18 @@ type Props = {
         // eslint-disable-next-line camelcase
         last_budget_event__status: BudgetStatus;
     };
+    statesList?: DropdownOptions<string>[];
     buttonSize?: 'medium' | 'small' | 'large' | undefined;
 };
 
-const statusOptions = (formatMessage: IntlFormatMessage) => {
-    return BUDGET_STATUSES.map(status => {
-        return {
-            value: status,
-            label: formatMessage(MESSAGES[status]),
-        };
-    });
-};
 const baseUrl = BUDGET;
 export const BudgetFilters: FunctionComponent<Props> = ({
     params,
     buttonSize = 'medium',
+    statesList = [],
 }) => {
     const { filters, handleSearch, handleChange, filtersUpdated } =
         useFilterState({ baseUrl, params });
-    const { formatMessage } = useSafeIntl();
     const theme = useTheme();
     const isXSLayout = useMediaQuery(theme.breakpoints.down('xs'));
     // const isSmLayout = useMediaQuery(theme.breakpoints.down('sm'));
@@ -66,7 +56,7 @@ export const BudgetFilters: FunctionComponent<Props> = ({
                         keyValue="current_state__key"
                         onChange={handleChange}
                         value={filters.current_state__key}
-                        options={statusOptions(formatMessage)}
+                        options={statesList}
                         label={MESSAGES.status}
                     />
                 </Grid>

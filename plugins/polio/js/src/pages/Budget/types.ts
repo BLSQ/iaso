@@ -14,11 +14,22 @@ export type Budget = {
     next_transitions?: {
         key: string;
         label: string;
+        color: Nullable<'primary' | 'green' | 'red'>;
         allowed: boolean; // depends on the user's team
         reason_not_allowed: Nullable<string>;
         required_fields: string[]; // comment, file, links
         help_text: string;
         displayed_fields: string[]; // This field determines the columns shown in the "create" modal
+    }[];
+    // -> optional: need to pass a param for the API to return it
+    possible_states?: {
+        key: string;
+        label: string;
+    }[];
+    // -> optional: need to pass a param for the API to return it
+    possible_transitions?: {
+        key: string;
+        label: string;
     }[];
 };
 

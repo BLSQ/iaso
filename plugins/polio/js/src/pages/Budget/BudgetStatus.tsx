@@ -7,7 +7,7 @@ import MESSAGES from '../../constants/messages';
 import { WARNING_COLOR } from '../../styles/constants';
 
 type Props = {
-    budgetStatus: 'validation_ongoing' | 'validated' | 'noBudgetSubmitted';
+    budgetStatus: string;
 };
 
 const styles = theme => ({

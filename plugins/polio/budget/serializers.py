@@ -159,7 +159,10 @@ class TransitionToSerializer(serializers.Serializer):
             raise serializers.ValidationError({"transition_key": [TransitionError.NOT_ALLOWED]})
 
         for field in transition.required_fields:
-            if field not in data:
+            if field == "attachments":
+                if len(data.get("files", [])) < 1 or len(data.get("links", [])) < 1:
+                    raise Exception(TransitionError.MISSING_FIELD)
+            elif field not in data:
                 raise Exception(TransitionError.MISSING_FIELD)
 
         created_by_team = None

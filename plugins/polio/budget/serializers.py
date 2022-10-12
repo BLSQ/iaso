@@ -24,6 +24,12 @@ class TransitionSerializer(serializers.Serializer):
     color = serializers.ChoiceField(choices=["primary", "green", "red"], required=False)
 
 
+class NestedTransitionSerializer(TransitionSerializer):
+    key = serializers.CharField()
+    # https://github.com/typeddjango/djangorestframework-stubs/issues/78 bug in mypy remove in future
+    label = serializers.CharField()  # type: ignore
+
+
 class NodeSerializer(serializers.Serializer):
     key = serializers.CharField()
     # https://github.com/typeddjango/djangorestframework-stubs/issues/78 bug in mypy remove in future
@@ -44,6 +50,7 @@ class CampaignBudgetSerializer(CampaignSerializer):
             "next_transitions",
             "budget_last_updated_at",
             "possible_states",
+            "possible_transitions",
         ]
 
     # added via annotation
@@ -51,14 +58,13 @@ class CampaignBudgetSerializer(CampaignSerializer):
     current_state = serializers.SerializerMethodField()
     # To be used for override
     possible_states = serializers.SerializerMethodField()
+    possible_transitions = serializers.SerializerMethodField()
 
     next_transitions = serializers.SerializerMethodField()
     # will need to use country__name for sorting
     country_name: serializers.SlugRelatedField = serializers.SlugRelatedField(
         source="country", slug_field="name", read_only=True
     )
-
-    # TODO add possible_transitions
 
     def get_current_state(self, campaign: Campaign):
         workflow = get_workflow()
@@ -82,11 +88,19 @@ class CampaignBudgetSerializer(CampaignSerializer):
 
         return TransitionSerializer(transitions, many=True).data
 
+    # this is used for filter dropdown
     @swagger_serializer_method(serializer_or_field=NodeSerializer)
     def get_possible_states(self, _campaign):
         workflow = get_workflow()
         nodes = workflow.nodes
         return NodeSerializer(nodes, many=True).data
+
+    # this is used for filter dropdown
+    @swagger_serializer_method(serializer_or_field=NodeSerializer)
+    def get_possible_transitions(self, _campaign):
+        workflow = get_workflow()
+        transitions = workflow.transitions
+        return NestedTransitionSerializer(transitions, many=True).data
 
 
 class TransitionError(Enum):

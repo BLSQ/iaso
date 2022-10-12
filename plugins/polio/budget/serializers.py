@@ -225,6 +225,7 @@ class BudgetStepSerializer(serializers.ModelSerializer):
             "created_at",
             "created_by_team",
             "created_by",
+            "deleted_at",
             "campaign_id",
             "comment",
             "links",
@@ -245,3 +246,13 @@ class BudgetStepSerializer(serializers.ModelSerializer):
         workflow = get_workflow()
         transition = workflow.get_transition_by_key(budget_step.transition_key)
         return transition.label
+
+
+class UpdateBudgetStepSerializer(serializers.ModelSerializer):
+    """Update serializer for budget update, the only allowed field is deleted_at to restore it"""
+
+    class Meta:
+        model = BudgetStep
+        fields = [
+            "deleted_at",
+        ]

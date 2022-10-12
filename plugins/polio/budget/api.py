@@ -1,14 +1,21 @@
+from typing import Type
+
 from django.db.models import QuerySet, Max
 from django.http import HttpResponse
 from django_filters.rest_framework import DjangoFilterBackend  # type: ignore
 from drf_yasg.utils import swagger_auto_schema
-from rest_framework import permissions, filters, status
+from rest_framework import permissions, filters, status, serializers
 from rest_framework.decorators import action
 from rest_framework.response import Response
 
 from iaso.api.common import ModelViewSet, DeletionFilterBackend
 from plugins.polio.budget.models import BudgetStep, MailTemplate
-from plugins.polio.budget.serializers import CampaignBudgetSerializer, TransitionToSerializer, BudgetStepSerializer
+from plugins.polio.budget.serializers import (
+    CampaignBudgetSerializer,
+    TransitionToSerializer,
+    BudgetStepSerializer,
+    UpdateBudgetStepSerializer,
+)
 from plugins.polio.models import Campaign
 
 
@@ -89,10 +96,14 @@ class BudgetStepViewSet(ModelViewSet):
     # FIXME : add DELETE
     # filter perms on campaign
 
-    serializer_class = BudgetStepSerializer
+    def get_serializer_class(self) -> Type[serializers.BaseSerializer]:
+        if self.request.method == "patch":
+            return UpdateBudgetStepSerializer
+        return BudgetStepSerializer
+
     permission_classes = [permissions.IsAuthenticated]
 
-    http_method_names = ["get", "head"]
+    http_method_names = ["get", "head", "delete", "patch"]
     filter_backends = [
         filters.OrderingFilter,
         DeletionFilterBackend,

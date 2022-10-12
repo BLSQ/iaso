@@ -33,13 +33,13 @@ export const useGetBudgetDetails = params => {
     });
 };
 
-// It's a delete request but UX wise it's acts as a hide feature
+// It's a delete request but UX wise it acts as a hide feature
 const hideBudetStep = (id: number) => {
-    return deleteRequest(`/api/polio/budgetsteps/${id}`);
+    return deleteRequest(`/api/polio/budgetsteps/${id}/`);
 };
 
 const unhideBudgetStep = (id: number) => {
-    return patchRequest(`/api/polio/budgetsteps/${id}`, { deleted_at: null });
+    return patchRequest(`/api/polio/budgetsteps/${id}/`, { deleted_at: null });
 };
 
 export const useDeleteRestoreBudgetStep = (

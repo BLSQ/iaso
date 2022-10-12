@@ -18,7 +18,7 @@ import MESSAGES from '../../../constants/messages';
 import InputComponent from '../../../../../../../hat/assets/js/apps/Iaso/components/forms/InputComponent';
 import { useCurrentUser } from '../../../../../../../hat/assets/js/apps/Iaso/utils/usersUtils';
 
-import { useBudgetStepOverrideValidation } from '../hooks/validation';
+import { useBudgetStepValidation } from '../hooks/validation';
 import {
     useGetTeamsDropDown,
     useUserHasTeam,
@@ -68,10 +68,7 @@ const CreateOverrideStep: FunctionComponent<Props> = ({
     } = useApiErrorValidation<Partial<any>, any>({
         mutationFn: saveBudgetStep,
     });
-    const validationSchema = useBudgetStepOverrideValidation(
-        apiErrors,
-        payload,
-    );
+    const validationSchema = useBudgetStepValidation(apiErrors, payload);
     const formik = useFormik({
         initialValues: {
             transition_key: transitionKey,

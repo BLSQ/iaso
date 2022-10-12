@@ -225,6 +225,9 @@ export const BudgetDetails: FunctionComponent<Props> = ({ router }) => {
                                                                         ? previousBudgetStep
                                                                         : undefined
                                                                 }
+                                                                requiredFields={
+                                                                    step.requiredFields
+                                                                }
                                                             />
                                                         </Grid>
                                                     );
@@ -254,6 +257,10 @@ export const BudgetDetails: FunctionComponent<Props> = ({ router }) => {
                                                     }
                                                     transitionLabel={
                                                         nextSteps.override.label
+                                                    }
+                                                    requiredFields={
+                                                        nextSteps.override
+                                                            .requiredFields
                                                     }
                                                 />
                                             </Grid>

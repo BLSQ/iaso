@@ -22,14 +22,15 @@ import { useCurrentUser } from '../../../../../../../hat/assets/js/apps/Iaso/uti
 import { useUserHasTeam } from '../../../hooks/useGetTeams';
 
 import {
+    useApiErrorValidation,
     useTranslatedErrors,
-    // useApiErrorValidation,
 } from '../../../../../../../hat/assets/js/apps/Iaso/libs/validation';
 import { useSaveBudgetStep } from '../hooks/api/useSaveBudgetStep';
 import { AddStepButton } from './AddStepButton';
 import { BudgetStep } from '../types';
 import { UserHasTeamWarning } from './UserHasTeamWarning';
 import { AddMultipleLinks } from '../MultipleLinks/AddMultipleLinks';
+import { useBudgetStepValidation } from '../hooks/validation';
 
 type Props = {
     campaignId: string;
@@ -40,6 +41,7 @@ type Props = {
     isOpen: boolean;
     id?: string;
     isMobileLayout?: boolean;
+    requiredFields?: string[];
 };
 
 const CreateBudgetStep: FunctionComponent<Props> = ({
@@ -50,21 +52,25 @@ const CreateBudgetStep: FunctionComponent<Props> = ({
     transitionKey,
     transitionLabel,
     id,
+    requiredFields = [],
 }) => {
     const currentUser = useCurrentUser();
     const { data: userHasTeam } = useUserHasTeam(currentUser?.user_id);
     const { formatMessage } = useSafeIntl();
     const { mutateAsync: saveBudgetStep } = useSaveBudgetStep();
 
-    // temporarily removing validation
-    // const {
-    //     apiErrors,
-    //     payload,
-    //     mutation: save,
-    // } = useApiErrorValidation<Partial<any>, any>({
-    //     mutationFn: saveBudgetStep,
-    // });
-    // const validationSchema = useBudgetStepValidation(apiErrors, payload);
+    const {
+        apiErrors,
+        payload,
+        mutation: save,
+    } = useApiErrorValidation<Partial<any>, any>({
+        mutationFn: saveBudgetStep,
+    });
+    const validationSchema = useBudgetStepValidation(
+        apiErrors,
+        payload,
+        requiredFields,
+    );
     const formik = useFormik({
         initialValues: {
             transition_key: transitionKey,
@@ -77,9 +83,8 @@ const CreateBudgetStep: FunctionComponent<Props> = ({
         },
         enableReinitialize: true,
         validateOnBlur: true,
-        // removing validation for now. Needs to be refactored to be compatible with workflow
-        // validationSchema,
-        onSubmit: (values, _helpers) => saveBudgetStep(values),
+        validationSchema,
+        onSubmit: save,
     });
     const {
         values,

@@ -13,7 +13,7 @@ from django.utils.translation import ugettext_lazy as _
 from hat.api.token_authentication import generate_auto_authentication_link
 from iaso.models.microplanning import Team
 from iaso.utils.models.soft_deletable import SoftDeletableModel
-from plugins.polio.budget.workflow import next_transitions, get_workflow, can_user_transition
+from plugins.polio.budget.workflow import next_transitions, can_user_transition, Transition, Node, Workflow
 
 
 class BudgetStepQuerySet(models.QuerySet):
@@ -25,6 +25,7 @@ class BudgetStepQuerySet(models.QuerySet):
 
 
 # workaround for MyPy
+# noinspection PyTypeChecker
 BudgetManager = models.Manager.from_queryset(BudgetStepQuerySet)
 
 
@@ -205,3 +206,18 @@ def send_budget_mails(step: BudgetStep, transition, request) -> None:
             msg = mt.render_for_step(step, user, request)
             logger.debug("sending", msg)
             msg.send(fail_silently=False)
+
+
+class WorkflowModel(models.Model):
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    definition = models.JSONField()
+
+
+def get_workflow():
+    workflow_model = WorkflowModel.objects.last()
+    transition_defs = workflow_model.definition["transitions"]
+    node_defs = workflow_model.definition["nodes"]
+    transitions = [Transition(**transition_def) for transition_def in transition_defs]
+    nodes = [Node(**node_def) for node_def in node_defs]
+    return Workflow(transitions, nodes)

@@ -1,7 +1,7 @@
 import json
 from io import StringIO
 from typing import List, Dict
-from unittest import skip
+from unittest import skip, mock
 
 from django.contrib.auth.models import User
 from django.core.exceptions import ValidationError
@@ -9,9 +9,57 @@ from django.template import Template, Engine, Context
 
 from iaso.test import APITestCase
 from plugins.polio.budget.models import BudgetStep, MailTemplate
+from plugins.polio.budget.workflow import Transition, Node, Workflow
 from plugins.polio.models import Campaign
 
+# Hardcoded workflow for testing.
 
+transition_defs = [
+    {
+        "key": "submit_budget",
+        "label": "Submit budget",
+        # "required_fields": ["files"],
+        "required_fields": [],
+        "displayed_fields": ["comment"],
+        "from_node": None,
+        "to_node": "budget_submitted",
+        "teams_ids_can_transition": [],
+    },
+    {
+        "key": "accept_budget",
+        "label": "Accept budget",
+        "required_fields": [],
+        "displayed_fields": ["comment"],
+        "from_node": "budget_submitted",
+        "to_node": "accepted",
+        "color": "green",
+    },
+    {
+        "key": "reject_budget",
+        "label": "Provide feedback",
+        "required_fields": [],
+        "displayed_fields": ["comment"],
+        "from_node": "budget_submitted",
+        "to_node": "rejected",
+        "color": "primary",
+    },
+]
+
+node_defs = [
+    {"key": "budget_submitted", "label": "Budget submitted"},
+    {"key": "accepted", "label": "Budget accepted"},
+    {"key": "rejected", "label": "Budget rejected"},
+]
+
+
+def get_workflow():
+    transitions = [Transition(**transition_def) for transition_def in transition_defs]
+    nodes = [Node(**node_def) for node_def in node_defs]
+    return Workflow(transitions, nodes)
+
+
+@mock.patch("plugins.polio.budget.models.get_workflow", get_workflow)
+@mock.patch("plugins.polio.budget.serializers.get_workflow", get_workflow)
 class TeamAPITestCase(APITestCase):
     fixtures = ["user.yaml"]
     c: Campaign
@@ -305,10 +353,10 @@ class TeamAPITestCase(APITestCase):
         text = """
         hello, {{user}}
         """
-        mt = MailTemplate(slug="hello", template=text, template_subject="hey")
+        mt = MailTemplate(slug="hello", text_template=text, html_template=text, subject_template="hey")
         mt.full_clean()
         mt.save()
-        template = Engine.get_default().from_string(mt.template)
+        template = Engine.get_default().from_string(mt.text_template)
         context = Context({"user": "olivier"})
         r = template.render(context)
         self.assertEqual(
@@ -322,7 +370,7 @@ class TeamAPITestCase(APITestCase):
         text = """
         hello, {{user:dwadwa}}
         """
-        mt = MailTemplate(slug="hello", template=text, template_subject="hey")
+        mt = MailTemplate(slug="hello", html_template=text, text_template=text, subject_template="hey")
         with self.assertRaises(ValidationError):
             mt.full_clean()
             mt.save()
@@ -335,7 +383,7 @@ class TeamAPITestCase(APITestCase):
     {%include "_files.html" with files=files only %}
     {%include "_links.html" with links=links only %}
         """
-        mt = MailTemplate(slug="hello", template=text, template_subject="hey")
+        mt = MailTemplate(slug="hello", template=text, subject_template="hey")
         mt.full_clean()
         mt.save()
         template = Engine.get_default().from_string(mt.template)

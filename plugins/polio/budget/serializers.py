@@ -7,8 +7,8 @@ from rest_framework import serializers
 from iaso.models.microplanning import Team
 from plugins.polio.models import Campaign
 from plugins.polio.serializers import CampaignSerializer, UserSerializer
-from .models import BudgetStep, BudgetStepFile, BudgetStepLink, send_budget_mails
-from .workflow import get_workflow, next_transitions, can_user_transition
+from .models import BudgetStep, BudgetStepFile, BudgetStepLink, send_budget_mails, get_workflow
+from .workflow import next_transitions, can_user_transition
 
 
 class TransitionSerializer(serializers.Serializer):
@@ -57,6 +57,8 @@ class CampaignBudgetSerializer(CampaignSerializer):
     country_name: serializers.SlugRelatedField = serializers.SlugRelatedField(
         source="country", slug_field="name", read_only=True
     )
+
+    # TODO add possible_transitions
 
     def get_current_state(self, campaign: Campaign):
         return {

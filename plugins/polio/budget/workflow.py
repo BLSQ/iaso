@@ -3,13 +3,19 @@ from typing import Union, List, Optional, Tuple
 
 from iaso.models.microplanning import Team
 
+# Move to typing import Litteral when upgrading to python 3.8
+from typing_extensions import Literal
+
+# attachment is either file or a links
+FieldName = Literal["comment", "amount", "attachments"]
+
 
 @dataclass
 class Transition:
     label: str
     key: str
-    required_fields: List[str]
-    displayed_fields: List[str]
+    required_fields: List[FieldName]
+    displayed_fields: List[FieldName]
     from_node: str = ""
     to_node: str = ""
     teams_ids_can_transition: Union[list, None] = None  # if none unrestricted
@@ -69,50 +75,3 @@ def can_user_transition(transition: Transition, user):
     if Team.objects.filter(id__in=transition.teams_ids_can_transition).filter(users=user).exists():
         return True
     return False
-
-
-# Hardcoded workflow for testing.
-
-transition_defs = [
-    {
-        "key": "submit_budget",
-        "label": "Submit budget",
-        # "required_fields": ["files"],
-        "required_fields": [],
-        "displayed_fields": ["comment"],
-        "from_node": None,
-        "to_node": "budget_submitted",
-        "teams_ids_can_transition": [],
-    },
-    {
-        "key": "accept_budget",
-        "label": "Accept budget",
-        "required_fields": [],
-        "displayed_fields": ["comment"],
-        "from_node": "budget_submitted",
-        "to_node": "accepted",
-        "color": "green",
-    },
-    {
-        "key": "reject_budget",
-        "label": "Provide feedback",
-        "required_fields": [],
-        "displayed_fields": ["comment"],
-        "from_node": "budget_submitted",
-        "to_node": "rejected",
-        "color": "primary",
-    },
-]
-
-node_defs = [
-    {"key": "budget_submitted", "label": "Budget submitted"},
-    {"key": "accepted", "label": "Budget accepted"},
-    {"key": "rejected", "label": "Budget rejected"},
-]
-
-
-# FIXME Add cache
-def get_workflow():
-    transitions = [Transition(**transition_def) for transition_def in transition_defs]
-    nodes = [Node(**node_def) for node_def in node_defs]
-    return Workflow(transitions, nodes)

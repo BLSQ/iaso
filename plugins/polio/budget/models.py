@@ -14,6 +14,7 @@ from hat.api.token_authentication import generate_auto_authentication_link
 from iaso.models.microplanning import Team
 from iaso.utils.models.soft_deletable import SoftDeletableModel
 from plugins.polio.budget.workflow import next_transitions, can_user_transition, Transition, Node, Workflow
+from plugins.polio.time_cache import time_cache
 
 
 class BudgetStepQuerySet(models.QuerySet):
@@ -214,6 +215,7 @@ class WorkflowModel(models.Model):
     definition = models.JSONField()
 
 
+@time_cache(60)
 def get_workflow():
     workflow_model = WorkflowModel.objects.last()
     transition_defs = workflow_model.definition["transitions"]

@@ -30,7 +30,7 @@ BudgetManager = models.Manager.from_queryset(BudgetStepQuerySet)
 
 class BudgetStep(SoftDeletableModel):
     class Meta:
-        ordering = ["updated_at"]
+        ordering = ["-updated_at"]
 
     objects = BudgetManager()
     campaign = models.ForeignKey("Campaign", on_delete=models.PROTECT, related_name="budget_steps")

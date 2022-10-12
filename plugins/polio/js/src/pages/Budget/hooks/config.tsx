@@ -12,7 +12,10 @@ import { Box, makeStyles } from '@material-ui/core';
 import MESSAGES from '../../../constants/messages';
 import { Column } from '../../../../../../../hat/assets/js/apps/Iaso/types/table';
 import { BUDGET_DETAILS } from '../../../constants/routes';
-import { DateTimeCellRfc } from '../../../../../../../hat/assets/js/apps/Iaso/components/Cells/DateTimeCell';
+import {
+    DateCell,
+    DateTimeCellRfc,
+} from '../../../../../../../hat/assets/js/apps/Iaso/components/Cells/DateTimeCell';
 import { makeFileLinks, makeLinks } from '../utils';
 import { Optional } from '../../../../../../../hat/assets/js/apps/Iaso/types/utils';
 import { convertObjectToString } from '../../../utils';
@@ -59,6 +62,12 @@ export const useBudgetColumns = (): Column[] => {
                 accessor: 'current_state__label',
                 Cell: settings =>
                     settings.row.original.current_state?.label ?? '--',
+            },
+            {
+                Header: formatMessage(MESSAGES.virusNotificationDate),
+                sortable: true,
+                accessor: 'cvdpv2_notified_at',
+                Cell: DateCell,
             },
             {
                 Header: formatMessage(MESSAGES.actions),

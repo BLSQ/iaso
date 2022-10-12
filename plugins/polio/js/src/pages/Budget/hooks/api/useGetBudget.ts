@@ -9,6 +9,7 @@ const getBudgets = (params: any) => {
         // eslint-disable-next-line no-unused-vars
         ([_key, value]) => value !== undefined,
     );
+    filteredParams.push(['order', '-cvdpv2_notified_at']);
     const queryString = new URLSearchParams(
         Object.fromEntries(filteredParams) as Record<string, any>,
     ).toString();

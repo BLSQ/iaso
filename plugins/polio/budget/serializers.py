@@ -44,6 +44,7 @@ class CampaignBudgetSerializer(CampaignSerializer):
             "next_transitions",
             "budget_last_updated_at",
             "possible_states",
+            "cvdpv2_notified_at",
         ]
 
     # added via annotation

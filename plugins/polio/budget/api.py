@@ -95,6 +95,7 @@ class BudgetStepViewSet(ModelViewSet):
 
     # FIXME : add DELETE
     # filter perms on campaign
+    ordering = "-created_at"
 
     def get_serializer_class(self) -> Type[serializers.BaseSerializer]:
         if self.request.method == "patch":
@@ -124,6 +125,7 @@ class BudgetStepViewSet(ModelViewSet):
     ]
     filterset_fields = {
         "campaign_id": ["exact"],
+        "transition_key": ["exact"],
     }
 
     @action(detail=True, permission_classes=[permissions.IsAdminUser])

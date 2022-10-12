@@ -4,11 +4,12 @@ from django.db import transaction
 from drf_yasg.utils import swagger_serializer_method
 from rest_framework import serializers
 
+from iaso.api.common import DynamicFieldsModelSerializer
 from iaso.models.microplanning import Team
 from plugins.polio.models import Campaign
 from plugins.polio.serializers import CampaignSerializer, UserSerializer
-from .models import BudgetStep, BudgetStepFile, BudgetStepLink
-from .workflow import get_workflow, next_transitions, can_user_transition
+from .models import BudgetStep, BudgetStepFile, BudgetStepLink, send_budget_mails, get_workflow
+from .workflow import next_transitions, can_user_transition
 
 
 class TransitionSerializer(serializers.Serializer):
@@ -24,6 +25,12 @@ class TransitionSerializer(serializers.Serializer):
     color = serializers.ChoiceField(choices=["primary", "green", "red"], required=False)
 
 
+class NestedTransitionSerializer(TransitionSerializer):
+    key = serializers.CharField()
+    # https://github.com/typeddjango/djangorestframework-stubs/issues/78 bug in mypy remove in future
+    label = serializers.CharField()  # type: ignore
+
+
 class NodeSerializer(serializers.Serializer):
     key = serializers.CharField()
     # https://github.com/typeddjango/djangorestframework-stubs/issues/78 bug in mypy remove in future
@@ -31,8 +38,7 @@ class NodeSerializer(serializers.Serializer):
 
 
 # noinspection PyMethodMayBeStatic
-class CampaignBudgetSerializer(CampaignSerializer):
-    # Todo set dynamic serializer
+class CampaignBudgetSerializer(CampaignSerializer, DynamicFieldsModelSerializer):
     class Meta:
         model = Campaign
         fields = [
@@ -45,6 +51,15 @@ class CampaignBudgetSerializer(CampaignSerializer):
             "budget_last_updated_at",
             "possible_states",
             "cvdpv2_notified_at",
+            "possible_transitions",
+        ]
+        default_fields = [
+            "created_at",
+            "id",
+            "obr_name",
+            "country_name",
+            "current_state",
+            "budget_last_updated_at",
         ]
 
     # added via annotation
@@ -52,6 +67,7 @@ class CampaignBudgetSerializer(CampaignSerializer):
     current_state = serializers.SerializerMethodField()
     # To be used for override
     possible_states = serializers.SerializerMethodField()
+    possible_transitions = serializers.SerializerMethodField()
 
     next_transitions = serializers.SerializerMethodField()
     # will need to use country__name for sorting
@@ -60,12 +76,14 @@ class CampaignBudgetSerializer(CampaignSerializer):
     )
 
     def get_current_state(self, campaign: Campaign):
+        workflow = get_workflow()
+        node = workflow.get_node_by_key(campaign.budget_current_state_key)
         return {
             "key": campaign.budget_current_state_key,
-            "label": campaign.budget_current_state_label,
+            "label": node.label,
         }
 
-    @swagger_serializer_method(serializer_or_field=TransitionSerializer)
+    @swagger_serializer_method(serializer_or_field=TransitionSerializer(many=True))
     def get_next_transitions(self, campaign):
         # // get transition from workflow engine.
         workflow = get_workflow()
@@ -79,11 +97,19 @@ class CampaignBudgetSerializer(CampaignSerializer):
 
         return TransitionSerializer(transitions, many=True).data
 
-    @swagger_serializer_method(serializer_or_field=NodeSerializer)
+    # this is used for filter dropdown
+    @swagger_serializer_method(serializer_or_field=NodeSerializer(many=True))
     def get_possible_states(self, _campaign):
         workflow = get_workflow()
         nodes = workflow.nodes
         return NodeSerializer(nodes, many=True).data
+
+    # this is used for filter dropdown
+    @swagger_serializer_method(serializer_or_field=TransitionSerializer(many=True))
+    def get_possible_transitions(self, _campaign):
+        workflow = get_workflow()
+        transitions = workflow.transitions
+        return NestedTransitionSerializer(transitions, many=True).data
 
 
 class TransitionError(Enum):
@@ -142,7 +168,10 @@ class TransitionToSerializer(serializers.Serializer):
             raise serializers.ValidationError({"transition_key": [TransitionError.NOT_ALLOWED]})
 
         for field in transition.required_fields:
-            if field not in data:
+            if field == "attachments":
+                if len(data.get("files", [])) < 1 or len(data.get("links", [])) < 1:
+                    raise Exception(TransitionError.MISSING_FIELD)
+            elif field not in data:
                 raise Exception(TransitionError.MISSING_FIELD)
 
         created_by_team = None
@@ -172,6 +201,10 @@ class TransitionToSerializer(serializers.Serializer):
             campaign.budget_current_state_label = node.label
             campaign.save()
 
+        send_budget_mails(step, transition, self.context["request"])
+        step.is_email_sent = True
+        step.save()
+
         return step
 
 
@@ -193,6 +226,7 @@ class BudgetStepSerializer(serializers.ModelSerializer):
             "created_at",
             "created_by_team",
             "created_by",
+            "deleted_at",
             "campaign_id",
             "comment",
             "links",
@@ -213,3 +247,13 @@ class BudgetStepSerializer(serializers.ModelSerializer):
         workflow = get_workflow()
         transition = workflow.get_transition_by_key(budget_step.transition_key)
         return transition.label
+
+
+class UpdateBudgetStepSerializer(serializers.ModelSerializer):
+    """Update serializer for budget update, the only allowed field is deleted_at to restore it"""
+
+    class Meta:
+        model = BudgetStep
+        fields = [
+            "deleted_at",
+        ]

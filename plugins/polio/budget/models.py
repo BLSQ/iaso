@@ -1,13 +1,20 @@
+import logging
 from typing import Union
 
+from django.conf import settings
 from django.contrib.auth.models import User, AnonymousUser
+from django.contrib.sites.shortcuts import get_current_site
 from django.core.exceptions import ValidationError
+from django.core.mail import EmailMultiAlternatives
 from django.db import models
-from django.template import Engine, TemplateSyntaxError
-from django.template.backends import django
+from django.template import Engine, TemplateSyntaxError, Context
 from django.utils.translation import ugettext_lazy as _
 
+from hat.api.token_authentication import generate_auto_authentication_link
+from iaso.models.microplanning import Team
 from iaso.utils.models.soft_deletable import SoftDeletableModel
+from plugins.polio.budget.workflow import next_transitions, can_user_transition, Transition, Node, Workflow
+from plugins.polio.time_cache import time_cache
 
 
 class BudgetStepQuerySet(models.QuerySet):
@@ -19,12 +26,13 @@ class BudgetStepQuerySet(models.QuerySet):
 
 
 # workaround for MyPy
+# noinspection PyTypeChecker
 BudgetManager = models.Manager.from_queryset(BudgetStepQuerySet)
 
 
 class BudgetStep(SoftDeletableModel):
     class Meta:
-        ordering = ["updated_at"]
+        ordering = ["-updated_at"]
 
     objects = BudgetManager()
     campaign = models.ForeignKey("Campaign", on_delete=models.PROTECT, related_name="budget_steps")
@@ -40,7 +48,7 @@ class BudgetStep(SoftDeletableModel):
     amount = models.DecimalField(blank=True, null=True, decimal_places=2, max_digits=14)
     is_email_sent = models.BooleanField(default=False)
 
-    def __repr__(self):
+    def __str__(self):
         return f"{self.campaign}, {self.transition_key}"
 
 
@@ -84,20 +92,136 @@ def validator_template(value: str):
         raise ValidationError(_("Error in template: %(error)s"), code="invalid_template", params={"error": str(e)})
 
 
+DEFAUL_MAIL_TEMPLATE = """{% extends "base_budget_email.html" %}
+{% block text %}
+{{ block.super }} 
+{% endblock %}"""
+
+
 class MailTemplate(models.Model):
     slug = models.SlugField(unique=True)
-    template_subject = models.TextField(
+    subject_template = models.TextField(
         validators=[validator_template],
         help_text="Template for the Email subject, use the Django Template language, "
         "see https://docs.djangoproject.com/en/4.1/ref/templates/language/ for reference. Please keep it as one line.",
+        default="{{author_name}} updated the the budget  for campaign {{campaign.obr_name}}",
     )
-    template = models.TextField(
+    html_template = models.TextField(
         validators=[validator_template],
-        help_text="Template for the Email body, use the Django Template language, "
+        help_text="HTML Template for the Email body, use the Django Template language, "
         "see https://docs.djangoproject.com/en/4.1/ref/templates/language/ for reference",
     )
+    text_template = models.TextField(
+        validators=[validator_template],
+        help_text="Plain text Template for the Email body, use the Django Template language, "
+        "see https://docs.djangoproject.com/en/4.1/ref/templates/language/ for reference",
+    )
+
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
     def __str__(self):
         return str(self.slug)
+
+    def render_for_step(self, step: BudgetStep, receiver: User, request=None) -> EmailMultiAlternatives:
+        site = get_current_site(request)
+        base_url = "https://" if settings.SSL_ON else "http://"
+        base_url += site.domain
+
+        campaign = step.campaign
+        campaign_url = (
+            f"{base_url}/dashboard/polio/budget/details/campaignId/{campaign.id}/campaignName/{campaign.obr_name}"
+        )
+
+        workflow = get_workflow()
+        transitions = next_transitions(workflow.transitions, campaign.budget_current_state_key)
+
+        buttons = []
+        for transition in transitions:
+            transition_url_template = "/quickTransition/{transition_key}/previousStep/{step_id}"
+            button_url = campaign_url + transition_url_template.format(transition_key=transition.key, step_id=step.id)
+            # link that will auto auth
+
+            buttons.append(
+                {
+                    "base_url": button_url,
+                    "url": generate_auto_authentication_link(button_url, receiver),
+                    "label": transition.label,
+                    "color": transition.color,
+                    "allowed": can_user_transition(transition, receiver),
+                }
+            )
+        transition = workflow.get_transition_by_key(step.transition_key)
+        context = Context(
+            {
+                "author": step.created_by,
+                "author_name": step.created_by.get_full_name() or step.created_by.username,
+                "buttons": buttons,
+                "transition": transition,
+                "team": step.created_by_team,
+                "step": step,
+                "campaign": campaign,
+                "budget_link": campaign_url,
+                "site_url": base_url,
+                "site_name": site.name,
+                "comment": step.comment,
+                "amount": step.amount,
+                "files": step.files.all(),
+                "links": step.links.all(),
+            }
+        )
+        DEFAULT_HTML_TEMPLATE = '{% extends "base_budget_email.html" %}'
+        DEFAULT_TEXT_TEMPLATE = '{% extends "base_budget_email.html" %}'
+        html_template = Engine.get_default().from_string(self.html_template or DEFAULT_HTML_TEMPLATE)
+        html_content = html_template.render(context)
+        text_template = Engine.get_default().from_string(self.text_template or DEFAULT_TEXT_TEMPLATE)
+        text_content = text_template.render(context).strip()
+        subject_template = Engine.get_default().from_string(self.subject_template)
+        subject_content = subject_template.render(context)
+
+        msg = EmailMultiAlternatives(subject_content, text_content, settings.DEFAULT_FROM_EMAIL, [receiver.email])
+        msg.attach_alternative(html_content, "text/html")
+        return msg
+
+
+logger = logging.getLogger(__name__)
+
+
+def send_budget_mails(step: BudgetStep, transition, request) -> None:
+    for email_to_send in transition.emails_to_send:
+        template_id, team_ids = email_to_send
+        try:
+            mt = MailTemplate.objects.get(template_id)
+        except MailTemplate.DoesNotExist as e:
+            logger.exception(e)
+            continue
+
+        teams = Team.objects(ids_in=team_ids)
+        # Ensure we don't send an email twice to the same user
+        users = User.objects.filter(teams__in=teams).distinct()
+        for user in users:
+            if not user.email:
+                logger.info(f"skip sending email for {step}, user {user} doesn't have an email address configured")
+                continue
+
+            msg = mt.render_for_step(step, user, request)
+            logger.debug("sending", msg)
+            msg.send(fail_silently=False)
+
+
+class WorkflowModel(models.Model):
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    definition = models.JSONField()
+
+
+@time_cache(60)
+def get_workflow():
+    workflow_model = WorkflowModel.objects.last()
+    transition_defs = workflow_model.definition["transitions"]
+    node_defs = workflow_model.definition["nodes"]
+    if not any(n["key"] == None for n in node_defs):
+        node_defs.append({"key": None, "label": "No budget submitted"})
+    transitions = [Transition(**transition_def) for transition_def in transition_defs]
+    nodes = [Node(**node_def) for node_def in node_defs]
+    return Workflow(transitions, nodes)

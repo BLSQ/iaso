@@ -66,7 +66,7 @@ export const BudgetDetails: FunctionComponent<Props> = ({ router }) => {
     const apiParams = useMemo(() => {
         return {
             ...rest,
-            show_hidden: showHidden,
+            deletion_status: showHidden ? 'all' : undefined,
             campaign_id: campaignId,
         };
     }, [campaignId, rest, showHidden]);

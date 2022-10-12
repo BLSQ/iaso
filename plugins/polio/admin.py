@@ -1,10 +1,12 @@
+import json
+
 import gspread.utils  # type: ignore
 from django.contrib import admin
 from django.contrib.admin import widgets
 from django.db import models
 from django.utils.safestring import mark_safe
 
-from .budget.models import MailTemplate, BudgetStepLink, BudgetStepFile, BudgetStep
+from .budget.models import MailTemplate, BudgetStepLink, BudgetStepFile, BudgetStep, WorkflowModel
 from .models import (
     Campaign,
     Surge,
@@ -98,6 +100,20 @@ class BudgetStepAdmin(admin.ModelAdmin):
     list_display = ["campaign", "transition_key", "created_by", "created_at", "deleted_at"]
 
 
+class WorkflowAdmin(admin.ModelAdmin):
+    readonly_fields = [
+        "pretty_json",
+    ]
+
+    def pretty_json(self, obj: WorkflowModel):
+        try:
+            d = json.dumps(obj.definition, indent=2)
+            html = f"<pre>{d}</pre>"
+            return mark_safe(html)
+        except Exception as e:
+            print(e)
+
+
 admin.site.register(Campaign, CampaignAdmin)
 admin.site.register(CampaignGroup, CampaignGroupAdmin)
 admin.site.register(Config)
@@ -108,3 +124,4 @@ admin.site.register(URLCache)
 admin.site.register(SpreadSheetImport, SpreadSheetImportAdmin)
 admin.site.register(BudgetStep, BudgetStepAdmin)
 admin.site.register(MailTemplate, MailTemplateAdmin)
+admin.site.register(WorkflowModel, WorkflowAdmin)

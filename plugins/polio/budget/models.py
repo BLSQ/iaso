@@ -220,6 +220,8 @@ def get_workflow():
     workflow_model = WorkflowModel.objects.last()
     transition_defs = workflow_model.definition["transitions"]
     node_defs = workflow_model.definition["nodes"]
+    if not any(n["key"] == None for n in node_defs):
+        node_defs.append({"key": None, "label": "No budget submitted"})
     transitions = [Transition(**transition_def) for transition_def in transition_defs]
     nodes = [Node(**node_def) for node_def in node_defs]
     return Workflow(transitions, nodes)

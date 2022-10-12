@@ -61,9 +61,11 @@ class CampaignBudgetSerializer(CampaignSerializer):
     # TODO add possible_transitions
 
     def get_current_state(self, campaign: Campaign):
+        workflow = get_workflow()
+        node = workflow.get_node_by_key(campaign.budget_current_state_key)
         return {
             "key": campaign.budget_current_state_key,
-            "label": campaign.budget_current_state_label,
+            "label": node.label,
         }
 
     @swagger_serializer_method(serializer_or_field=TransitionSerializer)

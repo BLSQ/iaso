@@ -430,9 +430,9 @@ class StorageLogEntryInline(admin.TabularInline):
 
 
 class StorageDeviceAdmin(admin.ModelAdmin):
-    fields = ("account", "customer_chosen_id", "type")
+    fields = ("account", "customer_chosen_id", "type", "status", "status_reason", "status_comment")
     list_display = ("account", "type", "customer_chosen_id")
-    list_filter = ("account", "type")
+    list_filter = ("account", "type", "status")
     inlines = [
         StorageLogEntryInline,
     ]

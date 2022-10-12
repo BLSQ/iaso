@@ -1,6 +1,6 @@
-from openpyxl import Workbook
-from openpyxl.styles import Alignment, Font, PatternFill
-from openpyxl.styles.borders import Border, Side
+from openpyxl import Workbook  # type: ignore
+from openpyxl.styles import Alignment, Font, PatternFill  # type: ignore
+from openpyxl.styles.borders import Border, Side  # type: ignore
 import datetime as dt
 import calendar
 from typing import Any, Optional, Union

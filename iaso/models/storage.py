@@ -29,6 +29,29 @@ class StorageDevice(models.Model):
         (SD, "SD"),
     ]
 
+    OK = "OK"
+    BLACKLISTED = "BLACKLISTED"
+
+    STATUS_CHOICES = [
+        (OK, "OK"),
+        (BLACKLISTED, "BLACKLISTED"),
+    ]
+
+    # Reasons a Device can be blacklisted
+    STOLEN = "STOLEN"
+    LOST = "LOST"
+    DAMAGED = "DAMAGED"
+    ABUSE = "ABUSE"
+    OTHER = "OTHER"
+
+    STATUS_REASON_CHOICES = [
+        (STOLEN, "STOLEN"),
+        (LOST, "LOST"),
+        (DAMAGED, "DAMAGED"),
+        (ABUSE, "ABUSE"),
+        (OTHER, "OTHER"),
+    ]
+
     # A unique identifier for the storage device in a given account. It is provided to the backend by the mobile app,
     # the first time a StorageLogEntry is created for the customer_chosen_id, type, account triplet.
     # (the ID is scoped by type, this is visible in API URLs such as .../{storage_type}/{storage_id}/...)
@@ -36,6 +59,12 @@ class StorageDevice(models.Model):
     customer_chosen_id = models.CharField(max_length=255)
     account = models.ForeignKey(Account, on_delete=models.PROTECT)
     type = models.CharField(max_length=8, choices=STORAGE_TYPE_CHOICES)
+
+    # Devices can be blacklisted, and in that case it's interesting to keep details about why in the status_reason and
+    # status_comment fields
+    status = models.CharField(max_length=64, choices=STATUS_CHOICES, default=OK)
+    status_reason = models.CharField(max_length=64, choices=STATUS_REASON_CHOICES, blank=True, null=True)
+    status_comment = models.TextField(blank=True, null=True)
 
     class Meta:
         unique_together = ("customer_chosen_id", "account", "type")
@@ -92,3 +121,4 @@ class StorageLogEntry(models.Model):
 
     class Meta:
         ordering = ["-performed_at"]
+        verbose_name_plural = "storage log entries"

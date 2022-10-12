@@ -1,13 +1,21 @@
 /* eslint-disable camelcase */
-import React, { useState, useEffect, FunctionComponent } from 'react';
-// @ts-ignore
-import { useSafeIntl, commonStyles } from 'bluesquare-components';
+import React, { useState, useEffect, useMemo, FunctionComponent } from 'react';
+
+import {
+    // @ts-ignore
+    useSafeIntl,
+    // @ts-ignore
+    commonStyles,
+    // @ts-ignore
+    LoadingSpinner,
+} from 'bluesquare-components';
 import { useSelector, useDispatch } from 'react-redux';
 
-import { Box, Grid, makeStyles, Theme } from '@material-ui/core';
+import { Box, Grid, makeStyles, Theme, Typography } from '@material-ui/core';
 
-import { CampaignLogDetail } from './CampaignLogDetail';
+import { CampaignLogDetail, Result } from './CampaignLogDetail';
 
+import WidgetPaper from '../../../../../../hat/assets/js/apps/Iaso/components/papers/WidgetPaperComponent';
 import ErrorPaperComponent from '../../../../../../hat/assets/js/apps/Iaso/components/papers/ErrorPaperComponent';
 import InputComponent from '../../../../../../hat/assets/js/apps/Iaso/components/forms/InputComponent';
 import TopBar from '../../../../../../hat/assets/js/apps/Iaso/components/nav/TopBarComponent';
@@ -18,7 +26,10 @@ import {
 } from '../../constants/routes';
 
 import MESSAGES from '../../constants/messages';
-import { useGetCampaignLogs } from '../../hooks/useGetCampaignHistory';
+import {
+    useGetCampaignLogs,
+    useGetCampaignLogDetail,
+} from '../../hooks/useGetCampaignHistory';
 
 type RouterCustom = {
     prevPathname?: string;
@@ -51,12 +62,29 @@ export const CampaignHistory: FunctionComponent<Props> = ({
     const {
         data: campaignLogsDropdown,
         isFetching: isFetchingCampaignLogsDropdown,
-        isError,
     }: {
         data?: Record<string, any> | undefined;
         isFetching: boolean;
         isError: boolean;
     } = useGetCampaignLogs(params.campaignId);
+
+    const {
+        data,
+        isLoading: isCampaignLogLoading,
+        isError: isCampaignLogError,
+    }: {
+        data?: Result | undefined;
+        isLoading: boolean;
+        isError: boolean;
+    } = useGetCampaignLogDetail(params.logId);
+
+    const { user: campaignUser } = useMemo(() => {
+        if (!data) {
+            return { user: undefined, logDetail: undefined };
+        }
+
+        return data;
+    }, [data]);
 
     const { formatMessage } = useSafeIntl();
 
@@ -95,7 +123,7 @@ export const CampaignHistory: FunctionComponent<Props> = ({
         );
     }, [campaignLogsDropdown, isFetchingCampaignLogsDropdown]);
 
-    if (isError) {
+    if (isCampaignLogError) {
         return <ErrorPaperComponent message={formatMessage(MESSAGES.error)} />;
     }
 
@@ -126,11 +154,52 @@ export const CampaignHistory: FunctionComponent<Props> = ({
                                 loading={isFetchingCampaignLogsDropdown}
                             />
                         </Box>
+
+                        {isCampaignLogLoading && (
+                            <Box height="70vh">
+                                <LoadingSpinner
+                                    fixed={false}
+                                    transparent
+                                    padding={4}
+                                    size={25}
+                                />
+                            </Box>
+                        )}
                     </Grid>
+
                     <Grid container spacing={4}>
                         <Grid xs={12} md={6} item>
                             <Box pl={6}>
-                                <CampaignLogDetail logId={params.logId} />
+                                <WidgetPaper
+                                    expandable
+                                    isExpanded
+                                    title={formatMessage(MESSAGES.infos)}
+                                    padded
+                                >
+                                    <Typography variant="body1" color="inherit">
+                                        {formatMessage(
+                                            MESSAGES.last_modified_by,
+                                        )}{' '}
+                                        : {campaignUser?.user_name}
+                                    </Typography>
+                                </WidgetPaper>
+                            </Box>
+                        </Grid>
+                    </Grid>
+
+                    <Grid container spacing={4}>
+                        <Grid xs={12} md={6} item>
+                            <Box pt={6} pb={6} pl={6}>
+                                <WidgetPaper
+                                    expandable
+                                    isExpanded
+                                    title={formatMessage(
+                                        MESSAGES.campaignLogDetails,
+                                    )}
+                                    padded
+                                >
+                                    <CampaignLogDetail logId={params.logId} />
+                                </WidgetPaper>
                             </Box>
                         </Grid>
                     </Grid>

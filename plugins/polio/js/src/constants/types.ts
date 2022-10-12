@@ -1,6 +1,7 @@
 import { IntlMessage } from '../../../../../hat/assets/js/apps/Iaso/types/intl';
 import { Pagination } from '../../../../../hat/assets/js/apps/Iaso/types/table';
 import { Nullable } from '../../../../../hat/assets/js/apps/Iaso/types/utils';
+import { Profile } from '../../../../../hat/assets/js/apps/Iaso/utils/usersUtils';
 
 /* eslint-disable camelcase */
 export type FormatForNFMArgs<T> = {
@@ -144,6 +145,7 @@ export type CampaignLogDetail = {
 };
 
 export type CampaignLogData = {
+    user: Profile;
     new_value: Record<string, any>;
 };
 

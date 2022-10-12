@@ -117,3 +117,12 @@ class StorageAPITestCase(APITestCase):
     # TODO: POST test mandatory fields are checked on POST
     # TODO: POST test an error is returned if incorrect value for instances, org unit or entity (400)
     # TODO: POST: that the non mandatory fields are actually non mandatory
+
+    def test_list_only_authenticated(self):
+        """GET /api/storage/ is rejected if user is not authenticated."""
+        response = self.client.get("/api/storage/")
+        self.assertEqual(response.status_code, 403)
+
+    def test_list_only_own_account(self):
+        """GET /api/storage/ only lists the devices associated with the user account"""
+        # TODO: implement

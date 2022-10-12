@@ -29,9 +29,12 @@ class StorageLogSerializer(serializers.ModelSerializer):
 
 
 class StorageSerializer(serializers.ModelSerializer):
+    storage_id = serializers.CharField(source="customer_chosen_id")
+    storage_type = serializers.CharField(source="type")
+
     class Meta:
         model = StorageDevice
-        fields = "__all__"
+        fields = ("storage_id", "storage_type")
 
 
 class StorageViewSet(ListModelMixin, viewsets.GenericViewSet):
@@ -45,6 +48,12 @@ class StorageViewSet(ListModelMixin, viewsets.GenericViewSet):
     def get_queryset(self):
         # We'll only return results for the account of the user
         return StorageDevice.objects.filter(account=self.request.user.iaso_profile.account)
+
+    def list(self, request):
+        queryset = self.get_queryset()
+
+        serializer = self.get_serializer(queryset, many=True)
+        return Response(serializer.data)
 
 
 # This could be rewritten in more idiomatic DRF (serializers, ...). On the other hand, I quite like the explicitness

@@ -18,7 +18,6 @@ import {
     TableCell,
     makeStyles,
     Theme,
-    Typography,
 } from '@material-ui/core';
 
 import { useGetCampaignLogDetail } from '../../hooks/useGetCampaignHistory';
@@ -31,7 +30,8 @@ import { Profile } from '../../../../../../hat/assets/js/apps/Iaso/utils/usersUt
 
 import MESSAGES from '../../constants/messages';
 import { useGetCampaignFieldLabel } from '../../hooks/useGetCampaignFieldLabel';
-import { baseUrls } from '../../../../../../hat/assets/js/apps/Iaso/constants/urls';
+
+import { Row } from './Row';
 
 type Props = {
     logId?: string;
@@ -55,8 +55,45 @@ const useStyles = makeStyles((theme: Theme) => ({
     },
 }));
 
-const redirectToChangesLog = url => {
-    window.open(url);
+const objectLoop = (obj, getValue, getLabel) => {
+    return (
+        <Table>
+            <TableBody>
+                {Object.entries(obj).map(([key, value], index) => (
+                    <Row
+                        key={`${key}-${index}`}
+                        fieldKey={key}
+                        value={getComplexValue(value, getValue, key, getLabel)}
+                    />
+                ))}
+            </TableBody>
+        </Table>
+    );
+};
+
+const arrayLoop = (arr, getValue, key, getLabel) => {
+    return (
+        <Table>
+            <TableBody>
+                {arr.map((value, index) => (
+                    <Row
+                        key={`${key}-${index}`}
+                        value={getComplexValue(value, getValue, key, getLabel)}
+                    />
+                ))}
+            </TableBody>
+        </Table>
+    );
+};
+
+const getComplexValue = (value, getValue, key, getLabel) => {
+    if (Array.isArray(value)) {
+        return arrayLoop(value, getValue, key, getLabel);
+    }
+    if (value && typeof value === 'object') {
+        return objectLoop(value, getValue, getLabel);
+    }
+    return getValue(value, typeof value);
 };
 
 export const CampaignLogDetail: FunctionComponent<Props> = ({ logId }) => {
@@ -77,8 +114,6 @@ export const CampaignLogDetail: FunctionComponent<Props> = ({ logId }) => {
 
         return data;
     }, [data]);
-
-    const logsUrl = `/${baseUrls.apiLogs}/${logId}`;
 
     const { formatMessage } = useSafeIntl();
 
@@ -101,7 +136,6 @@ export const CampaignLogDetail: FunctionComponent<Props> = ({ logId }) => {
     if (isError) {
         return <ErrorPaperComponent message={formatMessage(MESSAGES.error)} />;
     }
-
     return (
         <>
             {campaignLogDetail && (
@@ -127,43 +161,16 @@ export const CampaignLogDetail: FunctionComponent<Props> = ({ logId }) => {
                         {Object.entries(campaignLogDetail).map(
                             ([key, value]) => {
                                 return (
-                                    <TableRow key={key}>
-                                        <TableCell
-                                            width={150}
-                                            className={classes.tableCell}
-                                        >
-                                            {getLabel(key, MESSAGES)}
-                                        </TableCell>
-
-                                        <TableCell
-                                            width={150}
-                                            className={classes.tableCell}
-                                        >
-                                            {value ? (
-                                                getValue(
-                                                    key,
-                                                    campaignLogDetail,
-                                                    typeof value,
-                                                )
-                                            ) : (
-                                                <Typography
-                                                    className={
-                                                        classes.linkToChangesLog
-                                                    }
-                                                    variant="overline"
-                                                    onClick={() =>
-                                                        redirectToChangesLog(
-                                                            logsUrl,
-                                                        )
-                                                    }
-                                                >
-                                                    {formatMessage(
-                                                        MESSAGES.seeLogDetail,
-                                                    )}
-                                                </Typography>
-                                            )}
-                                        </TableCell>
-                                    </TableRow>
+                                    <Row
+                                        key={key}
+                                        value={getComplexValue(
+                                            value,
+                                            getValue,
+                                            key,
+                                            getLabel,
+                                        )}
+                                        fieldKey={key}
+                                    />
                                 );
                             },
                         )}

@@ -229,7 +229,7 @@ class StorageBlacklistedViewSet(ListModelMixin, viewsets.GenericViewSet):
     queryset = StorageDevice.objects.filter(status=StorageDevice.BLACKLISTED)
     serializer_class = StorageSerializer
 
-    # TODO: check permissions if necessary (everybody can get the list of blacklisted devices, correct?)
+    # TODO: check permissions if necessary (everybody can get the list of blacklisted devices accross all accounts, correct?)
     permission_classes = [AllowAny]
     # TODO: according to spec, we should add an "updated_at" field
     # TODO: implement pagination

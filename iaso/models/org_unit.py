@@ -16,6 +16,7 @@ from django.db import models, transaction
 
 from .base import SourceVersion, Account
 from .project import Project
+from ..utils.expressions import ArraySubquery
 
 
 def get_or_create_org_unit_type(name: str, depth: int, account: Account, preferred_project: Project) -> "OrgUnitType":
@@ -47,13 +48,13 @@ def get_or_create_org_unit_type(name: str, depth: int, account: Account, preferr
             return OrgUnitType.objects.get(**out_defining_fields, projects__in=all_projects_from_account)
         except OrgUnitType.MultipleObjectsReturned:
             # We have multiple similar OUT in the account and no way to choose the better one, so let's pick the first
-            return OrgUnitType.objects.filter(**out_defining_fields, projects__in=all_projects_from_account).first()
+            return OrgUnitType.objects.filter(**out_defining_fields, projects__in=all_projects_from_account).first()  # type: ignore
         except OrgUnitType.DoesNotExist:
             # We have no similar OUT in the account, so let's create a new one
             return OrgUnitType.objects.create(**out_defining_fields, short_name=name[:4])
     except OrgUnitType.MultipleObjectsReturned:
         # We have multiple similar OUT for the preferred project, so let's pick the first
-        return OrgUnitType.objects.filter(**out_defining_fields, projects=preferred_project).first()
+        return OrgUnitType.objects.filter(**out_defining_fields, projects=preferred_project).first()  # type: ignore
 
 
 class OrgUnitTypeQuerySet(models.QuerySet):
@@ -152,11 +153,14 @@ class OrgUnitQuerySet(models.QuerySet):
         """The OrgunitS and all their descendants"""
         # We need to cast PathValue instances to strings - this could be fixed upstream
         # (https://github.com/mariocesar/django-ltree/issues/8)
-        if isinstance(org_unit, (list, models.QuerySet)):
+        if isinstance(org_unit, OrgUnit):
+            query = models.Q(path__descendants=str(org_unit.path))
+        elif isinstance(org_unit, models.QuerySet):
+            org_unit_qs = org_unit
+            query = models.Q(path__descendants=ArraySubquery(org_unit_qs.values("path")))
+        elif isinstance(org_unit, (list,)):
             org_unit = org_unit.only("path") if isinstance(org_unit, models.QuerySet) else org_unit
             query = reduce(operator.or_, [models.Q(path__descendants=str(ou.path)) for ou in list(org_unit)])
-        else:
-            query = models.Q(path__descendants=str(org_unit.path))
 
         return self.filter(query)
 

@@ -32,14 +32,14 @@ const polioViruses = [
 
 const polioVaccines = [
     {
-        value: 'mOPV2',
-        label: 'mOPV2',
-        color: '#66ff66',
-    },
-    {
         value: 'nOPV2',
         label: 'nOPV2',
         color: '#00b0f0',
+    },
+    {
+        value: 'mOPV2',
+        label: 'mOPV2',
+        color: '#66ff66',
     },
     {
         value: 'bOPV',

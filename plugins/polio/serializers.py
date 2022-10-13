@@ -4,11 +4,11 @@ from datetime import datetime
 import pandas as pd
 from django.contrib.auth.models import User
 from django.db import transaction
-from django.db.models import Count
 from django.db.transaction import atomic
 from gspread.exceptions import APIError  # type: ignore
 from gspread.exceptions import NoValidUrlKeyFound
 from rest_framework import serializers
+from rest_framework.fields import Field
 from rest_framework.validators import UniqueValidator
 from django.utils.translation import gettext as _
 from django.utils import timezone
@@ -51,7 +51,7 @@ class UserSerializer(serializers.ModelSerializer):
 
 class CountryUsersGroupSerializer(serializers.ModelSerializer):
     read_only_users_field = UserSerializer(source="users", many=True, read_only=True)
-    country_name = serializers.SlugRelatedField(source="country", slug_field="name", read_only=True)
+    country_name: Field = serializers.SlugRelatedField(source="country", slug_field="name", read_only=True)
 
     class Meta:
         model = CountryUsersGroup
@@ -96,16 +96,48 @@ class BudgetStatusSerializer(serializers.ModelSerializer):
 # the following serializer are used so we can audit the modification on a campaign.
 # The related Scope and Round can be modified in the same request but are modelised as separate ORM Object
 # and DjangoSerializer don't serialize relation, DRF Serializer is used
+class AuditGroupSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Group
+        fields = "__all__"
+
+
+class AuditRoundVaccineSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = RoundVaccine
+        fields = "__all__"
+
+
+class AuditShipmentSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Shipment
+        fields = "__all__"
+
+
+class AuditRoundScopeSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = RoundScope
+        fields = "__all__"
+
+    group = AuditGroupSerializer()
+
+
 class AuditRoundSerializer(serializers.ModelSerializer):
     class Meta:
         model = Round
         fields = "__all__"
 
+    vaccines = AuditRoundVaccineSerializer(many=True)
+    scopes = AuditRoundScopeSerializer(many=True)
+    shipments = AuditShipmentSerializer(many=True)
 
-class AuditGroupSerializer(serializers.ModelSerializer):
+
+class AuditCampaignScopeSerializer(serializers.ModelSerializer):
     class Meta:
-        model = Group
+        model = CampaignScope
         fields = "__all__"
+
+    group = AuditGroupSerializer()
 
 
 class AuditCampaignSerializer(serializers.ModelSerializer):
@@ -115,6 +147,7 @@ class AuditCampaignSerializer(serializers.ModelSerializer):
 
     group = AuditGroupSerializer()
     rounds = AuditRoundSerializer(many=True)
+    scopes = AuditCampaignScopeSerializer(many=True)
 
 
 def serialize_campaign(campaign):
@@ -423,7 +456,7 @@ class SurgePreviewSerializer(serializers.Serializer):
 
 class OrgUnitSerializer(serializers.ModelSerializer):
     country_parent = serializers.SerializerMethodField()
-    root = serializers.SerializerMethodField()
+    root = serializers.SerializerMethodField()  # type: ignore
 
     def __init__(self, *args, **kwargs):
         for field in kwargs.pop("hidden_fields", []):
@@ -480,9 +513,9 @@ class CampaignSerializer(serializers.ModelSerializer):
             return None
 
     rounds = RoundSerializer(many=True, required=False)
-    org_unit = OrgUnitSerializer(source="initial_org_unit", read_only=True)
-    top_level_org_unit_name = serializers.SlugRelatedField(source="country", slug_field="name", read_only=True)
-    top_level_org_unit_id = serializers.SlugRelatedField(source="country", slug_field="id", read_only=True)
+    org_unit: Field = OrgUnitSerializer(source="initial_org_unit", read_only=True)
+    top_level_org_unit_name: Field = serializers.SlugRelatedField(source="country", slug_field="name", read_only=True)
+    top_level_org_unit_id: Field = serializers.SlugRelatedField(source="country", slug_field="id", read_only=True)
     general_status = serializers.SerializerMethodField()
     grouped_campaigns = serializers.PrimaryKeyRelatedField(
         many=True, queryset=CampaignGroup.objects.all(), required=False

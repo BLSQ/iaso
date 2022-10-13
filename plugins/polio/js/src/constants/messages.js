@@ -1406,6 +1406,10 @@ const MESSAGES = defineMessages({
         id: 'iaso.polio.label.exportToPdf',
         defaultMessage: 'Export to pdf',
     },
+    exportToExcel: {
+        id: 'iaso.polio.label.exportToExcel',
+        defaultMessage: 'Export to XLSX',
+    },
     userWithoutTeam: {
         id: 'iaso.polio.error.label.userWithoutTeam',
         defaultMessage: 'User should be part of a team',
@@ -1535,6 +1539,11 @@ const MESSAGES = defineMessages({
     shipmentFieldsTogether: {
         id: 'iaso.polio.label.shipmentFieldsTogether',
         defaultMessage: 'All shipment fields need to be filled together',
+    },
+    scopeUnlockConditions: {
+        id: 'iaso.polio.label.scopeUnlockConditions',
+        defaultMessage:
+            'Select initial region and encode dates for at least one round to unlock Scope tab',
     },
 });
 

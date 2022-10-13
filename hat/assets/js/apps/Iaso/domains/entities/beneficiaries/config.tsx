@@ -26,6 +26,7 @@ import { Column } from '../../../types/table';
 import { ExtraColumn } from './types/fields';
 import getDisplayName from '../../../utils/usersUtils';
 import { useGetFieldValue } from './hooks/useGetFieldValue';
+import { formatLabel } from '../../instances/utils';
 
 export const baseUrl = baseUrls.entities;
 
@@ -59,8 +60,8 @@ export const useStaticColumns = (): Array<Column> => {
         },
         {
             Header: formatMessage(MESSAGES.program),
-            id: 'attributes__program',
-            accessor: 'attributes__program',
+            id: 'program',
+            accessor: 'program',
             Cell: settings => {
                 return <>{settings.row.original?.program ?? '--'}</>;
             },
@@ -99,7 +100,7 @@ export const useColumns = (
         }
         extraColumns.forEach(extraColumn => {
             columns.push({
-                Header: extraColumn.label,
+                Header: formatLabel(extraColumn),
                 id: extraColumn.name,
                 accessor: extraColumn.name,
                 Cell: settings => {
@@ -207,8 +208,8 @@ export const useBeneficiariesDetailsColumns = (
                 // TODO make sortable
                 // TODO get correct key when implemented on backend
                 sortable: false,
-                id: 'last_sync_at',
-                accessor: 'last_sync_at',
+                id: 'updated_at',
+                accessor: 'updated_at',
                 Cell: DateTimeCell,
             },
             {

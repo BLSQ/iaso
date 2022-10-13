@@ -1,6 +1,7 @@
 import csv
 import functools
 import json
+import datetime as dt
 from datetime import timedelta, datetime, date
 import string
 from datetime import timedelta, datetime
@@ -83,6 +84,7 @@ from .models import CountryUsersGroup
 from .models import URLCache
 from .preparedness.calculator import preparedness_summary
 from .preparedness.parser import get_preparedness
+from .export_utils import generate_xlsx_campaigns_calendar, xlsx_file_name
 
 logger = getLogger(__name__)
 
@@ -219,6 +221,97 @@ class CampaignViewSet(ModelViewSet):
         roundNumber = request.query_params.get("round", "")
         return Response(get_current_preparedness(campaign, roundNumber))
 
+    @action(methods=["GET"], detail=False, serializer_class=None)
+    def create_calendar_xlsx_sheet(self, request, **kwargs):
+        current_date = request.query_params.get("currentDate")
+        current_year = self.get_year(current_date)
+
+        params = request.query_params
+
+        calendar_data = self.get_calendar_data(self, current_year, request.query_params)
+        filename = xlsx_file_name("calendar", params)
+        xlsx_file = generate_xlsx_campaigns_calendar(filename, calendar_data)
+
+        response = HttpResponse(
+            save_virtual_workbook(xlsx_file),
+            content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        )
+        response["Content-Disposition"] = "attachment; filename=%s" % filename + ".xlsx"
+        return response
+
+    @staticmethod
+    def get_year(current_date):
+        if current_date is not None:
+            current_date = dt.datetime.strptime(current_date, "%Y-%m-%d")
+            current_date = current_date.date()
+            return current_date.year
+        else:
+            today = dt.date.today()
+            return today.year
+
+    @staticmethod
+    def get_calendar_data(self, year, params):
+        countries = params.get("countries") if params.get("countries") is not None else None
+        campaign_groups = params.get("campaignGroups") if params.get("campaignGroups") is not None else None
+        campaign_type = params.get("campaignType") if params.get("campaignType") is not None else None
+        order_by = params.get("order") if params.get("order") is not None else None
+        search = params.get("search")
+        rounds = Round.objects.filter(started_at__year=year)
+        if countries:
+            rounds = rounds.filter(campaign__country_id__in=countries.split(","))
+        if campaign_groups:
+            rounds = rounds.filter(campaign__group_id__in=campaign_groups.split(","))
+        if campaign_type == "preventive":
+            rounds = rounds.filter(campaign__is_preventive=True)
+        if campaign_type == "test":
+            rounds = rounds.filter(campaign__is_test=True)
+        if campaign_type == "regular":
+            rounds = rounds.filter(campaign__is_preventive=False).filter(campaign__is_test=False)
+        if search:
+            rounds = rounds.filter(Q(campaign__obr_name__icontains=search) | Q(campaign__epid__icontains=search))
+
+        return self.loop_on_rounds(self, rounds)
+
+    @staticmethod
+    def loop_on_rounds(self, rounds):
+        data_row = []
+        for round in rounds:
+            if round.campaign is not None:
+                if round.campaign.country is not None:
+                    if not any(d["country_id"] == round.campaign.country.id for d in data_row):
+                        row = {"country_id": round.campaign.country.id, "country_name": round.campaign.country.name}
+                        month = round.started_at.month
+                        row["rounds"] = {}
+                        row["rounds"][str(month)] = []
+                        row["rounds"][str(month)].append(self.get_round(round))
+                        data_row.append(row)
+                    else:
+                        row = [sub for sub in data_row if sub["country_id"] == round.campaign.country.id][0]
+                        row_index = data_row.index(row)
+                        if row is not None:
+                            month = round.started_at.month
+                            if str(month) in data_row[row_index]["rounds"]:
+                                data_row[row_index]["rounds"][str(month)].append(self.get_round(round))
+                            else:
+                                data_row[row_index]["rounds"][str(month)] = []
+                                data_row[row_index]["rounds"][str(month)].append(self.get_round(round))
+        return data_row
+
+    @staticmethod
+    def get_round(round):
+        started_at = dt.datetime.strftime(round.started_at, "%Y-%m-%d") if round.started_at is not None else None
+        ended_at = dt.datetime.strftime(round.ended_at, "%Y-%m-%d") if round.ended_at is not None else None
+        obr_name = round.campaign.obr_name if round.campaign.obr_name is not None else ""
+        vacine = round.campaign.vacine if round.campaign.vacine is not None else ""
+        round_number = round.number if round.number is not None else ""
+        return {
+            "started_at": started_at,
+            "ended_at": ended_at,
+            "obr_name": obr_name,
+            "vacine": vacine,
+            "round_number": round_number,
+        }
+
     @action(methods=["POST"], detail=True, serializer_class=CampaignPreparednessSpreadsheetSerializer)
     def create_preparedness_sheet(self, request: Request, pk=None, **kwargs):
         data = request.data
@@ -256,6 +349,8 @@ Timeline tracker Automated message
         country = campaign.country
 
         domain = settings.DNS_DOMAIN
+        from_email = settings.DEFAULT_FROM_EMAIL
+
         if campaign.creation_email_send_at:
             raise serializers.ValidationError("Notification Email already sent")
         if not (campaign.obr_name and campaign.virus and country and campaign.onset_at):
@@ -286,7 +381,7 @@ Timeline tracker Automated message
         send_mail(
             "New Campaign {}".format(campaign.obr_name),
             email_text,
-            "no-reply@%s" % domain,
+            from_email,
             emails,
         )
         campaign.creation_email_send_at = now()
@@ -307,7 +402,7 @@ Timeline tracker Automated message
             return Response("Campaign already active.", status=status.HTTP_400_BAD_REQUEST)
 
     @action(
-        methods=["GET", "HEAD"],
+        methods=["GET", "HEAD"],  # type: ignore # HEAD is missing in djangorestframework-stubs
         detail=False,
         url_path="merged_shapes.geojson",
     )
@@ -389,7 +484,7 @@ where polio_campaignscope.campaign_id = polio_campaign.id""",
         return JsonResponse(json.loads(cached_response))
 
     @action(
-        methods=["GET", "HEAD"],
+        methods=["GET", "HEAD"],  # type: ignore # HEAD is missing in djangorestframework-stubs
         detail=False,
         url_path="v2/merged_shapes.geojson",
     )
@@ -827,8 +922,9 @@ def _make_prep(c: Campaign, round: Round):
             campaign_prep["status"] = "not_sync"
             campaign_prep["details"] = "This spreadsheet has not been synchronised yet"
             return campaign_prep
-        campaign_prep["date"] = ssi_qs.last().created_at
-        cs = ssi_qs.last().cached_spreadsheet
+        # FIXME: what if ssi_qs.last() is None?
+        campaign_prep["date"] = ssi_qs.last().created_at  # type: ignore
+        cs = ssi_qs.last().cached_spreadsheet  # type: ignore
         last_p = get_preparedness(cs)
         campaign_prep.update(preparedness_summary(last_p))
         if round.number != last_p["national"]["round"]:
@@ -1837,7 +1933,8 @@ def send_approval_budget_mail(event: BudgetEvent) -> None:
         settings.DNS_DOMAIN,
         event.campaign.id,
         event.campaign.obr_name,
-        event.campaign.country.id,
+        # FIXME: check if the country might be None
+        event.campaign.country.id,  # type: ignore
     )
     subject = budget_approval_email_subject(event.campaign.obr_name)
     for e in events:

@@ -119,7 +119,6 @@ const CreateBudgetStep: FunctionComponent<Props> = ({
     }, [errors.attachments, touched]);
 
     const titleMessage = transitionLabel;
-    console.log(errors);
 
     return (
         <FormikProvider value={formik}>

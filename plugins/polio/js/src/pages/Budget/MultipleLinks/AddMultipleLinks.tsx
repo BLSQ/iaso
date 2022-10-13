@@ -1,4 +1,4 @@
-import { Box, Grid, makeStyles, Typography } from '@material-ui/core';
+import { Box, Grid, Typography } from '@material-ui/core';
 import { useFormikContext } from 'formik';
 import React, { FunctionComponent, useCallback, useMemo } from 'react';
 // @ts-ignore
@@ -10,36 +10,16 @@ import { NamedLink } from './NamedLink';
 
 type Props = { required?: boolean };
 
-const useStyles = makeStyles(theme => {
-    return {
-        error: {
-            outline: `1px solid ${theme.palette.error.main}`,
-            borderRadius: '4px',
-        },
-    };
-});
-
 export const AddMultipleLinks: FunctionComponent<Props> = ({
     required = false,
 }) => {
-    const classes = useStyles();
     const { formatMessage } = useSafeIntl();
     const {
         setFieldValue,
         // @ts-ignore
         values,
-        errors: formErrors,
-        touched,
     } = useFormikContext();
 
-    const errors = useMemo(
-        // @ts-ignore
-        () => (touched.links && formErrors?.links ? [formErrors.links] : []),
-        // @ts-ignore
-        [formErrors.links, touched.links],
-    );
-    // const errors = formErrors?.links ?? [];
-    const hasErrors = errors.length > 0;
     // @ts-ignore
     const links = useMemo(() => values?.links ?? [], [values?.links]);
 
@@ -67,7 +47,7 @@ export const AddMultipleLinks: FunctionComponent<Props> = ({
                     {required && <sup>*</sup>}
                 </Typography>
             </div>
-            <Box mt={2} className={hasErrors ? classes.error : ''}>
+            <Box mt={2}>
                 {links.length > 1 &&
                     links.map((_link, index) => (
                         // eslint-disable-next-line react/no-array-index-key

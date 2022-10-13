@@ -38,23 +38,39 @@ addMethod(
         });
     },
 );
-// addMethod(
-//     array,
-//     'linksOrFiles',
-//     function fileOrLinks(enableTest, formatMessage) {
-//         return this.test('linksOrFiles', '', (_value, context) => {
-//             if (!enableTest) return true;
-//             const { path, createError, parent } = context;
-//             if (!parent.files && !parent.links) {
-//                 return createError({
-//                     path,
-//                     message: formatMessage(MESSAGES.linksOrFilesRequired),
-//                 });
-//             }
-//             return true;
-//         });
-//     },
-// );
+
+addMethod(
+    string,
+    'isUrlRequired',
+    function isUrlRequired(isLinkRequired, message) {
+        return this.test('isUrlRequired', '', (value, context) => {
+            const { path, createError, parent } = context;
+            if ((isLinkRequired && !value) || (parent.alias && !value)) {
+                return createError({
+                    path,
+                    message,
+                });
+            }
+            return true;
+        });
+    },
+);
+addMethod(
+    string,
+    'isAliasRequired',
+    function isAliasRequired(isLinkRequired, message) {
+        return this.test('isAliasRequired', '', (value, context) => {
+            const { path, createError, parent } = context;
+            if ((isLinkRequired && !value) || (parent.url && !value)) {
+                return createError({
+                    path,
+                    message,
+                });
+            }
+            return true;
+        });
+    },
+);
 
 export const useBudgetStepValidation = (
     errors: ValidationError = {},
@@ -75,8 +91,20 @@ export const useBudgetStepValidation = (
             links: makeRequired(
                 array().of(
                     object({
-                        alias: string().required(fieldRequired),
-                        url: string().required(fieldRequired),
+                        alias: string()
+                            .nullable()
+                            // @ts-ignore
+                            .isAliasRequired(
+                                requiredFields.includes('links'),
+                                fieldRequired,
+                            ),
+                        url: string()
+                            .nullable()
+                            // @ts-ignore
+                            .isUrlRequired(
+                                requiredFields.includes('links'),
+                                fieldRequired,
+                            ),
                     }),
                 ),
                 requiredFields.includes('files'),

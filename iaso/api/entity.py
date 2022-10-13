@@ -127,9 +127,10 @@ def export_entity_as_xlsx(entities):
                 if k in fields_list or k == "attributes":
                     if k == "attributes":
                         for k_, v_ in res["entity"]["attributes"]["file_content"].items():
-                            worksheet.write(row, col, k_)
-                            worksheet.write(row + 1, col, v_)
-                            col += 1
+                            if k_ in fields_list:
+                                worksheet.write(row, col, k_)
+                                worksheet.write(row + 1, col, v_)
+                                col += 1
                     else:
                         worksheet.write(row, col, k)
                         worksheet.write(row + 1, col, v)
@@ -319,6 +320,7 @@ class EntityViewSet(ModelViewSet):
         order_columns = request.GET.get("order_columns", None)
 
         queryset = queryset.order_by(*orders)
+
         if xlsx_format or csv_format:
             if pk:
                 entities = Entity.objects.filter(account=account, entity_type_ids=pk)

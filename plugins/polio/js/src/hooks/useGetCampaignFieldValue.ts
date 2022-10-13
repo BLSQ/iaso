@@ -17,6 +17,12 @@ export const useGetCampaignFieldValue = (): ((
     const { formatMessage } = useSafeIntl();
     const getValue = (fieldKey, newValue, type): string => {
         switch (type) {
+            case 'object': {
+                if (!newValue[fieldKey]) {
+                    return textPlaceholder;
+                }
+                return 'boo';
+            }
             case 'string':
             case 'number': {
                 return newValue[fieldKey] || textPlaceholder;

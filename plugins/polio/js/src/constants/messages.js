@@ -1406,6 +1406,10 @@ const MESSAGES = defineMessages({
         id: 'iaso.polio.label.exportToPdf',
         defaultMessage: 'Export to pdf',
     },
+    exportToExcel: {
+        id: 'iaso.polio.label.exportToExcel',
+        defaultMessage: 'Export to XLSX',
+    },
     userWithoutTeam: {
         id: 'iaso.polio.error.label.userWithoutTeam',
         defaultMessage: 'User should be part of a team',

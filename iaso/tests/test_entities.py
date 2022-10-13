@@ -228,7 +228,7 @@ class EntityAPITestCase(APITestCase):
 
         self.client.post("/api/entity/", data=payload, format="json")
 
-        response = self.client.get("/api/entity/{0}/".format(Entity.objects.last().pk, format="json"))
+        response = self.client.get("/api/entity/{0}/".format(Entity.objects.last().pk), format="json")
 
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.json()["id"], Entity.objects.last().pk)

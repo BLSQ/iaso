@@ -728,17 +728,11 @@ class InstanceQuerySet(models.QuerySet):
             queryset = queryset.filter(org_unit_id=org_unit_id)
 
         if org_unit_parent_id:
-            # TODO: attempt to refactor this (so it's cleaner / more efficient and we're not limited to an arbitrary number of parents)
-            queryset = queryset.filter(
-                Q(org_unit__id=org_unit_parent_id)
-                | Q(org_unit__parent__id=org_unit_parent_id)
-                | Q(org_unit__parent__parent__id=org_unit_parent_id)
-                | Q(org_unit__parent__parent__parent__id=org_unit_parent_id)
-                | Q(org_unit__parent__parent__parent__parent__id=org_unit_parent_id)
-                | Q(org_unit__parent__parent__parent__parent__parent__id=org_unit_parent_id)
-                | Q(org_unit__parent__parent__parent__parent__parent__parent__id=org_unit_parent_id)
-                | Q(org_unit__parent__parent__parent__parent__parent__parent__parent__id=org_unit_parent_id)
-            )
+            # Local import to avoid loop
+            from iaso.models import OrgUnit
+
+            parent = OrgUnit.objects.get(id=org_unit_parent_id)
+            queryset = queryset.filter(org_unit__path__descendants=parent.path)
 
         if with_location == "true":
             queryset = queryset.filter(location__isnull=False)
@@ -818,15 +812,18 @@ class InstanceQuerySet(models.QuerySet):
 
     def filter_for_user(self, user):
         profile = user.iaso_profile
+        # Do a relative import to avoid an import loop
         from .org_unit import OrgUnit
+
+        new_qs = self
 
         # If user is restricted to some org unit, filter on thoses
         if profile.org_units.exists():
             orgunits = OrgUnit.objects.hierarchy(profile.org_units.all())
 
-            self = self.filter(org_unit__in=orgunits)
-        self = self.filter(project__account=profile.account)
-        return self
+            new_qs = new_qs.filter(org_unit__in=orgunits)
+        new_qs = new_qs.filter(project__account=profile.account_id)
+        return new_qs
 
 
 InstanceManager = models.Manager.from_queryset(InstanceQuerySet)
@@ -871,7 +868,7 @@ class Instance(models.Model):
     )
     project = models.ForeignKey("Project", blank=True, null=True, on_delete=models.DO_NOTHING)
     json = models.JSONField(null=True, blank=True)
-    accuracy = models.DecimalField(null=True, decimal_places=2, max_digits=7)
+    accuracy = models.DecimalField(null=True, blank=True, decimal_places=2, max_digits=7)
     device = models.ForeignKey("Device", null=True, blank=True, on_delete=models.DO_NOTHING)
     period = models.TextField(null=True, blank=True, db_index=True)
     entity = models.ForeignKey("Entity", null=True, blank=True, on_delete=models.DO_NOTHING, related_name="instances")
@@ -880,6 +877,7 @@ class Instance(models.Model):
 
     objects = InstanceManager()
 
+    # TODO: investigate why this model doesn't use SoftDeletableModel as other models and if it thi should be changed
     deleted = models.BooleanField(default=False)
     to_export = models.BooleanField(default=False)
 
@@ -927,7 +925,8 @@ class Instance(models.Model):
         soup = as_soup(file)
         form_version_id = extract_form_version_id(soup)
         if form_version_id:
-            form_versions = self.form.form_versions.filter(version_id=form_version_id)
+            # TODO: investigate: can self.form be None here? What's the expected behavior?
+            form_versions = self.form.form_versions.filter(version_id=form_version_id)  # type: ignore
             form_version = form_versions.first()
             if form_version:
                 questions_by_path = form_version.questions_by_path()

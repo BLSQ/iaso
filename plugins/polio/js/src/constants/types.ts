@@ -144,6 +144,10 @@ export type CampaignLogDetail = {
     created_at: string;
 };
 
+export type CampaignLogsDetail = Pagination & {
+    list: CampaignLogDetail[];
+};
+
 export type CampaignLogData = {
     user: Profile;
     new_value: Record<string, any>;

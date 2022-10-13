@@ -3,16 +3,13 @@
 
 import { useSafeIntl } from 'bluesquare-components';
 
-import { Translations } from '../constants/types';
+import MESSAGES from '../constants/messages';
 
-export const useGetCampaignFieldLabel = (): ((
-    fieldKey: string,
-    messages: Translations,
-) => string) => {
+export const useGetCampaignFieldLabel = (): ((fieldKey: string) => string) => {
     const { formatMessage } = useSafeIntl();
-    const getLabel = (fieldKey, messages): any => {
+    const getLabel = (fieldKey): any => {
         // temporary displaying key instead of label not yet added to translations
-        return formatMessage(messages[fieldKey]) || fieldKey;
+        return formatMessage(MESSAGES[fieldKey]) || fieldKey;
     };
 
     return getLabel;

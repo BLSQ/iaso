@@ -6,7 +6,6 @@ import {
 
 import { TableRow, TableCell, makeStyles, Theme } from '@material-ui/core';
 
-import MESSAGES from '../../constants/messages';
 import { useGetCampaignFieldLabel } from '../../hooks/useGetCampaignFieldLabel';
 
 type RowProps = {
@@ -15,6 +14,13 @@ type RowProps = {
 };
 const useStyles = makeStyles((theme: Theme) => ({
     ...commonStyles(theme),
+    tableCellLabel: {
+        ...commonStyles(theme).tableCell,
+        verticalAlign: 'top',
+    },
+    value: {
+        maxWidth: '300px',
+    },
 }));
 
 export const Row: FunctionComponent<RowProps> = ({ fieldKey, value }) => {
@@ -23,14 +29,11 @@ export const Row: FunctionComponent<RowProps> = ({ fieldKey, value }) => {
     return (
         <TableRow>
             {fieldKey && (
-                <TableCell width={150} className={classes.tableCell}>
-                    {getLabel(fieldKey, MESSAGES)}
+                <TableCell className={classes.tableCellLabel}>
+                    {getLabel(fieldKey)}
                 </TableCell>
             )}
-
-            <TableCell width={150} className={classes.tableCell}>
-                {value}
-            </TableCell>
+            <TableCell className={classes.tableCell}>{value}</TableCell>
         </TableRow>
     );
 };

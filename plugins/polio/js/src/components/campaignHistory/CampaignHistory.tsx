@@ -143,7 +143,7 @@ export const CampaignHistory: FunctionComponent<Props> = ({
             <Box className={classes.containerFullHeightNoTabPadded}>
                 <Grid container spacing={4}>
                     <Grid xs={12} md={6} item>
-                        <Box pl={6}>
+                        <Box mt={2}>
                             <InputComponent
                                 type="select"
                                 keyValue="logId"
@@ -165,41 +165,29 @@ export const CampaignHistory: FunctionComponent<Props> = ({
                                 />
                             </Box>
                         )}
-                    </Grid>
-
-                    <Grid container spacing={4}>
-                        <Grid xs={12} md={6} item>
-                            <Box pl={6}>
-                                <WidgetPaper
-                                    expandable
-                                    isExpanded
-                                    title={formatMessage(MESSAGES.infos)}
-                                    padded
-                                >
-                                    <Typography variant="body1" color="inherit">
-                                        {formatMessage(
-                                            MESSAGES.last_modified_by,
-                                        )}{' '}
-                                        : {campaignUser?.user_name}
-                                    </Typography>
-                                </WidgetPaper>
-                            </Box>
-                        </Grid>
-                    </Grid>
-
-                    <Grid container spacing={4}>
-                        <Grid xs={12} md={6} item>
-                            <Box pt={6} pb={6} pl={6}>
-                                <WidgetPaper
-                                    expandable
-                                    isExpanded
-                                    title={formatMessage(MESSAGES.form)}
-                                    padded
-                                >
-                                    <CampaignLogDetail logId={params.logId} />
-                                </WidgetPaper>
-                            </Box>
-                        </Grid>
+                        <Box mt={2}>
+                            <WidgetPaper
+                                expandable
+                                isExpanded
+                                title={formatMessage(MESSAGES.infos)}
+                                padded
+                            >
+                                <Typography variant="body1" color="inherit">
+                                    {formatMessage(MESSAGES.last_modified_by)} :{' '}
+                                    {campaignUser?.user_name}
+                                </Typography>
+                            </WidgetPaper>
+                        </Box>
+                        <Box mt={2}>
+                            <WidgetPaper
+                                expandable
+                                isExpanded
+                                title={formatMessage(MESSAGES.form)}
+                                padded
+                            >
+                                <CampaignLogDetail logId={params.logId} />
+                            </WidgetPaper>
+                        </Box>
                     </Grid>
                 </Grid>
             </Box>

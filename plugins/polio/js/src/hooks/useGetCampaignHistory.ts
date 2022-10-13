@@ -4,19 +4,23 @@ import { UseQueryResult } from 'react-query';
 import { getRequest } from '../../../../../hat/assets/js/apps/Iaso/libs/Api';
 import { useSnackQuery } from '../../../../../hat/assets/js/apps/Iaso/libs/apiHooks';
 import { DropdownOptions } from '../../../../../hat/assets/js/apps/Iaso/types/utils';
-import { CampaignLogDetail, CampaignLogData } from '../constants/types';
+import {
+    CampaignLogDetail,
+    CampaignLogData,
+    CampaignLogsDetail,
+} from '../constants/types';
 import { Profile } from '../../../../../hat/assets/js/apps/Iaso/utils/usersUtils';
 
 export const getCampaignLog = (
     campaignId?: string,
-): Promise<CampaignLogDetail> => {
+): Promise<CampaignLogsDetail> => {
     return getRequest(
         `/api/logs/?objectId=${campaignId}&contentType=polio.campaign`,
     );
 };
 
 const getCampaignLogDetail = (logId?: string): Promise<CampaignLogData> => {
-    return getRequest(`/api/logs/${logId}`);
+    return getRequest(`/api/logs/${logId}/`);
 };
 
 export const useGetCampaignLogs = (

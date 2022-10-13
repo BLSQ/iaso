@@ -57,7 +57,7 @@ const useStyles = makeStyles((theme: Theme) => ({
 
 const objectLoop = (obj, getValue, getLabel) => {
     return (
-        <Table>
+        <Table size="small">
             <TableBody>
                 {Object.entries(obj).map(([key, value], index) => (
                     <Row
@@ -71,9 +71,14 @@ const objectLoop = (obj, getValue, getLabel) => {
     );
 };
 
+const displayAsStringKeysArray = ['org_units'];
+
 const arrayLoop = (arr, getValue, key, getLabel) => {
+    if (displayAsStringKeysArray.includes(key)) {
+        return arr.join(', ');
+    }
     return (
-        <Table>
+        <Table size="small">
             <TableBody>
                 {arr.map((value, index) => (
                     <Row
@@ -139,7 +144,7 @@ export const CampaignLogDetail: FunctionComponent<Props> = ({ logId }) => {
     return (
         <>
             {campaignLogDetail && (
-                <Table>
+                <Table size="small">
                     <TableHead>
                         <TableRow>
                             <TableCell

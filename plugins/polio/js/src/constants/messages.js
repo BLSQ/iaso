@@ -9,6 +9,10 @@ const MESSAGES = defineMessages({
         defaultMessage: 'Separate scope per round',
         id: 'iaso.polio.label.scope_per_round',
     },
+    source_version: {
+        id: 'iaso.groups.sourceVersion',
+        defaultMessage: 'Source version',
+    },
     infos: {
         defaultMessage: 'Infos',
         id: 'iaso.label.infos',
@@ -17,9 +21,21 @@ const MESSAGES = defineMessages({
         defaultMessage: 'Separate scope per round',
         id: 'iaso.polio.label.scope_per_round',
     },
+    preparedness_spreadsheet_url: {
+        defaultMessage: 'Preparedness spreadsheet url',
+        id: 'iaso.polio.label.preparednesSpreadsheetUrl',
+    },
+    preparedness_sync_status: {
+        defaultMessage: 'Preparedness status',
+        id: 'iaso.polio.label.preparednesSyncStatus',
+    },
     helpTextEditVaccineViaScope: {
         defaultMessage: 'The list of vaccines comes from the scope',
         id: 'iaso.polio.label.helpTextEditVaccineViaScope',
+    },
+    org_units: {
+        defaultMessage: 'Org units',
+        id: 'iaso.label.orgUnit',
     },
     campaigns: {
         defaultMessage: 'Campaigns',
@@ -101,7 +117,19 @@ const MESSAGES = defineMessages({
         id: 'iaso.label.dateFrom',
         defaultMessage: 'Start date',
     },
+    started_at: {
+        id: 'iaso.label.dateFrom',
+        defaultMessage: 'Start date',
+    },
     endDate: {
+        id: 'iaso.label.dateTo',
+        defaultMessage: 'End date',
+    },
+    source_ref: {
+        defaultMessage: 'Source ref',
+        id: 'iaso.orgUnits.sourceRef',
+    },
+    ended_at: {
         id: 'iaso.label.dateTo',
         defaultMessage: 'End date',
     },
@@ -412,55 +440,55 @@ const MESSAGES = defineMessages({
         id: 'iaso.polio.form.label.roundtwoEnd',
         defaultMessage: 'Round 2 End',
     },
-    mopUpStart: {
+    mop_up_started_at: {
         id: 'iaso.polio.form.label.mopUpStart',
         defaultMessage: 'Mop Up Start',
     },
-    mopUpEnd: {
+    mop_up_ended_at: {
         id: 'iaso.polio.form.label.mopUpEnd',
         defaultMessage: 'Mop Up End',
     },
-    imStart: {
+    im_started_at: {
         id: 'iaso.polio.form.label.imStart',
         defaultMessage: 'IM Start',
     },
-    imEnd: {
+    im_ended_at: {
         id: 'iaso.polio.form.label.imEnd',
         defaultMessage: 'IM End',
     },
-    lqasStart: {
+    lqas_started_at: {
         id: 'iaso.polio.form.label.lqasStart',
         defaultMessage: 'LQAS Start',
     },
-    lqasEnd: {
+    lqas_ended_at: {
         id: 'iaso.polio.form.label.lqasEnd',
         defaultMessage: 'LQAS End',
     },
-    districtsPassingLqas: {
+    lqas_district_passing: {
         id: 'iaso.polio.form.label.districtsPassingLqas',
         defaultMessage: 'Districts passing LQAS',
     },
-    districtsFailingLqas: {
+    lqas_district_failing: {
         id: 'iaso.polio.form.label.districtsFailingLqas',
         defaultMessage: 'Districts failing LQAS',
     },
-    mainReasonForNonVaccination: {
+    main_awareness_problem: {
         id: 'iaso.polio.form.label.mainReasonForNonVaccination',
         defaultMessage: 'Main reason for non-vaccination',
     },
-    ratioChildrenMissedInHousehold: {
+    im_percentage_children_missed_in_household: {
         id: 'iaso.polio.form.label.ratioChildrenMissedInHousehold',
         defaultMessage: '% children missed IN household',
     },
-    ratioChildrenMissedOutOfHousehold: {
+    im_percentage_children_missed_out_household: {
         id: 'iaso.polio.form.label.ratioChildrenMissedOutOfHousehold',
         defaultMessage: '% children missed OUT OF household',
     },
-    ratioChildrenMissedInAndOutOfHousehold: {
+    im_percentage_children_missed_in_plus_out_household: {
         id: 'iaso.polio.form.label.ratioChildrenMissedInAndOutOfHousehold',
         defaultMessage: '% children missed IN+OUT OF household',
     },
-    awarenessCampaignPlanning: {
+    awareness_of_campaign_planning: {
         id: 'iaso.polio.form.label.awarenessCampaignPlanning',
         defaultMessage: 'Awareness of campaign planning (%)',
     },

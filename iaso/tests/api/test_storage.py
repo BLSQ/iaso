@@ -324,3 +324,26 @@ class StorageAPITestCase(APITestCase):
                 ],
             },
         )
+
+    def test_get_blacklisted_devices(self):
+        """Test the basics of the GET /api/mobile/storage/blacklisted endpoint"""
+        response = self.client.get("/api/mobile/storage/blacklisted/")
+        self.assertEqual(response.status_code, 200)
+        received_json = response.json()
+        self.assertEqual(
+            received_json,
+            {
+                "storages": [
+                    {
+                        "storage_id": "ANOTHER_EXISTING_STORAGE_BLACKLISTED_STOLEN",
+                        "storage_type": "NFC",
+                        "status": {"status": "BLACKLISTED", "reason": "STOLEN", "comment": ""},
+                    },
+                    {
+                        "storage_id": "ANOTHER_EXISTING_STORAGE_BLACKLISTED_ABUSE",
+                        "storage_type": "SD",
+                        "status": {"status": "BLACKLISTED", "reason": "ABUSE", "comment": ""},
+                    },
+                ]
+            },
+        )

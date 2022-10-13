@@ -5,6 +5,7 @@ from typing import Tuple
 from rest_framework import viewsets, permissions, serializers, status
 from rest_framework.decorators import action, api_view
 from rest_framework.mixins import CreateModelMixin, ListModelMixin
+from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 
 from iaso.models import StorageLogEntry, StorageDevice, Instance, OrgUnit, Entity
@@ -108,7 +109,6 @@ class StorageViewSet(ListModelMixin, viewsets.GenericViewSet):
         # TODO: implement pagination
         # TODO: responses when insufficient permissions
         queryset = self.get_queryset()
-
         serializer = self.get_serializer(queryset, many=True)
         return Response({"storages": serializer.data})
 
@@ -223,3 +223,24 @@ def logs_per_device(request, storage_customer_chosen_id: str, storage_type: str)
     # TODO: implement pagination
 
     return Response(StorageSerializerWithLogs(device).data)
+
+
+class StorageBlacklistedViewSet(ListModelMixin, viewsets.GenericViewSet):
+    queryset = StorageDevice.objects.filter(status=StorageDevice.BLACKLISTED)
+    serializer_class = StorageSerializer
+
+    # TODO: check permissions if necessary (everybody can get the list of blacklisted devices, correct?)
+    permission_classes = [AllowAny]
+    # TODO: according to spec, we should add an "updated_at" field
+    # TODO: implement pagination
+    # TODO: clarify, then implement the "since" feature -see specs-
+
+    def list(self, request):
+        """
+        GET /api/mobile/storage/blacklisted
+
+        Returns a list of blacklisted devices
+        """
+        queryset = self.get_queryset()
+        serializer = self.get_serializer(queryset, many=True)
+        return Response({"storages": serializer.data})

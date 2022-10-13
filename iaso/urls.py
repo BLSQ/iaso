@@ -38,7 +38,7 @@ from .api.groups import GroupsViewSet
 from .api.periods import PeriodsViewSet
 from .api.completeness import CompletenessViewSet
 from .api.export_requests import ExportRequestsViewSet
-from .api.storage import StorageLogViewSet, StorageViewSet, logs_per_device
+from .api.storage import StorageLogViewSet, StorageViewSet, logs_per_device, StorageBlacklistedViewSet
 
 from .api.tasks import TaskSourceViewSet
 from .api.accounts import AccountViewSet
@@ -123,6 +123,7 @@ router.register(r"microplanning/assignments", AssignmentViewSet, basename="assig
 router.register(r"mobile/plannings", MobilePlanningViewSet, basename="mobileplanning")
 router.register(r"storage", StorageViewSet, basename="storage")
 router.register(r"mobile/storage/logs", StorageLogViewSet, basename="storagelogs")
+router.register(r"mobile/storage/blacklisted", StorageBlacklistedViewSet, basename="storageblacklisted")
 
 router.registry.extend(plugins_router.registry)
 

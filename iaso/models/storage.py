@@ -1,7 +1,9 @@
+# TODO: need better type annotations in this file
 import uuid
 
 from django.contrib.auth.models import User
 from django.db import models
+from django.utils import timezone
 
 from iaso.models import Entity, Instance, OrgUnit, Account
 
@@ -62,9 +64,32 @@ class StorageDevice(models.Model):
 
     # Devices can be blacklisted, and in that case it's interesting to keep details about why in the status_reason and
     # status_comment fields
-    status = models.CharField(max_length=64, choices=STATUS_CHOICES, default=OK)
-    status_reason = models.CharField(max_length=64, choices=STATUS_REASON_CHOICES, blank=True, null=True)
-    status_comment = models.TextField(blank=True, null=True)
+    status = models.CharField(
+        max_length=64, choices=STATUS_CHOICES, default=OK
+    )  # Do not change this field directly, use change_status() instead
+    status_reason = models.CharField(
+        max_length=64, choices=STATUS_REASON_CHOICES, blank=True
+    )  # Do not change this field directly, use change_status() instead
+    status_comment = models.TextField(blank=True)  # Do not change this field directly, use change_status instead
+
+    def change_status(self, new_status: str, reason: str, comment: str, performed_by: User) -> None:
+        # TODO: this method is tested indirectly via the API but would deserve a proper, more detailed unit test
+        """
+        Change the status of the device, and add a log entry for this
+        """
+        self.status = new_status
+        self.status_reason = reason
+        self.status_comment = comment
+        self.save()
+
+        StorageLogEntry.objects.create(
+            device=self,
+            operation_type=StorageLogEntry.CHANGE_STATUS,
+            performed_by=performed_by,
+            performed_at=timezone.now(),
+        )
+        # TODO: a potential problem with this approach is that the log entry itself doesn't hold the details about the
+        #  new values for status/reason/comment. Should we improve that?
 
     class Meta:
         unique_together = ("customer_chosen_id", "account", "type")
@@ -111,7 +136,7 @@ class StorageLogEntry(models.Model):
     device = models.ForeignKey(StorageDevice, on_delete=models.CASCADE, related_name="log_entries")
     operation_type = models.CharField(max_length=32, choices=OPERATION_TYPE_CHOICES)
     # when as te data read/written on the storage device. This is chosen by the mobile app, that can happen earlier than
-    # when the backend knows about it.
+    # when the backend knows about it (not true for CHANGE_STATUS since this is performed in Django, not on the mobile).
     performed_at = models.DateTimeField()
     performed_by = models.ForeignKey(User, on_delete=models.PROTECT)
     # Multiple instances/submissions can be saved on a StorageDevice

@@ -1,3 +1,5 @@
+# TODO: need better type annotations in this file
+
 from time import time
 
 from iaso.models import Account, Form, MONTH, Instance, OrgUnit, Entity, EntityType, StorageDevice, StorageLogEntry
@@ -24,6 +26,7 @@ class StorageAPITestCase(APITestCase):
             customer_chosen_id="EXISTING_STORAGE",
             account=star_wars,
             type="NFC",
+            status="OK",
         )
 
         cls.existing_storage_device_2 = StorageDevice.objects.create(
@@ -67,7 +70,7 @@ class StorageAPITestCase(APITestCase):
         num_devices_before = StorageDevice.objects.count()
 
         current_timestamp_in_seconds = int(time())
-        body_python = [
+        post_body = [
             {
                 "id": "123e4567-e89b-12d3-a456-426614174000",
                 "storage_id": "NEW_STORAGE",
@@ -79,7 +82,7 @@ class StorageAPITestCase(APITestCase):
                 "performed_at": current_timestamp_in_seconds,
             }
         ]
-        response = self.client.post("/api/mobile/storage/logs/", body_python, format="json")
+        response = self.client.post("/api/mobile/storage/logs/", post_body, format="json")
 
         self.assertEqual(response.status_code, 201)
 
@@ -109,7 +112,7 @@ class StorageAPITestCase(APITestCase):
         num_devices_before = StorageDevice.objects.count()
 
         current_timestamp_in_seconds = int(time())
-        body_python = [
+        post_body = [
             {
                 "id": "66664567-e89b-12d3-a456-426614174000",
                 "storage_id": "EXISTING_STORAGE",
@@ -121,7 +124,7 @@ class StorageAPITestCase(APITestCase):
                 "performed_at": current_timestamp_in_seconds,
             }
         ]
-        response = self.client.post("/api/mobile/storage/logs/", body_python, format="json")
+        response = self.client.post("/api/mobile/storage/logs/", post_body, format="json")
         self.assertEqual(response.status_code, 201)
 
         # Ensure the no new devices were created
@@ -171,17 +174,17 @@ class StorageAPITestCase(APITestCase):
                     {
                         "storage_id": "EXISTING_STORAGE",
                         "storage_type": "NFC",
-                        "status": {"status": "OK", "reason": None, "comment": None},
+                        "status": {"status": "OK", "reason": "", "comment": ""},
                     },
                     {
                         "storage_id": "ANOTHER_EXISTING_STORAGE_BLACKLISTED_STOLEN",
                         "storage_type": "NFC",
-                        "status": {"status": "BLACKLISTED", "reason": "STOLEN", "comment": None},
+                        "status": {"status": "BLACKLISTED", "reason": "STOLEN", "comment": ""},
                     },
                     {
                         "storage_id": "ANOTHER_EXISTING_STORAGE_BLACKLISTED_ABUSE",
                         "storage_type": "SD",
-                        "status": {"status": "BLACKLISTED", "reason": "ABUSE", "comment": None},
+                        "status": {"status": "BLACKLISTED", "reason": "ABUSE", "comment": ""},
                     },
                 ]
             },
@@ -199,12 +202,12 @@ class StorageAPITestCase(APITestCase):
                     {
                         "storage_id": "ANOTHER_EXISTING_STORAGE_BLACKLISTED_STOLEN",
                         "storage_type": "NFC",
-                        "status": {"status": "BLACKLISTED", "reason": "STOLEN", "comment": None},
+                        "status": {"status": "BLACKLISTED", "reason": "STOLEN", "comment": ""},
                     },
                     {
                         "storage_id": "ANOTHER_EXISTING_STORAGE_BLACKLISTED_ABUSE",
                         "storage_type": "SD",
-                        "status": {"status": "BLACKLISTED", "reason": "ABUSE", "comment": None},
+                        "status": {"status": "BLACKLISTED", "reason": "ABUSE", "comment": ""},
                     },
                 ]
             },
@@ -224,7 +227,7 @@ class StorageAPITestCase(APITestCase):
                     {
                         "storage_id": "ANOTHER_EXISTING_STORAGE_BLACKLISTED_STOLEN",
                         "storage_type": "NFC",
-                        "status": {"status": "BLACKLISTED", "reason": "STOLEN", "comment": None},
+                        "status": {"status": "BLACKLISTED", "reason": "STOLEN", "comment": ""},
                     },
                 ]
             },
@@ -242,13 +245,43 @@ class StorageAPITestCase(APITestCase):
                     {
                         "storage_id": "EXISTING_STORAGE",
                         "storage_type": "NFC",
-                        "status": {"status": "OK", "reason": None, "comment": None},
+                        "status": {"status": "OK", "reason": "", "comment": ""},
                     },
                     {
                         "storage_id": "ANOTHER_EXISTING_STORAGE_BLACKLISTED_STOLEN",
                         "storage_type": "NFC",
-                        "status": {"status": "BLACKLISTED", "reason": "STOLEN", "comment": None},
+                        "status": {"status": "BLACKLISTED", "reason": "STOLEN", "comment": ""},
                     },
                 ]
             },
         )
+
+    def test_blacklist_storage_ok(self):
+        """
+        POST /api/storage/blacklisted with correct parameters and permissions does the job:
+
+        - returns the 204 status
+        - perform the requested changes in the database
+        """
+        self.client.force_authenticate(self.yoda)
+
+        post_body = {
+            "storage_id": "EXISTING_STORAGE",
+            "storage_type": "NFC",
+            "storage_status": {"status": "BLACKLISTED", "reason": "DAMAGED", "comment": "not usable anymore"},
+        }
+        response = self.client.post("/api/storage/blacklisted/", post_body, format="json")
+        self.assertEqual(response.status_code, 204)
+
+        # check that the storage status has been updated (was OK before)
+        updated_storage = StorageDevice.objects.get(pk=self.existing_storage_device.pk)
+        self.assertEqual(updated_storage.status, "BLACKLISTED")
+        self.assertEqual(updated_storage.status_reason, "DAMAGED")
+        self.assertEqual(updated_storage.status_comment, "not usable anymore")
+
+        # check that a corresponding log entry has been created
+
+        latest_log_entry_for_storage = updated_storage.log_entries.latest("pk")
+        self.assertEqual(latest_log_entry_for_storage.operation_type, "CHANGE_STATUS")
+        self.assertEqual(latest_log_entry_for_storage.performed_by, self.yoda)
+        # TODO: also check the value of performed_at (use mock object?)

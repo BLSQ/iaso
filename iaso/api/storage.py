@@ -1,6 +1,8 @@
+# TODO: need better type annotations in this file
 from datetime import datetime
 
 from rest_framework import viewsets, permissions, serializers, status
+from rest_framework.decorators import action
 from rest_framework.mixins import CreateModelMixin, ListModelMixin
 from rest_framework.response import Response
 
@@ -62,6 +64,8 @@ class StorageViewSet(ListModelMixin, viewsets.GenericViewSet):
     serializer_class = StorageSerializer
 
     def get_queryset(self):
+        """Devices get filtered by account, and optionally by a few URL parameters"""
+
         # In all cases, we'll only return results for the account of the user
         qs = StorageDevice.objects.filter(account=self.request.user.iaso_profile.account)
 
@@ -86,15 +90,59 @@ class StorageViewSet(ListModelMixin, viewsets.GenericViewSet):
         return qs
 
     def list(self, request):
+        """
+        Endpoint used to list/search devices on the web interface
 
+        GET /api/storage/
+        """
         # TODO: implement pagination
         # TODO: responses when insufficient permissions
-        # 1. Get data out of request
-
         queryset = self.get_queryset()
 
         serializer = self.get_serializer(queryset, many=True)
         return Response({"storages": serializer.data})
+
+    @action(detail=False, methods=["post"])
+    def blacklisted(self, request):
+        """
+        Endpoint used to blacklist a single device from the web interface
+
+        POST /api/storage/blacklisted/
+        """
+        # TODO: permissions: spec mentions "permission to modify storage", what does it mean exactly?
+        #  Clarify then implement
+
+        # 1. Get data from request/environment
+        user = request.user
+        body = request.data
+        storage_id = body.get("storage_id")
+        storage_type = body.get("storage_type")
+        storage_status_dict = body.get("storage_status")
+        account = user.iaso_profile.account
+
+        # 2. Preprocess submitted data
+        try:
+            device = StorageDevice.objects.get(customer_chosen_id=storage_id, type=storage_type, account=account)
+        except StorageDevice.DoesNotExist:
+            device = None
+
+        status_serializer = StorageStatusSerializer(data=storage_status_dict)
+
+        if device is not None and status_serializer.is_valid():
+            # 3. Submitted data is valid, we can now proceed
+            status_dict = status_serializer.validated_data
+            # 3.1 Update device status
+            device.change_status(
+                new_status=status_dict["status"],
+                reason=status_dict["status_reason"],
+                comment=status_dict["status_comment"],
+                performed_by=user,
+            )
+            return Response("", status=status.HTTP_204_NO_CONTENT)
+
+        else:  # Some parameters were invalid
+            # TODO: return a 400 error here?
+            pass
 
 
 # This could be rewritten in more idiomatic DRF (serializers, ...). On the other hand, I quite like the explicitness

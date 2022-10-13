@@ -25,11 +25,11 @@ const MESSAGES = defineMessages({
         defaultMessage: 'SD',
         id: 'iaso.storages.sd',
     },
-    ok: {
+    OK: {
         defaultMessage: 'Ok',
         id: 'iaso.storages.status.ok',
     },
-    blacklisted: {
+    BLACKLISTED: {
         defaultMessage: 'Blacklisted',
         id: 'iaso.storages.status.blacklisted',
     },

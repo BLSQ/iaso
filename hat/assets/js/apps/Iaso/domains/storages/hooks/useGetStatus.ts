@@ -12,11 +12,11 @@ export const useGetStatus = (): Array<DropdownOptions<string>> => {
     return [
         {
             value: 'OK',
-            label: formatMessage(MESSAGES.ok),
+            label: formatMessage(MESSAGES.OK),
         },
         {
             value: 'BLACKLISTED',
-            label: formatMessage(MESSAGES.blacklisted),
+            label: formatMessage(MESSAGES.BLACKLISTED),
         },
     ];
 };

@@ -793,7 +793,7 @@
     "iaso.storages.sd": "SD",
     "iaso.storages.status.blacklisted": "Blacklisted",
     "iaso.storages.status.label": "Status",
-    "iaso.storages.status.ok": "OK",
+    "iaso.storages.status.ok": "Ok",
     "iaso.storages.usb": "USB",
     "iaso.table.label.close": "Fermer",
     "iaso.table.label.resetSearch": "Vider la recherche",

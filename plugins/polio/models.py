@@ -129,9 +129,13 @@ class Round(models.Model):
     class Meta:
         ordering = ["number", "started_at"]
 
+    # With the current situation/UI, all rounds must have a start date. However, there might be legacy campaigns/rounds
+    # floating around in production, and therefore consumer code must assume that this field might be NULL
     started_at = models.DateField(null=True, blank=True)
     number = models.IntegerField(null=True, blank=True)
     campaign = models.ForeignKey("Campaign", related_name="rounds", on_delete=models.PROTECT, null=True)
+    # With the current situation/UI, all rounds must have an end date. However, there might be legacy campaigns/rounds
+    # floating around in production, and therefore consumer code must assume that this field might be NULL
     ended_at = models.DateField(null=True, blank=True)
     mop_up_started_at = models.DateField(null=True, blank=True)
     mop_up_ended_at = models.DateField(null=True, blank=True)
@@ -382,14 +386,16 @@ class Campaign(SoftDeletableModel):
 
     def get_districts_for_round_number(self, round_number):
         if self.separate_scopes_per_round:
-            return OrgUnit.objects.filter(groups__roundScope__round__number=round_number).filter(
-                groups__roundScope__round__campaign=self
+            return (
+                OrgUnit.objects.filter(groups__roundScope__round__number=round_number)
+                .filter(groups__roundScope__round__campaign=self)
+                .distinct()
             )
         return self.get_campaign_scope_districts()
 
     def get_districts_for_round(self, round):
         if self.separate_scopes_per_round:
-            districts = OrgUnit.objects.filter(groups__roundScope__round=round)
+            districts = OrgUnit.objects.filter(groups__roundScope__round=round).distinct()
         else:
             districts = self.get_campaign_scope_districts()
         return districts
@@ -401,7 +407,7 @@ class Campaign(SoftDeletableModel):
     def get_all_districts(self):
         """District from all round merged as one"""
         if self.separate_scopes_per_round:
-            return OrgUnit.objects.filter(groups__roundScope__round__campaign=self)
+            return OrgUnit.objects.filter(groups__roundScope__round__campaign=self).distinct()
         return self.get_campaign_scope_districts()
 
     def last_surge(self):

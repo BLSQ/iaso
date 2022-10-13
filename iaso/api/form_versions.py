@@ -1,6 +1,7 @@
 import typing
 
 from rest_framework import serializers, parsers, permissions, exceptions
+from rest_framework.fields import Field
 
 from iaso.models import Form, FormVersion
 from django.db.models.functions import Concat
@@ -60,7 +61,7 @@ class FormVersionSerializer(DynamicFieldsModelSerializer):
             "descriptor",
         ]
 
-    form_id = serializers.PrimaryKeyRelatedField(source="form", queryset=Form.objects.all())
+    form_id: Field = serializers.PrimaryKeyRelatedField(source="form", queryset=Form.objects.all())
     form_name = serializers.SerializerMethodField()
     xls_file = serializers.FileField(required=False, allow_empty_file=False)  # field is not required in model
     mapped = serializers.BooleanField(read_only=True)

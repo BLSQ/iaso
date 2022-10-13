@@ -1,6 +1,9 @@
 import datetime
 import json
 import os
+import pandas as pd
+import pprint
+import io
 from typing import List
 from unittest import mock
 from unittest.mock import patch
@@ -18,7 +21,7 @@ from django.contrib.gis.geos import Polygon, Point, MultiPolygon
 from hat.api.token_authentication import generate_auto_authentication_link
 from hat.settings import BASE_DIR
 from iaso import models as m
-from iaso.models import Account, OrgUnit, org_unit
+from iaso.models import Account, OrgUnit, org_unit, OrgUnitType
 from iaso.models.microplanning import Team
 from iaso.test import APITestCase, TestCase
 
@@ -30,6 +33,7 @@ from ..preparedness.calculator import get_preparedness_score
 from ..preparedness.exceptions import InvalidFormatError
 from ..preparedness.spreadsheet_manager import *
 from ..serializers import CampaignSerializer
+from ..export_utils import format_date
 
 
 class PolioAPITestCase(APITestCase):
@@ -37,6 +41,8 @@ class PolioAPITestCase(APITestCase):
     now: datetime.datetime
     source_version_1: m.SourceVersion
     source_version_2: m.SourceVersion
+    star_wars: m.Account
+    jedi_squad: m.OrgUnitType
     yoda: User
     org_unit: m.OrgUnit
     child_org_unit: m.OrgUnit
@@ -51,7 +57,8 @@ class PolioAPITestCase(APITestCase):
 
         cls.source_version_1 = m.SourceVersion.objects.create(data_source=cls.data_source, number=1)
         cls.source_version_2 = m.SourceVersion.objects.create(data_source=cls.data_source, number=2)
-
+        cls.star_wars = m.Account.objects.create(name="Star Wars")
+        cls.jedi_squad = m.OrgUnitType.objects.create(name="Jedi Squad", short_name="Jds")
         account = Account.objects.create(name="Global Health Initiative", default_version=cls.source_version_1)
         cls.yoda = cls.create_user_with_profile(username="yoda", account=account, permissions=["iaso_forms"])
 
@@ -334,6 +341,112 @@ class PolioAPITestCase(APITestCase):
         restored_campaign = Campaign.objects.get(id=campaign.id)
         self.assertIsNone(restored_campaign.deleted_at)
 
+    def test_create_calendar_xlsx_sheet(self):
+        """
+        It tests the whole export XLSX calendar feature when everything happens correctly:
+            1. If the export succeed
+            2. If it return the right header
+            3. If the columns names are correct
+            4. If the data in cells are correct:
+                a. If there is on rounds in a cell
+                b. If there are two rounds in a cell(it can be more than two rounds)
+        """
+        org_unit = OrgUnit.objects.create(
+            id=5455,
+            name="Country name",
+            org_unit_type=self.jedi_squad,
+            version=self.star_wars.default_version,
+        )
+
+        org_unit_2 = OrgUnit.objects.create(
+            id=5456,
+            name="Country name 2",
+            org_unit_type=self.jedi_squad,
+            version=self.star_wars.default_version,
+        )
+
+        c = Campaign.objects.create(country_id=org_unit.id, obr_name="orb campaign", vacine="vacin")
+        c_round_1 = c.rounds.create(number=1, started_at=datetime.date(2022, 1, 1), ended_at=datetime.date(2022, 1, 2))
+        c_round_2 = c.rounds.create(number=2, started_at=datetime.date(2022, 3, 1), ended_at=datetime.date(2022, 3, 2))
+
+        c2 = Campaign.objects.create(country_id=org_unit_2.id, obr_name="orb campaign 2", vacine="vacin")
+        c2_round_1 = c2.rounds.create(
+            number=1, started_at=datetime.date(2022, 1, 1), ended_at=datetime.date(2022, 1, 2)
+        )
+        c2_round_2 = c2.rounds.create(
+            number=2, started_at=datetime.date(2022, 1, 4), ended_at=datetime.date(2022, 1, 7)
+        )
+        response = self.client.get("/api/polio/campaigns/create_calendar_xlsx_sheet/", {"currentDate": "2022-10-01"})
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.get("Content-Disposition"), "attachment; filename=calendar_2022-10-01.xlsx")
+        excel_data = pd.read_excel(response.content, engine="openpyxl", sheet_name="calendar_2022-10-01")
+
+        excel_columns = excel_data.columns.ravel()
+        self.assertEqual(excel_columns[0], "COUNTRY")
+        self.assertEqual(excel_columns[3], "March")
+
+        data_dict = excel_data.to_dict()
+        self.assertEqual(data_dict["COUNTRY"][0], org_unit.name)
+        self.assertEqual(data_dict["COUNTRY"][1], org_unit_2.name)
+        self.assertEqual(data_dict["January"][0], self.format_date_to_test(c, c_round_1))
+        self.assertEqual(
+            data_dict["January"][1], self.format_date_to_test(c2, c2_round_1) + self.format_date_to_test(c2, c2_round_2)
+        )
+
+    def test_create_calendar_xlsx_sheet_campaign_without_country(self):
+        """
+        When a campaign was not linked to a country, export XLSX calendar triggered an error('NoneType' object has no attribute 'id'):
+            - This test checks if the error does not occur even when a campaign is not linked to country
+        """
+        c = Campaign.objects.create(obr_name="orb campaign", vacine="vacin")
+        c.rounds.create(number=1, started_at=datetime.date(2022, 1, 1), ended_at=datetime.date(2022, 1, 2))
+
+        response = self.client.get("/api/polio/campaigns/create_calendar_xlsx_sheet/", {"currentDate": "2022-10-01"})
+        self.assertEqual(response.status_code, 200)
+        excel_data = pd.read_excel(response.content, engine="openpyxl", sheet_name="calendar_2022-10-01")
+
+        data_dict = excel_data.to_dict()
+        self.assertEqual(len(data_dict["COUNTRY"]), 0)
+
+    def test_create_calendar_xlsx_sheet_round_with_no_end_date(self):
+        """
+        When a round had None in started_at or ended_at, it triggered an error('time data '' does not match format '%Y-%m-%d''):
+            - This test checks if the error does not occur even when a round has None in started_at or ended_at
+        """
+        org_unit = OrgUnit.objects.create(
+            id=5455,
+            name="Country name",
+            org_unit_type=self.jedi_squad,
+            version=self.star_wars.default_version,
+        )
+
+        c = Campaign.objects.create(country_id=org_unit.id, obr_name="orb campaign", vacine="vacin")
+        round = c.rounds.create(number=1, started_at=datetime.date(2022, 1, 1), ended_at=None)
+
+        response = self.client.get("/api/polio/campaigns/create_calendar_xlsx_sheet/", {"currentDate": "2022-10-01"})
+        self.assertEqual(response.status_code, 200)
+        excel_data = pd.read_excel(response.content, engine="openpyxl", sheet_name="calendar_2022-10-01")
+
+        data_dict = excel_data.to_dict()
+        self.assertEqual(data_dict["January"][0], self.format_date_to_test(c, round))
+
+    @staticmethod
+    def format_date_to_test(campaign, round):
+        started_at = format_date(round.started_at.strftime("%Y-%m-%d")) if round.started_at is not None else ""
+        ended_at = format_date(round.ended_at.strftime("%Y-%m-%d"), True) if round.ended_at is not None else ""
+        return (
+            campaign.obr_name
+            + "\nRound "
+            + str(round.number)
+            + "\nDates: "
+            + started_at
+            + " - "
+            + ended_at
+            + "\n"
+            + campaign.vacine
+            + "\n\n"
+        )
+
     def test_handle_restore_active_campaign(self):
         self.create_multiple_campaigns(1)
         campaign = Campaign.objects.get()
@@ -612,7 +725,6 @@ class BudgetPolioTestCase(APITestCase):
     @classmethod
     def setUpTestData(cls):
         cls.data_source = m.DataSource.objects.create(name="Default source")
-
         cls.now = now()
 
         cls.source_version_1 = m.SourceVersion.objects.create(data_source=cls.data_source, number=1)

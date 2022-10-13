@@ -1,5 +1,6 @@
 # TODO: need better type annotations in this file
 from datetime import datetime
+from typing import Tuple
 
 from rest_framework import viewsets, permissions, serializers, status
 from rest_framework.decorators import action, api_view
@@ -52,7 +53,7 @@ class StorageSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = StorageDevice
-        fields = ("storage_id", "storage_type", "status")
+        fields: Tuple[str, ...] = ("storage_id", "storage_type", "status")
 
 
 class StorageSerializerWithLogs(StorageSerializer):

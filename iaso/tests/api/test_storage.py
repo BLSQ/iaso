@@ -1,6 +1,8 @@
 # TODO: need better type annotations in this file
-
+from datetime import datetime
 from time import time
+
+from django.utils import timezone
 
 from iaso.models import Account, Form, MONTH, Instance, OrgUnit, Entity, EntityType, StorageDevice, StorageLogEntry
 from iaso.test import APITestCase
@@ -27,6 +29,14 @@ class StorageAPITestCase(APITestCase):
             account=star_wars,
             type="NFC",
             status="OK",
+        )
+
+        StorageLogEntry.objects.create(
+            id="e4200710-bf82-4d29-a29b-6a042f79ef25",
+            device=cls.existing_storage_device,
+            operation_type="WRITE_PROFILE",
+            performed_by=cls.yoda,
+            performed_at=datetime(2022, 10, 13, 13, 12, 56, 0, tzinfo=timezone.utc),
         )
 
         cls.existing_storage_device_2 = StorageDevice.objects.create(
@@ -256,7 +266,7 @@ class StorageAPITestCase(APITestCase):
             },
         )
 
-    def test_blacklist_storage_ok(self):
+    def test_post_blacklisted_storage_ok(self):
         """
         POST /api/storage/blacklisted with correct parameters and permissions does the job:
 
@@ -281,7 +291,36 @@ class StorageAPITestCase(APITestCase):
 
         # check that a corresponding log entry has been created
 
-        latest_log_entry_for_storage = updated_storage.log_entries.latest("pk")
+        latest_log_entry_for_storage = updated_storage.log_entries.latest("performed_at")
         self.assertEqual(latest_log_entry_for_storage.operation_type, "CHANGE_STATUS")
         self.assertEqual(latest_log_entry_for_storage.performed_by, self.yoda)
         # TODO: also check the value of performed_at (use mock object?)
+
+    # TODO: test edge cases and errors for the POST /api/storage/blacklisted
+
+    def test_get_logs_for_device_base(self):
+        """Test the basics of the logs per device endpoint"""
+        self.client.force_authenticate(self.yoda)
+        response = self.client.get("/api/storage/NFC/EXISTING_STORAGE/logs")
+        self.assertEqual(response.status_code, 200)
+        received_json = response.json()
+        self.assertEqual(
+            received_json,
+            {
+                "storage_id": "EXISTING_STORAGE",
+                "storage_type": "NFC",
+                "status": {"status": "OK", "reason": "", "comment": ""},
+                "logs": [
+                    {
+                        "id": "e4200710-bf82-4d29-a29b-6a042f79ef25",
+                        "storage_id": "EXISTING_STORAGE",
+                        "storage_type": "NFC",
+                        "operation_type": "WRITE_PROFILE",
+                        "instances": [],
+                        "org_unit": None,
+                        "entity": None,
+                        "performed_at": "2022-10-13T13:12:56Z",
+                    }
+                ],
+            },
+        )

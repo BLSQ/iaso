@@ -31,6 +31,8 @@ from django.utils.timezone import now, make_aware
 from django_filters.rest_framework import DjangoFilterBackend  # type: ignore
 from django.template.loader import render_to_string
 from gspread.utils import extract_id_from_url  # type: ignore
+from openpyxl.writer.excel import save_virtual_workbook
+
 from hat.settings import DEFAULT_FROM_EMAIL
 from rest_framework import routers, filters, viewsets, serializers, permissions, status
 from rest_framework.decorators import action

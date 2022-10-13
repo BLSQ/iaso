@@ -2,7 +2,7 @@
 from datetime import datetime
 
 from rest_framework import viewsets, permissions, serializers, status
-from rest_framework.decorators import action
+from rest_framework.decorators import action, api_view
 from rest_framework.mixins import CreateModelMixin, ListModelMixin
 from rest_framework.response import Response
 
@@ -53,6 +53,15 @@ class StorageSerializer(serializers.ModelSerializer):
     class Meta:
         model = StorageDevice
         fields = ("storage_id", "storage_type", "status")
+
+
+class StorageSerializerWithLogs(StorageSerializer):
+    """Like StorageSerializer, but also includes the log entries"""
+
+    logs = StorageLogSerializer(many=True, source="log_entries")
+
+    class Meta(StorageSerializer.Meta):
+        fields = StorageSerializer.Meta.fields + ("logs",)
 
 
 class StorageViewSet(ListModelMixin, viewsets.GenericViewSet):
@@ -195,3 +204,21 @@ class StorageLogViewSet(CreateModelMixin, viewsets.GenericViewSet):
         log_entry.instances.set(concerned_instances)
 
         return Response("", status=status.HTTP_201_CREATED)
+
+
+@api_view()
+def logs_per_device(request, storage_customer_chosen_id: str, storage_type: str):
+    """Return a list of log entries for a given device"""
+    user_account = request.user.iaso_profile.account
+
+    # TODO: implement permissions and return 403/401 (see spec)
+    # TODO: spec says: "permissions to see storage", what does it mean exactly?
+
+    device = StorageDevice.objects.get(
+        customer_chosen_id=storage_customer_chosen_id, type=storage_type, account=user_account
+    )
+
+    # TODO: implement filtering
+    # TODO: implement pagination
+
+    return Response(StorageSerializerWithLogs(device).data)

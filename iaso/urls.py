@@ -38,7 +38,7 @@ from .api.groups import GroupsViewSet
 from .api.periods import PeriodsViewSet
 from .api.completeness import CompletenessViewSet
 from .api.export_requests import ExportRequestsViewSet
-from .api.storage import StorageLogViewSet, StorageViewSet
+from .api.storage import StorageLogViewSet, StorageViewSet, logs_per_device
 
 from .api.tasks import TaskSourceViewSet
 from .api.accounts import AccountViewSet
@@ -162,6 +162,7 @@ def append_datasources_subresource(viewset, resource_name, urlpatterns):
 urlpatterns = urlpatterns + [
     path("token/", TokenObtainPairView.as_view(), name="token_obtain_pair"),
     path("token/refresh/", TokenRefreshView.as_view(), name="token_refresh"),
+    path("storage/<str:storage_type>/<str:storage_customer_chosen_id>/logs", logs_per_device),
     path("", include(router.urls)),
 ]
 # External Auth

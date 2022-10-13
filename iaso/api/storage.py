@@ -6,7 +6,7 @@ from rest_framework.response import Response
 
 from iaso.models import StorageLogEntry, StorageDevice, Instance, OrgUnit, Entity
 
-
+# This is actually unused (by POST)
 class StorageLogSerializer(serializers.ModelSerializer):
     storage_id = serializers.CharField(source="device.customer_chosen_id")
     storage_type = serializers.CharField(source="device.type")
@@ -28,13 +28,28 @@ class StorageLogSerializer(serializers.ModelSerializer):
         pass
 
 
+class StorageStatusSerializer(serializers.Serializer):
+    status = serializers.CharField()
+    reason = serializers.CharField(source="status_reason")
+    # TODO: where should this data come from
+    # updated_at = serializers.DateTimeField()
+    # TODO: Comment field is not in the spec, but I guess it's useful to implement, no?
+    comment = serializers.CharField(source="status_comment")
+
+
 class StorageSerializer(serializers.ModelSerializer):
     storage_id = serializers.CharField(source="customer_chosen_id")
     storage_type = serializers.CharField(source="type")
+    status = StorageStatusSerializer(source="*")
+    # TODO: missing fields according to spec:
+    # - created at (what is it? created in the backend? from the timestamp of the storage log that created it?
+    # - updated at (what is it: last log entry? last time a device field was updated?)
+    # - org_unit? From the last log entry (that mentions a orgunit)?
+    # - entity? From the last log entry (that mentions an entity)?
 
     class Meta:
         model = StorageDevice
-        fields = ("storage_id", "storage_type")
+        fields = ("storage_id", "storage_type", "status")
 
 
 class StorageViewSet(ListModelMixin, viewsets.GenericViewSet):
@@ -46,14 +61,39 @@ class StorageViewSet(ListModelMixin, viewsets.GenericViewSet):
     serializer_class = StorageSerializer
 
     def get_queryset(self):
-        # We'll only return results for the account of the user
-        return StorageDevice.objects.filter(account=self.request.user.iaso_profile.account)
+        # In all cases, we'll only return results for the account of the user
+        qs = StorageDevice.objects.filter(account=self.request.user.iaso_profile.account)
+
+        # There are also a few optional URL filters
+        status = self.request.query_params.get("status")
+        if status is not None:
+            qs = qs.filter(status=status)
+
+        reason = self.request.query_params.get("reason")
+        if reason is not None:
+            qs = qs.filter(status_reason=reason)
+
+        type = self.request.query_params.get("type")
+        if type is not None:
+            qs = qs.filter(type=type)
+
+        search = self.request.query_params.get("search")
+        if search is not None:
+            # TODO: implement: search on entity or storage id
+            pass
+
+        return qs
 
     def list(self, request):
+
+        # TODO: implement pagination
+        # TODO: responses when insufficient permissions
+        # 1. Get data out of request
+
         queryset = self.get_queryset()
 
         serializer = self.get_serializer(queryset, many=True)
-        return Response(serializer.data)
+        return Response({"storages": serializer.data})
 
 
 # This could be rewritten in more idiomatic DRF (serializers, ...). On the other hand, I quite like the explicitness

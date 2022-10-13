@@ -8,6 +8,7 @@ class StorageAPITestCase(APITestCase):
     @classmethod
     def setUpTestData(cls):
         star_wars = Account.objects.create(name="Star Wars")
+        star_wars_2 = Account.objects.create(name="Star Wars revival")
         cls.yoda = cls.create_user_with_profile(username="yoda", account=star_wars, permissions=["iaso_forms"])
 
         form_1 = Form.objects.create(name="Hydroponics study", period_type=MONTH, single_per_period=True)
@@ -22,6 +23,29 @@ class StorageAPITestCase(APITestCase):
         cls.existing_storage_device = StorageDevice.objects.create(
             customer_chosen_id="EXISTING_STORAGE",
             account=star_wars,
+            type="NFC",
+        )
+
+        cls.existing_storage_device_2 = StorageDevice.objects.create(
+            customer_chosen_id="ANOTHER_EXISTING_STORAGE_BLACKLISTED_STOLEN",
+            account=star_wars,
+            type="NFC",
+            status="BLACKLISTED",
+            status_reason="STOLEN",
+        )
+
+        cls.existing_storage_device_3 = StorageDevice.objects.create(
+            customer_chosen_id="ANOTHER_EXISTING_STORAGE_BLACKLISTED_ABUSE",
+            account=star_wars,
+            type="SD",
+            status="BLACKLISTED",
+            status_reason="ABUSE",
+        )
+
+        # This one should be invisible to the "yoda" user
+        cls.existing_storage_device_another_account = StorageDevice.objects.create(
+            customer_chosen_id="EXISTING_STORAGE_ANOTHER_ACCOUNT",
+            account=star_wars_2,
             type="NFC",
         )
 
@@ -127,3 +151,104 @@ class StorageAPITestCase(APITestCase):
     def test_list_only_own_account(self):
         """GET /api/storage/ only lists the devices associated with the user account"""
         # TODO: implement
+
+    def test_list_base(self):
+        """
+        GET /api/storage/ return a status 200 and the list of devices in the specified format.
+
+        We also check that devices from other accounts (than the user account) are not returned.
+
+        Endpoint specs: https://bluesquare.atlassian.net/browse/WC2-62
+        """
+        self.client.force_authenticate(self.yoda)
+        response = self.client.get("/api/storage/")
+        self.assertEqual(response.status_code, 200)
+        received_json = response.json()
+        self.assertEqual(
+            received_json,
+            {
+                "storages": [
+                    {
+                        "storage_id": "EXISTING_STORAGE",
+                        "storage_type": "NFC",
+                        "status": {"status": "OK", "reason": None, "comment": None},
+                    },
+                    {
+                        "storage_id": "ANOTHER_EXISTING_STORAGE_BLACKLISTED_STOLEN",
+                        "storage_type": "NFC",
+                        "status": {"status": "BLACKLISTED", "reason": "STOLEN", "comment": None},
+                    },
+                    {
+                        "storage_id": "ANOTHER_EXISTING_STORAGE_BLACKLISTED_ABUSE",
+                        "storage_type": "SD",
+                        "status": {"status": "BLACKLISTED", "reason": "ABUSE", "comment": None},
+                    },
+                ]
+            },
+        )
+
+    def test_list_filter_by_status(self):
+        """GET /api/storage/?status=OK only returns devices with the specified status"""
+        self.client.force_authenticate(self.yoda)
+        response = self.client.get("/api/storage/?status=BLACKLISTED")
+        received_json = response.json()
+        self.assertEqual(
+            received_json,
+            {
+                "storages": [
+                    {
+                        "storage_id": "ANOTHER_EXISTING_STORAGE_BLACKLISTED_STOLEN",
+                        "storage_type": "NFC",
+                        "status": {"status": "BLACKLISTED", "reason": "STOLEN", "comment": None},
+                    },
+                    {
+                        "storage_id": "ANOTHER_EXISTING_STORAGE_BLACKLISTED_ABUSE",
+                        "storage_type": "SD",
+                        "status": {"status": "BLACKLISTED", "reason": "ABUSE", "comment": None},
+                    },
+                ]
+            },
+        )
+
+    # TODO: list: error 400 if incorrect status/reason/type is requested?
+
+    def test_list_filter_by_reason(self):
+        """GET /api/storage/?status=OK only returns devices with the specified status"""
+        self.client.force_authenticate(self.yoda)
+        response = self.client.get("/api/storage/?reason=STOLEN")
+        received_json = response.json()
+        self.assertEqual(
+            received_json,
+            {
+                "storages": [
+                    {
+                        "storage_id": "ANOTHER_EXISTING_STORAGE_BLACKLISTED_STOLEN",
+                        "storage_type": "NFC",
+                        "status": {"status": "BLACKLISTED", "reason": "STOLEN", "comment": None},
+                    },
+                ]
+            },
+        )
+
+    def test_list_filter_by_type(self):
+        """GET /api/storage/?status=OK only returns devices with the specified type"""
+        self.client.force_authenticate(self.yoda)
+        response = self.client.get("/api/storage/?type=NFC")
+        received_json = response.json()
+        self.assertEqual(
+            received_json,
+            {
+                "storages": [
+                    {
+                        "storage_id": "EXISTING_STORAGE",
+                        "storage_type": "NFC",
+                        "status": {"status": "OK", "reason": None, "comment": None},
+                    },
+                    {
+                        "storage_id": "ANOTHER_EXISTING_STORAGE_BLACKLISTED_STOLEN",
+                        "storage_type": "NFC",
+                        "status": {"status": "BLACKLISTED", "reason": "STOLEN", "comment": None},
+                    },
+                ]
+            },
+        )

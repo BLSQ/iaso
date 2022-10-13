@@ -8,6 +8,8 @@ import {
     commonStyles,
     useSafeIntl,
     LoadingSpinner,
+    ExcellSvg,
+    getTableUrl
 } from 'bluesquare-components';
 import { useSelector } from 'react-redux';
 import TopBar from 'Iaso/components/nav/TopBarComponent';
@@ -20,6 +22,8 @@ import {
     filterCampaigns,
     getCalendarData,
 } from '../components/campaignCalendar/utils';
+
+import { useGetCalendarXlsx } from '../hooks/useGetCalendarXlsx';
 
 import {
     dateFormat,
@@ -44,6 +48,7 @@ const useStyles = makeStyles(theme => ({
     isNotPdf: {
         height: 'calc(100vh - 65px)',
     },
+    exportIcon: { marginRight: '8px' }
 }));
 
 const Calendar = ({ params }) => {
@@ -66,6 +71,9 @@ const Calendar = ({ params }) => {
         params.countries,
         params.search,
     ]);
+
+    const { mutate: generateCalendarXlsx } = useGetCalendarXlsx();
+
     const { data: campaigns = [], isLoading } =
         useGetCampaigns(queryOptions).query;
 
@@ -97,7 +105,7 @@ const Calendar = ({ params }) => {
         const element = document.getElementById('pdf');
         const options = {
             filename: 'calendar.pdf',
-            excludeTagNames: 'button',
+            excludeClassNames: ['createPDF', 'createXlsx'],
             overrideWidth: pageWidth,
         };
 
@@ -113,6 +121,20 @@ const Calendar = ({ params }) => {
             });
         }, 1000);
     };
+
+    const urlParams = {
+        currentDate: params.currentDate,
+        countries: params.countries,
+        campaignType: params.campaignType,
+        campaignGroups: params.campaignGroups,
+        search: params.search,
+        order: params.order
+    };
+
+    const xlsx_url = getTableUrl(
+        'polio/campaigns/create_calendar_xlsx_sheet',
+        urlParams,
+    );
 
     useEffect(() => {
         if (campaigns.length > 0) {
@@ -150,18 +172,49 @@ const Calendar = ({ params }) => {
                             <Filters disableDates disableOnlyDeleted />
                         </Box>
                     )}
-                    <Box mb={2} mt={2} display="flex" justifyContent="flex-end">
-                        <Button
-                            onClick={createPDF}
-                            disabled={!isCalendarAndMapLoaded}
-                            type="button"
-                            color="primary"
-                            variant="contained"
-                        >
-                            <PictureAsPdfIcon style={{ marginRight: '8px' }} />
-                            {formatMessage(MESSAGES.exportToPdf)}
-                        </Button>
-                    </Box>
+
+                    <Grid
+                        container
+                        spacing={1}
+                        display="flex"
+                        justifyContent="flex-end"
+                    >
+                        <Grid item>
+                            <Box mb={2} mt={2}>
+                                <Button
+                                    onClick={createPDF}
+                                    disabled={!isCalendarAndMapLoaded}
+                                    type="button"
+                                    color="primary"
+                                    variant="contained"
+                                    className="createPDF"
+                                >
+                                    <PictureAsPdfIcon
+                                        className={classes.exportIcon}
+                                    />
+                                    {formatMessage(MESSAGES.exportToPdf)}
+                                </Button>
+                            </Box>
+                        </Grid>
+                        <Grid item>
+                            <Box mb={2} mt={2}>
+                                <Button
+                                    disabled={!isCalendarAndMapLoaded}
+                                    type="button"
+                                    color="primary"
+                                    variant="contained"
+                                    className="createXlsx"
+                                    href={xlsx_url}
+                                >
+                                    <ExcellSvg
+                                        className={classes.exportIcon}
+
+                                    />
+                                    {formatMessage(MESSAGES.exportToExcel)}
+                                </Button>
+                            </Box>
+                        </Grid>
+                    </Grid>
                     <Grid container spacing={2}>
                         {isPdf && (
                             <Grid item xs={12}>

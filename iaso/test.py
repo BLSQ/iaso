@@ -62,6 +62,8 @@ def try_json(response):
 
 
 class APITestCase(BaseAPITestCase, IasoTestCaseMixin):
+    client: APIClient
+
     def setUp(self):
         """Make sure we have a fresh client at the beginning of each test"""
 

@@ -1579,7 +1579,7 @@ const MESSAGES = defineMessages({
     },
     linksOrFilesRequired: {
         id: 'iaso.polio.label.linksOrFilesRequired',
-        defaultMessage: 'You need to attach either at least a link or a file',
+        defaultMessage: 'You need to attach at least a link or a file',
     },
 });
 

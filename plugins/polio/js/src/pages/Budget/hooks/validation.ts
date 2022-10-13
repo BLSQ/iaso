@@ -38,23 +38,23 @@ addMethod(
         });
     },
 );
-addMethod(
-    array,
-    'linksOrFiles',
-    function fileOrLinks(enableTest, formatMessage) {
-        return this.test('linksOrFiles', '', (_value, context) => {
-            if (!enableTest) return true;
-            const { path, createError, parent } = context;
-            if (!parent.files && !parent.links) {
-                return createError({
-                    path,
-                    message: formatMessage(MESSAGES.linksOrFilesRequired),
-                });
-            }
-            return true;
-        });
-    },
-);
+// addMethod(
+//     array,
+//     'linksOrFiles',
+//     function fileOrLinks(enableTest, formatMessage) {
+//         return this.test('linksOrFiles', '', (_value, context) => {
+//             if (!enableTest) return true;
+//             const { path, createError, parent } = context;
+//             if (!parent.files && !parent.links) {
+//                 return createError({
+//                     path,
+//                     message: formatMessage(MESSAGES.linksOrFilesRequired),
+//                 });
+//             }
+//             return true;
+//         });
+//     },
+// );
 
 export const useBudgetStepValidation = (
     errors: ValidationError = {},
@@ -67,13 +67,10 @@ export const useBudgetStepValidation = (
     const apiValidator = useAPIErrorValidator<Partial<any>>(errors, payload);
     return useMemo(() => {
         return object().shape({
-            file: makeRequired(
+            files: makeRequired(
                 mixed().nullable(),
                 requiredFields.includes('files'),
                 fieldRequired,
-            ).fileOrLinks(
-                requiredFields.includes('attachments'),
-                formatMessage,
             ),
             links: makeRequired(
                 array().of(
@@ -84,9 +81,6 @@ export const useBudgetStepValidation = (
                 ),
                 requiredFields.includes('files'),
                 fieldRequired,
-            ).linksOrFiles(
-                requiredFields.includes('attachments'),
-                formatMessage,
             ),
             comment: makeRequired(
                 string().nullable(),
@@ -99,6 +93,13 @@ export const useBudgetStepValidation = (
                 fieldRequired,
             ).typeError(typeError),
             general: mixed().nullable().test(apiValidator('general')),
+            attachments: mixed()
+                .nullable()
+                // @ts-ignore
+                .fileOrLinks(
+                    requiredFields.includes('attachments'),
+                    formatMessage,
+                ),
         });
     }, [apiValidator, fieldRequired, formatMessage, requiredFields, typeError]);
 };

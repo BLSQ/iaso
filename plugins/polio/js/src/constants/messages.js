@@ -1710,20 +1710,17 @@ const MESSAGES = defineMessages({
         id: 'iaso.polio.campaign.typeNotSupported',
         defaultMessage: 'Type not supported yet: {type}',
     },
-    // to do : add translations
     last_modified_by: {
         id: 'iaso.instance.last_modified_by',
         defaultMessage: 'Modified By',
     },
-    // to do : add translations
     seeLogDetail: {
-        id: 'iaso.polio.seeLogDetail',
+        id: 'iaso.polio.campaign.seeLogDetail',
         defaultMessage: 'See more details',
     },
-    // to do : add translations
-    campaignLogDetails: {
-        id: 'iaso.polio;campaignLogDetails',
-        defaultMessage: 'Campaign log details',
+    form: {
+        id: 'iaso.polio.campaign.form',
+        defaultMessage: 'Form',
     },
 });
 

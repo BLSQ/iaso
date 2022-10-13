@@ -6,6 +6,7 @@ from rest_framework.response import Response
 
 from iaso.models import StorageLogEntry, StorageDevice, Instance, OrgUnit, Entity
 
+
 # This is actually unused (by POST)
 class StorageLogSerializer(serializers.ModelSerializer):
     storage_id = serializers.CharField(source="device.customer_chosen_id")
@@ -65,20 +66,20 @@ class StorageViewSet(ListModelMixin, viewsets.GenericViewSet):
         qs = StorageDevice.objects.filter(account=self.request.user.iaso_profile.account)
 
         # There are also a few optional URL filters
-        status = self.request.query_params.get("status")
-        if status is not None:
-            qs = qs.filter(status=status)
+        filter_status = self.request.query_params.get("status")
+        if filter_status is not None:
+            qs = qs.filter(status=filter_status)
 
-        reason = self.request.query_params.get("reason")
-        if reason is not None:
-            qs = qs.filter(status_reason=reason)
+        filter_reason = self.request.query_params.get("reason")
+        if filter_reason is not None:
+            qs = qs.filter(status_reason=filter_reason)
 
-        type = self.request.query_params.get("type")
-        if type is not None:
-            qs = qs.filter(type=type)
+        filter_type = self.request.query_params.get("type")
+        if filter_type is not None:
+            qs = qs.filter(type=filter_type)
 
-        search = self.request.query_params.get("search")
-        if search is not None:
+        filter_search = self.request.query_params.get("search")
+        if filter_search is not None:
             # TODO: implement: search on entity or storage id
             pass
 

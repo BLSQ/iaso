@@ -4,6 +4,7 @@ import React, {
     useCallback,
     useMemo,
     useState,
+    useEffect
 } from 'react';
 import { useField } from 'formik';
 import {
@@ -53,6 +54,7 @@ import {
     unselectedPathOptions,
 } from '../../styles/constants';
 import { useStyles } from '../../styles/theme';
+import { csvPreview } from '../../../../../../hat/assets/js/apps/Iaso/domains/dataSources/requests';
 
 type Scope = {
     vaccine: string;
@@ -95,6 +97,8 @@ type Values = {
 export const ScopeInput: FunctionComponent<FieldProps<Scope[], Values>> = ({
     field,
     form: { values },
+    searchDistricts,
+    search
 }) => {
     // eslint-disable-next-line no-unused-vars
     const [_field, _meta, helpers] = useField(field.name);
@@ -128,6 +132,8 @@ export const ScopeInput: FunctionComponent<FieldProps<Scope[], Values>> = ({
     const { data: districtShapes, isFetching: isFetchingDistricts } =
         useGetGeoJson(parentCountryId, 'DISTRICT');
 
+    const districts = districtShapes
+    const [filteredDistricts, setFilteredDistricts] = useState([]);
     const { data: regionShapes, isFetching: isFetchingRegions } = useGetGeoJson(
         parentCountryId,
         'REGION',
@@ -216,7 +222,7 @@ export const ScopeInput: FunctionComponent<FieldProps<Scope[], Values>> = ({
         setScopes(newScopes);
     };
     const [selectedVaccine, setSelectedVaccine] = useState('mOPV2');
-
+    console.log("bien bien", districtShapes)
     const toggleDistrictInVaccineScope = useCallback(
         (district, _selectedVaccine) => {
             const newScopes: Scope[] = cloneDeep(scopes);
@@ -355,6 +361,35 @@ export const ScopeInput: FunctionComponent<FieldProps<Scope[], Values>> = ({
             </Tooltip>
         );
     };
+
+    useEffect(() => {
+        searchDistricts.current = searchDistrictByName
+    }, [districts, filteredDistricts])
+
+    const searchDistrictByName = (search) => {
+        let filtreds: ShapeRow[] = districts
+            .map(district => {
+                return {
+                    ...district,
+                    region: findRegion(district, regionShapes),
+                    vaccineName: findScopeWithOrgUnit(scopes, district.id)
+                        ?.vaccine,
+                };
+            })
+            .filter(d => d.name.includes(search))
+        if (sortFocus === 'REGION') {
+            filtreds = sortBy(filtreds, ['region']);
+        } else if (sortFocus === 'VACCINE') {
+            filtreds = sortBy(filtreds, ['vaccineName']);
+        }
+        if (orderBy === 'desc') {
+            filtreds = filtreds.reverse();
+        }
+        setFilteredDistricts(filtreds)
+    }
+
+    console.log("filtered", filteredDistricts)
+
     return (
         <Grid container spacing={4}>
             <Grid xs={7} item>
@@ -368,7 +403,7 @@ export const ScopeInput: FunctionComponent<FieldProps<Scope[], Values>> = ({
                 <Box position="relative">
                     <MapComponent
                         name="ScopeMap"
-                        mainLayer={districtShapes}
+                        mainLayer={filteredDistricts.length > 0 ? filteredDistricts : districtShapes}
                         backgroundLayer={regionShapes}
                         onSelectShape={onSelectOrgUnit}
                         getMainLayerStyle={getShapeStyle}
@@ -412,12 +447,12 @@ export const ScopeInput: FunctionComponent<FieldProps<Scope[], Values>> = ({
                                                 >
                                                     {selectedVaccine ===
                                                         vaccine.value && (
-                                                        <span
-                                                            className={
-                                                                classes.roundColorInner
-                                                            }
-                                                        />
-                                                    )}
+                                                            <span
+                                                                className={
+                                                                    classes.roundColorInner
+                                                                }
+                                                            />
+                                                        )}
                                                 </span>
                                                 <span
                                                     className={
@@ -504,7 +539,7 @@ export const ScopeInput: FunctionComponent<FieldProps<Scope[], Values>> = ({
                             </TableRow>
                         </TableHead>
                         <TableBody>
-                            {shapesForTable
+                            {(filteredDistricts.length > 0 ? filteredDistricts : shapesForTable)
                                 ?.slice(
                                     page * rowsPerPage,
                                     page * rowsPerPage + rowsPerPage,
@@ -572,7 +607,7 @@ export const ScopeInput: FunctionComponent<FieldProps<Scope[], Values>> = ({
                     className={classes.tablePagination}
                     rowsPerPageOptions={[5, 10, 25]}
                     component="div"
-                    count={shapesForTable?.length ?? 0}
+                    count={filteredDistricts?.length ?? 0}
                     rowsPerPage={rowsPerPage}
                     page={page}
                     labelRowsPerPage="Rows"

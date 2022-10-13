@@ -193,9 +193,7 @@ export const CampaignHistory: FunctionComponent<Props> = ({
                                 <WidgetPaper
                                     expandable
                                     isExpanded
-                                    title={formatMessage(
-                                        MESSAGES.campaignLogDetails,
-                                    )}
+                                    title={formatMessage(MESSAGES.form)}
                                     padded
                                 >
                                     <CampaignLogDetail logId={params.logId} />

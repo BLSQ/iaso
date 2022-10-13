@@ -3,7 +3,7 @@ import moment from 'moment';
 // @ts-ignore
 import { useSafeIntl } from 'bluesquare-components';
 
-import { CampaignLogData, CampaignFieldType } from '../constants/types';
+import { CampaignFieldType } from '../constants/types';
 
 import MESSAGES from '../constants/messages';
 
@@ -11,41 +11,30 @@ const textPlaceholder = '--';
 
 export const useGetCampaignFieldValue = (): ((
     fieldKey: string,
-    newValue: CampaignLogData,
     type: CampaignFieldType,
 ) => string) => {
     const { formatMessage } = useSafeIntl();
-    const getValue = (fieldKey, newValue, type): string => {
+    const getValue = (value, type): string => {
+        if (!value) return textPlaceholder;
         switch (type) {
-            case 'object': {
-                if (!newValue[fieldKey]) {
-                    return textPlaceholder;
-                }
-                return 'boo';
-            }
             case 'string':
             case 'number': {
-                return newValue[fieldKey] || textPlaceholder;
+                return value || textPlaceholder;
             }
             case 'date': {
-                return newValue[fieldKey]
-                    ? moment(newValue[fieldKey]).format('L')
-                    : textPlaceholder;
+                return value ? moment(value).format('L') : textPlaceholder;
             }
             case 'boolean': {
-                return newValue[fieldKey].toString();
+                return value.toString();
             }
             case 'dateTime': {
-                return newValue[fieldKey]
-                    ? moment(newValue[fieldKey]).format('LTS')
-                    : textPlaceholder;
+                return value ? moment(value).format('LTS') : textPlaceholder;
             }
             case 'time': {
-                return newValue[fieldKey]
-                    ? moment(newValue[fieldKey]).format('T')
-                    : textPlaceholder;
+                return value ? moment(value).format('T') : textPlaceholder;
             }
             default:
+                console.warn('value', value);
                 return formatMessage(MESSAGES.typeNotSupported, { type });
         }
     };

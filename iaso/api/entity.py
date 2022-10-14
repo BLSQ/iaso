@@ -156,7 +156,7 @@ def export_entity_as_csv(entities):
     # NOT WORKING ATM
     for entity in entities:
         res = entity.attributes.json
-        benef_data = [None]
+        benef_data = []
         if res is not None:
             for k, v in res.items():
                 try:
@@ -178,16 +178,17 @@ def export_entity_as_csv(entities):
                 for h in possible_field_list:
                     if h in fields_list and h not in header:
                         header.append(h)
-        i = 0
-        for h in header:
-            for k, v in res.items():
+
+            header = [h for h in header if h is not None]
+            for h in header:
                 match = False
-                if k == h:
-                    benef_data.append(f"found at {k}")
-                if i < len(header):
-                    i += 1
-                else:
-                    i = 0
+                for k, v in res.items():
+                    if k == h:
+                        match = True
+                        benef_data.append(v)
+                if not match:
+                    benef_data.append(None)
+
         data.append(benef_data)
         filename = entity.name
     filename = f"EXPORT_ENTITIES.csv" if len(entities) > 1 else f"{filename.upper()}_ENTITY.csv"
@@ -326,8 +327,7 @@ class EntityViewSet(ModelViewSet):
 
         if xlsx_format or csv_format:
             if pk:
-                # FIXME: the next line references a non-existing field? (entity_type_ids instead of entity_type_id?)
-                entities = Entity.objects.filter(account=account, entity_type_ids=pk)  # type: ignore
+                entities = Entity.objects.filter(account=account, entity_type_id=pk)
             else:
                 entities = Entity.objects.filter(account=account)
             if xlsx_format:
@@ -369,7 +369,9 @@ class EntityViewSet(ModelViewSet):
                 attributes_ou = None
                 file_content = None
                 if attributes is not None:
-                    file_content = entity.attributes.get_and_save_json_of_xml().get("file_content", None)  # type: ignore
+                    file_content = entity.attributes.get_and_save_json_of_xml().get(
+                        "file_content", None
+                    )  # type: ignore
                     attributes_pk = attributes.pk
                     # FIXME: what if entity.attributes.org_unit is None?
                     attributes_ou = entity.attributes.org_unit.as_location(with_parents=True)  # type: ignore
@@ -399,7 +401,9 @@ class EntityViewSet(ModelViewSet):
                 file_content = None
                 if attributes is not None:
                     # FIXME: what if entity.attributes is None?
-                    file_content = entity.attributes.get_and_save_json_of_xml().get("file_content", None)  # type: ignore
+                    file_content = entity.attributes.get_and_save_json_of_xml().get(
+                        "file_content", None
+                    )  # type: ignore
                     # FIXME: what if entity.attributes.org_unit is None?
                     attributes_ou = entity.attributes.org_unit.as_location(with_parents=True)  # type: ignore
                 columns_list = []

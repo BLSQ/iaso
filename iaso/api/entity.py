@@ -322,12 +322,13 @@ class EntityViewSet(ModelViewSet):
         page_offset = request.GET.get("page", 1)
         orders = request.GET.get("order", "-created_at").split(",")
         order_columns = request.GET.get("order_columns", None)
+        entity_id = request.GET.get("id", None)
 
         queryset = queryset.order_by(*orders)
 
         if xlsx_format or csv_format:
             if pk:
-                entities = Entity.objects.filter(account=account, entity_type_id=pk)
+                entities = Entity.objects.filter(account=account, id=pk)
             else:
                 entities = Entity.objects.filter(account=account)
             if xlsx_format:
@@ -367,13 +368,13 @@ class EntityViewSet(ModelViewSet):
                 attributes = entity.attributes
                 attributes_pk = None
                 attributes_ou = None
-                file_content = None
-                if attributes is not None:
+                # FIXME
+                file_content = None  # type: ignore
+                if attributes is not None and entity.attributes is not None:
                     file_content = entity.attributes.get_and_save_json_of_xml().get(
                         "file_content", None
                     )  # type: ignore
                     attributes_pk = attributes.pk
-                    # FIXME: what if entity.attributes.org_unit is None?
                     attributes_ou = entity.attributes.org_unit.as_location(with_parents=True)  # type: ignore
                 name = None
                 program = None
@@ -399,7 +400,7 @@ class EntityViewSet(ModelViewSet):
                 attributes = entity.attributes
                 attributes_ou = None
                 file_content = None
-                if attributes is not None:
+                if attributes is not None and entity.attributes is not None:  # type: ignore
                     # FIXME: what if entity.attributes is None?
                     file_content = entity.attributes.get_and_save_json_of_xml().get(
                         "file_content", None

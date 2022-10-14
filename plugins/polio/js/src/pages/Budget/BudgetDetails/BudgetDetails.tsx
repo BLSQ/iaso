@@ -237,6 +237,7 @@ export const BudgetDetails: FunctionComponent<Props> = ({ router }) => {
                                                                 requiredFields={
                                                                     step.required_fields
                                                                 }
+                                                                params={params}
                                                             />
                                                         </Grid>
                                                     );

@@ -1,6 +1,6 @@
 /* eslint-disable react/require-default-props */
 /* eslint-disable react/no-unused-prop-types */
-import React, { FunctionComponent, useMemo } from 'react';
+import React, { FunctionComponent, useCallback, useMemo } from 'react';
 import { useFormik, FormikProvider } from 'formik';
 import { isEqual } from 'lodash';
 import {
@@ -14,6 +14,7 @@ import {
     makeFullModal,
 } from 'bluesquare-components';
 import { Box, Divider, makeStyles, Typography } from '@material-ui/core';
+import { useDispatch } from 'react-redux';
 import MESSAGES from '../../../constants/messages';
 import InputComponent from '../../../../../../../hat/assets/js/apps/Iaso/components/forms/InputComponent';
 import { useCurrentUser } from '../../../../../../../hat/assets/js/apps/Iaso/utils/usersUtils';
@@ -28,6 +29,8 @@ import { BudgetStep } from '../types';
 import { UserHasTeamWarning } from './UserHasTeamWarning';
 import { AddMultipleLinks } from '../MultipleLinks/AddMultipleLinks';
 import { useBudgetStepValidation } from '../hooks/validation';
+import { redirectToReplace } from '../../../../../../../hat/assets/js/apps/Iaso/routing/actions';
+import { BUDGET_DETAILS } from '../../../constants/routes';
 
 type Props = {
     campaignId: string;
@@ -39,6 +42,7 @@ type Props = {
     id?: string;
     isMobileLayout?: boolean;
     requiredFields?: string[];
+    params: Record<string, any>;
 };
 
 const useStyles = makeStyles({ alignRight: { textAlign: 'right' } });
@@ -52,19 +56,33 @@ const CreateBudgetStep: FunctionComponent<Props> = ({
     transitionLabel,
     id,
     requiredFields = [],
+    params,
 }) => {
     const currentUser = useCurrentUser();
     const { data: userHasTeam } = useUserHasTeam(currentUser?.user_id);
     const { formatMessage } = useSafeIntl();
     const { mutateAsync: saveBudgetStep } = useSaveBudgetStep();
     const classes = useStyles();
+    const dispatch = useDispatch();
+    const onSuccess = useCallback(() => {
+        const {
+            // eslint-disable-next-line @typescript-eslint/no-unused-vars
+            quickTransition,
+            // eslint-disable-next-line @typescript-eslint/no-unused-vars, no-unused-vars
+            previousStep: { stepFromParams },
+            ...trimmedParams
+        } = params;
+        dispatch(redirectToReplace(BUDGET_DETAILS, trimmedParams));
+    }, [dispatch, params]);
 
     const {
         apiErrors,
         payload,
+
         mutation: save,
     } = useApiErrorValidation<Partial<any>, any>({
         mutationFn: saveBudgetStep,
+        onSuccess,
     });
     const validationSchema = useBudgetStepValidation(
         apiErrors,

@@ -169,7 +169,7 @@ class TransitionToSerializer(serializers.Serializer):
 
         for field in transition.required_fields:
             if field == "attachments":
-                if len(data.get("files", [])) < 1 or len(data.get("links", [])) < 1:
+                if len(data.get("files", [])) < 1 and len(data.get("links", [])) < 1:
                     raise Exception(TransitionError.MISSING_FIELD)
             elif field not in data:
                 raise Exception(TransitionError.MISSING_FIELD)
@@ -188,6 +188,7 @@ class TransitionToSerializer(serializers.Serializer):
                 created_by=user,
                 created_by_team=created_by_team,
                 campaign=campaign,
+                comment=data.get("comment"),
                 transition_key=transition.key,
             )
             for link_data in data.get("links", []):

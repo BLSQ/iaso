@@ -1162,7 +1162,7 @@ const MESSAGES = defineMessages({
         id: 'iaso.polio.label.note',
     },
     notes: {
-        defaultMessage: 'notes',
+        defaultMessage: 'comments',
         id: 'iaso.polio.label.notes',
     },
     submission: {

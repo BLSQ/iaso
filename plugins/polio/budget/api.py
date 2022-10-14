@@ -127,7 +127,7 @@ class BudgetStepViewSet(ModelViewSet):
     ]
     filterset_fields = {
         "campaign_id": ["exact"],
-        "transition_key": ["exact"],
+        "transition_key": ["exact", "in"],
     }
 
     @action(detail=True, permission_classes=[permissions.IsAdminUser])

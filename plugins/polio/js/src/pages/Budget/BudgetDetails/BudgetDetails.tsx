@@ -16,6 +16,7 @@ import {
 } from '@material-ui/core';
 
 import { useDispatch, useSelector } from 'react-redux';
+import { groupBy } from 'lodash';
 import TopBar from '../../../../../../../hat/assets/js/apps/Iaso/components/nav/TopBarComponent';
 import MESSAGES from '../../../constants/messages';
 import { useStyles } from '../../../styles/theme';
@@ -58,8 +59,14 @@ export const BudgetDetails: FunctionComponent<Props> = ({ router }) => {
     const { params } = router;
     const classes = useStyles();
     const budgetDetailsClasses = useBudgetDetailsStyles();
-    const { campaignName, campaignId, quickTransition, previousStep, ...rest } =
-        router.params;
+    const {
+        campaignName,
+        campaignId,
+        quickTransition,
+        previousStep,
+        transition_key,
+        ...rest
+    } = router.params;
     const { formatMessage } = useSafeIntl();
     const [showHidden, setShowHidden] = useState(rest.show_hidden ?? false);
 
@@ -68,6 +75,7 @@ export const BudgetDetails: FunctionComponent<Props> = ({ router }) => {
             ...rest,
             deletion_status: showHidden ? 'all' : undefined,
             campaign_id: campaignId,
+            transition_key__in: transition_key,
         };
     }, [campaignId, rest, showHidden]);
 
@@ -117,6 +125,11 @@ export const BudgetDetails: FunctionComponent<Props> = ({ router }) => {
         },
         [params, setPage],
     );
+    const stepsList = Object.entries(
+        groupBy(budgetInfos?.possible_transitions, 'label'),
+    ).map(([label, items]) => {
+        return { label, value: items.map(i => i.key).join(',') };
+    });
 
     return (
         <>
@@ -154,13 +167,7 @@ export const BudgetDetails: FunctionComponent<Props> = ({ router }) => {
                             <Grid item xs={6}>
                                 <BudgetDetailsFilters
                                     params={params}
-                                    // FIXME: should come in the right format from backend
-                                    stepsList={(
-                                        budgetInfos?.possible_transitions ?? []
-                                    ).map(transition => ({
-                                        value: transition.key,
-                                        label: transition.label,
-                                    }))}
+                                    stepsList={stepsList}
                                 />
                             </Grid>
                         )}

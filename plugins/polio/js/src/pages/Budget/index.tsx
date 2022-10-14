@@ -24,6 +24,7 @@ import { Pagination } from '@material-ui/lab';
 
 // @ts-ignore
 import TopBar from 'Iaso/components/nav/TopBarComponent';
+import { groupBy } from 'lodash';
 import { TableWithDeepLink } from '../../../../../../hat/assets/js/apps/Iaso/components/tables/TableWithDeepLink';
 
 import { useStyles } from '../../styles/theme';
@@ -92,10 +93,11 @@ export const BudgetList: FunctionComponent<Props> = ({ router }) => {
     const possibleStates = useMemo(() => {
         const apiPossibleStates =
             (budgets?.results ?? [])[0]?.possible_states ?? [];
-        return apiPossibleStates.map(possibleState => ({
-            value: possibleState.key,
-            label: possibleState.label,
-        }));
+        return Object.entries(groupBy(apiPossibleStates, 'label')).map(
+            ([label, items]) => {
+                return { label, value: items.map(i => i.key).join(',') };
+            },
+        );
     }, [budgets?.results]);
 
     return (

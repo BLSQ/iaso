@@ -8,7 +8,14 @@ from rest_framework.mixins import CreateModelMixin, ListModelMixin
 from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 
+from django.core.paginator import Paginator
+
 from iaso.models import StorageLogEntry, StorageDevice, Instance, OrgUnit, Entity
+from iaso.api.entity import EntitySerializer
+
+from iaso.api.serializers import OrgUnitSerializer
+
+from .common import TimestampField, HasPermission
 
 
 # This is actually unused (by POST)
@@ -42,19 +49,41 @@ class StorageStatusSerializer(serializers.Serializer):
     comment = serializers.CharField(source="status_comment")
 
 
+class EntityNestedSerializer(EntitySerializer):
+    class Meta:
+        model = Entity
+        fields = ["id", "name"]
+
+
+class OrgUnitNestedSerializer(OrgUnitSerializer):
+    class Meta:
+        model = OrgUnit
+        fields = [
+            "id",
+            "name",
+        ]
+
+
 class StorageSerializer(serializers.ModelSerializer):
     storage_id = serializers.CharField(source="customer_chosen_id")
     storage_type = serializers.CharField(source="type")
     status = StorageStatusSerializer(source="*")
-    # TODO: missing fields according to spec:
-    # - created at (what is it? created in the backend? from the timestamp of the storage log that created it?
-    # - updated at (what is it: last log entry? last time a device field was updated?)
-    # - org_unit? From the last log entry (that mentions a orgunit)?
-    # - entity? From the last log entry (that mentions an entity)?
+    entity = EntityNestedSerializer(read_only=True)
+    org_unit = OrgUnitNestedSerializer(read_only=True)
+    created_at = TimestampField(read_only=True)
+    updated_at = TimestampField(read_only=True)
 
     class Meta:
         model = StorageDevice
-        fields: Tuple[str, ...] = ("storage_id", "storage_type", "status")
+        fields: Tuple[str, ...] = (
+            "updated_at",
+            "created_at",
+            "storage_id",
+            "storage_type",
+            "status",
+            "org_unit",
+            "entity",
+        )
 
 
 class StorageSerializerWithLogs(StorageSerializer):
@@ -69,9 +98,7 @@ class StorageSerializerWithLogs(StorageSerializer):
 class StorageViewSet(ListModelMixin, viewsets.GenericViewSet):
     # TODO: clarify permissions (the doc says "permission to see storage)
     # For now we'll check that user is authenticated, and we filter by account
-    permission_classes = [
-        permissions.IsAuthenticated,
-    ]
+    permission_classes = [permissions.IsAuthenticated, HasPermission("menupermissions.iaso_storage")]
     serializer_class = StorageSerializer
 
     def get_queryset(self):
@@ -108,9 +135,30 @@ class StorageViewSet(ListModelMixin, viewsets.GenericViewSet):
         """
         # TODO: implement pagination
         # TODO: responses when insufficient permissions
+
+        limit = request.GET.get("limit", None)
+        page_offset = request.GET.get("page", 1)
         queryset = self.get_queryset()
-        serializer = self.get_serializer(queryset, many=True)
-        return Response({"storages": serializer.data})
+        # serializer = self.get_serializer(queryset, many=True)
+        serializer = StorageSerializer
+
+        if limit:
+            limit = int(limit)
+            page_offset = int(page_offset)
+            paginator = Paginator(queryset, limit)
+            res = {"count": paginator.count}
+            if page_offset > paginator.num_pages:
+                page_offset = paginator.num_pages
+            page = paginator.page(page_offset)
+            res["results"] = (serializer(page.object_list, many=True).data,)
+            res["has_next"] = page.has_next()
+            res["has_previous"] = page.has_previous()
+            res["page"] = page_offset
+            res["pages"] = paginator.num_pages
+            res["limit"] = limit
+            return Response(res)
+        else:
+            return Response(StorageSerializer(queryset, many=True).data)
 
     @action(detail=False, methods=["post"])
     def blacklisted(self, request):

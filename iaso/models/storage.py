@@ -72,6 +72,12 @@ class StorageDevice(models.Model):
     )  # Do not change this field directly, use change_status() instead
     status_comment = models.TextField(blank=True)  # Do not change this field directly, use change_status instead
 
+    org_unit = models.ForeignKey(OrgUnit, on_delete=models.SET_NULL, null=True, blank=True)
+    entity = models.ForeignKey(Entity, on_delete=models.SET_NULL, null=True, blank=True)
+
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
     def change_status(self, new_status: str, reason: str, comment: str, performed_by: User) -> None:
         # TODO: this method is tested indirectly via the API but would deserve a proper, more detailed unit test
         """

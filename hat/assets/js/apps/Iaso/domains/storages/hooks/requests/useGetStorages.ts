@@ -1,15 +1,13 @@
 /* eslint-disable camelcase */
 import { UseQueryResult } from 'react-query';
-// import { getRequest } from '../../../../libs/Api';
+import { getRequest } from '../../../../libs/Api';
 import { useSnackQuery } from '../../../../libs/apiHooks';
-// import { makeUrlWithParams } from '../../../../libs/utils';
+import { makeUrlWithParams } from '../../../../libs/utils';
 import {
     StoragePaginated,
     StorageFilterParams,
     StorageParams,
 } from '../../types/storages';
-
-import { Storages } from './fixtures';
 
 const getStorage = async (
     options: StorageParams | StorageFilterParams,
@@ -22,9 +20,8 @@ const getStorage = async (
         delete params.select;
     }
 
-    // const url = makeUrlWithParams('/api/storage', params);
-    // return getRequest(url) as Promise<StoragePaginated>;
-    return new Promise(resolve => resolve(Storages));
+    const url = makeUrlWithParams('/api/storage/', params);
+    return getRequest(url) as Promise<StoragePaginated>;
 };
 
 export const useGetStorages = (

@@ -1,13 +1,17 @@
 import { defineMessages } from 'react-intl';
 
 const MESSAGES = defineMessages({
-    edit: {
-        id: 'iaso.label.edit',
-        defaultMessage: 'Edit',
+    see: {
+        defaultMessage: 'See',
+        id: 'iaso.label.see',
     },
     actions: {
         id: 'iaso.label.actions',
         defaultMessage: 'Action(s)',
+    },
+    last_sync_at: {
+        id: 'iaso.entities.label.last_sync_at',
+        defaultMessage: 'Last sync',
     },
     title: {
         defaultMessage: 'Storages',

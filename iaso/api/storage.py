@@ -138,8 +138,10 @@ class StorageViewSet(ListModelMixin, viewsets.GenericViewSet):
 
         limit = request.GET.get("limit", None)
         page_offset = request.GET.get("page", 1)
+        order = request.GET.get("order", "updated_at").split(",")
+
         queryset = self.get_queryset()
-        # serializer = self.get_serializer(queryset, many=True)
+        queryset = queryset.order_by(*order)
         serializer = StorageSerializer
 
         if limit:
@@ -150,7 +152,7 @@ class StorageViewSet(ListModelMixin, viewsets.GenericViewSet):
             if page_offset > paginator.num_pages:
                 page_offset = paginator.num_pages
             page = paginator.page(page_offset)
-            res["results"] = (serializer(page.object_list, many=True).data,)
+            res["results"] = serializer(page.object_list, many=True).data
             res["has_next"] = page.has_next()
             res["has_previous"] = page.has_previous()
             res["page"] = page_offset

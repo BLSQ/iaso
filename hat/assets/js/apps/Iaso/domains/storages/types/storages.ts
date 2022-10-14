@@ -42,7 +42,7 @@ export type Storage = {
     updated_at: number;
     created_at: number;
     storage_type: 'NFC' | 'USB' | 'SD';
-    storage_status: StorageStatus;
+    status: StorageStatus;
     entity: Entity;
     logs?: Array<Log>;
     org_unit: ShortOrgUnit;

@@ -15,7 +15,7 @@ export const getCampaignLog = (
     campaignId?: string,
 ): Promise<CampaignLogsDetail> => {
     return getRequest(
-        `/api/logs/?objectId=${campaignId}&contentType=polio.campaign`,
+        `/api/logs/?limit=500&objectId=${campaignId}&contentType=polio.campaign`,
     );
 };
 

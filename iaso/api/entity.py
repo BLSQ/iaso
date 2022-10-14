@@ -153,7 +153,7 @@ def export_entity_as_csv(entities):
     data = []
     filename = ""
     possible_field_list = []
-    # NOT WORKING ATM
+
     for entity in entities:
         res = entity.attributes.json
         benef_data = []

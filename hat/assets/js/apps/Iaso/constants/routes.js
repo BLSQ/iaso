@@ -30,6 +30,7 @@ import Pages from '../domains/pages';
 import { Planning } from '../domains/plannings/index.tsx';
 import { Teams } from '../domains/teams/index.tsx';
 import { Storages } from '../domains/storages/index.tsx';
+import { Details as StorageDetails } from '../domains/storages/details.tsx';
 import { Assignments } from '../domains/assignments/index.tsx';
 import { CompareInstanceLogs } from '../domains/instances/compare/components/CompareInstanceLogs.tsx';
 
@@ -730,6 +731,33 @@ export const storagesPath = {
         })),
     ],
 };
+export const storageDetailPath = {
+    baseUrl: baseUrls.storageDetail,
+    permissions: ['iaso_storages'],
+    component: props => <StorageDetails {...props} />,
+    params: [
+        {
+            isRequired: true,
+            key: 'storageId',
+        },
+        {
+            isRequired: false,
+            key: 'search',
+        },
+        {
+            isRequired: false,
+            key: 'status',
+        },
+        {
+            isRequired: false,
+            key: 'reason',
+        },
+        ...paginationPathParams.map(p => ({
+            ...p,
+            isRequired: false,
+        })),
+    ],
+};
 
 export const page401 = {
     baseUrl: baseUrls.error401,
@@ -782,4 +810,5 @@ export const routeConfigs = [
     entityDetailsPath,
     entitySubmissionDetailPath,
     storagesPath,
+    storageDetailPath,
 ];

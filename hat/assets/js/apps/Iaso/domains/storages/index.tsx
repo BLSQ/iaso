@@ -12,9 +12,8 @@ import { Filters } from './components/Filters';
 import { useGetStorages } from './hooks/requests/useGetStorages';
 import { redirectTo } from '../../routing/actions';
 
-import { baseUrls } from '../../constants/urls';
 import MESSAGES from './messages';
-import { useGetColumns, defaultSorted } from './config';
+import { useGetColumns, defaultSorted, baseUrl } from './config';
 
 const useStyles = makeStyles(theme => ({
     ...commonStyles(theme),
@@ -24,13 +23,12 @@ type Props = {
     params: StorageParams;
 };
 
-const baseUrl = baseUrls.storages;
 export const Storages: FunctionComponent<Props> = ({ params }) => {
     const dispatch = useDispatch();
     const classes: Record<string, string> = useStyles();
     const { formatMessage } = useSafeIntl();
     const { data, isFetching } = useGetStorages(params);
-    const columns = useGetColumns();
+    const columns = useGetColumns(params);
     return (
         <>
             <TopBar

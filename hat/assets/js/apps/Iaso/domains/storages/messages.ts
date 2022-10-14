@@ -1,6 +1,14 @@
 import { defineMessages } from 'react-intl';
 
 const MESSAGES = defineMessages({
+    edit: {
+        id: 'iaso.label.edit',
+        defaultMessage: 'Edit',
+    },
+    actions: {
+        id: 'iaso.label.actions',
+        defaultMessage: 'Action(s)',
+    },
     title: {
         defaultMessage: 'Storages',
         id: 'iaso.label.storages',

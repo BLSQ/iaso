@@ -7,9 +7,11 @@ import { Profile } from '../../../utils/usersUtils';
 
 export type StorageFilterParams = {
     performedAt?: string;
-    storageType?: string;
+    type?: string;
     storageId?: string;
     search?: string;
+    status?: string;
+    reason?: string;
 };
 export type StorageParams = UrlParams &
     StorageFilterParams & {
@@ -51,3 +53,15 @@ export type Storages = Array<Storage>;
 export interface StoragePaginated extends Pagination {
     results: Storages;
 }
+export type StorageDetailsFilterParams = {
+    performedAt?: string;
+    storageId: string;
+    search?: string;
+};
+export type StorageDetailsParams = UrlParams &
+    StorageDetailsFilterParams & {
+        select?: (
+            // eslint-disable-next-line no-unused-vars
+            data: Array<Storage>,
+        ) => Array<any>;
+    };

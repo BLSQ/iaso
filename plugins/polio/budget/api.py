@@ -26,7 +26,7 @@ class BudgetCampaignViewSet(ModelViewSet):
     """
     Campaign endpoint with budget information.
 
-    You can request specific field by using the ?fields paramter
+    You can request specific field by using the ?fields parameter
     """
 
     serializer_class = CampaignBudgetSerializer

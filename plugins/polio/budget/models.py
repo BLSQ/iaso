@@ -36,7 +36,7 @@ class BudgetStep(SoftDeletableModel):
 
     objects = BudgetManager()
     campaign = models.ForeignKey("Campaign", on_delete=models.PROTECT, related_name="budget_steps")
-    transition_key = models.CharField(max_length=30)
+    transition_key = models.CharField(max_length=100)
     created_at = models.DateTimeField(auto_now_add=True)
     created_by = models.ForeignKey("auth.User", on_delete=models.PROTECT)
     updated_at = models.DateTimeField(auto_now=True)

@@ -130,7 +130,7 @@ class MailTemplate(models.Model):
 
         campaign = step.campaign
         campaign_url = (
-            f"{base_url}/dashboard/polio/budget/details/campaignId/{campaign.id}/campaignName/{campaign.obr_name}"
+            f"{base_url}/dashboard/polio/budget/details/campaignName/{campaign.obr_name}/campaignId/{campaign.id}"
         )
 
         workflow = get_workflow()
@@ -147,7 +147,7 @@ class MailTemplate(models.Model):
                     "base_url": button_url,
                     "url": generate_auto_authentication_link(button_url, receiver),
                     "label": transition.label,
-                    "color": transition.color,
+                    "color": transition.color if transition.color != "primary" else "grey",
                     "allowed": can_user_transition(transition, receiver),
                 }
             )
@@ -189,14 +189,14 @@ logger = logging.getLogger(__name__)
 
 def send_budget_mails(step: BudgetStep, transition, request) -> None:
     for email_to_send in transition.emails_to_send:
-        template_id, team_ids = email_to_send
+        template_slug, team_ids = email_to_send
         try:
-            mt = MailTemplate.objects.get(template_id)
+            mt = MailTemplate.objects.get(slug=template_slug)
         except MailTemplate.DoesNotExist as e:
             logger.exception(e)
             continue
 
-        teams = Team.objects(ids_in=team_ids)
+        teams = Team.objects.filter(id__in=team_ids)
         # Ensure we don't send an email twice to the same user
         users = User.objects.filter(teams__in=teams).distinct()
         for user in users:

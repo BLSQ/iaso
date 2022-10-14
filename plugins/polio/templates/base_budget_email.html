@@ -66,18 +66,19 @@ Base file to be reused in the MailTemplate for the budget workflow engine
       Consult the <a href="{{ budget_url }}">campaign page</a> for the complet budget history and more information.
     </td>
   <tr>
+    {% if buttons %}
   <tr>
     <td style="height:20px;padding:0;font-size:0;line-height:0;">&nbsp;</td>
   </tr>
   <tr>
     <td align="left" style="padding:5px;">
-      You can follow up using one of the button below:
+      You can follow up using one of the buttons below:
     </td>
   </tr>
   <tr>
     <td style="height:20px;padding:0;font-size:0;line-height:0;">&nbsp;</td>
   </tr>
-  {% if buttons %}
+
   <table role="presentation"
          style="width:100%;max-width:600px;border-collapse:collapse;border:0;border-spacing:0;background:#ffffff;">
     <tr>

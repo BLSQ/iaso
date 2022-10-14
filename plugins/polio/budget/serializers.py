@@ -201,9 +201,9 @@ class TransitionToSerializer(serializers.Serializer):
             campaign.budget_current_state_label = node.label
             campaign.save()
 
-        send_budget_mails(step, transition, self.context["request"])
-        step.is_email_sent = True
-        step.save()
+            send_budget_mails(step, transition, self.context["request"])
+            step.is_email_sent = True
+            step.save()
 
         return step
 

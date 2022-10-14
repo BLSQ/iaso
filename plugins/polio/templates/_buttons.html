@@ -4,7 +4,7 @@
     {% for button in buttons %}
       {% if button.allowed %}
         <td
-          style="padding:5px; width:45%; height:50px; align:center;background-color:{{ button.color }};border-radius:5px; text-align:center;">
+          style="padding:5px;width:45%;height:50px;background-color:{{ button.color }};border-radius:5px;text-align:center;">
           <a href="{{ button.url }}"
              style="display:inline-block;font-size:24px;font-weight:bold;color:white;text-decoration:none;width:100%;padding:10px 0px;">
             {{ button.label }}

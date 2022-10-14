@@ -147,7 +147,7 @@ class MailTemplate(models.Model):
                     "base_url": button_url,
                     "url": generate_auto_authentication_link(button_url, receiver),
                     "label": transition.label,
-                    "color": transition.color if transition.color != "primary" else "grey",
+                    "color": transition.color if transition.color != "primary" else "black",
                     "allowed": can_user_transition(transition, receiver),
                 }
             )

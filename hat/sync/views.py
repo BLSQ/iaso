@@ -36,8 +36,10 @@ def detect_user_request(request):
 def form_upload(request: HttpRequest) -> HttpResponse:
     main_file = request.FILES["xml_submission_file"]
     instances = Instance.objects.filter(file_name=main_file.name)
+    i: Instance
     if instances:
-        i = instances.first()
+        # TODO: investigate: can we have an empty QS here?
+        i = instances.first()  # type: ignore
     else:
         i = Instance(file_name=main_file.name)
 

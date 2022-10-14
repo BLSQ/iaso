@@ -1,5 +1,5 @@
-from django.shortcuts import get_object_or_404, render
-from django.contrib.auth.decorators import resolve_url
+from django.shortcuts import get_object_or_404, render, resolve_url
+
 from django.contrib.auth.views import redirect_to_login
 from django.conf import settings
 from iaso.models import Page, Account, TEXT, IFRAME, POWERBI

@@ -8,7 +8,7 @@ from typing import Any, Dict, List, Optional, Union
 from collections import defaultdict
 from functools import lru_cache
 from logging import getLogger
-from openpyxl.writer.excel import save_virtual_workbook
+from openpyxl.writer.excel import save_virtual_workbook  # type: ignore
 
 import requests
 from django.core.files import File
@@ -398,7 +398,7 @@ Timeline tracker Automated message
             return Response("Campaign already active.", status=status.HTTP_400_BAD_REQUEST)
 
     @action(
-        methods=["GET", "HEAD"],
+        methods=["GET", "HEAD"],  # type: ignore # HEAD is missing in djangorestframework-stubs
         detail=False,
         url_path="merged_shapes.geojson",
     )
@@ -480,7 +480,7 @@ where polio_campaignscope.campaign_id = polio_campaign.id""",
         return JsonResponse(json.loads(cached_response))
 
     @action(
-        methods=["GET", "HEAD"],
+        methods=["GET", "HEAD"],  # type: ignore # HEAD is missing in djangorestframework-stubs
         detail=False,
         url_path="v2/merged_shapes.geojson",
     )
@@ -668,8 +668,9 @@ def _make_prep(c: Campaign, round: Round):
             campaign_prep["status"] = "not_sync"
             campaign_prep["details"] = "This spreadsheet has not been synchronised yet"
             return campaign_prep
-        campaign_prep["date"] = ssi_qs.last().created_at
-        cs = ssi_qs.last().cached_spreadsheet
+        # FIXME: what if ssi_qs.last() is None?
+        campaign_prep["date"] = ssi_qs.last().created_at  # type: ignore
+        cs = ssi_qs.last().cached_spreadsheet  # type: ignore
         last_p = get_preparedness(cs)
         campaign_prep.update(preparedness_summary(last_p))
         if round.number != last_p["national"]["round"]:
@@ -1678,7 +1679,8 @@ def send_approval_budget_mail(event: BudgetEvent) -> None:
         settings.DNS_DOMAIN,
         event.campaign.id,
         event.campaign.obr_name,
-        event.campaign.country.id,
+        # FIXME: check if the country might be None
+        event.campaign.country.id,  # type: ignore
     )
     subject = budget_approval_email_subject(event.campaign.obr_name)
     for e in events:

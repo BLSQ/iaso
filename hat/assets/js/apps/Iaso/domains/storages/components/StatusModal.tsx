@@ -9,18 +9,12 @@ import {
     makeFullModal,
     // @ts-ignore
     IconButton as IconButtonComponent,
-    // @ts-ignore
-    FormControl,
-    // @ts-ignore
-    commonStyles,
 } from 'bluesquare-components';
-import classnames from 'classnames';
-import { makeStyles, InputLabel } from '@material-ui/core';
 
 import { StorageStatus } from '../types/storages';
 
 import InputComponent from '../../../components/forms/InputComponent';
-
+import { TextArea } from '../../../components/forms/TextArea';
 import { useGetReasons } from '../hooks/useGetReasons';
 import { useGetStatus } from '../hooks/useGetStatus';
 
@@ -50,36 +44,6 @@ type Props = {
     onChange: (status: StorageStatus | undefined) => void;
 };
 
-const useStyles = makeStyles(theme => ({
-    inputLabelFocus: {
-        color: theme.palette.primary.main,
-    },
-    inputLabel: {
-        ...commonStyles.inputLabel,
-        top: 13,
-        left: 4,
-        backgroundColor: 'white',
-    },
-    inputLabelShrink: {
-        transform: 'translate(14px, -3px) scale(0.75) !important',
-    },
-    textArea: {
-        width: '100%',
-        minWidth: '100%',
-        maxWidth: '100%',
-        minHeight: '100px',
-        padding: theme.spacing(2),
-        marginTop: theme.spacing(2),
-        outline: 'none',
-        borderRadius: 5,
-        fontSize: 16,
-        fontFamily: '"Roboto", "Arial", sans-serif',
-        '&:focus': {
-            border: `1px solid ${theme.palette.primary.main}`,
-        },
-    },
-}));
-
 const StatusModal: FunctionComponent<Props> = ({
     closeDialog,
     isOpen,
@@ -88,11 +52,9 @@ const StatusModal: FunctionComponent<Props> = ({
     onChange,
     initialStatus,
 }) => {
-    const classes: Record<string, string> = useStyles();
     const { formatMessage } = useSafeIntl();
     const allStatus = useGetStatus();
     const [status, setStatus] = useState<StorageStatus>(initialStatus);
-    const [commentFocus, setCommentFocus] = useState<boolean>(false);
     const reasons = useGetReasons();
 
     const handleConfirm = () => {
@@ -143,28 +105,13 @@ const StatusModal: FunctionComponent<Props> = ({
                         label={MESSAGES.reason}
                         options={reasons}
                     />
-                    <FormControl>
-                        <InputLabel
-                            shrink={Boolean(status?.comment)}
-                            className={classnames(
-                                classes.inputLabel,
-                                commentFocus && classes.inputLabelFocus,
-                                Boolean(status?.comment) &&
-                                    classes.inputLabelShrink,
-                            )}
-                        >
-                            {formatMessage(MESSAGES.comment)}
-                        </InputLabel>
-                        <textarea
-                            onFocus={() => setCommentFocus(true)}
-                            onBlur={() => setCommentFocus(false)}
-                            className={classes.textArea}
-                            onChange={e =>
-                                handleChange('comment', e.target.value)
-                            }
-                            value={status?.comment}
-                        />
-                    </FormControl>
+                    <TextArea
+                        label={formatMessage(MESSAGES.comment)}
+                        value={status?.comment}
+                        onChange={newComment =>
+                            handleChange('comment', newComment)
+                        }
+                    />
                 </>
             )}
         </ConfirmCancelModal>

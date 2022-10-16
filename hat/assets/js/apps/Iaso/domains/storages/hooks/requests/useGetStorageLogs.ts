@@ -27,7 +27,7 @@ const getStorageLogs = async (
 export const useGetStorageLogs = (
     options: StorageParams | StorageFilterParams,
 ): UseQueryResult<Storage, Error> => {
-    const queryKey: any[] = ['storageLOg', options];
+    const queryKey: any[] = ['storageLog', options];
     const { select } = options as Record<string, any>;
     // @ts-ignore
     return useSnackQuery(queryKey, () => getStorageLogs(options), undefined, {

@@ -66,10 +66,14 @@ export const Infos: FunctionComponent<Props> = ({ storage }) => {
                 label: formatMessage(MESSAGES.status),
                 value: (
                     <>
-                        {storage && <StatusCell status={storage.status} />}
-                        <Box ml={2} display="inline-block">
-                            <StatusModal initialStatus={storage?.status} />
-                        </Box>
+                        {storage && (
+                            <>
+                                <StatusCell status={storage.status} />
+                                <Box ml={2} display="inline-block">
+                                    <StatusModal storage={storage} />
+                                </Box>
+                            </>
+                        )}
                     </>
                 ),
                 key: 'status',

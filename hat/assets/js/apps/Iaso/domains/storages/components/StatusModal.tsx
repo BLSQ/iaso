@@ -11,7 +11,8 @@ import {
     IconButton as IconButtonComponent,
 } from 'bluesquare-components';
 
-import { StorageStatus } from '../types/storages';
+import { Storage, StorageStatus } from '../types/storages';
+import { useSaveStatus } from '../hooks/requests/useSaveStatus';
 
 import InputComponent from '../../../components/forms/InputComponent';
 import { TextArea } from '../../../components/forms/TextArea';
@@ -38,10 +39,8 @@ type Props = {
     isOpen: boolean;
     id?: string;
     dataTestId?: string;
-    initialStatus: StorageStatus;
+    storage: Storage;
     closeDialog: () => void;
-    // eslint-disable-next-line no-unused-vars
-    onChange: (status: StorageStatus | undefined) => void;
 };
 
 const StatusModal: FunctionComponent<Props> = ({
@@ -49,24 +48,31 @@ const StatusModal: FunctionComponent<Props> = ({
     isOpen,
     id,
     dataTestId,
-    onChange,
-    initialStatus,
+    storage,
 }) => {
     const { formatMessage } = useSafeIntl();
     const allStatus = useGetStatus();
-    const [status, setStatus] = useState<StorageStatus>(initialStatus);
+    const [status, setStatus] = useState<StorageStatus>(storage.status);
     const reasons = useGetReasons();
-
+    const { mutate: saveStatus } = useSaveStatus(closeDialog);
     const handleConfirm = () => {
-        closeDialog();
-        onChange(status);
+        saveStatus({
+            storage_id: storage.storage_id,
+            storage_type: storage.storage_type,
+            storage_status: status,
+        });
     };
 
     const handleChange = (key, value) => {
-        setStatus({
+        const newStatus = {
             ...status,
             [key]: value,
-        });
+        };
+        if (key === 'status' && value === 'OK') {
+            newStatus.reason = undefined;
+            newStatus.comment = undefined;
+        }
+        setStatus(newStatus);
     };
 
     return (

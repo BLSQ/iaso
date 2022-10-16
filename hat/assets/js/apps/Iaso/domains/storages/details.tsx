@@ -80,29 +80,31 @@ export const Details: FunctionComponent<Props> = ({ params, router }) => {
                         className={classes.fullWith}
                         title={formatMessage(MESSAGES.logs)}
                     >
-                        <TableWithDeepLink
-                            marginTop={false}
-                            showPagination={false}
-                            elevation={0}
-                            baseUrl={baseUrls.storageDetail}
-                            data={storageDetail?.logs ?? []}
-                            pages={1}
-                            defaultSorted={[
-                                { id: 'performed_at', desc: false },
-                            ]}
-                            columns={columns}
-                            count={0}
-                            params={params}
-                            onTableParamsChange={p =>
-                                dispatch(
-                                    redirectToReplace(
-                                        baseUrls.storageDetail,
-                                        p,
-                                    ),
-                                )
-                            }
-                            extraProps={{ loading: isFetching }}
-                        />
+                        <Box mt={-4}>
+                            <TableWithDeepLink
+                                marginTop={false}
+                                showPagination={false}
+                                elevation={0}
+                                baseUrl={baseUrls.storageDetail}
+                                data={storageDetail?.logs ?? []}
+                                pages={1}
+                                defaultSorted={[
+                                    { id: 'performed_at', desc: false },
+                                ]}
+                                columns={columns}
+                                count={0}
+                                params={params}
+                                onTableParamsChange={p =>
+                                    dispatch(
+                                        redirectToReplace(
+                                            baseUrls.storageDetail,
+                                            p,
+                                        ),
+                                    )
+                                }
+                                extraProps={{ loading: isFetching }}
+                            />
+                        </Box>
                     </WidgetPaper>
                 </Box>
             </Box>

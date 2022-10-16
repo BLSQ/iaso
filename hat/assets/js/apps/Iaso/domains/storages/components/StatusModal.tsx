@@ -83,7 +83,7 @@ const StatusModal: FunctionComponent<Props> = ({
             onCancel={() => {
                 closeDialog();
             }}
-            maxWidth="sm"
+            maxWidth="xs"
             cancelMessage={MESSAGES.cancel}
             confirmMessage={MESSAGES.confirm}
             open={isOpen}
@@ -93,6 +93,7 @@ const StatusModal: FunctionComponent<Props> = ({
             onClose={() => null}
         >
             <InputComponent
+                required
                 clearable={false}
                 type="select"
                 keyValue="status"

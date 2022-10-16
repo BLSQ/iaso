@@ -15,7 +15,6 @@ type QueryData = {
 export const useSaveStatus = (closeDialog: () => void): UseMutationResult =>
     useSnackMutation({
         mutationFn: (data: QueryData) => {
-            console.log('data', data);
             return postRequest(' /api/storage/blacklisted/', data);
         },
         invalidateQueryKey: ['storageLog'],

@@ -41,6 +41,7 @@ export const Filters: FunctionComponent<Props> = ({ params }) => {
                 <Grid item xs={4}>
                     <InputComponent
                         type="select"
+                        multi
                         keyValue="type"
                         onChange={handleChange}
                         value={filters.type}

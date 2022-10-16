@@ -18,10 +18,28 @@ from iaso.api.serializers import OrgUnitSerializer
 from .common import TimestampField, HasPermission
 
 
+class EntityNestedSerializer(EntitySerializer):
+    class Meta:
+        model = Entity
+        fields = ["id", "name"]
+
+
+class OrgUnitNestedSerializer(OrgUnitSerializer):
+    class Meta:
+        model = OrgUnit
+        fields = [
+            "id",
+            "name",
+        ]
+
+
 # This is actually unused (by POST)
 class StorageLogSerializer(serializers.ModelSerializer):
     storage_id = serializers.CharField(source="device.customer_chosen_id")
     storage_type = serializers.CharField(source="device.type")
+    entity = EntityNestedSerializer(read_only=True)
+    org_unit = OrgUnitNestedSerializer(read_only=True)
+    performed_at = TimestampField(read_only=True)
 
     class Meta:
         model = StorageLogEntry
@@ -47,21 +65,6 @@ class StorageStatusSerializer(serializers.Serializer):
     # updated_at = serializers.DateTimeField()
     # TODO: Comment field is not in the spec, but I guess it's useful to implement, no?
     comment = serializers.CharField(source="status_comment")
-
-
-class EntityNestedSerializer(EntitySerializer):
-    class Meta:
-        model = Entity
-        fields = ["id", "name"]
-
-
-class OrgUnitNestedSerializer(OrgUnitSerializer):
-    class Meta:
-        model = OrgUnit
-        fields = [
-            "id",
-            "name",
-        ]
 
 
 class StorageSerializer(serializers.ModelSerializer):
@@ -118,7 +121,7 @@ class StorageViewSet(ListModelMixin, viewsets.GenericViewSet):
 
         filter_type = self.request.query_params.get("type")
         if filter_type is not None:
-            qs = qs.filter(type=filter_type)
+            qs = qs.filter(type__in=filter_type.split(","))
 
         filter_search = self.request.query_params.get("search")
         if filter_search is not None:
@@ -133,7 +136,6 @@ class StorageViewSet(ListModelMixin, viewsets.GenericViewSet):
 
         GET /api/storage/
         """
-        # TODO: implement pagination
         # TODO: responses when insufficient permissions
 
         limit = request.GET.get("limit", None)

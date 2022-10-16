@@ -4,29 +4,34 @@ import { getRequest } from '../../../../libs/Api';
 import { useSnackQuery } from '../../../../libs/apiHooks';
 import { makeUrlWithParams } from '../../../../libs/utils';
 import {
-    StoragePaginated,
+    Storage,
     StorageFilterParams,
     StorageParams,
 } from '../../types/storages';
 
-const getStorage = async (
+const getStorageLogs = async (
     options: StorageParams | StorageFilterParams,
-): Promise<StoragePaginated> => {
+): Promise<Storage> => {
     const { pageSize, ...params } = options as Record<string, any>;
     if (pageSize) {
         params.limit = pageSize;
     }
-    const url = makeUrlWithParams('/api/storage/', params);
-    return getRequest(url) as Promise<StoragePaginated>;
+
+    const url = makeUrlWithParams(
+        `/api/storage/${params.type}/${params.storageId}/logs`,
+        params,
+    );
+    return getRequest(url) as Promise<Storage>;
 };
 
-export const useGetStorages = (
+export const useGetStorageLogs = (
     options: StorageParams | StorageFilterParams,
-): UseQueryResult<StoragePaginated, Error> => {
-    const queryKey: any[] = ['storageList', options];
+): UseQueryResult<Storage, Error> => {
+    const queryKey: any[] = ['storageLOg', options];
     const { select } = options as Record<string, any>;
     // @ts-ignore
-    return useSnackQuery(queryKey, () => getStorage(options), undefined, {
+    return useSnackQuery(queryKey, () => getStorageLogs(options), undefined, {
         select,
+        enabled: Boolean(options.type) && Boolean(options.storageId),
     });
 };

@@ -738,6 +738,10 @@ export const storageDetailPath = {
     params: [
         {
             isRequired: true,
+            key: 'type',
+        },
+        {
+            isRequired: true,
             key: 'storageId',
         },
         {

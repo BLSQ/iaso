@@ -10,7 +10,7 @@ import { TableWithDeepLink } from '../../components/tables/TableWithDeepLink';
 import { StorageParams } from './types/storages';
 import { Filters } from './components/Filters';
 import { useGetStorages } from './hooks/requests/useGetStorages';
-import { redirectTo } from '../../routing/actions';
+import { redirectToReplace } from '../../routing/actions';
 
 import MESSAGES from './messages';
 import { useGetColumns, defaultSorted, baseUrl } from './config';
@@ -45,7 +45,9 @@ export const Storages: FunctionComponent<Props> = ({ params }) => {
                     columns={columns}
                     count={data?.count ?? 0}
                     params={params}
-                    onTableParamsChange={p => dispatch(redirectTo(baseUrl, p))}
+                    onTableParamsChange={p =>
+                        dispatch(redirectToReplace(baseUrl, p))
+                    }
                     extraProps={{ loading: isFetching }}
                 />
             </Box>

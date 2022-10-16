@@ -1,6 +1,34 @@
 import { defineMessages } from 'react-intl';
 
 const MESSAGES = defineMessages({
+    writeProfile: {
+        defaultMessage: 'Write profile',
+        id: 'iaso.storages.writeProfile',
+    },
+    reset: {
+        defaultMessage: 'Reset',
+        id: 'iaso.storages.reset',
+    },
+    read: {
+        defaultMessage: 'Read',
+        id: 'iaso.storages.read',
+    },
+    writeRecord: {
+        defaultMessage: 'Write record',
+        id: 'iaso.storages.writeRecord',
+    },
+    changeStatus: {
+        defaultMessage: 'Change status',
+        id: 'iaso.storages.changeStatus',
+    },
+    date: {
+        defaultMessage: 'Date',
+        id: 'iaso.label.date',
+    },
+    logs: {
+        defaultMessage: 'Logs',
+        id: 'iaso.storages.logs',
+    },
     see: {
         defaultMessage: 'See',
         id: 'iaso.label.see',
@@ -17,6 +45,14 @@ const MESSAGES = defineMessages({
         defaultMessage: 'Storages',
         id: 'iaso.label.storages',
     },
+    info: {
+        defaultMessage: 'Information',
+        id: 'iaso.instance.infos',
+    },
+    storage: {
+        defaultMessage: 'Storage',
+        id: 'iaso.label.storage',
+    },
     search: {
         defaultMessage: 'Search',
         id: 'iaso.search',
@@ -24,6 +60,10 @@ const MESSAGES = defineMessages({
     type: {
         defaultMessage: 'Storage type',
         id: 'iaso.label.storageType',
+    },
+    operationType: {
+        defaultMessage: 'Operation type',
+        id: 'iaso.label.operationType',
     },
     nfc: {
         defaultMessage: 'NFC',

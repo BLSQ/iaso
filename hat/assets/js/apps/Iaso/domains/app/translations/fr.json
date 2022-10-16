@@ -236,6 +236,7 @@
     "iaso.instance.error": "Aucune soumission trouvée",
     "iaso.instance.file": "Fichier",
     "iaso.instance.files": "Fichiers",
+    "iaso.storages.comment": "Commentaire",
     "iaso.instance.form": "Soumissions pour le formulaire",
     "iaso.instance.formShort": "Formulaire",
     "iaso.instance.infos": "Informations",

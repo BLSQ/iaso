@@ -5,6 +5,7 @@ import {
     TableBody,
     TableRow,
     TableCell,
+    Box,
 } from '@material-ui/core';
 import React, { FunctionComponent, useMemo, ReactElement } from 'react';
 // @ts-ignore
@@ -16,6 +17,7 @@ import { LinkToOrgUnit } from '../../orgUnits/components/LinkToOrgUnit';
 import { Storage } from '../types/storages';
 import { FieldType } from '../../forms/types/forms';
 import { StatusCell } from './StatusCell';
+import { StatusModal } from './StatusModal';
 import { LinkToEntity } from './LinkToEntity';
 
 const useStyles = makeStyles(theme => ({
@@ -62,7 +64,14 @@ export const Infos: FunctionComponent<Props> = ({ storage }) => {
             },
             {
                 label: formatMessage(MESSAGES.status),
-                value: storage && <StatusCell status={storage.status} />,
+                value: (
+                    <>
+                        {storage && <StatusCell status={storage.status} />}
+                        <Box ml={2} display="inline-block">
+                            <StatusModal initialStatus={storage?.status} />
+                        </Box>
+                    </>
+                ),
                 key: 'status',
             },
             {

@@ -796,6 +796,7 @@
     "iaso.sourceVersion.label.update_explication": "Update this version by syncing with DHIS2. New Orgunit from DHIS2 will be imported but OrgUnit already present on this version won't be modified.",
     "iaso.SSC": "Community Health Site",
     "iaso.storages.changeStatus": "Change status",
+    "iaso.storages.comment": "Comment",
     "iaso.storages.logs": "Logs",
     "iaso.storages.nfc": "NFC",
     "iaso.storages.read": "Read",

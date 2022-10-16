@@ -25,6 +25,7 @@ export type StorageStatus = {
     status: 'OK' | 'BLACKLISTED';
     reason?: 'STOLEN' | 'LOST' | 'DAMAGED' | 'ABUSE' | 'OTHER';
     updated_at: number;
+    comment?: string;
 };
 
 type Log = {

@@ -81,9 +81,9 @@ export const Details: FunctionComponent<Props> = ({ params, router }) => {
                         title={formatMessage(MESSAGES.logs)}
                     >
                         <TableWithDeepLink
-                            marginTop={0}
+                            marginTop={false}
                             showPagination={false}
-                            elevation
+                            elevation={0}
                             baseUrl={baseUrls.storageDetail}
                             data={storageDetail?.logs ?? []}
                             pages={1}

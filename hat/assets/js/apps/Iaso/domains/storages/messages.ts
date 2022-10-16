@@ -1,6 +1,18 @@
 import { defineMessages } from 'react-intl';
 
 const MESSAGES = defineMessages({
+    comment: {
+        id: 'iaso.storages.comment',
+        defaultMessage: 'Comment',
+    },
+    cancel: {
+        id: 'iaso.label.cancel',
+        defaultMessage: 'Cancel',
+    },
+    confirm: {
+        id: 'iaso.mappings.confirm',
+        defaultMessage: 'Confirm',
+    },
     writeProfile: {
         defaultMessage: 'Write profile',
         id: 'iaso.storages.writeProfile',

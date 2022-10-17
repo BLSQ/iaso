@@ -70,6 +70,12 @@ export const useBudgetColumns = (): Column[] => {
                 Cell: DateCell,
             },
             {
+                Header: formatMessage(MESSAGES.lastUpdatedAt),
+                sortable: true,
+                accessor: 'budget_last_updated_at',
+                Cell: DateCell,
+            },
+            {
                 Header: formatMessage(MESSAGES.actions),
                 accessor: 'id',
                 sortable: false,

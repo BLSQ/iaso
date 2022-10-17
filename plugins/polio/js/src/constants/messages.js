@@ -1581,6 +1581,10 @@ const MESSAGES = defineMessages({
         id: 'iaso.polio.label.linksOrFilesRequired',
         defaultMessage: 'You need to attach at least a link or a file',
     },
+    lastUpdatedAt: {
+        id: 'iaso.polio.label.lastUpdatedAt',
+        defaultMessage: 'Last update',
+    },
 });
 
 export default MESSAGES;

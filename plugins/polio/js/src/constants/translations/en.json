@@ -226,6 +226,7 @@
     "iaso.polio.label.imWarning": "90%-94%",
     "iaso.polio.label.internal": "Internal",
     "iaso.polio.label.lastRound": "Last round",
+    "iaso.polio.label.lastUpdatedAt": "Last update",
     "iaso.polio.label.latestEvent": "Latest event",
     "iaso.polio.label.latestEventDate": "Latest event date",
     "iaso.polio.label.linksOrFilesRequired": "You need to attach at least a link or a file",

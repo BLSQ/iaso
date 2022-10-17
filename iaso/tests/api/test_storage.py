@@ -69,6 +69,11 @@ class StorageAPITestCase(APITestCase):
         response = self.client.post("/api/mobile/storage/logs/")
         self.assertEqual(response.status_code, 403)  # TODO: Would be better to return 401?
 
+    def test_post_storage_multiple_logs(self):
+        """
+        Multiple logs can be sent at once
+        """
+
     def test_post_storage_base_new_storage(self):
         """
         Test the base of the POST /api/mobile/storage/log/ endpoint, in the case where the storage device is new.

@@ -234,38 +234,39 @@ class StorageLogViewSet(CreateModelMixin, viewsets.GenericViewSet):
         # 1) Get data out of request
         user = request.user
 
-        body = request.data[0]
-        log_id = body["id"]
-        storage_id = body["storage_id"]
-        storage_type = body["storage_type"]
-        operation_type = body["operation_type"]
+        for log_data in request.data:
+            # We receive an array of logs, we'll process them one by one
+            log_id = log_data["id"]
+            storage_id = log_data["storage_id"]
+            storage_type = log_data["storage_type"]
+            operation_type = log_data["operation_type"]
 
-        # timestamp in seconds, but it's actually a double so there are 3 decimals with the millis
-        performed_at = datetime.utcfromtimestamp(float(body["performed_at"]))
+            # timestamp in seconds, but it's actually a double so there are 3 decimals with the millis
+            performed_at = datetime.utcfromtimestamp(float(log_data["performed_at"]))
 
-        concerned_instances = Instance.objects.filter(uuid__in=body["instances"])
-        concerned_orgunit = OrgUnit.objects.get(id=body["org_unit_id"])
-        concerned_entity = Entity.objects.get(id=body["entity_id"])
+            concerned_instances = Instance.objects.filter(uuid__in=log_data["instances"])
+            concerned_orgunit = OrgUnit.objects.get(id=log_data["org_unit_id"])
+            concerned_entity = Entity.objects.get(id=log_data["entity_id"])
 
-        account = user.iaso_profile.account
+            account = user.iaso_profile.account
 
-        # 1. Create the storage device, if needed
-        device, _ = StorageDevice.objects.get_or_create(
-            account=account, customer_chosen_id=storage_id, type=storage_type
-        )
+            # 1. Create the storage device, if needed
+            device, _ = StorageDevice.objects.get_or_create(
+                account=account, customer_chosen_id=storage_id, type=storage_type
+            )
 
-        # 2. Create the log entry
-        log_entry = StorageLogEntry.objects.create(
-            id=log_id,
-            device=device,
-            operation_type=operation_type,
-            performed_at=performed_at,
-            performed_by=user,
-            org_unit=concerned_orgunit,
-            entity=concerned_entity,
-        )
+            # 2. Create the log entry
+            log_entry = StorageLogEntry.objects.create(
+                id=log_id,
+                device=device,
+                operation_type=operation_type,
+                performed_at=performed_at,
+                performed_by=user,
+                org_unit=concerned_orgunit,
+                entity=concerned_entity,
+            )
 
-        log_entry.instances.set(concerned_instances)
+            log_entry.instances.set(concerned_instances)
 
         return Response("", status=status.HTTP_201_CREATED)
 

@@ -152,6 +152,12 @@ class MailTemplate(models.Model):
                 }
             )
         transition = workflow.get_transition_by_key(step.transition_key)
+        attachments = []
+        for f in step.files.all():
+            attachments.append({"url": f.file.url, "name": f.filename})
+        for l in step.links.all():
+            attachments.append({"url": l.url, "name": l.alias})
+
         context = Context(
             {
                 "author": step.created_by,
@@ -166,6 +172,7 @@ class MailTemplate(models.Model):
                 "site_name": site.name,
                 "comment": step.comment,
                 "amount": step.amount,
+                "attachments": attachments,
                 "files": step.files.all(),
                 "links": step.links.all(),
             }

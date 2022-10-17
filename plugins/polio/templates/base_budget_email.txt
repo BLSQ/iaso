@@ -9,13 +9,8 @@ from team {{ team }}: {{ transition.label }}.
 The following comment was left:
   {{ comment }}
 {% endif %}
-{%if files%}Attached Files:
-{% for file in files%}{{ forloop.counter }}. {{file.filename}}: {{file.file.url|safe}}
-{% endfor %}
-{%endif%}
-{%if links%}Links:
-{% for link in links%}
-{{ forloop.counter }}. {{link.alias}}: {{link.url|safe}}
+{%if attachments %}Attached Files:
+{% for attachment in attachments%}{{ forloop.counter }}. {{attachment.name}}: {{attachment.url|safe}}
 {% endfor %}
 {%endif%}
 
@@ -26,10 +21,7 @@ You can do a quick follow up using one of these links:
 {% for button in buttons %}{% if button.allowed %}{{ button.label }}: {{ button.url|safe }} {% endif %}
 {% endfor %}
 {% endif %}
-
-
 {% endblock content %}
-
 
 ============
 This is an automated email from {{ site_name }} - {{ site_url }}

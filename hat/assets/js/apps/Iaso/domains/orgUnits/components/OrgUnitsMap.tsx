@@ -190,7 +190,6 @@ export const OrgUnitsMap: FunctionComponent<Props> = ({
             </Grid>
         );
     }
-    console.log('render');
     return (
         <Grid container spacing={0}>
             <InnerDrawer

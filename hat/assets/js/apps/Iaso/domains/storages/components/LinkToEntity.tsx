@@ -18,7 +18,7 @@ const useStyles = makeStyles(theme => ({
 }));
 
 type Props = {
-    entity: Entity | undefined;
+    entity?: Entity;
 };
 
 export const LinkToEntity: FunctionComponent<Props> = ({ entity }) => {

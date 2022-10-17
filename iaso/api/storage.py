@@ -208,7 +208,7 @@ class StorageViewSet(ListModelMixin, viewsets.GenericViewSet):
                 comment=status_dict.get("status_comment", ""),
                 performed_by=user,
             )
-            return Response("", status=status.HTTP_204_NO_CONTENT)
+            return Response({}, status=200)
 
         else:  # Some parameters were invalid
             # TODO: return a 400 error here?

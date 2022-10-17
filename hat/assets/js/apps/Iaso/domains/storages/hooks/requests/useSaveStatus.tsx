@@ -19,4 +19,5 @@ export const useSaveStatus = (closeDialog: () => void): UseMutationResult =>
         },
         invalidateQueryKey: ['storageLog'],
         options: { onSuccess: () => closeDialog() },
+        ignoreErrorCodes: [204],
     });

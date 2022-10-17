@@ -35,7 +35,8 @@ import { Search } from './types/search';
 // UTILS
 import { decodeSearch } from './utils';
 import { convertObjectToString } from '../../utils';
-import { redirectTo } from '../../routing/actions';
+import { redirectTo, redirectToReplace } from '../../routing/actions';
+import { getChipColors } from '../../constants/chipColors';
 // UTILS
 
 // CONSTANTS
@@ -104,10 +105,9 @@ export const OrgUnits: FunctionComponent<Props> = ({ params }) => {
     // STATE
 
     // MEMO
-    const searches: [Search] = useMemo(
-        () => decodeSearch(decodeURI(params.searches)),
-        [params.searches],
-    );
+    const searches: [Search] = useMemo(() => {
+        return decodeSearch(decodeURI(params.searches));
+    }, [params.searches]);
     const isSearchActive: boolean = useMemo(
         () => params.searchActive === 'true',
         [params.searchActive],
@@ -146,6 +146,23 @@ export const OrgUnits: FunctionComponent<Props> = ({ params }) => {
     });
     // REQUESTS HOOKS
 
+    const getSearchColor = useCallback(
+        currentSearchIndex => {
+            const currentSearch = searches[currentSearchIndex];
+            let currentColor;
+            if (currentSearch) {
+                currentColor = currentSearch.color;
+            }
+            if (!currentColor) {
+                currentColor = getChipColors(0);
+            } else {
+                currentColor = `#${currentColor}`;
+            }
+            return currentColor;
+        },
+        [searches],
+    );
+
     const handleSearch = useCallback(() => {
         fetchOrgUnits();
         fetchOrgUnitsLocations();
@@ -176,7 +193,7 @@ export const OrgUnits: FunctionComponent<Props> = ({ params }) => {
                 ...params,
                 tab: newtab,
             };
-            dispatch(redirectTo(baseUrl, newParams));
+            dispatch(redirectToReplace(baseUrl, newParams));
         },
         [params, dispatch],
     );
@@ -298,7 +315,7 @@ export const OrgUnits: FunctionComponent<Props> = ({ params }) => {
                             >
                                 <div className={classes.containerMarginNeg}>
                                     <OrgUnitsMap
-                                        params={params}
+                                        getSearchColor={getSearchColor}
                                         orgUnitTypes={orgunitTypes || []}
                                         orgUnits={
                                             orgUnitsDataLocation || {

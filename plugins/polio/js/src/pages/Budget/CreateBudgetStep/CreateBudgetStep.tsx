@@ -1,6 +1,11 @@
 /* eslint-disable react/require-default-props */
 /* eslint-disable react/no-unused-prop-types */
-import React, { FunctionComponent, useCallback, useMemo } from 'react';
+import React, {
+    FunctionComponent,
+    useCallback,
+    useEffect,
+    useMemo,
+} from 'react';
 import { useFormik, FormikProvider } from 'formik';
 import { isEqual } from 'lodash';
 import {
@@ -64,10 +69,11 @@ const CreateBudgetStep: FunctionComponent<Props> = ({
     const { mutateAsync: saveBudgetStep } = useSaveBudgetStep();
     const classes = useStyles();
     const dispatch = useDispatch();
+    const quickTransition = { params };
     const onSuccess = useCallback(() => {
         const {
-            // eslint-disable-next-line @typescript-eslint/no-unused-vars
-            quickTransition,
+            // eslint-disable-next-line @typescript-eslint/no-unused-vars, no-unused-vars
+            quickTransition: { _quickTransition },
             // eslint-disable-next-line @typescript-eslint/no-unused-vars, no-unused-vars
             previousStep: { stepFromParams },
             ...trimmedParams
@@ -89,13 +95,35 @@ const CreateBudgetStep: FunctionComponent<Props> = ({
         payload,
         requiredFields,
     );
+    const intialLinks = useMemo(() => {
+        const fileLinks = previousStep?.files;
+        const filesAsLinks = (fileLinks ?? []).map(fileLink => ({
+            alias: fileLink.filename,
+            url: fileLink.file,
+        }));
+        const previousStepLinks = previousStep?.links;
+        if (!quickTransition) {
+            return previousStepLinks;
+        }
+        if (previousStepLinks && fileLinks) {
+            return [...filesAsLinks, ...previousStepLinks];
+        }
+        if (!previousStepLinks && fileLinks) {
+            return filesAsLinks;
+        }
+        if (previousStepLinks && !fileLinks) {
+            return previousStepLinks;
+        }
+        return undefined;
+    }, [quickTransition, previousStep]);
+
     const formik = useFormik({
         initialValues: {
             transition_key: transitionKey,
             campaign: campaignId,
             comment: undefined,
-            files: previousStep?.files,
-            links: previousStep?.links,
+            files: undefined,
+            links: intialLinks,
             amount: previousStep?.amount,
             // this value is for handling non-field arrors from api
             general: null,
@@ -138,10 +166,32 @@ const CreateBudgetStep: FunctionComponent<Props> = ({
 
     const titleMessage = transitionLabel;
 
+    useEffect(() => {
+        const formHasBeenTouched = touched.links || touched.amount;
+        if (quickTransition && !formHasBeenTouched) {
+            const { links, amount } = values;
+            if ((links?.length ?? []) > 0) {
+                setFieldTouched('links', true);
+            }
+            if (amount) {
+                setFieldTouched('amount', true);
+            }
+        }
+    }, [
+        previousStep,
+        quickTransition,
+        setFieldTouched,
+        touched.amount,
+        touched.links,
+        values,
+    ]);
+    const allowConfirm = !quickTransition
+        ? isValid && !isEqual(values, initialValues)
+        : isValid;
     return (
         <FormikProvider value={formik}>
             <ConfirmCancelModal
-                allowConfirm={isValid && !isEqual(values, initialValues)}
+                allowConfirm={allowConfirm}
                 titleMessage={titleMessage}
                 onConfirm={() => {
                     if (userHasTeam) {

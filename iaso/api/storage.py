@@ -239,7 +239,9 @@ class StorageLogViewSet(CreateModelMixin, viewsets.GenericViewSet):
         storage_id = body["storage_id"]
         storage_type = body["storage_type"]
         operation_type = body["operation_type"]
-        performed_at = datetime.utcfromtimestamp(body["performed_at"])  # timestamp, but Python already expects that
+
+        # timestamp in seconds, but it's actually a double so there are 3 decimals with the milis
+        performed_at = datetime.utcfromtimestamp(float(body["performed_at"]))
 
         concerned_instances = Instance.objects.filter(id__in=body["instances"])
         concerned_orgunit = OrgUnit.objects.get(id=body["org_unit_id"])

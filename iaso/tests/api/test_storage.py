@@ -91,7 +91,7 @@ class StorageAPITestCase(APITestCase):
                 "instances": [self.instance1.id, self.instance2.id],
                 "org_unit_id": self.org_unit.id,
                 "entity_id": self.entity.id,
-                "performed_at": current_timestamp_in_seconds,
+                "performed_at": "1666002739.171",
             }
         ]
         response = self.client.post("/api/mobile/storage/logs/", post_body, format="json")
@@ -133,7 +133,7 @@ class StorageAPITestCase(APITestCase):
                 "instances": [self.instance1.id, self.instance2.id],
                 "org_unit_id": self.org_unit.id,
                 "entity_id": self.entity.id,
-                "performed_at": current_timestamp_in_seconds,
+                "performed_at": "1666002739.171",
             }
         ]
         response = self.client.post("/api/mobile/storage/logs/", post_body, format="json")

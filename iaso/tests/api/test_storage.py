@@ -19,8 +19,8 @@ class StorageAPITestCase(APITestCase):
 
         form_1 = Form.objects.create(name="Hydroponics study", period_type=MONTH, single_per_period=True)
 
-        cls.instance1 = Instance.objects.create(form=form_1)
-        cls.instance2 = Instance.objects.create(form=form_1)
+        cls.instance1 = Instance.objects.create(form=form_1, uuid="12345678-1234-1234-1234-123456789012")
+        cls.instance2 = Instance.objects.create(form=form_1, uuid="12345678-1234-1234-1234-123456789013")
 
         cls.org_unit = OrgUnit.objects.create(name="Akkala")
         entity_type = EntityType.objects.create(name="Type 1")
@@ -88,10 +88,10 @@ class StorageAPITestCase(APITestCase):
                 "storage_id": "NEW_STORAGE",
                 "storage_type": "NFC",
                 "operation_type": "WRITE_PROFILE",
-                "instances": [self.instance1.id, self.instance2.id],
+                "instances": [self.instance1.uuid, self.instance2.uuid],
                 "org_unit_id": self.org_unit.id,
                 "entity_id": self.entity.id,
-                "performed_at": "1666002739.171",
+                "performed_at": 1666002739.171,
             }
         ]
         response = self.client.post("/api/mobile/storage/logs/", post_body, format="json")
@@ -130,10 +130,10 @@ class StorageAPITestCase(APITestCase):
                 "storage_id": "EXISTING_STORAGE",
                 "storage_type": "NFC",
                 "operation_type": "WRITE_RECORD",
-                "instances": [self.instance1.id, self.instance2.id],
+                "instances": [self.instance1.uuid, self.instance2.uuid],
                 "org_unit_id": self.org_unit.id,
                 "entity_id": self.entity.id,
-                "performed_at": "1666002739.171",
+                "performed_at": 1666002739.171,
             }
         ]
         response = self.client.post("/api/mobile/storage/logs/", post_body, format="json")

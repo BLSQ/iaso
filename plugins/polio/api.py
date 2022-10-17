@@ -8,7 +8,6 @@ from typing import Any, Dict, List, Optional, Union
 from collections import defaultdict
 from functools import lru_cache
 from logging import getLogger
-from typing_extensions import reveal_type
 from openpyxl.writer.excel import save_virtual_workbook  # type: ignore
 
 import requests

@@ -269,6 +269,7 @@ export const OrgUnitFilters: FunctionComponent<Props> = ({
             <Grid item xs={4}>
                 <InputComponent
                     type="select"
+                    multi
                     disabled={isFetchingOrgunitTypes}
                     keyValue="orgUnitTypeId"
                     onChange={handleChange}
@@ -279,6 +280,7 @@ export const OrgUnitFilters: FunctionComponent<Props> = ({
                 />
                 <InputComponent
                     type="select"
+                    multi
                     disabled={isFetchingGroups}
                     keyValue="group"
                     onChange={handleChange}

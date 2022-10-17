@@ -246,7 +246,7 @@ class StorageLogViewSet(CreateModelMixin, viewsets.GenericViewSet):
 
             concerned_instances = Instance.objects.filter(uuid__in=log_data["instances"])
             concerned_orgunit = OrgUnit.objects.get(id=log_data["org_unit_id"])
-            concerned_entity = Entity.objects.get(id=log_data["entity_id"])
+            concerned_entity = Entity.objects.get(uuid=log_data["entity_id"])
 
             account = user.iaso_profile.account
 

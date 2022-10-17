@@ -1,4 +1,4 @@
-import React, { FunctionComponent, useState } from 'react';
+import React, { FunctionComponent, useState, useMemo } from 'react';
 
 import {
     // @ts-ignore
@@ -7,33 +7,18 @@ import {
     ConfirmCancelModal,
     // @ts-ignore
     makeFullModal,
-    // @ts-ignore
-    IconButton as IconButtonComponent,
 } from 'bluesquare-components';
 
 import { Storage, StorageStatus } from '../types/storages';
 import { useSaveStatus } from '../hooks/requests/useSaveStatus';
 
+import { TriggerModal } from './TriggerModal';
 import InputComponent from '../../../components/forms/InputComponent';
 import { TextArea } from '../../../components/forms/TextArea';
 import { useGetReasons } from '../hooks/useGetReasons';
 import { useGetStatus } from '../hooks/useGetStatus';
 
 import MESSAGES from '../messages';
-
-type TriggerModalProps = {
-    onClick: () => void;
-};
-export const TriggerModal: FunctionComponent<TriggerModalProps> = ({
-    onClick,
-}) => (
-    <IconButtonComponent
-        size="small"
-        onClick={onClick}
-        icon="edit"
-        tooltipMessage={MESSAGES.changeStatus}
-    />
-);
 
 type Props = {
     isOpen: boolean;
@@ -74,10 +59,15 @@ const StatusModal: FunctionComponent<Props> = ({
         }
         setStatus(newStatus);
     };
-
+    const allowConfirm = useMemo(() => {
+        if (status?.status === 'BLACKLISTED' && !status.reason) {
+            return false;
+        }
+        return true;
+    }, [status.reason, status?.status]);
     return (
         <ConfirmCancelModal
-            allowConfirm
+            allowConfirm={allowConfirm}
             titleMessage={formatMessage(MESSAGES.changeStatus)}
             onConfirm={handleConfirm}
             onCancel={() => {
@@ -106,6 +96,8 @@ const StatusModal: FunctionComponent<Props> = ({
                 <>
                     <InputComponent
                         type="select"
+                        required
+                        clearable={false}
                         keyValue="reason"
                         onChange={handleChange}
                         value={status?.reason}

@@ -40,6 +40,11 @@ const useStyles = makeStyles(theme => ({
         borderRadius: 5,
         fontSize: 16,
         fontFamily: '"Roboto", "Arial", sans-serif',
+        // @ts-ignore
+        border: `1px solid rgba(0, 0, 0, 0.23)`,
+        '&:hover': {
+            border: `1px solid rgba(0, 0, 0, 0.87)`,
+        },
         '&:focus': {
             border: `1px solid ${theme.palette.primary.main}`,
         },

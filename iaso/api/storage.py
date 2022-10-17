@@ -109,7 +109,7 @@ class StorageSerializerWithLogs(StorageSerializer):
 class StorageViewSet(ListModelMixin, viewsets.GenericViewSet):
     # TODO: clarify permissions (the doc says "permission to see storage)
     # For now we'll check that user is authenticated, and we filter by account
-    permission_classes = [permissions.IsAuthenticated, HasPermission("menupermissions.iaso_storage")]
+    permission_classes = [permissions.IsAuthenticated, HasPermission("menupermissions.iaso_storages")]
     serializer_class = StorageSerializer
 
     def get_queryset(self):

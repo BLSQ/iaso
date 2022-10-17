@@ -26,7 +26,7 @@ ASSIGNMENTS = _("Attributions")
 POLIO_BUDGET = _("Budget Polio")
 ENTITIES = _("Entities")
 BENEFICIARIES = _("Beneficiaries")
-STORAGES = _("Strorages")
+STORAGES = _("Storages")
 
 
 # When adding a new permissions, it also need to be added in

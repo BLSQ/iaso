@@ -1,21 +1,26 @@
 # TODO: need better type annotations in this file
 from datetime import datetime
 from time import time
+from unittest import mock
 
+import pytz
 from django.utils import timezone
 
 from iaso.models import Account, Form, MONTH, Instance, OrgUnit, Entity, EntityType, StorageDevice, StorageLogEntry
 from iaso.test import APITestCase
+
+MOCK_DATE = datetime(2020, 2, 2, 2, 2, 2, tzinfo=pytz.utc)
 
 
 class StorageAPITestCase(APITestCase):
     maxDiff = None
 
     @classmethod
+    @mock.patch("django.utils.timezone.now", lambda: MOCK_DATE)
     def setUpTestData(cls):
         star_wars = Account.objects.create(name="Star Wars")
         star_wars_2 = Account.objects.create(name="Star Wars revival")
-        cls.yoda = cls.create_user_with_profile(username="yoda", account=star_wars, permissions=["iaso_forms"])
+        cls.yoda = cls.create_user_with_profile(username="yoda", account=star_wars, permissions=["iaso_storages"])
 
         form_1 = Form.objects.create(name="Hydroponics study", period_type=MONTH, single_per_period=True)
 
@@ -95,7 +100,7 @@ class StorageAPITestCase(APITestCase):
                 "operation_type": "WRITE_PROFILE",
                 "instances": [self.instance1.uuid, self.instance2.uuid],
                 "org_unit_id": self.org_unit.id,
-                "entity_id": self.entity.id,
+                "entity_id": self.entity.uuid,
                 "performed_at": 1666002739.171,
             }
         ]
@@ -137,7 +142,7 @@ class StorageAPITestCase(APITestCase):
                 "operation_type": "WRITE_RECORD",
                 "instances": [self.instance1.uuid, self.instance2.uuid],
                 "org_unit_id": self.org_unit.id,
-                "entity_id": self.entity.id,
+                "entity_id": self.entity.uuid,
                 "performed_at": 1666002739.171,
             }
         ]
@@ -186,25 +191,35 @@ class StorageAPITestCase(APITestCase):
         received_json = response.json()
         self.assertEqual(
             received_json,
-            {
-                "storages": [
-                    {
-                        "storage_id": "EXISTING_STORAGE",
-                        "storage_type": "NFC",
-                        "status": {"status": "OK", "reason": "", "comment": ""},
-                    },
-                    {
-                        "storage_id": "ANOTHER_EXISTING_STORAGE_BLACKLISTED_STOLEN",
-                        "storage_type": "NFC",
-                        "status": {"status": "BLACKLISTED", "reason": "STOLEN", "comment": ""},
-                    },
-                    {
-                        "storage_id": "ANOTHER_EXISTING_STORAGE_BLACKLISTED_ABUSE",
-                        "storage_type": "SD",
-                        "status": {"status": "BLACKLISTED", "reason": "ABUSE", "comment": ""},
-                    },
-                ]
-            },
+            [
+                {
+                    "updated_at": 1580608922.0,
+                    "created_at": 1580608922.0,
+                    "storage_id": "EXISTING_STORAGE",
+                    "storage_type": "NFC",
+                    "status": {"status": "OK", "reason": "", "comment": ""},
+                    "org_unit": None,
+                    "entity": None,
+                },
+                {
+                    "updated_at": 1580608922.0,
+                    "created_at": 1580608922.0,
+                    "storage_id": "ANOTHER_EXISTING_STORAGE_BLACKLISTED_STOLEN",
+                    "storage_type": "NFC",
+                    "status": {"status": "BLACKLISTED", "reason": "STOLEN", "comment": ""},
+                    "org_unit": None,
+                    "entity": None,
+                },
+                {
+                    "updated_at": 1580608922.0,
+                    "created_at": 1580608922.0,
+                    "storage_id": "ANOTHER_EXISTING_STORAGE_BLACKLISTED_ABUSE",
+                    "storage_type": "SD",
+                    "status": {"status": "BLACKLISTED", "reason": "ABUSE", "comment": ""},
+                    "org_unit": None,
+                    "entity": None,
+                },
+            ],
         )
 
     def test_list_filter_by_status(self):
@@ -214,20 +229,26 @@ class StorageAPITestCase(APITestCase):
         received_json = response.json()
         self.assertEqual(
             received_json,
-            {
-                "storages": [
-                    {
-                        "storage_id": "ANOTHER_EXISTING_STORAGE_BLACKLISTED_STOLEN",
-                        "storage_type": "NFC",
-                        "status": {"status": "BLACKLISTED", "reason": "STOLEN", "comment": ""},
-                    },
-                    {
-                        "storage_id": "ANOTHER_EXISTING_STORAGE_BLACKLISTED_ABUSE",
-                        "storage_type": "SD",
-                        "status": {"status": "BLACKLISTED", "reason": "ABUSE", "comment": ""},
-                    },
-                ]
-            },
+            [
+                {
+                    "updated_at": 1580608922.0,
+                    "created_at": 1580608922.0,
+                    "storage_id": "ANOTHER_EXISTING_STORAGE_BLACKLISTED_STOLEN",
+                    "storage_type": "NFC",
+                    "status": {"status": "BLACKLISTED", "reason": "STOLEN", "comment": ""},
+                    "org_unit": None,
+                    "entity": None,
+                },
+                {
+                    "updated_at": 1580608922.0,
+                    "created_at": 1580608922.0,
+                    "storage_id": "ANOTHER_EXISTING_STORAGE_BLACKLISTED_ABUSE",
+                    "storage_type": "SD",
+                    "status": {"status": "BLACKLISTED", "reason": "ABUSE", "comment": ""},
+                    "org_unit": None,
+                    "entity": None,
+                },
+            ],
         )
 
     # TODO: list: error 400 if incorrect status/reason/type is requested?
@@ -239,15 +260,17 @@ class StorageAPITestCase(APITestCase):
         received_json = response.json()
         self.assertEqual(
             received_json,
-            {
-                "storages": [
-                    {
-                        "storage_id": "ANOTHER_EXISTING_STORAGE_BLACKLISTED_STOLEN",
-                        "storage_type": "NFC",
-                        "status": {"status": "BLACKLISTED", "reason": "STOLEN", "comment": ""},
-                    },
-                ]
-            },
+            [
+                {
+                    "updated_at": 1580608922.0,
+                    "created_at": 1580608922.0,
+                    "storage_id": "ANOTHER_EXISTING_STORAGE_BLACKLISTED_STOLEN",
+                    "storage_type": "NFC",
+                    "status": {"status": "BLACKLISTED", "reason": "STOLEN", "comment": ""},
+                    "org_unit": None,
+                    "entity": None,
+                }
+            ],
         )
 
     def test_list_filter_by_type(self):
@@ -257,27 +280,33 @@ class StorageAPITestCase(APITestCase):
         received_json = response.json()
         self.assertEqual(
             received_json,
-            {
-                "storages": [
-                    {
-                        "storage_id": "EXISTING_STORAGE",
-                        "storage_type": "NFC",
-                        "status": {"status": "OK", "reason": "", "comment": ""},
-                    },
-                    {
-                        "storage_id": "ANOTHER_EXISTING_STORAGE_BLACKLISTED_STOLEN",
-                        "storage_type": "NFC",
-                        "status": {"status": "BLACKLISTED", "reason": "STOLEN", "comment": ""},
-                    },
-                ]
-            },
+            [
+                {
+                    "updated_at": 1580608922.0,
+                    "created_at": 1580608922.0,
+                    "storage_id": "EXISTING_STORAGE",
+                    "storage_type": "NFC",
+                    "status": {"status": "OK", "reason": "", "comment": ""},
+                    "org_unit": None,
+                    "entity": None,
+                },
+                {
+                    "updated_at": 1580608922.0,
+                    "created_at": 1580608922.0,
+                    "storage_id": "ANOTHER_EXISTING_STORAGE_BLACKLISTED_STOLEN",
+                    "storage_type": "NFC",
+                    "status": {"status": "BLACKLISTED", "reason": "STOLEN", "comment": ""},
+                    "org_unit": None,
+                    "entity": None,
+                },
+            ],
         )
 
     def test_post_blacklisted_storage_ok(self):
         """
         POST /api/storage/blacklisted with correct parameters and permissions does the job:
 
-        - returns the 204 status
+        - returns the 200 status
         - perform the requested changes in the database
         """
         self.client.force_authenticate(self.yoda)
@@ -288,7 +317,7 @@ class StorageAPITestCase(APITestCase):
             "storage_status": {"status": "BLACKLISTED", "reason": "DAMAGED", "comment": "not usable anymore"},
         }
         response = self.client.post("/api/storage/blacklisted/", post_body, format="json")
-        self.assertEqual(response.status_code, 204)
+        self.assertEqual(response.status_code, 200)
 
         # check that the storage status has been updated (was OK before)
         updated_storage = StorageDevice.objects.get(pk=self.existing_storage_device.pk)
@@ -314,9 +343,13 @@ class StorageAPITestCase(APITestCase):
         self.assertEqual(
             received_json,
             {
+                "updated_at": 1580608922.0,
+                "created_at": 1580608922.0,
                 "storage_id": "EXISTING_STORAGE",
                 "storage_type": "NFC",
                 "status": {"status": "OK", "reason": "", "comment": ""},
+                "org_unit": None,
+                "entity": None,
                 "logs": [
                     {
                         "id": "e4200710-bf82-4d29-a29b-6a042f79ef25",
@@ -326,7 +359,7 @@ class StorageAPITestCase(APITestCase):
                         "instances": [],
                         "org_unit": None,
                         "entity": None,
-                        "performed_at": "2022-10-13T13:12:56Z",
+                        "performed_at": 1665666776.0,
                     }
                 ],
             },
@@ -342,14 +375,22 @@ class StorageAPITestCase(APITestCase):
             {
                 "storages": [
                     {
+                        "updated_at": 1580608922.0,
+                        "created_at": 1580608922.0,
                         "storage_id": "ANOTHER_EXISTING_STORAGE_BLACKLISTED_STOLEN",
                         "storage_type": "NFC",
                         "status": {"status": "BLACKLISTED", "reason": "STOLEN", "comment": ""},
+                        "org_unit": None,
+                        "entity": None,
                     },
                     {
+                        "updated_at": 1580608922.0,
+                        "created_at": 1580608922.0,
                         "storage_id": "ANOTHER_EXISTING_STORAGE_BLACKLISTED_ABUSE",
                         "storage_type": "SD",
                         "status": {"status": "BLACKLISTED", "reason": "ABUSE", "comment": ""},
+                        "org_unit": None,
+                        "entity": None,
                     },
                 ]
             },

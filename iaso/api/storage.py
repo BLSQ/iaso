@@ -209,6 +209,7 @@ class StorageViewSet(ListModelMixin, viewsets.GenericViewSet):
                 performed_by=user,
             )
             return Response({}, status=200)
+            return Response("", status=status.HTTP_204_NO_CONTENT)
 
         else:  # Some parameters were invalid
             # TODO: return a 400 error here?

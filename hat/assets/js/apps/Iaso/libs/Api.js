@@ -65,7 +65,6 @@ export const getRequest = async (url, signal) => {
 export const basePostRequest = (url, data, fileData = {}, signal) => {
     // Send as form if files included else in JSON
     let init = {};
-
     if (Object.keys(fileData).length > 0) {
         const formData = new FormData();
         // multipart mode
@@ -86,7 +85,12 @@ export const basePostRequest = (url, data, fileData = {}, signal) => {
         };
     }
 
-    return iasoFetch(url, init).then(response => response.json());
+    return iasoFetch(url, init).then(response => {
+        if (response.status === 204) {
+            return undefined;
+        }
+        return response.json();
+    });
 };
 
 export const postRequest = (arg1, arg2, arg3, arg4) => {

@@ -7,6 +7,7 @@ import {
     commonStyles,
 } from 'bluesquare-components';
 import classnames from 'classnames';
+// @ts-ignore
 import { makeStyles, InputLabel } from '@material-ui/core';
 
 type Props = {

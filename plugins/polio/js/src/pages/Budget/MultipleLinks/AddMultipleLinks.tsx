@@ -1,10 +1,9 @@
 import { Box, Grid, Typography } from '@material-ui/core';
 import { useFormikContext } from 'formik';
-import React, { FunctionComponent, useCallback, useMemo } from 'react';
+import React, { FunctionComponent, useMemo } from 'react';
 // @ts-ignore
 import { useSafeIntl, IconButton } from 'bluesquare-components';
 import AddIcon from '@material-ui/icons/Add';
-import RemoveIcon from '@material-ui/icons/Remove';
 import MESSAGES from '../../../constants/messages';
 import { NamedLink } from './NamedLink';
 
@@ -31,14 +30,6 @@ export const AddMultipleLinks: FunctionComponent<Props> = ({
         setFieldValue(`links`, newLinks);
     };
 
-    const handleRemoveLastLink = useCallback(() => {
-        if (links.length > 1) {
-            const newLinks = [...links];
-            newLinks.pop();
-            setFieldValue(`links`, newLinks);
-        }
-    }, [setFieldValue, links]);
-
     return (
         <>
             <div>
@@ -47,7 +38,7 @@ export const AddMultipleLinks: FunctionComponent<Props> = ({
                     {required && <sup>*</sup>}
                 </Typography>
             </div>
-            <Box mt={2}>
+            <Box mt={1}>
                 {links.length > 1 &&
                     links.map((_link, index) => (
                         // eslint-disable-next-line react/no-array-index-key
@@ -56,43 +47,16 @@ export const AddMultipleLinks: FunctionComponent<Props> = ({
                 {/* if the condition is on length === 0 the UI will flicker and the field lose focus because of re-render */}
                 {links.length <= 1 && <NamedLink index={0} />}
 
-                <Grid
-                    container
-                    spacing={2}
-                    direction="column"
-                    justifyContent="flex-end"
-                >
+                <Grid container spacing={2}>
                     <Box mb={2}>
-                        <Grid
-                            container
-                            item
-                            direction="row"
-                            justifyContent="flex-end"
-                            spacing={2}
-                            xs={12}
+                        <IconButton
+                            onClick={handleAddlink}
+                            variant="outlined"
+                            overrideIcon={AddIcon}
+                            tooltipMessage={MESSAGES.addLink}
                         >
-                            <Grid item>
-                                <IconButton
-                                    onClick={handleAddlink}
-                                    variant="outlined"
-                                    overrideIcon={AddIcon}
-                                    tooltipMessage={MESSAGES.addLink}
-                                >
-                                    {formatMessage(MESSAGES.addLink)}
-                                </IconButton>
-                            </Grid>
-                            <Grid item>
-                                <IconButton
-                                    onClick={handleRemoveLastLink}
-                                    disabled={!(links.length > 1)}
-                                    variant="outlined"
-                                    overrideIcon={RemoveIcon}
-                                    tooltipMessage={MESSAGES.removeLastLink}
-                                >
-                                    {formatMessage(MESSAGES.removeLastLink)}
-                                </IconButton>
-                            </Grid>
-                        </Grid>
+                            {formatMessage(MESSAGES.addLink)}
+                        </IconButton>
                     </Box>
                 </Grid>
             </Box>

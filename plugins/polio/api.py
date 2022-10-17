@@ -223,7 +223,7 @@ class CampaignViewSet(ModelViewSet):
         current_year = self.get_year(current_date)
 
         params = request.query_params
-        calendar_data = self.get_calendar_data(self, current_year, params)
+        calendar_data = self.get_calendar_data(current_year, params)
         filename = xlsx_file_name("calendar", params)
         xlsx_file = generate_xlsx_campaigns_calendar(filename, calendar_data)
 
@@ -244,13 +244,12 @@ class CampaignViewSet(ModelViewSet):
             today = dt.date.today()
             return today.year
 
-    @staticmethod
     def get_calendar_data(self: Any, year: int, params: Any) -> Any:
         """
         Returns filtered rounds from database
 
             parameters:
-                self (CampaignViewSet): a self CampaignViewSet
+                self: a self
                 year (int): a year int
                 params(dictionary): a params dictionary
             returns:

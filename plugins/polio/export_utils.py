@@ -68,7 +68,7 @@ def generate_xlsx_campaigns_calendar(filename: str, datas: Any) -> Workbook:
                     cell = cell_border(cell, True)
                     vacine_color = None
                     if datas[row - 1]["rounds"][str(month)][r]["vacine"] != "":
-                        vacine_color = polioVaccines(datas[row - 1]["rounds"][str(month)][r]["vacine"])
+                        vacine_color = polio_vaccines(datas[row - 1]["rounds"][str(month)][r]["vacine"])
                     sheet = cell_dimension_pattern_fill(
                         sheet, cell, CALENDAR_CELL_WIDTH, CALENDAR_CELL_HEIGHT, True, vacine_color
                     )
@@ -100,8 +100,6 @@ def get_max_rounds_count(rounds: Any) -> int:
     for key, round in rounds.items():
         rounds_list.append(len(round))
     return max(rounds_list)
-
-    return ""
 
 
 def get_cell_data(round: Any) -> str:
@@ -148,7 +146,7 @@ def format_date(date: str, with_year: bool = False) -> str:
     return formatted_date
 
 
-def polioVaccines(vaccine: str) -> Optional[str]:
+def polio_vaccines(vaccine: str) -> Optional[str]:
     """
     returns a vaccine color
 

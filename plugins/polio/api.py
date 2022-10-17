@@ -275,7 +275,7 @@ class CampaignViewSet(ModelViewSet):
             rounds = rounds.filter(campaign__is_preventive=False).filter(campaign__is_test=False)
         if search:
             rounds = rounds.filter(Q(campaign__obr_name__icontains=search) | Q(campaign__epid__icontains=search))
-        print(rounds)
+
         return self.loop_on_rounds(self, rounds)
 
     @staticmethod

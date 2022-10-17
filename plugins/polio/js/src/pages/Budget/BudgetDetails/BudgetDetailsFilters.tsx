@@ -54,7 +54,7 @@ export const BudgetDetailsFilters: FunctionComponent<Props> = ({
                         options={stepsList}
                         multi={false}
                         value={filters.transition_key}
-                        label={MESSAGES.eventType}
+                        label={MESSAGES.step}
                     />
                 </Grid>
                 <Grid

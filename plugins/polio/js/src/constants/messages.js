@@ -1153,10 +1153,6 @@ const MESSAGES = defineMessages({
         defaultMessage: 'Destination',
         id: 'iaso.polio.label.destination',
     },
-    event: {
-        defaultMessage: 'Event',
-        id: 'iaso.polio.label.event',
-    },
     note: {
         defaultMessage: 'note',
         id: 'iaso.polio.label.note',
@@ -1205,9 +1201,9 @@ const MESSAGES = defineMessages({
         defaultMessage: 'Send',
         id: 'iaso.polio.label.send',
     },
-    eventType: {
-        defaultMessage: 'Type',
-        id: 'iaso.polio.label.eventType',
+    step: {
+        defaultMessage: 'Step',
+        id: 'iaso.polio.label.step',
     },
     cc_emails: {
         defaultMessage: 'Cc emails',
@@ -1573,17 +1569,17 @@ const MESSAGES = defineMessages({
         id: 'iaso.polio.label.url',
         defaultMessage: 'Url',
     },
-    alias: {
-        id: 'iaso.polio.label.alias',
-        defaultMessage: 'Alias',
+    displayedName: {
+        id: 'iaso.polio.label.displayedName',
+        defaultMessage: 'Displayed name',
     },
     linksOrFilesRequired: {
         id: 'iaso.polio.label.linksOrFilesRequired',
         defaultMessage: 'You need to attach at least a link or a file',
     },
-    lastUpdatedAt: {
-        id: 'iaso.polio.label.lastUpdatedAt',
-        defaultMessage: 'Last update',
+    lastStep: {
+        id: 'iaso.polio.label.lastStep',
+        defaultMessage: 'Last step',
     },
 });
 

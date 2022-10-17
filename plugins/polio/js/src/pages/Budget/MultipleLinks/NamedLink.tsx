@@ -27,7 +27,7 @@ export const NamedLink: FunctionComponent<Props> = ({ index }) => {
         <Grid container spacing={2}>
             <Grid item xs={4}>
                 <Field
-                    label={formatMessage(MESSAGES.alias)}
+                    label={formatMessage(MESSAGES.displayedName)}
                     name={`links[${index}].alias`}
                     className={classNames(classes.input, customStyle.linkInput)}
                     component={TextInput}

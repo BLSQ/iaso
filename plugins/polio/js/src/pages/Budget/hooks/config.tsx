@@ -70,7 +70,7 @@ export const useBudgetColumns = (): Column[] => {
                 Cell: DateCell,
             },
             {
-                Header: formatMessage(MESSAGES.lastUpdatedAt),
+                Header: formatMessage(MESSAGES.lastStep),
                 sortable: true,
                 accessor: 'budget_last_updated_at',
                 Cell: DateCell,
@@ -101,7 +101,7 @@ export const useBudgetDetailsColumns = (): Column[] => {
     return useMemo(() => {
         const defaultColumns = [
             {
-                Header: formatMessage(MESSAGES.event),
+                Header: formatMessage(MESSAGES.step),
                 id: 'transition_label',
                 accessor: 'transition_label',
                 sortable: false,

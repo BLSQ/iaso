@@ -132,26 +132,36 @@ export const getInstancesColumns = (
 const labelLocales = { fr: 'French', en: 'English' };
 
 const localizeLabel = field => {
+    // Localize a label. Sometimes a label may be a string, that is somewhat json but not totally
+    // sometime it's already a Mapping.
     const locale = getCookie('django_language') ?? 'en';
-    const singleToDoubleQuotes = field.label.replaceAll("'", '"');
-    const wrongDoubleQuotes = /(?:[a-zA-Z])"(?=[a-zA-Z])/g;
-    const formattedLabel = singleToDoubleQuotes.replace(wrongDoubleQuotes, "'");
-    let result;
-    try {
-        const localeOptions = JSON.parse(formattedLabel);
-        const localeKey = labelLocales[locale] ?? labelLocales.en;
-        result = localeOptions[localeKey];
-    } catch (e) {
-        // some fields are using single quotes. Logging just for info, this can be deleted if it clutters the console
-        console.warn('Error parsing JSON', formattedLabel, e);
-        result = field.name;
+    const localeKey = labelLocales[locale] ?? labelLocales.en;
+
+    let localeOptions;
+    if (typeof field !== 'object') {
+        const singleToDoubleQuotes = field.label.replaceAll("'", '"');
+        const wrongDoubleQuotes = /(?:[a-zA-Z])"(?=[a-zA-Z])/g;
+        const formattedLabel = singleToDoubleQuotes.replace(
+            wrongDoubleQuotes,
+            "'",
+        );
+        try {
+            localeOptions = JSON.parse(formattedLabel);
+        } catch (e) {
+            // some fields are using single quotes. Logging just for info, this can be deleted if it clutters the console
+            console.warn('Error parsing JSON', formattedLabel, e);
+            return field.name;
+        }
+    } else {
+        localeOptions = field;
     }
-    return result;
+    return localeOptions[localeKey] ?? field.name;
 };
 
 export const formatLabel = field => {
-    if (field.label?.charAt(0) === '{') return localizeLabel(field);
     if (!field.label) return field.name;
+    if (typeof field.label === 'object' || field.label?.charAt(0) === '{')
+        return localizeLabel(field);
     if (!field.label.trim()) return field.name;
     if (field.label.includes(':')) return field.label.split(':')[0];
     if (field.label.includes('$')) return field.label.split('$')[0];

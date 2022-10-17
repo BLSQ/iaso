@@ -199,7 +199,7 @@ export const BudgetDetails: FunctionComponent<Props> = ({ router }) => {
                                         justifyContent="flex-end"
                                     >
                                         {nextSteps.regular &&
-                                            nextSteps.regular.map(
+                                            nextSteps.regular.filter(step=>step.allowed).map(
                                                 (step, index) => {
                                                     const isQuickTransition =
                                                         step.key ===

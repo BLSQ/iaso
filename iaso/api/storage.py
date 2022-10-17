@@ -64,7 +64,7 @@ class StorageStatusSerializer(serializers.Serializer):
     # TODO: where should this data come from
     # updated_at = serializers.DateTimeField()
     # TODO: Comment field is not in the spec, but I guess it's useful to implement, no?
-    comment = serializers.CharField(source="status_comment", required=False)
+    comment = serializers.CharField(source="status_comment", required=False, allow_blank=True)
 
     def validate(self, data):
         """

@@ -11,6 +11,8 @@ https://docs.djangoproject.com/en/1.9/ref/settings/
 """
 
 import os
+from typing import Dict, Any
+
 import sentry_sdk
 from datetime import timedelta
 from django.utils.translation import ugettext_lazy as _
@@ -26,6 +28,11 @@ from urllib.parse import urlparse
 
 from plugins.wfp.wfp_pkce_generator import generate_pkce
 
+# This should the the naked domain (no http or https prefix) that is
+# hosting Iaso, this is used when sending out emails that need a link
+# back to the Iaso application.
+#
+# This should be the same as the one set on: `/admin/sites/site/1/change/`
 DNS_DOMAIN = os.environ.get("DNS_DOMAIN", "localhost:8081")
 TESTING = os.environ.get("TESTING", "").lower() == "true"
 PLUGINS = os.environ["PLUGINS"].split(",") if os.environ.get("PLUGINS", "") else []
@@ -83,7 +90,7 @@ ENKETO = {
 
 TEST_RUNNER = "redgreenunittest.django.runner.RedGreenDiscoverRunner"
 
-LOGGING = {
+LOGGING: Dict[str, Any] = {
     "version": 1,
     "disable_existing_loggers": False,
     "formatters": {"default": {"format": "%(levelname)-8s %(asctime)s %(name)s -- %(message)s"}},
@@ -111,6 +118,7 @@ LOGGING = {
 
 # AWS expects python logs to be stored in this folder
 AWS_LOG_FOLDER = "/opt/python/log"
+
 if os.path.isdir(AWS_LOG_FOLDER):
     if os.access(AWS_LOG_FOLDER, os.W_OK):
         print("Logging to django log")
@@ -237,7 +245,7 @@ if os.environ.get("DB_READONLY_USERNAME"):
         "PASSWORD": os.environ.get("DB_READONLY_PASSWORD", None),
         "HOST": DB_HOST,
         "PORT": DB_PORT,
-        "OPTIONS": {"options": "-c default_transaction_read_only=on -c statement_timeout=10000"},
+        "OPTIONS": {"options": "-c default_transaction_read_only=on -c statement_timeout=10000"},  # type: ignore
     }
 
     INSTALLED_APPS.append("django_sql_dashboard")

@@ -48,7 +48,7 @@ class Dhis2OuImporterSerializer(serializers.Serializer):
 
 # noinspection PyMethodMayBeStatic
 class Dhis2OuImporterViewSet(viewsets.ViewSet):
-    permission_classes = [permissions.IsAuthenticated, HasPermission("menupermissions.iaso_sources")]
+    permission_classes = [permissions.IsAuthenticated, HasPermission("menupermissions.iaso_sources")]  # type: ignore
     serializer_class = Dhis2OuImporterSerializer
 
     def create(self, request):
@@ -58,6 +58,7 @@ class Dhis2OuImporterViewSet(viewsets.ViewSet):
         source_version_number = data.get("source_version_number", None)
         update_mode = source_version_number is not None
 
+        # TODO: investigate: the task parameter (of dhis2_ou_importer) is not passed (which is allowed by the signature), but on the other hand the code seems to assume it's not None...
         task = dhis2_ou_importer(
             source_id=data["source_id"],
             source_version_number=source_version_number,

@@ -5,7 +5,7 @@ import FormsStats from '../domains/forms/stats';
 import { OrgUnits } from '../domains/orgUnits/index.tsx';
 import { Links } from '../domains/links';
 import Runs from '../domains/links/Runs';
-import OrgUnitDetail from '../domains/orgUnits/detail';
+import OrgUnitDetail from '../domains/orgUnits/details';
 import Completeness from '../domains/completeness';
 import Instances from '../domains/instances';
 import CompareSubmissions from '../domains/instances/compare/index.tsx';
@@ -568,6 +568,10 @@ export const entitiesPath = {
         {
             isRequired: false,
             key: 'submitterTeamId',
+        },
+        {
+            isRequired: false,
+            key: 'entityTypeIds',
         },
         ...paginationPathParams.map(p => ({
             ...p,

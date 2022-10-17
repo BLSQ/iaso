@@ -294,6 +294,7 @@ pattern to run a command is
 The following are some examples:
 
 * Run tests                    `docker-compose exec iaso ./manage.py test`
+* Check type hints             `docker-compose exec iaso mypy .`
 * Create a shell inside the container    `docker-compose run iaso bash`
 * Run a shell command          `docker-compose run iaso eval curl http://google.com`
 * Run Django manage.py         `docker-compose exec iaso ./manage.py help`
@@ -678,9 +679,26 @@ External service dependencies:
 
 The PostgreSQL database server and Enketo server can both be deployed in Docker on the same physical machine, it is advised to double the recommended values in that case.
 
-Each of these services have their own requirements, that are available on their own documentation
+Each of these services have their own requirements, that are available on their own documentation.
 
+Area of notice for configuration
+--------------------------------
 
+### E-mails
+
+The reset e-mail functionality use django builtin site framework to generate
+the url. When setting a new server, got to the admin and modify the example.com
+site to point to your server url.
+You can do so at `/admin/sites/site/1/change/`
+
+Some part of the code use DNS_DOMAIN environment variable, please fill it 
+with the same value.
+
+Please also check the `# Email configuration` section in settings.py and check
+everything is set correctly. Notably the sending address. See the
+[sending email](https://docs.djangoproject.com/en/4.1/topics/email/) section
+in the Django documentation for the possible backends and tweak. 
+`
 
 Deployment on AWS Elastic Beanstalk
 ====================================

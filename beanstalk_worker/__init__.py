@@ -1,7 +1,7 @@
 from functools import wraps
 import traceback
 from django.utils import timezone
-from lazy_services import LazyService
+from lazy_services import LazyService  # type: ignore
 import sentry_sdk
 from logging import getLogger
 

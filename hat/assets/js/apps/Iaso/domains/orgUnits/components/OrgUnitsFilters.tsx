@@ -277,6 +277,7 @@ export const OrgUnitFilters: FunctionComponent<Props> = ({
             <Grid item xs={4}>
                 <InputComponent
                     type="select"
+                    multi
                     disabled={isFetchingOrgunitTypes}
                     keyValue="orgUnitTypeId"
                     onChange={handleChange}
@@ -287,6 +288,7 @@ export const OrgUnitFilters: FunctionComponent<Props> = ({
                 />
                 <InputComponent
                     type="select"
+                    multi
                     disabled={isFetchingGroups}
                     keyValue="group"
                     onChange={handleChange}
@@ -405,13 +407,11 @@ export const OrgUnitFilters: FunctionComponent<Props> = ({
                 </Box>
                 {(filters?.hasInstances === 'true' ||
                     filters?.hasInstances === 'duplicates') && (
-                    <Box mt={-3}>
-                        <DatesRange
-                            onChangeDate={handleChange}
-                            dateFrom={filters?.dateFrom}
-                            dateTo={filters?.dateTo}
-                        />
-                    </Box>
+                    <DatesRange
+                        onChangeDate={handleChange}
+                        dateFrom={filters?.dateFrom}
+                        dateTo={filters?.dateTo}
+                    />
                 )}
             </Grid>
         </Grid>

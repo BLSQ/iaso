@@ -9,7 +9,7 @@ import django.contrib.postgres.indexes
 from django.db import migrations, models
 import django.db.migrations.operations.special
 import django.db.models.deletion
-import django_ltree.fields
+import django_ltree.fields  # type: ignore
 import iaso.models.base
 import iaso.models.forms
 import uuid

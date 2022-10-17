@@ -22,6 +22,8 @@
 # sys.path.insert(0, os.path.abspath('.'))
 
 # setup django
+from typing import List, Dict
+
 import django
 
 django.setup()
@@ -77,7 +79,7 @@ language = None
 # List of patterns, relative to source directory, that match files and
 # directories to ignore when looking for source files.
 # This patterns also effect to html_static_path and html_extra_path
-exclude_patterns = []
+exclude_patterns: List[str] = []
 
 # The name of the Pygments (syntax highlighting) style to use.
 pygments_style = "sphinx"
@@ -124,7 +126,7 @@ htmlhelp_basename = "SenseHATdoc"
 
 # -- Options for LaTeX output ---------------------------------------------
 
-latex_elements = {
+latex_elements: Dict[str, str] = {
     # The paper size ('letterpaper' or 'a4paper').
     #
     # 'papersize': 'letterpaper',

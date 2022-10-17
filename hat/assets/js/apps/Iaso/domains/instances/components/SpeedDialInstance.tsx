@@ -59,7 +59,7 @@ const SpeedDialInstance: FunctionComponent<Props> = props => {
         currentUser,
     );
     const isOrgUnitAlreadyLinked =
-        currentInstance.org_unit.reference_instance_id !== null;
+        currentInstance.org_unit?.reference_instance_id !== null;
     const {
         org_unit: orgUnit,
         latitude: formLat,
@@ -119,7 +119,7 @@ const SpeedDialInstance: FunctionComponent<Props> = props => {
 
     const actions = [...baseActions, deleteRestore];
 
-    if (isGpsEqual) {
+    if (!isGpsEqual) {
         actions.unshift(editLocationWithInstanceGps);
     }
 

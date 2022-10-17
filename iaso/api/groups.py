@@ -69,7 +69,7 @@ class GroupsViewSet(ModelViewSet):
 
     permission_classes = [
         permissions.IsAuthenticated,
-        HasPermission("menupermissions.iaso_org_units"),
+        HasPermission("menupermissions.iaso_org_units"),  # type: ignore
         HasGroupPermission,
     ]
     serializer_class = GroupSerializer

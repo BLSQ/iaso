@@ -11,7 +11,7 @@ from rest_framework import serializers, permissions
 from iaso.dhis2.export_request_builder import ExportRequestBuilder
 from .common import ModelViewSet
 from .instance_filters import parse_instance_filters
-from iaso.dhis2.datavalue_exporter import DataValueExporter
+from iaso.dhis2.datavalue_exporter import DataValueExporter  # type: ignore
 
 
 class ExportRequestSerializer(serializers.ModelSerializer):

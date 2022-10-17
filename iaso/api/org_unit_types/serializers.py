@@ -44,7 +44,7 @@ class OrgUnitTypeSerializer(DynamicFieldsModelSerializer):
     updated_at = TimestampField(read_only=True)
     units_count = serializers.SerializerMethodField(read_only=True)
     reference_form = serializers.SerializerMethodField(read_only=True)
-    reference_form_id = serializers.PrimaryKeyRelatedField(
+    reference_form_id: serializers.PrimaryKeyRelatedField = serializers.PrimaryKeyRelatedField(
         source="reference_form",
         write_only=True,
         required=False,
@@ -53,6 +53,7 @@ class OrgUnitTypeSerializer(DynamicFieldsModelSerializer):
         queryset=Form.objects.all(),
     )
 
+    # Fixme make this directly in db !
     def get_units_count(self, obj: OrgUnitType):
         orgUnits = OrgUnit.objects.filter_for_user_and_app_id(
             self.context["request"].user, self.context["request"].query_params.get("app_id")
@@ -60,7 +61,7 @@ class OrgUnitTypeSerializer(DynamicFieldsModelSerializer):
         orgunits_count = orgUnits.count()
         return orgunits_count
 
-    def get_reference_form(self, obj: Form):
+    def get_reference_form(self, obj: OrgUnitType):
         form_def = Form.objects.filter_for_user_and_app_id(
             self.context["request"].user, self.context["request"].query_params.get("app_id")
         ).filter(id=obj.reference_form_id)

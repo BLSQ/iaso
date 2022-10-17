@@ -42,6 +42,7 @@ const CampaignsCalendar = ({
                         params={params}
                         orders={orders}
                         currentWeekIndex={currentWeekIndex}
+                        isPdf={isPdf}
                     />
                     <Body
                         loadingCampaigns={loadingCampaigns}
@@ -49,6 +50,7 @@ const CampaignsCalendar = ({
                         currentWeekIndex={currentWeekIndex}
                         firstMonday={firstMonday}
                         lastSunday={lastSunday}
+                        isPdf={isPdf}
                     />
                 </Table>
             </TableContainer>

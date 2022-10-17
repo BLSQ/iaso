@@ -9,6 +9,7 @@ import {
     ResponsibleField,
     RABudgetStatusField,
     TextInput,
+    NumberInput,
 } from '../components/Inputs';
 
 export const RiskAssessmentForm = () => {
@@ -37,12 +38,10 @@ export const RiskAssessmentForm = () => {
                         <Field
                             label={formatMessage(MESSAGES.verificationScore)}
                             name="verification_score"
-                            component={TextInput}
+                            component={NumberInput}
                             className={classes.input}
-                            type="number"
-                            inputProps={{
-                                min: 0,
-                            }}
+                            min={0}
+                            max={20}
                         />
                     </Grid>
                 </Grid>

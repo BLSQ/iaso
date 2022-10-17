@@ -1,9 +1,10 @@
 from django.contrib.auth.models import User
 from django.db.models import Q
 from django.shortcuts import get_object_or_404
-from django_filters.rest_framework import DjangoFilterBackend
+from django_filters.rest_framework import DjangoFilterBackend  # type: ignore
 from rest_framework import serializers, filters, permissions
 from rest_framework.decorators import action
+from rest_framework.fields import Field
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
@@ -39,7 +40,7 @@ class NestedUserSerializer(serializers.ModelSerializer):
 
 
 class AuditTeamSerializer(serializers.ModelSerializer):
-    sub_teams = serializers.PrimaryKeyRelatedField(read_only=True, many=True)
+    sub_teams: Field = serializers.PrimaryKeyRelatedField(read_only=True, many=True)
 
     class Meta:
         model = Team
@@ -94,7 +95,8 @@ class TeamSerializer(serializers.ModelSerializer):
             while p:
                 if p == self.instance:
                     raise serializers.ValidationError("noLoopInSubTree")
-                p = p.parent
+                # TODO: investigate type error on next line
+                p = p.parent  # type: ignore
         return value
 
     def validate_sub_teams(self, values):
@@ -249,7 +251,7 @@ class TeamViewSet(AuditMixin, ModelViewSet):
         TeamSearchFilterBackend,
         DeletionFilterBackend,
     ]
-    permission_classes = [ReadOnlyOrHasPermission("menupermissions.iaso_teams")]
+    permission_classes = [ReadOnlyOrHasPermission("menupermissions.iaso_teams")]  # type: ignore
     serializer_class = TeamSerializer
     queryset = Team.objects.all()
     ordering_fields = ["id", "name", "created_at", "updated_at", "type"]
@@ -258,7 +260,7 @@ class TeamViewSet(AuditMixin, ModelViewSet):
         "project": ["exact"],
     }
 
-    audit_serializer = AuditTeamSerializer
+    audit_serializer = AuditTeamSerializer  # type: ignore
 
     def get_queryset(self):
         user = self.request.user
@@ -359,7 +361,7 @@ class PublishingStatusFilterBackend(filters.BaseFilterBackend):
 
 class PlanningViewSet(AuditMixin, ModelViewSet):
     remove_results_key_if_paginated = True
-    permission_classes = [ReadOnlyOrHasPermission("menupermissions.iaso_planning")]
+    permission_classes = [ReadOnlyOrHasPermission("menupermissions.iaso_planning")]  # type: ignore
     serializer_class = PlanningSerializer
     queryset = Planning.objects.all()
     filter_backends = [
@@ -375,7 +377,7 @@ class PlanningViewSet(AuditMixin, ModelViewSet):
         "started_at": ["gte", "lte"],
         "ended_at": ["gte", "lte"],
     }
-    audit_serializer = AuditPlanningSerializer
+    audit_serializer = AuditPlanningSerializer  # type: ignore
 
     def get_queryset(self):
         user = self.request.user
@@ -504,7 +506,7 @@ class AssignmentViewSet(AuditMixin, ModelViewSet):
     sense outside of it's planning."""
 
     remove_results_key_if_paginated = True
-    permission_classes = [IsAuthenticated, ReadOnlyOrHasPermission("menupermissions.iaso_planning")]
+    permission_classes = [IsAuthenticated, ReadOnlyOrHasPermission("menupermissions.iaso_planning")]  # type: ignore
     serializer_class = AssignmentSerializer
     queryset = Assignment.objects.all()
     filter_backends = [
@@ -518,7 +520,7 @@ class AssignmentViewSet(AuditMixin, ModelViewSet):
         "planning": ["exact"],
         "team": ["exact"],
     }
-    audit_serializer = AuditAssignmentSerializer
+    audit_serializer = AuditAssignmentSerializer  # type: ignore
 
     def get_queryset(self):
         user = self.request.user
@@ -563,7 +565,8 @@ class MobilePlanningSerializer(serializers.ModelSerializer):
         user = self.context["request"].user
         r = []
         for a in planning.assignment_set.filter(deleted_at__isnull=True).filter(user=user):
-            r.append({"org_unit_id": a.org_unit.id, "form_ids": [f.id for f in planning.forms.all()]})
+            # TODO: investigate type error on next line
+            r.append({"org_unit_id": a.org_unit.id, "form_ids": [f.id for f in planning.forms.all()]})  # type: ignore
         return r
 
 

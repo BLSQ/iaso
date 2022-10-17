@@ -31,7 +31,7 @@ def dhis2_ou_exporter(
     org_unit_types_ids,
     org_unit_types_ref_ids,
     field_names,
-    task: Task = None,
+    task: Task,
 ):
     task.report_progress_and_stop_if_killed(progress_message="Computing differences")
     iaso_logger = CommandLogger(sys.stdout)
@@ -52,7 +52,8 @@ def dhis2_ou_exporter(
     )
     task.report_progress_and_stop_if_killed(progress_message=f"Starting to export: {len(diffs)}")
 
-    api = get_api_from_credential(source_version.data_source.credentials)
+    # TODO: investigate type error on next line
+    api = get_api_from_credential(source_version.data_source.credentials)  # type: ignore
     if not api:
         raise ValueError("No credentials exist for this source, please provide them")
 

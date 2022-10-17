@@ -32,7 +32,9 @@ class AccountSerializer(serializers.ModelSerializer):
 
 class HasAccountPermission(permissions.BasePermission):
     def has_object_permission(self, request: Request, view, obj: Account):
-        return request.user.iaso_profile.account == obj
+        if request.user.is_authenticated:
+            return request.user.iaso_profile.account == obj
+        return False
 
 
 class AccountViewSet(ModelViewSet):
@@ -45,7 +47,7 @@ class AccountViewSet(ModelViewSet):
 
     permission_classes = [
         permissions.IsAuthenticated,
-        HasPermission("menupermissions.iaso_sources"),
+        HasPermission("menupermissions.iaso_sources"),  # type: ignore
         HasAccountPermission,
     ]
     serializer_class = AccountSerializer

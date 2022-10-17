@@ -1,7 +1,7 @@
 import typing
 
-from django.http.response import HttpResponseBadRequest
 from rest_framework import serializers, parsers, permissions, exceptions
+from rest_framework.fields import Field
 
 from iaso.models import Form, FormVersion
 from django.db.models.functions import Concat
@@ -61,7 +61,7 @@ class FormVersionSerializer(DynamicFieldsModelSerializer):
             "descriptor",
         ]
 
-    form_id = serializers.PrimaryKeyRelatedField(source="form", queryset=Form.objects.all())
+    form_id: Field = serializers.PrimaryKeyRelatedField(source="form", queryset=Form.objects.all())
     form_name = serializers.SerializerMethodField()
     xls_file = serializers.FileField(required=False, allow_empty_file=False)  # field is not required in model
     mapped = serializers.BooleanField(read_only=True)
@@ -147,7 +147,7 @@ class FormVersionsViewSet(ModelViewSet):
     serializer_class = FormVersionSerializer
     permission_classes = [
         permissions.IsAuthenticated,
-        HasPermission("menupermissions.iaso_forms", "menupermissions.iaso_submissions"),
+        HasPermission("menupermissions.iaso_forms", "menupermissions.iaso_submissions"),  # type: ignore
     ]
     results_key = "form_versions"
     queryset = FormVersion.objects.all()

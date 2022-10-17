@@ -62,6 +62,8 @@ def try_json(response):
 
 
 class APITestCase(BaseAPITestCase, IasoTestCaseMixin):
+    client: APIClient
+
     def setUp(self):
         """Make sure we have a fresh client at the beginning of each test"""
 
@@ -147,6 +149,7 @@ class APITestCase(BaseAPITestCase, IasoTestCaseMixin):
         """Make sure that a APIImport has been correctly generated"""
 
         last_api_import = APIImport.objects.order_by("-created_at").first()
+        assert last_api_import is not None
         self.assertIsNotNone(last_api_import)
         self.assertIsInstance(last_api_import.headers, dict)
         self.assertEqual(last_api_import.json_body, request_body)

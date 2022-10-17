@@ -69,15 +69,16 @@ const CreateBudgetStep: FunctionComponent<Props> = ({
     const { mutateAsync: saveBudgetStep } = useSaveBudgetStep();
     const classes = useStyles();
     const dispatch = useDispatch();
-    const quickTransition = { params };
+    //@ts-ignore
+    const quickTransition = params?.quickTransition
     const onSuccess = useCallback(() => {
-        const {
-            // eslint-disable-next-line @typescript-eslint/no-unused-vars, no-unused-vars
-            quickTransition: { _quickTransition },
-            // eslint-disable-next-line @typescript-eslint/no-unused-vars, no-unused-vars
-            previousStep: { stepFromParams },
-            ...trimmedParams
-        } = params;
+        const trimmedParams = {...params}
+        if (params.quickTransition){
+            delete(trimmedParams.quickTransition)
+        }
+        if(params.previousStep){
+            delete(trimmedParams.previousStep)
+        }
         dispatch(redirectToReplace(BUDGET_DETAILS, trimmedParams));
     }, [dispatch, params]);
 

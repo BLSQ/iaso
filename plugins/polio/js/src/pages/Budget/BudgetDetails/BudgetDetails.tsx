@@ -36,6 +36,7 @@ import { CreateOverrideStep } from '../CreateBudgetStep/CreateOverrideStep';
 import { BudgetDetailsCardsLayout } from './mobile/BudgetDetailsCardsLayout';
 import { BudgetDetailsTableLayout } from './BudgetDetailsTableLayout';
 import { BudgetDetailsFiltersMobile } from './mobile/BudgetDetailsFiltersMobile';
+import { NextBudgetStep } from '../NextBudgetStep';
 
 type Props = {
     router: any;
@@ -107,7 +108,8 @@ export const BudgetDetails: FunctionComponent<Props> = ({ router }) => {
         const override = budgetInfos?.next_transitions?.find(
             transition => transition.key === 'override',
         );
-        return { regular, override };
+        const toDisplay = new Set(regular?.filter(transition=>transition.key!==budgetInfos?.current_state?.key).map(transition=>transition.label));
+        return { regular, override, toDisplay };
     }, [budgetInfos?.next_transitions]);
 
     const { resetPageToOne, columns } = useTableState({
@@ -174,12 +176,15 @@ export const BudgetDetails: FunctionComponent<Props> = ({ router }) => {
                     </Grid>
 
                     <Grid container justifyContent="space-between" spacing={1}>
-                        <Grid container item xs={12} lg={6} spacing={1}>
+                        <Grid container item xs={12} lg={4} spacing={1}>
                             <BudgetStatus
                                 budgetStatus={
                                     budgetInfos?.current_state?.label ?? '--'
                                 }
                             />
+                        </Grid>
+                        <Grid container item xs={12} lg={4} spacing={1} justifyContent="center">
+                            <NextBudgetStep nextSteps={Array.from(nextSteps.toDisplay.values())}/>
                         </Grid>
                         {budgetStatus !== 'validated' && (
                             <Grid
@@ -187,7 +192,7 @@ export const BudgetDetails: FunctionComponent<Props> = ({ router }) => {
                                 item
                                 direction="row"
                                 xs={12}
-                                lg={6}
+                                lg={4}
                                 justifyContent="flex-end"
                             >
                                 {nextSteps && (
@@ -286,6 +291,7 @@ export const BudgetDetails: FunctionComponent<Props> = ({ router }) => {
                             </Grid>
                         )}
                     </Grid>
+
                     <InputComponent
                         type="checkbox"
                         keyValue="showHidden"

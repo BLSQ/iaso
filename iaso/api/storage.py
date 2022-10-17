@@ -60,11 +60,19 @@ class StorageLogSerializer(serializers.ModelSerializer):
 
 class StorageStatusSerializer(serializers.Serializer):
     status = serializers.CharField()
-    reason = serializers.CharField(source="status_reason")
+    reason = serializers.CharField(source="status_reason", required=False)
     # TODO: where should this data come from
     # updated_at = serializers.DateTimeField()
     # TODO: Comment field is not in the spec, but I guess it's useful to implement, no?
-    comment = serializers.CharField(source="status_comment")
+    comment = serializers.CharField(source="status_comment", required=False)
+
+    def validate(self, data):
+        """
+        Ensure that a reason is set if changed to a non-ok status
+        """
+        if data["status"] != StorageDevice.OK and not data["status_reason"]:
+            raise serializers.ValidationError("A reason must be provided when changing the status to a non-ok status")
+        return data
 
 
 class StorageSerializer(serializers.ModelSerializer):
@@ -196,8 +204,8 @@ class StorageViewSet(ListModelMixin, viewsets.GenericViewSet):
             # 3.1 Update device status
             device.change_status(
                 new_status=status_dict["status"],
-                reason=status_dict["status_reason"],
-                comment=status_dict["status_comment"],
+                reason=status_dict.get("status_reason", ""),
+                comment=status_dict.get("status_comment", ""),
                 performed_by=user,
             )
             return Response("", status=status.HTTP_204_NO_CONTENT)

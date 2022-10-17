@@ -9,6 +9,8 @@ from iaso.test import APITestCase
 
 
 class StorageAPITestCase(APITestCase):
+    maxDiff = None
+
     @classmethod
     def setUpTestData(cls):
         star_wars = Account.objects.create(name="Star Wars")

@@ -1581,6 +1581,10 @@ const MESSAGES = defineMessages({
         id: 'iaso.polio.label.lastStep',
         defaultMessage: 'Last step',
     },
+    nextSteps: {
+        id: 'iaso.polio.label.nextSteps',
+        defaultMessage: 'Next steps',
+    },
 });
 
 export default MESSAGES;

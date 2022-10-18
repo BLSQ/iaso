@@ -142,7 +142,8 @@ export const OrgUnitFilters: FunctionComponent<Props> = ({
             dataSources &&
             !dataSourceId &&
             !sourceVersionId &&
-            filters?.version
+            filters?.version &&
+            !filters?.group
         ) {
             const id = retrieveSourceFromVersionId(
                 filters?.version,
@@ -160,7 +161,8 @@ export const OrgUnitFilters: FunctionComponent<Props> = ({
             !dataSourceId &&
             !sourceVersionId &&
             !filters?.version &&
-            currentUser?.account?.default_version?.data_source?.id
+            currentUser?.account?.default_version?.data_source?.id &&
+            !filters?.group
         ) {
             // TO-DO => IA-1491 when coming from groups page, we need to prefill source and version from the selected group !
             setDataSourceId(

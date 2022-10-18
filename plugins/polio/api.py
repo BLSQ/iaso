@@ -223,8 +223,7 @@ class CampaignViewSet(ModelViewSet):
         current_year = self.get_year(current_date)
 
         params = request.query_params
-
-        calendar_data = self.get_calendar_data(self, current_year, request.query_params)
+        calendar_data = self.get_calendar_data(current_year, params)
         filename = xlsx_file_name("calendar", params)
         xlsx_file = generate_xlsx_campaigns_calendar(filename, calendar_data)
 
@@ -245,22 +244,31 @@ class CampaignViewSet(ModelViewSet):
             today = dt.date.today()
             return today.year
 
-    @staticmethod
-    def get_calendar_data(self, year, params):
+    def get_calendar_data(self: Any, year: int, params: Any) -> Any:
+        """
+        Returns filtered rounds from database
+
+            parameters:
+                self: a self
+                year (int): a year int
+                params(dictionary): a params dictionary
+            returns:
+                rounds (array of dictionary): a rounds of array of dictionaries
+        """
         countries = params.get("countries") if params.get("countries") is not None else None
         campaign_groups = params.get("campaignGroups") if params.get("campaignGroups") is not None else None
         campaign_type = params.get("campaignType") if params.get("campaignType") is not None else None
         order_by = params.get("order") if params.get("order") is not None else None
         search = params.get("search")
         rounds = Round.objects.filter(started_at__year=year)
+        # Test campaigns should not appear in the xlsx calendar
+        rounds = rounds.filter(campaign__is_test=False)
         if countries:
             rounds = rounds.filter(campaign__country_id__in=countries.split(","))
         if campaign_groups:
             rounds = rounds.filter(campaign__group_id__in=campaign_groups.split(","))
         if campaign_type == "preventive":
             rounds = rounds.filter(campaign__is_preventive=True)
-        if campaign_type == "test":
-            rounds = rounds.filter(campaign__is_test=True)
         if campaign_type == "regular":
             rounds = rounds.filter(campaign__is_preventive=False).filter(campaign__is_test=False)
         if search:
@@ -269,8 +277,17 @@ class CampaignViewSet(ModelViewSet):
         return self.loop_on_rounds(self, rounds)
 
     @staticmethod
-    def loop_on_rounds(self, rounds):
-        data_row = []
+    def loop_on_rounds(self: Any, rounds: Any) -> list:
+        """
+        Returns formatted rounds
+
+            parameters:
+                self (CampaignViewSet): a self CampaignViewSet
+                rounds(rounds queryset): rounds queryset
+            returns:
+                rounds (list): list of rounds
+        """
+        data_row: list = []
         for round in rounds:
             if round.campaign is not None:
                 if round.campaign.country is not None:
@@ -291,6 +308,7 @@ class CampaignViewSet(ModelViewSet):
                             else:
                                 data_row[row_index]["rounds"][str(month)] = []
                                 data_row[row_index]["rounds"][str(month)].append(self.get_round(round))
+
         return data_row
 
     @staticmethod

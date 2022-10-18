@@ -1,3 +1,4 @@
+"""This api is only there so the default version on an account can be modified"""
 from rest_framework.request import Request
 
 from .common import ModelViewSet, HasPermission
@@ -52,4 +53,5 @@ class AccountViewSet(ModelViewSet):
     serializer_class = AccountSerializer
     results_key = "accounts"
     queryset = Account.objects.all()
+    # FIXME: USe a PATCH in the future, it make more sense regarding HTTP method semantic
     http_method_names = ["put"]

@@ -1,6 +1,5 @@
 # TODO: need better type annotations in this file
 from datetime import datetime
-from time import time
 from unittest import mock
 
 import pytz
@@ -18,9 +17,12 @@ class StorageAPITestCase(APITestCase):
     @classmethod
     @mock.patch("django.utils.timezone.now", lambda: MOCK_DATE)
     def setUpTestData(cls):
-        star_wars = Account.objects.create(name="Star Wars")
+        cls.star_wars = Account.objects.create(name="Star Wars")
         star_wars_2 = Account.objects.create(name="Star Wars revival")
-        cls.yoda = cls.create_user_with_profile(username="yoda", account=star_wars, permissions=["iaso_storages"])
+        cls.yoda = cls.create_user_with_profile(username="yoda", account=cls.star_wars, permissions=["iaso_storages"])
+
+        # Another user that doesn't have the iaso_storages
+        cls.another_user = cls.create_user_with_profile(username="yoda2", account=cls.star_wars)
 
         form_1 = Form.objects.create(name="Hydroponics study", period_type=MONTH, single_per_period=True)
 
@@ -29,11 +31,11 @@ class StorageAPITestCase(APITestCase):
 
         cls.org_unit = OrgUnit.objects.create(name="Akkala")
         entity_type = EntityType.objects.create(name="Type 1")
-        cls.entity = Entity.objects.create(name="New Client 3", entity_type=entity_type, account=star_wars)
+        cls.entity = Entity.objects.create(name="New Client 3", entity_type=entity_type, account=cls.star_wars)
 
         cls.existing_storage_device = StorageDevice.objects.create(
             customer_chosen_id="EXISTING_STORAGE",
-            account=star_wars,
+            account=cls.star_wars,
             type="NFC",
             status="OK",
         )
@@ -48,7 +50,7 @@ class StorageAPITestCase(APITestCase):
 
         cls.existing_storage_device_2 = StorageDevice.objects.create(
             customer_chosen_id="ANOTHER_EXISTING_STORAGE_BLACKLISTED_STOLEN",
-            account=star_wars,
+            account=cls.star_wars,
             type="NFC",
             status="BLACKLISTED",
             status_reason="STOLEN",
@@ -56,7 +58,7 @@ class StorageAPITestCase(APITestCase):
 
         cls.existing_storage_device_3 = StorageDevice.objects.create(
             customer_chosen_id="ANOTHER_EXISTING_STORAGE_BLACKLISTED_ABUSE",
-            account=star_wars,
+            account=cls.star_wars,
             type="SD",
             status="BLACKLISTED",
             status_reason="ABUSE",
@@ -76,8 +78,39 @@ class StorageAPITestCase(APITestCase):
 
     def test_post_storage_multiple_logs(self):
         """
-        Multiple logs can be sent at once
+        Multiple logs can be sent at once. Based on test_post_storage_base_existing_storage().
         """
+        self.client.force_authenticate(self.yoda)
+
+        device = StorageDevice.objects.get(customer_chosen_id="EXISTING_STORAGE", type="NFC", account=self.star_wars)
+        num_log_storage_before = StorageLogEntry.objects.filter(device=device).count()
+
+        post_body = [
+            {
+                "id": "66664567-e89b-12d3-a456-426614174000",
+                "storage_id": "EXISTING_STORAGE",
+                "storage_type": "NFC",
+                "operation_type": "WRITE_RECORD",
+                "instances": [self.instance1.uuid, self.instance2.uuid],
+                "org_unit_id": self.org_unit.id,
+                "entity_id": self.entity.uuid,
+                "performed_at": 1666002739.171,
+            },
+            {
+                "id": "66664567-e89b-12d3-a456-426614175000",
+                "storage_id": "EXISTING_STORAGE",
+                "storage_type": "NFC",
+                "operation_type": "WRITE_RECORD",
+                "instances": [self.instance1.uuid, self.instance2.uuid],
+                "org_unit_id": self.org_unit.id,
+                "entity_id": self.entity.uuid,
+                "performed_at": 1666004000.171,
+            },
+        ]
+        response = self.client.post("/api/mobile/storage/logs/", post_body, format="json")
+        self.assertEqual(response.status_code, 201)
+
+        self.assertEqual(StorageLogEntry.objects.count(), num_log_storage_before + 2)
 
     def test_post_storage_base_new_storage(self):
         """
@@ -91,7 +124,6 @@ class StorageAPITestCase(APITestCase):
 
         num_devices_before = StorageDevice.objects.count()
 
-        current_timestamp_in_seconds = int(time())
         post_body = [
             {
                 "id": "123e4567-e89b-12d3-a456-426614174000",
@@ -101,7 +133,7 @@ class StorageAPITestCase(APITestCase):
                 "instances": [self.instance1.uuid, self.instance2.uuid],
                 "org_unit_id": self.org_unit.id,
                 "entity_id": self.entity.uuid,
-                "performed_at": 1666002739.171,
+                "performed_at": 1666002739.171,  # In seconds
             }
         ]
         response = self.client.post("/api/mobile/storage/logs/", post_body, format="json")
@@ -120,8 +152,7 @@ class StorageAPITestCase(APITestCase):
         the_log_entry = the_storage.log_entries.first()
         self.assertEqual(str(the_log_entry.id), "123e4567-e89b-12d3-a456-426614174000")
         self.assertEqual(the_log_entry.operation_type, "WRITE_PROFILE")
-        # TODO: check the timestamp (in seconds conversion)
-        # self.assertEqual(the_log_entry.performed_at, current_timestamp_in_seconds)
+        self.assertEqual(str(the_log_entry.performed_at), "2022-10-17 10:32:19.171000+00:00")
         self.assertEqual(the_log_entry.performed_by, self.yoda)
         self.assertQuerysetEqual(the_log_entry.instances.all(), [self.instance1, self.instance2], ordered=False)
         self.assertEqual(the_log_entry.org_unit, self.org_unit)
@@ -133,7 +164,6 @@ class StorageAPITestCase(APITestCase):
 
         num_devices_before = StorageDevice.objects.count()
 
-        current_timestamp_in_seconds = int(time())
         post_body = [
             {
                 "id": "66664567-e89b-12d3-a456-426614174000",
@@ -161,6 +191,25 @@ class StorageAPITestCase(APITestCase):
         self.assertEqual(the_log_entry.org_unit, self.org_unit)
         self.assertEqual(the_log_entry.entity, self.entity)
 
+    def test_post_storage_incorrect_type(self):
+        """In the case the storage type is invalid, POST to /api/mobile/storage/log/ should return 400."""
+        self.client.force_authenticate(self.yoda)
+
+        post_body = [
+            {
+                "id": "66664567-e89b-12d3-a456-426614174000",
+                "storage_id": "EXISTING_STORAGE",
+                "storage_type": "INVALID_TYPE",
+                "operation_type": "WRITE_RECORD",
+                "instances": [self.instance1.uuid, self.instance2.uuid],
+                "org_unit_id": self.org_unit.id,
+                "entity_id": self.entity.uuid,
+                "performed_at": 1666002739.171,
+            }
+        ]
+        response = self.client.post("/api/mobile/storage/logs/", post_body, format="json")
+        self.assertEqual(response.status_code, 400)
+
     # TODO: POST test post a log with an incorrect storage type fails
     # TODO: POST test post a log with an incorrect operation type fails
     # TODO: POST test mandatory fields are checked on POST
@@ -170,6 +219,14 @@ class StorageAPITestCase(APITestCase):
 
     def test_list_only_authenticated(self):
         """GET /api/storage/ is rejected if user is not authenticated."""
+        response = self.client.get("/api/storage/")
+        self.assertEqual(response.status_code, 403)
+        # TODO: according to the specs, it should be 401.
+        #  Is that consistent with the rest of the API? (fix/or update specs)
+
+    def test_list_only_storages_permission(self):
+        """GET /api/storage/ is rejected if user does not have the 'storages' permission."""
+        self.client.force_authenticate(self.another_user)
         response = self.client.get("/api/storage/")
         self.assertEqual(response.status_code, 403)
 
@@ -301,6 +358,15 @@ class StorageAPITestCase(APITestCase):
                 },
             ],
         )
+
+    def test_list_can_be_ordered(self):
+        """GET /api/storage/ takes an optional parameter to order the results (default: updated_at)"""
+        self.client.force_authenticate(self.yoda)
+        response = self.client.get("/api/storage/?order=-type")
+        received_json = response.json()
+        types_in_order_received = [entry["storage_type"] for entry in received_json]
+        self.assertEqual(types_in_order_received[::-1], sorted(types_in_order_received))
+        # TODO: check with the frontend team which exact ordering options should be available
 
     def test_post_blacklisted_storage_ok(self):
         """

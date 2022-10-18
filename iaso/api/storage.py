@@ -107,8 +107,6 @@ class StorageSerializerWithLogs(StorageSerializer):
 
 
 class StorageViewSet(ListModelMixin, viewsets.GenericViewSet):
-    # TODO: clarify permissions (the doc says "permission to see storage)
-    # For now we'll check that user is authenticated, and we filter by account
     permission_classes = [permissions.IsAuthenticated, HasPermission("menupermissions.iaso_storages")]
     serializer_class = StorageSerializer
 
@@ -144,9 +142,7 @@ class StorageViewSet(ListModelMixin, viewsets.GenericViewSet):
 
         GET /api/storage/
         """
-        # TODO: responses when insufficient permissions
-
-        limit = request.GET.get("limit", None)
+        limit_str = request.GET.get("limit", None)
         page_offset = request.GET.get("page", 1)
         order = request.GET.get("order", "updated_at").split(",")
 
@@ -154,8 +150,8 @@ class StorageViewSet(ListModelMixin, viewsets.GenericViewSet):
         queryset = queryset.order_by(*order)
         serializer = StorageSerializer
 
-        if limit:
-            limit = int(limit)
+        if limit_str is not None:
+            limit = int(limit_str)
             page_offset = int(page_offset)
             paginator = Paginator(queryset, limit)
             res = {"count": paginator.count}
@@ -209,7 +205,6 @@ class StorageViewSet(ListModelMixin, viewsets.GenericViewSet):
                 performed_by=user,
             )
             return Response({}, status=200)
-            return Response("", status=status.HTTP_204_NO_CONTENT)
 
         else:  # Some parameters were invalid
             # TODO: return a 400 error here?
@@ -231,8 +226,10 @@ class StorageLogViewSet(CreateModelMixin, viewsets.GenericViewSet):
 
         This will also create a new StorageDevice if the storage_id / storage_type / account combination is not found
         """
-        # 1) Get data out of request
         user = request.user
+
+        # todo: wrap in a transaction?
+        # todo: make sure we can re-push cleanly existing logs
 
         for log_data in request.data:
             # We receive an array of logs, we'll process them one by one

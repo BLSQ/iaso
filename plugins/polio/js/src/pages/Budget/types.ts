@@ -1,5 +1,8 @@
 /* eslint-disable camelcase */
-import { Nullable } from '../../../../../../hat/assets/js/apps/Iaso/types/utils';
+import {
+    Nullable,
+    Optional,
+} from '../../../../../../hat/assets/js/apps/Iaso/types/utils';
 
 export type Budget = {
     id: number;
@@ -49,4 +52,15 @@ export type BudgetStep = {
     transition_label: string; // (step name)
     // eslint-disable-next-line no-undef
     deleted_at: Nullable<string>;
+};
+
+export type StepForm = {
+    transition_key: string;
+    campaign: string;
+    comment: Optional<string>;
+    files: Optional<File[]>;
+    links: Optional<LinkWithAlias[]>;
+    amount: Optional<number>;
+    general: Nullable<string[]>;
+    attachments: Nullable<string[]>;
 };

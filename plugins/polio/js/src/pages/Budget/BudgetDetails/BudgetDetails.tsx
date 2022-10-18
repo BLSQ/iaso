@@ -1,3 +1,5 @@
+/* eslint-disable react/no-array-index-key */
+/* eslint-disable camelcase */
 import React, {
     FunctionComponent,
     useCallback,
@@ -69,7 +71,9 @@ export const BudgetDetails: FunctionComponent<Props> = ({ router }) => {
         ...rest
     } = router.params;
     const { formatMessage } = useSafeIntl();
-    const [showHidden, setShowHidden] = useState(rest.show_hidden ?? false);
+    const [showHidden, setShowHidden] = useState<boolean>(
+        rest.show_hidden ?? false,
+    );
 
     const apiParams = useMemo(() => {
         return {
@@ -78,7 +82,7 @@ export const BudgetDetails: FunctionComponent<Props> = ({ router }) => {
             campaign_id: campaignId,
             transition_key__in: transition_key,
         };
-    }, [campaignId, rest, showHidden]);
+    }, [campaignId, rest, showHidden, transition_key]);
 
     const checkBoxLabel = formatMessage(MESSAGES.showHidden);
     // @ts-ignore
@@ -108,9 +112,16 @@ export const BudgetDetails: FunctionComponent<Props> = ({ router }) => {
         const override = budgetInfos?.next_transitions?.find(
             transition => transition.key === 'override',
         );
-        const toDisplay = new Set(regular?.filter(transition=>transition.key!==budgetInfos?.current_state?.key).map(transition=>transition.label));
+        const toDisplay = new Set(
+            regular
+                ?.filter(
+                    transition =>
+                        transition.key !== budgetInfos?.current_state?.key,
+                )
+                .map(transition => transition.label),
+        );
         return { regular, override, toDisplay };
-    }, [budgetInfos?.next_transitions]);
+    }, [budgetInfos?.current_state?.key, budgetInfos?.next_transitions]);
 
     const { resetPageToOne, columns } = useTableState({
         events: budgetDetails?.results,
@@ -147,10 +158,7 @@ export const BudgetDetails: FunctionComponent<Props> = ({ router }) => {
                 }}
             />
             {/* @ts-ignore */}
-            <Box
-                // @ts-ignore
-                className={`${classes.containerFullHeightNoTabPadded}`}
-            >
+            <Box className={classes.containerFullHeightNoTabPadded}>
                 <Box mb={5}>
                     <Grid container>
                         <Grid item xs={isMobileLayout ? 12 : 6}>
@@ -183,8 +191,19 @@ export const BudgetDetails: FunctionComponent<Props> = ({ router }) => {
                                 }
                             />
                         </Grid>
-                        <Grid container item xs={12} lg={4} spacing={1} justifyContent="center">
-                            <NextBudgetStep nextSteps={Array.from(nextSteps.toDisplay.values())}/>
+                        <Grid
+                            container
+                            item
+                            xs={12}
+                            lg={4}
+                            spacing={1}
+                            justifyContent="center"
+                        >
+                            <NextBudgetStep
+                                nextSteps={Array.from(
+                                    nextSteps.toDisplay.values(),
+                                )}
+                            />
                         </Grid>
                         {budgetStatus !== 'validated' && (
                             <Grid
@@ -204,8 +223,9 @@ export const BudgetDetails: FunctionComponent<Props> = ({ router }) => {
                                         justifyContent="flex-end"
                                     >
                                         {nextSteps.regular &&
-                                            nextSteps.regular.filter(step=>step.allowed).map(
-                                                (step, index) => {
+                                            nextSteps.regular
+                                                .filter(step => step.allowed)
+                                                .map((step, index) => {
                                                     const isQuickTransition =
                                                         step.key ===
                                                         quickTransition;
@@ -219,8 +239,6 @@ export const BudgetDetails: FunctionComponent<Props> = ({ router }) => {
                                                                 isMobileLayout={
                                                                     isMobileLayout
                                                                 }
-                                                                // displayedFields={step.displayed_fields}
-                                                                // requiredFields={step.required_fields}
                                                                 campaignId={
                                                                     campaignId
                                                                 }
@@ -229,8 +247,6 @@ export const BudgetDetails: FunctionComponent<Props> = ({ router }) => {
                                                                     color: step.color,
                                                                     disabled:
                                                                         !step.allowed,
-                                                                    // tooltipText={step.reason_not_allowed}
-                                                                    // disabled={step.allowed}
                                                                 }}
                                                                 transitionKey={
                                                                     step.key
@@ -253,25 +269,19 @@ export const BudgetDetails: FunctionComponent<Props> = ({ router }) => {
                                                             />
                                                         </Grid>
                                                     );
-                                                },
-                                            )}
+                                                })}
                                         {nextSteps.override?.allowed && (
                                             <Grid item>
                                                 <CreateOverrideStep
                                                     isMobileLayout={
                                                         isMobileLayout
                                                     }
-                                                    // displayedFields={step.displayed_fields}
-                                                    // requiredFields={step.required_fields}
                                                     campaignId={campaignId}
                                                     iconProps={{
                                                         label: nextSteps
                                                             .override.label,
                                                         color: nextSteps
                                                             .override.color,
-
-                                                        // tooltipText={step.reason_not_allowed}
-                                                        // disabled={step.allowed}
                                                     }}
                                                     transitionKey={
                                                         nextSteps.override.key

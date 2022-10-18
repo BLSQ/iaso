@@ -36,7 +36,6 @@ export const BudgetDetailsFilters: FunctionComponent<Props> = ({
             params,
             saveSearchInHistory: false,
         });
-    // const { data: teams, isFetching } = useGetTeamsDropDown();
     const theme = useTheme();
     const isXSLayout = useMediaQuery(theme.breakpoints.down('xs'));
     return (

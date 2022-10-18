@@ -60,7 +60,6 @@ const truncateFileName = (fileName: string) => {
 
 export const makeFileLinks = (files: FileWithName[]): React.ReactNode => {
     return files.map((file, index) => {
-        // const fileName = extractFileName(file) || file;
         return (
             // eslint-disable-next-line react/no-array-index-key
             <Link key={`${file.filename}_${index}`} download href={file.file}>
@@ -77,7 +76,6 @@ export const makeLinks = (
     links: Optional<Nullable<LinkWithAlias[]>>,
 ): Nullable<any[]> => {
     if (!links) return null;
-    // const linksArray = links.split(',');
     return links.map((link, index) => {
         return (
             // eslint-disable-next-line react/no-array-index-key

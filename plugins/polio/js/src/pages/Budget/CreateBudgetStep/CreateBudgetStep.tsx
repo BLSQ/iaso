@@ -1,3 +1,4 @@
+/* eslint-disable camelcase */
 /* eslint-disable react/require-default-props */
 /* eslint-disable react/no-unused-prop-types */
 import React, {
@@ -30,7 +31,7 @@ import {
 } from '../../../../../../../hat/assets/js/apps/Iaso/libs/validation';
 import { useSaveBudgetStep } from '../hooks/api/useSaveBudgetStep';
 import { AddStepButton } from './AddStepButton';
-import { BudgetStep } from '../types';
+import { BudgetStep, StepForm } from '../types';
 import { UserHasTeamWarning } from './UserHasTeamWarning';
 import { AddMultipleLinks } from '../MultipleLinks/AddMultipleLinks';
 import { useBudgetStepValidation } from '../hooks/validation';
@@ -69,15 +70,14 @@ const CreateBudgetStep: FunctionComponent<Props> = ({
     const { mutateAsync: saveBudgetStep } = useSaveBudgetStep();
     const classes = useStyles();
     const dispatch = useDispatch();
-    //@ts-ignore
-    const quickTransition = params?.quickTransition
+    const quickTransition = params?.quickTransition;
     const onSuccess = useCallback(() => {
-        const trimmedParams = {...params}
-        if (params.quickTransition){
-            delete(trimmedParams.quickTransition)
+        const trimmedParams = { ...params };
+        if (params.quickTransition) {
+            delete trimmedParams.quickTransition;
         }
-        if(params.previousStep){
-            delete(trimmedParams.previousStep)
+        if (params.previousStep) {
+            delete trimmedParams.previousStep;
         }
         dispatch(redirectToReplace(BUDGET_DETAILS, trimmedParams));
     }, [dispatch, params]);
@@ -118,7 +118,7 @@ const CreateBudgetStep: FunctionComponent<Props> = ({
         return undefined;
     }, [quickTransition, previousStep]);
 
-    const formik = useFormik({
+    const formik = useFormik<StepForm>({
         initialValues: {
             transition_key: transitionKey,
             campaign: campaignId,
@@ -215,27 +215,25 @@ const CreateBudgetStep: FunctionComponent<Props> = ({
             >
                 {userHasTeam && (
                     <>
-                        <>
-                            <InputComponent
-                                type="text"
-                                keyValue="comment"
-                                multiline
-                                onChange={onChange}
-                                value={values.comment}
-                                errors={getErrors('comment')}
-                                label={MESSAGES.notes}
-                                required={requiredFields.includes('comment')}
-                            />
-                            <InputComponent
-                                type="number"
-                                keyValue="amount"
-                                onChange={onChange}
-                                value={values.amount}
-                                errors={getErrors('amount')}
-                                label={MESSAGES.amount}
-                                required={requiredFields.includes('amount')}
-                            />
-                        </>
+                        <InputComponent
+                            type="text"
+                            keyValue="comment"
+                            multiline
+                            onChange={onChange}
+                            value={values.comment}
+                            errors={getErrors('comment')}
+                            label={MESSAGES.notes}
+                            required={requiredFields.includes('comment')}
+                        />
+                        <InputComponent
+                            type="number"
+                            keyValue="amount"
+                            onChange={onChange}
+                            value={values.amount}
+                            errors={getErrors('amount')}
+                            label={MESSAGES.amount}
+                            required={requiredFields.includes('amount')}
+                        />
 
                         <Box mt={2}>
                             <FilesUpload
@@ -270,7 +268,6 @@ const CreateBudgetStep: FunctionComponent<Props> = ({
                                 ))}
                             </>
                         )}
-                        {/* @ts-ignore */}
                         {attachmentErrors.length > 0 && (
                             <>
                                 {attachmentErrors.map(e => (

@@ -9,18 +9,13 @@ type Props = {
     nextSteps: string[];
 };
 
-const styles = theme => ({
+const useStyles = makeStyles(theme => ({
     title: {
         fontWeight: 'bold',
-        [theme.breakpoints.down('md')]: {
-            fontSize: 18,
-        },
+        [theme.breakpoints.down('md')]: { fontSize: 18 },
     },
     spacer: { marginRight: '5px' },
-});
-
-// @ts-ignore
-const useStyles = makeStyles(styles);
+}));
 
 export const NextBudgetStep: FunctionComponent<Props> = ({ nextSteps }) => {
     const { formatMessage } = useSafeIntl();

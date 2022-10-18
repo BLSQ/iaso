@@ -35,7 +35,6 @@ export const BudgetFilters: FunctionComponent<Props> = ({
         useFilterState({ baseUrl, params });
     const theme = useTheme();
     const isXSLayout = useMediaQuery(theme.breakpoints.down('xs'));
-    // const isSmLayout = useMediaQuery(theme.breakpoints.down('sm'));
     return (
         <Box mb={4}>
             <Grid container spacing={isXSLayout ? 0 : 2}>
@@ -60,26 +59,6 @@ export const BudgetFilters: FunctionComponent<Props> = ({
                         label={MESSAGES.status}
                     />
                 </Grid>
-                {/* <Grid item xs={12} sm={12} md={6}>
-                    <Box
-                        mt={
-                            isSmLayout && !isXSLayout
-                                ? -5
-                                : (isXSLayout && -2) || 0
-                        }
-                    >
-                        <DatesRange
-                            onChangeDate={handleChange}
-                            dateFrom={filters.startdateFrom}
-                            dateTo={filters.endDateUntil}
-                            labelFrom={MESSAGES.RoundStartFrom}
-                            labelTo={MESSAGES.RoundStartTo}
-                            keyDateFrom="roundStartFrom"
-                            keyDateTo="roundStartTo"
-                            xs={12}
-                        />
-                    </Box>
-                </Grid> */}
                 <Grid container item xs={12} justifyContent="flex-end">
                     <Box mt={2}>
                         <FilterButton
@@ -90,8 +69,6 @@ export const BudgetFilters: FunctionComponent<Props> = ({
                     </Box>
                 </Grid>
             </Grid>
-            {/* <Grid container item xs={2} lg={1} justifyContent="flex-end"> */}
-            {/* </Grid> */}
         </Box>
     );
 };

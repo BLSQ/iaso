@@ -31,7 +31,6 @@ import {
 import { useSaveBudgetStep } from '../hooks/api/useSaveBudgetStep';
 import { AddStepButton } from './AddStepButton';
 import { commaSeparatedIdsToArray } from '../../../../../../../hat/assets/js/apps/Iaso/utils/forms';
-import { useGetStatusDropDown } from '../hooks/api/useGetStatusDropDown';
 import { UserHasTeamWarning } from './UserHasTeamWarning';
 
 type Props = {
@@ -58,8 +57,8 @@ const CreateOverrideStep: FunctionComponent<Props> = ({
     const { mutateAsync: saveBudgetStep } = useSaveBudgetStep();
     const { data: teamOptions, isFetching: isFetchingTeams } =
         useGetTeamsDropDown();
-    const { data: stepOptions, isFetching: isFetchingStepOptions } =
-        useGetStatusDropDown();
+    // TODO replace with endpoint when available
+    const stepOptions = [];
 
     const {
         apiErrors,
@@ -110,7 +109,6 @@ const CreateOverrideStep: FunctionComponent<Props> = ({
     });
 
     const titleMessage = transitionLabel;
-    // const titleMessage = MESSAGES.newBudgetStep;
 
     return (
         <FormikProvider value={formik}>
@@ -138,38 +136,36 @@ const CreateOverrideStep: FunctionComponent<Props> = ({
             >
                 {userHasTeam && (
                     <>
-                        <>
-                            <InputComponent
-                                type="select"
-                                required
-                                keyValue="type"
-                                onChange={(keyValue, value) => {
-                                    onChange(keyValue, value);
-                                }}
-                                value={values.type}
-                                errors={getErrors('type')}
-                                label={MESSAGES.eventType}
-                                options={stepOptions}
-                                loading={isFetchingStepOptions}
-                            />
-                            <InputComponent
-                                type="text"
-                                keyValue="comment"
-                                multiline
-                                onChange={onChange}
-                                value={values.comment}
-                                errors={getErrors('comment')}
-                                label={MESSAGES.notes}
-                            />
-                            <InputComponent
-                                type="number"
-                                keyValue="amount"
-                                onChange={onChange}
-                                value={values.amount}
-                                errors={getErrors('amount')}
-                                label={MESSAGES.amount}
-                            />
-                        </>
+                        <InputComponent
+                            type="select"
+                            required
+                            keyValue="type"
+                            onChange={(keyValue, value) => {
+                                onChange(keyValue, value);
+                            }}
+                            value={values.type}
+                            errors={getErrors('type')}
+                            label={MESSAGES.step}
+                            options={stepOptions}
+                            loading={false} // TODO replace with query status when available
+                        />
+                        <InputComponent
+                            type="text"
+                            keyValue="comment"
+                            multiline
+                            onChange={onChange}
+                            value={values.comment}
+                            errors={getErrors('comment')}
+                            label={MESSAGES.notes}
+                        />
+                        <InputComponent
+                            type="number"
+                            keyValue="amount"
+                            onChange={onChange}
+                            value={values.amount}
+                            errors={getErrors('amount')}
+                            label={MESSAGES.amount}
+                        />
 
                         <Box mt={2}>
                             <FilesUpload
@@ -222,7 +218,6 @@ const CreateOverrideStep: FunctionComponent<Props> = ({
                         )}
                     </>
                 )}
-                {/* TODO put in own component */}
                 {!userHasTeam && <UserHasTeamWarning />}
             </ConfirmCancelModal>
         </FormikProvider>

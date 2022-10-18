@@ -12,7 +12,6 @@ class AccountSerializer(serializers.ModelSerializer):
 
         fields = [
             "id",
-            "name",
             "default_version",
         ]
 

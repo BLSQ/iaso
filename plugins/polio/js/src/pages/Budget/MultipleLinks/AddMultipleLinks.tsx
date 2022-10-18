@@ -7,6 +7,7 @@ import AddIcon from '@material-ui/icons/Add';
 import classNames from 'classnames';
 import MESSAGES from '../../../constants/messages';
 import { NamedLink } from './NamedLink';
+import { StepForm } from '../types';
 
 type Props = { required?: boolean };
 const useStyles = makeStyles(theme => ({
@@ -25,13 +26,8 @@ export const AddMultipleLinks: FunctionComponent<Props> = ({
 }) => {
     const { formatMessage } = useSafeIntl();
     const classes = useStyles();
-    const {
-        setFieldValue,
-        // @ts-ignore
-        values,
-    } = useFormikContext();
+    const { setFieldValue, values } = useFormikContext<StepForm>();
 
-    // @ts-ignore
     const links = useMemo(() => values?.links ?? [], [values?.links]);
 
     const handleAddlink = () => {

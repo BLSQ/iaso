@@ -1,5 +1,5 @@
 /* eslint-disable camelcase */
-import { UseMutationResult } from 'react-query';
+import { UseMutationResult, UseQueryResult } from 'react-query';
 import {
     deleteRequest,
     getRequest,
@@ -26,7 +26,19 @@ const getBudgetDetails = (params: any) => {
     return getRequest(`/api/polio/budgetsteps/?${queryString}`);
 };
 
-export const useGetBudgetDetails = params => {
+type DetailsParams = {
+    action?: any;
+    campaign_id: string;
+    country?: string;
+    deletion_status?: any;
+    order?: string;
+    page?: number;
+    pageSize?: number;
+    show_hidden?: boolean;
+    transition_key__in?: any;
+};
+
+export const useGetBudgetDetails = (params: DetailsParams): UseQueryResult => {
     return useSnackQuery({
         queryFn: () => getBudgetDetails(params),
         queryKey: ['budget', 'details', params],

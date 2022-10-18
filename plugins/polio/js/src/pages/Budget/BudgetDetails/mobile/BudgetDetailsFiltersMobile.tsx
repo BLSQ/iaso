@@ -8,8 +8,6 @@ type Props = { params: any };
 
 export const BudgetDetailsFiltersMobile: FunctionComponent<Props> = ({
     params,
-    // expand,
-    // onClick,
 }) => {
     const [expand, setExpand] = useState<boolean>(false);
     return (

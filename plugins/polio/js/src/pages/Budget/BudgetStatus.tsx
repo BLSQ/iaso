@@ -41,7 +41,7 @@ export const BudgetStatus: FunctionComponent<Props> = ({ budgetStatus }) => {
             {budgetStatus && (
                 <Typography
                     variant="h5"
-                    className={`${classes.title}`}
+                    className={classes.title}
                     color="primary"
                 >
                     {budgetStatus}

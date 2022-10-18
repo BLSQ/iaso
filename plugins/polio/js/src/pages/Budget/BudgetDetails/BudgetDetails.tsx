@@ -1,3 +1,4 @@
+/* eslint-disable react/no-array-index-key */
 /* eslint-disable camelcase */
 import React, {
     FunctionComponent,
@@ -70,7 +71,9 @@ export const BudgetDetails: FunctionComponent<Props> = ({ router }) => {
         ...rest
     } = router.params;
     const { formatMessage } = useSafeIntl();
-    const [showHidden, setShowHidden] = useState(rest.show_hidden ?? false);
+    const [showHidden, setShowHidden] = useState<boolean>(
+        rest.show_hidden ?? false,
+    );
 
     const apiParams = useMemo(() => {
         return {
@@ -155,10 +158,7 @@ export const BudgetDetails: FunctionComponent<Props> = ({ router }) => {
                 }}
             />
             {/* @ts-ignore */}
-            <Box
-                // @ts-ignore
-                className={`${classes.containerFullHeightNoTabPadded}`}
-            >
+            <Box className={classes.containerFullHeightNoTabPadded}>
                 <Box mb={5}>
                     <Grid container>
                         <Grid item xs={isMobileLayout ? 12 : 6}>
@@ -240,8 +240,6 @@ export const BudgetDetails: FunctionComponent<Props> = ({ router }) => {
                                                                 isMobileLayout={
                                                                     isMobileLayout
                                                                 }
-                                                                // displayedFields={step.displayed_fields}
-                                                                // requiredFields={step.required_fields}
                                                                 campaignId={
                                                                     campaignId
                                                                 }
@@ -250,8 +248,6 @@ export const BudgetDetails: FunctionComponent<Props> = ({ router }) => {
                                                                     color: step.color,
                                                                     disabled:
                                                                         !step.allowed,
-                                                                    // tooltipText={step.reason_not_allowed}
-                                                                    // disabled={step.allowed}
                                                                 }}
                                                                 transitionKey={
                                                                     step.key
@@ -281,17 +277,12 @@ export const BudgetDetails: FunctionComponent<Props> = ({ router }) => {
                                                     isMobileLayout={
                                                         isMobileLayout
                                                     }
-                                                    // displayedFields={step.displayed_fields}
-                                                    // requiredFields={step.required_fields}
                                                     campaignId={campaignId}
                                                     iconProps={{
                                                         label: nextSteps
                                                             .override.label,
                                                         color: nextSteps
                                                             .override.color,
-
-                                                        // tooltipText={step.reason_not_allowed}
-                                                        // disabled={step.allowed}
                                                     }}
                                                     transitionKey={
                                                         nextSteps.override.key

@@ -9,7 +9,7 @@ from team {{ team }}: {{ transition.label }}.
 The following comment was left:
   {{ comment }}
 {% endif %}
-{%if attachments %}Attached Files:
+{%if attachments %}Attachements:
 {% for attachment in attachments%}{{ forloop.counter }}. {{attachment.name}}: {{attachment.url|safe}}
 {% endfor %}
 {%endif%}

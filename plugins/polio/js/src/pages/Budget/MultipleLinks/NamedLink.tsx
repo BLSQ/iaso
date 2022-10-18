@@ -75,6 +75,7 @@ export const NamedLink: FunctionComponent<Props> = ({ index }) => {
                         tooltipMessage={MESSAGES.delete}
                     />
                 </Grid>
+                {/* IconButton from blsq-comp with url prop doesn't seem to work, so we're using the one from Material UI instead (cf Preparedness) */}
                 <Grid item xs={6}>
                     <IconButton
                         target="_blank"

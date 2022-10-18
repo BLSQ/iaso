@@ -1,3 +1,4 @@
+/* eslint-disable camelcase */
 import React, {
     FunctionComponent,
     useCallback,
@@ -78,7 +79,7 @@ export const BudgetDetails: FunctionComponent<Props> = ({ router }) => {
             campaign_id: campaignId,
             transition_key__in: transition_key,
         };
-    }, [campaignId, rest, showHidden]);
+    }, [campaignId, rest, showHidden, transition_key]);
 
     const checkBoxLabel = formatMessage(MESSAGES.showHidden);
     // @ts-ignore
@@ -108,9 +109,16 @@ export const BudgetDetails: FunctionComponent<Props> = ({ router }) => {
         const override = budgetInfos?.next_transitions?.find(
             transition => transition.key === 'override',
         );
-        const toDisplay = new Set(regular?.filter(transition=>transition.key!==budgetInfos?.current_state?.key).map(transition=>transition.label));
+        const toDisplay = new Set(
+            regular
+                ?.filter(
+                    transition =>
+                        transition.key !== budgetInfos?.current_state?.key,
+                )
+                .map(transition => transition.label),
+        );
         return { regular, override, toDisplay };
-    }, [budgetInfos?.next_transitions]);
+    }, [budgetInfos?.current_state?.key, budgetInfos?.next_transitions]);
 
     const { resetPageToOne, columns } = useTableState({
         events: budgetDetails?.results,
@@ -183,8 +191,19 @@ export const BudgetDetails: FunctionComponent<Props> = ({ router }) => {
                                 }
                             />
                         </Grid>
-                        <Grid container item xs={12} lg={4} spacing={1} justifyContent="center">
-                            <NextBudgetStep nextSteps={Array.from(nextSteps.toDisplay.values())}/>
+                        <Grid
+                            container
+                            item
+                            xs={12}
+                            lg={4}
+                            spacing={1}
+                            justifyContent="center"
+                        >
+                            <NextBudgetStep
+                                nextSteps={Array.from(
+                                    nextSteps.toDisplay.values(),
+                                )}
+                            />
                         </Grid>
                         {budgetStatus !== 'validated' && (
                             <Grid
@@ -204,8 +223,9 @@ export const BudgetDetails: FunctionComponent<Props> = ({ router }) => {
                                         justifyContent="flex-end"
                                     >
                                         {nextSteps.regular &&
-                                            nextSteps.regular.filter(step=>step.allowed).map(
-                                                (step, index) => {
+                                            nextSteps.regular
+                                                .filter(step => step.allowed)
+                                                .map((step, index) => {
                                                     const isQuickTransition =
                                                         step.key ===
                                                         quickTransition;
@@ -213,6 +233,7 @@ export const BudgetDetails: FunctionComponent<Props> = ({ router }) => {
                                                     return (
                                                         <Grid
                                                             item
+                                                            // eslint-disable-next-line react/no-array-index-key
                                                             key={`${step.key}-${index}`}
                                                         >
                                                             <CreateBudgetStep
@@ -253,8 +274,7 @@ export const BudgetDetails: FunctionComponent<Props> = ({ router }) => {
                                                             />
                                                         </Grid>
                                                     );
-                                                },
-                                            )}
+                                                })}
                                         {nextSteps.override?.allowed && (
                                             <Grid item>
                                                 <CreateOverrideStep

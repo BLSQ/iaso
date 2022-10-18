@@ -1,18 +1,30 @@
-import { Box, Grid, Typography } from '@material-ui/core';
+import { Box, Grid, makeStyles, Typography } from '@material-ui/core';
 import { useFormikContext } from 'formik';
 import React, { FunctionComponent, useMemo } from 'react';
 // @ts-ignore
 import { useSafeIntl, IconButton } from 'bluesquare-components';
 import AddIcon from '@material-ui/icons/Add';
+import classNames from 'classnames';
 import MESSAGES from '../../../constants/messages';
 import { NamedLink } from './NamedLink';
 
 type Props = { required?: boolean };
+const useStyles = makeStyles(theme => ({
+    addLink: {
+        position: 'absolute',
+        bottom: theme.spacing(13.8),
+        left: theme.spacing(8),
+    },
+    title: {
+        display: 'inline',
+    },
+}));
 
 export const AddMultipleLinks: FunctionComponent<Props> = ({
     required = false,
 }) => {
     const { formatMessage } = useSafeIntl();
+    const classes = useStyles();
     const {
         setFieldValue,
         // @ts-ignore
@@ -33,7 +45,7 @@ export const AddMultipleLinks: FunctionComponent<Props> = ({
     return (
         <>
             <div>
-                <Typography style={{ display: 'inline' }}>
+                <Typography className={classNames(classes.title)}>
                     {formatMessage(MESSAGES.links)}
                     {required && <sup>*</sup>}
                 </Typography>
@@ -48,12 +60,13 @@ export const AddMultipleLinks: FunctionComponent<Props> = ({
                 {links.length <= 1 && <NamedLink index={0} />}
 
                 <Grid container spacing={2}>
-                    <Box mb={2}>
+                    <Box mb={2} className={classes.addLink}>
                         <IconButton
                             onClick={handleAddlink}
                             variant="outlined"
                             overrideIcon={AddIcon}
                             tooltipMessage={MESSAGES.addLink}
+                            iconSize="small"
                         >
                             {formatMessage(MESSAGES.addLink)}
                         </IconButton>

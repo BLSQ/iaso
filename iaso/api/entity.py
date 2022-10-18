@@ -354,7 +354,7 @@ class EntityViewSet(ModelViewSet):
             def get_row(entity: dict, **kwargs):
                 values = [
                     entity["id"],
-                    entity["uuid"],
+                    str(entity["uuid"]),
                     entity["entity_type"],
                     entity["created_at"],
                     entity["org_unit"]["name"],

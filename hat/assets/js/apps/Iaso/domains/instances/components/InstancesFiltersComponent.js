@@ -53,8 +53,16 @@ const InstancesFiltersComponent = ({
 
     const [hasLocationLimitError, setHasLocationLimitError] = useState(false);
     const [fetchingOrgUnitTypes, setFetchingOrgUnitTypes] = useState(false);
-
-    const [formState, setFormState] = useFormState(filterDefault(params));
+    const defaultFilters = useMemo(() => {
+        const filters = { ...params };
+        delete filters.pageSize;
+        delete filters.order;
+        delete filters.page;
+        return filters;
+    }, [params]);
+    const [formState, setFormState] = useFormState(
+        filterDefault(defaultFilters),
+    );
 
     const [initialOrgUnitId, setInitialOrgUnitId] = useState(params?.levels);
     const { data: initialOrgUnit } = useGetOrgUnit(initialOrgUnitId);

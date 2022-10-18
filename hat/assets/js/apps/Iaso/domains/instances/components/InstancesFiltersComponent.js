@@ -70,7 +70,7 @@ const InstancesFiltersComponent = ({
         state => state.instances.isInstancesFilterUpdated,
     );
     const { data, isFetching: fetchingForms } = useGetForms();
-    const formsList = useMemo(() => (data && data.forms) || [], [data]);
+    const formsList = useMemo(() => data?.forms ?? [], [data]);
 
     const formId =
         formState.formIds.value?.split(',').length === 1

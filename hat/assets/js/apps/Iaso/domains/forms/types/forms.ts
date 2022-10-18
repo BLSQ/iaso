@@ -55,11 +55,11 @@ export type PossibleField = {
     name: string;
     type: FieldType;
 };
-export type Children = {
+export type ChildrenDescriptor = {
     label: string;
     name: string;
     type: FieldType;
-    children: Children[];
+    children: ChildrenDescriptor[];
 };
 
 export type Form = {
@@ -94,5 +94,5 @@ export type FormDescriptor = {
     title: string;
     version: string;
     type: string;
-    children: Children[];
+    children: ChildrenDescriptor[];
 };

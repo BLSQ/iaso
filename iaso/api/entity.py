@@ -304,7 +304,7 @@ class EntityViewSet(ModelViewSet):
                 if file_content is not None:
                     program = file_content.get("program")
                 # FIXME: what if entity.entity_type.reference_form is None?
-                possible_fields_list = entity.entity_type.reference_form.possible_fields  # type: ignore
+                possible_fields_list = entity.entity_type.reference_form.possible_fields or []  # type: ignore
                 # FIXME: investigate typing error on next line
                 for items in possible_fields_list:  # type: ignore
                     for k, v in items.items():
@@ -325,7 +325,7 @@ class EntityViewSet(ModelViewSet):
                 }
 
                 # Get data from xlsform
-                if attributes is not None:
+                if attributes is not None and attributes.json is not None:
                     # TODO: investigate typing error on next line
                     for k, v in entity.attributes.json.items():  # type: ignore
                         if k in list(entity.entity_type.fields_list_view):  # type: ignore

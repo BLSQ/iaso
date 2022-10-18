@@ -8,7 +8,6 @@ from typing import Any, Dict, List, Optional, Union
 from collections import defaultdict
 from functools import lru_cache
 from logging import getLogger
-from typing_extensions import reveal_type
 from openpyxl.writer.excel import save_virtual_workbook  # type: ignore
 
 import requests
@@ -224,7 +223,7 @@ class CampaignViewSet(ModelViewSet):
         current_year = self.get_year(current_date)
 
         params = request.query_params
-        calendar_data = self.get_calendar_data(self, current_year, params)
+        calendar_data = self.get_calendar_data(current_year, params)
         filename = xlsx_file_name("calendar", params)
         xlsx_file = generate_xlsx_campaigns_calendar(filename, calendar_data)
 
@@ -245,13 +244,12 @@ class CampaignViewSet(ModelViewSet):
             today = dt.date.today()
             return today.year
 
-    @staticmethod
     def get_calendar_data(self: Any, year: int, params: Any) -> Any:
         """
         Returns filtered rounds from database
 
             parameters:
-                self (CampaignViewSet): a self CampaignViewSet
+                self: a self
                 year (int): a year int
                 params(dictionary): a params dictionary
             returns:
@@ -275,7 +273,7 @@ class CampaignViewSet(ModelViewSet):
             rounds = rounds.filter(campaign__is_preventive=False).filter(campaign__is_test=False)
         if search:
             rounds = rounds.filter(Q(campaign__obr_name__icontains=search) | Q(campaign__epid__icontains=search))
-        print(rounds)
+
         return self.loop_on_rounds(self, rounds)
 
     @staticmethod

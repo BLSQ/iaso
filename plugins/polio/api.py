@@ -626,9 +626,10 @@ where group_id = polio_roundscope.group_id""",
             "created_at",
             "updated_at",
             "district_count",
-            "round_pne",
+            "round_one",
             "round_two",
             "vacine",
+            "obr_name",
         ]
 
         try:
@@ -637,6 +638,7 @@ where group_id = polio_roundscope.group_id""",
             raise serializers.ValidationError({"error": f"No template form is linked to the campaign {campaign}."})
 
         wb = openpyxl.load_workbook(path)
+        ws = wb.active
         sheet = wb.get_sheet_by_name("choices")
         choices_row = 2
         choices_column = 1
@@ -673,7 +675,7 @@ where group_id = polio_roundscope.group_id""",
         district_added = False
         facility_added = False
 
-        # create xls column
+        # create xls columns
         sheet[cell[choices_column - 1] + "1"] = "list name"
         sheet[cell[choices_column] + "1"] = "name"
         sheet[cell[choices_column + 1] + "1"] = "label"
@@ -683,15 +685,18 @@ where group_id = polio_roundscope.group_id""",
         sheet[cell[choices_column + 5] + "1"] = "district"
         sheet[cell[choices_column + 6] + "1"] = "health facility"
 
+        # insert rows to add the org units fields at the top of the file
+        ws.insert_rows(3, 5)
+
         # populate csv with OU
         for ou_dic in ou_tree_list:
             for k, v in ou_dic.items():
                 if k == "COUNTRY" and v not in added_countries:
                     added_countries.append(v)
-                    q_sheet[cell[0] + str(16)] = "select_one ou_country"
-                    q_sheet[cell[1] + str(16)] = "ou_country"
-                    q_sheet[cell[2] + str(16)] = "Select Country"
-                    q_sheet[cell[3] + str(16)] = "yes"
+                    q_sheet[cell[0] + str(3)] = "select_one ou_country"
+                    q_sheet[cell[1] + str(3)] = "ou_country"
+                    q_sheet[cell[2] + str(3)] = "Select Country"
+                    q_sheet[cell[3] + str(3)] = "yes"
                     sheet[cell[choices_column - 1] + str(choices_row)] = "ou_country"
                     sheet[cell[choices_column] + str(choices_row)] = v.id
                     sheet[cell[choices_column + 1] + str(choices_row)] = str(v.name)
@@ -701,10 +706,10 @@ where group_id = polio_roundscope.group_id""",
                     survey_last_empty_row += 2
                     added_regions.append(v)
                     if not region_added:
-                        q_sheet[cell[0] + str(17)] = "select_one ou_region"
-                        q_sheet[cell[1] + str(17)] = "ou_region"
-                        q_sheet[cell[2] + str(17)] = "Select a Region"
-                        q_sheet[cell[9] + str(17)] = "country=${ou_country}"
+                        q_sheet[cell[0] + str(4)] = "select_one ou_region"
+                        q_sheet[cell[1] + str(4)] = "ou_region"
+                        q_sheet[cell[2] + str(4)] = "Select a Region"
+                        q_sheet[cell[9] + str(4)] = "country=${ou_country}"
                         region_added = True
                     sheet[cell[choices_column - 1] + str(choices_row)] = "ou_region"
                     sheet[cell[choices_column] + str(choices_row)] = v.id
@@ -721,10 +726,10 @@ where group_id = polio_roundscope.group_id""",
                     survey_last_empty_row += 4
                     added_district.append(v)
                     if not district_added:
-                        q_sheet[cell[0] + str(18)] = "select_one ou_district"
-                        q_sheet[cell[1] + str(18)] = "ou_district"
-                        q_sheet[cell[2] + str(18)] = "Select a District"
-                        q_sheet[cell[9] + str(18)] = "region=${ou_region}"
+                        q_sheet[cell[0] + str(5)] = "select_one ou_district"
+                        q_sheet[cell[1] + str(5)] = "ou_district"
+                        q_sheet[cell[2] + str(5)] = "Select a District"
+                        q_sheet[cell[9] + str(5)] = "region=${ou_region}"
                         district_added = True
                     sheet[cell[choices_column - 1] + str(choices_row)] = "ou_district"
                     sheet[cell[choices_column] + str(choices_row)] = v.id
@@ -746,10 +751,10 @@ where group_id = polio_roundscope.group_id""",
                     survey_last_empty_row += 6
                     added_facilities.append(v)
                     if not facility_added:
-                        q_sheet[cell[0] + str(19)] = "select_one ou_facility"
-                        q_sheet[cell[1] + str(19)] = "ou_facility"
-                        q_sheet[cell[2] + str(19)] = "Select a Health Facility"
-                        q_sheet[cell[9] + str(19)] = "district=${ou_district}"
+                        q_sheet[cell[0] + str(6)] = "select_one ou_facility"
+                        q_sheet[cell[1] + str(6)] = "ou_facility"
+                        q_sheet[cell[2] + str(6)] = "Select a Health Facility"
+                        q_sheet[cell[9] + str(6)] = "district=${ou_district}"
                         district_added = True
                     sheet[cell[choices_column - 1] + str(choices_row)] = ""
                     sheet[cell[choices_column] + str(choices_row)] = v.id
@@ -772,28 +777,7 @@ where group_id = polio_roundscope.group_id""",
                     choices_row += 1
                     survey_last_empty_row += 1
 
-        # Add default data to the xlsform
         row = q_sheet.max_row
-
-        q_sheet[cell[0] + str(11)] = "note"
-        q_sheet[cell[1] + str(11)] = "note_obr_name"
-        q_sheet[cell[2] + str(11)] = f"Outbreak Name: {campaign.obr_name} "
-
-        number_of_round = 0 if campaign.round_one is None else 1
-        number_of_round = number_of_round if campaign.round_two is None else 2
-        q_sheet[cell[0] + str(12)] = "note"
-        q_sheet[cell[1] + str(12)] = "note_round_number"
-        q_sheet[cell[2] + str(12)] = f"Number of rounds: {number_of_round} "
-
-        q_sheet[cell[0] + str(13)] = "note"
-        q_sheet[cell[1] + str(13)] = "note_first_round_date"
-        if campaign.round_one is not None:
-            q_sheet[cell[2] + str(13)] = f"First Round Date: {campaign.round_one.started_at} "
-        else:
-            q_sheet[cell[2] + str(13)] = f"First Round Date: {None}"
-        q_sheet[cell[0] + str(14)] = "note"
-        q_sheet[cell[1] + str(14)] = "note_vaccine_type"
-        q_sheet[cell[2] + str(14)] = f"Vaccine Type: {campaign.vacine} "
 
         # Get Calculation column position
         calculation_index = 0
@@ -809,7 +793,7 @@ where group_id = polio_roundscope.group_id""",
         for i in range(2, row + 1):
             cell_obj = q_sheet.cell(row=i, column=2)
             cell_value_start = cell_obj.value[:7] if cell_obj.value is not None else ""
-            if cell_value_start == "survey_":
+            if cell_value_start == "insert_":
                 str_request = cell_obj.value[7:]
                 if str_request in authorized_fields:
                     cell_obj = q_sheet.cell(row=i, column=calculation_index)
@@ -2281,6 +2265,7 @@ class BudgetFilesViewset(ModelViewSet):
 
 
 class CampaignFormTemplateViewSet(ModelViewSet):
+    # FIXME make sure once campaigns are multi tenancy proof that forms are accessible only if the user has access to the campaign
     results_key = "results"
     serializer_class = CampaignFormTemplateSerializer
     remove_results_key_if_paginated = True

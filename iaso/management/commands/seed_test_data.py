@@ -1,4 +1,5 @@
 from random import randint, random
+from iaso.models.pages import Page
 from lxml import etree
 from io import BytesIO
 from django.core.files.uploadedfile import InMemoryUploadedFile
@@ -90,14 +91,39 @@ class Command(BaseCommand):
 
         project, p_created = Project.objects.get_or_create(name="Test" + dhis2_version, account=account)
 
+        project.app_id = "org.bluesquare.play"
+        project.save()
+
         datasource, _ds_created = DataSource.objects.get_or_create(
             name="reference_play_test" + dhis2_version, credentials=credentials
         )
         datasource.projects.add(project)
         source_version, _created = SourceVersion.objects.get_or_create(number=1, data_source=datasource)
 
+        datasource.default_version = source_version
+        datasource.save()
+
+        account.default_version = source_version
+        account.save()
+
+        page, _page_created = Page.objects.get_or_create(
+            account=account, name=f"dhis2{dhis2_version}", slug=f"dhis2{dhis2_version}"
+        )
+
+        page.type = "RAW"
+        page.content = f"<html><body>https://play.dhis2.org/{dhis2_version}</body></html>"
+
+        page.save()
+        user.pages.add(page)
+
         orgunit_type, created = OrgUnitType.objects.get_or_create(name="FosaPlay", short_name="FosaPlay")
         orgunit_type.projects.add(project)
+
+        with transaction.atomic():
+            for orgunit in source_version.orgunit_set.all():
+                orgunit.org_unit_type = orgunit_type
+                orgunit.save()
+
         # quantity
         quantity_form, created = Form.objects.get_or_create(
             form_id="quantity_pca_" + dhis2_version,
@@ -275,6 +301,24 @@ class Command(BaseCommand):
             self.assign_orgunits_to_program(credentials)
             print("fixing categoryOptions sharing", timezone.now())
             self.make_category_options_public(credentials)
+
+        print("********")
+        print("For Iaso web")
+        print("  log into http://localhost:8081/")
+        print("  with user and password : ", "testemail" + dhis2_version)
+        print("")
+        print("For Iaso mobile")
+        print("  now you need to start ngrok")
+        print("     with : ngrok http 8081")
+        print("     adapt .env and set the FILE_SERVER_URL to the ngrok https url in Forwarding section")
+        print("     restart iaso (so .env is reloaded) : docker-compose up")
+        print("  install the generic iaso mobile app and launch the app")
+        print("        https://play.google.com/store/apps/details?id=com.bluesquarehub.iaso")
+        print("     in the menu ")
+        print("        Change the App ID : ", project.app_id)
+        print("        Change URL server : with the ngrok one (good luck, try to send it by email)")
+        print("     then in the Connection section")
+        print("        user and password : ", "testemail" + dhis2_version)
 
     def assign_orgunits_to_program(self, credentials):
         api = Api(credentials.url, credentials.login, credentials.password)

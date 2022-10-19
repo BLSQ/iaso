@@ -21,6 +21,10 @@ export type Pagination = {
     has_previous: boolean;
 };
 
+export interface Paginated<T> extends Pagination {
+    results: T[];
+}
+
 export type UrlParams = {
     pageSize: string;
     order: string;

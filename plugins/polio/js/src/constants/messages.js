@@ -9,9 +9,33 @@ const MESSAGES = defineMessages({
         defaultMessage: 'Separate scope per round',
         id: 'iaso.polio.label.scope_per_round',
     },
+    source_version: {
+        id: 'iaso.groups.sourceVersion',
+        defaultMessage: 'Source version',
+    },
+    infos: {
+        defaultMessage: 'Infos',
+        id: 'iaso.label.infos',
+    },
+    separate_scopes_per_round: {
+        defaultMessage: 'Separate scope per round',
+        id: 'iaso.polio.label.scope_per_round',
+    },
+    preparedness_spreadsheet_url: {
+        defaultMessage: 'Preparedness spreadsheet url',
+        id: 'iaso.polio.label.preparednesSpreadsheetUrl',
+    },
+    preparedness_sync_status: {
+        defaultMessage: 'Preparedness status',
+        id: 'iaso.polio.label.preparednesSyncStatus',
+    },
     helpTextEditVaccineViaScope: {
         defaultMessage: 'The list of vaccines comes from the scope',
         id: 'iaso.polio.label.helpTextEditVaccineViaScope',
+    },
+    org_units: {
+        defaultMessage: 'Org units',
+        id: 'iaso.label.orgUnit',
     },
     campaigns: {
         defaultMessage: 'Campaigns',
@@ -93,7 +117,19 @@ const MESSAGES = defineMessages({
         id: 'iaso.label.dateFrom',
         defaultMessage: 'Start date',
     },
+    started_at: {
+        id: 'iaso.label.dateFrom',
+        defaultMessage: 'Start date',
+    },
     endDate: {
+        id: 'iaso.label.dateTo',
+        defaultMessage: 'End date',
+    },
+    source_ref: {
+        defaultMessage: 'Source ref',
+        id: 'iaso.orgUnits.sourceRef',
+    },
+    ended_at: {
         id: 'iaso.label.dateTo',
         defaultMessage: 'End date',
     },
@@ -110,6 +146,10 @@ const MESSAGES = defineMessages({
         defaultMessage: 'R1 date',
     },
     budgetStatus: {
+        id: 'iaso.polio.budgetStatus',
+        defaultMessage: 'Budget status',
+    },
+    budget_status: {
         id: 'iaso.polio.budgetStatus',
         defaultMessage: 'Budget status',
     },
@@ -160,6 +200,10 @@ const MESSAGES = defineMessages({
         id: 'iaso.polio.form.label.obrName',
         defaultMessage: 'OBR Name',
     },
+    obr_name: {
+        id: 'iaso.polio.form.label.obrName',
+        defaultMessage: 'OBR Name',
+    },
     virus: {
         id: 'iaso.polio.form.label.virus',
         defaultMessage: 'Virus',
@@ -172,7 +216,15 @@ const MESSAGES = defineMessages({
         id: 'iaso.polio.form.label.gpeiCoordinator',
         defaultMessage: 'GPEI Coordinator',
     },
+    gpei_coordinator: {
+        id: 'iaso.polio.form.label.gpeiCoordinator',
+        defaultMessage: 'GPEI Coordinator',
+    },
     preventive: {
+        id: 'iaso.polio.form.label.preventive',
+        defaultMessage: 'Preventive campaign',
+    },
+    is_preventive: {
         id: 'iaso.polio.form.label.preventive',
         defaultMessage: 'Preventive campaign',
     },
@@ -180,11 +232,11 @@ const MESSAGES = defineMessages({
         id: 'iaso.polio.form.label.preventive.short',
         defaultMessage: 'Preventive',
     },
-    selectInitialRegion: {
-        id: 'iaso.polio.form.label.selectInitialRegion',
-        defaultMessage: 'Select initial region',
-    },
     dateOfOnset: {
+        id: 'iaso.polio.form.label.dateOfOnset',
+        defaultMessage: 'Date of onset',
+    },
+    onset_at: {
         id: 'iaso.polio.form.label.dateOfOnset',
         defaultMessage: 'Date of onset',
     },
@@ -192,11 +244,23 @@ const MESSAGES = defineMessages({
         id: 'iaso.polio.form.label.virusNotificationDate',
         defaultMessage: 'Virus notification date',
     },
-    pv2NotificationDate: {
-        id: 'iaso.polio.form.label.pv2NotificationDate',
+    cvdpv2_notified_at: {
+        id: 'iaso.polio.form.label.virusNotificationDate',
+        defaultMessage: 'Virus notification date',
+    },
+    pv2_notification_date: {
+        id: 'iaso.polio.form.label.pv2_notification_date',
+        defaultMessage: 'PV2 notification date',
+    },
+    pv2_notified_at: {
+        id: 'iaso.polio.form.label.pv2_notification_date',
         defaultMessage: 'PV2 notification date',
     },
     threelevelCall: {
+        id: 'iaso.polio.form.label.threelevelCall',
+        defaultMessage: '3 level call',
+    },
+    three_level_call_at: {
         id: 'iaso.polio.form.label.threelevelCall',
         defaultMessage: '3 level call',
     },
@@ -208,19 +272,39 @@ const MESSAGES = defineMessages({
         id: 'iaso.polio.form.label.verificationScore',
         defaultMessage: 'Verification Score (/20)',
     },
+    verification_score: {
+        id: 'iaso.polio.form.label.verificationScore',
+        defaultMessage: 'Verif',
+    },
     fieldInvestigationDate: {
         id: 'iaso.polio.form.label.fieldInvestigationDate',
         defaultMessage: 'Field Investigation Date',
     },
-    firstDraftSubmission: {
+    investigation_at: {
+        id: 'iaso.polio.form.label.fieldInvestigationDate',
+        defaultMessage: 'Field Investigation Date',
+    },
+    risk_assessment_first_draft_submitted_at: {
+        id: 'iaso.polio.form.label.risk_assessment_first_draft_submitted_at',
+        defaultMessage: '1st Draft Submission',
+    },
+    detection_first_draft_submitted_at: {
         id: 'iaso.polio.form.label.firstDraftSubmission',
         defaultMessage: '1st Draft Submission',
     },
-    rrtOprttApproval: {
-        id: 'iaso.polio.form.label.rrtOprttApproval',
+    detection_responsible: {
+        id: 'iaso.polio.label.detection_responsible',
+        defaultMessage: 'Detection responsible',
+    },
+    risk_assessment_rrt_oprtt_approval_at: {
+        id: 'iaso.polio.form.label.risk_assessment_rrt_oprtt_approval_at',
         defaultMessage: 'RRT/OPRTT Approval',
     },
-    agNopvGroup: {
+    budget_rrt_oprtt_approval_at: {
+        id: 'iaso.polio.form.label.budget_rrt_oprtt_approval_at',
+        defaultMessage: 'RRT/OPRTT Approval',
+    },
+    ag_nopv_group_met_at: {
         id: 'iaso.polio.form.label.agNopvGroup',
         defaultMessage: 'AG/nOPV Group',
     },
@@ -228,11 +312,19 @@ const MESSAGES = defineMessages({
         id: 'iaso.polio.form.label.dgAuthorization',
         defaultMessage: 'DG Authorization',
     },
-    targetpopulationRound: {
+    dg_authorized_at: {
+        id: 'iaso.polio.form.label.dgAuthorization',
+        defaultMessage: 'DG Authorization',
+    },
+    target_population: {
         id: 'iaso.polio.form.label.targetpopulationRound',
         defaultMessage: 'Target population Round',
     },
     dosesRequested: {
+        id: 'iaso.polio.form.label.dosesRequested',
+        defaultMessage: 'Doses Requested',
+    },
+    doses_requested: {
         id: 'iaso.polio.form.label.dosesRequested',
         defaultMessage: 'Doses Requested',
     },
@@ -264,7 +356,15 @@ const MESSAGES = defineMessages({
         id: 'iaso.polio.form.label.disbursedToCoWho',
         defaultMessage: 'Disbursed to CO (WHO)',
     },
+    who_disbursed_to_co_at: {
+        id: 'iaso.polio.form.label.disbursedToCoWho',
+        defaultMessage: 'Disbursed to CO (WHO)',
+    },
     disbursedToMohWho: {
+        id: 'iaso.polio.form.label.disbursedToMohWho',
+        defaultMessage: 'Disbursed to MOH (WHO)',
+    },
+    who_disbursed_to_moh_at: {
         id: 'iaso.polio.form.label.disbursedToMohWho',
         defaultMessage: 'Disbursed to MOH (WHO)',
     },
@@ -272,19 +372,27 @@ const MESSAGES = defineMessages({
         id: 'iaso.polio.form.label.disbursedToCoUnicef',
         defaultMessage: 'Disbursed to CO (Unicef)',
     },
+    unicef_disbursed_to_co_at: {
+        id: 'iaso.polio.form.label.disbursedToCoUnicef',
+        defaultMessage: 'Disbursed to CO (Unicef)',
+    },
     disbursedToMohUnicef: {
         id: 'iaso.polio.form.label.disbursedToMohUnicef',
         defaultMessage: 'Disbursed to MOH (Unicef)',
     },
-    eomgGroup: {
+    unicef_disbursed_to_moh_at: {
+        id: 'iaso.polio.form.label.disbursedToMohUnicef',
+        defaultMessage: 'Disbursed to MOH (Unicef)',
+    },
+    eomg: {
         id: 'iaso.polio.form.label.eomgGroup',
         defaultMessage: 'EOMG Group',
     },
-    budgetSubmittedAt: {
+    budget_submitted_at: {
         id: 'iaso.polio.form.label.budgetSubmittedAt',
         defaultMessage: 'Budget Submitted At',
     },
-    districtCount: {
+    district_count: {
         id: 'iaso.polio.form.label.districtCount',
         defaultMessage: 'District Count',
     },
@@ -292,8 +400,12 @@ const MESSAGES = defineMessages({
         id: 'iaso.polio.form.label.noRegretFund',
         defaultMessage: 'No Regret Fund',
     },
-    costRound: {
-        id: 'iaso.polio.form.label.costRound',
+    no_regret_fund_amount: {
+        id: 'iaso.polio.form.label.noRegretFund',
+        defaultMessage: 'No Regret Fund',
+    },
+    cost: {
+        id: 'iaso.polio.form.label.cost',
         defaultMessage: 'Cost Round',
     },
     costPerChildRound: {
@@ -320,55 +432,55 @@ const MESSAGES = defineMessages({
         id: 'iaso.polio.form.label.roundtwoEnd',
         defaultMessage: 'Round 2 End',
     },
-    mopUpStart: {
+    mop_up_started_at: {
         id: 'iaso.polio.form.label.mopUpStart',
         defaultMessage: 'Mop Up Start',
     },
-    mopUpEnd: {
+    mop_up_ended_at: {
         id: 'iaso.polio.form.label.mopUpEnd',
         defaultMessage: 'Mop Up End',
     },
-    imStart: {
+    im_started_at: {
         id: 'iaso.polio.form.label.imStart',
         defaultMessage: 'IM Start',
     },
-    imEnd: {
+    im_ended_at: {
         id: 'iaso.polio.form.label.imEnd',
         defaultMessage: 'IM End',
     },
-    lqasStart: {
+    lqas_started_at: {
         id: 'iaso.polio.form.label.lqasStart',
         defaultMessage: 'LQAS Start',
     },
-    lqasEnd: {
+    lqas_ended_at: {
         id: 'iaso.polio.form.label.lqasEnd',
         defaultMessage: 'LQAS End',
     },
-    districtsPassingLqas: {
+    lqas_district_passing: {
         id: 'iaso.polio.form.label.districtsPassingLqas',
         defaultMessage: 'Districts passing LQAS',
     },
-    districtsFailingLqas: {
+    lqas_district_failing: {
         id: 'iaso.polio.form.label.districtsFailingLqas',
         defaultMessage: 'Districts failing LQAS',
     },
-    mainReasonForNonVaccination: {
+    main_awareness_problem: {
         id: 'iaso.polio.form.label.mainReasonForNonVaccination',
         defaultMessage: 'Main reason for non-vaccination',
     },
-    ratioChildrenMissedInHousehold: {
+    im_percentage_children_missed_in_household: {
         id: 'iaso.polio.form.label.ratioChildrenMissedInHousehold',
         defaultMessage: '% children missed IN household',
     },
-    ratioChildrenMissedOutOfHousehold: {
+    im_percentage_children_missed_out_household: {
         id: 'iaso.polio.form.label.ratioChildrenMissedOutOfHousehold',
         defaultMessage: '% children missed OUT OF household',
     },
-    ratioChildrenMissedInAndOutOfHousehold: {
+    im_percentage_children_missed_in_plus_out_household: {
         id: 'iaso.polio.form.label.ratioChildrenMissedInAndOutOfHousehold',
         defaultMessage: '% children missed IN+OUT OF household',
     },
-    awarenessCampaignPlanning: {
+    awareness_of_campaign_planning: {
         id: 'iaso.polio.form.label.awarenessCampaignPlanning',
         defaultMessage: 'Awareness of campaign planning (%)',
     },
@@ -392,6 +504,10 @@ const MESSAGES = defineMessages({
         id: 'iaso.polio.title.riskAssessment',
         defaultMessage: 'Risk Assessment',
     },
+    risk_assessment_status: {
+        id: 'iaso.polio.label.risk_assessment_status',
+        defaultMessage: 'Risk assessment',
+    },
     scope: {
         id: 'iaso.polio.title.scope',
         defaultMessage: 'Scope',
@@ -408,7 +524,15 @@ const MESSAGES = defineMessages({
         id: 'iaso.polio.title.roundOne',
         defaultMessage: 'Round 1',
     },
+    round_one: {
+        id: 'iaso.polio.title.roundOne',
+        defaultMessage: 'Round 1',
+    },
     roundTwo: {
+        id: 'iaso.polio.title.roundTwo',
+        defaultMessage: 'Round 2',
+    },
+    round_two: {
         id: 'iaso.polio.title.roundTwo',
         defaultMessage: 'Round 2',
     },
@@ -436,6 +560,10 @@ const MESSAGES = defineMessages({
         id: 'iaso.polio.table.label.status',
         defaultMessage: 'Synchronisation',
     },
+    preperadness_sync_status: {
+        id: 'iaso.polio.table.label.status',
+        defaultMessage: 'Synchronisation',
+    },
     import: {
         id: 'iaso.polio.button.label.import',
         defaultMessage: 'Import',
@@ -458,6 +586,10 @@ const MESSAGES = defineMessages({
         defaultMessage: 'Enter Google Sheet url',
     },
     preparednessGoogleSheetUrl: {
+        id: 'iaso.polio.title.preparednessGoogleSheetUrl',
+        defaultMessage: 'Preparedness Google Sheet URL',
+    },
+    preperadness_spreadsheet_url: {
         id: 'iaso.polio.title.preparednessGoogleSheetUrl',
         defaultMessage: 'Preparedness Google Sheet URL',
     },
@@ -493,7 +625,16 @@ const MESSAGES = defineMessages({
         id: 'iaso.polio.label.recruitmentSurgeUrl',
         defaultMessage: 'Recruitment Surge Google Sheet URL',
     },
+    surge_spreadsheet_url: {
+        id: 'iaso.polio.label.recruitmentSurgeUrl',
+        defaultMessage: 'Recruitment Surge Google Sheet URL',
+    },
+
     countryNameInSheet: {
+        id: 'iaso.polio.label.countryNameInSheet',
+        defaultMessage: 'Country Name in sheet',
+    },
+    country_name_in_surge_spreadsheet: {
         id: 'iaso.polio.label.countryNameInSheet',
         defaultMessage: 'Country Name in sheet',
     },
@@ -521,7 +662,15 @@ const MESSAGES = defineMessages({
         id: 'iaso.polio.label.paymentMode',
         defaultMessage: 'Payment Mode',
     },
+    payment_mode: {
+        id: 'iaso.polio.label.paymentMode',
+        defaultMessage: 'Payment Mode',
+    },
     responsible: {
+        id: 'iaso.polio.label.responsible',
+        defaultMessage: 'Responsible',
+    },
+    budget_responsible: {
         id: 'iaso.polio.label.responsible',
         defaultMessage: 'Responsible',
     },
@@ -713,7 +862,7 @@ const MESSAGES = defineMessages({
         id: 'iaso.polio.label.imResults',
         defaultMessage: 'IM Results',
     },
-    enableSendWeeklyEmail: {
+    enable_send_weekly_email: {
         id: 'iaso.polio.label.enableSendWeeklyEmail',
         defaultMessage: 'Send a weekly e-mail reminder',
     },
@@ -742,6 +891,10 @@ const MESSAGES = defineMessages({
         id: 'iaso.polio.label.imPerRegion',
         defaultMessage:
             'Vaccination ratio per region (based on districts found)',
+    },
+    vacine: {
+        id: 'iaso.polio.label.vaccine',
+        defaultMessage: 'Vaccine',
     },
     vaccinated: {
         id: 'iaso.polio.label.vaccinated',
@@ -1089,6 +1242,10 @@ const MESSAGES = defineMessages({
         id: 'iaso.polio.label.testCampaign',
         defaultMessage: 'Test campaign',
     },
+    is_test: {
+        id: 'iaso.polio.label.testCampaign',
+        defaultMessage: 'Test campaign',
+    },
     testCampaigns: {
         id: 'iaso.polio.label.testCampaigns',
         defaultMessage: 'Test campaigns',
@@ -1153,16 +1310,12 @@ const MESSAGES = defineMessages({
         defaultMessage: 'Destination',
         id: 'iaso.polio.label.destination',
     },
-    event: {
-        defaultMessage: 'Event',
-        id: 'iaso.polio.label.event',
-    },
     note: {
         defaultMessage: 'note',
         id: 'iaso.polio.label.note',
     },
     notes: {
-        defaultMessage: 'notes',
+        defaultMessage: 'comments',
         id: 'iaso.polio.label.notes',
     },
     submission: {
@@ -1205,9 +1358,9 @@ const MESSAGES = defineMessages({
         defaultMessage: 'Send',
         id: 'iaso.polio.label.send',
     },
-    eventType: {
-        defaultMessage: 'Type',
-        id: 'iaso.polio.label.eventType',
+    step: {
+        defaultMessage: 'Step',
+        id: 'iaso.polio.label.step',
     },
     cc_emails: {
         defaultMessage: 'Cc emails',
@@ -1238,6 +1391,10 @@ const MESSAGES = defineMessages({
         id: 'iaso.polio.label.latestEventDate',
     },
     latestEvent: {
+        defaultMessage: 'Latest event',
+        id: 'iaso.polio.label.latestEvent',
+    },
+    last_budget_event: {
         defaultMessage: 'Latest event',
         id: 'iaso.polio.label.latestEvent',
     },
@@ -1515,17 +1672,25 @@ const MESSAGES = defineMessages({
         id: 'iaso.polio.label.addVaccine',
         defaultMessage: 'Add vaccine',
     },
-    addShipment: {
-        id: 'iaso.polio.label.addShipment',
-        defaultMessage: 'Add shipment',
-    },
     removeLastVaccine: {
         id: 'iaso.polio.label.removeLastVaccine',
         defaultMessage: 'Remove last vaccine',
     },
+    addShipment: {
+        id: 'iaso.polio.label.addShipment',
+        defaultMessage: 'Add shipment',
+    },
     removeLastShipment: {
         id: 'iaso.polio.label.removeLastShipment',
         defaultMessage: 'Remove last shipment',
+    },
+    addLink: {
+        id: 'iaso.polio.label.addLink',
+        defaultMessage: 'Add link',
+    },
+    removeLastLink: {
+        id: 'iaso.polio.label.removeLastLink',
+        defaultMessage: 'Remove last link',
     },
     destructionDateAndVialsDestroyed: {
         id: 'iaso.polio.label.destructionDateAndVialsDestroyed',
@@ -1544,6 +1709,130 @@ const MESSAGES = defineMessages({
         id: 'iaso.polio.label.scopeUnlockConditions',
         defaultMessage:
             'Select initial region and encode dates for at least one round to unlock Scope tab',
+    },
+    campaignHistory: {
+        id: 'iaso.polio.campaign.campaignHistory',
+        defaultMessage: 'Campaign History',
+    },
+    campaingDropdownLabel: {
+        id: 'iaso.polio.label.campaignDropdownLabel',
+        defaultMessage: 'Modification date',
+    },
+    error: {
+        id: 'iaso.polio.campaign.campaignHistory.error',
+        defaultMessage: 'Can not find an history with this campaign or log id',
+    },
+    key: {
+        id: 'iaso.polio.campaign.key',
+        defaultMessage: 'Key',
+    },
+    label: {
+        id: 'iaso.polio.label.labl',
+        defaultMessage: 'Label',
+    },
+    value: {
+        id: 'iaso.polio.campaign.value',
+        defaultMessage: 'Value',
+    },
+    typeNotSupported: {
+        id: 'iaso.polio.campaign.typeNotSupported',
+        defaultMessage: 'Type not supported yet: {type}',
+    },
+    last_modified_by: {
+        id: 'iaso.instance.last_modified_by',
+        defaultMessage: 'Modified By',
+    },
+    seeLogDetail: {
+        id: 'iaso.polio.campaign.seeLogDetail',
+        defaultMessage: 'See more details',
+    },
+    form: {
+        id: 'iaso.polio.campaign.form',
+        defaultMessage: 'Form',
+    },
+    initial_org_unit: {
+        id: 'iaso.polio.campaign.initial_org_unit',
+        defaultMessage: 'Org Unit',
+    },
+    gpei_email: {
+        id: 'iaso.polio.label.gpei_email',
+        defaultMessage: 'Email GPEI',
+    },
+    pv_notified_at: {
+        id: 'iaso.polio.label.pv_notified_at',
+        defaultMessage: 'PV Notification date',
+    },
+    cvdpv_notified_at: {
+        id: 'iaso.polio.label.cvdpv_notified_at',
+        defaultMessage: 'CVDPV Notification date',
+    },
+    detection_status: {
+        id: 'iaso.polio.label.detection_status',
+        defaultMessage: 'Detection status',
+    },
+    creation_email_send_at: {
+        id: 'iaso.polio.label.creation_email_send_at',
+        defaultMessage: 'Email creation date',
+    },
+    risk_assessment_responsible: {
+        id: 'iaso.polio.label.risk_assessment_responsible',
+        defaultMessage: 'Risk assessment responsible',
+    },
+    detection_rrt_oprtt_approval_at: {
+        id: 'iaso.polio.label.detection_rrt_oprtt_approval_at',
+        defaultMessage: 'Detection rrt oprtt oprtt',
+    },
+    id: {
+        id: 'iaso.polio.label.campaign.id',
+        defaultMessage: 'Id',
+    },
+    group: {
+        id: 'iaso.polio.label.group',
+        defaultMessage: 'Group',
+    },
+    number: {
+        id: 'iaso.polio.label.round.number',
+        defaultMessage: 'Round number',
+    },
+    domain: {
+        id: 'iaso.polio.label.domain',
+        defaultMessage: 'Domain',
+    },
+    attachments: {
+        id: 'iaso.polio.label.attachments',
+        defaultMessage: 'Attachments',
+    },
+    clickToHide: {
+        id: 'iaso.polio.label.clickToHide',
+        defaultMessage: 'Click to hide',
+    },
+    clickToShow: {
+        id: 'iaso.polio.label.clickToShow',
+        defaultMessage: 'Click to show',
+    },
+    showHidden: {
+        id: 'iaso.polio.label.showHidden',
+        defaultMessage: 'Show hidden',
+    },
+    url: {
+        id: 'iaso.polio.label.url',
+        defaultMessage: 'Url',
+    },
+    displayedName: {
+        id: 'iaso.polio.label.displayedName',
+        defaultMessage: 'Displayed name',
+    },
+    linksOrFilesRequired: {
+        id: 'iaso.polio.label.linksOrFilesRequired',
+        defaultMessage: 'You need to attach at least a link or a file',
+    },
+    lastStep: {
+        id: 'iaso.polio.label.lastStep',
+        defaultMessage: 'Last step',
+    },
+    nextSteps: {
+        id: 'iaso.polio.label.nextSteps',
+        defaultMessage: 'Next steps',
     },
 });
 

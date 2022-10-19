@@ -33,7 +33,7 @@ export const DetectionForm = () => {
                     />
 
                     <Field
-                        label={formatMessage(MESSAGES.pv2NotificationDate)}
+                        label={formatMessage(MESSAGES.pv2_notification_date)}
                         fullWidth
                         name="pv_notified_at"
                         component={DateInput}

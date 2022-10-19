@@ -142,7 +142,7 @@ export const CampaignHistory: FunctionComponent<Props> = ({
             />
             <Box className={classes.containerFullHeightNoTabPadded}>
                 <Grid container spacing={4}>
-                    <Grid xs={12} item>
+                    <Grid xs={4} item>
                         <Box mt={2}>
                             <InputComponent
                                 type="select"
@@ -178,6 +178,8 @@ export const CampaignHistory: FunctionComponent<Props> = ({
                                 </Typography>
                             </WidgetPaper>
                         </Box>
+                    </Grid>
+                    <Grid xs={12} item>
                         <Box mt={2}>
                             <WidgetPaper
                                 expandable

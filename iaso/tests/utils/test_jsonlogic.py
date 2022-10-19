@@ -9,6 +9,12 @@ class JsonLogicTests(TestCase):
         q = jsonlogic_to_q(filters)
         self.assertEqual(str(q), "(AND: ('gender__exact', 'F'), ('age__lt', 25))")
 
+    def test_jsonlogic_to_q_filters_not(self) -> None:
+        """The not operator works as expected"""
+        filters = {"!": {"and": [{"==": [{"var": "gender"}, "F"]}, {"<": [{"var": "age"}, 25]}]}}
+        q = jsonlogic_to_q(filters)
+        self.assertEqual(str(q), "(NOT (AND: ('gender__exact', 'F'), ('age__lt', 25)))")
+
     def test_jsonlogic_to_q_filters_field_prefix(self) -> None:
         """The field_prefix argument is taken into account."""
         filters = {"and": [{"==": [{"var": "gender"}, "F"]}, {"<": [{"var": "age"}, 25]}]}

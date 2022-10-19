@@ -72,11 +72,9 @@ def generate_xlsx_campaigns_calendar(filename: str, datas: Any) -> Workbook:
                     sheet = cell_dimension_pattern_fill(
                         sheet, cell, CALENDAR_CELL_WIDTH, CALENDAR_CELL_HEIGHT, True, vacine_color
                     )
-            else:
-                cell = sheet.cell(column=month + 1, row=r + start_row, value="")
-                sheet = cell_dimension_pattern_fill(sheet, cell, CALENDAR_CELL_WIDTH, CALENDAR_CELL_HEIGHT)
-            cell_format = sheet.cell(column=month + 1, row=last_end_row)
+
             # format the last cell in the month column according it has value or not
+            cell_format = sheet.cell(column=month + 1, row=last_end_row)
             if cell_format.value is None or cell_format.value == "":
                 cell_border(cell_format, False, True)
             else:

@@ -195,6 +195,7 @@ class StorageAPITestCase(APITestCase):
         """In the case the storage type is invalid, POST to /api/mobile/storage/log/ should return 400."""
         self.client.force_authenticate(self.yoda)
 
+        num_logs_before = StorageLogEntry.objects.count()
         post_body = [
             {
                 "id": "66664567-e89b-12d3-a456-426614174000",
@@ -209,9 +210,35 @@ class StorageAPITestCase(APITestCase):
         ]
         response = self.client.post("/api/mobile/storage/logs/", post_body, format="json")
         self.assertEqual(response.status_code, 400)
+        # Also make sure nothing was added to the database
+        self.assertEqual(StorageLogEntry.objects.count(), num_logs_before)
 
-    # TODO: POST test post a log with an incorrect storage type fails
-    # TODO: POST test post a log with an incorrect operation type fails
+    def test_post_storage_incorrect_operation_type(self):
+        """In the case the operation type is invalid, POST to /api/mobile/storage/log/ should return 400."""
+        self.client.force_authenticate(self.yoda)
+
+        num_logs_before = StorageLogEntry.objects.count()
+        post_body = [
+            {
+                "id": "66664567-e89b-12d3-a456-426614174000",
+                "storage_id": "EXISTING_STORAGE",
+                "storage_type": "NFC",
+                "operation_type": "INVALID_OPERATION_TYPE",
+                "instances": [self.instance1.uuid, self.instance2.uuid],
+                "org_unit_id": self.org_unit.id,
+                "entity_id": self.entity.uuid,
+                "performed_at": 1666002739.171,
+            }
+        ]
+        response = self.client.post("/api/mobile/storage/logs/", post_body, format="json")
+        self.assertEqual(response.status_code, 400)
+        # Also make sure nothing was added to the database
+        self.assertEqual(StorageLogEntry.objects.count(), num_logs_before)
+
+    def test_post_storage_existing_logs(self):
+        """If a storage log entry already exists, it should be silently ignored if pushed again"""
+        pass
+
     # TODO: POST test mandatory fields are checked on POST
     # TODO: POST test an error is returned if incorrect value for instances, org unit or entity (400)
     # TODO: POST: that the non mandatory fields are actually non mandatory
@@ -229,10 +256,6 @@ class StorageAPITestCase(APITestCase):
         self.client.force_authenticate(self.another_user)
         response = self.client.get("/api/storage/")
         self.assertEqual(response.status_code, 403)
-
-    def test_list_only_own_account(self):
-        """GET /api/storage/ only lists the devices associated with the user account"""
-        # TODO: implement
 
     def test_list_base(self):
         """
@@ -366,7 +389,7 @@ class StorageAPITestCase(APITestCase):
         received_json = response.json()
         types_in_order_received = [entry["storage_type"] for entry in received_json]
         self.assertEqual(types_in_order_received[::-1], sorted(types_in_order_received))
-        # TODO: check with the frontend team which exact ordering options should be available
+        # TODO: check with the frontend team which exact ordering possibilities should be available
 
     def test_post_blacklisted_storage_ok(self):
         """
@@ -398,7 +421,53 @@ class StorageAPITestCase(APITestCase):
         self.assertEqual(latest_log_entry_for_storage.performed_by, self.yoda)
         # TODO: also check the value of performed_at (use mock object?)
 
-    # TODO: test edge cases and errors for the POST /api/storage/blacklisted
+    def test_post_blacklisted_storage_non_existing(self):
+        """An error 400 is returned if we try to blacklist a non-existing device"""
+        self.client.force_authenticate(self.yoda)
+
+        post_body = {
+            "storage_id": "NON_EXISTING_STORAGE",
+            "storage_type": "NFC",
+            "storage_status": {"status": "BLACKLISTED", "reason": "DAMAGED", "comment": "not usable anymore"},
+        }
+        response = self.client.post("/api/storage/blacklisted/", post_body, format="json")
+        self.assertEqual(response.status_code, 400)
+
+    def test_post_blacklisted_storage_incorrect_status(self):
+        """An error 400 is returned if we try to blacklist a device with an incorrect status"""
+        self.client.force_authenticate(self.yoda)
+
+        post_body = {
+            "storage_id": "EXISTING_STORAGE",
+            "storage_type": "NFC",
+            "storage_status": {"status": "AZFDSGFDDFFD", "reason": "DAMAGED", "comment": "not usable anymore"},
+        }
+        response = self.client.post("/api/storage/blacklisted/", post_body, format="json")
+        self.assertEqual(response.status_code, 400)
+
+    def test_post_blacklisted_storage_incorrect_reason(self):
+        """An error 400 is returned if we try to blacklist a device for an incorrect reason"""
+        self.client.force_authenticate(self.yoda)
+
+        post_body = {
+            "storage_id": "EXISTING_STORAGE",
+            "storage_type": "NFC",
+            "storage_status": {"status": "BLACKLISTED", "reason": "AZFDSGFDDFFD", "comment": "not usable anymore"},
+        }
+        response = self.client.post("/api/storage/blacklisted/", post_body, format="json")
+        self.assertEqual(response.status_code, 400)
+
+    def test_post_blacklisted_reason_mandatory_when_blacklisting(self):
+        """An error 400 is returned if we try to blacklist a device without specifying a reason"""
+        self.client.force_authenticate(self.yoda)
+
+        post_body = {
+            "storage_id": "EXISTING_STORAGE",
+            "storage_type": "NFC",
+            "storage_status": {"status": "BLACKLISTED", "reason": None, "comment": "not usable anymore"},
+        }
+        response = self.client.post("/api/storage/blacklisted/", post_body, format="json")
+        self.assertEqual(response.status_code, 400)
 
     def test_get_logs_for_device_base(self):
         """Test the basics of the logs per device endpoint"""

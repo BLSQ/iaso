@@ -59,8 +59,10 @@ class StorageLogSerializer(serializers.ModelSerializer):
 
 
 class StorageStatusSerializer(serializers.Serializer):
-    status = serializers.CharField()
-    reason = serializers.CharField(source="status_reason", required=False)
+    status = serializers.ChoiceField(choices=StorageDevice.STATUS_CHOICES)
+    reason = serializers.ChoiceField(
+        source="status_reason", required=False, choices=StorageDevice.STATUS_REASON_CHOICES
+    )
     # TODO: where should this data come from
     # updated_at = serializers.DateTimeField()
     # TODO: Comment field is not in the spec, but I guess it's useful to implement, no?
@@ -70,7 +72,11 @@ class StorageStatusSerializer(serializers.Serializer):
         """
         Ensure that a reason is set if changed to a non-ok status
         """
-        if data["status"] != StorageDevice.OK and not data["status_reason"]:
+        missing_status_reason = True
+        if "status_reason" in data and data["status_reason"] != "":
+            missing_status_reason = False
+
+        if data["status"] != StorageDevice.OK and missing_status_reason:
             raise serializers.ValidationError("A reason must be provided when changing the status to a non-ok status")
         return data
 
@@ -107,7 +113,7 @@ class StorageSerializerWithLogs(StorageSerializer):
 
 
 class StorageViewSet(ListModelMixin, viewsets.GenericViewSet):
-    permission_classes = [permissions.IsAuthenticated, HasPermission("menupermissions.iaso_storages")]
+    permission_classes = [permissions.IsAuthenticated, HasPermission("menupermissions.iaso_storages")]  # type: ignore
     serializer_class = StorageSerializer
 
     def get_queryset(self):
@@ -198,6 +204,7 @@ class StorageViewSet(ListModelMixin, viewsets.GenericViewSet):
             # 3. Submitted data is valid, we can now proceed
             status_dict = status_serializer.validated_data
             # 3.1 Update device status
+            # TODO: discuss: what should be done if we try to change the device to the status it's already in?
             device.change_status(
                 new_status=status_dict["status"],
                 reason=status_dict.get("status_reason", ""),
@@ -207,8 +214,7 @@ class StorageViewSet(ListModelMixin, viewsets.GenericViewSet):
             return Response({}, status=200)
 
         else:  # Some parameters were invalid
-            # TODO: return a 400 error here?
-            pass
+            return Response({}, status=400)
 
 
 # This could be rewritten in more idiomatic DRF (serializers, ...). On the other hand, I quite like the explicitness
@@ -228,42 +234,52 @@ class StorageLogViewSet(CreateModelMixin, viewsets.GenericViewSet):
         """
         user = request.user
 
-        # todo: wrap in a transaction?
-        # todo: make sure we can re-push cleanly existing logs
-
         for log_data in request.data:
             # We receive an array of logs, we'll process them one by one
             log_id = log_data["id"]
-            storage_id = log_data["storage_id"]
-            storage_type = log_data["storage_type"]
-            operation_type = log_data["operation_type"]
 
-            # timestamp in seconds, but it's actually a double so there are 3 decimals with the millis
-            performed_at = datetime.utcfromtimestamp(float(log_data["performed_at"]))
+            try:
+                # TODO: check the logic is sound here (=we don't expect the mobile to re-push the same log id with different values)
+                StorageLogEntry.objects.get(id=log_id)
+                # That log entry already exists, skip it
+            except StorageLogEntry.DoesNotExist:
+                # New log entry, we continue
+                storage_id = log_data["storage_id"]
+                storage_type = log_data["storage_type"]
+                operation_type = log_data["operation_type"]
 
-            concerned_instances = Instance.objects.filter(uuid__in=log_data["instances"])
-            concerned_orgunit = OrgUnit.objects.get(id=log_data["org_unit_id"])
-            concerned_entity = Entity.objects.get(uuid=log_data["entity_id"])
+                if storage_type not in [c[1] for c in StorageDevice.STORAGE_TYPE_CHOICES]:
+                    return Response({"error": "Invalid storage type"}, status=400)
 
-            account = user.iaso_profile.account
+                if operation_type not in [c[1] for c in StorageLogEntry.OPERATION_TYPE_CHOICES]:
+                    return Response({"error": "Invalid operation type"}, status=400)
 
-            # 1. Create the storage device, if needed
-            device, _ = StorageDevice.objects.get_or_create(
-                account=account, customer_chosen_id=storage_id, type=storage_type
-            )
+                # timestamp in seconds, but it's actually a double so there are 3 decimals with the millis
+                performed_at = datetime.utcfromtimestamp(float(log_data["performed_at"]))
 
-            # 2. Create the log entry
-            log_entry = StorageLogEntry.objects.create(
-                id=log_id,
-                device=device,
-                operation_type=operation_type,
-                performed_at=performed_at,
-                performed_by=user,
-                org_unit=concerned_orgunit,
-                entity=concerned_entity,
-            )
+                concerned_instances = Instance.objects.filter(uuid__in=log_data["instances"])
+                concerned_orgunit = OrgUnit.objects.get(id=log_data["org_unit_id"])
+                concerned_entity = Entity.objects.get(uuid=log_data["entity_id"])
 
-            log_entry.instances.set(concerned_instances)
+                account = user.iaso_profile.account
+
+                # 1. Create the storage device, if needed
+                device, _ = StorageDevice.objects.get_or_create(
+                    account=account, customer_chosen_id=storage_id, type=storage_type
+                )
+
+                # 2. Create the log entry
+                log_entry = StorageLogEntry.objects.create(
+                    id=log_id,
+                    device=device,
+                    operation_type=operation_type,
+                    performed_at=performed_at,
+                    performed_by=user,
+                    org_unit=concerned_orgunit,
+                    entity=concerned_entity,
+                )
+
+                log_entry.instances.set(concerned_instances)
 
         return Response("", status=status.HTTP_201_CREATED)
 

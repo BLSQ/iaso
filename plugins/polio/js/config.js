@@ -35,8 +35,8 @@ import { Lqas } from './src/pages/LQAS';
 import { ImStats } from './src/pages/IM';
 import { paginationPathParams } from '../../../hat/assets/js/apps/Iaso/routing/common';
 import { GroupedCampaigns } from './src/pages/GroupedCampaigns/GroupedCampaigns.tsx';
-import { Budget } from './src/pages/Budget/index.tsx';
-import { BudgetDetails } from './src/pages/Budget/BudgetDetails.tsx';
+import { BudgetDetails } from './src/pages/Budget/BudgetDetails/BudgetDetails.tsx';
+import { BudgetList } from './src/pages/Budget/index.tsx';
 
 const campaignsFilters = [
     {
@@ -215,41 +215,17 @@ const routes = [
     },
     {
         baseUrl: BUDGET,
-        component: props => <Budget {...props} />,
+        component: props => <BudgetList {...props} />,
         permissions: ['iaso_polio_budget'],
         params: [
             ...paginationPathParams,
-            {
-                isRequired: false,
-                key: 'campaign',
-            },
-            {
-                isRequired: false,
-                key: 'country',
-            },
             {
                 isRequired: false,
                 key: 'search',
             },
             {
                 isRequired: false,
-                key: 'showOnlyDeleted',
-            },
-            {
-                isRequired: false,
-                key: 'campaignType',
-            },
-            {
-                isRequired: false,
-                key: 'campaignGroups',
-            },
-            {
-                isRequired: false,
-                key: 'show_test',
-            },
-            {
-                isRequired: false,
-                key: 'last_budget_event__status',
+                key: 'current_state__key',
             },
             {
                 isRequired: false,
@@ -267,13 +243,14 @@ const routes = [
         permissions: ['iaso_polio_budget'],
         params: [
             ...paginationPathParams,
-            {
-                isRequired: false,
-                key: 'campaignId',
-            },
+
             {
                 isRequired: false,
                 key: 'campaignName',
+            },
+            {
+                isRequired: false,
+                key: 'campaignId',
             },
             {
                 isRequired: false,
@@ -281,7 +258,7 @@ const routes = [
             },
             {
                 isRequired: false,
-                key: 'show_deleted',
+                key: 'show_hidden',
             },
             {
                 isRequired: false,
@@ -289,15 +266,23 @@ const routes = [
             },
             {
                 isRequired: false,
-                key: 'senderTeam',
+                key: 'quickTransition',
             },
             {
                 isRequired: false,
-                key: 'recipient',
+                key: 'previousStep',
             },
+            // {
+            //     isRequired: false,
+            //     key: 'senderTeam',
+            // },
+            // {
+            //     isRequired: false,
+            //     key: 'recipient',
+            // },
             {
                 isRequired: false,
-                key: 'type',
+                key: 'transition_key',
             },
         ],
     },

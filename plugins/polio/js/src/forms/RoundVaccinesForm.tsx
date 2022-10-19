@@ -27,6 +27,8 @@ const DEFAULT_WASTAGE_RATIOS = {
     bOPV2: 1.18,
 };
 
+const DEFAULT_DOSES_PER_VIAL = 50;
+
 export const RoundVaccinesForm: FunctionComponent<Props> = ({
     round,
     roundIndex,
@@ -133,10 +135,39 @@ export const RoundVaccinesForm: FunctionComponent<Props> = ({
                 ((touched?.rounds ?? [])[roundIndex]?.vaccines ?? [])[index]
                     ?.wastage_ratio_forecast,
             );
-            if (!wastageRatio && !isTouched) {
+            if (!wastageRatio && vaccine?.name && !isTouched) {
                 setFieldValue(
                     `rounds[${roundIndex}].vaccines[${index}].wastage_ratio_forecast`,
                     DEFAULT_WASTAGE_RATIOS[vaccine.name],
+                );
+            }
+        });
+    }, [
+        roundIndex,
+        rounds,
+        setFieldValue,
+        // @ts-ignore
+        touched.rounds,
+        vaccines,
+        vaccines.length,
+    ]);
+
+    // Fill in number of doses with default value when adding vaccine
+    useEffect(() => {
+        vaccines.forEach((vaccine, index) => {
+            const dosesPerVial =
+                rounds[roundIndex].vaccines[index].doses_per_vial;
+            // I'm sorry for this, I really had to null check this value
+            const isTouched = Boolean(
+                // @ts-ignore
+                ((touched?.rounds ?? [])[roundIndex]?.vaccines ?? [])[index]
+                    ?.doses_per_vial,
+            );
+            // checking on vaccine.name so default values apply when vaccine is selected
+            if (!dosesPerVial && vaccine?.name && !isTouched) {
+                setFieldValue(
+                    `rounds[${roundIndex}].vaccines[${index}].doses_per_vial`,
+                    DEFAULT_DOSES_PER_VIAL,
                 );
             }
         });
@@ -188,7 +219,8 @@ export const RoundVaccinesForm: FunctionComponent<Props> = ({
                         />
                     );
                 })}
-            {vaccines.length === 0 && (
+            {/* if the condition is on length === 0 the UI will flicker and the field lose focus because of re-render */}
+            {vaccines.length <= 1 && (
                 <RoundVaccineForm
                     vaccineIndex={0}
                     roundIndex={roundIndex}

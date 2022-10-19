@@ -28,6 +28,7 @@ import { Location } from './ListMap';
 import { baseUrls } from '../../../../constants/urls';
 import { ExtraColumn } from '../types/fields';
 import { useGetFieldValue } from '../hooks/useGetFieldValue';
+import { formatLabel } from '../../../instances/utils';
 
 import MESSAGES from '../../messages';
 
@@ -95,7 +96,7 @@ export const PopupComponent: FunctionComponent<Props> = ({
                             />
                             <PopupItemComponent
                                 label={formatMessage(MESSAGES.type)}
-                                value={location.original.entity_type_name}
+                                value={location.original.entity_type}
                             />
                             <PopupItemComponent
                                 label={formatMessage(MESSAGES.program)}
@@ -104,7 +105,7 @@ export const PopupComponent: FunctionComponent<Props> = ({
                             {extraColumns?.map(extraColumn => (
                                 <PopupItemComponent
                                     key={extraColumn.name}
-                                    label={extraColumn.label}
+                                    label={formatLabel(extraColumn)}
                                     value={getValue(
                                         extraColumn.name,
                                         location.original,

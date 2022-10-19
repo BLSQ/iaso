@@ -1,6 +1,8 @@
 from collections import defaultdict
 from datetime import timedelta
 from functools import lru_cache
+from typing import Dict, Callable, Any
+from uuid import UUID
 
 import pandas as pd
 from django.db.models import Max, Min
@@ -150,7 +152,7 @@ def handle_country(forms, country, campaign_qs) -> DataFrame:
     """For each submission try to match the Zone with a campaign and a matching orgunit in scope"""
 
     # Cache for orgunits per campaign
-    cache_campaign_find_func = {}
+    cache_campaign_find_func: Dict[UUID, Callable[[Any], Any]] = {}
 
     df = DataFrame.from_records(forms)
     # Add fields to speed up detection of campaign day

@@ -753,4 +753,11 @@ export const routeConfigs = [
     entitiesPath,
     entityDetailsPath,
     entitySubmissionDetailPath,
-];
+].map(conf => {
+    const newConf = { ...conf };
+    newConf.params.push({
+        isRequired: false,
+        key: 'accountId',
+    });
+    return newConf;
+});

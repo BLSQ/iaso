@@ -21,12 +21,25 @@ const ProtectedRoute = ({
     location,
     featureFlag,
     component,
+    params,
 }) => {
     const currentUser = useCurrentUser();
     const dispatch = useDispatch();
     useEffect(() => {
         dispatch(fetchCurrentUser());
-    }, [dispatch]);
+    }, []);
+
+    useEffect(() => {
+        if (!params.accountId && currentUser?.account) {
+            console.log('REDIRECT', location.pathname);
+            dispatch(
+                redirectTo(location.pathname, {
+                    ...params,
+                    accountId: currentUser.account.id,
+                }),
+            );
+        }
+    }, [currentUser?.account]);
 
     useEffect(() => {
         // Use defined default language if it exists and if the user didn't set it manually
@@ -84,6 +97,7 @@ ProtectedRoute.propTypes = {
     featureFlag: PropTypes.oneOfType([PropTypes.object, PropTypes.string]),
     allRoutes: PropTypes.array,
     location: PropTypes.object.isRequired,
+    params: PropTypes.object.isRequired,
 };
 
 export default ProtectedRoute;

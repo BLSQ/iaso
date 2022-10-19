@@ -6,6 +6,7 @@ from iaso.api.comment import ContentTypeField
 from iaso.models.base import AccountFeatureFlag
 from iaso.models.comment import CommentIaso
 from django.contrib.sites.models import Site
+from iaso.models.microplanning import Planning, Team
 from iaso.models.pages import Page
 from lxml import etree
 from io import BytesIO
@@ -68,6 +69,8 @@ class Command(BaseCommand):
         user, user_created = User.objects.get_or_create(
             username="testemail" + dhis2_version, email="testemail" + dhis2_version + "@bluesquarehub.com"
         )
+        user.name = "testemail" + dhis2_version
+        user.save()
         if user.password == "":
             user.set_password("testemail" + dhis2_version)
         user.user_permissions.clear()
@@ -249,7 +252,8 @@ class Command(BaseCommand):
 
         print("********* FORM seed done")
         if mode == "seed":
-            print("******** delete previous instances")
+            print("******** delete previous instances and plannings")
+            print(Planning.objects.filter(org_unit__in=source_version.orgunit_set.all()).delete())
             print(Instance.objects.filter(org_unit__in=source_version.orgunit_set.all()).delete())
 
             print("********* Importing orgunits")
@@ -265,6 +269,8 @@ class Command(BaseCommand):
                 force=True,
                 validate=True,
             )
+
+            self.seed_micro_planning(source_version, dhis2_version, account, project, user)
 
             print("********* generating instances")
 
@@ -558,3 +564,48 @@ class Command(BaseCommand):
     def mapping_json(self, file):
         with open(file) as json_file:
             return json.load(json_file)
+
+    def seed_micro_planning(self, source_version, dhis2_version, account, project, user):
+
+        print("********* seed_micro_planning")
+        team1, _ignore1 = Team.objects.get_or_create(
+            project=project, name="team 1", description="team 1", type="TEAM_OF_USERS", manager=user
+        )
+        team2, _ignore2 = Team.objects.get_or_create(
+            project=project, name="team 2", description="", type="TEAM_OF_USERS", manager=user
+        )
+        team3, _ignore3 = Team.objects.get_or_create(
+            project=project, name="team 3", description="", type="TEAM_OF_USERS", manager=user
+        )
+        team4, _ignore4 = Team.objects.get_or_create(
+            project=project, name="team 4", description="", type="TEAM_OF_USERS", manager=user
+        )
+        team5, _ignore5 = Team.objects.get_or_create(
+            project=project, name="team 5", description="", type="TEAM_OF_USERS", manager=user
+        )
+        basic_teams = [team1, team2, team3, team4, team5]
+
+        team_main, _ignore1 = Team.objects.get_or_create(
+            project=project, name="team-main", type="TEAM_OF_TEAMS", manager=user
+        )
+
+        for sub_team in basic_teams:
+            sub_team.users.set([user])
+            team_main.sub_teams.add(sub_team)
+
+        country = source_version.orgunit_set.filter(source_ref="ImspTQPwCqd").first()
+        print("country ", country.name)
+
+        p = Planning.objects.create(project=project, name="planning-cvs", team=team_main, org_unit=country)
+
+        child_index = 0
+        for region in country.children():
+            assigned_team = basic_teams[child_index % len(basic_teams)]
+            print(" assigning", region.name, assigned_team.name)
+            for child_org_unit in region.descendants():
+                p.assignment_set.get_or_create(org_unit=child_org_unit, team=assigned_team, user=user)
+            child_index += 1
+
+        p = Planning.objects.get_or_create(
+            project=self.project, name="planning-vaccination", team=team_main, org_unit=country
+        )

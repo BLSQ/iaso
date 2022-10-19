@@ -101,7 +101,7 @@ def iter_items(queryset, pseudo_buffer, columns, get_row, chunk_size=5000):
         yield writer.writerow([c["title"].replace("\n", " ") for c in columns])
     else:
         yield writer.writerow(columns)
-    if isinstance(queryset, QuerySet):
+    if isinstance(queryset, QuerySet):  # type: ignore
         for item in queryset_iterator(queryset, chunk_size=chunk_size):
             yield writer.writerow(get_row(item))
     else:

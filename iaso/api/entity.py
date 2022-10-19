@@ -2,7 +2,7 @@ import csv
 import datetime
 import io
 from time import strftime, gmtime
-from typing import List, Any
+from typing import List, Any, Union
 
 import xlsxwriter  # type: ignore
 from django.core.paginator import Paginator
@@ -365,6 +365,7 @@ class EntityViewSet(ModelViewSet):
                     values.append(entity.get(col["name"]))
                 return values
 
+            response: Union[HttpResponse, StreamingHttpResponse]
             if xlsx_format:
                 filename = filename + ".xlsx"
                 response = HttpResponse(
@@ -400,8 +401,8 @@ class EntityViewSet(ModelViewSet):
                 }
             )
 
-        response = {"columns": columns_list, "result": result_list}
-        return Response(response)
+        res = {"columns": columns_list, "result": result_list}
+        return Response(res)
 
     @action(detail=False, methods=["GET"])
     def export_entity_submissions_list(self, request):

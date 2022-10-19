@@ -12,7 +12,8 @@ from django.db import router
 from django.contrib.admin.utils import NestedObjects
 from iaso.models.base import ExternalCredentials, Instance, Mapping
 from iaso.models.forms import Form
-
+from iaso.models.pages import Page
+from iaso.models.microplanning import Assignment, Team, Planning
 from iaso.models.project import Project
 from django.contrib.contenttypes.models import ContentType
 
@@ -85,7 +86,13 @@ class Command(BaseCommand):
                     print(Instance.objects.filter(project=project).delete())
                     print(Mapping.objects.filter(form__in=forms).delete())
                     print(forms.delete())
+                    print(Assignment.objects.filter(team__in=Team.objects.filter(project=project)).delete())
+                    print(Planning.objects.filter(project=project).delete())
+                    print(Team.objects.filter(parent__in=Team.objects.filter(project=project)).delete())
+                    print(Team.objects.filter(project=project).delete())
                     print(project.delete())
+
+                print(Page.objects.filter(account=account).delete())
                 print(account.delete())
 
         counts_after = dump_counts()

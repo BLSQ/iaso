@@ -9,7 +9,7 @@ from django.utils.translation import gettext as _
 from rest_framework import viewsets
 from rest_framework.authentication import BasicAuthentication
 from rest_framework.response import Response
-
+from plugins.polio.models import Campaign
 from hat.api.authentication import CsrfExemptSessionAuthentication
 from hat.audit.models import Modification
 from iaso.models import OrgUnit, Instance, Form
@@ -25,6 +25,8 @@ def has_access_to(user: User, obj: Union[OrgUnit, Instance, models.Model]):
     if isinstance(obj, Form):
         forms = Form.objects.filter_for_user_and_app_id(user)
         return obj in forms
+    if isinstance(obj, Campaign):
+        return True
     return False
 
 

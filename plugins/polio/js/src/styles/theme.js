@@ -30,6 +30,20 @@ export const useStyles = makeStyles(() => ({
         flexDirection: 'column',
         alignItems: 'flex-start',
     },
+    historyLink: {
+        display: 'flex',
+        justifyContent: 'flex-end',
+        alignItems: 'center',
+    },
+    historyIcon: {
+        backgroundColor: 'red !important',
+    },
+    linkButton: {
+        '& svg': {
+            width: '1.25em',
+            height: '1.25em',
+        },
+    },
     round1FormCalculations: {
         marginTop: theme.spacing(4),
         marginBottom: theme.spacing(4),

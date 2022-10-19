@@ -3,7 +3,7 @@ from io import StringIO
 from typing import List, Dict
 from unittest import skip, mock
 
-from django.contrib.auth.models import User
+from django.contrib.auth.models import User, Permission
 from django.core.exceptions import ValidationError
 from django.template import Template, Engine, Context
 
@@ -81,6 +81,8 @@ class TeamAPITestCase(APITestCase):
     @classmethod
     def setUpTestData(cls) -> None:
         cls.user = User.objects.get(username="test")
+        cls.user.user_permissions.add(Permission.objects.get(codename="iaso_polio_budget"))
+
         cls.c = Campaign.objects.create(obr_name="test campaign")
 
     def test_simple_get_list(self):

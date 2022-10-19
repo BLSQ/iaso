@@ -56,7 +56,9 @@ export type User = {
     dhis2_id?: string;
 };
 
-export const getDisplayName = (user: User | Profile): string => {
+export const getDisplayName = (
+    user: Partial<User> | Partial<Profile>,
+): string => {
     // Some endpoint have user_name and some username (without the _, fun)
     const userName = user.user_name ?? user?.username;
     if (!user.first_name && !user.last_name) {

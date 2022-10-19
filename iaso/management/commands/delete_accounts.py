@@ -24,9 +24,13 @@ def dump_counts():
         m = ct.model_class()
         try:
             count = m._default_manager.count()
-            print(m.__module__, m.__name__, count)
+            # print(m.__module__, m.__name__, count)
             counts[m.__module__ + "." + m.__name__] = count
         except:
+            # don't know why (abstract model ? missing migration) but I had to add this catch statement
+            # the error raised below :
+            # db_1       | 2022-10-19 08:30:32.838 UTC [153] ERROR:  relation "menupermissions_custompermissionsupport" does not exist at character 35
+            # db_1       | 2022-10-19 08:30:32.838 UTC [153] STATEMENT:  SELECT COUNT(*) AS "__count" FROM "menupermissions_custompermissionsupport"
             print(m.__module__, m.__name__, "not available")
     print("******************* ")
 
@@ -62,7 +66,7 @@ class Command(BaseCommand):
             for account in Account.objects.all():
                 print(account.id, account.name)
             raise Exception("No account id provided via --account-to-keep")
-        print("keeping", account_id_to_keep, options)
+        print("keeping", account_id_to_keep)
         account_to_keep = Account.objects.get(pk=account_id_to_keep)
 
         counts_before = dump_counts()

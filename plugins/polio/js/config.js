@@ -13,10 +13,12 @@ import StorefrontIcon from '@material-ui/icons/Storefront';
 import AccountBalanceWalletIcon from '@material-ui/icons/AccountBalanceWallet';
 import { Dashboard } from './src/pages/Dashboard';
 import { Calendar } from './src/pages/Calendar';
+import { CampaignHistory } from './src/components/campaignHistory/CampaignHistory.tsx';
 import { CountryNotificationsConfig } from './src/components/CountryNotificationsConfig/CountryNotificationsConfig';
 import MESSAGES from './src/constants/messages';
 import {
     DASHBOARD_BASE_URL,
+    CAMPAIGN_HISTORY_URL,
     GROUPED_CAMPAIGNS,
     CALENDAR_BASE_URL,
     CONFIG_BASE_URL,
@@ -84,6 +86,22 @@ const routes = [
                 key: 'campaignId',
             },
             ...campaignsFilters,
+        ],
+    },
+    {
+        baseUrl: CAMPAIGN_HISTORY_URL,
+        component: props => <CampaignHistory {...props} />,
+        permissions: ['iaso_polio'],
+        isRootUrl: true,
+        params: [
+            {
+                isRequired: true,
+                key: 'campaignId',
+            },
+            {
+                isRequired: false,
+                key: 'logId',
+            },
         ],
     },
     {

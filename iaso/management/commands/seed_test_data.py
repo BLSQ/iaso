@@ -1,4 +1,5 @@
 from random import randint, random
+from iaso.models.base import AccountFeatureFlag, FeatureFlag
 from iaso.models.pages import Page
 from lxml import etree
 from io import BytesIO
@@ -54,6 +55,9 @@ class Command(BaseCommand):
         mode = options.get("mode")
 
         account, account_created = Account.objects.get_or_create(name="Organisation Name" + dhis2_version)
+
+        for feat in AccountFeatureFlag.objects.all():
+            account.feature_flags.add(feat)
 
         user, user_created = User.objects.get_or_create(
             username="testemail" + dhis2_version, email="testemail" + dhis2_version + "@bluesquarehub.com"

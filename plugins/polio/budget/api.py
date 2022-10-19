@@ -104,7 +104,7 @@ class BudgetStepViewSet(ModelViewSet):
             return UpdateBudgetStepSerializer
         return BudgetStepSerializer
 
-    permission_classes = [HasPermission("menupermissions.iaso_polio_budget")]
+    permission_classes = [HasPermission("menupermissions.iaso_polio_budget")]  # type: ignore
 
     http_method_names = ["get", "head", "delete", "patch"]
     filter_backends = [

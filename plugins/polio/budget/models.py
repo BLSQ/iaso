@@ -126,7 +126,7 @@ class MailTemplate(models.Model):
     def render_for_step(self, step: BudgetStep, receiver: User, request=None) -> EmailMultiAlternatives:
         site = get_current_site(request)
         base_url = "https://" if settings.SSL_ON else "http://"
-        base_url += site.domain
+        base_url += site.domain  # type: ignore
 
         campaign = step.campaign
         campaign_url = (

@@ -59,7 +59,9 @@ export const RiskAssessmentForm = () => {
                         fullWidth
                     />
                     <Field
-                        label={formatMessage(MESSAGES.firstDraftSubmission)}
+                        label={formatMessage(
+                            MESSAGES.risk_assessment_first_draft_submitted_at,
+                        )}
                         name="risk_assessment_first_draft_submitted_at"
                         component={DateInput}
                         fullWidth
@@ -71,7 +73,7 @@ export const RiskAssessmentForm = () => {
                         fullWidth
                     />
                     <Field
-                        label={formatMessage(MESSAGES.agNopvGroup)}
+                        label={formatMessage(MESSAGES.ag_nopv_group_met_at)}
                         name="ag_nopv_group_met_at"
                         component={DateInput}
                         fullWidth

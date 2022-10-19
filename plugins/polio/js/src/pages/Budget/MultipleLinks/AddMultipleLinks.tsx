@@ -14,11 +14,12 @@ const useStyles = makeStyles(theme => ({
     addLink: {
         position: 'absolute',
         left: theme.spacing(8),
-        top: theme.spacing(37),
+        top: `-${theme.spacing(1.5)}px`,
     },
     title: {
         display: 'inline',
     },
+    addLinkContainer: { position: 'relative' },
 }));
 
 export const AddMultipleLinks: FunctionComponent<Props> = ({
@@ -40,12 +41,8 @@ export const AddMultipleLinks: FunctionComponent<Props> = ({
 
     return (
         <>
-            <div>
-                <Typography className={classNames(classes.title)}>
-                    {formatMessage(MESSAGES.links)}
-                    {required && <sup>*</sup>}
-                </Typography>
-                <Box className={classes.addLink}>
+            <div className={classes.addLinkContainer}>
+                <div className={classes.addLink}>
                     <IconButton
                         onClick={handleAddlink}
                         variant="outlined"
@@ -55,7 +52,11 @@ export const AddMultipleLinks: FunctionComponent<Props> = ({
                     >
                         {formatMessage(MESSAGES.addLink)}
                     </IconButton>
-                </Box>
+                </div>
+                <Typography className={classNames(classes.title)}>
+                    {formatMessage(MESSAGES.links)}
+                    {required && <sup>*</sup>}
+                </Typography>
             </div>
             <Box mt={1}>
                 {links.length > 1 &&

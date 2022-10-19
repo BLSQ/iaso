@@ -1797,7 +1797,7 @@ const MESSAGES = defineMessages({
     domain: {
         id: 'iaso.polio.label.domain',
         defaultMessage: 'Domain',
-=======
+    },
     attachments: {
         id: 'iaso.polio.label.attachments',
         defaultMessage: 'Attachments',

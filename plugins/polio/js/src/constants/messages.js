@@ -1153,16 +1153,12 @@ const MESSAGES = defineMessages({
         defaultMessage: 'Destination',
         id: 'iaso.polio.label.destination',
     },
-    event: {
-        defaultMessage: 'Event',
-        id: 'iaso.polio.label.event',
-    },
     note: {
         defaultMessage: 'note',
         id: 'iaso.polio.label.note',
     },
     notes: {
-        defaultMessage: 'notes',
+        defaultMessage: 'comments',
         id: 'iaso.polio.label.notes',
     },
     submission: {
@@ -1205,9 +1201,9 @@ const MESSAGES = defineMessages({
         defaultMessage: 'Send',
         id: 'iaso.polio.label.send',
     },
-    eventType: {
-        defaultMessage: 'Type',
-        id: 'iaso.polio.label.eventType',
+    step: {
+        defaultMessage: 'Step',
+        id: 'iaso.polio.label.step',
     },
     cc_emails: {
         defaultMessage: 'Cc emails',
@@ -1515,17 +1511,25 @@ const MESSAGES = defineMessages({
         id: 'iaso.polio.label.addVaccine',
         defaultMessage: 'Add vaccine',
     },
-    addShipment: {
-        id: 'iaso.polio.label.addShipment',
-        defaultMessage: 'Add shipment',
-    },
     removeLastVaccine: {
         id: 'iaso.polio.label.removeLastVaccine',
         defaultMessage: 'Remove last vaccine',
     },
+    addShipment: {
+        id: 'iaso.polio.label.addShipment',
+        defaultMessage: 'Add shipment',
+    },
     removeLastShipment: {
         id: 'iaso.polio.label.removeLastShipment',
         defaultMessage: 'Remove last shipment',
+    },
+    addLink: {
+        id: 'iaso.polio.label.addLink',
+        defaultMessage: 'Add link',
+    },
+    removeLastLink: {
+        id: 'iaso.polio.label.removeLastLink',
+        defaultMessage: 'Remove last link',
     },
     destructionDateAndVialsDestroyed: {
         id: 'iaso.polio.label.destructionDateAndVialsDestroyed',
@@ -1544,6 +1548,42 @@ const MESSAGES = defineMessages({
         id: 'iaso.polio.label.scopeUnlockConditions',
         defaultMessage:
             'Select initial region and encode dates for at least one round to unlock Scope tab',
+    },
+    attachments: {
+        id: 'iaso.polio.label.attachments',
+        defaultMessage: 'Attachments',
+    },
+    clickToHide: {
+        id: 'iaso.polio.label.clickToHide',
+        defaultMessage: 'Click to hide',
+    },
+    clickToShow: {
+        id: 'iaso.polio.label.clickToShow',
+        defaultMessage: 'Click to show',
+    },
+    showHidden: {
+        id: 'iaso.polio.label.showHidden',
+        defaultMessage: 'Show hidden',
+    },
+    url: {
+        id: 'iaso.polio.label.url',
+        defaultMessage: 'Url',
+    },
+    displayedName: {
+        id: 'iaso.polio.label.displayedName',
+        defaultMessage: 'Displayed name',
+    },
+    linksOrFilesRequired: {
+        id: 'iaso.polio.label.linksOrFilesRequired',
+        defaultMessage: 'You need to attach at least a link or a file',
+    },
+    lastStep: {
+        id: 'iaso.polio.label.lastStep',
+        defaultMessage: 'Last step',
+    },
+    nextSteps: {
+        id: 'iaso.polio.label.nextSteps',
+        defaultMessage: 'Next steps',
     },
 });
 

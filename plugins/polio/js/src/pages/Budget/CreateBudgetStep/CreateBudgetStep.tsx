@@ -51,7 +51,9 @@ type Props = {
     params: Record<string, any>;
 };
 
-const useStyles = makeStyles({ alignRight: { textAlign: 'right' } });
+const useStyles = makeStyles({
+    alignRight: { textAlign: 'right' },
+});
 
 const CreateBudgetStep: FunctionComponent<Props> = ({
     campaignId,
@@ -268,19 +270,32 @@ const CreateBudgetStep: FunctionComponent<Props> = ({
                                 ))}
                             </>
                         )}
-                        {attachmentErrors.length > 0 && (
-                            <>
-                                {attachmentErrors.map(e => (
-                                    <Typography
-                                        key={`${e}-error`}
-                                        color="error"
-                                        className={classes.alignRight}
-                                    >
-                                        {e}
-                                    </Typography>
-                                ))}
-                            </>
-                        )}
+                        {attachmentErrors.length > 0 &&
+                            (touched.links || touched.files) && (
+                                <>
+                                    {attachmentErrors.map(e => (
+                                        <Typography
+                                            key={`${e}-error`}
+                                            color="error"
+                                            className={classes.alignRight}
+                                        >
+                                            {e}
+                                        </Typography>
+                                    ))}
+                                </>
+                            )}
+                        {!touched.links &&
+                            !touched.files &&
+                            requiredFields.includes('attachments') && (
+                                <Typography
+                                    color="textSecondary"
+                                    className={classes.alignRight}
+                                >
+                                    {formatMessage(
+                                        MESSAGES.linksOrFilesRequired,
+                                    )}
+                                </Typography>
+                            )}
                     </>
                 )}
                 {!userHasTeam && <UserHasTeamWarning />}

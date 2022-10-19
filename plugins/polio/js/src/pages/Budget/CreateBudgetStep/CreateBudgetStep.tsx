@@ -37,6 +37,7 @@ import { AddMultipleLinks } from '../MultipleLinks/AddMultipleLinks';
 import { useBudgetStepValidation } from '../hooks/validation';
 import { redirectToReplace } from '../../../../../../../hat/assets/js/apps/Iaso/routing/actions';
 import { BUDGET_DETAILS } from '../../../constants/routes';
+import { TextArea } from '../../../../../../../hat/assets/js/apps/Iaso/components/forms/TextArea';
 
 type Props = {
     campaignId: string;
@@ -217,14 +218,11 @@ const CreateBudgetStep: FunctionComponent<Props> = ({
             >
                 {userHasTeam && (
                     <>
-                        <InputComponent
-                            type="text"
-                            keyValue="comment"
-                            multiline
-                            onChange={onChange}
+                        <TextArea
                             value={values.comment}
                             errors={getErrors('comment')}
-                            label={MESSAGES.notes}
+                            label={formatMessage(MESSAGES.notes)}
+                            onChange={newValue => onChange('comment', newValue)}
                             required={requiredFields.includes('comment')}
                         />
                         <InputComponent

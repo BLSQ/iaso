@@ -135,7 +135,7 @@ export const RoundVaccinesForm: FunctionComponent<Props> = ({
                 ((touched?.rounds ?? [])[roundIndex]?.vaccines ?? [])[index]
                     ?.wastage_ratio_forecast,
             );
-            if (!wastageRatio && !isTouched) {
+            if (!wastageRatio && vaccine?.name && !isTouched) {
                 setFieldValue(
                     `rounds[${roundIndex}].vaccines[${index}].wastage_ratio_forecast`,
                     DEFAULT_WASTAGE_RATIOS[vaccine.name],
@@ -163,7 +163,8 @@ export const RoundVaccinesForm: FunctionComponent<Props> = ({
                 ((touched?.rounds ?? [])[roundIndex]?.vaccines ?? [])[index]
                     ?.doses_per_vial,
             );
-            if (!dosesPerVial && !isTouched) {
+            // checking on vaccine.name so default values apply when vaccine is selected
+            if (!dosesPerVial && vaccine?.name && !isTouched) {
                 setFieldValue(
                     `rounds[${roundIndex}].vaccines[${index}].doses_per_vial`,
                     DEFAULT_DOSES_PER_VIAL,
@@ -218,7 +219,8 @@ export const RoundVaccinesForm: FunctionComponent<Props> = ({
                         />
                     );
                 })}
-            {vaccines.length === 0 && (
+            {/* if the condition is on length === 0 the UI will flicker and the field lose focus because of re-render */}
+            {vaccines.length <= 1 && (
                 <RoundVaccineForm
                     vaccineIndex={0}
                     roundIndex={roundIndex}

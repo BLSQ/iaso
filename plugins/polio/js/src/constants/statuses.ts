@@ -6,5 +6,3 @@ export const campaignStatuses = [
     'ROUND2START',
     'ROUND2DONE',
 ];
-
-export const BUDGET_STATUSES = ['validated', 'validation_ongoing'];

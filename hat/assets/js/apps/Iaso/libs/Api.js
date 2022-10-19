@@ -70,10 +70,18 @@ export const basePostRequest = (url, data, fileData = {}, signal) => {
         const formData = new FormData();
         // multipart mode
         Object.entries(data).forEach(([key, value]) => {
-            formData.append(key, value);
+            let newvalue = value;
+            if (typeof newvalue === 'object') {
+                newvalue = JSON.stringify(newvalue);
+            }
+            formData.append(key, newvalue);
         });
         Object.entries(fileData).forEach(([key, value]) => {
-            formData.append(key, value);
+            if (Array.isArray(value)) {
+                value.forEach(file => formData.append(key, file));
+            } else {
+                formData.append(key, value);
+            }
         });
         init = { method: 'POST', body: formData, signal };
     } else {

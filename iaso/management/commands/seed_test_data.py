@@ -1,5 +1,11 @@
+import pdb
 from random import randint, random
-from iaso.models.base import AccountFeatureFlag, FeatureFlag
+from django.contrib.contenttypes.models import ContentType
+
+from iaso.api.comment import ContentTypeField
+from iaso.models.base import AccountFeatureFlag
+from iaso.models.comment import CommentIaso
+from django.contrib.sites.models import Site
 from iaso.models.pages import Page
 from lxml import etree
 from io import BytesIO
@@ -122,11 +128,23 @@ class Command(BaseCommand):
 
         orgunit_type, created = OrgUnitType.objects.get_or_create(name="FosaPlay", short_name="FosaPlay")
         orgunit_type.projects.add(project)
+        site = Site.objects.first()
+        content_type = ContentType.objects.filter(model="orgunit").first()
 
         with transaction.atomic():
             for orgunit in source_version.orgunit_set.all():
                 orgunit.org_unit_type = orgunit_type
                 orgunit.save()
+
+                newComment = CommentIaso(
+                    user=user,
+                    comment="demo comment",
+                    object_pk=orgunit.id,
+                    content_type=content_type,
+                    site=site,
+                )
+
+                newComment.save()
 
         # quantity
         quantity_form, created = Form.objects.get_or_create(

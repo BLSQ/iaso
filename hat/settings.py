@@ -111,10 +111,14 @@ LOGGING: Dict[str, Any] = {
         "plugins": {"level": LOGGING_LEVEL},
         "beanstalk_worker": {"level": LOGGING_LEVEL},
         #  Uncomment to print all sql query
-        # 'django.db.backends': {'level': 'DEBUG'},
         "": {"handlers": ["console"]},
     },
 }
+
+
+if os.getenv("DEBUG_SQL") == "true":
+    LOGGING["loggers"]["django.db.backends"] = {"level": "DEBUG"}
+
 
 # AWS expects python logs to be stored in this folder
 AWS_LOG_FOLDER = "/opt/python/log"

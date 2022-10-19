@@ -185,7 +185,7 @@ def cell_dimension_pattern_fill(
         sheet.column_dimensions[cell.column_letter].width = float(width)
     if height is not None:
         sheet.row_dimensions[cell.row].height = float(height)
-    if pattern_fill and color != "":
+    if pattern_fill and color is not None:
         sheet[cell.column_letter + str(cell.row)].fill = PatternFill("solid", start_color=color)
 
     return sheet

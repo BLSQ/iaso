@@ -218,15 +218,12 @@ class EntityViewSet(ModelViewSet):
         queryset = self.filter_queryset(self.get_queryset())
         csv_format = request.GET.get("csv", None)
         xlsx_format = request.GET.get("xlsx", None)
-        pk = request.query_params.get("id", None)
         # TODO: investigate if request.user can be anonymous here
-        account = self.request.user.iaso_profile.account  # type: ignore
         entity_type_ids = request.query_params.get("entity_type_ids", None)
         limit = request.GET.get("limit", None)
         page_offset = request.GET.get("page", 1)
         orders = request.GET.get("order", "-created_at").split(",")
         order_columns = request.GET.get("order_columns", None)
-        entity_id = request.GET.get("id", None)
 
         queryset = queryset.order_by(*orders)
 

@@ -26,6 +26,11 @@ const postBudgetStep = (body: Payload): Promise<BudgetStep> => {
             ([key, value]) => value !== undefined && key !== 'general',
         ),
     );
+    const { links }: { links?: LinkWithAlias[] } = filteredParams;
+    if (links) {
+        const filteredLinks = links.filter(link => link.alias && link.url);
+        filteredParams.links = filteredLinks;
+    }
     const requestBody: PostRequestBody = {
         url: '/api/polio/budget/transition_to/',
         data: filteredParams,

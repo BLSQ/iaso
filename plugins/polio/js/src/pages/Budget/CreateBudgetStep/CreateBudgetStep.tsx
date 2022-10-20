@@ -37,6 +37,7 @@ import { AddMultipleLinks } from '../MultipleLinks/AddMultipleLinks';
 import { useBudgetStepValidation } from '../hooks/validation';
 import { redirectToReplace } from '../../../../../../../hat/assets/js/apps/Iaso/routing/actions';
 import { BUDGET_DETAILS } from '../../../constants/routes';
+import { TextArea } from '../../../../../../../hat/assets/js/apps/Iaso/components/forms/TextArea';
 
 type Props = {
     campaignId: string;
@@ -51,7 +52,9 @@ type Props = {
     params: Record<string, any>;
 };
 
-const useStyles = makeStyles({ alignRight: { textAlign: 'right' } });
+const useStyles = makeStyles({
+    alignRight: { textAlign: 'right' },
+});
 
 const CreateBudgetStep: FunctionComponent<Props> = ({
     campaignId,
@@ -215,14 +218,11 @@ const CreateBudgetStep: FunctionComponent<Props> = ({
             >
                 {userHasTeam && (
                     <>
-                        <InputComponent
-                            type="text"
-                            keyValue="comment"
-                            multiline
-                            onChange={onChange}
+                        <TextArea
                             value={values.comment}
                             errors={getErrors('comment')}
-                            label={MESSAGES.notes}
+                            label={formatMessage(MESSAGES.notes)}
+                            onChange={newValue => onChange('comment', newValue)}
                             required={requiredFields.includes('comment')}
                         />
                         <InputComponent
@@ -268,19 +268,32 @@ const CreateBudgetStep: FunctionComponent<Props> = ({
                                 ))}
                             </>
                         )}
-                        {attachmentErrors.length > 0 && (
-                            <>
-                                {attachmentErrors.map(e => (
-                                    <Typography
-                                        key={`${e}-error`}
-                                        color="error"
-                                        className={classes.alignRight}
-                                    >
-                                        {e}
-                                    </Typography>
-                                ))}
-                            </>
-                        )}
+                        {attachmentErrors.length > 0 &&
+                            (touched.links || touched.files) && (
+                                <>
+                                    {attachmentErrors.map(e => (
+                                        <Typography
+                                            key={`${e}-error`}
+                                            color="error"
+                                            className={classes.alignRight}
+                                        >
+                                            {e}
+                                        </Typography>
+                                    ))}
+                                </>
+                            )}
+                        {!touched.links &&
+                            !touched.files &&
+                            requiredFields.includes('attachments') && (
+                                <Typography
+                                    color="textSecondary"
+                                    className={classes.alignRight}
+                                >
+                                    {formatMessage(
+                                        MESSAGES.linksOrFilesRequired,
+                                    )}
+                                </Typography>
+                            )}
                     </>
                 )}
                 {!userHasTeam && <UserHasTeamWarning />}

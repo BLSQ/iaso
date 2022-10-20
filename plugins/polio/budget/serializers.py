@@ -23,6 +23,7 @@ class TransitionSerializer(serializers.Serializer):
     displayed_fields = serializers.ListField(child=serializers.CharField())
     # Note : implemented as a Css class in the frontend
     color = serializers.ChoiceField(choices=["primary", "green", "red"], required=False)
+    emails_to_send = serializers.JSONField(required=False)
 
 
 class NestedTransitionSerializer(TransitionSerializer):

@@ -8,14 +8,7 @@ import React, {
 } from 'react';
 // @ts-ignore
 import { useSafeIntl } from 'bluesquare-components';
-import {
-    Box,
-    Grid,
-    makeStyles,
-    Typography,
-    useMediaQuery,
-    useTheme,
-} from '@material-ui/core';
+import { Box, Grid, useMediaQuery, useTheme } from '@material-ui/core';
 
 import { useDispatch, useSelector } from 'react-redux';
 import { groupBy } from 'lodash';
@@ -24,7 +17,6 @@ import MESSAGES from '../../../constants/messages';
 import { useStyles } from '../../../styles/theme';
 import { BUDGET, BUDGET_DETAILS } from '../../../constants/routes';
 import { useTableState } from '../hooks/config';
-import { BudgetStatus } from '../BudgetStatus';
 import { redirectToReplace } from '../../../../../../../hat/assets/js/apps/Iaso/routing/actions';
 import InputComponent from '../../../../../../../hat/assets/js/apps/Iaso/components/forms/InputComponent';
 import { useBoundState } from '../../../../../../../hat/assets/js/apps/Iaso/hooks/useBoundState';
@@ -38,30 +30,15 @@ import { CreateOverrideStep } from '../CreateBudgetStep/CreateOverrideStep';
 import { BudgetDetailsCardsLayout } from './mobile/BudgetDetailsCardsLayout';
 import { BudgetDetailsTableLayout } from './BudgetDetailsTableLayout';
 import { BudgetDetailsFiltersMobile } from './mobile/BudgetDetailsFiltersMobile';
-import { NextBudgetStep } from '../NextBudgetStep';
+import { BudgetDetailsInfos } from './BudgetDetailsInfos';
 
 type Props = {
     router: any;
 };
 
-const useBudgetDetailsStyles = makeStyles(theme => ({
-    pagination: {
-        '&.MuiPagination-root > .MuiPagination-ul': {
-            justifyContent: 'center',
-        },
-    },
-    title: {
-        fontWeight: 'bold',
-        [theme.breakpoints.down('md')]: {
-            fontSize: 22,
-        },
-    },
-}));
-
 export const BudgetDetails: FunctionComponent<Props> = ({ router }) => {
     const { params } = router;
     const classes = useStyles();
-    const budgetDetailsClasses = useBudgetDetailsStyles();
     const {
         campaignName,
         campaignId,
@@ -102,8 +79,6 @@ export const BudgetDetails: FunctionComponent<Props> = ({ router }) => {
     }, [budgetDetails?.results, previousStep, quickTransition]);
 
     const { data: budgetInfos } = useGetBudgetForCampaign(params?.campaignId);
-
-    const budgetStatus = budgetInfos?.current_state?.label ?? '--';
 
     const nextSteps = useMemo(() => {
         const regular = budgetInfos?.next_transitions?.filter(
@@ -147,7 +122,7 @@ export const BudgetDetails: FunctionComponent<Props> = ({ router }) => {
     return (
         <>
             <TopBar
-                title={formatMessage(MESSAGES.budgetDetails)}
+                title={campaignName}
                 displayBackButton
                 goBack={() => {
                     if (prevPathname) {
@@ -159,149 +134,117 @@ export const BudgetDetails: FunctionComponent<Props> = ({ router }) => {
             />
             {/* @ts-ignore */}
             <Box className={classes.containerFullHeightNoTabPadded}>
-                <Box mb={5}>
-                    <Grid container>
-                        <Grid item xs={isMobileLayout ? 12 : 6}>
-                            <Box mb={4}>
-                                <Typography
-                                    className={budgetDetailsClasses.title}
-                                    variant="h4"
-                                >
-                                    {`${formatMessage(
-                                        MESSAGES.campaign,
-                                    )}: ${campaignName}`}
-                                </Typography>
-                            </Box>
-                        </Grid>
-                        {!isMobileLayout && (
-                            <Grid item xs={6}>
-                                <BudgetDetailsFilters
-                                    params={params}
-                                    stepsList={stepsList}
-                                />
-                            </Grid>
-                        )}
-                    </Grid>
-
+                <Box mb={4}>
                     <Grid container justifyContent="space-between" spacing={1}>
-                        <Grid container item xs={12} lg={4} spacing={1}>
-                            <BudgetStatus
-                                budgetStatus={
+                        <Grid item xs={12} lg={6}>
+                            <BudgetDetailsInfos
+                                status={
                                     budgetInfos?.current_state?.label ?? '--'
                                 }
-                            />
-                        </Grid>
-                        <Grid
-                            container
-                            item
-                            xs={12}
-                            lg={4}
-                            spacing={1}
-                            justifyContent="center"
-                        >
-                            <NextBudgetStep
                                 nextSteps={Array.from(
                                     nextSteps.toDisplay.values(),
                                 )}
                             />
                         </Grid>
-                        {budgetStatus !== 'validated' && (
-                            <Grid
-                                container
-                                item
-                                direction="row"
-                                xs={12}
-                                lg={4}
-                                justifyContent="flex-end"
-                            >
-                                {nextSteps && (
-                                    <Grid
-                                        container
-                                        item
-                                        xs={12}
-                                        spacing={2}
-                                        justifyContent="flex-end"
-                                    >
-                                        {nextSteps.regular &&
-                                            nextSteps.regular
-                                                .filter(step => step.allowed)
-                                                .map((step, index) => {
-                                                    const isQuickTransition =
-                                                        step.key ===
-                                                        quickTransition;
+                        <Grid
+                            container
+                            item
+                            direction="row"
+                            xs={12}
+                            lg={6}
+                            justifyContent="flex-end"
+                        >
+                            {nextSteps && (
+                                <Grid
+                                    container
+                                    item
+                                    xs={12}
+                                    spacing={2}
+                                    justifyContent="flex-end"
+                                >
+                                    {nextSteps.regular &&
+                                        nextSteps.regular
+                                            .filter(step => step.allowed)
+                                            .map((step, index) => {
+                                                const isQuickTransition =
+                                                    step.key ===
+                                                    quickTransition;
 
-                                                    return (
-                                                        <Grid
-                                                            item
-                                                            // eslint-disable-next-line react/no-array-index-key
-                                                            key={`${step.key}-${index}`}
-                                                        >
-                                                            <CreateBudgetStep
-                                                                isMobileLayout={
-                                                                    isMobileLayout
-                                                                }
-                                                                campaignId={
-                                                                    campaignId
-                                                                }
-                                                                iconProps={{
-                                                                    label: step.label,
-                                                                    color: step.color,
-                                                                    disabled:
-                                                                        !step.allowed,
-                                                                }}
-                                                                transitionKey={
-                                                                    step.key
-                                                                }
-                                                                transitionLabel={
-                                                                    step.label
-                                                                }
-                                                                defaultOpen={
-                                                                    isQuickTransition
-                                                                }
-                                                                previousStep={
-                                                                    isQuickTransition
-                                                                        ? previousBudgetStep
-                                                                        : undefined
-                                                                }
-                                                                requiredFields={
-                                                                    step.required_fields
-                                                                }
-                                                                params={params}
-                                                            />
-                                                        </Grid>
-                                                    );
-                                                })}
-                                        {nextSteps.override?.allowed && (
-                                            <Grid item>
-                                                <CreateOverrideStep
-                                                    isMobileLayout={
-                                                        isMobileLayout
-                                                    }
-                                                    campaignId={campaignId}
-                                                    iconProps={{
-                                                        label: nextSteps
-                                                            .override.label,
-                                                        color: nextSteps
-                                                            .override.color,
-                                                    }}
-                                                    transitionKey={
-                                                        nextSteps.override.key
-                                                    }
-                                                    transitionLabel={
-                                                        nextSteps.override.label
-                                                    }
-                                                    requiredFields={
-                                                        nextSteps.override
-                                                            .required_fields
-                                                    }
-                                                />
-                                            </Grid>
-                                        )}
-                                    </Grid>
-                                )}
-                            </Grid>
-                        )}
+                                                return (
+                                                    <Grid
+                                                        item
+                                                        // eslint-disable-next-line react/no-array-index-key
+                                                        key={`${step.key}-${index}`}
+                                                    >
+                                                        <CreateBudgetStep
+                                                            isMobileLayout={
+                                                                isMobileLayout
+                                                            }
+                                                            campaignId={
+                                                                campaignId
+                                                            }
+                                                            iconProps={{
+                                                                label: step.label,
+                                                                color: step.color,
+                                                                disabled:
+                                                                    !step.allowed,
+                                                            }}
+                                                            transitionKey={
+                                                                step.key
+                                                            }
+                                                            transitionLabel={
+                                                                step.label
+                                                            }
+                                                            defaultOpen={
+                                                                isQuickTransition
+                                                            }
+                                                            previousStep={
+                                                                isQuickTransition
+                                                                    ? previousBudgetStep
+                                                                    : undefined
+                                                            }
+                                                            requiredFields={
+                                                                step.required_fields
+                                                            }
+                                                            params={params}
+                                                        />
+                                                    </Grid>
+                                                );
+                                            })}
+                                    {nextSteps.override?.allowed && (
+                                        <Grid item>
+                                            <CreateOverrideStep
+                                                isMobileLayout={isMobileLayout}
+                                                campaignId={campaignId}
+                                                iconProps={{
+                                                    label: nextSteps.override
+                                                        .label,
+                                                    color: nextSteps.override
+                                                        .color,
+                                                }}
+                                                transitionKey={
+                                                    nextSteps.override.key
+                                                }
+                                                transitionLabel={
+                                                    nextSteps.override.label
+                                                }
+                                                requiredFields={
+                                                    nextSteps.override
+                                                        .required_fields
+                                                }
+                                            />
+                                        </Grid>
+                                    )}
+                                </Grid>
+                            )}
+                        </Grid>
                     </Grid>
+                    {!isMobileLayout && (
+                        <BudgetDetailsFilters
+                            params={params}
+                            stepsList={stepsList}
+                        />
+                    )}
 
                     <InputComponent
                         type="checkbox"
@@ -311,7 +254,9 @@ export const BudgetDetails: FunctionComponent<Props> = ({ router }) => {
                             setShowHidden(newValue);
                         }}
                         value={showHidden}
+                        withMarginTop={false}
                     />
+
                     {isMobileLayout && (
                         <BudgetDetailsFiltersMobile params={params} />
                     )}

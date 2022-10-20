@@ -1294,10 +1294,6 @@ const MESSAGES = defineMessages({
         id: 'iaso.polio.budget.label.addCampaign',
         defaultMessage: 'Add campaign',
     },
-    budgetDetails: {
-        id: 'iaso.polio.budget.title.budgetDetails',
-        defaultMessage: 'Budget details',
-    },
     details: {
         defaultMessage: 'Details',
         id: 'iaso.label.details',

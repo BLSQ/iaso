@@ -258,28 +258,29 @@ class StorageLogViewSet(CreateModelMixin, viewsets.GenericViewSet):
                 performed_at = datetime.utcfromtimestamp(float(log_data["performed_at"]))
 
                 concerned_instances = Instance.objects.filter(uuid__in=log_data["instances"])
-                concerned_orgunit = OrgUnit.objects.get(id=log_data["org_unit_id"])
-                concerned_entity = Entity.objects.get(uuid=log_data["entity_id"])
+
+                # TODO: refactor this?
+                concerned_orgunit = None
+                if "org_unit_id" in log_data and log_data["org_unit_id"] is not None:
+                    try:
+                        concerned_orgunit = OrgUnit.objects.get(id=log_data["org_unit_id"])
+                    except OrgUnit.DoesNotExist:
+                        return Response({"error": "Invalid org_unit_id"}, status=400)
+
+                concerned_entity = None
+                if "entity_id" in log_data and log_data["entity_id"] is not None:
+                    try:
+                        concerned_entity = Entity.objects.get(uuid=log_data["entity_id"])
+                    except Entity.DoesNotExist:
+                        return Response({"error": "Invalid entity_id"}, status=400)
 
                 account = user.iaso_profile.account
 
+                # TODO: move that logic to models
                 # 1. Create the storage device, if needed
                 device, _ = StorageDevice.objects.get_or_create(
                     account=account, customer_chosen_id=storage_id, type=storage_type
                 )
-
-                # 2. Create the log entry
-                log_entry = StorageLogEntry.objects.create(
-                    id=log_id,
-                    device=device,
-                    operation_type=operation_type,
-                    performed_at=performed_at,
-                    performed_by=user,
-                    org_unit=concerned_orgunit,
-                    entity=concerned_entity,
-                )
-
-                log_entry.instances.set(concerned_instances)
 
         return Response("", status=status.HTTP_201_CREATED)
 

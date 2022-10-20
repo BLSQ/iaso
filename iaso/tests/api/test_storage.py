@@ -30,8 +30,8 @@ class StorageAPITestCase(APITestCase):
         cls.instance2 = Instance.objects.create(form=form_1, uuid="12345678-1234-1234-1234-123456789013")
 
         cls.org_unit = OrgUnit.objects.create(name="Akkala")
-        entity_type = EntityType.objects.create(name="Type 1")
-        cls.entity = Entity.objects.create(name="New Client 3", entity_type=entity_type, account=cls.star_wars)
+        cls.entity_type = EntityType.objects.create(name="Type 1")
+        cls.entity = Entity.objects.create(name="New Client 3", entity_type=cls.entity_type, account=cls.star_wars)
 
         cls.existing_storage_device = StorageDevice.objects.create(
             customer_chosen_id="EXISTING_STORAGE",
@@ -76,7 +76,7 @@ class StorageAPITestCase(APITestCase):
         response = self.client.post("/api/mobile/storage/logs/")
         self.assertEqual(response.status_code, 403)  # TODO: Would be better to return 401?
 
-    def test_post_storage_multiple_logs(self):
+    def test_post_log_multiple_logs(self):
         """
         Multiple logs can be sent at once. Based on test_post_storage_base_existing_storage().
         """
@@ -112,7 +112,7 @@ class StorageAPITestCase(APITestCase):
 
         self.assertEqual(StorageLogEntry.objects.count(), num_log_storage_before + 2)
 
-    def test_post_storage_base_new_storage(self):
+    def test_post_log_base_new_storage(self):
         """
         Test the base of the POST /api/mobile/storage/log/ endpoint, in the case where the storage device is new.
 
@@ -146,6 +146,7 @@ class StorageAPITestCase(APITestCase):
         self.assertEqual(the_storage.customer_chosen_id, "NEW_STORAGE")
         self.assertEqual(the_storage.account, self.yoda.iaso_profile.account)
         self.assertEqual(the_storage.type, "NFC")
+        self.assertEqual(the_storage.status, "OK")
 
         # Ensure the log entry was created with decent values
         self.assertEqual(the_storage.log_entries.count(), 1)
@@ -158,7 +159,11 @@ class StorageAPITestCase(APITestCase):
         self.assertEqual(the_log_entry.org_unit, self.org_unit)
         self.assertEqual(the_log_entry.entity, self.entity)
 
-    def test_post_storage_base_existing_storage(self):
+        # The "orgunit" and "entity" fields should also have been set on the storage device itself
+        self.assertEqual(the_storage.org_unit, self.org_unit)
+        self.assertEqual(the_storage.entity, self.entity)
+
+    def test_post_log_base_existing_storage(self):
         """Similar to test_post_storage_base_new_storage, but the storage device already exists."""
         self.client.force_authenticate(self.yoda)
 
@@ -191,7 +196,82 @@ class StorageAPITestCase(APITestCase):
         self.assertEqual(the_log_entry.org_unit, self.org_unit)
         self.assertEqual(the_log_entry.entity, self.entity)
 
-    def test_post_storage_incorrect_type(self):
+    def test_post_log_existing_update_ou_entity(self):
+        """Posting a new log entry to an existing storage device should update its org_unit and entity properties"""
+        self.client.force_authenticate(self.yoda)
+
+        new_org_unit = OrgUnit.objects.create(name="Akkala2")
+        new_entity = Entity.objects.create(name="New Client 3", entity_type=self.entity_type, account=self.star_wars)
+
+        post_body = [
+            {
+                "id": "66664567-e89b-12d3-a456-426614174000",
+                "storage_id": "EXISTING_STORAGE",
+                "storage_type": "NFC",
+                "operation_type": "WRITE_RECORD",
+                "instances": [self.instance1.uuid, self.instance2.uuid],
+                "org_unit_id": new_org_unit.id,
+                "entity_id": new_entity.uuid,
+                "performed_at": 1666002739.171,
+            }
+        ]
+        response = self.client.post("/api/mobile/storage/logs/", post_body, format="json")
+        self.assertEqual(response.status_code, 201)
+
+        the_log_entry = StorageLogEntry.objects.get(id="66664567-e89b-12d3-a456-426614174000")
+        device = the_log_entry.device
+        self.assertEqual(device.org_unit, new_org_unit)
+        self.assertEqual(device.entity, new_entity)
+
+    def test_post_log_empty_orgunit(self):
+        """Posting a new log entry with an empty org_unit_id should be accepted"""
+        self.client.force_authenticate(self.yoda)
+
+        post_body = [
+            {
+                "id": "66664567-e89b-12d3-a456-426614174000",
+                "storage_id": "EXISTING_STORAGE",
+                "storage_type": "NFC",
+                "operation_type": "WRITE_RECORD",
+                "instances": [self.instance1.uuid, self.instance2.uuid],
+                "org_unit_id": None,
+                "entity_id": self.entity.uuid,
+                "performed_at": 1666002739.171,
+            }
+        ]
+        response = self.client.post("/api/mobile/storage/logs/", post_body, format="json")
+        self.assertEqual(response.status_code, 201)
+
+        the_log_entry = StorageLogEntry.objects.get(id="66664567-e89b-12d3-a456-426614174000")
+        device = the_log_entry.device
+        self.assertIsNone(device.org_unit)
+        self.assertIsNone(the_log_entry.org_unit)
+
+    def test_post_log_empty_entity(self):
+        """Posting a new log entry with an empty entity_id should be accepted"""
+        self.client.force_authenticate(self.yoda)
+
+        post_body = [
+            {
+                "id": "66664567-e89b-12d3-a456-426614174000",
+                "storage_id": "EXISTING_STORAGE",
+                "storage_type": "NFC",
+                "operation_type": "WRITE_RECORD",
+                "instances": [self.instance1.uuid, self.instance2.uuid],
+                "org_unit_id": self.org_unit.id,
+                "entity_id": None,
+                "performed_at": 1666002739.171,
+            }
+        ]
+        response = self.client.post("/api/mobile/storage/logs/", post_body, format="json")
+        self.assertEqual(response.status_code, 201)
+
+        the_log_entry = StorageLogEntry.objects.get(id="66664567-e89b-12d3-a456-426614174000")
+        device = the_log_entry.device
+        self.assertIsNone(device.entity)
+        self.assertIsNone(the_log_entry.entity)
+
+    def test_post_log_invalid_storage_type(self):
         """In the case the storage type is invalid, POST to /api/mobile/storage/log/ should return 400."""
         self.client.force_authenticate(self.yoda)
 
@@ -213,7 +293,7 @@ class StorageAPITestCase(APITestCase):
         # Also make sure nothing was added to the database
         self.assertEqual(StorageLogEntry.objects.count(), num_logs_before)
 
-    def test_post_storage_incorrect_operation_type(self):
+    def test_post_log_invalid_operation_type(self):
         """In the case the operation type is invalid, POST to /api/mobile/storage/log/ should return 400."""
         self.client.force_authenticate(self.yoda)
 
@@ -235,14 +315,78 @@ class StorageAPITestCase(APITestCase):
         # Also make sure nothing was added to the database
         self.assertEqual(StorageLogEntry.objects.count(), num_logs_before)
 
-    def test_post_storage_existing_logs(self):
+    def test_post_log_invalid_org_unit(self):
+        """In the case the org unit is invalid, POST to /api/mobile/storage/log/ should return 400."""
+        self.client.force_authenticate(self.yoda)
+
+        num_logs_before = StorageLogEntry.objects.count()
+        post_body = [
+            {
+                "id": "66664567-e89b-12d3-a456-426614174000",
+                "storage_id": "EXISTING_STORAGE",
+                "storage_type": "NFC",
+                "operation_type": "WRITE_RECORD",
+                "instances": [self.instance1.uuid, self.instance2.uuid],
+                "org_unit_id": 9999,
+                "entity_id": self.entity.uuid,
+                "performed_at": 1666002739.171,
+            }
+        ]
+        response = self.client.post("/api/mobile/storage/logs/", post_body, format="json")
+        self.assertEqual(response.status_code, 400)
+        # Also make sure nothing was added to the database
+        self.assertEqual(StorageLogEntry.objects.count(), num_logs_before)
+
+    def test_post_log_invalid_entity(self):
+        """In the case the entity is invalid, POST to /api/mobile/storage/log/ should return 400."""
+        self.client.force_authenticate(self.yoda)
+
+        num_logs_before = StorageLogEntry.objects.count()
+        post_body = [
+            {
+                "id": "66664567-e89b-12d3-a456-426614174000",
+                "storage_id": "EXISTING_STORAGE",
+                "storage_type": "NFC",
+                "operation_type": "WRITE_RECORD",
+                "instances": [self.instance1.uuid, self.instance2.uuid],
+                "org_unit_id": self.org_unit.id,
+                "entity_id": 9999,
+                "performed_at": 1666002739.171,
+            }
+        ]
+        response = self.client.post("/api/mobile/storage/logs/", post_body, format="json")
+        self.assertEqual(response.status_code, 400)
+        # Also make sure nothing was added to the database
+        self.assertEqual(StorageLogEntry.objects.count(), num_logs_before)
+
+    def test_post_log_empty_instances(self):
+        """Posting a new log entry with an empty instances list should be accepted"""
+        self.client.force_authenticate(self.yoda)
+
+        post_body = [
+            {
+                "id": "66664567-e89b-12d3-a456-426614174000",
+                "storage_id": "EXISTING_STORAGE",
+                "storage_type": "NFC",
+                "operation_type": "WRITE_RECORD",
+                "instances": [],
+                "org_unit_id": self.org_unit.id,
+                "entity_id": self.entity.uuid,
+                "performed_at": 1666002739.171,
+            }
+        ]
+        response = self.client.post("/api/mobile/storage/logs/", post_body, format="json")
+        self.assertEqual(response.status_code, 201)
+
+        the_log_entry = StorageLogEntry.objects.get(id="66664567-e89b-12d3-a456-426614174000")
+        self.assertEqual(the_log_entry.instances.count(), 0)
+
+    def test_post_existing_logs(self):
         """If a storage log entry already exists, it should be silently ignored if pushed again"""
         pass
 
     # TODO: POST test mandatory fields are checked on POST
     # TODO: POST test an error is returned if incorrect value for instances, org unit or entity (400)
-    # TODO: POST: that the non mandatory fields are actually non mandatory
-    # TODO: POST: make sure the device is created in the OK status
 
     def test_list_only_authenticated(self):
         """GET /api/storage/ is rejected if user is not authenticated."""

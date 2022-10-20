@@ -101,6 +101,34 @@ class StorageDevice(models.Model):
         unique_together = ("customer_chosen_id", "account", "type")
 
 
+class StorageLogEntryManager(models.Manager):
+    def create_and_update_device(self) -> None:
+        """
+        Create a new StorageLogEntry and update the StorageDevice if needed
+
+        This is the preferred method to create new log entries. It is assumed the StorageDevice already exists when this
+        method is called.
+        """
+        # 2. Create the log entry
+        log_entry = self.create(
+            id=log_id,
+            device=device,
+            operation_type=operation_type,
+            performed_at=performed_at,
+            performed_by=user,
+            org_unit=concerned_orgunit,
+            entity=concerned_entity,
+        )
+
+        log_entry.instances.set(concerned_instances)
+
+        # We update the orgunit and entity to reflect what was pushed as the last log
+        # TODO: discuss: should we do that? What if the mobile pushes multiple logs in the wrong "order" for a given device?
+        device.entity = concerned_entity
+        device.org_unit = concerned_orgunit
+        device.save()
+
+
 class StorageLogEntry(models.Model):
     """
     This model keeps track of all the operations that were performed on a storage device, this is important for
@@ -149,6 +177,8 @@ class StorageLogEntry(models.Model):
     instances = models.ManyToManyField(Instance, blank=True, related_name="storage_log_entries")
     org_unit = models.ForeignKey(OrgUnit, on_delete=models.SET_NULL, null=True, blank=True)
     entity = models.ForeignKey(Entity, on_delete=models.SET_NULL, null=True, blank=True)
+
+    objects = StorageLogEntryManager()
 
     class Meta:
         ordering = ["-performed_at"]

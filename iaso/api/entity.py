@@ -357,7 +357,7 @@ class EntityViewSet(ModelViewSet):
                     str(entity["uuid"]),
                     entity["entity_type"],
                     entity["created_at"],
-                    entity["org_unit"]["name"],
+                    entity["org_unit"]["name"] if entity["org_unit"] else "",
                     entity["last_saved_instance"],
                     entity["program"],
                 ]

@@ -6,24 +6,35 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('iaso', '0171_merge_20221013_0805'),
+        ("iaso", "0171_merge_20221013_0805"),
     ]
 
     operations = [
         migrations.AlterModelOptions(
-            name='storagelogentry',
-            options={'ordering': ['-performed_at'], 'verbose_name_plural': 'storage log entries'},
+            name="storagelogentry",
+            options={"ordering": ["-performed_at"], "verbose_name_plural": "storage log entries"},
         ),
         migrations.AlterField(
-            model_name='storagedevice',
-            name='status_comment',
-            field=models.TextField(blank=True, default=''),
+            model_name="storagedevice",
+            name="status_comment",
+            field=models.TextField(blank=True, default=""),
             preserve_default=False,
         ),
         migrations.AlterField(
-            model_name='storagedevice',
-            name='status_reason',
-            field=models.CharField(blank=True, choices=[('STOLEN', 'STOLEN'), ('LOST', 'LOST'), ('DAMAGED', 'DAMAGED'), ('ABUSE', 'ABUSE'), ('OTHER', 'OTHER')], default='', max_length=64),
+            model_name="storagedevice",
+            name="status_reason",
+            field=models.CharField(
+                blank=True,
+                choices=[
+                    ("STOLEN", "STOLEN"),
+                    ("LOST", "LOST"),
+                    ("DAMAGED", "DAMAGED"),
+                    ("ABUSE", "ABUSE"),
+                    ("OTHER", "OTHER"),
+                ],
+                default="",
+                max_length=64,
+            ),
             preserve_default=False,
         ),
     ]

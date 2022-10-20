@@ -351,13 +351,21 @@ class EntityViewSet(ModelViewSet):
             filename = "%s-%s" % (filename, strftime("%Y-%m-%d-%H-%M", gmtime()))
 
             def get_row(entity: dict, **kwargs):
+                created_at = entity["created_at"]
+                if created_at is not None:
+                    created_at = created_at.strftime(EXPORTS_DATETIME_FORMAT)
+
+                last_saved_instance = entity["last_saved_instance"]
+                if last_saved_instance is not None:
+                    last_saved_instance = last_saved_instance.strftime(EXPORTS_DATETIME_FORMAT)
+
                 values = [
                     entity["id"],
                     str(entity["uuid"]),
                     entity["entity_type"],
-                    entity["created_at"].strftime(EXPORTS_DATETIME_FORMAT),
+                    created_at,
                     entity["org_unit"]["name"] if entity["org_unit"] else "",
-                    entity["last_saved_instance"].strftime(EXPORTS_DATETIME_FORMAT),
+                    last_saved_instance,
                     entity["program"],
                 ]
                 for col in columns_list:

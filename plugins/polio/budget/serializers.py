@@ -37,6 +37,10 @@ class NodeSerializer(serializers.Serializer):
     label = serializers.CharField()  # type: ignore
 
 
+class WorkflowSerializer(serializers.Serializer):
+    states = NodeSerializer(many=True, source="nodes")
+
+
 # noinspection PyMethodMayBeStatic
 class CampaignBudgetSerializer(CampaignSerializer, DynamicFieldsModelSerializer):
     class Meta:

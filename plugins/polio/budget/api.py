@@ -7,14 +7,16 @@ from drf_yasg.utils import swagger_auto_schema
 from rest_framework import permissions, filters, status, serializers
 from rest_framework.decorators import action
 from rest_framework.response import Response
+from rest_framework.viewsets import ViewSet
 
 from iaso.api.common import ModelViewSet, DeletionFilterBackend, HasPermission
-from plugins.polio.budget.models import BudgetStep, MailTemplate
+from plugins.polio.budget.models import BudgetStep, MailTemplate, get_workflow
 from plugins.polio.budget.serializers import (
     CampaignBudgetSerializer,
     TransitionToSerializer,
     BudgetStepSerializer,
     UpdateBudgetStepSerializer,
+    WorkflowSerializer,
 )
 from plugins.polio.models import Campaign
 
@@ -147,3 +149,25 @@ class BudgetStepViewSet(ModelViewSet):
             html = email_template.message().as_string()
 
         return HttpResponse(html)
+
+
+# noinspection PyMethodMayBeStatic
+@swagger_auto_schema(tags=["budget"])
+class WorkflowViewSet(ViewSet):
+    """
+    Info on the budge workflow
+
+    This endpoint is currently used to show the possible state in the filter
+    """
+
+    permission_classes = [HasPermission("menupermissions.iaso_polio_budget")]  # type: ignore
+
+    # At the moment I only implemented retrieve /current hardcode because we only support one workflow at the time
+    # to keep the design simple, change if/when we want to support multiple workflow.
+
+    def retrieve(self, request, pk="current"):
+        try:
+            workflow = get_workflow()
+        except Exception as e:
+            return {"error": "Error getting workflow", "details": e}
+        return Response(WorkflowSerializer(workflow).data)

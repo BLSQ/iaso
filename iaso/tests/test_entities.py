@@ -246,12 +246,18 @@ class EntityAPITestCase(APITestCase):
         the_result = response.json()["result"][0]
         self.assertEqual(the_result["id"], newly_added_entity.id)
 
-        # Case 2: search by entity UUID
+        # Case 2: search by entity name - make sure it's case-insensitive
+        response = self.client.get("/api/entity/?search=cLiEnT", format="json")
+        self.assertEqual(len(response.json()["result"]), 1)
+        the_result = response.json()["result"][0]
+        self.assertEqual(the_result["id"], newly_added_entity.id)
+
+        # Case 3: search by entity UUID
         response = self.client.get(f"/api/entity/?search={newly_added_entity.uuid}", format="json")
         self.assertEqual(len(response.json()["result"]), 1)
         self.assertEqual(the_result["id"], newly_added_entity.id)
 
-        # Case 3: search by JSON attribute
+        # Case 4: search by JSON attribute
         response = self.client.get(f"/api/entity/?search=age", format="json")
         self.assertEqual(len(response.json()["result"]), 1)
         self.assertEqual(the_result["id"], newly_added_entity.id)

@@ -20,6 +20,8 @@ from hat.api.export_utils import Echo, generate_xlsx, iter_items
 from iaso.api.common import TimestampField, ModelViewSet, DeletionFilterBackend
 from iaso.models import Entity, Instance, EntityType
 
+EXPORTS_DATETIME_FORMAT = "%Y-%m-%d %H:%M:%S"
+
 
 class EntityTypeSerializer(serializers.ModelSerializer):
     class Meta:
@@ -356,9 +358,9 @@ class EntityViewSet(ModelViewSet):
                     entity["id"],
                     str(entity["uuid"]),
                     entity["entity_type"],
-                    entity["created_at"],
+                    entity["created_at"].strftime(EXPORTS_DATETIME_FORMAT),
                     entity["org_unit"]["name"] if entity["org_unit"] else "",
-                    entity["last_saved_instance"],
+                    entity["last_saved_instance"].strftime(EXPORTS_DATETIME_FORMAT),
                     entity["program"],
                 ]
                 for col in columns_list:
@@ -431,8 +433,8 @@ class EntityViewSet(ModelViewSet):
                 col = 0
                 data = [
                     i.form.name,
-                    i.created_at.strftime("%Y-%m-%d %H:%M:%S"),
-                    i.updated_at.strftime("%Y-%m-%d %H:%M:%S"),
+                    i.created_at.strftime(EXPORTS_DATETIME_FORMAT),
+                    i.updated_at.strftime(EXPORTS_DATETIME_FORMAT),
                     i.org_unit.name,
                     i.created_by.username,
                     "",
@@ -462,8 +464,8 @@ class EntityViewSet(ModelViewSet):
             for i in instances:
                 data_list = [
                     i.form.name,
-                    i.created_at.strftime("%Y-%m-%d %H:%M:%S"),
-                    i.updated_at.strftime("%Y-%m-%d %H:%M:%S"),
+                    i.created_at.strftime(EXPORTS_DATETIME_FORMAT),
+                    i.updated_at.strftime(EXPORTS_DATETIME_FORMAT),
                     i.org_unit.name,
                     i.created_by.username,
                     "",

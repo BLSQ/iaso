@@ -6,7 +6,11 @@ import { useDispatch, useSelector } from 'react-redux';
 import { Box, Button, Grid, makeStyles, Typography } from '@material-ui/core';
 
 import Search from '@material-ui/icons/Search';
-import { commonStyles, useSafeIntl } from 'bluesquare-components';
+import {
+    commonStyles,
+    useSafeIntl,
+    QueryBuilderInput,
+} from 'bluesquare-components';
 import InputComponent from '../../../components/forms/InputComponent';
 
 import { periodTypeOptions } from '../../periods/constants';
@@ -18,8 +22,10 @@ import { Period } from '../../periods/models';
 import { INSTANCE_STATUSES } from '../constants';
 import { setInstancesFilterUpdated } from '../actions';
 
+import { useGetFormDescriptor } from '../compare/hooks/useGetInstanceLogs.ts';
 import { useGetForms, useInstancesFiltersData } from '../hooks';
 import { getInstancesFilterValues, useFormState } from '../../../hooks/form';
+import { useGetQueryBuildersFields } from '../hooks/useGetQueryBuildersFields.ts';
 
 import MESSAGES from '../messages';
 import { OrgUnitTreeviewModal } from '../../orgUnits/components/TreeView/OrgUnitTreeviewModal';
@@ -39,7 +45,7 @@ const useStyles = makeStyles(theme => ({
 
 const filterDefault = params => ({
     ...params,
-    mapResults: params.mapResults === undefined ? 3000 : params.mapResults,
+    mapResults: params.mapResults ? 3000 : params.mapResults,
 });
 
 const InstancesFiltersComponent = ({
@@ -72,7 +78,25 @@ const InstancesFiltersComponent = ({
         state => state.instances.isInstancesFilterUpdated,
     );
     const { data, isFetching: fetchingForms } = useGetForms();
-    const formsList = (data && data.forms) || [];
+    const formsList = useMemo(() => data?.forms ?? [], [data]);
+
+    const formId =
+        formState.formIds.value?.split(',').length === 1
+            ? formState.formIds.value.split(',')[0]
+            : undefined;
+    const currentForm = useMemo(() => {
+        if (formId) {
+            return formsList.find(form => parseInt(formId, 10) === form.id);
+        }
+        return undefined;
+    }, [formId, formsList]);
+
+    const { data: formDescriptor } = useGetFormDescriptor(
+        currentForm?.latest_form_version?.version_id, // by default using last form version
+        currentForm?.id,
+    );
+    const fields = useGetQueryBuildersFields(formId, formDescriptor);
+
     useInstancesFiltersData(formIds, setFetchingOrgUnitTypes);
     const handleSearch = useCallback(() => {
         if (isInstancesFilterUpdated) {
@@ -84,8 +108,8 @@ const InstancesFiltersComponent = ({
             };
             // removing columns params to refetch correct columns
             const newFormIdsString = formState.formIds.value;
+            const newFormIds = formState.formIds.value?.split(',');
             if (newFormIdsString) {
-                const newFormIds = formState.formIds.value.split(',');
                 if (
                     formState.formIds.value !== params?.formIds &&
                     newFormIds.length === 1
@@ -93,13 +117,27 @@ const InstancesFiltersComponent = ({
                     delete searchParams.columns;
                 }
             }
+            if (newFormIds?.length !== 1) {
+                delete searchParams.fieldsSearch;
+                setFormState('fieldsSearch', null);
+            }
             onSearch(searchParams);
         }
-    }, [params, onSearch, dispatch, formState, isInstancesFilterUpdated]);
+    }, [
+        isInstancesFilterUpdated,
+        dispatch,
+        params,
+        formState,
+        onSearch,
+        setFormState,
+    ]);
 
     const handleFormChange = useCallback(
         (key, value) => {
             // checking only as value can be null or false
+            if (key === 'formIds') {
+                setFormState('fieldsSearch', null);
+            }
             if (key) {
                 setFormState(key, value);
                 if (key === 'periodType') {
@@ -113,8 +151,9 @@ const InstancesFiltersComponent = ({
             }
             dispatch(setInstancesFilterUpdated(true));
         },
-        [setFormState, dispatch],
+        [dispatch, setFormState],
     );
+
     const startPeriodError = useMemo(() => {
         if (formState.startPeriod?.value && formState.periodType?.value) {
             return !isValidPeriod(
@@ -146,7 +185,6 @@ const InstancesFiltersComponent = ({
         }
         return false;
     }, [formState.startPeriod, formState.endPeriod]);
-
     return (
         <div className={classes.marginBottomBig}>
             <UserOrgUnitRestriction />
@@ -174,6 +212,32 @@ const InstancesFiltersComponent = ({
                         label={MESSAGES.forms}
                         loading={fetchingForms}
                     />
+                    {formState.formIds.value?.split(',').length === 1 && (
+                        <QueryBuilderInput
+                            label={MESSAGES.queryBuilder}
+                            onChange={newLogic =>
+                                handleFormChange(
+                                    'fieldsSearch',
+                                    newLogic
+                                        ? JSON.stringify(newLogic)
+                                        : undefined,
+                                )
+                            }
+                            initialLogic={
+                                formState.fieldsSearch.value
+                                    ? JSON.parse(formState.fieldsSearch.value)
+                                    : undefined
+                            }
+                            fields={fields}
+                            iconProps={{
+                                label: MESSAGES.queryBuilder,
+                                value: formState.fieldsSearch.value,
+                                onClear: () =>
+                                    handleFormChange('fieldsSearch', undefined),
+                            }}
+                        />
+                    )}
+
                     <Box id="ou-tree-input">
                         <OrgUnitTreeviewModal
                             toggleOnLabelClick={false}

@@ -15,31 +15,30 @@ import { hasFeatureFlag } from '../../../utils/featureFlags';
 import { useCurrentUser } from '../../../utils/usersUtils.ts';
 
 const ProtectedRoute = ({
-    isRootUrl,
-    permissions,
+    routeConfig,
     allRoutes,
     location,
-    featureFlag,
     component,
     params,
 }) => {
+    const { featureFlag, permissions, isRootUrl, baseUrl } = routeConfig;
+    // on first load this is undefined, it will be updated when fetchCurrentUser is done
     const currentUser = useCurrentUser();
     const dispatch = useDispatch();
     useEffect(() => {
         dispatch(fetchCurrentUser());
-    }, []);
+    });
 
     useEffect(() => {
         if (!params.accountId && currentUser?.account) {
-            console.log('REDIRECT', location.pathname);
             dispatch(
-                redirectTo(location.pathname, {
+                redirectTo(baseUrl, {
                     ...params,
                     accountId: currentUser.account.id,
                 }),
             );
         }
-    }, [currentUser?.account]);
+    }, [currentUser?.account, baseUrl, params, dispatch]);
 
     useEffect(() => {
         // Use defined default language if it exists and if the user didn't set it manually
@@ -84,20 +83,15 @@ const ProtectedRoute = ({
     );
 };
 ProtectedRoute.defaultProps = {
-    permissions: [],
-    isRootUrl: false,
-    featureFlag: null,
     allRoutes: [],
 };
 
 ProtectedRoute.propTypes = {
     component: PropTypes.node.isRequired,
-    permissions: PropTypes.arrayOf(PropTypes.string),
-    isRootUrl: PropTypes.bool,
-    featureFlag: PropTypes.oneOfType([PropTypes.object, PropTypes.string]),
     allRoutes: PropTypes.array,
     location: PropTypes.object.isRequired,
     params: PropTypes.object.isRequired,
+    routeConfig: PropTypes.object.isRequired,
 };
 
 export default ProtectedRoute;

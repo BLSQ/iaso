@@ -33,25 +33,20 @@ export default function iasoApp(
         ...routeConfigs,
         ...plugins.map(plugin => plugin.routes).flat(),
     ];
-    const baseRoutes = allRoutesConfigs.map(routeConfig => (
-        <Route
-            path={getPath(routeConfig)}
-            component={
-                routeConfig.allowAnonymous
-                    ? routeConfig.component
-                    : props => (
-                          <ProtectedRoute
-                            {...props}
-                            featureFlag={routeConfig.featureFlag}
-                            permissions={routeConfig.permissions}
-                            component={routeConfig.component(props)}
-                            isRootUrl={routeConfig.isRootUrl}
-                            allRoutes={allRoutesConfigs}
-                        />
-                      )
-            }
-        />
-    ));
+    const baseRoutes = allRoutesConfigs.map(routeConfig => {
+        const { allowAnonymous, component } = routeConfig;
+        const renderProtectedComponent = props => (
+            <ProtectedRoute
+                // eslint-disable-next-line react/jsx-props-no-spreading
+                {...props}
+                routeConfig={routeConfig}
+                component={routeConfig.component(props)}
+                allRoutes={allRoutesConfigs}
+            />
+        );
+        const page = allowAnonymous ? component : renderProtectedComponent;
+        return <Route path={getPath(routeConfig)} component={page} />;
+    });
 
     const overrideLandingRoutes = plugins
         .filter(plugin => plugin.overrideLanding)

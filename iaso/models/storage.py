@@ -102,7 +102,18 @@ class StorageDevice(models.Model):
 
 
 class StorageLogEntryManager(models.Manager):
-    def create_and_update_device(self) -> None:
+    # TODO: this manager method deserves its own unit tests and proper type annotations
+    def create_and_update_device(
+        self,
+        log_id,
+        device,
+        operation_type,
+        performed_at,
+        user,
+        concerned_orgunit,
+        concerned_entity,
+        concerned_instances,
+    ) -> None:
         """
         Create a new StorageLogEntry and update the StorageDevice if needed
 
@@ -122,8 +133,8 @@ class StorageLogEntryManager(models.Manager):
 
         log_entry.instances.set(concerned_instances)
 
-        # We update the orgunit and entity to reflect what was pushed as the last log
-        # TODO: discuss: should we do that? What if the mobile pushes multiple logs in the wrong "order" for a given device?
+        # We update the orgunit and entity of the device to reflect what was pushed as the last log
+        # TODO: discuss: should we do that? What if the mobile pushes multiple logs in the wrong "order" for a given device? should we merge data instead?
         device.entity = concerned_entity
         device.org_unit = concerned_orgunit
         device.save()

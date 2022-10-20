@@ -276,10 +276,20 @@ class StorageLogViewSet(CreateModelMixin, viewsets.GenericViewSet):
 
                 account = user.iaso_profile.account
 
-                # TODO: move that logic to models
                 # 1. Create the storage device, if needed
                 device, _ = StorageDevice.objects.get_or_create(
                     account=account, customer_chosen_id=storage_id, type=storage_type
+                )
+
+                StorageLogEntry.objects.create_and_update_device(
+                    log_id=log_id,
+                    device=device,
+                    operation_type=operation_type,
+                    performed_at=performed_at,
+                    user=user,
+                    concerned_orgunit=concerned_orgunit,
+                    concerned_entity=concerned_entity,
+                    concerned_instances=concerned_instances,
                 )
 
         return Response("", status=status.HTTP_201_CREATED)

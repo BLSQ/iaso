@@ -78,11 +78,18 @@ class CampaignBudgetSerializer(CampaignSerializer, DynamicFieldsModelSerializer)
 
     def get_current_state(self, campaign: Campaign):
         workflow = get_workflow()
-        node = workflow.get_node_by_key(campaign.budget_current_state_key)
-        return {
-            "key": campaign.budget_current_state_key,
-            "label": node.label,
-        }
+        try:
+            node = workflow.get_node_by_key(campaign.budget_current_state_key)
+        except:
+            return {
+                "key": campaign.budget_current_state_key,
+                "label": campaign.budget_current_state_key,
+            }
+        else:
+            return {
+                "key": campaign.budget_current_state_key,
+                "label": node.label,
+            }
 
     @swagger_serializer_method(serializer_or_field=TransitionSerializer(many=True))
     def get_next_transitions(self, campaign):

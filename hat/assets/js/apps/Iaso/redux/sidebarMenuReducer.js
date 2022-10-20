@@ -1,11 +1,13 @@
 const TOGGLE_SIDEBAR = 'TOGGLE_SIDEBAR';
 
-export const toggleSidebarMenu = () => ({
+export const toggleSidebarMenu = anchor => ({
     type: TOGGLE_SIDEBAR,
+    anchor,
 });
 
 export const sidebarMenuInitialState = {
     isOpen: false,
+    anchor: 'left',
 };
 
 export const sidebarMenuReducer = (
@@ -14,9 +16,11 @@ export const sidebarMenuReducer = (
 ) => {
     switch (action.type) {
         case TOGGLE_SIDEBAR: {
+            console.log(action);
             return {
                 ...state,
                 isOpen: !state.isOpen,
+                anchor: action.anchor ?? state.anchor,
             };
         }
 

@@ -15,6 +15,7 @@ import {
 } from '@material-ui/core';
 
 import ArrowBackIcon from '@material-ui/icons/ArrowBack';
+import ArrowForwardIcon from '@material-ui/icons/ArrowForward';
 import PropTypes from 'prop-types';
 
 import { injectIntl, commonStyles } from 'bluesquare-components';
@@ -89,6 +90,7 @@ const SidebarMenu = ({
     location,
     intl,
     activeLocale,
+    anchor,
 }) => {
     const onClick = url => {
         toggleSidebar();
@@ -117,7 +119,7 @@ const SidebarMenu = ({
     const menuItems = getMenuItems(currentUser, plugins, defaultSourceVersion);
 
     return (
-        <Drawer anchor="left" open={isOpen} onClose={toggleSidebar}>
+        <Drawer anchor={anchor} open={isOpen} onClose={toggleSidebar}>
             <div className={classes.toolbar}>
                 <Logo />
                 <IconButton
@@ -126,7 +128,11 @@ const SidebarMenu = ({
                     aria-label="Menu"
                     onClick={toggleSidebar}
                 >
-                    <ArrowBackIcon />
+                    {anchor === 'left' ? (
+                        <ArrowBackIcon />
+                    ) : (
+                        <ArrowForwardIcon />
+                    )}
                 </IconButton>
             </div>
             <Divider />
@@ -217,6 +223,7 @@ const SidebarMenu = ({
 
 SidebarMenu.propTypes = {
     classes: PropTypes.object.isRequired,
+    anchor: PropTypes.string.isRequired,
     isOpen: PropTypes.bool.isRequired,
     toggleSidebar: PropTypes.func.isRequired,
     location: PropTypes.object.isRequired,
@@ -226,6 +233,7 @@ SidebarMenu.propTypes = {
 
 const MapStateToProps = state => ({
     isOpen: state.sidebar.isOpen,
+    anchor: state.sidebar.anchor, // right or left
     activeLocale: state.app.locale,
 });
 

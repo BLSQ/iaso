@@ -13,6 +13,7 @@ import PropTypes from 'prop-types';
 
 import { toggleSidebarMenu } from '../../redux/sidebarMenuReducer';
 import { ThemeConfigContext } from '../../domains/app/contexts/ThemeConfigContext.tsx';
+import { useCurrentUser } from '../../utils/usersUtils';
 
 const styles = theme => ({
     menuButton: {
@@ -21,6 +22,7 @@ const styles = theme => ({
             marginLeft: theme.spacing(1),
         },
     },
+    userName: { cursor: 'pointer' },
 });
 
 const useStyles = makeStyles(styles);
@@ -34,10 +36,15 @@ function TopBar(props) {
         document.title = `${APP_TITLE} ${title ? `| ${title}` : ''}`;
     }, [title, APP_TITLE]);
     const dispatch = useDispatch();
-    const toggleSidebar = useCallback(
-        () => dispatch(toggleSidebarMenu()),
+    const toggleSidebarLeft = useCallback(
+        () => dispatch(toggleSidebarMenu('left')),
         [dispatch],
     );
+    const toggleSidebarRight = useCallback(
+        () => dispatch(toggleSidebarMenu('right')),
+        [dispatch],
+    );
+    const currentUser = useCurrentUser();
 
     return (
         <>
@@ -61,7 +68,7 @@ function TopBar(props) {
                                     className={classes.menuButton}
                                     color="inherit"
                                     aria-label="Menu"
-                                    onClick={toggleSidebar}
+                                    onClick={toggleSidebarLeft}
                                     id="menu-button"
                                 >
                                     <MenuIcon />
@@ -86,9 +93,21 @@ function TopBar(props) {
                                 {title}
                             </Typography>
                         </Grid>
-                        {/* <Grid item xs={3}>
-                            <div>New stuff</div>
-                        </Grid> */}
+                        <Grid
+                            container
+                            item
+                            xs={3}
+                            alignContent="flex-end"
+                            justifyContent="flex-end"
+                        >
+                            <Typography
+                                variant="body2"
+                                className={classes.userName}
+                                onClick={toggleSidebarRight}
+                            >
+                                {currentUser.user_name}
+                            </Typography>
+                        </Grid>
                     </Grid>
                 </Toolbar>
                 {children}

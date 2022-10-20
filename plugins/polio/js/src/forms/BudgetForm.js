@@ -102,28 +102,30 @@ export const BudgetForm = () => {
 
                 <Grid item md={6}>
                     <Field
-                        label={formatMessage(MESSAGES.rrtOprttApproval)}
+                        label={formatMessage(
+                            MESSAGES.budget_rrt_oprtt_approval_at,
+                        )}
                         name="budget_rrt_oprtt_approval_at"
                         component={DateInput}
                         fullWidth
                     />
 
                     <Field
-                        label={formatMessage(MESSAGES.eomgGroup)}
+                        label={formatMessage(MESSAGES.eomg)}
                         name="eomg"
                         component={DateInput}
                         fullWidth
                     />
 
                     <Field
-                        label={formatMessage(MESSAGES.budgetSubmittedAt)}
+                        label={formatMessage(MESSAGES.budget_submitted_at)}
                         name="budget_submitted_at"
                         component={DateInput}
                         fullWidth
                     />
 
                     <Field
-                        label={formatMessage(MESSAGES.districtCount)}
+                        label={formatMessage(MESSAGES.district_count)}
                         name="district_count"
                         component={TextInput}
                         className={classes.input}
@@ -141,9 +143,9 @@ export const BudgetForm = () => {
                         return (
                             <Box key={round.number}>
                                 <Field
-                                    label={`${formatMessage(
-                                        MESSAGES.costRound,
-                                    )} ${round.number}`}
+                                    label={`${formatMessage(MESSAGES.cost)} ${
+                                        round.number
+                                    }`}
                                     name={`rounds[${i}].cost`}
                                     component={TextInput}
                                     className={classes.input}

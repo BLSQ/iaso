@@ -9,52 +9,28 @@ import {
     makeStyles,
     Typography,
 } from '@material-ui/core';
-import React, {
-    FunctionComponent,
-    useCallback,
-    useMemo,
-    useState,
-} from 'react';
+import React, { FunctionComponent, useCallback, useState } from 'react';
 import {
     // @ts-ignore
     useSafeIntl,
-    // @ts-ignore
-    IconButton as IconButtonComponent,
-    // @ts-ignore
-    LoadingSpinner,
 } from 'bluesquare-components';
 import moment from 'moment';
 import classNames from 'classnames';
+import RemoveCircleIcon from '@material-ui/icons/RemoveCircle';
+import { PlaylistAdd } from '@material-ui/icons';
 import MESSAGES from '../../../constants/messages';
-import {
-    Profile,
-    useCurrentUser,
-} from '../../../../../../../hat/assets/js/apps/Iaso/utils/usersUtils';
-import { formatTargetTeams, formatUserName } from '../utils';
-import { useGetTeams } from '../../../hooks/useGetTeams';
+
 import { BudgetFilesModalForCards } from '../pop-ups/BudgetFilesModalForCards';
-import { useGetBudgetEventFiles } from '../../../hooks/useGetBudgetEventFiles';
-import DeleteDialog from '../../../../../../../hat/assets/js/apps/Iaso/components/dialogs/DeleteDialogComponent';
-import {
-    useDeleteBudgetEvent,
-    useRestoreBudgetEvent,
-} from '../../../hooks/useDeleteBudgetEvent';
-import { CreateEditBudgetEvent } from '../CreateEditBudgetEvent/CreateEditBudgetEvent';
-import { LockIcon } from './LockIcon';
-import { BudgetEvent } from '../../../constants/types';
-import {
-    findAuthorTeam,
-    formatComment,
-    getProfileFromId,
-    shouldOpenModal,
-    useActionMessage,
-} from './utils';
+
+import { formatComment, shouldOpenModal, useActionMessage } from './utils';
 import { styles as eventStyles } from '../hooks/config';
 import { formatThousand } from '../../../../../../../hat/assets/js/apps/Iaso/utils';
+import { BudgetStep, LinkWithAlias } from '../types';
+import getDisplayName from '../../../../../../../hat/assets/js/apps/Iaso/utils/usersUtils';
+import { useDeleteRestoreBudgetStep } from '../hooks/api/useGetBudgetDetails';
 
 type Props = {
-    event: BudgetEvent;
-    profiles: Profile[];
+    step: BudgetStep;
 };
 
 const useStyles = makeStyles(theme => ({
@@ -72,178 +48,123 @@ const useStyles = makeStyles(theme => ({
     },
 }));
 
-export const BudgetEventCard: FunctionComponent<Props> = ({
-    event,
-    profiles,
-}) => {
+export const BudgetEventCard: FunctionComponent<Props> = ({ step }) => {
     const { formatMessage } = useSafeIntl();
-    const currentUser = useCurrentUser();
     const classes = useStyles();
-    const userIsAuthor = event?.author === currentUser.user_id;
-    const { data: teams = [], isFetching: isFetchingTeams } = useGetTeams();
-    const { data: budgetEventFiles, isFetching: isFetchingFiles } =
-        useGetBudgetEventFiles(event.id);
-    const isLoading = isFetchingFiles || isFetchingTeams;
-    const eventLinks = event?.links ?? '';
-    const eventComment = event?.comment ?? '';
-    const { mutateAsync: deleteBudgetEvent } = useDeleteBudgetEvent();
-    const { mutateAsync: restoreBudgetEvent } = useRestoreBudgetEvent();
+    const { files } = step;
+    const stepLinks = (step?.links ?? []) as LinkWithAlias[];
+    const stepComment = step?.comment ?? '';
+    const isStepDeleted = Boolean(step.deleted_at);
+
+    const { mutateAsync: toggleStatus } =
+        useDeleteRestoreBudgetStep(isStepDeleted);
 
     const actionMessage = useActionMessage(
-        eventComment,
-        budgetEventFiles?.length,
-        eventLinks,
+        stepComment,
+        files?.length,
+        stepLinks,
     );
     const [openModal, setOpenModal] = useState<boolean>(false);
-    const title = formatMessage(MESSAGES[event.type]);
+    const title = step.transition_label;
 
-    const authorName = useMemo(
-        () => formatUserName(getProfileFromId(event.author, profiles)),
-        [event.author, profiles],
-    );
-    const textColor = event.deleted_at ? classes.deletedRow : '';
-    const amount = event.amount
-        ? formatThousand(parseInt(`${event.amount}`, 10)) // using parseInt to remove decimals before formatting
+    const authorName = getDisplayName(step?.created_by);
+    const textColor = isStepDeleted ? classes.hiddenRow : '';
+    const amount = step.amount
+        ? formatThousand(parseInt(`${step.amount}`, 10)) // using parseInt to remove decimals before formatting
         : '--';
-    const formattedCreationDate = moment(event.created_at).format('L');
-    const targetTeams = formatTargetTeams(event.target_teams, teams);
-    const truncatedComment = formatComment(event.comment);
-    const authorTeam = findAuthorTeam(event.author, teams, event.type);
+    const formattedCreationDate = moment(step.created_at).format('L');
+
+    const truncatedComment = formatComment(step.comment);
+    const authorTeam = step.created_by_team;
     const allowOpenModal = shouldOpenModal(
-        budgetEventFiles?.length,
-        eventLinks,
-        eventComment,
+        files?.length,
+        stepLinks,
+        stepComment,
     );
     const onClick = useCallback(() => {
         if (allowOpenModal) setOpenModal(true);
     }, [allowOpenModal]);
 
+    const toggleStepStatus = useCallback(() => {
+        return toggleStatus(step.id);
+    }, [step.id, toggleStatus]);
+
     return (
         <Card>
             <Grid container>
-                <Grid item xs={userIsAuthor ? 10 : 12}>
+                <Grid item xs={10}>
                     <CardActionArea
                         className={allowOpenModal ? '' : classes.inactiveCard}
                         disableRipple={!allowOpenModal}
-                        disabled={isLoading}
                     >
-                        {isLoading && <LoadingSpinner fixed={false} />}
-                        {!isLoading && (
-                            <CardContent
-                                onClick={onClick}
-                                className={classes.cardContent}
-                            >
-                                <Box>
-                                    <Typography
-                                        variant="h6"
-                                        className={classNames(
-                                            classes.title,
-                                            textColor,
-                                        )}
-                                    >
-                                        {title}
-                                        <LockIcon internal={event?.internal} />
-                                    </Typography>
-                                </Box>
+                        <CardContent
+                            onClick={onClick}
+                            className={classes.cardContent}
+                        >
+                            <Box>
                                 <Typography
-                                    variant="body2"
-                                    className={textColor}
+                                    variant="h6"
+                                    className={classNames(
+                                        classes.title,
+                                        textColor,
+                                    )}
                                 >
-                                    {formatMessage(MESSAGES.onDate, {
-                                        date: formattedCreationDate,
-                                    })}
+                                    {title}
                                 </Typography>
-                                <Typography className={textColor}>
-                                    {`${authorName} - ${authorTeam}`}
-                                </Typography>
-                                <Typography className={textColor}>
-                                    {`${formatMessage(
-                                        MESSAGES.destination,
-                                    )}: ${targetTeams}`}
-                                </Typography>
-                                {truncatedComment && (
-                                    <Typography
-                                        // @ts-ignore
-                                        style={{ wordWrap: 'anywhere' }}
-                                        className={textColor}
-                                    >
-                                        {`${formatMessage(
-                                            MESSAGES.comment,
-                                        )}: ${truncatedComment}`}
-                                    </Typography>
-                                )}
+                            </Box>
+                            <Typography variant="body2" className={textColor}>
+                                {formatMessage(MESSAGES.onDate, {
+                                    date: formattedCreationDate,
+                                })}
+                            </Typography>
+                            <Typography className={textColor}>
+                                {`${authorName} - ${authorTeam}`}
+                            </Typography>
+                            {truncatedComment && (
                                 <Typography
                                     // @ts-ignore
                                     style={{ wordWrap: 'anywhere' }}
-                                    className={`${textColor}`}
+                                    className={textColor}
                                 >
                                     {`${formatMessage(
-                                        MESSAGES.amount,
-                                    )}: ${amount}`}
+                                        MESSAGES.comment,
+                                    )}: ${truncatedComment}`}
                                 </Typography>
+                            )}
+                            <Typography
+                                // @ts-ignore
+                                style={{ wordWrap: 'anywhere' }}
+                                className={`${textColor}`}
+                            >
+                                {`${formatMessage(MESSAGES.amount)}: ${amount}`}
+                            </Typography>
 
-                                <Typography
-                                    variant="body2"
-                                    className={classes.cta}
-                                >
-                                    {actionMessage}
-                                </Typography>
-                            </CardContent>
-                        )}
+                            <Typography variant="body2" className={classes.cta}>
+                                {actionMessage}
+                            </Typography>
+                        </CardContent>
                     </CardActionArea>
                     <BudgetFilesModalForCards
                         open={openModal}
                         setOpen={setOpenModal}
-                        eventId={event.id}
-                        author={event.author}
-                        type={event.type}
-                        note={event.comment}
-                        date={event.created_at}
-                        links={event.links}
-                        recipients={event.target_teams.join(',')}
+                        files={step.files ?? []}
+                        note={step.comment}
+                        links={step.links}
                     />
                 </Grid>
-                {userIsAuthor && (
-                    <Grid
-                        container
-                        item
-                        xs={2}
-                        direction="column"
-                        justifyContent="center"
-                    >
-                        <Divider orientation="vertical" />
-                        {!event?.is_finalized && userIsAuthor && (
-                            <CreateEditBudgetEvent
-                                campaignId={event?.campaign}
-                                type="edit"
-                                budgetEvent={event}
-                                iconProps={{
-                                    type: 'edit',
-                                    isMobileLayout: true,
-                                    color: event?.deleted_at
-                                        ? 'secondary'
-                                        : 'action',
-                                }}
-                            />
-                        )}
-                        {!event.deleted_at && userIsAuthor && (
-                            <DeleteDialog
-                                titleMessage={MESSAGES.deleteBudgetEvent}
-                                message={MESSAGES.deleteBudgetEvent}
-                                onConfirm={() => deleteBudgetEvent(event?.id)}
-                                keyName={`deleteBudgetEvent-card-${event?.id}`}
-                            />
-                        )}
-                        {event.deleted_at && userIsAuthor && (
-                            <IconButtonComponent
-                                color="secondary"
-                                icon="restore-from-trash"
-                                tooltipMessage={MESSAGES.restore}
-                                onClick={() => restoreBudgetEvent(event?.id)}
-                            />
-                        )}
-                    </Grid>
-                )}
+
+                <Grid
+                    container
+                    item
+                    xs={2}
+                    direction="column"
+                    justifyContent="center"
+                    onClick={toggleStepStatus}
+                >
+                    <Divider orientation="vertical" />
+                    {!isStepDeleted && <RemoveCircleIcon color="action" />}
+                    {isStepDeleted && <PlaylistAdd className={textColor} />}
+                </Grid>
             </Grid>
         </Card>
     );

@@ -1,19 +1,19 @@
-{%if files%}
+{%if attachments %}
     <tr>
         <td style="height:20px;padding:5px;font-size:0;line-height:0;">&nbsp;</td>
     </tr>
     <tr>
         <td align="left" style="padding:0px 5px;">
-            Files:
+            Attachements:
         </td>
     </tr>
     <tr>
         <td style="height:20px;padding:5px;font-size:0;line-height:0;">&nbsp;</td>
     </tr>
-    {% for file in files%}
+    {% for attachment in attachments %}
         <tr>
             <td align="left" style="padding:0px 5px;">
-                <a href={{file.path}}>{{file.name}}</a>
+                {{ forloop.counter }}. <a href={{attachment.url}}>{{attachment.name}}</a>
             </td>
         </tr>
     {% endfor %}

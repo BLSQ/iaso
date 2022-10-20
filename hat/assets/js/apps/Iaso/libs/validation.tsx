@@ -63,7 +63,10 @@ type ApiValidationUtils<
 };
 
 // TODO handle non_field_errors
-export const useApiErrorValidation = <T, K>({
+export const useApiErrorValidation = <
+    T extends Record<string, any>,
+    K extends Record<string, any>,
+>({
     mutationFn,
     onSuccess,
     onError,

@@ -39,13 +39,13 @@ export const BudgetDetailsFilters: FunctionComponent<Props> = ({
     const theme = useTheme();
     const isXSLayout = useMediaQuery(theme.breakpoints.down('xs'));
     return (
-        <Box mb={4}>
+        <Box>
             <Grid
                 container
                 spacing={isXSLayout ? 0 : 2}
                 justifyContent="flex-end"
             >
-                <Grid item xs={12} sm={6} md={4}>
+                <Grid item xs={12} sm={6} md={2}>
                     <InputComponent
                         keyValue="transition_key"
                         onChange={handleChange}
@@ -61,7 +61,7 @@ export const BudgetDetailsFilters: FunctionComponent<Props> = ({
                     item
                     xs={12}
                     sm={6}
-                    md={3}
+                    md={10}
                     justifyContent="flex-end"
                 >
                     <Box mt={2}>

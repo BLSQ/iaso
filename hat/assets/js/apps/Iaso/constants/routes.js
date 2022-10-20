@@ -198,6 +198,10 @@ export const instancesPath = {
             isRequired: false,
             key: 'fileRowsPerPage',
         },
+        {
+            isRequired: false,
+            key: 'fieldsSearch',
+        },
     ],
 };
 

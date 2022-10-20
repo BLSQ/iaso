@@ -7,7 +7,6 @@
     "iaso.label.type": "Type",
     "iaso.polio.badRoundNumbers": "Forms with the wrong round number",
     "iaso.polio.budget.label.addCampaign": "Add campaign",
-    "iaso.polio.budget.title.budgetDetails": "Budget details",
     "iaso.polio.budgetStatus": "Budget status",
     "iaso.polio.button.label.import": "Import",
     "iaso.polio.button.label.removeDistrict": "Unselect district",
@@ -275,6 +274,7 @@
     "iaso.polio.label.rejected": "Rejected",
     "iaso.polio.label.Religious_leader": "Religious leader",
     "iaso.polio.label.removeLastLink": "Remove last link",
+    "iaso.polio.label.removeLastShipment": "Remove last shipment",
     "iaso.polio.label.removeLastVaccine": "Remove last vaccine",
     "iaso.polio.label.reportingDelays": "Reporting delays",
     "iaso.polio.label.reportingDistricts": "Reporting districts",
@@ -294,6 +294,7 @@
     "iaso.polio.label.RoundStartFrom": "Round start date from",
     "iaso.polio.label.RoundStartTo": "Round start date to",
     "iaso.polio.label.school": "At school",
+    "iaso.polio.label.scope_per_round": "Separate scope per round",
     "iaso.polio.label.scopeUnlockConditions": "Select initial org. unit and encode dates for at least one round to unlock Scope tab",
     "iaso.polio.label.search": "Search",
     "iaso.polio.label.see": "See",
@@ -387,6 +388,5 @@
     "iaso.polio.title.tryUpdateStep": "Resend data?",
     "iaso.polio.tooltip.label.lqasImDate": "No date found in campaign data, using default value based on round date",
     "iaso.polio.vaccine": "Vaccine",
-    "iaso.polio.vaccines": "Vaccines",
-    "Remove last shipment": "Remove last shipment"
+    "iaso.polio.vaccines": "Vaccines"
 }

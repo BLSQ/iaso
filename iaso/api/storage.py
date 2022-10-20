@@ -150,7 +150,7 @@ class StorageViewSet(ListModelMixin, viewsets.GenericViewSet):
         """
         limit_str = request.GET.get("limit", None)
         page_offset = request.GET.get("page", 1)
-        order = request.GET.get("order", "updated_at").split(",")
+        order = request.GET.get("order", "updated_at,id").split(",")
 
         queryset = self.get_queryset()
         queryset = queryset.order_by(*order)

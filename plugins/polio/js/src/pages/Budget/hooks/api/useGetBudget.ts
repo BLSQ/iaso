@@ -40,7 +40,7 @@ export const useGetBudgets = (options: any): any => {
 export const useBudgetParams = params => {
     return useMemo(() => {
         return {
-            order: params?.order ?? '-obr_name',
+            order: params?.order ?? '-cvdpv2_notified_at',
             pageSize: params?.pageSize ?? 20,
             page: params?.page ?? 1,
             search: params.search,

@@ -233,6 +233,7 @@ export const BudgetDetails: FunctionComponent<Props> = ({ router }) => {
                                                     return (
                                                         <Grid
                                                             item
+                                                            // eslint-disable-next-line react/no-array-index-key
                                                             key={`${step.key}-${index}`}
                                                         >
                                                             <CreateBudgetStep

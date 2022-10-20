@@ -93,21 +93,23 @@ function TopBar(props) {
                                 {title}
                             </Typography>
                         </Grid>
-                        <Grid
-                            container
-                            item
-                            xs={3}
-                            alignContent="flex-end"
-                            justifyContent="flex-end"
-                        >
-                            <Typography
-                                variant="body2"
-                                className={classes.userName}
-                                onClick={toggleSidebarRight}
+                        {currentUser && (
+                            <Grid
+                                container
+                                item
+                                xs={3}
+                                alignContent="flex-end"
+                                justifyContent="flex-end"
                             >
-                                {currentUser.user_name}
-                            </Typography>
-                        </Grid>
+                                <Typography
+                                    variant="body2"
+                                    className={classes.userName}
+                                    onClick={toggleSidebarRight}
+                                >
+                                    {currentUser?.user_name}
+                                </Typography>
+                            </Grid>
+                        )}
                     </Grid>
                 </Toolbar>
                 {children}

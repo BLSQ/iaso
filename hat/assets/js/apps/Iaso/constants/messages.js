@@ -130,7 +130,7 @@ const MESSAGES = defineMessages({
         id: 'iaso.label.beneficiaries',
     },
     storages: {
-        defaultMessage: 'Beneficiaries',
+        defaultMessage: 'Storages',
         id: 'iaso.label.storages',
     },
 });

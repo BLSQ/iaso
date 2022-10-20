@@ -159,15 +159,8 @@ const menuItems = defaultSourceId => [
     {
         label: MESSAGES.storages,
         key: 'storages',
+        permissions: paths.storagesPath.permissions,
         icon: props => <StorageIcon {...props} />,
-        subMenu: [
-            {
-                label: MESSAGES.list,
-                permissions: paths.storagesPath.permissions,
-                key: 'list',
-                icon: props => <FormatListBulleted {...props} />,
-            },
-        ],
     },
     {
         label: MESSAGES.planning,

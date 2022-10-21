@@ -15,25 +15,19 @@ def jsonlogic_to_q(jsonlogic: Dict[str, Any], field_prefix: str = "") -> Q:
 
     :return: A Django Q object.
     """
-    q = _real_jsonlogic_to_q(jsonlogic, field_prefix)
-    return q.children[0] if len(q.children) == 1 else q
-
-
-def _real_jsonlogic_to_q(jsonlogic: Dict[str, Any], field_prefix: str = "") -> Q:
     if "and" in jsonlogic:
-        return Q(
-            reduce(
-                operator.and_,
-                (_real_jsonlogic_to_q(subquery, field_prefix) for subquery in jsonlogic["and"]),
-            )
+        return reduce(
+            operator.and_,
+            (jsonlogic_to_q(subquery, field_prefix) for subquery in jsonlogic["and"]),
         )
     elif "or" in jsonlogic:
-        return Q(
-            reduce(
-                operator.or_,
-                (_real_jsonlogic_to_q(subquery, field_prefix) for subquery in jsonlogic["or"]),
-            )
+        return reduce(
+            operator.or_,
+            (jsonlogic_to_q(subquery, field_prefix) for subquery in jsonlogic["or"]),
         )
+
+    elif "!" in jsonlogic:
+        return ~jsonlogic_to_q(jsonlogic["!"], field_prefix)
     elif "==" in jsonlogic:
         return Q(**{f"{field_prefix}{jsonlogic['=='][0]['var']}__exact": jsonlogic["=="][1]})
     elif "!=" in jsonlogic:

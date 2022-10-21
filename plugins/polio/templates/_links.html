@@ -13,7 +13,7 @@
     {% for link in links%}
         <tr>
             <td align="left" style="padding:0px 5px;">
-                <a href={{link}}>{{link}}</a>
+               {{ forloop.counter }}.  <a href={{link.url}}>{{link.alias}}</a>
             </td>
         </tr>
     {% endfor %}

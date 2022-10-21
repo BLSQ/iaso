@@ -7,7 +7,6 @@ import {
     commonStyles,
 } from 'bluesquare-components';
 import classnames from 'classnames';
-// @ts-ignore
 import { makeStyles, InputLabel } from '@material-ui/core';
 
 type Props = {
@@ -15,6 +14,8 @@ type Props = {
     label: string;
     // eslint-disable-next-line no-unused-vars
     onChange: (newValue: string) => void;
+    errors?: string[];
+    required?: boolean;
 };
 
 const useStyles = makeStyles(theme => ({
@@ -50,32 +51,50 @@ const useStyles = makeStyles(theme => ({
             border: `1px solid ${theme.palette.primary.main}`,
         },
     },
+    errorArea: {
+        border: `1px solid ${theme.palette.error.main}`,
+        '&:focus': {
+            border: `1px solid ${theme.palette.error.main}`,
+        },
+        '&:hover': {
+            border: `1px solid ${theme.palette.error.main}`,
+        },
+    },
+    errorText: { color: theme.palette.error.main },
 }));
 
 export const TextArea: FunctionComponent<Props> = ({
     value,
     onChange,
     label,
+    errors = [],
+    required = false,
 }) => {
     const classes: Record<string, string> = useStyles();
     const [focus, setFocus] = useState<boolean>(false);
+    const hasErrors = errors.length > 0;
 
     return (
-        <FormControl>
+        <FormControl errors={errors}>
             <InputLabel
                 shrink={Boolean(value)}
                 className={classnames(
                     classes.inputLabel,
                     focus && classes.inputLabelFocus,
                     Boolean(value) && classes.inputLabelShrink,
+                    hasErrors && classes.errorText,
                 )}
+                required={required}
             >
                 {label}
             </InputLabel>
             <textarea
                 onFocus={() => setFocus(true)}
                 onBlur={() => setFocus(false)}
-                className={classes.textArea}
+                className={classnames(
+                    classes.textArea,
+                    hasErrors && classes.errorArea,
+                )}
                 onChange={e => onChange(e.target.value)}
                 value={value}
             />

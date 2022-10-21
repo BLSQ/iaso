@@ -1,5 +1,4 @@
 import React, { useCallback, useMemo, useState } from 'react';
-
 import PropTypes from 'prop-types';
 import { useDispatch, useSelector } from 'react-redux';
 
@@ -26,6 +25,7 @@ import { useGetFormDescriptor } from '../compare/hooks/useGetInstanceLogs.ts';
 import { useGetForms, useInstancesFiltersData } from '../hooks';
 import { getInstancesFilterValues, useFormState } from '../../../hooks/form';
 import { useGetQueryBuildersFields } from '../hooks/useGetQueryBuildersFields.ts';
+import { parseJson } from '../utils/jsonLogicParse.ts';
 
 import MESSAGES from '../messages';
 import { OrgUnitTreeviewModal } from '../../orgUnits/components/TreeView/OrgUnitTreeviewModal';
@@ -59,6 +59,7 @@ const InstancesFiltersComponent = ({
 
     const [hasLocationLimitError, setHasLocationLimitError] = useState(false);
     const [fetchingOrgUnitTypes, setFetchingOrgUnitTypes] = useState(false);
+
     const defaultFilters = useMemo(() => {
         const filters = { ...params };
         delete filters.pageSize;
@@ -185,6 +186,20 @@ const InstancesFiltersComponent = ({
         }
         return false;
     }, [formState.startPeriod, formState.endPeriod]);
+
+    const handleChangeQueryBuilder = value => {
+        let parsedValue;
+        if (value)
+            parsedValue = parseJson({
+                value,
+                fields,
+            });
+        handleFormChange(
+            'fieldsSearch',
+            value ? JSON.stringify(parsedValue) : undefined,
+        );
+    };
+
     return (
         <div className={classes.marginBottomBig}>
             <UserOrgUnitRestriction />
@@ -215,14 +230,7 @@ const InstancesFiltersComponent = ({
                     {formState.formIds.value?.split(',').length === 1 && (
                         <QueryBuilderInput
                             label={MESSAGES.queryBuilder}
-                            onChange={newLogic =>
-                                handleFormChange(
-                                    'fieldsSearch',
-                                    newLogic
-                                        ? JSON.stringify(newLogic)
-                                        : undefined,
-                                )
-                            }
+                            onChange={handleChangeQueryBuilder}
                             initialLogic={
                                 formState.fieldsSearch.value
                                     ? JSON.parse(formState.fieldsSearch.value)

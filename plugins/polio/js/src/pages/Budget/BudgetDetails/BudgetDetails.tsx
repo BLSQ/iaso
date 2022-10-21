@@ -207,6 +207,9 @@ export const BudgetDetails: FunctionComponent<Props> = ({ router }) => {
                                                                 step.required_fields
                                                             }
                                                             params={params}
+                                                            recipients={
+                                                                step.emails_destination_team_ids
+                                                            }
                                                         />
                                                     </Grid>
                                                 );
@@ -231,6 +234,10 @@ export const BudgetDetails: FunctionComponent<Props> = ({ router }) => {
                                                 requiredFields={
                                                     nextSteps.override
                                                         .required_fields
+                                                }
+                                                recipients={
+                                                    nextSteps.override
+                                                        .emails_destination_team_ids
                                                 }
                                             />
                                         </Grid>

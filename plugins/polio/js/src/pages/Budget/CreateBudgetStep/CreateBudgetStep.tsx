@@ -19,7 +19,7 @@ import {
     // @ts-ignore
     makeFullModal,
 } from 'bluesquare-components';
-import { Box, Divider, makeStyles, Typography } from '@material-ui/core';
+import { Box, Chip, Divider, makeStyles, Typography } from '@material-ui/core';
 import { useDispatch } from 'react-redux';
 import MESSAGES from '../../../constants/messages';
 import InputComponent from '../../../../../../../hat/assets/js/apps/Iaso/components/forms/InputComponent';
@@ -38,6 +38,7 @@ import { useBudgetStepValidation } from '../hooks/validation';
 import { redirectToReplace } from '../../../../../../../hat/assets/js/apps/Iaso/routing/actions';
 import { BUDGET_DETAILS } from '../../../constants/routes';
 import { TextArea } from '../../../../../../../hat/assets/js/apps/Iaso/components/forms/TextArea';
+import { useGetRecipientTeams } from '../hooks/api/useGetEmailRecipients';
 
 type Props = {
     campaignId: string;
@@ -50,6 +51,7 @@ type Props = {
     isMobileLayout?: boolean;
     requiredFields?: string[];
     params: Record<string, any>;
+    recipients?: number[]; // team ids
 };
 
 const useStyles = makeStyles({
@@ -66,6 +68,7 @@ const CreateBudgetStep: FunctionComponent<Props> = ({
     id,
     requiredFields = [],
     params,
+    recipients = [],
 }) => {
     const currentUser = useCurrentUser();
     const { data: userHasTeam } = useUserHasTeam(currentUser?.user_id);
@@ -84,6 +87,8 @@ const CreateBudgetStep: FunctionComponent<Props> = ({
         }
         dispatch(redirectToReplace(BUDGET_DETAILS, trimmedParams));
     }, [dispatch, params]);
+
+    const { data: recipientTeams } = useGetRecipientTeams(recipients);
 
     const {
         apiErrors,
@@ -160,7 +165,6 @@ const CreateBudgetStep: FunctionComponent<Props> = ({
         messages: MESSAGES,
         formatMessage,
     });
-
     const attachmentErrors = useMemo(() => {
         const anyFieldTouched = Object.values(touched).find(value => value);
         const attachmentsErrors = [errors.attachments] ?? [];
@@ -253,6 +257,34 @@ const CreateBudgetStep: FunctionComponent<Props> = ({
                             <AddMultipleLinks
                                 required={requiredFields.includes('links')}
                             />
+                        </Box>
+                        <Box mt={2} mb={2}>
+                            <Divider />
+                        </Box>
+                        <Box mt={1} mb={1}>
+                            <Typography>
+                                {formatMessage(MESSAGES.emailWillBeSentTo)}
+                            </Typography>
+                            {recipientTeams?.map(team => {
+                                return (
+                                    <Box
+                                        mt={1}
+                                        mr={1}
+                                        mb={1}
+                                        display="inline-block"
+                                        key={team}
+                                    >
+                                        <Chip
+                                            label={team}
+                                            variant="outlined"
+                                            color="secondary"
+                                        />
+                                    </Box>
+                                );
+                            })}
+                        </Box>
+                        <Box mt={2} mb={2}>
+                            <Divider />
                         </Box>
                         {/* @ts-ignore */}
                         {(errors?.general ?? []).length > 0 && (

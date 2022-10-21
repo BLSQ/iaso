@@ -25,35 +25,35 @@ class ProjectsAPITestCase(APITestCase):
         self.assertJSONResponse(response, 403)
 
     def test_account_list_with_auth(self):
-        """GET /projects/ with auth should result in a 403 as method is not allowed"""
+        """GET /projects/ with auth should result in a 405 as method is not allowed"""
         self.client.force_authenticate(self.jane)
 
         response = self.client.get("/api/accounts/")
         self.assertJSONResponse(response, 405)
 
     def test_account_delete_forbidden(self):
-        """DELETE /projects/ with auth should result in a 403 as method is not allowed"""
+        """DELETE /projects/ with auth should result in a 405 as method is not allowed"""
         self.client.force_authenticate(self.jane)
 
         response = self.client.delete("/api/accounts/")
         self.assertJSONResponse(response, 405)
 
     def test_account_post_forbidden(self):
-        """POST /projects/ with auth should result in a 403 as method is not allowed"""
+        """POST /projects/ with auth should result in a 405 as method is not allowed"""
         self.client.force_authenticate(self.jane)
 
         response = self.client.post("/api/accounts/", {"default_version": self.ghi_version})
         self.assertJSONResponse(response, 405)
 
     def test_account_detail_forbidden(self):
-        """POST /projects/ with auth should result in a 403 as method is not allowed"""
+        """POST /projects/ with auth should result in a 405 as method is not allowed"""
         self.client.force_authenticate(self.jane)
 
         response = self.client.get(f"/api/accounts/{self.ghi.pk}/")
         self.assertJSONResponse(response, 405)
 
     def test_account_set_default_ok(self):
-        """Set a version with an user that has correct perm"""
+        """Set a version with a user that has correct perm"""
 
         self.client.force_authenticate(self.jane)
         response = self.client.put(f"/api/accounts/{self.ghi.pk}/", {"default_version": self.ghi_version.pk})

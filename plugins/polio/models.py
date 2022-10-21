@@ -188,9 +188,14 @@ class Round(models.Model):
 class CampaignQuerySet(models.QuerySet):
     def filter_for_user(self, user: Union[User, AnonymousUser]):
         qs = self
-        if user.is_authenticated and user.iaso_profile.org_units.count():
-            org_units = OrgUnit.objects.hierarchy(user.iaso_profile.org_units.all())
-            qs = qs.filter(initial_org_unit__in=org_units)
+        if user.is_authenticated:
+            # Authenticated users only get campaigns linked to their account
+            qs = qs.filter(account=user.iaso_profile.account)
+
+            # Restrict Campaign to the OrgUnit on the country he can access
+            if user.iaso_profile.org_units.count():
+                org_units = OrgUnit.objects.hierarchy(user.iaso_profile.org_units.all())
+                qs = qs.filter(initial_org_unit__in=org_units)
         return qs
 
 

@@ -18,11 +18,10 @@ class PolioAPITestCase(APITestCase):
 
     @classmethod
     def setUpTestData(cls):
-        cls.account = Account.objects.create(name="test")
         cls.data_source = m.DataSource.objects.create(name="Default source")
         cls.now = now()
         cls.source_version_1 = m.SourceVersion.objects.create(data_source=cls.data_source, number=1)
-        polio_account = Account.objects.create(name="polio", default_version=cls.source_version_1)
+        cls.account = polio_account = Account.objects.create(name="polio", default_version=cls.source_version_1)
         cls.yoda = cls.create_user_with_profile(username="yoda", account=polio_account, permissions=["iaso_forms"])
 
         cls.org_unit = m.OrgUnit.objects.create(
@@ -177,9 +176,8 @@ class PolioAPITestCase(APITestCase):
             ],
         }
         response = self.client.post("/api/polio/campaigns/", payload, format="json")
-        self.assertEqual(Campaign.objects.count(), 0)  # Nothing was created
+        self.assertEqual(Campaign.objects.count(), 1)
         self.assertEqual(response.status_code, 201)
-        self.assertEqual(response.content, b'{"account":["This field is required."]}')
 
     def test_cannot_create_campaigns_if_not_authenticated(self):
         payload = {

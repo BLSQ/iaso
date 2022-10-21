@@ -187,15 +187,6 @@ class CampaignViewSet(ModelViewSet):
         if campaign_groups:
             campaigns = campaigns.filter(grouped_campaigns__in=campaign_groups.split(","))
 
-        if self.request.user.is_authenticated:
-            # Authenticated users only get campaigns linked to their account
-            campaigns = campaigns.filter(account=self.request.user.iaso_profile.account)
-        else:
-            # Anonymous users *can* filter campaigns using account_id
-            account_id = self.request.query_params.get("account_id", None)
-            if account_id is not None:
-                campaigns = campaigns.filter(account_id=account_id)
-
         return campaigns.distinct()
 
     def get_queryset(self):
@@ -207,6 +198,14 @@ class CampaignViewSet(ModelViewSet):
         campaigns = campaigns.annotate(first_round_started_at=Min("rounds__started_at"))
 
         campaigns = campaigns.filter_for_user(user)
+        if not self.request.user.is_authenticated:
+            # For this endpoint since it's available anonymously we allow all user to list the campaigns
+            # and to additionally filter on the account_id
+            # In the future we may want to make the account_id parameter mandatory.
+            account_id = self.request.query_params.get("account_id", None)
+            if account_id is not None:
+                campaigns = campaigns.filter(account_id=account_id)
+
         return campaigns
 
     @action(methods=["POST"], detail=False, serializer_class=PreparednessPreviewSerializer)
@@ -432,6 +431,8 @@ Timeline tracker Automated message
         Campaign with and without scope per round are handled separately"""
         # FIXME: The cache ignore all the filter parameter which will return wrong result if used
         key_name = "{0}-geo_shapes".format(request.user.id)
+
+        # use the same filter logic and rule as for anonymous or not
         campaigns = self.filter_queryset(self.get_queryset())
         # Remove deleted campaigns
         campaigns = campaigns.filter(deleted_at=None)

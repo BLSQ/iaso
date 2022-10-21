@@ -502,7 +502,7 @@ class CurrentAccountDefault:
     requires_context = True
 
     def __call__(self, serializer_field):
-        return serializer_field.context["request"].user.iaso_profile.account
+        return serializer_field.context["request"].user.iaso_profile.account_id
 
 
 class CampaignSerializer(serializers.ModelSerializer):
@@ -533,7 +533,7 @@ class CampaignSerializer(serializers.ModelSerializer):
     )
     last_budget_event = BudgetStatusSerializer(many=False, required=False, allow_null=True)
     # Account is filed per default the one of the connected user that update it
-    account: Field = serializers.HiddenField(default=CurrentAccountDefault())
+    account: Field = serializers.PrimaryKeyRelatedField(default=CurrentAccountDefault(), read_only=True)
 
     def get_top_level_org_unit_name(self, campaign):
         if campaign.country:
@@ -572,6 +572,8 @@ class CampaignSerializer(serializers.ModelSerializer):
 
         campaign_scopes = validated_data.pop("scopes", [])
         campaign = Campaign.objects.create(
+            # there seems a bug in DRF the account is not in validated data, when not using HiddenField
+            account_id=self.context["request"].user.iaso_profile.account_id,
             **validated_data,
         )
 

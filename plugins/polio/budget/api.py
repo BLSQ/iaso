@@ -44,7 +44,6 @@ class BudgetCampaignViewSet(ModelViewSet):
     ]
 
     def get_queryset(self) -> QuerySet:
-        # Fixme refactor in function
         user = self.request.user
         campaigns = Campaign.objects.filter_for_user(user)
         campaigns = campaigns.annotate(budget_last_updated_at=Max("budget_steps__created_at"))

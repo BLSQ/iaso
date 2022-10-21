@@ -48,6 +48,7 @@ class PolioAPITestCase(APITestCase):
     child_org_unit: m.OrgUnit
     org_units: List[m.OrgUnit]
     luke: User
+    account: m.Account
 
     @classmethod
     def setUpTestData(cls) -> None:

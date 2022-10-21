@@ -29,7 +29,7 @@ def has_access_to(user: User, obj: Union[OrgUnit, Instance, models.Model]):
     from plugins.polio.models import Campaign
 
     if isinstance(obj, Campaign):
-        return True
+        return Campaign.objects.filter_for_user(user).filter(id=obj.id).exists()
     return False
 
 

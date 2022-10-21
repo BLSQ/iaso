@@ -5,6 +5,7 @@ import { useGetPossibleFields } from '../../forms/hooks/useGetPossibleFields';
 import { formatLabel } from '../utils';
 
 import { FormDescriptor } from '../../forms/types/forms';
+import { getLocaleDateFormat } from '../../../utils/dates';
 
 const findDescriptorInChildren = (field, descriptor) =>
     descriptor?.children?.reduce((a, child) => {
@@ -114,6 +115,10 @@ export const useGetQueryBuildersFields = (
                 Fields[field.name] = {
                     label: formatLabel(field),
                     type: 'date',
+                    operators: ['equal', 'not_equal'],
+                    fieldSettings: {
+                        dateFormat: getLocaleDateFormat('L'),
+                    },
                 };
                 break;
             }
@@ -121,6 +126,10 @@ export const useGetQueryBuildersFields = (
                 Fields[field.name] = {
                     label: formatLabel(field),
                     type: 'time',
+                    operators: ['equal', 'not_equal'],
+                    fieldSettings: {
+                        timeFormat: getLocaleDateFormat('LT'),
+                    },
                 };
                 break;
             }
@@ -128,6 +137,11 @@ export const useGetQueryBuildersFields = (
                 Fields[field.name] = {
                     label: formatLabel(field),
                     type: 'datetime',
+                    operators: ['equal', 'not_equal'],
+                    fieldSettings: {
+                        timeFormat: getLocaleDateFormat('LT'),
+                        dateFormat: getLocaleDateFormat('L'),
+                    },
                 };
                 break;
             }

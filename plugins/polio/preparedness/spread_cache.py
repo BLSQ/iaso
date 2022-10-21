@@ -45,6 +45,7 @@ class CachedSheet:
         self.c = cache_dict
         self.values = cache_dict["values"]
         self.formulas = cache_dict["formulas"]
+        self.properties = cache_dict.get("properties", {})
 
     def _cache_get(self, linenum, colnum):
         if linenum >= len(self.values):
@@ -71,6 +72,10 @@ class CachedSheet:
     @property
     def title(self):
         return self.c["title"]
+
+    @property
+    def is_hidden(self) -> bool:
+        return self.properties.get("hidden", False)
 
     def __repr__(self):
         return f'<CachedSheet title="{self.c["title"]}">'

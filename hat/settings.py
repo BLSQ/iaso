@@ -226,6 +226,10 @@ DB_HOST = os.environ.get("RDS_HOSTNAME", "db")
 DB_PORT = os.environ.get("RDS_PORT", 5432)
 SNS_NOTIFICATION_TOPIC = os.environ.get("SNS_NOTIFICATION_TOPIC", None)
 
+print(
+    "DB_NAME",
+    DB_NAME,
+)
 DATABASES = {
     "default": {
         "ENGINE": "django.contrib.gis.db.backends.postgis",

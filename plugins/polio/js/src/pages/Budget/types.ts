@@ -64,3 +64,10 @@ export type StepForm = {
     general: Nullable<string[]>;
     attachments: Nullable<string[]>;
 };
+
+export type Workflow = {
+    states: {
+        key: string;
+        label: string;
+    }[];
+};

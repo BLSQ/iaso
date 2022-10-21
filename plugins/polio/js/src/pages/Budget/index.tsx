@@ -1,9 +1,4 @@
-import React, {
-    FunctionComponent,
-    useState,
-    useCallback,
-    useMemo,
-} from 'react';
+import React, { FunctionComponent, useState, useCallback } from 'react';
 import {
     // @ts-ignore
     useSafeIntl,
@@ -24,7 +19,6 @@ import { Pagination } from '@material-ui/lab';
 
 // @ts-ignore
 import TopBar from 'Iaso/components/nav/TopBarComponent';
-import { groupBy } from 'lodash';
 import { TableWithDeepLink } from '../../../../../../hat/assets/js/apps/Iaso/components/tables/TableWithDeepLink';
 
 import { useStyles } from '../../styles/theme';
@@ -37,7 +31,11 @@ import { convertObjectToString } from '../../utils';
 import { BudgetFilters } from './BudgetFilters';
 import { BudgetCard } from './cards/BudgetCard';
 
-import { useBudgetParams, useGetBudgets } from './hooks/api/useGetBudget';
+import {
+    useBudgetParams,
+    useGetBudgets,
+    useGetWorkflowStatesForDropdown,
+} from './hooks/api/useGetBudget';
 import { Budget } from './types';
 
 import { handleTableDeepLink } from '../../../../../../hat/assets/js/apps/Iaso/utils/table';
@@ -89,16 +87,7 @@ export const BudgetList: FunctionComponent<Props> = ({ router }) => {
         },
         [apiParams],
     );
-    // FIXME: should come with right format from backend
-    const possibleStates = useMemo(() => {
-        const apiPossibleStates =
-            (budgets?.results ?? [])[0]?.possible_states ?? [];
-        return Object.entries(groupBy(apiPossibleStates, 'label')).map(
-            ([label, items]) => {
-                return { label, value: items.map(i => i.key).join(',') };
-            },
-        );
-    }, [budgets?.results]);
+    const { data: possibleStates } = useGetWorkflowStatesForDropdown();
 
     return (
         <>

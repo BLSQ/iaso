@@ -1,11 +1,15 @@
 /* eslint-disable camelcase */
 import { useMemo } from 'react';
 import { UseQueryResult } from 'react-query';
+import { groupBy } from 'lodash';
 import { useSnackQuery } from '../../../../../../../../hat/assets/js/apps/Iaso/libs/apiHooks';
 import { getApiParamDateString } from '../../../../../../../../hat/assets/js/apps/Iaso/utils/dates';
 import { getRequest } from '../../../../../../../../hat/assets/js/apps/Iaso/libs/Api';
-import { Optional } from '../../../../../../../../hat/assets/js/apps/Iaso/types/utils';
-import { Budget } from '../../types';
+import {
+    DropdownOptions,
+    Optional,
+} from '../../../../../../../../hat/assets/js/apps/Iaso/types/utils';
+import { Budget, Workflow } from '../../types';
 
 const getBudgets = (params: any) => {
     const filteredParams = Object.entries(params).filter(
@@ -40,7 +44,7 @@ export const useGetBudgets = (options: any): any => {
 export const useBudgetParams = params => {
     return useMemo(() => {
         return {
-            order: params?.order ?? '-obr_name',
+            order: params?.order ?? '-cvdpv2_notified_at',
             pageSize: params?.pageSize ?? 20,
             page: params?.page ?? 1,
             search: params.search,
@@ -74,5 +78,31 @@ export const useGetBudgetForCampaign = (
         queryFn: () => getBudgetForCampaign(id, params),
         queryKey: ['budget', 'campaign', id],
         options: { enabled: Boolean(id) },
+    });
+};
+
+const getBudgetWorkflow = () => {
+    return getRequest(`/api/polio/workflow/current/`);
+};
+
+export const useGetWorkflowStatesForDropdown = (): UseQueryResult<
+    DropdownOptions<string>[]
+> => {
+    return useSnackQuery({
+        queryFn: () => getBudgetWorkflow(),
+        queryKey: ['budget', 'workflow'],
+        options: {
+            select: (data: Workflow) => {
+                const apiPossibleStates = data?.states ?? [];
+                return Object.entries(groupBy(apiPossibleStates, 'label')).map(
+                    ([label, items]) => {
+                        return {
+                            label,
+                            value: items.map(i => i.key).join(','),
+                        };
+                    },
+                );
+            },
+        },
     });
 };

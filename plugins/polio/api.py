@@ -206,11 +206,8 @@ class CampaignViewSet(ModelViewSet):
         campaigns = campaigns.annotate(last_round_started_at=Max("rounds__started_at"))
         campaigns = campaigns.annotate(first_round_started_at=Min("rounds__started_at"))
 
-        if user.is_authenticated and user.iaso_profile.org_units.count():
-            org_units = OrgUnit.objects.hierarchy(user.iaso_profile.org_units.all())
-            return campaigns.filter(initial_org_unit__in=org_units)
-        else:
-            return campaigns.filter()
+        campaigns = campaigns.filter_for_user(user)
+        return campaigns
 
     @action(methods=["POST"], detail=False, serializer_class=PreparednessPreviewSerializer)
     def preview_preparedness(self, request, **kwargs):

@@ -5,7 +5,7 @@ import {
     TableCell,
     TableRow,
 } from '@material-ui/core';
-import React, { FunctionComponent, useMemo } from 'react';
+import React, { FunctionComponent } from 'react';
 // @ts-ignore
 import { useSafeIntl } from 'bluesquare-components';
 import classnames from 'classnames';
@@ -30,11 +30,7 @@ export const BudgetDetailsInfos: FunctionComponent<Props> = ({
     nextSteps = [],
 }) => {
     const { formatMessage } = useSafeIntl();
-    // filtering out repeat steps
-    const [firstStep, ...steps] = useMemo(
-        () => nextSteps.filter(step => !step.includes('repeat')),
-        [nextSteps],
-    );
+    const [firstStep, ...steps] = nextSteps;
     const classes = useStyles();
     return (
         <WidgetPaperComponent title={formatMessage(MESSAGES.budgetStatus)}>

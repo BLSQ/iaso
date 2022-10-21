@@ -89,14 +89,11 @@ export const BudgetDetails: FunctionComponent<Props> = ({ router }) => {
         );
         const toDisplay = new Set(
             regular
-                ?.filter(
-                    transition =>
-                        transition.key !== budgetInfos?.current_state?.key,
-                )
+                ?.filter(transition => !transition.key.includes('repeat'))
                 .map(transition => transition.label),
         );
         return { regular, override, toDisplay };
-    }, [budgetInfos?.current_state?.key, budgetInfos?.next_transitions]);
+    }, [budgetInfos?.next_transitions]);
 
     const { resetPageToOne, columns } = useTableState({
         events: budgetDetails?.results,

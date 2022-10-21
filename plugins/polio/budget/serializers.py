@@ -9,7 +9,7 @@ from iaso.models.microplanning import Team
 from plugins.polio.models import Campaign
 from plugins.polio.serializers import CampaignSerializer, UserSerializer
 from .models import BudgetStep, BudgetStepFile, BudgetStepLink, send_budget_mails, get_workflow
-from .workflow import next_transitions, can_user_transition
+from .workflow import next_transitions, can_user_transition, Transition
 
 
 class TransitionSerializer(serializers.Serializer):
@@ -23,7 +23,13 @@ class TransitionSerializer(serializers.Serializer):
     displayed_fields = serializers.ListField(child=serializers.CharField())
     # Note : implemented as a Css class in the frontend
     color = serializers.ChoiceField(choices=["primary", "green", "red"], required=False)
-    emails_to_send = serializers.JSONField(required=False)
+    emails_destination_team_ids = serializers.SerializerMethodField()
+
+    def get_emails_destination_team_ids(self, transition: Transition):
+        teams = []
+        for _, teams_ids in transition.emails_to_send:
+            teams += teams_ids
+        return set(teams)
 
 
 class NestedTransitionSerializer(TransitionSerializer):

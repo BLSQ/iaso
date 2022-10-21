@@ -8,6 +8,15 @@ import {
     apiTimeFormat,
 } from '../../../utils/dates';
 
+type FieldType =
+    | 'text'
+    | 'select'
+    | 'multiselect'
+    | 'number'
+    | 'time'
+    | 'date'
+    | 'datetime';
+
 type Props = {
     value: JSONValue;
     parent: JSONValue;
@@ -37,8 +46,10 @@ const arrayLoop = (arr: JSONArray, fields: QueryBuilderFields): JSONArray => {
     return arr.map(value => parseJson({ value, parent: arr, fields }));
 };
 
-const getFieldType = (parent: JSONValue, fields: QueryBuilderFields): string =>
-    parent && parent[0]?.var && fields[parent[0].var]?.type;
+const getFieldType = (
+    parent: JSONValue,
+    fields: QueryBuilderFields,
+): FieldType => parent && parent[0]?.var && fields[parent[0].var]?.type;
 
 export const parseJson = ({ value, parent, fields }: Props): JSONValue => {
     // @ts-ignore

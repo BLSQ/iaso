@@ -6,6 +6,7 @@ from iaso.api.comment import ContentTypeField
 from iaso.models.base import AccountFeatureFlag
 from iaso.models.comment import CommentIaso
 from django.contrib.sites.models import Site
+from iaso.models.device import Device
 from iaso.models.microplanning import Planning, Team
 from iaso.models.pages import Page
 from lxml import etree
@@ -156,6 +157,9 @@ class Command(BaseCommand):
             period_type="MONTH",
             single_per_period=True,
         )
+        quantity_form.device_field = "imei"
+        quantity_form.save()
+
         project.forms.add(quantity_form)
         quantity_form.org_unit_types.add(orgunit_type)
         quantity_mapping_version = self.seed_form(
@@ -175,6 +179,10 @@ class Command(BaseCommand):
         )
         quality_form.org_unit_types.add(orgunit_type)
         project.forms.add(quality_form)
+
+        quality_form.device_field = "imei"
+        quality_form.save()
+
         quality_form_version = self.seed_form(
             quality_form,
             datasource,
@@ -195,6 +203,8 @@ class Command(BaseCommand):
             single_per_period=False,
         )
         cvs_form.org_unit_types.add(orgunit_type)
+        cvs_form.device_field = "imei"
+        cvs_form.save()
 
         cvs_mapping_version = self.seed_form(
             cvs_form,
@@ -231,6 +241,9 @@ class Command(BaseCommand):
         event_tracker_form, created = Form.objects.get_or_create(
             form_id="event_tracker" + dhis2_version, name="Event Tracker " + dhis2_version, single_per_period=False
         )
+
+        event_tracker_form.device_field = "imei"
+        event_tracker_form.save()
 
         event_tracker_form.org_unit_types.add(orgunit_type)
 
@@ -275,16 +288,26 @@ class Command(BaseCommand):
             print("********* generating instances")
 
             self.seed_instances(
-                source_version, event_tracker_form, [None], event_tracker_form_version, fixed_instance_count=1
+                dhis2_version,
+                source_version,
+                event_tracker_form,
+                [None],
+                event_tracker_form_version,
+                fixed_instance_count=1,
             )
 
             self.seed_instances(
-                source_version, cvs_form, quarter_periods[0:1], cvs_mapping_version, fixed_instance_count=50
+                dhis2_version,
+                source_version,
+                cvs_form,
+                quarter_periods[0:1],
+                cvs_mapping_version,
+                fixed_instance_count=50,
             )
             print("generated", cvs_form.name, cvs_form.instances.count(), "instances")
-            self.seed_instances(source_version, quantity_form, periods, quantity_mapping_version)
+            self.seed_instances(dhis2_version, source_version, quantity_form, periods, quantity_mapping_version)
             print("generated", quantity_form.name, quantity_form.instances.count(), "instances")
-            self.seed_instances(source_version, quality_form, quarter_periods, quality_form_version)
+            self.seed_instances(dhis2_version, source_version, quality_form, quarter_periods, quality_form_version)
             print("generated", quality_form.name, quality_form.instances.count(), "instances")
 
         if mode == "derived":
@@ -422,7 +445,7 @@ class Command(BaseCommand):
         return mapping_version
 
     @transaction.atomic
-    def seed_instances(self, source_version, form, periods, mapping_version, fixed_instance_count=None):
+    def seed_instances(self, dhis2_version, source_version, form, periods, mapping_version, fixed_instance_count=None):
         for org_unit in source_version.orgunit_set.all():
             instances = []
             for period in periods:
@@ -456,9 +479,13 @@ class Command(BaseCommand):
                     instance.json = test_data
                     instance.form = form
 
+                    imei_prefix = "testi_" + dhis2_version if randint(1, 10) < 5 else "testimei"
+
                     if mapping_version.mapping.is_event_tracker():
                         instance.json.clear()
+
                         instance.json = {
+                            "imei": "testimeivalue" + str(randint(1, 100)),
                             "DE_2005736": "2.5",
                             "DE_2006098": "5",
                             "DE_2006101": "1",
@@ -497,6 +524,8 @@ class Command(BaseCommand):
                         self.generate_xml_file(instance, form.latest_version)
                     else:
                         instance.json["instanceID"] = "uuid:" + str(uuid4())
+                        instance.json["imei"] = "testimeivalue" + str(randint(1, 100))
+
                         xml_string = (
                             open("./testdata/seed-data-command-instance.xml")
                             .read()
@@ -516,6 +545,12 @@ class Command(BaseCommand):
                         instance.file = file
 
                         UploadedFile()
+
+                    if instance.json["imei"] is not None:
+                        device, created = Device.objects.get_or_create(imei=instance.json["imei"])
+                        instance.device = device
+                        if created:
+                            device.projects.add(instance.project)
 
                     instances.append(instance)
             Instance.objects.bulk_create(instances)
@@ -592,6 +627,11 @@ class Command(BaseCommand):
         for sub_team in basic_teams:
             sub_team.users.set([user])
             team_main.sub_teams.add(sub_team)
+            sub_team.calculate_paths(force_recalculate=True)
+            sub_team.save()
+
+        team_main.calculate_paths(force_recalculate=True)
+        team_main.save()
 
         country = source_version.orgunit_set.filter(source_ref="ImspTQPwCqd").first()
         print("country ", country.name)

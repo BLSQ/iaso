@@ -46,7 +46,7 @@ class LogsViewSet(viewsets.ViewSet):
         - new_value
         - field_diffs
 
-    contentType parameter can be one of:  iaso.orgunit, iaso.form, iaso.instance
+    contentType parameter can be one of:  iaso.orgunit, iaso.form, iaso.instance, polio.campaign
 
     list:
     Returns the list of modifications

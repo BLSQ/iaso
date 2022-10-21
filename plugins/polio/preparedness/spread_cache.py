@@ -15,6 +15,10 @@ class CachedSpread:
         dict_spread["properties"] = spread._properties
         dict_spread["sheets"] = sheets = []
         for sheet in spread.worksheets():
+            # Google sheet has some kind of special "chart" as a sheet
+            # which will fail import. their sheetType is "OBJECT"
+            if sheet._properties["sheetType"] != "GRID":
+                continue
             dict_sheet = {
                 "title": sheet.title,
                 "id": sheet.id,
@@ -23,6 +27,7 @@ class CachedSpread:
                     value_render_option=gspread.utils.ValueRenderOption.unformatted,
                     date_time_render_option="SERIAL_NUMBER",
                 ),
+                "properties": sheet._properties,
             }
             sheets.append(dict_sheet)
         return CachedSpread(dict_spread)

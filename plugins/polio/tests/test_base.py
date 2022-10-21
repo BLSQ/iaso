@@ -466,7 +466,9 @@ class PolioAPITestCase(APITestCase):
             org_unit_type=self.jedi_squad,
             version=self.star_wars.default_version,
         )
-        c = Campaign.objects.create(country_id=org_unit.id, obr_name="orb campaign", vacine="vacin", is_test=True)
+        c = Campaign.objects.create(
+            country_id=org_unit.id, obr_name="orb campaign", vacine="vacin", is_test=True, account=self.account
+        )
         c.rounds.create(number=1, started_at=datetime.date(2022, 1, 1), ended_at=datetime.date(2022, 1, 2))
 
         response = self.client.get("/api/polio/campaigns/create_calendar_xlsx_sheet/", {"currentDate": "2022-10-01"})

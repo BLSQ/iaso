@@ -38,7 +38,6 @@ import { useSnackQuery } from '../../libs/apiHooks.ts';
 import snackMessages from '../../components/snackBars/messages';
 import { TableWithDeepLink } from '../../components/tables/TableWithDeepLink';
 import { PaginatedInstanceFiles } from './components/PaginatedInstancesFiles';
-import { convertObjectToString } from '../../utils';
 
 const baseUrl = baseUrls.instances;
 
@@ -60,10 +59,6 @@ const Instances = ({ params }) => {
     const [selection, setSelection] = useState(selectionInitialState);
     const [tableColumns, setTableColumns] = useState([]);
     const [tab, setTab] = useState(params.tab ?? 'list');
-
-    const [resetPageToOne, setResetPageToOne] = useState(
-        convertObjectToString(params),
-    );
 
     // Data for the map
     const { data: instancesSmall, isLoading: loadingMap } = useSnackQuery(
@@ -135,7 +130,6 @@ const Instances = ({ params }) => {
     const onSearch = useCallback(
         newParams => {
             setSelection(selectionInitialState);
-            setResetPageToOne(convertObjectToString(newParams));
             dispatch(redirectToReplace(baseUrl, newParams));
         },
         [dispatch],
@@ -261,7 +255,6 @@ const Instances = ({ params }) => {
                         extraProps={{
                             loading: fetchingList,
                         }}
-                        resetPageToOne={resetPageToOne}
                     />
                 )}
                 {tab === 'map' && (

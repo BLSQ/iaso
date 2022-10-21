@@ -7,9 +7,9 @@ from typing import Any, Optional, Union
 
 CALENDAR_COLUMNS_CELL_WIDTH = 25.75
 CALENDAR_FIRST_COLUMN_CELL_WIDTH = 35.00
-CALENDAR_FIRST_COLUMN_CELL_HEIGHT = 50.75
+CALENDAR_FIRST_COLUMN_CELL_HEIGHT = 40.75
 CALENDAR_CELL_WIDTH = 22.00
-CALENDAR_CELL_HEIGHT = 80.00
+CALENDAR_CELL_HEIGHT = 40.00
 CALENDAR_COLUMN_FONT_SIZE = 12
 CALENDAR_CELL_FONT_SIZE = 10
 
@@ -32,51 +32,92 @@ def generate_xlsx_campaigns_calendar(filename: str, datas: Any) -> Workbook:
     # display columns in the xlsx file
     for column in range(1, len(columns) + 1):
         cell_header = sheet.cell(column=column, row=1, value=columns[column - 1])
-        cell_header = format_cell(cell_header, CALENDAR_COLUMN_FONT_SIZE, True)
+        cell_header = font_alignment(cell_header, CALENDAR_COLUMN_FONT_SIZE, "center")
+        cell_header = cell_border(cell_header)
         sheet = cell_dimension_pattern_fill(sheet, cell_header, None, CALENDAR_COLUMNS_CELL_WIDTH, True)
     # display calendar data in the xlsx file by looping over each row representing a country campaign rounds
+    last_end_row = 0
     for row in range(1, len(datas) + 1):
-        cell_country = sheet.cell(column=1, row=row + 1, value=datas[row - 1]["country_name"])
-        cell_country = format_cell(cell_country, CALENDAR_COLUMN_FONT_SIZE, True)
+        # merge cells depending on the max length for rounds it has
+        max_rounds_count = get_max_rounds_count(datas[row - 1]["rounds"])
+        # specify from which cell to start merging until to which cell
+        start_row = row + 1 if row == 1 else last_end_row + 1
+        end_row = row + max_rounds_count if row == 1 else last_end_row + max_rounds_count
+        # merging cells
+        sheet.merge_cells(start_column=1, end_column=1, start_row=start_row, end_row=end_row)
+        cell_country = sheet.cell(row=start_row, column=1)
+        # assign value to merged cell
+        cell_country.value = datas[row - 1]["country_name"]
+        cell_country = font_alignment(cell_country, CALENDAR_COLUMN_FONT_SIZE)
         sheet = cell_dimension_pattern_fill(
             sheet, cell_country, CALENDAR_FIRST_COLUMN_CELL_WIDTH, CALENDAR_FIRST_COLUMN_CELL_HEIGHT, True
         )
+
+        last_end_row = end_row
+        cell_country_format = sheet.cell(column=1, row=last_end_row)
+        cell_border(cell_country_format, False, True)
         # loop over rounds for each month
         for month in range(1, 13):
             if str(month) in datas[row - 1]["rounds"].keys():
-                cell = sheet.cell(
-                    column=month + 1, row=row + 1, value=get_cell_data(datas[row - 1]["rounds"][str(month)])
-                )
+                # assign rounds to each cell
+                for r in range(0, len(datas[row - 1]["rounds"][str(month)])):
+                    cell_val = datas[row - 1]["rounds"][str(month)][r]
+                    formatted_cell_val = get_cell_data(cell_val)
+                    cell = sheet.cell(column=month + 1, row=r + start_row, value=formatted_cell_val)
+                    cell = font_alignment(cell, CALENDAR_CELL_FONT_SIZE)
+                    cell = cell_border(cell, True)
+                    vacine_color = None
+                    if datas[row - 1]["rounds"][str(month)][r]["vacine"] != "":
+                        vacine_color = polio_vaccines(datas[row - 1]["rounds"][str(month)][r]["vacine"])
+                    sheet = cell_dimension_pattern_fill(
+                        sheet, cell, CALENDAR_CELL_WIDTH, CALENDAR_CELL_HEIGHT, True, vacine_color
+                    )
+
+            # format the last cell in the month column according it has value or not
+            cell_format = sheet.cell(column=month + 1, row=last_end_row)
+            if cell_format.value is None or cell_format.value == "":
+                cell_border(cell_format, False, True)
             else:
-                cell = sheet.cell(column=month + 1, row=row + 1, value="")
-            cell = format_cell(cell, CALENDAR_CELL_FONT_SIZE)
-            sheet = cell_dimension_pattern_fill(sheet, cell, CALENDAR_CELL_WIDTH, CALENDAR_CELL_HEIGHT)
+                cell_border(cell_format, False, False)
 
     file.save(filename)
 
     return file
 
 
-def get_cell_data(rounds: Any) -> str:
+def get_max_rounds_count(rounds: Any) -> int:
     """
-    Returns a value(string of rounds in same month) to be assigned in an XLSX cell
+    returns the max length for country rounds
+
+        parameters:
+            rounds : all rounds owned by the country
+        returns:
+            max (int): the max length for all rounds(in each month)
+    """
+    rounds_list = []
+    for key, round in rounds.items():
+        rounds_list.append(len(round))
+    return max(rounds_list)
+
+
+def get_cell_data(round: Any) -> str:
+    """
+    Returns a value(string of one round in a month) to be assigned in an XLSX cell
 
             parameters:
-                rounds (list): a rounds list
+                round (dict): a round dict
 
             returns:
                 cell_data (string): a cell_data string
     """
-    cell_data = ""
-    for round in rounds:
-        started_at = format_date(round["started_at"])
-        ended_at = format_date(round["ended_at"], True)
-        obr_name = round["obr_name"] if round["obr_name"] is not None else ""
-        round_number = round["round_number"] if round["round_number"] is not None else ""
-        cell_data += obr_name + "\n"
-        cell_data += "Round " + str(round_number) + "\n"
-        cell_data += "Dates: " + started_at + " - " + ended_at + "\n"
-        cell_data += round["vacine"] + "\n\n" if round["vacine"] is not None else "\n"
+    started_at = format_date(round["started_at"])
+    ended_at = format_date(round["ended_at"], True)
+    obr_name = round["obr_name"] if round["obr_name"] is not None else ""
+    round_number = round["round_number"] if round["round_number"] is not None else ""
+    cell_data = obr_name + "\n"
+    cell_data += "Round " + str(round_number) + "\n"
+    cell_data += "Dates: " + started_at + " - " + ended_at + "\n"
+    cell_data += round["vacine"] if round["vacine"] is not None else ""
 
     return cell_data
 
@@ -103,8 +144,29 @@ def format_date(date: str, with_year: bool = False) -> str:
     return formatted_date
 
 
+def polio_vaccines(vaccine: str) -> Optional[str]:
+    """
+    returns a vaccine color
+
+        parameters:
+            vaccine (str): a vaccine string
+        returns:
+            None when the color vaccine doesn't exist or the matching color when the vaccine exists
+    """
+    vaccine_color = {"nOPV2": "00b0f0", "mOPV2": "66ff66", "bOPV": "ffff00"}
+    if vaccine not in vaccine_color.keys():
+        return None
+
+    return vaccine_color[vaccine]
+
+
 def cell_dimension_pattern_fill(
-    sheet: Any, cell: Any, width: Union[None, float], height: Union[None, float], pattern_fill: Optional[bool] = False
+    sheet: Any,
+    cell: Any,
+    width: Union[None, float],
+    height: Union[None, float],
+    pattern_fill: Optional[bool] = False,
+    color: Optional[str] = "999791",
 ) -> Any:
     """
     Return the openpyxl.worksheet object after applying fill color on a cell
@@ -123,47 +185,59 @@ def cell_dimension_pattern_fill(
         sheet.column_dimensions[cell.column_letter].width = float(width)
     if height is not None:
         sheet.row_dimensions[cell.row].height = float(height)
-    if pattern_fill:
-        sheet[cell.column_letter + str(cell.row)].fill = PatternFill("solid", start_color="999791")
+    if pattern_fill and color is not None:
+        sheet[cell.column_letter + str(cell.row)].fill = PatternFill("solid", start_color=color)
 
     return sheet
 
 
-def format_cell(cell: Any, size: int, is_header: bool = False) -> Any:
+def font_alignment(cell: Any, size: int, horizontal: str = "left") -> Any:
     """
-    Return the openpyxl.cell object after applying alignement, border and font
+    returns a cell already aligned and formatted with font size
 
-            parameters:
-                cell (openpyxl.cell): a cell openpyxl.cell object
-                size (str): a size string
-                is_header (boolean): a is_header boolean with false as default value
-
-            returns:
-                cell (openpyxl.cell): a sheet openpyxl.cell object
+        parameters:
+            cell (openpyxl.cell): a cell openpyxl.cell object
+            size (str): a size string
+        returns:
+            cell (openpyxl.cell): a sheet openpyxl.cell object
     """
-    cell.alignment = Alignment(horizontal="left", vertical="top", wrap_text=True)
-    cell.border = border_style(is_header)
+    cell.alignment = Alignment(horizontal=horizontal, vertical="center", wrap_text=True)
     cell.font = Font(size=size)
-
     return cell
 
 
-def border_style(is_header: bool) -> Border:
+def cell_border(cell: Any, all: bool = True, bottom_only: bool = False) -> Any:
     """
-    Return the border(openpyxl.styles.borders.Border) object for each cell
+    Return the openpyxl.cell object after applying  border
 
             parameters:
-                is_header (boolean): a is_header boolean
-
+                cell (openpyxl.cell): a cell openpyxl.cell object
+                all (boolean): all border are thin
+                bottom_only(boolean): Anly bottom border
             returns:
-                border (openpyxl.styles.borders.Borderl): a border openpyxl.styles.borders.Border object
+                cell (openpyxl.cell): a sheet openpyxl.cell object
     """
-    return Border(
-        left=Side(style="thin"),
-        right=Side(style="thin"),
-        top=Side(style="thin"),
-        bottom=Side(style="thin" if not is_header else "medium"),
-    )
+    border = None
+    if all:
+        border = Border(
+            left=Side(style="thin"),
+            right=Side(style="thin"),
+            top=Side(style="thin"),
+            bottom=Side(style="thin"),
+        )
+    elif bottom_only:
+        border = Border(
+            bottom=Side(style="medium"),
+        )
+    else:
+        border = Border(
+            left=Side(style="thin"),
+            right=Side(style="thin"),
+            top=Side(style="thin"),
+            bottom=Side(style="medium"),
+        )
+    cell.border = border
+    return cell
 
 
 def get_columns_names() -> list:

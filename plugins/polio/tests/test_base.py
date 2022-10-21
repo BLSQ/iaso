@@ -412,9 +412,9 @@ class PolioAPITestCase(APITestCase):
         self.assertEqual(data_dict["COUNTRY"][0], org_unit.name)
         self.assertEqual(data_dict["COUNTRY"][1], org_unit_2.name)
         self.assertEqual(data_dict["January"][0], self.format_date_to_test(c, c_round_1))
-        self.assertEqual(
-            data_dict["January"][1], self.format_date_to_test(c2, c2_round_1) + self.format_date_to_test(c2, c2_round_2)
-        )
+        self.assertEqual(data_dict["January"][1], self.format_date_to_test(c2, c2_round_1))
+        self.assertEqual(data_dict["January"][2], self.format_date_to_test(c2, c2_round_2))
+        #  + self.format_date_to_test(c2, c2_round_2)
 
     def test_create_calendar_xlsx_sheet_campaign_without_country(self):
         """
@@ -455,6 +455,27 @@ class PolioAPITestCase(APITestCase):
         data_dict = excel_data.to_dict()
         self.assertEqual(data_dict["January"][0], self.format_date_to_test(c, round))
 
+    def test_create_calendar_xlsx_sheet_without_test_campaigns(self):
+        """
+        Test campaigns appeared in the XLSX but they should not
+            - This test is to make sure that no test campaign appear again in the XLSX calendar export
+        """
+        org_unit = OrgUnit.objects.create(
+            id=5455,
+            name="Country name",
+            org_unit_type=self.jedi_squad,
+            version=self.star_wars.default_version,
+        )
+        c = Campaign.objects.create(country_id=org_unit.id, obr_name="orb campaign", vacine="vacin", is_test=True)
+        c.rounds.create(number=1, started_at=datetime.date(2022, 1, 1), ended_at=datetime.date(2022, 1, 2))
+
+        response = self.client.get("/api/polio/campaigns/create_calendar_xlsx_sheet/", {"currentDate": "2022-10-01"})
+        self.assertEqual(response.status_code, 200)
+        excel_data = pd.read_excel(response.content, engine="openpyxl", sheet_name="calendar_2022-10-01")
+
+        data_dict = excel_data.to_dict()
+        self.assertEqual(len(data_dict["COUNTRY"]), 0)
+
     @staticmethod
     def format_date_to_test(campaign, round):
         started_at = format_date(round.started_at.strftime("%Y-%m-%d")) if round.started_at is not None else ""
@@ -469,7 +490,6 @@ class PolioAPITestCase(APITestCase):
             + ended_at
             + "\n"
             + campaign.vacine
-            + "\n\n"
         )
 
     def test_handle_restore_active_campaign(self):

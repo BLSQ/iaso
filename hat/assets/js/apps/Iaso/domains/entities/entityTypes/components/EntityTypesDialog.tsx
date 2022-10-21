@@ -20,7 +20,7 @@ import { baseUrls } from '../../../../constants/urls';
 
 import { useGetForms } from '../hooks/requests/forms';
 import { useTranslatedErrors } from '../../../../libs/validation';
-import { useGetPossibleFields } from '../hooks/useGetPossibleFields';
+import { useGetPossibleFields } from '../../../forms/hooks/useGetPossibleFields';
 import MESSAGES from '../messages';
 
 type RenderTriggerProps = {

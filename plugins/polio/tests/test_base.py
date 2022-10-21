@@ -114,12 +114,15 @@ class PolioAPITestCase(APITestCase):
     def test_create_campaign(self):
         self.assertEqual(Campaign.objects.count(), 0)
 
-        payload = {"account": self.account.id, "obr_name": "obr_name", "detection_status": "PENDING", "rounds": []}
+        payload = {"obr_name": "obr_name", "detection_cstatus": "PENDING", "rounds": []}
         response = self.client.post("/api/polio/campaigns/", payload, format="json")
         self.assertJSONResponse(response, 201)
 
         self.assertEqual(response.status_code, 201)
         self.assertEqual(Campaign.objects.count(), 1)
+        c = Campaign.objects.first()
+        self.assertEqual(c.obr_name, "obr_name")
+        self.assertEqual(c.account, self.account)
 
     def test_return_test_campaign_only(self):
         self.assertEqual(Campaign.objects.count(), 0)
@@ -181,7 +184,6 @@ class PolioAPITestCase(APITestCase):
         response = self.client.post(
             "/api/polio/campaigns/",
             data={
-                "account": self.account.pk,
                 "obr_name": "campaign with org units",
                 "scopes": [
                     {
@@ -382,11 +384,15 @@ class PolioAPITestCase(APITestCase):
             version=self.star_wars.default_version,
         )
 
-        c = Campaign.objects.create(country_id=org_unit.id, obr_name="orb campaign", vacine="vacin")
+        c = Campaign.objects.create(
+            country_id=org_unit.id, obr_name="orb campaign", vacine="vacin", account=self.account
+        )
         c_round_1 = c.rounds.create(number=1, started_at=datetime.date(2022, 1, 1), ended_at=datetime.date(2022, 1, 2))
         c_round_2 = c.rounds.create(number=2, started_at=datetime.date(2022, 3, 1), ended_at=datetime.date(2022, 3, 2))
 
-        c2 = Campaign.objects.create(country_id=org_unit_2.id, obr_name="orb campaign 2", vacine="vacin")
+        c2 = Campaign.objects.create(
+            country_id=org_unit_2.id, obr_name="orb campaign 2", vacine="vacin", account=self.account
+        )
         c2_round_1 = c2.rounds.create(
             number=1, started_at=datetime.date(2022, 1, 1), ended_at=datetime.date(2022, 1, 2)
         )
@@ -415,7 +421,7 @@ class PolioAPITestCase(APITestCase):
         When a campaign was not linked to a country, export XLSX calendar triggered an error('NoneType' object has no attribute 'id'):
             - This test checks if the error does not occur even when a campaign is not linked to country
         """
-        c = Campaign.objects.create(obr_name="orb campaign", vacine="vacin")
+        c = Campaign.objects.create(obr_name="orb campaign", vacine="vacin", account=self.account)
         c.rounds.create(number=1, started_at=datetime.date(2022, 1, 1), ended_at=datetime.date(2022, 1, 2))
 
         response = self.client.get("/api/polio/campaigns/create_calendar_xlsx_sheet/", {"currentDate": "2022-10-01"})
@@ -437,7 +443,9 @@ class PolioAPITestCase(APITestCase):
             version=self.star_wars.default_version,
         )
 
-        c = Campaign.objects.create(country_id=org_unit.id, obr_name="orb campaign", vacine="vacin")
+        c = Campaign.objects.create(
+            country_id=org_unit.id, obr_name="orb campaign", vacine="vacin", account=self.account
+        )
         round = c.rounds.create(number=1, started_at=datetime.date(2022, 1, 1), ended_at=None)
 
         response = self.client.get("/api/polio/campaigns/create_calendar_xlsx_sheet/", {"currentDate": "2022-10-01"})

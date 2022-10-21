@@ -493,6 +493,18 @@ class CampaignPreparednessSpreadsheetSerializer(serializers.Serializer):
         return {"url": spreadsheet.url}
 
 
+class CurrentAccountDefault:
+    """
+    May be applied as a `default=...` value on a serializer field.
+    Returns the current user's account.
+    """
+
+    requires_context = True
+
+    def __call__(self, serializer_field):
+        return serializer_field.context["request"].user.iaso_profile.account
+
+
 class CampaignSerializer(serializers.ModelSerializer):
     round_one = serializers.SerializerMethodField(read_only=True)
     round_two = serializers.SerializerMethodField(read_only=True)
@@ -520,6 +532,8 @@ class CampaignSerializer(serializers.ModelSerializer):
         many=True, queryset=CampaignGroup.objects.all(), required=False
     )
     last_budget_event = BudgetStatusSerializer(many=False, required=False, allow_null=True)
+    # Account is filed per default the one of the connected user that update it
+    account: Field = serializers.HiddenField(default=CurrentAccountDefault())
 
     def get_top_level_org_unit_name(self, campaign):
         if campaign.country:

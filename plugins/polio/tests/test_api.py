@@ -162,8 +162,8 @@ class PolioAPITestCase(APITestCase):
             self.assertEqual(campaign_data["account"], self.account.pk)
             # TODO: test other fields (all that's needed for anonymous access) here
 
-    def test_create_campaign_account_mandatory(self):
-        """Campaigns can't be created without an account"""
+    def test_create_campaign_account_not_mandatory(self):
+        """Campaigns ca be created without an account"""
         self.client.force_authenticate(self.yoda)
         payload = {
             "obr_name": "obr_name",
@@ -178,7 +178,7 @@ class PolioAPITestCase(APITestCase):
         }
         response = self.client.post("/api/polio/campaigns/", payload, format="json")
         self.assertEqual(Campaign.objects.count(), 0)  # Nothing was created
-        self.assertEqual(response.status_code, 400)
+        self.assertEqual(response.status_code, 201)
         self.assertEqual(response.content, b'{"account":["This field is required."]}')
 
     def test_cannot_create_campaigns_if_not_authenticated(self):

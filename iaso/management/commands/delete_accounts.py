@@ -1,3 +1,4 @@
+import pdb
 from django.core.management.base import BaseCommand
 from django.contrib.gis.geos import Point
 from django.db import models, transaction
@@ -8,14 +9,18 @@ from iaso.models import Account
 from django.contrib.admin.utils import NestedObjects
 from django.db import router
 
-
+import random
 from django.contrib.admin.utils import NestedObjects
-from iaso.models.base import ExternalCredentials, Instance, Mapping
+from iaso.models.base import DataSource, ExternalCredentials, Instance, Mapping
 from iaso.models.forms import Form
 from iaso.models.pages import Page
 from iaso.models.microplanning import Assignment, Team, Planning
 from iaso.models.project import Project
 from django.contrib.contenttypes.models import ContentType
+
+
+def fullname(m):
+    return m.__module__ + "." + m.__name__
 
 
 def dump_counts():
@@ -26,13 +31,13 @@ def dump_counts():
         try:
             count = m._default_manager.count()
             # print(m.__module__, m.__name__, count)
-            counts[m.__module__ + "." + m.__name__] = count
+            counts[fullname(m)] = count
         except:
             # don't know why (abstract model ? missing migration) but I had to add this catch statement
             # the error raised below :
             # db_1       | 2022-10-19 08:30:32.838 UTC [153] ERROR:  relation "menupermissions_custompermissionsupport" does not exist at character 35
             # db_1       | 2022-10-19 08:30:32.838 UTC [153] STATEMENT:  SELECT COUNT(*) AS "__count" FROM "menupermissions_custompermissionsupport"
-            print(m.__module__, m.__name__, "not available")
+            print(fullname(m), "not available")
     print("******************* ")
 
     return counts
@@ -55,13 +60,12 @@ def dump_diffs(counts_before, counts_after):
 
 
 class Command(BaseCommand):
-    help = "Import a complete tree from a csv file"
+    help = "Local hosting delete all the data related to other accounts"
 
     def add_arguments(self, parser):
         parser.add_argument("--account-to-keep", type=int)
 
     def handle(self, *args, **options):
-
         account_id_to_keep = options.get("account_to_keep")
         if account_id_to_keep is None:
             for account in Account.objects.all():
@@ -83,6 +87,7 @@ class Command(BaseCommand):
                 projects = Project.objects.filter(account=account)
                 for project in projects:
                     forms = Form.objects_include_deleted.filter(projects__account=account)
+
                     print(Instance.objects.filter(project=project).delete())
                     print(Mapping.objects.filter(form__in=forms).delete())
                     print(forms.delete())
@@ -90,7 +95,9 @@ class Command(BaseCommand):
                     print(Planning.objects.filter(project=project).delete())
                     print(Team.objects.filter(parent__in=Team.objects.filter(project=project)).delete())
                     print(Team.objects.filter(project=project).delete())
+                    datasources = project.data_sources.all()
                     print(project.delete())
+                    print(datasources.delete())
 
                 print(Page.objects.filter(account=account).delete())
                 print(account.delete())

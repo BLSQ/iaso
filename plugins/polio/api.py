@@ -1092,6 +1092,10 @@ def handle_ona_request_with_key(request, key):
 
     form_count = 0
     find_campaign_on_day_cached = functools.lru_cache(None)(find_campaign_on_day)
+    stats = {
+        "7days": {"ok": defaultdict(lambda: 0), "failure": defaultdict(lambda: 0)},
+        "alltime": {"ok": defaultdict(lambda: 0), "failure": defaultdict(lambda: 0)},
+    }
     for config in config.content:
         forms = get_url_content(
             url=config["url"], login=config["login"], password=config["password"], minutes=config.get("minutes", 60)
@@ -1140,14 +1144,38 @@ def handle_ona_request_with_key(request, key):
                     form["campaign_id"] = None
                     form["epid"] = None
                     form["obr"] = None
+
                 res.append(form)
                 form_count += 1
+
+                success = form["facility_id"] != None and form["campaign_id"] != None
+                stats_key = "ok" if success else "failure"
+                stats["alltime"][stats_key][country.name] = stats["alltime"][stats_key][country.name] + 1
+                if (datetime.utcnow().date() - today).days <= 7:
+                    stats["7days"][stats_key][country.name] = stats["7days"][stats_key][country.name] + 1
             except Exception as e:
                 logger.exception(f"failed parsing of {form}", exc_info=e)
                 failure_count += 1
     print("parsed:", len(res), "failed:", failure_count)
     res = convert_dicts_to_table(res)
 
+    if len(stats["7days"]["failure"]) > 1:  # let's send an email if there are recent failures
+        email_text = "Forms not appearing in %s for the last 7 days \n" % key.upper()
+        config = get_object_or_404(Config, slug="refresh_error_mailing_list")
+        mails = config.content["mails"].split(",")  # format should be: {"mails": "a@a.b,b@b.a"}
+        for country in stats["7days"]["failure"]:
+            new_line = "\n%d\t%s" % (stats["7days"]["failure"][country], country)
+            email_text += new_line
+        email_text += "\n\nForms correctly handled in %s for the last 7 days\n" % key.upper()
+        for country in stats["7days"]["ok"]:
+            new_line = "\n%d\t%s" % (stats["7days"]["ok"][country], country)
+            email_text += new_line
+        send_mail(
+            "Recent errors for %s" % (key.upper(),),
+            email_text,
+            settings.DEFAULT_FROM_EMAIL,
+            mails,
+        )
     if as_csv:
         response = HttpResponse(content_type="text/csv")
         writer = csv.writer(response)

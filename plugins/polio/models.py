@@ -3,7 +3,7 @@ from uuid import uuid4
 
 from django.contrib.auth.models import User, AnonymousUser
 from django.db import models
-from django.db.models import Count, Manager
+from django.db.models import Count, Manager, Q
 import django.db.models.manager
 
 from django.utils.translation import gettext as _

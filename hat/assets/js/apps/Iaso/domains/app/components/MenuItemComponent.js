@@ -49,7 +49,6 @@ function MenuItem(props) {
         url,
     } = props;
 
-
     const urlLink = url;
     const path = urlLink ? `${currentPath}` : `${currentPath}/${menuItem.key}`;
     const activePath = location.pathname.split('/', subMenuLevel + 1).join('/');
@@ -73,13 +72,19 @@ function MenuItem(props) {
         <>
             <Link
                 className={classes.linkButton}
-                to={!hasSubMenu ? fullPath : ''}
-                target={urlLink ? "_blank" : ""}
+                to={
+                    !hasSubMenu
+                        ? `${fullPath}/accountId/${currentUser.account.id}`
+                        : ''
+                }
+                target={urlLink ? '_blank' : ''}
             >
                 <ListItem
                     style={itemStyle}
                     button
-                    onClick={() => (!hasSubMenu ? onClick(path, url) : toggleOpen())}
+                    onClick={() =>
+                        !hasSubMenu ? onClick(path, url) : toggleOpen()
+                    }
                 >
                     <ListItemIcon className={classes.listItemIcon}>
                         {menuItem.icon({ color })}

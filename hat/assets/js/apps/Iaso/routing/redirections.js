@@ -14,8 +14,11 @@ import Page404 from '../components/errors/Page404';
 
 import { defaultSorted as storageDefaultSort } from '../domains/storages/config.tsx';
 
-const addRoutes = (baseRoutes, overrideLanding) => {
-    return baseRoutes.concat([
+import { useCurrentUser } from '../utils/usersUtils.ts';
+
+const useAddRoutes = (baseRoutes, overrideLanding) => {
+    const currentUser = useCurrentUser();
+    return [...baseRoutes].concat([
         <Redirect path="/" to={overrideLanding ?? baseUrls.forms} />,
         <Redirect
             path={baseUrls.orgUnits}
@@ -83,4 +86,4 @@ const addRoutes = (baseRoutes, overrideLanding) => {
     ]);
 };
 
-export { addRoutes };
+export { useAddRoutes };

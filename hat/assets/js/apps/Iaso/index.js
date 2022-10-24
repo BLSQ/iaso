@@ -1,6 +1,7 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
 import { Route } from 'react-router';
+import { Provider } from 'react-redux';
 import { MuiThemeProvider } from '@material-ui/core/styles';
 import CssBaseline from '@material-ui/core/CssBaseline';
 import { theme } from 'bluesquare-components';
@@ -9,7 +10,6 @@ import App from './domains/app';
 import { routeConfigs, getPath } from './constants/routes';
 import ProtectedRoute from './domains/users/components/ProtectedRoute';
 import { store, history } from './redux/store';
-import { addRoutes } from './routing/redirections';
 import { getPlugins, PluginsContext } from './utils';
 import { getOverriddenTheme } from './styles';
 import { ThemeConfigContext } from './domains/app/contexts/ThemeConfigContext.tsx';
@@ -33,6 +33,7 @@ export default function iasoApp(
         ...routeConfigs,
         ...plugins.map(plugin => plugin.routes).flat(),
     ];
+
     const baseRoutes = allRoutesConfigs.map(routeConfig => {
         const { allowAnonymous, component } = routeConfig;
         const renderProtectedComponent = props => (
@@ -56,7 +57,7 @@ export default function iasoApp(
         overrideLandingRoutes.length > 0
             ? overrideLandingRoutes[overrideLandingRoutes.length - 1]
             : undefined;
-    const routes = addRoutes(baseRoutes, userHomePage || overrideLanding);
+    // const routes = useAddRoutes(baseRoutes, userHomePage || overrideLanding);
     ReactDOM.render(
         <QueryClientProvider client={queryClient}>
             <PluginsContext.Provider value={{ plugins }}>
@@ -65,7 +66,15 @@ export default function iasoApp(
                         theme={getOverriddenTheme(theme, themeConfig)}
                     >
                         <CssBaseline />
-                        <App store={store} routes={routes} history={history} />
+                        <Provider store={store}>
+                            <App
+                                store={store}
+                                baseRoutes={baseRoutes}
+                                history={history}
+                                overrideLanding={overrideLanding}
+                                userHomePage={userHomePage}
+                            />
+                        </Provider>
                     </MuiThemeProvider>
                 </ThemeConfigContext.Provider>
             </PluginsContext.Provider>

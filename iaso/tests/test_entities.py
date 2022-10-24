@@ -466,6 +466,8 @@ class EntityAPITestCase(APITestCase):
         self.assertEqual(response.status_code, 200)
         self.assertEquals(response.get("Content-Disposition"), "attachment; filename=entities-2021-07-18-14-57.csv")
 
+        # TODO: we should also check the content of the files
+
     def test_handle_export_entity_type_empty_field_list(self):
         self.client.force_authenticate(self.yoda)
 

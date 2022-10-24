@@ -53,6 +53,7 @@ class OrgUnitTypeSerializer(DynamicFieldsModelSerializer):
         queryset=Form.objects.all(),
     )
 
+    # Fixme make this directly in db !
     def get_units_count(self, obj: OrgUnitType):
         orgUnits = OrgUnit.objects.filter_for_user_and_app_id(
             self.context["request"].user, self.context["request"].query_params.get("app_id")

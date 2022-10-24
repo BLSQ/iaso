@@ -1,21 +1,24 @@
 import csv
 import datetime
 import io
+from time import strftime, gmtime
+from typing import List, Any, Union
 
 import xlsxwriter  # type: ignore
 from django.core.paginator import Paginator
-from django.db.models import Q, Max
-from django.http import JsonResponse, HttpResponse
+from django.db.models import Max
+from django.http import JsonResponse, HttpResponse, StreamingHttpResponse
 from django.shortcuts import get_object_or_404
 from django_filters.rest_framework import DjangoFilterBackend  # type: ignore
-from rest_framework import permissions, filters
+from rest_framework import filters
 from rest_framework import serializers
 from rest_framework.decorators import action
 from rest_framework.request import Request
 from rest_framework.response import Response
 
+from hat.api.export_utils import Echo, generate_xlsx, iter_items
 from iaso.api.common import TimestampField, ModelViewSet, DeletionFilterBackend
-from iaso.models import Entity, Instance, EntityType, FormVersion
+from iaso.models import Entity, Instance, EntityType
 
 
 class EntityTypeSerializer(serializers.ModelSerializer):
@@ -76,7 +79,8 @@ class EntitySerializer(serializers.ModelSerializer):
 
     def get_submitter(self, entity: Entity):
         try:
-            submitter = entity.attributes.created_by.username
+            # TODO: investigate type issue on next line
+            submitter = entity.attributes.created_by.username  # type: ignore
         except AttributeError:
             submitter = None
         return submitter
@@ -100,104 +104,6 @@ class EntityTypeViewSet(ModelViewSet):
         if search:
             queryset = queryset.filter(name__icontains=search)
         return queryset
-
-
-def export_entity_as_xlsx(entities):
-    mem_file = io.BytesIO()
-    workbook = xlsxwriter.Workbook(mem_file)
-    worksheet = workbook.add_worksheet("entity")
-    worksheet.set_column(0, 100, 30)
-    row_color = workbook.add_format({"bg_color": "#FFC7CE"})
-    row = 0
-    col = 0
-    filename = ""
-    for entity in entities:
-        res = {"entity": EntitySerializer(entity, many=False).data}
-        worksheet.set_row(row, cell_format=row_color)
-        worksheet.write(row, col, f"{entity.name.upper()}:")
-        row += 1
-        for k, v in res["entity"].items():
-            try:
-                fields_list = entity.entity_type.fields_list_view
-            except TypeError:
-                raise serializers.ValidationError(
-                    {"error": "You must provide a field view list in order to export the entities."}
-                )
-            if fields_list is not None:
-                if k in fields_list or k == "attributes":
-                    if k == "attributes":
-                        for k_, v_ in res["entity"]["attributes"]["file_content"].items():
-                            worksheet.write(row, col, k_)
-                            worksheet.write(row + 1, col, v_)
-                            col += 1
-                    else:
-                        worksheet.write(row, col, k)
-                        worksheet.write(row + 1, col, v)
-                        col += 1
-        col = 0
-        row += 2
-        filename = entity.name
-    filename = "EXPORT_ENTITIES.xlsx" if len(entities) > 1 else f"{filename.upper()}_ENTITY.xlsx"
-    workbook.close()
-    mem_file.seek(0)
-    response = HttpResponse(mem_file, content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
-    response["Content-Disposition"] = "attachment; filename=%s" % filename
-    return response
-
-
-def export_entity_as_csv(entities):
-    header = []
-    data = []
-    filename = ""
-    possible_field_list = []
-    # NOT WORKING ATM
-    for entity in entities:
-        res = entity.attributes.json
-        benef_data = [None]
-        if res is not None:
-            for k, v in res.items():
-                try:
-                    fields_list = entity.entity_type.fields_list_view
-                    for f in fields_list:
-                        if f is None:
-                            raise serializers.ValidationError(
-                                {"error": "You must provide a field view list in order to export the entities."}
-                            )
-                except TypeError:
-                    raise serializers.ValidationError(
-                        {"error": "You must provide a field view list in order to export the entities."}
-                    )
-
-                for f in entity.attributes.form.possible_fields:
-                    for k_, v_ in f.items():
-                        if k_ == "name" and v_ not in possible_field_list:
-                            possible_field_list.append(v_)
-                for h in possible_field_list:
-                    if h in fields_list and h not in header:
-                        header.append(h)
-        i = 0
-        for h in header:
-            for k, v in res.items():
-                match = False
-                if k == h:
-                    benef_data.append(f"found at {k}")
-                if i < len(header):
-                    i += 1
-                else:
-                    i = 0
-        data.append(benef_data)
-        filename = entity.name
-    filename = f"EXPORT_ENTITIES.csv" if len(entities) > 1 else f"{filename.upper()}_ENTITY.csv"
-
-    response = HttpResponse(
-        content_type="txt/csv",
-        headers={"Content-Disposition": f"attachment; filename={filename}"},
-    )
-    writer = csv.writer(response)
-    writer.writerow(header)
-    writer.writerows(data)
-
-    return response
 
 
 class EntityViewSet(ModelViewSet):
@@ -311,28 +217,21 @@ class EntityViewSet(ModelViewSet):
         csv_format = request.GET.get("csv", None)
         xlsx_format = request.GET.get("xlsx", None)
         pk = request.query_params.get("id", None)
-        account = self.request.user.iaso_profile.account
+        # TODO: investigate if request.user can be anonymous here
+        account = self.request.user.iaso_profile.account  # type: ignore
         entity_type_ids = request.query_params.get("entity_type_ids", None)
         limit = request.GET.get("limit", None)
         page_offset = request.GET.get("page", 1)
         orders = request.GET.get("order", "-created_at").split(",")
         order_columns = request.GET.get("order_columns", None)
+        entity_id = request.GET.get("id", None)
 
         queryset = queryset.order_by(*orders)
-        if xlsx_format or csv_format:
-            if pk:
-                entities = Entity.objects.filter(account=account, entity_type_ids=pk)
-            else:
-                entities = Entity.objects.filter(account=account)
-            if xlsx_format:
-                return export_entity_as_xlsx(entities)
-            if csv_format:
-                return export_entity_as_csv(entities)
 
         # annotate with last instance on Entity, to allow ordering by it
         entities = queryset.annotate(last_saved_instance=Max("instances__created_at"))
         result_list = []
-        columns_list = []
+        columns_list: List[Any] = []
 
         # -- Allow ordering by the field inside the Entity.
         fields_on_entity = [f.name for f in Entity._meta.get_fields()]
@@ -342,7 +241,8 @@ class EntityViewSet(ModelViewSet):
         # otherwise assume it's part of the attributes
         new_order_columns = []
         if order_columns:
-            order_columns = order_columns.split(",")
+            # FIXME: next line: a string variable is reused for a list, cna we avoid that?
+            order_columns = order_columns.split(",")  # type: ignore
             for order_column in order_columns:
                 # Remove eventual leading -
                 order_column_name = order_column.lstrip("-")
@@ -360,11 +260,14 @@ class EntityViewSet(ModelViewSet):
                 attributes = entity.attributes
                 attributes_pk = None
                 attributes_ou = None
-                file_content = None
-                if attributes is not None:
-                    file_content = entity.attributes.get_and_save_json_of_xml().get("file_content", None)
+                # FIXME
+                file_content = None  # type: ignore
+                if attributes is not None and entity.attributes is not None:
+                    file_content = entity.attributes.get_and_save_json_of_xml().get(
+                        "file_content", None
+                    )  # type: ignore
                     attributes_pk = attributes.pk
-                    attributes_ou = entity.attributes.org_unit.as_location(with_parents=True)
+                    attributes_ou = entity.attributes.org_unit.as_location(with_parents=True)  # type: ignore
                 name = None
                 program = None
                 if file_content is not None:
@@ -378,7 +281,8 @@ class EntityViewSet(ModelViewSet):
                     "updated_at": entity.updated_at,
                     "attributes": attributes_pk,
                     "entity_type": entity.entity_type.name,
-                    "last_saved_instance": entity.last_saved_instance,
+                    # TODO: investigate typing issue on next line
+                    "last_saved_instance": entity.last_saved_instance,  # type: ignore
                     "org_unit": attributes_ou,
                     "program": program,
                 }
@@ -388,59 +292,117 @@ class EntityViewSet(ModelViewSet):
                 attributes = entity.attributes
                 attributes_ou = None
                 file_content = None
-                if attributes is not None:
-                    file_content = entity.attributes.get_and_save_json_of_xml().get("file_content", None)
-                    attributes_ou = entity.attributes.org_unit.as_location(with_parents=True)
+                if attributes is not None and entity.attributes is not None:  # type: ignore
+                    # FIXME: what if entity.attributes is None?
+                    file_content = entity.attributes.get_and_save_json_of_xml().get(
+                        "file_content", None
+                    )  # type: ignore
+                    # FIXME: what if entity.attributes.org_unit is None?
+                    attributes_ou = entity.attributes.org_unit.as_location(with_parents=True)  # type: ignore
                 columns_list = []
                 program = None
                 if file_content is not None:
                     program = file_content.get("program")
-                possible_fields_list = entity.entity_type.reference_form.possible_fields
-                for items in possible_fields_list:
+                # FIXME: what if entity.entity_type.reference_form is None?
+                possible_fields_list = entity.entity_type.reference_form.possible_fields or []  # type: ignore
+                # FIXME: investigate typing error on next line
+                for items in possible_fields_list:  # type: ignore
                     for k, v in items.items():
                         if k == "name":
-                            if v in entity.entity_type.fields_list_view:
+                            # FIXME: investigate typing error on next line
+                            if v in entity.entity_type.fields_list_view:  # type: ignore
                                 columns_list.append(items)
                 result = {
                     "id": entity.pk,
-                    "uuid": entity.uuid,
-                    "entity_type_name": entity.entity_type.name,
+                    "uuid": str(entity.uuid),
+                    "entity_type": entity.entity_type.name,
                     "created_at": entity.created_at,
                     "updated_at": entity.updated_at,
                     "org_unit": attributes_ou,
-                    "last_saved_instance": entity.last_saved_instance,
+                    # FIXME: investigate typing error on next line
+                    "last_saved_instance": entity.last_saved_instance,  # type: ignore
                     "program": program,
                 }
 
                 # Get data from xlsform
-                if attributes is not None:
-                    for k, v in entity.attributes.json.items():
-                        if k in list(entity.entity_type.fields_list_view):
+                if attributes is not None and attributes.json is not None:
+                    # TODO: investigate typing error on next line
+                    for k, v in entity.attributes.json.items():  # type: ignore
+                        if k in list(entity.entity_type.fields_list_view):  # type: ignore
                             result[k] = v
                     result_list.append(result)
 
             columns_list = [i for n, i in enumerate(columns_list) if i not in columns_list[n + 1 :]]
             columns_list = [c for c in columns_list if len(c) > 2]
 
+        if xlsx_format or csv_format:
+            columns = [
+                {"title": "ID", "width": 20},
+                {"title": "UUID", "width": 20},
+                {"title": "Entity Type", "width": 20},
+                {"title": "Creation Date", "width": 20},
+                {"title": "HC", "width": 20},
+                {"title": "Last update", "width": 20},
+                {"title": "Program", "width": 20},
+            ]
+            for col in columns_list:
+                columns.append({"title": col["label"]})
+
+            filename = "entities"
+            filename = "%s-%s" % (filename, strftime("%Y-%m-%d-%H-%M", gmtime()))
+
+            def get_row(entity: dict, **kwargs):
+                values = [
+                    entity["id"],
+                    str(entity["uuid"]),
+                    entity["entity_type"],
+                    entity["created_at"],
+                    entity["org_unit"]["name"] if entity["org_unit"] else "",
+                    entity["last_saved_instance"],
+                    entity["program"],
+                ]
+                for col in columns_list:
+                    values.append(entity.get(col["name"]))
+                return values
+
+            response: Union[HttpResponse, StreamingHttpResponse]
+            if xlsx_format:
+                filename = filename + ".xlsx"
+                response = HttpResponse(
+                    generate_xlsx("Entities", columns, result_list, get_row),
+                    content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                )
+            if csv_format:
+                response = StreamingHttpResponse(
+                    streaming_content=(iter_items(result_list, Echo(), columns, get_row)), content_type="text/csv"
+                )
+                filename = filename + ".csv"
+            response["Content-Disposition"] = "attachment; filename=%s" % filename
+            return response
+
         if limit:
-            limit = int(limit)
+            limit_int = int(limit)
             page_offset = int(page_offset)
-            paginator = Paginator(result_list, limit)
-            res = {"count": paginator.count}
+            paginator = Paginator(result_list, limit_int)
+
             if page_offset > paginator.num_pages:
                 page_offset = paginator.num_pages
             page = paginator.page(page_offset)
-            res["has_next"] = page.has_next()
-            res["has_previous"] = page.has_previous()
-            res["page"] = page_offset
-            res["pages"] = paginator.num_pages
-            res["limit"] = limit
-            res["columns"] = columns_list
-            res["result"] = map(lambda x: x, page.object_list)
-            return Response(res)
-        response = {"columns": columns_list, "result": result_list}
+            return Response(
+                {
+                    "count": paginator.count,
+                    "has_next": page.has_next(),
+                    "has_previous": page.has_previous(),
+                    "page": page_offset,
+                    "pages": paginator.num_pages,
+                    "limit": limit_int,
+                    "columns": columns_list,
+                    "result": map(lambda x: x, page.object_list),
+                }
+            )
 
-        return Response(response)
+        res = {"columns": columns_list, "result": result_list}
+        return Response(res)
 
     @action(detail=False, methods=["GET"])
     def export_entity_submissions_list(self, request):

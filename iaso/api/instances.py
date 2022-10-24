@@ -387,9 +387,11 @@ class InstancesViewSet(viewsets.ViewSet):
         # user orgunit that contain the instance's orgunit and is the highest level.
         if not user_orgunits.exists():
             # user is not restricted to any orgunit, use the root that contain the instance
-            top_level = OrgUnit.objects.filter(path__ancestors=instance.org_unit.path).order_by("path__depth").first()
+            # FIXME: what if instance.org_unit is None?
+            top_level = OrgUnit.objects.filter(path__ancestors=instance.org_unit.path).order_by("path__depth").first()  # type: ignore
         else:
-            top_level = user_orgunits.filter(path__ancestors=instance.org_unit.path).order_by("path__depth").first()
+            # FIXME: what if instance.org_unit is None?
+            top_level = user_orgunits.filter(path__ancestors=instance.org_unit.path).order_by("path__depth").first()  # type: ignore
         assert top_level, "No intersection found"  # should not happen
 
         lock = InstanceLock.objects.create(locked_by=user, top_org_unit=top_level, instance=instance)

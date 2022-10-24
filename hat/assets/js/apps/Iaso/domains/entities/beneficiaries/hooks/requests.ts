@@ -75,7 +75,7 @@ export const useGetBeneficiariesApiParams = (params: Params): GetAPiParams => {
         created_by_team_id: params.submitterTeamId,
         entity_type_ids: params.entityTypeIds,
     };
-    const url = makeUrlWithParams('/api/entity', apiParams);
+    const url = makeUrlWithParams('/api/entity/', apiParams);
     return {
         url,
         apiParams,

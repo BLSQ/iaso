@@ -13,7 +13,7 @@ class TimestampSerializerMixin:
     this is used to stay compatible with older API"""
 
     serializer_field_mapping = serializers.ModelSerializer.serializer_field_mapping.copy()
-    serializer_field_mapping[models.DateTimeField] = TimestampField
+    serializer_field_mapping[models.DateTimeField] = TimestampField  # type: ignore
 
 
 class GroupSerializer(TimestampSerializerMixin, serializers.ModelSerializer):
@@ -38,9 +38,9 @@ class OrgUnitSerializer(TimestampSerializerMixin, serializers.ModelSerializer):
 
     org_unit_type = OrgUnitTypeSerializer()
     groups = GroupSerializer(many=True)
-    parent_name = serializers.SerializerMethodField()
-    source = serializers.SerializerMethodField()
-    org_unit_type_name = serializers.SerializerMethodField()
+    parent_name = serializers.SerializerMethodField()  # type: ignore # see https://github.com/typeddjango/djangorestframework-stubs/issues/4
+    source = serializers.SerializerMethodField()  # type: ignore # see https://github.com/typeddjango/djangorestframework-stubs/issues/4
+    org_unit_type_name = serializers.SerializerMethodField()  # type: ignore # see https://github.com/typeddjango/djangorestframework-stubs/issues/4
     search_index = serializers.SerializerMethodField()
     source_id = serializers.SerializerMethodField()
     has_geo_json = serializers.SerializerMethodField()
@@ -49,7 +49,7 @@ class OrgUnitSerializer(TimestampSerializerMixin, serializers.ModelSerializer):
     altitude = serializers.SerializerMethodField()
 
     # If in a subclass this will correctly use the subclass own serializer
-    parent = serializers.SerializerMethodField()
+    parent = serializers.SerializerMethodField()  # type: ignore # see https://github.com/typeddjango/djangorestframework-stubs/issues/4
 
     @classmethod
     def get_parent(cls, org_unit):

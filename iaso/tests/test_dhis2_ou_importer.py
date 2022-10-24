@@ -1,4 +1,5 @@
 from io import StringIO
+from typing import Union
 
 from django.core import management
 from os import environ
@@ -69,7 +70,7 @@ class DHIS2TestMixin:
             if model not in createds and diff[model] == 0:
                 del diff[model]
 
-        self.assertDictEqual(createds, diff, diff)
+        self.assertDictEqual(createds, diff, diff)  # type: ignore
 
 
 class CommandTests(TestCase, DHIS2TestMixin):

@@ -33,40 +33,40 @@ export const RoundForm = ({ roundNumber }) => {
                     fullWidth
                 />
                 <Field
-                    label={formatMessage(MESSAGES.mopUpStart)}
+                    label={formatMessage(MESSAGES.mop_up_started_at)}
                     name={`rounds[${roundIndex}].mop_up_started_at`}
                     component={DateInput}
                     fullWidth
                 />
                 <Field
-                    label={formatMessage(MESSAGES.mopUpEnd)}
+                    label={formatMessage(MESSAGES.mop_up_ended_at)}
                     name={`rounds[${roundIndex}].mop_up_ended_at`}
                     component={DateInput}
                     fullWidth
                 />
 
                 <Field
-                    label={formatMessage(MESSAGES.imStart)}
+                    label={formatMessage(MESSAGES.im_started_at)}
                     name={`rounds[${roundIndex}].im_started_at`}
                     component={DateInput}
                     fullWidth
                 />
 
                 <Field
-                    label={formatMessage(MESSAGES.imEnd)}
+                    label={formatMessage(MESSAGES.im_ended_at)}
                     name={`rounds[${roundIndex}].im_ended_at`}
                     component={DateInput}
                     fullWidth
                 />
                 <Field
-                    label={formatMessage(MESSAGES.lqasStart)}
+                    label={formatMessage(MESSAGES.lqas_started_at)}
                     name={`rounds[${roundIndex}].lqas_started_at`}
                     component={DateInput}
                     fullWidth
                 />
 
                 <Field
-                    label={formatMessage(MESSAGES.lqasEnd)}
+                    label={formatMessage(MESSAGES.lqas_ended_at)}
                     name={`rounds[${roundIndex}].lqas_ended_at`}
                     component={DateInput}
                     fullWidth
@@ -74,26 +74,26 @@ export const RoundForm = ({ roundNumber }) => {
             </Grid>
             <Grid xs={12} md={6} item>
                 <Field
-                    label={formatMessage(MESSAGES.districtsPassingLqas)}
+                    label={formatMessage(MESSAGES.lqas_district_passing)}
                     name={`rounds[${roundIndex}].lqas_district_passing`}
                     component={TextInput}
                     className={classes.input}
                 />
                 <Field
-                    label={formatMessage(MESSAGES.districtsFailingLqas)}
+                    label={formatMessage(MESSAGES.lqas_district_failing)}
                     name={`rounds[${roundIndex}].lqas_district_failing`}
                     component={TextInput}
                     className={classes.input}
                 />
                 <Field
-                    label={formatMessage(MESSAGES.mainReasonForNonVaccination)}
+                    label={formatMessage(MESSAGES.main_awareness_problem)}
                     name={`rounds[${roundIndex}].main_awareness_problem`}
                     component={TextInput}
                     className={classes.input}
                 />
                 <Field
                     label={formatMessage(
-                        MESSAGES.ratioChildrenMissedInHousehold,
+                        MESSAGES.im_percentage_children_missed_in_household,
                     )}
                     name={`rounds[${roundIndex}].im_percentage_children_missed_in_household`}
                     component={TextInput}
@@ -109,14 +109,16 @@ export const RoundForm = ({ roundNumber }) => {
                 />
                 <Field
                     label={formatMessage(
-                        MESSAGES.ratioChildrenMissedInAndOutOfHousehold,
+                        MESSAGES.im_percentage_children_missed_in_plus_out_household,
                     )}
                     name={`rounds[${roundIndex}].im_percentage_children_missed_in_plus_out_household`}
                     component={TextInput}
                     className={classes.input}
                 />
                 <Field
-                    label={formatMessage(MESSAGES.awarenessCampaignPlanning)}
+                    label={formatMessage(
+                        MESSAGES.awareness_of_campaign_planning,
+                    )}
                     name={`rounds[${roundIndex}].awareness_of_campaign_planning`}
                     component={TextInput}
                     className={classes.input}

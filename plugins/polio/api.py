@@ -4,13 +4,12 @@ import json
 import datetime as dt
 from datetime import timedelta, datetime, date
 import logging
-from typing import Any, Dict, List, Optional, Union
+from typing import Any, Dict, List, Optional
 from collections import defaultdict
 from functools import lru_cache
 from logging import getLogger
-from openpyxl.writer.excel import save_virtual_workbook
+from openpyxl.writer.excel import save_virtual_workbook  # type: ignore
 
-import requests
 from django.core.files import File
 from django.core.cache import cache
 from django.core.exceptions import ObjectDoesNotExist
@@ -34,7 +33,6 @@ from rest_framework.decorators import action
 from rest_framework.request import Request
 from rest_framework.response import Response
 from django.conf import settings
-import urllib.parse
 from hat.api.token_authentication import generate_auto_authentication_link
 from iaso.api.common import ModelViewSet, DeletionFilterBackend
 from iaso.models import OrgUnit
@@ -77,7 +75,6 @@ from .models import (
     RoundScope,
 )
 from .models import CountryUsersGroup
-from .models import URLCache
 from .preparedness.calculator import preparedness_summary
 from .preparedness.parser import get_preparedness
 from .export_utils import generate_xlsx_campaigns_calendar, xlsx_file_name
@@ -189,6 +186,7 @@ class CampaignViewSet(ModelViewSet):
             campaigns = campaigns.filter(is_preventive=False).filter(is_test=False)
         if campaign_groups:
             campaigns = campaigns.filter(grouped_campaigns__in=campaign_groups.split(","))
+
         return campaigns.distinct()
 
     def get_queryset(self):
@@ -199,11 +197,16 @@ class CampaignViewSet(ModelViewSet):
         campaigns = campaigns.annotate(last_round_started_at=Max("rounds__started_at"))
         campaigns = campaigns.annotate(first_round_started_at=Min("rounds__started_at"))
 
-        if user.is_authenticated and user.iaso_profile.org_units.count():
-            org_units = OrgUnit.objects.hierarchy(user.iaso_profile.org_units.all())
-            return campaigns.filter(initial_org_unit__in=org_units)
-        else:
-            return campaigns.filter()
+        campaigns = campaigns.filter_for_user(user)
+        if not self.request.user.is_authenticated:
+            # For this endpoint since it's available anonymously we allow all user to list the campaigns
+            # and to additionally filter on the account_id
+            # In the future we may want to make the account_id parameter mandatory.
+            account_id = self.request.query_params.get("account_id", None)
+            if account_id is not None:
+                campaigns = campaigns.filter(account_id=account_id)
+
+        return campaigns
 
     @action(methods=["POST"], detail=False, serializer_class=PreparednessPreviewSerializer)
     def preview_preparedness(self, request, **kwargs):
@@ -223,8 +226,7 @@ class CampaignViewSet(ModelViewSet):
         current_year = self.get_year(current_date)
 
         params = request.query_params
-
-        calendar_data = self.get_calendar_data(self, current_year, request.query_params)
+        calendar_data = self.get_calendar_data(current_year, params)
         filename = xlsx_file_name("calendar", params)
         xlsx_file = generate_xlsx_campaigns_calendar(filename, calendar_data)
 
@@ -245,22 +247,31 @@ class CampaignViewSet(ModelViewSet):
             today = dt.date.today()
             return today.year
 
-    @staticmethod
-    def get_calendar_data(self, year, params):
+    def get_calendar_data(self: Any, year: int, params: Any) -> Any:
+        """
+        Returns filtered rounds from database
+
+            parameters:
+                self: a self
+                year (int): a year int
+                params(dictionary): a params dictionary
+            returns:
+                rounds (array of dictionary): a rounds of array of dictionaries
+        """
         countries = params.get("countries") if params.get("countries") is not None else None
         campaign_groups = params.get("campaignGroups") if params.get("campaignGroups") is not None else None
         campaign_type = params.get("campaignType") if params.get("campaignType") is not None else None
         order_by = params.get("order") if params.get("order") is not None else None
         search = params.get("search")
         rounds = Round.objects.filter(started_at__year=year)
+        # Test campaigns should not appear in the xlsx calendar
+        rounds = rounds.filter(campaign__is_test=False)
         if countries:
             rounds = rounds.filter(campaign__country_id__in=countries.split(","))
         if campaign_groups:
             rounds = rounds.filter(campaign__group_id__in=campaign_groups.split(","))
         if campaign_type == "preventive":
             rounds = rounds.filter(campaign__is_preventive=True)
-        if campaign_type == "test":
-            rounds = rounds.filter(campaign__is_test=True)
         if campaign_type == "regular":
             rounds = rounds.filter(campaign__is_preventive=False).filter(campaign__is_test=False)
         if search:
@@ -269,8 +280,17 @@ class CampaignViewSet(ModelViewSet):
         return self.loop_on_rounds(self, rounds)
 
     @staticmethod
-    def loop_on_rounds(self, rounds):
-        data_row = []
+    def loop_on_rounds(self: Any, rounds: Any) -> list:
+        """
+        Returns formatted rounds
+
+            parameters:
+                self (CampaignViewSet): a self CampaignViewSet
+                rounds(rounds queryset): rounds queryset
+            returns:
+                rounds (list): list of rounds
+        """
+        data_row: list = []
         for round in rounds:
             if round.campaign is not None:
                 if round.campaign.country is not None:
@@ -291,6 +311,7 @@ class CampaignViewSet(ModelViewSet):
                             else:
                                 data_row[row_index]["rounds"][str(month)] = []
                                 data_row[row_index]["rounds"][str(month)].append(self.get_round(round))
+
         return data_row
 
     @staticmethod
@@ -398,7 +419,7 @@ Timeline tracker Automated message
             return Response("Campaign already active.", status=status.HTTP_400_BAD_REQUEST)
 
     @action(
-        methods=["GET", "HEAD"],
+        methods=["GET", "HEAD"],  # type: ignore # HEAD is missing in djangorestframework-stubs
         detail=False,
         url_path="merged_shapes.geojson",
     )
@@ -407,9 +428,11 @@ Timeline tracker Automated message
 
         We use the django annotate feature to make a raw Postgis request that will generate the shape on the
         postgresql server which is faster.
-        Campaign with and without scope per round are  handled separately"""
+        Campaign with and without scope per round are handled separately"""
         # FIXME: The cache ignore all the filter parameter which will return wrong result if used
         key_name = "{0}-geo_shapes".format(request.user.id)
+
+        # use the same filter logic and rule as for anonymous or not
         campaigns = self.filter_queryset(self.get_queryset())
         # Remove deleted campaigns
         campaigns = campaigns.filter(deleted_at=None)
@@ -480,7 +503,7 @@ where polio_campaignscope.campaign_id = polio_campaign.id""",
         return JsonResponse(json.loads(cached_response))
 
     @action(
-        methods=["GET", "HEAD"],
+        methods=["GET", "HEAD"],  # type: ignore # HEAD is missing in djangorestframework-stubs
         detail=False,
         url_path="v2/merged_shapes.geojson",
     )
@@ -668,8 +691,9 @@ def _make_prep(c: Campaign, round: Round):
             campaign_prep["status"] = "not_sync"
             campaign_prep["details"] = "This spreadsheet has not been synchronised yet"
             return campaign_prep
-        campaign_prep["date"] = ssi_qs.last().created_at
-        cs = ssi_qs.last().cached_spreadsheet
+        # FIXME: what if ssi_qs.last() is None?
+        campaign_prep["date"] = ssi_qs.last().created_at  # type: ignore
+        cs = ssi_qs.last().cached_spreadsheet  # type: ignore
         last_p = get_preparedness(cs)
         campaign_prep.update(preparedness_summary(last_p))
         if round.number != last_p["national"]["round"]:
@@ -1678,7 +1702,8 @@ def send_approval_budget_mail(event: BudgetEvent) -> None:
         settings.DNS_DOMAIN,
         event.campaign.id,
         event.campaign.obr_name,
-        event.campaign.country.id,
+        # FIXME: check if the country might be None
+        event.campaign.country.id,  # type: ignore
     )
     subject = budget_approval_email_subject(event.campaign.obr_name)
     for e in events:
@@ -2025,6 +2050,11 @@ class BudgetFilesViewset(ModelViewSet):
 router = routers.SimpleRouter()
 router.register(r"polio/orgunits", PolioOrgunitViewSet, basename="PolioOrgunit")
 router.register(r"polio/campaigns", CampaignViewSet, basename="Campaign")
+from .budget.api import BudgetCampaignViewSet, BudgetStepViewSet, WorkflowViewSet
+
+router.register(r"polio/budget", BudgetCampaignViewSet, basename="BudgetCampaign")
+router.register(r"polio/budgetsteps", BudgetStepViewSet, basename="BudgetStep")
+router.register(r"polio/workflow", WorkflowViewSet, basename="BudgetWorkflow")
 router.register(r"polio/campaignsgroup", CampaignGroupViewSet, basename="campaigngroup")
 router.register(r"polio/preparedness_dashboard", PreparednessDashboardViewSet, basename="preparedness_dashboard")
 router.register(r"polio/imstats", IMStatsViewSet, basename="imstats")

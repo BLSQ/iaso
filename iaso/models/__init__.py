@@ -7,3 +7,4 @@ from .pages import Page, RAW, TEXT, IFRAME, POWERBI
 from .comment import CommentIaso
 from .import_gpkg import ImportGPKG
 from .entity import EntityType, Entity
+from .storage import StorageDevice, StorageLogEntry

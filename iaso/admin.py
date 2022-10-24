@@ -41,6 +41,8 @@ from .models import (
     Entity,
     BulkCreateUserCsvFile,
     InstanceLock,
+    StorageDevice,
+    StorageLogEntry,
 )
 from .models.microplanning import Team, Planning, Assignment
 from .utils.gis import convert_2d_point_to_3d
@@ -428,6 +430,30 @@ class InstanceLockAdmin(admin.ModelAdmin):
     date_hierarchy = "locked_at"
 
 
+class StorageLogEntryInline(admin.TabularInline):
+    model = StorageLogEntry
+    raw_id_fields = ("instances", "org_unit")
+
+
+class StorageDeviceAdmin(admin.ModelAdmin):
+    fields = (
+        "account",
+        "customer_chosen_id",
+        "type",
+        "status",
+        "status_reason",
+        "status_comment",
+        "org_unit",
+        "entity",
+    )
+    list_display = ("account", "type", "customer_chosen_id")
+    list_filter = ("account", "type", "status")
+    raw_id_fields = ("org_unit",)
+    inlines = [
+        StorageLogEntryInline,
+    ]
+
+
 admin.site.register(Link, LinkAdmin)
 admin.site.register(Form, FormAdmin)
 admin.site.register(Instance, InstanceAdmin)
@@ -462,3 +488,4 @@ admin.site.register(Planning, PlanningAdmin)
 admin.site.register(BulkCreateUserCsvFile)
 admin.site.register(Assignment, AssignmentAdmin)
 admin.site.register(InstanceLock, InstanceLockAdmin)
+admin.site.register(StorageDevice, StorageDeviceAdmin)

@@ -26,6 +26,7 @@ ASSIGNMENTS = _("Attributions")
 POLIO_BUDGET = _("Budget Polio")
 ENTITIES = _("Entities")
 BENEFICIARIES = _("Beneficiaries")
+STORAGES = _("Storages")
 
 
 # When adding a new permissions, it also need to be added in
@@ -77,4 +78,5 @@ class CustomPermissionSupport(models.Model):
             ("iaso_polio_budget", POLIO_BUDGET),
             ("iaso_entities", ENTITIES),
             ("iaso_beneficiaries", BENEFICIARIES),
+            ("iaso_storages", STORAGES),
         )

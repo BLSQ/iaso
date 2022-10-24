@@ -23,8 +23,6 @@ import {
     getCalendarData,
 } from '../components/campaignCalendar/utils';
 
-import { useGetCalendarXlsx } from '../hooks/useGetCalendarXlsx';
-
 import {
     dateFormat,
     defaultOrder,
@@ -71,8 +69,6 @@ const Calendar = ({ params }) => {
         params.countries,
         params.search,
     ]);
-
-    const { mutate: generateCalendarXlsx } = useGetCalendarXlsx();
 
     const { data: campaigns = [], isLoading } =
         useGetCampaigns(queryOptions).query;

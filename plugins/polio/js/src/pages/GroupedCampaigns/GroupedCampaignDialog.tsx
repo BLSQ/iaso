@@ -92,7 +92,6 @@ export const GroupedCampaignDialog: FunctionComponent<Props> = ({
         [reset],
     );
     const allowConfirm = Boolean(groupedCampaignName);
-
     return (
         <ConfirmCancelDialogComponent
             id="grouped-campaigns-modal"

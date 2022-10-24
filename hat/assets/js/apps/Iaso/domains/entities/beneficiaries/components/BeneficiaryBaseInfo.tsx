@@ -10,7 +10,7 @@ import React, { FunctionComponent, useMemo } from 'react';
 // @ts-ignore
 import { useSafeIntl } from 'bluesquare-components';
 import MESSAGES from '../../messages';
-import { useGetPossibleFields } from '../../entityTypes/hooks/useGetPossibleFields';
+import { useGetPossibleFields } from '../../../forms/hooks/useGetPossibleFields';
 import { useGetFields } from '../hooks/useGetFields';
 import { useGetBeneficiaryTypesDropdown } from '../hooks/requests';
 

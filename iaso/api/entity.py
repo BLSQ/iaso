@@ -6,7 +6,7 @@ from typing import List, Any, Union
 
 import xlsxwriter  # type: ignore
 from django.core.paginator import Paginator
-from django.db.models import Max
+from django.db.models import Max, Q
 from django.http import JsonResponse, HttpResponse, StreamingHttpResponse
 from django.shortcuts import get_object_or_404
 from django_filters.rest_framework import DjangoFilterBackend  # type: ignore

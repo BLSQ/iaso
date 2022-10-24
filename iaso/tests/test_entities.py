@@ -1,8 +1,10 @@
+# TODO: check: shouldn't this file be under the "api" subdirectory?
+# TODO: it would be cleaner if tests for the get operations would create the objects they need directly in the database,
+#  rather than making POST calls
+
 import time
 import uuid
 from unittest import mock
-
-from django.core.files import File
 
 from iaso import models as m
 from iaso.models import EntityType, Instance, Entity
@@ -208,6 +210,57 @@ class EntityAPITestCase(APITestCase):
         response = self.client.get(f"/api/entity/{entity.pk}/")
 
         self.assertEqual(response.status_code, 200)
+
+    def test_get_entity_search_filter(self):
+        """
+        Test the 'search' filter of /api/entity
+
+        This parameter allows to filter either by name, UUID or attributes (of the reference form)
+        """
+        self.client.force_authenticate(self.yoda)
+
+        # Let's first create the test data
+        entity_type = EntityType.objects.create(name="Type 1", reference_form=self.form_1)
+
+        instance = Instance.objects.create(
+            org_unit=self.jedi_council_corruscant,
+            form=self.form_1,
+            period="202002",
+            json={"name": "c", "age": 30, "gender": "F"},
+        )
+
+        payload = {
+            "name": "New Client",
+            "entity_type": entity_type.pk,
+            "attributes": instance.uuid,
+            "account": self.yoda.iaso_profile.account.pk,
+        }
+
+        self.client.post("/api/entity/", data=payload, format="json")
+
+        newly_added_entity = Entity.objects.last()
+
+        # Case 1: search by entity name
+        response = self.client.get("/api/entity/?search=Client", format="json")
+        self.assertEqual(len(response.json()["result"]), 1)
+        the_result = response.json()["result"][0]
+        self.assertEqual(the_result["id"], newly_added_entity.id)
+
+        # Case 2: search by entity name - make sure it's case-insensitive
+        response = self.client.get("/api/entity/?search=cLiEnT", format="json")
+        self.assertEqual(len(response.json()["result"]), 1)
+        the_result = response.json()["result"][0]
+        self.assertEqual(the_result["id"], newly_added_entity.id)
+
+        # Case 3: search by entity UUID
+        response = self.client.get(f"/api/entity/?search={newly_added_entity.uuid}", format="json")
+        self.assertEqual(len(response.json()["result"]), 1)
+        self.assertEqual(the_result["id"], newly_added_entity.id)
+
+        # Case 4: search by JSON attribute
+        response = self.client.get(f"/api/entity/?search=age", format="json")
+        self.assertEqual(len(response.json()["result"]), 1)
+        self.assertEqual(the_result["id"], newly_added_entity.id)
 
     def test_get_entity_by_id(self):
         self.client.force_authenticate(self.yoda)

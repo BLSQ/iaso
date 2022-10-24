@@ -195,7 +195,7 @@ class CampaignQuerySet(models.QuerySet):
             # Restrict Campaign to the OrgUnit on the country he can access
             if user.iaso_profile.org_units.count():
                 org_units = OrgUnit.objects.hierarchy(user.iaso_profile.org_units.all())
-                qs = qs.filter(initial_org_unit__in=org_units)
+                qs = qs.filter(country__in=org_units)
         return qs
 
 

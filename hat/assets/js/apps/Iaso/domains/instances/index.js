@@ -23,7 +23,12 @@ import {
     fetchPossibleFields,
 } from './requests';
 
-import { getEndpointUrl, getFilters, getSelectionActions } from './utils';
+import {
+    getEndpointUrl,
+    getFilters,
+    getSelectionActions,
+    getExportUrl,
+} from './utils';
 
 import { InstancesTopBar as TopBar } from './components/InstancesTopBar';
 import DownloadButtonsComponent from '../../components/DownloadButtonsComponent';
@@ -203,14 +208,9 @@ const Instances = ({ params }) => {
                                         justifyContent="flex-end"
                                     >
                                         <DownloadButtonsComponent
-                                            csvUrl={getEndpointUrl(
+                                            csvUrl={getExportUrl(params, 'csv')}
+                                            xlsxUrl={getExportUrl(
                                                 params,
-                                                true,
-                                                'csv',
-                                            )}
-                                            xlsxUrl={getEndpointUrl(
-                                                params,
-                                                true,
                                                 'xlsx',
                                             )}
                                         />

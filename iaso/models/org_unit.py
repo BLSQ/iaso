@@ -12,12 +12,17 @@ from django_ltree.fields import PathField  # type: ignore
 from django.utils.translation import ugettext_lazy as _
 from django_ltree.models import TreeModel  # type: ignore
 
-from .base import SourceVersion, Account
+from iaso.models.data_source import SourceVersion
 from .project import Project
 from ..utils.expressions import ArraySubquery
 
+try:  # for typing
+    from .base import Account
+except:
+    pass
 
-def get_or_create_org_unit_type(name: str, depth: int, account: Account, preferred_project: Project) -> "OrgUnitType":
+
+def get_or_create_org_unit_type(name: str, depth: int, account: "Account", preferred_project: Project) -> "OrgUnitType":
     """
     Get or create the OUT (in the scope of the account).
 
@@ -488,3 +493,10 @@ class OrgUnit(TreeModel):
         if len(path_components) > 0:
             return "/" + ("/".join(path_components))
         return None
+
+    def get_reference_form_id(self):
+        """Return the form id of the reference form for this org unit, or None"""
+        if self.org_unit_type:
+            return self.org_unit_type.reference_form_id
+        else:
+            return None

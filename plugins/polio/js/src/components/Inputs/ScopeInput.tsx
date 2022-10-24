@@ -55,6 +55,8 @@ import {
 } from '../../styles/constants';
 import { useStyles } from '../../styles/theme';
 import { csvPreview } from '../../../../../../hat/assets/js/apps/Iaso/domains/dataSources/requests';
+import CheckIcon from '@material-ui/icons/Check';
+import SelectAllIcon from '@material-ui/icons/SelectAll';
 
 type Scope = {
     vaccine: string;
@@ -107,7 +109,7 @@ export const ScopeInput: FunctionComponent<FieldProps<Scope[], Values>> = ({
     const { value: scopes = [] } = field;
     const { setValue: setScopes } = helpers;
     const [searchValue, setSearchValue] = useState("");
-
+    const [searchScope, setSearchScope] = useState(true);
     const vaccineCount = useMemo(
         () =>
             Object.fromEntries(
@@ -221,6 +223,29 @@ export const ScopeInput: FunctionComponent<FieldProps<Scope[], Values>> = ({
         setScopes(newScopes);
     };
     const [selectedVaccine, setSelectedVaccine] = useState('mOPV2');
+    const addDistrictInVaccineScope = useCallback(
+        (district, selectedVaccine) => {
+            const newScopes: Scope[] = cloneDeep(scopes);
+            let scope: Scope | undefined = newScopes.find(
+                s => s.vaccine === selectedVaccine,
+            );
+            if (scope === undefined) {
+                scope = {
+                    vaccine: selectedVaccine,
+                    group: {
+                        org_units: [],
+                    },
+                };
+                newScopes.push(scope);
+            }
+            // Add org unit in selection if it's not part of the scope
+            if (!scope.group.org_units.includes(district.id)) {
+                scope.group.org_units.push(district.id,);
+            }
+            setScopes(newScopes);
+        },
+        [scopes, setScopes],
+    );
     const toggleDistrictInVaccineScope = useCallback(
         (district, _selectedVaccine) => {
             const newScopes: Scope[] = cloneDeep(scopes);
@@ -236,6 +261,7 @@ export const ScopeInput: FunctionComponent<FieldProps<Scope[], Values>> = ({
                 };
                 newScopes.push(scope);
             }
+
             // Remove org unit from selection if it's part of the scope
             if (scope.group.org_units.includes(district.id)) {
 
@@ -281,6 +307,13 @@ export const ScopeInput: FunctionComponent<FieldProps<Scope[], Values>> = ({
         [toggleDistrictInVaccineScope],
     );
 
+    const addDistrictToTable = useCallback(
+        (shape: ShapeRow) => {
+            addDistrictInVaccineScope(shape, selectedVaccine);
+        },
+        [addDistrictInVaccineScope, selectedVaccine],
+    );
+
     // Remove all district in the same region as this district
     const removeRegionFromTable = useCallback(
         (shape: ShapeRow) => {
@@ -294,6 +327,22 @@ export const ScopeInput: FunctionComponent<FieldProps<Scope[], Values>> = ({
                 scope.group.org_units = scope.group.org_units.filter(
                     OrgUnitId => !OrgUnitIdsToRemove.includes(OrgUnitId),
                 );
+            });
+            setScopes(newScopes);
+        },
+        [districtShapes, scopes, setScopes],
+    );
+
+    const addRegionToTable = useCallback(
+        (shape: ShapeRow, selectedVaccine) => {
+            const OrgUnitIdsToAdd = districtShapes
+                .filter(s => s.parent_id === shape.parent_id)
+                .map(s => s.id);
+
+            const newScopes: Scope[] = cloneDeep(scopes);
+            newScopes.filter(sc => sc.vaccine === selectedVaccine).forEach(scope => {
+                // eslint-disable-next-line no-param-reassign
+                scope.group.org_units = scope.group.org_units.concat(OrgUnitIdsToAdd);
             });
             setScopes(newScopes);
         },
@@ -369,10 +418,11 @@ export const ScopeInput: FunctionComponent<FieldProps<Scope[], Values>> = ({
 
     useEffect(() => {
         searchDistricts.current = searchDistrictByName
-    }, [districts, filteredDistricts, searchValue])
+    }, [districts, filteredDistricts, searchValue, searchScope])
 
     const searchDistrictByName = (search, scopeSearch) => {
         setSearchValue(search)
+        setSearchScope(scopeSearch)
         let filtreds = []
         if (search.length > 0) {
             let toFilter = districts
@@ -612,7 +662,41 @@ export const ScopeInput: FunctionComponent<FieldProps<Scope[], Values>> = ({
                                                 )
                                             }
                                             {
-                                                !shape.vaccineName && <TableCell />
+                                                !shape.vaccineName && (
+                                                    <TableCell
+                                                        style={{
+                                                            padding: 0,
+                                                            cursor: 'pointer',
+                                                            textAlign: 'center',
+                                                        }}
+                                                    >
+                                                        <IconButtonComponent
+                                                            size="small"
+                                                            onClick={() =>
+                                                                addRegionToTable(
+                                                                    shape,
+                                                                    selectedVaccine
+                                                                )
+                                                            }
+                                                            overrideIcon={SelectAllIcon}
+                                                            tooltipMessage={
+                                                                MESSAGES.removeRegion
+                                                            }
+                                                        />
+                                                        <IconButtonComponent
+                                                            size="small"
+                                                            onClick={() =>
+                                                                addDistrictToTable(
+                                                                    shape,
+                                                                )
+                                                            }
+                                                            overrideIcon={CheckIcon}
+                                                            tooltipMessage={
+                                                                MESSAGES.removeDistrict
+                                                            }
+                                                        />
+                                                    </TableCell>
+                                                )
                                             }
 
                                         </TableRow>

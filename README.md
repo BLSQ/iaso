@@ -620,6 +620,18 @@ them reflected in the interface:
 
 ```manage.py compilemessages```
 
+You do not need to manage local for English as it is the default language
+
+If you get an error about `/opt/app` or cannot accessing docker:
+Change in settings.py LOCALE_PATHS to
+```python
+LOCALE_PATHS = [ "hat/locale/"]
+```
+
+And specify --ignore
+```sh
+makemessages --locale=fr --extension txt --extension html --ignore /opt/app --ignore docker --ignore node_modules
+```
 
 Code reloading
 --------------

@@ -25,6 +25,11 @@ def has_access_to(user: User, obj: Union[OrgUnit, Instance, models.Model]):
     if isinstance(obj, Form):
         forms = Form.objects.filter_for_user_and_app_id(user)
         return obj in forms
+    # FIXME Hotfix to prevent an error when loading the app without the polio plugins
+    from plugins.polio.models import Campaign
+
+    if isinstance(obj, Campaign):
+        return True
     return False
 
 

@@ -17,10 +17,16 @@ import {
     Tabs,
     Typography,
     Tooltip,
+    Box,
 } from '@material-ui/core';
 
-import { useSafeIntl, LoadingSpinner } from 'bluesquare-components';
 import { FormattedMessage } from 'react-intl';
+
+import {
+    useSafeIntl,
+    LoadingSpinner,
+    IconButton as IconButtonComponent,
+} from 'bluesquare-components';
 import { convertEmptyStringToNull } from '../utils/convertEmptyStringToNull';
 import { PreparednessForm } from '../forms/PreparednessForm';
 import { useFormValidator } from '../hooks/useFormValidator';
@@ -34,6 +40,9 @@ import { RoundsForm } from '../forms/RoundsForm';
 import { RoundsEmptyDates } from './Rounds/RoundsEmptyDates.tsx';
 
 import { useSaveCampaign } from '../hooks/useSaveCampaign';
+import { useGetCampaignLogs } from '../hooks/useGetCampaignHistory.ts';
+
+import { CAMPAIGN_HISTORY_URL } from '../constants/routes';
 
 import { useStyles } from '../styles/theme';
 import MESSAGES from '../constants/messages';
@@ -46,6 +55,8 @@ const CreateEditDialog = ({
     isFetching,
 }) => {
     const { mutate: saveCampaign } = useSaveCampaign();
+
+    const { data: campaignLogs } = useGetCampaignLogs(selectedCampaign?.id);
 
     const schema = useFormValidator();
     const { formatMessage } = useSafeIntl();
@@ -175,11 +186,34 @@ const CreateEditDialog = ({
             className={classes.mainModal}
         >
             {isFetching && <LoadingSpinner absolute />}
-            <DialogTitle className={classes.title}>
-                {selectedCampaign?.id
-                    ? formatMessage(MESSAGES.editCampaign)
-                    : formatMessage(MESSAGES.createCampaign)}
-            </DialogTitle>
+
+            <Grid container>
+                <Grid item xs={12} md={6}>
+                    <Box pr={4} justifyContent="center" alignContent="center">
+                        <DialogTitle className={classes.title}>
+                            {selectedCampaign?.id
+                                ? formatMessage(MESSAGES.editCampaign)
+                                : formatMessage(MESSAGES.createCampaign)}
+                        </DialogTitle>
+                    </Box>
+                </Grid>
+
+                {selectedCampaign && campaignLogs?.length > 0 && (
+                    <Grid item xs={12} md={6} className={classes.historyLink}>
+                        <Box pr={4} alignItems="center">
+                            <IconButtonComponent
+                                url={`${CAMPAIGN_HISTORY_URL}/campaignId/${selectedCampaign?.id}`}
+                                icon="history"
+                                tooltipMessage={MESSAGES.campaignHistory}
+                                classes={{
+                                    linkButton: classes.linkButton,
+                                }}
+                            />
+                        </Box>
+                    </Grid>
+                )}
+            </Grid>
+
             <DialogContent className={classes.content}>
                 <Tabs
                     value={selectedTab}
@@ -197,6 +231,7 @@ const CreateEditDialog = ({
                         ) {
                             return (
                                 <Tooltip
+                                    key={title}
                                     title={
                                         <FormattedMessage
                                             {...MESSAGES.scopeUnlockConditions}

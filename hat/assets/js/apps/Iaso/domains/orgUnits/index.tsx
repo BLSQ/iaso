@@ -154,7 +154,7 @@ export const OrgUnits: FunctionComponent<Props> = ({ params }) => {
                 currentColor = currentSearch.color;
             }
             if (!currentColor) {
-                currentColor = getChipColors(0);
+                currentColor = getChipColors(currentSearchIndex);
             } else {
                 currentColor = `#${currentColor}`;
             }

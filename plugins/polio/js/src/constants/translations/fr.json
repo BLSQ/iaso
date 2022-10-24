@@ -308,6 +308,7 @@
     "iaso.polio.label.scope_per_round": "Périmètre séparé par round",
     "iaso.polio.label.scopeUnlockConditions": "Veuillez sélectuionner l'unité d'org initiale et encoder les dates d'au moins un round pour activer l'onglet \"Périmètre\"",
     "iaso.polio.label.search": "Recherche",
+    "iaso.polio.label.searchInScopeOrAllDistricts": "Recherche des districts dans scope",
     "iaso.polio.label.see": "Voir",
     "iaso.polio.label.seeFullComment": "Voir commentaire",
     "iaso.polio.label.seeProcedure": "Voir la procédure",

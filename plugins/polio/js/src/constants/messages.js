@@ -1830,6 +1830,10 @@ const MESSAGES = defineMessages({
         id: 'iaso.polio.label.nextSteps',
         defaultMessage: 'Next steps',
     },
+    searchInScopeOrAllDistricts: {
+        id: 'iaso.polio.label.searchInScopeOrAllDistricts',
+        defaultMessage: 'Search districts in scope',
+    },
 });
 
 export default MESSAGES;

@@ -38,6 +38,7 @@ export const ScopeForm: FunctionComponent = () => {
         [rounds],
     );
     const [searchUpdated, setSearchUpdated] = useState(false);
+    const [scopeSearch, setScopeSearch] = useState(true);
     const [currentTab, setCurrentTab] = useState('1');
     const handleChangeTab = (event, newValue) => {
         setCurrentTab(newValue);
@@ -57,22 +58,41 @@ export const ScopeForm: FunctionComponent = () => {
 
 
     const searchDistricts = useRef(null)
+    const defineSearchScope = () => {
+        let scopeType = true;
+        if (scopeSearch) {
+            scopeType = false;
+        }
+        setScopeSearch(scopeType);
+    }
+
     return (
         <>
             <Grid container spacing={2}>
-                <Grid xs={12} md={6} item>
+                <Grid xs={12} md={3} item>
                     <Field
                         name="separate_scopes_per_round"
                         component={BooleanInput}
                         label={formatMessage(MESSAGES.scope_per_round)}
                     />
                 </Grid>
-                <Grid xs={12} md={4} item>
+                <Grid xs={12} md={3} item>
+                    <InputComponent
+                        type="checkbox"
+                        withMarginTop={false}
+                        onChange={() => defineSearchScope()}
+                        value={scopeSearch}
+                        label={MESSAGES.searchInScopeOrAllDistricts}
+                    />
+                </Grid>
+                <Grid xs={12} md={3} item>
                     <InputComponent
                         className={styleClasses.inputComponent}
                         variant="contained"
                         keyValue="search"
                         type="search"
+                        onEnterPressed={() => [searchDistricts.current(search, scopeSearch), setSearchUpdated(false)]}
+                        withMarginTop={false}
                         label={MESSAGES.search}
                         onChange={(key, value) => {
                             setSearch(value);
@@ -80,12 +100,12 @@ export const ScopeForm: FunctionComponent = () => {
                         value={search}
                     />
                 </Grid>
-                <Grid xs={6} md={2} item>
+                <Grid xs={6} md={3} item>
                     <Button
                         variant="contained"
                         disabled={!searchUpdated}
                         color="primary"
-                        onClick={() => [searchDistricts.current(search), setSearchUpdated(false)]}
+                        onClick={() => [searchDistricts.current(search, scopeSearch), setSearchUpdated(false)]}
                     >
                         <Box mr={1} top={3} position="relative">
                             <FiltersIcon />
@@ -98,7 +118,7 @@ export const ScopeForm: FunctionComponent = () => {
 
 
             {!scopePerRound ? (
-                <Field name="scopes" component={ScopeInput} searchDistricts={searchDistricts} />
+                <Field name="scopes" component={ScopeInput} searchDistricts={searchDistricts} scopeSearch={scopeSearch} />
             ) : (
                 <TabContext value={currentTab}>
                     <TabList

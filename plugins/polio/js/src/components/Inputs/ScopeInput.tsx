@@ -97,7 +97,7 @@ type Values = {
 export const ScopeInput: FunctionComponent<FieldProps<Scope[], Values>> = ({
     field,
     form: { values },
-    searchDistricts
+    searchDistricts,
 }) => {
     // eslint-disable-next-line no-unused-vars
     const [_field, _meta, helpers] = useField(field.name);
@@ -107,7 +107,7 @@ export const ScopeInput: FunctionComponent<FieldProps<Scope[], Values>> = ({
     const { value: scopes = [] } = field;
     const { setValue: setScopes } = helpers;
     const [searchValue, setSearchValue] = useState("");
-    // Group contains selected orgunits
+
     const vaccineCount = useMemo(
         () =>
             Object.fromEntries(
@@ -238,6 +238,13 @@ export const ScopeInput: FunctionComponent<FieldProps<Scope[], Values>> = ({
             }
             // Remove org unit from selection if it's part of the scope
             if (scope.group.org_units.includes(district.id)) {
+
+                if (filteredDistricts.length > 0) {
+                    const remainings = filteredDistricts.filter(
+                        OrgUnit => OrgUnit.id !== district.id,
+                    );
+                    setFilteredDistricts(remainings);
+                }
                 scope.group.org_units = scope.group.org_units.filter(
                     OrgUnitId => OrgUnitId !== district.id,
                 );
@@ -364,11 +371,11 @@ export const ScopeInput: FunctionComponent<FieldProps<Scope[], Values>> = ({
         searchDistricts.current = searchDistrictByName
     }, [districts, filteredDistricts, searchValue])
 
-    const searchDistrictByName = (search) => {
+    const searchDistrictByName = (search, scopeSearch) => {
         setSearchValue(search)
         let filtreds = []
         if (search.length > 0) {
-            filtreds = districts
+            let toFilter = districts
                 .map(district => {
                     return {
                         ...district,
@@ -377,7 +384,10 @@ export const ScopeInput: FunctionComponent<FieldProps<Scope[], Values>> = ({
                             ?.vaccine,
                     };
                 })
-                .filter(d => d.name.includes(search.toUpperCase()))
+            if (scopeSearch) {
+                toFilter = toFilter.filter(d => d.vaccineName)
+            }
+            filtreds = toFilter.filter(d => d.name.includes(search.toUpperCase()))
             if (sortFocus === 'REGION') {
                 filtreds = sortBy(filtreds, ['region']);
             } else if (sortFocus === 'VACCINE') {
@@ -403,7 +413,7 @@ export const ScopeInput: FunctionComponent<FieldProps<Scope[], Values>> = ({
                 <Box position="relative">
                     <MapComponent
                         name="ScopeMap"
-                        mainLayer={searchValue !== "" ? filteredDistricts : districtShapes}
+                        mainLayer={districtShapes}
                         backgroundLayer={regionShapes}
                         onSelectShape={onSelectOrgUnit}
                         getMainLayerStyle={getShapeStyle}

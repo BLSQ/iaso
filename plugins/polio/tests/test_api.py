@@ -1,33 +1,28 @@
-import json
-from unittest import mock
-
-from django.contrib.auth.models import User
-from django.core.cache import cache
 from django.utils.timezone import now
-from rest_framework import status
 from rest_framework.test import APIClient
-from django.contrib.gis.geos import Polygon, Point, MultiPolygon
 
 from iaso import models as m
-from iaso.models import Account, OrgUnit
-from iaso.test import APITestCase, TestCase
+from iaso.models import Account
+from iaso.test import APITestCase
 
-from plugins.polio.management.commands.weekly_email import send_notification_email
-from ..models import Config, Round
+from ..models import Round
 
-from ..preparedness.calculator import get_preparedness_score
-from ..preparedness.exceptions import InvalidFormatError
 from ..preparedness.spreadsheet_manager import *
 
 
 class PolioAPITestCase(APITestCase):
+    data_source: m.DataSource
+    source_version_1: m.SourceVersion
+    org_unit: m.OrgUnit
+    child_org_unit: m.OrgUnit
+
     @classmethod
     def setUpTestData(cls):
         cls.data_source = m.DataSource.objects.create(name="Default source")
         cls.now = now()
         cls.source_version_1 = m.SourceVersion.objects.create(data_source=cls.data_source, number=1)
-        account = Account.objects.create(name="polio", default_version=cls.source_version_1)
-        cls.yoda = cls.create_user_with_profile(username="yoda", account=account, permissions=["iaso_forms"])
+        cls.account = polio_account = Account.objects.create(name="polio", default_version=cls.source_version_1)
+        cls.yoda = cls.create_user_with_profile(username="yoda", account=polio_account, permissions=["iaso_forms"])
 
         cls.org_unit = m.OrgUnit.objects.create(
             org_unit_type=m.OrgUnitType.objects.create(name="Jedi Council", short_name="Cnc"),
@@ -59,18 +54,154 @@ class PolioAPITestCase(APITestCase):
         ]
 
         cls.luke = cls.create_user_with_profile(
-            username="luke", account=account, permissions=["iaso_forms"], org_units=[cls.child_org_unit]
+            username="luke", account=polio_account, permissions=["iaso_forms"], org_units=[cls.child_org_unit]
         )
 
     def setUp(self):
         """Make sure we have a fresh client at the beginning of each test"""
         self.client = APIClient()
+
+    # TODO: consider moving all campaigns list tests to their own classes (for tighter/smaller test classes)
+    def test_campaings_list_authenticated(self):
+        """Basic tests for the campaigns list endpoint (while authenticated)
+
+        Checks
+        - the endpoint exists
+        - the status code
+        - important data fields get returned
+        """
         self.client.force_authenticate(self.yoda)
+        yoda_account = self.yoda.iaso_profile.account
+        Campaign.objects.create(account=yoda_account, obr_name="obr_name", detection_status="PENDING")
+        Campaign.objects.create(account=yoda_account, obr_name="obr_name2", detection_status="PENDING")
+
+        response = self.client.get("/api/polio/campaigns/")
+        self.assertEqual(response.status_code, 200)
+        json_response = response.json()
+        self.assertEqual(len(json_response), 2)
+
+        for campaign_data in json_response:
+            # Both are part of the same account
+            self.assertEqual(campaign_data["account"], yoda_account.pk)
+            # TODO: test other fields here
+
+    def test_campaings_list_authenticated_only_get_own_account(self):
+        """Campaigns list endpoint: authenticated users only see results linked to their account"""
+        self.client.force_authenticate(self.yoda)
+        yoda_account = self.yoda.iaso_profile.account
+
+        another_account = Account.objects.create(name="another_account")
+        Campaign.objects.create(account=yoda_account, obr_name="obr_name", detection_status="PENDING")
+        Campaign.objects.create(account=yoda_account, obr_name="obr_name2", detection_status="PENDING")
+        Campaign.objects.create(account=another_account, obr_name="obr_name_other_account", detection_status="PENDING")
+
+        json_response = self.client.get("/api/polio/campaigns/").json()
+        self.assertEqual(len(json_response), 2)
+        self.assertNotIn("obr_name_other_account", [c["obr_name"] for c in json_response])
+
+    def test_campaigns_list_anonymous_can_choose_account(self):
+        """Campaigns list endpoint: anonymous users only can use the account_id parameter to filter"""
+        another_account = Account.objects.create(name="another_account")
+        Campaign.objects.create(account=self.account, obr_name="obr_name", detection_status="PENDING")
+        Campaign.objects.create(account=self.account, obr_name="obr_name2", detection_status="PENDING")
+        Campaign.objects.create(account=another_account, obr_name="obr_name_other_account", detection_status="PENDING")
+
+        json_response = self.client.get(f"/api/polio/campaigns/?account_id={another_account.pk}").json()
+        self.assertEqual(len(json_response), 1)
+        self.assertEqual(json_response[0]["obr_name"], "obr_name_other_account")
+
+    def test_campaigns_list_anonymous_get_everything(self):
+        """Campaigns list endpoint: if they don't use the account_id, anonymous users get everything"""
+        another_account = Account.objects.create(name="another_account")
+        Campaign.objects.create(account=self.account, obr_name="obr_name", detection_status="PENDING")
+        Campaign.objects.create(account=self.account, obr_name="obr_name2", detection_status="PENDING")
+        Campaign.objects.create(account=another_account, obr_name="obr_name_other_account", detection_status="PENDING")
+
+        json_response = self.client.get("/api/polio/campaigns/").json()
+        self.assertEqual(len(json_response), 3)
+
+    def test_campaings_list_authenticated_account_id_ignored(self):
+        """Campaigns list endpoint: authenticated users cannot make use of the account_id parameter
+
+        Notes:
+            - This is a bit counterintuitive since anonymous users can BUT this is because more data fields are shown
+            to authenticated users
+            - in practice, no error is thrown but the account_id parameter just gets ignored
+        """
+        self.client.force_authenticate(self.yoda)
+        yoda_account = self.yoda.iaso_profile.account
+
+        another_account = Account.objects.create(name="another_account")
+        Campaign.objects.create(account=yoda_account, obr_name="obr_name", detection_status="PENDING")
+        Campaign.objects.create(account=yoda_account, obr_name="obr_name2", detection_status="PENDING")
+        Campaign.objects.create(account=another_account, obr_name="obr_name_other_account", detection_status="PENDING")
+
+        json_response = self.client.get(f"/api/polio/campaigns/?account_id={another_account.pk}").json()
+        self.assertEqual(len(json_response), 2)
+        self.assertNotIn("obr_name_other_account", [c["obr_name"] for c in json_response])
+
+    def test_campaigns_list_anonymous(self):
+        """Basic tests for the campaigns list endpoint (anonymous)
+
+        Checks
+        - the endpoint exists
+        - the status code
+        - important data fields get returned
+        """
+        Campaign.objects.create(account=self.account, obr_name="obr_name", detection_status="PENDING")
+        Campaign.objects.create(account=self.account, obr_name="obr_name2", detection_status="PENDING")
+
+        response = self.client.get("/api/polio/campaigns/")
+        self.assertEqual(response.status_code, 200)
+        json_response = response.json()
+        self.assertEqual(len(json_response), 2)
+
+        for campaign_data in json_response:
+            # Both are part of the same account
+            self.assertEqual(campaign_data["account"], self.account.pk)
+            # TODO: test other fields (all that's needed for anonymous access) here
+
+    def test_create_campaign_account_not_mandatory(self):
+        """Campaigns ca be created without an account"""
+        self.client.force_authenticate(self.yoda)
+        payload = {
+            "obr_name": "obr_name",
+            "detection_status": "PENDING",
+            "rounds": [
+                {
+                    "number": 0,
+                    "started_at": "2021-02-01",
+                    "ended_at": "2021-02-20",
+                }
+            ],
+        }
+        response = self.client.post("/api/polio/campaigns/", payload, format="json")
+        self.assertEqual(Campaign.objects.count(), 1)
+        self.assertEqual(response.status_code, 201)
+
+    def test_cannot_create_campaigns_if_not_authenticated(self):
+        payload = {
+            "account": self.account.pk,
+            "obr_name": "obr_name",
+            "detection_status": "PENDING",
+            "rounds": [
+                {
+                    "number": 0,
+                    "started_at": "2021-02-01",
+                    "ended_at": "2021-02-20",
+                }
+            ],
+        }
+        response = self.client.post("/api/polio/campaigns/", payload, format="json")
+        self.assertEqual(response.status_code, 403)
+        self.assertEqual(Campaign.objects.count(), 0)
 
     def test_create_campaign(self):
+        self.client.force_authenticate(self.yoda)
         self.assertEqual(Campaign.objects.count(), 0)
 
         payload = {
+            "account": self.account.pk,
             "obr_name": "obr_name",
             "detection_status": "PENDING",
             "rounds": [
@@ -97,9 +228,11 @@ class PolioAPITestCase(APITestCase):
         self.assertEqual(len(r["rounds"]), 1)
 
     def test_create_campaign_with_round_one(self):
+        self.client.force_authenticate(self.yoda)
         self.assertEqual(Campaign.objects.count(), 0)
 
         payload = {
+            "account": self.account.pk,
             "obr_name": "obr_name",
             "detection_status": "PENDING",
             "rounds": [
@@ -129,9 +262,11 @@ class PolioAPITestCase(APITestCase):
         self.assertEqual(len(r["rounds"]), 1)
 
     def test_create_campaign_with_round_one_and_two(self):
+        self.client.force_authenticate(self.yoda)
         self.assertEqual(Campaign.objects.count(), 0)
 
         payload = {
+            "account": self.account.pk,
             "obr_name": "obr_name",
             "detection_status": "PENDING",
             "rounds": [
@@ -166,8 +301,9 @@ class PolioAPITestCase(APITestCase):
         self.assertEqual(r["round_two"]["started_at"], "2021-04-01", r)
 
     def test_patch_campaign(self):
+        self.client.force_authenticate(self.yoda)
         self.assertEqual(Campaign.objects.count(), 0)
-        campaign = Campaign.objects.create(obr_name="obr_name")
+        campaign = Campaign.objects.create(obr_name="obr_name", account=self.account)
         Round.objects.create(number=1, started_at="2021-01-01", ended_at="2021-01-20", campaign=campaign)
         response = self.client.get(f"/api/polio/campaigns/{campaign.id}/", format="json")
         r = self.assertJSONResponse(response, 200)
@@ -190,14 +326,15 @@ class PolioAPITestCase(APITestCase):
             ],
         }
         response = self.client.patch(f"/api/polio/campaigns/{campaign.id}/", payload, format="json")
-        r = self.assertJSONResponse(response, 200)
+        self.assertJSONResponse(response, 200)
         campaign.refresh_from_db()
         self.assertEqual(campaign.obr_name, "obr_name2")
         self.assertEqual(campaign.rounds.count(), 2, campaign.rounds)
 
     def test_patch_campaign_remove_round(self):
+        self.client.force_authenticate(self.yoda)
         self.assertEqual(Campaign.objects.count(), 0)
-        campaign = Campaign.objects.create(obr_name="obr_name")
+        campaign = Campaign.objects.create(obr_name="obr_name", account=self.account)
         Round.objects.create(number=1, started_at="2021-01-01", ended_at="2021-01-20", campaign=campaign)
         Round.objects.create(number=3, started_at="2021-01-01", ended_at="2021-01-20", campaign=campaign)
         Round.objects.create(number=4, started_at="2021-01-01", ended_at="2021-01-20", campaign=campaign)
@@ -222,7 +359,7 @@ class PolioAPITestCase(APITestCase):
             ],
         }
         response = self.client.patch(f"/api/polio/campaigns/{campaign.id}/", payload, format="json")
-        r = self.assertJSONResponse(response, 200)
+        self.assertJSONResponse(response, 200)
         campaign.refresh_from_db()
         self.assertEqual(campaign.obr_name, "obr_name2")
         rounds = campaign.rounds.all().order_by("number")
@@ -230,8 +367,9 @@ class PolioAPITestCase(APITestCase):
         self.assertQuerysetEqual(rounds, [1, 2], lambda r: r.number)
 
     def test_patch_campaign_remove_all_rounds(self):
+        self.client.force_authenticate(self.yoda)
         self.assertEqual(Campaign.objects.count(), 0)
-        campaign = Campaign.objects.create(obr_name="obr_name")
+        campaign = Campaign.objects.create(obr_name="obr_name", account=self.account)
         Round.objects.create(number=1, started_at="2021-01-01", ended_at="2021-01-20", campaign=campaign)
         Round.objects.create(number=3, started_at="2021-01-01", ended_at="2021-01-20", campaign=campaign)
         Round.objects.create(number=4, started_at="2021-01-01", ended_at="2021-01-20", campaign=campaign)
@@ -243,7 +381,7 @@ class PolioAPITestCase(APITestCase):
             "rounds": [],
         }
         response = self.client.patch(f"/api/polio/campaigns/{campaign.id}/", payload, format="json")
-        r = self.assertJSONResponse(response, 200)
+        self.assertJSONResponse(response, 200)
         campaign.refresh_from_db()
         rounds = campaign.rounds.all().order_by("number")
         self.assertEqual(0, rounds.count())
@@ -252,9 +390,11 @@ class PolioAPITestCase(APITestCase):
         self.assertEqual(len(r["rounds"]), 0)
 
     def test_create_campaign_with_round_scopes(self):
+        self.client.force_authenticate(self.yoda)
         self.assertEqual(Campaign.objects.count(), 0)
 
         payload = {
+            "account": self.account.pk,
             "obr_name": "obr_name",
             "detection_status": "PENDING",
             "rounds": [
@@ -321,13 +461,17 @@ class PolioAPITestCase(APITestCase):
 
 
 class PreparednessAPITestCase(APITestCase):
+    data_source: m.DataSource
+    source_version_1: m.SourceVersion
+    account: Account
+
     @classmethod
     def setUpTestData(cls):
         cls.data_source = m.DataSource.objects.create(name="Default source")
         cls.now = now()
         cls.source_version_1 = m.SourceVersion.objects.create(data_source=cls.data_source, number=1)
-        account = Account.objects.create(name="polio", default_version=cls.source_version_1)
-        cls.yoda = cls.create_user_with_profile(username="yoda", account=account, permissions=["iaso_forms"])
+        cls.account = Account.objects.create(name="polio", default_version=cls.source_version_1)
+        cls.yoda = cls.create_user_with_profile(username="yoda", account=cls.account, permissions=["iaso_forms"])
 
     def setUp(self):
         """Make sure we have a fresh client at the beginning of each test"""
@@ -335,11 +479,11 @@ class PreparednessAPITestCase(APITestCase):
         self.client.force_authenticate(self.yoda)
 
     def test_two_campaign_round(self):
-        campaign_a = Campaign.objects.create(obr_name="campaign A")
+        campaign_a = Campaign.objects.create(obr_name="campaign A", account=self.account)
         round_one = campaign_a.rounds.create(number=1)
         round_three = campaign_a.rounds.create(number=3)
-        campaign_b = Campaign.objects.create(obr_name="campaign B")
-        campaign_c = Campaign.objects.create(obr_name="campaign c")
+        Campaign.objects.create(obr_name="campaign B", account=self.account)
+        Campaign.objects.create(obr_name="campaign c", account=self.account)
 
         response = self.client.get(f"/api/polio/campaigns/{campaign_a.id}/", format="json")
 
@@ -347,7 +491,7 @@ class PreparednessAPITestCase(APITestCase):
         self.assertEqual(len(r["rounds"]), 2)
 
         response = self.client.get(f"/api/polio/preparedness_dashboard/", format="json")
-        r = self.assertJSONResponse(response, 200)
+        self.assertJSONResponse(response, 200)
 
         round_one.preparedness_spreadsheet_url = "https://docs.google.com/spreadsheets/d/1"
         round_one.save()
@@ -357,6 +501,6 @@ class PreparednessAPITestCase(APITestCase):
         response = self.client.get(f"/api/polio/preparedness_dashboard/", format="json")
         r = self.assertJSONResponse(response, 200)
         self.assertEqual(len(r), 2)
-        for round in r:
-            self.assertEqual(round["status"], "not_sync")
+        for campaign_round in r:
+            self.assertEqual(campaign_round["status"], "not_sync")
         print(r)

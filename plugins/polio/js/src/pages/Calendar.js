@@ -9,7 +9,7 @@ import {
     useSafeIntl,
     LoadingSpinner,
     ExcellSvg,
-    getTableUrl
+    getTableUrl,
 } from 'bluesquare-components';
 import { useSelector } from 'react-redux';
 import TopBar from 'Iaso/components/nav/TopBarComponent';
@@ -48,7 +48,7 @@ const useStyles = makeStyles(theme => ({
     isNotPdf: {
         height: 'calc(100vh - 65px)',
     },
-    exportIcon: { marginRight: '8px' }
+    exportIcon: { marginRight: '8px' },
 }));
 
 const Calendar = ({ params }) => {
@@ -128,7 +128,7 @@ const Calendar = ({ params }) => {
         campaignType: params.campaignType,
         campaignGroups: params.campaignGroups,
         search: params.search,
-        order: params.order
+        order: params.order,
     };
 
     const xlsx_url = getTableUrl(
@@ -137,10 +137,14 @@ const Calendar = ({ params }) => {
     );
 
     useEffect(() => {
-        if (campaigns.length > 0) {
+        if (
+            campaigns.length > 0 &&
+            filteredCampaigns.length > 0 &&
+            !isLoading
+        ) {
             setCalendarAndMapLoaded(true);
         }
-    }, [campaigns]);
+    }, [campaigns, filteredCampaigns, isLoading]);
 
     return (
         <div>
@@ -206,10 +210,7 @@ const Calendar = ({ params }) => {
                                     className="createXlsx"
                                     href={xlsx_url}
                                 >
-                                    <ExcellSvg
-                                        className={classes.exportIcon}
-
-                                    />
+                                    <ExcellSvg className={classes.exportIcon} />
                                     {formatMessage(MESSAGES.exportToExcel)}
                                 </Button>
                             </Box>

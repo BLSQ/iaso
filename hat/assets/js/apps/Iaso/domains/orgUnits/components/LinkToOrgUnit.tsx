@@ -24,7 +24,7 @@ const useStyles = makeStyles(theme => ({
 }));
 
 type Props = {
-    orgUnit: OrgUnit | ShortOrgUnit | undefined;
+    orgUnit?: OrgUnit | ShortOrgUnit;
     useIcon?: boolean;
 };
 

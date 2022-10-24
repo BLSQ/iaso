@@ -24,7 +24,7 @@ type Props = {
 export const LinkToEntity: FunctionComponent<Props> = ({ entity }) => {
     const user = useCurrentUser();
     const classes: Record<string, string> = useStyles();
-    if (userHasPermission('iaso_entities', user) && entity) {
+    if (userHasPermission('iaso_entities', user) && entity?.name) {
         const url = `/${baseUrls.entityDetails}/entityId/${entity.id}`;
         return (
             <Link className={classes.root} to={url}>

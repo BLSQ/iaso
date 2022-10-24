@@ -10,7 +10,7 @@ import MESSAGES from '../messages';
 type Props = {
     onClick: () => void;
 };
-export const TriggerModal: FunctionComponent<Props> = ({ onClick }) => (
+export const ModalButton: FunctionComponent<Props> = ({ onClick }) => (
     <IconButtonComponent
         size="small"
         onClick={onClick}

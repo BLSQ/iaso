@@ -95,7 +95,7 @@ export const basePostRequest = (url, data, fileData = {}, signal) => {
 
     return iasoFetch(url, init).then(response => {
         if (response.status === 204) {
-            return undefined;
+            return null;
         }
         return response.json();
     });

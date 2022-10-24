@@ -12,7 +12,7 @@ import {
 import { Storage, StorageStatus } from '../types/storages';
 import { useSaveStatus } from '../hooks/requests/useSaveStatus';
 
-import { TriggerModal } from './TriggerModal';
+import { ModalButton } from './ModalButton';
 import InputComponent from '../../../components/forms/InputComponent';
 import { TextArea } from '../../../components/forms/TextArea';
 import { useGetReasons } from '../hooks/useGetReasons';
@@ -116,6 +116,6 @@ const StatusModal: FunctionComponent<Props> = ({
         </ConfirmCancelModal>
     );
 };
-const modalWithButton = makeFullModal(StatusModal, TriggerModal);
+const modalWithButton = makeFullModal(StatusModal, ModalButton);
 
 export { modalWithButton as StatusModal };

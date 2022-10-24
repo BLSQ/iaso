@@ -146,7 +146,6 @@ const Instances = ({ params }) => {
         [dispatch],
     );
 
-    getEndpointUrl(params, 'csv');
     const fetching = loadingMap || loadingList || fetchingDetail;
     return (
         <section className={classes.relativeContainer}>

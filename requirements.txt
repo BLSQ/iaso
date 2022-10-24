@@ -28,7 +28,7 @@ django-ltree==0.5.3
 # webpack loader
 # This is our custom version of webpack loader to handle S3 better.
 # Use the following line if you want a locally editable version, and comment the other
-#-e git+https://github.com/BLSQ/django-webpack-loader@e94f76d0f8372193f0b662e2a1aba01a9deffb20#egg=django_webpack_loader
+# -e git+https://github.com/BLSQ/django-webpack-loader@e94f76d0f8372193f0b662e2a1aba01a9deffb20#egg=django_webpack_loader
 # Use the tar.gz version to install faster
 https://github.com/BLSQ/django-webpack-loader/archive/e94f76d0f8372193f0b662e2a1aba01a9deffb20.tar.gz#egg=django_webpack_loader
 
@@ -56,6 +56,7 @@ flake8-mypy==17.8.0
 mock==4.0.1
 redgreenunittest==0.1.1
 responses==0.12.1
+types-dataclasses==0.6.6
 types-requests==2.28.9
 django-stubs==1.9.0
 types-mock==4.0.15

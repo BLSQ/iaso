@@ -122,7 +122,7 @@ export const BaseInfoForm = () => {
                     <SendEmailButton />
                     <Field
                         className={classes.input}
-                        label={formatMessage(MESSAGES.enableSendWeeklyEmail)}
+                        label={formatMessage(MESSAGES.enable_send_weekly_email)}
                         name="enable_send_weekly_email"
                         component={BooleanInput}
                     />
@@ -147,7 +147,9 @@ export const BaseInfoForm = () => {
                     </Grid>
                     <Grid item xs={12} md={6}>
                         <Field
-                            label={formatMessage(MESSAGES.pv2NotificationDate)}
+                            label={formatMessage(
+                                MESSAGES.pv2_notification_date,
+                            )}
                             fullWidth
                             name="pv_notified_at"
                             component={DateInput}

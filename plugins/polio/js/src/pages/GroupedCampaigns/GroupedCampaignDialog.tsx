@@ -99,7 +99,7 @@ export const GroupedCampaignDialog: FunctionComponent<Props> = ({
             onConfirm={onConfirm}
             confirmMessage={MESSAGES.save}
             cancelMessage={MESSAGES.close}
-            maxWidth="md"
+            maxWidth="xs"
             titleMessage={MESSAGES.editGroupedCampaign}
             onCancel={onCancel}
             dataTestId="grouped-campaigns-modal"
@@ -119,7 +119,7 @@ export const GroupedCampaignDialog: FunctionComponent<Props> = ({
                     direction="row"
                     justifyContent="space-around"
                 >
-                    <Grid container item xs={6}>
+                    <Grid container item xs={12}>
                         <Grid item xs={12}>
                             <InputComponent
                                 keyValue={GROUPED_CAMPAIGN_NAME}

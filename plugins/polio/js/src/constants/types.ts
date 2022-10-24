@@ -1,6 +1,7 @@
 import { IntlMessage } from '../../../../../hat/assets/js/apps/Iaso/types/intl';
 import { Pagination } from '../../../../../hat/assets/js/apps/Iaso/types/table';
 import { Nullable } from '../../../../../hat/assets/js/apps/Iaso/types/utils';
+import { Profile } from '../../../../../hat/assets/js/apps/Iaso/utils/usersUtils';
 
 /* eslint-disable camelcase */
 export type FormatForNFMArgs<T> = {
@@ -132,4 +133,65 @@ export type BudgetEvent = {
     files: any;
     internal: boolean;
     amount?: number;
+};
+
+export type CampaignLogDetail = {
+    id: number;
+    content_type: string;
+    object_id: string;
+    source: string;
+    user: Record<string, any>;
+    created_at: string;
+};
+
+export type CampaignLogsDetail = Pagination & {
+    list: CampaignLogDetail[];
+};
+
+export type CampaignLogData = {
+    user: Profile;
+    new_value: Record<string, any>;
+};
+
+export type CampaignFieldType =
+    | 'string'
+    | 'number'
+    | 'boolean'
+    | 'object'
+    | 'string'
+    | 'undefined'
+    | 'function'
+    | 'symbol'
+    | 'integer'
+    | 'bigint'
+    | 'decimal'
+    | 'range'
+    | 'text'
+    | 'select_one'
+    | 'select_multiple'
+    | 'select_one_from_file'
+    | 'select_multiple_from_file'
+    | 'rank'
+    | 'note'
+    | 'geopoint'
+    | 'geotrace'
+    | 'geoshape'
+    | 'date'
+    | 'time'
+    | 'dateTime'
+    | 'start'
+    | 'end'
+    | 'image'
+    | 'audio'
+    | 'background-audio'
+    | 'video'
+    | 'file'
+    | 'barcode'
+    | 'calculate'
+    | 'acknowledge'
+    | 'hidden'
+    | 'xml-external';
+
+export type Translations = {
+    messages: Record<string, any>;
 };

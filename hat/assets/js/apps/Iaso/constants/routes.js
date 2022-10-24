@@ -9,7 +9,7 @@ import OrgUnitDetail from '../domains/orgUnits/details';
 import Completeness from '../domains/completeness';
 import Instances from '../domains/instances';
 import CompareSubmissions from '../domains/instances/compare/index.tsx';
-import InstanceDetail from '../domains/instances/details';
+import InstanceDetail from '../domains/instances/details.tsx';
 import Mappings from '../domains/mappings';
 import MappingDetails from '../domains/mappings/details';
 import Users from '../domains/users';
@@ -29,6 +29,8 @@ import { linksFiltersWithPrefix, orgUnitFiltersWithPrefix } from './filters';
 import Pages from '../domains/pages';
 import { Planning } from '../domains/plannings/index.tsx';
 import { Teams } from '../domains/teams/index.tsx';
+import { Storages } from '../domains/storages/index.tsx';
+import { Details as StorageDetails } from '../domains/storages/details.tsx';
 import { Assignments } from '../domains/assignments/index.tsx';
 import { CompareInstanceLogs } from '../domains/instances/compare/components/CompareInstanceLogs.tsx';
 
@@ -706,6 +708,64 @@ export const teamsPath = {
         })),
     ],
 };
+export const storagesPath = {
+    baseUrl: baseUrls.storages,
+    permissions: ['iaso_storages'],
+    component: props => <Storages {...props} />,
+    params: [
+        {
+            isRequired: false,
+            key: 'search',
+        },
+        {
+            isRequired: false,
+            key: 'type',
+        },
+        {
+            isRequired: false,
+            key: 'status',
+        },
+        {
+            isRequired: false,
+            key: 'reason',
+        },
+        ...paginationPathParams.map(p => ({
+            ...p,
+            isRequired: true,
+        })),
+    ],
+};
+export const storageDetailPath = {
+    baseUrl: baseUrls.storageDetail,
+    permissions: ['iaso_storages'],
+    component: props => <StorageDetails {...props} />,
+    params: [
+        {
+            isRequired: true,
+            key: 'type',
+        },
+        {
+            isRequired: true,
+            key: 'storageId',
+        },
+        {
+            isRequired: false,
+            key: 'search',
+        },
+        {
+            isRequired: false,
+            key: 'status',
+        },
+        {
+            isRequired: false,
+            key: 'reason',
+        },
+        ...paginationPathParams.map(p => ({
+            ...p,
+            isRequired: false,
+        })),
+    ],
+};
 
 export const page401 = {
     baseUrl: baseUrls.error401,
@@ -757,4 +817,6 @@ export const routeConfigs = [
     entitiesPath,
     entityDetailsPath,
     entitySubmissionDetailPath,
+    storagesPath,
+    storageDetailPath,
 ];

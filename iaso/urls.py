@@ -38,6 +38,7 @@ from .api.groups import GroupsViewSet
 from .api.periods import PeriodsViewSet
 from .api.completeness import CompletenessViewSet
 from .api.export_requests import ExportRequestsViewSet
+from .api.storage import StorageLogViewSet, StorageViewSet, logs_per_device, StorageBlacklistedViewSet
 
 from .api.tasks import TaskSourceViewSet
 from .api.accounts import AccountViewSet
@@ -120,6 +121,9 @@ router.register(r"microplanning/teams", TeamViewSet, basename="teams")
 router.register(r"microplanning/planning", PlanningViewSet, basename="planning")
 router.register(r"microplanning/assignments", AssignmentViewSet, basename="assignments")
 router.register(r"mobile/plannings", MobilePlanningViewSet, basename="mobileplanning")
+router.register(r"storage", StorageViewSet, basename="storage")
+router.register(r"mobile/storage/logs", StorageLogViewSet, basename="storagelogs")
+router.register(r"mobile/storage/blacklisted", StorageBlacklistedViewSet, basename="storageblacklisted")
 
 router.registry.extend(plugins_router.registry)
 
@@ -159,6 +163,7 @@ def append_datasources_subresource(viewset, resource_name, urlpatterns):
 urlpatterns = urlpatterns + [
     path("token/", TokenObtainPairView.as_view(), name="token_obtain_pair"),
     path("token/refresh/", TokenRefreshView.as_view(), name="token_refresh"),
+    path("storage/<str:storage_type>/<str:storage_customer_chosen_id>/logs", logs_per_device),
     path("", include(router.urls)),
 ]
 # External Auth

@@ -40,14 +40,14 @@ export default function iasoApp(
                 routeConfig.allowAnonymous
                     ? routeConfig.component
                     : props => (
-                          <ProtectedRoute
-                            {...props}
-                            featureFlag={routeConfig.featureFlag}
-                            permissions={routeConfig.permissions}
-                            component={routeConfig.component(props)}
-                            isRootUrl={routeConfig.isRootUrl}
-                            allRoutes={allRoutesConfigs}
-                        />
+                        <ProtectedRoute
+                              {...props}
+                              featureFlag={routeConfig.featureFlag}
+                              permissions={routeConfig.permissions}
+                              component={routeConfig.component(props)}
+                              isRootUrl={routeConfig.isRootUrl}
+                              allRoutes={allRoutesConfigs}
+                          />
                       )
             }
         />

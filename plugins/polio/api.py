@@ -4,13 +4,12 @@ import json
 import datetime as dt
 from datetime import timedelta, datetime, date
 import logging
-from typing import Any, Dict, List, Optional, Union
+from typing import Any, Dict, List, Optional
 from collections import defaultdict
 from functools import lru_cache
 from logging import getLogger
 from openpyxl.writer.excel import save_virtual_workbook  # type: ignore
 
-import requests
 from django.core.files import File
 from django.core.cache import cache
 from django.core.exceptions import ObjectDoesNotExist
@@ -34,7 +33,6 @@ from rest_framework.decorators import action
 from rest_framework.request import Request
 from rest_framework.response import Response
 from django.conf import settings
-import urllib.parse
 from hat.api.token_authentication import generate_auto_authentication_link
 from iaso.api.common import ModelViewSet, DeletionFilterBackend
 from iaso.models import OrgUnit
@@ -58,7 +56,6 @@ from plugins.polio.serializers import (
     CountryUsersGroupSerializer,
 )
 from plugins.polio.serializers import SurgePreviewSerializer, CampaignPreparednessSpreadsheetSerializer
-from .budget.api import BudgetCampaignViewSet
 from .forma import (
     FormAStocksViewSetV2,
     make_orgunits_cache,
@@ -78,7 +75,6 @@ from .models import (
     RoundScope,
 )
 from .models import CountryUsersGroup
-from .models import URLCache
 from .preparedness.calculator import preparedness_summary
 from .preparedness.parser import get_preparedness
 from .export_utils import generate_xlsx_campaigns_calendar, xlsx_file_name
@@ -190,6 +186,7 @@ class CampaignViewSet(ModelViewSet):
             campaigns = campaigns.filter(is_preventive=False).filter(is_test=False)
         if campaign_groups:
             campaigns = campaigns.filter(grouped_campaigns__in=campaign_groups.split(","))
+
         return campaigns.distinct()
 
     def get_queryset(self):
@@ -200,11 +197,16 @@ class CampaignViewSet(ModelViewSet):
         campaigns = campaigns.annotate(last_round_started_at=Max("rounds__started_at"))
         campaigns = campaigns.annotate(first_round_started_at=Min("rounds__started_at"))
 
-        if user.is_authenticated and user.iaso_profile.org_units.count():
-            org_units = OrgUnit.objects.hierarchy(user.iaso_profile.org_units.all())
-            return campaigns.filter(initial_org_unit__in=org_units)
-        else:
-            return campaigns.filter()
+        campaigns = campaigns.filter_for_user(user)
+        if not self.request.user.is_authenticated:
+            # For this endpoint since it's available anonymously we allow all user to list the campaigns
+            # and to additionally filter on the account_id
+            # In the future we may want to make the account_id parameter mandatory.
+            account_id = self.request.query_params.get("account_id", None)
+            if account_id is not None:
+                campaigns = campaigns.filter(account_id=account_id)
+
+        return campaigns
 
     @action(methods=["POST"], detail=False, serializer_class=PreparednessPreviewSerializer)
     def preview_preparedness(self, request, **kwargs):
@@ -426,9 +428,11 @@ Timeline tracker Automated message
 
         We use the django annotate feature to make a raw Postgis request that will generate the shape on the
         postgresql server which is faster.
-        Campaign with and without scope per round are  handled separately"""
+        Campaign with and without scope per round are handled separately"""
         # FIXME: The cache ignore all the filter parameter which will return wrong result if used
         key_name = "{0}-geo_shapes".format(request.user.id)
+
+        # use the same filter logic and rule as for anonymous or not
         campaigns = self.filter_queryset(self.get_queryset())
         # Remove deleted campaigns
         campaigns = campaigns.filter(deleted_at=None)
@@ -1093,6 +1097,10 @@ def handle_ona_request_with_key(request, key):
 
     form_count = 0
     find_campaign_on_day_cached = functools.lru_cache(None)(find_campaign_on_day)
+    stats = {
+        "7days": {"ok": defaultdict(lambda: 0), "failure": defaultdict(lambda: 0)},
+        "alltime": {"ok": defaultdict(lambda: 0), "failure": defaultdict(lambda: 0)},
+    }
     for config in config.content:
         forms = get_url_content(
             url=config["url"], login=config["login"], password=config["password"], minutes=config.get("minutes", 60)
@@ -1141,14 +1149,38 @@ def handle_ona_request_with_key(request, key):
                     form["campaign_id"] = None
                     form["epid"] = None
                     form["obr"] = None
+
                 res.append(form)
                 form_count += 1
+
+                success = form["facility_id"] != None and form["campaign_id"] != None
+                stats_key = "ok" if success else "failure"
+                stats["alltime"][stats_key][country.name] = stats["alltime"][stats_key][country.name] + 1
+                if (datetime.utcnow().date() - today).days <= 7:
+                    stats["7days"][stats_key][country.name] = stats["7days"][stats_key][country.name] + 1
             except Exception as e:
                 logger.exception(f"failed parsing of {form}", exc_info=e)
                 failure_count += 1
     print("parsed:", len(res), "failed:", failure_count)
     res = convert_dicts_to_table(res)
 
+    if len(stats["7days"]["failure"]) > 1:  # let's send an email if there are recent failures
+        email_text = "Forms not appearing in %s for the last 7 days \n" % key.upper()
+        config = get_object_or_404(Config, slug="refresh_error_mailing_list")
+        mails = config.content["mails"].split(",")  # format should be: {"mails": "a@a.b,b@b.a"}
+        for country in stats["7days"]["failure"]:
+            new_line = "\n%d\t%s" % (stats["7days"]["failure"][country], country)
+            email_text += new_line
+        email_text += "\n\nForms correctly handled in %s for the last 7 days\n" % key.upper()
+        for country in stats["7days"]["ok"]:
+            new_line = "\n%d\t%s" % (stats["7days"]["ok"][country], country)
+            email_text += new_line
+        send_mail(
+            "Recent errors for %s" % (key.upper(),),
+            email_text,
+            settings.DEFAULT_FROM_EMAIL,
+            mails,
+        )
     if as_csv:
         response = HttpResponse(content_type="text/csv")
         writer = csv.writer(response)
@@ -2046,10 +2078,11 @@ class BudgetFilesViewset(ModelViewSet):
 router = routers.SimpleRouter()
 router.register(r"polio/orgunits", PolioOrgunitViewSet, basename="PolioOrgunit")
 router.register(r"polio/campaigns", CampaignViewSet, basename="Campaign")
-from .budget.api import BudgetCampaignViewSet, BudgetStepViewSet
+from .budget.api import BudgetCampaignViewSet, BudgetStepViewSet, WorkflowViewSet
 
 router.register(r"polio/budget", BudgetCampaignViewSet, basename="BudgetCampaign")
 router.register(r"polio/budgetsteps", BudgetStepViewSet, basename="BudgetStep")
+router.register(r"polio/workflow", WorkflowViewSet, basename="BudgetWorkflow")
 router.register(r"polio/campaignsgroup", CampaignGroupViewSet, basename="campaigngroup")
 router.register(r"polio/preparedness_dashboard", PreparednessDashboardViewSet, basename="preparedness_dashboard")
 router.register(r"polio/imstats", IMStatsViewSet, basename="imstats")

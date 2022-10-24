@@ -1,10 +1,18 @@
 import React from 'react';
 import { Redirect, Route } from 'react-router';
+
+import {
+    // @ts-ignore
+    getSort,
+} from 'bluesquare-components';
+
 import { baseUrls } from '../constants/urls';
 import { getChipColors } from '../constants/chipColors';
 
 import { locationLimitMax } from '../domains/orgUnits/constants/orgUnitConstants';
 import Page404 from '../components/errors/Page404';
+
+import { defaultSorted as storageDefaultSort } from '../domains/storages/config.tsx';
 
 const addRoutes = (baseRoutes, overrideLanding) => {
     return baseRoutes.concat([
@@ -48,6 +56,12 @@ const addRoutes = (baseRoutes, overrideLanding) => {
         <Redirect
             path={baseUrls.teams}
             to={`${baseUrls.teams}/order/name/pageSize/20/page/1`}
+        />,
+        <Redirect
+            path={baseUrls.storages}
+            to={`${baseUrls.storages}/order/${getSort(
+                storageDefaultSort,
+            )}/pageSize/20/page/1`}
         />,
         // Keep compatibility with the olds url for instance as they got renamed in Nov 2021
         <Redirect

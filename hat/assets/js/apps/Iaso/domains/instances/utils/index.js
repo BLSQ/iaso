@@ -331,6 +331,21 @@ export const getFilters = params => {
 
 const defaultOrder = 'updated_at';
 
+export const getExportUrl = (params, exportType = 'csv') => {
+    const baseUrl = `/api/instances`;
+    const queryParams = { ...getFilters(params) };
+    const urlParams = new URLSearchParams();
+    Object.entries(queryParams).forEach(entry => {
+        const [k, v] = entry;
+        if (v) {
+            urlParams.append(k, v);
+        }
+    });
+    urlParams.append(exportType, true);
+    const queryString = urlParams.toString();
+    return `${baseUrl}/?${queryString}`;
+};
+
 export const getEndpointUrl = (
     params,
     toExport,

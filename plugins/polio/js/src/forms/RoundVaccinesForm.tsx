@@ -207,7 +207,7 @@ export const RoundVaccinesForm: FunctionComponent<Props> = ({
 
     return (
         <>
-            {vaccines.length > 0 &&
+            {vaccines.length > 1 &&
                 vaccines.map((_vaccine, index) => {
                     return (
                         <RoundVaccineForm

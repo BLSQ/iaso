@@ -2,7 +2,7 @@ import json
 import ntpath
 from enum import Enum
 from time import gmtime, strftime
-from typing import Dict, Any
+from typing import Dict, Any, Union
 
 import pandas as pd
 from django.contrib.auth.models import User
@@ -201,7 +201,8 @@ class InstancesViewSet(viewsets.ViewSet):
         sub_columns = ["" for __ in columns]
         # TODO: Check the logic here, it's going to fail in any case if there is no form
         # Don't know what we are trying to achieve exactly
-        latest_form_version = form.latest_version
+        # The type ignore is obviously wrong since the type can be null, but the frontend always send forms.
+        latest_form_version = form.latest_version  # type: ignore
         questions_by_name = latest_form_version.questions_by_name() if latest_form_version else {}
         if form and latest_form_version:
             file_content_template = questions_by_name
@@ -214,7 +215,7 @@ class InstancesViewSet(viewsets.ViewSet):
                 sub_columns.append(label)
                 columns.append({"title": title, "width": 50})
         else:
-            file_content_template = queryset.first().as_dict()["file_content"]
+            file_content_template = queryset.first().as_dict()["file_content"]  # type: ignore
             for title in file_content_template:
                 columns.append({"title": title, "width": 50})
                 sub_columns.append(questions_by_name.get(title, {}).get("label", ""))
@@ -264,6 +265,7 @@ class InstancesViewSet(viewsets.ViewSet):
             "org_unit__parent__parent__parent"
         ).prefetch_related("org_unit__parent__parent").prefetch_related("org_unit__parent").prefetch_related("org_unit")
 
+        response: Union[HttpResponse, StreamingHttpResponse]
         if file_format == FileFormatEnum.XLSX:
             filename = filename + ".xlsx"
             response = HttpResponse(
@@ -334,7 +336,7 @@ class InstancesViewSet(viewsets.ViewSet):
                     d = instance.as_dict()
                     d["can_user_modify"] = instance.count_lock_applying_to_user == 0
                     d["is_locked"] = instance.count_active_lock > 0
-                    reference_form_id = instance.org_unit.get_reference_form_id() if instance.has_org_unit else None
+                    reference_form_id = instance.org_unit.get_reference_form_id() if instance.has_org_unit else None  # type: ignore
                     if reference_form_id:
                         d["reference_form_id"] = reference_form_id
                     return d

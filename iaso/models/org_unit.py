@@ -16,6 +16,11 @@ from iaso.models.data_source import SourceVersion
 from .project import Project
 from ..utils.expressions import ArraySubquery
 
+try:  # for typing
+    from .base import Account
+except:
+    pass
+
 
 def get_or_create_org_unit_type(name: str, depth: int, account: "Account", preferred_project: Project) -> "OrgUnitType":
     """

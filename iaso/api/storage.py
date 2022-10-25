@@ -2,6 +2,7 @@
 from datetime import datetime
 from typing import Tuple
 
+from django.db.models import Prefetch
 from rest_framework import viewsets, permissions, serializers, status
 from rest_framework.decorators import action, api_view
 from rest_framework.mixins import CreateModelMixin, ListModelMixin
@@ -106,7 +107,7 @@ class StorageSerializer(serializers.ModelSerializer):
 class StorageSerializerWithLogs(StorageSerializer):
     """Like StorageSerializer, but also includes the log entries"""
 
-    logs = StorageLogSerializer(many=True, source="log_entries")
+    logs = StorageLogSerializer(many=True, source="filtered_log_entries")
 
     class Meta(StorageSerializer.Meta):
         fields = StorageSerializer.Meta.fields + ("logs",)
@@ -239,7 +240,6 @@ class StorageLogViewSet(CreateModelMixin, viewsets.GenericViewSet):
             log_id = log_data["id"]
 
             try:
-                # TODO: check the logic is sound here (=we don't expect the mobile to re-push the same log id with different values)
                 StorageLogEntry.objects.get(id=log_id)
                 # That log entry already exists, skip it
             except StorageLogEntry.DoesNotExist:
@@ -300,12 +300,18 @@ def logs_per_device(request, storage_customer_chosen_id: str, storage_type: str)
     """Return a list of log entries for a given device"""
     user_account = request.user.iaso_profile.account
 
+    org_unit_id = request.GET.get("org_unit_id")
+
     # TODO: implement permissions and return 403/401 (see spec)
     # TODO: spec says: "permissions to see storage", what does it mean exactly?
 
-    device = StorageDevice.objects.get(
-        customer_chosen_id=storage_customer_chosen_id, type=storage_type, account=user_account
-    )
+    device = StorageDevice.objects.prefetch_related(
+        Prefetch(
+            "log_entries",
+            queryset=StorageLogEntry.objects.filter(org_unit_id=org_unit_id),
+            to_attr="filtered_log_entries",
+        )
+    ).get(customer_chosen_id=storage_customer_chosen_id, type=storage_type, account=user_account)
 
     # TODO: implement filtering
     # TODO: implement pagination

@@ -535,6 +535,18 @@ class StorageAPITestCase(APITestCase):
         self.assertEqual(types_in_order_received[::-1], sorted(types_in_order_received))
         # TODO: check with the frontend team which exact ordering possibilities should be available
 
+    def test_list_can_be_paginated(self):
+        """GET /api/storage/ takes an optional "limit" parameter to paginate the results"""
+        self.client.force_authenticate(self.yoda)
+        response = self.client.get("/api/storage/?limit=1")
+        received_json = response.json()
+        self.assertEqual(received_json["count"], 3)  # 3 devices in total
+        self.assertEqual(len(received_json["results"]), 1)  # 1 result on this page
+        self.assertEqual(received_json["pages"], 3)  # 3 pages of results
+        self.assertTrue(received_json["has_next"])
+        self.assertFalse(received_json["has_previous"])
+        self.assertEqual(received_json["limit"], 1)
+
     def test_post_blacklisted_storage_ok(self):
         """
         POST /api/storage/blacklisted with correct parameters and permissions does the job:
@@ -637,6 +649,68 @@ class StorageAPITestCase(APITestCase):
                         "operation_type": "WRITE_PROFILE",
                         "instances": [],
                         "org_unit": None,
+                        "entity": None,
+                        "performed_at": 1665666776.0,
+                    }
+                ],
+            },
+        )
+
+    def test_get_logs_for_device_ou_filter(self):
+        """The logs per device endpoint can be filtered by org_unit_id"""
+        self.client.force_authenticate(self.yoda)
+        # 1. Case one: no logs because no log entries for this device refer to the given OU
+        response = self.client.get(f"/api/storage/NFC/EXISTING_STORAGE/logs?org_unit_id={self.org_unit.id}")
+        self.assertEqual(response.status_code, 200)
+
+        received_json = response.json()
+
+        self.assertEqual(
+            received_json,
+            {
+                "updated_at": 1580608922.0,
+                "created_at": 1580608922.0,
+                "storage_id": "EXISTING_STORAGE",
+                "storage_type": "NFC",
+                "status": {"status": "OK", "reason": "", "comment": ""},
+                "org_unit": None,
+                "entity": None,
+                "logs": [],
+            },
+        )
+
+        # Case 2: we add one log entry for the given device and OU
+        StorageLogEntry.objects.create(
+            id="e4200710-bf82-4d29-a29b-6a042f79ef26",
+            device=self.existing_storage_device,
+            operation_type="WRITE_PROFILE",
+            performed_by=self.yoda,
+            performed_at=datetime(2022, 10, 13, 13, 12, 56, 0, tzinfo=timezone.utc),
+            org_unit=self.org_unit,
+        )
+
+        # This time, it should be returned
+        response = self.client.get(f"/api/storage/NFC/EXISTING_STORAGE/logs?org_unit_id={self.org_unit.id}")
+        received_json = response.json()
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(
+            received_json,
+            {
+                "updated_at": 1580608922.0,
+                "created_at": 1580608922.0,
+                "storage_id": "EXISTING_STORAGE",
+                "storage_type": "NFC",
+                "status": {"status": "OK", "reason": "", "comment": ""},
+                "org_unit": None,
+                "entity": None,
+                "logs": [
+                    {
+                        "id": "e4200710-bf82-4d29-a29b-6a042f79ef26",
+                        "storage_id": "EXISTING_STORAGE",
+                        "storage_type": "NFC",
+                        "operation_type": "WRITE_PROFILE",
+                        "instances": [],
+                        "org_unit": {"id": self.org_unit.id, "name": "Akkala"},
                         "entity": None,
                         "performed_at": 1665666776.0,
                     }

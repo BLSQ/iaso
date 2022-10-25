@@ -301,19 +301,27 @@ def logs_per_device(request, storage_customer_chosen_id: str, storage_type: str)
     user_account = request.user.iaso_profile.account
 
     org_unit_id = request.GET.get("org_unit_id")
+    operation_types_str = request.GET.get("types", None)
 
     # TODO: implement permissions and return 403/401 (see spec)
     # TODO: spec says: "permissions to see storage", what does it mean exactly?
 
+    log_entries_queryset = StorageLogEntry.objects.all()
+    if org_unit_id is not None:
+        log_entries_queryset = log_entries_queryset.filter(org_unit_id=org_unit_id)
+    if operation_types_str is not None:
+        operation_types = operation_types_str.split(",")
+        log_entries_queryset = log_entries_queryset.filter(operation_type__in=operation_types)
+
     device = StorageDevice.objects.prefetch_related(
         Prefetch(
             "log_entries",
-            queryset=StorageLogEntry.objects.filter(org_unit_id=org_unit_id),
+            log_entries_queryset,
             to_attr="filtered_log_entries",
         )
     ).get(customer_chosen_id=storage_customer_chosen_id, type=storage_type, account=user_account)
 
-    # TODO: implement filtering
+    # TODO: implement filtering (missing: types, status, reason)
     # TODO: implement pagination
 
     return Response(StorageSerializerWithLogs(device).data)

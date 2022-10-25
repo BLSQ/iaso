@@ -661,10 +661,9 @@ class StorageAPITestCase(APITestCase):
         self.client.force_authenticate(self.yoda)
         # 1. Case one: no logs because no log entries for this device refer to the given OU
         response = self.client.get(f"/api/storage/NFC/EXISTING_STORAGE/logs?org_unit_id={self.org_unit.id}")
+
         self.assertEqual(response.status_code, 200)
-
         received_json = response.json()
-
         self.assertEqual(
             received_json,
             {
@@ -714,6 +713,134 @@ class StorageAPITestCase(APITestCase):
                         "entity": None,
                         "performed_at": 1665666776.0,
                     }
+                ],
+            },
+        )
+
+    def test_get_logs_for_device_types_filter(self):
+        """The logs per device endpoint can be filtered by org_unit_id"""
+        self.client.force_authenticate(self.yoda)
+
+        # Case 1: we request WRITE_PROFILE, there is one from setupTestData
+        response = self.client.get(f"/api/storage/NFC/EXISTING_STORAGE/logs?types=WRITE_PROFILE")
+        received_json = response.json()
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(
+            received_json,
+            {
+                "updated_at": 1580608922.0,
+                "created_at": 1580608922.0,
+                "storage_id": "EXISTING_STORAGE",
+                "storage_type": "NFC",
+                "status": {"status": "OK", "reason": "", "comment": ""},
+                "org_unit": None,
+                "entity": None,
+                "logs": [
+                    {
+                        "id": "e4200710-bf82-4d29-a29b-6a042f79ef25",
+                        "storage_id": "EXISTING_STORAGE",
+                        "storage_type": "NFC",
+                        "operation_type": "WRITE_PROFILE",
+                        "instances": [],
+                        "org_unit": None,
+                        "entity": None,
+                        "performed_at": 1665666776.0,
+                    }
+                ],
+            },
+        )
+
+        # Case 2: we request WRITE_RECORD, there's currently none
+        response = self.client.get(f"/api/storage/NFC/EXISTING_STORAGE/logs?types=WRITE_RECORD")
+        self.assertEqual(response.status_code, 200)
+        received_json = response.json()
+        self.assertEqual(
+            received_json,
+            {
+                "updated_at": 1580608922.0,
+                "created_at": 1580608922.0,
+                "storage_id": "EXISTING_STORAGE",
+                "storage_type": "NFC",
+                "status": {"status": "OK", "reason": "", "comment": ""},
+                "org_unit": None,
+                "entity": None,
+                "logs": [],
+            },
+        )
+
+        # Case 3: we request both, there's currently only one WRITE_PROFILE
+        response = self.client.get(f"/api/storage/NFC/EXISTING_STORAGE/logs?types=WRITE_PROFILE,WRITE_RECORD")
+        self.assertEqual(response.status_code, 200)
+        received_json = response.json()
+        self.assertEqual(
+            received_json,
+            {
+                "updated_at": 1580608922.0,
+                "created_at": 1580608922.0,
+                "storage_id": "EXISTING_STORAGE",
+                "storage_type": "NFC",
+                "status": {"status": "OK", "reason": "", "comment": ""},
+                "org_unit": None,
+                "entity": None,
+                "logs": [
+                    {
+                        "id": "e4200710-bf82-4d29-a29b-6a042f79ef25",
+                        "storage_id": "EXISTING_STORAGE",
+                        "storage_type": "NFC",
+                        "operation_type": "WRITE_PROFILE",
+                        "instances": [],
+                        "org_unit": None,
+                        "entity": None,
+                        "performed_at": 1665666776.0,
+                    }
+                ],
+            },
+        )
+
+        # Case 4: we add an entry for WRITE_RECORD, we can now request both again and see them
+        StorageLogEntry.objects.create(
+            id="e4200710-bf82-4d29-a29b-6a042f79ef26",
+            device=self.existing_storage_device,
+            operation_type="WRITE_RECORD",
+            performed_by=self.yoda,
+            performed_at=datetime(2022, 10, 13, 13, 12, 56, 0, tzinfo=timezone.utc),
+            org_unit=self.org_unit,
+        )
+
+        response = self.client.get(f"/api/storage/NFC/EXISTING_STORAGE/logs?types=WRITE_PROFILE,WRITE_RECORD")
+        self.assertEqual(response.status_code, 200)
+        received_json = response.json()
+        self.assertEqual(
+            received_json,
+            {
+                "updated_at": 1580608922.0,
+                "created_at": 1580608922.0,
+                "storage_id": "EXISTING_STORAGE",
+                "storage_type": "NFC",
+                "status": {"status": "OK", "reason": "", "comment": ""},
+                "org_unit": None,
+                "entity": None,
+                "logs": [
+                    {
+                        "id": "e4200710-bf82-4d29-a29b-6a042f79ef25",
+                        "storage_id": "EXISTING_STORAGE",
+                        "storage_type": "NFC",
+                        "operation_type": "WRITE_PROFILE",
+                        "instances": [],
+                        "org_unit": None,
+                        "entity": None,
+                        "performed_at": 1665666776.0,
+                    },
+                    {
+                        "id": "e4200710-bf82-4d29-a29b-6a042f79ef26",
+                        "storage_id": "EXISTING_STORAGE",
+                        "storage_type": "NFC",
+                        "operation_type": "WRITE_RECORD",
+                        "instances": [],
+                        "org_unit": {"id": self.org_unit.id, "name": "Akkala"},
+                        "entity": None,
+                        "performed_at": 1665666776.0,
+                    },
                 ],
             },
         )

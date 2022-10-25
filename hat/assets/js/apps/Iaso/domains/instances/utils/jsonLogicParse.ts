@@ -62,7 +62,9 @@ export const parseJson = ({ value, parent, fields }: Props): JSONValue => {
             return moment(value as MomentInput).format(apiDateTimeFormat);
         }
         if (fieldType === 'time') {
-            return moment.unix(value as number).format(apiTimeFormat);
+            return `${moment
+                .utc(moment.duration(value, 'seconds').as('milliseconds'))
+                .format(apiTimeFormat)}`;
         }
     }
     if (Array.isArray(value)) {

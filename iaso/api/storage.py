@@ -321,7 +321,7 @@ def logs_per_device(request, storage_customer_chosen_id: str, storage_type: str)
         )
     ).get(customer_chosen_id=storage_customer_chosen_id, type=storage_type, account=user_account)
 
-    # TODO: implement filtering (missing: types, status, reason)
+    # TODO: implement filtering (missing: status, reason)
     # TODO: implement pagination
 
     return Response(StorageSerializerWithLogs(device).data)

@@ -195,6 +195,8 @@ class StorageAPITestCase(APITestCase):
         self.assertQuerysetEqual(the_log_entry.instances.all(), [self.instance1, self.instance2], ordered=False)
         self.assertEqual(the_log_entry.org_unit, self.org_unit)
         self.assertEqual(the_log_entry.entity, self.entity)
+        self.assertEqual(the_log_entry.status, "")
+        self.assertEqual(the_log_entry.status_reason, "")
 
     def test_post_log_existing_update_ou_entity(self):
         """Posting a new log entry to an existing storage device should update its org_unit and entity properties"""
@@ -575,6 +577,9 @@ class StorageAPITestCase(APITestCase):
         latest_log_entry_for_storage = updated_storage.log_entries.latest("performed_at")
         self.assertEqual(latest_log_entry_for_storage.operation_type, "CHANGE_STATUS")
         self.assertEqual(latest_log_entry_for_storage.performed_by, self.yoda)
+        self.assertEqual(latest_log_entry_for_storage.status, "BLACKLISTED")
+        self.assertEqual(latest_log_entry_for_storage.status_reason, "DAMAGED")
+        self.assertEqual(latest_log_entry_for_storage.status_comment, "not usable anymore")
         # TODO: also check the value of performed_at (use mock object?)
 
     def test_post_blacklisted_storage_non_existing(self):

@@ -133,10 +133,12 @@ const Calendar = ({ params }) => {
     );
 
     useEffect(() => {
-        if (campaigns.length > 0 && filteredCampaigns.length > 0) {
+        if (filteredCampaigns.length > 0) {
             setCalendarAndMapLoaded(true);
+        } else {
+            setCalendarAndMapLoaded(false);
         }
-    }, [campaigns, filteredCampaigns]);
+    }, [filteredCampaigns]);
 
     return (
         <div>

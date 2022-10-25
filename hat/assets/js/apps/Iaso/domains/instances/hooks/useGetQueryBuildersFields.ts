@@ -67,31 +67,32 @@ export const useGetQueryBuildersFields = (
                 };
                 break;
             }
-            case 'select multiple':
-            case 'select_multiple': {
-                const listValues =
-                    findDescriptorInChildren(
-                        field,
-                        formDescriptor,
-                    )?.children?.map(child => ({
-                        value: child.name,
-                        title: formatLabel(child),
-                    })) || [];
-                Fields[field.name] = {
-                    label: formatLabel(field),
-                    type: 'multiselect',
-                    excludeOperators: [
-                        'proximity',
-                        'select_any_in',
-                        'select_not_any_in',
-                    ],
-                    valueSources: ['value'],
-                    fieldSettings: {
-                        listValues,
-                    },
-                };
-                break;
-            }
+            // Not working for now
+            // case 'select multiple':
+            // case 'select_multiple': {
+            //     const listValues =
+            //         findDescriptorInChildren(
+            //             field,
+            //             formDescriptor,
+            //         )?.children?.map(child => ({
+            //             value: child.name,
+            //             title: formatLabel(child),
+            //         })) || [];
+            //     Fields[field.name] = {
+            //         label: formatLabel(field),
+            //         type: 'multiselect',
+            //         excludeOperators: [
+            //             'proximity',
+            //             'select_any_in',
+            //             'select_not_any_in',
+            //         ],
+            //         valueSources: ['value'],
+            //         fieldSettings: {
+            //             listValues,
+            //         },
+            //     };
+            //     break;
+            // }
             case 'integer':
             case 'decimal': {
                 Fields[field.name] = {
@@ -122,29 +123,31 @@ export const useGetQueryBuildersFields = (
                 };
                 break;
             }
-            case 'time': {
-                Fields[field.name] = {
-                    label: formatLabel(field),
-                    type: 'time',
-                    operators: ['equal', 'not_equal'],
-                    fieldSettings: {
-                        timeFormat: getLocaleDateFormat('LT'),
-                    },
-                };
-                break;
-            }
-            case 'dateTime': {
-                Fields[field.name] = {
-                    label: formatLabel(field),
-                    type: 'datetime',
-                    operators: ['equal', 'not_equal'],
-                    fieldSettings: {
-                        timeFormat: getLocaleDateFormat('LT'),
-                        dateFormat: getLocaleDateFormat('L'),
-                    },
-                };
-                break;
-            }
+
+            // Not working for now
+            // case 'time': {
+            //     Fields[field.name] = {
+            //         label: formatLabel(field),
+            //         type: 'time',
+            //         operators: ['equal', 'not_equal'],
+            //         fieldSettings: {
+            //             timeFormat: getLocaleDateFormat('LT'),
+            //         },
+            //     };
+            //     break;
+            // }
+            // case 'dateTime': {
+            //     Fields[field.name] = {
+            //         label: formatLabel(field),
+            //         type: 'datetime',
+            //         operators: ['equal', 'not_equal'],
+            //         fieldSettings: {
+            //             timeFormat: getLocaleDateFormat('LT'),
+            //             dateFormat: getLocaleDateFormat('L'),
+            //         },
+            //     };
+            //     break;
+            // }
             default:
                 break;
         }

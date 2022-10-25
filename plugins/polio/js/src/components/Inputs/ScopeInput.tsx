@@ -222,7 +222,9 @@ export const ScopeInput: FunctionComponent<FieldProps<Scope[], Values>> = ({
         }
         setScopes(newScopes);
     };
+
     const [selectedVaccine, setSelectedVaccine] = useState('mOPV2');
+
     const addDistrictInVaccineScope = useCallback(
         (district, selectedVaccine) => {
             const newScopes: Scope[] = cloneDeep(scopes);
@@ -240,18 +242,32 @@ export const ScopeInput: FunctionComponent<FieldProps<Scope[], Values>> = ({
             }
             // Add org unit in selection if it's not part of the scope
             if (!scope.group.org_units.includes(district.id)) {
-                scope.group.org_units.push(district.id,);
+                scope.group.org_units.push(district.id);
             }
+            // when the add is done on searched result and update the filteredDistricts state
+            if (searchValue !== "") {
+                const newFilteredDistricts = filteredDistricts.map(dist => {
+                    if (dist.id === district.id) {
+                        dist.vaccineName = selectedVaccine;
+                    }
+
+                    return dist;
+                });
+                setFilteredDistricts(newFilteredDistricts);
+            }
+
             setScopes(newScopes);
         },
-        [scopes, setScopes],
+        [scopes, setScopes, filteredDistricts, setFilteredDistricts],
     );
+
     const toggleDistrictInVaccineScope = useCallback(
         (district, _selectedVaccine) => {
             const newScopes: Scope[] = cloneDeep(scopes);
             let scope: Scope | undefined = newScopes.find(
                 s => s.vaccine === _selectedVaccine,
             );
+
             if (scope === undefined) {
                 scope = {
                     vaccine: _selectedVaccine,
@@ -261,19 +277,23 @@ export const ScopeInput: FunctionComponent<FieldProps<Scope[], Values>> = ({
                 };
                 newScopes.push(scope);
             }
-
             // Remove org unit from selection if it's part of the scope
-            if (scope.group.org_units.includes(district.id)) {
 
-                if (filteredDistricts.length > 0) {
-                    const remainings = filteredDistricts.filter(
-                        OrgUnit => OrgUnit.id !== district.id,
+            if (scope.group.org_units.includes(district.id)) {
+                if (searchValue !== "") {
+                    const newFilteredDistricts = filteredDistricts.map(dist => {
+                        if (dist.id === district.id) {
+                            dist.vaccineName = "";
+                        }
+
+                        return dist;
+                    });
+                    setFilteredDistricts(newFilteredDistricts);
+                } else {
+                    scope.group.org_units = scope.group.org_units.filter(
+                        OrgUnitId => OrgUnitId !== district.id,
                     );
-                    setFilteredDistricts(remainings);
                 }
-                scope.group.org_units = scope.group.org_units.filter(
-                    OrgUnitId => OrgUnitId !== district.id,
-                );
             } else {
                 // Remove the orgunit from all the scope in case it's part of another scope
                 newScopes.forEach(s => {
@@ -289,9 +309,10 @@ export const ScopeInput: FunctionComponent<FieldProps<Scope[], Values>> = ({
             }
             setScopes(newScopes);
         },
-        [scopes, setScopes],
+        [scopes, setScopes, filteredDistricts, setFilteredDistricts],
     );
-    //
+
+
     const onSelectOrgUnit = shape => {
         if (selectRegion) {
             toggleRegion(shape, selectedVaccine, districtShapes);
@@ -328,11 +349,21 @@ export const ScopeInput: FunctionComponent<FieldProps<Scope[], Values>> = ({
                     OrgUnitId => !OrgUnitIdsToRemove.includes(OrgUnitId),
                 );
             });
+            if (searchValue !== "") {
+                const newFilteredDistricts = filteredDistricts.map(dict => {
+                    if (OrgUnitIdsToRemove.includes(dict.id)) {
+                        dict.vaccineName = "";
+                    }
+                    return dict;
+                });
+                setFilteredDistricts(newFilteredDistricts);
+            }
             setScopes(newScopes);
         },
-        [districtShapes, scopes, setScopes],
+        [districtShapes, scopes, setScopes, filteredDistricts, searchValue],
     );
 
+    // Add all district in the same region as this district
     const addRegionToTable = useCallback(
         (shape: ShapeRow, selectedVaccine) => {
             const OrgUnitIdsToAdd = districtShapes
@@ -344,9 +375,20 @@ export const ScopeInput: FunctionComponent<FieldProps<Scope[], Values>> = ({
                 // eslint-disable-next-line no-param-reassign
                 scope.group.org_units = scope.group.org_units.concat(OrgUnitIdsToAdd);
             });
+
+            if (searchValue !== "") {
+                const newFilteredDistricts = filteredDistricts.map(dict => {
+                    if (OrgUnitIdsToAdd.includes(dict.id)) {
+                        dict.vaccineName = selectedVaccine;
+                    }
+                    return dict;
+                });
+                setFilteredDistricts(newFilteredDistricts);
+            }
+
             setScopes(newScopes);
         },
-        [districtShapes, scopes, setScopes],
+        [districtShapes, scopes, setScopes, filteredDistricts, setFilteredDistricts],
     );
 
     const handleSort = useCallback(
@@ -420,9 +462,11 @@ export const ScopeInput: FunctionComponent<FieldProps<Scope[], Values>> = ({
         searchDistricts.current = searchDistrictByName
     }, [districts, filteredDistricts, searchValue, searchScope])
 
+    // Will search district according to the name entered in the search input
     const searchDistrictByName = (search, scopeSearch) => {
         setSearchValue(search)
         setSearchScope(scopeSearch)
+
         let filtreds = []
         if (search.length > 0) {
             let toFilter = districts

@@ -254,6 +254,10 @@ def enketo_form_list(request):
     form_id_str = request.GET["formID"]
     i = Instance.objects.exclude(deleted=True).get(uuid=form_id_str)
     latest_form_version = i.form.latest_version
+    if not latest_form_version:
+        error = f"No form version on form {i.form}"
+        logger.exception(error)
+        return JsonResponse({"error": error}, status=500)
     # will it work through s3, what about "signing" infos if they expires ?
     downloadurl = public_url_for_enketo(request, "/api/enketo/formDownload/?uuid=%s" % i.uuid)
 

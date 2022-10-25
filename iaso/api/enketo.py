@@ -87,7 +87,7 @@ def enketo_public_create_url(request):
         2. 1 submission exists, open Enketo to edit it.
         3. 2 or more for exist: Error state
     * form !single_per_period
-        1. Always create a new submssion
+        1. Always create a new submission
 
     It contacts enketo to generate a Form url and return that url"""
 

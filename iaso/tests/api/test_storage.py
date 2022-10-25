@@ -46,6 +46,7 @@ class StorageAPITestCase(APITestCase):
             operation_type="WRITE_PROFILE",
             performed_by=cls.yoda,
             performed_at=datetime(2022, 10, 13, 13, 12, 56, 0, tzinfo=timezone.utc),
+            status="OK",
         )
 
         cls.existing_storage_device_2 = StorageDevice.objects.create(
@@ -656,6 +657,7 @@ class StorageAPITestCase(APITestCase):
                         "org_unit": None,
                         "entity": None,
                         "performed_at": 1665666776.0,
+                        "status": "OK",
                     }
                 ],
             },
@@ -717,6 +719,7 @@ class StorageAPITestCase(APITestCase):
                         "org_unit": {"id": self.org_unit.id, "name": "Akkala"},
                         "entity": None,
                         "performed_at": 1665666776.0,
+                        "status": "",
                     }
                 ],
             },
@@ -750,6 +753,7 @@ class StorageAPITestCase(APITestCase):
                         "org_unit": None,
                         "entity": None,
                         "performed_at": 1665666776.0,
+                        "status": "OK",
                     }
                 ],
             },
@@ -797,6 +801,7 @@ class StorageAPITestCase(APITestCase):
                         "org_unit": None,
                         "entity": None,
                         "performed_at": 1665666776.0,
+                        "status": "OK",
                     }
                 ],
             },
@@ -835,6 +840,7 @@ class StorageAPITestCase(APITestCase):
                         "org_unit": None,
                         "entity": None,
                         "performed_at": 1665666776.0,
+                        "status": "OK",
                     },
                     {
                         "id": "e4200710-bf82-4d29-a29b-6a042f79ef26",
@@ -845,8 +851,82 @@ class StorageAPITestCase(APITestCase):
                         "org_unit": {"id": self.org_unit.id, "name": "Akkala"},
                         "entity": None,
                         "performed_at": 1665666776.0,
+                        "status": "",
                     },
                 ],
+            },
+        )
+
+    def test_get_logs_for_device_status_filter(self):
+        """The logs per device endpoint can be filtered by status"""
+        self.client.force_authenticate(self.yoda)
+
+        # Case 1: we request the OK status, there is one from setupTestData
+        response = self.client.get(f"/api/storage/NFC/EXISTING_STORAGE/logs?status=OK")
+        self.assertEqual(response.status_code, 200)
+        received_json = response.json()
+        self.assertEqual(
+            received_json,
+            {
+                "updated_at": 1580608922.0,
+                "created_at": 1580608922.0,
+                "storage_id": "EXISTING_STORAGE",
+                "storage_type": "NFC",
+                "status": {"status": "OK", "reason": "", "comment": ""},
+                "org_unit": None,
+                "entity": None,
+                "logs": [
+                    {
+                        "id": "e4200710-bf82-4d29-a29b-6a042f79ef25",
+                        "storage_id": "EXISTING_STORAGE",
+                        "storage_type": "NFC",
+                        "operation_type": "WRITE_PROFILE",
+                        "instances": [],
+                        "org_unit": None,
+                        "entity": None,
+                        "performed_at": 1665666776.0,
+                        "status": "OK",
+                    }
+                ],
+            },
+        )
+
+        # Case 2: we request the blacklisted status, there is none
+        response = self.client.get(f"/api/storage/NFC/EXISTING_STORAGE/logs?status=BLACKLISTED")
+        self.assertEqual(response.status_code, 200)
+        received_json = response.json()
+        self.assertEqual(
+            received_json,
+            {
+                "updated_at": 1580608922.0,
+                "created_at": 1580608922.0,
+                "storage_id": "EXISTING_STORAGE",
+                "storage_type": "NFC",
+                "status": {"status": "OK", "reason": "", "comment": ""},
+                "org_unit": None,
+                "entity": None,
+                "logs": [],
+            },
+        )
+
+    def test_get_logs_for_device_reason_filter(self):
+        """The logs per device endpoint can be filtered by (status) reason"""
+        self.client.force_authenticate(self.yoda)
+
+        response = self.client.get(f"/api/storage/NFC/EXISTING_STORAGE/logs?reason=STOLEN")
+        self.assertEqual(response.status_code, 200)
+        received_json = response.json()
+        self.assertEqual(
+            received_json,
+            {
+                "updated_at": 1580608922.0,
+                "created_at": 1580608922.0,
+                "storage_id": "EXISTING_STORAGE",
+                "storage_type": "NFC",
+                "status": {"status": "OK", "reason": "", "comment": ""},
+                "org_unit": None,
+                "entity": None,
+                "logs": [],
             },
         )
 

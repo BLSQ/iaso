@@ -53,6 +53,7 @@ class StorageLogSerializer(serializers.ModelSerializer):
             "org_unit",
             "entity",
             "performed_at",
+            "status",
         ]
 
     def create(self, validated_data):
@@ -302,6 +303,8 @@ def logs_per_device(request, storage_customer_chosen_id: str, storage_type: str)
 
     org_unit_id = request.GET.get("org_unit_id")
     operation_types_str = request.GET.get("types", None)
+    status = request.GET.get("status", None)
+    reason = request.GET.get("reason", None)
 
     # TODO: implement permissions and return 403/401 (see spec)
     # TODO: spec says: "permissions to see storage", what does it mean exactly?
@@ -312,6 +315,10 @@ def logs_per_device(request, storage_customer_chosen_id: str, storage_type: str)
     if operation_types_str is not None:
         operation_types = operation_types_str.split(",")
         log_entries_queryset = log_entries_queryset.filter(operation_type__in=operation_types)
+    if status is not None:
+        log_entries_queryset = log_entries_queryset.filter(status=status)
+    if reason is not None:
+        log_entries_queryset = log_entries_queryset.filter(status_reason=reason)
 
     device = StorageDevice.objects.prefetch_related(
         Prefetch(
@@ -321,7 +328,6 @@ def logs_per_device(request, storage_customer_chosen_id: str, storage_type: str)
         )
     ).get(customer_chosen_id=storage_customer_chosen_id, type=storage_type, account=user_account)
 
-    # TODO: implement filtering (missing: status, reason)
     # TODO: implement pagination
 
     return Response(StorageSerializerWithLogs(device).data)

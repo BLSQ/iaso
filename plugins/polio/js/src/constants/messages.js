@@ -61,6 +61,14 @@ const MESSAGES = defineMessages({
         defaultMessage: 'Unselect region',
         id: 'iaso.polio.button.label.removeRegion',
     },
+    addDistrict: {
+        defaultMessage: 'Select district',
+        id: 'iaso.polio.button.label.addDistrict',
+    },
+    addRegion: {
+        defaultMessage: 'Select region',
+        id: 'iaso.polio.button.label.addRegion',
+    },
     confirm: {
         defaultMessage: 'Confirm',
         id: 'iaso.label.confirm',

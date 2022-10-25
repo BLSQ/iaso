@@ -21,7 +21,7 @@ type Values = {
     separate_scopes_per_round?: boolean;
     rounds: Round[];
 };
-const styles = makeStyles({ inputComponent: { marginTop: '10000px' } });
+const styles = makeStyles({ container: { marginBottom: '15px' } });
 export const ScopeForm: FunctionComponent = () => {
     const { formatMessage } = useSafeIntl();
     const { values } = useFormikContext<Values>();
@@ -68,7 +68,7 @@ export const ScopeForm: FunctionComponent = () => {
 
     return (
         <>
-            <Grid container spacing={2}>
+            <Grid container spacing={2} rowSpacing={4} className={styleClasses.container}>
                 <Grid xs={12} md={3} item>
                     <Field
                         name="separate_scopes_per_round"

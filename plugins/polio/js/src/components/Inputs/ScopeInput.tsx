@@ -724,7 +724,7 @@ export const ScopeInput: FunctionComponent<FieldProps<Scope[], Values>> = ({
                                                             }
                                                             overrideIcon={SelectAllIcon}
                                                             tooltipMessage={
-                                                                MESSAGES.removeRegion
+                                                                MESSAGES.addRegion
                                                             }
                                                         />
                                                         <IconButtonComponent
@@ -736,7 +736,7 @@ export const ScopeInput: FunctionComponent<FieldProps<Scope[], Values>> = ({
                                                             }
                                                             overrideIcon={CheckIcon}
                                                             tooltipMessage={
-                                                                MESSAGES.removeDistrict
+                                                                MESSAGES.addDistrict
                                                             }
                                                         />
                                                     </TableCell>

@@ -1,3 +1,5 @@
+import logging
+
 from bs4 import BeautifulSoup as Soup  # type: ignore
 from django.http import HttpResponse, JsonResponse, HttpResponseRedirect
 from django.shortcuts import get_object_or_404
@@ -26,6 +28,8 @@ from iaso.models import Form, Instance, InstanceFile, OrgUnit, Project, Profile
 from hat.audit.models import log_modification, INSTANCE_API
 from iaso.models import User
 from uuid import uuid4
+
+logger = logging.getLogger(__name__)
 
 
 def public_url_for_enketo(request, path):
@@ -340,18 +344,23 @@ class EnketoSubmissionAPIView(APIView):
                     fi.save()
 
             log_modification(original, instance, source=INSTANCE_API, user=user)
+
             if instance.to_export:
                 try:
                     instance.export(force_export=True)
                 except InstanceExportError as error:
-                    return Response(
-                        {
-                            "result": "error",
-                            "step": "export",
-                            "message": error.message,
-                            "description": error.descriptions,
-                        },
-                        status=status.HTTP_409_CONFLICT,
+                    logger.exception(error)
+                    # Returning in this format with a 400 mean the
+                    #  following message will be displayed directly in the user.
+                    return HttpResponse(
+                        """
+<OpenRosaResponse>
+<message>Your submission couldn't reach the destination server but
+remain saved in the queue to be processed at a later date.
+</message>
+</OpenRosaResponse>""",
+                        content_type="text/xml",
+                        status=status.HTTP_400_BAD_REQUEST,
                     )
 
             return Response({"result": "success"}, status=status.HTTP_201_CREATED)

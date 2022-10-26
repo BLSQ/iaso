@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import PropTypes from 'prop-types';
-import { useDispatch, useSelector } from 'react-redux';
+import { useDispatch } from 'react-redux';
 
 import { makeStyles, Grid, Tabs, Tab } from '@material-ui/core';
 import { commonStyles, useSafeIntl } from 'bluesquare-components';
@@ -12,7 +12,7 @@ import { getInstancesColumns, getInstancesVisibleColumns } from '../utils';
 import { ColumnsSelectDrawer } from '../../../components/tables/ColumnSelectDrawer';
 import MESSAGES from '../messages';
 import { INSTANCE_METAS_FIELDS } from '../constants';
-import { useCurrentUser } from '../../../utils/usersUtils';
+import { useCurrentUser } from '../../../utils/usersUtils.ts';
 
 const useStyles = makeStyles(theme => ({
     ...commonStyles(theme),
@@ -36,6 +36,7 @@ const InstancesTopBar = ({
     labelKeys,
     possibleFields,
     formDetails,
+    tableColumns,
 }) => {
     const classes = useStyles();
     const dispatch = useDispatch();
@@ -53,15 +54,16 @@ const InstancesTopBar = ({
         if (columns.length > 0) {
             newParams.columns = columns.map(c => c.key).join(',');
         }
-        setTableColumns(
-            getInstancesColumns(
-                formatMessage,
-                cols,
-                params.showDeleted === 'true',
-                currentUser,
-                dispatch,
-            ),
+        const newTablecols = getInstancesColumns(
+            formatMessage,
+            cols,
+            params.showDeleted === 'true',
+            currentUser,
+            dispatch,
         );
+        if (JSON.stringify(newTablecols) !== JSON.stringify(tableColumns)) {
+            setTableColumns(newTablecols);
+        }
         setVisibleColumns(cols);
         if (withRedirect) {
             dispatch(redirectToReplace(baseUrl, newParams));

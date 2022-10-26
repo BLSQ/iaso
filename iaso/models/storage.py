@@ -62,15 +62,13 @@ class StorageDevice(models.Model):
     account = models.ForeignKey(Account, on_delete=models.PROTECT)
     type = models.CharField(max_length=8, choices=STORAGE_TYPE_CHOICES)
 
-    # Devices can be blacklisted, and in that case it's interesting to keep details about why in the status_reason and
-    # status_comment fields
-    status = models.CharField(
-        max_length=64, choices=STATUS_CHOICES, default=OK
-    )  # Do not change this field directly, use change_status() instead
-    status_reason = models.CharField(
-        max_length=64, choices=STATUS_REASON_CHOICES, blank=True
-    )  # Do not change this field directly, use change_status() instead
-    status_comment = models.TextField(blank=True)  # Do not change this field directly, use change_status instead
+    # Status-related fields
+    # Devices can be blacklisted, and in that case it's interesting to keep details in status_* fields
+    # CAUTION: do not change those fields directly, use the change_status() method instead
+    status = models.CharField(max_length=64, choices=STATUS_CHOICES, default=OK)
+    status_reason = models.CharField(max_length=64, choices=STATUS_REASON_CHOICES, blank=True)
+    status_comment = models.TextField(blank=True)
+    status_updated_at = models.DateTimeField(blank=True, null=True)
 
     org_unit = models.ForeignKey(OrgUnit, on_delete=models.SET_NULL, null=True, blank=True)
     entity = models.ForeignKey(Entity, on_delete=models.SET_NULL, null=True, blank=True)
@@ -86,6 +84,7 @@ class StorageDevice(models.Model):
         self.status = new_status
         self.status_reason = reason
         self.status_comment = comment
+        self.status_updated_at = timezone.now()
         self.save()
 
         StorageLogEntry.objects.create(

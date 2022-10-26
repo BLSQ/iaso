@@ -3,6 +3,7 @@ from datetime import datetime
 from typing import Tuple
 
 from django.db.models import Prefetch
+from django.utils.timezone import make_aware
 from rest_framework import viewsets, permissions, serializers, status
 from rest_framework.decorators import action, api_view
 from rest_framework.mixins import CreateModelMixin, ListModelMixin
@@ -274,7 +275,8 @@ class StorageLogViewSet(CreateModelMixin, viewsets.GenericViewSet):
                     return Response({"error": "Invalid operation type"}, status=400)
 
                 # timestamp in seconds, but it's actually a double so there are 3 decimals with the millis
-                performed_at = datetime.utcfromtimestamp(float(log_data["performed_at"]))
+                # TODO: refactor this whole method to use a serializer and use our TimestampField instead
+                performed_at = make_aware(datetime.utcfromtimestamp(float(log_data["performed_at"])))
 
                 concerned_instances = Instance.objects.filter(uuid__in=log_data["instances"])
 

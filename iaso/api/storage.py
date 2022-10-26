@@ -5,9 +5,9 @@ from typing import Tuple
 from django.db.models import Prefetch
 from django.utils.timezone import make_aware
 from rest_framework import viewsets, permissions, serializers, status
-from rest_framework.decorators import action, api_view
+from rest_framework.decorators import action, api_view, permission_classes
 from rest_framework.mixins import CreateModelMixin, ListModelMixin
-from rest_framework.permissions import AllowAny
+from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 
 from django.core.paginator import Paginator
@@ -315,6 +315,7 @@ class StorageLogViewSet(CreateModelMixin, viewsets.GenericViewSet):
 
 
 @api_view()
+@permission_classes([IsAuthenticated, HasPermission("menupermissions.iaso_storages")])
 def logs_per_device(request, storage_customer_chosen_id: str, storage_type: str):
     """Return a list of log entries for a given device"""
     user_account = request.user.iaso_profile.account

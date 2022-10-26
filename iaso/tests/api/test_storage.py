@@ -635,6 +635,17 @@ class StorageAPITestCase(APITestCase):
         response = self.client.post("/api/storage/blacklisted/", post_body, format="json")
         self.assertEqual(response.status_code, 400)
 
+    def test_get_logs_for_device_unauthenticated(self):
+        """A non authenticated user should receive a 403"""
+        response = self.client.get("/api/storage/NFC/EXISTING_STORAGE/logs")
+        self.assertEqual(response.status_code, 403)
+
+    def test_get_logs_for_device_insufficient_permissions(self):
+        """A user without the "iaso_storages" permission should receive a 403"""
+        self.client.force_authenticate(self.another_user)
+        response = self.client.get("/api/storage/NFC/EXISTING_STORAGE/logs")
+        self.assertEqual(response.status_code, 403)
+
     def test_get_logs_for_device_base(self):
         """Test the basics of the logs per device endpoint"""
         self.client.force_authenticate(self.yoda)

@@ -6,7 +6,7 @@ from typing import List, Any, Union
 
 import xlsxwriter  # type: ignore
 from django.core.paginator import Paginator
-from django.db.models import Max
+from django.db.models import Max, Q
 from django.http import JsonResponse, HttpResponse, StreamingHttpResponse
 from django.shortcuts import get_object_or_404
 from django_filters.rest_framework import DjangoFilterBackend  # type: ignore
@@ -19,6 +19,8 @@ from rest_framework.response import Response
 from hat.api.export_utils import Echo, generate_xlsx, iter_items
 from iaso.api.common import TimestampField, ModelViewSet, DeletionFilterBackend
 from iaso.models import Entity, Instance, EntityType
+
+EXPORTS_DATETIME_FORMAT = "%Y-%m-%d %H:%M:%S"
 
 
 class EntityTypeSerializer(serializers.ModelSerializer):
@@ -216,15 +218,12 @@ class EntityViewSet(ModelViewSet):
         queryset = self.filter_queryset(self.get_queryset())
         csv_format = request.GET.get("csv", None)
         xlsx_format = request.GET.get("xlsx", None)
-        pk = request.query_params.get("id", None)
         # TODO: investigate if request.user can be anonymous here
-        account = self.request.user.iaso_profile.account  # type: ignore
         entity_type_ids = request.query_params.get("entity_type_ids", None)
         limit = request.GET.get("limit", None)
         page_offset = request.GET.get("page", 1)
         orders = request.GET.get("order", "-created_at").split(",")
         order_columns = request.GET.get("order_columns", None)
-        entity_id = request.GET.get("id", None)
 
         queryset = queryset.order_by(*orders)
 
@@ -352,13 +351,21 @@ class EntityViewSet(ModelViewSet):
             filename = "%s-%s" % (filename, strftime("%Y-%m-%d-%H-%M", gmtime()))
 
             def get_row(entity: dict, **kwargs):
+                created_at = entity["created_at"]
+                if created_at is not None:
+                    created_at = created_at.strftime(EXPORTS_DATETIME_FORMAT)
+
+                last_saved_instance = entity["last_saved_instance"]
+                if last_saved_instance is not None:
+                    last_saved_instance = last_saved_instance.strftime(EXPORTS_DATETIME_FORMAT)
+
                 values = [
                     entity["id"],
                     str(entity["uuid"]),
                     entity["entity_type"],
-                    entity["created_at"],
+                    created_at,
                     entity["org_unit"]["name"] if entity["org_unit"] else "",
-                    entity["last_saved_instance"],
+                    last_saved_instance,
                     entity["program"],
                 ]
                 for col in columns_list:
@@ -431,8 +438,8 @@ class EntityViewSet(ModelViewSet):
                 col = 0
                 data = [
                     i.form.name,
-                    i.created_at.strftime("%Y-%m-%d %H:%M:%S"),
-                    i.updated_at.strftime("%Y-%m-%d %H:%M:%S"),
+                    i.created_at.strftime(EXPORTS_DATETIME_FORMAT),
+                    i.updated_at.strftime(EXPORTS_DATETIME_FORMAT),
                     i.org_unit.name,
                     i.created_by.username,
                     "",
@@ -462,8 +469,8 @@ class EntityViewSet(ModelViewSet):
             for i in instances:
                 data_list = [
                     i.form.name,
-                    i.created_at.strftime("%Y-%m-%d %H:%M:%S"),
-                    i.updated_at.strftime("%Y-%m-%d %H:%M:%S"),
+                    i.created_at.strftime(EXPORTS_DATETIME_FORMAT),
+                    i.updated_at.strftime(EXPORTS_DATETIME_FORMAT),
                     i.org_unit.name,
                     i.created_by.username,
                     "",

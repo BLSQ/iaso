@@ -17,7 +17,9 @@ def assign_campaigns_account(apps, schema_editor):
         if all_accounts.count() == 1:
             account_to_assign = all_accounts[0]
         else:
-            account_to_assign = Account.objects.get(name="polio")
+            account_to_assign = Account.objects.filter(name="polio").first()
+        if not account_to_assign:
+            account_to_assign = Account.objects.filter(name="polioTest").first()
 
         for campaign in all_campaigns:
             campaign.account = account_to_assign

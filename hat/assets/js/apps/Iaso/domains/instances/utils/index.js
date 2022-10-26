@@ -7,19 +7,19 @@ import { truncateText, getTableUrl } from 'bluesquare-components';
 import { FormattedMessage } from 'react-intl';
 import CompareArrowsIcon from '@material-ui/icons/CompareArrows';
 
-import instancesTableColumns, { actionTableColumn } from './config';
-import MESSAGES from './messages';
-import DeleteDialog from './components/DeleteInstanceDialog';
-import ExportInstancesDialogComponent from './components/ExportInstancesDialogComponent';
-import { getCookie } from '../../utils/cookies';
+import instancesTableColumns, { actionTableColumn } from '../config';
+import MESSAGES from '../messages';
+import DeleteDialog from '../components/DeleteInstanceDialog';
+import ExportInstancesDialogComponent from '../components/ExportInstancesDialogComponent';
+import { getCookie } from '../../../utils/cookies';
 import {
     apiDateTimeFormat,
     apiDateFormat,
     getFromDateString,
     getToDateString,
-} from '../../utils/dates.ts';
-import { fetchLatestOrgUnitLevelId } from '../orgUnits/utils';
-import { baseUrls } from '../../constants/urls';
+} from '../../../utils/dates.ts';
+import { fetchLatestOrgUnitLevelId } from '../../orgUnits/utils';
+import { baseUrls } from '../../../constants/urls';
 
 const NO_VALUE = '/';
 const hasNoValue = value => !value || value === '';
@@ -330,6 +330,21 @@ export const getFilters = params => {
 };
 
 const defaultOrder = 'updated_at';
+
+export const getExportUrl = (params, exportType = 'csv') => {
+    const baseUrl = `/api/instances`;
+    const queryParams = { ...getFilters(params) };
+    const urlParams = new URLSearchParams();
+    Object.entries(queryParams).forEach(entry => {
+        const [k, v] = entry;
+        if (v) {
+            urlParams.append(k, v);
+        }
+    });
+    urlParams.append(exportType, true);
+    const queryString = urlParams.toString();
+    return `${baseUrl}/?${queryString}`;
+};
 
 export const getEndpointUrl = (
     params,

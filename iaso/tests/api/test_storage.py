@@ -930,6 +930,141 @@ class StorageAPITestCase(APITestCase):
             },
         )
 
+    def test_get_logs_for_device_pagination(self):
+        """The logs per device endpoint can optionally be paginated"""
+        self.client.force_authenticate(self.yoda)
+
+        # We first add a second log for this device, so we have more realistic test data
+        StorageLogEntry.objects.create(
+            id="e4200710-bf82-4d29-a29b-6a042f79ef26",
+            device=self.existing_storage_device,
+            operation_type="WRITE_PROFILE",
+            performed_by=self.yoda,
+            performed_at=datetime(2022, 10, 13, 13, 12, 56, 0, tzinfo=timezone.utc),
+        )
+
+        # We request the first page
+        response = self.client.get(f"/api/storage/NFC/EXISTING_STORAGE/logs?limit=1&page=1")
+        received_json = response.json()
+        self.assertEqual(
+            received_json,
+            {
+                "count": 2,
+                "results": {
+                    "updated_at": 1580608922.0,
+                    "created_at": 1580608922.0,
+                    "storage_id": "EXISTING_STORAGE",
+                    "storage_type": "NFC",
+                    "status": {"status": "OK", "reason": "", "comment": ""},
+                    "org_unit": None,
+                    "entity": None,
+                    "logs": [
+                        {
+                            "id": "e4200710-bf82-4d29-a29b-6a042f79ef25",
+                            "storage_id": "EXISTING_STORAGE",
+                            "storage_type": "NFC",
+                            "operation_type": "WRITE_PROFILE",
+                            "instances": [],
+                            "org_unit": None,
+                            "entity": None,
+                            "performed_at": 1665666776.0,
+                            "status": "OK",
+                        }
+                    ],
+                },
+                "has_next": True,
+                "has_previous": False,
+                "page": 1,
+                "pages": 2,
+                "limit": 1,
+            },
+        )
+
+        # Then the second
+        response = self.client.get(f"/api/storage/NFC/EXISTING_STORAGE/logs?limit=1&page=2")
+        received_json = response.json()
+        self.assertEqual(
+            received_json,
+            {
+                "count": 2,
+                "results": {
+                    "updated_at": 1580608922.0,
+                    "created_at": 1580608922.0,
+                    "storage_id": "EXISTING_STORAGE",
+                    "storage_type": "NFC",
+                    "status": {"status": "OK", "reason": "", "comment": ""},
+                    "org_unit": None,
+                    "entity": None,
+                    "logs": [
+                        {
+                            "id": "e4200710-bf82-4d29-a29b-6a042f79ef26",
+                            "storage_id": "EXISTING_STORAGE",
+                            "storage_type": "NFC",
+                            "operation_type": "WRITE_PROFILE",
+                            "instances": [],
+                            "org_unit": None,
+                            "entity": None,
+                            "performed_at": 1665666776.0,
+                            "status": "",
+                        }
+                    ],
+                },
+                "has_next": False,
+                "has_previous": True,
+                "page": 2,
+                "pages": 2,
+                "limit": 1,
+            },
+        )
+
+        # Then both records on the same page
+        response = self.client.get(f"/api/storage/NFC/EXISTING_STORAGE/logs?limit=10&page=1")
+        received_json = response.json()
+        self.assertEqual(
+            received_json,
+            {
+                "count": 2,
+                "results": {
+                    "updated_at": 1580608922.0,
+                    "created_at": 1580608922.0,
+                    "storage_id": "EXISTING_STORAGE",
+                    "storage_type": "NFC",
+                    "status": {"status": "OK", "reason": "", "comment": ""},
+                    "org_unit": None,
+                    "entity": None,
+                    "logs": [
+                        {
+                            "id": "e4200710-bf82-4d29-a29b-6a042f79ef25",
+                            "storage_id": "EXISTING_STORAGE",
+                            "storage_type": "NFC",
+                            "operation_type": "WRITE_PROFILE",
+                            "instances": [],
+                            "org_unit": None,
+                            "entity": None,
+                            "performed_at": 1665666776.0,
+                            "status": "OK",
+                        },
+                        {
+                            "id": "e4200710-bf82-4d29-a29b-6a042f79ef26",
+                            "storage_id": "EXISTING_STORAGE",
+                            "storage_type": "NFC",
+                            "operation_type": "WRITE_PROFILE",
+                            "instances": [],
+                            "org_unit": None,
+                            "entity": None,
+                            "performed_at": 1665666776.0,
+                            "status": "",
+                        },
+                    ],
+                },
+                "has_next": False,
+                "has_previous": False,
+                "page": 1,
+                "pages": 1,
+                "limit": 10,
+            },
+        )
+
     def test_get_blacklisted_devices(self):
         """Test the basics of the GET /api/mobile/storage/blacklisted endpoint"""
         response = self.client.get("/api/mobile/storage/blacklisted/")

@@ -34,7 +34,6 @@ class OrgUnitNestedSerializer(OrgUnitSerializer):
         ]
 
 
-# This is actually unused (by POST)
 class StorageLogSerializer(serializers.ModelSerializer):
     storage_id = serializers.CharField(source="device.customer_chosen_id")
     storage_type = serializers.CharField(source="device.type")
@@ -55,9 +54,6 @@ class StorageLogSerializer(serializers.ModelSerializer):
             "performed_at",
             "status",
         ]
-
-    def create(self, validated_data):
-        pass
 
 
 class StorageStatusSerializer(serializers.Serializer):
@@ -106,12 +102,34 @@ class StorageSerializer(serializers.ModelSerializer):
 
 
 class StorageSerializerWithLogs(StorageSerializer):
-    """Like StorageSerializer, but also includes the log entries"""
+    """
+    Like StorageSerializer, but also includes the log entries
+
+    Requires a "filtered_log_entries" attribute on the data, use a Prefetch() object
+    """
 
     logs = StorageLogSerializer(many=True, source="filtered_log_entries")
 
     class Meta(StorageSerializer.Meta):
         fields = StorageSerializer.Meta.fields + ("logs",)
+
+
+class StorageSerializerWithPaginatedLogs(StorageSerializerWithLogs):
+    """
+    Extends StorageSerializerWithLogs so the log entries can be paginated
+
+    Requires:
+     - a "filtered_log_entries" attribute on the data, use a Prefetch() object
+     - "limit" and "offset" in the serializer context
+    """
+
+    logs = serializers.SerializerMethodField(method_name="get_filtered_and_paginated_log_entries")
+
+    def get_filtered_and_paginated_log_entries(self, obj):
+        offset = self.context["offset"]
+        limit = self.context["limit"]
+        logs = obj.filtered_log_entries[offset : offset + limit]
+        return StorageLogSerializer(logs, many=True).data
 
 
 class StorageViewSet(ListModelMixin, viewsets.GenericViewSet):
@@ -306,6 +324,9 @@ def logs_per_device(request, storage_customer_chosen_id: str, storage_type: str)
     status = request.GET.get("status", None)
     reason = request.GET.get("reason", None)
 
+    limit_str = request.GET.get("limit", None)
+    page_offset = request.GET.get("page", 1)
+
     # TODO: implement permissions and return 403/401 (see spec)
     # TODO: spec says: "permissions to see storage", what does it mean exactly?
 
@@ -320,7 +341,7 @@ def logs_per_device(request, storage_customer_chosen_id: str, storage_type: str)
     if reason is not None:
         log_entries_queryset = log_entries_queryset.filter(status_reason=reason)
 
-    device = StorageDevice.objects.prefetch_related(
+    device_with_logs = StorageDevice.objects.prefetch_related(
         Prefetch(
             "log_entries",
             log_entries_queryset,
@@ -328,9 +349,26 @@ def logs_per_device(request, storage_customer_chosen_id: str, storage_type: str)
         )
     ).get(customer_chosen_id=storage_customer_chosen_id, type=storage_type, account=user_account)
 
-    # TODO: implement pagination
-
-    return Response(StorageSerializerWithLogs(device).data)
+    if limit_str:
+        # Pagination requested: each page contains the device metadata + a subset of log entries
+        limit = int(limit_str)
+        page_offset = int(page_offset)
+        paginator = Paginator(log_entries_queryset, limit)
+        res = {"count": paginator.count}
+        if page_offset > paginator.num_pages:
+            page_offset = paginator.num_pages
+        page = paginator.page(page_offset)
+        res["results"] = StorageSerializerWithPaginatedLogs(
+            device_with_logs, context={"limit": limit, "offset": page.start_index() - 1}
+        ).data
+        res["has_next"] = page.has_next()
+        res["has_previous"] = page.has_previous()
+        res["page"] = page_offset
+        res["pages"] = paginator.num_pages
+        res["limit"] = limit
+        return Response(res)
+    else:
+        return Response(StorageSerializerWithLogs(device_with_logs).data)
 
 
 class StorageBlacklistedViewSet(ListModelMixin, viewsets.GenericViewSet):

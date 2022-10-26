@@ -8,4 +8,4 @@ so in case of import problem we can fix it server side and not ask them to uploa
 * To replay the failings requests use the django command `reimport_failed_imports.py`
 
 
-This app used to be a lot of others things too before, hence the not magching name.
+This app used to be a lot of others things too before, hence the not matching name.

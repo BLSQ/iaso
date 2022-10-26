@@ -1065,6 +1065,56 @@ class StorageAPITestCase(APITestCase):
             },
         )
 
+    def test_get_logs_per_device_order(self):
+        """Test various ordering options for the logs per device endpoint"""
+        self.client.force_authenticate(self.yoda)
+
+        # We add another one for more realistic test data
+        StorageLogEntry.objects.create(
+            id="e4200710-bf82-4d29-a29b-6a042f79ef26",
+            device=self.existing_storage_device,
+            operation_type="WRITE_RECORD",
+            performed_by=self.yoda,
+            performed_at=datetime(2022, 10, 15, 13, 12, 56, 0, tzinfo=timezone.utc),
+            org_unit=self.org_unit,
+        )
+
+        # Ordering by "id"
+        response = self.client.get(f"/api/storage/NFC/EXISTING_STORAGE/logs?order=id")
+        received_json = response.json()
+        received_data = [e["id"] for e in received_json["logs"]]
+        self.assertEqual(received_data, sorted(received_data))
+
+        # Ordering by reverse "id"
+        response = self.client.get(f"/api/storage/NFC/EXISTING_STORAGE/logs?order=-id")
+        received_json = response.json()
+        received_data = [e["id"] for e in received_json["logs"]]
+        self.assertEqual(received_data[::-1], sorted(received_data))
+
+        # Ordering by "operation_type"
+        response = self.client.get(f"/api/storage/NFC/EXISTING_STORAGE/logs?order=operation_type")
+        received_json = response.json()
+        received_data = [e["operation_type"] for e in received_json["logs"]]
+        self.assertEqual(received_data, sorted(received_data))
+
+        # Ordering by reverse "operation_type"
+        response = self.client.get(f"/api/storage/NFC/EXISTING_STORAGE/logs?order=-operation_type")
+        received_json = response.json()
+        received_data = [e["operation_type"] for e in received_json["logs"]]
+        self.assertEqual(received_data[::-1], sorted(received_data))
+
+        # Ordering by "performed_at"
+        response = self.client.get(f"/api/storage/NFC/EXISTING_STORAGE/logs?order=performed_at")
+        received_json = response.json()
+        received_data = [e["performed_at"] for e in received_json["logs"]]
+        self.assertEqual(received_data, sorted(received_data))
+
+        # Ordering by reverse "performed_at"
+        response = self.client.get(f"/api/storage/NFC/EXISTING_STORAGE/logs?order=-performed_at")
+        received_json = response.json()
+        received_data = [e["performed_at"] for e in received_json["logs"]]
+        self.assertEqual(received_data[::-1], sorted(received_data))
+
     def test_get_blacklisted_devices(self):
         """Test the basics of the GET /api/mobile/storage/blacklisted endpoint"""
         response = self.client.get("/api/mobile/storage/blacklisted/")

@@ -329,10 +329,12 @@ def logs_per_device(request, storage_customer_chosen_id: str, storage_type: str)
     limit_str = request.GET.get("limit", None)
     page_offset = request.GET.get("page", 1)
 
+    order = request.GET.get("order", "-performed_at").split(",")
+    log_entries_queryset = StorageLogEntry.objects.all().order_by(*order)
+
     # TODO: implement permissions and return 403/401 (see spec)
     # TODO: spec says: "permissions to see storage", what does it mean exactly?
 
-    log_entries_queryset = StorageLogEntry.objects.all()
     if org_unit_id is not None:
         log_entries_queryset = log_entries_queryset.filter(org_unit_id=org_unit_id)
     if operation_types_str is not None:

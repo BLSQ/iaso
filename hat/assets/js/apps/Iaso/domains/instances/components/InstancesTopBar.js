@@ -61,7 +61,11 @@ const InstancesTopBar = ({
             currentUser,
             dispatch,
         );
-        if (JSON.stringify(newTablecols) !== JSON.stringify(tableColumns)) {
+        // TODO this part of the code should be refactored, it leads too infinite loop
+        if (
+            JSON.stringify(newTablecols) !== JSON.stringify(tableColumns) &&
+            newTablecols.length > 1
+        ) {
             setTableColumns(newTablecols);
         }
         setVisibleColumns(cols);

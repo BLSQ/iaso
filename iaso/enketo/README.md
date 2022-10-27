@@ -2,14 +2,14 @@ Enketo is another service, used to present Form to users, so they can use them. 
 locally and how the connexion between the two works. 
 
 This package contain utilities functions to interact with the ENKETO server. A part of the logic is in the API in `iaso/api/enketo.py`.
-See main README for more information
+See main README for more information.
 
 TODO: Document which Enketo version we support and have tested with.
 
 # Running Enketo in you dev environment
 See the Enketo directory section from the Main readme.md on how to launch Enketo in your docker compose environment
 
-Iaso used to have a fork of Enketo to run in dev mode but nowawdays you can use the mainstream one at https://github.com/enketo/enketo-express
+Iaso used to have a fork of Enketo to run in dev mode but nowadays, you can use the mainstream one at https://github.com/enketo/enketo-express
 
 
 ## Configuration in Iaso
@@ -27,6 +27,48 @@ Note that the content of the created Submission (in their "json" and "xml" ) don
 Then in the Iaso Dashboard, got to the instance details of Quantity PCA form 2.31.8
 
 Then in the FAB (Floating action button, on the top right) button you can Edit : Modifier les réponses via enketo.
+
+# public_create_url
+
+## Flow for `public_create_url`
+```mermaid
+sequenceDiagram
+    autonumber
+    Note right of Browser: User open page to Submit form
+    Browser->>DHIS2: open page
+    DHIS2 -->> Browser: Link to /enketo/create_public_url with parameters
+    Browser ->> IASO: GET iaso./enketo/create_public_url
+    Note right of IASO: Create Instance in db
+    IASO ->> Enketo: /api_v2/survey/single
+    Note over IASO,Enketo:settings.ENKETO_API_SURVEY_PATH
+
+    Enketo -->> IASO: json with $url to enketo
+    IASO -->> DHIS2: json with $url
+    Browser ->> Enketo: GET $url
+    Enketo ->> IASO: GET /enketo/formList with the Instance uuid
+    IASO -->> Enketo: Return a XML with a single URL to /api/enketo/formDownload/ with the uuid instance
+    Enketo ->> IASO: GET /enketo/formDownload?uuid=..
+    Note right of IASO: Take form definition, inject uuid in it.
+    IASO -->> Enketo: Return modified XML Form definition
+    Enketo -->> Browser: Return an HTML Page with a form to fill
+    Note right of Browser: User fill the form, click submit
+    Browser ->> Enketo: POST form with the submission
+    Enketo ->> IASO: POST /enketo/submssion with the submission
+
+    opt if to_export
+        Note right of IASO: Do mapping logic.
+        IASO ->> DHIS2: POST mapped submission
+        DHIS2 ->> IASO: return ok
+        # if the instance fail to export we still save it in the Iaso database
+        # to be exported later
+    end
+    IASO -->> Enketo: Return HTTP Status 201
+    Enketo -->> Browser: HTTP redirect to return url
+    # Return url is either passed at start of process or new submission page in iaso
+    Browser --> IASO: Open redirected page
+    Note right of Browser:  user is not authenticated in Iaso
+ ```                                                       
+
 
 
 # HOW TO manually test Enketo public_create_url

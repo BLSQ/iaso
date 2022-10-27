@@ -18,7 +18,7 @@ To create a temporary server with only the fixtures data:
 This will create a separate DB and load your data in it. Your existing data won't be lost. Your data will be lost after stopping the server.
 
 
-To load the fixture data in your current Database, use theload data command:
+To load the fixture data in your current Database, use the loaddata command:
 ```
 /m loaddata plugins/polio/fixtures/campaign.yaml
 ```

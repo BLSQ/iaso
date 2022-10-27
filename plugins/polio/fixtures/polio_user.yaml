@@ -43,6 +43,12 @@
     - - iaso_polio
       - menupermissions
       - custompermissionsupport
+    - - iaso_teams
+      - menupermissions
+      - custompermissionsupport
+    - - iaso_polio_budget
+      - menupermissions
+      - custompermissionsupport
 - model: iaso.profile
   pk: 22
   fields:

@@ -116,6 +116,7 @@
     budget_submitted_at: null
     is_preventive: false
     enable_send_weekly_email: false
+    account_id: 4
 - model: polio.countryusersgroup
   pk: 1
   fields:

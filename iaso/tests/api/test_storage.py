@@ -832,7 +832,7 @@ class StorageAPITestCase(APITestCase):
             org_unit=self.org_unit,
         )
 
-        response = self.client.get(f"/api/storage/NFC/EXISTING_STORAGE/logs?types=WRITE_PROFILE,WRITE_RECORD")
+        response = self.client.get(f"/api/storage/NFC/EXISTING_STORAGE/logs?types=WRITE_PROFILE,WRITE_RECORD&order=id")
         self.assertEqual(response.status_code, 200)
         received_json = response.json()
         self.assertEqual(
@@ -959,7 +959,7 @@ class StorageAPITestCase(APITestCase):
         )
 
         # We request the first page
-        response = self.client.get(f"/api/storage/NFC/EXISTING_STORAGE/logs?limit=1&page=1")
+        response = self.client.get(f"/api/storage/NFC/EXISTING_STORAGE/logs?limit=1&page=1&order=id")
         received_json = response.json()
         self.assertEqual(
             received_json,
@@ -996,7 +996,7 @@ class StorageAPITestCase(APITestCase):
         )
 
         # Then the second
-        response = self.client.get(f"/api/storage/NFC/EXISTING_STORAGE/logs?limit=1&page=2")
+        response = self.client.get(f"/api/storage/NFC/EXISTING_STORAGE/logs?limit=1&page=2&order=id")
         received_json = response.json()
         self.assertEqual(
             received_json,
@@ -1033,7 +1033,7 @@ class StorageAPITestCase(APITestCase):
         )
 
         # Then both records on the same page
-        response = self.client.get(f"/api/storage/NFC/EXISTING_STORAGE/logs?limit=10&page=1")
+        response = self.client.get(f"/api/storage/NFC/EXISTING_STORAGE/logs?limit=10&page=1&order=id")
         received_json = response.json()
         self.assertEqual(
             received_json,

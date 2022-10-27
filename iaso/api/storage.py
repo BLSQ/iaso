@@ -330,10 +330,17 @@ def logs_per_device(request, storage_customer_chosen_id: str, storage_type: str)
     page_offset = request.GET.get("page", 1)
 
     order = request.GET.get("order", "-performed_at").split(",")
-    log_entries_queryset = StorageLogEntry.objects.all().order_by(*order)
 
-    # TODO: implement permissions and return 403/401 (see spec)
-    # TODO: spec says: "permissions to see storage", what does it mean exactly?
+    device_identity_fields = {
+        "customer_chosen_id": storage_customer_chosen_id,
+        "type": storage_type,
+        "account": user_account,
+    }
+
+    # We need to filter the log entries early or the paginator (count, ...) will have inconsistent values with the
+    # prefetched log entries later
+    device = StorageDevice.objects.get(**device_identity_fields)
+    log_entries_queryset = StorageLogEntry.objects.filter(device=device).order_by(*order)
 
     if org_unit_id is not None:
         log_entries_queryset = log_entries_queryset.filter(org_unit_id=org_unit_id)
@@ -351,7 +358,7 @@ def logs_per_device(request, storage_customer_chosen_id: str, storage_type: str)
             log_entries_queryset,
             to_attr="filtered_log_entries",
         )
-    ).get(customer_chosen_id=storage_customer_chosen_id, type=storage_type, account=user_account)
+    ).get(**device_identity_fields)
 
     if limit_str:
         # Pagination requested: each page contains the device metadata + a subset of log entries

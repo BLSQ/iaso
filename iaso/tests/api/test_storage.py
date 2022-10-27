@@ -1080,6 +1080,24 @@ class StorageAPITestCase(APITestCase):
             },
         )
 
+    def test_get_logs_for_device_pagination_correct_count(self):
+        """Regression test: the 'count' attributes of the paginator listed the log entries for all devices."""
+        self.client.force_authenticate(self.yoda)
+
+        # We first add a second log for another device, it shouldn't appear in the count of other devices
+        StorageLogEntry.objects.create(
+            id="e4200710-bf82-4d29-a29b-6a042f79ef26",
+            device=self.existing_storage_device_2,
+            operation_type="WRITE_PROFILE",
+            performed_by=self.yoda,
+            performed_at=datetime(2022, 10, 13, 13, 12, 56, 0, tzinfo=timezone.utc),
+        )
+
+        # We request the first page
+        response = self.client.get(f"/api/storage/NFC/EXISTING_STORAGE/logs?limit=1&page=1&order=id")
+        received_json = response.json()
+        self.assertEqual(received_json["count"], 1)
+
     def test_get_logs_per_device_order(self):
         """Test various ordering options for the logs per device endpoint"""
         self.client.force_authenticate(self.yoda)

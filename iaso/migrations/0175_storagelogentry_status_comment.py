@@ -6,13 +6,13 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('iaso', '0174_auto_20221025_1354'),
+        ("iaso", "0174_auto_20221025_1354"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='storagelogentry',
-            name='status_comment',
+            model_name="storagelogentry",
+            name="status_comment",
             field=models.TextField(blank=True),
         ),
     ]

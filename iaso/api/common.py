@@ -182,6 +182,10 @@ class DynamicFieldsModelSerializer(serializers.ModelSerializer):
 
 
 class TimestampField(serializers.Field):
+    """Represent a DateTime as a unix Timestamp float
+
+    Use only for mobile APIs"""
+
     def to_representation(self, value: datetime):
         return value.timestamp()
 
@@ -190,7 +194,7 @@ class TimestampField(serializers.Field):
 
 
 class DateTimestampField(serializers.Field):
-    """Represent a date as a timestampfield
+    """Represent a date (day without time) as a unix Timestamp float
 
     Use only for mobile APIs"""
 

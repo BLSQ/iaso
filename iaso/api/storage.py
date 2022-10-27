@@ -6,6 +6,7 @@ from django.db.models import Prefetch
 from django.utils.timezone import make_aware
 from rest_framework import viewsets, permissions, serializers, status
 from rest_framework.decorators import action, api_view, permission_classes
+from rest_framework.fields import Field
 from rest_framework.mixins import CreateModelMixin, ListModelMixin
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
@@ -107,7 +108,7 @@ class StorageSerializerWithLogs(StorageSerializer):
     Requires a "filtered_log_entries" attribute on the data, use a Prefetch() object
     """
 
-    logs = StorageLogSerializer(many=True, source="filtered_log_entries")
+    logs: Field = StorageLogSerializer(many=True, source="filtered_log_entries")
 
     class Meta(StorageSerializer.Meta):
         fields = StorageSerializer.Meta.fields + ("logs",)
@@ -315,7 +316,7 @@ class StorageLogViewSet(CreateModelMixin, viewsets.GenericViewSet):
 
 
 @api_view()
-@permission_classes([IsAuthenticated, HasPermission("menupermissions.iaso_storages")])
+@permission_classes([IsAuthenticated, HasPermission("menupermissions.iaso_storages")])  # type: ignore
 def logs_per_device(request, storage_customer_chosen_id: str, storage_type: str):
     """Return a list of log entries for a given device"""
     user_account = request.user.iaso_profile.account
@@ -361,7 +362,7 @@ def logs_per_device(request, storage_customer_chosen_id: str, storage_type: str)
         if page_offset > paginator.num_pages:
             page_offset = paginator.num_pages
         page = paginator.page(page_offset)
-        res["results"] = StorageSerializerWithPaginatedLogs(
+        res["results"] = StorageSerializerWithPaginatedLogs(  # type: ignore
             device_with_logs, context={"limit": limit, "offset": page.start_index() - 1}
         ).data
         res["has_next"] = page.has_next()

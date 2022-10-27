@@ -197,7 +197,6 @@ const Calendar = ({ params }) => {
                         <Grid item>
                             <Box mb={2} mt={2}>
                                 <Button
-                                    disabled={!isCalendarAndMapLoaded}
                                     type="button"
                                     color="primary"
                                     variant="contained"

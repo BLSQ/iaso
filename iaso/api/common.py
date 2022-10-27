@@ -32,6 +32,11 @@ REQUEST_HEADER_INFO_KEYS = [
     "HTTP_AUTHORIZATION",
 ]
 
+CONTENT_TYPE_XLSX = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+CONTENT_TYPE_CSV = "text/csv"
+
+EXPORTS_DATETIME_FORMAT = "%Y-%m-%d %H:%M:%S"
+
 
 def safe_api_import(key: str, fallback_status=200):
     """This decorator allows to mark api views as "safe imports". This has two effects:
@@ -330,3 +335,8 @@ class DeletionFilterBackend(filters.BaseFilterBackend):
         if query_param == "all":
             return queryset
         return queryset
+
+
+class FileFormatEnum(enum.Enum):
+    CSV: str = "csv"
+    XLSX: str = "xlsx"

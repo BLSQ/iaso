@@ -19,7 +19,7 @@ from django.conf import settings
 
 from hat.api.export_utils import Echo, generate_xlsx, iter_items, timestamp_to_utc_datetime
 from hat.audit import models as audit_models
-from iaso.api.common import safe_api_import
+from iaso.api.common import safe_api_import, CONTENT_TYPE_XLSX, CONTENT_TYPE_CSV
 from iaso.api.serializers import OrgUnitSmallSearchSerializer, OrgUnitSearchSerializer, OrgUnitTreeSearchSerializer
 from iaso.gpkg import org_units_to_gpkg_bytes
 from iaso.models import OrgUnit, OrgUnitType, Group, Project, SourceVersion, Form, Instance
@@ -282,11 +282,11 @@ class OrgUnitViewSet(viewsets.ViewSet):
                 filename = filename + ".xlsx"
                 response = HttpResponse(
                     generate_xlsx("Forms", columns, queryset, get_row),
-                    content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                    content_type=CONTENT_TYPE_XLSX,
                 )
             if csv_format:
                 response = StreamingHttpResponse(
-                    streaming_content=(iter_items(queryset, Echo(), columns, get_row)), content_type="text/csv"
+                    streaming_content=(iter_items(queryset, Echo(), columns, get_row)), content_type=CONTENT_TYPE_CSV
                 )
                 filename = filename + ".csv"
             response["Content-Disposition"] = "attachment; filename=%s" % filename

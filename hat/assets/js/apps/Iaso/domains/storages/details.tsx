@@ -5,6 +5,7 @@ import {
     // @ts-ignore
     commonStyles,
 } from 'bluesquare-components';
+// @ts-ignore
 import { Box, Grid, makeStyles } from '@material-ui/core';
 import { useDispatch, useSelector } from 'react-redux';
 import TopBar from '../../components/nav/TopBarComponent';
@@ -43,7 +44,8 @@ const useStyles = makeStyles(theme => ({
 
 export const Details: FunctionComponent<Props> = ({ params, router }) => {
     const { formatMessage } = useSafeIntl();
-    const { data: storageDetail, isFetching } = useGetStorageLogs(params);
+    const { data, isFetching } = useGetStorageLogs(params);
+    const storageDetail = data?.results;
 
     const classes: Record<string, string> = useStyles();
     const prevPathname: string | undefined = useSelector(
@@ -80,19 +82,19 @@ export const Details: FunctionComponent<Props> = ({ params, router }) => {
                         className={classes.fullWith}
                         title={formatMessage(MESSAGES.logs)}
                     >
-                        <Box mt={-4}>
+                        <Box mb={-4} position="relative">
                             <TableWithDeepLink
                                 marginTop={false}
-                                showPagination={false}
+                                countOnTop={false}
                                 elevation={0}
                                 baseUrl={baseUrls.storageDetail}
                                 data={storageDetail?.logs ?? []}
-                                pages={1}
+                                pages={data?.pages}
                                 defaultSorted={[
                                     { id: 'performed_at', desc: false },
                                 ]}
                                 columns={columns}
-                                count={0}
+                                count={data?.count}
                                 params={params}
                                 onTableParamsChange={p =>
                                     dispatch(

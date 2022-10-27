@@ -131,7 +131,7 @@ const MESSAGES = defineMessages({
     },
     entity: {
         defaultMessage: 'Beneficiary',
-        id: 'iaso.label.beneficiar',
+        id: 'iaso.label.beneficiary',
     },
 });
 

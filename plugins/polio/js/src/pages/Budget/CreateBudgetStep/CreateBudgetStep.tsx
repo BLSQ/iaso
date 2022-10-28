@@ -238,75 +238,6 @@ const CreateBudgetStep: FunctionComponent<Props> = ({
                             label={MESSAGES.amount}
                             required={requiredFields.includes('amount')}
                         />
-
-                        <Box mt={2}>
-                            <FilesUpload
-                                files={values.files ?? []}
-                                onFilesSelect={files => {
-                                    setFieldTouched('files', true);
-                                    setFieldValue('files', files);
-                                }}
-                                required={requiredFields.includes('files')}
-                                errors={getErrors('files')}
-                            />
-                        </Box>
-                        <Box mt={2}>
-                            <Divider />
-                        </Box>
-                        <Box mt={2}>
-                            <AddMultipleLinks
-                                required={requiredFields.includes('links')}
-                            />
-                        </Box>
-                        <Box mt={2} mb={2}>
-                            <Divider />
-                        </Box>
-                        {recipientTeams?.length > 0 && (
-                            <>
-                                <Box mt={1} mb={1}>
-                                    <Typography>
-                                        {formatMessage(
-                                            MESSAGES.emailWillBeSentTo,
-                                        )}
-                                    </Typography>
-                                    {recipientTeams?.map(team => {
-                                        return (
-                                            <Box
-                                                mt={1}
-                                                mr={1}
-                                                mb={1}
-                                                display="inline-block"
-                                                key={team}
-                                            >
-                                                <Chip
-                                                    label={team}
-                                                    variant="outlined"
-                                                    color="secondary"
-                                                />
-                                            </Box>
-                                        );
-                                    })}
-                                </Box>
-                                <Box mt={2} mb={2}>
-                                    <Divider />
-                                </Box>
-                            </>
-                        )}
-
-                        {/* @ts-ignore */}
-                        {(errors?.general ?? []).length > 0 && (
-                            <>
-                                {getErrors('general').map(e => (
-                                    <Typography
-                                        key={`${e}-error`}
-                                        color="error"
-                                        className={classes.alignRight}
-                                    >
-                                        {e}
-                                    </Typography>
-                                ))}
-                            </>
-                        )}
                         {attachmentErrors.length > 0 &&
                             (touched.links || touched.files) && (
                                 <>
@@ -314,7 +245,6 @@ const CreateBudgetStep: FunctionComponent<Props> = ({
                                         <Typography
                                             key={`${e}-error`}
                                             color="error"
-                                            className={classes.alignRight}
                                         >
                                             {e}
                                         </Typography>
@@ -324,17 +254,81 @@ const CreateBudgetStep: FunctionComponent<Props> = ({
                         {!touched.links &&
                             !touched.files &&
                             requiredFields.includes('attachments') && (
-                                <Typography
-                                    color="textSecondary"
-                                    className={classes.alignRight}
-                                >
-                                    {formatMessage(
-                                        MESSAGES.linksOrFilesRequired,
-                                    )}
-                                </Typography>
+                                <Box mt={4}>
+                                    <Typography>
+                                        {formatMessage(
+                                            MESSAGES.linksOrFilesRequired,
+                                        )}
+                                    </Typography>
+                                </Box>
                             )}
                     </>
                 )}
+                <Box mt={2}>
+                    <FilesUpload
+                        files={values.files ?? []}
+                        onFilesSelect={files => {
+                            setFieldTouched('files', true);
+                            setFieldValue('files', files);
+                        }}
+                        required={requiredFields.includes('files')}
+                        errors={getErrors('files')}
+                    />
+                </Box>
+
+                <Box mt={2}>
+                    <AddMultipleLinks
+                        required={requiredFields.includes('links')}
+                    />
+                </Box>
+                <Box mt={2} mb={2}>
+                    <Divider />
+                </Box>
+                {recipientTeams?.length > 0 && (
+                    <>
+                        <Box mt={1} mb={1}>
+                            <Typography>
+                                {formatMessage(MESSAGES.emailWillBeSentTo)}
+                            </Typography>
+                            {recipientTeams?.map(team => {
+                                return (
+                                    <Box
+                                        mt={1}
+                                        mr={1}
+                                        mb={1}
+                                        display="inline-block"
+                                        key={team}
+                                    >
+                                        <Chip
+                                            label={team}
+                                            variant="outlined"
+                                            color="secondary"
+                                        />
+                                    </Box>
+                                );
+                            })}
+                        </Box>
+                        <Box mt={2} mb={2}>
+                            <Divider />
+                        </Box>
+                    </>
+                )}
+
+                {/* @ts-ignore */}
+                {(errors?.general ?? []).length > 0 && (
+                    <>
+                        {getErrors('general').map(e => (
+                            <Typography
+                                key={`${e}-error`}
+                                color="error"
+                                className={classes.alignRight}
+                            >
+                                {e}
+                            </Typography>
+                        ))}
+                    </>
+                )}
+
                 {!userHasTeam && <UserHasTeamWarning />}
             </ConfirmCancelModal>
         </FormikProvider>

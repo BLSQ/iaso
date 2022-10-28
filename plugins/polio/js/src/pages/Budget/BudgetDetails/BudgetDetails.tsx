@@ -89,14 +89,11 @@ export const BudgetDetails: FunctionComponent<Props> = ({ router }) => {
         );
         const toDisplay = new Set(
             regular
-                ?.filter(
-                    transition =>
-                        transition.key !== budgetInfos?.current_state?.key,
-                )
+                ?.filter(transition => !transition.key.includes('repeat'))
                 .map(transition => transition.label),
         );
         return { regular, override, toDisplay };
-    }, [budgetInfos?.current_state?.key, budgetInfos?.next_transitions]);
+    }, [budgetInfos?.next_transitions]);
 
     const { resetPageToOne, columns } = useTableState({
         events: budgetDetails?.results,
@@ -207,6 +204,9 @@ export const BudgetDetails: FunctionComponent<Props> = ({ router }) => {
                                                                 step.required_fields
                                                             }
                                                             params={params}
+                                                            recipients={
+                                                                step.emails_destination_team_ids
+                                                            }
                                                         />
                                                     </Grid>
                                                 );
@@ -231,6 +231,10 @@ export const BudgetDetails: FunctionComponent<Props> = ({ router }) => {
                                                 requiredFields={
                                                     nextSteps.override
                                                         .required_fields
+                                                }
+                                                recipients={
+                                                    nextSteps.override
+                                                        .emails_destination_team_ids
                                                 }
                                             />
                                         </Grid>

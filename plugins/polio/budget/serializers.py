@@ -9,7 +9,7 @@ from iaso.models.microplanning import Team
 from plugins.polio.models import Campaign
 from plugins.polio.serializers import CampaignSerializer, UserSerializer
 from .models import BudgetStep, BudgetStepFile, BudgetStepLink, send_budget_mails, get_workflow
-from .workflow import next_transitions, can_user_transition
+from .workflow import next_transitions, can_user_transition, Transition
 
 
 class TransitionSerializer(serializers.Serializer):
@@ -23,6 +23,13 @@ class TransitionSerializer(serializers.Serializer):
     displayed_fields = serializers.ListField(child=serializers.CharField())
     # Note : implemented as a Css class in the frontend
     color = serializers.ChoiceField(choices=["primary", "green", "red"], required=False)
+    emails_destination_team_ids = serializers.SerializerMethodField()
+
+    def get_emails_destination_team_ids(self, transition: Transition):
+        teams = []
+        for _, teams_ids in transition.emails_to_send:
+            teams += teams_ids
+        return set(teams)
 
 
 class NestedTransitionSerializer(TransitionSerializer):
@@ -81,11 +88,18 @@ class CampaignBudgetSerializer(CampaignSerializer, DynamicFieldsModelSerializer)
 
     def get_current_state(self, campaign: Campaign):
         workflow = get_workflow()
-        node = workflow.get_node_by_key(campaign.budget_current_state_key)
-        return {
-            "key": campaign.budget_current_state_key,
-            "label": node.label,
-        }
+        try:
+            node = workflow.get_node_by_key(campaign.budget_current_state_key)
+        except:
+            return {
+                "key": campaign.budget_current_state_key,
+                "label": campaign.budget_current_state_key,
+            }
+        else:
+            return {
+                "key": campaign.budget_current_state_key,
+                "label": node.label,
+            }
 
     @swagger_serializer_method(serializer_or_field=TransitionSerializer(many=True))
     def get_next_transitions(self, campaign):

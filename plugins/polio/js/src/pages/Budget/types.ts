@@ -22,6 +22,7 @@ export type Budget = {
         reason_not_allowed: Nullable<string>;
         required_fields: string[]; // comment, file, links
         help_text: string;
+        emails_destination_team_ids?: number[];
         displayed_fields: string[]; // This field determines the columns shown in the "create" modal
     }[];
     // -> optional: need to pass a param for the API to return it

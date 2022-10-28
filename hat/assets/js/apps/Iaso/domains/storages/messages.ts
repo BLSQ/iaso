@@ -137,6 +137,10 @@ const MESSAGES = defineMessages({
         defaultMessage: 'User',
         id: 'iaso.label.user',
     },
+    submissions: {
+        defaultMessage: 'Submissions',
+        id: 'iaso.instance.title',
+    },
 });
 
 export default MESSAGES;

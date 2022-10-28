@@ -12,6 +12,7 @@ import { LinkToOrgUnit } from '../orgUnits/components/LinkToOrgUnit';
 import { DateTimeCell } from '../../components/Cells/DateTimeCell';
 import { StatusCell } from './components/StatusCell';
 import { LinkToEntity } from './components/LinkToEntity';
+import { LinkToInstance } from '../instances/components/LinkToInstance';
 
 import { IntlFormatMessage } from '../../types/intl';
 import { Column } from '../../types/table';
@@ -175,6 +176,21 @@ export const useGetDetailsColumns = (): Array<Column> => {
                         : '-';
                 }
                 return '-';
+            },
+        },
+        {
+            Header: formatMessage(MESSAGES.submissions),
+            accessor: 'instances',
+            id: 'instances',
+            Cell: settings => {
+                const { instances } = settings.row.original;
+                if (instances.length === 0) return '-';
+                return instances.map((instanceId, index) => (
+                    <span key={instanceId}>
+                        <LinkToInstance instanceId={instanceId} />
+                        {index + 1 < instances.length && ', '}
+                    </span>
+                ));
             },
         },
         {

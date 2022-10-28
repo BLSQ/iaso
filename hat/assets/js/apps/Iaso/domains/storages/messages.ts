@@ -103,7 +103,7 @@ const MESSAGES = defineMessages({
     },
     reason: {
         defaultMessage: 'Reason',
-        id: 'iaso.storages.status.reason',
+        id: 'iaso.table.status.reason',
     },
     stolen: {
         defaultMessage: 'Stolen',
@@ -132,6 +132,10 @@ const MESSAGES = defineMessages({
     entity: {
         defaultMessage: 'Beneficiary',
         id: 'iaso.label.beneficiary',
+    },
+    user: {
+        defaultMessage: 'User',
+        id: 'iaso.label.user',
     },
 });
 

@@ -45,6 +45,7 @@ const useStyles = makeStyles(theme => ({
 export const Details: FunctionComponent<Props> = ({ params, router }) => {
     const { formatMessage } = useSafeIntl();
     const { data, isFetching } = useGetStorageLogs(params);
+
     const storageDetail = data?.results;
 
     const classes: Record<string, string> = useStyles();

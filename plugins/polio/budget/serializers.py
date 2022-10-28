@@ -138,6 +138,25 @@ class CampaignBudgetSerializer(CampaignSerializer, DynamicFieldsModelSerializer)
 
     @swagger_serializer_method(serializer_or_field=TimelineSerializer())
     def get_timeline(self, campaign):
+        """Represent the progression of the budget process, per category
+
+        State/Nodes are stored in category.
+        For each category, we return a merge between the Step leading to that node and the node that we still need to visit
+        (marked as mandatory).
+
+        So you will get something like
+        CategoryA:
+           NodeA : Performed by Xavier on 1 Jan
+           NodeB : Performed by Olivier on 2 Feb
+           NodeC : to do
+
+        We also return a color to mark the progress in each category. In the future we may want to modulate this
+        color according to the delay.
+
+        We may want to cache this in the future because this a bit of calculation, and only change when a step is done
+        but it is not critical for now as we only query one campaign at the time in the current design.
+
+        """
         workflow = get_workflow()
         r = []
         c: Category
@@ -166,9 +185,9 @@ class CampaignBudgetSerializer(CampaignSerializer, DynamicFieldsModelSerializer)
             for node in c.nodes:  # Node are already sorted
                 if not node.mandatory:
                     continue
+                node_remaining.add(node.key)
                 if node.key in node_passed_by:
                     continue
-                node_remaining.add(node.key)
                 items.append({"label": node.label})
             # color calculation
             if len(node_passed_by) == 0:

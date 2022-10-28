@@ -31,6 +31,7 @@ import { BudgetDetailsCardsLayout } from './mobile/BudgetDetailsCardsLayout';
 import { BudgetDetailsTableLayout } from './BudgetDetailsTableLayout';
 import { BudgetDetailsFiltersMobile } from './mobile/BudgetDetailsFiltersMobile';
 import { BudgetDetailsInfos } from './BudgetDetailsInfos';
+import { BudgetTimeline } from './BudgetTimeline';
 
 type Props = {
     router: any;
@@ -245,6 +246,10 @@ export const BudgetDetails: FunctionComponent<Props> = ({ router }) => {
                             stepsList={stepsList}
                         />
                     )}
+
+                    <BudgetTimeline
+                        categories={budgetInfos?.timeline?.categories}
+                    />
 
                     <InputComponent
                         type="checkbox"

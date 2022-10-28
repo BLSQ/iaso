@@ -17,6 +17,11 @@ const MESSAGES = defineMessages({
         defaultMessage: 'Write profile',
         id: 'iaso.storages.writeProfile',
     },
+
+    clear: {
+        id: 'iaso.label.clear',
+        defaultMessage: 'Clear',
+    },
     reset: {
         defaultMessage: 'Reset',
         id: 'iaso.storages.reset',
@@ -103,7 +108,7 @@ const MESSAGES = defineMessages({
     },
     reason: {
         defaultMessage: 'Reason',
-        id: 'iaso.storages.status.reason',
+        id: 'iaso.table.status.reason',
     },
     stolen: {
         defaultMessage: 'Stolen',

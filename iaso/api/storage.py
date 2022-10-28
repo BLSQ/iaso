@@ -57,6 +57,8 @@ class StorageLogSerializer(serializers.ModelSerializer):
             "performed_at",
             "performed_by",
             "status",
+            "status_reason",
+            "status_comment",
         ]
 
 

@@ -674,6 +674,8 @@ class StorageAPITestCase(APITestCase):
                         "performed_at": 1665666776.0,
                         "performed_by": {"first_name": "", "last_name": "", "username": "yoda"},
                         "status": "OK",
+                        "status_comment": "",
+                        "status_reason": "",
                     }
                 ],
             },
@@ -709,6 +711,9 @@ class StorageAPITestCase(APITestCase):
             performed_by=self.yoda,
             performed_at=datetime(2022, 10, 13, 13, 12, 56, 0, tzinfo=timezone.utc),
             org_unit=self.org_unit,
+            status="BLACKLISTED",
+            status_reason="DAMAGED",
+            status_comment="not usable anymore",
         )
 
         # This time, it should be returned
@@ -736,7 +741,9 @@ class StorageAPITestCase(APITestCase):
                         "entity": None,
                         "performed_at": 1665666776.0,
                         "performed_by": {"first_name": "", "last_name": "", "username": "yoda"},
-                        "status": "",
+                        "status": "BLACKLISTED",
+                        "status_comment": "not usable anymore",
+                        "status_reason": "DAMAGED",
                     }
                 ],
             },
@@ -772,6 +779,8 @@ class StorageAPITestCase(APITestCase):
                         "performed_at": 1665666776.0,
                         "performed_by": {"first_name": "", "last_name": "", "username": "yoda"},
                         "status": "OK",
+                        "status_comment": "",
+                        "status_reason": "",
                     }
                 ],
             },
@@ -821,6 +830,8 @@ class StorageAPITestCase(APITestCase):
                         "performed_at": 1665666776.0,
                         "performed_by": {"first_name": "", "last_name": "", "username": "yoda"},
                         "status": "OK",
+                        "status_comment": "",
+                        "status_reason": "",
                     }
                 ],
             },
@@ -861,6 +872,8 @@ class StorageAPITestCase(APITestCase):
                         "performed_at": 1665666776.0,
                         "performed_by": {"first_name": "", "last_name": "", "username": "yoda"},
                         "status": "OK",
+                        "status_comment": "",
+                        "status_reason": "",
                     },
                     {
                         "id": "e4200710-bf82-4d29-a29b-6a042f79ef26",
@@ -873,6 +886,8 @@ class StorageAPITestCase(APITestCase):
                         "performed_at": 1665666776.0,
                         "performed_by": {"first_name": "", "last_name": "", "username": "yoda"},
                         "status": "",
+                        "status_comment": "",
+                        "status_reason": "",
                     },
                 ],
             },
@@ -908,6 +923,8 @@ class StorageAPITestCase(APITestCase):
                         "performed_at": 1665666776.0,
                         "performed_by": {"first_name": "", "last_name": "", "username": "yoda"},
                         "status": "OK",
+                        "status_comment": "",
+                        "status_reason": "",
                     }
                 ],
             },
@@ -992,6 +1009,8 @@ class StorageAPITestCase(APITestCase):
                             "performed_at": 1665666776.0,
                             "performed_by": {"first_name": "", "last_name": "", "username": "yoda"},
                             "status": "OK",
+                            "status_comment": "",
+                            "status_reason": "",
                         }
                     ],
                 },
@@ -1030,6 +1049,8 @@ class StorageAPITestCase(APITestCase):
                             "performed_at": 1665666776.0,
                             "performed_by": {"first_name": "", "last_name": "", "username": "yoda"},
                             "status": "",
+                            "status_comment": "",
+                            "status_reason": "",
                         }
                     ],
                 },
@@ -1068,6 +1089,8 @@ class StorageAPITestCase(APITestCase):
                             "performed_at": 1665666776.0,
                             "performed_by": {"first_name": "", "last_name": "", "username": "yoda"},
                             "status": "OK",
+                            "status_comment": "",
+                            "status_reason": "",
                         },
                         {
                             "id": "e4200710-bf82-4d29-a29b-6a042f79ef26",
@@ -1080,6 +1103,8 @@ class StorageAPITestCase(APITestCase):
                             "performed_at": 1665666776.0,
                             "performed_by": {"first_name": "", "last_name": "", "username": "yoda"},
                             "status": "",
+                            "status_comment": "",
+                            "status_reason": "",
                         },
                     ],
                 },

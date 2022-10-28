@@ -261,31 +261,38 @@ const CreateBudgetStep: FunctionComponent<Props> = ({
                         <Box mt={2} mb={2}>
                             <Divider />
                         </Box>
-                        <Box mt={1} mb={1}>
-                            <Typography>
-                                {formatMessage(MESSAGES.emailWillBeSentTo)}
-                            </Typography>
-                            {recipientTeams?.map(team => {
-                                return (
-                                    <Box
-                                        mt={1}
-                                        mr={1}
-                                        mb={1}
-                                        display="inline-block"
-                                        key={team}
-                                    >
-                                        <Chip
-                                            label={team}
-                                            variant="outlined"
-                                            color="secondary"
-                                        />
-                                    </Box>
-                                );
-                            })}
-                        </Box>
-                        <Box mt={2} mb={2}>
-                            <Divider />
-                        </Box>
+                        {recipientTeams?.length > 0 && (
+                            <>
+                                <Box mt={1} mb={1}>
+                                    <Typography>
+                                        {formatMessage(
+                                            MESSAGES.emailWillBeSentTo,
+                                        )}
+                                    </Typography>
+                                    {recipientTeams?.map(team => {
+                                        return (
+                                            <Box
+                                                mt={1}
+                                                mr={1}
+                                                mb={1}
+                                                display="inline-block"
+                                                key={team}
+                                            >
+                                                <Chip
+                                                    label={team}
+                                                    variant="outlined"
+                                                    color="secondary"
+                                                />
+                                            </Box>
+                                        );
+                                    })}
+                                </Box>
+                                <Box mt={2} mb={2}>
+                                    <Divider />
+                                </Box>
+                            </>
+                        )}
+
                         {/* @ts-ignore */}
                         {(errors?.general ?? []).length > 0 && (
                             <>

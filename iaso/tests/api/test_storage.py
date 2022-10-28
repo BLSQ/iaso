@@ -672,6 +672,7 @@ class StorageAPITestCase(APITestCase):
                         "org_unit": None,
                         "entity": None,
                         "performed_at": 1665666776.0,
+                        "performed_by": {"first_name": "", "last_name": "", "username": "yoda"},
                         "status": "OK",
                     }
                 ],
@@ -734,6 +735,7 @@ class StorageAPITestCase(APITestCase):
                         "org_unit": {"id": self.org_unit.id, "name": "Akkala"},
                         "entity": None,
                         "performed_at": 1665666776.0,
+                        "performed_by": {"first_name": "", "last_name": "", "username": "yoda"},
                         "status": "",
                     }
                 ],
@@ -768,6 +770,7 @@ class StorageAPITestCase(APITestCase):
                         "org_unit": None,
                         "entity": None,
                         "performed_at": 1665666776.0,
+                        "performed_by": {"first_name": "", "last_name": "", "username": "yoda"},
                         "status": "OK",
                     }
                 ],
@@ -816,6 +819,7 @@ class StorageAPITestCase(APITestCase):
                         "org_unit": None,
                         "entity": None,
                         "performed_at": 1665666776.0,
+                        "performed_by": {"first_name": "", "last_name": "", "username": "yoda"},
                         "status": "OK",
                     }
                 ],
@@ -855,6 +859,7 @@ class StorageAPITestCase(APITestCase):
                         "org_unit": None,
                         "entity": None,
                         "performed_at": 1665666776.0,
+                        "performed_by": {"first_name": "", "last_name": "", "username": "yoda"},
                         "status": "OK",
                     },
                     {
@@ -866,6 +871,7 @@ class StorageAPITestCase(APITestCase):
                         "org_unit": {"id": self.org_unit.id, "name": "Akkala"},
                         "entity": None,
                         "performed_at": 1665666776.0,
+                        "performed_by": {"first_name": "", "last_name": "", "username": "yoda"},
                         "status": "",
                     },
                 ],
@@ -900,6 +906,7 @@ class StorageAPITestCase(APITestCase):
                         "org_unit": None,
                         "entity": None,
                         "performed_at": 1665666776.0,
+                        "performed_by": {"first_name": "", "last_name": "", "username": "yoda"},
                         "status": "OK",
                     }
                 ],
@@ -983,6 +990,7 @@ class StorageAPITestCase(APITestCase):
                             "org_unit": None,
                             "entity": None,
                             "performed_at": 1665666776.0,
+                            "performed_by": {"first_name": "", "last_name": "", "username": "yoda"},
                             "status": "OK",
                         }
                     ],
@@ -1020,6 +1028,7 @@ class StorageAPITestCase(APITestCase):
                             "org_unit": None,
                             "entity": None,
                             "performed_at": 1665666776.0,
+                            "performed_by": {"first_name": "", "last_name": "", "username": "yoda"},
                             "status": "",
                         }
                     ],
@@ -1057,6 +1066,7 @@ class StorageAPITestCase(APITestCase):
                             "org_unit": None,
                             "entity": None,
                             "performed_at": 1665666776.0,
+                            "performed_by": {"first_name": "", "last_name": "", "username": "yoda"},
                             "status": "OK",
                         },
                         {
@@ -1068,6 +1078,7 @@ class StorageAPITestCase(APITestCase):
                             "org_unit": None,
                             "entity": None,
                             "performed_at": 1665666776.0,
+                            "performed_by": {"first_name": "", "last_name": "", "username": "yoda"},
                             "status": "",
                         },
                     ],

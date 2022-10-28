@@ -341,6 +341,8 @@ def logs_for_device_generate_export(queryset: QuerySet[StorageLogEntry], file_fo
         {"title": "performed_at"},
         {"title": "performed_by"},
         {"title": "status"},
+        {"title": "status_reason"},
+        {"title": "status_comment"},
     ]
 
     def get_row(log_entry: StorageLogEntry, **_) -> List[Any]:
@@ -361,6 +363,8 @@ def logs_for_device_generate_export(queryset: QuerySet[StorageLogEntry], file_fo
             performed_at_str,
             log_entry.performed_by.username,
             log_entry.status,
+            log_entry.status_reason,
+            log_entry.status_comment,
         ]
 
     filename = "storage_logs"

@@ -44,7 +44,7 @@ class WorkflowSerializer(serializers.Serializer):
 class CategoryItemSerializer(serializers.Serializer):
     label = serializers.CharField()
     performed_by = UserSerializer(required=False)
-    performed_on = serializers.DateTimeField(required=False)
+    performed_at = serializers.DateTimeField(required=False)
     step_id = serializers.IntegerField(required=False)
 
 

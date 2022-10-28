@@ -240,16 +240,16 @@ export const BudgetDetails: FunctionComponent<Props> = ({ router }) => {
                             )}
                         </Grid>
                     </Grid>
+
+                    <BudgetTimeline
+                        categories={budgetInfos?.timeline?.categories}
+                    />
                     {!isMobileLayout && (
                         <BudgetDetailsFilters
                             params={params}
                             stepsList={stepsList}
                         />
                     )}
-
-                    <BudgetTimeline
-                        categories={budgetInfos?.timeline?.categories}
-                    />
 
                     <InputComponent
                         type="checkbox"

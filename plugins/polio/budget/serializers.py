@@ -9,7 +9,7 @@ from iaso.models.microplanning import Team
 from plugins.polio.models import Campaign
 from plugins.polio.serializers import CampaignSerializer, UserSerializer
 from .models import BudgetStep, BudgetStepFile, BudgetStepLink, send_budget_mails, get_workflow
-from .workflow import next_transitions, can_user_transition
+from .workflow import next_transitions, can_user_transition, Category
 
 
 class TransitionSerializer(serializers.Serializer):
@@ -21,7 +21,7 @@ class TransitionSerializer(serializers.Serializer):
     reason_not_allowed = serializers.CharField(required=False)
     required_fields = serializers.ListField(child=serializers.CharField())
     displayed_fields = serializers.ListField(child=serializers.CharField())
-    # Note : implemented as a Css class in the frontend
+    # Note : implemented as a Css class in the frontend. Color of the button for approval
     color = serializers.ChoiceField(choices=["primary", "green", "red"], required=False)
 
 
@@ -41,6 +41,25 @@ class WorkflowSerializer(serializers.Serializer):
     states = NodeSerializer(many=True, source="nodes")
 
 
+class CategoryItemSerializer(serializers.Serializer):
+    label = serializers.CharField()
+    performed_by = UserSerializer(required=False)
+    performed_on = serializers.DateTimeField(required=False)
+    step_id = serializers.IntegerField(required=False)
+
+
+class CategorySerializer(serializers.Serializer):
+    key = serializers.CharField()
+    # https://github.com/typeddjango/djangorestframework-stubs/issues/78 bug in mypy remove in future
+    label = serializers.CharField()  # type: ignore
+    color = serializers.CharField()
+    items = CategoryItemSerializer(many=True)
+
+
+class TimelineSerializer(serializers.Serializer):
+    categories = CategorySerializer(many=True)
+
+
 # noinspection PyMethodMayBeStatic
 class CampaignBudgetSerializer(CampaignSerializer, DynamicFieldsModelSerializer):
     class Meta:
@@ -56,6 +75,7 @@ class CampaignBudgetSerializer(CampaignSerializer, DynamicFieldsModelSerializer)
             "possible_states",
             "cvdpv2_notified_at",
             "possible_transitions",
+            "timeline",
         ]
         default_fields = [
             "created_at",
@@ -72,6 +92,7 @@ class CampaignBudgetSerializer(CampaignSerializer, DynamicFieldsModelSerializer)
     # To be used for override
     possible_states = serializers.SerializerMethodField()
     possible_transitions = serializers.SerializerMethodField()
+    timeline = serializers.SerializerMethodField()
 
     next_transitions = serializers.SerializerMethodField()
     # will need to use country__name for sorting
@@ -114,6 +135,53 @@ class CampaignBudgetSerializer(CampaignSerializer, DynamicFieldsModelSerializer)
         workflow = get_workflow()
         transitions = workflow.transitions
         return NestedTransitionSerializer(transitions, many=True).data
+
+    @swagger_serializer_method(serializer_or_field=TimelineSerializer())
+    def get_timeline(self, campaign):
+        workflow = get_workflow()
+        r = []
+        c: Category
+        steps = list(campaign.budget_steps.filter(deleted_at__isnull=True).order_by("created_at"))
+        for c in workflow.categories:
+            items = []
+            node_dict = {node.key: node for node in c.nodes}
+            node_passed_by = set()  # Keys
+            node_remaining = set()
+            step: BudgetStep
+            for step in steps:
+                transition = workflow.transitions_dict[step.transition_key]
+                to_node_key = transition.to_node
+                if to_node_key in node_dict.keys():
+                    # If this is in the category
+                    items.append(
+                        {
+                            "label": node_dict[to_node_key].label,
+                            "performed_by": step.created_by,
+                            "performed_at": step.created_at,
+                            "step_id": step.id,
+                        }
+                    )
+                    node_passed_by.add(to_node_key)
+
+            for node in c.nodes:  # Node are already sorted
+                if not node.mandatory:
+                    continue
+                if node.key in node_passed_by:
+                    continue
+                node_remaining.add(node.key)
+                items.append({"label": node.label})
+            # color calculation
+            if len(node_passed_by) == 0:
+                # Category not started
+                color = "grey"
+            elif len(node_remaining) == 0:
+                # category done
+                color = "green"
+            else:
+                color = "lightgreen"
+
+            r.append({"label": c.label, "key": c.key, "color": color, "items": items})
+        return TimelineSerializer({"categories": r}).data
 
 
 class TransitionError(Enum):

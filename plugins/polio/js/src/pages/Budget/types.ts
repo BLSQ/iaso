@@ -4,6 +4,25 @@ import {
     Optional,
 } from '../../../../../../hat/assets/js/apps/Iaso/types/utils';
 
+export type Timeline = {
+    categories: Categories;
+};
+
+export type Categories = {
+    key: string;
+    label: string;
+    color: string; // css string
+    items: {
+        label: string;
+        performed_on?: string; // datetime
+        performed_by?: {
+            username;
+            first_name;
+            last_name;
+        }; // User
+    }[];
+}[];
+
 export type Budget = {
     id: number;
     obr_name: string;
@@ -34,6 +53,7 @@ export type Budget = {
         key: string;
         label: string;
     }[];
+    timeline?: Timeline;
 };
 
 export type LinkWithAlias = { alias: string; url: string };

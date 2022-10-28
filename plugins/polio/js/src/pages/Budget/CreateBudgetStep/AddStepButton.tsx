@@ -1,5 +1,6 @@
 import React, { FunctionComponent } from 'react';
-import { Button, makeStyles } from '@material-ui/core';
+import { Button, makeStyles, Box } from '@material-ui/core';
+import LoopIcon from '@material-ui/icons/Loop';
 
 const style = theme => {
     return {
@@ -22,6 +23,9 @@ const style = theme => {
                 backgroundColor: theme.palette.error.main,
             },
         },
+        repeatIcon: {
+            marginRight: theme.spacing(1),
+        },
     };
 };
 
@@ -32,11 +36,13 @@ type AddStepButtonProps = {
     onClick: () => void;
     color: 'red' | 'green' | 'primary';
     disabled?: boolean;
+    stepKey: string;
 };
 
 export const AddStepButton: FunctionComponent<AddStepButtonProps> = ({
     onClick,
     label,
+    stepKey,
     color = 'primary',
     disabled = false,
 }: AddStepButtonProps) => {
@@ -44,18 +50,23 @@ export const AddStepButton: FunctionComponent<AddStepButtonProps> = ({
     const usableColor = color ?? 'primary';
     const className =
         usableColor !== 'primary' ? classes[usableColor] : undefined;
+    const isRepeat = stepKey.includes('repeat');
     // The div prevents the Button from being too big on small screens
     return (
         <div className={classes.addButton}>
             <Button
                 onClick={onClick}
                 size="medium"
-                variant="contained"
+                variant={isRepeat ? 'outlined' : 'contained'}
                 component="button"
                 color={usableColor === 'primary' ? usableColor : undefined}
                 className={className}
                 disabled={disabled}
             >
+                {isRepeat && (
+                    <LoopIcon fontSize="small" className={classes.repeatIcon} />
+                )}
+
                 {label}
             </Button>
         </div>

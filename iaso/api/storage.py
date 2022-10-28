@@ -1,6 +1,6 @@
 # TODO: need better type annotations in this file
 from datetime import datetime
-from typing import Tuple, List, Any
+from typing import Tuple, List, Any, Union
 
 from django.db.models import Prefetch, QuerySet
 from django.http import HttpResponse, StreamingHttpResponse
@@ -329,7 +329,9 @@ class StorageLogViewSet(CreateModelMixin, viewsets.GenericViewSet):
         return Response("", status=status.HTTP_201_CREATED)
 
 
-def logs_for_device_generate_export(queryset: QuerySet[StorageLogEntry], file_format: FileFormatEnum) -> HttpResponse:
+def logs_for_device_generate_export(
+    queryset: "QuerySet[StorageLogEntry]", file_format: FileFormatEnum
+) -> Union[HttpResponse, StreamingHttpResponse]:
     columns = [
         {"title": "id"},
         {"title": "storage_id"},
@@ -367,6 +369,7 @@ def logs_for_device_generate_export(queryset: QuerySet[StorageLogEntry], file_fo
             log_entry.status_comment,
         ]
 
+    response: Union[HttpResponse, StreamingHttpResponse]
     filename = "storage_logs"
     if file_format == FileFormatEnum.XLSX:
         filename = filename + ".xlsx"

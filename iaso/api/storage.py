@@ -23,6 +23,7 @@ from iaso.api.serializers import OrgUnitSerializer
 from .common import (
     TimestampField,
     HasPermission,
+    UserSerializer,
     FileFormatEnum,
     CONTENT_TYPE_XLSX,
     EXPORTS_DATETIME_FORMAT,
@@ -51,6 +52,7 @@ class StorageLogSerializer(serializers.ModelSerializer):
     entity = EntityNestedSerializer(read_only=True)
     org_unit = OrgUnitNestedSerializer(read_only=True)
     performed_at = TimestampField(read_only=True)
+    performed_by = UserSerializer(read_only=True)
 
     class Meta:
         model = StorageLogEntry
@@ -63,7 +65,10 @@ class StorageLogSerializer(serializers.ModelSerializer):
             "org_unit",
             "entity",
             "performed_at",
+            "performed_by",
             "status",
+            "status_reason",
+            "status_comment",
         ]
 
 

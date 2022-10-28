@@ -14,6 +14,7 @@ from django.utils.translation import gettext as _
 from django.utils import timezone
 
 from hat.audit.models import Modification, CAMPAIGN_API
+from iaso.api.common import UserSerializer
 
 from iaso.models import Group
 from .models import (
@@ -41,15 +42,14 @@ from .preparedness.spreadsheet_manager import generate_spreadsheet_for_campaign
 logger = getLogger(__name__)
 
 
-class UserSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = User
-        fields = ["id", "username", "first_name", "last_name", "email"]
+class UserSerializerForPolio(UserSerializer):
+    class Meta(UserSerializer.Meta):
+        fields = UserSerializer.Meta.fields + ["id", "email"]
         ref_name = "polio_user_serializer"
 
 
 class CountryUsersGroupSerializer(serializers.ModelSerializer):
-    read_only_users_field = UserSerializer(source="users", many=True, read_only=True)
+    read_only_users_field = UserSerializerForPolio(source="users", many=True, read_only=True)
     country_name: Field = serializers.SlugRelatedField(source="country", slug_field="name", read_only=True)
 
     class Meta:

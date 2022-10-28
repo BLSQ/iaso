@@ -5,6 +5,7 @@ from functools import wraps
 from traceback import format_exc
 
 import pytz
+from django.contrib.auth.models import User
 from django.db import transaction
 from django.db.models import ProtectedError, Q
 from django.utils.timezone import make_aware
@@ -36,6 +37,12 @@ CONTENT_TYPE_XLSX = "application/vnd.openxmlformats-officedocument.spreadsheetml
 CONTENT_TYPE_CSV = "text/csv"
 
 EXPORTS_DATETIME_FORMAT = "%Y-%m-%d %H:%M:%S"
+
+
+class UserSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = ["first_name", "last_name", "username"]
 
 
 def safe_api_import(key: str, fallback_status=200):

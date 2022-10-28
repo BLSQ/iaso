@@ -12,7 +12,6 @@ from .models import BudgetStep, BudgetStepFile, BudgetStepLink, send_budget_mail
 from .workflow import next_transitions, can_user_transition, Transition, Category
 
 
-
 class TransitionSerializer(serializers.Serializer):
     key = serializers.CharField()
     # https://github.com/typeddjango/djangorestframework-stubs/issues/78 bug in mypy remove in future

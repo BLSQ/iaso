@@ -58,13 +58,6 @@ export const ScopeForm: FunctionComponent = () => {
 
 
     const searchDistricts = useRef(null)
-    const defineSearchScope = () => {
-        let scopeType = true;
-        if (scopeSearch) {
-            scopeType = false;
-        }
-        setScopeSearch(scopeType);
-    }
 
     return (
         <>
@@ -78,20 +71,11 @@ export const ScopeForm: FunctionComponent = () => {
                 </Grid>
                 <Grid xs={12} md={3} item>
                     <InputComponent
-                        type="checkbox"
-                        withMarginTop={false}
-                        onChange={() => defineSearchScope()}
-                        value={scopeSearch}
-                        label={MESSAGES.searchInScopeOrAllDistricts}
-                    />
-                </Grid>
-                <Grid xs={12} md={3} item>
-                    <InputComponent
                         className={styleClasses.inputComponent}
                         variant="contained"
                         keyValue="search"
                         type="search"
-                        onEnterPressed={() => [searchDistricts.current(search, scopeSearch), setSearchUpdated(false)]}
+                        onEnterPressed={() => [searchDistricts.current(search), setSearchUpdated(false)]}
                         withMarginTop={false}
                         label={MESSAGES.search}
                         onChange={(key, value) => {
@@ -105,7 +89,7 @@ export const ScopeForm: FunctionComponent = () => {
                         variant="contained"
                         disabled={!searchUpdated}
                         color="primary"
-                        onClick={() => [searchDistricts.current(search, scopeSearch), setSearchUpdated(false)]}
+                        onClick={() => [searchDistricts.current(search)]}
                     >
                         <Box mr={1} top={3} position="relative">
                             <FiltersIcon />
@@ -118,7 +102,7 @@ export const ScopeForm: FunctionComponent = () => {
 
 
             {!scopePerRound ? (
-                <Field name="scopes" component={ScopeInput} searchDistricts={searchDistricts} scopeSearch={scopeSearch} />
+                <Field name="scopes" component={ScopeInput} searchDistricts={searchDistricts}/>
             ) : (
                 <TabContext value={currentTab}>
                     <TabList

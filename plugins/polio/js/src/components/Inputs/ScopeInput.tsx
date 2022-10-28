@@ -57,6 +57,7 @@ import { useStyles } from '../../styles/theme';
 import { csvPreview } from '../../../../../../hat/assets/js/apps/Iaso/domains/dataSources/requests';
 import CheckIcon from '@material-ui/icons/Check';
 import SelectAllIcon from '@material-ui/icons/SelectAll';
+import InputComponent from 'Iaso/components/forms/InputComponent';
 
 type Scope = {
     vaccine: string;
@@ -463,9 +464,9 @@ export const ScopeInput: FunctionComponent<FieldProps<Scope[], Values>> = ({
     }, [districts, filteredDistricts, searchValue, searchScope])
 
     // Will search district according to the name entered in the search input
-    const searchDistrictByName = (search, scopeSearch) => {
+    const searchDistrictByName = (search) => {
         setSearchValue(search)
-        setSearchScope(scopeSearch)
+        // setSearchScope(searchScope)
 
         let filtreds = []
         if (search.length > 0) {
@@ -478,7 +479,7 @@ export const ScopeInput: FunctionComponent<FieldProps<Scope[], Values>> = ({
                             ?.vaccine,
                     };
                 })
-            if (scopeSearch) {
+            if (searchScope) {
                 toFilter = toFilter.filter(d => d.vaccineName)
             }
             filtreds = toFilter.filter(d => d.name.includes(search.toUpperCase()))
@@ -494,9 +495,16 @@ export const ScopeInput: FunctionComponent<FieldProps<Scope[], Values>> = ({
         setFilteredDistricts(filtreds)
     }
 
+
+    const defineSearchScope = useCallback(() => {
+        setSearchScope(!searchScope);
+        searchDistrictByName(searchValue);
+
+    }, [setSearchScope, searchScope, searchDistrictByName]);
+
     return (
         <Grid container spacing={4}>
-            <Grid xs={7} item>
+            <Grid xs={7} item style={{ marginTop: "25px" }}>
                 {isFetching && !districtShapes && <LoadingSpinner />}
                 {!isFetching && !districtShapes && (
                     // FIXME should not be needed
@@ -600,9 +608,18 @@ export const ScopeInput: FunctionComponent<FieldProps<Scope[], Values>> = ({
                 )}
             </Grid>
             <Grid xs={5} item>
+                <InputComponent
+                    type="checkbox"
+                    withMarginTop={false}
+                    onChange={() => defineSearchScope()}
+                    value={searchScope}
+                    label={MESSAGES.searchInScopeOrAllDistricts}
+                />
                 <TableContainer className={classes.districtList}>
+
                     <MuiTable stickyHeader size="small">
                         <TableHead>
+
                             <TableRow>
                                 <TableCell
                                     onClick={() => handleSort('REGION')}

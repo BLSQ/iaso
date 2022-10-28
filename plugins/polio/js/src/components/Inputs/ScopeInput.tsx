@@ -458,10 +458,15 @@ export const ScopeInput: FunctionComponent<FieldProps<Scope[], Values>> = ({
             </Tooltip>
         );
     };
-
+    // Launch the searchdistrictByname from parent component
     useEffect(() => {
-        searchDistricts.current = searchDistrictByName
+        searchDistricts.current = searchDistrictByName;
+
     }, [districts, filteredDistricts, searchValue, searchScope])
+    // research when the checkbox(Search districts in scope) is checked on unchecked
+    useEffect(() => {
+        searchDistrictByName(searchValue);
+    }, [searchScope]);
 
     // Will search district according to the name entered in the search input
     const searchDistrictByName = (search) => {
@@ -494,13 +499,6 @@ export const ScopeInput: FunctionComponent<FieldProps<Scope[], Values>> = ({
         }
         setFilteredDistricts(filtreds)
     }
-
-
-    const defineSearchScope = useCallback(() => {
-        setSearchScope(!searchScope);
-        searchDistrictByName(searchValue);
-
-    }, [setSearchScope, searchScope, searchDistrictByName]);
 
     return (
         <Grid container spacing={4}>
@@ -611,7 +609,7 @@ export const ScopeInput: FunctionComponent<FieldProps<Scope[], Values>> = ({
                 <InputComponent
                     type="checkbox"
                     withMarginTop={false}
-                    onChange={() => defineSearchScope()}
+                    onChange={() => setSearchScope(!searchScope)}
                     value={searchScope}
                     label={MESSAGES.searchInScopeOrAllDistricts}
                 />

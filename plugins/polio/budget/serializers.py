@@ -52,8 +52,10 @@ class CategorySerializer(serializers.Serializer):
     key = serializers.CharField()
     # https://github.com/typeddjango/djangorestframework-stubs/issues/78 bug in mypy remove in future
     label = serializers.CharField()  # type: ignore
-    color = serializers.CharField()
+    color = serializers.CharField(help_text="Color completed according to the progress")
     items = CategoryItemSerializer(many=True)
+    completed = serializers.BooleanField(help_text="Every step in the category is done")
+    active = serializers.BooleanField(help_text="Category has been started")
 
 
 class TimelineSerializer(serializers.Serializer):
@@ -190,16 +192,27 @@ class CampaignBudgetSerializer(CampaignSerializer, DynamicFieldsModelSerializer)
                     continue
                 items.append({"label": node.label})
             # color calculation
-            if len(node_passed_by) == 0:
+            active = len(node_passed_by) > 0
+            completed = len(node_remaining) == 0
+            if completed:
+                # category done
+                color = "lightgreen"
+            elif active:
+                color = "lightgreen"
+            else:
                 # Category not started
                 color = "grey"
-            elif len(node_remaining) == 0:
-                # category done
-                color = "green"
-            else:
-                color = "lightgreen"
 
-            r.append({"label": c.label, "key": c.key, "color": color, "items": items})
+            r.append(
+                {
+                    "label": c.label,
+                    "key": c.key,
+                    "color": color,
+                    "items": items,
+                    "active": active,
+                    "completed": completed,
+                }
+            )
         return TimelineSerializer({"categories": r}).data
 
 

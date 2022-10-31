@@ -1,14 +1,24 @@
 import { Box, makeStyles } from '@material-ui/core';
-import React, { FunctionComponent, useState } from 'react';
+import React, { FunctionComponent, useState, useEffect } from 'react';
 // @ts-ignore
 // import { useSafeIntl } from 'bluesquare-components';
 // import classnames from 'classnames';
 import Stepper from '@material-ui/core/Stepper';
 import Step from '@material-ui/core/Step';
 import StepLabel from '@material-ui/core/StepLabel';
-import { CheckBox } from '@material-ui/icons';
+import {
+    CheckBox,
+    CheckBoxOutlineBlank,
+    ContactSupportOutlined,
+} from '@material-ui/icons';
 // import MESSAGES from '../../../constants/messages';
+import moment from 'moment';
 import { Categories } from '../types';
+import {
+    BUDGET_COMPLETED_COLOR,
+    BUDGET_PENDING_COLOR,
+    BUDGET_INACTIVE_COLOR,
+} from '../../../styles/constants';
 
 type Props = {
     categories?: Categories;
@@ -17,17 +27,57 @@ type Props = {
 const useStyles = makeStyles(theme => ({
     root: {
         width: '100%',
-        marginLeft: '-85px',
-        marginTop: '40px',
+        '&.MuiStepper-root': {
+            paddingLeft: 0,
+            paddingRight: 0,
+        },
         '& .MuiStepConnector-lineHorizontal': {
             borderTopWidth: '12px',
             borderColor: 'grey',
         },
+        '& .MuiBox-root': {
+            alignItems: 'flex-start',
+        },
+    },
+    step: {
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        backgroundColor: 'red',
     },
     item: {
         marginTop: '20px',
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'flex-start',
+    },
+    stepPending: {
+        '& .MuiStepConnector-lineHorizontal': {
+            borderColor: BUDGET_PENDING_COLOR,
+        },
+    },
+    stepCompleted: {
+        '& .MuiStepConnector-lineHorizontal': {
+            borderColor: BUDGET_COMPLETED_COLOR,
+        },
+    },
+    stepInactive: {
+        '& .MuiStepConnector-lineHorizontal': {
+            borderColor: BUDGET_INACTIVE_COLOR,
+        },
     },
 }));
+
+const getClassName = category => {
+    switch (category.completed) {
+        case true:
+            return 'stepCompleted';
+        case false:
+            return 'stepPending';
+        default:
+            return 'stepInactive';
+    }
+};
 
 export const BudgetTimeline: FunctionComponent<Props> = ({
     categories = [],
@@ -35,23 +85,54 @@ export const BudgetTimeline: FunctionComponent<Props> = ({
     const [activeStep, setActiveStep] = useState(0);
     const classes = useStyles();
 
+    useEffect(() => {
+        if (categories.length > 0) {
+            const lastStepCompleted = categories?.findLast(
+                category => category.completed === false,
+            );
+
+            const lastStepCompletedIndex =
+                categories.indexOf(lastStepCompleted);
+            setActiveStep(lastStepCompletedIndex);
+        }
+    }, [categories, activeStep]);
+
     return (
         <>
             <Stepper classes={classes} activeStep={activeStep} alternativeLabel>
                 {categories?.map(category => (
-                    <Step key={category.key} completed>
+                    <Step
+                        style={{
+                            display: 'flex',
+                            flexDirection: 'column',
+                            alignItems: 'center',
+                        }}
+                        className={classes[getClassName(category)]}
+                        key={category.key}
+                        completed={category.completed}
+                        active={category.active}
+                    >
                         <StepLabel>{category.label}</StepLabel>
                         <Box className={classes.item}>
                             {category.items.map(item => (
                                 <Box
                                     display="flex"
                                     alignItems="center"
-                                    justifyContent="center"
+                                    justifyContent="flex-start"
                                     flexDirection="column"
                                 >
-                                    <div style={{ display: 'flex' }}>
+                                    <div
+                                        style={{
+                                            display: 'flex',
+                                            alignItems: 'center',
+                                        }}
+                                    >
                                         {' '}
-                                        <CheckBox />
+                                        {item.performed_by ? (
+                                            <CheckBox color="primary" />
+                                        ) : (
+                                            <CheckBoxOutlineBlank />
+                                        )}
                                         <div>{item.label}</div>
                                     </div>
 
@@ -62,7 +143,9 @@ export const BudgetTimeline: FunctionComponent<Props> = ({
                                                 flexDirection: 'column',
                                             }}
                                         >
-                                            {item.performed_at}
+                                            {moment(item.performed_at).format(
+                                                'l',
+                                            )}
                                         </div>
                                     )}
                                 </Box>

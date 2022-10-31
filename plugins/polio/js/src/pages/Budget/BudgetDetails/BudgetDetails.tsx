@@ -241,26 +241,33 @@ export const BudgetDetails: FunctionComponent<Props> = ({ router }) => {
                         </Grid>
                     </Grid>
 
-                    <BudgetTimeline
-                        categories={budgetInfos?.timeline?.categories}
-                    />
-                    {!isMobileLayout && (
-                        <BudgetDetailsFilters
-                            params={params}
-                            stepsList={stepsList}
+                    <Box pt={5} pb={5}>
+                        <BudgetTimeline
+                            categories={budgetInfos?.timeline?.categories}
                         />
+                    </Box>
+
+                    {!isMobileLayout && (
+                        <Box pl={5}>
+                            <BudgetDetailsFilters
+                                params={params}
+                                stepsList={stepsList}
+                            />
+                        </Box>
                     )}
 
-                    <InputComponent
-                        type="checkbox"
-                        keyValue="showHidden"
-                        labelString={checkBoxLabel}
-                        onChange={(_keyValue, newValue) => {
-                            setShowHidden(newValue);
-                        }}
-                        value={showHidden}
-                        withMarginTop={false}
-                    />
+                    <Box pl={5}>
+                        <InputComponent
+                            type="checkbox"
+                            keyValue="showHidden"
+                            labelString={checkBoxLabel}
+                            onChange={(_keyValue, newValue) => {
+                                setShowHidden(newValue);
+                            }}
+                            value={showHidden}
+                            withMarginTop={false}
+                        />
+                    </Box>
 
                     {isMobileLayout && (
                         <BudgetDetailsFiltersMobile params={params} />
@@ -278,13 +285,15 @@ export const BudgetDetails: FunctionComponent<Props> = ({ router }) => {
                     )}
                     {!isMobileLayout && (
                         <Grid item xs={12}>
-                            <BudgetDetailsTableLayout
-                                budgetDetails={budgetDetails}
-                                params={params}
-                                columns={columns}
-                                isFetching={isFetching}
-                                resetPageToOne={resetPageToOne}
-                            />
+                            <Box pl={5}>
+                                <BudgetDetailsTableLayout
+                                    budgetDetails={budgetDetails}
+                                    params={params}
+                                    columns={columns}
+                                    isFetching={isFetching}
+                                    resetPageToOne={resetPageToOne}
+                                />
+                            </Box>
                         </Grid>
                     )}
                 </Grid>

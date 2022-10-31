@@ -1,12 +1,14 @@
 import pdb
+import csv
 from random import randint, random
 from django.contrib.contenttypes.models import ContentType
-
+import requests
 from iaso.api.comment import ContentTypeField
 from iaso.models.base import AccountFeatureFlag
 from iaso.models.comment import CommentIaso
 from django.contrib.sites.models import Site
 from iaso.models.device import Device
+from iaso.models.entity import Entity, EntityType
 from iaso.models.microplanning import Planning, Team
 from iaso.models.pages import Page
 from lxml import etree
@@ -60,6 +62,12 @@ class Command(BaseCommand):
 
     def handle(self, *args, **options):
         dhis2_version = options.get("dhis2version")
+
+        response = requests.get(f"http://play.dhis2.org/{dhis2_version}")
+        dhis2_url = response.url.replace("/dhis-web-commons/security/login.action", "")
+        dhis2_version = dhis2_url.split("/")[-1]
+        print("dhis2_version resolved to ", dhis2_version)
+
         mode = options.get("mode")
 
         account, account_created = Account.objects.get_or_create(name="Organisation Name" + dhis2_version)
@@ -258,6 +266,37 @@ class Command(BaseCommand):
 
         project.forms.add(event_tracker_form)
 
+        entity_form, created = Form.objects.get_or_create(
+            form_id="entity_form" + dhis2_version, name="Entity form " + dhis2_version, single_per_period=False
+        )
+
+        entity_form.device_field = "imei"
+        entity_form.possible_fields = [
+            {"name": "What_is_the_father_s_name", "type": "text", "label": "Father's name"},
+            {"name": "What_is_the_child_s_name", "type": "text", "label": "Prénom"},
+        ]
+        entity_form.label_keys = ["What_is_the_child_s_name", "What_is_the_father_s_name"]
+
+        entity_form.label_keys
+        entity_form.save()
+
+        entity_form.org_unit_types.add(orgunit_type)
+        project.forms.add(entity_form)
+
+        entity_form_version = self.seed_form(
+            entity_form,
+            datasource,
+            credentials,
+            xls_file="./testdata/seed-data-command-entity-form.xlsx",
+            xls_xml_file="./testdata/seed-data-command-entity-form.xml",
+        )
+
+        entity_type, created = EntityType.objects.get_or_create(
+            account=account, name="Child", reference_form=entity_form
+        )
+        entity_type.fields_list_view = entity_form.label_keys
+        entity_type.save()
+
         self.project = project
 
         periods = ["201801", "201802", "201803"]
@@ -267,6 +306,8 @@ class Command(BaseCommand):
         if mode == "seed":
             print("******** delete previous instances and plannings")
             print(Planning.objects.filter(org_unit__in=source_version.orgunit_set.all()).delete())
+            print(Instance.objects.filter(org_unit__in=source_version.orgunit_set.all()).update(entity=None))
+            print(Entity.objects.filter(account=account).delete())
             print(Instance.objects.filter(org_unit__in=source_version.orgunit_set.all()).delete())
 
             print("********* Importing orgunits")
@@ -282,6 +323,8 @@ class Command(BaseCommand):
                 force=True,
                 validate=True,
             )
+
+            self.seed_entities(source_version, entity_form, entity_form_version, account, project, entity_type)
 
             self.seed_micro_planning(source_version, dhis2_version, account, project, user)
 
@@ -410,19 +453,20 @@ class Command(BaseCommand):
         mapping_type="AGGREGATE",
         mapping_file=None,
         xls_file="testdata/seed-data-command-form.xlsx",
+        xls_xml_file="./testdata/seed-data-command-form.xml",
     ):
         form_version, created = FormVersion.objects.get_or_create(form=form, version_id=1)
         # don't use uploadedFile in get_or_create, it will end up non unique
         form_version.file = UploadedFile(
             # TODO: use better fixture
-            open("./testdata/seed-data-command-form.xml")
+            open(xls_xml_file)
         )
         form_version.xls_file = UploadedFile(open(xls_file, "rb+"))
 
         form_version.save()
 
         if not mapping_file:
-            return
+            return form_version
 
         mapping_version_name = mapping_type
 
@@ -443,6 +487,46 @@ class Command(BaseCommand):
         mapping_version.json = mapping_version_json
         mapping_version.save()
         return mapping_version
+
+    @transaction.atomic
+    def seed_entities(self, source_version, form, form_version, account, project, entity_type):
+
+        reader = csv.DictReader(open("./testdata/seed-data-command-names.csv"))
+        names = [line for line in reader]
+
+        for org_unit in source_version.orgunit_set.all()[0:1000]:
+            name = names[randint(0, len(names) - 1)]
+            firstname = names[randint(0, len(names) - 1)]
+            entityUuid = str(uuid4())
+            entityTypeId = entity_type.id
+
+            entity, created = Entity.objects.get_or_create(
+                uuid=entityUuid, entity_type_id=entityTypeId, account=account
+            )
+
+            instance = Instance(project=project)
+            instance.created_at = parse_datetime("2018-02-16T11:00:00+00")
+            instance.org_unit = org_unit
+            instance.form = form
+            instance.file_name = "fake_it_until_you_make_it.xml"
+            instance.uuid = str(uuid4())
+            instance.json = {
+                "entityUuid": entityUuid,
+                "entityTypeId": entityTypeId,
+                "What_is_the_child_s_name": name,
+                "What_is_the_father_s_name": firstname,
+            }
+            with_location = randint(1, 3) == 2
+            if with_location:
+                instance.location = Point(-11.7868289 + (2 * random()), 8.4494988 + (2 * random()), 0)
+            instance.entity = entity
+            instance.save()
+            entity.attributes = instance
+            entity.name = " ".join([str(instance.json[k]) for k in form.label_keys])
+            entity.save()
+
+            self.generate_xml_file(instance, form_version)
+            instance.save()
 
     @transaction.atomic
     def seed_instances(self, dhis2_version, source_version, form, periods, mapping_version, fixed_instance_count=None):

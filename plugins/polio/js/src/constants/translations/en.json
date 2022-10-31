@@ -179,6 +179,7 @@
     "iaso.polio.label.emailListLabel": "Configured emails :",
     "iaso.polio.label.emailListTooltip": "Change email list via country configuration",
     "iaso.polio.label.emailNotifyButton": "Notify coordinators by e-mail",
+    "iaso.polio.label.emailWillBeSentTo": "The following teams will be notified by email:",
     "iaso.polio.label.enableSendWeeklyEmail": "Send a weekly e-mail reminder",
     "iaso.polio.label.enterGoogleSheet": "Enter Google Sheet url",
     "iaso.polio.label.enterOrCreateGoogleSheet": "Enter Google Sheet url or use the button to generate a new one",

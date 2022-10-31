@@ -1842,6 +1842,10 @@ const MESSAGES = defineMessages({
         id: 'iaso.polio.label.searchInScopeOrAllDistricts',
         defaultMessage: 'Search districts in scope',
     },
+    emailWillBeSentTo: {
+        id: 'iaso.polio.label.emailWillBeSentTo',
+        defaultMessage: 'The following teams will be notified by email:',
+    },
 });
 
 export default MESSAGES;

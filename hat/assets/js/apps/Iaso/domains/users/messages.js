@@ -164,6 +164,10 @@ const MESSAGES = defineMessages({
         id: 'iaso.permissions.assignments',
         defaultMessage: 'Assignments',
     },
+    iaso_storages: {
+        id: 'iaso.label.storages',
+        defaultMessage: 'Storages',
+    },
     iaso_entities: {
         id: 'iaso.permissions.entities',
         defaultMessage: 'Beneficiaries',

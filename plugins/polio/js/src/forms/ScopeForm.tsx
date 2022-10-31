@@ -21,13 +21,12 @@ type Values = {
     separate_scopes_per_round?: boolean;
     rounds: Round[];
 };
-const styles = makeStyles({ container: { marginBottom: '15px' } });
+
 export const ScopeForm: FunctionComponent = () => {
     const { formatMessage } = useSafeIntl();
     const { values } = useFormikContext<Values>();
     const { separate_scopes_per_round: scopePerRound, rounds } = values;
     const classes: Record<string, string> = useStyles();
-    const styleClasses = styles()
     const sortedRounds = useMemo(
         () =>
             [...rounds]
@@ -61,48 +60,51 @@ export const ScopeForm: FunctionComponent = () => {
 
     return (
         <>
-            <Grid container spacing={2} rowSpacing={4} className={styleClasses.container}>
-                <Grid xs={12} md={3} item>
+            <Grid container spacing={4} justify="space-between" >
+                <Grid xs={12} md={6} item>
                     <Field
                         name="separate_scopes_per_round"
                         component={BooleanInput}
                         label={formatMessage(MESSAGES.scope_per_round)}
                     />
                 </Grid>
-                <Grid xs={12} md={3} item>
-                    <InputComponent
-                        className={styleClasses.inputComponent}
-                        variant="contained"
-                        keyValue="search"
-                        type="search"
-                        onEnterPressed={() => [searchDistricts.current(search), setSearchUpdated(false)]}
-                        withMarginTop={false}
-                        label={MESSAGES.search}
-                        onChange={(key, value) => {
-                            setSearch(value);
-                        }}
-                        value={search}
-                    />
-                </Grid>
-                <Grid xs={6} md={3} item>
-                    <Button
-                        variant="contained"
-                        disabled={!searchUpdated}
-                        color="primary"
-                        onClick={() => [searchDistricts.current(search)]}
-                    >
-                        <Box mr={1} top={3} position="relative">
-                            <FiltersIcon />
-                        </Box>
-                        <FormattedMessage {...MESSAGES.filter} />
-                    </Button>
+
+                <Grid container spacing={3} xs={12} md={5}>
+                    <Grid xs={12} md={6} item>
+                        <InputComponent
+                            variant="contained"
+                            keyValue="search"
+                            type="search"
+                            onEnterPressed={() => [searchDistricts.current(search), setSearchUpdated(false)]}
+                            withMarginTop={false}
+                            label={MESSAGES.search}
+                            onChange={(key, value) => {
+                                setSearch(value);
+                            }}
+                            value={search}
+                        />
+                    </Grid>
+                    <Grid xs={12} md={6} item>
+                        <Button
+                            style={{ marginLeft: "auto" }}
+                            variant="contained"
+                            disabled={!searchUpdated}
+                            color="primary"
+                            onClick={() => [searchDistricts.current(search)]}
+                        >
+                            <Box mr={1} top={3} position="relative">
+                                <FiltersIcon />
+                            </Box>
+                            <FormattedMessage {...MESSAGES.filter} />
+                        </Button>
+                    </Grid>
                 </Grid>
             </Grid>
 
 
 
             {!scopePerRound ? (
-                <Field name="scopes" component={ScopeInput} searchDistricts={searchDistricts}/>
+                <Field name="scopes" component={ScopeInput} searchDistricts={searchDistricts} />
             ) : (
                 <TabContext value={currentTab}>
                     <TabList

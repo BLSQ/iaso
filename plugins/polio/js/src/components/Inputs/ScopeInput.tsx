@@ -279,7 +279,6 @@ export const ScopeInput: FunctionComponent<FieldProps<Scope[], Values>> = ({
                 newScopes.push(scope);
             }
             // Remove org unit from selection if it's part of the scope
-
             if (scope.group.org_units.includes(district.id)) {
                 if (searchValue !== "") {
                     const newFilteredDistricts = filteredDistricts.map(dist => {
@@ -290,11 +289,10 @@ export const ScopeInput: FunctionComponent<FieldProps<Scope[], Values>> = ({
                         return dist;
                     });
                     setFilteredDistricts(newFilteredDistricts);
-                } else {
-                    scope.group.org_units = scope.group.org_units.filter(
-                        OrgUnitId => OrgUnitId !== district.id,
-                    );
                 }
+                scope.group.org_units = scope.group.org_units.filter(
+                    OrgUnitId => OrgUnitId !== district.id,
+                );
             } else {
                 // Remove the orgunit from all the scope in case it's part of another scope
                 newScopes.forEach(s => {
@@ -501,8 +499,8 @@ export const ScopeInput: FunctionComponent<FieldProps<Scope[], Values>> = ({
     }
 
     return (
-        <Grid container spacing={4}>
-            <Grid xs={7} item style={{ marginTop: "25px" }}>
+        <Grid container spacing={4} style={{ marginTop: "2px" }}>
+            <Grid xs={7} item style={{ marginTop: "15px" }}>
                 {isFetching && !districtShapes && <LoadingSpinner />}
                 {!isFetching && !districtShapes && (
                     // FIXME should not be needed

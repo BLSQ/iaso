@@ -183,6 +183,8 @@ export const BudgetDetails: FunctionComponent<Props> = ({ router }) => {
                                                             iconProps={{
                                                                 label: step.label,
                                                                 color: step.color,
+                                                                stepKey:
+                                                                    step.key,
                                                                 disabled:
                                                                     !step.allowed,
                                                             }}

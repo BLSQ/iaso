@@ -1,14 +1,7 @@
 from rest_framework import permissions, serializers
-from django.contrib.auth.models import User
 
-from ..common import ModelViewSet, TimestampField
+from ..common import ModelViewSet, TimestampField, UserSerializer
 from iaso.models import Task
-
-
-class UserSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = User
-        fields = ["first_name", "last_name", "username"]
 
 
 class TaskSerializer(serializers.ModelSerializer):

@@ -1,9 +1,8 @@
 # TODO: need better type annotations in this file
-from datetime import datetime
+
 from typing import Tuple
 
 from django.db.models import Prefetch
-from django.utils.timezone import make_aware
 from rest_framework import viewsets, permissions, serializers, status
 from rest_framework.decorators import action, api_view, permission_classes
 from rest_framework.fields import Field
@@ -13,6 +12,7 @@ from rest_framework.response import Response
 
 from django.core.paginator import Paginator
 
+from hat.api.export_utils import timestamp_to_utc_datetime
 from iaso.models import StorageLogEntry, StorageDevice, Instance, OrgUnit, Entity
 from iaso.api.entity import EntitySerializer
 
@@ -277,9 +277,7 @@ class StorageLogViewSet(CreateModelMixin, viewsets.GenericViewSet):
                 if operation_type not in [c[1] for c in StorageLogEntry.OPERATION_TYPE_CHOICES]:
                     return Response({"error": "Invalid operation type"}, status=400)
 
-                # timestamp in seconds, but it's actually a double so there are 3 decimals with the millis
-                # TODO: refactor this whole method to use a serializer and use our TimestampField instead
-                performed_at = make_aware(datetime.utcfromtimestamp(float(log_data["performed_at"])))
+                performed_at = timestamp_to_utc_datetime(int(log_data["performed_at"]))
 
                 concerned_instances = Instance.objects.filter(uuid__in=log_data["instances"])
 

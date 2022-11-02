@@ -44,7 +44,7 @@ logger = getLogger(__name__)
 
 class UserSerializerForPolio(UserSerializer):
     class Meta(UserSerializer.Meta):
-        fields = UserSerializer.Meta.fields + ["id", "email"]
+        fields = ["id", "username", "first_name", "last_name", "email"]
         ref_name = "polio_user_serializer"
 
 

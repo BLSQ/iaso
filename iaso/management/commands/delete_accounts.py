@@ -11,7 +11,8 @@ from django.db import router
 
 import random
 from django.contrib.admin.utils import NestedObjects
-from iaso.models.base import DataSource, ExternalCredentials, Instance, Mapping
+from iaso.models.base import DataSource, ExternalCredentials, Instance, Mapping, Profile
+from iaso.models.entity import Entity, EntityType
 from iaso.models.forms import Form
 from iaso.models.pages import Page
 from iaso.models.microplanning import Assignment, Team, Planning
@@ -88,6 +89,9 @@ class Command(BaseCommand):
                 for project in projects:
                     forms = Form.objects_include_deleted.filter(projects__account=account)
 
+                    print(Instance.objects.filter(project=project).update(entity=None))
+                    print(Entity.objects.filter(account=account).delete())
+                    print(EntityType.objects.filter(account=account).delete())
                     print(Instance.objects.filter(project=project).delete())
                     print(Mapping.objects.filter(form__in=forms).delete())
                     print(forms.delete())
@@ -96,11 +100,17 @@ class Command(BaseCommand):
                     print(Team.objects.filter(parent__in=Team.objects.filter(project=project)).delete())
                     print(Team.objects.filter(project=project).delete())
                     datasources = project.data_sources.all()
-                    print(project.delete())
                     print(datasources.delete())
+                    print(project.delete())
 
+                profiles = Profile.objects.filter(account=account)
+                for profile in profiles.all():
+                    profile.user.delete()
                 print(Page.objects.filter(account=account).delete())
+                print(profiles.delete())
                 print(account.delete())
+                # uncomment to dry run
+                # raise Exception("don't delete for now")
 
         counts_after = dump_counts()
 

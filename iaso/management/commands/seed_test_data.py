@@ -324,7 +324,7 @@ class Command(BaseCommand):
                 validate=True,
             )
 
-            self.seed_entities(source_version, entity_form, entity_form_version, account, project, entity_type)
+            self.seed_entities(source_version, entity_form, entity_form_version, account, project, entity_type, user)
 
             self.seed_micro_planning(source_version, dhis2_version, account, project, user)
 
@@ -489,8 +489,8 @@ class Command(BaseCommand):
         return mapping_version
 
     @transaction.atomic
-    def seed_entities(self, source_version, form, form_version, account, project, entity_type):
-
+    def seed_entities(self, source_version, form, form_version, account, project, entity_type, user):
+        print("********* seeding entities")
         reader = csv.DictReader(open("./testdata/seed-data-command-names.csv"))
         names = [line for line in reader]
 
@@ -510,11 +510,13 @@ class Command(BaseCommand):
             instance.form = form
             instance.file_name = "fake_it_until_you_make_it.xml"
             instance.uuid = str(uuid4())
+            instance.created_by = user
             instance.json = {
                 "entityUuid": entityUuid,
                 "entityTypeId": entityTypeId,
-                "What_is_the_child_s_name": name,
-                "What_is_the_father_s_name": firstname,
+                "What_is_the_child_s_name": name["name"],
+                "What_is_the_father_s_name": firstname["name"],
+                "_version": str(1),
             }
             with_location = randint(1, 3) == 2
             if with_location:
@@ -666,8 +668,8 @@ class Command(BaseCommand):
                 child.text = str(instance.json[k])
                 root.append(child)
 
-        root.attrib["version"] = form_version.version_id
-        root.attrib["id"] = form_version.form.form_id
+        root.attrib["version"] = str(form_version.version_id)
+        root.attrib["id"] = str(form_version.form.form_id)
 
         # generate <meta><instanceID>uuid:3679c645-24ec-4860-93ea-fce1d068b58f</instanceID></meta>
         meta = etree.Element("meta")

@@ -78,16 +78,7 @@ export const useGetBudgetForCampaign = (
     return useSnackQuery({
         queryFn: () => getBudgetForCampaign(id, params),
         queryKey: ['budget', 'campaign', id],
-        options: {
-            enabled: Boolean(id),
-            select: (data: Partial<Budget>) => {
-                const newData = {
-                    ...data,
-                };
-
-                return newData;
-            },
-        },
+        options: { enabled: Boolean(id) },
     });
 };
 
@@ -116,5 +107,3 @@ export const useGetWorkflowStatesForDropdown = (): UseQueryResult<
         },
     });
 };
-
-export const useGetBudgetTimeline = () => {};

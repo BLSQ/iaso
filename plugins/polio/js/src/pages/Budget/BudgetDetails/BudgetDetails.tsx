@@ -241,11 +241,22 @@ export const BudgetDetails: FunctionComponent<Props> = ({ router }) => {
                         </Grid>
                     </Grid>
 
-                    <Box pt={5} pb={5}>
-                        <BudgetTimeline
-                            categories={budgetInfos?.timeline?.categories}
-                        />
-                    </Box>
+                    {!isMobileLayout && (
+                        <Box pt={5} pb={5}>
+                            <BudgetTimeline
+                                categories={budgetInfos?.timeline?.categories}
+                            />
+                        </Box>
+                    )}
+
+                    {isMobileLayout && (
+                        <Box pt={5} pb={5}>
+                            <BudgetTimeline
+                                categories={budgetInfos?.timeline?.categories}
+                                orientation="vertical"
+                            />
+                        </Box>
+                    )}
 
                     {!isMobileLayout && (
                         <Box pl={5}>

@@ -1,14 +1,28 @@
+"""
+The completeness stats API endpoint.
+
+This endpoint is used to display the completeness stats in the dashboard. Completeness data is a list rows, each row
+for a given form in a given orgunit.
+
+This one is planned to become a "default" and be reused, not to be confused with the more specialized preexisting
+completeness API.
+"""
+
+# TODO: clarify permissions: new iaso_completeness_stats permission?
+# TODO: clarify with FE what's needed in terms of pagination
+# TODO: clarify with FE what's needed in terms of sorting
+
 from rest_framework import viewsets, permissions
 from rest_framework.response import Response
 
 from .common import HasPermission
-from iaso.models import Instance, OrgUnit, Form
+from iaso.models import OrgUnit, Form
 
 
 class CompletenessStatsViewSet(viewsets.ViewSet):
     """Completeness Stats API"""
 
-    permission_classes = [permissions.IsAuthenticated, HasPermission("menupermissions.iaso_completeness")]  # type: ignore
+    permission_classes = [permissions.IsAuthenticated, HasPermission("menupermissions.iaso_completeness_stats")]  # type: ignore
 
     def list(self, request):
         org_unit_type = None
@@ -40,7 +54,7 @@ class CompletenessStatsViewSet(viewsets.ViewSet):
 
         res = []
         for ou in top_ous:
-            for form in form_qs:  # forms:
+            for form in form_qs:
                 form = Form.objects.get(id=form.id)
 
                 ou_types = form.org_unit_types.all()

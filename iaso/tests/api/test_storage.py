@@ -160,7 +160,7 @@ class StorageAPITestCase(APITestCase):
         the_log_entry = the_storage.log_entries.first()
         self.assertEqual(str(the_log_entry.id), "123e4567-e89b-12d3-a456-426614174000")
         self.assertEqual(the_log_entry.operation_type, "WRITE_PROFILE")
-        self.assertEqual(str(the_log_entry.performed_at), "2022-10-17 10:32:19.171000+00:00")
+        self.assertEqual(str(the_log_entry.performed_at), "2022-10-17 10:32:19+00:00")
         self.assertEqual(the_log_entry.performed_by, self.yoda)
         self.assertQuerysetEqual(the_log_entry.instances.all(), [self.instance1, self.instance2], ordered=False)
         self.assertEqual(the_log_entry.org_unit, self.org_unit)

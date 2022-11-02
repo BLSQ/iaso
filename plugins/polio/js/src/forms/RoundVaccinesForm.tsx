@@ -2,6 +2,8 @@ import React, {
     FunctionComponent,
     useCallback,
     useEffect,
+    useMemo,
+    useRef,
     useState,
 } from 'react';
 import { useFormikContext } from 'formik';
@@ -24,7 +26,7 @@ const DEFAULT_DELAY_REGION = 7;
 const DEFAULT_WASTAGE_RATIOS = {
     mOPV2: 1.15,
     nOPV2: 1.33,
-    bOPV2: 1.18,
+    bOPV: 1.18,
 };
 
 const DEFAULT_DOSES_PER_VIAL = 50;
@@ -49,6 +51,8 @@ export const RoundVaccinesForm: FunctionComponent<Props> = ({
     const RegionDelay = rounds[roundIndex]?.reporting_delays_region_to_national;
 
     const { vaccines = [] } = round ?? {};
+    // use Ref to tack changes in selected vaccine
+    const vaccinesRef = useRef<any>();
 
     const lastIndex = vaccines.length >= 1 && vaccines.length - 1;
 
@@ -62,6 +66,12 @@ export const RoundVaccinesForm: FunctionComponent<Props> = ({
         newVaccines.pop();
         setFieldValue(`rounds[${roundIndex}].vaccines`, newVaccines);
     }, [roundIndex, setFieldValue, vaccines]);
+
+    const vaccineOptions = useMemo(() => {
+        return polioVaccines.filter(
+            pv => !vaccines.find(vaccine => vaccine.name === pv.value),
+        );
+    }, [vaccines]);
 
     // determine whether to show delete button or not
     useEffect(() => {
@@ -127,50 +137,21 @@ export const RoundVaccinesForm: FunctionComponent<Props> = ({
     // Fill in wastage ratio with default value for vaccine when adding vaccine
     useEffect(() => {
         vaccines.forEach((vaccine, index) => {
-            const wastageRatio =
-                rounds[roundIndex].vaccines[index].wastage_ratio_forecast;
-            // I'm sorry for this, I really had to null check this value
-            const isTouched = Boolean(
-                // @ts-ignore
-                ((touched?.rounds ?? [])[roundIndex]?.vaccines ?? [])[index]
-                    ?.wastage_ratio_forecast,
-            );
-            if (!wastageRatio && vaccine?.name && !isTouched) {
+            if (vaccine?.name !== vaccinesRef?.current?.[index]?.name) {
+                vaccine?.name;
                 setFieldValue(
                     `rounds[${roundIndex}].vaccines[${index}].wastage_ratio_forecast`,
                     DEFAULT_WASTAGE_RATIOS[vaccine.name],
                 );
             }
-        });
-    }, [
-        roundIndex,
-        rounds,
-        setFieldValue,
-        // @ts-ignore
-        touched.rounds,
-        vaccines,
-        vaccines.length,
-    ]);
-
-    // Fill in number of doses with default value when adding vaccine
-    useEffect(() => {
-        vaccines.forEach((vaccine, index) => {
-            const dosesPerVial =
-                rounds[roundIndex].vaccines[index].doses_per_vial;
-            // I'm sorry for this, I really had to null check this value
-            const isTouched = Boolean(
-                // @ts-ignore
-                ((touched?.rounds ?? [])[roundIndex]?.vaccines ?? [])[index]
-                    ?.doses_per_vial,
-            );
-            // checking on vaccine.name so default values apply when vaccine is selected
-            if (!dosesPerVial && vaccine?.name && !isTouched) {
+            if (vaccine?.name !== vaccinesRef?.current?.[index]?.name) {
                 setFieldValue(
                     `rounds[${roundIndex}].vaccines[${index}].doses_per_vial`,
                     DEFAULT_DOSES_PER_VIAL,
                 );
             }
         });
+        vaccinesRef.current = vaccines;
     }, [
         roundIndex,
         rounds,
@@ -215,7 +196,7 @@ export const RoundVaccinesForm: FunctionComponent<Props> = ({
                             key={`vaccine${index}`}
                             vaccineIndex={index}
                             roundIndex={roundIndex}
-                            vaccineOptions={polioVaccines}
+                            vaccineOptions={vaccineOptions}
                         />
                     );
                 })}
@@ -224,7 +205,7 @@ export const RoundVaccinesForm: FunctionComponent<Props> = ({
                 <RoundVaccineForm
                     vaccineIndex={0}
                     roundIndex={roundIndex}
-                    vaccineOptions={polioVaccines}
+                    vaccineOptions={vaccineOptions}
                 />
             )}
 

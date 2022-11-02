@@ -1,24 +1,19 @@
-import { Box, makeStyles } from '@material-ui/core';
+import { Box, makeStyles, Divider } from '@material-ui/core';
 import React, { FunctionComponent, useState, useEffect } from 'react';
 // @ts-ignore
 // import { useSafeIntl } from 'bluesquare-components';
-// import classnames from 'classnames';
-import Stepper from '@material-ui/core/Stepper';
+import classnames from 'classnames';
+import Stepper, { Orientation } from '@material-ui/core/Stepper';
 import Step from '@material-ui/core/Step';
 import StepLabel from '@material-ui/core/StepLabel';
 import { CheckBox, CheckBoxOutlineBlank } from '@material-ui/icons';
 // import MESSAGES from '../../../constants/messages';
 import moment from 'moment';
 import { Categories } from '../types';
-import {
-    BUDGET_COMPLETED_COLOR,
-    BUDGET_PENDING_COLOR,
-    BUDGET_INACTIVE_COLOR,
-} from '../../../styles/constants';
 
 type Props = {
     categories?: Categories;
-    orientation?: string;
+    orientation?: Orientation;
 };
 
 const useStyles = makeStyles(theme => ({
@@ -28,49 +23,58 @@ const useStyles = makeStyles(theme => ({
             paddingLeft: 0,
             paddingRight: 0,
         },
-        '& .MuiStepConnector-lineHorizontal': {
-            borderTopWidth: '12px',
-            borderColor: 'grey',
-        },
         '& .MuiBox-root': {
             alignItems: 'flex-start',
+        },
+        '& .MuiStepConnector-lineHorizontal': {
+            borderTopWidth: '4px',
         },
     },
     step: {
         display: 'flex',
         flexDirection: 'column',
         alignItems: 'center',
-        backgroundColor: 'red',
     },
-    item: {
-        marginTop: '20px',
+    checkboxWrapper: {
         display: 'flex',
-        flexDirection: 'column',
-        alignItems: 'flex-start',
+        alignItems: 'center',
     },
-    stepPending: {
-        '& .MuiStepConnector-lineHorizontal': {
-            borderColor: BUDGET_PENDING_COLOR,
-        },
+    checkbox: {
+        transform: 'scale(0.85)',
+    },
+    itemLabel: {
+        fontSize: '0.82rem',
+    },
+    date: {
+        paddingLeft: '1.5rem',
+    },
+    divider: {
+        height: '30px',
+        backgroundColor: theme.palette.gray.main,
     },
     stepCompleted: {
-        '& .MuiStepConnector-lineHorizontal': {
-            borderColor: BUDGET_COMPLETED_COLOR,
+        '& + div .MuiStepConnector-lineHorizontal': {
+            borderColor: theme.palette.success.main,
+        },
+    },
+    stepActive: {
+        '& + div .MuiStepConnector-lineHorizontal': {
+            borderColor: theme.palette.success.background,
         },
     },
     stepInactive: {
-        '& .MuiStepConnector-lineHorizontal': {
-            borderColor: BUDGET_INACTIVE_COLOR,
+        '& + div .MuiStepConnector-lineHorizontal': {
+            borderColor: theme.palette.gray.main,
         },
     },
 }));
 
-const getClassName = category => {
-    switch (category.completed) {
-        case true:
+const getColor = category => {
+    switch (category.color) {
+        case 'lightgreen':
+            return 'stepActive';
+        case 'green':
             return 'stepCompleted';
-        case false:
-            return 'stepPending';
         default:
             return 'stepInactive';
     }
@@ -105,47 +109,42 @@ export const BudgetTimeline: FunctionComponent<Props> = ({
             >
                 {categories?.map(category => (
                     <Step
-                        style={{
-                            display: 'flex',
-                            flexDirection: 'column',
-                            alignItems: 'center',
-                        }}
-                        className={classes[getClassName(category)]}
+                        className={classnames(
+                            classes[getColor(category)],
+                            classes.step,
+                        )}
                         key={category.key}
                         completed={category.completed}
                         active={category.active}
                     >
                         <StepLabel>{category.label}</StepLabel>
-                        <Box className={classes.item}>
-                            {category.items.map(item => (
-                                <Box
-                                    display="flex"
-                                    alignItems="center"
-                                    justifyContent="flex-start"
-                                    flexDirection="column"
-                                >
-                                    <div
-                                        style={{
-                                            display: 'flex',
-                                            alignItems: 'center',
-                                        }}
-                                    >
-                                        {' '}
-                                        {item.performed_by ? (
-                                            <CheckBox color="primary" />
-                                        ) : (
-                                            <CheckBoxOutlineBlank />
-                                        )}
-                                        <div>{item.label}</div>
-                                    </div>
+                        <Box display="flex" justifyContent="center">
+                            <Divider
+                                orientation="vertical"
+                                className={classes.divider}
+                            />
+                        </Box>
 
+                        <Box>
+                            {category.items.map(item => (
+                                <Box mb={1}>
+                                    <div className={classes.checkboxWrapper}>
+                                        {item.performed_by ? (
+                                            <CheckBox
+                                                color="primary"
+                                                className={classes.checkbox}
+                                            />
+                                        ) : (
+                                            <CheckBoxOutlineBlank
+                                                className={classes.checkbox}
+                                            />
+                                        )}
+                                        <div className={classes.itemLabel}>
+                                            {item.label}
+                                        </div>
+                                    </div>
                                     {item.performed_at && (
-                                        <div
-                                            style={{
-                                                display: 'flex',
-                                                flexDirection: 'column',
-                                            }}
-                                        >
+                                        <div className={classes.date}>
                                             {moment(item.performed_at).format(
                                                 'l',
                                             )}

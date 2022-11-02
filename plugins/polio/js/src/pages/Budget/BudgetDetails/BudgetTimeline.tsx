@@ -6,11 +6,7 @@ import React, { FunctionComponent, useState, useEffect } from 'react';
 import Stepper from '@material-ui/core/Stepper';
 import Step from '@material-ui/core/Step';
 import StepLabel from '@material-ui/core/StepLabel';
-import {
-    CheckBox,
-    CheckBoxOutlineBlank,
-    ContactSupportOutlined,
-} from '@material-ui/icons';
+import { CheckBox, CheckBoxOutlineBlank } from '@material-ui/icons';
 // import MESSAGES from '../../../constants/messages';
 import moment from 'moment';
 import { Categories } from '../types';
@@ -22,6 +18,7 @@ import {
 
 type Props = {
     categories?: Categories;
+    orientation?: string;
 };
 
 const useStyles = makeStyles(theme => ({
@@ -81,6 +78,7 @@ const getClassName = category => {
 
 export const BudgetTimeline: FunctionComponent<Props> = ({
     categories = [],
+    orientation,
 }) => {
     const [activeStep, setActiveStep] = useState(0);
     const classes = useStyles();
@@ -99,7 +97,12 @@ export const BudgetTimeline: FunctionComponent<Props> = ({
 
     return (
         <>
-            <Stepper classes={classes} activeStep={activeStep} alternativeLabel>
+            <Stepper
+                classes={classes}
+                activeStep={activeStep}
+                alternativeLabel
+                orientation={orientation}
+            >
                 {categories?.map(category => (
                     <Step
                         style={{

@@ -107,14 +107,12 @@ export const useGetDetailsColumns = (): Array<Column> => {
         {
             Header: formatMessage(MESSAGES.date),
             id: 'performed_at',
-            sortable: false,
             accessor: 'performed_at',
             Cell: DateTimeCell,
         },
         {
             Header: formatMessage(MESSAGES.operationType),
             accessor: 'operation_type',
-            sortable: false,
             id: 'operation_type',
             Cell: settings =>
                 getOparationTypeLabel(settings.row.original.operation_type),
@@ -122,7 +120,6 @@ export const useGetDetailsColumns = (): Array<Column> => {
         {
             Header: formatMessage(MESSAGES.location),
             accessor: 'org_unit__name',
-            sortable: false,
             id: 'org_unit__name',
             Cell: settings => (
                 <LinkToOrgUnit orgUnit={settings.row.original.org_unit} />
@@ -130,7 +127,6 @@ export const useGetDetailsColumns = (): Array<Column> => {
         },
         {
             Header: formatMessage(MESSAGES.entity),
-            sortable: false,
             accessor: 'entity__name',
             id: 'entity__name',
             Cell: settings => (

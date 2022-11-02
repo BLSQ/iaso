@@ -48,6 +48,9 @@ export type Storage = {
     logs?: Array<Log>;
     org_unit: ShortOrgUnit;
 };
+export interface PaginatedStorage extends Pagination {
+    results: Storage;
+}
 
 export type Storages = Array<Storage>;
 

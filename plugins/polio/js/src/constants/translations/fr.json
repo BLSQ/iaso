@@ -183,6 +183,7 @@
     "iaso.polio.label.emailListLabel": "Destinataires configurés:",
     "iaso.polio.label.emailListTooltip": "La liste d'email est configurable sur les pays",
     "iaso.polio.label.emailNotifyButton": "Notifier les coordinateurs par courriel",
+    "iaso.polio.label.emailWillBeSentTo": "Les équipes suivantes seront notifiées par email:",
     "iaso.polio.label.enableSendWeeklyEmail": "Envoyer un rappel hebdomadaire par courriel",
     "iaso.polio.label.enterGoogleSheet": "Entrer l'url de la Google Sheet",
     "iaso.polio.label.enterOrCreateGoogleSheet": "Entrer un url de Google Sheet ou utiliser le bouton pour générer une nouvelle Google sheet",

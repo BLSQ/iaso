@@ -48,21 +48,18 @@ export type Storage = {
     logs?: Array<Log>;
     org_unit: ShortOrgUnit;
 };
+export interface PaginatedStorage extends Pagination {
+    results: Storage;
+}
 
 export type Storages = Array<Storage>;
 
 export interface StoragePaginated extends Pagination {
     results: Storages;
 }
-export type StorageDetailsFilterParams = {
-    performedAt?: string;
+export type StorageDetailsParams = Pagination & {
+    type: string;
     storageId: string;
-    search?: string;
+    operationType?: string;
+    performedAt?: string;
 };
-export type StorageDetailsParams = UrlParams &
-    StorageDetailsFilterParams & {
-        select?: (
-            // eslint-disable-next-line no-unused-vars
-            data: Array<Storage>,
-        ) => Array<any>;
-    };

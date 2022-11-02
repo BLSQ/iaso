@@ -12,13 +12,18 @@ import { LinkToOrgUnit } from '../orgUnits/components/LinkToOrgUnit';
 import { DateTimeCell } from '../../components/Cells/DateTimeCell';
 import { StatusCell } from './components/StatusCell';
 import { LinkToEntity } from './components/LinkToEntity';
+import { LinkToInstance } from '../instances/components/LinkToInstance';
 
 import { IntlFormatMessage } from '../../types/intl';
 import { Column } from '../../types/table';
 import { baseUrls } from '../../constants/urls';
 import { StorageParams } from './types/storages';
 
+import getDisplayName from '../../utils/usersUtils';
+
 import { useGetOperationsTypesLabel } from './hooks/useGetOperationsTypes';
+import { useGetReasons } from './hooks/useGetReasons';
+import { useGetStatus } from './hooks/useGetStatus';
 
 export const defaultSorted = [{ id: 'updated_at', desc: false }];
 
@@ -103,6 +108,8 @@ export const useGetDetailsColumns = (): Array<Column> => {
     const { formatMessage }: { formatMessage: IntlFormatMessage } =
         useSafeIntl();
     const getOparationTypeLabel = useGetOperationsTypesLabel();
+    const reasons = useGetReasons();
+    const statusList = useGetStatus();
     return [
         {
             Header: formatMessage(MESSAGES.date),
@@ -111,11 +118,80 @@ export const useGetDetailsColumns = (): Array<Column> => {
             Cell: DateTimeCell,
         },
         {
+            Header: formatMessage(MESSAGES.user),
+            id: 'performed_by',
+            accessor: 'performed_by',
+            Cell: settings =>
+                getDisplayName(settings.row.original.performed_by),
+        },
+        {
             Header: formatMessage(MESSAGES.operationType),
             accessor: 'operation_type',
             id: 'operation_type',
             Cell: settings =>
                 getOparationTypeLabel(settings.row.original.operation_type),
+        },
+        {
+            Header: formatMessage(MESSAGES.status),
+            accessor: 'status',
+            id: 'status',
+            Cell: settings => {
+                const log = settings.row.original;
+                if (log.operation_type === 'CHANGE_STATUS' && log.status) {
+                    const status = statusList.find(
+                        stat => stat.value === log.status,
+                    );
+                    return status?.label || '-';
+                }
+                return '-';
+            },
+        },
+        {
+            Header: formatMessage(MESSAGES.reason),
+            accessor: 'status_reason',
+            id: 'status_reason',
+            Cell: settings => {
+                const log = settings.row.original;
+                if (
+                    log.operation_type === 'CHANGE_STATUS' &&
+                    log.status === 'BLACKLISTED'
+                ) {
+                    const reason = reasons.find(
+                        reas => reas.value === log.status_reason,
+                    );
+                    return reason?.label || '-';
+                }
+                return '-';
+            },
+        },
+        {
+            Header: formatMessage(MESSAGES.comment),
+            accessor: 'status_comment',
+            id: 'status_comment',
+            Cell: settings => {
+                const log = settings.row.original;
+                if (log.operation_type === 'CHANGE_STATUS') {
+                    return log.status_comment && log.status_comment !== ''
+                        ? log.status_comment
+                        : '-';
+                }
+                return '-';
+            },
+        },
+        {
+            Header: formatMessage(MESSAGES.submissions),
+            accessor: 'instances',
+            id: 'instances',
+            Cell: settings => {
+                const { instances } = settings.row.original;
+                if (instances.length === 0) return '-';
+                return instances.map((instanceId, index) => (
+                    <span key={instanceId}>
+                        <LinkToInstance instanceId={instanceId} />
+                        {index + 1 < instances.length && ', '}
+                    </span>
+                ));
+            },
         },
         {
             Header: formatMessage(MESSAGES.location),

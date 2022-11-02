@@ -137,14 +137,20 @@ export const RoundVaccinesForm: FunctionComponent<Props> = ({
     // Fill in wastage ratio with default value for vaccine when adding vaccine
     useEffect(() => {
         vaccines.forEach((vaccine, index) => {
-            if (vaccine?.name !== vaccinesRef?.current?.[index]?.name) {
+            if (
+                vaccinesRef.current &&
+                vaccine?.name !== vaccinesRef?.current?.[index]?.name
+            ) {
                 vaccine?.name;
                 setFieldValue(
                     `rounds[${roundIndex}].vaccines[${index}].wastage_ratio_forecast`,
                     DEFAULT_WASTAGE_RATIOS[vaccine.name],
                 );
             }
-            if (vaccine?.name !== vaccinesRef?.current?.[index]?.name) {
+            if (
+                vaccinesRef.current &&
+                vaccine?.name !== vaccinesRef?.current?.[index]?.name
+            ) {
                 setFieldValue(
                     `rounds[${roundIndex}].vaccines[${index}].doses_per_vial`,
                     DEFAULT_DOSES_PER_VIAL,

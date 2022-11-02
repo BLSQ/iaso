@@ -43,7 +43,7 @@ export const RoundVaccineForm: FunctionComponent<Props> = ({
         // @ts-ignore
         values: { rounds },
     } = useFormikContext();
-    const { vaccines } = rounds[roundIndex];
+    const { vaccines = [] } = rounds[roundIndex] ?? {};
     const selectedVaccine = vaccines[vaccineIndex];
     const classes: Record<string, string> = useStyles();
     const accessor = `rounds[${roundIndex}].vaccines[${vaccineIndex}]`;

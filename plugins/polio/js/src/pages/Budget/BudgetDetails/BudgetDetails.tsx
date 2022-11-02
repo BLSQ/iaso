@@ -69,7 +69,7 @@ export const BudgetDetails: FunctionComponent<Props> = ({ router }) => {
 
     const theme = useTheme();
     const isMobileLayout = useMediaQuery(theme.breakpoints.down('md'));
-
+    const isTabletOrDesktopLayout = useMediaQuery(theme.breakpoints.up('sm'));
     const { data: budgetDetails, isFetching } = useGetBudgetDetails(apiParams);
 
     const previousBudgetStep = useMemo(() => {
@@ -247,19 +247,10 @@ export const BudgetDetails: FunctionComponent<Props> = ({ router }) => {
                         </Grid>
                     </Grid>
 
-                    {!isMobileLayout && (
+                    {isTabletOrDesktopLayout && (
                         <Box pt={5} pb={5}>
                             <BudgetTimeline
                                 categories={budgetInfos?.timeline?.categories}
-                            />
-                        </Box>
-                    )}
-
-                    {isMobileLayout && (
-                        <Box pt={5} pb={5}>
-                            <BudgetTimeline
-                                categories={budgetInfos?.timeline?.categories}
-                                orientation="vertical"
                             />
                         </Box>
                     )}

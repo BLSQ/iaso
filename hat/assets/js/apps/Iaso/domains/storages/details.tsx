@@ -18,6 +18,7 @@ import { redirectToReplace } from '../../routing/actions';
 import { baseUrls } from '../../constants/urls';
 
 import WidgetPaper from '../../components/papers/WidgetPaperComponent';
+import { LogsFilters } from './components/LogsFilters';
 
 import { StorageDetailsParams } from './types/storages';
 import { useGetStorageLogs } from './hooks/requests/useGetStorageLogs';
@@ -45,6 +46,7 @@ const useStyles = makeStyles(theme => ({
 export const Details: FunctionComponent<Props> = ({ params, router }) => {
     const { formatMessage } = useSafeIntl();
     const { data, isFetching } = useGetStorageLogs(params);
+
     const storageDetail = data?.results;
 
     const classes: Record<string, string> = useStyles();
@@ -83,6 +85,7 @@ export const Details: FunctionComponent<Props> = ({ params, router }) => {
                         title={formatMessage(MESSAGES.logs)}
                     >
                         <Box mb={-4} position="relative">
+                            <LogsFilters params={params} />
                             <TableWithDeepLink
                                 marginTop={false}
                                 countOnTop={false}

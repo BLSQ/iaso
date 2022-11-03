@@ -10,6 +10,8 @@ export const getUrlParamDateObject = (
 ): moment.Moment => {
     return moment(date, dateFormat);
 };
+// this is the date time format used in api calls
+export const apiTimeFormat = 'HH:mm';
 
 // this is the date time format used in api calls
 export const apiDateTimeFormat = 'YYYY-MM-DD HH:mm';

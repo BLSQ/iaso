@@ -3,7 +3,7 @@ from uuid import uuid4
 
 from django.contrib.auth.models import User, AnonymousUser
 from django.db import models
-from django.db.models import Count, Manager
+from django.db.models import Count, Manager, Q
 import django.db.models.manager
 
 from django.utils.translation import gettext as _
@@ -195,7 +195,7 @@ class CampaignQuerySet(models.QuerySet):
             # Restrict Campaign to the OrgUnit on the country he can access
             if user.iaso_profile.org_units.count():
                 org_units = OrgUnit.objects.hierarchy(user.iaso_profile.org_units.all())
-                qs = qs.filter(initial_org_unit__in=org_units)
+                qs = qs.filter(Q(country__in=org_units) | Q(initial_org_unit__in=org_units))
         return qs
 
 

@@ -39,9 +39,6 @@ type Props = {
     onSearch: () => void;
     // eslint-disable-next-line no-unused-vars
     onChangeColor: (color: string, index: number) => void;
-    filtersUpdated: boolean;
-    // eslint-disable-next-line no-unused-vars
-    setFiltersUpdated: (isUpdated: boolean) => void;
     setSearches: React.Dispatch<React.SetStateAction<[Search]>>;
     currentTab: string;
     params: OrgUnitParams;
@@ -71,8 +68,6 @@ export const OrgUnitFilters: FunctionComponent<Props> = ({
     onSearch,
     onChangeColor,
     setTextSearchError,
-    filtersUpdated,
-    setFiltersUpdated,
     setSearches,
     currentTab,
     params,
@@ -104,9 +99,6 @@ export const OrgUnitFilters: FunctionComponent<Props> = ({
         sourceVersionId,
     });
     const handleChange = (key, value) => {
-        if (!filtersUpdated) {
-            setFiltersUpdated(true);
-        }
         if (key === 'version') {
             setSourceVersionId(parseInt(value, 10));
         }

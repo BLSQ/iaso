@@ -3,7 +3,7 @@ import React, { FunctionComponent, useState, useEffect } from 'react';
 // @ts-ignore
 // import { useSafeIntl } from 'bluesquare-components';
 import classnames from 'classnames';
-import Stepper, { Orientation } from '@material-ui/core/Stepper';
+import Stepper from '@material-ui/core/Stepper';
 import Step from '@material-ui/core/Step';
 import StepLabel from '@material-ui/core/StepLabel';
 import { CheckBox, CheckBoxOutlineBlank } from '@material-ui/icons';
@@ -13,7 +13,6 @@ import { Categories } from '../types';
 
 type Props = {
     categories?: Categories;
-    orientation?: Orientation;
 };
 
 const useStyles = makeStyles(theme => ({
@@ -82,7 +81,6 @@ const getColor = category => {
 
 export const BudgetTimeline: FunctionComponent<Props> = ({
     categories = [],
-    orientation,
 }) => {
     const [activeStep, setActiveStep] = useState(0);
     const classes = useStyles();
@@ -101,12 +99,7 @@ export const BudgetTimeline: FunctionComponent<Props> = ({
 
     return (
         <>
-            <Stepper
-                classes={classes}
-                activeStep={activeStep}
-                alternativeLabel
-                orientation={orientation}
-            >
+            <Stepper classes={classes} activeStep={activeStep} alternativeLabel>
                 {categories?.map(category => (
                     <Step
                         className={classnames(

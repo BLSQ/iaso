@@ -1,7 +1,10 @@
+# TODO: check: shouldn't this file be under the "api" subdirectory?
+# TODO: it would be cleaner if tests for the get operations would create the objects they need directly in the database,
+#  rather than making POST calls
+
+import time
 import uuid
 from unittest import mock
-
-from django.core.files import File
 
 from iaso import models as m
 from iaso.models import EntityType, Instance, Entity
@@ -208,6 +211,57 @@ class EntityAPITestCase(APITestCase):
 
         self.assertEqual(response.status_code, 200)
 
+    def test_get_entity_search_filter(self):
+        """
+        Test the 'search' filter of /api/entity
+
+        This parameter allows to filter either by name, UUID or attributes (of the reference form)
+        """
+        self.client.force_authenticate(self.yoda)
+
+        # Let's first create the test data
+        entity_type = EntityType.objects.create(name="Type 1", reference_form=self.form_1)
+
+        instance = Instance.objects.create(
+            org_unit=self.jedi_council_corruscant,
+            form=self.form_1,
+            period="202002",
+            json={"name": "c", "age": 30, "gender": "F"},
+        )
+
+        payload = {
+            "name": "New Client",
+            "entity_type": entity_type.pk,
+            "attributes": instance.uuid,
+            "account": self.yoda.iaso_profile.account.pk,
+        }
+
+        self.client.post("/api/entity/", data=payload, format="json")
+
+        newly_added_entity = Entity.objects.last()
+
+        # Case 1: search by entity name
+        response = self.client.get("/api/entity/?search=Client", format="json")
+        self.assertEqual(len(response.json()["result"]), 1)
+        the_result = response.json()["result"][0]
+        self.assertEqual(the_result["id"], newly_added_entity.id)
+
+        # Case 2: search by entity name - make sure it's case-insensitive
+        response = self.client.get("/api/entity/?search=cLiEnT", format="json")
+        self.assertEqual(len(response.json()["result"]), 1)
+        the_result = response.json()["result"][0]
+        self.assertEqual(the_result["id"], newly_added_entity.id)
+
+        # Case 3: search by entity UUID
+        response = self.client.get(f"/api/entity/?search={newly_added_entity.uuid}", format="json")
+        self.assertEqual(len(response.json()["result"]), 1)
+        self.assertEqual(the_result["id"], newly_added_entity.id)
+
+        # Case 4: search by JSON attribute
+        response = self.client.get(f"/api/entity/?search=age", format="json")
+        self.assertEqual(len(response.json()["result"]), 1)
+        self.assertEqual(the_result["id"], newly_added_entity.id)
+
     def test_get_entity_by_id(self):
         self.client.force_authenticate(self.yoda)
 
@@ -356,6 +410,7 @@ class EntityAPITestCase(APITestCase):
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(response.json()["result"]), 1)
 
+    @mock.patch("iaso.api.entity.gmtime", lambda: time.struct_time((2021, 7, 18, 14, 57, 0, 1, 291, 0)))
     def test_export_entity(self):
         self.client.force_authenticate(self.yoda)
         entity_type = EntityType.objects.create(
@@ -394,22 +449,24 @@ class EntityAPITestCase(APITestCase):
         # export all entities type as csv
         response = self.client.get("/api/entity/?csv=true/")
         self.assertEqual(response.status_code, 200)
-        self.assertEquals(response.get("Content-Disposition"), "attachment; filename=NEW CLIENT_ENTITY.csv")
+        self.assertEquals(response.get("Content-Disposition"), "attachment; filename=entities-2021-07-18-14-57.csv")
 
         # export all entities type as xlsx
         response = self.client.get("/api/entity/?xlsx=true/")
         self.assertEqual(response.status_code, 200)
-        self.assertEquals(response.get("Content-Disposition"), "attachment; filename=NEW CLIENT_ENTITY.xlsx")
+        self.assertEquals(response.get("Content-Disposition"), "attachment; filename=entities-2021-07-18-14-57.xlsx")
 
         # export specific entity type as xlsx
         response = self.client.get(f"/api/entity/?entity_type_ids={entity_type.pk}&xlsx=true/")
         self.assertEqual(response.status_code, 200)
-        self.assertEquals(response.get("Content-Disposition"), "attachment; filename=NEW CLIENT_ENTITY.xlsx")
+        self.assertEquals(response.get("Content-Disposition"), "attachment; filename=entities-2021-07-18-14-57.xlsx")
 
         # export specific entity type as csv
         response = self.client.get(f"/api/entity/?entity_type_ids={entity_type.pk}&csv=true/")
         self.assertEqual(response.status_code, 200)
-        self.assertEquals(response.get("Content-Disposition"), "attachment; filename=NEW CLIENT_ENTITY.csv")
+        self.assertEquals(response.get("Content-Disposition"), "attachment; filename=entities-2021-07-18-14-57.csv")
+
+        # TODO: we should also check the content of the files
 
     def test_handle_export_entity_type_empty_field_list(self):
         self.client.force_authenticate(self.yoda)

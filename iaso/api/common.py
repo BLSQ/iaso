@@ -1,13 +1,15 @@
+import enum
 import logging
 from datetime import datetime, date
 from functools import wraps
 from traceback import format_exc
 
 import pytz
+from django.contrib.auth.models import User
 from django.db import transaction
 from django.db.models import ProtectedError, Q
 from django.utils.timezone import make_aware
-from rest_framework import serializers, pagination, exceptions, permissions, filters
+from rest_framework import serializers, pagination, exceptions, permissions, filters, compat
 from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework.viewsets import ModelViewSet as BaseModelViewSet
@@ -30,6 +32,12 @@ REQUEST_HEADER_INFO_KEYS = [
     "QUERY_STRING",
     "HTTP_AUTHORIZATION",
 ]
+
+
+class UserSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = ["first_name", "last_name", "username"]
 
 
 def safe_api_import(key: str, fallback_status=200):
@@ -197,7 +205,6 @@ class DateTimestampField(serializers.Field):
         return datetime(value.year, value.month, value.day, 0, 0, 0, tzinfo=pytz.utc).timestamp()
 
     def to_internal_value(self, data: float):
-
         return make_aware(datetime.utcfromtimestamp(data)).date()
 
 
@@ -249,7 +256,7 @@ class ModelViewSet(BaseModelViewSet):
         return self.results_key
 
     def list(self, request: Request, *args, **kwargs):
-        """Override to return responses with {"result_key": data} structure"""
+        # """Override to return responses with {"result_key": data} structure"""
 
         queryset = self.filter_queryset(self.get_queryset())
 
@@ -279,11 +286,45 @@ class ModelViewSet(BaseModelViewSet):
             )
 
 
+class ChoiceEnum(enum.Enum):
+    active = "active"
+    all = "all"
+    deleted = "deleted"
+
+
 class DeletionFilterBackend(filters.BaseFilterBackend):
+    def get_schema_fields(self, view):
+        # Used to generate the swagger / browsable api
+        return [
+            compat.coreapi.Field(
+                name="deletion_status",
+                required=False,
+                location="query",
+                # schema=compat.coreschema.Enum(enum=ChoiceEnum),
+                schema=compat.coreschema.String(
+                    description="Filter on deleted item: all|active|deleted. Default:active"
+                ),
+            )
+        ]
+
+    def get_schema_operation_parameters(self, view):
+        # Used to generate the swagger / browsable api
+        return [
+            {
+                "name": "deletion_status",
+                "required": False,
+                "in": "query",
+                "description": "Filter on deleted item: all|active|deleted. Default:active",
+                "schema": {"type": "string", "enum": [c.name for c in ChoiceEnum]},
+            }
+        ]
+
     def filter_queryset(self, request, queryset, view):
-        if view.action != "list":
-            return queryset
-        query_param = request.query_params.get("deletion_status", "active")
+        # by default in list view filter deleted record
+        # but don't outside of list view
+        # otherwise we can't access, and undelete deleted object
+        default_filter = "active" if view.action == "list" else "all"
+        query_param = request.query_params.get("deletion_status", default_filter)
 
         if query_param == "deleted":
             query = Q(deleted_at__isnull=False)

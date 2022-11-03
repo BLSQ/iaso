@@ -29,6 +29,8 @@ export const baseUrls = {
     teams: 'settings/teams',
     entityDetails: 'entities/details',
     entitySubmissionDetail: 'entities/submission',
+    storages: 'storages',
+    storageDetail: 'storages/detail',
     apiLogs: 'api/logs',
     error401: '401',
     error500: '500',

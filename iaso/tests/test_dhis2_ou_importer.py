@@ -123,7 +123,11 @@ class CommandTests(TestCase, DHIS2TestMixin):
 
         # assert location and geometry and parent relationships
         healthcenter = created_orgunits_qs.get(name="Bambara Kaima CHP")
-        self.assertEquals(healthcenter.location.wkt, "POINT Z (-11.3596 8.531700000000001 0)")
+
+        location_coords = healthcenter.location.coords
+        self.assertAlmostEqual(location_coords[0], -11.3596)
+        self.assertAlmostEqual(location_coords[1], 8.5317)
+        self.assertEqual(location_coords[2], 0)
         self.assertEquals(healthcenter.parent.name, "Gorama Mende")
 
         # assert has a simplified geometry
@@ -268,7 +272,10 @@ class TaskTests(TestCase, DHIS2TestMixin):
 
         # assert location and geometry and parent relationships
         healthcenter = created_orgunits_qs.get(name="Bambara Kaima CHP")
-        self.assertEquals(healthcenter.location.wkt, "POINT Z (-11.3596 8.531700000000001 0)")
+        location_coords = healthcenter.location.coords
+        self.assertAlmostEqual(location_coords[0], -11.3596)
+        self.assertAlmostEqual(location_coords[1], 8.5317)
+        self.assertEqual(location_coords[2], 0)
         self.assertEquals(healthcenter.parent.name, "Gorama Mende")
 
         # assert has a simplified geometry

@@ -12,11 +12,17 @@ from django_ltree.fields import PathField  # type: ignore
 from django.utils.translation import ugettext_lazy as _
 from django_ltree.models import TreeModel  # type: ignore
 
-from .base import SourceVersion, Account
+from iaso.models.data_source import SourceVersion
 from .project import Project
+from ..utils.expressions import ArraySubquery
+
+try:  # for typing
+    from .base import Account
+except:
+    pass
 
 
-def get_or_create_org_unit_type(name: str, depth: int, account: Account, preferred_project: Project) -> "OrgUnitType":
+def get_or_create_org_unit_type(name: str, depth: int, account: "Account", preferred_project: Project) -> "OrgUnitType":
     """
     Get or create the OUT (in the scope of the account).
 
@@ -150,11 +156,14 @@ class OrgUnitQuerySet(models.QuerySet):
         """The OrgunitS and all their descendants"""
         # We need to cast PathValue instances to strings - this could be fixed upstream
         # (https://github.com/mariocesar/django-ltree/issues/8)
-        if isinstance(org_unit, (list, models.QuerySet)):
+        if isinstance(org_unit, OrgUnit):
+            query = models.Q(path__descendants=str(org_unit.path))
+        elif isinstance(org_unit, models.QuerySet):
+            org_unit_qs = org_unit
+            query = models.Q(path__descendants=ArraySubquery(org_unit_qs.values("path")))
+        elif isinstance(org_unit, (list,)):
             org_unit = org_unit.only("path") if isinstance(org_unit, models.QuerySet) else org_unit
             query = reduce(operator.or_, [models.Q(path__descendants=str(ou.path)) for ou in list(org_unit)])
-        else:
-            query = models.Q(path__descendants=str(org_unit.path))
 
         return self.filter(query)
 
@@ -352,6 +361,7 @@ class OrgUnit(TreeModel):
             "longitude": self.location.x if self.location else None,
             "altitude": self.location.z if self.location else None,
             "reference_instance_id": self.reference_instance_id if self.reference_instance else None,
+            "aliases": self.aliases,
         }
 
     def as_dict(self, with_groups=True):
@@ -484,3 +494,10 @@ class OrgUnit(TreeModel):
         if len(path_components) > 0:
             return "/" + ("/".join(path_components))
         return None
+
+    def get_reference_form_id(self):
+        """Return the form id of the reference form for this org unit, or None"""
+        if self.org_unit_type:
+            return self.org_unit_type.reference_form_id
+        else:
+            return None

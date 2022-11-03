@@ -4,14 +4,12 @@ import React from 'react';
 import { Link } from 'react-router';
 import { Profile } from '../../../../../../hat/assets/js/apps/Iaso/utils/usersUtils';
 import { fileExtensions } from '../../constants/fileExtensions';
-import { Nullable } from '../../../../../../hat/assets/js/apps/Iaso/types/utils';
+import {
+    Nullable,
+    Optional,
+} from '../../../../../../hat/assets/js/apps/Iaso/types/utils';
 import { Team } from '../../../../../../hat/assets/js/apps/Iaso/domains/teams/types/team';
-
-export const findApprovalTeams = (teams: any[]): number[] => {
-    return teams
-        .filter(team => team.name.toLowerCase().includes('approval'))
-        .map(team => team.id);
-};
+import { FileWithName, LinkWithAlias } from './types';
 
 export const formatUserName = (profile: Profile): string => {
     return profile?.first_name && profile?.last_name
@@ -52,32 +50,39 @@ export const extractFileName = (fileUrl: string): string => {
     return removedSlashes[removedSlashes.length - 1];
 };
 
-export const makeFileLinks = (files: { file: string }[]): React.ReactNode => {
+const truncateFileName = (fileName: string) => {
+    if (fileName.length <= 30) return fileName;
+    const separator = '...';
+    const end = fileName.substring(fileName.length - 5, fileName.length);
+    const start = fileName.substring(0, 22);
+    return `${start}${separator}${end}`;
+};
+
+export const makeFileLinks = (files: FileWithName[]): React.ReactNode => {
     return files.map((file, index) => {
-        const fileName = extractFileName(file.file) || file.file;
         return (
             // eslint-disable-next-line react/no-array-index-key
-            <Link key={`${fileName}_${index}`} download href={file.file}>
+            <Link key={`${file.filename}_${index}`} download href={file.file}>
                 {/* @ts-ignore */}
-                <Typography style={{ wordWrap: 'anywhere' }}>
-                    {fileName}
+                <Typography variant="body2" style={{ wordWrap: 'anywhere' }}>
+                    {truncateFileName(file.filename)}
                 </Typography>
             </Link>
         );
     });
 };
 
-export const makeLinks = (links: Nullable<string>): Nullable<any[]> => {
+export const makeLinks = (
+    links: Optional<Nullable<LinkWithAlias[]>>,
+): Nullable<any[]> => {
     if (!links) return null;
-    const linksArray = links.split(',');
-    return linksArray.map((link, index) => {
-        const trimmedLink = link.trim();
+    return links.map((link, index) => {
         return (
             // eslint-disable-next-line react/no-array-index-key
-            <Link key={`${trimmedLink}_${index}`} download href={trimmedLink}>
+            <Link key={`${link.alias}_${index}`} download href={link.url}>
                 {/* @ts-ignore */}
-                <Typography style={{ wordWrap: 'anywhere' }}>
-                    {trimmedLink}
+                <Typography variant="body2" style={{ wordWrap: 'anywhere' }}>
+                    {link.alias}
                 </Typography>
             </Link>
         );

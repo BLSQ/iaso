@@ -3,6 +3,11 @@ import { Shape } from './shapes';
 import { Nullable } from '../../../types/utils';
 
 /* eslint-disable camelcase */
+export type ShortOrgUnit = {
+    name: string;
+    id: number;
+};
+
 export type OrgUnit = {
     name: string;
     short_name: string;

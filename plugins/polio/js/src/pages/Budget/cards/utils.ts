@@ -7,6 +7,7 @@ import {
 import { Profile } from '../../../../../../../hat/assets/js/apps/Iaso/utils/usersUtils';
 import MESSAGES from '../../../constants/messages';
 import { BudgetEventType } from '../../../constants/types';
+import { LinkWithAlias } from '../types';
 
 export const COMMENT_CHAR_LIMIT = 50;
 export const getProfileFromId = (
@@ -18,8 +19,8 @@ export const getProfileFromId = (
         ({} as Profile)
     );
 };
-export const formatComment = (comment: Nullable<string>): Nullable<string> => {
-    if (!comment) return comment;
+export const formatComment = (comment: Optional<string>): Nullable<string> => {
+    if (!comment) return null;
     if (comment.length > COMMENT_CHAR_LIMIT)
         return `${comment.substring(0, COMMENT_CHAR_LIMIT)}...`;
     return comment;
@@ -28,7 +29,7 @@ export const formatComment = (comment: Nullable<string>): Nullable<string> => {
 export const useActionMessage = (
     comment = '',
     files = 0,
-    links = '',
+    links = [] as LinkWithAlias[],
 ): Nullable<string> => {
     const { formatMessage } = useSafeIntl();
     const fileMsg = `${files} ${formatMessage(MESSAGES.files)}`;
@@ -46,10 +47,10 @@ export const useActionMessage = (
     if (comment.length > COMMENT_CHAR_LIMIT && files === 0) {
         message = `${commentsMessage}`;
     }
-    if (links && message) {
+    if (links.length > 0 && message) {
         message = `${message ?? formatMessage(MESSAGES.see)} + ${linkMessage}`;
     }
-    if (links && !message) {
+    if (links.length > 0 && !message) {
         message = `${formatMessage(MESSAGES.see)} ${linkMessage.toLowerCase()}`;
     }
     return message;
@@ -76,9 +77,9 @@ export const findAuthorTeam = (
 
 export const shouldOpenModal = (
     files: Nullable<number> = 0,
-    links: Nullable<string> = '',
+    links: Nullable<LinkWithAlias[]> = [],
     comments: Nullable<string> = '',
 ): boolean => {
-    if (files || links || comments) return true;
+    if (files || (links ?? []).length > 0 || comments) return true;
     return false;
 };

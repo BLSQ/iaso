@@ -74,7 +74,7 @@ class CommentApiTestCase(APITestCase):
         self.assertEqual(response.status_code, 201, response.content)
         self.assertIn("id", response.json())
 
-        # Attempt to re read it
+        # Attempt to reread it
         response = self.client.get(
             "/api/comments/", data={"content_type": "iaso-orgunit", "object_pk": self.orgunit.pk}, format="json"
         )

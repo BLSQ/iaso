@@ -164,10 +164,10 @@ export const Details: FunctionComponent<Props> = ({ router }) => {
                         <Divider />
                         <Box display="flex" py={2}>
                             <CsvButton
-                                csvUrl={`/api/entity/beneficiary/?csv=true&id=${entityId}`}
+                                csvUrl={`/api/entity/?csv=true&id=${entityId}`}
                             />
                             <XlsxButton
-                                xlsxUrl={`/api/entity/beneficiary/?xlsx=true&id=${entityId}`}
+                                xlsxUrl={`/api/entity/?xlsx=true&id=${entityId}`}
                             />
                         </Box>
                     </WidgetPaper>

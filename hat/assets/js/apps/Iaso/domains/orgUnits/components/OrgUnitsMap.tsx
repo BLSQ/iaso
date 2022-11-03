@@ -4,6 +4,7 @@ import React, {
     useState,
     useEffect,
     useCallback,
+    useMemo,
 } from 'react';
 import { useSelector } from 'react-redux';
 import MarkerClusterGroup from 'react-leaflet-markercluster';
@@ -43,13 +44,11 @@ import {
     colorClusterCustomMarker,
     circleColorMarkerOptions,
 } from '../../../utils/mapUtils';
-import { decodeSearch } from '../utils';
-import { getChipColors } from '../../../constants/chipColors';
 // UTILS
 
 // TYPES
 import { IntlFormatMessage } from '../../../types/intl';
-import { OrgUnit, OrgUnitParams } from '../types/orgUnit';
+import { OrgUnit } from '../types/orgUnit';
 import { DropdownOptions } from '../../../types/utils';
 // TYPES
 
@@ -63,7 +62,8 @@ export type Locations = {
     shapes: OrgUnit[];
 };
 type Props = {
-    params: OrgUnitParams;
+    // eslint-disable-next-line no-unused-vars
+    getSearchColor: (index: number) => string;
     orgUnitTypes: DropdownOptions<string>[];
     orgUnits: Locations;
 };
@@ -123,7 +123,7 @@ const getOrgUnitsBounds = orgUnits => {
     return bounds;
 };
 export const OrgUnitsMap: FunctionComponent<Props> = ({
-    params,
+    getSearchColor,
     orgUnits,
     orgUnitTypes,
 }) => {
@@ -156,23 +156,75 @@ export const OrgUnitsMap: FunctionComponent<Props> = ({
         }
     }, [orgUnits]);
 
-    const getSearchColor = useCallback(
-        currentSearchIndex => {
-            const searches = decodeSearch(params.searches);
-            const currentSearch = searches[currentSearchIndex];
-            let currentColor;
-            if (currentSearch) {
-                currentColor = currentSearch.color;
-            }
-            if (!currentColor) {
-                currentColor = getChipColors(0);
-            } else {
-                currentColor = `#${currentColor}`;
-            }
-            return currentColor;
-        },
-        [params.searches],
-    );
+    const locations = useMemo(() => {
+        if (isClusterActive) {
+            return orgUnits.locations.map((orgUnitsBySearch, searchIndex) => {
+                const color = getSearchColor(searchIndex);
+                if (orgUnitsBySearch.length === 0) return null;
+                return (
+                    <MarkerClusterGroup
+                        iconCreateFunction={cluster =>
+                            colorClusterCustomMarker(cluster, color)
+                        }
+                        key={searchIndex}
+                        polygonOptions={{
+                            fillColor: color,
+                            color,
+                        }}
+                    >
+                        <Pane
+                            name={`markers-${searchIndex}`}
+                            style={{ zIndex: 500 }}
+                        >
+                            <MarkersListComponent
+                                markerProps={() => ({
+                                    ...circleColorMarkerOptions(color),
+                                })}
+                                items={orgUnitsBySearch}
+                                onMarkerClick={o => setCurrentOrgUnitId(o.id)}
+                                popupProps={() => ({
+                                    currentOrgUnit,
+                                })}
+                                PopupComponent={OrgUnitPopupComponent}
+                                tooltipProps={e => ({
+                                    children: [e.name],
+                                })}
+                                TooltipComponent={Tooltip}
+                                isCircle
+                            />
+                        </Pane>
+                    </MarkerClusterGroup>
+                );
+            });
+        }
+        return orgUnits.locations.map((orgUnitsBySearch, searchIndex) => (
+            <Pane
+                key={searchIndex}
+                name={`markers-${searchIndex}`}
+                style={{ zIndex: 500 }}
+            >
+                <MarkersListComponent
+                    key={searchIndex}
+                    markerProps={() => ({
+                        ...circleColorMarkerOptions(
+                            getSearchColor(searchIndex),
+                        ),
+                    })}
+                    items={orgUnitsBySearch}
+                    onMarkerClick={o => setCurrentOrgUnitId(o.id)}
+                    popupProps={() => ({
+                        currentOrgUnit,
+                    })}
+                    PopupComponent={OrgUnitPopupComponent}
+                    tooltipProps={e => ({
+                        children: [e.name],
+                    })}
+                    TooltipComponent={Tooltip}
+                    isCircle
+                />
+            </Pane>
+        ));
+    }, [currentOrgUnit, getSearchColor, isClusterActive, orgUnits.locations]);
 
     useEffect(() => {
         fitToBounds();
@@ -190,6 +242,7 @@ export const OrgUnitsMap: FunctionComponent<Props> = ({
             </Grid>
         );
     }
+
     return (
         <Grid container spacing={0}>
             <InnerDrawer
@@ -283,88 +336,7 @@ export const OrgUnitsMap: FunctionComponent<Props> = ({
                                 ))}
                         </Pane>
                     ))}
-                    {isClusterActive &&
-                        orgUnits.locations.map(
-                            (orgUnitsBySearch, searchIndex) => {
-                                const color = getSearchColor(searchIndex);
-                                if (orgUnitsBySearch.length === 0) return null;
-                                return (
-                                    <MarkerClusterGroup
-                                        iconCreateFunction={cluster =>
-                                            colorClusterCustomMarker(
-                                                cluster,
-                                                color,
-                                            )
-                                        }
-                                        key={searchIndex}
-                                        polygonOptions={{
-                                            fillColor: color,
-                                            color,
-                                        }}
-                                    >
-                                        <Pane
-                                            name={`markers-${searchIndex}`}
-                                            style={{ zIndex: 500 }}
-                                        >
-                                            <MarkersListComponent
-                                                markerProps={() => ({
-                                                    ...circleColorMarkerOptions(
-                                                        color,
-                                                    ),
-                                                })}
-                                                items={orgUnitsBySearch}
-                                                onMarkerClick={o =>
-                                                    setCurrentOrgUnitId(o.id)
-                                                }
-                                                popupProps={() => ({
-                                                    currentOrgUnit,
-                                                })}
-                                                PopupComponent={
-                                                    OrgUnitPopupComponent
-                                                }
-                                                tooltipProps={e => ({
-                                                    children: [e.name],
-                                                })}
-                                                TooltipComponent={Tooltip}
-                                                isCircle
-                                            />
-                                        </Pane>
-                                    </MarkerClusterGroup>
-                                );
-                            },
-                        )}
-                    {!isClusterActive &&
-                        orgUnits.locations.map(
-                            (orgUnitsBySearch, searchIndex) => (
-                                <Pane
-                                    key={searchIndex}
-                                    name={`markers-${searchIndex}`}
-                                    style={{ zIndex: 500 }}
-                                >
-                                    <MarkersListComponent
-                                        key={searchIndex}
-                                        markerProps={() => ({
-                                            ...circleColorMarkerOptions(
-                                                getSearchColor(searchIndex),
-                                            ),
-                                        })}
-                                        items={orgUnitsBySearch}
-                                        onMarkerClick={o =>
-                                            setCurrentOrgUnitId(o.id)
-                                        }
-                                        popupProps={() => ({
-                                            currentOrgUnit,
-                                        })}
-                                        PopupComponent={OrgUnitPopupComponent}
-                                        tooltipProps={e => ({
-                                            children: [e.name],
-                                        })}
-                                        TooltipComponent={Tooltip}
-                                        isCircle
-                                    />
-                                </Pane>
-                            ),
-                        )}
+                    {locations}
                 </Map>
             </InnerDrawer>
         </Grid>

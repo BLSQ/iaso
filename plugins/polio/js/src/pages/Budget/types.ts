@@ -12,9 +12,12 @@ export type Categories = {
     key: string;
     label: string;
     color: string; // css string
+    active: boolean;
+    completed: boolean;
     items: {
+        step_id: number;
         label: string;
-        performed_on?: string; // datetime
+        performed_at?: string; // datetime
         performed_by?: {
             username;
             first_name;

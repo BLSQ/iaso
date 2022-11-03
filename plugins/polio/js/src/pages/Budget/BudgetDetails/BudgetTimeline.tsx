@@ -1,13 +1,10 @@
 import { Box, makeStyles, Divider } from '@material-ui/core';
 import React, { FunctionComponent, useState, useEffect } from 'react';
-// @ts-ignore
-// import { useSafeIntl } from 'bluesquare-components';
 import classnames from 'classnames';
 import Stepper from '@material-ui/core/Stepper';
 import Step from '@material-ui/core/Step';
 import StepLabel from '@material-ui/core/StepLabel';
-import { CheckBox, CheckBoxOutlineBlank } from '@material-ui/icons';
-// import MESSAGES from '../../../constants/messages';
+import { CheckCircleOutline } from '@material-ui/icons';
 import moment from 'moment';
 import { Categories } from '../types';
 
@@ -25,9 +22,6 @@ const useStyles = makeStyles(theme => ({
         '& .MuiBox-root': {
             alignItems: 'flex-start',
         },
-        '& .MuiStepConnector-lineHorizontal': {
-            borderTopWidth: '4px',
-        },
     },
     step: {
         display: 'flex',
@@ -38,8 +32,14 @@ const useStyles = makeStyles(theme => ({
         display: 'flex',
         alignItems: 'center',
     },
-    checkbox: {
+    taskDone: {
         transform: 'scale(0.85)',
+        color: theme.palette.success.main,
+    },
+    taskPending: {
+        transform: 'scale(0.85)',
+        // @ts-ignore
+        color: theme.palette.mediumGray.main,
     },
     itemLabel: {
         fontSize: '0.82rem',
@@ -49,6 +49,7 @@ const useStyles = makeStyles(theme => ({
     },
     divider: {
         height: '30px',
+        // @ts-ignore
         backgroundColor: theme.palette.gray.main,
     },
     stepCompleted: {
@@ -58,11 +59,13 @@ const useStyles = makeStyles(theme => ({
     },
     stepActive: {
         '& + div .MuiStepConnector-lineHorizontal': {
+            // @ts-ignore
             borderColor: theme.palette.success.background,
         },
     },
     stepInactive: {
         '& + div .MuiStepConnector-lineHorizontal': {
+            // @ts-ignore
             borderColor: theme.palette.gray.main,
         },
     },
@@ -100,7 +103,11 @@ export const BudgetTimeline: FunctionComponent<Props> = ({
 
     return (
         <>
-            <Stepper activeStep={activeStep} alternativeLabel>
+            <Stepper
+                className={classes.root}
+                activeStep={activeStep}
+                alternativeLabel
+            >
                 {categories?.map(category => (
                     <Step
                         className={classnames(
@@ -124,13 +131,12 @@ export const BudgetTimeline: FunctionComponent<Props> = ({
                                 <Box key={item.step_id} mb={1}>
                                     <div className={classes.checkboxWrapper}>
                                         {item.performed_by ? (
-                                            <CheckBox
-                                                color="primary"
-                                                className={classes.checkbox}
+                                            <CheckCircleOutline
+                                                className={classes.taskDone}
                                             />
                                         ) : (
-                                            <CheckBoxOutlineBlank
-                                                className={classes.checkbox}
+                                            <CheckCircleOutline
+                                                className={classes.taskPending}
                                             />
                                         )}
                                         <div className={classes.itemLabel}>

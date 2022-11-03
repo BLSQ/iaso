@@ -89,8 +89,8 @@ services:
     build:
       context: .
       dockerfile: docker/webpack/Dockerfile
- #   depends_on:
- #     - iaso
+    depends_on:
+      - iaso
     ports:
       - "3000:3000"
     volumes: *hat_volumes

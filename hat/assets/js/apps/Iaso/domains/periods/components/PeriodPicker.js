@@ -117,13 +117,6 @@ const PeriodPicker = ({
                     currentDate={Period.toDate(currentPeriod)}
                     errors={hasError ? [''] : []}
                     hideError
-                    // onChange={date => {
-                    //     console.log('date', date);
-                    //     handleChange(
-                    //         'day',
-                    //         date ? date.format('YYYYMMDD') : null,
-                    //     );
-                    // }}
                     onChange={handleChangeDay}
                 />
             )}

@@ -387,7 +387,6 @@ class StorageBlacklistedViewSet(ListModelMixin, viewsets.GenericViewSet):
     serializer_class = StorageSerializer
 
     permission_classes = [AllowAny]
-    # TODO: according to spec, we should add an "updated_at" field
     # TODO: implement pagination
     # TODO: clarify, then implement the "since" feature -see specs-
 

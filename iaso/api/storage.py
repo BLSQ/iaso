@@ -370,7 +370,7 @@ def logs_for_device_generate_export(
     if file_format == FileFormatEnum.XLSX:
         filename = filename + ".xlsx"
         response = HttpResponse(
-            generate_xlsx("Forms", columns, queryset, get_row),
+            generate_xlsx("Storage logs", columns, queryset, get_row),
             content_type=CONTENT_TYPE_XLSX,
         )
     elif file_format == FileFormatEnum.CSV:

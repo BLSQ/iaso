@@ -56,7 +56,7 @@ node_defs = [
 def get_workflow():
     transitions = [Transition(**transition_def) for transition_def in transition_defs]
     nodes = [Node(**node_def) for node_def in node_defs]
-    return Workflow(transitions, nodes)
+    return Workflow(transitions=transitions, nodes=nodes, categories=[])
 
 
 @mock.patch("plugins.polio.budget.models.get_workflow", get_workflow)

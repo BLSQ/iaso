@@ -33,6 +33,9 @@ REQUEST_HEADER_INFO_KEYS = [
     "HTTP_AUTHORIZATION",
 ]
 
+CONTENT_TYPE_XLSX = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+CONTENT_TYPE_CSV = "text/csv"
+
 
 class UserSerializer(serializers.ModelSerializer):
     class Meta:

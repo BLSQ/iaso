@@ -1,8 +1,9 @@
 # TODO: need better type annotations in this file
 
-from typing import Tuple
+from typing import Tuple, Union, List, Any
 
-from django.db.models import Prefetch
+from django.db.models import Prefetch, QuerySet
+from django.http import HttpResponse, StreamingHttpResponse
 from rest_framework import viewsets, permissions, serializers, status
 from rest_framework.decorators import action, api_view, permission_classes
 from rest_framework.fields import Field
@@ -12,13 +13,14 @@ from rest_framework.response import Response
 
 from django.core.paginator import Paginator
 
-from hat.api.export_utils import timestamp_to_utc_datetime
+from hat.api.export_utils import timestamp_to_utc_datetime, generate_xlsx, iter_items, Echo
 from iaso.models import StorageLogEntry, StorageDevice, Instance, OrgUnit, Entity
-from iaso.api.entity import EntitySerializer
+from iaso.api.entity import EntitySerializer, EXPORTS_DATETIME_FORMAT
 
 from iaso.api.serializers import OrgUnitSerializer
 
-from .common import TimestampField, HasPermission, UserSerializer
+from .common import TimestampField, HasPermission, UserSerializer, CONTENT_TYPE_XLSX, CONTENT_TYPE_CSV
+from .instances import FileFormatEnum
 
 
 class EntityNestedSerializer(EntitySerializer):
@@ -136,6 +138,62 @@ class StorageSerializerWithPaginatedLogs(StorageSerializerWithLogs):
         return StorageLogSerializer(logs, many=True).data
 
 
+def device_generate_export(
+    queryset: "QuerySet[StorageDevice]", file_format: FileFormatEnum
+) -> Union[HttpResponse, StreamingHttpResponse]:
+    columns = [
+        {"title": "Storage ID"},
+        {"title": "Storage Type"},
+        {"title": "Created at"},
+        {"title": "Updated at"},
+        {"title": "Status"},
+        {"title": "Status reason"},
+        {"title": "Status comment"},
+        {"title": "Status updated at"},
+        {"title": "Org unit id"},
+        {"title": "Entity id"},
+    ]
+
+    def get_row(device: StorageDevice, **_) -> List[Any]:
+        created_at_str = ""
+        if device.created_at is not None:
+            created_at_str = device.created_at.strftime(EXPORTS_DATETIME_FORMAT)
+
+        updated_at_str = ""
+        if device.updated_at is not None:
+            updated_at_str = device.updated_at.strftime(EXPORTS_DATETIME_FORMAT)
+
+        return [
+            device.customer_chosen_id,
+            device.type,
+            created_at_str,
+            updated_at_str,
+            device.status,
+            device.status_reason,
+            device.status_comment,
+            device.status_updated_at,
+            device.org_unit_id,
+            device.entity_id,
+        ]
+
+    response: Union[HttpResponse, StreamingHttpResponse]
+    filename = "storage_devices"
+    if file_format == FileFormatEnum.XLSX:
+        filename = filename + ".xlsx"
+        response = HttpResponse(
+            generate_xlsx("Devices", columns, queryset, get_row),
+            content_type=CONTENT_TYPE_XLSX,
+        )
+    else:
+        filename = filename + ".csv"
+        response = StreamingHttpResponse(
+            streaming_content=(iter_items(queryset, Echo(), columns, get_row)), content_type=CONTENT_TYPE_CSV
+        )
+
+    response["Content-Disposition"] = "attachment; filename=%s" % filename
+    return response
+
+
 class StorageViewSet(ListModelMixin, viewsets.GenericViewSet):
     permission_classes = [permissions.IsAuthenticated, HasPermission("menupermissions.iaso_storages")]  # type: ignore
     serializer_class = StorageSerializer
@@ -176,27 +234,37 @@ class StorageViewSet(ListModelMixin, viewsets.GenericViewSet):
         page_offset = request.GET.get("page", 1)
         order = request.GET.get("order", "updated_at,id").split(",")
 
+        csv_format = request.GET.get("csv", None)
+        xlsx_format = request.GET.get("xlsx", None)
+        file_export = False
+        if csv_format is not None or xlsx_format is not None:
+            file_export = True
+            file_format_export = FileFormatEnum.CSV if csv_format is not None else FileFormatEnum.XLSX
+
         queryset = self.get_queryset()
         queryset = queryset.order_by(*order)
         serializer = StorageSerializer
 
-        if limit_str is not None:
-            limit = int(limit_str)
-            page_offset = int(page_offset)
-            paginator = Paginator(queryset, limit)
-            res = {"count": paginator.count}
-            if page_offset > paginator.num_pages:
-                page_offset = paginator.num_pages
-            page = paginator.page(page_offset)
-            res["results"] = serializer(page.object_list, many=True).data
-            res["has_next"] = page.has_next()
-            res["has_previous"] = page.has_previous()
-            res["page"] = page_offset
-            res["pages"] = paginator.num_pages
-            res["limit"] = limit
-            return Response(res)
-        else:
-            return Response(StorageSerializer(queryset, many=True).data)
+        if not file_export:
+            if limit_str is not None:
+                limit = int(limit_str)
+                page_offset = int(page_offset)
+                paginator = Paginator(queryset, limit)
+                res = {"count": paginator.count}
+                if page_offset > paginator.num_pages:
+                    page_offset = paginator.num_pages
+                page = paginator.page(page_offset)
+                res["results"] = serializer(page.object_list, many=True).data
+                res["has_next"] = page.has_next()
+                res["has_previous"] = page.has_previous()
+                res["page"] = page_offset
+                res["pages"] = paginator.num_pages
+                res["limit"] = limit
+                return Response(res)
+            else:
+                return Response(StorageSerializer(queryset, many=True).data)
+        else:  # This is a file export
+            return device_generate_export(queryset=queryset, file_format=file_format_export)
 
     @action(detail=False, methods=["post"])
     def blacklisted(self, request):

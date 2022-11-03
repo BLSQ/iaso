@@ -87,7 +87,8 @@ export const BudgetTimeline: FunctionComponent<Props> = ({
 
     useEffect(() => {
         if (categories.length > 0) {
-            const lastStepCompleted = categories?.findLast(
+            // @ts-ignore
+            const lastStepCompleted = categories.findLast(
                 category => category.completed === false,
             );
 
@@ -99,7 +100,7 @@ export const BudgetTimeline: FunctionComponent<Props> = ({
 
     return (
         <>
-            <Stepper classes={classes} activeStep={activeStep} alternativeLabel>
+            <Stepper activeStep={activeStep} alternativeLabel>
                 {categories?.map(category => (
                     <Step
                         className={classnames(
@@ -120,7 +121,7 @@ export const BudgetTimeline: FunctionComponent<Props> = ({
 
                         <Box>
                             {category.items.map(item => (
-                                <Box mb={1}>
+                                <Box key={item.step_id} mb={1}>
                                     <div className={classes.checkboxWrapper}>
                                         {item.performed_by ? (
                                             <CheckBox

@@ -27,7 +27,7 @@ class CompletenessStatsViewSet(viewsets.ViewSet):
     def list(self, request):
         org_unit_type = None
         parent_org_unit = None
-        form_ids = []
+        requested_form_ids = []
         profile = request.user.iaso_profile
 
         # TODO: clarify: normal that instance_qs is unused?
@@ -40,8 +40,8 @@ class CompletenessStatsViewSet(viewsets.ViewSet):
 
         # Forms to take into account: we take everything for the user's account, then filter by the form_ids if provided
         form_qs = Form.objects.filter_for_user_and_app_id(user=request.user)
-        if form_ids:
-            form_qs = form_qs.filter(id__in=form_ids)
+        if requested_form_ids:
+            form_qs = form_qs.filter(id__in=requested_form_ids)
 
         account = profile.account
         version = account.default_version

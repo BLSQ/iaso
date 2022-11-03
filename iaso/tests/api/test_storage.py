@@ -550,6 +550,34 @@ class StorageAPITestCase(APITestCase):
         self.assertFalse(received_json["has_previous"])
         self.assertEqual(received_json["limit"], 1)
 
+    def test_post_blacklisted_storage_permission_denied(self):
+        """POST to /api/storage/blacklisted requires an authenticated user with iaso_storage permissions"""
+        # Case 1: anonymous user
+        response = self.client.post(
+            "/api/storage/blacklisted/",
+            {
+                "storage_id": "EXISTING_STORAGE",
+                "storage_type": "NFC",
+                "storage_status": {"status": "BLACKLISTED", "reason": "DAMAGED", "comment": "not usable anymore"},
+            },
+            format="json",
+        )
+        self.assertEqual(response.status_code, 403)
+
+        # Case 2: user without iaso_storage permissions
+        self.client.force_authenticate(self.another_user)
+
+        response = self.client.post(
+            "/api/storage/blacklisted/",
+            {
+                "storage_id": "EXISTING_STORAGE",
+                "storage_type": "NFC",
+                "storage_status": {"status": "BLACKLISTED", "reason": "DAMAGED", "comment": "not usable anymore"},
+            },
+            format="json",
+        )
+        self.assertEqual(response.status_code, 403)
+
     def test_post_blacklisted_storage_ok(self):
         """
         POST /api/storage/blacklisted with correct parameters and permissions does the job:

@@ -210,7 +210,7 @@ class CampaignBudgetSerializer(CampaignSerializer, DynamicFieldsModelSerializer)
             completed = len(node_remaining) == 0
             if completed:
                 # category done
-                color = "lightgreen"
+                color = "green"
             elif active:
                 color = "lightgreen"
             else:

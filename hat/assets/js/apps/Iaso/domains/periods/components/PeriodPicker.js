@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Grid, makeStyles, Box, Typography } from '@material-ui/core';
 import { useTheme } from '@material-ui/core/styles';
 import PropTypes from 'prop-types';
@@ -74,9 +74,16 @@ const PeriodPicker = ({
         setCurrentPeriod(newPeriod);
         onChange(getPeriodPickerString(periodType, newPeriod, value));
     };
-    if (!periodType) {
-        return null;
-    }
+
+    const handleChangeDay = useCallback(
+        date => {
+            const newValue = date?.format('YYYYMMDD') ?? null;
+            setCurrentPeriod(Period.parse(newValue)?.[1]);
+            onChange(newValue);
+        },
+        [onChange],
+    );
+
     const getQuarterOptionLabel = (value, label) => {
         if (hasFeatureFlag(currentUser, HIDE_PERIOD_QUARTER_NAME)) {
             return `${formatMessage(QUARTERS_RANGE[value][0])}-${formatMessage(
@@ -87,6 +94,10 @@ const PeriodPicker = ({
             QUARTERS_RANGE[value][0],
         )}-${formatMessage(QUARTERS_RANGE[value][1])})`;
     };
+
+    if (!periodType) {
+        return null;
+    }
     return (
         <Box
             id={keyName}
@@ -103,15 +114,17 @@ const PeriodPicker = ({
                 <DatePicker
                     label={title}
                     clearMessage={MESSAGES.clear}
-                    currentDate={currentPeriod?.day}
+                    currentDate={Period.toDate(currentPeriod)}
                     errors={hasError ? [''] : []}
                     hideError
-                    onChange={date =>
-                        handleChange(
-                            'day',
-                            date ? date.format('YYYYMMDD') : null,
-                        )
-                    }
+                    // onChange={date => {
+                    //     console.log('date', date);
+                    //     handleChange(
+                    //         'day',
+                    //         date ? date.format('YYYYMMDD') : null,
+                    //     );
+                    // }}
+                    onChange={handleChangeDay}
                 />
             )}
             {currentPeriodType !== PERIOD_TYPE_DAY && (

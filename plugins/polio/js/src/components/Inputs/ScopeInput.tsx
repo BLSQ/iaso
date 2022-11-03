@@ -36,8 +36,12 @@ import {
 import cloneDeep from 'lodash/cloneDeep';
 import sortBy from 'lodash/sortBy';
 
+// eslint-disable-next-line import/no-unresolved
 import { FieldProps } from 'formik/dist/Field';
 
+import CheckIcon from '@material-ui/icons/Check';
+import SelectAllIcon from '@material-ui/icons/SelectAll';
+import InputComponent from 'Iaso/components/forms/InputComponent';
 import { MapComponent } from '../MapComponent/MapComponent';
 import { MapLegend } from '../../../../../../hat/assets/js/apps/Iaso/components/maps/MapLegend';
 
@@ -69,6 +73,7 @@ type Shape = {
     country_parent?: { id: number };
     root?: { id: number };
 };
+
 type ShapeRow = Shape & {
     region: string;
     vaccineName: string;
@@ -86,6 +91,7 @@ const findScopeWithOrgUnit = (scopes: Scope[], orgUnitId: number) => {
     });
     return scope;
 };
+
 type Values = {
     scopes?: Scope[];
     org_unit: Shape;

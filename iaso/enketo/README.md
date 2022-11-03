@@ -7,13 +7,13 @@ See main README for more information.
 TODO: Document which Enketo version we support and have tested with.
 
 # Running Enketo in you dev environment
-See the Enketo directory section from the Main readme.md on how to launch Enketo in your docker compose environment
+See the Enketo directory section from the Main readme.md on how to launch Enketo in your docker compose environment. You shouldn't need any special configuration.
 
 Iaso used to have a fork of Enketo to run in dev mode but nowadays, you can use the mainstream one at https://github.com/enketo/enketo-express
 
 
-## Configuration in Iaso
-To populate your Iaso database with Form and Org Unit, as well as sample submission that you can use with your local Enketo, you can use the seed command. That will retrieve these information from the sample DHIS2 server.
+## Automatic data configuration in Iaso
+To populate your Iaso database with Form and Org Unit, as well as sample submissions that you can use with your local Enketo, you can use the seed command. That will retrieve these information from the sample DHIS2 server.
 
 First Run:
 ```
@@ -28,7 +28,40 @@ Then in the Iaso Dashboard, got to the instance details of Quantity PCA form 2.3
 
 Then in the FAB (Floating action button, on the top right) button you can Edit : Modifier les réponses via enketo.
 
+# API Endpoints:
+
+* `/enketo/create` Iaso web: create submission. Logged user
+* `/enketo/edit/<instance_uuid>/` Iaso web edit submission. Logger user with perm.
+* `/enketo/create_public_url/` Used by external service. Edit or Create submission
+* `/enketo/formList` Internal wiring, called by Enketo
+* `/enketo/formDowload` Internal wiring, called by Enketo 
+* `/enketo/submission/` Internal wiring, called by Enketo create the actual value
+* `/fill/<form_uuid>/<org_unit_id>/<period>/` Not sure if used?
+
+
 # public_create_url
+This endpoint is used by web page outside of IASO to fill a form for an org unit and period.
+It contacts enketo to generate a Form Webpage and return the url to that page
+
+Used for example by the Invoice App
+
+Different behaviours:
+
+* form is single per period:
+    1. No submission exist for period and org unit: Create a new one
+    2. 1 submission exists, open Enketo to edit it.
+    3. 2 or more for exist: Error state
+* form !single_per_period
+    1. Always create a new submission
+
+The parameters are "in the dhis2 world" because (we don't know much about iaso db details)
+
+```
+    form_id=CS_QLTE_RDC003-Gestion_finance (the form_id not the technical id of the db)
+    period=2022Q3 (in dhis2 format)
+    external_user_id= dhis2 user id (an user/profile is created automatically)
+    external_org_unit_id=DWmKNyyDCWv (source_ref of the iaso orgunit)
+```
 
 ## Flow for `public_create_url`
 ```mermaid
@@ -39,8 +72,8 @@ sequenceDiagram
     DHIS2 -->> Browser: Link to /enketo/create_public_url with parameters
     Browser ->> IASO: GET iaso./enketo/create_public_url
     Note right of IASO: Create Instance in db
-    IASO ->> Enketo: /api_v2/survey/single
-    Note over IASO,Enketo:settings.ENKETO_API_SURVEY_PATH
+    IASO ->> Enketo: POST /api_v2/survey/single
+    Note over IASO,Enketo:If editing an existing Instance we do along with the form_id. Iaso will send an instance_id and an instance_xml containing the current answers.
 
     Enketo -->> IASO: json with $url to enketo
     IASO -->> DHIS2: json with $url
@@ -100,7 +133,14 @@ Fill the form.
 
 To test the export, add the `to_export=true` argument. You will need FormMapping and a DHIS2 configuration to test the full export
 
+# Create and edit form from iaso
+For the Edit in Enketo feature it use `/enketo/create/` and `/enketo/edit/<instance_uuid>/` instead of `/enketo/public_create_url/` . It  behave nearly in the same way but not 100% exactly. It's restricted to currently logged in user and embed the current user in the form definition. 
 
+Other differences it take the internal iaso form_id and not the one from the XML, idem for Org Unit etc..
+
+To confirm but normally from Step "4" to Step "14" in the flow diagram would be the same.
+
+The export behave differently as it is handled by the Front End manually in a separate call.
 
 # Old notes on implementations
 Warning some part might not be up-to-date.

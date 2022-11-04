@@ -8,6 +8,7 @@ import MESSAGES from '../constants/messages';
 import { useStyles } from '../styles/theme';
 import { DateInput, Select, TextInput } from '../components/Inputs';
 import { polioVaccines } from '../constants/virus';
+import { NumberInput } from '../components/Inputs/NumberInput';
 
 type Props = {
     index: number;
@@ -48,7 +49,7 @@ export const ShipmentForm: FunctionComponent<Props> = ({ index, accessor }) => {
                     <Field
                         label={formatMessage(MESSAGES.dosesShipped)}
                         name={`${accessor}.shipments[${index}].doses_received`}
-                        component={TextInput}
+                        component={NumberInput}
                         className={classes.input}
                     />
                 </Grid>

@@ -237,6 +237,7 @@ const CreateBudgetStep: FunctionComponent<Props> = ({
                             errors={getErrors('amount')}
                             label={MESSAGES.amount}
                             required={requiredFields.includes('amount')}
+                            markThousands
                         />
 
                         <Box mt={2}>
@@ -261,7 +262,7 @@ const CreateBudgetStep: FunctionComponent<Props> = ({
                         <Box mt={2} mb={2}>
                             <Divider />
                         </Box>
-                        {recipientTeams?.length > 0 && (
+                        {(recipientTeams?.length ?? 0) > 0 && (
                             <>
                                 <Box mt={1} mb={1}>
                                     <Typography>

@@ -1,5 +1,5 @@
 {
-    "iaso.forms.options.budgetTypeError": "Choisir uen valeur parmis \"soumission\", \"commentaires\" ou \"validation\"",
+    "iaso.forms.options.budgetTypeError": "Mauvais type de valeur",
     "iaso.forms.options.emailFormat": "Veuillez encoder des adresses email valides",
     "iaso.forms.options.urlFormat": "Veuillez utiliser une URL valide ",
     "iaso.forms.options.validation": "Validation",

@@ -1432,8 +1432,7 @@ const MESSAGES = defineMessages({
     },
     budgetTypeError: {
         id: 'iaso.forms.options.budgetTypeError',
-        defaultMessage:
-            'Value should be one of "submission", "comments" or "validation"',
+        defaultMessage: 'Wrong value type',
     },
     links: {
         defaultMessage: 'Links',

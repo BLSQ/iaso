@@ -189,7 +189,7 @@ export const VaccineManangementForm: FunctionComponent<Props> = () => {
                     </Grid>
                     <Grid item lg={3} md={6}>
                         <TextArea
-                            label={formatMessage(MESSAGES.comment)}
+                            label={formatMessage(MESSAGES.formAComment)}
                             value={comment}
                             onChange={newComment =>
                                 onChangeComment(

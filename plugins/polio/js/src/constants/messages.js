@@ -1634,7 +1634,11 @@ const MESSAGES = defineMessages({
     },
     formADate: {
         id: 'iaso.polio.label.formADate',
-        defaultMessage: 'Form date',
+        defaultMessage: 'Form A date',
+    },
+    formAComment: {
+        id: 'iaso.polio.label.formAComment',
+        defaultMessage: 'Comment on form A',
     },
     formAUsableVials: {
         id: 'iaso.polio.label.formAUsableVials',

@@ -46,8 +46,8 @@ export const ShipmentForm: FunctionComponent<Props> = ({ index, accessor }) => {
                 </Grid>
                 <Grid item lg={2} md={4}>
                     <Field
-                        label={formatMessage(MESSAGES.dosesShipped)}
-                        name={`${accessor}.shipments[${index}].doses_received`}
+                        label={formatMessage(MESSAGES.vialsShipped)}
+                        name={`${accessor}.shipments[${index}].vials_received`}
                         component={TextInput}
                         className={classes.input}
                     />

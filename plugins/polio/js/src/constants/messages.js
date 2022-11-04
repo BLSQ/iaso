@@ -1620,9 +1620,9 @@ const MESSAGES = defineMessages({
         id: 'iaso.polio.label.estimatedDateOfArrival',
         defaultMessage: 'Estimated date of arrival',
     },
-    dosesShipped: {
-        id: 'iaso.polio.label.dosesShipped',
-        defaultMessage: 'Doses shipped',
+    vialsShipped: {
+        id: 'iaso.polio.label.vialsShipped',
+        defaultMessage: 'Vials shipped',
     },
     poNumbers: {
         id: 'iaso.polio.label.poNumbers',

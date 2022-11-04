@@ -34,14 +34,15 @@ export const VaccineManangementForm: FunctionComponent<Props> = () => {
     const accessor = `rounds[${roundIndex}]`;
     const [comment, setComment] = useState(rounds[roundIndex]?.forma_comment);
 
-    const onChangeComment = useCallback(
-        (key, commentValue) => {
-            setComment(commentValue);
-            setFieldTouched(key, true);
-            setFieldValue(key, commentValue);
-        },
-        [setFieldTouched, setFieldValue],
-    );
+    const onChangeComment = useCallback((key, commentValue) => {
+        setComment(commentValue);
+    }, []);
+
+    const onblur = key => {
+        console.log('Onblur');
+        setFieldTouched(key, true);
+        setFieldValue(key, comment);
+    };
 
     return (
         <>
@@ -196,6 +197,7 @@ export const VaccineManangementForm: FunctionComponent<Props> = () => {
                                     newComment,
                                 )
                             }
+                            onBlur={() => onblur(`${accessor}.forma_comment`)}
                         />
                     </Grid>
                 </Grid>

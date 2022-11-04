@@ -1193,7 +1193,10 @@ class StorageAPITestCase(APITestCase):
     @staticmethod
     def _csv_response_to_list(response: StreamingHttpResponse) -> List[List[str]]:
         """Convert a StreamingHttpResponse for CSV data to a list of lists"""
-        response_string = "\n".join(s.decode("U8") for s in response)
+
+        # We use weird \r\n\n line separators, I don't want to change the working behavior so this helper just replace
+        # them, so csv.reader can read the data
+        response_string = "\n".join(s.decode("U8") for s in response).replace("\r\n\n", "\r\n")
         reader = csv.reader(StringIO(response_string), delimiter=",")
         return list(reader)
 
@@ -1229,9 +1232,9 @@ class StorageAPITestCase(APITestCase):
             ],
         )
         # 3. Check the data
-        self.assertEqual(len(data), 3)  # 1 header, 1 blank then 1 data row
+        self.assertEqual(len(data), 2)  # 1 header, 1 data row
         self.assertEqual(
-            data[2],
+            data[1],
             [
                 "e4200710-bf82-4d29-a29b-6a042f79ef25",
                 "EXISTING_STORAGE",
@@ -1316,9 +1319,9 @@ class StorageAPITestCase(APITestCase):
         response = self.client.get(f"/api/storage/NFC/EXISTING_STORAGE/logs?csv=true&types=WRITE_RECORD")
         data = self._csv_response_to_list(response)
         # We check that only the new one is found, the one from setUpTestData is filtered out
-        self.assertEqual(len(data), 3)  # 1 header, 1 blank then 1 data row
+        self.assertEqual(len(data), 2)  # 1 header, 1 data row
         self.assertEqual(
-            data[2],
+            data[1],
             [
                 "e4200710-bf82-4d29-a29b-6a042f79ef26",
                 "EXISTING_STORAGE",
@@ -1351,8 +1354,8 @@ class StorageAPITestCase(APITestCase):
 
         response = self.client.get(f"/api/storage/NFC/EXISTING_STORAGE/logs?csv=true&order=-id")
         data = self._csv_response_to_list(response)
-        self.assertEqual(data[2][0], "e4200710-bf82-4d29-a29b-6a042f79ef26")
-        self.assertEqual(data[4][0], "e4200710-bf82-4d29-a29b-6a042f79ef25")
+        self.assertEqual(data[1][0], "e4200710-bf82-4d29-a29b-6a042f79ef26")
+        self.assertEqual(data[2][0], "e4200710-bf82-4d29-a29b-6a042f79ef25")
 
     def test_get_blacklisted_devices(self):
         """Test the basics of the GET /api/mobile/storage/blacklisted endpoint"""

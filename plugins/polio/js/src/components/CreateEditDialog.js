@@ -46,7 +46,7 @@ import { CAMPAIGN_HISTORY_URL } from '../constants/routes';
 
 import { useStyles } from '../styles/theme';
 import MESSAGES from '../constants/messages';
-import { VaccineManangementForm } from '../forms/VaccineManangementForm.tsx';
+import { VaccineManagementForm } from '../forms/VaccineManagementForm.tsx';
 
 const CreateEditDialog = ({
     isOpen,
@@ -141,7 +141,7 @@ const CreateEditDialog = ({
             },
             {
                 title: formatMessage(MESSAGES.vaccineManagement),
-                form: VaccineManangementForm,
+                form: VaccineManagementForm,
             },
         ];
     }, [

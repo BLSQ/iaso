@@ -10,10 +10,11 @@ import { ShipmentsForm } from './ShipmentsForm';
 import { ReportingDelays } from './ReportingDelays';
 import { RoundVaccinesForm } from './RoundVaccinesForm';
 import { MultilineText } from '../components/Inputs/MultilineText';
+import { DestructionsForm } from './DestructionsForm';
 
 type Props = any;
 
-export const VaccineManangementForm: FunctionComponent<Props> = () => {
+export const VaccineManagementForm: FunctionComponent<Props> = () => {
     const classes: Record<string, string> = useStyles();
     const { formatMessage } = useSafeIntl();
     const {
@@ -192,11 +193,16 @@ export const VaccineManangementForm: FunctionComponent<Props> = () => {
                         </Typography>
                     </Box>
                 </Grid>
-                <Grid container direction="row" spacing={2} item xs={12}>
-                    {/* Not sure yet if this should not be a map */}
+                <DestructionsForm
+                    accessor={accessor}
+                    round={rounds[roundIndex]}
+                />
+                {/* <Grid container direction="row" spacing={2} item xs={12}>
                     <Grid item xs={6}>
                         <Field
-                            label={formatMessage(MESSAGES.destructionDate)}
+                            label={formatMessage(
+                                MESSAGES.destructionReceptionDate,
+                            )}
                             // fullWidth
                             name={`${accessor}.date_destruction`}
                             component={DateInput}
@@ -210,7 +216,7 @@ export const VaccineManangementForm: FunctionComponent<Props> = () => {
                             className={classes.input}
                         />
                     </Grid>
-                </Grid>
+                </Grid> */}
             </Grid>
         </>
     );

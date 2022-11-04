@@ -18,8 +18,8 @@ export const VaccineManangementForm: FunctionComponent<Props> = () => {
     const { formatMessage } = useSafeIntl();
     const {
         values: { rounds = [] },
-        setFieldValue,
-        setFieldTouched,
+        // setFieldValue,
+        // setFieldTouched,
     } = useFormikContext<any>(); // TODO add campaign typing
 
     const [currentRoundNumber, setCurrentRoundNumber] = useState(
@@ -38,10 +38,10 @@ export const VaccineManangementForm: FunctionComponent<Props> = () => {
         setComment(commentValue);
     }, []);
 
-    const onblur = key => {
-        setFieldTouched(key, true);
-        setFieldValue(key, comment);
-    };
+    // const onblur = key => {
+    //     setFieldTouched(key, true);
+    //     setFieldValue(key, comment);
+    // };
 
     return (
         <>
@@ -196,7 +196,7 @@ export const VaccineManangementForm: FunctionComponent<Props> = () => {
                                     newComment,
                                 )
                             }
-                            onBlur={() => onblur(`${accessor}.forma_comment`)}
+                            // onBlur={() => onblur(`${accessor}.forma_comment`)}
                         />
                     </Grid>
                 </Grid>

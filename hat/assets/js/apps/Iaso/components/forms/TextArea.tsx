@@ -17,7 +17,7 @@ type Props = {
     errors?: string[];
     required?: boolean;
     // eslint-disable-next-line no-unused-vars
-    onBlur: () => void;
+    // onBlur?: () => void;
 };
 
 const useStyles = makeStyles(theme => ({
@@ -69,7 +69,7 @@ export const TextArea: FunctionComponent<Props> = ({
     label,
     errors = [],
     required = false,
-    onBlur,
+    // onBlur,
 }) => {
     const classes: Record<string, string> = useStyles();
     const [focus, setFocus] = useState<boolean>(false);
@@ -91,7 +91,7 @@ export const TextArea: FunctionComponent<Props> = ({
             </InputLabel>
             <textarea
                 onFocus={() => setFocus(true)}
-                onBlur={() => [setFocus(false), onBlur()]}
+                // onBlur={() => [setFocus(false), onBlur()]}
                 className={classnames(
                     classes.textArea,
                     hasErrors && classes.errorArea,

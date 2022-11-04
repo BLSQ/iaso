@@ -1,4 +1,4 @@
-import React, { FunctionComponent, useState } from 'react';
+import React, { FunctionComponent, useCallback, useState } from 'react';
 import { Box, Divider, Grid, Tab, Tabs, Typography } from '@material-ui/core';
 import { Field, useFormikContext } from 'formik';
 // @ts-ignore
@@ -13,13 +13,13 @@ import { TextArea } from '../../../../../hat/assets/js/apps/Iaso/components/form
 
 type Props = any;
 
-
-
 export const VaccineManangementForm: FunctionComponent<Props> = () => {
     const classes: Record<string, string> = useStyles();
     const { formatMessage } = useSafeIntl();
     const {
         values: { rounds = [] },
+        setFieldValue,
+        setFieldTouched,
     } = useFormikContext<any>(); // TODO add campaign typing
 
     const [currentRoundNumber, setCurrentRoundNumber] = useState(
@@ -32,8 +32,16 @@ export const VaccineManangementForm: FunctionComponent<Props> = () => {
     };
 
     const accessor = `rounds[${roundIndex}]`;
-    console.log("accessor", accessor["forma_date"])
-    const [comment, setComment] = useState("");
+    const [comment, setComment] = useState(rounds[roundIndex]?.forma_comment);
+
+    const onChangeComment = useCallback(
+        (key, commentValue) => {
+            setComment(commentValue);
+            setFieldTouched(key, true);
+            setFieldValue(key, commentValue);
+        },
+        [setFieldTouched, setFieldValue],
+    );
 
     return (
         <>
@@ -161,7 +169,15 @@ export const VaccineManangementForm: FunctionComponent<Props> = () => {
                         />
                     </Grid>
                 </Grid>
-                <Grid container direction="row" item xs={12} spacing={2} justify="flex-start" alignItems="center">
+                <Grid
+                    container
+                    direction="row"
+                    item
+                    xs={12}
+                    spacing={2}
+                    justify="flex-start"
+                    alignItems="center"
+                >
                     <Grid item lg={3} md={6}>
                         <Field
                             label={formatMessage(MESSAGES.formADate)}
@@ -173,15 +189,17 @@ export const VaccineManangementForm: FunctionComponent<Props> = () => {
                     <Grid item lg={3} md={6}>
                         <TextArea
                             label={formatMessage(MESSAGES.comment)}
-                            name={`${accessor}.forma_comment`}
                             value={comment}
                             onChange={newComment =>
-                                setComment(newComment)
+                                onChangeComment(
+                                    `${accessor}.forma_comment`,
+                                    newComment,
+                                )
                             }
                         />
                     </Grid>
                 </Grid>
-                
+
                 {/* fourth row: destruction */}
                 <Divider style={{ width: '100%' }} />
                 <Grid item xs={12}>
@@ -211,7 +229,6 @@ export const VaccineManangementForm: FunctionComponent<Props> = () => {
                     </Grid>
                 </Grid>
             </Grid>
-           
         </>
     );
 };

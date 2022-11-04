@@ -147,7 +147,7 @@ yup.addMethod(
                 forma_missing_vials,
                 forma_usable_vials,
                 forma_unusable_vials,
-                forma_date
+                forma_date,
             } = parent;
             if (
                 !value &&
@@ -177,7 +177,7 @@ yup.addMethod(
                 forma_missing_vials,
                 forma_usable_vials,
                 forma_unusable_vials,
-                forma_date
+                forma_date,
             } = parent;
             if (
                 !value &&
@@ -493,11 +493,8 @@ const useRoundShape = () => {
         forma_date: yup
             .date()
             .typeError(formatMessage(MESSAGES.invalidDate))
-            .nullable()
-            .hasAllFormAFieldsDate(formatMessage),
-        forma_comment: yup
-            .string()
             .nullable(),
+        forma_comment: yup.string().nullable(),
         date_destruction: yup
             .date()
             .typeError(formatMessage(MESSAGES.invalidDate))

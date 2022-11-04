@@ -117,6 +117,7 @@ class Shipment(models.Model):
     estimated_arrival_date = models.DateField(null=True, blank=True)
     reception_pre_alert = models.DateField(null=True, blank=True)
     date_reception = models.DateField(null=True, blank=True)
+    comment = models.TextField(null=True, blank=True)
     round = models.ForeignKey("Round", related_name="shipments", on_delete=models.CASCADE, null=True)
 
 

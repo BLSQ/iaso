@@ -285,6 +285,7 @@ class ShipmentSerializer(serializers.ModelSerializer):
             "reception_pre_alert",
             "date_reception",
             "vaccine_name",
+            "comment",
             "id",
         ]
 

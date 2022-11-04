@@ -262,6 +262,39 @@ yup.addMethod(
 );
 yup.addMethod(
     yup.string,
+    'shipmentCommentsCheck',
+    function shipmentCommentsCheck(formatMessage) {
+        return this.test('shipmentCommentsCheck', '', (value, context) => {
+            const { path, createError, parent } = context;
+            const {
+                date_reception,
+                estimated_arrival_date,
+                reception_pre_alert,
+                vials_received,
+                po_numbers,
+                vaccine_name,
+            } = parent;
+            if (
+                value &&
+                (!vaccine_name ||
+                    !po_numbers ||
+                    !vials_received ||
+                    !reception_pre_alert ||
+                    !estimated_arrival_date ||
+                    !date_reception)
+            ) {
+                return createError({
+                    path,
+                    message: formatMessage(MESSAGES.shipmentFieldsTogether),
+                });
+            }
+            return true;
+        });
+    },
+);
+
+yup.addMethod(
+    yup.string,
     'hasAllShipmentFieldsString',
     function hasAllShipmentFieldsString(formatMessage) {
         return this.test('hasAllShipmentFieldsString', '', (value, context) => {
@@ -329,6 +362,7 @@ const useShipmentShape = () => {
             .nullable()
             .typeError(formatMessage(MESSAGES.invalidDate))
             .hasAllShipmentFieldsDate(formatMessage),
+        comment: yup.string().nullable().shipmentCommentsCheck(formatMessage),
     });
 };
 

@@ -24,12 +24,11 @@ const useStyles = makeStyles(theme => ({
     },
     inputLabel: {
         ...commonStyles.inputLabel,
-        top: 13,
         left: 4,
         backgroundColor: 'white',
     },
     inputLabelShrink: {
-        transform: 'translate(14px, -3px) scale(0.75) !important',
+        transform: 'translate(14px, -5px) scale(0.75) !important',
     },
     textArea: {
         width: '100%',
@@ -37,7 +36,6 @@ const useStyles = makeStyles(theme => ({
         maxWidth: '100%',
         minHeight: '100px',
         padding: theme.spacing(2),
-        marginTop: theme.spacing(2),
         outline: 'none',
         borderRadius: 5,
         fontSize: 16,

@@ -82,6 +82,9 @@ class OrgUnitSerializer(TimestampSerializerMixin, serializers.ModelSerializer):
     def get_altitude(self, org_unit):
         return org_unit.location.z if org_unit.location else None
 
+    def get_creator(self, org_unit):
+        return None if org_unit.creator is None else org_unit.creator.username
+
     class Meta:
         model = OrgUnit
 
@@ -104,10 +107,14 @@ class OrgUnitSerializer(TimestampSerializerMixin, serializers.ModelSerializer):
             "search_index",
             "created_at",
             "org_unit_type_id",
+            "creator",
         ]
 
 
 class OrgUnitSmallSearchSerializer(OrgUnitSerializer):
+    def get_creator(self, org_unit):
+        return None if org_unit.creator is None else org_unit.creator.username
+
     class Meta:
         model = OrgUnit
 
@@ -122,6 +129,7 @@ class OrgUnitSmallSearchSerializer(OrgUnitSerializer):
             "org_unit_type_name",
             "search_index",
             "parent",
+            "creator",
         ]
 
 
@@ -135,6 +143,7 @@ class OrgUnitSearchParentSerializer(OrgUnitSerializer):
 class OrgUnitSearchSerializer(OrgUnitSerializer):
     parent = OrgUnitSearchParentSerializer()
     instances_count = serializers.SerializerMethodField()
+    creator = serializers.SerializerMethodField()
 
     def get_instances_count(self, org_unit):
         # in some case instances_count is prefilled by an annotation
@@ -142,6 +151,15 @@ class OrgUnitSearchSerializer(OrgUnitSerializer):
             return org_unit.instances_count
         else:
             return org_unit.instance_set.filter(~Q(file="") & ~Q(device__test_device=True) & ~Q(deleted=True)).count()
+
+    def get_creator(self, org_unit):
+        creator = None
+        if org_unit.creator is not None:
+            if org_unit.creator.first_name is not None and org_unit.creator.last_name is not None:
+                creator = f"{org_unit.creator.username} ( {org_unit.creator.first_name} {org_unit.creator.last_name} )"
+            else:
+                creator = org_unit.creator.username
+        return creator
 
     class Meta:
         model = OrgUnit
@@ -170,6 +188,7 @@ class OrgUnitSearchSerializer(OrgUnitSerializer):
             "instances_count",
             "updated_at",
             "groups",
+            "creator",
         ]
 
 

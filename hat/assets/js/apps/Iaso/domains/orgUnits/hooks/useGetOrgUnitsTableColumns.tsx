@@ -17,6 +17,7 @@ import { Search } from '../types/search';
 import { Column } from '../../../types/table';
 import { IntlFormatMessage } from '../../../types/intl';
 import { ActionCell } from '../components/ActionCell';
+import getDisplayName from '../../../utils/usersUtils';
 
 const useStyles = makeStyles(theme => ({
     ...commonStyles(theme),
@@ -109,6 +110,11 @@ export const useGetOrgUnitsTableColumns = (searches: [Search]): Column[] => {
                 Header: formatMessage(MESSAGES.created_at),
                 accessor: 'created_at',
                 Cell: DateTimeCell,
+            },
+            {
+                Header: formatMessage(MESSAGES.creator),
+                accessor: 'creator',
+                id: 'creator',
             },
             {
                 Header: formatMessage(MESSAGES.action),

@@ -133,6 +133,7 @@ class OrgUnitAPITestCase(APITestCase):
             {
                 "aliases": None,
                 "created_at": 1522800000.0,
+                "creator": None,
                 "groups": [
                     OrderedDict(
                         [
@@ -223,6 +224,7 @@ class OrgUnitAPITestCase(APITestCase):
                 "latitude": 50.0,
                 "longitude": 4.0,
                 "altitude": 100.0,
+                "creator": None,
             },
         )
 
@@ -237,6 +239,7 @@ class OrgUnitAPITestCase(APITestCase):
                 "name": "Corruscant Jedi Council",
                 "org_unit_type_name": "Jedi Council",
                 "parent": None,
+                "creator": None,
                 "parent_id": None,
                 "parent_name": None,
                 "search_index": None,
@@ -251,10 +254,12 @@ class OrgUnitAPITestCase(APITestCase):
         self.assertDictEqual(
             res,
             {
+                "creator": None,
                 "id": orgunit.id,
                 "name": "Endor Jedi Squad 1",
                 "org_unit_type_name": "Jedi Squad",
                 "parent": {
+                    "creator": None,
                     "id": orgunit.parent_id,
                     "name": "Endor Jedi Council",
                     "parent_id": None,

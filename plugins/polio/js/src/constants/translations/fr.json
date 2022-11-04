@@ -197,6 +197,7 @@
     "iaso.polio.label.filter": "Filtrer",
     "iaso.polio.label.finished": "Terminé",
     "iaso.polio.label.formA": "Form A",
+    "iaso.polio.label.formADate": "Date du formulaire",
     "iaso.polio.label.formaFieldsTogether": "Tous les champs relatifs au Formulaire A doivent être remplis ensemble",
     "iaso.polio.label.formAMissingVials": "Nombre de fioles manquantes dans le formulaire national",
     "iaso.polio.label.formAReception": "Réception du Formulaire A national",

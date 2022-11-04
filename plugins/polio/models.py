@@ -180,6 +180,8 @@ class Round(models.Model):
     forma_missing_vials = models.IntegerField(null=True, blank=True)
     forma_usable_vials = models.IntegerField(null=True, blank=True)
     forma_unusable_vials = models.IntegerField(null=True, blank=True)
+    forma_date = models.DateField(null=True, blank=True)
+    forma_comment = models.TextField(blank=True, null=True)
 
     def get_item_by_key(self, key):
         return getattr(self, key)

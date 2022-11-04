@@ -9,8 +9,11 @@ import { DateInput, TextInput } from '../components/Inputs';
 import { ShipmentsForm } from './ShipmentsForm';
 import { ReportingDelays } from './ReportingDelays';
 import { RoundVaccinesForm } from './RoundVaccinesForm';
+import { TextArea } from '../../../../../hat/assets/js/apps/Iaso/components/forms/TextArea';
 
 type Props = any;
+
+
 
 export const VaccineManangementForm: FunctionComponent<Props> = () => {
     const classes: Record<string, string> = useStyles();
@@ -29,6 +32,8 @@ export const VaccineManangementForm: FunctionComponent<Props> = () => {
     };
 
     const accessor = `rounds[${roundIndex}]`;
+    console.log("accessor", accessor["forma_date"])
+    const [comment, setComment] = useState("");
 
     return (
         <>
@@ -156,6 +161,27 @@ export const VaccineManangementForm: FunctionComponent<Props> = () => {
                         />
                     </Grid>
                 </Grid>
+                <Grid container direction="row" item xs={12} spacing={2} justify="flex-start" alignItems="center">
+                    <Grid item lg={3} md={6}>
+                        <Field
+                            label={formatMessage(MESSAGES.formADate)}
+                            name={`${accessor}.forma_date`}
+                            component={DateInput}
+                            className={classes.input}
+                        />
+                    </Grid>
+                    <Grid item lg={3} md={6}>
+                        <TextArea
+                            label={formatMessage(MESSAGES.comment)}
+                            name={`${accessor}.forma_comment`}
+                            value={comment}
+                            onChange={newComment =>
+                                setComment(newComment)
+                            }
+                        />
+                    </Grid>
+                </Grid>
+                
                 {/* fourth row: destruction */}
                 <Divider style={{ width: '100%' }} />
                 <Grid item xs={12}>
@@ -185,6 +211,7 @@ export const VaccineManangementForm: FunctionComponent<Props> = () => {
                     </Grid>
                 </Grid>
             </Grid>
+           
         </>
     );
 };

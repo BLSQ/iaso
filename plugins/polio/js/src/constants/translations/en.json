@@ -190,6 +190,7 @@
     "iaso.polio.label.filesUpload": "Files",
     "iaso.polio.label.finished": "Finished",
     "iaso.polio.label.formA": "Form A",
+    "iaso.polio.label.formADate": "Form date",
     "iaso.polio.label.formaFieldsTogether": "All Form A fields need to be filled together",
     "iaso.polio.label.formAMissingVials": "Number of missing vials from the national form",
     "iaso.polio.label.formAReception": "Reception of national Form A",

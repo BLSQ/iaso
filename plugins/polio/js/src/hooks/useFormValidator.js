@@ -147,13 +147,15 @@ yup.addMethod(
                 forma_missing_vials,
                 forma_usable_vials,
                 forma_unusable_vials,
+                forma_date
             } = parent;
             if (
                 !value &&
                 (forma_unusable_vials ||
                     forma_usable_vials ||
                     forma_missing_vials ||
-                    forma_reception)
+                    forma_reception ||
+                    forma_date)
             ) {
                 return createError({
                     path,
@@ -175,13 +177,15 @@ yup.addMethod(
                 forma_missing_vials,
                 forma_usable_vials,
                 forma_unusable_vials,
+                forma_date
             } = parent;
             if (
                 !value &&
                 (forma_unusable_vials ||
                     forma_usable_vials ||
                     forma_missing_vials ||
-                    forma_reception)
+                    forma_reception ||
+                    forma_date)
             ) {
                 return createError({
                     path,
@@ -486,6 +490,14 @@ const useRoundShape = () => {
             .typeError(formatMessage(MESSAGES.invalidDate))
             .nullable()
             .hasAllFormAFieldsDate(formatMessage),
+        forma_date: yup
+            .date()
+            .typeError(formatMessage(MESSAGES.invalidDate))
+            .nullable()
+            .hasAllFormAFieldsDate(formatMessage),
+        forma_comment: yup
+            .string()
+            .nullable(),
         date_destruction: yup
             .date()
             .typeError(formatMessage(MESSAGES.invalidDate))

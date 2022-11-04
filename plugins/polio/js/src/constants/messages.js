@@ -1632,6 +1632,10 @@ const MESSAGES = defineMessages({
         id: 'iaso.polio.label.formAReception',
         defaultMessage: 'Reception of national Form A',
     },
+    formADate: {
+        id: 'iaso.polio.label.formADate',
+        defaultMessage: 'Form date',
+    },
     formAUsableVials: {
         id: 'iaso.polio.label.formAUsableVials',
         defaultMessage: 'Usable vials',

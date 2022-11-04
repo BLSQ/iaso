@@ -110,6 +110,14 @@ class CampaignScope(models.Model):
         ordering = ["campaign", "vaccine"]
 
 
+class Destruction(models.Model):
+    vials_destroyed = models.IntegerField(null=True, blank=True)
+    date_report_received = models.DateField(null=True, blank=True)
+    date_report = models.DateField(null=True, blank=True)
+    comment = models.TextField(null=True, blank=True)
+    round = models.ForeignKey("Round", related_name="destructions", on_delete=models.CASCADE, null=True)
+
+
 class Shipment(models.Model):
     vaccine_name = models.CharField(max_length=5, choices=VACCINES)
     po_numbers = models.IntegerField(null=True, blank=True)

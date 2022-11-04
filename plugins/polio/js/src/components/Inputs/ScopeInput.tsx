@@ -4,7 +4,7 @@ import React, {
     useCallback,
     useMemo,
     useState,
-    useEffect
+    useEffect,
 } from 'react';
 import { useField } from 'formik';
 import {
@@ -39,6 +39,9 @@ import sortBy from 'lodash/sortBy';
 
 import { FieldProps } from 'formik/dist/Field';
 
+import CheckIcon from '@material-ui/icons/Check';
+import SelectAllIcon from '@material-ui/icons/SelectAll';
+import InputComponent from 'Iaso/components/forms/InputComponent';
 import { MapComponent } from '../MapComponent/MapComponent';
 import { MapLegend } from '../../../../../../hat/assets/js/apps/Iaso/components/maps/MapLegend';
 
@@ -55,9 +58,6 @@ import {
 } from '../../styles/constants';
 import { useStyles } from '../../styles/theme';
 import { csvPreview } from '../../../../../../hat/assets/js/apps/Iaso/domains/dataSources/requests';
-import CheckIcon from '@material-ui/icons/Check';
-import SelectAllIcon from '@material-ui/icons/SelectAll';
-import InputComponent from 'Iaso/components/forms/InputComponent';
 
 type Scope = {
     vaccine: string;
@@ -100,8 +100,10 @@ type Values = {
 export const ScopeInput: FunctionComponent<FieldProps<Scope[], Values>> = ({
     field,
     form: { values },
-    searchDistricts,
+    filteredDistricts,
+    searchString,
 }) => {
+    console.log(searchString, filteredDistricts);
     // eslint-disable-next-line no-unused-vars
     const [_field, _meta, helpers] = useField(field.name);
     const classes: Record<string, string> = useStyles();
@@ -109,7 +111,7 @@ export const ScopeInput: FunctionComponent<FieldProps<Scope[], Values>> = ({
     const [selectRegion, setSelectRegion] = useState(false);
     const { value: scopes = [] } = field;
     const { setValue: setScopes } = helpers;
-    const [searchValue, setSearchValue] = useState("");
+    const [searchValue, setSearchValue] = useState('');
     const [searchScope, setSearchScope] = useState(true);
     const vaccineCount = useMemo(
         () =>
@@ -134,8 +136,8 @@ export const ScopeInput: FunctionComponent<FieldProps<Scope[], Values>> = ({
     const { data: districtShapes, isFetching: isFetchingDistricts } =
         useGetGeoJson(parentCountryId, 'DISTRICT');
 
-    const districts = districtShapes
-    const [filteredDistricts, setFilteredDistricts] = useState([]);
+    const districts = districtShapes;
+    // const [filteredDistricts, setFilteredDistricts] = useState([]);
     const { data: regionShapes, isFetching: isFetchingRegions } = useGetGeoJson(
         parentCountryId,
         'REGION',
@@ -246,20 +248,20 @@ export const ScopeInput: FunctionComponent<FieldProps<Scope[], Values>> = ({
                 scope.group.org_units.push(district.id);
             }
             // when the add is done on searched result and update the filteredDistricts state
-            if (searchValue !== "") {
-                const newFilteredDistricts = filteredDistricts.map(dist => {
-                    if (dist.id === district.id) {
-                        dist.vaccineName = selectedVaccine;
-                    }
+            // if (searchValue !== '') {
+            //     const newFilteredDistricts = filteredDistricts.map(dist => {
+            //         if (dist.id === district.id) {
+            //             dist.vaccineName = selectedVaccine;
+            //         }
 
-                    return dist;
-                });
-                setFilteredDistricts(newFilteredDistricts);
-            }
+            //         return dist;
+            //     });
+            //     setFilteredDistricts(newFilteredDistricts);
+            // }
 
             setScopes(newScopes);
         },
-        [scopes, setScopes, filteredDistricts, setFilteredDistricts],
+        [scopes, setScopes],
     );
 
     const toggleDistrictInVaccineScope = useCallback(
@@ -280,16 +282,16 @@ export const ScopeInput: FunctionComponent<FieldProps<Scope[], Values>> = ({
             }
             // Remove org unit from selection if it's part of the scope
             if (scope.group.org_units.includes(district.id)) {
-                if (searchValue !== "") {
-                    const newFilteredDistricts = filteredDistricts.map(dist => {
-                        if (dist.id === district.id) {
-                            dist.vaccineName = "";
-                        }
+                // if (searchValue !== '') {
+                //     const newFilteredDistricts = filteredDistricts.map(dist => {
+                //         if (dist.id === district.id) {
+                //             dist.vaccineName = '';
+                //         }
 
-                        return dist;
-                    });
-                    setFilteredDistricts(newFilteredDistricts);
-                }
+                //         return dist;
+                //     });
+                //     setFilteredDistricts(newFilteredDistricts);
+                // }
                 scope.group.org_units = scope.group.org_units.filter(
                     OrgUnitId => OrgUnitId !== district.id,
                 );
@@ -308,9 +310,8 @@ export const ScopeInput: FunctionComponent<FieldProps<Scope[], Values>> = ({
             }
             setScopes(newScopes);
         },
-        [scopes, setScopes, filteredDistricts, setFilteredDistricts],
+        [scopes, setScopes],
     );
-
 
     const onSelectOrgUnit = shape => {
         if (selectRegion) {
@@ -348,18 +349,18 @@ export const ScopeInput: FunctionComponent<FieldProps<Scope[], Values>> = ({
                     OrgUnitId => !OrgUnitIdsToRemove.includes(OrgUnitId),
                 );
             });
-            if (searchValue !== "") {
-                const newFilteredDistricts = filteredDistricts.map(dict => {
-                    if (OrgUnitIdsToRemove.includes(dict.id)) {
-                        dict.vaccineName = "";
-                    }
-                    return dict;
-                });
-                setFilteredDistricts(newFilteredDistricts);
-            }
+            // if (searchValue !== '') {
+            //     const newFilteredDistricts = filteredDistricts.map(dict => {
+            //         if (OrgUnitIdsToRemove.includes(dict.id)) {
+            //             dict.vaccineName = '';
+            //         }
+            //         return dict;
+            //     });
+            //     setFilteredDistricts(newFilteredDistricts);
+            // }
             setScopes(newScopes);
         },
-        [districtShapes, scopes, setScopes, filteredDistricts, searchValue],
+        [districtShapes, scopes, setScopes, searchValue],
     );
 
     // Add all district in the same region as this district
@@ -370,24 +371,27 @@ export const ScopeInput: FunctionComponent<FieldProps<Scope[], Values>> = ({
                 .map(s => s.id);
 
             const newScopes: Scope[] = cloneDeep(scopes);
-            newScopes.filter(sc => sc.vaccine === selectedVaccine).forEach(scope => {
-                // eslint-disable-next-line no-param-reassign
-                scope.group.org_units = scope.group.org_units.concat(OrgUnitIdsToAdd);
-            });
-
-            if (searchValue !== "") {
-                const newFilteredDistricts = filteredDistricts.map(dict => {
-                    if (OrgUnitIdsToAdd.includes(dict.id)) {
-                        dict.vaccineName = selectedVaccine;
-                    }
-                    return dict;
+            newScopes
+                .filter(sc => sc.vaccine === selectedVaccine)
+                .forEach(scope => {
+                    // eslint-disable-next-line no-param-reassign
+                    scope.group.org_units =
+                        scope.group.org_units.concat(OrgUnitIdsToAdd);
                 });
-                setFilteredDistricts(newFilteredDistricts);
-            }
+
+            // if (searchValue !== '') {
+            //     const newFilteredDistricts = filteredDistricts.map(dict => {
+            //         if (OrgUnitIdsToAdd.includes(dict.id)) {
+            //             dict.vaccineName = selectedVaccine;
+            //         }
+            //         return dict;
+            //     });
+            //     setFilteredDistricts(newFilteredDistricts);
+            // }
 
             setScopes(newScopes);
         },
-        [districtShapes, scopes, setScopes, filteredDistricts, setFilteredDistricts],
+        [districtShapes, scopes, setScopes],
     );
 
     const handleSort = useCallback(
@@ -456,51 +460,51 @@ export const ScopeInput: FunctionComponent<FieldProps<Scope[], Values>> = ({
             </Tooltip>
         );
     };
-    // Launch the searchdistrictByname from parent component
-    useEffect(() => {
-        searchDistricts.current = searchDistrictByName;
-
-    }, [districts, filteredDistricts, searchValue, searchScope])
-    // research when the checkbox(Search districts in scope) is checked on unchecked
-    useEffect(() => {
-        searchDistrictByName(searchValue);
-    }, [searchScope]);
+    // // Launch the searchdistrictByname from parent component
+    // useEffect(() => {
+    //     searchDistricts.current = searchDistrictByName;
+    // }, [districts, filteredDistricts, searchValue, searchScope]);
+    // // research when the checkbox(Search districts in scope) is checked on unchecked
+    // useEffect(() => {
+    //     searchDistrictByName(searchValue);
+    // }, [searchScope]);
 
     // Will search district according to the name entered in the search input
-    const searchDistrictByName = (search) => {
-        setSearchValue(search)
-        // setSearchScope(searchScope)
+    // const searchDistrictByName = search => {
+    //     setSearchValue(search);
+    //     // setSearchScope(searchScope)
 
-        let filtreds = []
-        if (search.length > 0) {
-            let toFilter = districts
-                .map(district => {
-                    return {
-                        ...district,
-                        region: findRegion(district, regionShapes),
-                        vaccineName: findScopeWithOrgUnit(scopes, district.id)
-                            ?.vaccine,
-                    };
-                })
-            if (searchScope) {
-                toFilter = toFilter.filter(d => d.vaccineName)
-            }
-            filtreds = toFilter.filter(d => d.name.includes(search.toUpperCase()))
-            if (sortFocus === 'REGION') {
-                filtreds = sortBy(filtreds, ['region']);
-            } else if (sortFocus === 'VACCINE') {
-                filtreds = sortBy(filtreds, ['vaccineName']);
-            }
-            if (orderBy === 'desc') {
-                filtreds = filtreds.reverse();
-            }
-        }
-        setFilteredDistricts(filtreds)
-    }
+    //     let filtreds = [];
+    //     if (search.length > 0) {
+    //         let toFilter = districts.map(district => {
+    //             return {
+    //                 ...district,
+    //                 region: findRegion(district, regionShapes),
+    //                 vaccineName: findScopeWithOrgUnit(scopes, district.id)
+    //                     ?.vaccine,
+    //             };
+    //         });
+    //         if (searchScope) {
+    //             toFilter = toFilter.filter(d => d.vaccineName);
+    //         }
+    //         filtreds = toFilter.filter(d =>
+    //             d.name.includes(search.toUpperCase()),
+    //         );
+    //         if (sortFocus === 'REGION') {
+    //             filtreds = sortBy(filtreds, ['region']);
+    //         } else if (sortFocus === 'VACCINE') {
+    //             filtreds = sortBy(filtreds, ['vaccineName']);
+    //         }
+    //         if (orderBy === 'desc') {
+    //             filtreds = filtreds.reverse();
+    //         }
+    //     }
+    //     setFilteredDistricts(filtreds);
+    // };
 
     return (
-        <Grid container spacing={4} style={{ marginTop: "2px" }}>
-            <Grid xs={7} item style={{ marginTop: "15px" }}>
+        <Grid container spacing={4} style={{ marginTop: '2px' }}>
+            <Grid xs={7} item style={{ marginTop: '15px' }}>
                 {isFetching && !districtShapes && <LoadingSpinner />}
                 {!isFetching && !districtShapes && (
                     // FIXME should not be needed
@@ -555,12 +559,12 @@ export const ScopeInput: FunctionComponent<FieldProps<Scope[], Values>> = ({
                                                 >
                                                     {selectedVaccine ===
                                                         vaccine.value && (
-                                                            <span
-                                                                className={
-                                                                    classes.roundColorInner
-                                                                }
-                                                            />
-                                                        )}
+                                                        <span
+                                                            className={
+                                                                classes.roundColorInner
+                                                            }
+                                                        />
+                                                    )}
                                                 </span>
                                                 <span
                                                     className={
@@ -612,10 +616,8 @@ export const ScopeInput: FunctionComponent<FieldProps<Scope[], Values>> = ({
                     label={MESSAGES.searchInScopeOrAllDistricts}
                 />
                 <TableContainer className={classes.districtList}>
-
                     <MuiTable stickyHeader size="small">
                         <TableHead>
-
                             <TableRow>
                                 <TableCell
                                     onClick={() => handleSort('REGION')}
@@ -656,7 +658,10 @@ export const ScopeInput: FunctionComponent<FieldProps<Scope[], Values>> = ({
                             </TableRow>
                         </TableHead>
                         <TableBody>
-                            {(searchValue !== "" ? filteredDistricts : shapesForTable)
+                            {(searchString !== ''
+                                ? filteredDistricts
+                                : shapesForTable
+                            )
                                 ?.slice(
                                     page * rowsPerPage,
                                     page * rowsPerPage + rowsPerPage,
@@ -682,80 +687,77 @@ export const ScopeInput: FunctionComponent<FieldProps<Scope[], Values>> = ({
                                                     shape.vaccineName,
                                                 )}
                                             </TableCell>
-                                            {
-                                                shape.vaccineName && (
-                                                    <TableCell
-                                                        style={{
-                                                            padding: 0,
-                                                            cursor: 'pointer',
-                                                            textAlign: 'center',
-                                                        }}
-                                                    >
-                                                        <IconButtonComponent
-                                                            size="small"
-                                                            onClick={() =>
-                                                                removeRegionFromTable(
-                                                                    shape,
-                                                                )
-                                                            }
-                                                            icon="clearAll"
-                                                            tooltipMessage={
-                                                                MESSAGES.removeRegion
-                                                            }
-                                                        />
-                                                        <IconButtonComponent
-                                                            size="small"
-                                                            onClick={() =>
-                                                                removeDistrictFromTable(
-                                                                    shape,
-                                                                )
-                                                            }
-                                                            icon="clear"
-                                                            tooltipMessage={
-                                                                MESSAGES.removeDistrict
-                                                            }
-                                                        />
-                                                    </TableCell>
-                                                )
-                                            }
-                                            {
-                                                !shape.vaccineName && (
-                                                    <TableCell
-                                                        style={{
-                                                            padding: 0,
-                                                            cursor: 'pointer',
-                                                            textAlign: 'center',
-                                                        }}
-                                                    >
-                                                        <IconButtonComponent
-                                                            size="small"
-                                                            onClick={() =>
-                                                                addRegionToTable(
-                                                                    shape,
-                                                                    selectedVaccine
-                                                                )
-                                                            }
-                                                            overrideIcon={SelectAllIcon}
-                                                            tooltipMessage={
-                                                                MESSAGES.addRegion
-                                                            }
-                                                        />
-                                                        <IconButtonComponent
-                                                            size="small"
-                                                            onClick={() =>
-                                                                addDistrictToTable(
-                                                                    shape,
-                                                                )
-                                                            }
-                                                            overrideIcon={CheckIcon}
-                                                            tooltipMessage={
-                                                                MESSAGES.addDistrict
-                                                            }
-                                                        />
-                                                    </TableCell>
-                                                )
-                                            }
-
+                                            {shape.vaccineName && (
+                                                <TableCell
+                                                    style={{
+                                                        padding: 0,
+                                                        cursor: 'pointer',
+                                                        textAlign: 'center',
+                                                    }}
+                                                >
+                                                    <IconButtonComponent
+                                                        size="small"
+                                                        onClick={() =>
+                                                            removeRegionFromTable(
+                                                                shape,
+                                                            )
+                                                        }
+                                                        icon="clearAll"
+                                                        tooltipMessage={
+                                                            MESSAGES.removeRegion
+                                                        }
+                                                    />
+                                                    <IconButtonComponent
+                                                        size="small"
+                                                        onClick={() =>
+                                                            removeDistrictFromTable(
+                                                                shape,
+                                                            )
+                                                        }
+                                                        icon="clear"
+                                                        tooltipMessage={
+                                                            MESSAGES.removeDistrict
+                                                        }
+                                                    />
+                                                </TableCell>
+                                            )}
+                                            {!shape.vaccineName && (
+                                                <TableCell
+                                                    style={{
+                                                        padding: 0,
+                                                        cursor: 'pointer',
+                                                        textAlign: 'center',
+                                                    }}
+                                                >
+                                                    <IconButtonComponent
+                                                        size="small"
+                                                        onClick={() =>
+                                                            addRegionToTable(
+                                                                shape,
+                                                                selectedVaccine,
+                                                            )
+                                                        }
+                                                        overrideIcon={
+                                                            SelectAllIcon
+                                                        }
+                                                        tooltipMessage={
+                                                            MESSAGES.addRegion
+                                                        }
+                                                    />
+                                                    <IconButtonComponent
+                                                        size="small"
+                                                        onClick={() =>
+                                                            addDistrictToTable(
+                                                                shape,
+                                                            )
+                                                        }
+                                                        overrideIcon={CheckIcon}
+                                                        tooltipMessage={
+                                                            MESSAGES.addDistrict
+                                                        }
+                                                    />
+                                                </TableCell>
+                                            )}
                                         </TableRow>
                                     );
                                 })}
@@ -766,7 +768,7 @@ export const ScopeInput: FunctionComponent<FieldProps<Scope[], Values>> = ({
                     className={classes.tablePagination}
                     rowsPerPageOptions={[5, 10, 25]}
                     component="div"
-                    count={searchValue !== "" ? filteredDistricts.length : (shapesForTable?.length ?? 0)}
+                    count={shapesForTable?.length ?? 0}
                     rowsPerPage={rowsPerPage}
                     page={page}
                     labelRowsPerPage="Rows"

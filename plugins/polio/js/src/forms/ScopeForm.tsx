@@ -1,18 +1,35 @@
 /* eslint-disable camelcase */
-import React, { FunctionComponent, useState, useMemo, useRef, useEffect } from 'react';
+import React, {
+    FunctionComponent,
+    useState,
+    useMemo,
+    useCallback,
+    useEffect,
+} from 'react';
 import { Field, useFormikContext } from 'formik';
 // @ts-ignore
 import { useSafeIntl } from 'bluesquare-components';
 import { TabContext, TabList, TabPanel } from '@material-ui/lab';
-import { Tab, Grid, Paper, Button, Box, makeStyles } from '@material-ui/core';
+import { Tab, Grid, Button, Box } from '@material-ui/core';
+import InputComponent from 'Iaso/components/forms/InputComponent';
+import FiltersIcon from '@material-ui/icons/FilterList';
+import { FormattedMessage } from 'react-intl';
+import sortBy from 'lodash/sortBy';
 import { ScopeInput } from '../components/Inputs/ScopeInput';
 import { BooleanInput } from '../components/Inputs';
 import MESSAGES from '../constants/messages';
 import { useStyles } from '../styles/theme';
-import InputComponent from 'Iaso/components/forms/InputComponent';
-import { styled } from '@material-ui/styles';
-import FiltersIcon from '@material-ui/icons/FilterList';
-import { FormattedMessage } from 'react-intl';
+import { useGetParentOrgUnit } from '../hooks/useGetParentOrgUnit';
+import { useGetGeoJson } from '../hooks/useGetGeoJson';
+
+type Scope = {
+    vaccine: string;
+    group: {
+        org_units: number[];
+        id?: number;
+    };
+};
+
 type Round = {
     number: number;
 };
@@ -20,11 +37,42 @@ type Round = {
 type Values = {
     separate_scopes_per_round?: boolean;
     rounds: Round[];
+    scopes: any;
+    initial_org_unit: number;
+};
+
+type Shape = {
+    name: string;
+    id: number;
+    parent_id: number;
+    country_parent?: { id: number };
+    root?: { id: number };
+};
+
+type ShapeRow = Shape & {
+    region: string;
+    vaccineName: string;
+};
+
+const findRegion = (shape: Shape, regionShapes: Shape[]) => {
+    return regionShapes.filter(
+        regionShape => regionShape.id === shape.parent_id,
+    )[0]?.name;
+};
+
+const findScopeWithOrgUnit = (scopes: Scope[], orgUnitId: number) => {
+    const scope = scopes.find(s => {
+        return s.group?.org_units.includes(orgUnitId);
+    });
+    return scope;
 };
 
 export const ScopeForm: FunctionComponent = () => {
     const { formatMessage } = useSafeIntl();
     const { values } = useFormikContext<Values>();
+    const [scopes, setScopes] = useState(values.scopes);
+    const [orderBy, setOrderBy] = useState('asc');
+    const [sortFocus, setSortFocus] = useState('DISTRICT');
     const { separate_scopes_per_round: scopePerRound, rounds } = values;
     const classes: Record<string, string> = useStyles();
     const sortedRounds = useMemo(
@@ -39,28 +87,72 @@ export const ScopeForm: FunctionComponent = () => {
     const [searchUpdated, setSearchUpdated] = useState(false);
     const [scopeSearch, setScopeSearch] = useState(true);
     const [currentTab, setCurrentTab] = useState('1');
+    const [filteredDistricts, setFilteredDistricts] = useState([]);
     const handleChangeTab = (event, newValue) => {
         setCurrentTab(newValue);
     };
+
+    const { data: country } = useGetParentOrgUnit(values.initial_org_unit);
+
+    const parentCountryId =
+        country?.country_parent?.id || country?.root?.id || country?.id;
+
+    const { data: districtShapes, isFetching: isFetchingDistricts } =
+        useGetGeoJson(parentCountryId, 'DISTRICT');
+
+    const { data: regionShapes, isFetching: isFetchingRegions } = useGetGeoJson(
+        parentCountryId,
+        'REGION',
+    );
 
     const [search, setSearch] = useState(null);
 
     useEffect(() => {
         setSearchUpdated(true);
-    }, [
-        search
-    ]);
+    }, [search]);
 
     useEffect(() => {
         setSearchUpdated(false);
     }, []);
 
-
-    const searchDistricts = useRef(null)
+    const searchDistrictByName = useCallback(
+        search => {
+            console.log('search', search);
+            // setSearchValue(search);
+            // // setSearchScope(searchScope)
+            let filtreds = [];
+            if (search !== '') {
+                const toFilter = districtShapes.map(district => {
+                    return {
+                        ...district,
+                        region: findRegion(district, regionShapes),
+                        vaccineName: findScopeWithOrgUnit(scopes, district.id)
+                            ?.vaccine,
+                    };
+                });
+                // if (searchScope) {
+                //     toFilter = toFilter.filter(d => d.vaccineName);
+                // }
+                filtreds = toFilter.filter(d =>
+                    d.name.includes(search.toUpperCase()),
+                );
+                if (sortFocus === 'REGION') {
+                    filtreds = sortBy(filtreds, ['region']);
+                } else if (sortFocus === 'VACCINE') {
+                    filtreds = sortBy(filtreds, ['vaccineName']);
+                }
+                if (orderBy === 'desc') {
+                    filtreds = filtreds.reverse();
+                }
+            }
+            setFilteredDistricts(filtreds);
+        },
+        [districtShapes, orderBy, regionShapes, scopes, sortFocus],
+    );
 
     return (
         <>
-            <Grid container spacing={4} justify="space-between" >
+            <Grid container spacing={4} justify="space-between">
                 <Grid xs={12} md={6} item>
                     <Field
                         name="separate_scopes_per_round"
@@ -75,7 +167,10 @@ export const ScopeForm: FunctionComponent = () => {
                             variant="contained"
                             keyValue="search"
                             type="search"
-                            onEnterPressed={() => [searchDistricts.current(search), setSearchUpdated(false)]}
+                            onEnterPressed={() => [
+                                searchDistrictByName(search),
+                                setSearchUpdated(false),
+                            ]}
                             withMarginTop={false}
                             label={MESSAGES.search}
                             onChange={(key, value) => {
@@ -86,11 +181,14 @@ export const ScopeForm: FunctionComponent = () => {
                     </Grid>
                     <Grid xs={12} md={6} item>
                         <Button
-                            style={{ marginLeft: "auto" }}
+                            style={{ marginLeft: 'auto' }}
                             variant="contained"
                             disabled={!searchUpdated}
                             color="primary"
-                            onClick={() => [searchDistricts.current(search)]}
+                            onClick={() => [
+                                searchDistrictByName(search),
+                                setSearchUpdated(false),
+                            ]}
                         >
                             <Box mr={1} top={3} position="relative">
                                 <FiltersIcon />
@@ -101,21 +199,25 @@ export const ScopeForm: FunctionComponent = () => {
                 </Grid>
             </Grid>
 
-
-
             {!scopePerRound ? (
-                <Field name="scopes" component={ScopeInput} searchDistricts={searchDistricts} />
+                <Field
+                    name="scopes"
+                    component={ScopeInput}
+                    filteredDistricts={filteredDistricts}
+                    searchString={search}
+                />
             ) : (
                 <TabContext value={currentTab}>
                     <TabList
                         onChange={handleChangeTab}
-                    // className={classes.subTabs}
+                        // className={classes.subTabs}
                     >
                         {sortedRounds.map(round => (
                             <Tab
                                 key={round.number}
-                                label={`${formatMessage(MESSAGES.round)} ${round.number
-                                    }`}
+                                label={`${formatMessage(MESSAGES.round)} ${
+                                    round.number
+                                }`}
                                 value={`${round.number}`}
                             />
                         ))}

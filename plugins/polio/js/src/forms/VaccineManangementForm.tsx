@@ -32,16 +32,14 @@ export const VaccineManangementForm: FunctionComponent<Props> = () => {
     };
 
     const accessor = `rounds[${roundIndex}]`;
-    const [comment, setComment] = useState(rounds[roundIndex]?.forma_comment);
 
-    const onChangeComment = useCallback((key, commentValue) => {
-        setComment(commentValue);
-    }, []);
-
-    const onblur = key => {
-        setFieldTouched(key, true);
-        setFieldValue(key, comment);
-    };
+    const onChangeComment = useCallback(
+        value => {
+            setFieldTouched(`${accessor}.forma_comment`, true);
+            setFieldValue(`${accessor}.forma_comment`, value);
+        },
+        [accessor, setFieldTouched, setFieldValue],
+    );
 
     return (
         <>
@@ -189,14 +187,8 @@ export const VaccineManangementForm: FunctionComponent<Props> = () => {
                     <Grid item lg={3} md={6}>
                         <TextArea
                             label={formatMessage(MESSAGES.formAComment)}
-                            value={comment}
-                            onChange={newComment =>
-                                onChangeComment(
-                                    `${accessor}.forma_comment`,
-                                    newComment,
-                                )
-                            }
-                            onBlur={() => onblur(`${accessor}.forma_comment`)}
+                            value={rounds[roundIndex].forma_comment}
+                            onChange={onChangeComment}
                         />
                     </Grid>
                 </Grid>

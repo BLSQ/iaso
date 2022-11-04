@@ -90,53 +90,6 @@ yup.addMethod(
 );
 
 yup.addMethod(
-    yup.date,
-    'hasVialsFieldAndDestuctionDate',
-    function hasVialsFieldAndDestuctionDate(formatMessage) {
-        return this.test(
-            'hasVialsFieldAndDestuctionDate',
-            '',
-            (value, context) => {
-                const { path, createError, parent } = context;
-                const vialsDestroyed = parent.vials_destroyed;
-                if (!value && vialsDestroyed) {
-                    return createError({
-                        path,
-                        message: formatMessage(
-                            MESSAGES.destructionDateAndVialsDestroyed,
-                        ),
-                    });
-                }
-                return true;
-            },
-        );
-    },
-);
-yup.addMethod(
-    yup.number,
-    'hasDestuctionDateAndVialsField',
-    function hasDestuctionDateAndVialsField(formatMessage) {
-        return this.test(
-            'hasDestuctionDateAndVialsField',
-            '',
-            (value, context) => {
-                const { path, createError, parent } = context;
-                const destructionDate = parent.date_destruction;
-                if (!value && destructionDate) {
-                    return createError({
-                        path,
-                        message: formatMessage(
-                            MESSAGES.destructionDateAndVialsDestroyed,
-                        ),
-                    });
-                }
-                return true;
-            },
-        );
-    },
-);
-
-yup.addMethod(
     yup.number,
     'hasAllFormAFieldsNumber',
     function hasAllFormAFieldsNumber(formatMessage) {
@@ -151,6 +104,7 @@ yup.addMethod(
             } = parent;
             if (
                 !value &&
+                value !== 0 &&
                 (forma_unusable_vials ||
                     forma_usable_vials ||
                     forma_missing_vials ||
@@ -244,6 +198,7 @@ yup.addMethod(
             } = parent;
             if (
                 !value &&
+                value !== 0 &&
                 (vaccine_name ||
                     po_numbers ||
                     vials_received ||
@@ -347,6 +302,7 @@ yup.addMethod(
                     parent;
                 if (
                     !value &&
+                    value !== 0 &&
                     (date_report || vials_destroyed || date_report_received)
                 ) {
                     return createError({
@@ -618,18 +574,6 @@ const useRoundShape = () => {
             .typeError(formatMessage(MESSAGES.invalidDate))
             .nullable(),
         forma_comment: yup.string().nullable(),
-        // vials_destroyed: yup
-        //     .number()
-        //     .integer()
-        //     .nullable()
-        //     .min(0)
-        //     .typeError(formatMessage(MESSAGES.positiveNumber))
-        //     .hasDestuctionDateAndVialsField(formatMessage),
-        // date_destruction: yup
-        //     .date()
-        //     .typeError(formatMessage(MESSAGES.invalidDate))
-        //     .nullable()
-        //     .hasVialsFieldAndDestuctionDate(formatMessage),
         date_signed_vrf_received: yup
             .date()
             .typeError(formatMessage(MESSAGES.invalidDate))

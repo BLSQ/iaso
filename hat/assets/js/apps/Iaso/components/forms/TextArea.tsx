@@ -1,4 +1,4 @@
-import React, { FunctionComponent, useState } from 'react';
+import React, { FunctionComponent, useEffect, useState } from 'react';
 
 import {
     // @ts-ignore
@@ -8,6 +8,7 @@ import {
 } from 'bluesquare-components';
 import classnames from 'classnames';
 import { makeStyles, InputLabel } from '@material-ui/core';
+import { useDebounce } from 'use-debounce';
 
 type Props = {
     value?: string;
@@ -16,8 +17,7 @@ type Props = {
     onChange: (newValue: string) => void;
     errors?: string[];
     required?: boolean;
-    // eslint-disable-next-line no-unused-vars
-    // onBlur?: () => void;
+    debounceTime?: number; // debounce time in ms
 };
 
 const useStyles = makeStyles(theme => ({
@@ -69,16 +69,23 @@ export const TextArea: FunctionComponent<Props> = ({
     label,
     errors = [],
     required = false,
-    // onBlur,
+    debounceTime = 1000,
 }) => {
     const classes: Record<string, string> = useStyles();
     const [focus, setFocus] = useState<boolean>(false);
     const hasErrors = errors.length > 0;
+    const [textValue, setTextValue] = useState<string>(value ?? '');
+    const debounce = useDebounce(textValue, debounceTime);
+    const [debouncedValue] = debounce;
+
+    useEffect(() => {
+        onChange(debouncedValue);
+    }, [debouncedValue, onChange]);
 
     return (
         <FormControl errors={errors}>
             <InputLabel
-                shrink={Boolean(value)}
+                shrink={Boolean(textValue)}
                 className={classnames(
                     classes.inputLabel,
                     focus && classes.inputLabelFocus,
@@ -91,13 +98,14 @@ export const TextArea: FunctionComponent<Props> = ({
             </InputLabel>
             <textarea
                 onFocus={() => setFocus(true)}
-                // onBlur={() => [setFocus(false), onBlur()]}
                 className={classnames(
                     classes.textArea,
                     hasErrors && classes.errorArea,
                 )}
-                onChange={e => onChange(e.target.value)}
-                value={value}
+                onChange={e => {
+                    setTextValue(e.target.value);
+                }}
+                value={textValue}
             />
         </FormControl>
     );

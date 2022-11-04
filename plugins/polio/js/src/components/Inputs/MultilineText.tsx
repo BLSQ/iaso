@@ -1,5 +1,5 @@
 import { get } from 'lodash';
-import React, { FunctionComponent } from 'react';
+import React, { FunctionComponent, useCallback } from 'react';
 import { TextArea } from '../../../../../../hat/assets/js/apps/Iaso/components/forms/TextArea';
 
 type Props = {
@@ -25,16 +25,20 @@ export const MultilineText: FunctionComponent<Props> = ({
     const hasError =
         form.errors && Boolean(get(formErrors, name) && get(touched, name));
     const errors = hasError ? [get(formErrors, name)] : [];
+    const onChange = useCallback(
+        value => {
+            setFieldTouched(name, true);
+            setFieldValue(name, value);
+        },
+        [name, setFieldTouched, setFieldValue],
+    );
     return (
         <TextArea
             errors={errors}
             required={required}
             label={label}
             value={field.value}
-            onChange={value => {
-                setFieldTouched(name, true);
-                setFieldValue(name, value);
-            }}
+            onChange={onChange}
         />
     );
 };

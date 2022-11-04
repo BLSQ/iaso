@@ -57,6 +57,7 @@ export const BaseInfoForm = () => {
                             name="obr_name"
                             component={TextInput}
                             className={classes.input}
+                            required
                         />
                         <Field
                             label={formatMessage(MESSAGES.groupedCampaigns)}

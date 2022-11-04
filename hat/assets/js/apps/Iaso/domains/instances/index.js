@@ -1,4 +1,4 @@
-import React, { useCallback, useState } from 'react';
+import React, { useCallback, useState, useMemo } from 'react';
 import { Box, Grid, makeStyles } from '@material-ui/core';
 import { useDispatch } from 'react-redux';
 
@@ -20,7 +20,6 @@ import {
     fetchFormDetailsForInstance,
     fetchInstancesAsDict,
     fetchInstancesAsSmallDict,
-    fetchPossibleFields,
 } from './requests';
 
 import {
@@ -43,6 +42,7 @@ import { useSnackQuery } from '../../libs/apiHooks.ts';
 import snackMessages from '../../components/snackBars/messages';
 import { TableWithDeepLink } from '../../components/tables/TableWithDeepLink';
 import { PaginatedInstanceFiles } from './components/PaginatedInstancesFiles';
+import { useGetPossibleFields } from '../forms/hooks/useGetPossibleFields.ts';
 
 const baseUrl = baseUrls.instances;
 
@@ -65,14 +65,37 @@ const Instances = ({ params }) => {
     const [tableColumns, setTableColumns] = useState([]);
     const [tab, setTab] = useState(params.tab ?? 'list');
 
+    const formIds = params.formIds?.split(',');
+    const formId = formIds?.length === 1 ? formIds[0] : undefined;
+
+    const { possibleFields, isLoading: isLoadingPossibleFields } =
+        useGetPossibleFields(formId);
+    const fieldsSearchApi = useMemo(() => {
+        let newFieldsSearch = params.fieldsSearch;
+
+        possibleFields.forEach(field => {
+            if (newFieldsSearch?.includes(field.fieldKey)) {
+                newFieldsSearch = newFieldsSearch.replace(
+                    field.fieldKey,
+                    field.name,
+                );
+            }
+        });
+        return possibleFields.length === 0 ? undefined : newFieldsSearch;
+    }, [params.fieldsSearch, possibleFields]);
+    const apiParams = useMemo(
+        () => ({ ...params, fieldsSearch: fieldsSearchApi }),
+        [fieldsSearchApi, params],
+    );
+
     // Data for the map
     const { data: instancesSmall, isLoading: loadingMap } = useSnackQuery(
-        ['instances', 'small', params],
+        ['instances', 'small', apiParams],
         // Ugly fix to limit results displayed on map, IA-904
         () =>
             fetchInstancesAsSmallDict(
-                `${getEndpointUrl(params, false, '', true)}&limit=${
-                    params.mapResults || 3000
+                `${getEndpointUrl(apiParams, false, '', true)}&limit=${
+                    apiParams.mapResults || 3000
                 }`,
             ),
         snackMessages.fetchInstanceLocationError,
@@ -82,22 +105,18 @@ const Instances = ({ params }) => {
             select: result => result.instances,
         },
     );
-
     const {
         data,
         isLoading: loadingList,
         isFetching: fetchingList,
     } = useSnackQuery(
-        ['instances', params],
-        () => fetchInstancesAsDict(getEndpointUrl(params)),
+        ['instances', apiParams],
+        () => fetchInstancesAsDict(getEndpointUrl(apiParams)),
         snackMessages.fetchInstanceDictError,
-        { keepPreviousData: true },
+        { keepPreviousData: true, enabled: !isLoadingPossibleFields },
     );
     // Move to delete when we port dialog to react-query
     const refetchInstances = () => queryClient.invalidateQueries(['instances']);
-
-    const formIds = params.formIds?.split(',');
-    const formId = formIds?.length === 1 ? formIds[0] : undefined;
 
     const { data: formDetails, fetching: fetchingDetail } = useSnackQuery(
         ['formDetailsForInstance', `${formId}`],
@@ -109,16 +128,6 @@ const Instances = ({ params }) => {
     const formName = formDetails?.name ?? '';
     const periodType = formDetails?.period_type;
     const orgUnitTypes = formDetails?.org_unit_type_ids ?? [];
-
-    const { data: possibleFields } = useSnackQuery(
-        ['possibleFieldForForm', formId],
-        () => fetchPossibleFields(formId),
-        undefined,
-        {
-            enabled: Boolean(formId),
-            select: response => response.possible_fields,
-        },
-    );
 
     const handleChangeTab = useCallback(
         newTab => {
@@ -154,6 +163,7 @@ const Instances = ({ params }) => {
                 labelKeys={labelKeys}
                 possibleFields={possibleFields}
                 formDetails={formDetails}
+                tableColumns={tableColumns}
             />
 
             {fetching && <LoadingSpinner />}
@@ -161,6 +171,7 @@ const Instances = ({ params }) => {
                 <InstancesFiltersComponent
                     params={params}
                     onSearch={onSearch}
+                    possibleFields={possibleFields}
                 />
                 {tab === 'list' && (
                     <Grid

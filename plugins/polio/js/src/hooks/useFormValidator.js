@@ -527,8 +527,7 @@ const useRoundShape = () => {
         forma_date: yup
             .date()
             .typeError(formatMessage(MESSAGES.invalidDate))
-            .nullable()
-            .hasAllFormAFieldsDate(formatMessage),
+            .nullable(),
         forma_comment: yup.string().nullable(),
         date_destruction: yup
             .date()

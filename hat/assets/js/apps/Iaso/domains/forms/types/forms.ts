@@ -54,6 +54,7 @@ export type PossibleField = {
     label: string;
     name: string;
     type: FieldType;
+    fieldKey: string;
 };
 export type ChildrenDescriptor = {
     label: string;

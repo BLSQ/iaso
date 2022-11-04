@@ -13,8 +13,13 @@ export const useGetPossibleFields = (formId?: number): Result => {
         Boolean(formId),
         'possible_fields',
     );
+    const possibleFields =
+        currentForm?.possible_fields.map(field => ({
+            ...field,
+            fieldKey: field.name.replace('.', ''),
+        })) || [];
     return {
-        possibleFields: currentForm?.possible_fields || [],
+        possibleFields,
         isFetchingForm,
     };
 };

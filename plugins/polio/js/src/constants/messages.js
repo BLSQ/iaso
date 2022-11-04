@@ -1634,7 +1634,11 @@ const MESSAGES = defineMessages({
     },
     formADate: {
         id: 'iaso.polio.label.formADate',
-        defaultMessage: 'Form date',
+        defaultMessage: 'Form A date',
+    },
+    formAComment: {
+        id: 'iaso.polio.label.formAComment',
+        defaultMessage: 'Comment on form A',
     },
     formAUsableVials: {
         id: 'iaso.polio.label.formAUsableVials',
@@ -1833,6 +1837,10 @@ const MESSAGES = defineMessages({
     nextSteps: {
         id: 'iaso.polio.label.nextSteps',
         defaultMessage: 'Next steps',
+    },
+    emailWillBeSentTo: {
+        id: 'iaso.polio.label.emailWillBeSentTo',
+        defaultMessage: 'The following teams will be notified by email:',
     },
 });
 

@@ -1,4 +1,4 @@
-import React, { FunctionComponent, useState } from 'react';
+import React, { FunctionComponent, useCallback, useState } from 'react';
 import { Box, Divider, Grid, Tab, Tabs, Typography } from '@material-ui/core';
 import { Field, useFormikContext } from 'formik';
 // @ts-ignore
@@ -18,6 +18,8 @@ export const VaccineManangementForm: FunctionComponent<Props> = () => {
     const { formatMessage } = useSafeIntl();
     const {
         values: { rounds = [] },
+        setFieldValue,
+        setFieldTouched,
     } = useFormikContext<any>(); // TODO add campaign typing
 
     const [currentRoundNumber, setCurrentRoundNumber] = useState(
@@ -30,8 +32,16 @@ export const VaccineManangementForm: FunctionComponent<Props> = () => {
     };
 
     const accessor = `rounds[${roundIndex}]`;
-    console.log('accessor', accessor.forma_date);
-    const [comment, setComment] = useState('');
+    const [comment, setComment] = useState(rounds[roundIndex]?.forma_comment);
+
+    const onChangeComment = useCallback((key, commentValue) => {
+        setComment(commentValue);
+    }, []);
+
+    const onblur = key => {
+        setFieldTouched(key, true);
+        setFieldValue(key, comment);
+    };
 
     return (
         <>
@@ -178,10 +188,15 @@ export const VaccineManangementForm: FunctionComponent<Props> = () => {
                     </Grid>
                     <Grid item lg={3} md={6}>
                         <TextArea
-                            label={formatMessage(MESSAGES.comment)}
-                            name={`${accessor}.forma_comment`}
+                            label={formatMessage(MESSAGES.formAComment)}
                             value={comment}
-                            onChange={newComment => setComment(newComment)}
+                            onChange={newComment =>
+                                onChangeComment(
+                                    `${accessor}.forma_comment`,
+                                    newComment,
+                                )
+                            }
+                            onBlur={() => onblur(`${accessor}.forma_comment`)}
                         />
                     </Grid>
                 </Grid>

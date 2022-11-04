@@ -5,6 +5,7 @@ from functools import wraps
 from traceback import format_exc
 
 import pytz
+from django.contrib.auth.models import User
 from django.db import transaction
 from django.db.models import ProtectedError, Q
 from django.utils.timezone import make_aware
@@ -31,6 +32,12 @@ REQUEST_HEADER_INFO_KEYS = [
     "QUERY_STRING",
     "HTTP_AUTHORIZATION",
 ]
+
+
+class UserSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = ["first_name", "last_name", "username"]
 
 
 def safe_api_import(key: str, fallback_status=200):

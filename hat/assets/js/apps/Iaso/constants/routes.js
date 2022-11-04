@@ -750,15 +750,11 @@ export const storageDetailPath = {
         },
         {
             isRequired: false,
-            key: 'search',
+            key: 'operationType',
         },
         {
             isRequired: false,
-            key: 'status',
-        },
-        {
-            isRequired: false,
-            key: 'reason',
+            key: 'performedAt',
         },
         ...paginationPathParams.map(p => ({
             ...p,

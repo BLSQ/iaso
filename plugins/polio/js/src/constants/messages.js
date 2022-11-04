@@ -1834,6 +1834,10 @@ const MESSAGES = defineMessages({
         id: 'iaso.polio.label.nextSteps',
         defaultMessage: 'Next steps',
     },
+    emailWillBeSentTo: {
+        id: 'iaso.polio.label.emailWillBeSentTo',
+        defaultMessage: 'The following teams will be notified by email:',
+    },
 });
 
 export default MESSAGES;

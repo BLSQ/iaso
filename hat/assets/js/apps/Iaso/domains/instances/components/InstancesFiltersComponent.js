@@ -52,6 +52,7 @@ const InstancesFiltersComponent = ({
     params: { formIds },
     params,
     onSearch,
+    possibleFields,
 }) => {
     const dispatch = useDispatch();
     const { formatMessage } = useSafeIntl();
@@ -96,7 +97,7 @@ const InstancesFiltersComponent = ({
         currentForm?.latest_form_version?.version_id, // by default using last form version
         currentForm?.id,
     );
-    const fields = useGetQueryBuildersFields(formId, formDescriptor);
+    const fields = useGetQueryBuildersFields(formDescriptor, possibleFields);
 
     useInstancesFiltersData(formIds, setFetchingOrgUnitTypes);
     const handleSearch = useCallback(() => {
@@ -409,9 +410,14 @@ const InstancesFiltersComponent = ({
     );
 };
 
+InstancesFiltersComponent.defaultProps = {
+    possibleFields: [],
+};
+
 InstancesFiltersComponent.propTypes = {
     params: PropTypes.object.isRequired,
     onSearch: PropTypes.func.isRequired,
+    possibleFields: PropTypes.array,
 };
 
 export default InstancesFiltersComponent;

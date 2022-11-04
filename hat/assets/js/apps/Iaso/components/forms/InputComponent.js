@@ -50,6 +50,7 @@ class InputComponent extends Component {
             helperText,
             min,
             max,
+            markThousands,
         } = this.props;
         const { isFocused, displayPassword } = this.state;
         const labelText =
@@ -110,6 +111,7 @@ class InputComponent extends Component {
                             required={required}
                             multiline={multiline}
                             disabled={disabled}
+                            markThousands={markThousands}
                             onChange={input => {
                                 onChange(keyValue, input);
                             }}
@@ -217,6 +219,7 @@ InputComponent.defaultProps = {
     helperText: undefined,
     min: undefined,
     max: undefined,
+    markThousands: false,
 };
 InputComponent.propTypes = {
     type: PropTypes.string,
@@ -244,6 +247,7 @@ InputComponent.propTypes = {
     helperText: PropTypes.string,
     min: PropTypes.number,
     max: PropTypes.number,
+    markThousands: PropTypes.bool,
 };
 
 const translated = injectIntl(InputComponent);

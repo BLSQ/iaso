@@ -292,6 +292,75 @@ yup.addMethod(
         });
     },
 );
+yup.addMethod(
+    yup.string,
+    'destructionCommentsCheck',
+    function destructionCommentsCheck(formatMessage) {
+        return this.test('destructionCommentsCheck', '', (value, context) => {
+            const { path, createError, parent } = context;
+            const { date_report_received, date_report, vials_destroyed } =
+                parent;
+            if (
+                value &&
+                (!date_report || !vials_destroyed || !date_report_received)
+            ) {
+                return createError({
+                    path,
+                    message: formatMessage(MESSAGES.destructionFieldsTogether),
+                });
+            }
+            return true;
+        });
+    },
+);
+yup.addMethod(
+    yup.date,
+    'destructionFieldsDateCheck',
+    function destructionFieldsDateCheck(formatMessage) {
+        return this.test('destructionFieldsDateCheck', '', (value, context) => {
+            const { path, createError, parent } = context;
+            const { date_report_received, date_report, vials_destroyed } =
+                parent;
+            if (
+                !value &&
+                (date_report || vials_destroyed || date_report_received)
+            ) {
+                return createError({
+                    path,
+                    message: formatMessage(MESSAGES.destructionFieldsTogether),
+                });
+            }
+            return true;
+        });
+    },
+);
+yup.addMethod(
+    yup.number,
+    'destructionFieldsNumberCheck',
+    function destructionFieldsNumberCheck(formatMessage) {
+        return this.test(
+            'destructionFieldsNumberCheck',
+            '',
+            (value, context) => {
+                const { path, createError, parent } = context;
+                const { date_report_received, date_report, vials_destroyed } =
+                    parent;
+                if (
+                    !value &&
+                    (date_report || vials_destroyed || date_report_received)
+                ) {
+                    return createError({
+                        path,
+                        message: formatMessage(
+                            MESSAGES.destructionFieldsTogether,
+                        ),
+                    });
+                }
+                return true;
+            },
+        );
+    },
+);
 
 yup.addMethod(
     yup.string,
@@ -365,6 +434,32 @@ const useShipmentShape = () => {
         comment: yup.string().nullable().shipmentCommentsCheck(formatMessage),
     });
 };
+const useDestructionShape = () => {
+    const { formatMessage } = useSafeIntl();
+    return yup.object().shape({
+        vials_destroyed: yup
+            .number()
+            .nullable()
+            .integer()
+            .min(0)
+            .typeError(formatMessage(MESSAGES.positiveNumber))
+            .destructionFieldsNumberCheck(formatMessage),
+        date_report: yup
+            .date()
+            .nullable()
+            .typeError(formatMessage(MESSAGES.invalidDate))
+            .destructionFieldsDateCheck(formatMessage),
+        date_report_received: yup
+            .date()
+            .nullable()
+            .typeError(formatMessage(MESSAGES.invalidDate))
+            .destructionFieldsDateCheck(formatMessage),
+        comment: yup
+            .string()
+            .nullable()
+            .destructionCommentsCheck(formatMessage),
+    });
+};
 
 const useVaccineShape = () => {
     const { formatMessage } = useSafeIntl();
@@ -388,6 +483,7 @@ const useRoundShape = () => {
     const { formatMessage } = useSafeIntl();
     const shipment = useShipmentShape();
     const vaccine = useVaccineShape();
+    const destruction = useDestructionShape();
 
     return yup.object().shape({
         number: yup.number().integer().min(0),
@@ -512,13 +608,6 @@ const useRoundShape = () => {
             .nullable()
             .min(0)
             .typeError(formatMessage(MESSAGES.positiveNumber)),
-        vials_destroyed: yup
-            .number()
-            .integer()
-            .nullable()
-            .min(0)
-            .typeError(formatMessage(MESSAGES.positiveNumber))
-            .hasDestuctionDateAndVialsField(formatMessage),
         forma_reception: yup
             .date()
             .typeError(formatMessage(MESSAGES.invalidDate))
@@ -529,17 +618,25 @@ const useRoundShape = () => {
             .typeError(formatMessage(MESSAGES.invalidDate))
             .nullable(),
         forma_comment: yup.string().nullable(),
-        date_destruction: yup
-            .date()
-            .typeError(formatMessage(MESSAGES.invalidDate))
-            .nullable()
-            .hasVialsFieldAndDestuctionDate(formatMessage),
+        // vials_destroyed: yup
+        //     .number()
+        //     .integer()
+        //     .nullable()
+        //     .min(0)
+        //     .typeError(formatMessage(MESSAGES.positiveNumber))
+        //     .hasDestuctionDateAndVialsField(formatMessage),
+        // date_destruction: yup
+        //     .date()
+        //     .typeError(formatMessage(MESSAGES.invalidDate))
+        //     .nullable()
+        //     .hasVialsFieldAndDestuctionDate(formatMessage),
         date_signed_vrf_received: yup
             .date()
             .typeError(formatMessage(MESSAGES.invalidDate))
             .nullable(),
         shipments: yup.array(shipment).nullable(),
         vaccines: yup.array(vaccine).nullable(),
+        destructions: yup.array(destruction).nullable(),
     });
 };
 

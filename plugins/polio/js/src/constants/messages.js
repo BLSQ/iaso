@@ -1721,6 +1721,10 @@ const MESSAGES = defineMessages({
         id: 'iaso.polio.label.shipmentFieldsTogether',
         defaultMessage: 'All shipment fields need to be filled together',
     },
+    destructionFieldsTogether: {
+        id: 'iaso.polio.label.destructionFieldsTogether',
+        defaultMessage: 'All destruction fields need to be filled together',
+    },
     scopeUnlockConditions: {
         id: 'iaso.polio.label.scopeUnlockConditions',
         defaultMessage:

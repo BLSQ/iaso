@@ -162,6 +162,7 @@
     "iaso.polio.label.destination": "Destination",
     "iaso.polio.label.destruction": "Destruction",
     "iaso.polio.label.destructionDateAndVialsDestroyed": "Destruction date and Vials destroyed need to be filled together",
+    "iaso.polio.label.destructionFieldsTogether": "All destruction fields need to be filled together",
     "iaso.polio.label.destructionReceptionDate": "Reception of the destruction report",
     "iaso.polio.label.destructionReportDate": "Date of the destruction report",
     "iaso.polio.label.detection_responsible": "Detection responsible",

@@ -49,7 +49,8 @@ class WorkflowSerializer(serializers.Serializer):
 
 
 class CategoryItemSerializer(serializers.Serializer):
-    label = serializers.CharField()
+    # https://github.com/typeddjango/djangorestframework-stubs/issues/78 bug in mypy remove in future
+    label = serializers.CharField()  # type: ignore
     performed_by = UserSerializer(required=False)
     performed_at = serializers.DateTimeField(required=False)
     step_id = serializers.IntegerField(required=False)

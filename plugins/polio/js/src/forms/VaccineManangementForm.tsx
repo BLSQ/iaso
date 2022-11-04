@@ -39,7 +39,6 @@ export const VaccineManangementForm: FunctionComponent<Props> = () => {
     }, []);
 
     const onblur = key => {
-        console.log('Onblur');
         setFieldTouched(key, true);
         setFieldValue(key, comment);
     };

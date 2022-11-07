@@ -205,8 +205,6 @@ class StorageViewSet(ListModelMixin, viewsets.GenericViewSet):
 
         POST /api/storage/blacklisted/
         """
-        # TODO: permissions: spec mentions "permission to modify storage", what does it mean exactly?
-        #  Clarify then implement
 
         # 1. Get data from request/environment
         user = request.user
@@ -228,7 +226,6 @@ class StorageViewSet(ListModelMixin, viewsets.GenericViewSet):
             # 3. Submitted data is valid, we can now proceed
             status_dict = status_serializer.validated_data
             # 3.1 Update device status
-            # TODO: discuss: what should be done if we try to change the device to the status it's already in?
             device.change_status(
                 new_status=status_dict["status"],
                 reason=status_dict.get("status_reason", ""),
@@ -281,7 +278,6 @@ class StorageLogViewSet(CreateModelMixin, viewsets.GenericViewSet):
 
                 concerned_instances = Instance.objects.filter(uuid__in=log_data["instances"])
 
-                # TODO: refactor this?
                 concerned_orgunit = None
                 if "org_unit_id" in log_data and log_data["org_unit_id"] is not None:
                     try:
@@ -363,7 +359,7 @@ def logs_per_device(request, storage_customer_chosen_id: str, storage_type: str)
     ).get(**device_identity_fields)
 
     if limit_str:
-        # Pagination requested: each page contains the device metadata + a subset of log entries
+        # Pagination as requested: each page contains the device metadata + a subset of log entries
         limit = int(limit_str)
         page_offset = int(page_offset)
         paginator = Paginator(log_entries_queryset, limit)
@@ -388,11 +384,7 @@ class StorageBlacklistedViewSet(ListModelMixin, viewsets.GenericViewSet):
     queryset = StorageDevice.objects.filter(status=StorageDevice.BLACKLISTED)
     serializer_class = StorageSerializer
 
-    # TODO: check permissions if necessary (everybody can get the list of blacklisted devices accross all accounts, correct?)
     permission_classes = [AllowAny]
-    # TODO: according to spec, we should add an "updated_at" field
-    # TODO: implement pagination
-    # TODO: clarify, then implement the "since" feature -see specs-
 
     def list(self, request):
         """

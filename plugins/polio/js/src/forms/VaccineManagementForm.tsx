@@ -197,26 +197,6 @@ export const VaccineManagementForm: FunctionComponent<Props> = () => {
                     accessor={accessor}
                     round={rounds[roundIndex]}
                 />
-                {/* <Grid container direction="row" spacing={2} item xs={12}>
-                    <Grid item xs={6}>
-                        <Field
-                            label={formatMessage(
-                                MESSAGES.destructionReceptionDate,
-                            )}
-                            // fullWidth
-                            name={`${accessor}.date_destruction`}
-                            component={DateInput}
-                        />
-                    </Grid>
-                    <Grid item xs={6}>
-                        <Field
-                            label={formatMessage(MESSAGES.vialsDestroyed)}
-                            name={`${accessor}.vials_destroyed`}
-                            component={TextInput}
-                            className={classes.input}
-                        />
-                    </Grid>
-                </Grid> */}
             </Grid>
         </>
     );

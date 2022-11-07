@@ -28,15 +28,15 @@ export const DestructionsForm: FunctionComponent<Props> = ({
 
     const lastIndex = destructions.length >= 1 && destructions.length - 1;
 
-    const handleAddShipment = () => {
-        const newShipments = [...destructions, {}];
-        setFieldValue(`${accessor}.destructions`, newShipments);
+    const handleAddDestruction = () => {
+        const newDestructions = [...destructions, {}];
+        setFieldValue(`${accessor}.destructions`, newDestructions);
     };
 
-    const handleRemoveLastShipment = useCallback(() => {
-        const newShipments = [...destructions];
-        newShipments.pop();
-        setFieldValue(`${accessor}.destructions`, newShipments);
+    const handleRemoveLastDestruction = useCallback(() => {
+        const newDestructions = [...destructions];
+        newDestructions.pop();
+        setFieldValue(`${accessor}.destructions`, newDestructions);
     }, [accessor, setFieldValue, destructions]);
 
     // determine whether to show delete button or not
@@ -85,7 +85,7 @@ export const DestructionsForm: FunctionComponent<Props> = ({
                     >
                         <Grid item>
                             <Button
-                                onClick={handleAddShipment}
+                                onClick={handleAddDestruction}
                                 variant="outlined"
                             >
                                 {formatMessage(MESSAGES.addDestruction)}
@@ -93,7 +93,7 @@ export const DestructionsForm: FunctionComponent<Props> = ({
                         </Grid>
                         <Grid item>
                             <Button
-                                onClick={handleRemoveLastShipment}
+                                onClick={handleRemoveLastDestruction}
                                 disabled={!enableRemoveButton}
                                 variant="outlined"
                             >

@@ -2,7 +2,7 @@
 
 from typing import Tuple
 
-from django.db.models import Prefetch
+from django.db.models import Prefetch, Q
 from rest_framework import viewsets, permissions, serializers, status
 from rest_framework.decorators import action, api_view, permission_classes
 from rest_framework.fields import Field
@@ -159,10 +159,17 @@ class StorageViewSet(ListModelMixin, viewsets.GenericViewSet):
         if filter_type is not None:
             qs = qs.filter(type__in=filter_type.split(","))
 
+        # the search filter works on entity_id or storage (customer-chosen) id
         filter_search = self.request.query_params.get("search")
         if filter_search is not None:
-            # TODO: implement: search on entity or storage id
-            pass
+            q = Q(customer_chosen_id__icontains=filter_search)
+            try:
+                filter_search_int = int(filter_search)
+                q = q | Q(entity__id=filter_search_int)
+            except ValueError:
+                pass
+
+            qs = qs.filter(q)
 
         return qs
 

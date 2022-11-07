@@ -23,6 +23,7 @@ const initialFormState = orgUnit => {
         aliases: orgUnit.aliases,
         parent_id: orgUnit.parent_id,
         source_ref: orgUnit.source_ref,
+        creator: orgUnit.creator,
     };
 };
 

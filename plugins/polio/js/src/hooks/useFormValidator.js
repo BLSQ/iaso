@@ -215,59 +215,7 @@ yup.addMethod(
         });
     },
 );
-yup.addMethod(
-    yup.string,
-    'shipmentCommentsCheck',
-    function shipmentCommentsCheck(formatMessage) {
-        return this.test('shipmentCommentsCheck', '', (value, context) => {
-            const { path, createError, parent } = context;
-            const {
-                date_reception,
-                estimated_arrival_date,
-                reception_pre_alert,
-                vials_received,
-                po_numbers,
-                vaccine_name,
-            } = parent;
-            if (
-                value &&
-                (!vaccine_name ||
-                    !po_numbers ||
-                    !vials_received ||
-                    !reception_pre_alert ||
-                    !estimated_arrival_date ||
-                    !date_reception)
-            ) {
-                return createError({
-                    path,
-                    message: formatMessage(MESSAGES.shipmentFieldsTogether),
-                });
-            }
-            return true;
-        });
-    },
-);
-yup.addMethod(
-    yup.string,
-    'destructionCommentsCheck',
-    function destructionCommentsCheck(formatMessage) {
-        return this.test('destructionCommentsCheck', '', (value, context) => {
-            const { path, createError, parent } = context;
-            const { date_report_received, date_report, vials_destroyed } =
-                parent;
-            if (
-                value &&
-                (!date_report || !vials_destroyed || !date_report_received)
-            ) {
-                return createError({
-                    path,
-                    message: formatMessage(MESSAGES.destructionFieldsTogether),
-                });
-            }
-            return true;
-        });
-    },
-);
+
 yup.addMethod(
     yup.date,
     'destructionFieldsDateCheck',
@@ -387,7 +335,7 @@ const useShipmentShape = () => {
             .nullable()
             .typeError(formatMessage(MESSAGES.invalidDate))
             .hasAllShipmentFieldsDate(formatMessage),
-        comment: yup.string().nullable().shipmentCommentsCheck(formatMessage),
+        comment: yup.string().nullable(),
     });
 };
 const useDestructionShape = () => {
@@ -410,10 +358,7 @@ const useDestructionShape = () => {
             .nullable()
             .typeError(formatMessage(MESSAGES.invalidDate))
             .destructionFieldsDateCheck(formatMessage),
-        comment: yup
-            .string()
-            .nullable()
-            .destructionCommentsCheck(formatMessage),
+        comment: yup.string().nullable(),
     });
 };
 

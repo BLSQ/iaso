@@ -1,5 +1,13 @@
 import React, { FunctionComponent, useState } from 'react';
-import { Box, Divider, Grid, Tab, Tabs, Typography } from '@material-ui/core';
+import {
+    Box,
+    Divider,
+    Grid,
+    makeStyles,
+    Tab,
+    Tabs,
+    Typography,
+} from '@material-ui/core';
 import { Field, useFormikContext } from 'formik';
 // @ts-ignore
 import { useSafeIntl } from 'bluesquare-components';
@@ -14,8 +22,13 @@ import { DestructionsForm } from './DestructionsForm';
 
 type Props = any;
 
+const useCustomStyles = makeStyles(theme => ({
+    marginTop: { marginTop: theme.spacing(1) },
+}));
+
 export const VaccineManagementForm: FunctionComponent<Props> = () => {
     const classes: Record<string, string> = useStyles();
+    const customClasses = useCustomStyles();
     const { formatMessage } = useSafeIntl();
     const {
         values: { rounds = [] },
@@ -186,7 +199,10 @@ export const VaccineManagementForm: FunctionComponent<Props> = () => {
                 </Grid>
 
                 {/* fourth row: destruction */}
-                <Divider style={{ width: '100%' }} />
+                <Divider
+                    style={{ width: '100%' }}
+                    className={customClasses.marginTop}
+                />
                 <Grid item xs={12}>
                     <Box mt={1} mb={1}>
                         <Typography variant="button">

@@ -155,10 +155,18 @@ const CreateBudgetStep: FunctionComponent<Props> = ({
         handleSubmit,
         resetForm,
     } = formik;
-    const onChange = (keyValue, value) => {
-        setFieldTouched(keyValue, true);
-        setFieldValue(keyValue, value);
-    };
+    const onChange = useCallback(
+        (keyValue, value) => {
+            setFieldTouched(keyValue, true);
+            setFieldValue(keyValue, value);
+        },
+        [setFieldTouched, setFieldValue],
+    );
+
+    const onCommentChange = useCallback(
+        newValue => onChange('comment', newValue),
+        [onChange],
+    );
     const getErrors = useTranslatedErrors({
         touched,
         errors,
@@ -220,83 +228,95 @@ const CreateBudgetStep: FunctionComponent<Props> = ({
                 dataTestId="Test-modal"
                 onClose={() => null}
             >
+                <>
+                    <TextArea
+                        value={values.comment}
+                        errors={getErrors('comment')}
+                        label={formatMessage(MESSAGES.notes)}
+                        onChange={onCommentChange}
+                        required={requiredFields.includes('comment')}
+                        debounceTime={0}
+                    />
+                    <InputComponent
+                        type="number"
+                        keyValue="amount"
+                        onChange={onChange}
+                        value={values.amount}
+                        errors={getErrors('amount')}
+                        label={MESSAGES.amount}
+                        required={requiredFields.includes('amount')}
+                    />
 
-                    <>
-                        <TextArea
-                            value={values.comment}
-                            errors={getErrors('comment')}
-                            label={formatMessage(MESSAGES.notes)}
-                            onChange={newValue => onChange('comment', newValue)}
-                            required={requiredFields.includes('comment')}
+                    <Box mt={2}>
+                        <FilesUpload
+                            files={values.files ?? []}
+                            onFilesSelect={files => {
+                                setFieldTouched('files', true);
+                                setFieldValue('files', files);
+                            }}
+                            required={requiredFields.includes('files')}
+                            errors={getErrors('files')}
                         />
-                        <InputComponent
-                            type="number"
-                            keyValue="amount"
-                            onChange={onChange}
-                            value={values.amount}
-                            errors={getErrors('amount')}
-                            label={MESSAGES.amount}
-                            required={requiredFields.includes('amount')}
+                    </Box>
+                    <Box mt={2}>
+                        <Divider />
+                    </Box>
+                    <Box mt={2}>
+                        <AddMultipleLinks
+                            required={requiredFields.includes('links')}
                         />
+                    </Box>
+                    <Box mt={2} mb={2}>
+                        <Divider />
+                    </Box>
+                    {(recipientTeams ?? []).length > 0 && (
+                        <>
+                            <Box mt={1} mb={1}>
+                                <Typography>
+                                    {formatMessage(MESSAGES.emailWillBeSentTo)}
+                                </Typography>
+                                {recipientTeams?.map(team => {
+                                    return (
+                                        <Box
+                                            mt={1}
+                                            mr={1}
+                                            mb={1}
+                                            display="inline-block"
+                                            key={team}
+                                        >
+                                            <Chip
+                                                label={team}
+                                                variant="outlined"
+                                                color="secondary"
+                                            />
+                                        </Box>
+                                    );
+                                })}
+                            </Box>
+                            <Box mt={2} mb={2}>
+                                <Divider />
+                            </Box>
+                        </>
+                    )}
 
-                        <Box mt={2}>
-                            <FilesUpload
-                                files={values.files ?? []}
-                                onFilesSelect={files => {
-                                    setFieldTouched('files', true);
-                                    setFieldValue('files', files);
-                                }}
-                                required={requiredFields.includes('files')}
-                                errors={getErrors('files')}
-                            />
-                        </Box>
-                        <Box mt={2}>
-                            <Divider />
-                        </Box>
-                        <Box mt={2}>
-                            <AddMultipleLinks
-                                required={requiredFields.includes('links')}
-                            />
-                        </Box>
-                        <Box mt={2} mb={2}>
-                            <Divider />
-                        </Box>
-                        {recipientTeams?.length > 0 && (
+                    {/* @ts-ignore */}
+                    {(errors?.general ?? []).length > 0 && (
+                        <>
+                            {getErrors('general').map(e => (
+                                <Typography
+                                    key={`${e}-error`}
+                                    color="error"
+                                    className={classes.alignRight}
+                                >
+                                    {e}
+                                </Typography>
+                            ))}
+                        </>
+                    )}
+                    {attachmentErrors.length > 0 &&
+                        (touched.links || touched.files) && (
                             <>
-                                <Box mt={1} mb={1}>
-                                    <Typography>
-                                        {formatMessage(
-                                            MESSAGES.emailWillBeSentTo,
-                                        )}
-                                    </Typography>
-                                    {recipientTeams?.map(team => {
-                                        return (
-                                            <Box
-                                                mt={1}
-                                                mr={1}
-                                                mb={1}
-                                                display="inline-block"
-                                                key={team}
-                                            >
-                                                <Chip
-                                                    label={team}
-                                                    variant="outlined"
-                                                    color="secondary"
-                                                />
-                                            </Box>
-                                        );
-                                    })}
-                                </Box>
-                                <Box mt={2} mb={2}>
-                                    <Divider />
-                                </Box>
-                            </>
-                        )}
-
-                        {/* @ts-ignore */}
-                        {(errors?.general ?? []).length > 0 && (
-                            <>
-                                {getErrors('general').map(e => (
+                                {attachmentErrors.map(e => (
                                     <Typography
                                         key={`${e}-error`}
                                         color="error"
@@ -307,33 +327,17 @@ const CreateBudgetStep: FunctionComponent<Props> = ({
                                 ))}
                             </>
                         )}
-                        {attachmentErrors.length > 0 &&
-                            (touched.links || touched.files) && (
-                                <>
-                                    {attachmentErrors.map(e => (
-                                        <Typography
-                                            key={`${e}-error`}
-                                            color="error"
-                                            className={classes.alignRight}
-                                        >
-                                            {e}
-                                        </Typography>
-                                    ))}
-                                </>
-                            )}
-                        {!touched.links &&
-                            !touched.files &&
-                            requiredFields.includes('attachments') && (
-                                <Typography
-                                    color="textSecondary"
-                                    className={classes.alignRight}
-                                >
-                                    {formatMessage(
-                                        MESSAGES.linksOrFilesRequired,
-                                    )}
-                                </Typography>
-                            )}
-                    </>
+                    {!touched.links &&
+                        !touched.files &&
+                        requiredFields.includes('attachments') && (
+                            <Typography
+                                color="textSecondary"
+                                className={classes.alignRight}
+                            >
+                                {formatMessage(MESSAGES.linksOrFilesRequired)}
+                            </Typography>
+                        )}
+                </>
                 {!userHasTeam && <UserHasTeamWarning />}
             </ConfirmCancelModal>
         </FormikProvider>

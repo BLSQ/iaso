@@ -50,6 +50,7 @@ export const DestructionForm: FunctionComponent<Props> = ({
                     name={`${accessor}.destructions[${index}].comment`}
                     component={MultilineText}
                     className={classes.input}
+                    debounceTime={1000}
                 />
             </Grid>
         </Grid>

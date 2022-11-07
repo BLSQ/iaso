@@ -85,6 +85,7 @@ export const ShipmentForm: FunctionComponent<Props> = ({ index, accessor }) => {
                         name={`${accessor}.shipments[${index}].comment`}
                         component={MultilineText}
                         className={classes.input}
+                        debounceTime={1000}
                     />
                 </Grid>
             </Grid>

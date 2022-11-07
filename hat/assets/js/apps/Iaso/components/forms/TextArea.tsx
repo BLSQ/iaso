@@ -1,10 +1,12 @@
-import React, { FunctionComponent, useEffect, useState } from 'react';
+import React, { FunctionComponent, useState } from 'react';
 
 import {
     // @ts-ignore
     FormControl,
     // @ts-ignore
     commonStyles,
+    // @ts-ignores
+    useSkipEffectOnMount,
 } from 'bluesquare-components';
 import classnames from 'classnames';
 import { makeStyles, InputLabel } from '@material-ui/core';
@@ -69,16 +71,15 @@ export const TextArea: FunctionComponent<Props> = ({
     label,
     errors = [],
     required = false,
-    debounceTime = 1000,
+    debounceTime = 0,
 }) => {
     const classes: Record<string, string> = useStyles();
     const [focus, setFocus] = useState<boolean>(false);
     const hasErrors = errors.length > 0;
     const [textValue, setTextValue] = useState<string>(value ?? '');
-    const debounce = useDebounce(textValue, debounceTime);
-    const [debouncedValue] = debounce;
+    const [debouncedValue] = useDebounce(textValue, debounceTime);
 
-    useEffect(() => {
+    useSkipEffectOnMount(() => {
         onChange(debouncedValue);
     }, [debouncedValue, onChange]);
 

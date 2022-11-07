@@ -1,4 +1,9 @@
-import React, { FunctionComponent, useState, useMemo } from 'react';
+import React, {
+    FunctionComponent,
+    useState,
+    useMemo,
+    useCallback,
+} from 'react';
 
 import {
     // @ts-ignore
@@ -48,17 +53,25 @@ const StatusModal: FunctionComponent<Props> = ({
         });
     };
 
-    const handleChange = (key, value) => {
-        const newStatus = {
-            ...status,
-            [key]: value,
-        };
-        if (key === 'status' && value === 'OK') {
-            newStatus.reason = undefined;
-            newStatus.comment = undefined;
-        }
-        setStatus(newStatus);
-    };
+    const handleChange = useCallback(
+        (key, value) => {
+            const newStatus = {
+                ...status,
+                [key]: value,
+            };
+            if (key === 'status' && value === 'OK') {
+                newStatus.reason = undefined;
+                newStatus.comment = undefined;
+            }
+            setStatus(newStatus);
+        },
+        [status],
+    );
+
+    const handleCommentChange = useCallback(
+        newComment => handleChange('comment', newComment),
+        [handleChange],
+    );
     const allowConfirm = useMemo(() => {
         if (status?.status === 'BLACKLISTED' && !status.reason) {
             return false;
@@ -107,9 +120,8 @@ const StatusModal: FunctionComponent<Props> = ({
                     <TextArea
                         label={formatMessage(MESSAGES.comment)}
                         value={status?.comment}
-                        onChange={newComment =>
-                            handleChange('comment', newComment)
-                        }
+                        onChange={handleCommentChange}
+                        debounceTime={0}
                     />
                 </>
             )}

@@ -180,6 +180,7 @@ export const VaccineManagementForm: FunctionComponent<Props> = () => {
                             name={`${accessor}.forma_comment`}
                             component={MultilineText}
                             className={classes.input}
+                            debounceTime={1000}
                         />
                     </Grid>
                 </Grid>

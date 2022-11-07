@@ -1858,6 +1858,10 @@ const MESSAGES = defineMessages({
         id: 'iaso.polio.label.emailWillBeSentTo',
         defaultMessage: 'The following teams will be notified by email:',
     },
+    teams: {
+        id: 'iaso.polio.config.teams',
+        defaultMessage: 'Teams for Budget workflow',
+    },
 });
 
 export default MESSAGES;

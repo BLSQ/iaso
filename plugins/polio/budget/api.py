@@ -168,5 +168,5 @@ class WorkflowViewSet(ViewSet):
         try:
             workflow = get_workflow()
         except Exception as e:
-            return {"error": "Error getting workflow", "details": e}
+            return Response({"error": "Error getting workflow", "details": str(e)})
         return Response(WorkflowSerializer(workflow).data)

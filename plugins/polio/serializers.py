@@ -65,6 +65,7 @@ class CountryUsersGroupSerializer(serializers.ModelSerializer):
             "country_name",
             "users",
             "read_only_users_field",
+            "teams",
         ]
 
 

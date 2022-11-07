@@ -1,16 +1,33 @@
+import operator
 import typing
+from functools import reduce
 
 from django.contrib.auth.models import User
 from django.db import models, transaction
 from django_ltree.fields import PathField  # type: ignore
 
 from iaso.models import Project, Form, OrgUnit
+from iaso.utils.expressions import ArraySubquery
 from iaso.utils.models.soft_deletable import SoftDeletableModel
 
 
 class TeamQuerySet(models.QuerySet):
     def filter_for_user(self, user: User):
         return self.filter(project__account=user.iaso_profile.account)
+
+    def hierarchy(self, teams: typing.Union[typing.List["Team"], "QuerySet[Team]", "Team"]) -> "TeamQuerySet":
+        """The Team and all their descendants"""
+        if isinstance(teams, Team):
+            query = models.Q(path__descendants=teams.path)
+        elif isinstance(teams, models.QuerySet):
+            team_qs = teams
+            query = models.Q(path__descendants=ArraySubquery(team_qs.values("path")))
+        elif isinstance(teams, (list,)):
+            query = reduce(operator.or_, [models.Q(path__descendants=str(ou.path)) for ou in teams])
+        else:
+            raise NotImplemented()
+
+        return self.filter(query)
 
 
 class TeamType(models.TextChoices):

@@ -417,7 +417,9 @@ class OrgUnit(TreeModel):
             "altitude": self.location.z if self.location else None,
             "has_geo_json": True if self.simplified_geom else False,
             "reference_instance_id": self.reference_instance_id,
-            "creator": None if self.creator is None else f"{self.creator.username} ({self.creator.first_name} {self.creator.last_name})"
+            "creator": None
+            if self.creator is None
+            else f"{self.creator.username} ({self.creator.first_name} {self.creator.last_name})",
         }
         if not light:  # avoiding joins here
             res["groups"] = [group.as_dict(with_counts=False) for group in self.groups.all()]

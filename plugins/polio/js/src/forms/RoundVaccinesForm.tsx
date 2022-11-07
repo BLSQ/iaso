@@ -141,7 +141,6 @@ export const RoundVaccinesForm: FunctionComponent<Props> = ({
                 vaccinesRef.current &&
                 vaccine?.name !== vaccinesRef?.current?.[index]?.name
             ) {
-                vaccine?.name;
                 setFieldValue(
                     `rounds[${roundIndex}].vaccines[${index}].wastage_ratio_forecast`,
                     DEFAULT_WASTAGE_RATIOS[vaccine.name],

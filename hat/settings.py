@@ -391,7 +391,7 @@ except Exception as e:
 
 if SENTRY_URL:
     sentry_sdk.init(
-        SENTRY_URL, traces_sample_rate=1.0, integrations=[DjangoIntegration()], send_default_pii=True, release=VERSION
+        SENTRY_URL, traces_sample_rate=0.1, integrations=[DjangoIntegration()], send_default_pii=True, release=VERSION
     )
 
 # Workers configuration

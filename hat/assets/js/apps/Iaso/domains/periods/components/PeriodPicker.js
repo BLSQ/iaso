@@ -78,8 +78,14 @@ const PeriodPicker = ({
     const handleChangeDay = useCallback(
         date => {
             const newValue = date?.format('YYYYMMDD') ?? null;
-            setCurrentPeriod(Period.parse(newValue)?.[1]);
-            onChange(newValue);
+            try {
+                const parsedValue = Period.parse(newValue)?.[1];
+                setCurrentPeriod(parsedValue);
+                onChange(newValue);
+            } catch (e) {
+                setCurrentPeriod(newValue);
+                onChange(newValue);
+            }
         },
         [onChange],
     );

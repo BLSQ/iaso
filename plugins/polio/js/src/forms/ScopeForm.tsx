@@ -17,36 +17,6 @@ type Round = {
 type Values = {
     separate_scopes_per_round?: boolean;
     rounds: Round[];
-    initial_org_unit: number;
-};
-
-type Scope = {
-    vaccine: string;
-    group: {
-        org_units: number[];
-        id?: number;
-    };
-};
-
-type Shape = {
-    name: string;
-    id: number;
-    parent_id: number;
-    country_parent?: { id: number };
-    root?: { id: number };
-};
-
-const findRegion = (shape: Shape, regionShapes: Shape[]) => {
-    return regionShapes.filter(
-        regionShape => regionShape.id === shape.parent_id,
-    )[0]?.name;
-};
-
-const findScopeWithOrgUnit = (scopes: Scope[], orgUnitId: number) => {
-    const scope = scopes.find(s => {
-        return s.group?.org_units.includes(orgUnitId);
-    });
-    return scope;
 };
 
 export const ScopeForm: FunctionComponent = () => {

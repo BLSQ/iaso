@@ -8,7 +8,7 @@ import {
     // @ts-ignore
     makeFullModal,
 } from 'bluesquare-components';
-
+import { Box } from '@material-ui/core';
 import { Storage, StorageStatus } from '../types/storages';
 import { useSaveStatus } from '../hooks/requests/useSaveStatus';
 
@@ -104,13 +104,16 @@ const StatusModal: FunctionComponent<Props> = ({
                         label={MESSAGES.reason}
                         options={reasons}
                     />
-                    <TextArea
-                        label={formatMessage(MESSAGES.comment)}
-                        value={status?.comment}
-                        onChange={newComment =>
-                            handleChange('comment', newComment)
-                        }
-                    />
+
+                    <Box sx={{ mt: 2 }}>
+                        <TextArea
+                            label={formatMessage(MESSAGES.comment)}
+                            value={status?.comment}
+                            onChange={newComment =>
+                                handleChange('comment', newComment)
+                            }
+                        />
+                    </Box>
                 </>
             )}
         </ConfirmCancelModal>

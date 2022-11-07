@@ -280,11 +280,12 @@ class ShipmentSerializer(serializers.ModelSerializer):
         model = Shipment
         fields = [
             "po_numbers",
-            "doses_received",
+            "vials_received",
             "estimated_arrival_date",
             "reception_pre_alert",
             "date_reception",
             "vaccine_name",
+            "comment",
             "id",
         ]
 

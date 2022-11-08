@@ -55,6 +55,7 @@ class StorageAPITestCase(APITestCase):
             type="NFC",
             status="BLACKLISTED",
             status_reason="STOLEN",
+            status_updated_at=datetime(2022, 11, 8, 13, 12, 56, 0, tzinfo=timezone.utc),
         )
 
         cls.existing_storage_device_3 = StorageDevice.objects.create(
@@ -434,7 +435,12 @@ class StorageAPITestCase(APITestCase):
                     "created_at": 1580608922.0,
                     "storage_id": "ANOTHER_EXISTING_STORAGE_BLACKLISTED_STOLEN",
                     "storage_type": "NFC",
-                    "status": {"status": "BLACKLISTED", "reason": "STOLEN", "comment": "", "updated_at": None},
+                    "status": {
+                        "status": "BLACKLISTED",
+                        "reason": "STOLEN",
+                        "comment": "",
+                        "updated_at": "2022-11-08T13:12:56Z",
+                    },
                     "org_unit": None,
                     "entity": None,
                 },
@@ -463,7 +469,12 @@ class StorageAPITestCase(APITestCase):
                     "created_at": 1580608922.0,
                     "storage_id": "ANOTHER_EXISTING_STORAGE_BLACKLISTED_STOLEN",
                     "storage_type": "NFC",
-                    "status": {"status": "BLACKLISTED", "reason": "STOLEN", "comment": "", "updated_at": None},
+                    "status": {
+                        "status": "BLACKLISTED",
+                        "reason": "STOLEN",
+                        "comment": "",
+                        "updated_at": "2022-11-08T13:12:56Z",
+                    },
                     "org_unit": None,
                     "entity": None,
                 },
@@ -494,7 +505,12 @@ class StorageAPITestCase(APITestCase):
                     "created_at": 1580608922.0,
                     "storage_id": "ANOTHER_EXISTING_STORAGE_BLACKLISTED_STOLEN",
                     "storage_type": "NFC",
-                    "status": {"status": "BLACKLISTED", "reason": "STOLEN", "comment": "", "updated_at": None},
+                    "status": {
+                        "status": "BLACKLISTED",
+                        "reason": "STOLEN",
+                        "comment": "",
+                        "updated_at": "2022-11-08T13:12:56Z",
+                    },
                     "org_unit": None,
                     "entity": None,
                 }
@@ -523,7 +539,12 @@ class StorageAPITestCase(APITestCase):
                     "created_at": 1580608922.0,
                     "storage_id": "ANOTHER_EXISTING_STORAGE_BLACKLISTED_STOLEN",
                     "storage_type": "NFC",
-                    "status": {"status": "BLACKLISTED", "reason": "STOLEN", "comment": "", "updated_at": None},
+                    "status": {
+                        "status": "BLACKLISTED",
+                        "reason": "STOLEN",
+                        "comment": "",
+                        "updated_at": "2022-11-08T13:12:56Z",
+                    },
                     "org_unit": None,
                     "entity": None,
                 },
@@ -1258,22 +1279,24 @@ class StorageAPITestCase(APITestCase):
             {
                 "storages": [
                     {
-                        "updated_at": 1580608922.0,
-                        "created_at": 1580608922.0,
                         "storage_id": "ANOTHER_EXISTING_STORAGE_BLACKLISTED_STOLEN",
                         "storage_type": "NFC",
-                        "status": {"status": "BLACKLISTED", "reason": "STOLEN", "comment": "", "updated_at": None},
-                        "org_unit": None,
-                        "entity": None,
+                        "storage_status": {
+                            "status": "BLACKLISTED",
+                            "reason": "STOLEN",
+                            "updated_at": 1667913176.0,
+                            "comment": "",
+                        },
                     },
                     {
-                        "updated_at": 1580608922.0,
-                        "created_at": 1580608922.0,
                         "storage_id": "ANOTHER_EXISTING_STORAGE_BLACKLISTED_ABUSE",
                         "storage_type": "SD",
-                        "status": {"status": "BLACKLISTED", "reason": "ABUSE", "comment": "", "updated_at": None},
-                        "org_unit": None,
-                        "entity": {"id": self.entity.id, "name": "New Client 3"},
+                        "storage_status": {
+                            "status": "BLACKLISTED",
+                            "reason": "ABUSE",
+                            "updated_at": None,
+                            "comment": "",
+                        },
                     },
                 ]
             },

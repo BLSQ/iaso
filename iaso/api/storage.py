@@ -83,6 +83,12 @@ class StorageStatusSerializer(serializers.Serializer):
         return data
 
 
+class StorageStatusSerializerForMobile(StorageStatusSerializer):
+    """Like StorageStatusSerializer, but updated_at is a timestamp instead of a datetime"""
+
+    updated_at = TimestampField(source="status_updated_at", read_only=True)
+
+
 class StorageSerializer(serializers.ModelSerializer):
     storage_id = serializers.CharField(source="customer_chosen_id")
     storage_type = serializers.CharField(source="type")
@@ -391,7 +397,7 @@ class StorageSerializerForBlacklisted(serializers.ModelSerializer):
     # Since the blacklisted endpoint is open to everyone, we have a specific serializer that expose as little information as possible
     storage_id = serializers.CharField(source="customer_chosen_id")
     storage_type = serializers.CharField(source="type")
-    storage_status = StorageStatusSerializer(source="*")
+    storage_status = StorageStatusSerializerForMobile(source="*")
 
     class Meta:
         model = StorageDevice

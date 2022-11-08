@@ -120,8 +120,6 @@ const InstancesTopBar = ({
                 defaultOrder,
             });
         }
-        console.log('newCols', newCols);
-        console.log('params.columns', params.columns);
         if (newCols.length > 0) {
             handleChangeVisibleColmuns(newCols, !params.columns);
         }

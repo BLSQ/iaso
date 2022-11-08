@@ -101,7 +101,13 @@ class OrgUnitAPITestCase(APITestCase):
                 validation_status=m.OrgUnit.VALIDATION_VALID,
             )
 
-            cls.yoda = cls.create_user_with_profile(username="yoda", first_name="master", last_name="yoda", account=star_wars, permissions=["iaso_org_units"])
+            cls.yoda = cls.create_user_with_profile(
+                username="yoda",
+                first_name="master",
+                last_name="yoda",
+                account=star_wars,
+                permissions=["iaso_org_units"],
+            )
             cls.luke = cls.create_user_with_profile(
                 username="luke", account=star_wars, permissions=["iaso_org_units"], org_units=[cls.jedi_council_endor]
             )
@@ -300,5 +306,6 @@ class OrgUnitAPITestCase(APITestCase):
         )
         self.assertJSONResponse(response, 200)
 
-        self.assertEqual(f"{self.yoda.username} ({self.yoda.first_name} {self.yoda.last_name})", response.json().get("creator"))
-
+        self.assertEqual(
+            f"{self.yoda.username} ({self.yoda.first_name} {self.yoda.last_name})", response.json().get("creator")
+        )

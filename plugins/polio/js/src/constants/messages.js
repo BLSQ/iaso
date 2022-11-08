@@ -1620,9 +1620,9 @@ const MESSAGES = defineMessages({
         id: 'iaso.polio.label.estimatedDateOfArrival',
         defaultMessage: 'Estimated date of arrival',
     },
-    dosesShipped: {
-        id: 'iaso.polio.label.dosesShipped',
-        defaultMessage: 'Doses shipped',
+    vialsShipped: {
+        id: 'iaso.polio.label.vialsShipped',
+        defaultMessage: 'Vials shipped',
     },
     poNumbers: {
         id: 'iaso.polio.label.poNumbers',
@@ -1631,6 +1631,14 @@ const MESSAGES = defineMessages({
     formAReception: {
         id: 'iaso.polio.label.formAReception',
         defaultMessage: 'Reception of national Form A',
+    },
+    formADate: {
+        id: 'iaso.polio.label.formADate',
+        defaultMessage: 'Form A date',
+    },
+    formAComment: {
+        id: 'iaso.polio.label.formAComment',
+        defaultMessage: 'Comment on form A',
     },
     formAUsableVials: {
         id: 'iaso.polio.label.formAUsableVials',

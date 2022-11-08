@@ -147,13 +147,15 @@ yup.addMethod(
                 forma_missing_vials,
                 forma_usable_vials,
                 forma_unusable_vials,
+                forma_date,
             } = parent;
             if (
                 !value &&
                 (forma_unusable_vials ||
                     forma_usable_vials ||
                     forma_missing_vials ||
-                    forma_reception)
+                    forma_reception ||
+                    forma_date)
             ) {
                 return createError({
                     path,
@@ -175,13 +177,15 @@ yup.addMethod(
                 forma_missing_vials,
                 forma_usable_vials,
                 forma_unusable_vials,
+                forma_date,
             } = parent;
             if (
                 !value &&
                 (forma_unusable_vials ||
                     forma_usable_vials ||
                     forma_missing_vials ||
-                    forma_reception)
+                    forma_reception ||
+                    forma_date)
             ) {
                 return createError({
                     path,
@@ -202,7 +206,7 @@ yup.addMethod(
                 date_reception,
                 estimated_arrival_date,
                 reception_pre_alert,
-                doses_received,
+                vials_received,
                 po_numbers,
                 vaccine_name,
             } = parent;
@@ -210,7 +214,7 @@ yup.addMethod(
                 !value &&
                 (vaccine_name ||
                     po_numbers ||
-                    doses_received ||
+                    vials_received ||
                     reception_pre_alert ||
                     estimated_arrival_date ||
                     date_reception)
@@ -234,7 +238,7 @@ yup.addMethod(
                 date_reception,
                 estimated_arrival_date,
                 reception_pre_alert,
-                doses_received,
+                vials_received,
                 po_numbers,
                 vaccine_name,
             } = parent;
@@ -242,7 +246,7 @@ yup.addMethod(
                 !value &&
                 (vaccine_name ||
                     po_numbers ||
-                    doses_received ||
+                    vials_received ||
                     reception_pre_alert ||
                     estimated_arrival_date ||
                     date_reception)
@@ -258,6 +262,39 @@ yup.addMethod(
 );
 yup.addMethod(
     yup.string,
+    'shipmentCommentsCheck',
+    function shipmentCommentsCheck(formatMessage) {
+        return this.test('shipmentCommentsCheck', '', (value, context) => {
+            const { path, createError, parent } = context;
+            const {
+                date_reception,
+                estimated_arrival_date,
+                reception_pre_alert,
+                vials_received,
+                po_numbers,
+                vaccine_name,
+            } = parent;
+            if (
+                value &&
+                (!vaccine_name ||
+                    !po_numbers ||
+                    !vials_received ||
+                    !reception_pre_alert ||
+                    !estimated_arrival_date ||
+                    !date_reception)
+            ) {
+                return createError({
+                    path,
+                    message: formatMessage(MESSAGES.shipmentFieldsTogether),
+                });
+            }
+            return true;
+        });
+    },
+);
+
+yup.addMethod(
+    yup.string,
     'hasAllShipmentFieldsString',
     function hasAllShipmentFieldsString(formatMessage) {
         return this.test('hasAllShipmentFieldsString', '', (value, context) => {
@@ -266,7 +303,7 @@ yup.addMethod(
                 date_reception,
                 estimated_arrival_date,
                 reception_pre_alert,
-                doses_received,
+                vials_received,
                 po_numbers,
                 vaccine_name,
             } = parent;
@@ -274,7 +311,7 @@ yup.addMethod(
                 !value &&
                 (vaccine_name ||
                     po_numbers ||
-                    doses_received ||
+                    vials_received ||
                     reception_pre_alert ||
                     estimated_arrival_date ||
                     date_reception)
@@ -303,7 +340,7 @@ const useShipmentShape = () => {
             .min(0)
             .typeError(formatMessage(MESSAGES.positiveNumber))
             .hasAllShipmentFieldsNumber(formatMessage),
-        doses_received: yup
+        vials_received: yup
             .number()
             .nullable()
             .integer()
@@ -325,6 +362,7 @@ const useShipmentShape = () => {
             .nullable()
             .typeError(formatMessage(MESSAGES.invalidDate))
             .hasAllShipmentFieldsDate(formatMessage),
+        comment: yup.string().nullable().shipmentCommentsCheck(formatMessage),
     });
 };
 
@@ -486,6 +524,12 @@ const useRoundShape = () => {
             .typeError(formatMessage(MESSAGES.invalidDate))
             .nullable()
             .hasAllFormAFieldsDate(formatMessage),
+        forma_date: yup
+            .date()
+            .typeError(formatMessage(MESSAGES.invalidDate))
+            .nullable()
+            .hasAllFormAFieldsDate(formatMessage),
+        forma_comment: yup.string().nullable(),
         date_destruction: yup
             .date()
             .typeError(formatMessage(MESSAGES.invalidDate))

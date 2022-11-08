@@ -220,7 +220,7 @@ const CreateBudgetStep: FunctionComponent<Props> = ({
                 dataTestId="Test-modal"
                 onClose={() => null}
             >
-                {userHasTeam && (
+
                     <>
                         <TextArea
                             value={values.comment}
@@ -334,7 +334,6 @@ const CreateBudgetStep: FunctionComponent<Props> = ({
                                 </Typography>
                             )}
                     </>
-                )}
                 {!userHasTeam && <UserHasTeamWarning />}
             </ConfirmCancelModal>
         </FormikProvider>

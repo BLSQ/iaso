@@ -136,7 +136,7 @@ class AuditRoundSerializer(serializers.ModelSerializer):
     vaccines = AuditRoundVaccineSerializer(many=True)
     scopes = AuditRoundScopeSerializer(many=True)
     shipments = AuditShipmentSerializer(many=True)
-    destructions = AuditShipmentSerializer(many=True)
+    destructions = AuditDestructionSerializer(many=True)
 
 
 class AuditCampaignScopeSerializer(serializers.ModelSerializer):

@@ -82,8 +82,6 @@ export const VaccineManagementForm: FunctionComponent<Props> = () => {
             )}
             {rounds.map((round, index) => {
                 const accessor = `rounds[${index}]`;
-                console.log('round.number', round.number);
-                console.log('currentRoundNumber', currentRoundNumber);
                 return (
                     <Grid
                         key={round.number}

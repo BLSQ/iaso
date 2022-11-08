@@ -74,7 +74,7 @@ export const BudgetDetailsFilters: FunctionComponent<Props> = ({
                     />
                 </Grid>
                 <Grid container item xs={12} md={8} justifyContent="flex-end">
-                    <Box mt={2}>
+                    <Box mt={2} mb={isXSLayout ? 2 : 0}>
                         <FilterButton
                             disabled={!filtersUpdated}
                             onFilter={handleSearch}

@@ -41,6 +41,7 @@ RUN apt-get update && apt-get --yes  --no-install-recommends install \
     &&  apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
 WORKDIR /opt/app
+COPY requirements.txt /opt/app/requirements.txt
 COPY requirements-dev.txt /opt/app/requirements-dev.txt
 RUN pip install -r requirements-dev.txt
 

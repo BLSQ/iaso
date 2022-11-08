@@ -1,7 +1,7 @@
 # Specifies only dev-specific requirements
 # But imports the runtime ones too
 
--r ./requirements.txt
+-r requirements.txt
 
 # test and linting
 mypy==0.971

@@ -11,6 +11,7 @@ RUN apt-get update && apt-get --yes install \
 WORKDIR /opt/app
 
 # install python dependencies
+COPY requirements.txt /opt/app/requirements.txt
 COPY requirements-dev.txt /opt/app/requirements-dev.txt
 RUN pip install --quiet -r requirements-dev.txt
 

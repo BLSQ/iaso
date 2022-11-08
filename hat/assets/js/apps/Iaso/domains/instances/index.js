@@ -166,7 +166,6 @@ const Instances = ({ params }) => {
                 tableColumns={tableColumns}
             />
 
-            {fetching && <LoadingSpinner />}
             <Box className={classes.containerFullHeightPadded}>
                 <InstancesFiltersComponent
                     params={params}

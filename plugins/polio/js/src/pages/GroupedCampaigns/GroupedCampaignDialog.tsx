@@ -9,6 +9,7 @@ import { Box, Divider, Grid } from '@material-ui/core';
 // @ts-ignore
 import ConfirmCancelDialogComponent from 'Iaso/components/dialogs/ConfirmCancelDialogComponent';
 import { useSafeIntl } from 'bluesquare-components';
+import { StringSchema } from 'yup';
 import MESSAGES from '../../constants/messages';
 import InputComponent from '../../../../../../hat/assets/js/apps/Iaso/components/forms/InputComponent';
 import { useGetCampaigns } from '../../hooks/useGetCampaigns';
@@ -91,7 +92,9 @@ export const GroupedCampaignDialog: FunctionComponent<Props> = ({
         },
         [reset],
     );
-    const allowConfirm = Boolean(groupedCampaignName);
+    const allowConfirm =
+        Boolean(groupedCampaignName) && typeof campaignsToLink === 'string';
+
     return (
         <ConfirmCancelDialogComponent
             id="grouped-campaigns-modal"

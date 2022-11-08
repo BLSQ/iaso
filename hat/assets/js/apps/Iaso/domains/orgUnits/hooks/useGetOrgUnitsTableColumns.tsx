@@ -60,7 +60,6 @@ export const useGetOrgUnitsTableColumns = (searches: [Search]): Column[] => {
             {
                 Header: 'Id',
                 accessor: 'id',
-                width: 80,
             },
             {
                 Header: formatMessage(MESSAGES.name),
@@ -80,7 +79,6 @@ export const useGetOrgUnitsTableColumns = (searches: [Search]): Column[] => {
                 Header: formatMessage(MESSAGES.groups),
                 accessor: 'groups',
                 sortable: false,
-                width: 400,
                 Cell: settings => getOrgUnitGroups(settings.row.original),
             },
             {
@@ -115,6 +113,7 @@ export const useGetOrgUnitsTableColumns = (searches: [Search]): Column[] => {
                 Header: formatMessage(MESSAGES.creator),
                 accessor: 'creator',
                 id: 'creator',
+                Cell: settings => <>{settings.row.original.creator || '--'}</>,
             },
             {
                 Header: formatMessage(MESSAGES.action),

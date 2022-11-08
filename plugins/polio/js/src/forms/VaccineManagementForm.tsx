@@ -23,7 +23,7 @@ import { DestructionsForm } from './DestructionsForm';
 type Props = any;
 
 const useCustomStyles = makeStyles(theme => ({
-    marginTop: { marginTop: theme.spacing(1) },
+    marginTop: { width: '100%', marginTop: theme.spacing(1) },
 }));
 
 export const VaccineManagementForm: FunctionComponent<Props> = () => {
@@ -199,10 +199,7 @@ export const VaccineManagementForm: FunctionComponent<Props> = () => {
                 </Grid>
 
                 {/* fourth row: destruction */}
-                <Divider
-                    style={{ width: '100%' }}
-                    className={customClasses.marginTop}
-                />
+                <Divider className={customClasses.marginTop} />
                 <Grid item xs={12}>
                     <Box mt={1} mb={1}>
                         <Typography variant="button">

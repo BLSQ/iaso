@@ -66,6 +66,15 @@ export class Period {
         }
     }
 
+    static toDate(value) {
+        if (!value) return value;
+        const result = `${value.year}${String(value?.month ?? '1').padStart(
+            2,
+            '0',
+        )}${String(value?.day ?? '1').padStart(2, '0')}`;
+        return result;
+    }
+
     toCode() {
         switch (this.periodType) {
             case PERIOD_TYPE_DAY:
@@ -84,6 +93,7 @@ export class Period {
     }
 
     static parse(periodString) {
+        if (!periodString) return null;
         if (periodString.includes('Q')) {
             return [
                 PERIOD_TYPE_QUARTER,

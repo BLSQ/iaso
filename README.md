@@ -364,14 +364,18 @@ docker-compose exec db pg_dump -U postgres iaso  -Fc > iaso.dump
 
 The dumpfile will be created on your host. The `-Fc` meant it will use an optimised Postgres format (which take less place). If you want the plain sql command use `-Fp`
 
-To restore a dump file that you made or that somebody sent you:
+### To restore a dump file that you made or that somebody sent you
+0. Ensure the database server is running but not the rest. Close your docker-compose, ensure it is down with `docker-compose down`
+1. Launch the database server with `docker-compose up db` 
+2. Choose a name for you database. In this example  it will be `iaso5`
+   You can list existing databases using `docker-compose exec db psql -U postgres -l`
+3. Create the database `docker-compose exec db psql -U postgres -c "create database iaso5"`
+4. Restore the dump file to put the data in your database
 ```
-docker-compose exec db psql -U postgres -c "create database iaso5"
 cat iaso.dump | docker-compose exec -T db pg_restore -U postgres -d iaso5 -Fc --no-owner /dev/stdin
 ```
-
-This will put the data in a database called iaso5. You can choose in your .env file which database is used by editing
-the `RDS_DB_NAME` settings.
+5. Edit your `.env` file to use to this database in the `RDS_DB_NAME` settings.
+6. Start Iaso. Cut your docker-compose (see 0) and relaunch it fully. Warning: Modification in your .env file are not taken into account unless you entirely stop your docker-compose
 
 Health
 ------
@@ -615,10 +619,28 @@ regenerate the translations:
 This will update `hat/locale/fr/LC_MESSAGES/django.po` with the new strings to
 translate.
 
+If you get an error about `/opt/app` or cannot accessing docker:
+Change in settings.py LOCALE_PATHS to
+```python
+LOCALE_PATHS = [ "hat/locale/"]
+```
+
+And specify --ignore
+```sh
+makemessages --locale=fr --extension txt --extension html --ignore /opt/app --ignore docker --ignore node_modules
+```
+
+
 After updating it with the translation you need to following command to have
 them reflected in the interface:
 
 ```manage.py compilemessages```
+
+This is done automatically when you launch the docker image so if new translations
+you just pulled in git don't appear, relaunch the iaso docker.
+
+
+You do not need to manage local for English as it is the default language
 
 
 Code reloading

@@ -38,7 +38,7 @@ from iaso.utils import timestamp_to_datetime
 from . import common
 from .common import safe_api_import, TimestampField
 from .instance_filters import parse_instance_filters, get_form_from_instance_filters
-from .comment import UserSerializer
+from .comment import UserSerializerForComment
 from iaso.api.serializers import OrgUnitSerializer
 
 
@@ -117,8 +117,9 @@ class InstanceLockSerializer(serializers.ModelSerializer):
         fields = ["id", "top_org_unit", "locked_by", "locked_at", "unlocked_by", "locked_by"]
         read_only_fields = ["locked_at", "locked_by"]
 
-    locked_by = UserSerializer(read_only=True)
-    unlocked_by = UserSerializer(read_only=True)
+    # TODO: can we use the generic UserSerializer to keeps things less interleaved?
+    locked_by = UserSerializerForComment(read_only=True)
+    unlocked_by = UserSerializerForComment(read_only=True)
     top_org_unit = OrgUnitNestedSerializer(read_only=True)
 
 

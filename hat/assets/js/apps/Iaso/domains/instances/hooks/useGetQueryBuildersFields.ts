@@ -1,10 +1,10 @@
 // @ts-ignore
 import { QueryBuilderFields } from 'bluesquare-components';
 
-import { useGetPossibleFields } from '../../forms/hooks/useGetPossibleFields';
 import { formatLabel } from '../utils';
 
-import { FormDescriptor } from '../../forms/types/forms';
+import { FormDescriptor, PossibleField } from '../../forms/types/forms';
+import { getLocaleDateFormat } from '../../../utils/dates';
 
 const findDescriptorInChildren = (field, descriptor) =>
     descriptor?.children?.reduce((a, child) => {
@@ -16,17 +16,16 @@ const findDescriptorInChildren = (field, descriptor) =>
 
 // you can fields examples here: https://codesandbox.io/s/github/ukrbublik/react-awesome-query-builder/tree/master/sandbox?file=/src/demo/config.tsx:1444-1464
 export const useGetQueryBuildersFields = (
-    formId?: number,
     formDescriptor?: FormDescriptor,
+    possibleFields?: PossibleField[],
 ): QueryBuilderFields => {
-    const { possibleFields, isFetchingForm } = useGetPossibleFields(formId);
-    if (isFetchingForm || !possibleFields) return {};
+    if (!possibleFields) return {};
     const Fields: QueryBuilderFields = {};
     possibleFields.forEach(field => {
         switch (field.type) {
             case 'text':
             case 'note': {
-                Fields[field.name] = {
+                Fields[field.fieldKey] = {
                     label: formatLabel(field),
                     type: 'text',
                     excludeOperators: [
@@ -51,7 +50,7 @@ export const useGetQueryBuildersFields = (
                         value: child.name,
                         title: formatLabel(child),
                     })) || [];
-                Fields[field.name] = {
+                Fields[field.fieldKey] = {
                     label: formatLabel(field),
                     type: 'select',
                     excludeOperators: [
@@ -66,34 +65,36 @@ export const useGetQueryBuildersFields = (
                 };
                 break;
             }
-            case 'select multiple':
-            case 'select_multiple': {
-                const listValues =
-                    findDescriptorInChildren(
-                        field,
-                        formDescriptor,
-                    )?.children?.map(child => ({
-                        value: child.name,
-                        title: formatLabel(child),
-                    })) || [];
-                Fields[field.name] = {
-                    label: formatLabel(field),
-                    type: 'multiselect',
-                    excludeOperators: [
-                        'proximity',
-                        'select_any_in',
-                        'select_not_any_in',
-                    ],
-                    valueSources: ['value'],
-                    fieldSettings: {
-                        listValues,
-                    },
-                };
-                break;
-            }
+            // Not working for now
+            // case 'select multiple':
+            // case 'select_multiple': {
+            //     const listValues =
+            //         findDescriptorInChildren(
+            //             field,
+            //             formDescriptor,
+            //         )?.children?.map(child => ({
+            //             value: child.name,
+            //             title: formatLabel(child),
+            //         })) || [];
+            //     Fields[field.fieldKey] = {
+            //         label: formatLabel(field),
+            //         originalKey: field.name,
+            //         type: 'multiselect',
+            //         excludeOperators: [
+            //             'proximity',
+            //             'select_any_in',
+            //             'select_not_any_in',
+            //         ],
+            //         valueSources: ['value'],
+            //         fieldSettings: {
+            //             listValues,
+            //         },
+            //     };
+            //     break;
+            // }
             case 'integer':
             case 'decimal': {
-                Fields[field.name] = {
+                Fields[field.fieldKey] = {
                     label: formatLabel(field),
                     type: 'number',
                     preferWidgets: ['number'],
@@ -101,7 +102,7 @@ export const useGetQueryBuildersFields = (
                 break;
             }
             case 'range': {
-                Fields[field.name] = {
+                Fields[field.fieldKey] = {
                     label: formatLabel(field),
                     type: 'number',
                     preferWidgets: ['number'],
@@ -111,26 +112,43 @@ export const useGetQueryBuildersFields = (
                 break;
             }
             case 'date': {
-                Fields[field.name] = {
+                Fields[field.fieldKey] = {
                     label: formatLabel(field),
                     type: 'date',
+                    operators: ['equal', 'not_equal'],
+                    fieldSettings: {
+                        dateFormat: getLocaleDateFormat('L'),
+                    },
                 };
                 break;
             }
-            case 'time': {
-                Fields[field.name] = {
-                    label: formatLabel(field),
-                    type: 'time',
-                };
-                break;
-            }
-            case 'dateTime': {
-                Fields[field.name] = {
-                    label: formatLabel(field),
-                    type: 'datetime',
-                };
-                break;
-            }
+
+            // Not working for now
+            // case 'time': {
+            //     Fields[field.fieldKey] = {
+            //         label: formatLabel(field),
+            //         type: 'time',
+            //         originalKey: field.name,
+            //         operators: ['equal', 'not_equal'],
+            //         fieldSettings: {
+            //             timeFormat: getLocaleDateFormat('LT'),
+            //         },
+            //     };
+            //     break;
+            // }
+            // case 'dateTime': {
+            //     Fields[field.fieldKey] = {
+            //         label: formatLabel(field),
+            //         type: 'datetime',
+            //         originalKey: field.name,
+            //         operators: ['equal', 'not_equal'],
+            //         fieldSettings: {
+            //             timeFormat: getLocaleDateFormat('LT'),
+            //             dateFormat: getLocaleDateFormat('L'),
+            //         },
+            //     };
+            //     break;
+            // }
             default:
                 break;
         }

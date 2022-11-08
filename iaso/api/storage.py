@@ -1,21 +1,24 @@
 # TODO: need better type annotations in this file
-from datetime import datetime
+
 from typing import Tuple
 
+from django.db.models import Prefetch, Q
 from rest_framework import viewsets, permissions, serializers, status
-from rest_framework.decorators import action, api_view
+from rest_framework.decorators import action, api_view, permission_classes
+from rest_framework.fields import Field
 from rest_framework.mixins import CreateModelMixin, ListModelMixin
-from rest_framework.permissions import AllowAny
+from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 
 from django.core.paginator import Paginator
 
+from hat.api.export_utils import timestamp_to_utc_datetime
 from iaso.models import StorageLogEntry, StorageDevice, Instance, OrgUnit, Entity
 from iaso.api.entity import EntitySerializer
 
 from iaso.api.serializers import OrgUnitSerializer
 
-from .common import TimestampField, HasPermission
+from .common import TimestampField, HasPermission, UserSerializer
 
 
 class EntityNestedSerializer(EntitySerializer):
@@ -33,13 +36,13 @@ class OrgUnitNestedSerializer(OrgUnitSerializer):
         ]
 
 
-# This is actually unused (by POST)
 class StorageLogSerializer(serializers.ModelSerializer):
     storage_id = serializers.CharField(source="device.customer_chosen_id")
     storage_type = serializers.CharField(source="device.type")
     entity = EntityNestedSerializer(read_only=True)
     org_unit = OrgUnitNestedSerializer(read_only=True)
     performed_at = TimestampField(read_only=True)
+    performed_by = UserSerializer(read_only=True)
 
     class Meta:
         model = StorageLogEntry
@@ -52,10 +55,11 @@ class StorageLogSerializer(serializers.ModelSerializer):
             "org_unit",
             "entity",
             "performed_at",
+            "performed_by",
+            "status",
+            "status_reason",
+            "status_comment",
         ]
-
-    def create(self, validated_data):
-        pass
 
 
 class StorageStatusSerializer(serializers.Serializer):
@@ -63,9 +67,7 @@ class StorageStatusSerializer(serializers.Serializer):
     reason = serializers.ChoiceField(
         source="status_reason", required=False, choices=StorageDevice.STATUS_REASON_CHOICES
     )
-    # TODO: where should this data come from
-    # updated_at = serializers.DateTimeField()
-    # TODO: Comment field is not in the spec, but I guess it's useful to implement, no?
+    updated_at = serializers.DateTimeField(source="status_updated_at", read_only=True)
     comment = serializers.CharField(source="status_comment", required=False, allow_blank=True)
 
     def validate(self, data):
@@ -104,12 +106,34 @@ class StorageSerializer(serializers.ModelSerializer):
 
 
 class StorageSerializerWithLogs(StorageSerializer):
-    """Like StorageSerializer, but also includes the log entries"""
+    """
+    Like StorageSerializer, but also includes the log entries
 
-    logs = StorageLogSerializer(many=True, source="log_entries")
+    Requires a "filtered_log_entries" attribute on the data, use a Prefetch() object
+    """
+
+    logs: Field = StorageLogSerializer(many=True, source="filtered_log_entries")
 
     class Meta(StorageSerializer.Meta):
         fields = StorageSerializer.Meta.fields + ("logs",)
+
+
+class StorageSerializerWithPaginatedLogs(StorageSerializerWithLogs):
+    """
+    Extends StorageSerializerWithLogs so the log entries can be paginated
+
+    Requires:
+     - a "filtered_log_entries" attribute on the data, use a Prefetch() object
+     - "limit" and "offset" in the serializer context
+    """
+
+    logs = serializers.SerializerMethodField(method_name="get_filtered_and_paginated_log_entries")
+
+    def get_filtered_and_paginated_log_entries(self, obj):
+        offset = self.context["offset"]
+        limit = self.context["limit"]
+        logs = obj.filtered_log_entries[offset : offset + limit]
+        return StorageLogSerializer(logs, many=True).data
 
 
 class StorageViewSet(ListModelMixin, viewsets.GenericViewSet):
@@ -135,10 +159,17 @@ class StorageViewSet(ListModelMixin, viewsets.GenericViewSet):
         if filter_type is not None:
             qs = qs.filter(type__in=filter_type.split(","))
 
+        # the search filter works on entity_id or storage (customer-chosen) id
         filter_search = self.request.query_params.get("search")
         if filter_search is not None:
-            # TODO: implement: search on entity or storage id
-            pass
+            q = Q(customer_chosen_id__icontains=filter_search)
+            try:
+                filter_search_int = int(filter_search)
+                q = q | Q(entity__id=filter_search_int)
+            except ValueError:
+                pass
+
+            qs = qs.filter(q)
 
         return qs
 
@@ -181,8 +212,6 @@ class StorageViewSet(ListModelMixin, viewsets.GenericViewSet):
 
         POST /api/storage/blacklisted/
         """
-        # TODO: permissions: spec mentions "permission to modify storage", what does it mean exactly?
-        #  Clarify then implement
 
         # 1. Get data from request/environment
         user = request.user
@@ -204,7 +233,6 @@ class StorageViewSet(ListModelMixin, viewsets.GenericViewSet):
             # 3. Submitted data is valid, we can now proceed
             status_dict = status_serializer.validated_data
             # 3.1 Update device status
-            # TODO: discuss: what should be done if we try to change the device to the status it's already in?
             device.change_status(
                 new_status=status_dict["status"],
                 reason=status_dict.get("status_reason", ""),
@@ -239,7 +267,6 @@ class StorageLogViewSet(CreateModelMixin, viewsets.GenericViewSet):
             log_id = log_data["id"]
 
             try:
-                # TODO: check the logic is sound here (=we don't expect the mobile to re-push the same log id with different values)
                 StorageLogEntry.objects.get(id=log_id)
                 # That log entry already exists, skip it
             except StorageLogEntry.DoesNotExist:
@@ -254,12 +281,10 @@ class StorageLogViewSet(CreateModelMixin, viewsets.GenericViewSet):
                 if operation_type not in [c[1] for c in StorageLogEntry.OPERATION_TYPE_CHOICES]:
                     return Response({"error": "Invalid operation type"}, status=400)
 
-                # timestamp in seconds, but it's actually a double so there are 3 decimals with the millis
-                performed_at = datetime.utcfromtimestamp(float(log_data["performed_at"]))
+                performed_at = timestamp_to_utc_datetime(int(log_data["performed_at"]))
 
                 concerned_instances = Instance.objects.filter(uuid__in=log_data["instances"])
 
-                # TODO: refactor this?
                 concerned_orgunit = None
                 if "org_unit_id" in log_data and log_data["org_unit_id"] is not None:
                     try:
@@ -296,32 +321,77 @@ class StorageLogViewSet(CreateModelMixin, viewsets.GenericViewSet):
 
 
 @api_view()
+@permission_classes([IsAuthenticated, HasPermission("menupermissions.iaso_storages")])  # type: ignore
 def logs_per_device(request, storage_customer_chosen_id: str, storage_type: str):
     """Return a list of log entries for a given device"""
     user_account = request.user.iaso_profile.account
 
-    # TODO: implement permissions and return 403/401 (see spec)
-    # TODO: spec says: "permissions to see storage", what does it mean exactly?
+    org_unit_id = request.GET.get("org_unit_id")
+    operation_types_str = request.GET.get("types", None)
+    status = request.GET.get("status", None)
+    reason = request.GET.get("reason", None)
 
-    device = StorageDevice.objects.get(
-        customer_chosen_id=storage_customer_chosen_id, type=storage_type, account=user_account
-    )
+    limit_str = request.GET.get("limit", None)
+    page_offset = request.GET.get("page", 1)
 
-    # TODO: implement filtering
-    # TODO: implement pagination
+    order = request.GET.get("order", "-performed_at").split(",")
 
-    return Response(StorageSerializerWithLogs(device).data)
+    device_identity_fields = {
+        "customer_chosen_id": storage_customer_chosen_id,
+        "type": storage_type,
+        "account": user_account,
+    }
+
+    # We need to filter the log entries early or the paginator (count, ...) will have inconsistent values with the
+    # prefetched log entries later
+    device = StorageDevice.objects.get(**device_identity_fields)
+    log_entries_queryset = StorageLogEntry.objects.filter(device=device).order_by(*order)
+
+    if org_unit_id is not None:
+        log_entries_queryset = log_entries_queryset.filter(org_unit_id=org_unit_id)
+    if operation_types_str is not None:
+        operation_types = operation_types_str.split(",")
+        log_entries_queryset = log_entries_queryset.filter(operation_type__in=operation_types)
+    if status is not None:
+        log_entries_queryset = log_entries_queryset.filter(status=status)
+    if reason is not None:
+        log_entries_queryset = log_entries_queryset.filter(status_reason=reason)
+
+    device_with_logs = StorageDevice.objects.prefetch_related(
+        Prefetch(
+            "log_entries",
+            log_entries_queryset,
+            to_attr="filtered_log_entries",
+        )
+    ).get(**device_identity_fields)
+
+    if limit_str:
+        # Pagination as requested: each page contains the device metadata + a subset of log entries
+        limit = int(limit_str)
+        page_offset = int(page_offset)
+        paginator = Paginator(log_entries_queryset, limit)
+        res = {"count": paginator.count}
+        if page_offset > paginator.num_pages:
+            page_offset = paginator.num_pages
+        page = paginator.page(page_offset)
+        res["results"] = StorageSerializerWithPaginatedLogs(  # type: ignore
+            device_with_logs, context={"limit": limit, "offset": page.start_index() - 1}
+        ).data
+        res["has_next"] = page.has_next()
+        res["has_previous"] = page.has_previous()
+        res["page"] = page_offset
+        res["pages"] = paginator.num_pages
+        res["limit"] = limit
+        return Response(res)
+    else:
+        return Response(StorageSerializerWithLogs(device_with_logs).data)
 
 
 class StorageBlacklistedViewSet(ListModelMixin, viewsets.GenericViewSet):
     queryset = StorageDevice.objects.filter(status=StorageDevice.BLACKLISTED)
     serializer_class = StorageSerializer
 
-    # TODO: check permissions if necessary (everybody can get the list of blacklisted devices accross all accounts, correct?)
     permission_classes = [AllowAny]
-    # TODO: according to spec, we should add an "updated_at" field
-    # TODO: implement pagination
-    # TODO: clarify, then implement the "since" feature -see specs-
 
     def list(self, request):
         """

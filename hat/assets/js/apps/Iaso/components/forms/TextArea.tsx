@@ -1,4 +1,4 @@
-import React, { FunctionComponent, useState } from 'react';
+import React, { FunctionComponent, useEffect, useRef, useState } from 'react';
 
 import {
     // @ts-ignore
@@ -11,6 +11,7 @@ import {
 import classnames from 'classnames';
 import { makeStyles, InputLabel } from '@material-ui/core';
 import { useDebounce } from 'use-debounce';
+import { Optional } from '../../types/utils';
 
 type Props = {
     value?: string;
@@ -73,15 +74,29 @@ export const TextArea: FunctionComponent<Props> = ({
     required = false,
     debounceTime = 0,
 }) => {
+    const prevValue = useRef<Optional<string>>();
+    const prevDebounced = useRef<Optional<string>>();
     const classes: Record<string, string> = useStyles();
     const [focus, setFocus] = useState<boolean>(false);
     const hasErrors = errors.length > 0;
     const [textValue, setTextValue] = useState<string>(value ?? '');
     const [debouncedValue] = useDebounce(textValue, debounceTime);
 
+    // Reset state when value changes to prevent wrongly persisting the state value
+    useEffect(() => {
+        if (value !== prevValue.current) {
+            setTextValue(value ?? '');
+            prevValue.current = value;
+        }
+    }, [value]);
+
     useSkipEffectOnMount(() => {
-        onChange(debouncedValue);
-    }, [debouncedValue, onChange]);
+        if (debouncedValue !== prevDebounced.current) {
+            // Only call onChange if debouncedVAlue has been updated to avoid unwanted overwrites
+            prevDebounced.current = debouncedValue;
+            onChange(debouncedValue);
+        }
+    }, [debouncedValue, onChange, prevValue.current]);
 
     return (
         <FormControl errors={errors}>

@@ -30,7 +30,6 @@ class OrgUnitAPITestCase(APITestCase):
             sw_version_2 = m.SourceVersion.objects.create(data_source=sw_source, number=1)
             star_wars.default_version = sw_version_1
             star_wars.save()
-
             cls.jedi_squad = m.OrgUnitType.objects.create(name="Jedi Squad", short_name="Jds")
 
             cls.jedi_council = m.OrgUnitType.objects.create(name="Jedi Council", short_name="Cnc")
@@ -102,7 +101,7 @@ class OrgUnitAPITestCase(APITestCase):
                 validation_status=m.OrgUnit.VALIDATION_VALID,
             )
 
-            cls.yoda = cls.create_user_with_profile(username="yoda", account=star_wars, permissions=["iaso_org_units"])
+            cls.yoda = cls.create_user_with_profile(username="yoda", first_name="master", last_name="yoda", account=star_wars, permissions=["iaso_org_units"])
             cls.luke = cls.create_user_with_profile(
                 username="luke", account=star_wars, permissions=["iaso_org_units"], org_units=[cls.jedi_council_endor]
             )
@@ -279,3 +278,27 @@ class OrgUnitAPITestCase(APITestCase):
                 "validation_status": "VALID",
             },
         )
+
+    def test_creator_org_unit(self):
+        self.client.force_authenticate(self.yoda)
+        response = self.client.post(
+            f"/api/orgunits/create_org_unit/",
+            format="json",
+            data={
+                "id": None,
+                "name": "test_creator_ou",
+                "org_unit_type_id": self.jedi_council.pk,
+                "groups": [],
+                "sub_source": "",
+                "status": False,
+                "aliases": ["my alias"],
+                "validation_status": "NEW",
+                "parent_id": "",
+                "source_ref": "",
+                "creation_source": "dashboard",
+            },
+        )
+        self.assertJSONResponse(response, 200)
+
+        self.assertEqual(f"{self.yoda.username} ({self.yoda.first_name} {self.yoda.last_name})", response.json().get("creator"))
+

@@ -482,9 +482,24 @@ def logs_per_device(request, storage_customer_chosen_id: str, storage_type: str)
         return logs_for_device_generate_export(queryset=log_entries_queryset, file_format=file_format_export)
 
 
+class StorageSerializerForBlacklisted(serializers.ModelSerializer):
+    # Since the blacklisted endpoint is open to everyone, we have a specific serializer that expose as little information as possible
+    storage_id = serializers.CharField(source="customer_chosen_id")
+    storage_type = serializers.CharField(source="type")
+    storage_status = StorageStatusSerializer(source="*")
+
+    class Meta:
+        model = StorageDevice
+        fields: Tuple[str, ...] = (
+            "storage_id",
+            "storage_type",
+            "storage_status",
+        )
+
+
 class StorageBlacklistedViewSet(ListModelMixin, viewsets.GenericViewSet):
     queryset = StorageDevice.objects.filter(status=StorageDevice.BLACKLISTED)
-    serializer_class = StorageSerializer
+    serializer_class = StorageSerializerForBlacklisted
 
     permission_classes = [AllowAny]
 

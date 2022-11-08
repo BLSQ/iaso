@@ -16,8 +16,8 @@ const useStyles = makeStyles(theme => ({
     root: {
         width: '100%',
         '&.MuiStepper-root': {
-            paddingLeft: 0,
-            paddingRight: 0,
+            padding: 0,
+            marginTop: theme.spacing(2),
         },
         '& .MuiBox-root': {
             alignItems: 'flex-start',
@@ -32,20 +32,20 @@ const useStyles = makeStyles(theme => ({
         display: 'flex',
         alignItems: 'center',
     },
-    taskDone: {
+    taskIcon: {
         transform: 'scale(0.85)',
+        position: 'relative',
+        top: -3,
+    },
+    taskDone: {
         color: theme.palette.success.main,
     },
     taskPending: {
-        transform: 'scale(0.85)',
         // @ts-ignore
         color: theme.palette.mediumGray.main,
     },
     itemLabel: {
         fontSize: '0.82rem',
-    },
-    date: {
-        paddingLeft: '1.5rem',
     },
     divider: {
         height: '30px',
@@ -100,15 +100,14 @@ export const BudgetTimeline: FunctionComponent<Props> = ({
             setActiveStep(lastStepCompletedIndex);
         }
     }, [categories, activeStep]);
-
     return (
-        <>
-            <Stepper
-                className={classes.root}
-                activeStep={activeStep}
-                alternativeLabel
-            >
-                {categories?.map(category => (
+        <Stepper
+            className={classes.root}
+            activeStep={activeStep}
+            alternativeLabel
+        >
+            {categories?.map(category => {
+                return (
                     <Step
                         className={classnames(
                             classes[getColor(category)],
@@ -118,44 +117,62 @@ export const BudgetTimeline: FunctionComponent<Props> = ({
                         completed={category.completed}
                         active={category.active}
                     >
-                        <StepLabel>{category.label}</StepLabel>
-                        <Box display="flex" justifyContent="center">
-                            <Divider
-                                orientation="vertical"
-                                className={classes.divider}
-                            />
-                        </Box>
+                        <StepLabel>
+                            <Box>
+                                {category.label}
 
-                        <Box>
-                            {category.items.map(item => (
-                                <Box key={item.step_id} mb={1}>
-                                    <div className={classes.checkboxWrapper}>
-                                        {item.performed_by ? (
-                                            <CheckCircleOutline
-                                                className={classes.taskDone}
-                                            />
-                                        ) : (
-                                            <CheckCircleOutline
-                                                className={classes.taskPending}
-                                            />
-                                        )}
-                                        <div className={classes.itemLabel}>
-                                            {item.label}
-                                        </div>
-                                    </div>
-                                    {item.performed_at && (
-                                        <div className={classes.date}>
-                                            {moment(item.performed_at).format(
-                                                'l',
-                                            )}
-                                        </div>
-                                    )}
+                                <Box display="flex" justifyContent="center">
+                                    <Divider
+                                        orientation="vertical"
+                                        className={classes.divider}
+                                    />
                                 </Box>
-                            ))}
-                        </Box>
+
+                                <Box>
+                                    {category.items.map((item, index) => {
+                                        return (
+                                            <Box
+                                                // eslint-disable-next-line react/no-array-index-key
+                                                key={`${
+                                                    item.step_id || item.label
+                                                }-${index}`}
+                                                mb={1}
+                                            >
+                                                <Box
+                                                    className={
+                                                        classes.checkboxWrapper
+                                                    }
+                                                >
+                                                    <CheckCircleOutline
+                                                        className={classnames(
+                                                            item.performed_by &&
+                                                                classes.taskDone,
+                                                            !item.performed_by &&
+                                                                classes.taskPending,
+                                                            classes.taskIcon,
+                                                        )}
+                                                    />
+                                                    <Box
+                                                        className={
+                                                            classes.itemLabel
+                                                        }
+                                                    >
+                                                        {item.label}
+                                                        {item.performed_at &&
+                                                            `: ${moment(
+                                                                item.performed_at,
+                                                            ).format('l')}`}
+                                                    </Box>
+                                                </Box>
+                                            </Box>
+                                        );
+                                    })}
+                                </Box>
+                            </Box>
+                        </StepLabel>
                     </Step>
-                ))}
-            </Stepper>
-        </>
+                );
+            })}
+        </Stepper>
     );
 };

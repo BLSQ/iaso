@@ -9,7 +9,7 @@ import {
     DropdownOptions,
     Optional,
 } from '../../../../../../../../hat/assets/js/apps/Iaso/types/utils';
-import { Budget, Workflow, Categories } from '../../types';
+import { Budget, Workflow } from '../../types';
 
 const getBudgets = (params: any) => {
     const filteredParams = Object.entries(params).filter(

@@ -7,6 +7,7 @@ type Props = {
     form: any;
     label: string;
     required: boolean;
+    debounceTime?: number;
 };
 
 export const MultilineText: FunctionComponent<Props> = ({
@@ -14,6 +15,7 @@ export const MultilineText: FunctionComponent<Props> = ({
     form,
     label,
     required,
+    debounceTime = 0,
 }) => {
     const { name } = field;
     const {
@@ -39,6 +41,7 @@ export const MultilineText: FunctionComponent<Props> = ({
             label={label}
             value={field.value}
             onChange={onChange}
+            debounceTime={debounceTime}
         />
     );
 };

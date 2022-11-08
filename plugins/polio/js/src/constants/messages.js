@@ -1576,9 +1576,13 @@ const MESSAGES = defineMessages({
         id: 'iaso.polio.label.vialsDestroyed',
         defaultMessage: 'Unusable vials destroyed',
     },
-    destructionDate: {
-        id: 'iaso.polio.label.destructionDate',
+    destructionReceptionDate: {
+        id: 'iaso.polio.label.destructionReceptionDate',
         defaultMessage: 'Reception of the destruction report',
+    },
+    destructionReportDate: {
+        id: 'iaso.polio.label.destructionReportDate',
+        defaultMessage: 'Date of the destruction report',
     },
     dateSignedVrf: {
         id: 'iaso.polio.label.dateSignedVrf',
@@ -1688,6 +1692,14 @@ const MESSAGES = defineMessages({
         id: 'iaso.polio.label.removeLastShipment',
         defaultMessage: 'Remove last shipment',
     },
+    addDestruction: {
+        id: 'iaso.polio.label.addDestruction',
+        defaultMessage: 'Add destruction',
+    },
+    removeLastDestruction: {
+        id: 'iaso.polio.label.removeLastDestruction',
+        defaultMessage: 'Remove last destruction',
+    },
     addLink: {
         id: 'iaso.polio.label.addLink',
         defaultMessage: 'Add link',
@@ -1708,6 +1720,10 @@ const MESSAGES = defineMessages({
     shipmentFieldsTogether: {
         id: 'iaso.polio.label.shipmentFieldsTogether',
         defaultMessage: 'All shipment fields need to be filled together',
+    },
+    destructionFieldsTogether: {
+        id: 'iaso.polio.label.destructionFieldsTogether',
+        defaultMessage: 'All destruction fields need to be filled together',
     },
     scopeUnlockConditions: {
         id: 'iaso.polio.label.scopeUnlockConditions',

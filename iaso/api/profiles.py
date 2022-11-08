@@ -68,10 +68,8 @@ class ProfilesViewSet(viewsets.ViewSet):
                 Q(user__username__icontains=search)
                 | Q(user__first_name__icontains=search)
                 | Q(user__last_name__icontains=search)
-                | Q(user__iaso_profile__org_units__icontains=search)
+                | Q(user__iaso_profile__org_units__name__icontains=search)
             )
-
-
 
         if limit:
             queryset = queryset.order_by(*orders)

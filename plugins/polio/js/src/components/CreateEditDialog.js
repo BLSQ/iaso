@@ -37,6 +37,7 @@ import { ScopeForm } from '../forms/ScopeForm.tsx';
 import { BudgetForm } from '../forms/BudgetForm';
 import { Form } from '../forms/Form';
 import { RoundsForm } from '../forms/RoundsForm';
+import { VaccineManagementForm } from '../forms/VaccineManagementForm.tsx';
 import { RoundsEmptyDates } from './Rounds/RoundsEmptyDates.tsx';
 
 import { useSaveCampaign } from '../hooks/useSaveCampaign';
@@ -46,7 +47,6 @@ import { CAMPAIGN_HISTORY_URL } from '../constants/routes';
 
 import { useStyles } from '../styles/theme';
 import MESSAGES from '../constants/messages';
-import { VaccineManagementForm } from '../forms/VaccineManagementForm.tsx';
 
 const CreateEditDialog = ({
     isOpen,

@@ -55,6 +55,14 @@ class Workflow:
     def get_transition_by_key(self, key) -> Transition:
         return self.transitions_dict[key]
 
+    def get_transition_label_safe(self, key) -> str:
+        """Return the label for this transition key. Or the label itself it the
+        key is not found in the workfloe e.g. it was deleted"""
+        if key in self.transitions_dict:
+            return self.transitions_dict[key].label
+        else:
+            return key
+
     def self_check(self):
         for transition in self.transitions:
             if transition.from_node:

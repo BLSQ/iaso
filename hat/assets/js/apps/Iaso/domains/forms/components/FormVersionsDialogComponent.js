@@ -84,18 +84,19 @@ const FormVersionsDialogComponent = ({
             }
             try {
                 await savePromise;
+                setIsLoading(false);
                 closeDialog();
                 setFormState(emptyVersion(formVersion.id));
                 onConfirmed();
                 dispatch(enqueueSnackbar(succesfullSnackBar()));
             } catch (error) {
+                setIsLoading(false);
                 if (error.status === 400) {
                     Object.entries(error.details).forEach(entry =>
                         setFieldErrors(entry[0], entry[1]),
                     );
                 }
             }
-            setIsLoading(false);
         },
         [
             dispatch,

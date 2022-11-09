@@ -116,39 +116,43 @@ export const ScopeForm: FunctionComponent = () => {
         setSearchUpdated(false);
     }, []);
 
-    const searchDistrictByName = useCallback(
-        search => {
-            setSearchLaunched(true);
-            // // setSearchScope(searchScope)
-            let filtreds = [];
-            if (search !== '') {
-                const toFilter = districtShapes.map(district => {
-                    return {
-                        ...district,
-                        region: findRegion(district, regionShapes),
-                        vaccineName: findScopeWithOrgUnit(scopes, district.id)
-                            ?.vaccine,
-                    };
-                });
-                // if (searchScope) {
-                //     toFilter = toFilter.filter(d => d.vaccineName);
-                // }
-                filtreds = toFilter.filter(d =>
-                    d.name.includes(search.toUpperCase()),
-                );
-                if (sortFocus === 'REGION') {
-                    filtreds = sortBy(filtreds, ['region']);
-                } else if (sortFocus === 'VACCINE') {
-                    filtreds = sortBy(filtreds, ['vaccineName']);
-                }
-                if (orderBy === 'desc') {
-                    filtreds = filtreds.reverse();
-                }
-            }
-            setFilteredDistricts(filtreds);
-        },
-        [districtShapes, orderBy, regionShapes, scopes, sortFocus],
-    );
+    const searchDistrictByName = useCallback(() => {
+        // // setSearchScope(searchScope)
+        let filtreds = [];
+        filtreds = districtShapes.map(district => {
+            return {
+                ...district,
+                region: findRegion(district, regionShapes),
+                vaccineName: findScopeWithOrgUnit(scopes, district.id)?.vaccine,
+            };
+        });
+        // if (searchScope) {
+        //     toFilter = toFilter.filter(d => d.vaccineName);
+        // }
+        if (searchLaunched && search !== '') {
+            filtreds = filtreds.filter(d =>
+                d.name.includes(search?.toUpperCase()),
+            );
+        }
+
+        if (sortFocus === 'REGION') {
+            filtreds = sortBy(filtreds, ['region']);
+        } else if (sortFocus === 'VACCINE') {
+            filtreds = sortBy(filtreds, ['vaccineName']);
+        }
+        if (orderBy === 'desc') {
+            filtreds = filtreds.reverse();
+        }
+        setFilteredDistricts(filtreds);
+    }, [
+        districtShapes,
+        orderBy,
+        regionShapes,
+        scopes,
+        search,
+        searchLaunched,
+        sortFocus,
+    ]);
 
     return (
         <>
@@ -168,8 +172,9 @@ export const ScopeForm: FunctionComponent = () => {
                             keyValue="search"
                             type="search"
                             onEnterPressed={() => [
-                                searchDistrictByName(search),
+                                searchDistrictByName(),
                                 setSearchUpdated(false),
+                                setSearchLaunched(true),
                             ]}
                             withMarginTop={false}
                             label={MESSAGES.search}
@@ -186,8 +191,9 @@ export const ScopeForm: FunctionComponent = () => {
                             disabled={!searchUpdated}
                             color="primary"
                             onClick={() => [
-                                searchDistrictByName(search),
+                                searchDistrictByName(),
                                 setSearchUpdated(false),
+                                setSearchLaunched(true),
                             ]}
                         >
                             <Box mr={1} top={3} position="relative">

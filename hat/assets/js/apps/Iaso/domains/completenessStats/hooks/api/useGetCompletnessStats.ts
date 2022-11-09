@@ -10,8 +10,7 @@ export const useGetCompletenessStats = (): UseBaseQueryResult => {
         queryFn: () => getCompletenessStats(),
         options: {
             select: (data: any[]): any[] => {
-                if (!data) return [];
-                return data;
+                return data.completeness;
             },
         },
     });

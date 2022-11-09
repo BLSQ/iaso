@@ -17,6 +17,7 @@ import { Projects } from '../domains/projects/index.tsx';
 import DataSources from '../domains/dataSources';
 import Tasks from '../domains/tasks';
 import Devices from '../domains/devices';
+import { CompletessStats } from '../domains/completenessStats/index.tsx';
 import Groups from '../domains/orgUnits/groups';
 import Types from '../domains/orgUnits/orgUnitTypes';
 import { Beneficiaries } from '../domains/entities/beneficiaries/index.tsx';
@@ -470,7 +471,7 @@ export const completenessPath = {
 export const completenessStatsPath = {
     baseUrl: baseUrls.completenessStats,
     permissions: ['iaso_completeness_stats'],
-    component: props => <Completeness {...props} />,
+    component: props => <CompletessStats {...props} />,
     params: [],
 };
 

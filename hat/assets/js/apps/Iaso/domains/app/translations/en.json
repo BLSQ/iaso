@@ -33,6 +33,7 @@
     "iaso.assignment.parentPicking": "Parent picking mode",
     "iaso.assignment.title": "Assignments for planning",
     "iaso.CDS": "Health centre",
+    "iaso.completeness.formsFilled": "# Forms filled",
     "iaso.completeness.generateDerivedInstances": "Generate derived instances",
     "iaso.completeness.title": "Completeness",
     "iaso.datasources.addAskTitle": "{title} - Source: {source} - Version: {version}",

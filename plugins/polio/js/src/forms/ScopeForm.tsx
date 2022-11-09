@@ -85,10 +85,11 @@ export const ScopeForm: FunctionComponent = () => {
         [rounds],
     );
     const [searchUpdated, setSearchUpdated] = useState(false);
-    const [scopeSearch, setScopeSearch] = useState(true);
+    const [searchScope, setSearchScope] = useState(true);
     const [currentTab, setCurrentTab] = useState('1');
     const [filteredDistricts, setFilteredDistricts] = useState([]);
     const [searchLaunched, setSearchLaunched] = useState(false);
+    const [searchScopeChecked, setSearchScopeChecked] = useState(false);
     const handleChangeTab = (event, newValue) => {
         setCurrentTab(newValue);
     };
@@ -106,7 +107,7 @@ export const ScopeForm: FunctionComponent = () => {
         'REGION',
     );
 
-    const [search, setSearch] = useState(null);
+    const [search, setSearch] = useState('');
 
     useEffect(() => {
         setSearchUpdated(true);
@@ -126,10 +127,12 @@ export const ScopeForm: FunctionComponent = () => {
                 vaccineName: findScopeWithOrgUnit(scopes, district.id)?.vaccine,
             };
         });
-        // if (searchScope) {
-        //     toFilter = toFilter.filter(d => d.vaccineName);
-        // }
-        if (searchLaunched && search !== '') {
+
+        if (searchScope) {
+            filtreds = filtreds.filter(d => d.vaccineName);
+        }
+
+        if (search !== '') {
             filtreds = filtreds.filter(d =>
                 d.name.includes(search?.toUpperCase()),
             );
@@ -143,6 +146,7 @@ export const ScopeForm: FunctionComponent = () => {
         if (orderBy === 'desc') {
             filtreds = filtreds.reverse();
         }
+        console.log(filtreds);
         setFilteredDistricts(filtreds);
     }, [
         districtShapes,
@@ -150,9 +154,16 @@ export const ScopeForm: FunctionComponent = () => {
         regionShapes,
         scopes,
         search,
-        searchLaunched,
+        searchScope,
         sortFocus,
     ]);
+
+    const onChangeSearchScope = () => {
+        setSearchScopeChecked(true);
+        setSearchScope(!searchScope);
+        searchDistrictByName();
+        return !searchScope;
+    };
 
     return (
         <>
@@ -211,6 +222,9 @@ export const ScopeForm: FunctionComponent = () => {
                     component={ScopeInput}
                     filteredDistricts={filteredDistricts}
                     searchLaunched={searchLaunched}
+                    searchScopeValue={searchScope}
+                    onChangeSearchScopeFunction={() => onChangeSearchScope()}
+                    searchScopeChecked={searchScopeChecked}
                 />
             ) : (
                 <TabContext value={currentTab}>

@@ -101,6 +101,9 @@ export const ScopeInput: FunctionComponent<FieldProps<Scope[], Values>> = ({
     form: { values },
     filteredDistricts,
     searchLaunched,
+    searchScopeValue,
+    onChangeSearchScopeFunction,
+    searchScopeChecked,
 }) => {
     // eslint-disable-next-line no-unused-vars
     const [_field, _meta, helpers] = useField(field.name);
@@ -499,6 +502,10 @@ export const ScopeInput: FunctionComponent<FieldProps<Scope[], Values>> = ({
     //     }
     //     setFilteredDistricts(filtreds);
     // };
+
+    const onChangeSearchScope = () => {
+        const val = onChangeSearchScopeFunction();
+    };
     return (
         <Grid container spacing={4} style={{ marginTop: '2px' }}>
             <Grid xs={7} item style={{ marginTop: '15px' }}>
@@ -608,8 +615,8 @@ export const ScopeInput: FunctionComponent<FieldProps<Scope[], Values>> = ({
                 <InputComponent
                     type="checkbox"
                     withMarginTop={false}
-                    onChange={() => setSearchScope(!searchScope)}
-                    value={searchScope}
+                    onChange={() => onChangeSearchScope()}
+                    value={searchScopeValue}
                     label={MESSAGES.searchInScopeOrAllDistricts}
                 />
                 <TableContainer className={classes.districtList}>
@@ -655,7 +662,7 @@ export const ScopeInput: FunctionComponent<FieldProps<Scope[], Values>> = ({
                             </TableRow>
                         </TableHead>
                         <TableBody>
-                            {(searchLaunched
+                            {(searchLaunched || searchScopeChecked
                                 ? filteredDistricts
                                 : shapesForTable
                             )
@@ -766,7 +773,7 @@ export const ScopeInput: FunctionComponent<FieldProps<Scope[], Values>> = ({
                     rowsPerPageOptions={[5, 10, 25]}
                     component="div"
                     count={
-                        searchLaunched
+                        searchLaunched || searchScopeChecked
                             ? filteredDistricts?.length
                             : shapesForTable?.length ?? 0
                     }

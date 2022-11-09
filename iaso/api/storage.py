@@ -77,7 +77,7 @@ class StorageStatusSerializer(serializers.Serializer):
     reason = serializers.ChoiceField(
         source="status_reason", required=False, choices=StorageDevice.STATUS_REASON_CHOICES
     )
-    updated_at = serializers.DateTimeField(source="status_updated_at", read_only=True)
+    updated_at: Field = serializers.DateTimeField(source="status_updated_at", read_only=True)
     comment = serializers.CharField(source="status_comment", required=False, allow_blank=True)
 
     def validate(self, data):

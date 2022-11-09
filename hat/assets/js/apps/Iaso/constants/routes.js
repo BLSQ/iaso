@@ -467,6 +467,13 @@ export const completenessPath = {
     params: [],
 };
 
+export const completenessStatsPath = {
+    baseUrl: baseUrls.completenessStats,
+    permissions: ['iaso_completeness_stats'],
+    component: props => <Completeness {...props} />,
+    params: [],
+};
+
 export const usersPath = {
     baseUrl: baseUrls.users,
     permissions: ['iaso_users'],
@@ -796,6 +803,7 @@ export const routeConfigs = [
     linksPath,
     algosPath,
     completenessPath,
+    completenessStatsPath,
     usersPath,
     projectsPath,
     dataSourcesPath,

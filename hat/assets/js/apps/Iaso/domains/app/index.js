@@ -109,8 +109,12 @@ export default function App({ history, userHomePage, plugins }) {
         </LocalizedApp>
     );
 }
+App.defaultProps = {
+    userHomePage: undefined,
+};
+
 App.propTypes = {
     plugins: PropTypes.array.isRequired,
     history: PropTypes.object.isRequired,
-    userHomePage: PropTypes.string.isRequired,
+    userHomePage: PropTypes.string,
 };

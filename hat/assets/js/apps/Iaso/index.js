@@ -39,7 +39,6 @@ export default function iasoApp(
                         <CssBaseline />
                         <Provider store={store}>
                             <App
-                                store={store}
                                 plugins={plugins}
                                 history={history}
                                 userHomePage={userHomePage}

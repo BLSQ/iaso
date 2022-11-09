@@ -337,7 +337,7 @@ class RoundSerializer(serializers.ModelSerializer):
         for shipment in shipments:
             Shipment.objects.create(round=round, **shipment)
         for destruction in destructions:
-            Shipment.objects.create(round=round, **destruction)
+            Destruction.objects.create(round=round, **destruction)
         return round
 
     @atomic
@@ -638,7 +638,9 @@ class CampaignSerializer(serializers.ModelSerializer):
 
         for round_data in rounds:
             scopes = round_data.pop("scopes", [])
-            round = Round.objects.create(campaign=campaign, **round_data)
+            round_serializer = RoundSerializer(data={**round_data, "campaign": campaign.id})
+            round_serializer.is_valid(raise_exception=True)
+            round = round_serializer.save()
             for scope in scopes:
                 vaccine = scope.get("vaccine")
                 org_units = scope.get("group", {}).get("org_units")

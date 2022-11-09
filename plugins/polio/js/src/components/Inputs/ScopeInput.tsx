@@ -57,7 +57,6 @@ import {
     unselectedPathOptions,
 } from '../../styles/constants';
 import { useStyles } from '../../styles/theme';
-import { csvPreview } from '../../../../../../hat/assets/js/apps/Iaso/domains/dataSources/requests';
 
 type Scope = {
     vaccine: string;
@@ -101,9 +100,8 @@ export const ScopeInput: FunctionComponent<FieldProps<Scope[], Values>> = ({
     field,
     form: { values },
     filteredDistricts,
-    searchString,
+    searchLaunched,
 }) => {
-    console.log(searchString, filteredDistricts);
     // eslint-disable-next-line no-unused-vars
     const [_field, _meta, helpers] = useField(field.name);
     const classes: Record<string, string> = useStyles();
@@ -111,8 +109,8 @@ export const ScopeInput: FunctionComponent<FieldProps<Scope[], Values>> = ({
     const [selectRegion, setSelectRegion] = useState(false);
     const { value: scopes = [] } = field;
     const { setValue: setScopes } = helpers;
-    const [searchValue, setSearchValue] = useState('');
     const [searchScope, setSearchScope] = useState(true);
+    const [searchValue, setSearchValue] = useState('');
     const vaccineCount = useMemo(
         () =>
             Object.fromEntries(
@@ -360,7 +358,7 @@ export const ScopeInput: FunctionComponent<FieldProps<Scope[], Values>> = ({
             // }
             setScopes(newScopes);
         },
-        [districtShapes, scopes, setScopes, searchValue],
+        [districtShapes, scopes, setScopes],
     );
 
     // Add all district in the same region as this district
@@ -501,7 +499,6 @@ export const ScopeInput: FunctionComponent<FieldProps<Scope[], Values>> = ({
     //     }
     //     setFilteredDistricts(filtreds);
     // };
-
     return (
         <Grid container spacing={4} style={{ marginTop: '2px' }}>
             <Grid xs={7} item style={{ marginTop: '15px' }}>
@@ -658,7 +655,7 @@ export const ScopeInput: FunctionComponent<FieldProps<Scope[], Values>> = ({
                             </TableRow>
                         </TableHead>
                         <TableBody>
-                            {(searchString !== ''
+                            {(searchLaunched
                                 ? filteredDistricts
                                 : shapesForTable
                             )
@@ -768,7 +765,11 @@ export const ScopeInput: FunctionComponent<FieldProps<Scope[], Values>> = ({
                     className={classes.tablePagination}
                     rowsPerPageOptions={[5, 10, 25]}
                     component="div"
-                    count={shapesForTable?.length ?? 0}
+                    count={
+                        searchLaunched
+                            ? filteredDistricts?.length
+                            : shapesForTable?.length ?? 0
+                    }
                     rowsPerPage={rowsPerPage}
                     page={page}
                     labelRowsPerPage="Rows"

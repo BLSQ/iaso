@@ -88,6 +88,7 @@ export const ScopeForm: FunctionComponent = () => {
     const [scopeSearch, setScopeSearch] = useState(true);
     const [currentTab, setCurrentTab] = useState('1');
     const [filteredDistricts, setFilteredDistricts] = useState([]);
+    const [searchLaunched, setSearchLaunched] = useState(false);
     const handleChangeTab = (event, newValue) => {
         setCurrentTab(newValue);
     };
@@ -117,8 +118,7 @@ export const ScopeForm: FunctionComponent = () => {
 
     const searchDistrictByName = useCallback(
         search => {
-            console.log('search', search);
-            // setSearchValue(search);
+            setSearchLaunched(true);
             // // setSearchScope(searchScope)
             let filtreds = [];
             if (search !== '') {
@@ -204,7 +204,7 @@ export const ScopeForm: FunctionComponent = () => {
                     name="scopes"
                     component={ScopeInput}
                     filteredDistricts={filteredDistricts}
-                    searchString={search}
+                    searchLaunched={searchLaunched}
                 />
             ) : (
                 <TabContext value={currentTab}>

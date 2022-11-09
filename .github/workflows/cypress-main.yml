@@ -13,7 +13,6 @@ env:
 
 jobs:
   build-image:
-    if: github.event.issue.pull_request && contains(github.event.comment.body, '@cypress') == true
     permissions:
       issues: write
       contents: read

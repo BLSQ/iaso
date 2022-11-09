@@ -4,7 +4,6 @@ import React, {
     useCallback,
     useMemo,
     useState,
-    useEffect,
 } from 'react';
 import { useField } from 'formik';
 import {
@@ -37,7 +36,7 @@ import {
 import cloneDeep from 'lodash/cloneDeep';
 import sortBy from 'lodash/sortBy';
 
-import { FieldProps } from 'formik/dist/Field';
+import { FieldInputProps } from 'formik/dist/Field';
 
 import CheckIcon from '@material-ui/icons/Check';
 import SelectAllIcon from '@material-ui/icons/SelectAll';
@@ -96,14 +95,32 @@ type Values = {
     initial_org_unit: number;
 };
 
-export const ScopeInput: FunctionComponent<FieldProps<Scope[], Values>> = ({
+type FilteredDistricts = {
+    name: string;
+    vaccineName: string;
+    region: any;
+    id: number;
+    parent_id: number;
+};
+
+type Props = {
+    field;
+    form: FieldInputProps<Scope[], Values>;
+    filteredDistricts: FilteredDistricts[];
+    searchLaunched: boolean;
+    searchScopeValue: boolean;
+    searchScopeChecked: boolean;
+    onChangeSearchScopeFunction: () => void;
+};
+
+export const ScopeInput: FunctionComponent<Props> = ({
     field,
     form: { values },
     filteredDistricts,
     searchLaunched,
     searchScopeValue,
-    onChangeSearchScopeFunction,
     searchScopeChecked,
+    onChangeSearchScopeFunction,
 }) => {
     // eslint-disable-next-line no-unused-vars
     const [_field, _meta, helpers] = useField(field.name);
@@ -112,8 +129,6 @@ export const ScopeInput: FunctionComponent<FieldProps<Scope[], Values>> = ({
     const [selectRegion, setSelectRegion] = useState(false);
     const { value: scopes = [] } = field;
     const { setValue: setScopes } = helpers;
-    const [searchScope, setSearchScope] = useState(true);
-    const [searchValue, setSearchValue] = useState('');
     const vaccineCount = useMemo(
         () =>
             Object.fromEntries(
@@ -136,8 +151,6 @@ export const ScopeInput: FunctionComponent<FieldProps<Scope[], Values>> = ({
 
     const { data: districtShapes, isFetching: isFetchingDistricts } =
         useGetGeoJson(parentCountryId, 'DISTRICT');
-
-    const districts = districtShapes;
     // const [filteredDistricts, setFilteredDistricts] = useState([]);
     const { data: regionShapes, isFetching: isFetchingRegions } = useGetGeoJson(
         parentCountryId,
@@ -230,7 +243,7 @@ export const ScopeInput: FunctionComponent<FieldProps<Scope[], Values>> = ({
     const [selectedVaccine, setSelectedVaccine] = useState('mOPV2');
 
     const addDistrictInVaccineScope = useCallback(
-        (district, selectedVaccine) => {
+        district => {
             const newScopes: Scope[] = cloneDeep(scopes);
             let scope: Scope | undefined = newScopes.find(
                 s => s.vaccine === selectedVaccine,
@@ -262,7 +275,7 @@ export const ScopeInput: FunctionComponent<FieldProps<Scope[], Values>> = ({
 
             setScopes(newScopes);
         },
-        [scopes, setScopes],
+        [scopes, selectedVaccine, setScopes],
     );
 
     const toggleDistrictInVaccineScope = useCallback(
@@ -331,9 +344,9 @@ export const ScopeInput: FunctionComponent<FieldProps<Scope[], Values>> = ({
 
     const addDistrictToTable = useCallback(
         (shape: ShapeRow) => {
-            addDistrictInVaccineScope(shape, selectedVaccine);
+            addDistrictInVaccineScope(shape);
         },
-        [addDistrictInVaccineScope, selectedVaccine],
+        [addDistrictInVaccineScope],
     );
 
     // Remove all district in the same region as this district
@@ -366,7 +379,7 @@ export const ScopeInput: FunctionComponent<FieldProps<Scope[], Values>> = ({
 
     // Add all district in the same region as this district
     const addRegionToTable = useCallback(
-        (shape: ShapeRow, selectedVaccine) => {
+        (shape: ShapeRow) => {
             const OrgUnitIdsToAdd = districtShapes
                 .filter(s => s.parent_id === shape.parent_id)
                 .map(s => s.id);
@@ -392,7 +405,7 @@ export const ScopeInput: FunctionComponent<FieldProps<Scope[], Values>> = ({
 
             setScopes(newScopes);
         },
-        [districtShapes, scopes, setScopes],
+        [districtShapes, scopes, selectedVaccine, setScopes],
     );
 
     const handleSort = useCallback(
@@ -461,51 +474,11 @@ export const ScopeInput: FunctionComponent<FieldProps<Scope[], Values>> = ({
             </Tooltip>
         );
     };
-    // // Launch the searchdistrictByname from parent component
-    // useEffect(() => {
-    //     searchDistricts.current = searchDistrictByName;
-    // }, [districts, filteredDistricts, searchValue, searchScope]);
-    // // research when the checkbox(Search districts in scope) is checked on unchecked
-    // useEffect(() => {
-    //     searchDistrictByName(searchValue);
-    // }, [searchScope]);
-
-    // Will search district according to the name entered in the search input
-    // const searchDistrictByName = search => {
-    //     setSearchValue(search);
-    //     // setSearchScope(searchScope)
-
-    //     let filtreds = [];
-    //     if (search.length > 0) {
-    //         let toFilter = districts.map(district => {
-    //             return {
-    //                 ...district,
-    //                 region: findRegion(district, regionShapes),
-    //                 vaccineName: findScopeWithOrgUnit(scopes, district.id)
-    //                     ?.vaccine,
-    //             };
-    //         });
-    //         if (searchScope) {
-    //             toFilter = toFilter.filter(d => d.vaccineName);
-    //         }
-    //         filtreds = toFilter.filter(d =>
-    //             d.name.includes(search.toUpperCase()),
-    //         );
-    //         if (sortFocus === 'REGION') {
-    //             filtreds = sortBy(filtreds, ['region']);
-    //         } else if (sortFocus === 'VACCINE') {
-    //             filtreds = sortBy(filtreds, ['vaccineName']);
-    //         }
-    //         if (orderBy === 'desc') {
-    //             filtreds = filtreds.reverse();
-    //         }
-    //     }
-    //     setFilteredDistricts(filtreds);
-    // };
 
     const onChangeSearchScope = () => {
-        const val = onChangeSearchScopeFunction();
+        onChangeSearchScopeFunction();
     };
+
     return (
         <Grid container spacing={4} style={{ marginTop: '2px' }}>
             <Grid xs={7} item style={{ marginTop: '15px' }}>
@@ -738,7 +711,6 @@ export const ScopeInput: FunctionComponent<FieldProps<Scope[], Values>> = ({
                                                         onClick={() =>
                                                             addRegionToTable(
                                                                 shape,
-                                                                selectedVaccine,
                                                             )
                                                         }
                                                         overrideIcon={

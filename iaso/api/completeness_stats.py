@@ -26,17 +26,16 @@ class CompletenessStatsViewSet(viewsets.ViewSet):
 
     def list(self, request):
         org_unit_type = None
-        parent_org_unit = None
+
+        parent_org_unit_id_str = request.GET.get("parent_id", None)
+
+        if parent_org_unit_id_str is not None:
+            parent_org_unit = OrgUnit.objects.get(id=parent_org_unit_id_str)
+        else:
+            parent_org_unit = None
+
         requested_form_ids = []
         profile = request.user.iaso_profile
-
-        # TODO: clarify: normal that instance_qs is unused?
-        # instance_qs = (
-        #     Instance.objects.filter(project__account=profile.account)
-        #     .exclude(deleted=True)
-        #     .exclude(file="")
-        #     .with_status()
-        # )
 
         # Forms to take into account: we take everything for the user's account, then filter by the form_ids if provided
         form_qs = Form.objects.filter_for_user_and_app_id(user=request.user)

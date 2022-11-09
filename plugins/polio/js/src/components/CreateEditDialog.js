@@ -56,7 +56,10 @@ const CreateEditDialog = ({
 }) => {
     const { mutate: saveCampaign } = useSaveCampaign();
 
-    const { data: campaignLogs } = useGetCampaignLogs(selectedCampaign?.id);
+    const { data: campaignLogs } = useGetCampaignLogs(
+        selectedCampaign?.id,
+        isOpen,
+    );
 
     const schema = useFormValidator();
     const { formatMessage } = useSafeIntl();

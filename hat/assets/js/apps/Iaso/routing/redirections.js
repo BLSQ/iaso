@@ -15,8 +15,8 @@ import Page404 from '../components/errors/Page404';
 import { defaultSorted as storageDefaultSort } from '../domains/storages/config.tsx';
 
 const getRedirections = overrideLanding => {
-    const getPaginationParams = (order = 'id') =>
-        `/order/${order}/pageSize/20/page/1`;
+    const getPaginationParams = (order = 'id', pageSize = 20) =>
+        `/order/${order}/pageSize/${pageSize}/page/1`;
     return [
         {
             path: '/',
@@ -26,7 +26,10 @@ const getRedirections = overrideLanding => {
             path: `${baseUrls.orgUnits}/accountId/:accountId`,
             to: `${
                 baseUrls.orgUnits
-            }/locationLimit/${locationLimitMax}${getPaginationParams()}/searchTabIndex/0/searches/[{"validation_status":"all", "color":"${getChipColors(
+            }/locationLimit/${locationLimitMax}${getPaginationParams(
+                null,
+                50,
+            )}/searchTabIndex/0/searches/[{"validation_status":"all", "color":"${getChipColors(
                 0,
             ).replace('#', '')}"}]/accountId/:accountId`,
         },

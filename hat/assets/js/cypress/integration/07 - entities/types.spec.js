@@ -54,7 +54,7 @@ const goToPage = (
             res.send({ fixture });
         });
     }).as('getEntitiesTypes');
-    cy.visit(baseUrl);
+    cy.visit(`${baseUrl}/accountId/1`);
 };
 
 const openDialogForIndex = index => {
@@ -73,7 +73,7 @@ describe('Entities types', () => {
             cy.wait('@getEntitiesTypes').then(() => {
                 cy.url().should(
                     'eq',
-                    `${baseUrl}/order/name/pageSize/20/page/1`,
+                    `${baseUrl}/order/name/pageSize/20/page/1/accountId/1`,
                 );
             });
         });

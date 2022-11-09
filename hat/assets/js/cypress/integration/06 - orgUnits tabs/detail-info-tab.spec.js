@@ -4,7 +4,7 @@ import orgUnit from '../../fixtures/orgunits/details.json';
 import orgUnitsList from '../../fixtures/orgunits/list.json';
 
 const siteBaseUrl = Cypress.env('siteBaseUrl');
-const baseUrl = `${siteBaseUrl}/dashboard/orgunits/detail/orgUnitId/${orgUnit.id}`;
+const baseUrl = `${siteBaseUrl}/dashboard/orgunits/detail/orgUnitId/${orgUnit.id}/accountId/1`;
 const interceptList = [
     'profiles',
     'algorithms',

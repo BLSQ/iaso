@@ -6,7 +6,7 @@ import { testPermission } from '../../support/testPermission';
 
 const siteBaseUrl = Cypress.env('siteBaseUrl');
 
-const baseUrl = `${siteBaseUrl}/dashboard/orgunits/detail/orgUnitId/${orgUnit.id}`;
+const baseUrl = `${siteBaseUrl}/dashboard/orgunits/detail/orgUnitId/${orgUnit.id}/tab/comments/accountId/1`;
 
 const interceptList = [
     'profiles',
@@ -103,7 +103,7 @@ describe('comments tab', () => {
                 ],
             },
         );
-        cy.visit(`${baseUrl}/tab/comments`);
+        cy.visit(baseUrl);
     });
 
     it('page should not be accessible if user does not have permission', () => {

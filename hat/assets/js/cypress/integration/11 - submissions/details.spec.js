@@ -4,11 +4,11 @@ import superUser from '../../fixtures/profiles/me/superuser.json';
 import submission from '../../fixtures/submissions/details_1007.json';
 import submissionLogs from '../../fixtures/submissions/submission_logs.json';
 import { testPermission } from '../../support/testPermission';
-import { testTopBar } from '../../support/testTopBar';
+// import { testTopBar } from '../../support/testTopBar';
 
 const siteBaseUrl = Cypress.env('siteBaseUrl');
 
-const baseUrl = `${siteBaseUrl}/dashboard/forms/submission/instanceId/1007`;
+const baseUrl = `${siteBaseUrl}/dashboard/forms/submission/instanceId/1007/accountId/1`;
 
 const topBarTitle = `${submission.form_name}: ${submission.file_name.replace(
     '.xml',

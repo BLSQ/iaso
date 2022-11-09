@@ -10,7 +10,7 @@ import outypesList from '../../fixtures/orgunittypes/dummy-list.json';
 
 const siteBaseUrl = Cypress.env('siteBaseUrl');
 
-const baseUrl = `${siteBaseUrl}/dashboard/orgunits/types/order/name/pageSize/20/page/1`;
+const baseUrl = `${siteBaseUrl}/dashboard/orgunits/types/order/name/pageSize/20/page/1/accountId/1`;
 
 // TODO populate list
 const interceptList = ['profiles', 'projects', 'forms'];

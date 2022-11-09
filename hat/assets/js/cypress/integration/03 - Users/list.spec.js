@@ -40,7 +40,7 @@ const goToPage = (
             res.send({ fixture });
         });
     }).as('getUsers');
-    cy.visit(baseUrl);
+    cy.visit(`${baseUrl}/accountId/1`);
 };
 const openDialogForUserIndex = index => {
     table = cy.get('table');
@@ -65,7 +65,7 @@ describe('Users', () => {
             cy.wait('@getUsers').then(() => {
                 cy.url().should(
                     'eq',
-                    `${baseUrl}/order/user__username/pageSize/20/page/1`,
+                    `${baseUrl}/order/user__username/pageSize/20/page/1/accountId/1`,
                 );
             });
         });

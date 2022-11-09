@@ -12,7 +12,7 @@ import { testDownloadButtons } from '../../support/testDownloadButtons';
 
 const siteBaseUrl = Cypress.env('siteBaseUrl');
 
-const baseUrl = `${siteBaseUrl}/dashboard/orgunits/detail/orgUnitId/${orgUnit.id}/tab/links`;
+const baseUrl = `${siteBaseUrl}/dashboard/orgunits/detail/orgUnitId/${orgUnit.id}/tab/links/accountId/1`;
 
 const interceptList = [
     'profiles',

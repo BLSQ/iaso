@@ -14,7 +14,7 @@ import { testPageFilters } from '../../support/testPageFilters';
 
 const siteBaseUrl = Cypress.env('siteBaseUrl');
 
-const baseUrl = `${siteBaseUrl}/dashboard/forms/submissions/tab/list/mapResults/3000`;
+const baseUrl = `${siteBaseUrl}/dashboard/forms/submissions/tab/list/mapResults/3000/accountId/1`;
 
 let interceptFlag = false;
 let table;

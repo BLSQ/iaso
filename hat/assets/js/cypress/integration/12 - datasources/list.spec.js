@@ -14,7 +14,7 @@ import orgUnitTypes from '../../fixtures/orgunittypes/dummy-list.json';
 
 const siteBaseUrl = Cypress.env('siteBaseUrl');
 
-const baseUrl = `${siteBaseUrl}/dashboard/orgunits/sources/list/pageSize/10/page/1`;
+const baseUrl = `${siteBaseUrl}/dashboard/orgunits/sources/list/pageSize/10/page/1/accountId/1`;
 
 const dataSourceSeeds = Array(11)
     .fill()
@@ -214,7 +214,7 @@ describe('Data sources', () => {
                 cy.get('@request').its('force').should('eq', false);
                 cy.url().should(
                     'eq',
-                    `${siteBaseUrl}/dashboard/settings/tasks/order/-created_at`,
+                    `${siteBaseUrl}/dashboard/settings/tasks/order/-created_at/accountId/1`,
                 );
             });
         });

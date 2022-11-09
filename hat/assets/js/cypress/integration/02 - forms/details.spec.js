@@ -12,7 +12,7 @@ import { testTablerender } from '../../support/testTableRender';
 
 const siteBaseUrl = Cypress.env('siteBaseUrl');
 
-const baseUrl = `${siteBaseUrl}/dashboard/forms/detail/formId/1`;
+const baseUrl = `${siteBaseUrl}/dashboard/forms/detail/formId/1/accountId/1`;
 const formVersions = makeFormVersions({
     formName: 'Test Form',
     formId: 1,

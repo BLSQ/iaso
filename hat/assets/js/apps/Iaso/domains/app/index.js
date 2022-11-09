@@ -23,7 +23,7 @@ export default function App({
     const currentUser = useCurrentUser();
     useEffect(() => {
         dispatch(fetchCurrentUser());
-    });
+    }, [dispatch]);
     const routes = useMemo(() => {
         if (!currentUser) {
             return [];

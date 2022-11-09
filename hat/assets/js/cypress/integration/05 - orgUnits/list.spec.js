@@ -6,7 +6,7 @@ import { testPagination } from '../../support/testPagination';
 
 const siteBaseUrl = Cypress.env('siteBaseUrl');
 
-const baseUrl = `${siteBaseUrl}/dashboard/orgunits/list`;
+const baseUrl = `${siteBaseUrl}/dashboard/orgunits/list/accountId/1`;
 
 describe('OrgUnits', () => {
     beforeEach(() => {

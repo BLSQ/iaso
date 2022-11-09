@@ -17,6 +17,7 @@ import { Search } from '../types/search';
 import { Column } from '../../../types/table';
 import { IntlFormatMessage } from '../../../types/intl';
 import { ActionCell } from '../components/ActionCell';
+import getDisplayName from '../../../utils/usersUtils';
 
 const useStyles = makeStyles(theme => ({
     ...commonStyles(theme),
@@ -59,7 +60,6 @@ export const useGetOrgUnitsTableColumns = (searches: [Search]): Column[] => {
             {
                 Header: 'Id',
                 accessor: 'id',
-                width: 80,
             },
             {
                 Header: formatMessage(MESSAGES.name),
@@ -79,7 +79,6 @@ export const useGetOrgUnitsTableColumns = (searches: [Search]): Column[] => {
                 Header: formatMessage(MESSAGES.groups),
                 accessor: 'groups',
                 sortable: false,
-                width: 400,
                 Cell: settings => getOrgUnitGroups(settings.row.original),
             },
             {
@@ -109,6 +108,12 @@ export const useGetOrgUnitsTableColumns = (searches: [Search]): Column[] => {
                 Header: formatMessage(MESSAGES.created_at),
                 accessor: 'created_at',
                 Cell: DateTimeCell,
+            },
+            {
+                Header: formatMessage(MESSAGES.creator),
+                accessor: 'creator',
+                id: 'creator',
+                Cell: settings => <>{settings.row.original.creator || '--'}</>,
             },
             {
                 Header: formatMessage(MESSAGES.action),

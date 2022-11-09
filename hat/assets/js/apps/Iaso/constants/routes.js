@@ -472,7 +472,21 @@ export const completenessStatsPath = {
     baseUrl: baseUrls.completenessStats,
     permissions: ['iaso_completeness_stats'],
     component: props => <CompletessStats {...props} />,
-    params: [],
+    params: [
+        ...paginationPathParams,
+        {
+            isRequired: false,
+            key: 'parentId',
+        },
+        {
+            isRequired: false,
+            key: 'formId',
+        },
+        {
+            isRequired: false,
+            key: 'orgUnitTypeId',
+        },
+    ],
 };
 
 export const usersPath = {

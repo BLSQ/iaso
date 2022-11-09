@@ -109,23 +109,19 @@ const getRedirections = overrideLanding => {
         },
     ];
 };
+const getRoutes = (baseRoutes, overrideLanding) =>
+    [...baseRoutes].concat(
+        getRedirections(overrideLanding).map(redirection => {
+            if (redirection.component) {
+                return (
+                    <Route
+                        path={redirection.path}
+                        component={redirection.component}
+                    />
+                );
+            }
+            return <Redirect path={redirection.path} to={redirection.to} />;
+        }),
+    );
 
-const useAddRoutes = (baseRoutes, overrideLanding) => {
-    const getRoutes = () =>
-        [...baseRoutes].concat(
-            getRedirections(overrideLanding).map(redirection => {
-                if (redirection.component) {
-                    return (
-                        <Route
-                            path={redirection.path}
-                            component={redirection.component}
-                        />
-                    );
-                }
-                return <Redirect path={redirection.path} to={redirection.to} />;
-            }),
-        );
-    return getRoutes;
-};
-
-export { useAddRoutes };
+export { getRoutes };

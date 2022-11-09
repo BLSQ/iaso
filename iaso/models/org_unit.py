@@ -129,6 +129,12 @@ class OrgUnitType(models.Model):
             res["sub_unit_types"] = sub_unit_types
         return res
 
+    def as_dict_for_completeness_stats(self):
+        return {
+            "name": self.name,
+            "id": self.id,
+        }
+
 
 # def get_or_create_org_unit_type(name: str, depth: int, account: Account) -> typing.Tuple[OrgUnitType, bool]:
 #     """ ""Get the OUT if a similar one exist in the account, otherwise create it.
@@ -456,6 +462,12 @@ class OrgUnit(TreeModel):
             "source_ref": self.source_ref,
             "parent_id": self.parent_id,
             "org_unit_type": self.org_unit_type.name,
+        }
+
+    def as_dict_for_completeness_stats(self):
+        return {
+            "name": self.name,
+            "id": self.id,
         }
 
     def as_location(self, with_parents):

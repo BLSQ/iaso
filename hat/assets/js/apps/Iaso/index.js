@@ -31,7 +31,17 @@ export default function iasoApp(
     const plugins = getPlugins(enabledPluginsName);
     const allRoutesConfigs = [
         ...routeConfigs,
-        ...plugins.map(plugin => plugin.routes).flat(),
+        ...plugins
+            .map(plugin =>
+                plugin.routes.map(route => ({
+                    ...route,
+                    params: route.params.concat({
+                        isRequired: false,
+                        key: 'accountId',
+                    }),
+                })),
+            )
+            .flat(),
     ];
 
     const baseRoutes = allRoutesConfigs.map(routeConfig => {
@@ -57,7 +67,6 @@ export default function iasoApp(
         overrideLandingRoutes.length > 0
             ? overrideLandingRoutes[overrideLandingRoutes.length - 1]
             : undefined;
-    // const routes = useAddRoutes(baseRoutes, userHomePage || overrideLanding);
     ReactDOM.render(
         <QueryClientProvider client={queryClient}>
             <PluginsContext.Provider value={{ plugins }}>

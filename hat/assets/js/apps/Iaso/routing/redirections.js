@@ -14,76 +14,115 @@ import Page404 from '../components/errors/Page404';
 
 import { defaultSorted as storageDefaultSort } from '../domains/storages/config.tsx';
 
-import { useCurrentUser } from '../utils/usersUtils.ts';
+const getRedirections = overrideLanding => {
+    const getPaginationParams = (order = 'id') =>
+        `/order/${order}/pageSize/20/page/1`;
+    return [
+        {
+            path: '/',
+            to: overrideLanding ?? baseUrls.forms,
+        },
+        {
+            path: `${baseUrls.orgUnits}/accountId/:accountId`,
+            to: `${
+                baseUrls.orgUnits
+            }/locationLimit/${locationLimitMax}${getPaginationParams()}/searchTabIndex/0/searches/[{"validation_status":"all", "color":"${getChipColors(
+                0,
+            ).replace('#', '')}"}]/accountId/:accountId`,
+        },
+        {
+            path: `${baseUrls.mappings}/accountId/:accountId`,
+            to: `${baseUrls.mappings}${getPaginationParams(
+                'form_version__form__name,form_version__version_id,mapping__mapping_type',
+            )}/accountId/:accountId`,
+        },
+        {
+            path: `${baseUrls.users}/accountId/:accountId`,
+            to: `${baseUrls.users}${getPaginationParams(
+                'user__username',
+            )}/accountId/:accountId`,
+        },
+        {
+            path: `${baseUrls.entities}/accountId/:accountId`,
+            to: `${baseUrls.entities}${getPaginationParams(
+                'last_saved_instance',
+            )}/accountId/:accountId`,
+        },
+        {
+            path: `${baseUrls.entityTypes}/accountId/:accountId`,
+            to: `${baseUrls.entityTypes}${getPaginationParams(
+                'name',
+            )}/accountId/:accountId`,
+        },
+        {
+            path: `${baseUrls.groups}/accountId/:accountId`,
+            to: `${baseUrls.groups}${getPaginationParams(
+                'name',
+            )}/accountId/:accountId`,
+        },
+        {
+            path: `${baseUrls.orgUnitTypes}/accountId/:accountId`,
+            to: `${baseUrls.orgUnitTypes}${getPaginationParams(
+                'name',
+            )}/accountId/:accountId`,
+        },
+        {
+            path: `${baseUrls.planning}/accountId/:accountId`,
+            to: `${baseUrls.planning}/publishingStatus/all${getPaginationParams(
+                'name',
+            )}/accountId/:accountId`,
+        },
+        {
+            path: `${baseUrls.teams}/accountId/:accountId`,
+            to: `${baseUrls.teams}${getPaginationParams(
+                'name',
+            )}/accountId/:accountId`,
+        },
+        {
+            path: `${baseUrls.storages}/accountId/:accountId`,
+            to: `${baseUrls.storages}${getPaginationParams(
+                getSort(storageDefaultSort),
+            )}/accountId/:accountId`,
+        },
+        // Keep compatibility with the olds url for instance as they got renamed in Nov 2021
+        {
+            path: '/instance/instanceId/:instanceId',
+            to: '/forms/submission/instanceId/:instanceId',
+        },
+        // idem and the formId parameter was renamed to formIds (with s) to support multiple form
+        {
+            path:
+                '/instances/formId/:formId(/order/:order)(/pageSize/:pageSize)(/page/:page)(/dateFrom/:dateFrom)' +
+                '(/dateTo/:dateTo)(/periods/:periods)(/status/:status)(/levels/:levels)(/orgUnitTypeId/:orgUnitTypeId)' +
+                '(/withLocation/:withLocation)(/deviceId/:deviceId)(/deviceOwnershipId/:deviceOwnershipId)(/tab/:tab)(/columns/:columns)(/search/:search)(/showDeleted/:showDeleted)',
+            to:
+                '/forms/submissions(/formIds/:formId)(/order/:order)(/pageSize/:pageSize)(/page/:page)(/dateFrom/:dateFrom)' +
+                '(/dateTo/:dateTo)(/periods/:periods)(/status/:status)(/levels/:levels)(/orgUnitTypeId/:orgUnitTypeId)' +
+                '(/withLocation/:withLocation)(/deviceId/:deviceId)(/deviceOwnershipId/:deviceOwnershipId)(/tab/:tab)(/columns/:columns)(/search/:search)(/showDeleted/:showDeleted)',
+        },
+        {
+            path: '/*',
+            component: ({ location }) => <Page404 location={location} />,
+        },
+    ];
+};
 
 const useAddRoutes = (baseRoutes, overrideLanding) => {
-    const currentUser = useCurrentUser();
-    return [...baseRoutes].concat([
-        <Redirect path="/" to={overrideLanding ?? baseUrls.forms} />,
-        <Redirect
-            path={baseUrls.orgUnits}
-            to={`${
-                baseUrls.orgUnits
-            }/locationLimit/${locationLimitMax}/order/id/pageSize/50/page/1/searchTabIndex/0/searches/[{"validation_status":"all", "color":"${getChipColors(
-                0,
-            ).replace('#', '')}"}]`}
-        />,
-        <Redirect
-            path={baseUrls.mappings}
-            to={`${baseUrls.mappings}/order/form_version__form__name,form_version__version_id,mapping__mapping_type/pageSize/20/page/1`}
-        />,
-        <Redirect
-            path={baseUrls.users}
-            to={`${baseUrls.users}/order/user__username/pageSize/20/page/1`}
-        />,
-        <Redirect
-            path={baseUrls.entities}
-            to={`${baseUrls.entities}/order/last_saved_instance/pageSize/20/page/1`}
-        />,
-        <Redirect
-            path={baseUrls.entityTypes}
-            to={`${baseUrls.entityTypes}/order/name/pageSize/20/page/1`}
-        />,
-        <Redirect
-            path={baseUrls.groups}
-            to={`${baseUrls.groups}/order/name/pageSize/20/page/1`}
-        />,
-        <Redirect
-            path={baseUrls.orgUnitTypes}
-            to={`${baseUrls.orgUnitTypes}/order/name/pageSize/20/page/1`}
-        />,
-        <Redirect
-            path={baseUrls.planning}
-            to={`${baseUrls.planning}/publishingStatus/all/order/name/pageSize/20/page/1`}
-        />,
-        <Redirect
-            path={baseUrls.teams}
-            to={`${baseUrls.teams}/order/name/pageSize/20/page/1`}
-        />,
-        <Redirect
-            path={baseUrls.storages}
-            to={`${baseUrls.storages}/order/${getSort(
-                storageDefaultSort,
-            )}/pageSize/20/page/1`}
-        />,
-        // Keep compatibility with the olds url for instance as they got renamed in Nov 2021
-        <Redirect
-            path="/instance/instanceId/:instanceId"
-            to="/forms/submission/instanceId/:instanceId"
-        />,
-        // idem and the formId parameter was renamed to formIds (with s) to support multiple form
-        <Redirect
-            /* eslint-disable-next-line max-len */
-            path="/instances/formId/:formId(/order/:order)(/pageSize/:pageSize)(/page/:page)(/dateFrom/:dateFrom)(/dateTo/:dateTo)(/periods/:periods)(/status/:status)(/levels/:levels)(/orgUnitTypeId/:orgUnitTypeId)(/withLocation/:withLocation)(/deviceId/:deviceId)(/deviceOwnershipId/:deviceOwnershipId)(/tab/:tab)(/columns/:columns)(/search/:search)(/showDeleted/:showDeleted)"
-            /* eslint-disable-next-line max-len */
-            to="/forms/submissions(/formIds/:formId)(/order/:order)(/pageSize/:pageSize)(/page/:page)(/dateFrom/:dateFrom)(/dateTo/:dateTo)(/periods/:periods)(/status/:status)(/levels/:levels)(/orgUnitTypeId/:orgUnitTypeId)(/withLocation/:withLocation)(/deviceId/:deviceId)(/deviceOwnershipId/:deviceOwnershipId)(/tab/:tab)(/columns/:columns)(/search/:search)(/showDeleted/:showDeleted)"
-        />,
-        // Catch all route, need to be at the end
-        <Route
-            path="/*"
-            component={({ location }) => <Page404 location={location} />}
-        />,
-    ]);
+    const getRoutes = () =>
+        [...baseRoutes].concat(
+            getRedirections(overrideLanding).map(redirection => {
+                if (redirection.component) {
+                    return (
+                        <Route
+                            path={redirection.path}
+                            component={redirection.component}
+                        />
+                    );
+                }
+                return <Redirect path={redirection.path} to={redirection.to} />;
+            }),
+        );
+    return getRoutes;
 };
 
 export { useAddRoutes };

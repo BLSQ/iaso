@@ -3,7 +3,6 @@ import { useDispatch } from 'react-redux';
 import PropTypes from 'prop-types';
 
 import SidebarMenu from '../../app/components/SidebarMenuComponent';
-import { fetchCurrentUser } from '../actions';
 
 import { redirectTo } from '../../../routing/actions';
 
@@ -22,15 +21,11 @@ const ProtectedRoute = ({
     params,
 }) => {
     const { featureFlag, permissions, isRootUrl, baseUrl } = routeConfig;
-    // on first load this is undefined, it will be updated when fetchCurrentUser is done
     const currentUser = useCurrentUser();
     const dispatch = useDispatch();
-    useEffect(() => {
-        dispatch(fetchCurrentUser());
-    });
 
     useEffect(() => {
-        if (!params.accountId && currentUser?.account) {
+        if (!params.accountId && currentUser.account) {
             dispatch(
                 redirectTo(baseUrl, {
                     ...params,
@@ -38,14 +33,14 @@ const ProtectedRoute = ({
                 }),
             );
         }
-    }, [currentUser?.account, baseUrl, params, dispatch]);
+    }, [currentUser.account, baseUrl, params, dispatch]);
 
     useEffect(() => {
         // Use defined default language if it exists and if the user didn't set it manually
-        if (currentUser?.language) {
+        if (currentUser.language) {
             dispatch(switchLocale(currentUser.language));
         }
-    }, [currentUser?.language, dispatch]);
+    }, [currentUser.language, dispatch]);
 
     useEffect(() => {
         const isAuthorized =
@@ -55,7 +50,7 @@ const ProtectedRoute = ({
         if (!isAuthorized && isRootUrl) {
             const newBaseUrl = getFirstAllowedUrl(
                 permissions,
-                currentUser?.permissions ?? [],
+                currentUser.permissions ?? [],
                 allRoutes,
             );
             if (newBaseUrl) {

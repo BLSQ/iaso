@@ -30,7 +30,8 @@ export const CompletessStats: FunctionComponent<Props> = ({ params }) => {
     const classes: Record<string, string> = useStyles();
     const dispatch = useDispatch();
     const { formatMessage } = useSafeIntl();
-    const { data: completenessStats, isFetching } = useGetCompletenessStats();
+    const { data: completenessStats, isFetching } =
+        useGetCompletenessStats(params);
     const columns = useCompletenessStatsColumns();
 
     return (
@@ -53,11 +54,11 @@ export const CompletessStats: FunctionComponent<Props> = ({ params }) => {
                         // @ts-ignore
                         count={(completenessStats ?? []).length}
                         baseUrl={baseUrl}
-                        params={{}}
+                        params={params}
                         extraProps={{ loading: isFetching }}
-                        onTableParamsChange={p =>
-                            dispatch(redirectTo(baseUrl, p))
-                        }
+                        onTableParamsChange={p => {
+                            dispatch(redirectTo(baseUrl, p));
+                        }}
                     />
                 </Box>
             </Box>

@@ -354,7 +354,7 @@ class Campaign(SoftDeletableModel):
         "BudgetEvent", null=True, blank=True, on_delete=models.SET_NULL, related_name="lastbudgetevent"
     )
 
-    budget_current_state_key = models.CharField(max_length=100, null=True, blank=True)
+    budget_current_state_key = models.CharField(max_length=100, default="-")
     budget_current_state_label = models.CharField(max_length=100, null=True, blank=True)
 
     who_disbursed_to_co_at = models.DateField(

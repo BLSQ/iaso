@@ -24,7 +24,7 @@ transition_defs = [
         # "required_fields": ["files"],
         "required_fields": [],
         "displayed_fields": ["comment"],
-        "from_node": None,
+        "from_node": "-",
         "to_node": "budget_submitted",
         "teams_ids_can_transition": [],
     },
@@ -338,7 +338,7 @@ class TeamAPITestCase(APITestCase):
 
         # check initial status and possible transition on campaign
         self.assertEqual(j["obr_name"], "test campaign")
-        self.assertEqual(j["current_state"]["key"], None)
+        self.assertEqual(j["current_state"]["key"], "-")
         self.assertTrue(isinstance(j["next_transitions"], list))
         transitions = j["next_transitions"]
         self.assertEqual(len(transitions), 1)

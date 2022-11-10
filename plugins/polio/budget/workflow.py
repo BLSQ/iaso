@@ -20,8 +20,8 @@ class Transition:
     key: str
     required_fields: List[str]
     displayed_fields: List[str]
-    from_node: str = ""
-    to_node: str = ""
+    from_node: str = "-"
+    to_node: str = "-"
     teams_ids_can_transition: Union[list, None] = None  # if none unrestricted
     teams_ids_can_view: Union[list, None] = None  # if none unrestricted
     help_text: str = ""

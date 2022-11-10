@@ -142,16 +142,16 @@ jobs:
           CYPRESS_PASSWORD: "test"
           CYPRESS_BASE_URL: "http://localhost:8081"
 
+    if: github.event.issue.pull_request && contains(github.event.comment.body, '@cypress') == true
       - name: Mark comment as success
-        if: github.event.issue.pull_request && contains(github.event.comment.body, '@cypress') == true
         uses: dkershner6/reaction-action@v1
         if: success()
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           reaction: 'hooray'
 
+    if: github.event.issue.pull_request && contains(github.event.comment.body, '@cypress') == true
       - name: Comment PR with failure
-        if: github.event.issue.pull_request && contains(github.event.comment.body, '@cypress') == true
         uses: actions/github-script@v6
         if: failure()
         with:

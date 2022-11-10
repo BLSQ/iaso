@@ -90,7 +90,9 @@ class CompletenessStatsViewSet(viewsets.ViewSet):
                         "form": form.as_dict_for_completeness_stats(),
                         "forms_filled": ou_filled_count,
                         "forms_to_fill": ou_to_fill_count,
-                        "completeness_ratio": ((ou_filled_count / min(ou_to_fill_count,1)) * 100) #handle case when ou_to_fill is None or 1
+                        "completeness_ratio": (
+                            (ou_filled_count / min(ou_to_fill_count, 1)) * 100
+                        )  # handle case when ou_to_fill is None or 1
                         if ou_filled_count > 0
                         else 0,
                     }

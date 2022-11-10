@@ -149,7 +149,6 @@ jobs:
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           reaction: 'hooray'
-        if: github.event.issue.pull_request && contains(github.event.comment.body, '@cypress') == true
 
       - name: Comment PR with failure
         uses: actions/github-script@v6

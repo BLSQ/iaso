@@ -84,4 +84,4 @@ class CompletenessStatsViewSet(viewsets.ViewSet):
                 }
             )
 
-        return Response({"completeness": res})
+        return Response({"results": res})

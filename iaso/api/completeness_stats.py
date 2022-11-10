@@ -16,7 +16,7 @@ from rest_framework import viewsets, permissions
 from rest_framework.response import Response
 
 from .common import HasPermission
-from iaso.models import OrgUnit, Form
+from iaso.models import OrgUnit, Form, OrgUnitType
 
 
 class CompletenessStatsViewSet(viewsets.ViewSet):
@@ -25,7 +25,12 @@ class CompletenessStatsViewSet(viewsets.ViewSet):
     permission_classes = [permissions.IsAuthenticated, HasPermission("menupermissions.iaso_completeness_stats")]  # type: ignore
 
     def list(self, request):
-        org_unit_type = None
+        org_unit_type_str = request.query_params.get("org_unit_type", None)
+        if org_unit_type_str is not None:
+            org_unit_type = OrgUnitType.objects.get(id=org_unit_type_str)
+        else:
+            org_unit_type = None
+
 
         parent_org_unit_id_str = request.GET.get("parent_id", None)
 

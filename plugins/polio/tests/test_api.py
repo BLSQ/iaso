@@ -1,3 +1,5 @@
+from datetime import date
+
 from django.contrib.auth.models import User, Permission
 from django.utils.timezone import now
 from rest_framework.test import APIClient
@@ -458,6 +460,139 @@ class PolioAPITestCase(APITestCase):
                 },
             ],
         )
+
+    def test_update_campaign_with_vaccine_data(self):
+        self.client.force_authenticate(self.yoda)
+        self.assertEqual(Campaign.objects.count(), 0)
+        campaign = Campaign.objects.create(obr_name="obr_name", account=self.account)
+        Round.objects.create(number=1, started_at="2021-01-01", ended_at="2021-01-20", campaign=campaign)
+
+        payload = {
+            "rounds": [
+                {
+                    "number": 1,
+                    "started_at": "2022-11-08",
+                    "ended_at": "2022-11-10",
+                    "vaccines": [{"name": "mOPV2", "wastage_ratio_forecast": 1.15, "doses_per_vial": 50}],
+                    "reporting_delays_hc_to_district": 3,
+                    "reporting_delays_district_to_region": 5,
+                    "reporting_delays_region_to_national": 7,
+                    "destructions": [
+                        {"date_report_received": "2022-11-09", "date_report": "2022-11-09", "vials_destroyed": "1"}
+                    ],
+                }
+            ],
+            "scopes": [],
+            "group": {"name": "hidden group", "org_units": []},
+            "is_preventive": False,
+            "is_test": False,
+            "enable_send_weekly_email": True,
+            "obr_name": "hello",
+            "grouped_campaigns": [],
+        }
+
+        response = self.client.patch(f"/api/polio/campaigns/{campaign.id}/", payload, format="json")
+        self.assertEqual(response.status_code, 200, response.content)
+        self.assertEqual(Campaign.objects.count(), 1)
+        self.assertEqual(Modification.objects.count(), 1)
+        c = Campaign.objects.first()
+        self.assertEqual(c.obr_name, "hello")
+        self.assertEqual(c.rounds.count(), 1)
+
+        round = c.rounds.first()
+        self.assertEqual(round.started_at, date(2022, 11, 8))
+        self.assertEqual(round.ended_at, date(2022, 11, 10))
+        self.assertEqual(round.vaccines.count(), 1)
+        self.assertEqual(round.destructions.count(), 1)
+        self.assertEqual(round.shipments.count(), 0)
+
+        # update again
+
+        payload2 = {
+            "rounds": [
+                {
+                    "number": 1,
+                    "started_at": "2022-11-08",
+                    "ended_at": "2022-11-10",
+                    "vaccines": [{"name": "mOPV2", "wastage_ratio_forecast": 1.15, "doses_per_vial": 50}],
+                    "reporting_delays_hc_to_district": 3,
+                    "reporting_delays_district_to_region": 5,
+                    "reporting_delays_region_to_national": 7,
+                    "destructions": [],
+                    "shipments": [
+                        {
+                            "vaccine_name": "mOPV2",
+                            "po_numbers": "2",
+                            "vials_received": "2",
+                            "reception_pre_alert": "2022-11-09",
+                            "estimated_arrival_date": "2022-11-16",
+                            "date_reception": "2022-11-09",
+                        }
+                    ],
+                }
+            ],
+            "scopes": [],
+            "group": {"name": "hidden group", "org_units": []},
+            "is_preventive": False,
+            "is_test": False,
+            "enable_send_weekly_email": True,
+            "obr_name": "hello",
+            "grouped_campaigns": [],
+        }
+
+        response = self.client.patch(f"/api/polio/campaigns/{campaign.id}/", payload2, format="json")
+        self.assertEqual(response.status_code, 200, response.content)
+        self.assertEqual(Campaign.objects.count(), 1)
+        self.assertEqual(Modification.objects.count(), 2)
+        c = Campaign.objects.first()
+        self.assertEqual(c.rounds.count(), 1)
+
+        round = c.rounds.first()
+        self.assertEqual(round.started_at, date(2022, 11, 8))
+        self.assertEqual(round.ended_at, date(2022, 11, 10))
+        self.assertEqual(round.vaccines.count(), 1)
+        self.assertEqual(round.destructions.count(), 0)
+        self.assertEqual(round.shipments.count(), 1)
+
+    def test_create_campaign_with_vaccine_data(self):
+        self.client.force_authenticate(self.yoda)
+        self.assertEqual(Campaign.objects.count(), 0)
+
+        payload = {
+            "rounds": [
+                {
+                    "number": 1,
+                    "started_at": "2022-11-08",
+                    "ended_at": "2022-11-10",
+                    "vaccines": [{"name": "mOPV2", "wastage_ratio_forecast": 1.15, "doses_per_vial": 50}],
+                    "reporting_delays_hc_to_district": 3,
+                    "reporting_delays_district_to_region": 5,
+                    "reporting_delays_region_to_national": 7,
+                    "destructions": [
+                        {"date_report_received": "2022-11-09", "date_report": "2022-11-09", "vials_destroyed": "1"}
+                    ],
+                }
+            ],
+            "scopes": [],
+            "group": {"name": "hidden group", "org_units": []},
+            "is_preventive": False,
+            "is_test": False,
+            "enable_send_weekly_email": True,
+            "obr_name": "hello",
+            "grouped_campaigns": [],
+        }
+
+        response = self.client.post("/api/polio/campaigns/", payload, format="json")
+        self.assertEqual(response.status_code, 201, response.content)
+        self.assertEqual(Campaign.objects.count(), 1)
+        c = Campaign.objects.first()
+        self.assertEqual(c.obr_name, "hello")
+        self.assertEqual(c.rounds.count(), 1)
+
+        round = c.rounds.first()
+        self.assertEqual(round.vaccines.count(), 1)
+        self.assertEqual(round.destructions.count(), 1)
+        self.assertEqual(round.shipments.count(), 0)
 
 
 class PreparednessAPITestCase(APITestCase):

@@ -16,6 +16,10 @@ import { useGetCountries } from '../../hooks/useGetCountries';
 import { useGetGroupedCampaigns } from '../../hooks/useGetGroupedCampaigns.ts';
 
 import { genUrl } from '../../utils/routing';
+import {
+    dateApiToDateRangePicker,
+    dateRangePickerToDateApi,
+} from '../../../../../../hat/assets/js/apps/Iaso/utils/dates.ts';
 
 const campaignTypeOptions = (formatMessage, showTest = false) => {
     const options = [
@@ -43,8 +47,12 @@ const Filters = ({ router, disableDates, disableOnlyDeleted, showTest }) => {
     const [showOnlyDeleted, setShowOnlyDeleted] = useState(
         params.showOnlyDeleted === 'true',
     );
-    const [roundStartFrom, setRoundStartFrom] = useState(params.roundStartFrom);
-    const [roundStartTo, set1StartTo] = useState(params.roundStartTo);
+    const [roundStartFrom, setRoundStartFrom] = useState(
+        dateApiToDateRangePicker(params.roundStartFrom),
+    );
+    const [roundStartTo, set1StartTo] = useState(
+        dateApiToDateRangePicker(params.roundStartTo),
+    );
     const dispatch = useDispatch();
     const handleSearch = useCallback(() => {
         if (filtersUpdated) {
@@ -52,8 +60,8 @@ const Filters = ({ router, disableDates, disableOnlyDeleted, showTest }) => {
             const urlParams = {
                 countries,
                 search: search && search !== '' ? search : undefined,
-                roundStartFrom,
-                roundStartTo,
+                roundStartFrom: dateRangePickerToDateApi(roundStartFrom),
+                roundStartTo: dateRangePickerToDateApi(roundStartTo),
                 page: null,
                 campaignType,
                 showOnlyDeleted: showOnlyDeleted || undefined,

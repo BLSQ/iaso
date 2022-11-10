@@ -30,7 +30,6 @@ class OrgUnitAPITestCase(APITestCase):
             sw_version_2 = m.SourceVersion.objects.create(data_source=sw_source, number=1)
             star_wars.default_version = sw_version_1
             star_wars.save()
-
             cls.jedi_squad = m.OrgUnitType.objects.create(name="Jedi Squad", short_name="Jds")
 
             cls.jedi_council = m.OrgUnitType.objects.create(name="Jedi Council", short_name="Cnc")
@@ -102,7 +101,13 @@ class OrgUnitAPITestCase(APITestCase):
                 validation_status=m.OrgUnit.VALIDATION_VALID,
             )
 
-            cls.yoda = cls.create_user_with_profile(username="yoda", account=star_wars, permissions=["iaso_org_units"])
+            cls.yoda = cls.create_user_with_profile(
+                username="yoda",
+                first_name="master",
+                last_name="yoda",
+                account=star_wars,
+                permissions=["iaso_org_units"],
+            )
             cls.luke = cls.create_user_with_profile(
                 username="luke", account=star_wars, permissions=["iaso_org_units"], org_units=[cls.jedi_council_endor]
             )
@@ -133,6 +138,7 @@ class OrgUnitAPITestCase(APITestCase):
             {
                 "aliases": None,
                 "created_at": 1522800000.0,
+                "creator": None,
                 "groups": [
                     OrderedDict(
                         [
@@ -223,6 +229,7 @@ class OrgUnitAPITestCase(APITestCase):
                 "latitude": 50.0,
                 "longitude": 4.0,
                 "altitude": 100.0,
+                "creator": None,
             },
         )
 
@@ -237,6 +244,7 @@ class OrgUnitAPITestCase(APITestCase):
                 "name": "Corruscant Jedi Council",
                 "org_unit_type_name": "Jedi Council",
                 "parent": None,
+                "creator": None,
                 "parent_id": None,
                 "parent_name": None,
                 "search_index": None,
@@ -251,10 +259,12 @@ class OrgUnitAPITestCase(APITestCase):
         self.assertDictEqual(
             res,
             {
+                "creator": None,
                 "id": orgunit.id,
                 "name": "Endor Jedi Squad 1",
                 "org_unit_type_name": "Jedi Squad",
                 "parent": {
+                    "creator": None,
                     "id": orgunit.parent_id,
                     "name": "Endor Jedi Council",
                     "parent_id": None,
@@ -273,4 +283,29 @@ class OrgUnitAPITestCase(APITestCase):
                 "source_ref": None,
                 "validation_status": "VALID",
             },
+        )
+
+    def test_creator_org_unit(self):
+        self.client.force_authenticate(self.yoda)
+        response = self.client.post(
+            f"/api/orgunits/create_org_unit/",
+            format="json",
+            data={
+                "id": None,
+                "name": "test_creator_ou",
+                "org_unit_type_id": self.jedi_council.pk,
+                "groups": [],
+                "sub_source": "",
+                "status": False,
+                "aliases": ["my alias"],
+                "validation_status": "NEW",
+                "parent_id": "",
+                "source_ref": "",
+                "creation_source": "dashboard",
+            },
+        )
+        self.assertJSONResponse(response, 200)
+
+        self.assertEqual(
+            f"{self.yoda.username} ({self.yoda.first_name} {self.yoda.last_name})", response.json().get("creator")
         )

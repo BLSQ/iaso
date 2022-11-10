@@ -110,13 +110,22 @@ class CampaignScope(models.Model):
         ordering = ["campaign", "vaccine"]
 
 
+class Destruction(models.Model):
+    vials_destroyed = models.IntegerField(null=True, blank=True)
+    date_report_received = models.DateField(null=True, blank=True)
+    date_report = models.DateField(null=True, blank=True)
+    comment = models.TextField(null=True, blank=True)
+    round = models.ForeignKey("Round", related_name="destructions", on_delete=models.CASCADE, null=True)
+
+
 class Shipment(models.Model):
     vaccine_name = models.CharField(max_length=5, choices=VACCINES)
     po_numbers = models.IntegerField(null=True, blank=True)
-    doses_received = models.IntegerField(null=True, blank=True)
+    vials_received = models.IntegerField(null=True, blank=True)
     estimated_arrival_date = models.DateField(null=True, blank=True)
     reception_pre_alert = models.DateField(null=True, blank=True)
     date_reception = models.DateField(null=True, blank=True)
+    comment = models.TextField(null=True, blank=True)
     round = models.ForeignKey("Round", related_name="shipments", on_delete=models.CASCADE, null=True)
 
 
@@ -180,6 +189,8 @@ class Round(models.Model):
     forma_missing_vials = models.IntegerField(null=True, blank=True)
     forma_usable_vials = models.IntegerField(null=True, blank=True)
     forma_unusable_vials = models.IntegerField(null=True, blank=True)
+    forma_date = models.DateField(null=True, blank=True)
+    forma_comment = models.TextField(blank=True, null=True)
 
     def get_item_by_key(self, key):
         return getattr(self, key)

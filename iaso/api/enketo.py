@@ -9,6 +9,7 @@ from rest_framework import status
 from django.utils.translation import gettext as _
 
 from iaso.api.common import HasPermission
+from iaso.dhis2.datavalue_exporter import InstanceExportError
 from iaso.enketo import (
     enketo_settings,
     enketo_url_for_edition,
@@ -277,7 +278,6 @@ def enketo_form_download(request):
 
 
 class EnketoSubmissionAPIView(APIView):
-
     permission_classes = [permissions.AllowAny]
     http_method_names = ["post", "head", "get"]
 
@@ -341,7 +341,18 @@ class EnketoSubmissionAPIView(APIView):
 
             log_modification(original, instance, source=INSTANCE_API, user=user)
             if instance.to_export:
-                instance.export(force_export=True)
+                try:
+                    instance.export(force_export=True)
+                except InstanceExportError as error:
+                    return Response(
+                        {
+                            "result": "error",
+                            "step": "export",
+                            "message": error.message,
+                            "description": error.descriptions,
+                        },
+                        status=status.HTTP_409_CONFLICT,
+                    )
 
             return Response({"result": "success"}, status=status.HTTP_201_CREATED)
         return Response()

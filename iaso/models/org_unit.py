@@ -129,6 +129,12 @@ class OrgUnitType(models.Model):
             res["sub_unit_types"] = sub_unit_types
         return res
 
+    def as_dict_for_completeness_stats(self):
+        return {
+            "name": self.name,
+            "id": self.id,
+        }
+
 
 # def get_or_create_org_unit_type(name: str, depth: int, account: Account) -> typing.Tuple[OrgUnitType, bool]:
 #     """ ""Get the OUT if a similar one exist in the account, otherwise create it.
@@ -361,6 +367,7 @@ class OrgUnit(TreeModel):
             "longitude": self.location.x if self.location else None,
             "altitude": self.location.z if self.location else None,
             "reference_instance_id": self.reference_instance_id if self.reference_instance else None,
+            "aliases": self.aliases,
         }
 
     def as_dict(self, with_groups=True):
@@ -417,6 +424,9 @@ class OrgUnit(TreeModel):
             "altitude": self.location.z if self.location else None,
             "has_geo_json": True if self.simplified_geom else False,
             "reference_instance_id": self.reference_instance_id,
+            "creator": None
+            if self.creator is None
+            else f"{self.creator.username} ({self.creator.first_name} {self.creator.last_name})",
         }
         if not light:  # avoiding joins here
             res["groups"] = [group.as_dict(with_counts=False) for group in self.groups.all()]
@@ -456,6 +466,12 @@ class OrgUnit(TreeModel):
             "source_ref": self.source_ref,
             "parent_id": self.parent_id,
             "org_unit_type": self.org_unit_type.name,
+        }
+
+    def as_dict_for_completeness_stats(self):
+        return {
+            "name": self.name,
+            "id": self.id,
         }
 
     def as_location(self, with_parents):

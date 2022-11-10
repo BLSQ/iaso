@@ -63,6 +63,7 @@ class StorageAPITestCase(APITestCase):
             type="SD",
             status="BLACKLISTED",
             status_reason="ABUSE",
+            entity=cls.entity,
         )
 
         # This one should be invisible to the "yoda" user
@@ -444,7 +445,7 @@ class StorageAPITestCase(APITestCase):
                     "storage_type": "SD",
                     "status": {"status": "BLACKLISTED", "reason": "ABUSE", "comment": "", "updated_at": None},
                     "org_unit": None,
-                    "entity": None,
+                    "entity": {"id": self.entity.id, "name": "New Client 3"},
                 },
             ],
         )
@@ -473,7 +474,7 @@ class StorageAPITestCase(APITestCase):
                     "storage_type": "SD",
                     "status": {"status": "BLACKLISTED", "reason": "ABUSE", "comment": "", "updated_at": None},
                     "org_unit": None,
-                    "entity": None,
+                    "entity": {"id": self.entity.id, "name": "New Client 3"},
                 },
             ],
         )
@@ -529,6 +530,41 @@ class StorageAPITestCase(APITestCase):
             ],
         )
 
+    def test_list_filter_by_storage_id(self):
+        """The 'search' filter can be used to filter per (customer-chosen) storage ID"""
+        self.client.force_authenticate(self.yoda)
+        response = self.client.get("/api/storage/?search=aNotHeR")
+        received_json = response.json()
+
+        # If the filter was not operational we would get 3 results.
+        # If the filter was not case-insensitive we would get 0 results.
+        self.assertEqual(len(received_json), 2)
+        # We double-check that the results are the ones we expect
+        for entry in received_json:
+            self.assertIn("ANOTHER", entry["storage_id"])
+
+    def test_list_filter_by_entity_id(self):
+        """The 'search' filter can be also be used to search per entity ID"""
+        self.client.force_authenticate(self.yoda)
+        response = self.client.get(f"/api/storage/?search={self.entity.id}")
+        received_json = response.json()
+
+        # If the filter was not operational we would get 3 results.
+        self.assertEqual(
+            received_json,
+            [
+                {
+                    "updated_at": 1580608922.0,
+                    "created_at": 1580608922.0,
+                    "storage_id": "ANOTHER_EXISTING_STORAGE_BLACKLISTED_ABUSE",
+                    "storage_type": "SD",
+                    "status": {"status": "BLACKLISTED", "reason": "ABUSE", "updated_at": None, "comment": ""},
+                    "org_unit": None,
+                    "entity": {"id": self.entity.id, "name": "New Client 3"},
+                }
+            ],
+        )
+
     def test_list_can_be_ordered(self):
         """GET /api/storage/ takes an optional parameter to order the results (default: updated_at)"""
         self.client.force_authenticate(self.yoda)
@@ -549,6 +585,34 @@ class StorageAPITestCase(APITestCase):
         self.assertTrue(received_json["has_next"])
         self.assertFalse(received_json["has_previous"])
         self.assertEqual(received_json["limit"], 1)
+
+    def test_post_blacklisted_storage_permission_denied(self):
+        """POST to /api/storage/blacklisted requires an authenticated user with iaso_storage permissions"""
+        # Case 1: anonymous user
+        response = self.client.post(
+            "/api/storage/blacklisted/",
+            {
+                "storage_id": "EXISTING_STORAGE",
+                "storage_type": "NFC",
+                "storage_status": {"status": "BLACKLISTED", "reason": "DAMAGED", "comment": "not usable anymore"},
+            },
+            format="json",
+        )
+        self.assertEqual(response.status_code, 403)
+
+        # Case 2: user without iaso_storage permissions
+        self.client.force_authenticate(self.another_user)
+
+        response = self.client.post(
+            "/api/storage/blacklisted/",
+            {
+                "storage_id": "EXISTING_STORAGE",
+                "storage_type": "NFC",
+                "storage_status": {"status": "BLACKLISTED", "reason": "DAMAGED", "comment": "not usable anymore"},
+            },
+            format="json",
+        )
+        self.assertEqual(response.status_code, 403)
 
     def test_post_blacklisted_storage_ok(self):
         """
@@ -1209,7 +1273,7 @@ class StorageAPITestCase(APITestCase):
                         "storage_type": "SD",
                         "status": {"status": "BLACKLISTED", "reason": "ABUSE", "comment": "", "updated_at": None},
                         "org_unit": None,
-                        "entity": None,
+                        "entity": {"id": self.entity.id, "name": "New Client 3"},
                     },
                 ]
             },

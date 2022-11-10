@@ -16,7 +16,7 @@ from rest_framework import viewsets, permissions
 from rest_framework.response import Response
 
 from .common import HasPermission
-from iaso.models import OrgUnit, Form
+from iaso.models import OrgUnit, Form, OrgUnitType
 
 
 class CompletenessStatsViewSet(viewsets.ViewSet):
@@ -25,18 +25,21 @@ class CompletenessStatsViewSet(viewsets.ViewSet):
     permission_classes = [permissions.IsAuthenticated, HasPermission("menupermissions.iaso_completeness_stats")]  # type: ignore
 
     def list(self, request):
-        org_unit_type = None
-        parent_org_unit = None
+        org_unit_type_str = request.query_params.get("org_unit_type", None)
+        if org_unit_type_str is not None:
+            org_unit_type = OrgUnitType.objects.get(id=org_unit_type_str)
+        else:
+            org_unit_type = None
+
+        parent_org_unit_id_str = request.GET.get("parent_id", None)
+
+        if parent_org_unit_id_str is not None:
+            parent_org_unit = OrgUnit.objects.get(id=parent_org_unit_id_str)
+        else:
+            parent_org_unit = None
+
         requested_form_ids = []
         profile = request.user.iaso_profile
-
-        # TODO: clarify: normal that instance_qs is unused?
-        # instance_qs = (
-        #     Instance.objects.filter(project__account=profile.account)
-        #     .exclude(deleted=True)
-        #     .exclude(file="")
-        #     .with_status()
-        # )
 
         # Forms to take into account: we take everything for the user's account, then filter by the form_ids if provided
         form_qs = Form.objects.filter_for_user_and_app_id(user=request.user)
@@ -67,13 +70,22 @@ class CompletenessStatsViewSet(viewsets.ViewSet):
                 ou_filled = ou_to_fill.filter(instance__form=form)
                 ou_filled_count = ou_filled.count()
 
+            # TODO: response as serializer for swagger
+
+            parent_data = None
+            if ou.parent is not None:
+                parent_data = (ou.parent.as_dict_for_completeness_stats(),)
+
             res.append(
                 {
-                    "ou": ou.as_dict(),
-                    "form": form.as_dict(),
-                    "ou_to_fill_count": ou_to_fill_count,
-                    "ou_filled_count": ou_filled_count,
+                    "parent_org_unit": parent_data,
+                    "org_unit_type": ou.org_unit_type.as_dict_for_completeness_stats(),
+                    "org_unit": ou.as_dict_for_completeness_stats(),
+                    "form": form.as_dict_for_completeness_stats(),
+                    "forms_filled": ou_filled_count,
+                    "forms_to_fill": ou_to_fill_count,
+                    "completeness_ratio": ((ou_to_fill_count / ou_filled_count) * 100) if ou_to_fill_count > 0 else 0,
                 }
             )
 
-        return Response({"completeness": res})
+        return Response({"results": res})

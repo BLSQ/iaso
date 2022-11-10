@@ -1,7 +1,7 @@
 import { UseBaseQueryResult } from 'react-query';
 import { getRequest } from '../../../../libs/Api';
 import { useSnackQuery } from '../../../../libs/apiHooks';
-import { CompletenessApiResponse } from '../../types';
+import { CompletenessApiResponse, CompletenessStats } from '../../types';
 
 const queryParamsMap = new Map([
     ['parentId', 'parent_id'],
@@ -28,13 +28,13 @@ const getCompletenessStats = async (params: CompletenessGETParams) => {
 
 export const useGetCompletenessStats = (
     params: CompletenessGETParams,
-): UseBaseQueryResult<CompletenessApiResponse, unknown> => {
+): UseBaseQueryResult<CompletenessStats[], unknown> => {
     return useSnackQuery({
         queryKey: ['completenessStats', params],
         queryFn: () => getCompletenessStats(params),
         options: {
-            select: (data: CompletenessApiResponse[]): any[] => {
-                return data.completeness;
+            select: (data: CompletenessApiResponse): CompletenessStats[] => {
+                return data.results;
             },
         },
     });

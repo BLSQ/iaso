@@ -3,11 +3,10 @@ name: Iaso Cypress manual testing
 on:
   issue_comment:
     types: [created]
-  workflow_dispatch: {}
-  
+
 concurrency: 
   group: ${{ github.workflow }}-${{ github.ref }}
-  cancel-in-progress: false
+  cancel-in-progress: true
 
 env:
   REGISTRY: ghcr.io
@@ -15,6 +14,7 @@ env:
 
 jobs:
   build-image:
+    if: github.event.issue.pull_request && contains(github.event.comment.body, '@cypress') == true
     permissions:
       issues: write
       contents: read
@@ -67,6 +67,7 @@ jobs:
             });
 
   test_cypress:
+    if: github.event.issue.pull_request && contains(github.event.comment.body, '@cypress') == true
     timeout-minutes: 60
     runs-on: ubuntu-latest
     needs: build-image
@@ -141,9 +142,8 @@ jobs:
           CYPRESS_USERNAME: "test"
           CYPRESS_PASSWORD: "test"
           CYPRESS_BASE_URL: "http://localhost:8081"
-
+      
       - name: Mark comment as success
-        if: github.event.issue.pull_request && contains(github.event.comment.body, '@cypress') == true
         uses: dkershner6/reaction-action@v1
         if: success()
         with:
@@ -151,7 +151,6 @@ jobs:
           reaction: 'hooray'
 
       - name: Comment PR with failure
-        if: github.event.issue.pull_request && contains(github.event.comment.body, '@cypress') == true
         uses: actions/github-script@v6
         if: failure()
         with:

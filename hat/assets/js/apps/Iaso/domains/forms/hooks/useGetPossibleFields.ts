@@ -14,7 +14,7 @@ export const useGetPossibleFields = (formId?: number): Result => {
         'possible_fields',
     );
     const possibleFields =
-        currentForm?.possible_fields.map(field => ({
+        currentForm?.possible_fields?.map(field => ({
             ...field,
             fieldKey: field.name.replace('.', ''),
         })) || [];

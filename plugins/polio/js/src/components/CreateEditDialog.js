@@ -37,6 +37,7 @@ import { ScopeForm } from '../forms/ScopeForm.tsx';
 import { BudgetForm } from '../forms/BudgetForm';
 import { Form } from '../forms/Form';
 import { RoundsForm } from '../forms/RoundsForm';
+import { VaccineManagementForm } from '../forms/VaccineManagementForm.tsx';
 import { RoundsEmptyDates } from './Rounds/RoundsEmptyDates.tsx';
 
 import { useSaveCampaign } from '../hooks/useSaveCampaign';
@@ -46,7 +47,6 @@ import { CAMPAIGN_HISTORY_URL } from '../constants/routes';
 
 import { useStyles } from '../styles/theme';
 import MESSAGES from '../constants/messages';
-import { VaccineManangementForm } from '../forms/VaccineManangementForm.tsx';
 
 const CreateEditDialog = ({
     isOpen,
@@ -56,7 +56,10 @@ const CreateEditDialog = ({
 }) => {
     const { mutate: saveCampaign } = useSaveCampaign();
 
-    const { data: campaignLogs } = useGetCampaignLogs(selectedCampaign?.id);
+    const { data: campaignLogs } = useGetCampaignLogs(
+        selectedCampaign?.id,
+        isOpen,
+    );
 
     const schema = useFormValidator();
     const { formatMessage } = useSafeIntl();
@@ -141,7 +144,7 @@ const CreateEditDialog = ({
             },
             {
                 title: formatMessage(MESSAGES.vaccineManagement),
-                form: VaccineManangementForm,
+                form: VaccineManagementForm,
             },
         ];
     }, [

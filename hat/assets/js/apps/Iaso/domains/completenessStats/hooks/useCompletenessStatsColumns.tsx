@@ -9,8 +9,8 @@ export const useCompletenessStatsColumns = () => {
         () => [
             {
                 Header: formatMessage(MESSAGES.parent),
-                id: 'parent_org_unit.name',
-                accessor: 'parent_org_unit.name',
+                id: 'parent_org_unit__name',
+                accessor: 'parent_org_unit__name',
                 sortable: false,
                 Cell: settings => {
                     return (
@@ -23,9 +23,9 @@ export const useCompletenessStatsColumns = () => {
             },
             {
                 Header: formatMessage(MESSAGES.orgUnitType),
-                id: 'org_unit_type.name',
-                accessor: 'org_unit_type.name',
-                sortable: false,
+                id: 'org_unit_type__name',
+                accessor: 'org_unit_type__name',
+                sortable: true,
                 Cell: settings => {
                     return (
                         <span>
@@ -36,9 +36,9 @@ export const useCompletenessStatsColumns = () => {
             },
             {
                 Header: formatMessage(MESSAGES.orgUnit),
-                id: 'org_unit.name',
-                accessor: 'org_unit.name',
-                sortable: false,
+                id: 'name',
+                accessor: 'name',
+                sortable: true,
                 Cell: settings => {
                     return (
                         <span>
@@ -49,8 +49,8 @@ export const useCompletenessStatsColumns = () => {
             },
             {
                 Header: formatMessage(MESSAGES.form),
-                id: 'form.name',
-                accessor: 'form.name',
+                id: 'form__name',
+                accessor: 'form__name',
                 sortable: false,
                 Cell: settings => {
                     return (
@@ -62,7 +62,7 @@ export const useCompletenessStatsColumns = () => {
                 Header: formatMessage(MESSAGES.formsFilled),
                 id: 'ou_filled_count',
                 accessor: 'ou_filled_count',
-                sortable: false,
+                sortable: true,
                 Cell: settings => {
                     return (
                         <span>

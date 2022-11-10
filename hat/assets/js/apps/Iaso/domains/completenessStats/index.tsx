@@ -51,12 +51,12 @@ export const CompletessStats: FunctionComponent<Props> = ({ params }) => {
                 <Box>
                     <TableWithDeepLink
                         marginTop={false}
-                        data={completenessStats ?? []}
-                        pages={1}
+                        data={completenessStats?.results ?? []}
+                        pages={completenessStats?.pages ?? 1}
                         defaultSorted={['created_at']}
                         columns={columns}
                         // @ts-ignore
-                        count={(completenessStats ?? []).length}
+                        count={completenessStats?.count ?? 0}
                         baseUrl={baseUrl}
                         params={params}
                         extraProps={{ loading: isFetching }}

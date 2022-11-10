@@ -1,7 +1,8 @@
 import { UseBaseQueryResult } from 'react-query';
 import { getRequest } from '../../../../libs/Api';
 import { useSnackQuery } from '../../../../libs/apiHooks';
-import { CompletenessApiResponse, CompletenessStats } from '../../types';
+import { UrlParams } from '../../../../types/table';
+import { CompletenessApiResponse } from '../../types';
 
 const queryParamsMap = new Map([
     ['parentId', 'parent_id'],
@@ -9,14 +10,26 @@ const queryParamsMap = new Map([
     ['formId', 'form_id'],
 ]);
 
-export type CompletenessGETParams = {
+export type CompletenessGETParams = UrlParams & {
     parentId?: string;
     formId?: string;
     orgUnitTypeId?: string;
 };
 
+const apiParamsKeys = ['order', 'page', 'limit', 'search'];
+
 const getCompletenessStats = async (params: CompletenessGETParams) => {
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const { pageSize, parentId, orgUnitTypeId, formId, ...urlParams } = params;
+    const apiParams = { ...urlParams, limit: pageSize ?? 50 };
     const queryParams = {};
+    apiParamsKeys.forEach(apiParamKey => {
+        const apiParam = apiParams[apiParamKey];
+        if (apiParam !== undefined) {
+            queryParams[apiParamKey] = apiParam;
+        }
+    });
+
     queryParamsMap.forEach((value, key) => {
         if (params[key]) {
             queryParams[value] = params[key];
@@ -28,14 +41,9 @@ const getCompletenessStats = async (params: CompletenessGETParams) => {
 
 export const useGetCompletenessStats = (
     params: CompletenessGETParams,
-): UseBaseQueryResult<CompletenessStats[], unknown> => {
+): UseBaseQueryResult<CompletenessApiResponse, unknown> => {
     return useSnackQuery({
         queryKey: ['completenessStats', params],
         queryFn: () => getCompletenessStats(params),
-        options: {
-            select: (data: CompletenessApiResponse): CompletenessStats[] => {
-                return data.results;
-            },
-        },
     });
 };

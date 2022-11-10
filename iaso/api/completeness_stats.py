@@ -17,6 +17,7 @@ from rest_framework.response import Response
 
 from .common import HasPermission
 from iaso.models import OrgUnit, Form, OrgUnitType
+from django.core.paginator import Paginator
 
 
 class CompletenessStatsViewSet(viewsets.ViewSet):
@@ -25,10 +26,11 @@ class CompletenessStatsViewSet(viewsets.ViewSet):
     permission_classes = [permissions.IsAuthenticated, HasPermission("menupermissions.iaso_completeness_stats")]  # type: ignore
 
     def list(self, request):
+        order = request.GET.get("order", "name").split(",")
         org_unit_type_str = request.query_params.get("org_unit_type_id", None)
         requested_forms = request.query_params.get("form_id", None)
         if org_unit_type_str is not None:
-            org_unit_type = OrgUnitType.objects.get(id=int(org_unit_type_str))
+            org_unit_type = OrgUnitType.objects.get(id=org_unit_type_str)
         else:
             org_unit_type = None
 
@@ -57,6 +59,8 @@ class CompletenessStatsViewSet(viewsets.ViewSet):
         top_ous = org_units.exclude(parent__in=org_units)
         if org_unit_type is not None:
             top_ous = top_ous.filter(org_unit_type__id=org_unit_type.id)
+
+        top_ous = top_ous.order_by(*order)
 
         res = []
         for ou in top_ous:
@@ -91,5 +95,21 @@ class CompletenessStatsViewSet(viewsets.ViewSet):
                         else 0,
                     }
                 )
+        limit = int(request.GET.get("limit", "50"))
+        page_offset = int(request.GET.get("page", "1"))
+        paginator = Paginator(res, limit)
+        if page_offset > paginator.num_pages:
+            page_offset = paginator.num_pages
+        page = paginator.page(page_offset)
 
-        return Response({"results": res})
+        paginated_res = {
+            "count": paginator.count,
+            "results": res,
+            "has_next": page.has_next(),
+            "has_previous": page.has_previous(),
+            "page": page_offset,
+            "pages": paginator.num_pages,
+            "limit": limit,
+        }
+
+        return Response(paginated_res)

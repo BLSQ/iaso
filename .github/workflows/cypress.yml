@@ -30,6 +30,7 @@ jobs:
 
       - name: Mark comment as success
         uses: dkershner6/reaction-action@v1
+        if: (github.event.issue.pull_request && contains(github.event.comment.body, '@cypress') == true)
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           reaction: 'eyes'
@@ -54,7 +55,7 @@ jobs:
 
       - name: Comment PR with failure
         uses: actions/github-script@v6
-        if: failure()
+        if: (github.event.issue.pull_request && contains(github.event.comment.body, '@cypress') == true) && failure()
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
@@ -145,14 +146,14 @@ jobs:
 
       - name: Mark comment as success
         uses: dkershner6/reaction-action@v1
-        if: github.event.issue.pull_request && contains(github.event.comment.body, '@cypress') == true && success()
+        if: (github.event.issue.pull_request && contains(github.event.comment.body, '@cypress') == true) && success()
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           reaction: 'hooray'
 
       - name: Comment PR with failure
         uses: actions/github-script@v6
-        if: github.event.issue.pull_request && contains(github.event.comment.body, '@cypress') == true && failure()
+        if: (github.event.issue.pull_request && contains(github.event.comment.body, '@cypress') == true) && failure()
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |

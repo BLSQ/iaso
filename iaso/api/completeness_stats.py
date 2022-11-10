@@ -25,9 +25,10 @@ class CompletenessStatsViewSet(viewsets.ViewSet):
     permission_classes = [permissions.IsAuthenticated, HasPermission("menupermissions.iaso_completeness_stats")]  # type: ignore
 
     def list(self, request):
-        org_unit_type_str = request.query_params.get("org_unit_type", None)
+        org_unit_type_str = request.query_params.get("org_unit_type_id", None)
+        requested_forms = request.query_params.get("form_id", None)
         if org_unit_type_str is not None:
-            org_unit_type = OrgUnitType.objects.get(id=org_unit_type_str)
+            org_unit_type = OrgUnitType.objects.get(id=int(org_unit_type_str))
         else:
             org_unit_type = None
 
@@ -38,7 +39,7 @@ class CompletenessStatsViewSet(viewsets.ViewSet):
         else:
             parent_org_unit = None
 
-        requested_form_ids = []
+        requested_form_ids = requested_forms.split(",") if requested_forms is not None else []
         profile = request.user.iaso_profile
 
         # Forms to take into account: we take everything for the user's account, then filter by the form_ids if provided
@@ -54,6 +55,8 @@ class CompletenessStatsViewSet(viewsets.ViewSet):
         )  # don't forget to think about org unit status
 
         top_ous = org_units.exclude(parent__in=org_units)
+        if org_unit_type is not None:
+            top_ous = top_ous.filter(org_unit_type__id=org_unit_type.id)
 
         res = []
         for ou in top_ous:
@@ -70,22 +73,23 @@ class CompletenessStatsViewSet(viewsets.ViewSet):
                 ou_filled = ou_to_fill.filter(instance__form=form)
                 ou_filled_count = ou_filled.count()
 
-            # TODO: response as serializer for swagger
+                # TODO: response as serializer for swagger
 
-            parent_data = None
-            if ou.parent is not None:
-                parent_data = (ou.parent.as_dict_for_completeness_stats(),)
-
-            res.append(
-                {
-                    "parent_org_unit": parent_data,
-                    "org_unit_type": ou.org_unit_type.as_dict_for_completeness_stats(),
-                    "org_unit": ou.as_dict_for_completeness_stats(),
-                    "form": form.as_dict_for_completeness_stats(),
-                    "forms_filled": ou_filled_count,
-                    "forms_to_fill": ou_to_fill_count,
-                    "completeness_ratio": ((ou_to_fill_count / ou_filled_count) * 100) if ou_to_fill_count > 0 else 0,
-                }
-            )
+                parent_data = None
+                if ou.parent is not None:
+                    parent_data = (ou.parent.as_dict_for_completeness_stats(),)
+                res.append(
+                    {
+                        "parent_org_unit": parent_data,
+                        "org_unit_type": ou.org_unit_type.as_dict_for_completeness_stats(),
+                        "org_unit": ou.as_dict_for_completeness_stats(),
+                        "form": form.as_dict_for_completeness_stats(),
+                        "forms_filled": ou_filled_count,
+                        "forms_to_fill": ou_to_fill_count,
+                        "completeness_ratio": ((ou_to_fill_count / ou_filled_count) * 100)
+                        if ou_filled_count > 0
+                        else 0,
+                    }
+                )
 
         return Response({"results": res})

@@ -9,37 +9,41 @@ export const useCompletenessStatsColumns = () => {
         () => [
             {
                 Header: formatMessage(MESSAGES.parent),
-                id: 'ou.parent',
-                accessor: 'ou.parent',
-                sortable: false,
-                Cell: settings => {
-                    return (
-                        <span>{settings.row.original.ou?.parent ?? '--'}</span>
-                    );
-                },
-            },
-            {
-                Header: formatMessage(MESSAGES.orgUnitType),
-                id: 'ou.org_unit_type_name',
-                accessor: 'ou.org_unit_type_name',
+                id: 'parent_org_unit.name',
+                accessor: 'parent_org_unit.name',
                 sortable: false,
                 Cell: settings => {
                     return (
                         <span>
-                            {settings.row.original.ou?.org_unit_type_name ??
+                            {settings.row.original.parent_org_unit?.[0].name ??
                                 '--'}
                         </span>
                     );
                 },
             },
             {
-                Header: formatMessage(MESSAGES.orgUnit),
-                id: 'ou.name',
-                accessor: 'ou.name',
+                Header: formatMessage(MESSAGES.orgUnitType),
+                id: 'org_unit_type.name',
+                accessor: 'org_unit_type.name',
                 sortable: false,
                 Cell: settings => {
                     return (
-                        <span>{settings.row.original.ou?.name ?? '--'}</span>
+                        <span>
+                            {settings.row.original.org_unit_type?.name ?? '--'}
+                        </span>
+                    );
+                },
+            },
+            {
+                Header: formatMessage(MESSAGES.orgUnit),
+                id: 'org_unit.name',
+                accessor: 'org_unit.name',
+                sortable: false,
+                Cell: settings => {
+                    return (
+                        <span>
+                            {settings.row.original.org_unit?.name ?? '--'}
+                        </span>
                     );
                 },
             },

@@ -31,7 +31,6 @@ class CompletenessStatsViewSet(viewsets.ViewSet):
         else:
             org_unit_type = None
 
-
         parent_org_unit_id_str = request.GET.get("parent_id", None)
 
         if parent_org_unit_id_str is not None:

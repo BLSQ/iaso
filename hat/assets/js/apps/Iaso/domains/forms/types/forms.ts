@@ -23,6 +23,8 @@ export type FieldType =
     | 'decimal'
     | 'range'
     | 'text'
+    | 'select one'
+    | 'select multiple'
     | 'select_one'
     | 'select_multiple'
     | 'select_one_from_file'
@@ -52,6 +54,13 @@ export type PossibleField = {
     label: string;
     name: string;
     type: FieldType;
+    fieldKey: string;
+};
+export type ChildrenDescriptor = {
+    label: string;
+    name: string;
+    type: FieldType;
+    children: ChildrenDescriptor[];
 };
 
 export type Form = {
@@ -77,4 +86,14 @@ export type Form = {
     derived: boolean;
     label_keys: string[];
     possible_fields: PossibleField[];
+};
+
+export type FormDescriptor = {
+    default_language: string;
+    id_string: string;
+    name: string;
+    title: string;
+    version: string;
+    type: string;
+    children: ChildrenDescriptor[];
 };

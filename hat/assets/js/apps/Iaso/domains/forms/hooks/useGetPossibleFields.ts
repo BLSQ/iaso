@@ -1,6 +1,6 @@
-import { useGetForm } from './requests/forms';
+import { useGetForm } from '../../entities/entityTypes/hooks/requests/forms';
 
-import { PossibleField } from '../../../forms/types/forms';
+import { PossibleField } from '../types/forms';
 
 type Result = {
     possibleFields: PossibleField[];
@@ -13,8 +13,13 @@ export const useGetPossibleFields = (formId?: number): Result => {
         Boolean(formId),
         'possible_fields',
     );
+    const possibleFields =
+        currentForm?.possible_fields?.map(field => ({
+            ...field,
+            fieldKey: field.name.replace('.', ''),
+        })) || [];
     return {
-        possibleFields: currentForm?.possible_fields || [],
+        possibleFields,
         isFetchingForm,
     };
 };

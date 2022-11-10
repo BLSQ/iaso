@@ -1294,10 +1294,6 @@ const MESSAGES = defineMessages({
         id: 'iaso.polio.budget.label.addCampaign',
         defaultMessage: 'Add campaign',
     },
-    budgetDetails: {
-        id: 'iaso.polio.budget.title.budgetDetails',
-        defaultMessage: 'Budget details',
-    },
     details: {
         defaultMessage: 'Details',
         id: 'iaso.label.details',
@@ -1580,9 +1576,13 @@ const MESSAGES = defineMessages({
         id: 'iaso.polio.label.vialsDestroyed',
         defaultMessage: 'Unusable vials destroyed',
     },
-    destructionDate: {
-        id: 'iaso.polio.label.destructionDate',
+    destructionReceptionDate: {
+        id: 'iaso.polio.label.destructionReceptionDate',
         defaultMessage: 'Reception of the destruction report',
+    },
+    destructionReportDate: {
+        id: 'iaso.polio.label.destructionReportDate',
+        defaultMessage: 'Date of the destruction report',
     },
     dateSignedVrf: {
         id: 'iaso.polio.label.dateSignedVrf',
@@ -1624,9 +1624,9 @@ const MESSAGES = defineMessages({
         id: 'iaso.polio.label.estimatedDateOfArrival',
         defaultMessage: 'Estimated date of arrival',
     },
-    dosesShipped: {
-        id: 'iaso.polio.label.dosesShipped',
-        defaultMessage: 'Doses shipped',
+    vialsShipped: {
+        id: 'iaso.polio.label.vialsShipped',
+        defaultMessage: 'Vials shipped',
     },
     poNumbers: {
         id: 'iaso.polio.label.poNumbers',
@@ -1635,6 +1635,14 @@ const MESSAGES = defineMessages({
     formAReception: {
         id: 'iaso.polio.label.formAReception',
         defaultMessage: 'Reception of national Form A',
+    },
+    formADate: {
+        id: 'iaso.polio.label.formADate',
+        defaultMessage: 'Form A date',
+    },
+    formAComment: {
+        id: 'iaso.polio.label.formAComment',
+        defaultMessage: 'Comment on form A',
     },
     formAUsableVials: {
         id: 'iaso.polio.label.formAUsableVials',
@@ -1684,6 +1692,14 @@ const MESSAGES = defineMessages({
         id: 'iaso.polio.label.removeLastShipment',
         defaultMessage: 'Remove last shipment',
     },
+    addDestruction: {
+        id: 'iaso.polio.label.addDestruction',
+        defaultMessage: 'Add destruction',
+    },
+    removeLastDestruction: {
+        id: 'iaso.polio.label.removeLastDestruction',
+        defaultMessage: 'Remove last destruction',
+    },
     addLink: {
         id: 'iaso.polio.label.addLink',
         defaultMessage: 'Add link',
@@ -1704,6 +1720,10 @@ const MESSAGES = defineMessages({
     shipmentFieldsTogether: {
         id: 'iaso.polio.label.shipmentFieldsTogether',
         defaultMessage: 'All shipment fields need to be filled together',
+    },
+    destructionFieldsTogether: {
+        id: 'iaso.polio.label.destructionFieldsTogether',
+        defaultMessage: 'All destruction fields need to be filled together',
     },
     scopeUnlockConditions: {
         id: 'iaso.polio.label.scopeUnlockConditions',
@@ -1833,6 +1853,10 @@ const MESSAGES = defineMessages({
     nextSteps: {
         id: 'iaso.polio.label.nextSteps',
         defaultMessage: 'Next steps',
+    },
+    emailWillBeSentTo: {
+        id: 'iaso.polio.label.emailWillBeSentTo',
+        defaultMessage: 'The following teams will be notified by email:',
     },
 });
 

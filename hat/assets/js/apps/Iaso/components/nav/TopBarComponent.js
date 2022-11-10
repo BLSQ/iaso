@@ -13,6 +13,7 @@ import PropTypes from 'prop-types';
 
 import { toggleSidebarMenu } from '../../redux/sidebarMenuReducer';
 import { ThemeConfigContext } from '../../domains/app/contexts/ThemeConfigContext.tsx';
+import getDisplayName, { useCurrentUser } from '../../utils/usersUtils';
 
 const styles = theme => ({
     menuButton: {
@@ -38,6 +39,7 @@ function TopBar(props) {
         () => dispatch(toggleSidebarMenu()),
         [dispatch],
     );
+    const currentUser = useCurrentUser();
 
     return (
         <>
@@ -86,9 +88,23 @@ function TopBar(props) {
                                 {title}
                             </Typography>
                         </Grid>
-                        {/* <Grid item xs={3}>
-                            <div>New stuff</div>
-                        </Grid> */}
+                        {currentUser && (
+                            <Grid
+                                container
+                                item
+                                xs={3}
+                                alignContent="flex-end"
+                                justifyContent="flex-end"
+                            >
+                                <Typography
+                                    variant="body2"
+                                    className={classes.userName}
+                                    title={getDisplayName(currentUser)}
+                                >
+                                    {currentUser?.user_name}
+                                </Typography>
+                            </Grid>
+                        )}
                     </Grid>
                 </Toolbar>
                 {children}

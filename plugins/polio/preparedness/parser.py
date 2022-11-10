@@ -104,6 +104,8 @@ class RoundNumber(str, Enum):
 
 def get_national_level_preparedness(spread: CachedSpread):
     for worksheet in spread.worksheets():
+        if worksheet.is_hidden:
+            continue
         cell = worksheet.find_one_of(
             "Summary of National Level Preparedness",
             "Résumé du niveau de préparation au niveau national ",
@@ -148,6 +150,8 @@ def get_regional_level_preparedness(spread: CachedSpread):
 
     sheet: CachedSheet
     for sheet in spread.worksheets():
+        if sheet.is_hidden:
+            continue
         # detect if we are in a Regional Spreadsheet form the title
         # and find position of the total score box
         cell = sheet.find_one_of(

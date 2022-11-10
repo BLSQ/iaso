@@ -8,6 +8,7 @@ import MESSAGES from '../constants/messages';
 import { useStyles } from '../styles/theme';
 import { DateInput, Select, TextInput } from '../components/Inputs';
 import { polioVaccines } from '../constants/virus';
+import { MultilineText } from '../components/Inputs/MultilineText';
 
 type Props = {
     index: number;
@@ -25,9 +26,9 @@ export const ShipmentForm: FunctionComponent<Props> = ({ index, accessor }) => {
                 item
                 xs={12}
                 spacing={2}
-                justifyContent="space-between"
+                justifyContent="flex-start"
             >
-                <Grid item lg={2} md={4}>
+                <Grid item md={3}>
                     <Field
                         label={formatMessage(MESSAGES.vaccine)}
                         name={`${accessor}.shipments[${index}].vaccine_name`}
@@ -36,7 +37,7 @@ export const ShipmentForm: FunctionComponent<Props> = ({ index, accessor }) => {
                         component={Select}
                     />
                 </Grid>
-                <Grid item lg={2} md={4}>
+                <Grid item md={3}>
                     <Field
                         label={formatMessage(MESSAGES.poNumbers)}
                         name={`${accessor}.shipments[${index}].po_numbers`}
@@ -44,15 +45,15 @@ export const ShipmentForm: FunctionComponent<Props> = ({ index, accessor }) => {
                         className={classes.input}
                     />
                 </Grid>
-                <Grid item lg={2} md={4}>
+                <Grid item md={3}>
                     <Field
-                        label={formatMessage(MESSAGES.dosesShipped)}
-                        name={`${accessor}.shipments[${index}].doses_received`}
+                        label={formatMessage(MESSAGES.vialsShipped)}
+                        name={`${accessor}.shipments[${index}].vials_received`}
                         component={TextInput}
                         className={classes.input}
                     />
                 </Grid>
-                <Grid item lg={2} md={4}>
+                <Grid item md={3}>
                     <Field
                         label={formatMessage(MESSAGES.receptionPreAlert)}
                         name={`${accessor}.shipments[${index}].reception_pre_alert`}
@@ -60,7 +61,7 @@ export const ShipmentForm: FunctionComponent<Props> = ({ index, accessor }) => {
                         className={classes.input}
                     />
                 </Grid>
-                <Grid item lg={2} md={4}>
+                <Grid item md={3}>
                     <Field
                         label={formatMessage(MESSAGES.estimatedDateOfArrival)}
                         name={`${accessor}.shipments[${index}].estimated_arrival_date`}
@@ -68,7 +69,7 @@ export const ShipmentForm: FunctionComponent<Props> = ({ index, accessor }) => {
                         className={classes.input}
                     />
                 </Grid>
-                <Grid item lg={2} md={4}>
+                <Grid item md={3}>
                     <Field
                         label={formatMessage(
                             MESSAGES.receptionVaccineArrivalReport,
@@ -76,6 +77,15 @@ export const ShipmentForm: FunctionComponent<Props> = ({ index, accessor }) => {
                         name={`${accessor}.shipments[${index}].date_reception`}
                         component={DateInput}
                         className={classes.input}
+                    />
+                </Grid>
+                <Grid item md={3}>
+                    <Field
+                        label={formatMessage(MESSAGES.comment)}
+                        name={`${accessor}.shipments[${index}].comment`}
+                        component={MultilineText}
+                        className={classes.input}
+                        debounceTime={1000}
                     />
                 </Grid>
             </Grid>

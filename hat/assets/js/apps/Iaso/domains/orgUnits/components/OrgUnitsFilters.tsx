@@ -39,9 +39,6 @@ type Props = {
     onSearch: () => void;
     // eslint-disable-next-line no-unused-vars
     onChangeColor: (color: string, index: number) => void;
-    filtersUpdated: boolean;
-    // eslint-disable-next-line no-unused-vars
-    setFiltersUpdated: (isUpdated: boolean) => void;
     setSearches: React.Dispatch<React.SetStateAction<[Search]>>;
     currentTab: string;
     params: OrgUnitParams;
@@ -71,8 +68,6 @@ export const OrgUnitFilters: FunctionComponent<Props> = ({
     onSearch,
     onChangeColor,
     setTextSearchError,
-    filtersUpdated,
-    setFiltersUpdated,
     setSearches,
     currentTab,
     params,
@@ -104,9 +99,6 @@ export const OrgUnitFilters: FunctionComponent<Props> = ({
         sourceVersionId,
     });
     const handleChange = (key, value) => {
-        if (!filtersUpdated) {
-            setFiltersUpdated(true);
-        }
         if (key === 'version') {
             setSourceVersionId(parseInt(value, 10));
         }
@@ -142,7 +134,8 @@ export const OrgUnitFilters: FunctionComponent<Props> = ({
             dataSources &&
             !dataSourceId &&
             !sourceVersionId &&
-            filters?.version
+            filters?.version &&
+            !filters?.group
         ) {
             const id = retrieveSourceFromVersionId(
                 filters?.version,
@@ -160,7 +153,8 @@ export const OrgUnitFilters: FunctionComponent<Props> = ({
             !dataSourceId &&
             !sourceVersionId &&
             !filters?.version &&
-            currentUser?.account?.default_version?.data_source?.id
+            currentUser?.account?.default_version?.data_source?.id &&
+            !filters?.group
         ) {
             // TO-DO => IA-1491 when coming from groups page, we need to prefill source and version from the selected group !
             setDataSourceId(

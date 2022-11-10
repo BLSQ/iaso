@@ -1,6 +1,7 @@
 import typing
 
 from django.contrib.gis.geos import Polygon, Point, MultiPolygon
+from django.contrib.sites.models import Site
 from django.test import tag
 from django.core import mail
 from iaso.models import Profile
@@ -251,6 +252,9 @@ class ProfileAPITestCase(APITestCase):
         self.assertEqual(org_units[0].name, "Corruscant Jedi Council")
 
     def test_create_profile_with_send_email(self):
+        site = Site.objects.first()
+        site.name = "Iaso Dev"
+        site.save()
         self.client.force_authenticate(self.jim)
         data = {
             "user_name": "userTest",
@@ -264,7 +268,7 @@ class ProfileAPITestCase(APITestCase):
         response = self.client.post("/api/profiles/", data=data, format="json")
         self.assertEqual(response.status_code, 200)
 
-        domain = settings.DNS_DOMAIN
+        domain = site.name
         from_email = settings.DEFAULT_FROM_EMAIL
         self.assertEqual(len(mail.outbox), 1)
         self.assertEqual(mail.outbox[0].subject, f"Set up a password for your new account on {domain}")

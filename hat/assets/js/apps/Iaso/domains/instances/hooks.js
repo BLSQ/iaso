@@ -22,7 +22,7 @@ export const useGetForms = () => {
     const params = {
         all: true,
         order: 'name',
-        fields: 'name,period_type,label_keys,id',
+        fields: 'name,period_type,label_keys,id,latest_form_version',
     };
     const queryString = new URLSearchParams(params);
 

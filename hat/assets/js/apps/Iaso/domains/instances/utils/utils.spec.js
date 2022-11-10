@@ -1,5 +1,5 @@
-import { formatValue } from './utils';
-import { setLocale } from '../../utils/dates';
+import { formatValue } from '.';
+import { setLocale } from '../../../utils/dates.ts';
 
 describe('formatValue', () => {
     before(() => {

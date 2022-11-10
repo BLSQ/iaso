@@ -19,7 +19,7 @@ import {
     // @ts-ignore
     makeFullModal,
 } from 'bluesquare-components';
-import { Box, Divider, makeStyles, Typography } from '@material-ui/core';
+import { Box, Chip, Divider, makeStyles, Typography } from '@material-ui/core';
 import { useDispatch } from 'react-redux';
 import MESSAGES from '../../../constants/messages';
 import InputComponent from '../../../../../../../hat/assets/js/apps/Iaso/components/forms/InputComponent';
@@ -37,6 +37,8 @@ import { AddMultipleLinks } from '../MultipleLinks/AddMultipleLinks';
 import { useBudgetStepValidation } from '../hooks/validation';
 import { redirectToReplace } from '../../../../../../../hat/assets/js/apps/Iaso/routing/actions';
 import { BUDGET_DETAILS } from '../../../constants/routes';
+import { TextArea } from '../../../../../../../hat/assets/js/apps/Iaso/components/forms/TextArea';
+import { useGetRecipientTeams } from '../hooks/api/useGetEmailRecipients';
 
 type Props = {
     campaignId: string;
@@ -49,9 +51,12 @@ type Props = {
     isMobileLayout?: boolean;
     requiredFields?: string[];
     params: Record<string, any>;
+    recipients?: number[]; // team ids
 };
 
-const useStyles = makeStyles({ alignRight: { textAlign: 'right' } });
+const useStyles = makeStyles({
+    alignRight: { textAlign: 'right' },
+});
 
 const CreateBudgetStep: FunctionComponent<Props> = ({
     campaignId,
@@ -63,6 +68,7 @@ const CreateBudgetStep: FunctionComponent<Props> = ({
     id,
     requiredFields = [],
     params,
+    recipients = [],
 }) => {
     const currentUser = useCurrentUser();
     const { data: userHasTeam } = useUserHasTeam(currentUser?.user_id);
@@ -81,6 +87,8 @@ const CreateBudgetStep: FunctionComponent<Props> = ({
         }
         dispatch(redirectToReplace(BUDGET_DETAILS, trimmedParams));
     }, [dispatch, params]);
+
+    const { data: recipientTeams } = useGetRecipientTeams(recipients);
 
     const {
         apiErrors,
@@ -147,17 +155,24 @@ const CreateBudgetStep: FunctionComponent<Props> = ({
         handleSubmit,
         resetForm,
     } = formik;
-    const onChange = (keyValue, value) => {
-        setFieldTouched(keyValue, true);
-        setFieldValue(keyValue, value);
-    };
+    const onChange = useCallback(
+        (keyValue, value) => {
+            setFieldTouched(keyValue, true);
+            setFieldValue(keyValue, value);
+        },
+        [setFieldTouched, setFieldValue],
+    );
+
+    const onCommentChange = useCallback(
+        newValue => onChange('comment', newValue),
+        [onChange],
+    );
     const getErrors = useTranslatedErrors({
         touched,
         errors,
         messages: MESSAGES,
         formatMessage,
     });
-
     const attachmentErrors = useMemo(() => {
         const anyFieldTouched = Object.values(touched).find(value => value);
         const attachmentsErrors = [errors.attachments] ?? [];
@@ -213,62 +228,93 @@ const CreateBudgetStep: FunctionComponent<Props> = ({
                 dataTestId="Test-modal"
                 onClose={() => null}
             >
-                {userHasTeam && (
-                    <>
-                        <InputComponent
-                            type="text"
-                            keyValue="comment"
-                            multiline
-                            onChange={onChange}
-                            value={values.comment}
-                            errors={getErrors('comment')}
-                            label={MESSAGES.notes}
-                            required={requiredFields.includes('comment')}
-                        />
-                        <InputComponent
-                            type="number"
-                            keyValue="amount"
-                            onChange={onChange}
-                            value={values.amount}
-                            errors={getErrors('amount')}
-                            label={MESSAGES.amount}
-                            required={requiredFields.includes('amount')}
-                        />
+                <>
+                    <TextArea
+                        value={values.comment}
+                        errors={getErrors('comment')}
+                        label={formatMessage(MESSAGES.notes)}
+                        onChange={onCommentChange}
+                        required={requiredFields.includes('comment')}
+                        debounceTime={0}
+                    />
+                    <InputComponent
+                        type="number"
+                        keyValue="amount"
+                        onChange={onChange}
+                        value={values.amount}
+                        errors={getErrors('amount')}
+                        label={MESSAGES.amount}
+                        required={requiredFields.includes('amount')}
+                    />
 
-                        <Box mt={2}>
-                            <FilesUpload
-                                files={values.files ?? []}
-                                onFilesSelect={files => {
-                                    setFieldTouched('files', true);
-                                    setFieldValue('files', files);
-                                }}
-                                required={requiredFields.includes('files')}
-                                errors={getErrors('files')}
-                            />
-                        </Box>
-                        <Box mt={2}>
-                            <Divider />
-                        </Box>
-                        <Box mt={2}>
-                            <AddMultipleLinks
-                                required={requiredFields.includes('links')}
-                            />
-                        </Box>
-                        {/* @ts-ignore */}
-                        {(errors?.general ?? []).length > 0 && (
-                            <>
-                                {getErrors('general').map(e => (
-                                    <Typography
-                                        key={`${e}-error`}
-                                        color="error"
-                                        className={classes.alignRight}
-                                    >
-                                        {e}
-                                    </Typography>
-                                ))}
-                            </>
-                        )}
-                        {attachmentErrors.length > 0 && (
+                    <Box mt={2}>
+                        <FilesUpload
+                            files={values.files ?? []}
+                            onFilesSelect={files => {
+                                setFieldTouched('files', true);
+                                setFieldValue('files', files);
+                            }}
+                            required={requiredFields.includes('files')}
+                            errors={getErrors('files')}
+                        />
+                    </Box>
+                    <Box mt={2}>
+                        <Divider />
+                    </Box>
+                    <Box mt={2}>
+                        <AddMultipleLinks
+                            required={requiredFields.includes('links')}
+                        />
+                    </Box>
+                    <Box mt={2} mb={2}>
+                        <Divider />
+                    </Box>
+                    {(recipientTeams ?? []).length > 0 && (
+                        <>
+                            <Box mt={1} mb={1}>
+                                <Typography>
+                                    {formatMessage(MESSAGES.emailWillBeSentTo)}
+                                </Typography>
+                                {recipientTeams?.map(team => {
+                                    return (
+                                        <Box
+                                            mt={1}
+                                            mr={1}
+                                            mb={1}
+                                            display="inline-block"
+                                            key={team}
+                                        >
+                                            <Chip
+                                                label={team}
+                                                variant="outlined"
+                                                color="secondary"
+                                            />
+                                        </Box>
+                                    );
+                                })}
+                            </Box>
+                            <Box mt={2} mb={2}>
+                                <Divider />
+                            </Box>
+                        </>
+                    )}
+
+                    {/* @ts-ignore */}
+                    {(errors?.general ?? []).length > 0 && (
+                        <>
+                            {getErrors('general').map(e => (
+                                <Typography
+                                    key={`${e}-error`}
+                                    color="error"
+                                    className={classes.alignRight}
+                                >
+                                    {e}
+                                </Typography>
+                            ))}
+                        </>
+                    )}
+                    {attachmentErrors.length > 0 &&
+                        (touched.links || touched.files) && (
                             <>
                                 {attachmentErrors.map(e => (
                                     <Typography
@@ -281,8 +327,17 @@ const CreateBudgetStep: FunctionComponent<Props> = ({
                                 ))}
                             </>
                         )}
-                    </>
-                )}
+                    {!touched.links &&
+                        !touched.files &&
+                        requiredFields.includes('attachments') && (
+                            <Typography
+                                color="textSecondary"
+                                className={classes.alignRight}
+                            >
+                                {formatMessage(MESSAGES.linksOrFilesRequired)}
+                            </Typography>
+                        )}
+                </>
                 {!userHasTeam && <UserHasTeamWarning />}
             </ConfirmCancelModal>
         </FormikProvider>

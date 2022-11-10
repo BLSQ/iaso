@@ -4,7 +4,7 @@ from uuid import uuid4
 
 from django.contrib.auth.models import User, AnonymousUser
 from django.db import models
-from django.db.models import Count, Manager
+from django.db.models import Count, Manager, Q
 import django.db.models.manager
 
 from django.utils.translation import gettext as _
@@ -112,13 +112,22 @@ class CampaignScope(models.Model):
         ordering = ["campaign", "vaccine"]
 
 
+class Destruction(models.Model):
+    vials_destroyed = models.IntegerField(null=True, blank=True)
+    date_report_received = models.DateField(null=True, blank=True)
+    date_report = models.DateField(null=True, blank=True)
+    comment = models.TextField(null=True, blank=True)
+    round = models.ForeignKey("Round", related_name="destructions", on_delete=models.CASCADE, null=True)
+
+
 class Shipment(models.Model):
     vaccine_name = models.CharField(max_length=5, choices=VACCINES)
     po_numbers = models.IntegerField(null=True, blank=True)
-    doses_received = models.IntegerField(null=True, blank=True)
+    vials_received = models.IntegerField(null=True, blank=True)
     estimated_arrival_date = models.DateField(null=True, blank=True)
     reception_pre_alert = models.DateField(null=True, blank=True)
     date_reception = models.DateField(null=True, blank=True)
+    comment = models.TextField(null=True, blank=True)
     round = models.ForeignKey("Round", related_name="shipments", on_delete=models.CASCADE, null=True)
 
 
@@ -182,6 +191,8 @@ class Round(models.Model):
     forma_missing_vials = models.IntegerField(null=True, blank=True)
     forma_usable_vials = models.IntegerField(null=True, blank=True)
     forma_unusable_vials = models.IntegerField(null=True, blank=True)
+    forma_date = models.DateField(null=True, blank=True)
+    forma_comment = models.TextField(blank=True, null=True)
 
     def get_item_by_key(self, key):
         return getattr(self, key)
@@ -190,9 +201,14 @@ class Round(models.Model):
 class CampaignQuerySet(models.QuerySet):
     def filter_for_user(self, user: Union[User, AnonymousUser]):
         qs = self
-        if user.is_authenticated and user.iaso_profile.org_units.count():
-            org_units = OrgUnit.objects.hierarchy(user.iaso_profile.org_units.all())
-            qs = qs.filter(initial_org_unit__in=org_units)
+        if user.is_authenticated:
+            # Authenticated users only get campaigns linked to their account
+            qs = qs.filter(account=user.iaso_profile.account)
+
+            # Restrict Campaign to the OrgUnit on the country he can access
+            if user.iaso_profile.org_units.count():
+                org_units = OrgUnit.objects.hierarchy(user.iaso_profile.org_units.all())
+                qs = qs.filter(Q(country__in=org_units) | Q(initial_org_unit__in=org_units))
         return qs
 
 
@@ -238,6 +254,7 @@ class Campaign(SoftDeletableModel):
     scopes: "django.db.models.manager.RelatedManager[CampaignScope]"
     rounds: "django.db.models.manager.RelatedManager[Round]"
     id = models.UUIDField(default=uuid4, primary_key=True, editable=False)
+    account = models.ForeignKey("iaso.account", on_delete=models.CASCADE, related_name="campaigns")
     epid = models.CharField(default=None, max_length=255, null=True, blank=True)
     obr_name = models.CharField(max_length=255, unique=True)
     gpei_coordinator = models.CharField(max_length=255, null=True, blank=True)

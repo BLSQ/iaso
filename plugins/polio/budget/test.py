@@ -83,7 +83,7 @@ class TeamAPITestCase(APITestCase):
         cls.user = User.objects.get(username="test")
         cls.user.user_permissions.add(Permission.objects.get(codename="iaso_polio_budget"))
 
-        cls.c = Campaign.objects.create(obr_name="test campaign")
+        cls.c = Campaign.objects.create(obr_name="test campaign", account=cls.user.iaso_profile.account)
 
     def test_simple_get_list(self):
         self.client.force_login(self.user)

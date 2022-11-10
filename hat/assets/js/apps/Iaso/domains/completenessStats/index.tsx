@@ -6,12 +6,16 @@ import { Box, makeStyles } from '@material-ui/core';
 import { TableWithDeepLink } from '../../components/tables/TableWithDeepLink';
 import { baseUrls } from '../../constants/urls';
 import { redirectTo } from '../../routing/actions';
-import { useGetCompletenessStats } from './hooks/api/useGetCompletnessStats';
+import {
+    CompletenessGETParams,
+    useGetCompletenessStats,
+} from './hooks/api/useGetCompletnessStats';
 import { useCompletenessStatsColumns } from './hooks/useCompletenessStatsColumns';
 import TopBar from '../../components/nav/TopBarComponent';
 import MESSAGES from './messages';
 import { MENU_HEIGHT_WITHOUT_TABS } from '../../constants/uiConstants';
 import { CompletenessStatsFilters } from './CompletenessStatsFilters';
+import { UrlParams } from '../../types/table';
 
 const baseUrl = baseUrls.completenessStats;
 const useStyles = makeStyles(theme => ({
@@ -23,7 +27,7 @@ const useStyles = makeStyles(theme => ({
 }));
 
 type Props = {
-    params: any;
+    params: UrlParams & CompletenessGETParams;
 };
 
 export const CompletessStats: FunctionComponent<Props> = ({ params }) => {

@@ -1,6 +1,7 @@
 import { UseBaseQueryResult } from 'react-query';
 import { getRequest } from '../../../../libs/Api';
 import { useSnackQuery } from '../../../../libs/apiHooks';
+import { CompletenessApiResponse } from '../../types';
 
 const queryParamsMap = new Map([
     ['parentId', 'parent_id'],
@@ -8,7 +9,13 @@ const queryParamsMap = new Map([
     ['formId', 'form_id'],
 ]);
 
-const getCompletenessStats = async (params: any) => {
+export type CompletenessGETParams = {
+    parentId?: string;
+    formId?: string;
+    orgUnitTypeId?: string;
+};
+
+const getCompletenessStats = async (params: CompletenessGETParams) => {
     const queryParams = {};
     queryParamsMap.forEach((value, key) => {
         if (params[key]) {
@@ -19,12 +26,14 @@ const getCompletenessStats = async (params: any) => {
     return getRequest(`/api/completeness_stats/?${queryString}`);
 };
 
-export const useGetCompletenessStats = (params: any): UseBaseQueryResult => {
+export const useGetCompletenessStats = (
+    params: CompletenessGETParams,
+): UseBaseQueryResult<CompletenessApiResponse, unknown> => {
     return useSnackQuery({
         queryKey: ['completenessStats', params],
         queryFn: () => getCompletenessStats(params),
         options: {
-            select: (data: any[]): any[] => {
+            select: (data: CompletenessApiResponse[]): any[] => {
                 return data.completeness;
             },
         },

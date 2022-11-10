@@ -90,7 +90,7 @@ class CompletenessStatsViewSet(viewsets.ViewSet):
                         "form": form.as_dict_for_completeness_stats(),
                         "forms_filled": ou_filled_count,
                         "forms_to_fill": ou_to_fill_count,
-                        "completeness_ratio": ((ou_to_fill_count / ou_filled_count) * 100)
+                        "completeness_ratio": ((ou_filled_count / min(ou_to_fill_count,1)) * 100) #handle case when ou_to_fill is None or 1
                         if ou_filled_count > 0
                         else 0,
                     }
@@ -104,7 +104,7 @@ class CompletenessStatsViewSet(viewsets.ViewSet):
 
         paginated_res = {
             "count": paginator.count,
-            "results": res,
+            "results": page.object_list,
             "has_next": page.has_next(),
             "has_previous": page.has_previous(),
             "page": page_offset,

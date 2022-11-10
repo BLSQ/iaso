@@ -60,28 +60,28 @@ export const useCompletenessStatsColumns = () => {
             },
             {
                 Header: formatMessage(MESSAGES.formsFilled),
-                id: 'ou_filled_count',
-                accessor: 'ou_filled_count',
+                id: 'forms_filled',
+                accessor: 'forms_filled',
                 sortable: true,
                 Cell: settings => {
                     return (
                         <span>
-                            {settings.row.original.ou_filled_count ?? '--'}
+                            {settings.row.original.forms_filled ?? '--'}
                         </span>
                     );
                 },
             },
             {
                 Header: formatMessage(MESSAGES.completeness),
-                id: 'ou_to_fill_count',
-                accessor: 'ou_to_fill_count',
+                id: 'completeness_ratio',
+                accessor: 'completeness_ratio',
                 sortable: false,
-                Cell: settings => {
-                    const filled = settings.row.original.ou_filled_count ?? 0;
-                    const toFill = settings.row.original.ou_to_fill_count || 1;
-                    const completed = Math.round((filled / toFill) * 100);
-                    return <span>{completed}</span>;
-                },
+                // Cell: settings => {
+                //     const filled = settings.row.original.ou_filled_count ?? 0;
+                //     const toFill = settings.row.original.ou_to_fill_count || 1;
+                //     const completed = Math.round((filled / toFill) * 100);
+                //     return <span>{completeness_ratio}</span>;
+                // },
             },
         ],
         [formatMessage],

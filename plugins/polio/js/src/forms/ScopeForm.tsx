@@ -15,6 +15,7 @@ import InputComponent from 'Iaso/components/forms/InputComponent';
 import FiltersIcon from '@material-ui/icons/FilterList';
 import { FormattedMessage } from 'react-intl';
 import sortBy from 'lodash/sortBy';
+import isEmpty from 'lodash/isEmpty';
 import { ScopeInput } from '../components/Inputs/ScopeInput';
 import { BooleanInput } from '../components/Inputs';
 import MESSAGES from '../constants/messages';
@@ -50,6 +51,7 @@ type Shape = {
 };
 
 type FilteredDistricts = {
+    id: number;
     name: string;
     vaccineName: string;
 };
@@ -119,6 +121,8 @@ export const ScopeForm: FunctionComponent = () => {
         setSearchScope(searchScope);
     }, [searchScope]);
 
+    const [newScopeId, setNewScopeId] = useState({ newScope: {} });
+
     const searchDistrictByName = useCallback(
         searchScopeValue => {
             let filtreds: FilteredDistricts[] = [];
@@ -133,6 +137,17 @@ export const ScopeForm: FunctionComponent = () => {
 
             if (searchScopeValue) {
                 filtreds = filtreds.filter(d => d.vaccineName);
+            }
+
+            if (!isEmpty(newScopeId.newScope)) {
+                filtreds = filtreds.map(d => {
+                    if (newScopeId.newScope[d.id] !== undefined) {
+                        // eslint-disable-next-line no-param-reassign
+                        d.vaccineName = newScopeId.newScope[d.id];
+                    }
+
+                    return d;
+                });
             }
 
             if (search !== '') {
@@ -151,7 +166,27 @@ export const ScopeForm: FunctionComponent = () => {
             }
             setFilteredDistricts(filtreds);
         },
-        [districtShapes, orderBy, regionShapes, scopes, search, sortFocus],
+        [
+            districtShapes,
+            newScopeId,
+            orderBy,
+            regionShapes,
+            scopes,
+            search,
+            sortFocus,
+        ],
+    );
+
+    const addNewScopeId = useCallback(
+        (id: number, vaccineName: string) => {
+            const scopeIds = newScopeId;
+            const vaccine = {};
+
+            vaccine[id] = vaccineName;
+            newScopeId.newScope[id] = vaccineName;
+            setNewScopeId(scopeIds);
+        },
+        [newScopeId],
     );
 
     const onChangeSearchScope = () => {
@@ -215,11 +250,14 @@ export const ScopeForm: FunctionComponent = () => {
                 <Field
                     name="scopes"
                     component={ScopeInput}
-                    filteredDistricts={filteredDistricts}
+                    filteredDistrictsResult={filteredDistricts}
                     searchLaunched={searchLaunched}
                     searchScopeValue={searchScope}
                     onChangeSearchScopeFunction={() => onChangeSearchScope()}
                     searchScopeChecked={searchScopeChecked}
+                    addNewScopeId={(id, vacciName) =>
+                        addNewScopeId(id, vacciName)
+                    }
                 />
             ) : (
                 <TabContext value={currentTab}>

@@ -2,6 +2,7 @@
 import React, {
     FunctionComponent,
     useCallback,
+    useEffect,
     useMemo,
     useState,
 } from 'react';
@@ -36,11 +37,12 @@ import {
 import cloneDeep from 'lodash/cloneDeep';
 import sortBy from 'lodash/sortBy';
 
-import { FieldInputProps } from 'formik/dist/Field';
+import { FieldProps } from 'formik/dist/Field';
 
 import CheckIcon from '@material-ui/icons/Check';
 import SelectAllIcon from '@material-ui/icons/SelectAll';
 import InputComponent from 'Iaso/components/forms/InputComponent';
+import { values } from 'cypress/types/lodash';
 import { MapComponent } from '../MapComponent/MapComponent';
 import { MapLegend } from '../../../../../../hat/assets/js/apps/Iaso/components/maps/MapLegend';
 
@@ -105,22 +107,25 @@ type FilteredDistricts = {
 
 type Props = {
     field;
-    form: FieldInputProps<Scope[], Values>;
-    filteredDistricts: FilteredDistricts[];
+    form: FieldProps<Scope[], Values>;
+    values: values;
+    filteredDistrictsResult: FilteredDistricts[];
     searchLaunched: boolean;
     searchScopeValue: boolean;
     searchScopeChecked: boolean;
     onChangeSearchScopeFunction: () => void;
+    addNewScopeId: (id: number, vaccineName: string) => void;
 };
 
 export const ScopeInput: FunctionComponent<Props> = ({
     field,
     form: { values },
-    filteredDistricts,
+    filteredDistrictsResult,
     searchLaunched,
     searchScopeValue,
     searchScopeChecked,
     onChangeSearchScopeFunction,
+    addNewScopeId,
 }) => {
     // eslint-disable-next-line no-unused-vars
     const [_field, _meta, helpers] = useField(field.name);
@@ -151,7 +156,9 @@ export const ScopeInput: FunctionComponent<Props> = ({
 
     const { data: districtShapes, isFetching: isFetchingDistricts } =
         useGetGeoJson(parentCountryId, 'DISTRICT');
-    // const [filteredDistricts, setFilteredDistricts] = useState([]);
+    const [filteredDistricts, setFilteredDistricts] = useState<
+        FilteredDistricts[]
+    >([]);
     const { data: regionShapes, isFetching: isFetchingRegions } = useGetGeoJson(
         parentCountryId,
         'REGION',
@@ -162,6 +169,11 @@ export const ScopeInput: FunctionComponent<Props> = ({
     const toggleRegionSelect = () => {
         setSelectRegion(!selectRegion);
     };
+
+    useEffect(() => {
+        const filtereds = filteredDistrictsResult;
+        setFilteredDistricts(filtereds);
+    }, [filteredDistrictsResult]);
 
     const getShapeStyle = useCallback(
         shape => {
@@ -240,7 +252,7 @@ export const ScopeInput: FunctionComponent<Props> = ({
         setScopes(newScopes);
     };
 
-    const [selectedVaccine, setSelectedVaccine] = useState('mOPV2');
+    const [selectedVaccine, setSelectedVaccine] = useState<string>('mOPV2');
 
     const addDistrictInVaccineScope = useCallback(
         district => {
@@ -262,20 +274,28 @@ export const ScopeInput: FunctionComponent<Props> = ({
                 scope.group.org_units.push(district.id);
             }
             // when the add is done on searched result and update the filteredDistricts state
-            // if (searchValue !== '') {
-            //     const newFilteredDistricts = filteredDistricts.map(dist => {
-            //         if (dist.id === district.id) {
-            //             dist.vaccineName = selectedVaccine;
-            //         }
+            if (searchLaunched || searchScopeChecked) {
+                const newFilteredDistricts = filteredDistricts.map(dist => {
+                    if (dist.id === district.id) {
+                        // eslint-disable-next-line no-param-reassign
+                        dist.vaccineName = selectedVaccine;
+                    }
 
-            //         return dist;
-            //     });
-            //     setFilteredDistricts(newFilteredDistricts);
-            // }
+                    return dist;
+                });
+                setFilteredDistricts(newFilteredDistricts);
+            }
 
             setScopes(newScopes);
         },
-        [scopes, selectedVaccine, setScopes],
+        [
+            filteredDistricts,
+            scopes,
+            searchLaunched,
+            searchScopeChecked,
+            selectedVaccine,
+            setScopes,
+        ],
     );
 
     const toggleDistrictInVaccineScope = useCallback(
@@ -296,16 +316,17 @@ export const ScopeInput: FunctionComponent<Props> = ({
             }
             // Remove org unit from selection if it's part of the scope
             if (scope.group.org_units.includes(district.id)) {
-                // if (searchValue !== '') {
-                //     const newFilteredDistricts = filteredDistricts.map(dist => {
-                //         if (dist.id === district.id) {
-                //             dist.vaccineName = '';
-                //         }
+                if (searchLaunched || searchScopeChecked) {
+                    const newFilteredDistricts = filteredDistricts.map(dist => {
+                        if (dist.id === district.id) {
+                            // eslint-disable-next-line no-param-reassign
+                            dist.vaccineName = '';
+                        }
 
-                //         return dist;
-                //     });
-                //     setFilteredDistricts(newFilteredDistricts);
-                // }
+                        return dist;
+                    });
+                    setFilteredDistricts(newFilteredDistricts);
+                }
                 scope.group.org_units = scope.group.org_units.filter(
                     OrgUnitId => OrgUnitId !== district.id,
                 );
@@ -324,7 +345,13 @@ export const ScopeInput: FunctionComponent<Props> = ({
             }
             setScopes(newScopes);
         },
-        [scopes, setScopes],
+        [
+            filteredDistricts,
+            scopes,
+            searchLaunched,
+            searchScopeChecked,
+            setScopes,
+        ],
     );
 
     const onSelectOrgUnit = shape => {
@@ -338,15 +365,17 @@ export const ScopeInput: FunctionComponent<Props> = ({
     const removeDistrictFromTable = useCallback(
         (shape: ShapeRow) => {
             toggleDistrictInVaccineScope(shape, shape.vaccineName);
+            addNewScopeId(shape.id, '');
         },
-        [toggleDistrictInVaccineScope],
+        [addNewScopeId, toggleDistrictInVaccineScope],
     );
 
     const addDistrictToTable = useCallback(
         (shape: ShapeRow) => {
             addDistrictInVaccineScope(shape);
+            addNewScopeId(shape.id, selectedVaccine);
         },
-        [addDistrictInVaccineScope],
+        [addDistrictInVaccineScope, addNewScopeId, selectedVaccine],
     );
 
     // Remove all district in the same region as this district
@@ -363,18 +392,30 @@ export const ScopeInput: FunctionComponent<Props> = ({
                     OrgUnitId => !OrgUnitIdsToRemove.includes(OrgUnitId),
                 );
             });
-            // if (searchValue !== '') {
-            //     const newFilteredDistricts = filteredDistricts.map(dict => {
-            //         if (OrgUnitIdsToRemove.includes(dict.id)) {
-            //             dict.vaccineName = '';
-            //         }
-            //         return dict;
-            //     });
-            //     setFilteredDistricts(newFilteredDistricts);
-            // }
+
+            if (searchLaunched || searchScopeChecked) {
+                const newFilteredDistricts = filteredDistricts.map(dict => {
+                    if (OrgUnitIdsToRemove.includes(dict.id)) {
+                        // eslint-disable-next-line no-param-reassign
+                        dict.vaccineName = '';
+                        addNewScopeId(dict.id, '');
+                    }
+                    return dict;
+                });
+                setFilteredDistricts(newFilteredDistricts);
+            }
+
             setScopes(newScopes);
         },
-        [districtShapes, scopes, setScopes],
+        [
+            addNewScopeId,
+            districtShapes,
+            filteredDistricts,
+            scopes,
+            searchLaunched,
+            searchScopeChecked,
+            setScopes,
+        ],
     );
 
     // Add all district in the same region as this district
@@ -393,19 +434,30 @@ export const ScopeInput: FunctionComponent<Props> = ({
                         scope.group.org_units.concat(OrgUnitIdsToAdd);
                 });
 
-            // if (searchValue !== '') {
-            //     const newFilteredDistricts = filteredDistricts.map(dict => {
-            //         if (OrgUnitIdsToAdd.includes(dict.id)) {
-            //             dict.vaccineName = selectedVaccine;
-            //         }
-            //         return dict;
-            //     });
-            //     setFilteredDistricts(newFilteredDistricts);
-            // }
+            if (searchLaunched || searchScopeChecked) {
+                const newFilteredDistricts = filteredDistricts.map(dict => {
+                    if (OrgUnitIdsToAdd.includes(dict.id)) {
+                        // eslint-disable-next-line no-param-reassign
+                        dict.vaccineName = selectedVaccine;
+                        addNewScopeId(dict.id, selectedVaccine);
+                    }
+                    return dict;
+                });
+                setFilteredDistricts(newFilteredDistricts);
+            }
 
             setScopes(newScopes);
         },
-        [districtShapes, scopes, selectedVaccine, setScopes],
+        [
+            addNewScopeId,
+            districtShapes,
+            filteredDistricts,
+            scopes,
+            searchLaunched,
+            searchScopeChecked,
+            selectedVaccine,
+            setScopes,
+        ],
     );
 
     const handleSort = useCallback(

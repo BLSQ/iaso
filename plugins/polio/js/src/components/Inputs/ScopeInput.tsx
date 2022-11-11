@@ -215,7 +215,7 @@ export const ScopeInput: FunctionComponent<Props> = ({
         let scope: Scope | undefined = newScopes.find(
             s => s.vaccine === _selectedVaccine,
         );
-        if (scope === undefined) {
+        if (!scope) {
             scope = {
                 vaccine: _selectedVaccine,
                 group: {
@@ -260,7 +260,7 @@ export const ScopeInput: FunctionComponent<Props> = ({
             let scope: Scope | undefined = newScopes.find(
                 s => s.vaccine === selectedVaccine,
             );
-            if (scope === undefined) {
+            if (!scope) {
                 scope = {
                     vaccine: selectedVaccine,
                     group: {
@@ -305,7 +305,7 @@ export const ScopeInput: FunctionComponent<Props> = ({
                 s => s.vaccine === _selectedVaccine,
             );
 
-            if (scope === undefined) {
+            if (!scope) {
                 scope = {
                     vaccine: _selectedVaccine,
                     group: {

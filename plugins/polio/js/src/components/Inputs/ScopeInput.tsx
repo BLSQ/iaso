@@ -275,15 +275,13 @@ export const ScopeInput: FunctionComponent<Props> = ({
             }
             // when the add is done on searched result and update the filteredDistricts state
             if (searchLaunched || searchScopeChecked) {
-                const newFilteredDistricts = filteredDistricts.map(dist => {
+                const newListAfterAdding = [...filteredDistricts];
+                filteredDistricts.forEach((dist, index) => {
                     if (dist.id === district.id) {
-                        // eslint-disable-next-line no-param-reassign
-                        dist.vaccineName = selectedVaccine;
+                        newListAfterAdding[index].vaccineName = selectedVaccine;
                     }
-
-                    return dist;
                 });
-                setFilteredDistricts(newFilteredDistricts);
+                setFilteredDistricts(newListAfterAdding);
             }
 
             setScopes(newScopes);
@@ -317,15 +315,13 @@ export const ScopeInput: FunctionComponent<Props> = ({
             // Remove org unit from selection if it's part of the scope
             if (scope.group.org_units.includes(district.id)) {
                 if (searchLaunched || searchScopeChecked) {
-                    const newFilteredDistricts = filteredDistricts.map(dist => {
+                    const newListAfterRemove = [...filteredDistricts];
+                    filteredDistricts.forEach((dist, index) => {
                         if (dist.id === district.id) {
-                            // eslint-disable-next-line no-param-reassign
-                            dist.vaccineName = '';
+                            newListAfterRemove[index].vaccineName = '';
                         }
-
-                        return dist;
                     });
-                    setFilteredDistricts(newFilteredDistricts);
+                    setFilteredDistricts(newListAfterRemove);
                 }
                 scope.group.org_units = scope.group.org_units.filter(
                     OrgUnitId => OrgUnitId !== district.id,
@@ -394,15 +390,14 @@ export const ScopeInput: FunctionComponent<Props> = ({
             });
 
             if (searchLaunched || searchScopeChecked) {
-                const newFilteredDistricts = filteredDistricts.map(dict => {
-                    if (OrgUnitIdsToRemove.includes(dict.id)) {
-                        // eslint-disable-next-line no-param-reassign
-                        dict.vaccineName = '';
-                        addNewScopeId(dict.id, '');
+                const newListAfterRegionRemoved = [...filteredDistricts];
+                filteredDistricts.forEach((dist, index) => {
+                    if (OrgUnitIdsToRemove.includes(dist.id)) {
+                        newListAfterRegionRemoved[index].vaccineName = '';
+                        addNewScopeId(dist.id, '');
                     }
-                    return dict;
                 });
-                setFilteredDistricts(newFilteredDistricts);
+                setFilteredDistricts(newListAfterRegionRemoved);
             }
 
             setScopes(newScopes);
@@ -435,15 +430,15 @@ export const ScopeInput: FunctionComponent<Props> = ({
                 });
 
             if (searchLaunched || searchScopeChecked) {
-                const newFilteredDistricts = filteredDistricts.map(dict => {
-                    if (OrgUnitIdsToAdd.includes(dict.id)) {
-                        // eslint-disable-next-line no-param-reassign
-                        dict.vaccineName = selectedVaccine;
-                        addNewScopeId(dict.id, selectedVaccine);
+                const newListAfterRegionAdded = [...filteredDistricts];
+                filteredDistricts.forEach((dist, index) => {
+                    if (OrgUnitIdsToAdd.includes(dist.id)) {
+                        newListAfterRegionAdded[index].vaccineName =
+                            selectedVaccine;
+                        addNewScopeId(dist.id, selectedVaccine);
                     }
-                    return dict;
                 });
-                setFilteredDistricts(newFilteredDistricts);
+                setFilteredDistricts(newListAfterRegionAdded);
             }
 
             setScopes(newScopes);

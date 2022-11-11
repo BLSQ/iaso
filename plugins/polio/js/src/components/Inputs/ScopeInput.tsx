@@ -321,11 +321,11 @@ export const ScopeInput: FunctionComponent<Props> = ({
                     filteredDistricts.forEach((dist, index) => {
                         if (dist.id === district.id) {
                             newListAfterRemove[index].vaccineName = '';
-                            addNewScopeId(district.id, '');
                         }
                     });
                     setFilteredDistricts(newListAfterRemove);
                 }
+                addNewScopeId(district.id, '');
                 scope.group.org_units = scope.group.org_units.filter(
                     OrgUnitId => OrgUnitId !== district.id,
                 );
@@ -387,7 +387,12 @@ export const ScopeInput: FunctionComponent<Props> = ({
             newScopes.forEach(scope => {
                 // eslint-disable-next-line no-param-reassign
                 scope.group.org_units = scope.group.org_units.filter(
-                    OrgUnitId => !OrgUnitIdsToRemove.includes(OrgUnitId),
+                    OrgUnitId => {
+                        addNewScopeId(OrgUnitId, '');
+                        if (!OrgUnitIdsToRemove.includes(OrgUnitId)) {
+                            return OrgUnitId;
+                        }
+                    },
                 );
             });
 

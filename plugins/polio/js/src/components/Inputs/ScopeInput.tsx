@@ -638,6 +638,7 @@ export const ScopeInput: FunctionComponent<Props> = ({
             </Grid>
             <Grid xs={5} item>
                 <InputComponent
+                    keyValue="searchScope"
                     type="checkbox"
                     withMarginTop={false}
                     onChange={() => onChangeSearchScope()}

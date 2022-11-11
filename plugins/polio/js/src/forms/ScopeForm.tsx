@@ -197,7 +197,7 @@ export const ScopeForm: FunctionComponent = () => {
 
     return (
         <>
-            <Grid container spacing={4} justify="space-between">
+            <Grid container spacing={4} justifyContent="space-between">
                 <Grid xs={12} md={6} item>
                     <Field
                         name="separate_scopes_per_round"
@@ -206,7 +206,7 @@ export const ScopeForm: FunctionComponent = () => {
                     />
                 </Grid>
 
-                <Grid container spacing={3} xs={12} md={5}>
+                <Grid container spacing={3} item xs={12} md={5}>
                     <Grid xs={12} md={6} item>
                         <InputComponent
                             variant="contained"

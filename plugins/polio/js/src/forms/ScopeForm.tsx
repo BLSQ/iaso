@@ -135,10 +135,6 @@ export const ScopeForm: FunctionComponent = () => {
                 };
             });
 
-            if (searchScopeValue) {
-                filtreds = filtreds.filter(d => d.vaccineName);
-            }
-
             if (!isEmpty(newScopeId.newScope)) {
                 filtreds = filtreds.map(d => {
                     if (newScopeId.newScope[d.id] !== undefined) {
@@ -148,6 +144,10 @@ export const ScopeForm: FunctionComponent = () => {
 
                     return d;
                 });
+            }
+
+            if (searchScopeValue) {
+                filtreds = filtreds.filter(d => d.vaccineName);
             }
 
             if (search !== '') {

@@ -279,6 +279,7 @@ export const ScopeInput: FunctionComponent<Props> = ({
                 filteredDistricts.forEach((dist, index) => {
                     if (dist.id === district.id) {
                         newListAfterAdding[index].vaccineName = selectedVaccine;
+                        addNewScopeId(district.id, selectedVaccine);
                     }
                 });
                 setFilteredDistricts(newListAfterAdding);
@@ -287,6 +288,7 @@ export const ScopeInput: FunctionComponent<Props> = ({
             setScopes(newScopes);
         },
         [
+            addNewScopeId,
             filteredDistricts,
             scopes,
             searchLaunched,
@@ -319,6 +321,7 @@ export const ScopeInput: FunctionComponent<Props> = ({
                     filteredDistricts.forEach((dist, index) => {
                         if (dist.id === district.id) {
                             newListAfterRemove[index].vaccineName = '';
+                            addNewScopeId(district.id, '');
                         }
                     });
                     setFilteredDistricts(newListAfterRemove);
@@ -342,6 +345,7 @@ export const ScopeInput: FunctionComponent<Props> = ({
             setScopes(newScopes);
         },
         [
+            addNewScopeId,
             filteredDistricts,
             scopes,
             searchLaunched,
@@ -361,17 +365,15 @@ export const ScopeInput: FunctionComponent<Props> = ({
     const removeDistrictFromTable = useCallback(
         (shape: ShapeRow) => {
             toggleDistrictInVaccineScope(shape, shape.vaccineName);
-            addNewScopeId(shape.id, '');
         },
-        [addNewScopeId, toggleDistrictInVaccineScope],
+        [toggleDistrictInVaccineScope],
     );
 
     const addDistrictToTable = useCallback(
         (shape: ShapeRow) => {
             addDistrictInVaccineScope(shape);
-            addNewScopeId(shape.id, selectedVaccine);
         },
-        [addDistrictInVaccineScope, addNewScopeId, selectedVaccine],
+        [addDistrictInVaccineScope],
     );
 
     // Remove all district in the same region as this district

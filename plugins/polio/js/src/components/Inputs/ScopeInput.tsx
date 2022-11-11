@@ -522,10 +522,6 @@ export const ScopeInput: FunctionComponent<Props> = ({
         );
     };
 
-    const onChangeSearchScope = () => {
-        onChangeSearchScopeFunction();
-    };
-
     return (
         <Grid container spacing={4} style={{ marginTop: '2px' }}>
             <Grid xs={7} item style={{ marginTop: '15px' }}>
@@ -636,7 +632,7 @@ export const ScopeInput: FunctionComponent<Props> = ({
                     keyValue="searchScope"
                     type="checkbox"
                     withMarginTop={false}
-                    onChange={() => onChangeSearchScope()}
+                    onChange={() => onChangeSearchScopeFunction()}
                     value={searchScopeValue}
                     label={MESSAGES.searchInScopeOrAllDistricts}
                 />

@@ -8,8 +8,8 @@ import React, {
 import { Box, Divider, Grid } from '@material-ui/core';
 // @ts-ignore
 import ConfirmCancelDialogComponent from 'Iaso/components/dialogs/ConfirmCancelDialogComponent';
+// @ts-ignore
 import { useSafeIntl } from 'bluesquare-components';
-import { StringSchema } from 'yup';
 import MESSAGES from '../../constants/messages';
 import InputComponent from '../../../../../../hat/assets/js/apps/Iaso/components/forms/InputComponent';
 import { useGetCampaigns } from '../../hooks/useGetCampaigns';
@@ -54,6 +54,7 @@ export const GroupedCampaignDialog: FunctionComponent<Props> = ({
         [allCampaigns],
     );
     const { mutateAsync: saveGroupedCampaign } = useSaveGroupedCampaign(type);
+
     const reset = useCallback(() => {
         setGroupedCampaignName(name);
         setCampaignsToLink(campaigns);
@@ -65,18 +66,11 @@ export const GroupedCampaignDialog: FunctionComponent<Props> = ({
                 ? {
                       id,
                       name: groupedCampaignName,
-                      campaigns_ids:
-                          // FIXME dirty workaround because campaignToLink is sometimes string sometime array
-                          typeof campaignsToLink === 'string'
-                              ? commaSeparatedIdsToStringArray(campaignsToLink)
-                              : campaignsToLink,
+                      campaigns_ids: campaignsToLink,
                   }
                 : {
                       name: groupedCampaignName,
-                      campaigns_ids:
-                          typeof campaignsToLink === 'string'
-                              ? commaSeparatedIdsToStringArray(campaignsToLink)
-                              : campaignsToLink,
+                      campaigns_ids: campaignsToLink,
                   };
             // call in this order to avoid mem leak error
             closeDialog();
@@ -93,7 +87,7 @@ export const GroupedCampaignDialog: FunctionComponent<Props> = ({
         [reset],
     );
     const allowConfirm =
-        Boolean(groupedCampaignName) && typeof campaignsToLink === 'string';
+        Boolean(groupedCampaignName) && campaignsToLink.length > 0;
 
     return (
         <ConfirmCancelDialogComponent
@@ -144,7 +138,9 @@ export const GroupedCampaignDialog: FunctionComponent<Props> = ({
                                     MESSAGES.campaignsToLink,
                                 )}
                                 onChange={(_keyValue, value) => {
-                                    setCampaignsToLink(value);
+                                    setCampaignsToLink(
+                                        commaSeparatedIdsToStringArray(value),
+                                    );
                                 }}
                                 value={campaignsToLink}
                                 required

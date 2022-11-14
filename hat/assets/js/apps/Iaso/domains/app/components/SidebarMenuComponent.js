@@ -141,13 +141,6 @@ const SidebarMenu = ({
             </List>
             <Box className={classes.user}>
                 <LanguageSwitch />
-                <Typography
-                    variant="body2"
-                    color="textSecondary"
-                    className={classes.userName}
-                >
-                    {currentUser.user_name}
-                </Typography>
                 {currentUser.account && (
                     <Typography
                         variant="body2"

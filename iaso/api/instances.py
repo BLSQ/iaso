@@ -1,6 +1,5 @@
 import json
 import ntpath
-from enum import Enum
 from time import gmtime, strftime
 from typing import Dict, Any, Union
 
@@ -36,7 +35,7 @@ from iaso.models import (
 )
 from iaso.utils import timestamp_to_datetime
 from . import common
-from .common import safe_api_import, TimestampField
+from .common import safe_api_import, TimestampField, FileFormatEnum, CONTENT_TYPE_XLSX, CONTENT_TYPE_CSV
 from .instance_filters import parse_instance_filters, get_form_from_instance_filters
 from .comment import UserSerializerForComment
 from iaso.api.serializers import OrgUnitSerializer
@@ -126,11 +125,6 @@ class InstanceLockSerializer(serializers.ModelSerializer):
 class UnlockSerializer(serializers.Serializer):
     lock = serializers.PrimaryKeyRelatedField(queryset=InstanceLock.objects.all())
     # we will  check that the user can access from the directly in remove_lock()
-
-
-class FileFormatEnum(Enum):
-    CSV: str = "csv"
-    XLSX: str = "xlsx"
 
 
 class InstancesViewSet(viewsets.ViewSet):
@@ -271,12 +265,12 @@ class InstancesViewSet(viewsets.ViewSet):
             filename = filename + ".xlsx"
             response = HttpResponse(
                 generate_xlsx("Forms", columns, queryset_iterator(queryset, 100), get_row, sub_columns),
-                content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                content_type=CONTENT_TYPE_XLSX,
             )
         elif file_format == FileFormatEnum.CSV:
             filename = filename + ".csv"
             response = StreamingHttpResponse(
-                streaming_content=(iter_items(queryset, Echo(), columns, get_row)), content_type="text/csv"
+                streaming_content=(iter_items(queryset, Echo(), columns, get_row)), content_type=CONTENT_TYPE_CSV
             )
         else:
             raise ValueError(f"Unknown file format requested: {file_format}")

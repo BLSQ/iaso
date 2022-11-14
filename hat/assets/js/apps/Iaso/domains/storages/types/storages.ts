@@ -57,9 +57,12 @@ export type Storages = Array<Storage>;
 export interface StoragePaginated extends Pagination {
     results: Storages;
 }
-export type StorageDetailsParams = Pagination & {
+export type StorageDetailsParams = {
     type: string;
     storageId: string;
+    pageSize: string;
+    order: string;
+    page: string;
     operationType?: string;
     performedAt?: string;
 };

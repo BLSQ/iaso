@@ -1,6 +1,8 @@
 from rest_framework import viewsets, permissions, serializers
 from rest_framework.response import Response
-from iaso.models import Link, OrgUnit, DataSource, AlgorithmRun, MatchingAlgorithm
+
+from iaso.api.common import CONTENT_TYPE_XLSX, CONTENT_TYPE_CSV
+from iaso.models import Link, OrgUnit, DataSource
 from django.core.paginator import Paginator
 from django.shortcuts import get_object_or_404
 from django.db.models import Q
@@ -10,7 +12,6 @@ from time import gmtime, strftime
 from django.http import StreamingHttpResponse, HttpResponse
 from hat.api.export_utils import Echo, generate_xlsx, iter_items
 from iaso.utils import geojson_queryset
-from .common import HasPermission
 
 
 class LinkSerializer(serializers.ModelSerializer):
@@ -165,8 +166,7 @@ class LinkViewSet(viewsets.ViewSet):
             filename = "%s-%s" % (filename, strftime("%Y-%m-%d-%H-%M", gmtime()))
 
             def get_row(link, **kwargs):
-
-                link_values = [
+                return [
                     link.id,
                     link.algorithm_run_id,
                     link.destination_id,
@@ -177,17 +177,16 @@ class LinkViewSet(viewsets.ViewSet):
                     link.created_at,
                     link.similarity_score,
                 ]
-                return link_values
 
             if xlsx_format:
                 filename = filename + ".xlsx"
                 response = HttpResponse(
                     generate_xlsx("Forms", columns, queryset, get_row),
-                    content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                    content_type=CONTENT_TYPE_XLSX,
                 )
             if csv_format:
                 response = StreamingHttpResponse(
-                    streaming_content=(iter_items(queryset, Echo(), columns, get_row)), content_type="text/csv"
+                    streaming_content=(iter_items(queryset, Echo(), columns, get_row)), content_type=CONTENT_TYPE_CSV
                 )
                 filename = filename + ".csv"
             response["Content-Disposition"] = "attachment; filename=%s" % filename

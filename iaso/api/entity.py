@@ -17,10 +17,15 @@ from rest_framework.request import Request
 from rest_framework.response import Response
 
 from hat.api.export_utils import Echo, generate_xlsx, iter_items
-from iaso.api.common import TimestampField, ModelViewSet, DeletionFilterBackend
+from iaso.api.common import (
+    TimestampField,
+    ModelViewSet,
+    DeletionFilterBackend,
+    CONTENT_TYPE_XLSX,
+    CONTENT_TYPE_CSV,
+    EXPORTS_DATETIME_FORMAT,
+)
 from iaso.models import Entity, Instance, EntityType
-
-EXPORTS_DATETIME_FORMAT = "%Y-%m-%d %H:%M:%S"
 
 
 class EntityTypeSerializer(serializers.ModelSerializer):
@@ -377,11 +382,11 @@ class EntityViewSet(ModelViewSet):
                 filename = filename + ".xlsx"
                 response = HttpResponse(
                     generate_xlsx("Entities", columns, result_list, get_row),
-                    content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                    content_type=CONTENT_TYPE_XLSX,
                 )
             if csv_format:
                 response = StreamingHttpResponse(
-                    streaming_content=(iter_items(result_list, Echo(), columns, get_row)), content_type="text/csv"
+                    streaming_content=(iter_items(result_list, Echo(), columns, get_row)), content_type=CONTENT_TYPE_CSV
                 )
                 filename = filename + ".csv"
             response["Content-Disposition"] = "attachment; filename=%s" % filename
@@ -450,9 +455,7 @@ class EntityViewSet(ModelViewSet):
             filename = f"{entity}_details_list_{date}.xlsx"
             workbook.close()
             mem_file.seek(0)
-            response = HttpResponse(
-                mem_file, content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
-            )
+            response = HttpResponse(mem_file, content_type=CONTENT_TYPE_XLSX)
             response["Content-Disposition"] = "attachment; filename=%s" % filename
             return response
 

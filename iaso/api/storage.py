@@ -1,8 +1,10 @@
 # TODO: need better type annotations in this file
-import datetime
-from typing import Tuple
+from typing import Tuple, List, Any, Union
 
-from django.db.models import Prefetch, Q
+from django.db.models import Prefetch, QuerySet, Q
+from django.http import HttpResponse, StreamingHttpResponse
+import datetime
+
 from rest_framework import viewsets, permissions, serializers, status
 from rest_framework.decorators import action, api_view, permission_classes
 from rest_framework.fields import Field
@@ -12,13 +14,21 @@ from rest_framework.response import Response
 
 from django.core.paginator import Paginator
 
-from hat.api.export_utils import timestamp_to_utc_datetime
+from hat.api.export_utils import generate_xlsx, iter_items, Echo, timestamp_to_utc_datetime
 from iaso.models import StorageLogEntry, StorageDevice, Instance, OrgUnit, Entity
 from iaso.api.entity import EntitySerializer
 
 from iaso.api.serializers import OrgUnitSerializer
 
-from .common import TimestampField, HasPermission, UserSerializer
+from .common import (
+    TimestampField,
+    HasPermission,
+    UserSerializer,
+    FileFormatEnum,
+    CONTENT_TYPE_XLSX,
+    EXPORTS_DATETIME_FORMAT,
+    CONTENT_TYPE_CSV,
+)
 
 
 class EntityNestedSerializer(EntitySerializer):
@@ -320,21 +330,96 @@ class StorageLogViewSet(CreateModelMixin, viewsets.GenericViewSet):
         return Response("", status=status.HTTP_201_CREATED)
 
 
+def logs_for_device_generate_export(
+    queryset: "QuerySet[StorageLogEntry]", file_format: FileFormatEnum
+) -> Union[HttpResponse, StreamingHttpResponse]:
+    columns = [
+        {"title": "id"},
+        {"title": "storage_id"},
+        {"title": "storage_type"},
+        {"title": "operation_type"},
+        {"title": "instances"},
+        {"title": "org_unit"},
+        {"title": "entity"},
+        {"title": "performed_at"},
+        {"title": "performed_by"},
+        {"title": "status"},
+        {"title": "status_reason"},
+        {"title": "status_comment"},
+    ]
+
+    def get_row(log_entry: StorageLogEntry, **_) -> List[Any]:
+        instances_ids_list = ",".join([str(i.id) for i in log_entry.instances.all()])
+
+        performed_at_str = ""
+        if log_entry.performed_at is not None:
+            performed_at_str = log_entry.performed_at.strftime(EXPORTS_DATETIME_FORMAT)
+
+        return [
+            str(log_entry.id),
+            log_entry.device.customer_chosen_id,
+            log_entry.device.type,
+            log_entry.operation_type,
+            instances_ids_list,
+            log_entry.org_unit_id,
+            log_entry.entity_id,
+            performed_at_str,
+            log_entry.performed_by.username,
+            log_entry.status,
+            log_entry.status_reason,
+            log_entry.status_comment,
+        ]
+
+    response: Union[HttpResponse, StreamingHttpResponse]
+    filename = "storage_logs"
+    if file_format == FileFormatEnum.XLSX:
+        filename = filename + ".xlsx"
+        response = HttpResponse(
+            generate_xlsx("Storage logs", columns, queryset, get_row),
+            content_type=CONTENT_TYPE_XLSX,
+        )
+    elif file_format == FileFormatEnum.CSV:
+        filename = filename + ".csv"
+        response = StreamingHttpResponse(
+            streaming_content=(iter_items(queryset, Echo(), columns, get_row)), content_type=CONTENT_TYPE_CSV
+        )
+
+    else:
+        # Raise InvalidFileFormat
+        pass
+
+    response["Content-Disposition"] = "attachment; filename=%s" % filename
+    return response
+
+
 @api_view()
 @permission_classes([IsAuthenticated, HasPermission("menupermissions.iaso_storages")])  # type: ignore
 def logs_per_device(request, storage_customer_chosen_id: str, storage_type: str):
     """Return a list of log entries for a given device"""
+
+    # 1. Retrieve data from request
     user_account = request.user.iaso_profile.account
 
+    # 1.1 Filters
     org_unit_id = request.GET.get("org_unit_id")
     operation_types_str = request.GET.get("types", None)
     status = request.GET.get("status", None)
     reason = request.GET.get("reason", None)
 
+    # 1.2 Pagination
     limit_str = request.GET.get("limit", None)
     page_offset = request.GET.get("page", 1)
 
+    # 1.3 Ordering
     order = request.GET.get("order", "-performed_at").split(",")
+
+    # 1.4 file export?
+    csv_format = request.GET.get("csv", None)
+    xlsx_format = request.GET.get("xlsx", None)
+    file_export = False
+    if csv_format is not None or xlsx_format is not None:
+        file_export = True
+        file_format_export = FileFormatEnum.CSV if csv_format is not None else FileFormatEnum.XLSX
 
     performed_at_str = request.GET.get("performed_at", None)
 
@@ -363,34 +448,38 @@ def logs_per_device(request, storage_customer_chosen_id: str, storage_type: str)
             performed_at__date=datetime.datetime.strptime(performed_at_str, "%Y-%m-%d").date()
         )
 
-    device_with_logs = StorageDevice.objects.prefetch_related(
-        Prefetch(
-            "log_entries",
-            log_entries_queryset,
-            to_attr="filtered_log_entries",
-        )
-    ).get(**device_identity_fields)
+    if not file_export:
+        device_with_logs = StorageDevice.objects.prefetch_related(
+            Prefetch(
+                "log_entries",
+                log_entries_queryset,
+                to_attr="filtered_log_entries",
+            )
+        ).get(**device_identity_fields)
 
-    if limit_str:
-        # Pagination as requested: each page contains the device metadata + a subset of log entries
-        limit = int(limit_str)
-        page_offset = int(page_offset)
-        paginator = Paginator(log_entries_queryset, limit)
-        res = {"count": paginator.count}
-        if page_offset > paginator.num_pages:
-            page_offset = paginator.num_pages
-        page = paginator.page(page_offset)
-        res["results"] = StorageSerializerWithPaginatedLogs(  # type: ignore
-            device_with_logs, context={"limit": limit, "offset": page.start_index() - 1}
-        ).data
-        res["has_next"] = page.has_next()
-        res["has_previous"] = page.has_previous()
-        res["page"] = page_offset
-        res["pages"] = paginator.num_pages
-        res["limit"] = limit
-        return Response(res)
+        if limit_str:
+            # Pagination as requested: each page contains the device metadata + a subset of log entries
+            limit = int(limit_str)
+            page_offset = int(page_offset)
+            paginator = Paginator(log_entries_queryset, limit)
+            res = {"count": paginator.count}
+            if page_offset > paginator.num_pages:
+                page_offset = paginator.num_pages
+            page = paginator.page(page_offset)
+            res["results"] = StorageSerializerWithPaginatedLogs(  # type: ignore
+                device_with_logs, context={"limit": limit, "offset": page.start_index() - 1}
+            ).data
+            res["has_next"] = page.has_next()
+            res["has_previous"] = page.has_previous()
+            res["page"] = page_offset
+            res["pages"] = paginator.num_pages
+            res["limit"] = limit
+            return Response(res)
+        else:
+            return Response(StorageSerializerWithLogs(device_with_logs).data)
     else:
-        return Response(StorageSerializerWithLogs(device_with_logs).data)
+        # File export requested
+        return logs_for_device_generate_export(queryset=log_entries_queryset, file_format=file_format_export)
 
 
 class StorageBlacklistedViewSet(ListModelMixin, viewsets.GenericViewSet):

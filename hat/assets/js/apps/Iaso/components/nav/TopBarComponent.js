@@ -1,6 +1,5 @@
 import React, { useCallback, useContext } from 'react';
 import { useDispatch } from 'react-redux';
-
 import {
     IconButton,
     makeStyles,
@@ -109,7 +108,11 @@ function TopBar(props) {
                                     className={classes.userName}
                                     title={getDisplayName(currentUser)}
                                 >
-                                    {currentUser.user_name}
+                                    {`${
+                                        window.IASO_VERSION
+                                            ? `${window.IASO_VERSION} - `
+                                            : ''
+                                    }${currentUser.user_name}`}
                                 </Typography>
                             </Grid>
                         )}

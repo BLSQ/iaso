@@ -26,11 +26,11 @@ class CompletenessStatsAPITestCase(APITestCase):
         cls.project_1.forms.add(cls.form_1)
         cls.project_1.forms.add(cls.form_2)
         cls.project_1.save()
-        cls.org_unit_type_1 = OrgUnitType.objects.get(pk=5)#alternate pk: 4
-        cls.org_unit_type_2 = OrgUnitType.objects.get(pk=4)#alternate pk: 4
+        cls.org_unit_type_1 = OrgUnitType.objects.get(pk=5)  # alternate pk: 4
+        cls.org_unit_type_2 = OrgUnitType.objects.get(pk=4)  # alternate pk: 4
         cls.form_1.org_unit_types.add(cls.org_unit_type_1)
         cls.form_2.org_unit_types.add(cls.org_unit_type_1)
-        cls.form_3.org_unit_types.add(cls.org_unit_type_2) 
+        cls.form_3.org_unit_types.add(cls.org_unit_type_2)
         cls.org_unit = OrgUnit.objects.filter(org_unit_type=cls.org_unit_type_1).first()
         cls.create_form_instance(form=cls.form_1, org_unit=cls.org_unit)
 

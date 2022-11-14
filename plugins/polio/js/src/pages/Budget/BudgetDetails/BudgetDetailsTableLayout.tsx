@@ -4,6 +4,8 @@ import React, { FunctionComponent } from 'react';
 import { useSafeIntl } from 'bluesquare-components';
 import { TableWithDeepLink } from '../../../../../../../hat/assets/js/apps/Iaso/components/tables/TableWithDeepLink';
 import { GraphTitle } from '../../../components/LQAS-IM/GraphTitle';
+import { BudgetDetailsFilters } from './BudgetDetailsFilters';
+
 import { LinkToProcedure } from './LinkToProcedure';
 import MESSAGES from '../../../constants/messages';
 import { BUDGET_DETAILS } from '../../../constants/routes';
@@ -13,12 +15,18 @@ import {
 } from '../../../../../../../hat/assets/js/apps/Iaso/types/table';
 import { BudgetStep } from '../types';
 
+import { DropdownOptions } from '../../../../../../../hat/assets/js/apps/Iaso/types/utils';
+
 type Props = {
     budgetDetails?: Paginated<BudgetStep>;
     resetPageToOne: any;
     isFetching: boolean;
     columns: Column[];
     params: any;
+    showHidden: boolean;
+    // eslint-disable-next-line no-unused-vars
+    setShowHidden: (show: boolean) => void;
+    stepsList?: DropdownOptions<string>[];
 };
 
 export const BudgetDetailsTableLayout: FunctionComponent<Props> = ({
@@ -27,32 +35,47 @@ export const BudgetDetailsTableLayout: FunctionComponent<Props> = ({
     columns,
     isFetching,
     resetPageToOne,
+    stepsList = [],
+    showHidden,
+    setShowHidden,
 }) => {
     const { formatMessage } = useSafeIntl();
     return (
         <>
             <Paper elevation={2}>
-                <Box
-                    ml={2}
-                    pt={2}
-                    mr={2}
-                    pb={budgetDetails?.results.length === 0 ? 1 : 0}
-                >
-                    <Grid container justifyContent="space-between">
-                        <Grid item lg={8}>
-                            <GraphTitle
-                                text={formatMessage(MESSAGES.steps)}
-                                displayTrigger
-                            />
+                <Box pt={2} pb={budgetDetails?.results.length === 0 ? 1 : 0}>
+                    <Box px={2}>
+                        <Grid container justifyContent="space-between">
+                            <Grid item lg={8}>
+                                <GraphTitle
+                                    text={formatMessage(MESSAGES.steps)}
+                                    displayTrigger
+                                />
+                            </Grid>
+                            <Grid
+                                container
+                                item
+                                xs={4}
+                                justifyContent="flex-end"
+                            >
+                                <LinkToProcedure />
+                            </Grid>
                         </Grid>
-                        <Grid container item xs={4} justifyContent="flex-end">
-                            <LinkToProcedure />
-                        </Grid>
-                    </Grid>
+                    </Box>
                     <Box mt={2} mb={1}>
                         <Divider />
                     </Box>
+                    <Box px={2} pb={2}>
+                        <BudgetDetailsFilters
+                            params={params}
+                            stepsList={stepsList}
+                            showHidden={showHidden}
+                            setShowHidden={setShowHidden}
+                        />
+                    </Box>
+                    <Divider />
                     <TableWithDeepLink
+                        countOnTop={false}
                         data={budgetDetails?.results ?? []}
                         count={budgetDetails?.count}
                         pages={budgetDetails?.pages}

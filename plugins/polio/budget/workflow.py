@@ -32,12 +32,23 @@ class Transition:
 class Node:
     label: str
     key: str
+    category_key: str = ""
+    order: int = 0
+    mandatory: bool = False
+
+
+@dataclass
+class Category:
+    label: str
+    key: str
+    nodes: Optional[List[Node]] = None  # Added at workflow init
 
 
 @dataclass
 class Workflow:
     transitions: List[Transition]
     nodes: List[Node]
+    categories: List[Category]
     _transitions_dict = None
 
     def get_node_by_key(self, key):
@@ -69,6 +80,20 @@ class Workflow:
                 self.get_node_by_key(transition.to_node)
             if transition.to_node:
                 self.get_node_by_key(transition.to_node)
+
+    def _get_nodes_in_category(self, category_key):
+        nodes = [node for node in self.nodes if node.category_key == category_key]
+        return nodes
+
+    def __init__(self, transitions, nodes, categories):
+        self.nodes = nodes
+        self.categories = categories
+        self.transitions = transitions
+        # link categories to node
+        for category in self.categories:
+            nodes = self._get_nodes_in_category(category.key)
+            nodes.sort(key=lambda n: n.order)
+            category.nodes = nodes
 
 
 def next_transitions(transitions, current_node_key):

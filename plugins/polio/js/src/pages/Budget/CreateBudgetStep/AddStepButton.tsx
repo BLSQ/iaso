@@ -1,5 +1,5 @@
 import React, { FunctionComponent } from 'react';
-import { Button, makeStyles, Box } from '@material-ui/core';
+import { Button, makeStyles, useMediaQuery, useTheme } from '@material-ui/core';
 import LoopIcon from '@material-ui/icons/Loop';
 
 const style = theme => {
@@ -47,6 +47,9 @@ export const AddStepButton: FunctionComponent<AddStepButtonProps> = ({
     disabled = false,
 }: AddStepButtonProps) => {
     const classes = useButtonStyles();
+    const theme = useTheme();
+
+    const isMobileLayout = useMediaQuery(theme.breakpoints.down('md'));
     const usableColor = color ?? 'primary';
     const className =
         usableColor !== 'primary' ? classes[usableColor] : undefined;
@@ -56,7 +59,7 @@ export const AddStepButton: FunctionComponent<AddStepButtonProps> = ({
         <div className={classes.addButton}>
             <Button
                 onClick={onClick}
-                size="medium"
+                size={isMobileLayout ? 'small' : 'medium'}
                 variant={isRepeat ? 'outlined' : 'contained'}
                 component="button"
                 color={usableColor === 'primary' ? usableColor : undefined}

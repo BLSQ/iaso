@@ -1,24 +1,18 @@
 import React, { FunctionComponent } from 'react';
-import { makeStyles, Typography } from '@material-ui/core';
+import { Typography } from '@material-ui/core';
 
 type Props = {
     text: string;
     displayTrigger: unknown;
 };
-const useStyles = makeStyles({ graphTitle: { fontWeight: 'bold' } });
 export const GraphTitle: FunctionComponent<Props> = ({
     text,
     displayTrigger,
 }) => {
-    const classes = useStyles();
     return (
         <>
             {displayTrigger && (
-                <Typography
-                    variant="h6"
-                    className={classes.graphTitle}
-                    color="primary"
-                >
+                <Typography variant="h5" color="primary">
                     {text}
                 </Typography>
             )}

@@ -13,7 +13,7 @@ from django.utils.translation import ugettext_lazy as _
 from hat.api.token_authentication import generate_auto_authentication_link
 from iaso.models.microplanning import Team
 from iaso.utils.models.soft_deletable import SoftDeletableModel
-from plugins.polio.budget.workflow import next_transitions, can_user_transition, Transition, Node, Workflow
+from plugins.polio.budget.workflow import next_transitions, can_user_transition, Transition, Node, Workflow, Category
 from plugins.polio.time_cache import time_cache
 
 
@@ -227,8 +227,10 @@ def get_workflow():
     workflow_model = WorkflowModel.objects.last()
     transition_defs = workflow_model.definition["transitions"]
     node_defs = workflow_model.definition["nodes"]
+    categories_defs = workflow_model.definition["categories"]
     if not any(n["key"] == None for n in node_defs):
         node_defs.append({"key": None, "label": "No budget submitted"})
     transitions = [Transition(**transition_def) for transition_def in transition_defs]
     nodes = [Node(**node_def) for node_def in node_defs]
-    return Workflow(transitions, nodes)
+    categories = [Category(**categories_def) for categories_def in categories_defs]
+    return Workflow(transitions, nodes, categories)

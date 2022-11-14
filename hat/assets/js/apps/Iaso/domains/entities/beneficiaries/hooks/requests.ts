@@ -16,7 +16,7 @@ import MESSAGES from '../../messages';
 import { makeUrlWithParams } from '../../../../libs/utils';
 
 import { Beneficiary } from '../types/beneficiary';
-import { Pagination } from '../../../../types/table';
+import { Pagination, UrlParams } from '../../../../types/table';
 import {
     Instance,
     PaginatedInstances,
@@ -155,14 +155,8 @@ export const useGetBeneficiary = (
     });
 };
 
-type SubmissionsParams = {
-    pageSize?: string;
-    order?: string;
-    page?: string;
-};
-
 const getSubmissions = (
-    { pageSize, order, page }: SubmissionsParams,
+    { pageSize, order, page }: Partial<UrlParams>,
     entityId?: number,
 ): Promise<PaginatedInstances> => {
     const baseUrl = '/api/instances/';
@@ -178,7 +172,7 @@ const getSubmissions = (
 };
 
 export const useGetSubmissions = (
-    params: SubmissionsParams,
+    params: Partial<UrlParams>,
     entityId?: number,
 ): UseQueryResult<PaginatedInstances, Error> => {
     return useSnackQuery({

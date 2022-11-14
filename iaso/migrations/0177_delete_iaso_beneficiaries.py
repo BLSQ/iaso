@@ -9,4 +9,4 @@ class Migration(migrations.Migration):
         ("iaso", "0176_storagedevice_status_updated_at"),
     ]
 
-    operations = [migrations.RunSQL("delete from auth_permission where codename = 'iaso_beneficiaries';", "")]
+    operations = []

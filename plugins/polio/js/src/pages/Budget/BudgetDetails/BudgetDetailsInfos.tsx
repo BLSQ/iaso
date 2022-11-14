@@ -232,11 +232,11 @@ export const BudgetDetailsInfos: FunctionComponent<Props> = ({
                 </Grid>
             </Grid>
             {/* temporary hide the budget timeline waiting to fix the workflow process */}
-            {/* {isTabletOrDesktopLayout && (
+            {isTabletOrDesktopLayout && (
                 <Box py={2}>
                     <BudgetTimeline categories={categories} />
                 </Box>
-            )} */}
+            )}
         </WidgetPaperComponent>
     );
 };

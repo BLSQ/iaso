@@ -231,11 +231,12 @@ export const BudgetDetailsInfos: FunctionComponent<Props> = ({
                     </Grid>
                 </Grid>
             </Grid>
-            {isTabletOrDesktopLayout && (
+            {/* temporary hide the budget timeline waiting to fix the workflow process */}
+            {/* {isTabletOrDesktopLayout && (
                 <Box py={2}>
                     <BudgetTimeline categories={categories} />
                 </Box>
-            )}
+            )} */}
         </WidgetPaperComponent>
     );
 };

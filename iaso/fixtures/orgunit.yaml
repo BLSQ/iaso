@@ -1,3 +1,9 @@
+- model: iaso.accountfeatureflag
+  pk: ALLOW_SHAPE_EDITION
+  fields:
+    name: Allow shape edition in Iaso UI
+    created_at: 2022-09-13 13:00:19.028245+00:00
+    updated_at: 2022-09-13 13:00:19.028270+00:00
 - model: iaso.datasource
   pk: 1
   fields:

@@ -1,7 +1,13 @@
 import React, { useCallback, useContext } from 'react';
 import { useDispatch } from 'react-redux';
 
-import { IconButton, makeStyles, Grid, Box } from '@material-ui/core';
+import {
+    IconButton,
+    makeStyles,
+    Grid,
+    useMediaQuery,
+    useTheme,
+} from '@material-ui/core';
 import AppBar from '@material-ui/core/AppBar';
 import Toolbar from '@material-ui/core/Toolbar';
 import Typography from '@material-ui/core/Typography';
@@ -13,7 +19,7 @@ import PropTypes from 'prop-types';
 
 import { toggleSidebarMenu } from '../../redux/sidebarMenuReducer';
 import { ThemeConfigContext } from '../../domains/app/contexts/ThemeConfigContext.tsx';
-import getDisplayName, { useCurrentUser } from '../../utils/usersUtils';
+import getDisplayName, { useCurrentUser } from '../../utils/usersUtils.ts';
 
 const styles = theme => ({
     menuButton: {
@@ -40,6 +46,8 @@ function TopBar(props) {
         [dispatch],
     );
     const currentUser = useCurrentUser();
+    const theme = useTheme();
+    const isMobileLayout = useMediaQuery(theme.breakpoints.down('md'));
 
     return (
         <>
@@ -88,7 +96,7 @@ function TopBar(props) {
                                 {title}
                             </Typography>
                         </Grid>
-                        {currentUser && (
+                        {currentUser && !isMobileLayout && (
                             <Grid
                                 container
                                 item
@@ -101,7 +109,7 @@ function TopBar(props) {
                                     className={classes.userName}
                                     title={getDisplayName(currentUser)}
                                 >
-                                    {currentUser?.user_name}
+                                    {currentUser.user_name}
                                 </Typography>
                             </Grid>
                         )}

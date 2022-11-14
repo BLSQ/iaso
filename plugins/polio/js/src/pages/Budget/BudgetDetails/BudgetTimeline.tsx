@@ -1,12 +1,12 @@
 import { Box, makeStyles, Divider } from '@material-ui/core';
-import React, { FunctionComponent, useState, useEffect } from 'react';
+import React, { FunctionComponent, useState, useEffect, useMemo } from 'react';
 import classnames from 'classnames';
 import Stepper from '@material-ui/core/Stepper';
 import Step from '@material-ui/core/Step';
 import StepLabel from '@material-ui/core/StepLabel';
 import { CheckCircleOutline } from '@material-ui/icons';
 import moment from 'moment';
-import { findLast } from 'lodash';
+import { findLastIndex } from 'lodash';
 import { Categories } from '../types';
 
 type Props = {
@@ -86,23 +86,14 @@ const getColor = category => {
 export const BudgetTimeline: FunctionComponent<Props> = ({
     categories = [],
 }) => {
-    const [activeStep, setActiveStep] = useState(0);
     const classes = useStyles();
 
-    useEffect(() => {
+    const activeStep = useMemo(() => {
         if (categories.length > 0) {
-            // @ts-ignore
-            const lastStepCompleted = findLast(
-                categories,
-                category => !category.completed,
-            );
-
-            const lastStepCompletedIndex = lastStepCompleted
-                ? categories.indexOf(lastStepCompleted)
-                : 0;
-            setActiveStep(lastStepCompletedIndex);
+            return categories.findIndex(category => !category.completed);
         }
-    }, [categories, activeStep]);
+        return 0;
+    }, [categories]);
     return (
         <Stepper
             className={classes.root}
@@ -117,8 +108,9 @@ export const BudgetTimeline: FunctionComponent<Props> = ({
                             classes.step,
                         )}
                         key={category.key}
-                        completed={category.completed}
-                        active={category.active}
+                        // The widget automatically recalculate it so not needed
+                        // completed={category.completed}
+                        // active={category.active}
                     >
                         <StepLabel>
                             <Box>

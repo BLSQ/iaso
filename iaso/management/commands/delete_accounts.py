@@ -224,6 +224,18 @@ class Command(BaseCommand):
         # audit log, hard to clean, so keeping them in the saas db but no in the tenant db
         cursor.execute("delete from vector_control_apiimport")
 
+        # See discussion, submission that were created but not assigned to a project/user
+        # iaso.models.project.Project.DoesNotExist: Could not find project for user AnonymousUser
+        # https://bluesquare.slack.com/archives/C032F8GFAUD/p1668423313730229?thread_ts=1668006249.898909&cid=C032F8GFAUD
+
+        print(
+            "Delete unrelated file instances",
+            InstanceFile.objects.filter(
+                instance__in=Instance.objects.filter(project=None, form=None, org_unit=None)
+            ).delete(),
+        )
+        print("Delete unrelated instances", Instance.objects.filter(project=None, form=None, org_unit=None).delete())
+
         for account in accounts:
             try:
                 # with transaction.atomic():

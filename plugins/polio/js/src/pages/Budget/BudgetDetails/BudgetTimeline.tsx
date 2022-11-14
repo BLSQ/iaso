@@ -6,8 +6,8 @@ import Step from '@material-ui/core/Step';
 import StepLabel from '@material-ui/core/StepLabel';
 import { CheckCircleOutline } from '@material-ui/icons';
 import moment from 'moment';
-import { Categories } from '../types';
 import { findLast } from 'lodash';
+import { Categories } from '../types';
 
 type Props = {
     categories?: Categories;
@@ -97,8 +97,9 @@ export const BudgetTimeline: FunctionComponent<Props> = ({
                 category => !category.completed,
             );
 
-            const lastStepCompletedIndex =
-                categories.indexOf(lastStepCompleted);
+            const lastStepCompletedIndex = lastStepCompleted
+                ? categories.indexOf(lastStepCompleted)
+                : 0;
             setActiveStep(lastStepCompletedIndex);
         }
     }, [categories, activeStep]);

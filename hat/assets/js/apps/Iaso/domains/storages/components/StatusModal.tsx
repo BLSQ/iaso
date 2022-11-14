@@ -1,4 +1,9 @@
-import React, { FunctionComponent, useState, useMemo } from 'react';
+import React, {
+    FunctionComponent,
+    useState,
+    useMemo,
+    useCallback,
+} from 'react';
 
 import {
     // @ts-ignore
@@ -8,7 +13,7 @@ import {
     // @ts-ignore
     makeFullModal,
 } from 'bluesquare-components';
-
+import { Box } from '@material-ui/core';
 import { Storage, StorageStatus } from '../types/storages';
 import { useSaveStatus } from '../hooks/requests/useSaveStatus';
 
@@ -48,17 +53,25 @@ const StatusModal: FunctionComponent<Props> = ({
         });
     };
 
-    const handleChange = (key, value) => {
-        const newStatus = {
-            ...status,
-            [key]: value,
-        };
-        if (key === 'status' && value === 'OK') {
-            newStatus.reason = undefined;
-            newStatus.comment = undefined;
-        }
-        setStatus(newStatus);
-    };
+    const handleChange = useCallback(
+        (key, value) => {
+            const newStatus = {
+                ...status,
+                [key]: value,
+            };
+            if (key === 'status' && value === 'OK') {
+                newStatus.reason = undefined;
+                newStatus.comment = undefined;
+            }
+            setStatus(newStatus);
+        },
+        [status],
+    );
+
+    const handleCommentChange = useCallback(
+        newComment => handleChange('comment', newComment),
+        [handleChange],
+    );
     const allowConfirm = useMemo(() => {
         if (status?.status === 'BLACKLISTED' && !status.reason) {
             return false;
@@ -104,13 +117,14 @@ const StatusModal: FunctionComponent<Props> = ({
                         label={MESSAGES.reason}
                         options={reasons}
                     />
-                    <TextArea
-                        label={formatMessage(MESSAGES.comment)}
-                        value={status?.comment}
-                        onChange={newComment =>
-                            handleChange('comment', newComment)
-                        }
-                    />
+                    <Box mt={2}>
+                        <TextArea
+                            label={formatMessage(MESSAGES.comment)}
+                            value={status?.comment}
+                            onChange={handleCommentChange}
+                            debounceTime={0}
+                        />
+                    </Box>
                 </>
             )}
         </ConfirmCancelModal>

@@ -363,10 +363,9 @@ class BudgetStepSerializer(serializers.ModelSerializer):
     created_by = UserSerializer()
 
     @swagger_serializer_method(serializer_or_field=serializers.CharField)
-    def get_transition_label(self, budget_step: BudgetStep):
+    def get_transition_label(self, budget_step: BudgetStep) -> str:
         workflow = get_workflow()
-        transition = workflow.get_transition_by_key(budget_step.transition_key)
-        return transition.label
+        return workflow.get_transition_label_safe(budget_step.transition_key)
 
 
 class UpdateBudgetStepSerializer(serializers.ModelSerializer):

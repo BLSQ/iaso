@@ -23,6 +23,7 @@ from .models import (
     VIRUSES,
     RoundVaccine,
     Shipment,
+    Destruction,
     SpreadSheetImport,
     CampaignGroup,
     BudgetEvent,
@@ -113,6 +114,12 @@ class AuditShipmentSerializer(serializers.ModelSerializer):
         fields = "__all__"
 
 
+class AuditDestructionSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Destruction
+        fields = "__all__"
+
+
 class AuditRoundScopeSerializer(serializers.ModelSerializer):
     class Meta:
         model = RoundScope
@@ -129,6 +136,7 @@ class AuditRoundSerializer(serializers.ModelSerializer):
     vaccines = AuditRoundVaccineSerializer(many=True)
     scopes = AuditRoundScopeSerializer(many=True)
     shipments = AuditShipmentSerializer(many=True)
+    destructions = AuditDestructionSerializer(many=True)
 
 
 class AuditCampaignScopeSerializer(serializers.ModelSerializer):
@@ -275,16 +283,29 @@ class CampaignScopeSerializer(serializers.ModelSerializer):
     group = GroupSerializer()
 
 
+class DestructionSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Destruction
+        fields = [
+            "vials_destroyed",
+            "date_report_received",
+            "date_report",
+            "comment",
+            "id",
+        ]
+
+
 class ShipmentSerializer(serializers.ModelSerializer):
     class Meta:
         model = Shipment
         fields = [
             "po_numbers",
-            "doses_received",
+            "vials_received",
             "estimated_arrival_date",
             "reception_pre_alert",
             "date_reception",
             "vaccine_name",
+            "comment",
             "id",
         ]
 
@@ -303,16 +324,20 @@ class RoundSerializer(serializers.ModelSerializer):
     scopes = RoundScopeSerializer(many=True, required=False)
     vaccines = RoundVaccineSerializer(many=True, required=False)
     shipments = ShipmentSerializer(many=True, required=False)
+    destructions = DestructionSerializer(many=True, required=False)
 
     @atomic
     def create(self, validated_data):
         vaccines = validated_data.pop("vaccines", [])
         shipments = validated_data.pop("shipments", [])
+        destructions = validated_data.pop("destructions", [])
         round = Round.objects.create(**validated_data)
         for vaccine in vaccines:
             RoundVaccine.objects.create(round=round, **vaccine)
         for shipment in shipments:
             Shipment.objects.create(round=round, **shipment)
+        for destruction in destructions:
+            Destruction.objects.create(round=round, **destruction)
         return round
 
     @atomic
@@ -322,6 +347,9 @@ class RoundSerializer(serializers.ModelSerializer):
         shipments = validated_data.pop("shipments", [])
         shipment_instances = []
         current_shipment_ids = []
+        destructions = validated_data.pop("destructions", [])
+        destruction_instances = []
+        current_destruction_ids = []
         for vaccine_data in vaccines:
             round_vaccine = None
             if vaccine_data.get("id"):
@@ -355,8 +383,29 @@ class RoundSerializer(serializers.ModelSerializer):
         for current in all_current_shipments:
             if current_shipment_ids.count(current.id) == 0:
                 current.delete()
+        # TODO put repeated code in a function
+        for destruction_data in destructions:
+            destruction = None
+            if destruction_data.get("id"):
+                destruction_id = destruction_data["id"]
+                current_destruction_ids.append(destruction_id)
+                destruction = Destruction.objects.get(pk=destruction_id)
+                if destruction.round != instance:
+                    raise serializers.ValidationError({"destructions": "destruction is attached to wrong round"})
+            else:
+                destruction = Destruction.objects.create()
+            destruction_serializer = DestructionSerializer(instance=destruction, data=destruction_data)
+            destruction_serializer.is_valid(raise_exception=True)
+            destruction_instance = destruction_serializer.save()
+            destruction_instances.append(destruction_instance)
+        # remove deleted destructions, ie existing destructions whose id wan't sent in the request
+        all_current_destructions = instance.destructions.all()
+        for current in all_current_destructions:
+            if current_destruction_ids.count(current.id) == 0:
+                current.delete()
         instance.vaccines.set(vaccine_instances)
         instance.shipments.set(shipment_instances)
+        instance.destructions.set(destruction_instances)
         round = super().update(instance, validated_data)
         return round
 
@@ -589,7 +638,9 @@ class CampaignSerializer(serializers.ModelSerializer):
 
         for round_data in rounds:
             scopes = round_data.pop("scopes", [])
-            round = Round.objects.create(campaign=campaign, **round_data)
+            round_serializer = RoundSerializer(data={**round_data, "campaign": campaign.id})
+            round_serializer.is_valid(raise_exception=True)
+            round = round_serializer.save()
             for scope in scopes:
                 vaccine = scope.get("vaccine")
                 org_units = scope.get("group", {}).get("org_units")

@@ -3,10 +3,11 @@ name: Iaso Cypress manual testing
 on:
   issue_comment:
     types: [created]
-
+  workflow_dispatch: {}
+  
 concurrency: 
   group: ${{ github.workflow }}-${{ github.ref }}
-  cancel-in-progress: true
+  cancel-in-progress: false
 
 env:
   REGISTRY: ghcr.io
@@ -14,7 +15,7 @@ env:
 
 jobs:
   build-image:
-    if: github.event.issue.pull_request && contains(github.event.comment.body, '@cypress') == true
+    if: (github.event_name == "workflow_dispatch" || contains(github.event.comment.body, '@cypress'))
     permissions:
       issues: write
       contents: read
@@ -28,7 +29,8 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Mark comment as success
+      - name: Mark comment as seen
+        if: github.event_name != "workflow_dispatch"
         uses: dkershner6/reaction-action@v1
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
@@ -54,7 +56,7 @@ jobs:
 
       - name: Comment PR with failure
         uses: actions/github-script@v6
-        if: failure()
+        if: (github.event_name != "workflow_dispatch" && failure())
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
@@ -67,7 +69,7 @@ jobs:
             });
 
   test_cypress:
-    if: github.event.issue.pull_request && contains(github.event.comment.body, '@cypress') == true
+    if: (github.event_name == "workflow_dispatch" || contains(github.event.comment.body, '@cypress'))
     timeout-minutes: 60
     runs-on: ubuntu-latest
     needs: build-image
@@ -142,17 +144,18 @@ jobs:
           CYPRESS_USERNAME: "test"
           CYPRESS_PASSWORD: "test"
           CYPRESS_BASE_URL: "http://localhost:8081"
-      
+
+
       - name: Mark comment as success
         uses: dkershner6/reaction-action@v1
-        if: success()
+        if: success() && github.event_name != "workflow_dispatch"
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           reaction: 'hooray'
 
       - name: Comment PR with failure
         uses: actions/github-script@v6
-        if: failure()
+        if: failure() && github.event_name != "workflow_dispatch"
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |

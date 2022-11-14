@@ -220,9 +220,9 @@ class CampaignBudgetSerializer(CampaignSerializer, DynamicFieldsModelSerializer)
             for node in c.nodes:  # Node are already sorted
                 if not node.mandatory:
                     continue
-                node_remaining.add(node.key)
                 if node.key in node_passed_by:
                     continue
+                node_remaining.add(node.key)
                 items.append({"label": node.label})
             # color calculation
             active = len(node_passed_by) > 0

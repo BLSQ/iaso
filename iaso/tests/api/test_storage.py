@@ -27,7 +27,7 @@ class StorageAPITestCase(APITestCase):
         star_wars_2 = Account.objects.create(name="Star Wars revival")
         cls.yoda = cls.create_user_with_profile(username="yoda", account=cls.star_wars, permissions=["iaso_storages"])
 
-        # Another user that doesn't have the iaso_storages
+        # Another user that doesn't have the iaso_storages permission
         cls.another_user = cls.create_user_with_profile(username="yoda2", account=cls.star_wars)
 
         form_1 = Form.objects.create(name="Hydroponics study", period_type=MONTH, single_per_period=True)
@@ -1038,6 +1038,27 @@ class StorageAPITestCase(APITestCase):
                 "logs": [],
             },
         )
+
+    def test_get_logs_for_device_performed_at_filter(self):
+        """The logs per device endpoint can be filtered by date using performed_at"""
+        self.client.force_authenticate(self.yoda)
+
+        # We add a second log with a different performed_at
+        StorageLogEntry.objects.create(
+            id="e4200710-bf82-4d29-a29b-6a042f79ef26",
+            device=self.existing_storage_device,
+            operation_type="WRITE_RECORD",
+            performed_by=self.yoda,
+            performed_at=datetime(2022, 11, 3, 13, 12, 56, 0, tzinfo=timezone.utc),
+            org_unit=self.org_unit,
+        )
+
+        response = self.client.get(f"/api/storage/NFC/EXISTING_STORAGE/logs?performed_at=2022-11-03")
+        self.assertEqual(response.status_code, 200)
+        received_json = response.json()
+        # if the filter didn't worked, we would also receive the log from setupTestData
+        self.assertEqual(len(received_json["logs"]), 1)
+        self.assertEqual(received_json["logs"][0]["id"], "e4200710-bf82-4d29-a29b-6a042f79ef26")
 
     def test_get_logs_for_device_pagination(self):
         """The logs per device endpoint can optionally be paginated"""

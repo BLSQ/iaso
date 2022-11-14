@@ -12,3 +12,4 @@ export type Nullable<T> = T | null;
 // This type might be useful when typing eg useState
 export type Optional<T> = T | undefined;
 export type ClassNames = Record<string, string>;
+export type NameAndId = { name: string; id: number };

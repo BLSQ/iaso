@@ -30,7 +30,7 @@ export const BudgetDetailsCardsLayout: FunctionComponent<Props> = ({
         ? (page as number)
         : parseInt(page as string, 10);
     return (
-        <>
+        <Box width="100%">
             {budgetDetails?.results.map((budgetStep, i) => {
                 return (
                     <Box mb={1} key={`event-${budgetStep.transition_key}-${i}`}>
@@ -51,6 +51,6 @@ export const BudgetDetailsCardsLayout: FunctionComponent<Props> = ({
                     size="small"
                 />
             )}
-        </>
+        </Box>
     );
 };

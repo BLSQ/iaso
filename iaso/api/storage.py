@@ -3,6 +3,7 @@ from typing import Tuple, List, Any, Union
 
 from django.db.models import Prefetch, QuerySet, Q
 from django.http import HttpResponse, StreamingHttpResponse
+import datetime
 
 from rest_framework import viewsets, permissions, serializers, status
 from rest_framework.decorators import action, api_view, permission_classes
@@ -420,6 +421,8 @@ def logs_per_device(request, storage_customer_chosen_id: str, storage_type: str)
         file_export = True
         file_format_export = FileFormatEnum.CSV if csv_format is not None else FileFormatEnum.XLSX
 
+    performed_at_str = request.GET.get("performed_at", None)
+
     device_identity_fields = {
         "customer_chosen_id": storage_customer_chosen_id,
         "type": storage_type,
@@ -440,6 +443,10 @@ def logs_per_device(request, storage_customer_chosen_id: str, storage_type: str)
         log_entries_queryset = log_entries_queryset.filter(status=status)
     if reason is not None:
         log_entries_queryset = log_entries_queryset.filter(status_reason=reason)
+    if performed_at_str is not None:
+        log_entries_queryset = log_entries_queryset.filter(
+            performed_at__date=datetime.datetime.strptime(performed_at_str, "%Y-%m-%d").date()
+        )
 
     if not file_export:
         device_with_logs = StorageDevice.objects.prefetch_related(

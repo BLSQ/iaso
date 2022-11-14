@@ -1,0 +1,62 @@
+- model: auth.user
+  fields:
+    # test
+    password: pbkdf2_sha256$260000$LR0NEctHEEz9ATx8Za96hQ$bY8pmjN1A5BZp8BKUlI8z+SEOQeHSVLR1XVv7qT5QLU=
+    last_login: 2022-09-13 13:02:48.782964+00:00
+    is_superuser: false
+    username: polio
+    first_name: Polio
+    last_name: SimpleUser
+    email: 'polio@example.com'
+    is_staff: false
+    is_active: true
+    date_joined: 2021-10-15 10:42:13.391798+00:00
+    groups: []
+    user_permissions:
+    - - iaso_completeness
+      - menupermissions
+      - custompermissionsupport
+    - - iaso_data_tasks
+      - menupermissions
+      - custompermissionsupport
+    - - iaso_forms
+      - menupermissions
+      - custompermissionsupport
+    - - iaso_links
+      - menupermissions
+      - custompermissionsupport
+    - - iaso_mappings
+      - menupermissions
+      - custompermissionsupport
+    - - iaso_org_units
+      - menupermissions
+      - custompermissionsupport
+    - - iaso_projects
+      - menupermissions
+      - custompermissionsupport
+    - - iaso_sources
+      - menupermissions
+      - custompermissionsupport
+    - - iaso_users
+      - menupermissions
+      - custompermissionsupport
+    - - iaso_polio
+      - menupermissions
+      - custompermissionsupport
+    - - iaso_teams
+      - menupermissions
+      - custompermissionsupport
+    - - iaso_polio_budget
+      - menupermissions
+      - custompermissionsupport
+- model: iaso.profile
+  pk: 22
+  fields:
+    account: 4
+    user:
+    - polio
+    external_user_id: null
+    language: null
+    dhis2_id: null
+    home_page: null
+    org_units: []

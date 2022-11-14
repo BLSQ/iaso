@@ -164,6 +164,10 @@ const MESSAGES = defineMessages({
         id: 'iaso.permissions.assignments',
         defaultMessage: 'Assignments',
     },
+    iaso_completeness_stats: {
+        id: 'iaso.permissions.completeness_stats',
+        defaultMessage: 'Completeness stats',
+    },
     iaso_storages: {
         id: 'iaso.label.storages',
         defaultMessage: 'Storages',

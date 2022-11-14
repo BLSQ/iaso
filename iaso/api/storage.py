@@ -1,5 +1,5 @@
 # TODO: need better type annotations in this file
-
+import datetime
 from typing import Tuple
 
 from django.db.models import Prefetch, Q
@@ -336,6 +336,8 @@ def logs_per_device(request, storage_customer_chosen_id: str, storage_type: str)
 
     order = request.GET.get("order", "-performed_at").split(",")
 
+    performed_at_str = request.GET.get("performed_at", None)
+
     device_identity_fields = {
         "customer_chosen_id": storage_customer_chosen_id,
         "type": storage_type,
@@ -356,6 +358,10 @@ def logs_per_device(request, storage_customer_chosen_id: str, storage_type: str)
         log_entries_queryset = log_entries_queryset.filter(status=status)
     if reason is not None:
         log_entries_queryset = log_entries_queryset.filter(status_reason=reason)
+    if performed_at_str is not None:
+        log_entries_queryset = log_entries_queryset.filter(
+            performed_at__date=datetime.datetime.strptime(performed_at_str, "%Y-%m-%d").date()
+        )
 
     device_with_logs = StorageDevice.objects.prefetch_related(
         Prefetch(

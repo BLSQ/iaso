@@ -1,3 +1,5 @@
+from unittest import mock
+
 from iaso.models import Account, Form, Project, OrgUnitType, OrgUnit
 from iaso.test import APITestCase
 from django.contrib.auth.models import User, Permission
@@ -5,6 +7,7 @@ from django.contrib.auth.models import User, Permission
 
 class CompletenessStatsAPITestCase(APITestCase):
     fixtures = ["user.yaml", "orgunit.yaml"]
+    maxDiff = None
 
     @classmethod
     def setUpTestData(cls):
@@ -53,8 +56,37 @@ class CompletenessStatsAPITestCase(APITestCase):
 
         response = self.client.get("/api/completeness_stats/")
         j = self.assertJSONResponse(response, 200)
-        print(j)
-        self.assertEqual(j, {})
+        self.assertDictEqual(
+            j,
+            {
+                "count": 2,
+                "results": [
+                    {
+                        "parent_org_unit": None,
+                        "org_unit_type": {"name": "Country", "id": mock.ANY},
+                        "org_unit": {"name": "LaLaland", "id": mock.ANY},
+                        "form": {"name": "Hydroponics study", "id": mock.ANY},
+                        "forms_filled": 1,
+                        "forms_to_fill": 1,
+                        "completeness_ratio": 100.0,
+                    },
+                    {
+                        "parent_org_unit": None,
+                        "org_unit_type": {"name": "Country", "id": mock.ANY},
+                        "org_unit": {"name": "LaLaland", "id": mock.ANY},
+                        "form": {"name": "Hydroponics study 2", "id": mock.ANY},
+                        "forms_filled": 0,
+                        "forms_to_fill": 1,
+                        "completeness_ratio": 0,
+                    },
+                ],
+                "has_next": False,
+                "has_previous": False,
+                "page": 1,
+                "pages": 1,
+                "limit": 50,
+            },
+        )
 
     # TODO: Test the data is filtered by account
     # TODO: Test that data can be filtered by OU type

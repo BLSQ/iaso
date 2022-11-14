@@ -527,7 +527,7 @@ class PolioAPITestCase(APITestCase):
         )
 
         round = Round.objects.create(started_at=datetime.datetime.now())
-        campaign = Campaign.objects.create(round_one=round)
+        campaign = Campaign.objects.create(round_one=round, account=self.account)
 
         self.client.patch(
             f"/api/polio/campaigns/" + str(campaign.id) + "/",
@@ -566,7 +566,7 @@ class PolioAPITestCase(APITestCase):
             name="A_FORM_1", account=self.yoda.iaso_profile.account, form_template=upload_file
         )
 
-        campaign = Campaign.objects.create()
+        campaign = Campaign.objects.create(account=self.account)
 
         self.client.patch(
             f"/api/polio/campaigns/" + str(campaign.id) + "/",

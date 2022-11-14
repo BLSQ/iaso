@@ -1,4 +1,7 @@
 import pdb
+from django.db.models import TextField
+from django.db.models.functions import Cast
+
 from django.db import connection
 import traceback
 from django.contrib.auth.models import User
@@ -74,6 +77,11 @@ def dump_diffs(counts_before, counts_after):
                 ]
             )
         )
+
+
+def dump_modification_stats():
+    for tuple in Modification.objects.values("content_type").annotate(content_type_count=Count("content_type")).all():
+        print(ContentType.objects.get(pk=tuple["content_type"]), tuple["content_type_count"])
 
 
 class Command(BaseCommand):
@@ -242,6 +250,44 @@ class Command(BaseCommand):
 
         print(datasources_to_delete.delete())
 
+        print("***** Deleting Modification (might take a while too)")
+        dump_modification_stats()
+
+        # this part is a bit brittle, may should become a loop on ContentType.objects.all() ?
+
+        print(
+            "instance related",
+            Modification.objects.filter(
+                content_type=ContentType.objects.get_by_natural_key(app_label="iaso", model="instance")
+            )
+            .exclude(
+                object_id__in=Instance.objects.all().annotate(id_as_str=Cast("id", TextField())).values("id_as_str")
+            )
+            .delete(),
+        )
+
+        print(
+            "form related",
+            Modification.objects.filter(
+                content_type=ContentType.objects.get_by_natural_key(app_label="iaso", model="form")
+            )
+            .exclude(object_id__in=Form.objects.all().annotate(id_as_str=Cast("id", TextField())).values("id_as_str"))
+            .delete(),
+        )
+
+        print(
+            "orgunit related",
+            Modification.objects.filter(
+                content_type=ContentType.objects.get_by_natural_key(app_label="iaso", model="orgunit")
+            )
+            .exclude(
+                object_id__in=OrgUnit.objects.all().annotate(id_as_str=Cast("id", TextField())).values("id_as_str")
+            )
+            .delete(),
+        )
+
+        dump_modification_stats()
+
         # raise err
         counts_after = dump_counts()
 
@@ -249,3 +295,5 @@ class Command(BaseCommand):
         print("******* Review external credentials left")
         for ext_cred in ExternalCredentials.objects.all():
             print(ext_cred.url, ext_cred.login, ext_cred.name)
+
+        print("Done !")

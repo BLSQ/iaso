@@ -9,6 +9,7 @@ from django.core.mail import EmailMultiAlternatives
 from django.db import models
 from django.template import Engine, TemplateSyntaxError, Context
 from django.utils.translation import ugettext_lazy as _
+from django.urls import reverse
 
 from hat.api.token_authentication import generate_auto_authentication_link
 from iaso.models.microplanning import Team
@@ -59,6 +60,9 @@ class BudgetStepFile(models.Model):
     filename = models.CharField(blank=True, null=True, max_length=100)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+
+    def get_absolute_url(self):
+        return reverse("BudgetStep-files", kwargs={"pk": self.step_id, "file_pk": self.id})
 
     class Meta:
         verbose_name = "Budget Step File"

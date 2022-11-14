@@ -335,7 +335,10 @@ class BudgetFileSerializer(serializers.ModelSerializer):
             "id",
             "file",  # url
             "filename",
+            "permanent_url",
         ]
+
+    permanent_url = serializers.URLField(source="get_absolute_url", read_only=True)
 
 
 class BudgetStepSerializer(serializers.ModelSerializer):

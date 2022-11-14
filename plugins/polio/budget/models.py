@@ -128,6 +128,7 @@ class MailTemplate(models.Model):
         return str(self.slug)
 
     def render_for_step(self, step: BudgetStep, receiver: User, request=None) -> EmailMultiAlternatives:
+        msg = EmailMultiAlternatives(from_email=settings.DEFAULT_FROM_EMAIL, to=[receiver.email])
         site = get_current_site(request)
         base_url = "https://" if settings.SSL_ON else "http://"
         base_url += site.domain  # type: ignore
@@ -162,6 +163,14 @@ class MailTemplate(models.Model):
         for l in step.links.all():
             attachments.append({"url": l.url, "name": l.alias})
 
+        skipped_attachements = 0
+        for f in step.files.all():
+            # only attach file smaller than 500k
+            if f.file.size < 1024 * 500:
+                msg.attach(f.filename, f.file.read())
+            else:
+                skipped_attachements += 1
+
         context = Context(
             {
                 "author": step.created_by,
@@ -177,6 +186,7 @@ class MailTemplate(models.Model):
                 "comment": step.comment,
                 "amount": step.amount,
                 "attachments": attachments,
+                "skipped_attachments": skipped_attachements,
                 "files": step.files.all(),
                 "links": step.links.all(),
             }
@@ -190,8 +200,11 @@ class MailTemplate(models.Model):
         subject_template = Engine.get_default().from_string(self.subject_template)
         subject_content = subject_template.render(context)
 
-        msg = EmailMultiAlternatives(subject_content, text_content, settings.DEFAULT_FROM_EMAIL, [receiver.email])
+        msg.subject = subject_content
+        msg.body = text_content
+
         msg.attach_alternative(html_content, "text/html")
+
         return msg
 
 

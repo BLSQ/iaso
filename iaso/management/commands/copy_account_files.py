@@ -1,3 +1,10 @@
+import pdb
+import os
+from pathlib import Path
+from django.core.management.base import BaseCommand
+from django.contrib.contenttypes.models import ContentType
+
+
 def fullname(o):
     klass = o.__class__
     module = klass.__module__
@@ -9,26 +16,56 @@ def fullname(o):
 def model_and_fields_with_files():
     for ct in ContentType.objects.all():
         m = ct.model_class()
-        file_fields = [
-            field for field in m._meta.get_fields() if fullname(field) == "django.db.models.fields.files.FileField"
-        ]
-        if len(file_fields) == 0:
-            return
-        print(m.__module__, m.__name__)
-        for field in file_fields:
-            print(
-                "\t",
-                field.name,
-                "\t",
-                fullname(field),
-            )
+        if m:
+            file_fields = []
+            for field in m._meta.get_fields():
+                if fullname(field) == "django.db.models.fields.files.FileField":
+                    file_fields.append(field)
+
+            if len(file_fields) > 0:
+                print(m.__module__, m.__name__)
+                for field in file_fields:
+                    print(
+                        "\t",
+                        field.name,
+                        "\t",
+                        fullname(field),
+                    )
+
+                print("\t", "count", m.objects.count())
+                for object in m.objects.all():
+                    values = object.__dict__
+                    for field in file_fields:
+                        if values.get(field.name):
+                            target_file_name = "./media/account/" + values.get(field.name)
+
+                            if not os.path.exists(target_file_name):
+                                # avoid touching the s3 storage before this line so resuming the copy is faster
+                                file_field = getattr(object, field.name)
+                                os.makedirs(Path(target_file_name).parent.absolute(), exist_ok=True)
+                                with open(target_file_name, "wb") as target_f:
+                                    print(
+                                        "copying ",
+                                        field.name,
+                                        object.__class__.__qualname__,
+                                        object.id,
+                                        " : ",
+                                        "from s3 ",
+                                        values.get(field.name),
+                                        "to",
+                                        target_file_name,
+                                        "of",
+                                        object,
+                                    )
+                                    target_f.write(file_field.file.read())
 
 
 class Command(BaseCommand):
     help = "Copy account files to another bucket or local directory"
 
     def add_arguments(self, parser):
-        parser.add_argument("--account-to-keep", type=int)
+        parser.add_argument("--account", type=int)
 
     def handle(self, *args, **options):
+        print("Copy files from S3 to other s3 or local directory")
         model_and_fields_with_files()

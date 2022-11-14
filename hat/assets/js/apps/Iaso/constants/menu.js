@@ -73,7 +73,7 @@ const menuItems = defaultSourceId => [
             },
             {
                 label: MESSAGES.completeness,
-                permissions: paths.completenessPath.permissions,
+                permissions: paths.completenessStatsPath.permissions,
                 key: 'completenessStats',
                 icon: props => <DoneAll {...props} />,
             },

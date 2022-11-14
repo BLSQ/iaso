@@ -21,7 +21,7 @@ class StorageAPITestCase(APITestCase):
         star_wars_2 = Account.objects.create(name="Star Wars revival")
         cls.yoda = cls.create_user_with_profile(username="yoda", account=cls.star_wars, permissions=["iaso_storages"])
 
-        # Another user that doesn't have the iaso_storages
+        # Another user that doesn't have the iaso_storages permission
         cls.another_user = cls.create_user_with_profile(username="yoda2", account=cls.star_wars)
 
         form_1 = Form.objects.create(name="Hydroponics study", period_type=MONTH, single_per_period=True)

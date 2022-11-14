@@ -7,6 +7,7 @@ See the Django documentation for more information:
 * [Testing tool. Loading data](https://docs.djangoproject.com/en/4.1/topics/testing/tools/#topics-testing-fixtures)
 
 We use these files in the automated unit test !
+<<<<<<< HEAD
     
 (this readme assume ./m is your manage.py)
 
@@ -31,7 +32,7 @@ To redump the OrgUnit data after modification.
 ```
 /m dumpdata  --format yaml --natural-foreign --natural-primary --indent=2 --traceback  iaso.datasource iaso.sourceversion iaso.externalcredentials  iaso.orgunittype iaso.orgunit iaso.account --output iaso/fixtures/orgunit.yaml
 ```
-This will take the data in your database and dump them in file
+This will take the data in your database and dump them in the file
 
 
 For the Budget

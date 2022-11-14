@@ -146,6 +146,7 @@
         order: 13
         mandatory: true
         category_key: country
+        mark_nodes_as_completed: [who_sent_budget, unicef_sent_budget]
       - key: submitted_to_rrt
         label: Submitted to RRT
         order: 21

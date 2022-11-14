@@ -193,9 +193,23 @@ class CampaignBudgetSerializer(CampaignSerializer, DynamicFieldsModelSerializer)
                 to_node_key = transition.to_node
                 if to_node_key in node_dict.keys():
                     # If this is in the category
+                    node = node_dict[to_node_key]
+                    for other_key in node.mark_nodes_as_completed:
+                        if other_key not in node_passed_by:
+                            other_node = node_dict.get(other_key)
+                            items.append(
+                                {
+                                    "label": other_node.label,
+                                    "performed_by": step.created_by,
+                                    "performed_at": step.created_at,
+                                    "step_id": step.id,
+                                }
+                            )
+                            node_passed_by.add(other_key)
+
                     items.append(
                         {
-                            "label": node_dict[to_node_key].label,
+                            "label": node.label,
                             "performed_by": step.created_by,
                             "performed_at": step.created_at,
                             "step_id": step.id,

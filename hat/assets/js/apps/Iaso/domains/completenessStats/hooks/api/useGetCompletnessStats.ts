@@ -18,7 +18,9 @@ export type CompletenessGETParams = UrlParams & {
 
 const apiParamsKeys = ['order', 'page', 'limit', 'search'];
 
-const getCompletenessStats = async (params: CompletenessGETParams) => {
+const getCompletenessStats = async (
+    params: CompletenessGETParams,
+): Promise<CompletenessApiResponse> => {
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { pageSize, parentId, orgUnitTypeId, formId, ...urlParams } = params;
     const apiParams = { ...urlParams, limit: pageSize ?? 50 };

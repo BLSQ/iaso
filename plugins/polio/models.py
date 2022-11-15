@@ -567,6 +567,8 @@ class CountryUsersGroup(models.Model):
     language = models.CharField(max_length=32, choices=LANGUAGES, default="EN")
     created_at = models.DateTimeField(auto_now_add=True, db_index=True)
     updated_at = models.DateTimeField(auto_now=True)
+    # used for workflow
+    teams = models.ManyToManyField(Team, help_text="Teams used by the country", blank=True)
 
     def __str__(self):
         return str(self.country)

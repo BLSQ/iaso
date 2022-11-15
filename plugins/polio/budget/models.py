@@ -12,9 +12,9 @@ from django.utils.translation import ugettext_lazy as _
 from django.urls import reverse
 
 from hat.api.token_authentication import generate_auto_authentication_link
-from iaso.models.microplanning import Team
 from iaso.utils.models.soft_deletable import SoftDeletableModel
 from plugins.polio.budget.workflow import next_transitions, can_user_transition, Transition, Node, Workflow, Category
+from plugins.polio.budget import workflow
 from plugins.polio.time_cache import time_cache
 
 
@@ -153,7 +153,7 @@ class MailTemplate(models.Model):
                     "url": generate_auto_authentication_link(button_url, receiver),
                     "label": transition.label,
                     "color": transition.color if transition.color != "primary" else "black",
-                    "allowed": can_user_transition(transition, receiver),
+                    "allowed": can_user_transition(transition, receiver, campaign),
                 }
             )
         transition = workflow.get_transition_by_key(step.transition_key)
@@ -220,7 +220,7 @@ def send_budget_mails(step: BudgetStep, transition, request) -> None:
             logger.exception(e)
             continue
 
-        teams = Team.objects.filter(id__in=team_ids)
+        teams = workflow.effective_teams(step.campaign, team_ids)
         # Ensure we don't send an email twice to the same user
         users = User.objects.filter(teams__in=teams).distinct()
         for user in users:

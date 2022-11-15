@@ -1398,7 +1398,7 @@ class StorageAPITestCase(APITestCase):
                 "Status comment": {0: None, 1: None, 2: None},
                 "Status updated at": {0: None, 1: None, 2: None},
                 "Org unit id": {0: None, 1: None, 2: None},
-                "Entity id": {0: None, 1: None, 2: 1.0},
+                "Entity id": {0: None, 1: None, 2: mock.ANY},
             },
         )
 

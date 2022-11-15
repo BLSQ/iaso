@@ -8,6 +8,7 @@ import { useFormState } from 'Iaso/hooks/form';
 import { usePutCountryMutation } from './requests';
 import MESSAGES from '../../constants/messages';
 import { useGetTeamsDropdown } from '../../../../../../hat/assets/js/apps/Iaso/domains/teams/hooks/requests/useGetTeams';
+import { TeamType } from '../../../../../../hat/assets/js/apps/Iaso/domains/teams/constants';
 
 const makeDropDownListItem = user => {
     const userName =
@@ -48,7 +49,9 @@ export const CountryNotificationsConfigModal = ({
     );
     const { mutateAsync } = usePutCountryMutation();
     const { data: teamsDropdown = [], isFetching: isFetchingTeams } =
-        useGetTeamsDropdown();
+        useGetTeamsDropdown({
+            type: TeamType.TEAM_OF_USERS,
+        });
 
     const onConfirm = async closeDialog => {
         const result = await mutateAsync({

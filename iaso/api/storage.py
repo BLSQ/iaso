@@ -1,10 +1,10 @@
 # TODO: need better type annotations in this file
 import datetime
-
 from typing import Tuple, Union, List, Any
+
+from django.core.paginator import Paginator
 from django.db.models import Prefetch, QuerySet, Q
 from django.http import HttpResponse, StreamingHttpResponse
-
 from rest_framework import viewsets, permissions, serializers, status
 from rest_framework.decorators import action, api_view, permission_classes
 from rest_framework.fields import Field
@@ -12,24 +12,19 @@ from rest_framework.mixins import CreateModelMixin, ListModelMixin
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 
-from django.core.paginator import Paginator
-
 from hat.api.export_utils import generate_xlsx, iter_items, Echo, timestamp_to_utc_datetime
-from iaso.models import StorageLogEntry, StorageDevice, Instance, OrgUnit, Entity
-from iaso.api.entity import EntitySerializer, EXPORTS_DATETIME_FORMAT
-
+from iaso.api.entity import EntitySerializer
 from iaso.api.serializers import OrgUnitSerializer
+from iaso.models import StorageLogEntry, StorageDevice, Instance, OrgUnit, Entity
 
 from .common import (
     TimestampField,
     HasPermission,
     UserSerializer,
-    FileFormatEnum,
     CONTENT_TYPE_XLSX,
-    EXPORTS_DATETIME_FORMAT,
     CONTENT_TYPE_CSV,
+    EXPORTS_DATETIME_FORMAT,
 )
-from .common import TimestampField, HasPermission, UserSerializer, CONTENT_TYPE_XLSX, CONTENT_TYPE_CSV
 from .instances import FileFormatEnum
 
 

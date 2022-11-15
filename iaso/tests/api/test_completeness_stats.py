@@ -68,7 +68,7 @@ class CompletenessStatsAPITestCase(APITestCase):
                         "form": {"name": "Hydroponics study", "id": mock.ANY},
                         "forms_filled": 1,
                         "forms_to_fill": 1,
-                        "completeness_ratio": 100.0,
+                        "completeness_ratio": "100.0%",
                     },
                     {
                         "parent_org_unit": None,
@@ -77,7 +77,7 @@ class CompletenessStatsAPITestCase(APITestCase):
                         "form": {"name": "Hydroponics study 2", "id": mock.ANY},
                         "forms_filled": 0,
                         "forms_to_fill": 1,
-                        "completeness_ratio": 0,
+                        "completeness_ratio": "0.0%",
                     },
                 ],
                 "has_next": False,

@@ -86,6 +86,8 @@ sequenceDiagram
     Enketo -->> Browser: Return an HTML Page with a form to fill
     Note right of Browser: User fill the form, click submit
     Browser ->> Enketo: POST form with the submission
+    Enketo ->> IASO: HEAD /enketo/submission to get max content size [0]
+    IASO -->> Enketo: Return 204 with info in Header
     Enketo ->> IASO: POST /enketo/submssion with the submission
 
     opt if to_export
@@ -103,6 +105,7 @@ sequenceDiagram
  ```                                                       
 
 
+[0] See https://docs.getodk.org/openrosa-form-submission/#content
 
 # HOW TO manually test Enketo public_create_url
 

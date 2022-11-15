@@ -693,7 +693,7 @@ export const ScopeInput: FunctionComponent<Props> = ({
                     keyValue="searchScope"
                     type="checkbox"
                     withMarginTop={false}
-                    onChange={() => onChangeSearchScopeFunction()}
+                    onChange={onChangeSearchScopeFunction}
                     value={searchScopeValue}
                     label={MESSAGES.searchInScopeOrAllDistricts}
                 />

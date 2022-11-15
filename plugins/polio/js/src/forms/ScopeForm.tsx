@@ -152,7 +152,7 @@ export const ScopeForm: FunctionComponent = () => {
 
             if (search !== '') {
                 filtreds = filtreds.filter(d =>
-                    d.name.includes(search?.toUpperCase()),
+                    d.name.toLowerCase().includes(search.toLowerCase()),
                 );
             }
 
@@ -250,7 +250,7 @@ export const ScopeForm: FunctionComponent = () => {
                     filteredDistrictsResult={filteredDistricts}
                     searchLaunched={searchLaunched}
                     searchScopeValue={searchScope}
-                    onChangeSearchScopeFunction={() => onChangeSearchScope()}
+                    onChangeSearchScopeFunction={onChangeSearchScope}
                     searchScopeChecked={searchScopeChecked}
                     addNewScopeId={(id, vacciName) =>
                         addNewScopeId(id, vacciName)

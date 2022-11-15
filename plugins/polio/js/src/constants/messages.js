@@ -1860,7 +1860,7 @@ const MESSAGES = defineMessages({
     },
     teams: {
         id: 'iaso.polio.config.teams',
-        defaultMessage: 'Teams for Budget workflow',
+        defaultMessage: 'Team(s) for the Budget workflow',
     },
 });
 

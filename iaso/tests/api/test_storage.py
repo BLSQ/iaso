@@ -1347,7 +1347,7 @@ class StorageAPITestCase(APITestCase):
                 "",
                 "",
                 "",
-                "1",
+                mock.ANY,
             ],
         )
 
@@ -1437,7 +1437,7 @@ class StorageAPITestCase(APITestCase):
                 "",
                 "",
                 "",
-                "1",
+                mock.ANY,
             ],
         )
 

@@ -43,9 +43,9 @@ import CheckIcon from '@material-ui/icons/Check';
 import SelectAllIcon from '@material-ui/icons/SelectAll';
 import InputComponent from 'Iaso/components/forms/InputComponent';
 import { values } from 'cypress/types/lodash';
+import uniqBy from 'lodash/uniqBy';
 import { MapComponent } from '../MapComponent/MapComponent';
 import { MapLegend } from '../../../../../../hat/assets/js/apps/Iaso/components/maps/MapLegend';
-
 import MESSAGES from '../../constants/messages';
 import { polioVaccines } from '../../constants/virus';
 
@@ -270,7 +270,10 @@ export const ScopeInput: FunctionComponent<Props> = ({
                     }
                     return addedDistr;
                 });
-                newListAfterAdding = newListAfterAdding.concat(addedDistricts);
+                newListAfterAdding = uniqBy(
+                    newListAfterAdding.concat(addedDistricts),
+                    'id',
+                );
 
                 setFilteredDistricts(newListAfterAdding);
             } else {

@@ -180,9 +180,6 @@ export const ScopeForm: FunctionComponent = () => {
     const addNewScopeId = useCallback(
         (id: number, vaccineName: string) => {
             const scopeIds = newScopeId;
-            const vaccine = {};
-
-            vaccine[id] = vaccineName;
             newScopeId.newScope[id] = vaccineName;
             setNewScopeId(scopeIds);
         },

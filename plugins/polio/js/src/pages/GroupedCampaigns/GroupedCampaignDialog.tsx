@@ -48,7 +48,8 @@ export const GroupedCampaignDialog: FunctionComponent<Props> = ({
         useState<string>(name);
     const [campaignsToLink, setCampaignsToLink] = useState<string[]>(campaigns);
     // TODO refactor this hook to make more flexible
-    const { data: allCampaigns } = useGetCampaigns().query;
+    const { data: allCampaigns, isFetching: isFetchingCamaigns } =
+        useGetCampaigns().query;
     const allCampaignsDropdown = useMemo(
         () => makeCampaignsDropDownWithUUID(allCampaigns),
         [allCampaigns],
@@ -145,6 +146,7 @@ export const GroupedCampaignDialog: FunctionComponent<Props> = ({
                                 value={campaignsToLink}
                                 required
                                 multi
+                                loading={isFetchingCamaigns}
                             />
                         </Grid>
                     </Grid>

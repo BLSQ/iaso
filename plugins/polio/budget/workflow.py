@@ -32,12 +32,23 @@ class Transition:
 class Node:
     label: str
     key: str
+    category_key: str = ""
+    order: int = 0
+    mandatory: bool = False
+
+
+@dataclass
+class Category:
+    label: str
+    key: str
+    nodes: Optional[List[Node]] = None  # Added at workflow init
 
 
 @dataclass
 class Workflow:
     transitions: List[Transition]
     nodes: List[Node]
+    categories: List[Category]
     _transitions_dict = None
 
     def get_node_by_key(self, key):
@@ -55,12 +66,34 @@ class Workflow:
     def get_transition_by_key(self, key) -> Transition:
         return self.transitions_dict[key]
 
+    def get_transition_label_safe(self, key) -> str:
+        """Return the label for this transition key. Or the label itself it the
+        key is not found in the workfloe e.g. it was deleted"""
+        if key in self.transitions_dict:
+            return self.transitions_dict[key].label
+        else:
+            return key
+
     def self_check(self):
         for transition in self.transitions:
             if transition.from_node:
                 self.get_node_by_key(transition.to_node)
             if transition.to_node:
                 self.get_node_by_key(transition.to_node)
+
+    def _get_nodes_in_category(self, category_key):
+        nodes = [node for node in self.nodes if node.category_key == category_key]
+        return nodes
+
+    def __init__(self, transitions, nodes, categories):
+        self.nodes = nodes
+        self.categories = categories
+        self.transitions = transitions
+        # link categories to node
+        for category in self.categories:
+            nodes = self._get_nodes_in_category(category.key)
+            nodes.sort(key=lambda n: n.order)
+            category.nodes = nodes
 
 
 def next_transitions(transitions, current_node_key):

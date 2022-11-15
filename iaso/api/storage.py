@@ -1,9 +1,10 @@
 # TODO: need better type annotations in this file
+import datetime
 
 from typing import Tuple, Union, List, Any
-
-from django.db.models import Prefetch, QuerySet
+from django.db.models import Prefetch, QuerySet, Q
 from django.http import HttpResponse, StreamingHttpResponse
+
 from rest_framework import viewsets, permissions, serializers, status
 from rest_framework.decorators import action, api_view, permission_classes
 from rest_framework.fields import Field
@@ -13,12 +14,21 @@ from rest_framework.response import Response
 
 from django.core.paginator import Paginator
 
-from hat.api.export_utils import timestamp_to_utc_datetime, generate_xlsx, iter_items, Echo
+from hat.api.export_utils import generate_xlsx, iter_items, Echo, timestamp_to_utc_datetime
 from iaso.models import StorageLogEntry, StorageDevice, Instance, OrgUnit, Entity
 from iaso.api.entity import EntitySerializer, EXPORTS_DATETIME_FORMAT
 
 from iaso.api.serializers import OrgUnitSerializer
 
+from .common import (
+    TimestampField,
+    HasPermission,
+    UserSerializer,
+    FileFormatEnum,
+    CONTENT_TYPE_XLSX,
+    EXPORTS_DATETIME_FORMAT,
+    CONTENT_TYPE_CSV,
+)
 from .common import TimestampField, HasPermission, UserSerializer, CONTENT_TYPE_XLSX, CONTENT_TYPE_CSV
 from .instances import FileFormatEnum
 
@@ -217,10 +227,17 @@ class StorageViewSet(ListModelMixin, viewsets.GenericViewSet):
         if filter_type is not None:
             qs = qs.filter(type__in=filter_type.split(","))
 
+        # the search filter works on entity_id or storage (customer-chosen) id
         filter_search = self.request.query_params.get("search")
         if filter_search is not None:
-            # TODO: implement: search on entity or storage id
-            pass
+            q = Q(customer_chosen_id__icontains=filter_search)
+            try:
+                filter_search_int = int(filter_search)
+                q = q | Q(entity__id=filter_search_int)
+            except ValueError:
+                pass
+
+            qs = qs.filter(q)
 
         return qs
 
@@ -273,8 +290,6 @@ class StorageViewSet(ListModelMixin, viewsets.GenericViewSet):
 
         POST /api/storage/blacklisted/
         """
-        # TODO: permissions: spec mentions "permission to modify storage", what does it mean exactly?
-        #  Clarify then implement
 
         # 1. Get data from request/environment
         user = request.user
@@ -296,7 +311,6 @@ class StorageViewSet(ListModelMixin, viewsets.GenericViewSet):
             # 3. Submitted data is valid, we can now proceed
             status_dict = status_serializer.validated_data
             # 3.1 Update device status
-            # TODO: discuss: what should be done if we try to change the device to the status it's already in?
             device.change_status(
                 new_status=status_dict["status"],
                 reason=status_dict.get("status_reason", ""),
@@ -349,7 +363,6 @@ class StorageLogViewSet(CreateModelMixin, viewsets.GenericViewSet):
 
                 concerned_instances = Instance.objects.filter(uuid__in=log_data["instances"])
 
-                # TODO: refactor this?
                 concerned_orgunit = None
                 if "org_unit_id" in log_data and log_data["org_unit_id"] is not None:
                     try:
@@ -385,21 +398,98 @@ class StorageLogViewSet(CreateModelMixin, viewsets.GenericViewSet):
         return Response("", status=status.HTTP_201_CREATED)
 
 
+def logs_for_device_generate_export(
+    queryset: "QuerySet[StorageLogEntry]", file_format: FileFormatEnum
+) -> Union[HttpResponse, StreamingHttpResponse]:
+    columns = [
+        {"title": "id"},
+        {"title": "storage_id"},
+        {"title": "storage_type"},
+        {"title": "operation_type"},
+        {"title": "instances"},
+        {"title": "org_unit"},
+        {"title": "entity"},
+        {"title": "performed_at"},
+        {"title": "performed_by"},
+        {"title": "status"},
+        {"title": "status_reason"},
+        {"title": "status_comment"},
+    ]
+
+    def get_row(log_entry: StorageLogEntry, **_) -> List[Any]:
+        instances_ids_list = ",".join([str(i.id) for i in log_entry.instances.all()])
+
+        performed_at_str = ""
+        if log_entry.performed_at is not None:
+            performed_at_str = log_entry.performed_at.strftime(EXPORTS_DATETIME_FORMAT)
+
+        return [
+            str(log_entry.id),
+            log_entry.device.customer_chosen_id,
+            log_entry.device.type,
+            log_entry.operation_type,
+            instances_ids_list,
+            log_entry.org_unit_id,
+            log_entry.entity_id,
+            performed_at_str,
+            log_entry.performed_by.username,
+            log_entry.status,
+            log_entry.status_reason,
+            log_entry.status_comment,
+        ]
+
+    response: Union[HttpResponse, StreamingHttpResponse]
+    filename = "storage_logs"
+    if file_format == FileFormatEnum.XLSX:
+        filename = filename + ".xlsx"
+        response = HttpResponse(
+            generate_xlsx("Storage logs", columns, queryset, get_row),
+            content_type=CONTENT_TYPE_XLSX,
+        )
+    elif file_format == FileFormatEnum.CSV:
+        filename = filename + ".csv"
+        response = StreamingHttpResponse(
+            streaming_content=(iter_items(queryset, Echo(), columns, get_row)), content_type=CONTENT_TYPE_CSV
+        )
+
+    else:
+        # Raise InvalidFileFormat
+        pass
+
+    response["Content-Disposition"] = "attachment; filename=%s" % filename
+    return response
+
+
 @api_view()
 @permission_classes([IsAuthenticated, HasPermission("menupermissions.iaso_storages")])  # type: ignore
 def logs_per_device(request, storage_customer_chosen_id: str, storage_type: str):
     """Return a list of log entries for a given device"""
+
+    # 1. Retrieve data from request
     user_account = request.user.iaso_profile.account
 
+    # 1.1 Filters
     org_unit_id = request.GET.get("org_unit_id")
     operation_types_str = request.GET.get("types", None)
     status = request.GET.get("status", None)
     reason = request.GET.get("reason", None)
 
+    # 1.2 Pagination
     limit_str = request.GET.get("limit", None)
     page_offset = request.GET.get("page", 1)
 
+    # 1.3 Ordering
     order = request.GET.get("order", "-performed_at").split(",")
+
+    # 1.4 file export?
+    csv_format = request.GET.get("csv", None)
+    xlsx_format = request.GET.get("xlsx", None)
+    file_export = False
+    if csv_format is not None or xlsx_format is not None:
+        file_export = True
+        file_format_export = FileFormatEnum.CSV if csv_format is not None else FileFormatEnum.XLSX
+
+    performed_at_str = request.GET.get("performed_at", None)
 
     device_identity_fields = {
         "customer_chosen_id": storage_customer_chosen_id,
@@ -421,46 +511,50 @@ def logs_per_device(request, storage_customer_chosen_id: str, storage_type: str)
         log_entries_queryset = log_entries_queryset.filter(status=status)
     if reason is not None:
         log_entries_queryset = log_entries_queryset.filter(status_reason=reason)
-
-    device_with_logs = StorageDevice.objects.prefetch_related(
-        Prefetch(
-            "log_entries",
-            log_entries_queryset,
-            to_attr="filtered_log_entries",
+    if performed_at_str is not None:
+        log_entries_queryset = log_entries_queryset.filter(
+            performed_at__date=datetime.datetime.strptime(performed_at_str, "%Y-%m-%d").date()
         )
-    ).get(**device_identity_fields)
 
-    if limit_str:
-        # Pagination requested: each page contains the device metadata + a subset of log entries
-        limit = int(limit_str)
-        page_offset = int(page_offset)
-        paginator = Paginator(log_entries_queryset, limit)
-        res = {"count": paginator.count}
-        if page_offset > paginator.num_pages:
-            page_offset = paginator.num_pages
-        page = paginator.page(page_offset)
-        res["results"] = StorageSerializerWithPaginatedLogs(  # type: ignore
-            device_with_logs, context={"limit": limit, "offset": page.start_index() - 1}
-        ).data
-        res["has_next"] = page.has_next()
-        res["has_previous"] = page.has_previous()
-        res["page"] = page_offset
-        res["pages"] = paginator.num_pages
-        res["limit"] = limit
-        return Response(res)
+    if not file_export:
+        device_with_logs = StorageDevice.objects.prefetch_related(
+            Prefetch(
+                "log_entries",
+                log_entries_queryset,
+                to_attr="filtered_log_entries",
+            )
+        ).get(**device_identity_fields)
+
+        if limit_str:
+            # Pagination as requested: each page contains the device metadata + a subset of log entries
+            limit = int(limit_str)
+            page_offset = int(page_offset)
+            paginator = Paginator(log_entries_queryset, limit)
+            res = {"count": paginator.count}
+            if page_offset > paginator.num_pages:
+                page_offset = paginator.num_pages
+            page = paginator.page(page_offset)
+            res["results"] = StorageSerializerWithPaginatedLogs(  # type: ignore
+                device_with_logs, context={"limit": limit, "offset": page.start_index() - 1}
+            ).data
+            res["has_next"] = page.has_next()
+            res["has_previous"] = page.has_previous()
+            res["page"] = page_offset
+            res["pages"] = paginator.num_pages
+            res["limit"] = limit
+            return Response(res)
+        else:
+            return Response(StorageSerializerWithLogs(device_with_logs).data)
     else:
-        return Response(StorageSerializerWithLogs(device_with_logs).data)
+        # File export requested
+        return logs_for_device_generate_export(queryset=log_entries_queryset, file_format=file_format_export)
 
 
 class StorageBlacklistedViewSet(ListModelMixin, viewsets.GenericViewSet):
     queryset = StorageDevice.objects.filter(status=StorageDevice.BLACKLISTED)
     serializer_class = StorageSerializer
 
-    # TODO: check permissions if necessary (everybody can get the list of blacklisted devices accross all accounts, correct?)
     permission_classes = [AllowAny]
-    # TODO: according to spec, we should add an "updated_at" field
-    # TODO: implement pagination
-    # TODO: clarify, then implement the "since" feature -see specs-
 
     def list(self, request):
         """

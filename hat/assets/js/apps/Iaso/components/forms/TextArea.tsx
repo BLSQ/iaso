@@ -1,13 +1,17 @@
-import React, { FunctionComponent, useState } from 'react';
+import React, { FunctionComponent, useEffect, useRef, useState } from 'react';
 
 import {
     // @ts-ignore
     FormControl,
     // @ts-ignore
     commonStyles,
+    // @ts-ignores
+    useSkipEffectOnMount,
 } from 'bluesquare-components';
 import classnames from 'classnames';
 import { makeStyles, InputLabel } from '@material-ui/core';
+import { useDebounce } from 'use-debounce';
+import { Optional } from '../../types/utils';
 
 type Props = {
     value?: string;
@@ -16,6 +20,7 @@ type Props = {
     onChange: (newValue: string) => void;
     errors?: string[];
     required?: boolean;
+    debounceTime?: number; // debounce time in ms
 };
 
 const useStyles = makeStyles(theme => ({
@@ -24,12 +29,11 @@ const useStyles = makeStyles(theme => ({
     },
     inputLabel: {
         ...commonStyles.inputLabel,
-        top: 13,
         left: 4,
         backgroundColor: 'white',
     },
     inputLabelShrink: {
-        transform: 'translate(14px, -3px) scale(0.75) !important',
+        transform: 'translate(14px, -5px) scale(0.75) !important',
     },
     textArea: {
         width: '100%',
@@ -37,7 +41,6 @@ const useStyles = makeStyles(theme => ({
         maxWidth: '100%',
         minHeight: '100px',
         padding: theme.spacing(2),
-        marginTop: theme.spacing(2),
         outline: 'none',
         borderRadius: 5,
         fontSize: 16,
@@ -69,15 +72,36 @@ export const TextArea: FunctionComponent<Props> = ({
     label,
     errors = [],
     required = false,
+    debounceTime = 0,
 }) => {
+    const prevValue = useRef<Optional<string>>();
+    const prevDebounced = useRef<Optional<string>>();
     const classes: Record<string, string> = useStyles();
     const [focus, setFocus] = useState<boolean>(false);
     const hasErrors = errors.length > 0;
+    const [textValue, setTextValue] = useState<string>(value ?? '');
+    const [debouncedValue] = useDebounce(textValue, debounceTime);
+
+    // Reset state when value changes to prevent wrongly persisting the state value
+    useEffect(() => {
+        if (value !== prevValue.current) {
+            setTextValue(value ?? '');
+            prevValue.current = value;
+        }
+    }, [value]);
+
+    useSkipEffectOnMount(() => {
+        if (debouncedValue !== prevDebounced.current) {
+            // Only call onChange if debouncedVAlue has been updated to avoid unwanted overwrites
+            prevDebounced.current = debouncedValue;
+            onChange(debouncedValue);
+        }
+    }, [debouncedValue, onChange, prevValue.current]);
 
     return (
         <FormControl errors={errors}>
             <InputLabel
-                shrink={Boolean(value)}
+                shrink={Boolean(textValue)}
                 className={classnames(
                     classes.inputLabel,
                     focus && classes.inputLabelFocus,
@@ -90,13 +114,14 @@ export const TextArea: FunctionComponent<Props> = ({
             </InputLabel>
             <textarea
                 onFocus={() => setFocus(true)}
-                onBlur={() => setFocus(false)}
                 className={classnames(
                     classes.textArea,
                     hasErrors && classes.errorArea,
                 )}
-                onChange={e => onChange(e.target.value)}
-                value={value}
+                onChange={e => {
+                    setTextValue(e.target.value);
+                }}
+                value={textValue}
             />
         </FormControl>
     );

@@ -63,7 +63,7 @@ describe('OrgUnits', () => {
             const rows = table.find('tbody').find('tr');
             rows.should('have.length', 50);
             // number of col
-            rows.eq(0).find('td').should('have.length', 11);
+            rows.eq(0).find('td').should('have.length', 12);
 
             const row = cy.get('table').find('tbody').find('tr').eq(0);
             const nameCol = row.find('td').eq(1);

@@ -23,7 +23,6 @@ const useStyles = makeStyles(theme => ({
     title: {
         fontWeight: 'bold',
     },
-    inputFields: { '& .MuiOutlinedInput-notchedOutline': { border: 'none' } },
 }));
 
 type Props = {
@@ -61,7 +60,6 @@ export const ReportingDelays: FunctionComponent<Props> = ({ accessor }) => {
                                 label=""
                                 name={`${accessor}.reporting_delays_hc_to_district`}
                                 component={TextInput}
-                                className={classes.inputFields}
                             />
                         </TableCell>
                     </TableRow>
@@ -74,7 +72,6 @@ export const ReportingDelays: FunctionComponent<Props> = ({ accessor }) => {
                                 label=""
                                 name={`${accessor}.reporting_delays_district_to_region`}
                                 component={TextInput}
-                                className={classes.inputFields}
                             />
                         </TableCell>
                     </TableRow>
@@ -87,7 +84,6 @@ export const ReportingDelays: FunctionComponent<Props> = ({ accessor }) => {
                                 label=""
                                 name={`${accessor}.reporting_delays_region_to_national`}
                                 component={TextInput}
-                                className={classes.inputFields}
                             />
                         </TableCell>
                     </TableRow>

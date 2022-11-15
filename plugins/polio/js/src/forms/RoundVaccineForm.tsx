@@ -1,6 +1,6 @@
 import { Box, Grid } from '@material-ui/core';
-import { Field } from 'formik';
-import React, { FunctionComponent } from 'react';
+import { Field, useFormikContext } from 'formik';
+import React, { FunctionComponent, useMemo } from 'react';
 // @ts-ignore
 import { useSafeIntl } from 'bluesquare-components';
 import { Select, TextInput } from '../components/Inputs';
@@ -39,8 +39,21 @@ export const RoundVaccineForm: FunctionComponent<Props> = ({
     vaccineOptions,
 }) => {
     const { formatMessage } = useSafeIntl();
+    const {
+        // @ts-ignore
+        values: { rounds },
+    } = useFormikContext();
+    const { vaccines = [] } = rounds[roundIndex] ?? {};
+    const selectedVaccine = vaccines[vaccineIndex];
     const classes: Record<string, string> = useStyles();
     const accessor = `rounds[${roundIndex}].vaccines[${vaccineIndex}]`;
+    const options = useMemo(() => {
+        if (!selectedVaccine?.name) return vaccineOptions;
+        return [
+            ...vaccineOptions,
+            { label: selectedVaccine.name, value: selectedVaccine.name },
+        ];
+    }, [selectedVaccine?.name, vaccineOptions]);
 
     return (
         <>
@@ -50,7 +63,7 @@ export const RoundVaccineForm: FunctionComponent<Props> = ({
                         label={formatMessage(MESSAGES.vaccine)}
                         name={`${accessor}.name`}
                         className={classes.input}
-                        options={vaccineOptions}
+                        options={options}
                         component={Select}
                     />
                 </Box>

@@ -90,53 +90,6 @@ yup.addMethod(
 );
 
 yup.addMethod(
-    yup.date,
-    'hasVialsFieldAndDestuctionDate',
-    function hasVialsFieldAndDestuctionDate(formatMessage) {
-        return this.test(
-            'hasVialsFieldAndDestuctionDate',
-            '',
-            (value, context) => {
-                const { path, createError, parent } = context;
-                const vialsDestroyed = parent.vials_destroyed;
-                if (!value && vialsDestroyed) {
-                    return createError({
-                        path,
-                        message: formatMessage(
-                            MESSAGES.destructionDateAndVialsDestroyed,
-                        ),
-                    });
-                }
-                return true;
-            },
-        );
-    },
-);
-yup.addMethod(
-    yup.number,
-    'hasDestuctionDateAndVialsField',
-    function hasDestuctionDateAndVialsField(formatMessage) {
-        return this.test(
-            'hasDestuctionDateAndVialsField',
-            '',
-            (value, context) => {
-                const { path, createError, parent } = context;
-                const destructionDate = parent.date_destruction;
-                if (!value && destructionDate) {
-                    return createError({
-                        path,
-                        message: formatMessage(
-                            MESSAGES.destructionDateAndVialsDestroyed,
-                        ),
-                    });
-                }
-                return true;
-            },
-        );
-    },
-);
-
-yup.addMethod(
     yup.number,
     'hasAllFormAFieldsNumber',
     function hasAllFormAFieldsNumber(formatMessage) {
@@ -147,13 +100,16 @@ yup.addMethod(
                 forma_missing_vials,
                 forma_usable_vials,
                 forma_unusable_vials,
+                forma_date,
             } = parent;
             if (
                 !value &&
+                value !== 0 &&
                 (forma_unusable_vials ||
                     forma_usable_vials ||
                     forma_missing_vials ||
-                    forma_reception)
+                    forma_reception ||
+                    forma_date)
             ) {
                 return createError({
                     path,
@@ -175,13 +131,15 @@ yup.addMethod(
                 forma_missing_vials,
                 forma_usable_vials,
                 forma_unusable_vials,
+                forma_date,
             } = parent;
             if (
                 !value &&
                 (forma_unusable_vials ||
                     forma_usable_vials ||
                     forma_missing_vials ||
-                    forma_reception)
+                    forma_reception ||
+                    forma_date)
             ) {
                 return createError({
                     path,
@@ -202,7 +160,7 @@ yup.addMethod(
                 date_reception,
                 estimated_arrival_date,
                 reception_pre_alert,
-                doses_received,
+                vials_received,
                 po_numbers,
                 vaccine_name,
             } = parent;
@@ -210,7 +168,7 @@ yup.addMethod(
                 !value &&
                 (vaccine_name ||
                     po_numbers ||
-                    doses_received ||
+                    vials_received ||
                     reception_pre_alert ||
                     estimated_arrival_date ||
                     date_reception)
@@ -234,15 +192,16 @@ yup.addMethod(
                 date_reception,
                 estimated_arrival_date,
                 reception_pre_alert,
-                doses_received,
+                vials_received,
                 po_numbers,
                 vaccine_name,
             } = parent;
             if (
                 !value &&
+                value !== 0 &&
                 (vaccine_name ||
                     po_numbers ||
-                    doses_received ||
+                    vials_received ||
                     reception_pre_alert ||
                     estimated_arrival_date ||
                     date_reception)
@@ -256,6 +215,57 @@ yup.addMethod(
         });
     },
 );
+
+yup.addMethod(
+    yup.date,
+    'destructionFieldsDateCheck',
+    function destructionFieldsDateCheck(formatMessage) {
+        return this.test('destructionFieldsDateCheck', '', (value, context) => {
+            const { path, createError, parent } = context;
+            const { date_report_received, date_report, vials_destroyed } =
+                parent;
+            if (
+                !value &&
+                (date_report || vials_destroyed || date_report_received)
+            ) {
+                return createError({
+                    path,
+                    message: formatMessage(MESSAGES.destructionFieldsTogether),
+                });
+            }
+            return true;
+        });
+    },
+);
+yup.addMethod(
+    yup.number,
+    'destructionFieldsNumberCheck',
+    function destructionFieldsNumberCheck(formatMessage) {
+        return this.test(
+            'destructionFieldsNumberCheck',
+            '',
+            (value, context) => {
+                const { path, createError, parent } = context;
+                const { date_report_received, date_report, vials_destroyed } =
+                    parent;
+                if (
+                    !value &&
+                    value !== 0 &&
+                    (date_report || vials_destroyed || date_report_received)
+                ) {
+                    return createError({
+                        path,
+                        message: formatMessage(
+                            MESSAGES.destructionFieldsTogether,
+                        ),
+                    });
+                }
+                return true;
+            },
+        );
+    },
+);
+
 yup.addMethod(
     yup.string,
     'hasAllShipmentFieldsString',
@@ -266,7 +276,7 @@ yup.addMethod(
                 date_reception,
                 estimated_arrival_date,
                 reception_pre_alert,
-                doses_received,
+                vials_received,
                 po_numbers,
                 vaccine_name,
             } = parent;
@@ -274,7 +284,7 @@ yup.addMethod(
                 !value &&
                 (vaccine_name ||
                     po_numbers ||
-                    doses_received ||
+                    vials_received ||
                     reception_pre_alert ||
                     estimated_arrival_date ||
                     date_reception)
@@ -303,7 +313,7 @@ const useShipmentShape = () => {
             .min(0)
             .typeError(formatMessage(MESSAGES.positiveNumber))
             .hasAllShipmentFieldsNumber(formatMessage),
-        doses_received: yup
+        vials_received: yup
             .number()
             .nullable()
             .integer()
@@ -325,6 +335,30 @@ const useShipmentShape = () => {
             .nullable()
             .typeError(formatMessage(MESSAGES.invalidDate))
             .hasAllShipmentFieldsDate(formatMessage),
+        comment: yup.string().nullable(),
+    });
+};
+const useDestructionShape = () => {
+    const { formatMessage } = useSafeIntl();
+    return yup.object().shape({
+        vials_destroyed: yup
+            .number()
+            .nullable()
+            .integer()
+            .min(0)
+            .typeError(formatMessage(MESSAGES.positiveNumber))
+            .destructionFieldsNumberCheck(formatMessage),
+        date_report: yup
+            .date()
+            .nullable()
+            .typeError(formatMessage(MESSAGES.invalidDate))
+            .destructionFieldsDateCheck(formatMessage),
+        date_report_received: yup
+            .date()
+            .nullable()
+            .typeError(formatMessage(MESSAGES.invalidDate))
+            .destructionFieldsDateCheck(formatMessage),
+        comment: yup.string().nullable(),
     });
 };
 
@@ -350,6 +384,7 @@ const useRoundShape = () => {
     const { formatMessage } = useSafeIntl();
     const shipment = useShipmentShape();
     const vaccine = useVaccineShape();
+    const destruction = useDestructionShape();
 
     return yup.object().shape({
         number: yup.number().integer().min(0),
@@ -474,29 +509,24 @@ const useRoundShape = () => {
             .nullable()
             .min(0)
             .typeError(formatMessage(MESSAGES.positiveNumber)),
-        vials_destroyed: yup
-            .number()
-            .integer()
-            .nullable()
-            .min(0)
-            .typeError(formatMessage(MESSAGES.positiveNumber))
-            .hasDestuctionDateAndVialsField(formatMessage),
         forma_reception: yup
             .date()
             .typeError(formatMessage(MESSAGES.invalidDate))
             .nullable()
             .hasAllFormAFieldsDate(formatMessage),
-        date_destruction: yup
+        forma_date: yup
             .date()
             .typeError(formatMessage(MESSAGES.invalidDate))
             .nullable()
-            .hasVialsFieldAndDestuctionDate(formatMessage),
+            .hasAllFormAFieldsDate(formatMessage),
+        forma_comment: yup.string().nullable(),
         date_signed_vrf_received: yup
             .date()
             .typeError(formatMessage(MESSAGES.invalidDate))
             .nullable(),
         shipments: yup.array(shipment).nullable(),
         vaccines: yup.array(vaccine).nullable(),
+        destructions: yup.array(destruction).nullable(),
     });
 };
 

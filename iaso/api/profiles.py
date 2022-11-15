@@ -1,4 +1,5 @@
 from django.contrib.auth import update_session_auth_hash
+from django.contrib.sites.shortcuts import get_current_site
 
 from rest_framework import viewsets, permissions
 from rest_framework.response import Response
@@ -148,9 +149,10 @@ class ProfilesViewSet(viewsets.ViewSet):
 
         return Response(profile.as_dict())
 
-    @staticmethod
     def send_email_invitation(self, profile, email_subject, email_message):
-        domain = settings.DNS_DOMAIN
+        current_site = get_current_site(self.request)
+        site_name = current_site.name
+        domain = current_site.domain
         from_email = settings.DEFAULT_FROM_EMAIL
 
         token_generator = PasswordResetTokenGenerator()
@@ -159,11 +161,16 @@ class ProfilesViewSet(viewsets.ViewSet):
         uid = urlsafe_base64_encode(force_bytes(profile.user.pk))
         create_password_path = reverse("reset_password_confirmation", kwargs={"uidb64": uid, "token": token})
 
+        protocol = "https" if self.request.is_secure() else "http"
         email_message_text = email_message.format(
-            userName=profile.user.username, url=f"https://{domain}{create_password_path}", dns_domain=f"{domain}"
+            userName=profile.user.username,
+            url=f"{protocol}://{domain}{create_password_path}",
+            protocol=protocol,
+            domain=domain,
+            site_name=site_name,
         )
 
-        email_subject_text = email_subject.format(dns_domain=f"{domain}")
+        email_subject_text = email_subject.format(dns_domain=f"{site_name}")
 
         send_mail(email_subject_text, email_message_text, from_email, [profile.user.email])
 
@@ -231,7 +238,7 @@ class ProfilesViewSet(viewsets.ViewSet):
             email_subject = self.get_subject_by_language(self, request.data.get("language"))
             email_message = self.get_message_by_language(self, request.data.get("language"))
 
-            self.send_email_invitation(self, profile, email_subject, email_message)
+            self.send_email_invitation(profile, email_subject, email_message)
 
         return Response(user.profile.as_dict())
 
@@ -244,7 +251,7 @@ class ProfilesViewSet(viewsets.ViewSet):
 
     CREATE_PASSWORD_MESSAGE_EN = """Hello,
 
-You've been invited to access {dns_domain}, and a new account with the username {userName} has been created for you. 
+You've been invited to access {protocol}://{domain}, and a new account with the username {userName} has been created for you. 
 
 To set up a password for your account, please click on the link:
 
@@ -253,15 +260,15 @@ To set up a password for your account, please click on the link:
 If clicking the link above doesn't work, please copy and paste the URL in a new browser
 window instead.
 
-If you did not request an account on {dns_domain} , you can ignore this e-mail - no password will be created.
+If you did not request an account on {domain}, you can ignore this e-mail - no password will be created.
 
 Sincerely,
-The IASO Team.
+The {site_name} Team.
     """
 
     CREATE_PASSWORD_MESSAGE_FR = """Bonjour, 
 
-Vous avez été invité à accéder à {dns_domain} et un nouveau compte avec le nom d'utilisateur {userName} a été créé pour vous.
+Vous avez été invité à accéder à {protocol}://{domain} et un nouveau compte avec le nom d'utilisateur {userName} a été créé pour vous.
 
 Pour configurer un mot de passe pour votre compte, merci de cliquer sur le lien ci-dessous :
 
@@ -269,10 +276,10 @@ Pour configurer un mot de passe pour votre compte, merci de cliquer sur le lien 
 
 Si le lien ne fonctionne pas, merci de copier et coller l'URL dans une nouvelle fenêtre de votre navigateur.
 
-Si vous n'avez pas demandé de compte sur {dns_domain}, vous pouvez ignorer cet e-mail - aucun mot de passe ne sera créé.
+Si vous n'avez pas demandé de compte sur {domain}, vous pouvez ignorer cet e-mail - aucun mot de passe ne sera créé.
 
 Cordialement,
-L'équipe IASO.
+L'équipe {site_name}.
     """
 
     EMAIL_SUBJECT_FR = "Configurer un mot de passe pour votre nouveau compte sur {dns_domain}"

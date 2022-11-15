@@ -36,6 +36,8 @@ REQUEST_HEADER_INFO_KEYS = [
 CONTENT_TYPE_XLSX = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
 CONTENT_TYPE_CSV = "text/csv"
 
+EXPORTS_DATETIME_FORMAT = "%Y-%m-%d %H:%M:%S"
+
 
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
@@ -340,3 +342,8 @@ class DeletionFilterBackend(filters.BaseFilterBackend):
         if query_param == "all":
             return queryset
         return queryset
+
+
+class FileFormatEnum(enum.Enum):
+    CSV: str = "csv"
+    XLSX: str = "xlsx"

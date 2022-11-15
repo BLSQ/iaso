@@ -1022,3 +1022,14 @@
         displayed_fields: []
         teams_ids_can_transition:
         - 4
+- model: polio.mailtemplate
+  pk: 1
+  fields:
+    slug: base_email
+    subject_template: '{{author_name}} updated the the budget  for campaign {{campaign.obr_name}}'
+    html_template: "{% extends \"base_budget_email.html\" %}\r\n{% block text %}\r\n{{
+      block.super }} \r\n{% endblock %}"
+    text_template: "{% extends \"base_budget_email.txt\" %}\r\n{% block text %}\r\n{{
+      block.super }} \r\n{% endblock %}"
+    created_at: 2022-11-14 16:16:41.233023+00:00
+    updated_at: 2022-11-14 16:16:41.233054+00:00

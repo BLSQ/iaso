@@ -9,6 +9,7 @@ from django.core.mail import EmailMultiAlternatives
 from django.db import models
 from django.template import Engine, TemplateSyntaxError, Context
 from django.utils.translation import ugettext_lazy as _
+from django.urls import reverse
 
 from hat.api.token_authentication import generate_auto_authentication_link
 from iaso.models.microplanning import Team
@@ -59,6 +60,9 @@ class BudgetStepFile(models.Model):
     filename = models.CharField(blank=True, null=True, max_length=100)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+
+    def get_absolute_url(self):
+        return reverse("BudgetStep-files", kwargs={"pk": self.step_id, "file_pk": self.id})
 
     class Meta:
         verbose_name = "Budget Step File"
@@ -124,6 +128,7 @@ class MailTemplate(models.Model):
         return str(self.slug)
 
     def render_for_step(self, step: BudgetStep, receiver: User, request=None) -> EmailMultiAlternatives:
+        msg = EmailMultiAlternatives(from_email=settings.DEFAULT_FROM_EMAIL, to=[receiver.email])
         site = get_current_site(request)
         base_url = "https://" if settings.SSL_ON else "http://"
         base_url += site.domain  # type: ignore
@@ -154,9 +159,17 @@ class MailTemplate(models.Model):
         transition = workflow.get_transition_by_key(step.transition_key)
         attachments = []
         for f in step.files.all():
-            attachments.append({"url": f.file.url, "name": f.filename})
+            attachments.append({"url": f.get_absolute_url(), "name": f.filename})
         for l in step.links.all():
             attachments.append({"url": l.url, "name": l.alias})
+
+        skipped_attachements = 0
+        for f in step.files.all():
+            # only attach file smaller than 500k
+            if f.file.size < 1024 * 500:
+                msg.attach(f.filename, f.file.read())
+            else:
+                skipped_attachements += 1
 
         context = Context(
             {
@@ -173,6 +186,7 @@ class MailTemplate(models.Model):
                 "comment": step.comment,
                 "amount": step.amount,
                 "attachments": attachments,
+                "skipped_attachments": skipped_attachements,
                 "files": step.files.all(),
                 "links": step.links.all(),
             }
@@ -186,8 +200,11 @@ class MailTemplate(models.Model):
         subject_template = Engine.get_default().from_string(self.subject_template)
         subject_content = subject_template.render(context)
 
-        msg = EmailMultiAlternatives(subject_content, text_content, settings.DEFAULT_FROM_EMAIL, [receiver.email])
+        msg.subject = subject_content
+        msg.body = text_content
+
         msg.attach_alternative(html_content, "text/html")
+
         return msg
 
 

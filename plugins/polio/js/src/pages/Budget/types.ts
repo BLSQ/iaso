@@ -63,7 +63,11 @@ export type Budget = {
 };
 
 export type LinkWithAlias = { alias: string; url: string };
-export type FileWithName = { file: string; filename: string };
+export type FileWithName = {
+    file: string;
+    filename: string;
+    permanent_url: string;
+};
 
 export type BudgetStep = {
     id: number;

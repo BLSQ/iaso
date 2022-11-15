@@ -72,9 +72,9 @@ def jsonlogic_to_q(jsonlogic: Dict[str, Any], field_prefix: str = "") -> Q:
     op = list(jsonlogic.keys())[0]
     params = jsonlogic[op]
     if len(params) != 2:
-        raise ValueError(f"Unsuported JsonLogic: {jsonlogic}")
+        raise ValueError(f"Unsupported JsonLogic. Operator {op} take exactly two operands: {jsonlogic}")
     if "var" not in params[0]:
-        raise ValueError(f"Unsuported JsonLogic: {jsonlogic}")
+        raise ValueError(f"Unsupported JsonLogic. First argument must be a variable : {jsonlogic}")
 
     lookups = {
         "==": "exact",
@@ -86,7 +86,9 @@ def jsonlogic_to_q(jsonlogic: Dict[str, Any], field_prefix: str = "") -> Q:
     }
 
     if op not in lookups.keys():
-        raise ValueError(f"Unsuported JsonLogic: {jsonlogic}")
+        raise ValueError(
+            f"Unsupported JsonLogic (unknown operator {op}): {jsonlogic}. Supported operators: f{lookups.keys()}"
+        )
 
     field_name = params[0]["var"]
 

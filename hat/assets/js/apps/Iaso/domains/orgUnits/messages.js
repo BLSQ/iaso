@@ -173,6 +173,10 @@ const MESSAGES = defineMessages({
         defaultMessage: 'Created',
         id: 'iaso.label.created_at',
     },
+    creator: {
+        defaultMessage: 'Created By',
+        id: 'iaso.orgUnits.createdBy',
+    },
     details: {
         defaultMessage: 'Details',
         id: 'iaso.label.details',

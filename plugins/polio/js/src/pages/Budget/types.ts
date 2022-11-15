@@ -4,6 +4,40 @@ import {
     Optional,
 } from '../../../../../../hat/assets/js/apps/Iaso/types/utils';
 
+export type Timeline = {
+    categories: Categories;
+};
+
+export type Categories = {
+    key: string;
+    label: string;
+    color: string; // css string
+    active: boolean;
+    completed: boolean;
+    items: {
+        label: string;
+        step_id?: number;
+        performed_at?: string; // datetime
+        performed_by?: {
+            username;
+            first_name;
+            last_name;
+        }; // User
+    }[];
+}[];
+
+export type NextTransition = {
+    key: string;
+    label: string;
+    color: Nullable<'primary' | 'green' | 'red'>;
+    allowed: boolean; // depends on the user's team
+    reason_not_allowed: Nullable<string>;
+    required_fields: string[]; // comment, file, links
+    help_text: string;
+    emails_destination_team_ids?: number[];
+    displayed_fields: string[]; // This field determines the columns shown in the "create" modal
+};
+
 export type Budget = {
     id: number;
     obr_name: string;
@@ -14,17 +48,7 @@ export type Budget = {
         label: string;
     };
     // -> optional: need to pass a param for the API to return it
-    next_transitions?: {
-        key: string;
-        label: string;
-        color: Nullable<'primary' | 'green' | 'red'>;
-        allowed: boolean; // depends on the user's team
-        reason_not_allowed: Nullable<string>;
-        required_fields: string[]; // comment, file, links
-        help_text: string;
-        emails_destination_team_ids?: number[];
-        displayed_fields: string[]; // This field determines the columns shown in the "create" modal
-    }[];
+    next_transitions?: NextTransition[];
     // -> optional: need to pass a param for the API to return it
     possible_states?: {
         key: string;
@@ -35,6 +59,7 @@ export type Budget = {
         key: string;
         label: string;
     }[];
+    timeline?: Timeline;
 };
 
 export type LinkWithAlias = { alias: string; url: string };

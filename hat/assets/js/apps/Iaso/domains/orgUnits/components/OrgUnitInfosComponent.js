@@ -79,6 +79,7 @@ const initialFormState = (orgUnit, referenceSubmissionId) => {
     return {
         id: orgUnit.id.value,
         name: orgUnit.name.value,
+        creator: orgUnit.creator.value,
         org_unit_type_id:
             orgUnit?.org_unit_type_id.value?.toString() ?? undefined,
         groups: orgUnit.groups.value?.map(g => g) ?? [],
@@ -235,6 +236,7 @@ const OrgUnitCreationDetails = ({ orgUnit, formatMessage, classes }) => {
                 value={moment.unix(orgUnit.updated_at).format('LTS')}
                 disabled
             />
+           
 
             {!orgUnit.has_geo_json && !latitudeLongitude && (
                 <Grid
@@ -339,6 +341,12 @@ const OrgUnitInfosComponent = ({
                     errors={orgUnit.name.errors}
                     label={MESSAGES.name}
                     withMarginTop={!orgUnit.reference_instance}
+                />
+                <InputComponent
+                    keyValue="creator"
+                    value={orgUnit.creator.value}
+                    label={MESSAGES.creator}
+                    disabled
                 />
                 <InputComponent
                     keyValue="org_unit_type_id"

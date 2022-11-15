@@ -1,4 +1,3 @@
-from django.test import tag
 from django.contrib.gis.geos import Point
 from django.utils import timezone
 

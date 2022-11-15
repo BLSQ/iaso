@@ -39,6 +39,7 @@ import sortBy from 'lodash/sortBy';
 
 import CheckIcon from '@material-ui/icons/Check';
 import SelectAllIcon from '@material-ui/icons/SelectAll';
+// @ts-ignore
 import InputComponent from 'Iaso/components/forms/InputComponent';
 import uniqBy from 'lodash/uniqBy';
 import { MapComponent } from '../MapComponent/MapComponent';
@@ -102,17 +103,17 @@ type FilteredDistricts = {
     parent_id: number;
 };
 
-type Props = {
-    field;
-    form: FieldProps<Scope[], Values>;
-    values: Values;
+type ExtraProps = {
     filteredDistrictsResult: FilteredDistricts[];
     searchLaunched: boolean;
     searchScopeValue: boolean;
     searchScopeChecked: boolean;
     onChangeSearchScopeFunction: () => void;
+    // eslint-disable-next-line no-unused-vars
     addNewScopeId: (id: number, vaccineName: string) => void;
 };
+
+type Props = FieldProps<Scope[], Values> & ExtraProps;
 
 export const ScopeInput: FunctionComponent<Props> = ({
     field,
@@ -437,8 +438,8 @@ export const ScopeInput: FunctionComponent<Props> = ({
                 .map(s => s.id);
 
             const newScopes: Scope[] = cloneDeep(scopes);
-            newScopes.forEach(scope => {
-                scope.group.org_units = scope.group.org_units.filter(
+            scopes.forEach((scope, index) => {
+                newScopes[index].group.org_units = scope.group.org_units.filter(
                     OrgUnitId => {
                         let idToRemove: number | undefined;
                         if (!OrgUnitIdsToRemove.includes(OrgUnitId)) {
@@ -484,8 +485,8 @@ export const ScopeInput: FunctionComponent<Props> = ({
             const newScopes: Scope[] = cloneDeep(scopes);
             newScopes
                 .filter(sc => sc.vaccine === selectedVaccine)
-                .forEach(scope => {
-                    scope.group.org_units =
+                .forEach((scope, index) => {
+                    newScopes[index].group.org_units =
                         scope.group.org_units.concat(OrgUnitIdsToAdd);
                 });
 

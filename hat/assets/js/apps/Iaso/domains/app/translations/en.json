@@ -637,6 +637,7 @@
     "iaso.orgUnits.title": "Org units",
     "iaso.orgUnits.titleMulti": "org units",
     "iaso.orgUnits.titleSingle": "org unit",
+    "iaso.orgUnits.infos.title": "Org unit infos",
     "iaso.orgUnits.type": "Type",
     "iaso.orgUnitsTypes.create": "Create org unit type",
     "iaso.orgUnitsTypes.dialog.delete": "Are you sure you want to delete this org Unit type?",

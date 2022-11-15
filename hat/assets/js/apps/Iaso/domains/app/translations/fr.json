@@ -634,6 +634,7 @@
     "iaso.orgUnits.title": "Unités d’organisation",
     "iaso.orgUnits.titleMulti": "unités",
     "iaso.orgUnits.titleSingle": "unité",
+    "iaso.orgUnits.infos.title": "Informations unité d'organisation",
     "iaso.orgUnits.type": "Type",
     "iaso.orgUnitsTypes.create": "Créer un type d'unité d'organisation",
     "iaso.orgUnitsTypes.dialog.delete": "Etes-vous certain de vouloir effacer ce type d'unité d'organisation ?",

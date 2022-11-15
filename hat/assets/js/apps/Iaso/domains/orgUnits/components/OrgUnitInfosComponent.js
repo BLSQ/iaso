@@ -16,6 +16,7 @@ import {
     injectIntl,
     FormControl as FormControlComponent,
     IconButton as IconButtonComponent,
+    LoadingSpinner,
 } from 'bluesquare-components';
 import LinkIcon from '@material-ui/icons/Link';
 import LinkOffIcon from '@material-ui/icons/LinkOff';
@@ -50,6 +51,10 @@ const useStyles = makeStyles(theme => ({
     },
     geometryExistence: {
         marginTop: '16px',
+    },
+    alignCenter: {
+        display: 'flex',
+        justifyContent: 'center',
     },
 }));
 
@@ -217,71 +222,72 @@ const OrgUnitCreationDetails = ({ orgUnit, formatMessage, classes }) => {
                   orgUnit.latitude
               },  ${formatMessage(MESSAGES.longitude)}: ${orgUnit.longitude}`
             : false;
+
     return (
         <>
-            <InputComponent
-                keyValue="source"
-                value={orgUnit.source}
-                disabled
-                label={MESSAGES.source}
-                withMarginTop={!orgUnit.reference_instance}
-            />
-            <InputComponent
-                keyValue="created_at"
-                value={moment.unix(orgUnit.created_at).format('LTS')}
-                disabled
-            />
-            <InputComponent
-                keyValue="updated_at"
-                value={moment.unix(orgUnit.updated_at).format('LTS')}
-                disabled
-            />
-           
+            {!orgUnit && <LoadingSpinner absolute />}
+            <WidgetPaper
+                className={classes.infoPaper}
+                title={formatMessage(MESSAGES.orgunitDetailInfosTitle)}
+            >
+                <Box p={4}>
+                    <p>Source : {orgUnit.source}</p>
+                    <p>
+                        Created at:{' '}
+                        {moment.unix(orgUnit.created_at).format('LTS')}
+                    </p>
+                    <p>
+                        Updated at:{' '}
+                        {moment.unix(orgUnit.updated_at).format('LTS')}
+                    </p>
+                    {!orgUnit.has_geo_json && !latitudeLongitude && (
+                        <Grid
+                            container
+                            spacing={1}
+                            className={classes.geometryExistence}
+                        >
+                            <Grid item>
+                                <GpsOffIcon color="primary" />
+                            </Grid>
+                            <Grid item>
+                                <Typography>
+                                    <FormattedMessage
+                                        {...MESSAGES.hasNoGeometryAndGps}
+                                    />
+                                </Typography>
+                            </Grid>
+                        </Grid>
+                    )}
 
-            {!orgUnit.has_geo_json && !latitudeLongitude && (
-                <Grid
-                    container
-                    spacing={1}
-                    className={classes.geometryExistence}
-                >
-                    <Grid item>
-                        <GpsOffIcon color="primary" />
-                    </Grid>
-                    <Grid item>
-                        <Typography>
-                            <FormattedMessage
-                                {...MESSAGES.hasNoGeometryAndGps}
-                            />
-                        </Typography>
-                    </Grid>
-                </Grid>
-            )}
-
-            {orgUnit.has_geo_json && (
-                <Grid
-                    container
-                    spacing={1}
-                    className={classes.geometryExistence}
-                >
-                    <Grid item>
-                        <GpsFixedIcon color="primary" />
-                    </Grid>
-                    <Grid item>
-                        <Typography>
-                            <FormattedMessage {...MESSAGES.hasGeometry} />
-                        </Typography>
-                    </Grid>
-                </Grid>
-            )}
-            {latitudeLongitude && (
-                <InputComponent
-                    keyValue="latitudeLongitude"
-                    value={latitudeLongitude}
-                    type="text"
-                    disabled
-                    label={MESSAGES.latitudeLongitude}
-                />
-            )}
+                    {orgUnit.has_geo_json && (
+                        <Grid
+                            container
+                            spacing={1}
+                            className={classes.geometryExistence}
+                        >
+                            <Grid item>
+                                <GpsFixedIcon color="primary" />
+                            </Grid>
+                            <Grid item>
+                                <Typography>
+                                    <FormattedMessage
+                                        {...MESSAGES.hasGeometry}
+                                    />
+                                </Typography>
+                            </Grid>
+                        </Grid>
+                    )}
+                    {latitudeLongitude && (
+                        <InputComponent
+                            keyValue="latitudeLongitude"
+                            value={latitudeLongitude}
+                            type="text"
+                            disabled
+                            label={MESSAGES.latitudeLongitude}
+                        />
+                    )}
+                </Box>
+            </WidgetPaper>
         </>
     );
 };
@@ -308,12 +314,18 @@ const OrgUnitInfosComponent = ({
     );
 
     return (
-        <Grid container spacing={4}>
+        <Grid
+            container
+            spacing={4}
+            className={
+                orgUnit.id && !orgUnit.reference_instance && classes.alignCenter
+            }
+        >
             {(orgUnit.reference_instance ||
                 (formId === referenceFormId &&
                     formId !== undefined &&
                     referenceFormId !== undefined)) && (
-                    <SpeedDialInstanceActions
+                <SpeedDialInstanceActions
                     speedDialClasses={classes.speedDialTop}
                     actions={Actions(
                         orgUnit,
@@ -341,12 +353,6 @@ const OrgUnitInfosComponent = ({
                     errors={orgUnit.name.errors}
                     label={MESSAGES.name}
                     withMarginTop={!orgUnit.reference_instance}
-                />
-                <InputComponent
-                    keyValue="creator"
-                    value={orgUnit.creator.value}
-                    label={MESSAGES.creator}
-                    disabled
                 />
                 <InputComponent
                     keyValue="org_unit_type_id"
@@ -514,36 +520,38 @@ const OrgUnitInfosComponent = ({
                 </Grid>
             )}
 
-            <Grid item xs={12} md={orgUnit.reference_instance ? 8 : 4}>
-                {orgUnit.id && !orgUnit.reference_instance && (
-                    <OrgUnitCreationDetails
-                        orgUnit={orgUnit}
-                        formatMessage={formatMessage}
-                        classes={classes}
-                    />
-                )}
-                {orgUnit.reference_instance && (
-                    <WidgetPaper
-                        id="form-contents"
-                        title={formatMessage(MESSAGES.detailTitle)}
-                        IconButton={IconButtonComponent}
-                        iconButtonProps={{
-                            onClick: () =>
-                                window.open(
-                                    orgUnit.reference_instance.file_url,
-                                    '_blank',
-                                ),
-                            icon: 'xml',
-                            color: 'secondary',
-                            tooltipMessage: MESSAGES.downloadXml,
-                        }}
-                    >
-                        <InstanceFileContent
-                            instance={orgUnit.reference_instance}
+            {orgUnit.id && orgUnit.reference_instance && (
+                <Grid item xs={12} md={orgUnit.reference_instance ? 8 : 4}>
+                    {!orgUnit.id && !orgUnit.reference_instance && (
+                        <OrgUnitCreationDetails
+                            orgUnit={orgUnit}
+                            formatMessage={formatMessage}
+                            classes={classes}
                         />
-                    </WidgetPaper>
-                )}
-            </Grid>
+                    )}
+                    {orgUnit.reference_instance && (
+                        <WidgetPaper
+                            id="form-contents"
+                            title={formatMessage(MESSAGES.detailTitle)}
+                            IconButton={IconButtonComponent}
+                            iconButtonProps={{
+                                onClick: () =>
+                                    window.open(
+                                        orgUnit.reference_instance.file_url,
+                                        '_blank',
+                                    ),
+                                icon: 'xml',
+                                color: 'secondary',
+                                tooltipMessage: MESSAGES.downloadXml,
+                            }}
+                        >
+                            <InstanceFileContent
+                                instance={orgUnit.reference_instance}
+                            />
+                        </WidgetPaper>
+                    )}
+                </Grid>
+            )}
         </Grid>
     );
 };

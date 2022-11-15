@@ -36,7 +36,7 @@ Then in the FAB (Floating action button, on the top right) button you can Edit :
 * `/enketo/formList` Internal wiring, called by Enketo
 * `/enketo/formDowload` Internal wiring, called by Enketo 
 * `/enketo/submission/` Internal wiring, called by Enketo create the actual value
-* `/fill/<form_uuid>/<org_unit_id>/<period>/` Not sure if used?
+* `/fill/<form_uuid>/<org_unit_id>/<period>/` Not used at the moment
 
 
 # public_create_url

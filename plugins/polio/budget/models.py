@@ -245,8 +245,8 @@ def get_workflow():
     transition_defs = workflow_model.definition["transitions"]
     node_defs = workflow_model.definition["nodes"]
     categories_defs = workflow_model.definition["categories"]
-    if not any(n["key"] == None for n in node_defs):
-        node_defs.append({"key": None, "label": "No budget submitted"})
+    if not any(n["key"] == "-" for n in node_defs):
+        node_defs.insert(0, {"key": "-", "label": "No budget submitted"})
     transitions = [Transition(**transition_def) for transition_def in transition_defs]
     nodes = [Node(**node_def) for node_def in node_defs]
     categories = [Category(**categories_def) for categories_def in categories_defs]

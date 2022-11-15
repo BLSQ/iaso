@@ -229,7 +229,7 @@
         color: primary
         label: Request budget
         to_node: budget_requested
-        from_node: null
+        from_node: "-"
         emails_to_send:
         - - base_email
           - - 4

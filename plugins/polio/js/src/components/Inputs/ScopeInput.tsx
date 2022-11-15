@@ -6,7 +6,7 @@ import React, {
     useMemo,
     useState,
 } from 'react';
-import { useField } from 'formik';
+import { useField, FieldProps } from 'formik';
 import {
     // @ts-ignore
     IconButton as IconButtonComponent,
@@ -37,12 +37,9 @@ import {
 import cloneDeep from 'lodash/cloneDeep';
 import sortBy from 'lodash/sortBy';
 
-import { FieldProps } from 'formik/dist/Field';
-
 import CheckIcon from '@material-ui/icons/Check';
 import SelectAllIcon from '@material-ui/icons/SelectAll';
 import InputComponent from 'Iaso/components/forms/InputComponent';
-import { values } from 'cypress/types/lodash';
 import uniqBy from 'lodash/uniqBy';
 import { MapComponent } from '../MapComponent/MapComponent';
 import { MapLegend } from '../../../../../../hat/assets/js/apps/Iaso/components/maps/MapLegend';
@@ -108,7 +105,7 @@ type FilteredDistricts = {
 type Props = {
     field;
     form: FieldProps<Scope[], Values>;
-    values: values;
+    values: Values;
     filteredDistrictsResult: FilteredDistricts[];
     searchLaunched: boolean;
     searchScopeValue: boolean;
@@ -234,19 +231,23 @@ export const ScopeInput: FunctionComponent<Props> = ({
         ) {
             if (searchLaunched || searchScopeChecked) {
                 const newListAfterRemove = filteredDistricts.filter(dist => {
+                    let distrToRemove: FilteredDistricts | undefined;
                     if (!OrgUnitsIdInSameRegion.includes(dist.id)) {
+                        distrToRemove = dist;
                         addNewScopeId(dist.id, '');
-                        return dist;
                     }
+                    return distrToRemove;
                 });
                 setFilteredDistricts(newListAfterRemove);
             }
 
             scope.group.org_units = scope.group.org_units.filter(OrgUnitId => {
+                let orgIdToRemove: number | undefined;
                 if (!OrgUnitsIdInSameRegion.includes(OrgUnitId)) {
+                    orgIdToRemove = OrgUnitId;
                     addNewScopeId(OrgUnitId, '');
-                    return OrgUnitId;
                 }
+                return orgIdToRemove;
             });
         } else {
             // Remove the OrgUnits from all the scopes
@@ -437,15 +438,14 @@ export const ScopeInput: FunctionComponent<Props> = ({
 
             const newScopes: Scope[] = cloneDeep(scopes);
             newScopes.forEach(scope => {
-                // eslint-disable-next-line no-param-reassign
                 scope.group.org_units = scope.group.org_units.filter(
                     OrgUnitId => {
-                        let toRemoveId: number | null;
+                        let idToRemove: number | undefined;
                         if (!OrgUnitIdsToRemove.includes(OrgUnitId)) {
+                            idToRemove = OrgUnitId;
                             addNewScopeId(OrgUnitId, '');
-                            toRemoveId = OrgUnitId;
                         }
-                        return toRemoveId;
+                        return idToRemove;
                     },
                 );
             });
@@ -485,7 +485,6 @@ export const ScopeInput: FunctionComponent<Props> = ({
             newScopes
                 .filter(sc => sc.vaccine === selectedVaccine)
                 .forEach(scope => {
-                    // eslint-disable-next-line no-param-reassign
                     scope.group.org_units =
                         scope.group.org_units.concat(OrgUnitIdsToAdd);
                 });

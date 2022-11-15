@@ -55,6 +55,7 @@ def write_sheet(wb, sheet_name, col_descs, queryset, get_row, sub_columns=None):
 
 
 def generate_xlsx(sheet_name, columns, queryset, get_row, sub_columns=None):
+    # TODO: document sub_columns parameter
     """
     Generate an XLSX file with the provided parameters.
     The with_link parameter is deprecated. To force

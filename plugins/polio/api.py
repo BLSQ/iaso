@@ -34,7 +34,7 @@ from rest_framework.request import Request
 from rest_framework.response import Response
 from django.conf import settings
 from hat.api.token_authentication import generate_auto_authentication_link
-from iaso.api.common import ModelViewSet, DeletionFilterBackend
+from iaso.api.common import ModelViewSet, DeletionFilterBackend, CONTENT_TYPE_XLSX, CONTENT_TYPE_CSV
 from iaso.models import OrgUnit
 from iaso.models.microplanning import Team
 from iaso.models.org_unit import OrgUnitType
@@ -232,7 +232,7 @@ class CampaignViewSet(ModelViewSet):
 
         response = HttpResponse(
             save_virtual_workbook(xlsx_file),
-            content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+            content_type=CONTENT_TYPE_XLSX,
         )
         response["Content-Disposition"] = "attachment; filename=%s" % filename + ".xlsx"
         return response
@@ -1182,7 +1182,7 @@ def handle_ona_request_with_key(request, key):
             mails,
         )
     if as_csv:
-        response = HttpResponse(content_type="text/csv")
+        response = HttpResponse(content_type=CONTENT_TYPE_CSV)
         writer = csv.writer(response)
         i = 1
         for item in res:
@@ -1268,7 +1268,7 @@ class OrgUnitsPerCampaignViewset(viewsets.ViewSet):
         res = [headers]
         res.extend([org_unit_as_array(o) for o in queryset])
         if as_csv:
-            response = HttpResponse(content_type="text/csv")
+            response = HttpResponse(content_type=CONTENT_TYPE_CSV)
             writer = csv.writer(response)
             for item in res:
                 writer.writerow(item)

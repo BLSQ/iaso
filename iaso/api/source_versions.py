@@ -3,7 +3,7 @@ from rest_framework.decorators import action
 from rest_framework.response import Response
 
 from iaso.models import SourceVersion
-from .common import ModelViewSet
+from .common import ModelViewSet, CONTENT_TYPE_CSV
 from iaso.models import DataSource
 from rest_framework import serializers, permissions
 
@@ -97,7 +97,7 @@ class SourceVersionViewSet(ModelViewSet):
         serializer.is_valid(raise_exception=True)
         # FIXME: FileResponse don't work, no idea why, not a priority
         filename = "comparison.csv"
-        response = HttpResponse(serializer.generate_csv(), content_type="text/csv")
+        response = HttpResponse(serializer.generate_csv(), content_type=CONTENT_TYPE_CSV)
         response["Content-Disposition"] = "attachment; filename=%s" % filename
         return response
 

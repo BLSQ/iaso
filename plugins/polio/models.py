@@ -350,6 +350,7 @@ class Campaign(SoftDeletableModel):
     budget_responsible = models.CharField(max_length=10, choices=RESPONSIBLES, null=True, blank=True)
     is_test = models.BooleanField(default=False)
 
+    # Deprecated
     last_budget_event = models.ForeignKey(
         "BudgetEvent", null=True, blank=True, on_delete=models.SET_NULL, related_name="lastbudgetevent"
     )
@@ -639,6 +640,7 @@ class CampaignGroup(SoftDeletableModel):
     campaigns = models.ManyToManyField(Campaign, related_name="grouped_campaigns")
 
 
+# Deprecated
 class BudgetEvent(SoftDeletableModel):
 
     TYPES = (
@@ -680,6 +682,7 @@ class BudgetEvent(SoftDeletableModel):
         self.campaign.save()
 
 
+# Deprecated
 class BudgetFiles(models.Model):
     event = models.ForeignKey(BudgetEvent, on_delete=models.PROTECT, related_name="event_files")
     file = models.FileField()

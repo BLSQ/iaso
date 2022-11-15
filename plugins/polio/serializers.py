@@ -26,8 +26,6 @@ from .models import (
     Destruction,
     SpreadSheetImport,
     CampaignGroup,
-    BudgetEvent,
-    BudgetFiles,
     RoundScope,
     CampaignScope,
 )
@@ -74,24 +72,6 @@ def _error(message, exc=None):
     if exc:
         errors["debug"] = [str(exc)]
     return errors
-
-
-class BudgetEventSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = BudgetEvent
-        fields = "__all__"
-        read_only_fields = ["created_at", "updated_at", "author"]
-        ordering = ["type", "status", "updated_at"]
-
-    def validate(self, attrs):
-        validated_data = super().validate(attrs)
-        return validated_data
-
-
-class BudgetStatusSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = BudgetEvent
-        fields = ["created_at", "status", "type"]
 
 
 # the following serializer are used so we can audit the modification on a campaign.
@@ -581,7 +561,6 @@ class CampaignSerializer(serializers.ModelSerializer):
     grouped_campaigns = serializers.PrimaryKeyRelatedField(
         many=True, queryset=CampaignGroup.objects.all(), required=False
     )
-    last_budget_event = BudgetStatusSerializer(many=False, required=False, allow_null=True)
     # Account is filed per default the one of the connected user that update it
     account: Field = serializers.PrimaryKeyRelatedField(default=CurrentAccountDefault(), read_only=True)
 
@@ -696,7 +675,6 @@ class CampaignSerializer(serializers.ModelSerializer):
                 scope.group.org_units.set(org_units)
         instance.rounds.set(round_instances)
 
-        validated_data.pop("last_budget_event", None)
         campaign = super().update(instance, validated_data)
 
         log_campaign_modification(campaign, old_campaign_dump, self.context["request"].user)
@@ -863,10 +841,3 @@ class CampaignGroupSerializer(serializers.ModelSerializer):
 
     campaigns = CampaignNameSerializer(many=True, read_only=True)
     campaigns_ids = serializers.PrimaryKeyRelatedField(many=True, queryset=Campaign.objects.all(), source="campaigns")
-
-
-class BudgetFilesSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = BudgetFiles
-        fields = "__all__"
-        read_only_fields = ["created_at", "updated_at"]

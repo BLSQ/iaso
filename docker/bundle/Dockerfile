@@ -42,8 +42,7 @@ RUN apt-get update && apt-get --yes  --no-install-recommends install \
 
 WORKDIR /opt/app
 COPY requirements.txt /opt/app/requirements.txt
-COPY requirements-dev.txt /opt/app/requirements-dev.txt
-RUN pip install -r requirements-dev.txt
+RUN pip install -r requirements.txt
 
 COPY --from=npmbuilder /opt/app/hat/assets /opt/app/hat/assets
 COPY . /opt/app

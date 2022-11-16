@@ -3,7 +3,15 @@
 /* eslint-disable react/prop-types */
 import React from 'react';
 
-import { Grid, DialogContentText, Box, Typography } from '@material-ui/core';
+import {
+    Grid,
+    DialogContentText,
+    Box,
+    Table,
+    TableBody,
+    TableRow,
+    TableCell,
+} from '@material-ui/core';
 
 import PropTypes from 'prop-types';
 import moment from 'moment';
@@ -226,66 +234,105 @@ const OrgUnitCreationDetails = ({ orgUnit, formatMessage, classes }) => {
     return (
         <>
             {!orgUnit && <LoadingSpinner absolute />}
+
             <WidgetPaper
                 className={classes.infoPaper}
                 title={formatMessage(MESSAGES.orgunitDetailInfosTitle)}
             >
                 <Box p={4}>
-                    <p>Source : {orgUnit.source}</p>
-                    <p>
-                        Created at:{' '}
-                        {moment.unix(orgUnit.created_at).format('LTS')}
-                    </p>
-                    <p>
-                        Updated at:{' '}
-                        {moment.unix(orgUnit.updated_at).format('LTS')}
-                    </p>
-                    {!orgUnit.has_geo_json && !latitudeLongitude && (
-                        <Grid
-                            container
-                            spacing={1}
-                            className={classes.geometryExistence}
-                        >
-                            <Grid item>
-                                <GpsOffIcon color="primary" />
-                            </Grid>
-                            <Grid item>
-                                <Typography>
-                                    <FormattedMessage
-                                        {...MESSAGES.hasNoGeometryAndGps}
-                                    />
-                                </Typography>
-                            </Grid>
-                        </Grid>
-                    )}
+                    <Table size="small">
+                        <TableBody>
+                            <TableRow>
+                                <TableCell className={classes.leftCell}>
+                                    {formatMessage(MESSAGES.source)}
+                                </TableCell>
+                                <TableCell>{orgUnit.source}</TableCell>
+                            </TableRow>
 
-                    {orgUnit.has_geo_json && (
-                        <Grid
-                            container
-                            spacing={1}
-                            className={classes.geometryExistence}
-                        >
-                            <Grid item>
-                                <GpsFixedIcon color="primary" />
-                            </Grid>
-                            <Grid item>
-                                <Typography>
-                                    <FormattedMessage
-                                        {...MESSAGES.hasGeometry}
-                                    />
-                                </Typography>
-                            </Grid>
-                        </Grid>
-                    )}
-                    {latitudeLongitude && (
-                        <InputComponent
-                            keyValue="latitudeLongitude"
-                            value={latitudeLongitude}
-                            type="text"
-                            disabled
-                            label={MESSAGES.latitudeLongitude}
-                        />
-                    )}
+                            {orgUnit.creator.value && (
+                                <TableRow>
+                                    <TableCell className={classes.leftCell}>
+                                        {formatMessage(MESSAGES.creator)}
+                                    </TableCell>
+                                    <TableCell>
+                                        {orgUnit.creator.value}
+                                    </TableCell>
+                                </TableRow>
+                            )}
+
+                            <TableRow>
+                                <TableCell className={classes.leftCell}>
+                                    {formatMessage(MESSAGES.created_at)}
+                                </TableCell>
+                                <TableCell>
+                                    {moment
+                                        .unix(orgUnit.created_at)
+                                        .format('LTS')}
+                                </TableCell>
+                            </TableRow>
+
+                            <TableRow>
+                                <TableCell className={classes.leftCell}>
+                                    {formatMessage(MESSAGES.updated_at)}
+                                </TableCell>
+                                <TableCell>
+                                    {moment
+                                        .unix(orgUnit.updated_at)
+                                        .format('LTS')}
+                                </TableCell>
+                            </TableRow>
+
+                            {!orgUnit.has_geo_json && !latitudeLongitude && (
+                                <TableRow>
+                                    <TableCell className={classes.leftCell}>
+                                        <GpsOffIcon color="primary" />
+                                    </TableCell>
+
+                                    <TableCell>
+                                        {formatMessage(
+                                            MESSAGES.hasNoGeometryAndGps,
+                                        )}
+                                    </TableCell>
+                                </TableRow>
+                            )}
+
+                            {orgUnit.has_geo_json && (
+                                <TableRow>
+                                    <TableCell className={classes.leftCell}>
+                                        <GpsFixedIcon color="primary" />
+                                    </TableCell>
+
+                                    <TableCell>
+                                        {formatMessage(MESSAGES.hasGeometry)}
+                                    </TableCell>
+                                </TableRow>
+                            )}
+
+                            {latitudeLongitude && (
+                                <>
+                                    <TableRow>
+                                        <TableCell className={classes.leftCell}>
+                                            {formatMessage(MESSAGES.latitude)}
+                                        </TableCell>
+
+                                        <TableCell>
+                                            {orgUnit.latitude}
+                                        </TableCell>
+                                    </TableRow>
+
+                                    <TableRow>
+                                        <TableCell className={classes.leftCell}>
+                                            {formatMessage(MESSAGES.longitude)}
+                                        </TableCell>
+
+                                        <TableCell>
+                                            {orgUnit.longitude}
+                                        </TableCell>
+                                    </TableRow>
+                                </>
+                            )}
+                        </TableBody>
+                    </Table>
                 </Box>
             </WidgetPaper>
         </>
@@ -313,6 +360,12 @@ const OrgUnitInfosComponent = ({
         initialFormState(orgUnit, instanceId),
     );
 
+    const showSpeedDialInstanceActions =
+        orgUnit.reference_instance ||
+        (formId === referenceFormId &&
+            formId !== undefined &&
+            referenceFormId !== undefined);
+
     return (
         <Grid
             container
@@ -321,10 +374,7 @@ const OrgUnitInfosComponent = ({
                 orgUnit.id && !orgUnit.reference_instance && classes.alignCenter
             }
         >
-            {(orgUnit.reference_instance ||
-                (formId === referenceFormId &&
-                    formId !== undefined &&
-                    referenceFormId !== undefined)) && (
+            {showSpeedDialInstanceActions && (
                 <SpeedDialInstanceActions
                     speedDialClasses={classes.speedDialTop}
                     actions={Actions(
@@ -344,7 +394,7 @@ const OrgUnitInfosComponent = ({
                     }
                 />
             )}
-            <Grid item xs={12} md={6}>
+            <Grid item xs={12} md={!orgUnit.reference_instance ? 6 : 4}>
                 <InputComponent
                     keyValue="name"
                     required
@@ -453,7 +503,7 @@ const OrgUnitInfosComponent = ({
                     value={orgUnit.aliases.value}
                     type="arrayInput"
                 />
-                {orgUnit.reference_instance && (
+                {orgUnit.id.value && (
                     <OrgUnitCreationDetails
                         orgUnit={orgUnit}
                         formatMessage={formatMessage}

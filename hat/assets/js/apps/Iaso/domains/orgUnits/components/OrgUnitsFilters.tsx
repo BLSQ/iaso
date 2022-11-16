@@ -375,6 +375,7 @@ export const OrgUnitFilters: FunctionComponent<Props> = ({
                         ]}
                     />
                 </Box>
+                <Divider />
                 <Box mt={1}>
                     <InputComponent
                         type="select"

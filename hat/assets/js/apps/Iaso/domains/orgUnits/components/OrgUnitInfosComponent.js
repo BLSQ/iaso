@@ -344,7 +344,7 @@ const OrgUnitInfosComponent = ({
                     }
                 />
             )}
-            <Grid item xs={12} md={4}>
+            <Grid item xs={12} md={6}>
                 <InputComponent
                     keyValue="name"
                     required
@@ -463,7 +463,7 @@ const OrgUnitInfosComponent = ({
             </Grid>
 
             {!orgUnit.reference_instance && (
-                <Grid item xs={12} md={4}>
+                <Grid item xs={12} md={6}>
                     <InputComponent
                         keyValue="validation_status"
                         isClearable={false}

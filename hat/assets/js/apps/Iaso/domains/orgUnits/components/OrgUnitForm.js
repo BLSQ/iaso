@@ -1,7 +1,7 @@
 import React, { useState, useCallback, useEffect } from 'react';
 import mapValues from 'lodash/mapValues';
 import PropTypes from 'prop-types';
-import { withStyles, Button, Grid } from '@material-ui/core';
+import { withStyles, Button, Grid, Box } from '@material-ui/core';
 import { FormattedMessage } from 'react-intl';
 
 import { commonStyles } from 'bluesquare-components';
@@ -116,18 +116,41 @@ const OrgUnitForm = ({
 
     return (
         <>
-            <OrgUnitInfos
-                params={params}
-                baseUrl={baseUrl}
-                orgUnit={{
-                    ...orgUnit,
-                    ...formState,
-                }}
-                orgUnitTypes={orgUnitTypes}
-                groups={groups}
-                onChangeInfo={handleChangeInfo}
-                resetTrigger={!orgUnitModified}
-            />
+            <Grid
+                container
+                spacing={0}
+                alignItems="center"
+                className={classes.marginTopBig}
+            >
+                <Grid xs={12} item>
+                    <OrgUnitInfos
+                        params={params}
+                        baseUrl={baseUrl}
+                        orgUnit={{
+                            ...orgUnit,
+                            ...formState,
+                        }}
+                        orgUnitTypes={orgUnitTypes}
+                        groups={groups}
+                        onChangeInfo={handleChangeInfo}
+                        resetTrigger={!orgUnitModified}
+                    />
+                    {isNewOrgunit && (
+                        <Box display="flex" justifyContent="flex-end">
+                            <Button
+                                id="save-ou"
+                                disabled={!orgUnitModified}
+                                variant="contained"
+                                className={classes.marginLeft}
+                                color="primary"
+                                onClick={() => handleSave()}
+                            >
+                                <FormattedMessage {...MESSAGES.save} />
+                            </Button>
+                        </Box>
+                    )}
+                </Grid>
+            </Grid>
             <Grid
                 container
                 spacing={0}
@@ -136,25 +159,28 @@ const OrgUnitForm = ({
             >
                 <Grid xs={12} item className={classes.textAlignRight}>
                     {!isNewOrgunit && (
-                        <Button
-                            className={classes.marginLeft}
-                            disabled={!orgUnitModified}
-                            variant="contained"
-                            onClick={() => handleReset()}
-                        >
-                            <FormattedMessage {...MESSAGES.cancel} />
-                        </Button>
+                        <>
+                            <Button
+                                className={classes.marginLeft}
+                                disabled={!orgUnitModified}
+                                variant="contained"
+                                onClick={() => handleReset()}
+                            >
+                                <FormattedMessage {...MESSAGES.cancel} />
+                            </Button>
+
+                            <Button
+                                id="save-ou"
+                                disabled={!orgUnitModified}
+                                variant="contained"
+                                className={classes.marginLeft}
+                                color="primary"
+                                onClick={() => handleSave()}
+                            >
+                                <FormattedMessage {...MESSAGES.save} />
+                            </Button>
+                        </>
                     )}
-                    <Button
-                        id="save-ou"
-                        disabled={!orgUnitModified}
-                        variant="contained"
-                        className={classes.marginLeft}
-                        color="primary"
-                        onClick={() => handleSave()}
-                    >
-                        <FormattedMessage {...MESSAGES.save} />
-                    </Button>
                 </Grid>
             </Grid>
         </>

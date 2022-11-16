@@ -30,6 +30,7 @@
     "iaso.polio.campaign.seeLogDetail": "Voir plus de détails",
     "iaso.polio.campaign.typeNotSupported": "Ce type de valeur n'est pas encore supporté: {type}",
     "iaso.polio.campaign.value": "Valeur",
+    "iaso.polio.config.teams": "Équipe(s) pour le budget",
     "iaso.polio.createCampaign": "Créer une campagne",
     "iaso.polio.district": "District",
     "iaso.polio.districts": "Districts",

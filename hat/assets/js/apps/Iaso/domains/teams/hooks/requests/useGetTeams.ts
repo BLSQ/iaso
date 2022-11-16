@@ -18,12 +18,12 @@ type TeamList = Pagination & {
 const getTeamsDropdown = async (
     options: TeamParams | TeamFilterParams,
 ): Promise<Team[]> => {
-    const { ...params } = options as Record<string, any>;
+    const { ...params } = (options as Record<string, any>) ?? {};
     if (params.select) {
         delete params.select;
     }
 
-    const url = makeUrlWithParams('/api/microplanning/teams', params);
+    const url = makeUrlWithParams('/api/microplanning/teams/', params);
     return getRequest(url) as Promise<Team[]>;
 };
 const getTeams = async (

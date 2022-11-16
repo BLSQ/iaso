@@ -9,7 +9,7 @@ from iaso.models.microplanning import Team
 from plugins.polio.models import Campaign
 from plugins.polio.serializers import CampaignSerializer, UserSerializer
 from .models import BudgetStep, BudgetStepFile, BudgetStepLink, send_budget_mails, get_workflow
-from .workflow import next_transitions, can_user_transition, Transition, Category
+from .workflow import next_transitions, can_user_transition, Transition, Category, effective_teams
 
 
 class TransitionSerializer(serializers.Serializer):
@@ -23,13 +23,7 @@ class TransitionSerializer(serializers.Serializer):
     displayed_fields = serializers.ListField(child=serializers.CharField())
     # Note : implemented as a Css class in the frontend. Color of the button for approval
     color = serializers.ChoiceField(choices=["primary", "green", "red"], required=False)
-    emails_destination_team_ids = serializers.SerializerMethodField()
-
-    def get_emails_destination_team_ids(self, transition: Transition):
-        teams = []
-        for _, teams_ids in transition.emails_to_send:
-            teams += teams_ids
-        return set(teams)
+    emails_destination_team_ids = serializers.ListField(child=serializers.IntegerField(), required=False)
 
 
 class NestedTransitionSerializer(TransitionSerializer):
@@ -132,10 +126,20 @@ class CampaignBudgetSerializer(CampaignSerializer, DynamicFieldsModelSerializer)
         transitions = next_transitions(workflow.transitions, campaign.budget_current_state_key)
         user = self.context["request"].user
         for transition in transitions:
-            allowed = can_user_transition(transition, user)
+            allowed = can_user_transition(transition, user, campaign)
             transition.allowed = allowed
             if not allowed:
-                transition.reason_not_allowed = "User doesn't have permission"
+                if not effective_teams(campaign, transition.teams_ids_can_transition):
+                    reason = "No team configured for this country and transition"
+                else:
+                    reason = "User doesn't have permission"
+                transition.reason_not_allowed = reason
+
+            # FIXME: filter on effective teams, need campaign
+            teams = []
+            for _, teams_ids in transition.emails_to_send:
+                teams += effective_teams(campaign, teams_ids).values_list("id", flat=True)
+            transition.emails_destination_team_ids = set(teams)
 
         return TransitionSerializer(transitions, many=True).data
 
@@ -189,9 +193,23 @@ class CampaignBudgetSerializer(CampaignSerializer, DynamicFieldsModelSerializer)
                 to_node_key = transition.to_node
                 if to_node_key in node_dict.keys():
                     # If this is in the category
+                    node = node_dict[to_node_key]
+                    for other_key in node.mark_nodes_as_completed:
+                        if other_key not in node_passed_by:
+                            other_node = node_dict.get(other_key)
+                            items.append(
+                                {
+                                    "label": other_node.label,
+                                    "performed_by": step.created_by,
+                                    "performed_at": step.created_at,
+                                    "step_id": step.id,
+                                }
+                            )
+                            node_passed_by.add(other_key)
+
                     items.append(
                         {
-                            "label": node_dict[to_node_key].label,
+                            "label": node.label,
                             "performed_by": step.created_by,
                             "performed_at": step.created_at,
                             "step_id": step.id,
@@ -202,9 +220,9 @@ class CampaignBudgetSerializer(CampaignSerializer, DynamicFieldsModelSerializer)
             for node in c.nodes:  # Node are already sorted
                 if not node.mandatory:
                     continue
-                node_remaining.add(node.key)
                 if node.key in node_passed_by:
                     continue
+                node_remaining.add(node.key)
                 items.append({"label": node.label})
             # color calculation
             active = len(node_passed_by) > 0
@@ -283,7 +301,7 @@ class TransitionToSerializer(serializers.Serializer):
                 }
             )
         transition = transitions[0]
-        if not can_user_transition(transition, user):
+        if not can_user_transition(transition, user, campaign):
             raise serializers.ValidationError({"transition_key": [TransitionError.NOT_ALLOWED]})
 
         for field in transition.required_fields:
@@ -335,7 +353,10 @@ class BudgetFileSerializer(serializers.ModelSerializer):
             "id",
             "file",  # url
             "filename",
+            "permanent_url",
         ]
+
+    permanent_url = serializers.URLField(source="get_absolute_url", read_only=True)
 
 
 class BudgetStepSerializer(serializers.ModelSerializer):

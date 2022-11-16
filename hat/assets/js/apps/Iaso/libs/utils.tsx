@@ -2,12 +2,12 @@
  * Get request with params passed as query params
  * Remove undefined params
  * @param {string} url
- * @param {{[p: string]: T}} params
+ * @param {{[p: string]: T}} urlParams
  */
 // url should include closing slash
 export const makeUrlWithParams = (
     url: string,
-    urlParams: Record<string, unknown>,
+    urlParams: Record<string, string>,
 ): string => {
     // @ts-ignore
     const urlSearchParams = new URLSearchParams();

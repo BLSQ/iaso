@@ -361,11 +361,11 @@ if USE_S3:
         AWS_S3_ENDPOINT_URL = S3_ENDPOINT_URL
         STATIC_LOCATION = "iasostatics"
         STATIC_URL = S3_ENDPOINT_URL + "/" + AWS_STORAGE_BUCKET_NAME + "/" + STATIC_LOCATION + "/"
-        MEDIA_URL = S3_ENDPOINT_URL + "/" + AWS_STORAGE_BUCKET_NAME
+        MEDIA_URL = S3_ENDPOINT_URL + "/" + AWS_STORAGE_BUCKET_NAME + "/"
 
         print("using s3 alternative", AWS_S3_ENDPOINT_URL)
         print(" STATIC_URL", STATIC_URL)
-        print(" MEDIA_URL", STATIC_URL)
+        print(" MEDIA_URL", MEDIA_URL)
 
     DEFAULT_FILE_STORAGE = "storages.backends.s3boto3.S3Boto3Storage"
 else:

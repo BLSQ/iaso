@@ -344,7 +344,7 @@ if USE_S3:
     AWS_S3_SIGNATURE_VERSION = "s3v4"
     AWS_S3_HOST = "s3.%s.amazonaws.com" % AWS_S3_REGION_NAME
     AWS_DEFAULT_ACL = None
-    AWS_S3_ENDPOINT_URL = os.environ.get("AWS_S3_ENDPOINT_URL", None)
+    S3_ENDPOINT_URL = os.environ.get("AWS_S3_ENDPOINT_URL", None)
 
     # s3 static settings
     if CDN_URL:
@@ -357,9 +357,14 @@ if USE_S3:
 
     MEDIA_URL = "https://%s.s3.amazonaws.com/" % AWS_STORAGE_BUCKET_NAME  # subdirectories will depend on field
 
-    if AWS_S3_ENDPOINT_URL:
+    if S3_ENDPOINT_URL:
+        AWS_S3_ENDPOINT_URL = S3_ENDPOINT_URL
+        STATIC_LOCATION = "iasostatics"
+        STATIC_URL = S3_ENDPOINT_URL + "/" + STATIC_LOCATION
+
         print("using s3 alternative", AWS_S3_ENDPOINT_URL)
-        STATIC_URL = "%s" % AWS_S3_ENDPOINT_URL
+        print(" STATIC_URL", STATIC_URL)
+        print(" STATIC_URL", STATIC_URL)
 
     DEFAULT_FILE_STORAGE = "storages.backends.s3boto3.S3Boto3Storage"
 else:

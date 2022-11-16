@@ -20,6 +20,13 @@ from iaso.models import OrgUnit, Form, OrgUnitType
 from django.core.paginator import Paginator
 
 
+def formatted_percentage(part: int, total: int) -> str:
+    if total == 0:
+        return "N/A"
+
+    return "{:.1%}".format(part / total)
+
+
 class CompletenessStatsViewSet(viewsets.ViewSet):
     """Completeness Stats API"""
 
@@ -82,6 +89,7 @@ class CompletenessStatsViewSet(viewsets.ViewSet):
                 parent_data = None
                 if ou.parent is not None:
                     parent_data = (ou.parent.as_dict_for_completeness_stats(),)
+
                 res.append(
                     {
                         "parent_org_unit": parent_data,
@@ -90,11 +98,7 @@ class CompletenessStatsViewSet(viewsets.ViewSet):
                         "form": form.as_dict_for_completeness_stats(),
                         "forms_filled": ou_filled_count,
                         "forms_to_fill": ou_to_fill_count,
-                        "completeness_ratio": (
-                            (ou_filled_count / min(ou_to_fill_count, 1)) * 100
-                        )  # handle case when ou_to_fill is None or 1
-                        if ou_filled_count > 0
-                        else 0,
+                        "completeness_ratio": formatted_percentage(part=ou_filled_count, total=ou_to_fill_count),
                     }
                 )
         limit = int(request.GET.get("limit", "50"))

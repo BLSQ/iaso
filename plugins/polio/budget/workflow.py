@@ -36,6 +36,9 @@ class Transition:
 class Node:
     label: str
     key: str
+    # Hack for the widget. So we can mark node as completed when passing via other field
+    # must be in the same category
+    mark_nodes_as_completed: List[str] = field(default_factory=list)
     category_key: str = ""
     order: int = 0
     mandatory: bool = False

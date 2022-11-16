@@ -132,6 +132,9 @@ jobs:
 
       - run: npm ci
         if: steps.cache.outputs.cache-hit != 'true'
+        
+      - name: install cypress
+        run: npm -i cypress
 
       - name: Cypress run
         uses: cypress-io/github-action@v4

@@ -6,7 +6,7 @@ import React, {
     useCallback,
     useEffect,
 } from 'react';
-import { Field, useFormikContext } from 'formik';
+import { Field, useField, useFormikContext } from 'formik';
 // @ts-ignore
 import { useSafeIntl } from 'bluesquare-components';
 import { TabContext, TabList, TabPanel } from '@material-ui/lab';
@@ -70,12 +70,17 @@ const findScopeWithOrgUnit = (scopes: Scope[], orgUnitId: number) => {
 };
 
 export const ScopeForm: FunctionComponent = () => {
-    const { formatMessage } = useSafeIntl();
+    const [fieldValue, setFieldValue] = useState('scopes');
     const { values } = useFormikContext<Values>();
-    const [scopes] = useState(values.scopes);
+
+    const [field] = useField(fieldValue);
+    const { value: scopes = [] } = field;
+
+    const { formatMessage } = useSafeIntl();
     const [orderBy] = useState('asc');
     const [sortFocus] = useState('DISTRICT');
     const { separate_scopes_per_round: scopePerRound, rounds } = values;
+
     const classes: Record<string, string> = useStyles();
     const sortedRounds = useMemo(
         () =>
@@ -176,6 +181,14 @@ export const ScopeForm: FunctionComponent = () => {
             sortFocus,
         ],
     );
+
+    useEffect(() => {
+        if (scopePerRound) {
+            setFieldValue(`rounds[${currentTab}].scopes`);
+        } else {
+            setFieldValue(`scopes`);
+        }
+    }, [currentTab, scopePerRound, sortedRounds]);
 
     const addNewScopeId = useCallback(
         (id: number, vaccineName: string) => {
@@ -281,6 +294,16 @@ export const ScopeForm: FunctionComponent = () => {
                             <Field
                                 name={`rounds[${round.originalIndex}].scopes`}
                                 component={ScopeInput}
+                                filteredDistrictsResult={filteredDistricts}
+                                searchLaunched={searchLaunched}
+                                searchScopeValue={searchScope}
+                                onChangeSearchScopeFunction={
+                                    onChangeSearchScope
+                                }
+                                searchScopeChecked={searchScopeChecked}
+                                addNewScopeId={(id, vacciName) =>
+                                    addNewScopeId(id, vacciName)
+                                }
                             />
                         </TabPanel>
                     ))}

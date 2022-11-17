@@ -10,17 +10,17 @@ import { Field, useField, useFormikContext } from 'formik';
 // @ts-ignore
 import { useSafeIntl } from 'bluesquare-components';
 import { TabContext, TabList, TabPanel } from '@material-ui/lab';
-import { Tab, Grid, Button, Box } from '@material-ui/core';
-// @ts-ignore
-import InputComponent from 'Iaso/components/forms/InputComponent';
-import FiltersIcon from '@material-ui/icons/FilterList';
-import { FormattedMessage } from 'react-intl';
+import { Tab, Grid } from '@material-ui/core';
 import sortBy from 'lodash/sortBy';
 import isEmpty from 'lodash/isEmpty';
+
 import { ScopeInput } from '../components/Inputs/ScopeInput';
 import { BooleanInput } from '../components/Inputs';
+import { ScopeSearch } from '../components/Scopes/ScopeSearch';
+
 import MESSAGES from '../constants/messages';
 import { useStyles } from '../styles/theme';
+
 import { useGetParentOrgUnit } from '../hooks/useGetParentOrgUnit';
 import { useGetGeoJson } from '../hooks/useGetGeoJson';
 
@@ -72,7 +72,6 @@ export const ScopeForm: FunctionComponent = () => {
                 .sort((a, b) => a.number - b.number),
         [rounds],
     );
-    const [searchUpdated, setSearchUpdated] = useState(false);
     const [searchScope, setSearchScope] = useState(true);
     const [currentTab, setCurrentTab] = useState('1');
     const [filteredDistricts, setFilteredDistricts] = useState<
@@ -94,18 +93,6 @@ export const ScopeForm: FunctionComponent = () => {
     const { data: regionShapes } = useGetGeoJson(parentCountryId, 'REGION');
 
     const [search, setSearch] = useState('');
-
-    useEffect(() => {
-        setSearchUpdated(true);
-    }, [search]);
-
-    useEffect(() => {
-        setSearchUpdated(false);
-    }, []);
-
-    useEffect(() => {
-        setSearchScope(searchScope);
-    }, [searchScope]);
 
     const [newScopeId, setNewScopeId] = useState({ newScope: {} });
 
@@ -195,66 +182,34 @@ export const ScopeForm: FunctionComponent = () => {
                         label={formatMessage(MESSAGES.scope_per_round)}
                     />
                 </Grid>
-
-                <Grid container spacing={3} item xs={12} md={5}>
-                    <Grid xs={12} md={6} item>
-                        <InputComponent
-                            variant="contained"
-                            keyValue="search"
-                            type="search"
-                            onEnterPressed={() => [
-                                searchDistrictByName(searchScope),
-                                setSearchUpdated(false),
-                                setSearchLaunched(true),
-                            ]}
-                            withMarginTop={false}
-                            label={MESSAGES.search}
-                            onChange={(key, value) => {
-                                setSearch(value);
-                            }}
-                            value={search}
-                        />
-                    </Grid>
-                    <Grid xs={12} md={6} item>
-                        <Button
-                            style={{ marginLeft: 'auto' }}
-                            variant="contained"
-                            disabled={!searchUpdated}
-                            color="primary"
-                            onClick={() => [
-                                searchDistrictByName(searchScope),
-                                setSearchUpdated(false),
-                                setSearchLaunched(true),
-                            ]}
-                        >
-                            <Box mr={1} top={3} position="relative">
-                                <FiltersIcon />
-                            </Box>
-                            <FormattedMessage {...MESSAGES.filter} />
-                        </Button>
-                    </Grid>
-                </Grid>
             </Grid>
 
             {!scopePerRound ? (
-                <Field
-                    name="scopes"
-                    component={ScopeInput}
-                    filteredDistrictsResult={filteredDistricts}
-                    searchLaunched={searchLaunched}
-                    searchScopeValue={searchScope}
-                    onChangeSearchScopeFunction={onChangeSearchScope}
-                    searchScopeChecked={searchScopeChecked}
-                    addNewScopeId={(id, vacciName) =>
-                        addNewScopeId(id, vacciName)
-                    }
-                />
+                <>
+                    <ScopeSearch
+                        search={search}
+                        setSearch={setSearch}
+                        onSearch={() => [
+                            searchDistrictByName(searchScope),
+                            setSearchLaunched(true),
+                        ]}
+                    />
+                    <Field
+                        name="scopes"
+                        component={ScopeInput}
+                        filteredDistrictsResult={filteredDistricts}
+                        searchLaunched={searchLaunched}
+                        searchScopeValue={searchScope}
+                        onChangeSearchScopeFunction={onChangeSearchScope}
+                        searchScopeChecked={searchScopeChecked}
+                        addNewScopeId={(id, vacciName) =>
+                            addNewScopeId(id, vacciName)
+                        }
+                    />
+                </>
             ) : (
                 <TabContext value={currentTab}>
-                    <TabList
-                        onChange={handleChangeTab}
-                        // className={classes.subTabs}
-                    >
+                    <TabList onChange={handleChangeTab}>
                         {sortedRounds.map(round => (
                             <Tab
                                 key={round.number}
@@ -271,6 +226,14 @@ export const ScopeForm: FunctionComponent = () => {
                             key={round.number}
                             className={classes.tabPanel}
                         >
+                            <ScopeSearch
+                                search={search}
+                                setSearch={setSearch}
+                                onSearch={() => [
+                                    searchDistrictByName(searchScope),
+                                    setSearchLaunched(true),
+                                ]}
+                            />
                             <Field
                                 name={`rounds[${round.originalIndex}].scopes`}
                                 component={ScopeInput}

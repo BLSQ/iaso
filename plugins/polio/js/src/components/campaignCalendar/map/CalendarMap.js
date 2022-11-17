@@ -1,4 +1,4 @@
-import React, { useRef, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import PropTypes from 'prop-types';
 import { LoadingSpinner } from 'bluesquare-components';
 import { Box } from '@material-ui/core';
@@ -40,10 +40,38 @@ const getShapeQuery = (loadingCampaigns, groupId, campaign, vaccine, round) => {
     };
 };
 
-const CalendarMap = ({ campaigns, loadingCampaigns, isPdf }) => {
-    const classes = useStyles();
-    const [viewport, setViewPort] = useState(defaultViewport);
-    const map = useRef();
+const makeSelections = campaigns => {
+    let maxRound = null;
+    let showRoundZero = false;
+    campaigns.forEach(campaign => {
+        const lastRound = campaign.rounds[campaign.rounds.length - 1];
+        const { number } = lastRound ?? {};
+        if (
+            Number.isInteger(number) &&
+            (!maxRound || (maxRound && number > maxRound))
+        ) {
+            maxRound = number;
+        }
+
+        if (number === 0) {
+            showRoundZero = true;
+        }
+    });
+    // TODO translate
+    const selections = [
+        { value: 'all', label: 'All' },
+        { value: 'latest', label: 'Latest' },
+    ];
+    if (showRoundZero) {
+        selections.push({ value: 0, label: `Round 0}` });
+    }
+    for (let i = 1; i <= maxRound; i += 1) {
+        selections.push({ value: i, label: `Round ${i}` });
+    }
+    return selections;
+};
+
+const makeQueriesForCampaigns = (campaigns, loadingCampaigns) => {
     const queries = [];
     campaigns.forEach(campaign => {
         if (campaign.separateScopesPerRound) {
@@ -73,6 +101,72 @@ const CalendarMap = ({ campaigns, loadingCampaigns, isPdf }) => {
             });
         }
     });
+    return queries;
+};
+
+const useRoundsQueries = (selection, campaigns, loadingCampaigns) => {
+    const [queries, setQueries] = useState([]);
+
+    useEffect(() => {
+        if (selection === 'all') {
+            setQueries(makeQueriesForCampaigns(campaigns, loadingCampaigns));
+        } else if (selection === 'latest') {
+            // This is where the hard computation takes place
+        } else if (selection.includes('Round')) {
+            const campaignsCopy = [...campaigns];
+            const roundNumber = parseInt(selection.split('Round')[1], 10);
+            const campaignsWithFilteredRounds = campaigns.forEach((c, i) => {
+                campaignsCopy[i].rounds = campaignsCopy[i].rounds.filter(
+                    r => r.number === roundNumber,
+                );
+            });
+            setQueries(
+                makeQueriesForCampaigns(
+                    campaignsWithFilteredRounds,
+                    loadingCampaigns,
+                ),
+            );
+        }
+    }, [selection, campaigns, loadingCampaigns]);
+
+    return queries;
+};
+
+const CalendarMap = ({ campaigns, loadingCampaigns, isPdf, currentDate }) => {
+    const classes = useStyles();
+    const [viewport, setViewPort] = useState(defaultViewport);
+    const map = useRef();
+    const [selection, setSelection] = useState('all');
+    const queries = useRoundsQueries(selection, campaigns, loadingCampaigns);
+    // const queries = [];
+    // campaigns.forEach(campaign => {
+    //     if (campaign.separateScopesPerRound) {
+    //         campaign.rounds.forEach(round => {
+    //             round.scopes.forEach(scope => {
+    //                 queries.push(
+    //                     getShapeQuery(
+    //                         loadingCampaigns,
+    //                         scope.group.id,
+    //                         campaign,
+    //                         scope.vaccine,
+    //                         round,
+    //                     ),
+    //                 );
+    //             });
+    //         });
+    //     } else {
+    //         campaign.scopes.forEach(scope => {
+    //             queries.push(
+    //                 getShapeQuery(
+    //                     loadingCampaigns,
+    //                     scope.group.id,
+    //                     campaign,
+    //                     scope.vaccine,
+    //                 ),
+    //             );
+    //         });
+    //     }
+    // });
     const shapesQueries = useQueries(queries);
 
     const { data: mergedShapes, isLoading: isLoadingMergedShapes } =

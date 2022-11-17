@@ -238,6 +238,7 @@ const Calendar = ({ params }) => {
                                 campaigns={filteredCampaigns}
                                 loadingCampaigns={isLoading}
                                 isPdf={isPdf}
+                                currentDate={currentDate}
                             />
                         </Grid>
                     </Grid>

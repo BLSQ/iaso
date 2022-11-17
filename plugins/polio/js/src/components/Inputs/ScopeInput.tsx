@@ -29,9 +29,6 @@ import MESSAGES from '../../constants/messages';
 import { DistrictScopeTable } from '../Scopes/DistrictScopeTable';
 import { MapScope } from '../Scopes/MapScope';
 
-import { useGetParentOrgUnit } from '../../hooks/useGetParentOrgUnit';
-import { useGetGeoJson } from '../../hooks/useGetGeoJson';
-
 import { Scope, Shape, Values, FilteredDistricts } from '../Scopes/types';
 
 type ExtraProps = {
@@ -42,6 +39,10 @@ type ExtraProps = {
     onChangeSearchScopeFunction: () => void;
     // eslint-disable-next-line no-unused-vars
     addNewScopeId: (id: number, vaccineName: string) => void;
+    isFetchingDistricts: boolean;
+    isFetchingRegions: boolean;
+    districtShapes: FilteredDistricts[];
+    regionShapes: Shape[];
 };
 
 type Props = FieldProps<Scope[], Values> & ExtraProps;
@@ -55,30 +56,22 @@ export const ScopeInput: FunctionComponent<Props> = ({
     searchScopeChecked,
     onChangeSearchScopeFunction,
     addNewScopeId,
+    isFetchingDistricts,
+    isFetchingRegions,
+    districtShapes,
+    regionShapes,
 }) => {
     const [selectRegion, setSelectRegion] = useState(false);
     const [selectedVaccine, setSelectedVaccine] = useState<string>('mOPV2');
     const [filteredDistricts, setFilteredDistricts] = useState<
         FilteredDistricts[]
-    >([]);
+    >(filteredDistrictsResult);
 
     // eslint-disable-next-line no-unused-vars
     const [_field, _meta, helpers] = useField(field.name);
     const { formatMessage } = useSafeIntl();
     const { value: scopes = [] } = field;
     const { setValue: setScopes } = helpers;
-
-    const { data: country } = useGetParentOrgUnit(values.initial_org_unit);
-    const parentCountryId =
-        country?.country_parent?.id || country?.root?.id || country?.id;
-
-    const { data: regionShapes, isFetching: isFetchingRegions } = useGetGeoJson(
-        parentCountryId,
-        'REGION',
-    );
-
-    const { data: districtShapes, isFetching: isFetchingDistricts } =
-        useGetGeoJson(parentCountryId, 'DISTRICT');
 
     const isFetching = isFetchingDistricts || isFetchingRegions;
 
@@ -229,7 +222,7 @@ export const ScopeInput: FunctionComponent<Props> = ({
                         dist => dist.id === district.id,
                     );
                     if (addedDistrict[0]) {
-                        addedDistrict.vaccineName = selectedVaccine;
+                        addedDistrict[0].vaccineName = selectedVaccine;
                         newListAfterAdding.push(addedDistrict[0]);
                     }
 
@@ -316,13 +309,11 @@ export const ScopeInput: FunctionComponent<Props> = ({
                     addNewScopeId={addNewScopeId}
                     selectedVaccine={selectedVaccine}
                     regionShapes={regionShapes}
-                    districtShapes={districtShapes}
-                    filteredDistricts={filteredDistricts}
+                    districtShapes={filteredDistricts}
                     setFilteredDistricts={setFilteredDistricts}
                     toggleDistrictInVaccineScope={toggleDistrictInVaccineScope}
                 />
             </Grid>
-            <Grid container />
         </Grid>
     );
 };

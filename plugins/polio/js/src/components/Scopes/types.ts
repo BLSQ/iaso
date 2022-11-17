@@ -37,4 +37,6 @@ export type ShapeRow = Shape & {
 
 export type Round = {
     number: number;
+    scopes: Scope[];
+    originalIndex: number;
 };

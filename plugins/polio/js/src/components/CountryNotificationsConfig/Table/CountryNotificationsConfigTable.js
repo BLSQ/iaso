@@ -71,6 +71,7 @@ const CountryNotificationsConfigTable = ({ params }) => {
                         countryName={settings.row.original.country_name}
                         language={settings.row.original.language}
                         users={settings.row.original.users}
+                        teams={settings.row.original.teams}
                         allUsers={allUsers?.profiles}
                         allLanguages={allLanguages}
                         renderTrigger={({ openDialog }) => (

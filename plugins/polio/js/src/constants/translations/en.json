@@ -30,6 +30,7 @@
     "iaso.polio.campaign.seeLogDetail": "See more details",
     "iaso.polio.campaign.typeNotSupported": "Type not supported yet: {type}",
     "iaso.polio.campaign.value": "Value",
+    "iaso.polio.config.teams": "Team(s) for the Budget workflow",
     "iaso.polio.createCampaign": "Create campaign",
     "iaso.polio.district": "District",
     "iaso.polio.districts": "Districts",

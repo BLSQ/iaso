@@ -1,3 +1,4 @@
+import http
 import json
 from io import StringIO
 from typing import List, Dict
@@ -5,7 +6,9 @@ from unittest import skip, mock
 
 from django.contrib.auth.models import User, Permission
 from django.core.exceptions import ValidationError
-from django.template import Template, Engine, Context
+from django.http import HttpResponse
+from django.template import Engine, Context
+from rest_framework import status
 
 from iaso.test import APITestCase
 from plugins.polio.budget.models import BudgetStep, MailTemplate
@@ -21,7 +24,7 @@ transition_defs = [
         # "required_fields": ["files"],
         "required_fields": [],
         "displayed_fields": ["comment"],
-        "from_node": None,
+        "from_node": "-",
         "to_node": "budget_submitted",
         "teams_ids_can_transition": [],
     },
@@ -152,6 +155,50 @@ class TeamAPITestCase(APITestCase):
         f = j["files"][0]
         self.assertTrue(f["file"].startswith("http"))  # should be an url
         self.assertEqual(f["filename"], fake_file.name)
+
+    def test_step_files(self):
+        "With file and links"
+        self.client.force_login(self.user)
+        prev_budget_step_count = BudgetStep.objects.count()
+        r = self.client.get("/api/polio/budget/")
+        j = self.assertJSONResponse(r, 200)
+        campaigns = j["results"]
+        for c in campaigns:
+            self.assertEqual(c["obr_name"], "test campaign")
+
+        fake_file = StringIO("hello world")
+        fake_file.name = "mon_fichier.txt"
+        r = self.client.post(
+            "/api/polio/budget/transition_to/",
+            data={
+                "transition_key": "submit_budget",
+                "campaign": self.c.id,
+                "comment": "hello world2",
+                "files": [fake_file],
+            },
+        )
+        j = self.assertJSONResponse(r, 201)
+        self.assertEqual(j["result"], "success")
+        step_id = j["id"]
+        s = BudgetStep.objects.get(id=step_id)
+
+        # check that we have only created one step
+        new_budget_step_count = BudgetStep.objects.count()
+        self.assertEqual(prev_budget_step_count + 1, new_budget_step_count)
+
+        self.assertEqual(s.files.count(), 1)
+        r = self.client.get(f"/api/polio/budgetsteps/{s.id}/")
+        j = self.assertJSONResponse(r, 200)
+        f = j["files"][0]
+        self.assertTrue(f["file"].startswith("http"))  # should be an url
+        self.assertEqual(f["filename"], fake_file.name)
+        file_id = s.files.first().id
+        self.assertEqual(f["id"], file_id)
+        self.assertEqual(f["permanent_url"], f"/api/polio/budgetsteps/{s.id}/files/{file_id}/")
+        r = self.client.get(f"/api/polio/budgetsteps/{s.id}/files/{file_id}/")
+        self.assertIsInstance(r, HttpResponse)
+        self.assertEqual(r.status_code, status.HTTP_302_FOUND, r)
+        self.assertTrue(len(r.url) > 0)
 
     def test_transition_to_link(self):
         self.client.force_login(self.user)
@@ -291,7 +338,7 @@ class TeamAPITestCase(APITestCase):
 
         # check initial status and possible transition on campaign
         self.assertEqual(j["obr_name"], "test campaign")
-        self.assertEqual(j["current_state"]["key"], None)
+        self.assertEqual(j["current_state"]["key"], "-")
         self.assertTrue(isinstance(j["next_transitions"], list))
         transitions = j["next_transitions"]
         self.assertEqual(len(transitions), 1)

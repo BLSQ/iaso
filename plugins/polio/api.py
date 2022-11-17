@@ -457,7 +457,7 @@ Timeline tracker Automated message
 
         round_scope_queryset = campaigns.filter(separate_scopes_per_round=True).annotate(
             geom=RawSQL(
-                """select st_asgeojson(st_simplify(st_union(st_buffer(iaso_orgunit.geom::geometry, 0)), 0.01)::geography)
+                """select st_asgeojson(st_simplify(st_union(st_buffer(iaso_orgunit.simplified_geom::geometry, 0)), 0.01)::geography)
 from iaso_orgunit
 right join iaso_group_org_units ON iaso_group_org_units.orgunit_id = iaso_orgunit.id
 right join polio_roundscope ON iaso_group_org_units.group_id =  polio_roundscope.group_id
@@ -469,7 +469,7 @@ where polio_round.campaign_id = polio_campaign.id""",
         # For campaign scope
         campain_scope_queryset = campaigns.filter(separate_scopes_per_round=False).annotate(
             geom=RawSQL(
-                """select st_asgeojson(st_simplify(st_union(st_buffer(iaso_orgunit.geom::geometry, 0)), 0.01)::geography)
+                """select st_asgeojson(st_simplify(st_union(st_buffer(iaso_orgunit.simplified_geom::geometry, 0)), 0.01)::geography)
 from iaso_orgunit
 right join iaso_group_org_units ON iaso_group_org_units.orgunit_id = iaso_orgunit.id
 right join polio_campaignscope ON iaso_group_org_units.group_id =  polio_campaignscope.group_id
@@ -535,9 +535,11 @@ where polio_campaignscope.campaign_id = polio_campaign.id""",
         campaign_scopes = CampaignScope.objects.filter(campaign__in=campaigns.filter(separate_scopes_per_round=False))
         campaign_scopes = campaign_scopes.prefetch_related("campaign")
         campaign_scopes = campaign_scopes.prefetch_related("campaign__country")
+
+        # noinspection SqlResolve
         campaign_scopes = campaign_scopes.annotate(
             geom=RawSQL(
-                """select st_asgeojson(st_simplify(st_union(st_buffer(iaso_orgunit.geom::geometry, 0)), 0.01)::geography)
+                """SELECT st_asgeojson(st_simplify(st_union(st_buffer(iaso_orgunit.simplified_geom::geometry, 0)), 0.01)::geography)
 from iaso_orgunit right join iaso_group_org_units ON iaso_group_org_units.orgunit_id = iaso_orgunit.id
 where group_id = polio_campaignscope.group_id""",
                 [],
@@ -564,9 +566,10 @@ where group_id = polio_campaignscope.group_id""",
         round_scopes = RoundScope.objects.filter(round__campaign__in=campaigns.filter(separate_scopes_per_round=True))
         round_scopes = round_scopes.prefetch_related("round__campaign")
         round_scopes = round_scopes.prefetch_related("round__campaign__country")
+        # noinspection SqlResolve
         round_scopes = round_scopes.annotate(
             geom=RawSQL(
-                """select st_asgeojson(st_simplify(st_union(st_buffer(iaso_orgunit.geom::geometry, 0)), 0.01)::geography)
+                """select st_asgeojson(st_simplify(st_union(st_buffer(iaso_orgunit.simplified_geom::geometry, 0)), 0.01)::geography)
 from iaso_orgunit right join iaso_group_org_units ON iaso_group_org_units.orgunit_id = iaso_orgunit.id
 where group_id = polio_roundscope.group_id""",
                 [],

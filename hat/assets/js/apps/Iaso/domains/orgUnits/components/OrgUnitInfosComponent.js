@@ -235,105 +235,90 @@ const OrgUnitCreationDetails = ({ orgUnit, formatMessage, classes }) => {
         <>
             {!orgUnit && <LoadingSpinner absolute />}
 
-            <WidgetPaper
-                className={classes.infoPaper}
-                title={formatMessage(MESSAGES.orgunitDetailInfosTitle)}
-            >
-                <Box p={4}>
-                    <Table size="small">
-                        <TableBody>
+            <WidgetPaper showHeader={false}>
+                <Table size="normal">
+                    <TableBody>
+                        <TableRow>
+                            <TableCell className={classes.leftCell}>
+                                {formatMessage(MESSAGES.source)}
+                            </TableCell>
+                            <TableCell>{orgUnit.source}</TableCell>
+                        </TableRow>
+
+                        {orgUnit.creator.value && (
                             <TableRow>
                                 <TableCell className={classes.leftCell}>
-                                    {formatMessage(MESSAGES.source)}
+                                    {formatMessage(MESSAGES.creator)}
                                 </TableCell>
-                                <TableCell>{orgUnit.source}</TableCell>
+                                <TableCell>{orgUnit.creator.value}</TableCell>
                             </TableRow>
+                        )}
 
-                            {orgUnit.creator.value && (
-                                <TableRow>
-                                    <TableCell className={classes.leftCell}>
-                                        {formatMessage(MESSAGES.creator)}
-                                    </TableCell>
-                                    <TableCell>
-                                        {orgUnit.creator.value}
-                                    </TableCell>
-                                </TableRow>
-                            )}
+                        <TableRow>
+                            <TableCell className={classes.leftCell}>
+                                {formatMessage(MESSAGES.created_at)}
+                            </TableCell>
+                            <TableCell>
+                                {moment.unix(orgUnit.created_at).format('LTS')}
+                            </TableCell>
+                        </TableRow>
 
+                        <TableRow>
+                            <TableCell className={classes.leftCell}>
+                                {formatMessage(MESSAGES.updated_at)}
+                            </TableCell>
+                            <TableCell>
+                                {moment.unix(orgUnit.updated_at).format('LTS')}
+                            </TableCell>
+                        </TableRow>
+
+                        {!orgUnit.has_geo_json && !latitudeLongitude && (
                             <TableRow>
                                 <TableCell className={classes.leftCell}>
-                                    {formatMessage(MESSAGES.created_at)}
+                                    <GpsOffIcon color="primary" />
                                 </TableCell>
+
                                 <TableCell>
-                                    {moment
-                                        .unix(orgUnit.created_at)
-                                        .format('LTS')}
+                                    {formatMessage(
+                                        MESSAGES.hasNoGeometryAndGps,
+                                    )}
                                 </TableCell>
                             </TableRow>
+                        )}
 
+                        {orgUnit.has_geo_json && (
                             <TableRow>
                                 <TableCell className={classes.leftCell}>
-                                    {formatMessage(MESSAGES.updated_at)}
+                                    <GpsFixedIcon color="primary" />
                                 </TableCell>
+
                                 <TableCell>
-                                    {moment
-                                        .unix(orgUnit.updated_at)
-                                        .format('LTS')}
+                                    {formatMessage(MESSAGES.hasGeometry)}
                                 </TableCell>
                             </TableRow>
+                        )}
 
-                            {!orgUnit.has_geo_json && !latitudeLongitude && (
+                        {latitudeLongitude && (
+                            <>
                                 <TableRow>
                                     <TableCell className={classes.leftCell}>
-                                        <GpsOffIcon color="primary" />
+                                        {formatMessage(MESSAGES.latitude)}
                                     </TableCell>
 
-                                    <TableCell>
-                                        {formatMessage(
-                                            MESSAGES.hasNoGeometryAndGps,
-                                        )}
-                                    </TableCell>
+                                    <TableCell>{orgUnit.latitude}</TableCell>
                                 </TableRow>
-                            )}
 
-                            {orgUnit.has_geo_json && (
                                 <TableRow>
                                     <TableCell className={classes.leftCell}>
-                                        <GpsFixedIcon color="primary" />
+                                        {formatMessage(MESSAGES.longitude)}
                                     </TableCell>
 
-                                    <TableCell>
-                                        {formatMessage(MESSAGES.hasGeometry)}
-                                    </TableCell>
+                                    <TableCell>{orgUnit.longitude}</TableCell>
                                 </TableRow>
-                            )}
-
-                            {latitudeLongitude && (
-                                <>
-                                    <TableRow>
-                                        <TableCell className={classes.leftCell}>
-                                            {formatMessage(MESSAGES.latitude)}
-                                        </TableCell>
-
-                                        <TableCell>
-                                            {orgUnit.latitude}
-                                        </TableCell>
-                                    </TableRow>
-
-                                    <TableRow>
-                                        <TableCell className={classes.leftCell}>
-                                            {formatMessage(MESSAGES.longitude)}
-                                        </TableCell>
-
-                                        <TableCell>
-                                            {orgUnit.longitude}
-                                        </TableCell>
-                                    </TableRow>
-                                </>
-                            )}
-                        </TableBody>
-                    </Table>
-                </Box>
+                            </>
+                        )}
+                    </TableBody>
+                </Table>
             </WidgetPaper>
         </>
     );
@@ -370,9 +355,7 @@ const OrgUnitInfosComponent = ({
         <Grid
             container
             spacing={4}
-            className={
-                orgUnit.id && !orgUnit.reference_instance && classes.alignCenter
-            }
+            className={!orgUnit.id.value && classes.alignCenter}
         >
             {showSpeedDialInstanceActions && (
                 <SpeedDialInstanceActions
@@ -394,7 +377,7 @@ const OrgUnitInfosComponent = ({
                     }
                 />
             )}
-            <Grid item xs={12} md={!orgUnit.reference_instance ? 6 : 4}>
+            <Grid item xs={12} md={!orgUnit.id.value ? 6 : 4}>
                 <InputComponent
                     keyValue="name"
                     required
@@ -503,82 +486,66 @@ const OrgUnitInfosComponent = ({
                     value={orgUnit.aliases.value}
                     type="arrayInput"
                 />
-                {orgUnit.id.value && (
+
+                <InputComponent
+                    keyValue="validation_status"
+                    isClearable={false}
+                    onChange={onChangeInfo}
+                    errors={orgUnit.validation_status.errors}
+                    value={orgUnit.validation_status.value}
+                    type="select"
+                    label={MESSAGES.status}
+                    options={[
+                        {
+                            label: formatMessage(MESSAGES.new),
+                            value: 'NEW',
+                        },
+                        {
+                            label: formatMessage(MESSAGES.validated),
+                            value: 'VALID',
+                        },
+                        {
+                            label: formatMessage(MESSAGES.rejected),
+                            value: 'REJECTED',
+                        },
+                    ]}
+                />
+                <InputComponent
+                    keyValue="source_ref"
+                    value={orgUnit.source_ref.value || ''}
+                    onChange={onChangeInfo}
+                    errors={orgUnit.source_ref.errors}
+                />
+                <FormControlComponent
+                    errors={orgUnit.parent_id.errors}
+                    id="ou-tree-input"
+                >
+                    <OrgUnitTreeviewModal
+                        toggleOnLabelClick={false}
+                        titleMessage={MESSAGES.selectParentOrgUnit}
+                        onConfirm={treeviewOrgUnit => {
+                            if (
+                                (treeviewOrgUnit
+                                    ? treeviewOrgUnit.id
+                                    : null) !== orgUnit.parent_id.value
+                            ) {
+                                onChangeInfo('parent_id', treeviewOrgUnit?.id);
+                            }
+                        }}
+                        source={orgUnit.source_id}
+                        initialSelection={reformatOrgUnit(orgUnit)}
+                        resetTrigger={resetTrigger}
+                    />
+                </FormControlComponent>
+            </Grid>
+
+            {orgUnit.id.value && (
+                <Grid item xs={12} md={8}>
                     <OrgUnitCreationDetails
                         orgUnit={orgUnit}
                         formatMessage={formatMessage}
                         classes={classes}
                     />
-                )}
-            </Grid>
-
-            {!orgUnit.reference_instance && (
-                <Grid item xs={12} md={6}>
-                    <InputComponent
-                        keyValue="validation_status"
-                        isClearable={false}
-                        onChange={onChangeInfo}
-                        errors={orgUnit.validation_status.errors}
-                        value={orgUnit.validation_status.value}
-                        type="select"
-                        label={MESSAGES.status}
-                        options={[
-                            {
-                                label: formatMessage(MESSAGES.new),
-                                value: 'NEW',
-                            },
-                            {
-                                label: formatMessage(MESSAGES.validated),
-                                value: 'VALID',
-                            },
-                            {
-                                label: formatMessage(MESSAGES.rejected),
-                                value: 'REJECTED',
-                            },
-                        ]}
-                    />
-                    <InputComponent
-                        keyValue="source_ref"
-                        value={orgUnit.source_ref.value || ''}
-                        onChange={onChangeInfo}
-                        errors={orgUnit.source_ref.errors}
-                    />
-                    <FormControlComponent
-                        errors={orgUnit.parent_id.errors}
-                        id="ou-tree-input"
-                    >
-                        <OrgUnitTreeviewModal
-                            toggleOnLabelClick={false}
-                            titleMessage={MESSAGES.selectParentOrgUnit}
-                            onConfirm={treeviewOrgUnit => {
-                                if (
-                                    (treeviewOrgUnit
-                                        ? treeviewOrgUnit.id
-                                        : null) !== orgUnit.parent_id.value
-                                ) {
-                                    onChangeInfo(
-                                        'parent_id',
-                                        treeviewOrgUnit?.id,
-                                    );
-                                }
-                            }}
-                            source={orgUnit.source_id}
-                            initialSelection={reformatOrgUnit(orgUnit)}
-                            resetTrigger={resetTrigger}
-                        />
-                    </FormControlComponent>
-                </Grid>
-            )}
-
-            {orgUnit.id && orgUnit.reference_instance && (
-                <Grid item xs={12} md={orgUnit.reference_instance ? 8 : 4}>
-                    {!orgUnit.id && !orgUnit.reference_instance && (
-                        <OrgUnitCreationDetails
-                            orgUnit={orgUnit}
-                            formatMessage={formatMessage}
-                            classes={classes}
-                        />
-                    )}
                     {orgUnit.reference_instance && (
                         <WidgetPaper
                             id="form-contents"

@@ -11,6 +11,7 @@ import { Field, useField, useFormikContext } from 'formik';
 import { useSafeIntl } from 'bluesquare-components';
 import { TabContext, TabList, TabPanel } from '@material-ui/lab';
 import { Tab, Grid, Button, Box } from '@material-ui/core';
+// @ts-ignore
 import InputComponent from 'Iaso/components/forms/InputComponent';
 import FiltersIcon from '@material-ui/icons/FilterList';
 import { FormattedMessage } from 'react-intl';
@@ -23,17 +24,12 @@ import { useStyles } from '../styles/theme';
 import { useGetParentOrgUnit } from '../hooks/useGetParentOrgUnit';
 import { useGetGeoJson } from '../hooks/useGetGeoJson';
 
-type Scope = {
-    vaccine: string;
-    group: {
-        org_units: number[];
-        id?: number;
-    };
-};
-
-type Round = {
-    number: number;
-};
+import {
+    Scope,
+    Shape,
+    FilteredDistricts,
+    Round,
+} from '../components/Scopes/types';
 
 type Values = {
     separate_scopes_per_round?: boolean;
@@ -41,21 +37,6 @@ type Values = {
     scopes: any;
     initial_org_unit: number;
 };
-
-type Shape = {
-    name: string;
-    id: number;
-    parent_id: number;
-    country_parent?: { id: number };
-    root?: { id: number };
-};
-
-type FilteredDistricts = {
-    id: number;
-    name: string;
-    vaccineName: string;
-};
-
 const findRegion = (shape: Shape, regionShapes: Shape[]) => {
     return regionShapes.filter(
         regionShape => regionShape.id === shape.parent_id,
@@ -143,7 +124,6 @@ export const ScopeForm: FunctionComponent = () => {
             if (!isEmpty(newScopeId.newScope)) {
                 filtreds = filtreds.map(d => {
                     if (newScopeId.newScope[d.id] !== undefined) {
-                        // eslint-disable-next-line no-param-reassign
                         d.vaccineName = newScopeId.newScope[d.id];
                     }
 

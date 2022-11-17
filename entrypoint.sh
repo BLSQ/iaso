@@ -90,7 +90,6 @@ case "$1" in
     python "${@:2}"
   ;;
   * )
-    echo "Assuming execution from IDE"
-    exec "$@"
+    show_help
   ;;
 esac

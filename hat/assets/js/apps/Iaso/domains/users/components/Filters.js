@@ -2,7 +2,7 @@ import React, { useState, useCallback } from 'react';
 import { useDispatch } from 'react-redux';
 import PropTypes from 'prop-types';
 
-import { Grid, Button, makeStyles } from '@material-ui/core';
+import { Grid, Button, makeStyles, Box } from '@material-ui/core';
 import SearchIcon from '@material-ui/icons/Search';
 
 import { commonStyles, useSafeIntl } from 'bluesquare-components';
@@ -11,6 +11,8 @@ import InputComponent from 'Iaso/components/forms/InputComponent';
 import { redirectTo } from '../../../routing/actions';
 import MESSAGES from '../messages';
 import { useGetPermissionsDropDown } from '../hooks/useGetPermissionsDropdown.ts';
+import { OrgUnitTreeviewModal } from '../../orgUnits/components/TreeView/OrgUnitTreeviewModal';
+import { useGetOrgUnit } from '../../orgUnits/components/TreeView/requests';
 
 const useStyles = makeStyles(theme => ({
     ...commonStyles(theme),
@@ -24,8 +26,11 @@ const Filters = ({ baseUrl, params }) => {
     const [filters, setFilters] = useState({
         search: params.search,
         permissions: params.permissions,
+        location: params.location,
     });
+    const [initialOrgUnitId, setInitialOrgUnitId] = useState(params?.location);
     const { data: dropdown, isFetching } = useGetPermissionsDropDown();
+    const { data: initialOrgUnit } = useGetOrgUnit(initialOrgUnitId);
 
     const handleSearch = useCallback(() => {
         if (filtersUpdated) {
@@ -42,6 +47,9 @@ const Filters = ({ baseUrl, params }) => {
     const handleChange = useCallback(
         (key, value) => {
             setFiltersUpdated(true);
+            if (key === 'location') {
+                setInitialOrgUnitId(value);
+            }
             setFilters({
                 ...filters,
                 [key]: value,
@@ -87,6 +95,21 @@ const Filters = ({ baseUrl, params }) => {
                         loading={isFetching}
                         onEnterPressed={handleSearchPerms}
                     />
+                </Grid>
+                <Grid item xs={3}>
+                    <Box id="ou-tree-input">
+                        <OrgUnitTreeviewModal
+                            toggleOnLabelClick={false}
+                            titleMessage={MESSAGES.location}
+                            onConfirm={orgUnit =>
+                                handleChange(
+                                    'location',
+                                    orgUnit ? [orgUnit.id] : undefined,
+                                )
+                            }
+                            initialSelection={initialOrgUnit}
+                        />
+                    </Box>
                 </Grid>
             </Grid>
             <Grid

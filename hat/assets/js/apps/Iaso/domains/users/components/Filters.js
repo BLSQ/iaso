@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useCallback } from 'react';
 import { useDispatch } from 'react-redux';
 import PropTypes from 'prop-types';
 
@@ -10,6 +10,7 @@ import { commonStyles, useSafeIntl } from 'bluesquare-components';
 import InputComponent from 'Iaso/components/forms/InputComponent';
 import { redirectTo } from '../../../routing/actions';
 import MESSAGES from '../messages';
+import { useGetPermissionsDropDown } from '../hooks/useGetPermissionsDropdown.ts';
 
 const useStyles = makeStyles(theme => ({
     ...commonStyles(theme),
@@ -23,7 +24,9 @@ const Filters = ({ baseUrl, params }) => {
     const [filters, setFilters] = useState({
         search: params.search,
     });
-    const handleSearch = () => {
+    const { data: dropdown, isFetching } = useGetPermissionsDropDown();
+
+    const handleSearch = useCallback(() => {
         if (filtersUpdated) {
             setFiltersUpdated(false);
             const tempParams = {
@@ -33,14 +36,19 @@ const Filters = ({ baseUrl, params }) => {
             tempParams.page = 1;
             dispatch(redirectTo(baseUrl, tempParams));
         }
-    };
-    const handleChange = (key, value) => {
-        setFiltersUpdated(true);
-        setFilters({
-            ...filters,
-            [key]: value,
-        });
-    };
+    }, [baseUrl, dispatch, filters, filtersUpdated, params]);
+
+    const handleChange = useCallback(
+        (key, value) => {
+            setFiltersUpdated(true);
+            setFilters({
+                ...filters,
+                [key]: value,
+            });
+        },
+        [filters],
+    );
+
     return (
         <>
             <Grid container spacing={4}>
@@ -52,6 +60,18 @@ const Filters = ({ baseUrl, params }) => {
                         type="search"
                         label={MESSAGES.search}
                         onEnterPressed={handleSearch}
+                    />
+                </Grid>
+                <Grid item xs={3}>
+                    <InputComponent
+                        keyValue="permissions"
+                        onChange={handleChange}
+                        value={filters.permissions}
+                        type="select"
+                        multi
+                        options={dropdown ?? []}
+                        label={MESSAGES.permissions}
+                        loading={isFetching}
                     />
                 </Grid>
             </Grid>

@@ -21,8 +21,6 @@ show_help() {
 export PYTHONPATH="/opt/app:$PYTHONPATH"
 export DJANGO_SETTINGS_MODULE=hat.settings
 
-
-
 case "$1" in
   "start")
     ./scripts/wait_for_dbs.sh

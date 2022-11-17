@@ -60,9 +60,11 @@ class ProfilesViewSet(viewsets.ViewSet):
         page_offset = request.GET.get("page", 1)
         orders = request.GET.get("order", "user__username").split(",")
         search = request.GET.get("search", None)
+        perms = request.GET.get("permissions", None)
 
         queryset = self.get_queryset()
         if search:
+            print("SEARCH")
             queryset = queryset.filter(
                 Q(user__username__icontains=search)
                 | Q(user__first_name__icontains=search)
@@ -70,6 +72,10 @@ class ProfilesViewSet(viewsets.ViewSet):
                 | Q(user__iaso_profile__org_units__name__icontains=search)
                 | Q(user__user_permissions__codename__icontains=search)
             ).distinct()
+
+        if perms:
+            permissions = perms.split(",")
+            queryset = queryset.filter(user__user_permissions__codename__in=permissions).distinct()
 
         if limit:
             queryset = queryset.order_by(*orders)

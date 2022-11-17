@@ -23,6 +23,7 @@ const Filters = ({ baseUrl, params }) => {
     const dispatch = useDispatch();
     const [filters, setFilters] = useState({
         search: params.search,
+        permissions: params.permissions,
     });
     const { data: dropdown, isFetching } = useGetPermissionsDropDown();
 
@@ -49,6 +50,18 @@ const Filters = ({ baseUrl, params }) => {
         [filters],
     );
 
+    const handleSearchPerms = useCallback(() => {
+        if (filtersUpdated) {
+            setFiltersUpdated(false);
+            const tempParams = {
+                ...params,
+                ...filters,
+            };
+            tempParams.page = 1;
+            dispatch(redirectTo(baseUrl, tempParams));
+        }
+    }, [baseUrl, dispatch, filters, filtersUpdated, params]);
+
     return (
         <>
             <Grid container spacing={4}>
@@ -72,6 +85,7 @@ const Filters = ({ baseUrl, params }) => {
                         options={dropdown ?? []}
                         label={MESSAGES.permissions}
                         loading={isFetching}
+                        onEnterPressed={handleSearchPerms}
                     />
                 </Grid>
             </Grid>

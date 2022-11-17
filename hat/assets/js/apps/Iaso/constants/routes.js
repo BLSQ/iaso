@@ -498,6 +498,10 @@ export const usersPath = {
             isRequired: false,
             key: 'search',
         },
+        {
+            isRequired: false,
+            key: 'permissions',
+        },
         ...paginationPathParams.map(p => ({
             ...p,
             isRequired: true,

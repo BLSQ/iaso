@@ -1,5 +1,6 @@
 /* eslint-disable camelcase */
 import { UrlParams } from '../../../types/table';
+import { TeamType } from '../constants';
 
 export type SubTeam = {
     id: number;
@@ -20,7 +21,7 @@ export type Team = {
     sub_teams: Array<number>;
     sub_teams_details: Array<SubTeam>;
     project: number;
-    type?: 'TEAM_OF_TEAMS' | 'TEAM_OF_USERS';
+    type?: TeamType;
     users: Array<number>;
     users_details: Array<User>;
     created_at: string;
@@ -31,6 +32,7 @@ export type TeamFilterParams = {
     dateTo?: string;
     dateFrom?: string;
     project?: number;
+    type?: TeamType;
 };
 
 export type TeamParams = UrlParams &

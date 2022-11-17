@@ -13,8 +13,8 @@ export const useGetPermissionsDropDown = (): UseQueryResult =>
                 if (!data) return [];
                 return data.permissions.map(permission => {
                     return {
-                        value: permission.id,
-                        label: permission.codename,
+                        value: permission.codename,
+                        label: permission.name,
                     };
                 });
             },

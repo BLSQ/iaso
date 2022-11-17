@@ -28,5 +28,6 @@ class Migration(migrations.Migration):
     ]
 
     operations = [
-        migrations.RunPython(add_user_permissions, migrations.RunPython.noop),
+        # We don't need this permission anymore, just remove the code
+        # migrations.RunPython(add_user_permissions, migrations.RunPython.noop),
     ]

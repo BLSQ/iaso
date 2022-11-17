@@ -60,10 +60,10 @@ class ProfilesViewSet(viewsets.ViewSet):
         orders = request.GET.get("order", "user__username").split(",")
         search = request.GET.get("search", None)
         perms = request.GET.get("permissions", None)
+        org_unit = request.GET.get("orgunit", None)
 
         queryset = self.get_queryset()
         if search:
-            print("SEARCH")
             queryset = queryset.filter(
                 Q(user__username__icontains=search)
                 | Q(user__first_name__icontains=search)

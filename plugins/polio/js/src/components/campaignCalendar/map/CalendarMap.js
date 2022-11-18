@@ -73,6 +73,7 @@ const makeSelections = campaigns => {
 
 const makeQueriesForCampaigns = (campaigns, loadingCampaigns) => {
     const queries = [];
+    if (!campaigns) return queries;
     campaigns.forEach(campaign => {
         if (campaign.separateScopesPerRound) {
             campaign.rounds.forEach(round => {
@@ -115,16 +116,13 @@ const useRoundsQueries = (selection, campaigns, loadingCampaigns) => {
         } else if (selection.includes('Round')) {
             const campaignsCopy = [...campaigns];
             const roundNumber = parseInt(selection.split('Round')[1], 10);
-            const campaignsWithFilteredRounds = campaigns.forEach((c, i) => {
+            campaigns.forEach((c, i) => {
                 campaignsCopy[i].rounds = campaignsCopy[i].rounds.filter(
                     r => r.number === roundNumber,
                 );
             });
             setQueries(
-                makeQueriesForCampaigns(
-                    campaignsWithFilteredRounds,
-                    loadingCampaigns,
-                ),
+                makeQueriesForCampaigns(campaignsCopy, loadingCampaigns),
             );
         }
     }, [selection, campaigns, loadingCampaigns]);
@@ -136,7 +134,7 @@ const CalendarMap = ({ campaigns, loadingCampaigns, isPdf, currentDate }) => {
     const classes = useStyles();
     const [viewport, setViewPort] = useState(defaultViewport);
     const map = useRef();
-    const [selection, setSelection] = useState('all');
+    const [selection, setSelection] = useState('Round 1');
     const queries = useRoundsQueries(selection, campaigns, loadingCampaigns);
     // const queries = [];
     // campaigns.forEach(campaign => {

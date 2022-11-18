@@ -6,14 +6,14 @@ import React, {
     useCallback,
 } from 'react';
 import PropTypes from 'prop-types';
-import { LoadingSpinner, Select } from 'bluesquare-components';
+import { LoadingSpinner } from 'bluesquare-components';
 import { Box } from '@material-ui/core';
 import { Map, TileLayer } from 'react-leaflet';
 import { useQueries } from 'react-query';
 import { getRequest } from 'Iaso/libs/Api';
 import moment from 'moment';
 import { useGetMergedCampaignShapes } from '../../../hooks/useGetMergedCampaignShapes.ts';
-
+import { MapRoundSelector } from './MapRoundSelector.tsx';
 import { VaccinesLegend } from './VaccinesLegend';
 import { CampaignsLegend } from './CampaignsLegend';
 import { appId } from '../../../constants/app';
@@ -205,16 +205,18 @@ const useRoundsQueries = (campaigns, loadingCampaigns) => {
     return queries;
 };
 
+// CurrentDate should be today, for map purposes
 const CalendarMap = ({ campaigns, loadingCampaigns, isPdf, currentDate }) => {
     const classes = useStyles();
     const [viewport, setViewPort] = useState(defaultViewport);
     const map = useRef();
-    const [selection, setSelection] = useState('latest');
+    const [selection, setSelection] = useState(2);
     const { campaigns: campaignsForMap, roundsDict } = useRoundSelection(
         selection,
         campaigns,
         currentDate,
     );
+    console.log(currentDate);
     const queries = useRoundsQueries(campaignsForMap, loadingCampaigns);
 
     const options = useMemo(() => makeSelections(campaigns), [campaigns]);
@@ -253,6 +255,7 @@ const CalendarMap = ({ campaigns, loadingCampaigns, isPdf, currentDate }) => {
             return shapesForSelectedCampaign?.map(addShapeColor);
         }
 
+        // This will only work if there are separate scopes per round
         if (selection === 'latest') {
             return shapesForSelectedCampaign
                 ?.filter(
@@ -262,7 +265,7 @@ const CalendarMap = ({ campaigns, loadingCampaigns, isPdf, currentDate }) => {
                 )
                 .map(addShapeColor);
         }
-
+        // This will only work if there are separate scopes per round
         if (typeof selection === 'number') {
             return shapesForSelectedCampaign
                 ?.filter(shape => shape.properties.round_number === selection)
@@ -290,23 +293,21 @@ const CalendarMap = ({ campaigns, loadingCampaigns, isPdf, currentDate }) => {
         <Box position="relative">
             {(loadingCampaigns || loadingShapes) && <LoadingSpinner absolute />}
             <div className={classes.mapLegend}>
+                <MapRoundSelector
+                    selection={selection}
+                    options={options}
+                    onChange={value => {
+                        setSelection(value);
+                    }}
+                    label="Show round"
+                />
                 {viewport.zoom > boundariesZoomLimit && (
-                    <CampaignsLegend campaigns={campaigns} />
+                    <Box mt={2}>
+                        <CampaignsLegend campaigns={campaigns} />
+                    </Box>
                 )}
                 <Box display="flex" justifyContent="flex-end">
                     <VaccinesLegend />
-                </Box>
-                <Box display="flex" justifyContent="flex-end" mt={2}>
-                    <Select
-                        value={selection}
-                        options={options}
-                        onChange={value => {
-                            setSelection(value);
-                        }}
-                        keyValue="selection"
-                        label="Show round"
-                        clearable={false}
-                    />
                 </Box>
             </div>
             <Map

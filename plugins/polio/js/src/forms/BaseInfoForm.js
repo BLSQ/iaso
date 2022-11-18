@@ -101,7 +101,7 @@ export const BaseInfoForm = () => {
                     <Box mb={-2}>
                         <Field
                             name="initial_org_unit"
-                            label={formatMessage(MESSAGES.selectInitialRegion)}
+                            label={formatMessage(MESSAGES.selectOrgUnit)}
                             component={OrgUnitsLevels}
                             clearable={false}
                         />

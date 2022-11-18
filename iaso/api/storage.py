@@ -102,7 +102,7 @@ class StorageStatusSerializerForMobile(StorageStatusSerializer):
 class StorageSerializer(serializers.ModelSerializer):
     storage_id = serializers.CharField(source="customer_chosen_id")
     storage_type = serializers.CharField(source="type")
-    status = StorageStatusSerializer(source="*")
+    storage_status = StorageStatusSerializer(source="*")
     entity = EntityNestedSerializer(read_only=True)
     org_unit = OrgUnitNestedSerializer(read_only=True)
     created_at = TimestampField(read_only=True)
@@ -115,7 +115,7 @@ class StorageSerializer(serializers.ModelSerializer):
             "created_at",
             "storage_id",
             "storage_type",
-            "status",
+            "storage_status",
             "org_unit",
             "entity",
         )

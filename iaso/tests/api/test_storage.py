@@ -70,6 +70,7 @@ class StorageAPITestCase(APITestCase):
             type="SD",
             status="BLACKLISTED",
             status_reason="ABUSE",
+            status_updated_at=datetime(2022, 11, 8, 13, 12, 56, 0, tzinfo=timezone.utc),
             entity=cls.entity,
         )
 
@@ -424,7 +425,7 @@ class StorageAPITestCase(APITestCase):
         response = self.client.get("/api/storage/")
         self.assertEqual(response.status_code, 200)
         received_json = response.json()
-        self.assertEqual(
+        self.assertListEqual(
             received_json,
             [
                 {
@@ -432,7 +433,7 @@ class StorageAPITestCase(APITestCase):
                     "created_at": 1580608922.0,
                     "storage_id": "EXISTING_STORAGE",
                     "storage_type": "NFC",
-                    "status": {"status": "OK", "reason": "", "comment": "", "updated_at": None},
+                    "storage_status": {"status": "OK", "reason": "", "comment": "", "updated_at": None},
                     "org_unit": None,
                     "entity": None,
                 },
@@ -441,7 +442,7 @@ class StorageAPITestCase(APITestCase):
                     "created_at": 1580608922.0,
                     "storage_id": "ANOTHER_EXISTING_STORAGE_BLACKLISTED_STOLEN",
                     "storage_type": "NFC",
-                    "status": {
+                    "storage_status": {
                         "status": "BLACKLISTED",
                         "reason": "STOLEN",
                         "comment": "",
@@ -455,7 +456,12 @@ class StorageAPITestCase(APITestCase):
                     "created_at": 1580608922.0,
                     "storage_id": "ANOTHER_EXISTING_STORAGE_BLACKLISTED_ABUSE",
                     "storage_type": "SD",
-                    "status": {"status": "BLACKLISTED", "reason": "ABUSE", "comment": "", "updated_at": None},
+                    "storage_status": {
+                        "status": "BLACKLISTED",
+                        "reason": "ABUSE",
+                        "comment": "",
+                        "updated_at": "2022-11-08T13:12:56Z",
+                    },
                     "org_unit": None,
                     "entity": {"id": self.entity.id, "name": "New Client 3"},
                 },
@@ -475,7 +481,7 @@ class StorageAPITestCase(APITestCase):
                     "created_at": 1580608922.0,
                     "storage_id": "ANOTHER_EXISTING_STORAGE_BLACKLISTED_STOLEN",
                     "storage_type": "NFC",
-                    "status": {
+                    "storage_status": {
                         "status": "BLACKLISTED",
                         "reason": "STOLEN",
                         "comment": "",
@@ -489,7 +495,12 @@ class StorageAPITestCase(APITestCase):
                     "created_at": 1580608922.0,
                     "storage_id": "ANOTHER_EXISTING_STORAGE_BLACKLISTED_ABUSE",
                     "storage_type": "SD",
-                    "status": {"status": "BLACKLISTED", "reason": "ABUSE", "comment": "", "updated_at": None},
+                    "storage_status": {
+                        "status": "BLACKLISTED",
+                        "reason": "ABUSE",
+                        "comment": "",
+                        "updated_at": "2022-11-08T13:12:56Z",
+                    },
                     "org_unit": None,
                     "entity": {"id": self.entity.id, "name": "New Client 3"},
                 },
@@ -511,7 +522,7 @@ class StorageAPITestCase(APITestCase):
                     "created_at": 1580608922.0,
                     "storage_id": "ANOTHER_EXISTING_STORAGE_BLACKLISTED_STOLEN",
                     "storage_type": "NFC",
-                    "status": {
+                    "storage_status": {
                         "status": "BLACKLISTED",
                         "reason": "STOLEN",
                         "comment": "",
@@ -536,7 +547,7 @@ class StorageAPITestCase(APITestCase):
                     "created_at": 1580608922.0,
                     "storage_id": "EXISTING_STORAGE",
                     "storage_type": "NFC",
-                    "status": {"status": "OK", "reason": "", "comment": "", "updated_at": None},
+                    "storage_status": {"status": "OK", "reason": "", "comment": "", "updated_at": None},
                     "org_unit": None,
                     "entity": None,
                 },
@@ -545,7 +556,7 @@ class StorageAPITestCase(APITestCase):
                     "created_at": 1580608922.0,
                     "storage_id": "ANOTHER_EXISTING_STORAGE_BLACKLISTED_STOLEN",
                     "storage_type": "NFC",
-                    "status": {
+                    "storage_status": {
                         "status": "BLACKLISTED",
                         "reason": "STOLEN",
                         "comment": "",
@@ -585,7 +596,12 @@ class StorageAPITestCase(APITestCase):
                     "created_at": 1580608922.0,
                     "storage_id": "ANOTHER_EXISTING_STORAGE_BLACKLISTED_ABUSE",
                     "storage_type": "SD",
-                    "status": {"status": "BLACKLISTED", "reason": "ABUSE", "updated_at": None, "comment": ""},
+                    "storage_status": {
+                        "status": "BLACKLISTED",
+                        "reason": "ABUSE",
+                        "updated_at": "2022-11-08T13:12:56Z",
+                        "comment": "",
+                    },
                     "org_unit": None,
                     "entity": {"id": self.entity.id, "name": "New Client 3"},
                 }
@@ -750,7 +766,7 @@ class StorageAPITestCase(APITestCase):
                 "created_at": 1580608922.0,
                 "storage_id": "EXISTING_STORAGE",
                 "storage_type": "NFC",
-                "status": {"status": "OK", "reason": "", "comment": "", "updated_at": None},
+                "storage_status": {"status": "OK", "reason": "", "comment": "", "updated_at": None},
                 "org_unit": None,
                 "entity": None,
                 "logs": [
@@ -787,7 +803,7 @@ class StorageAPITestCase(APITestCase):
                 "created_at": 1580608922.0,
                 "storage_id": "EXISTING_STORAGE",
                 "storage_type": "NFC",
-                "status": {"status": "OK", "reason": "", "comment": "", "updated_at": None},
+                "storage_status": {"status": "OK", "reason": "", "comment": "", "updated_at": None},
                 "org_unit": None,
                 "entity": None,
                 "logs": [],
@@ -818,7 +834,7 @@ class StorageAPITestCase(APITestCase):
                 "created_at": 1580608922.0,
                 "storage_id": "EXISTING_STORAGE",
                 "storage_type": "NFC",
-                "status": {"status": "OK", "reason": "", "comment": "", "updated_at": None},
+                "storage_status": {"status": "OK", "reason": "", "comment": "", "updated_at": None},
                 "org_unit": None,
                 "entity": None,
                 "logs": [
@@ -855,7 +871,7 @@ class StorageAPITestCase(APITestCase):
                 "created_at": 1580608922.0,
                 "storage_id": "EXISTING_STORAGE",
                 "storage_type": "NFC",
-                "status": {"status": "OK", "reason": "", "comment": "", "updated_at": None},
+                "storage_status": {"status": "OK", "reason": "", "comment": "", "updated_at": None},
                 "org_unit": None,
                 "entity": None,
                 "logs": [
@@ -888,7 +904,7 @@ class StorageAPITestCase(APITestCase):
                 "created_at": 1580608922.0,
                 "storage_id": "EXISTING_STORAGE",
                 "storage_type": "NFC",
-                "status": {"status": "OK", "reason": "", "comment": "", "updated_at": None},
+                "storage_status": {"status": "OK", "reason": "", "comment": "", "updated_at": None},
                 "org_unit": None,
                 "entity": None,
                 "logs": [],
@@ -906,7 +922,7 @@ class StorageAPITestCase(APITestCase):
                 "created_at": 1580608922.0,
                 "storage_id": "EXISTING_STORAGE",
                 "storage_type": "NFC",
-                "status": {"status": "OK", "reason": "", "comment": "", "updated_at": None},
+                "storage_status": {"status": "OK", "reason": "", "comment": "", "updated_at": None},
                 "org_unit": None,
                 "entity": None,
                 "logs": [
@@ -948,7 +964,7 @@ class StorageAPITestCase(APITestCase):
                 "created_at": 1580608922.0,
                 "storage_id": "EXISTING_STORAGE",
                 "storage_type": "NFC",
-                "status": {"status": "OK", "reason": "", "comment": "", "updated_at": None},
+                "storage_status": {"status": "OK", "reason": "", "comment": "", "updated_at": None},
                 "org_unit": None,
                 "entity": None,
                 "logs": [
@@ -999,7 +1015,7 @@ class StorageAPITestCase(APITestCase):
                 "created_at": 1580608922.0,
                 "storage_id": "EXISTING_STORAGE",
                 "storage_type": "NFC",
-                "status": {"status": "OK", "reason": "", "comment": "", "updated_at": None},
+                "storage_status": {"status": "OK", "reason": "", "comment": "", "updated_at": None},
                 "org_unit": None,
                 "entity": None,
                 "logs": [
@@ -1032,7 +1048,7 @@ class StorageAPITestCase(APITestCase):
                 "created_at": 1580608922.0,
                 "storage_id": "EXISTING_STORAGE",
                 "storage_type": "NFC",
-                "status": {"status": "OK", "reason": "", "comment": "", "updated_at": None},
+                "storage_status": {"status": "OK", "reason": "", "comment": "", "updated_at": None},
                 "org_unit": None,
                 "entity": None,
                 "logs": [],
@@ -1053,7 +1069,7 @@ class StorageAPITestCase(APITestCase):
                 "created_at": 1580608922.0,
                 "storage_id": "EXISTING_STORAGE",
                 "storage_type": "NFC",
-                "status": {"status": "OK", "reason": "", "comment": "", "updated_at": None},
+                "storage_status": {"status": "OK", "reason": "", "comment": "", "updated_at": None},
                 "org_unit": None,
                 "entity": None,
                 "logs": [],
@@ -1106,7 +1122,7 @@ class StorageAPITestCase(APITestCase):
                     "created_at": 1580608922.0,
                     "storage_id": "EXISTING_STORAGE",
                     "storage_type": "NFC",
-                    "status": {"status": "OK", "reason": "", "comment": "", "updated_at": None},
+                    "storage_status": {"status": "OK", "reason": "", "comment": "", "updated_at": None},
                     "org_unit": None,
                     "entity": None,
                     "logs": [
@@ -1146,7 +1162,7 @@ class StorageAPITestCase(APITestCase):
                     "created_at": 1580608922.0,
                     "storage_id": "EXISTING_STORAGE",
                     "storage_type": "NFC",
-                    "status": {"status": "OK", "reason": "", "comment": "", "updated_at": None},
+                    "storage_status": {"status": "OK", "reason": "", "comment": "", "updated_at": None},
                     "org_unit": None,
                     "entity": None,
                     "logs": [
@@ -1186,7 +1202,7 @@ class StorageAPITestCase(APITestCase):
                     "created_at": 1580608922.0,
                     "storage_id": "EXISTING_STORAGE",
                     "storage_type": "NFC",
-                    "status": {"status": "OK", "reason": "", "comment": "", "updated_at": None},
+                    "storage_status": {"status": "OK", "reason": "", "comment": "", "updated_at": None},
                     "org_unit": None,
                     "entity": None,
                     "logs": [
@@ -1488,7 +1504,7 @@ class StorageAPITestCase(APITestCase):
                         "storage_status": {
                             "status": "BLACKLISTED",
                             "reason": "ABUSE",
-                            "updated_at": None,
+                            "updated_at": 1667913176.0,
                             "comment": "",
                         },
                     },

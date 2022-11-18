@@ -96,6 +96,7 @@ export const MapScope: FunctionComponent<Props> = ({
                     main: 'District',
                     background: 'Region',
                 }}
+                height={540}
             />
 
             <MapLegend

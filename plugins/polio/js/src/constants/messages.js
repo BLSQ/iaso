@@ -1882,6 +1882,14 @@ const MESSAGES = defineMessages({
         id: 'iaso.polio.form.label.rrtOprttApproval',
         defaultMessage: 'RRT/OPRTT Approval',
     },
+    loading: {
+        id: 'iaso.label.loading',
+        defaultMessage: 'Loading',
+    },
+    noOptions: {
+        id: 'iaso.label.noOptions',
+        defaultMessage: 'No result found',
+    },
 });
 
 export default MESSAGES;

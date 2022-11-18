@@ -1,7 +1,8 @@
 import React, { FunctionComponent, useState, useEffect } from 'react';
 import { Grid, Button, Box } from '@material-ui/core';
 import FiltersIcon from '@material-ui/icons/FilterList';
-import { FormattedMessage } from 'react-intl';
+// @ts-ignore
+import { useSafeIntl } from 'bluesquare-components';
 
 // @ts-ignore
 import InputComponent from 'Iaso/components/forms/InputComponent';
@@ -19,13 +20,14 @@ export const ScopeSearch: FunctionComponent<Props> = ({
     search,
     setSearch,
 }) => {
+    const { formatMessage } = useSafeIntl();
     const [searchUpdated, setSearchUpdated] = useState(false);
     useEffect(() => {
         setSearchUpdated(true);
     }, [search]);
     return (
-        <Grid container spacing={3} item xs={12} md={5}>
-            <Grid xs={12} md={6} item>
+        <Grid container spacing={2} item xs={12} alignItems="center">
+            <Grid xs={12} md={8} item>
                 <InputComponent
                     variant="contained"
                     keyValue="search"
@@ -39,7 +41,7 @@ export const ScopeSearch: FunctionComponent<Props> = ({
                     value={search}
                 />
             </Grid>
-            <Grid xs={12} md={6} item>
+            <Grid container xs={12} md={4} item justifyContent="flex-end">
                 <Button
                     style={{ marginLeft: 'auto' }}
                     variant="contained"
@@ -50,7 +52,7 @@ export const ScopeSearch: FunctionComponent<Props> = ({
                     <Box mr={1} top={3} position="relative">
                         <FiltersIcon />
                     </Box>
-                    <FormattedMessage {...MESSAGES.filter} />
+                    {formatMessage(MESSAGES.filter)}
                 </Button>
             </Grid>
         </Grid>

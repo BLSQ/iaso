@@ -21,6 +21,7 @@ import {
     TablePagination,
     TableRow,
     Typography,
+    Box,
 } from '@material-ui/core';
 import cloneDeep from 'lodash/cloneDeep';
 import sortBy from 'lodash/sortBy';
@@ -44,7 +45,7 @@ type Props = {
     addNewScopeId: (id: number, vaccineName: string) => void;
     selectedVaccine: string;
     regionShapes: Shape[];
-    districtShapes: FilteredDistricts[];
+    districtShapes?: FilteredDistricts[];
     // eslint-disable-next-line no-unused-vars
     setFilteredDistricts: (id: FilteredDistricts[]) => void;
     toggleDistrictInVaccineScope: (
@@ -53,6 +54,10 @@ type Props = {
         // eslint-disable-next-line no-unused-vars
         selectedVac: string,
     ) => void;
+    page: number;
+    // eslint-disable-next-line no-unused-vars
+    setPage: (page: number) => void;
+    isFetching: boolean;
 };
 
 export const DistrictScopeTable: FunctionComponent<Props> = ({
@@ -65,14 +70,15 @@ export const DistrictScopeTable: FunctionComponent<Props> = ({
     districtShapes,
     setFilteredDistricts,
     toggleDistrictInVaccineScope,
+    page,
+    setPage,
+    isFetching,
 }) => {
-    // eslint-disable-next-line no-unused-vars
-    const [_field, _meta, helpers] = useField(field.name);
+    const [, , helpers] = useField(field.name);
     const classes: Record<string, string> = useStyles();
     const { formatMessage } = useSafeIntl();
     const { value: scopes = [] } = field;
     const { setValue: setScopes } = helpers;
-    const [page, setPage] = useState(0);
     const [rowsPerPage, setRowsPerPage] = useState(10);
     const [orderBy, setOrderBy] = useState('asc');
     const [sortFocus, setSortFocus] = useState('DISTRICT');
@@ -97,7 +103,7 @@ export const DistrictScopeTable: FunctionComponent<Props> = ({
                 scope.group.org_units.push(district.id);
             }
             // when the add is done on searched result and update the filteredDistricts state
-            if (searchLaunched || searchScopeChecked) {
+            if ((searchLaunched || searchScopeChecked) && districtShapes) {
                 const newListAfterAdding = [...districtShapes];
                 districtShapes.forEach((dist, index) => {
                     if (dist.id === district.id) {
@@ -140,7 +146,7 @@ export const DistrictScopeTable: FunctionComponent<Props> = ({
     const removeRegionFromTable = useCallback(
         (shape: ShapeRow) => {
             const OrgUnitIdsToRemove = districtShapes
-                .filter(s => s.parent_id === shape.parent_id)
+                ?.filter(s => s.parent_id === shape.parent_id)
                 .map(s => s.id);
 
             const newScopes: Scope[] = cloneDeep(scopes);
@@ -148,7 +154,7 @@ export const DistrictScopeTable: FunctionComponent<Props> = ({
                 newScopes[index].group.org_units = scope.group.org_units.filter(
                     OrgUnitId => {
                         let idToRemove: number | undefined;
-                        if (!OrgUnitIdsToRemove.includes(OrgUnitId)) {
+                        if (!OrgUnitIdsToRemove?.includes(OrgUnitId)) {
                             idToRemove = OrgUnitId;
                             addNewScopeId(OrgUnitId, '');
                         }
@@ -157,10 +163,10 @@ export const DistrictScopeTable: FunctionComponent<Props> = ({
                 );
             });
 
-            if (searchLaunched || searchScopeChecked) {
+            if ((searchLaunched || searchScopeChecked) && districtShapes) {
                 const newListAfterRegionRemoved = [...districtShapes];
                 districtShapes.forEach((dist, index) => {
-                    if (OrgUnitIdsToRemove.includes(dist.id)) {
+                    if (OrgUnitIdsToRemove?.includes(dist.id)) {
                         newListAfterRegionRemoved[index].vaccineName = '';
                         addNewScopeId(dist.id, '');
                     }
@@ -266,10 +272,16 @@ export const DistrictScopeTable: FunctionComponent<Props> = ({
         if (orderBy === 'desc') {
             ds = ds.reverse();
         }
-
-        return ds;
-    }, [regionShapes, districtShapes, sortFocus, orderBy, scopes]);
-
+        return ds.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage);
+    }, [
+        regionShapes,
+        districtShapes,
+        sortFocus,
+        orderBy,
+        page,
+        rowsPerPage,
+        scopes,
+    ]);
     return (
         <>
             <TableContainer className={classes.districtList}>
@@ -315,101 +327,102 @@ export const DistrictScopeTable: FunctionComponent<Props> = ({
                         </TableRow>
                     </TableHead>
                     <TableBody>
-                        {shapesForTable
-                            ?.slice(
-                                page * rowsPerPage,
-                                page * rowsPerPage + rowsPerPage,
-                            )
-                            .map((shape, i) => {
-                                return (
-                                    <TableRow
-                                        key={shape.id}
-                                        className={
-                                            i % 2 > 0
-                                                ? classes.districtListRow
-                                                : ''
-                                        }
+                        {(isFetching ||
+                            (!isFetching && districtShapes?.length === 0)) && (
+                            <TableRow>
+                                <TableCell colSpan={4}>
+                                    <Box textAlign="center" width="100%">
+                                        {isFetching &&
+                                            formatMessage(MESSAGES.loading)}
+                                        {!isFetching &&
+                                            districtShapes?.length === 0 &&
+                                            formatMessage(MESSAGES.noOptions)}
+                                    </Box>
+                                </TableCell>
+                            </TableRow>
+                        )}
+                        {shapesForTable?.map((shape, i) => {
+                            return (
+                                <TableRow
+                                    key={shape.id}
+                                    className={
+                                        i % 2 > 0 ? classes.districtListRow : ''
+                                    }
+                                >
+                                    <TableCell>
+                                        <TableText text={shape.region} />
+                                    </TableCell>
+                                    <TableCell>
+                                        <TableText text={shape.name} />
+                                    </TableCell>
+                                    <TableCell>
+                                        <TableText text={shape.vaccineName} />
+                                    </TableCell>
+                                    <TableCell
+                                        style={{
+                                            padding: 0,
+                                            cursor: 'pointer',
+                                            textAlign: 'center',
+                                        }}
                                     >
-                                        <TableCell>
-                                            <TableText text={shape.region} />
-                                        </TableCell>
-                                        <TableCell>
-                                            <TableText text={shape.name} />
-                                        </TableCell>
-                                        <TableCell>
-                                            <TableText
-                                                text={shape.vaccineName}
-                                            />
-                                        </TableCell>
-                                        <TableCell
-                                            style={{
-                                                padding: 0,
-                                                cursor: 'pointer',
-                                                textAlign: 'center',
-                                            }}
-                                        >
-                                            {shape.vaccineName && (
-                                                <>
-                                                    <IconButtonComponent
-                                                        size="small"
-                                                        onClick={() =>
-                                                            removeRegionFromTable(
-                                                                shape,
-                                                            )
-                                                        }
-                                                        icon="clearAll"
-                                                        tooltipMessage={
-                                                            MESSAGES.removeRegion
-                                                        }
-                                                    />
-                                                    <IconButtonComponent
-                                                        size="small"
-                                                        onClick={() =>
-                                                            removeDistrictFromTable(
-                                                                shape,
-                                                            )
-                                                        }
-                                                        icon="clear"
-                                                        tooltipMessage={
-                                                            MESSAGES.removeDistrict
-                                                        }
-                                                    />
-                                                </>
-                                            )}
-                                            {!shape.vaccineName && (
-                                                <>
-                                                    <IconButtonComponent
-                                                        size="small"
-                                                        onClick={() =>
-                                                            addRegionToTable(
-                                                                shape,
-                                                            )
-                                                        }
-                                                        overrideIcon={
-                                                            SelectAllIcon
-                                                        }
-                                                        tooltipMessage={
-                                                            MESSAGES.addRegion
-                                                        }
-                                                    />
-                                                    <IconButtonComponent
-                                                        size="small"
-                                                        onClick={() =>
-                                                            addDistrictToTable(
-                                                                shape,
-                                                            )
-                                                        }
-                                                        overrideIcon={CheckIcon}
-                                                        tooltipMessage={
-                                                            MESSAGES.addDistrict
-                                                        }
-                                                    />
-                                                </>
-                                            )}
-                                        </TableCell>
-                                    </TableRow>
-                                );
-                            })}
+                                        {shape.vaccineName && (
+                                            <>
+                                                <IconButtonComponent
+                                                    size="small"
+                                                    onClick={() =>
+                                                        removeRegionFromTable(
+                                                            shape,
+                                                        )
+                                                    }
+                                                    icon="clearAll"
+                                                    tooltipMessage={
+                                                        MESSAGES.removeRegion
+                                                    }
+                                                />
+                                                <IconButtonComponent
+                                                    size="small"
+                                                    onClick={() =>
+                                                        removeDistrictFromTable(
+                                                            shape,
+                                                        )
+                                                    }
+                                                    icon="clear"
+                                                    tooltipMessage={
+                                                        MESSAGES.removeDistrict
+                                                    }
+                                                />
+                                            </>
+                                        )}
+                                        {!shape.vaccineName && (
+                                            <>
+                                                <IconButtonComponent
+                                                    size="small"
+                                                    onClick={() =>
+                                                        addRegionToTable(shape)
+                                                    }
+                                                    overrideIcon={SelectAllIcon}
+                                                    tooltipMessage={
+                                                        MESSAGES.addRegion
+                                                    }
+                                                />
+                                                <IconButtonComponent
+                                                    size="small"
+                                                    onClick={() =>
+                                                        addDistrictToTable(
+                                                            shape,
+                                                        )
+                                                    }
+                                                    overrideIcon={CheckIcon}
+                                                    tooltipMessage={
+                                                        MESSAGES.addDistrict
+                                                    }
+                                                />
+                                            </>
+                                        )}
+                                    </TableCell>
+                                </TableRow>
+                            );
+                        })}
                     </TableBody>
                 </MuiTable>
             </TableContainer>
@@ -417,7 +430,7 @@ export const DistrictScopeTable: FunctionComponent<Props> = ({
                 className={classes.tablePagination}
                 rowsPerPageOptions={[5, 10, 25]}
                 component="div"
-                count={shapesForTable?.length ?? 0}
+                count={districtShapes?.length ?? 0}
                 rowsPerPage={rowsPerPage}
                 page={page}
                 labelRowsPerPage="Rows"

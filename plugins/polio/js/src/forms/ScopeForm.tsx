@@ -5,6 +5,7 @@ import React, {
     useMemo,
     useCallback,
     useEffect,
+    ReactNode,
 } from 'react';
 import { Field, useFormikContext } from 'formik';
 // @ts-ignore
@@ -47,11 +48,12 @@ export const ScopeForm: FunctionComponent = () => {
                 .sort((a, b) => a.number - b.number),
         [rounds],
     );
+    const [page, setPage] = useState(0);
     const [searchScope, setSearchScope] = useState(true);
     const [currentTab, setCurrentTab] = useState('1');
     const [filteredDistricts, setFilteredDistricts] = useState<
-        FilteredDistricts[]
-    >([]);
+        FilteredDistricts[] | undefined
+    >();
     const [searchLaunched, setSearchLaunched] = useState(false);
     const [searchScopeChecked, setSearchScopeChecked] = useState(false);
     const handleChangeTab = (event, newValue) => {
@@ -88,36 +90,39 @@ export const ScopeForm: FunctionComponent = () => {
     const [newScopeId, setNewScopeId] = useState({ newScope: {} });
 
     const searchDistrictByName = useCallback(() => {
-        let filtreds: FilteredDistricts[] = [...districtShapes].map(
-            district => {
-                return {
-                    ...district,
-                    region: findRegion(district, regionShapes),
-                    vaccineName: findScopeWithOrgUnit(scopes, district.id)
-                        ?.vaccine,
-                };
-            },
-        );
-        if (!isEmpty(newScopeId.newScope)) {
-            filtreds.forEach((d, index) => {
-                if (newScopeId.newScope[d.id] !== undefined) {
-                    filtreds[index].vaccineName = newScopeId.newScope[d.id];
-                }
-            });
-        }
-
-        if (searchScope) {
-            filtreds = filtreds.filter(d =>
-                scopes.some(scope => scope.group.org_units.includes(d.id)),
+        if (districtShapes) {
+            let filtreds: FilteredDistricts[] = [...districtShapes].map(
+                district => {
+                    return {
+                        ...district,
+                        region: findRegion(district, regionShapes),
+                        vaccineName: findScopeWithOrgUnit(scopes, district.id)
+                            ?.vaccine,
+                    };
+                },
             );
-        }
+            if (!isEmpty(newScopeId.newScope)) {
+                filtreds.forEach((d, index) => {
+                    if (newScopeId.newScope[d.id] !== undefined) {
+                        filtreds[index].vaccineName = newScopeId.newScope[d.id];
+                    }
+                });
+            }
 
-        if (search !== '') {
-            filtreds = filtreds.filter(d =>
-                d.name.toLowerCase().includes(search.toLowerCase()),
-            );
+            if (searchScope) {
+                filtreds = filtreds.filter(d =>
+                    scopes.some(scope => scope.group.org_units.includes(d.id)),
+                );
+            }
+
+            if (search !== '') {
+                filtreds = filtreds.filter(d =>
+                    d.name.toLowerCase().includes(search.toLowerCase()),
+                );
+            }
+            setFilteredDistricts(filtreds);
         }
-        setFilteredDistricts(filtreds);
+        setPage(0);
     }, [
         districtShapes,
         newScopeId.newScope,
@@ -149,6 +154,37 @@ export const ScopeForm: FunctionComponent = () => {
         searchDistrictByName();
     };
 
+    const renderField = (name: string): ReactNode => {
+        return (
+            <Field
+                name={name}
+                component={ScopeInput}
+                filteredDistrictsResult={filteredDistricts}
+                searchLaunched={searchLaunched}
+                searchScopeValue={searchScope}
+                onChangeSearchScopeFunction={onChangeSearchScope}
+                searchScopeChecked={searchScopeChecked}
+                addNewScopeId={(id, vacciName) => addNewScopeId(id, vacciName)}
+                isFetchingDistricts={isFetchingDistricts || !filteredDistricts}
+                isFetchingRegions={isFetchingRegions || !regionShapes}
+                districtShapes={filteredDistricts}
+                regionShapes={regionShapes}
+                searchComponent={
+                    <ScopeSearch
+                        search={search}
+                        setSearch={setSearch}
+                        onSearch={() => [
+                            searchDistrictByName(),
+                            setSearchLaunched(true),
+                        ]}
+                    />
+                }
+                page={page}
+                setPage={setPage}
+            />
+        );
+    };
+
     return (
         <>
             <Grid container spacing={4} justifyContent="space-between">
@@ -160,34 +196,8 @@ export const ScopeForm: FunctionComponent = () => {
                     />
                 </Grid>
             </Grid>
-
-            <ScopeSearch
-                search={search}
-                setSearch={setSearch}
-                onSearch={() => [
-                    searchDistrictByName(),
-                    setSearchLaunched(true),
-                ]}
-            />
-            {!scopePerRound ? (
-                <Field
-                    name="scopes"
-                    component={ScopeInput}
-                    filteredDistrictsResult={filteredDistricts}
-                    searchLaunched={searchLaunched}
-                    searchScopeValue={searchScope}
-                    onChangeSearchScopeFunction={onChangeSearchScope}
-                    searchScopeChecked={searchScopeChecked}
-                    addNewScopeId={(id, vacciName) =>
-                        addNewScopeId(id, vacciName)
-                    }
-                    isFetchingDistricts={isFetchingDistricts}
-                    isFetchingRegions={isFetchingRegions}
-                    districtShapes={districtShapes}
-                    regionShapes={regionShapes}
-                />
-            ) : (
-                <TabContext value={currentTab}>
+            <TabContext value={currentTab}>
+                {scopePerRound && (
                     <TabList onChange={handleChangeTab}>
                         {sortedRounds.map(round => (
                             <Tab
@@ -199,34 +209,21 @@ export const ScopeForm: FunctionComponent = () => {
                             />
                         ))}
                     </TabList>
-                    {sortedRounds.map(round => (
+                )}
+                {!scopePerRound && renderField('scopes')}
+                {scopePerRound &&
+                    sortedRounds.map(round => (
                         <TabPanel
                             value={`${round.number}`}
                             key={round.number}
                             className={classes.tabPanel}
                         >
-                            <Field
-                                name={`rounds[${round.originalIndex}].scopes`}
-                                component={ScopeInput}
-                                filteredDistrictsResult={filteredDistricts}
-                                searchLaunched={searchLaunched}
-                                searchScopeValue={searchScope}
-                                onChangeSearchScopeFunction={
-                                    onChangeSearchScope
-                                }
-                                searchScopeChecked={searchScopeChecked}
-                                addNewScopeId={(id, vacciName) =>
-                                    addNewScopeId(id, vacciName)
-                                }
-                                isFetchingDistricts={isFetchingDistricts}
-                                isFetchingRegions={isFetchingRegions}
-                                districtShapes={filteredDistricts}
-                                regionShapes={regionShapes}
-                            />
+                            {renderField(
+                                `rounds[${round.originalIndex}].scopes`,
+                            )}
                         </TabPanel>
                     ))}
-                </TabContext>
-            )}
+            </TabContext>
         </>
     );
 };

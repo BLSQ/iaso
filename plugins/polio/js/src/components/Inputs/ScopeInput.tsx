@@ -4,6 +4,7 @@ import React, {
     useCallback,
     useEffect,
     useState,
+    ReactNode,
 } from 'react';
 import { useField, FieldProps } from 'formik';
 import {
@@ -17,7 +18,7 @@ import {
     FormGroup,
     Grid,
     Switch,
-    Typography,
+    Box,
 } from '@material-ui/core';
 import cloneDeep from 'lodash/cloneDeep';
 
@@ -41,8 +42,12 @@ type ExtraProps = {
     addNewScopeId: (id: number, vaccineName: string) => void;
     isFetchingDistricts: boolean;
     isFetchingRegions: boolean;
-    districtShapes: FilteredDistricts[];
-    regionShapes: Shape[];
+    districtShapes?: FilteredDistricts[];
+    regionShapes?: Shape[];
+    searchComponent: ReactNode;
+    page: number;
+    // eslint-disable-next-line no-unused-vars
+    setPage: (page: number) => void;
 };
 
 type Props = FieldProps<Scope[], Values> & ExtraProps;
@@ -60,15 +65,16 @@ export const ScopeInput: FunctionComponent<Props> = ({
     isFetchingRegions,
     districtShapes,
     regionShapes,
+    searchComponent,
+    page,
+    setPage,
 }) => {
     const [selectRegion, setSelectRegion] = useState(false);
     const [selectedVaccine, setSelectedVaccine] = useState<string>('mOPV2');
     const [filteredDistricts, setFilteredDistricts] = useState<
         FilteredDistricts[]
     >(filteredDistrictsResult);
-
-    // eslint-disable-next-line no-unused-vars
-    const [_field, _meta, helpers] = useField(field.name);
+    const [, , helpers] = useField(field.name);
     const { formatMessage } = useSafeIntl();
     const { value: scopes = [] } = field;
     const { setValue: setScopes } = helpers;
@@ -143,7 +149,7 @@ export const ScopeInput: FunctionComponent<Props> = ({
                 );
             });
 
-            if (searchLaunched || searchScopeChecked) {
+            if ((searchLaunched || searchScopeChecked) && districtShapes) {
                 let newListAfterAdding = [...filteredDistricts];
                 const addedDistricts = districtShapes.filter(dist => {
                     let addedDistr: FilteredDistricts | undefined;
@@ -216,7 +222,7 @@ export const ScopeInput: FunctionComponent<Props> = ({
                     }
                 });
 
-                if (searchLaunched || searchScopeChecked) {
+                if ((searchLaunched || searchScopeChecked) && districtShapes) {
                     const newListAfterAdding = [...filteredDistricts];
                     const addedDistrict = districtShapes.filter(
                         dist => dist.id === district.id,
@@ -247,7 +253,7 @@ export const ScopeInput: FunctionComponent<Props> = ({
     );
 
     const onSelectOrgUnit = shape => {
-        if (selectRegion) {
+        if (selectRegion && districtShapes) {
             toggleRegion(shape, selectedVaccine, districtShapes);
         } else {
             toggleDistrictInVaccineScope(shape, selectedVaccine);
@@ -255,20 +261,41 @@ export const ScopeInput: FunctionComponent<Props> = ({
     };
 
     return (
-        <Grid container spacing={4} style={{ marginTop: '2px' }}>
-            <Grid xs={7} item style={{ marginTop: '15px' }}>
-                {isFetching && !districtShapes && <LoadingSpinner />}
-                {!isFetching && !districtShapes && (
-                    // FIXME should not be needed
-                    <Typography>
-                        {formatMessage(MESSAGES.pleaseSaveCampaign)}
-                    </Typography>
-                )}
+        <Grid container spacing={2}>
+            <Grid xs={5} item>
+                <Box mb={2} mt={2}>
+                    {searchComponent}
+                    <InputComponent
+                        keyValue="searchScope"
+                        type="checkbox"
+                        withMarginTop={false}
+                        onChange={onChangeSearchScopeFunction}
+                        value={searchScopeValue}
+                        label={MESSAGES.searchInScopeOrAllDistricts}
+                    />
+                </Box>
+                <DistrictScopeTable
+                    field={field}
+                    searchLaunched={searchLaunched}
+                    searchScopeChecked={searchScopeChecked}
+                    addNewScopeId={addNewScopeId}
+                    selectedVaccine={selectedVaccine}
+                    regionShapes={regionShapes || []}
+                    districtShapes={filteredDistricts}
+                    setFilteredDistricts={setFilteredDistricts}
+                    toggleDistrictInVaccineScope={toggleDistrictInVaccineScope}
+                    setPage={setPage}
+                    page={page}
+                    isFetching={isFetching}
+                />
+            </Grid>
+            <Grid xs={7} item>
+                {isFetching && <LoadingSpinner />}
                 <MapScope
                     field={field}
                     values={values}
-                    regionShapes={regionShapes}
-                    districtShapes={districtShapes}
+                    regionShapes={regionShapes || []}
+                    districtShapes={districtShapes || []}
                     onSelectOrgUnit={onSelectOrgUnit}
                     selectedVaccine={selectedVaccine}
                     setSelectedVaccine={setSelectedVaccine}
@@ -287,32 +314,6 @@ export const ScopeInput: FunctionComponent<Props> = ({
                         label={formatMessage(MESSAGES.selectRegion)}
                     />
                 </FormGroup>
-                {districtShapes && isFetching && (
-                    <Typography align="right">
-                        {formatMessage(MESSAGES.refreshing)}
-                    </Typography>
-                )}
-            </Grid>
-            <Grid xs={5} item>
-                <InputComponent
-                    keyValue="searchScope"
-                    type="checkbox"
-                    withMarginTop={false}
-                    onChange={onChangeSearchScopeFunction}
-                    value={searchScopeValue}
-                    label={MESSAGES.searchInScopeOrAllDistricts}
-                />
-                <DistrictScopeTable
-                    field={field}
-                    searchLaunched={searchLaunched}
-                    searchScopeChecked={searchScopeChecked}
-                    addNewScopeId={addNewScopeId}
-                    selectedVaccine={selectedVaccine}
-                    regionShapes={regionShapes}
-                    districtShapes={filteredDistricts}
-                    setFilteredDistricts={setFilteredDistricts}
-                    toggleDistrictInVaccineScope={toggleDistrictInVaccineScope}
-                />
             </Grid>
         </Grid>
     );

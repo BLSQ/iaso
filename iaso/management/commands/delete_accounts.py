@@ -2,19 +2,17 @@ import pdb
 from iaso.models import ExportLog
 from django.db.models import TextField
 from django.db.models.functions import Cast
+from iaso.models.base import Task, QUEUED, KILLED
 
 from django.db import connection
 import traceback
 from django.contrib.auth.models import User
 from django.db.models import Count
 from django.core.management.base import BaseCommand
-from django.contrib.gis.geos import Point
-from django.db import models, transaction
 from uuid import uuid4
 from collections import defaultdict
 from django.db.models import Q
 from iaso.models import Account
-from django.contrib.admin.utils import NestedObjects
 from django.db import router
 
 import random
@@ -236,6 +234,11 @@ class Command(BaseCommand):
             ).delete(),
         )
         print("Delete unrelated instances", Instance.objects.filter(project=None, form=None, org_unit=None).delete())
+
+        print(
+            "Avoid running queued tasks once restarting on new server : ",
+            Task.objects.filter(status=QUEUED).update(status=KILLED),
+        )
 
         for account in accounts:
             try:

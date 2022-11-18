@@ -6,13 +6,12 @@ import React, {
     useCallback,
 } from 'react';
 import PropTypes from 'prop-types';
-import { LoadingSpinner } from 'bluesquare-components';
+import { LoadingSpinner, Select } from 'bluesquare-components';
 import { Box } from '@material-ui/core';
 import { Map, TileLayer } from 'react-leaflet';
 import { useQueries } from 'react-query';
 import { getRequest } from 'Iaso/libs/Api';
 import moment from 'moment';
-import { find } from 'lodash/fp';
 import { useGetMergedCampaignShapes } from '../../../hooks/useGetMergedCampaignShapes.ts';
 
 import { VaccinesLegend } from './VaccinesLegend';
@@ -25,6 +24,7 @@ import { CalendarMapPanesRegular } from './CalendarMapPanesRegular.tsx';
 import { CalendarMapPanesMerged } from './CalendarMapPanesMerged.tsx';
 import { defaultViewport, boundariesZoomLimit } from './constants.ts';
 import { polioVaccines } from '../../../constants/virus.ts';
+import { deepCopy } from '../../../../../../../hat/assets/js/apps/Iaso/utils/dataManipulation.ts';
 
 const getShapeQuery = (loadingCampaigns, groupId, campaign, vaccine, round) => {
     const baseParams = {
@@ -80,7 +80,7 @@ const makeSelections = campaigns => {
 };
 
 const findLatestRounds = (currentDate, campaigns) => {
-    const campaignsCopy = [...campaigns];
+    const campaignsCopy = deepCopy(campaigns);
     const roundsDict = {};
     campaigns.forEach((c, i) => {
         // What do I do if !rounds?
@@ -147,7 +147,7 @@ const makeQueriesForCampaigns = (campaigns, loadingCampaigns) => {
 };
 
 const findRoundForCampaigns = (campaigns, selection) => {
-    const campaignsCopy = [...campaigns];
+    const campaignsCopy = deepCopy(campaigns);
     campaigns.forEach((c, i) => {
         campaignsCopy[i].rounds = campaignsCopy[i].rounds.filter(
             r => r.number === selection,
@@ -187,18 +187,20 @@ const useRoundSelection = (selection, campaigns, currentDate) => {
         }
     }, [campaigns, currentDate, selection]);
 
+    // console.log('updatedCampaigns', updatedCampaigns, selection, rounds);
+
     return {
         campaigns: updatedCampaigns,
         roundsDict: rounds,
     };
 };
 
-const useRoundsQueries = (selection, campaigns, loadingCampaigns) => {
+const useRoundsQueries = (campaigns, loadingCampaigns) => {
     const [queries, setQueries] = useState([]);
 
     useEffect(() => {
         setQueries(makeQueriesForCampaigns(campaigns, loadingCampaigns));
-    }, [selection, campaigns, loadingCampaigns]);
+    }, [campaigns, loadingCampaigns]);
 
     return queries;
 };
@@ -213,11 +215,9 @@ const CalendarMap = ({ campaigns, loadingCampaigns, isPdf, currentDate }) => {
         campaigns,
         currentDate,
     );
-    const queries = useRoundsQueries(
-        selection,
-        campaignsForMap,
-        loadingCampaigns,
-    );
+    const queries = useRoundsQueries(campaignsForMap, loadingCampaigns);
+
+    const options = useMemo(() => makeSelections(campaigns), [campaigns]);
 
     const shapesQueries = useQueries(queries);
 
@@ -295,6 +295,18 @@ const CalendarMap = ({ campaigns, loadingCampaigns, isPdf, currentDate }) => {
                 )}
                 <Box display="flex" justifyContent="flex-end">
                     <VaccinesLegend />
+                </Box>
+                <Box display="flex" justifyContent="flex-end" mt={2}>
+                    <Select
+                        value={selection}
+                        options={options}
+                        onChange={value => {
+                            setSelection(value);
+                        }}
+                        keyValue="selection"
+                        label="Show round"
+                        clearable={false}
+                    />
                 </Box>
             </div>
             <Map

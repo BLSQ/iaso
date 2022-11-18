@@ -6,6 +6,7 @@ import {
     Grid,
     useMediaQuery,
     useTheme,
+    Box,
 } from '@material-ui/core';
 import AppBar from '@material-ui/core/AppBar';
 import Toolbar from '@material-ui/core/Toolbar';
@@ -26,6 +27,11 @@ const styles = theme => ({
             marginRight: theme.spacing(2),
             marginLeft: theme.spacing(1),
         },
+    },
+    version: {
+        fontSize: 9,
+        display: 'block',
+        marginTop: 5,
     },
 });
 
@@ -100,20 +106,30 @@ function TopBar(props) {
                                 container
                                 item
                                 xs={3}
-                                alignContent="flex-end"
                                 justifyContent="flex-end"
                             >
-                                <Typography
-                                    variant="body2"
-                                    className={classes.userName}
-                                    title={getDisplayName(currentUser)}
+                                <Box
+                                    display="flex"
+                                    alignItems="flex-end"
+                                    justifyContent="flex-end"
+                                    flexDirection="column"
                                 >
-                                    {`${
-                                        window.IASO_VERSION
-                                            ? `${window.IASO_VERSION} - `
-                                            : ''
-                                    }${currentUser.user_name}`}
-                                </Typography>
+                                    <Typography
+                                        variant="body2"
+                                        title={getDisplayName(currentUser)}
+                                    >
+                                        {currentUser.user_name}
+                                    </Typography>
+                                    {window.IASO_VERSION && (
+                                        <Typography
+                                            variant="body2"
+                                            className={classes.version}
+                                            title={getDisplayName(currentUser)}
+                                        >
+                                            {window.IASO_VERSION}
+                                        </Typography>
+                                    )}
+                                </Box>
                             </Grid>
                         )}
                     </Grid>

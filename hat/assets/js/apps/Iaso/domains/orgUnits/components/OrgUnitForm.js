@@ -1,7 +1,14 @@
 import React, { useState, useCallback, useEffect } from 'react';
+import classnames from 'classnames';
 import mapValues from 'lodash/mapValues';
 import PropTypes from 'prop-types';
-import { withStyles, Button, Grid, Box } from '@material-ui/core';
+import {
+    withStyles,
+    Button,
+    Grid,
+    useMediaQuery,
+    useTheme,
+} from '@material-ui/core';
 import { FormattedMessage } from 'react-intl';
 
 import { commonStyles } from 'bluesquare-components';
@@ -29,6 +36,17 @@ const initialFormState = orgUnit => {
 
 const styles = theme => ({
     ...commonStyles(theme),
+    alignCenter: {
+        display: 'flex',
+        justifyContent: 'center',
+    },
+    alignRight: {
+        display: 'flex',
+        justifyContent: 'flex-end',
+    },
+    marginTop: {
+        marginTop: '-32px',
+    },
 });
 const OrgUnitForm = ({
     orgUnit,
@@ -105,7 +123,9 @@ const OrgUnitForm = ({
         onResetOrgUnit();
     };
 
-    const isNewOrgunit = orgUnit && !orgUnit.id;
+    const theme = useTheme();
+    const isNewOrgunit = params.orgUnitId === '0';
+    const isMobileLayout = useMediaQuery(theme.breakpoints.down('md'));
 
     useEffect(() => {
         if (orgUnit.id !== formState.id.value) {
@@ -116,71 +136,57 @@ const OrgUnitForm = ({
 
     return (
         <>
-            <Grid
-                container
-                spacing={0}
-                alignItems="center"
-                className={classes.marginTopBig}
-            >
-                <Grid xs={12} item>
-                    <OrgUnitInfos
-                        params={params}
-                        baseUrl={baseUrl}
-                        orgUnit={{
-                            ...orgUnit,
-                            ...formState,
-                        }}
-                        orgUnitTypes={orgUnitTypes}
-                        groups={groups}
-                        onChangeInfo={handleChangeInfo}
-                        resetTrigger={!orgUnitModified}
-                    />
-                    {isNewOrgunit && (
-                        <Box display="flex" justifyContent="flex-end">
-                            <Button
-                                id="save-ou"
-                                disabled={!orgUnitModified}
-                                variant="contained"
-                                className={classes.marginLeft}
-                                color="primary"
-                                onClick={() => handleSave()}
-                            >
-                                <FormattedMessage {...MESSAGES.save} />
-                            </Button>
-                        </Box>
-                    )}
-                </Grid>
-            </Grid>
-            <Grid
-                container
-                spacing={0}
-                alignItems="center"
-                className={classes.marginTopBig}
-            >
-                <Grid xs={12} item className={classes.textAlignRight}>
-                    {!isNewOrgunit && (
-                        <>
-                            <Button
-                                className={classes.marginLeft}
-                                disabled={!orgUnitModified}
-                                variant="contained"
-                                onClick={() => handleReset()}
-                            >
-                                <FormattedMessage {...MESSAGES.cancel} />
-                            </Button>
+            <OrgUnitInfos
+                params={params}
+                baseUrl={baseUrl}
+                orgUnit={{
+                    ...orgUnit,
+                    ...formState,
+                }}
+                orgUnitTypes={orgUnitTypes}
+                groups={groups}
+                onChangeInfo={handleChangeInfo}
+                resetTrigger={!orgUnitModified}
+            />
 
-                            <Button
-                                id="save-ou"
-                                disabled={!orgUnitModified}
-                                variant="contained"
-                                className={classes.marginLeft}
-                                color="primary"
-                                onClick={() => handleSave()}
-                            >
-                                <FormattedMessage {...MESSAGES.save} />
-                            </Button>
-                        </>
+            <Grid
+                container
+                spacing={0}
+                alignItems="center"
+                className={classnames(
+                    !isNewOrgunit && classes.marginTopBig,
+                    isNewOrgunit ? classes.alignCenter : classes.alignRight,
+                    isNewOrgunit && isMobileLayout && classes.alignRight,
+                )}
+            >
+                <Grid
+                    xs={!isNewOrgunit ? 12 : 8}
+                    item
+                    className={classnames(
+                        classes.textAlignRight,
+                        isNewOrgunit && classes.marginTop,
                     )}
+                >
+                    {!isNewOrgunit && (
+                        <Button
+                            className={classes.marginLeft}
+                            disabled={!orgUnitModified}
+                            variant="contained"
+                            onClick={() => handleReset()}
+                        >
+                            <FormattedMessage {...MESSAGES.cancel} />
+                        </Button>
+                    )}
+                    <Button
+                        id="save-ou"
+                        disabled={!orgUnitModified}
+                        variant="contained"
+                        className={classes.marginLeft}
+                        color="primary"
+                        onClick={() => handleSave()}
+                    >
+                        <FormattedMessage {...MESSAGES.save} />
+                    </Button>
                 </Grid>
             </Grid>
         </>

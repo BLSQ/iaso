@@ -2,8 +2,8 @@ import { defineMessages } from 'react-intl';
 
 const MESSAGES = defineMessages({
     selectOrgUnit: {
-        id: 'iaso.orgUnits.selectOrgUnit',
-        defaultMessage: 'Please select an Org Unit',
+        id: 'iaso.polio.label.selectOrgUnit',
+        defaultMessage: 'Select intial region',
     },
     polio: {
         defaultMessage: 'Polio',

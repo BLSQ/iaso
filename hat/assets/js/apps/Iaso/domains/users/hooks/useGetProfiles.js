@@ -15,6 +15,9 @@ export const useGetProfiles = params => {
         if (params.permissions) {
             newParams.permissions = params.permissions;
         }
+        if (params.location) {
+            newParams.location = params.location;
+        }
     }
 
     const searchParams = new URLSearchParams(newParams);

@@ -69,15 +69,14 @@ class ProfilesViewSet(viewsets.ViewSet):
                 Q(user__username__icontains=search)
                 | Q(user__first_name__icontains=search)
                 | Q(user__last_name__icontains=search)
-                | Q(user__iaso_profile__org_units__name__icontains=search)
             ).distinct()
 
         if perms:
-            permissions = perms.split(",")
-            queryset = queryset.filter(user__user_permissions__codename__in=permissions).distinct()
+            perms = perms.split(",")
+            queryset = queryset.filter(user__user_permissions__codename__in=perms).distinct()
 
         if location:
-            queryset = queryset.filter(user__iaso__profile_org_units__pk=location).distinct()
+            queryset = queryset.filter(user__iaso_profile__org_units__pk=location).distinct()
 
         if limit:
             queryset = queryset.order_by(*orders)

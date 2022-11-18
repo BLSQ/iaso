@@ -1,10 +1,18 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, {
+    useEffect,
+    useRef,
+    useState,
+    useMemo,
+    useCallback,
+} from 'react';
 import PropTypes from 'prop-types';
 import { LoadingSpinner } from 'bluesquare-components';
 import { Box } from '@material-ui/core';
 import { Map, TileLayer } from 'react-leaflet';
 import { useQueries } from 'react-query';
 import { getRequest } from 'Iaso/libs/Api';
+import moment from 'moment';
+import { find } from 'lodash/fp';
 import { useGetMergedCampaignShapes } from '../../../hooks/useGetMergedCampaignShapes.ts';
 
 import { VaccinesLegend } from './VaccinesLegend';
@@ -71,9 +79,42 @@ const makeSelections = campaigns => {
     return selections;
 };
 
+const findLatestRounds = (currentDate, campaigns) => {
+    const campaignsCopy = [...campaigns];
+    const roundsDict = {};
+    campaigns.forEach((c, i) => {
+        // What do I do if !rounds?
+        const currentRound = c.rounds.find(round => {
+            const startDate = moment(round.started_at);
+            const endDate = moment(round.ended_at); // TODO handle rounds with no end date
+            return (
+                startDate.isSameOrBefore(currentDate) &&
+                endDate.isSameOrAfter(currentDate)
+            );
+        });
+        if (currentRound) {
+            campaignsCopy[i].rounds = [currentRound];
+            roundsDict[c.name] = currentRound.number;
+            return;
+        }
+        const nextRound = c.rounds.find(round => {
+            const startDate = moment(round.started_at);
+            return startDate.isAfter(currentDate);
+        });
+        if (nextRound) {
+            campaignsCopy[i].rounds = [nextRound];
+            roundsDict[c.name] = nextRound.number;
+            return;
+        }
+        campaignsCopy[i].rounds = [c.rounds[c.rounds.length - 1]];
+        roundsDict[c.name] = c.rounds[c.rounds.length - 1].number;
+    });
+    return { campaigns: campaignsCopy, roundsDict };
+};
+
 const makeQueriesForCampaigns = (campaigns, loadingCampaigns) => {
     const queries = [];
-    if (!campaigns) return queries;
+    if (!campaigns || campaigns.length === 0) return queries;
     campaigns.forEach(campaign => {
         if (campaign.separateScopesPerRound) {
             campaign.rounds.forEach(round => {
@@ -105,26 +146,58 @@ const makeQueriesForCampaigns = (campaigns, loadingCampaigns) => {
     return queries;
 };
 
+const findRoundForCampaigns = (campaigns, selection) => {
+    const campaignsCopy = [...campaigns];
+    campaigns.forEach((c, i) => {
+        campaignsCopy[i].rounds = campaignsCopy[i].rounds.filter(
+            r => r.number === selection,
+        );
+    });
+    return campaignsCopy;
+};
+
+const makeRoundDict = (selection, campaigns) => {
+    const result = {};
+    campaigns?.forEach(campaign => {
+        result[campaign.name] = selection;
+    });
+    return result;
+};
+
+const useRoundSelection = (selection, campaigns, currentDate) => {
+    const [updatedCampaigns, setUpdatedCampaigns] = useState(campaigns);
+    const [rounds, setRounds] = useState({});
+
+    useEffect(() => {
+        if (selection === 'latest') {
+            const { campaigns: newCampaigns, roundsDict } = findLatestRounds(
+                currentDate,
+                campaigns,
+            );
+            setUpdatedCampaigns(newCampaigns);
+            setRounds(roundsDict);
+        }
+        if (selection === 'all') {
+            setUpdatedCampaigns(campaigns);
+            setRounds({});
+        }
+        if (typeof selection === 'number') {
+            setUpdatedCampaigns(findRoundForCampaigns(campaigns, selection));
+            setRounds(makeRoundDict(selection, campaigns));
+        }
+    }, [campaigns, currentDate, selection]);
+
+    return {
+        campaigns: updatedCampaigns,
+        roundsDict: rounds,
+    };
+};
+
 const useRoundsQueries = (selection, campaigns, loadingCampaigns) => {
     const [queries, setQueries] = useState([]);
 
     useEffect(() => {
-        if (selection === 'all') {
-            setQueries(makeQueriesForCampaigns(campaigns, loadingCampaigns));
-        } else if (selection === 'latest') {
-            // This is where the hard computation takes place
-        } else if (selection.includes('Round')) {
-            const campaignsCopy = [...campaigns];
-            const roundNumber = parseInt(selection.split('Round')[1], 10);
-            campaigns.forEach((c, i) => {
-                campaignsCopy[i].rounds = campaignsCopy[i].rounds.filter(
-                    r => r.number === roundNumber,
-                );
-            });
-            setQueries(
-                makeQueriesForCampaigns(campaignsCopy, loadingCampaigns),
-            );
-        }
+        setQueries(makeQueriesForCampaigns(campaigns, loadingCampaigns));
     }, [selection, campaigns, loadingCampaigns]);
 
     return queries;
@@ -134,54 +207,75 @@ const CalendarMap = ({ campaigns, loadingCampaigns, isPdf, currentDate }) => {
     const classes = useStyles();
     const [viewport, setViewPort] = useState(defaultViewport);
     const map = useRef();
-    const [selection, setSelection] = useState('Round 1');
-    const queries = useRoundsQueries(selection, campaigns, loadingCampaigns);
-    // const queries = [];
-    // campaigns.forEach(campaign => {
-    //     if (campaign.separateScopesPerRound) {
-    //         campaign.rounds.forEach(round => {
-    //             round.scopes.forEach(scope => {
-    //                 queries.push(
-    //                     getShapeQuery(
-    //                         loadingCampaigns,
-    //                         scope.group.id,
-    //                         campaign,
-    //                         scope.vaccine,
-    //                         round,
-    //                     ),
-    //                 );
-    //             });
-    //         });
-    //     } else {
-    //         campaign.scopes.forEach(scope => {
-    //             queries.push(
-    //                 getShapeQuery(
-    //                     loadingCampaigns,
-    //                     scope.group.id,
-    //                     campaign,
-    //                     scope.vaccine,
-    //                 ),
-    //             );
-    //         });
-    //     }
-    // });
+    const [selection, setSelection] = useState('latest');
+    const { campaigns: campaignsForMap, roundsDict } = useRoundSelection(
+        selection,
+        campaigns,
+        currentDate,
+    );
+    const queries = useRoundsQueries(
+        selection,
+        campaignsForMap,
+        loadingCampaigns,
+    );
+
     const shapesQueries = useQueries(queries);
 
     const { data: mergedShapes, isLoading: isLoadingMergedShapes } =
         useGetMergedCampaignShapes().query;
 
-    const campaignColors = {};
+    const campaignColors = useMemo(() => {
+        const color = {};
 
-    campaigns.forEach(campaign => {
-        campaignColors[campaign.id] = campaign.color;
-    });
-    const campaignIds = campaigns.map(campaign => campaign.id);
-
-    const mergedShapesToDisplay = mergedShapes?.features
-        .filter(shape => campaignIds.includes(shape.properties.id))
-        .map(shape => {
-            return { ...shape, color: campaignColors[shape.properties.id] };
+        campaigns.forEach(campaign => {
+            color[campaign.id] = campaign.color;
         });
+        return color;
+    }, [campaigns]);
+
+    const campaignIds = useMemo(
+        () => campaigns.map(campaign => campaign.id),
+        [campaigns],
+    );
+
+    const addShapeColor = useCallback(
+        shape => {
+            return { ...shape, color: campaignColors[shape.properties.id] };
+        },
+        [campaignColors],
+    );
+
+    const mergedShapesToDisplay = useMemo(() => {
+        const shapesForSelectedCampaign = mergedShapes?.features.filter(shape =>
+            campaignIds.includes(shape.properties.id),
+        );
+        if (selection === 'all') {
+            return shapesForSelectedCampaign?.map(addShapeColor);
+        }
+
+        if (selection === 'latest') {
+            return shapesForSelectedCampaign
+                ?.filter(
+                    shape =>
+                        shape.properties.round_number ===
+                        roundsDict[shape.properties.obr_name],
+                )
+                .map(addShapeColor);
+        }
+
+        if (typeof selection === 'number') {
+            return shapesForSelectedCampaign
+                ?.filter(shape => shape.properties.round_number === selection)
+                .map(addShapeColor);
+        }
+        return shapesForSelectedCampaign?.map(addShapeColor);
+    }, [
+        addShapeColor,
+        campaignIds,
+        mergedShapes?.features,
+        roundsDict,
+        selection,
+    ]);
 
     const loadingShapes =
         viewport.zoom <= 6

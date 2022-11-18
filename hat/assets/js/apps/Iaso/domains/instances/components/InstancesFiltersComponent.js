@@ -86,17 +86,8 @@ const InstancesFiltersComponent = ({
         formState.formIds.value?.split(',').length === 1
             ? formState.formIds.value.split(',')[0]
             : undefined;
-    const currentForm = useMemo(() => {
-        if (formId) {
-            return formsList.find(form => parseInt(formId, 10) === form.id);
-        }
-        return undefined;
-    }, [formId, formsList]);
 
-    const { data: formDescriptor } = useGetFormDescriptor(
-        currentForm?.latest_form_version?.version_id, // by default using last form version
-        currentForm?.id,
-    );
+    const { data: formDescriptor } = useGetFormDescriptor(formId);
     const fields = useGetQueryBuildersFields(formDescriptor, possibleFields);
 
     useInstancesFiltersData(formIds, setFetchingOrgUnitTypes);

@@ -1,5 +1,5 @@
 import { getRequest } from 'Iaso/libs/Api';
-import { useSnackQuery } from 'Iaso/libs/apiHooks';
+import { useSnackQuery } from 'Iaso/libs/apiHooks.ts';
 
 export const useGetProfiles = params => {
     let newParams = {};

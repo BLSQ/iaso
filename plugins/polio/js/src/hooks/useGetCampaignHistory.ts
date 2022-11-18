@@ -25,12 +25,13 @@ const getCampaignLogDetail = (logId?: string): Promise<CampaignLogData> => {
 
 export const useGetCampaignLogs = (
     campaignId?: string,
+    isOpen = true,
 ): UseQueryResult<DropdownOptions<number>[], Error> => {
     return useSnackQuery({
         queryKey: ['campaignLog', campaignId],
         queryFn: () => getCampaignLog(campaignId),
         options: {
-            enabled: Boolean(campaignId),
+            enabled: Boolean(campaignId) && isOpen,
             select: data => {
                 if (!data) return [];
                 return data.list.map((campaignLog: CampaignLogDetail) => {

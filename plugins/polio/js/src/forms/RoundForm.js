@@ -101,7 +101,7 @@ export const RoundForm = ({ roundNumber }) => {
                 />
                 <Field
                     label={formatMessage(
-                        MESSAGES.ratioChildrenMissedOutOfHousehold,
+                        MESSAGES.im_percentage_children_missed_out_household,
                     )}
                     name={`rounds[${roundIndex}].im_percentage_children_missed_out_household`}
                     component={TextInput}

@@ -106,7 +106,7 @@ export const RiskAssessmentForm = () => {
                             <Field
                                 key={round.number}
                                 label={`${formatMessage(
-                                    MESSAGES.targetpopulationRound,
+                                    MESSAGES.target_population,
                                 )} ${round.number}`}
                                 name={`rounds[${i}].target_population`}
                                 component={TextInput}

@@ -7,7 +7,6 @@ import PropTypes from 'prop-types';
 import {
     AddButton as AddButtonComponent,
     commonStyles,
-    LoadingSpinner,
     selectionInitialState,
     setTableSelection,
     useSafeIntl,
@@ -105,11 +104,7 @@ const Instances = ({ params }) => {
             select: result => result.instances,
         },
     );
-    const {
-        data,
-        isLoading: loadingList,
-        isFetching: fetchingList,
-    } = useSnackQuery(
+    const { data, isFetching: fetchingList } = useSnackQuery(
         ['instances', apiParams],
         () => fetchInstancesAsDict(getEndpointUrl(apiParams)),
         snackMessages.fetchInstanceDictError,
@@ -118,7 +113,7 @@ const Instances = ({ params }) => {
     // Move to delete when we port dialog to react-query
     const refetchInstances = () => queryClient.invalidateQueries(['instances']);
 
-    const { data: formDetails, fetching: fetchingDetail } = useSnackQuery(
+    const { data: formDetails } = useSnackQuery(
         ['formDetailsForInstance', `${formId}`],
         () => fetchFormDetailsForInstance(formId),
         undefined,
@@ -149,7 +144,6 @@ const Instances = ({ params }) => {
         [dispatch],
     );
 
-    const fetching = loadingMap || loadingList || fetchingDetail;
     return (
         <section className={classes.relativeContainer}>
             <TopBar
@@ -166,7 +160,6 @@ const Instances = ({ params }) => {
                 tableColumns={tableColumns}
             />
 
-            {fetching && <LoadingSpinner />}
             <Box className={classes.containerFullHeightPadded}>
                 <InstancesFiltersComponent
                     params={params}

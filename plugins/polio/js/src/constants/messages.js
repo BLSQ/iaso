@@ -1,6 +1,10 @@
 import { defineMessages } from 'react-intl';
 
 const MESSAGES = defineMessages({
+    selectOrgUnit: {
+        id: 'iaso.polio.label.selectOrgUnit',
+        defaultMessage: 'Select intial region',
+    },
     polio: {
         defaultMessage: 'Polio',
         id: 'iaso.label.polio',
@@ -1857,6 +1861,14 @@ const MESSAGES = defineMessages({
     emailWillBeSentTo: {
         id: 'iaso.polio.label.emailWillBeSentTo',
         defaultMessage: 'The following teams will be notified by email:',
+    },
+    teams: {
+        id: 'iaso.polio.config.teams',
+        defaultMessage: 'Team(s) for the Budget workflow',
+    },
+    rrtOprttApproval: {
+        id: 'iaso.polio.form.label.rrtOprttApproval',
+        defaultMessage: 'RRT/OPRTT Approval',
     },
 });
 

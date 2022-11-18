@@ -9,10 +9,12 @@ import { PolioCreateEditDialog as CreateEditDialog } from '../../CreateEditDialo
 import { RoundPopper } from '../popper/RoundPopper';
 import { useStyles } from '../Styles';
 import { RoundPopperContext } from '../contexts/RoundPopperContext.tsx';
+import { useSelector } from 'react-redux';
 
 const RoundCell = ({ colSpan, campaign, round }) => {
     const classes = useStyles();
     const [dialogOpen, setDialogOpen] = useState(false);
+
     const { anchorEl, setAnchorEl } = useContext(RoundPopperContext);
     const [self, setSelf] = useState(null);
 
@@ -36,6 +38,7 @@ const RoundCell = ({ colSpan, campaign, round }) => {
 
     const defaultCellStyles = [classes.tableCell, classes.tableCellBordered];
     const open = self && isEqual(self, anchorEl);
+    const isLogged = useSelector(state => Boolean(state.users.current));
     return (
         <TableCell
             className={classnames(defaultCellStyles, classes.round)}
@@ -63,12 +66,13 @@ const RoundCell = ({ colSpan, campaign, round }) => {
                     setDialogOpen={setDialogOpen}
                 />
             )}
-
-            <CreateEditDialog
-                selectedCampaign={campaign.original}
-                isOpen={dialogOpen}
-                onClose={() => setDialogOpen(false)}
-            />
+            {isLogged && (
+                <CreateEditDialog
+                    selectedCampaign={campaign.original}
+                    isOpen={dialogOpen}
+                    onClose={() => setDialogOpen(false)}
+                />
+            )}
         </TableCell>
     );
 };

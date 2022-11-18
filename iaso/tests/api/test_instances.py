@@ -486,7 +486,7 @@ class InstancesAPITestCase(APITestCase):
             period="202001",
             org_unit=self.jedi_council_corruscant,
             project=self.project,
-            json={"name": "a", "age": 18, "gender": "M"},
+            json={"name": "a", "age": "18", "gender": "M"},
         )
 
         b = self.create_form_instance(
@@ -494,7 +494,7 @@ class InstancesAPITestCase(APITestCase):
             period="202001",
             org_unit=self.jedi_council_corruscant,
             project=self.project,
-            json={"name": "b", "age": 19, "gender": "F"},
+            json={"name": "b", "age": "19", "gender": "F"},
         )
 
         self.create_form_instance(
@@ -502,7 +502,7 @@ class InstancesAPITestCase(APITestCase):
             period="202001",
             org_unit=self.jedi_council_corruscant,
             project=self.project,
-            json={"name": "c", "age": 30, "gender": "F"},
+            json={"name": "c", "age": "30", "gender": "F"},
         )
 
         self.client.force_authenticate(self.yoda)
@@ -512,6 +512,43 @@ class InstancesAPITestCase(APITestCase):
         response_json = response.json()
         self.assertValidInstanceListData(response_json, expected_length=1)
         self.assertEqual(response_json["instances"][0]["id"], b.id)
+
+    def test_instance_list_by_json_content_not_operator(self):
+        """We do the opposite than test_instance_list_by_json_content(): exclude all the women before 25"""
+        a = self.create_form_instance(
+            form=self.form_1,
+            period="202001",
+            org_unit=self.jedi_council_corruscant,
+            project=self.project,
+            json={"name": "a", "age": "18", "gender": "M"},
+        )
+
+        b = self.create_form_instance(
+            form=self.form_1,
+            period="202001",
+            org_unit=self.jedi_council_corruscant,
+            project=self.project,
+            json={"name": "b", "age": "19", "gender": "F"},
+        )
+
+        c = self.create_form_instance(
+            form=self.form_1,
+            period="202001",
+            org_unit=self.jedi_council_corruscant,
+            project=self.project,
+            json={"name": "c", "age": 30, "gender": "F"},
+        )
+
+        self.client.force_authenticate(self.yoda)
+        json_filters = json.dumps({"!": {"and": [{"==": [{"var": "gender"}, "F"]}, {"<": [{"var": "age"}, 25]}]}})
+        response = self.client.get(f"/api/instances/", {"jsonContent": json_filters})
+
+        response_json = response.json()
+        # We should receive the a and c (+ the instances created in setupTestData), but not the b (because it's a female under 25)
+        received_instances_ids = [instance["id"] for instance in response_json["instances"]]
+        self.assertIn(a.id, received_instances_ids)
+        self.assertIn(c.id, received_instances_ids)
+        self.assertNotIn(b.id, received_instances_ids)
 
     def test_instance_list_by_json_content_nested(self):
         """Search using the instance content (in JSON field) with nested and/or operators"""

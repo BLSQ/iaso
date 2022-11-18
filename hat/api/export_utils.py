@@ -7,6 +7,7 @@ from django.conf import settings
 from django.utils import timezone
 from xlsxwriter.utility import xl_rowcol_to_cell  # type: ignore
 from hat.common.utils import queryset_iterator
+from django.db.models import QuerySet
 
 
 def write_sheet(wb, sheet_name, col_descs, queryset, get_row, sub_columns=None):
@@ -54,6 +55,7 @@ def write_sheet(wb, sheet_name, col_descs, queryset, get_row, sub_columns=None):
 
 
 def generate_xlsx(sheet_name, columns, queryset, get_row, sub_columns=None):
+    # TODO: document sub_columns parameter
     """
     Generate an XLSX file with the provided parameters.
     The with_link parameter is deprecated. To force
@@ -100,8 +102,12 @@ def iter_items(queryset, pseudo_buffer, columns, get_row, chunk_size=5000):
         yield writer.writerow([c["title"].replace("\n", " ") for c in columns])
     else:
         yield writer.writerow(columns)
-    for item in queryset_iterator(queryset, chunk_size=chunk_size):
-        yield writer.writerow(get_row(item))
+    if isinstance(queryset, QuerySet):  # type: ignore
+        for item in queryset_iterator(queryset, chunk_size=chunk_size):
+            yield writer.writerow(get_row(item))
+    else:
+        for item in queryset:
+            yield writer.writerow(get_row(item))
 
 
 def timestamp_to_utc_datetime(timestamp):

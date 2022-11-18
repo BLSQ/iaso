@@ -1,8 +1,11 @@
+from typing import Union
 from uuid import uuid4
 
-from django.contrib.auth.models import User
+from django.contrib.auth.models import User, AnonymousUser
 from django.db import models
-from django.db.models import Count
+from django.db.models import Count, Manager, Q
+import django.db.models.manager
+
 from django.utils.translation import gettext as _
 from gspread.utils import extract_id_from_url  # type: ignore
 
@@ -12,6 +15,9 @@ from iaso.utils.models.soft_deletable import SoftDeletableModel
 from plugins.polio.preparedness.parser import open_sheet_by_url, surge_indicator_for_country
 
 from plugins.polio.preparedness.spread_cache import CachedSpread
+
+# noinspection PyUnresolvedReferences
+from .budget.models import BudgetStep, BudgetStepFile
 
 VIRUSES = [
     ("PV1", _("PV1")),
@@ -104,13 +110,22 @@ class CampaignScope(models.Model):
         ordering = ["campaign", "vaccine"]
 
 
+class Destruction(models.Model):
+    vials_destroyed = models.IntegerField(null=True, blank=True)
+    date_report_received = models.DateField(null=True, blank=True)
+    date_report = models.DateField(null=True, blank=True)
+    comment = models.TextField(null=True, blank=True)
+    round = models.ForeignKey("Round", related_name="destructions", on_delete=models.CASCADE, null=True)
+
+
 class Shipment(models.Model):
     vaccine_name = models.CharField(max_length=5, choices=VACCINES)
     po_numbers = models.IntegerField(null=True, blank=True)
-    doses_received = models.IntegerField(null=True, blank=True)
+    vials_received = models.IntegerField(null=True, blank=True)
     estimated_arrival_date = models.DateField(null=True, blank=True)
     reception_pre_alert = models.DateField(null=True, blank=True)
     date_reception = models.DateField(null=True, blank=True)
+    comment = models.TextField(null=True, blank=True)
     round = models.ForeignKey("Round", related_name="shipments", on_delete=models.CASCADE, null=True)
 
 
@@ -174,16 +189,40 @@ class Round(models.Model):
     forma_missing_vials = models.IntegerField(null=True, blank=True)
     forma_usable_vials = models.IntegerField(null=True, blank=True)
     forma_unusable_vials = models.IntegerField(null=True, blank=True)
+    forma_date = models.DateField(null=True, blank=True)
+    forma_comment = models.TextField(blank=True, null=True)
 
     def get_item_by_key(self, key):
         return getattr(self, key)
+
+
+class CampaignQuerySet(models.QuerySet):
+    def filter_for_user(self, user: Union[User, AnonymousUser]):
+        qs = self
+        if user.is_authenticated:
+            # Authenticated users only get campaigns linked to their account
+            qs = qs.filter(account=user.iaso_profile.account)
+
+            # Restrict Campaign to the OrgUnit on the country he can access
+            if user.iaso_profile.org_units.count():
+                org_units = OrgUnit.objects.hierarchy(user.iaso_profile.org_units.all())
+                qs = qs.filter(Q(country__in=org_units) | Q(initial_org_unit__in=org_units))
+        return qs
+
+
+# workaround for MyPy detection
+CampaignManager = models.Manager.from_queryset(CampaignQuerySet)
 
 
 class Campaign(SoftDeletableModel):
     class Meta:
         ordering = ["obr_name"]
 
+    objects = CampaignManager()
+    scopes: "django.db.models.manager.RelatedManager[CampaignScope]"
+    rounds: "django.db.models.manager.RelatedManager[Round]"
     id = models.UUIDField(default=uuid4, primary_key=True, editable=False)
+    account = models.ForeignKey("iaso.account", on_delete=models.CASCADE, related_name="campaigns")
     epid = models.CharField(default=None, max_length=255, null=True, blank=True)
     obr_name = models.CharField(max_length=255, unique=True)
     gpei_coordinator = models.CharField(max_length=255, null=True, blank=True)
@@ -310,9 +349,14 @@ class Campaign(SoftDeletableModel):
     budget_status = models.CharField(max_length=10, choices=RA_BUDGET_STATUSES, null=True, blank=True)
     budget_responsible = models.CharField(max_length=10, choices=RESPONSIBLES, null=True, blank=True)
     is_test = models.BooleanField(default=False)
+
+    # Deprecated
     last_budget_event = models.ForeignKey(
         "BudgetEvent", null=True, blank=True, on_delete=models.SET_NULL, related_name="lastbudgetevent"
     )
+
+    budget_current_state_key = models.CharField(max_length=100, default="-")
+    budget_current_state_label = models.CharField(max_length=100, null=True, blank=True)
 
     who_disbursed_to_co_at = models.DateField(
         null=True,
@@ -524,6 +568,8 @@ class CountryUsersGroup(models.Model):
     language = models.CharField(max_length=32, choices=LANGUAGES, default="EN")
     created_at = models.DateTimeField(auto_now_add=True, db_index=True)
     updated_at = models.DateTimeField(auto_now=True)
+    # used for workflow
+    teams = models.ManyToManyField(Team, help_text="Teams used by the country", blank=True)
 
     def __str__(self):
         return str(self.country)
@@ -594,6 +640,7 @@ class CampaignGroup(SoftDeletableModel):
     campaigns = models.ManyToManyField(Campaign, related_name="grouped_campaigns")
 
 
+# Deprecated
 class BudgetEvent(SoftDeletableModel):
 
     TYPES = (
@@ -635,6 +682,7 @@ class BudgetEvent(SoftDeletableModel):
         self.campaign.save()
 
 
+# Deprecated
 class BudgetFiles(models.Model):
     event = models.ForeignKey(BudgetEvent, on_delete=models.PROTECT, related_name="event_files")
     file = models.FileField()

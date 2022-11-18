@@ -1,0 +1,27 @@
+{% comment %}
+Base file to be reused in the MailTemplate for the budget workflow engine
+{% endcomment %}
+{% block content %} {% block text %}
+A new budget update has been done on the polio campaign {{ campaign.obr_name }} by {{ author_name }} from team {{ team }}: {{ transition.label }}.
+{% endblock %}
+{% if comment %}
+The following comment was left:
+  {{ comment }}
+{% endif %}
+{%if attachments %}Attachements:
+{% for attachment in attachments%}{{ forloop.counter }}. {{attachment.name}}: {{attachment.url|safe}}
+{% endfor %}
+{%endif%}
+{% if skipped_attachments > 0 %}{{ skipped_attachments }} file(s) has(have) not been attached to this message due to their size. Please use the link(s) above to view them.{% endif %}
+
+Consult the campaign page for the complet budget history and more information: {{ budget_url|safe }}
+
+{% if buttons %}
+You can do a quick follow up using one of these links:
+{% for button in buttons %}{% if button.allowed %}{{ button.label }}: {{ button.url|safe }} {% endif %}
+{% endfor %}
+{% endif %}
+{% endblock content %}
+
+============
+This is an automated email from {{ site_name }} - {{ site_url }}

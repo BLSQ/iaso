@@ -26,11 +26,15 @@ ASSIGNMENTS = _("Attributions")
 POLIO_BUDGET = _("Budget Polio")
 ENTITIES = _("Entities")
 BENEFICIARIES = _("Beneficiaries")
+STORAGES = _("Storages")
+COMPLETENESS_STATS = _("Completeness stats")
 
 
-# When adding a new permissions, it also need to be added in
+# When adding a new permission, it also needs to be added in
 # hat/assets/js/apps/Iaso/domains/users/messages.js
 # so that it display properly in both lang
+#
+# Also, don't forget to generate a migration
 
 
 class CustomPermissionSupport(models.Model):
@@ -49,7 +53,6 @@ class CustomPermissionSupport(models.Model):
     ]
 
     class Meta:
-
         managed = False  # No database table creation or deletion operations \
         # will be performed for this model.
 
@@ -76,5 +79,6 @@ class CustomPermissionSupport(models.Model):
             ("iaso_assignments", ASSIGNMENTS),
             ("iaso_polio_budget", POLIO_BUDGET),
             ("iaso_entities", ENTITIES),
-            ("iaso_beneficiaries", BENEFICIARIES),
+            ("iaso_storages", STORAGES),
+            ("iaso_completeness_stats", COMPLETENESS_STATS),
         )

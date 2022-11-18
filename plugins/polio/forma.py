@@ -11,6 +11,7 @@ from pandas import DataFrame
 from rest_framework import viewsets
 from rest_framework.decorators import action
 
+from iaso.api.common import CONTENT_TYPE_CSV
 from iaso.models import *
 from plugins.polio.helpers import get_url_content
 from plugins.polio.models import Campaign
@@ -309,7 +310,7 @@ class FormAStocksViewSetV2(viewsets.ViewSet):
         df = df.drop(["ou", "report_org_unit", "country_config", "campaign"], axis=1)
         if request.GET.get("format", None) == "csv":
             r = df.to_csv()
-            return HttpResponse(r, content_type="text/csv")
+            return HttpResponse(r, content_type=CONTENT_TYPE_CSV)
         else:
             r = df.to_json(orient="table")
             return HttpResponse(r, content_type="application/json")

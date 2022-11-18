@@ -26,10 +26,11 @@ export const useGetCountryUsersGroup = params => {
 
 export const usePutCountryMutation = () =>
     useSnackMutation(
-        async ({ id, users, language }) =>
+        async ({ id, users, language, teams }) =>
             putRequest(`/api/polio/countryusersgroup/${id}/`, {
                 users,
                 language,
+                teams,
             }),
         undefined,
         undefined,

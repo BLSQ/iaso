@@ -11,7 +11,7 @@ from copy import copy
 
 from iaso.models import Form, Project, OrgUnitType, Profile, OrgUnit
 from iaso.utils import timestamp_to_datetime
-from .common import ModelViewSet, TimestampField, DynamicFieldsModelSerializer
+from .common import ModelViewSet, TimestampField, DynamicFieldsModelSerializer, CONTENT_TYPE_XLSX, CONTENT_TYPE_CSV
 from hat.api.export_utils import Echo, generate_xlsx, iter_items
 from hat.audit.models import log_modification, FORM_API
 from .projects import ProjectSerializer
@@ -275,7 +275,7 @@ class FormsViewSet(ModelViewSet):
     def list_to_csv(self):
         response = StreamingHttpResponse(
             streaming_content=(iter_items(self.get_queryset(), Echo(), self.EXPORT_TABLE_COLUMNS, self._get_table_row)),
-            content_type="text/csv",
+            content_type=CONTENT_TYPE_CSV,
         )
         response["Content-Disposition"] = f"attachment; filename={self.EXPORT_FILE_NAME}.csv"
 
@@ -284,7 +284,7 @@ class FormsViewSet(ModelViewSet):
     def list_to_xlsx(self):
         response = HttpResponse(
             generate_xlsx("Forms", self.EXPORT_TABLE_COLUMNS, self.get_queryset(), self._get_table_row),
-            content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+            content_type=CONTENT_TYPE_XLSX,
         )
         response["Content-Disposition"] = f"attachment; filename={self.EXPORT_FILE_NAME}.xlsx"
 

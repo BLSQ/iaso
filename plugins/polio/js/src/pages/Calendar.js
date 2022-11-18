@@ -9,7 +9,7 @@ import {
     useSafeIntl,
     LoadingSpinner,
     ExcellSvg,
-    getTableUrl
+    getTableUrl,
 } from 'bluesquare-components';
 import { useSelector } from 'react-redux';
 import TopBar from 'Iaso/components/nav/TopBarComponent';
@@ -22,8 +22,6 @@ import {
     filterCampaigns,
     getCalendarData,
 } from '../components/campaignCalendar/utils';
-
-import { useGetCalendarXlsx } from '../hooks/useGetCalendarXlsx';
 
 import {
     dateFormat,
@@ -48,7 +46,7 @@ const useStyles = makeStyles(theme => ({
     isNotPdf: {
         height: 'calc(100vh - 65px)',
     },
-    exportIcon: { marginRight: '8px' }
+    exportIcon: { marginRight: '8px' },
 }));
 
 const Calendar = ({ params }) => {
@@ -71,8 +69,6 @@ const Calendar = ({ params }) => {
         params.countries,
         params.search,
     ]);
-
-    const { mutate: generateCalendarXlsx } = useGetCalendarXlsx();
 
     const { data: campaigns = [], isLoading } =
         useGetCampaigns(queryOptions).query;
@@ -128,7 +124,7 @@ const Calendar = ({ params }) => {
         campaignType: params.campaignType,
         campaignGroups: params.campaignGroups,
         search: params.search,
-        order: params.order
+        order: params.order,
     };
 
     const xlsx_url = getTableUrl(
@@ -137,10 +133,16 @@ const Calendar = ({ params }) => {
     );
 
     useEffect(() => {
-        if (campaigns.length > 0) {
+        if (
+            filteredCampaigns.length > 0 &&
+            mappedCampaigns.length > 0 &&
+            !isLoading
+        ) {
             setCalendarAndMapLoaded(true);
+        } else {
+            setCalendarAndMapLoaded(false);
         }
-    }, [campaigns]);
+    }, [filteredCampaigns, mappedCampaigns, isLoading]);
 
     return (
         <div>
@@ -199,17 +201,13 @@ const Calendar = ({ params }) => {
                         <Grid item>
                             <Box mb={2} mt={2}>
                                 <Button
-                                    disabled={!isCalendarAndMapLoaded}
                                     type="button"
                                     color="primary"
                                     variant="contained"
                                     className="createXlsx"
                                     href={xlsx_url}
                                 >
-                                    <ExcellSvg
-                                        className={classes.exportIcon}
-
-                                    />
+                                    <ExcellSvg className={classes.exportIcon} />
                                     {formatMessage(MESSAGES.exportToExcel)}
                                 </Button>
                             </Box>

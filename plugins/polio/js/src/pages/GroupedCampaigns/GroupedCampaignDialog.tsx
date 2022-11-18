@@ -8,6 +8,7 @@ import React, {
 import { Box, Divider, Grid } from '@material-ui/core';
 // @ts-ignore
 import ConfirmCancelDialogComponent from 'Iaso/components/dialogs/ConfirmCancelDialogComponent';
+// @ts-ignore
 import { useSafeIntl } from 'bluesquare-components';
 import MESSAGES from '../../constants/messages';
 import InputComponent from '../../../../../../hat/assets/js/apps/Iaso/components/forms/InputComponent';
@@ -47,12 +48,14 @@ export const GroupedCampaignDialog: FunctionComponent<Props> = ({
         useState<string>(name);
     const [campaignsToLink, setCampaignsToLink] = useState<string[]>(campaigns);
     // TODO refactor this hook to make more flexible
-    const { data: allCampaigns } = useGetCampaigns().query;
+    const { data: allCampaigns, isFetching: isFetchingCamaigns } =
+        useGetCampaigns().query;
     const allCampaignsDropdown = useMemo(
         () => makeCampaignsDropDownWithUUID(allCampaigns),
         [allCampaigns],
     );
     const { mutateAsync: saveGroupedCampaign } = useSaveGroupedCampaign(type);
+
     const reset = useCallback(() => {
         setGroupedCampaignName(name);
         setCampaignsToLink(campaigns);
@@ -64,18 +67,11 @@ export const GroupedCampaignDialog: FunctionComponent<Props> = ({
                 ? {
                       id,
                       name: groupedCampaignName,
-                      campaigns_ids:
-                          // FIXME dirty workaround because campaignToLink is sometimes string sometime array
-                          typeof campaignsToLink === 'string'
-                              ? commaSeparatedIdsToStringArray(campaignsToLink)
-                              : campaignsToLink,
+                      campaigns_ids: campaignsToLink,
                   }
                 : {
                       name: groupedCampaignName,
-                      campaigns_ids:
-                          typeof campaignsToLink === 'string'
-                              ? commaSeparatedIdsToStringArray(campaignsToLink)
-                              : campaignsToLink,
+                      campaigns_ids: campaignsToLink,
                   };
             // call in this order to avoid mem leak error
             closeDialog();
@@ -91,7 +87,9 @@ export const GroupedCampaignDialog: FunctionComponent<Props> = ({
         },
         [reset],
     );
-    const allowConfirm = Boolean(groupedCampaignName);
+    const allowConfirm =
+        Boolean(groupedCampaignName) && campaignsToLink.length > 0;
+
     return (
         <ConfirmCancelDialogComponent
             id="grouped-campaigns-modal"
@@ -99,7 +97,7 @@ export const GroupedCampaignDialog: FunctionComponent<Props> = ({
             onConfirm={onConfirm}
             confirmMessage={MESSAGES.save}
             cancelMessage={MESSAGES.close}
-            maxWidth="md"
+            maxWidth="xs"
             titleMessage={MESSAGES.editGroupedCampaign}
             onCancel={onCancel}
             dataTestId="grouped-campaigns-modal"
@@ -119,7 +117,7 @@ export const GroupedCampaignDialog: FunctionComponent<Props> = ({
                     direction="row"
                     justifyContent="space-around"
                 >
-                    <Grid container item xs={6}>
+                    <Grid container item xs={12}>
                         <Grid item xs={12}>
                             <InputComponent
                                 keyValue={GROUPED_CAMPAIGN_NAME}
@@ -141,11 +139,14 @@ export const GroupedCampaignDialog: FunctionComponent<Props> = ({
                                     MESSAGES.campaignsToLink,
                                 )}
                                 onChange={(_keyValue, value) => {
-                                    setCampaignsToLink(value);
+                                    setCampaignsToLink(
+                                        commaSeparatedIdsToStringArray(value),
+                                    );
                                 }}
                                 value={campaignsToLink}
                                 required
                                 multi
+                                loading={isFetchingCamaigns}
                             />
                         </Grid>
                     </Grid>

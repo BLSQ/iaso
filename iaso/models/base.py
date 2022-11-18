@@ -14,13 +14,15 @@ from django.contrib.postgres.aggregates import ArrayAgg
 from django.core.paginator import Paginator
 from django.core.validators import MinLengthValidator
 from django.db import models
-from django.db.models import Q
+from django.db.models import Q, FilteredRelation, Count
 from django.shortcuts import get_object_or_404
 from django.utils import timezone
 from django.utils.translation import ugettext_lazy as _
 
 from hat.audit.models import log_modification, INSTANCE_API
 from iaso.utils import flat_parse_xml_soup, as_soup, extract_form_version_id
+from iaso.models.org_unit import OrgUnit
+from iaso.models.data_source import SourceVersion, DataSource
 from .device import DeviceOwnership, Device
 from .forms import Form, FormVersion
 
@@ -112,101 +114,6 @@ class Account(models.Model):
 
     def __str__(self):
         return "%s " % (self.name,)
-
-
-class DataSource(models.Model):
-    """DataSources allow linking multiple things imported from the same source (DHIS2, CSV, ...)"""
-
-    name = models.CharField(max_length=255, unique=True)
-    read_only = models.BooleanField(default=False)
-    projects = models.ManyToManyField("Project", related_name="data_sources", blank=True)
-    credentials = models.ForeignKey(
-        "ExternalCredentials",
-        on_delete=models.SET_NULL,
-        related_name="data_sources",
-        null=True,
-        blank=True,
-    )
-
-    description = models.TextField(null=True, blank=True)
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
-    default_version = models.ForeignKey("SourceVersion", null=True, blank=True, on_delete=models.SET_NULL)
-
-    def __str__(self):
-        return "%s " % (self.name,)
-
-    def as_dict(self):
-        versions = SourceVersion.objects.filter(data_source_id=self.id)
-        return {
-            "name": self.name,
-            "description": self.description,
-            "id": self.id,
-            "url": self.credentials.url if self.credentials else None,
-            "created_at": self.created_at.timestamp() if self.created_at else None,
-            "updated_at": self.updated_at.timestamp() if self.updated_at else None,
-            "versions": [v.as_dict_without_data_source() for v in versions],
-        }
-
-    def as_list(self):
-        return {"name": self.name, "id": self.id}
-
-
-class SourceVersion(models.Model):
-    data_source = models.ForeignKey(DataSource, on_delete=models.CASCADE, related_name="versions")
-    number = models.IntegerField()
-    description = models.TextField(null=True, blank=True)
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
-
-    def __str__(self):
-        return "%s %d" % (self.data_source, self.number)
-
-    def as_dict(self):
-        return {
-            "data_source": self.data_source.as_dict(),
-            "number": self.number,
-            "description": self.description,
-            "id": self.id,
-            "created_at": self.created_at.timestamp() if self.created_at else None,
-            "updated_at": self.updated_at.timestamp() if self.updated_at else None,
-        }
-
-    def as_list(self):
-        return {
-            "data_source": self.data_source.as_list(),
-            "number": self.number,
-            "id": self.id,
-        }
-
-    def as_dict_without_data_source(self):
-        return {
-            "number": self.number,
-            "description": self.description,
-            "id": self.id,
-            "created_at": self.created_at.timestamp() if self.created_at else None,
-            "updated_at": self.updated_at.timestamp() if self.updated_at else None,
-            "org_units_count": self.orgunit_set.count(),
-        }
-
-    def as_report_dict(self):
-        report = {}
-        report["org_units"] = self.orgunit_set.count()
-        report["org_units_with_location"] = self.orgunit_set.exclude(location=None).count()
-        report["org_units_with_shapes"] = self.orgunit_set.filter(simplified_geom__isnull=False).count()
-        org_unit_types = self.orgunit_set.values_list("org_unit_type__name", "org_unit_type__id").distinct()
-        org_unit_types_report = {}
-        for t in org_unit_types:
-            name, ident = t
-            org_unit_types_report[name] = self.orgunit_set.filter(org_unit_type_id=ident).count()
-        report["types"] = org_unit_types_report
-        group_report = {}
-        groups = self.orgunit_set.values_list("groups__name", "groups__id").distinct()
-        for group in groups:
-            name, ident = group
-            group_report[name] = self.orgunit_set.filter(groups__id=ident).count()
-        report["groups"] = group_report
-        return report
 
 
 class RecordType(models.Model):
@@ -342,7 +249,7 @@ class Task(models.Model):
 
     def report_progress_and_stop_if_killed(self, progress_value=None, progress_message=None, end_value=None):
         """Save progress and check if we have been killed
-        We use a separate transaction so we can report the progress even from a transaction, see services.py
+        We use a separate transaction, so we can report the progress even from a transaction, see services.py
         """
         logger.info(f"Task {self} reported {progress_message}")
         self.refresh_from_db()
@@ -593,6 +500,32 @@ class ExternalCredentials(models.Model):
 
 
 class InstanceQuerySet(models.QuerySet):
+    def with_lock_info(self, user):
+        """
+        Annotate the QuerySet with the lock info for the given user.
+
+        The following fields are added to the queryset:
+        - lock_applying_to_user
+        - count_lock_applying_to_user: number of locks that prevent user to modify the instance
+        - count_active_lock: number of locks on instance that are not unlocked
+
+        Implementation: we decided to make the lock calculation via annotations, so it's a lot faster with large querysets.
+        """
+
+        return (
+            self.annotate(
+                lock_applying_to_user=FilteredRelation(
+                    "instancelock",
+                    condition=Q(
+                        ~Q(instancelock__top_org_unit__in=OrgUnit.objects.filter_for_user(user)),
+                        Q(instancelock__unlocked_by__isnull=True),
+                    ),
+                )
+            )
+            .annotate(count_lock_applying_to_user=Count("lock_applying_to_user"))
+            .annotate(count_active_lock=Count("instancelock", Q(instancelock__unlocked_by__isnull=True)))
+        )
+
     def with_status(self):
         duplicates_subquery = (
             self.values("period", "form", "org_unit")
@@ -1148,6 +1081,10 @@ class Instance(models.Model):
             return True
         return False
 
+    @property
+    def has_org_unit(self):
+        return self.org_unit if self.org_unit else None
+
 
 class InstanceFile(models.Model):
     UPLOADED_TO = "instancefiles/"
@@ -1329,7 +1266,7 @@ class BulkCreateUserCsvFile(models.Model):
 
 class InstanceLockQueryset(models.QuerySet):
     def actives(self):
-        """Lock that don't have ben unlocked"""
+        """Lock that don't have been unlocked"""
         return self.filter(unlocked_by__isnull=True)
 
 

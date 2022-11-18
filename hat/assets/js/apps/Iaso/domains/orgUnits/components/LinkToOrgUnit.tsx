@@ -9,7 +9,7 @@ import { Link } from 'react-router';
 import { userHasPermission } from '../../users/utils';
 import { baseUrls } from '../../../constants/urls';
 import { useCurrentUser } from '../../../utils/usersUtils';
-import { OrgUnit } from '../types/orgUnit';
+import { OrgUnit, ShortOrgUnit } from '../types/orgUnit';
 
 import MESSAGES from '../../assignments/messages';
 
@@ -24,7 +24,7 @@ const useStyles = makeStyles(theme => ({
 }));
 
 type Props = {
-    orgUnit: OrgUnit | undefined;
+    orgUnit?: OrgUnit | ShortOrgUnit;
     useIcon?: boolean;
 };
 

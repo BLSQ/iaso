@@ -14,6 +14,7 @@ from django.utils.translation import gettext as _
 from django.utils import timezone
 
 from hat.audit.models import Modification, CAMPAIGN_API
+from iaso.api.common import UserSerializer
 
 from iaso.models import Group
 from .models import (
@@ -22,10 +23,9 @@ from .models import (
     VIRUSES,
     RoundVaccine,
     Shipment,
+    Destruction,
     SpreadSheetImport,
     CampaignGroup,
-    BudgetEvent,
-    BudgetFiles,
     RoundScope,
     CampaignScope,
 )
@@ -41,15 +41,14 @@ from .preparedness.spreadsheet_manager import generate_spreadsheet_for_campaign
 logger = getLogger(__name__)
 
 
-class UserSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = User
+class UserSerializerForPolio(UserSerializer):
+    class Meta(UserSerializer.Meta):
         fields = ["id", "username", "first_name", "last_name", "email"]
         ref_name = "polio_user_serializer"
 
 
 class CountryUsersGroupSerializer(serializers.ModelSerializer):
-    read_only_users_field = UserSerializer(source="users", many=True, read_only=True)
+    read_only_users_field = UserSerializerForPolio(source="users", many=True, read_only=True)
     country_name: Field = serializers.SlugRelatedField(source="country", slug_field="name", read_only=True)
 
     class Meta:
@@ -64,6 +63,7 @@ class CountryUsersGroupSerializer(serializers.ModelSerializer):
             "country_name",
             "users",
             "read_only_users_field",
+            "teams",
         ]
 
 
@@ -72,24 +72,6 @@ def _error(message, exc=None):
     if exc:
         errors["debug"] = [str(exc)]
     return errors
-
-
-class BudgetEventSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = BudgetEvent
-        fields = "__all__"
-        read_only_fields = ["created_at", "updated_at", "author"]
-        ordering = ["type", "status", "updated_at"]
-
-    def validate(self, attrs):
-        validated_data = super().validate(attrs)
-        return validated_data
-
-
-class BudgetStatusSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = BudgetEvent
-        fields = ["created_at", "status", "type"]
 
 
 # the following serializer are used so we can audit the modification on a campaign.
@@ -113,6 +95,12 @@ class AuditShipmentSerializer(serializers.ModelSerializer):
         fields = "__all__"
 
 
+class AuditDestructionSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Destruction
+        fields = "__all__"
+
+
 class AuditRoundScopeSerializer(serializers.ModelSerializer):
     class Meta:
         model = RoundScope
@@ -129,6 +117,7 @@ class AuditRoundSerializer(serializers.ModelSerializer):
     vaccines = AuditRoundVaccineSerializer(many=True)
     scopes = AuditRoundScopeSerializer(many=True)
     shipments = AuditShipmentSerializer(many=True)
+    destructions = AuditDestructionSerializer(many=True)
 
 
 class AuditCampaignScopeSerializer(serializers.ModelSerializer):
@@ -275,16 +264,29 @@ class CampaignScopeSerializer(serializers.ModelSerializer):
     group = GroupSerializer()
 
 
+class DestructionSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Destruction
+        fields = [
+            "vials_destroyed",
+            "date_report_received",
+            "date_report",
+            "comment",
+            "id",
+        ]
+
+
 class ShipmentSerializer(serializers.ModelSerializer):
     class Meta:
         model = Shipment
         fields = [
             "po_numbers",
-            "doses_received",
+            "vials_received",
             "estimated_arrival_date",
             "reception_pre_alert",
             "date_reception",
             "vaccine_name",
+            "comment",
             "id",
         ]
 
@@ -303,16 +305,20 @@ class RoundSerializer(serializers.ModelSerializer):
     scopes = RoundScopeSerializer(many=True, required=False)
     vaccines = RoundVaccineSerializer(many=True, required=False)
     shipments = ShipmentSerializer(many=True, required=False)
+    destructions = DestructionSerializer(many=True, required=False)
 
     @atomic
     def create(self, validated_data):
         vaccines = validated_data.pop("vaccines", [])
         shipments = validated_data.pop("shipments", [])
+        destructions = validated_data.pop("destructions", [])
         round = Round.objects.create(**validated_data)
         for vaccine in vaccines:
             RoundVaccine.objects.create(round=round, **vaccine)
         for shipment in shipments:
             Shipment.objects.create(round=round, **shipment)
+        for destruction in destructions:
+            Destruction.objects.create(round=round, **destruction)
         return round
 
     @atomic
@@ -322,6 +328,9 @@ class RoundSerializer(serializers.ModelSerializer):
         shipments = validated_data.pop("shipments", [])
         shipment_instances = []
         current_shipment_ids = []
+        destructions = validated_data.pop("destructions", [])
+        destruction_instances = []
+        current_destruction_ids = []
         for vaccine_data in vaccines:
             round_vaccine = None
             if vaccine_data.get("id"):
@@ -355,8 +364,29 @@ class RoundSerializer(serializers.ModelSerializer):
         for current in all_current_shipments:
             if current_shipment_ids.count(current.id) == 0:
                 current.delete()
+        # TODO put repeated code in a function
+        for destruction_data in destructions:
+            destruction = None
+            if destruction_data.get("id"):
+                destruction_id = destruction_data["id"]
+                current_destruction_ids.append(destruction_id)
+                destruction = Destruction.objects.get(pk=destruction_id)
+                if destruction.round != instance:
+                    raise serializers.ValidationError({"destructions": "destruction is attached to wrong round"})
+            else:
+                destruction = Destruction.objects.create()
+            destruction_serializer = DestructionSerializer(instance=destruction, data=destruction_data)
+            destruction_serializer.is_valid(raise_exception=True)
+            destruction_instance = destruction_serializer.save()
+            destruction_instances.append(destruction_instance)
+        # remove deleted destructions, ie existing destructions whose id wan't sent in the request
+        all_current_destructions = instance.destructions.all()
+        for current in all_current_destructions:
+            if current_destruction_ids.count(current.id) == 0:
+                current.delete()
         instance.vaccines.set(vaccine_instances)
         instance.shipments.set(shipment_instances)
+        instance.destructions.set(destruction_instances)
         round = super().update(instance, validated_data)
         return round
 
@@ -493,6 +523,18 @@ class CampaignPreparednessSpreadsheetSerializer(serializers.Serializer):
         return {"url": spreadsheet.url}
 
 
+class CurrentAccountDefault:
+    """
+    May be applied as a `default=...` value on a serializer field.
+    Returns the current user's account.
+    """
+
+    requires_context = True
+
+    def __call__(self, serializer_field):
+        return serializer_field.context["request"].user.iaso_profile.account_id
+
+
 class CampaignSerializer(serializers.ModelSerializer):
     round_one = serializers.SerializerMethodField(read_only=True)
     round_two = serializers.SerializerMethodField(read_only=True)
@@ -519,7 +561,8 @@ class CampaignSerializer(serializers.ModelSerializer):
     grouped_campaigns = serializers.PrimaryKeyRelatedField(
         many=True, queryset=CampaignGroup.objects.all(), required=False
     )
-    last_budget_event = BudgetStatusSerializer(many=False, required=False, allow_null=True)
+    # Account is filed per default the one of the connected user that update it
+    account: Field = serializers.PrimaryKeyRelatedField(default=CurrentAccountDefault(), read_only=True)
 
     def get_top_level_org_unit_name(self, campaign):
         if campaign.country:
@@ -558,6 +601,8 @@ class CampaignSerializer(serializers.ModelSerializer):
 
         campaign_scopes = validated_data.pop("scopes", [])
         campaign = Campaign.objects.create(
+            # there seems a bug in DRF the account is not in validated data, when not using HiddenField
+            account_id=self.context["request"].user.iaso_profile.account_id,
             **validated_data,
         )
 
@@ -573,7 +618,9 @@ class CampaignSerializer(serializers.ModelSerializer):
 
         for round_data in rounds:
             scopes = round_data.pop("scopes", [])
-            round = Round.objects.create(campaign=campaign, **round_data)
+            round_serializer = RoundSerializer(data={**round_data, "campaign": campaign.id})
+            round_serializer.is_valid(raise_exception=True)
+            round = round_serializer.save()
             for scope in scopes:
                 vaccine = scope.get("vaccine")
                 org_units = scope.get("group", {}).get("org_units")
@@ -628,7 +675,6 @@ class CampaignSerializer(serializers.ModelSerializer):
                 scope.group.org_units.set(org_units)
         instance.rounds.set(round_instances)
 
-        validated_data.pop("last_budget_event", None)
         campaign = super().update(instance, validated_data)
 
         log_campaign_modification(campaign, old_campaign_dump, self.context["request"].user)
@@ -646,6 +692,7 @@ class CampaignSerializer(serializers.ModelSerializer):
 class SmallCampaignSerializer(CampaignSerializer):
     class Meta:
         model = Campaign
+        # TODO: refactor to avoid duplication with AnonymousCampaignSerializer?
         fields = [
             "id",
             "epid",
@@ -697,6 +744,7 @@ class SmallCampaignSerializer(CampaignSerializer):
             "top_level_org_unit_name",
             "top_level_org_unit_id",
             "is_preventive",
+            "account",
         ]
         read_only_fields = fields
 
@@ -775,6 +823,7 @@ class AnonymousCampaignSerializer(CampaignSerializer):
             "top_level_org_unit_name",
             "top_level_org_unit_id",
             "is_preventive",
+            "account",
         ]
         read_only_fields = fields
 
@@ -792,10 +841,3 @@ class CampaignGroupSerializer(serializers.ModelSerializer):
 
     campaigns = CampaignNameSerializer(many=True, read_only=True)
     campaigns_ids = serializers.PrimaryKeyRelatedField(many=True, queryset=Campaign.objects.all(), source="campaigns")
-
-
-class BudgetFilesSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = BudgetFiles
-        fields = "__all__"
-        read_only_fields = ["created_at", "updated_at"]

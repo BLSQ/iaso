@@ -17,29 +17,22 @@ type Props = {
 const makeGroupsQueryParams = ({ dataSourceId, sourceVersionId }) => {
     if (sourceVersionId) return `?version=${sourceVersionId}`;
     if (dataSourceId) return `?dataSource=${dataSourceId}`;
-    return '?defaultVersion=true';
+    return '';
 };
 
 export const useGetGroups = ({
     dataSourceId,
     sourceVersionId,
 }: Props): UseQueryResult<DropdownOptions<string>[], Error> => {
-    const [enabled, setEnabled] = useState(false);
     const groupsQueryParams = makeGroupsQueryParams({
         dataSourceId,
         sourceVersionId,
     });
-
-    useEffect(() => {
-        if (dataSourceId) setEnabled(true);
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [dataSourceId]);
     return useSnackQuery({
         queryKey: ['groups', dataSourceId, groupsQueryParams],
         queryFn: () => getRequest(`/api/groups/${groupsQueryParams}`),
         snackErrorMsg: MESSAGES.fetchGroupsError,
         options: {
-            enabled,
             staleTime,
             select: data => {
                 if (!data) return [];

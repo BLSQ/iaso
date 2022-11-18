@@ -1,6 +1,6 @@
 import React, { FunctionComponent, useState, useMemo } from 'react';
 import { useDispatch } from 'react-redux';
-import { makeStyles, Box, Grid, Tabs, Tab } from '@material-ui/core';
+import { makeStyles, Box, Tabs, Tab } from '@material-ui/core';
 
 import {
     // @ts-ignore

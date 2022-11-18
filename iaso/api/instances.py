@@ -1,6 +1,7 @@
 import json
 import ntpath
 from time import gmtime, strftime
+from typing import Dict, Any, Union
 
 import pandas as pd
 from django.contrib.auth.models import User
@@ -8,9 +9,10 @@ from django.contrib.gis.geos import Point
 from django.core.paginator import Paginator
 from django.db import connection
 from django.db import transaction
-from django.db.models import Q, Count, FilteredRelation
+from django.db.models import Q, Count, QuerySet
 from django.http import StreamingHttpResponse, HttpResponse
 from django.utils.timezone import now
+from django_stubs_ext import WithAnnotations
 from rest_framework import serializers, status
 from rest_framework import viewsets, permissions
 from rest_framework.decorators import action
@@ -22,13 +24,21 @@ import iaso.periods as periods
 from hat.api.export_utils import Echo, generate_xlsx, iter_items, timestamp_to_utc_datetime
 from hat.audit.models import log_modification, INSTANCE_API
 from hat.common.utils import queryset_iterator
-from iaso.models import Instance, OrgUnit, Form, Project, InstanceFile, InstanceQuerySet, InstanceLock, Entity
+from iaso.models import (
+    Instance,
+    OrgUnit,
+    Project,
+    InstanceFile,
+    InstanceQuerySet,
+    InstanceLock,
+    Entity,
+)
 from iaso.utils import timestamp_to_datetime
 from . import common
-from .common import safe_api_import, TimestampField
-from .instance_filters import parse_instance_filters
-from .comment import UserSerializer
-from iaso.api.serializers import OrgUnitSmallSearchSerializer, OrgUnitSerializer
+from .common import safe_api_import, TimestampField, FileFormatEnum, CONTENT_TYPE_XLSX, CONTENT_TYPE_CSV
+from .instance_filters import parse_instance_filters, get_form_from_instance_filters
+from .comment import UserSerializerForComment
+from iaso.api.serializers import OrgUnitSerializer
 
 
 class InstanceSerializer(serializers.ModelSerializer):
@@ -106,8 +116,9 @@ class InstanceLockSerializer(serializers.ModelSerializer):
         fields = ["id", "top_org_unit", "locked_by", "locked_at", "unlocked_by", "locked_by"]
         read_only_fields = ["locked_at", "locked_by"]
 
-    locked_by = UserSerializer(read_only=True)
-    unlocked_by = UserSerializer(read_only=True)
+    # TODO: can we use the generic UserSerializer to keeps things less interleaved?
+    locked_by = UserSerializerForComment(read_only=True)
+    unlocked_by = UserSerializerForComment(read_only=True)
     top_org_unit = OrgUnitNestedSerializer(read_only=True)
 
 
@@ -152,8 +163,125 @@ class InstancesViewSet(viewsets.ViewSet):
         serializer = InstanceFileSerializer(queryset, many=True)
         return Response(serializer.data)
 
+    @staticmethod
+    def list_file_export(filters: Dict[str, Any], queryset: "QuerySet[Instance]", file_format: FileFormatEnum):
+        """WIP: Helper function to divide the huge list method"""
+        columns = [
+            {"title": "ID du formulaire", "width": 20},
+            {"title": "Version du formulaire", "width": 20},
+            {"title": "Export id", "width": 20},
+            {"title": "Latitude", "width": 40},
+            {"title": "Longitude", "width": 20},
+            {"title": "Période", "width": 20},
+            {"title": "Date de création", "width": 20},
+            {"title": "Date de modification", "width": 20},
+            {"title": "Org unit", "width": 20},
+            {"title": "Org unit id", "width": 20},
+            {"title": "Référence externe", "width": 20},
+            {"title": "parent1", "width": 20},
+            {"title": "parent2", "width": 20},
+            {"title": "parent3", "width": 20},
+            {"title": "parent4", "width": 20},
+        ]
+
+        filename = "instances"
+
+        form = get_form_from_instance_filters(filters)
+
+        if form:
+            filename = "%s-%s" % (filename, form.id)
+            if form.correlatable:
+                columns.append({"title": "correlation id", "width": 20})
+
+        sub_columns = ["" for __ in columns]
+        # TODO: Check the logic here, it's going to fail in any case if there is no form
+        # Don't know what we are trying to achieve exactly
+        # The type ignore is obviously wrong since the type can be null, but the frontend always send forms.
+        latest_form_version = form.latest_version  # type: ignore
+        questions_by_name = latest_form_version.questions_by_name() if latest_form_version else {}
+        if form and latest_form_version:
+            file_content_template = questions_by_name
+            for title in file_content_template:
+                # some form have dict as label to support MuliLang. So convert to String
+                # e.g. Vaccine Stock Monitoring {'French': 'fin', 'English': 'end'}
+                label = file_content_template.get(title, {}).get("label", "")
+                if isinstance(label, dict):
+                    label = str(label)
+                sub_columns.append(label)
+                columns.append({"title": title, "width": 50})
+        else:
+            file_content_template = queryset.first().as_dict()["file_content"]  # type: ignore
+            for title in file_content_template:
+                columns.append({"title": title, "width": 50})
+                sub_columns.append(questions_by_name.get(title, {}).get("label", ""))
+
+        filename = "%s-%s" % (filename, strftime("%Y-%m-%d-%H-%M", gmtime()))
+
+        def get_row(instance, **kwargs):
+            idict = instance.as_dict_with_parents()
+            created_at = timestamp_to_datetime(idict.get("created_at"))
+            updated_at = timestamp_to_datetime(idict.get("updated_at"))
+            org_unit = idict.get("org_unit")
+            file_content = idict.get("file_content")
+
+            instance_values = [
+                idict.get("id"),
+                file_content.get("_version") if file_content else None,
+                idict.get("export_id"),
+                idict.get("latitude"),
+                idict.get("longitude"),
+                idict.get("period"),
+                created_at,
+                updated_at,
+                org_unit.get("name") if org_unit else None,
+                org_unit.get("id") if org_unit else None,
+                org_unit.get("source_ref") if org_unit else None,
+            ]
+
+            parent = org_unit["parent"] if org_unit else None
+            for i in range(4):
+                if parent:
+                    instance_values.append(parent["name"])
+                    parent = parent["parent"]
+                else:
+                    instance_values.append("")
+            if instance.form.correlatable:
+                instance_values.append(instance.correlation_id)
+
+            for k in file_content_template:
+                v = idict["file_content"].get(k, None)
+                if type(v) is list:
+                    instance_values.append(json.dumps(v))
+                else:
+                    instance_values.append(v)
+            return instance_values
+
+        queryset.prefetch_related("org_unit__parent__parent__parent__parent").prefetch_related(
+            "org_unit__parent__parent__parent"
+        ).prefetch_related("org_unit__parent__parent").prefetch_related("org_unit__parent").prefetch_related("org_unit")
+
+        response: Union[HttpResponse, StreamingHttpResponse]
+        if file_format == FileFormatEnum.XLSX:
+            filename = filename + ".xlsx"
+            response = HttpResponse(
+                generate_xlsx("Forms", columns, queryset_iterator(queryset, 100), get_row, sub_columns),
+                content_type=CONTENT_TYPE_XLSX,
+            )
+        elif file_format == FileFormatEnum.CSV:
+            filename = filename + ".csv"
+            response = StreamingHttpResponse(
+                streaming_content=(iter_items(queryset, Echo(), columns, get_row)), content_type=CONTENT_TYPE_CSV
+            )
+        else:
+            raise ValueError(f"Unknown file format requested: {file_format}")
+
+        response["Content-Disposition"] = "attachment; filename=%s" % filename
+        return response
+
     def list(self, request):
-        # TODO: method is way too long, refactor
+        """List instances: this endpoint is used for both searches and file exports"""
+
+        # 1. Get data out of the request
         limit = request.GET.get("limit", None)
         as_small_dict = request.GET.get("asSmallDict", None)
         page_offset = request.GET.get("page", 1)
@@ -162,9 +290,14 @@ class InstancesViewSet(viewsets.ViewSet):
         xlsx_format = request.GET.get("xlsx", None)
         filters = parse_instance_filters(request.GET)
 
+        file_export = False
+        if csv_format is not None or xlsx_format is not None:
+            file_export = True
+            file_format_export = FileFormatEnum.CSV if csv_format is not None else FileFormatEnum.XLSX
+
+        # 2. Prepare queryset (common part between searches and exports)
         queryset = self.get_queryset()
         queryset = queryset.exclude(file="").exclude(device__test_device=True)
-
         queryset = queryset.prefetch_related("org_unit")
         queryset = queryset.prefetch_related("org_unit__version", "org_unit__version__data_source")
         queryset = queryset.prefetch_related("org_unit__org_unit_type")
@@ -174,25 +307,19 @@ class InstancesViewSet(viewsets.ViewSet):
         queryset = queryset.order_by(*orders)
         # IA-1023 = allow to sort instances by form version
 
-        if csv_format is None and xlsx_format is None:
+        # TODO: this function would deserve some more thorough refactor, see the discussion at
+        #  https://bluesquare.atlassian.net/browse/IA-1547. Some things were cleaned already, but it would make sense
+        #  to change it so:
+        #  - 1) the same queryset is prepared at the beginning of the function, then used in all cases (searches,
+        #       exports, paginated or not, as small dict or not)
+        #  - 2) the limit and asSmallDict parameters are independent from each other (the consumer can choose to use
+        #       one, both or None and get predictable results)
+        if not file_export:
             if limit:
                 limit = int(limit)
                 page_offset = int(page_offset)
-                # Make the Lock calculation via annotation so it's a lot faster
-                # count_lock_applying_to_user = Number of lock that prevent user to modify the instance
-                queryset = queryset.annotate(
-                    lock_applying_to_user=FilteredRelation(
-                        "instancelock",
-                        condition=Q(
-                            ~Q(instancelock__top_org_unit__in=OrgUnit.objects.filter_for_user(request.user)),
-                            Q(instancelock__unlocked_by__isnull=True),
-                        ),
-                    )
-                ).annotate(count_lock_applying_to_user=Count("lock_applying_to_user"))
-                # count_active_lock = Number of lock on instance that are not unlocked
-                queryset = queryset.annotate(
-                    count_active_lock=Count("instancelock", Q(instancelock__unlocked_by__isnull=True))
-                )
+
+                queryset = queryset.with_lock_info(user=request.user)
 
                 paginator = Paginator(queryset, limit)
                 res = {"count": paginator.count}
@@ -200,26 +327,14 @@ class InstancesViewSet(viewsets.ViewSet):
                     page_offset = paginator.num_pages
                 page = paginator.page(page_offset)
 
-                # check if the instance is linked to an org unit
-                def has_org_unit(instance):
-                    return instance.org_unit if instance.org_unit else None
-
-                # It will check if the orgUnit is linked to an orgUnitType before getting the reference form id
-                def get_reference_form_id(org_unit):
-                    if org_unit.org_unit_type:
-                        return org_unit.org_unit_type.reference_form_id
-                    else:
-                        return None
-
-                def as_dict_formatter(x):
-                    dict = x.as_dict()
-                    reference_form_id = get_reference_form_id(x.org_unit) if has_org_unit(x) else None
-
-                    dict["can_user_modify"] = x.count_lock_applying_to_user == 0
-                    dict["is_locked"] = x.count_active_lock > 0
+                def as_dict_formatter(instance: WithAnnotations[Instance]) -> Dict:
+                    d = instance.as_dict()
+                    d["can_user_modify"] = instance.count_lock_applying_to_user == 0
+                    d["is_locked"] = instance.count_active_lock > 0
+                    reference_form_id = instance.org_unit.get_reference_form_id() if instance.has_org_unit else None  # type: ignore
                     if reference_form_id:
-                        dict["reference_form_id"] = reference_form_id
-                    return dict
+                        d["reference_form_id"] = reference_form_id
+                    return d
 
                 res["instances"] = map(as_dict_formatter, page.object_list)
                 res["has_next"] = page.has_next()
@@ -230,136 +345,20 @@ class InstancesViewSet(viewsets.ViewSet):
 
                 return Response(res)
             elif as_small_dict:
-                queryset = queryset.annotate(instancefile_count=Count("instancefile"))
-                return Response(
-                    [
-                        instance.as_small_dict()
-                        for instance in queryset.filter(Q(location__isnull=False) | Q(instancefile_count__gt=0))
-                        .prefetch_related("instancefile_set")
-                        .prefetch_related("device")
-                        .defer("json")
-                    ]
+                # TODO: apparently, this branch is not used by the frontend nor the mobile app
+                queryset = (
+                    queryset.annotate(instancefile_count=Count("instancefile"))
+                    .filter(Q(location__isnull=False) | Q(instancefile_count__gt=0))
+                    .prefetch_related("instancefile_set")
+                    .prefetch_related("device")
+                    .defer("json")
                 )
+                return Response([instance.as_small_dict() for instance in queryset])
             else:
                 return Response({"instances": [instance.as_dict() for instance in queryset]})
-        else:
-            columns = [
-                {"title": "ID du formulaire", "width": 20},
-                {"title": "Version du formulaire", "width": 20},
-                {"title": "Export id", "width": 20},
-                {"title": "Latitude", "width": 40},
-                {"title": "Longitude", "width": 20},
-                {"title": "Période", "width": 20},
-                {"title": "Date de création", "width": 20},
-                {"title": "Date de modification", "width": 20},
-                {"title": "Org unit", "width": 20},
-                {"title": "Org unit id", "width": 20},
-                {"title": "Référence externe", "width": 20},
-                {"title": "parent1", "width": 20},
-                {"title": "parent2", "width": 20},
-                {"title": "parent3", "width": 20},
-                {"title": "parent4", "width": 20},
-            ]
+        else:  # This is a CSV/XLSX file export
+            return self.list_file_export(filters=filters, queryset=queryset, file_format=file_format_export)
 
-            filename = "instances"
-
-            form_id = filters["form_id"]
-            form_ids = filters["form_ids"]
-
-            form = None
-            if form_id:
-                form = Form.objects.get(pk=form_id)
-            elif form_ids:
-                form_ids = form_ids.split(",")
-                if not len(form_ids) > 1:  # if there is only one form_ids specified
-                    form = Form.objects.get(pk=form_ids[0])
-            if form:
-                filename = "%s-%s" % (filename, form.id)
-                if form.correlatable:
-                    columns.append({"title": "correlation id", "width": 20})
-
-            sub_columns = ["" for __ in columns]
-            # TODO: Check the logic here, it's going to fail in any case if there is no form
-            # Don't know what we are trying to achieve exactly
-            latest_form_version = form.form_versions.order_by("id").last()
-            questions_by_name = latest_form_version.questions_by_name() if latest_form_version else {}
-            if form and form.latest_version:
-                file_content_template = questions_by_name
-                for title in file_content_template:
-                    # some form have dict as label to support MuliLang. So convert to String
-                    # e.g. Vaccine Stock Monitoring {'French': 'fin', 'English': 'end'}
-                    label = file_content_template.get(title, {}).get("label", "")
-                    if isinstance(label, dict):
-                        label = str(label)
-                    sub_columns.append(label)
-                    columns.append({"title": title, "width": 50})
-            else:
-                file_content_template = queryset.first().as_dict()["file_content"]
-                for title in file_content_template:
-                    columns.append({"title": title, "width": 50})
-                    sub_columns.append(questions_by_name.get(title, {}).get("label", ""))
-            filename = "%s-%s" % (filename, strftime("%Y-%m-%d-%H-%M", gmtime()))
-
-            def get_row(instance, **kwargs):
-                idict = instance.as_dict_with_parents()
-                created_at = timestamp_to_datetime(idict.get("created_at"))
-                updated_at = timestamp_to_datetime(idict.get("updated_at"))
-                org_unit = idict.get("org_unit")
-                file_content = idict.get("file_content")
-
-                instance_values = [
-                    idict.get("id"),
-                    file_content.get("_version") if file_content else None,
-                    idict.get("export_id"),
-                    idict.get("latitude"),
-                    idict.get("longitude"),
-                    idict.get("period"),
-                    created_at,
-                    updated_at,
-                    org_unit.get("name") if org_unit else None,
-                    org_unit.get("id") if org_unit else None,
-                    org_unit.get("source_ref") if org_unit else None,
-                ]
-
-                parent = org_unit["parent"] if org_unit else None
-                for i in range(4):
-                    if parent:
-                        instance_values.append(parent["name"])
-                        parent = parent["parent"]
-                    else:
-                        instance_values.append("")
-                if instance.form.correlatable:
-                    instance_values.append(instance.correlation_id)
-
-                for k in file_content_template:
-                    v = idict["file_content"].get(k, None)
-                    if type(v) is list:
-                        instance_values.append(json.dumps(v))
-                    else:
-                        instance_values.append(v)
-                return instance_values
-
-            queryset.prefetch_related("org_unit__parent__parent__parent__parent").prefetch_related(
-                "org_unit__parent__parent__parent"
-            ).prefetch_related("org_unit__parent__parent").prefetch_related("org_unit__parent").prefetch_related(
-                "org_unit"
-            )
-
-            if xlsx_format:
-                filename = filename + ".xlsx"
-                response = HttpResponse(
-                    generate_xlsx("Forms", columns, queryset_iterator(queryset, 100), get_row, sub_columns),
-                    content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-                )
-            if csv_format:
-                response = StreamingHttpResponse(
-                    streaming_content=(iter_items(queryset, Echo(), columns, get_row)), content_type="text/csv"
-                )
-                filename = filename + ".csv"
-            response["Content-Disposition"] = "attachment; filename=%s" % filename
-            return response
-
-    # @action(detail=True,methods=["POST"], serializer_class=serializers.Serializer)
     @action(detail=True, methods=["POST"])
     def add_lock(self, request, pk):
         # would use get_object usually, but we are not in a ModelViewSet

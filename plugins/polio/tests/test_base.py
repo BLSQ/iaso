@@ -27,7 +27,7 @@ from iaso.test import APITestCase, TestCase
 
 from plugins.polio.management.commands.weekly_email import send_notification_email
 from ..api import CACHE_VERSION
-from ..models import Config, BudgetEvent, BudgetFiles
+from ..models import Config
 
 from ..preparedness.calculator import get_preparedness_score
 from ..preparedness.exceptions import InvalidFormatError
@@ -48,6 +48,7 @@ class PolioAPITestCase(APITestCase):
     child_org_unit: m.OrgUnit
     org_units: List[m.OrgUnit]
     luke: User
+    account: m.Account
 
     @classmethod
     def setUpTestData(cls) -> None:
@@ -59,8 +60,8 @@ class PolioAPITestCase(APITestCase):
         cls.source_version_2 = m.SourceVersion.objects.create(data_source=cls.data_source, number=2)
         cls.star_wars = m.Account.objects.create(name="Star Wars")
         cls.jedi_squad = m.OrgUnitType.objects.create(name="Jedi Squad", short_name="Jds")
-        account = Account.objects.create(name="Global Health Initiative", default_version=cls.source_version_1)
-        cls.yoda = cls.create_user_with_profile(username="yoda", account=account, permissions=["iaso_forms"])
+        cls.account = Account.objects.create(name="Global Health Initiative", default_version=cls.source_version_1)
+        cls.yoda = cls.create_user_with_profile(username="yoda", account=cls.account, permissions=["iaso_forms"])
 
         cls.org_unit = m.OrgUnit.objects.create(
             org_unit_type=m.OrgUnitType.objects.create(name="Jedi Council", short_name="Cnc"),
@@ -92,7 +93,7 @@ class PolioAPITestCase(APITestCase):
         ]
 
         cls.luke = cls.create_user_with_profile(
-            username="luke", account=account, permissions=["iaso_forms"], org_units=[cls.child_org_unit]
+            username="luke", account=cls.account, permissions=["iaso_forms"], org_units=[cls.child_org_unit]
         )
 
     def setUp(self) -> None:
@@ -114,17 +115,21 @@ class PolioAPITestCase(APITestCase):
     def test_create_campaign(self):
         self.assertEqual(Campaign.objects.count(), 0)
 
-        payload = {"obr_name": "obr_name", "detection_status": "PENDING", "rounds": []}
+        payload = {"obr_name": "obr_name", "detection_cstatus": "PENDING", "rounds": []}
         response = self.client.post("/api/polio/campaigns/", payload, format="json")
         self.assertJSONResponse(response, 201)
 
         self.assertEqual(response.status_code, 201)
         self.assertEqual(Campaign.objects.count(), 1)
+        c = Campaign.objects.first()
+        self.assertEqual(c.obr_name, "obr_name")
+        self.assertEqual(c.account, self.account)
 
     def test_return_test_campaign_only(self):
         self.assertEqual(Campaign.objects.count(), 0)
 
         payload1 = {
+            "account": self.account.pk,
             "obr_name": "obr_name",
             "detection_status": "PENDING",
             "is_test": True,
@@ -132,6 +137,7 @@ class PolioAPITestCase(APITestCase):
         self.client.post("/api/polio/campaigns/", payload1, format="json")
 
         payload2 = {
+            "account": self.account.pk,
             "obr_name": "obr_name_1",
             "detection_status": "PENDING",
             "is_test": False,
@@ -147,7 +153,7 @@ class PolioAPITestCase(APITestCase):
         """
         Ensure a group will be created when updating an existing campaign without a group
         """
-        campaign = Campaign.objects.create()
+        campaign = Campaign.objects.create(account=self.account)
 
         response = self.client.patch(
             f"/api/polio/campaigns/" + str(campaign.id) + "/",
@@ -177,7 +183,7 @@ class PolioAPITestCase(APITestCase):
         self.client.force_authenticate(self.yoda)
 
         response = self.client.post(
-            f"/api/polio/campaigns/",
+            "/api/polio/campaigns/",
             data={
                 "obr_name": "campaign with org units",
                 "scopes": [
@@ -196,8 +202,9 @@ class PolioAPITestCase(APITestCase):
         self.assertEqual(Campaign.objects.get().scopes.first().group.org_units.count(), 1)
 
         response = self.client.put(
-            f"/api/polio/campaigns/" + str(Campaign.objects.get().id) + "/",
+            f"/api/polio/campaigns/{str(Campaign.objects.get().id)}/",
             data={
+                "account": self.account.pk,
                 "obr_name": "campaign with org units",
                 "scopes": [
                     {
@@ -221,6 +228,7 @@ class PolioAPITestCase(APITestCase):
         """
 
         payload = {
+            "account": self.account.pk,
             "obr_name": "obr_name a",
             "detection_status": "PENDING",
             "initial_org_unit": self.org_unit.pk,
@@ -229,6 +237,7 @@ class PolioAPITestCase(APITestCase):
         self.assertEqual(response.status_code, 201)
 
         payload = {
+            "account": self.account.pk,
             "obr_name": "obr_name b",
             "detection_status": "PENDING",
             "initial_org_unit": self.child_org_unit.pk,
@@ -243,7 +252,7 @@ class PolioAPITestCase(APITestCase):
         self.assertEqual(response.json()[0]["initial_org_unit"], self.child_org_unit.pk)
 
     def test_polio_campaign_soft_delete(self):
-        campaign = Campaign(obr_name="test_soft_delete", detection_status="PENDING")
+        campaign = Campaign(obr_name="test_soft_delete", detection_status="PENDING", account=self.account)
         campaign.save()
         campaign.delete()
         last_campaign = Campaign.objects.last()
@@ -251,11 +260,21 @@ class PolioAPITestCase(APITestCase):
 
     def test_soft_deleted_campaign_weekly_mail(self):
         campaign_deleted = Campaign(
-            obr_name="deleted_campaign", detection_status="PENDING", virus="ABC", country=self.org_unit, onset_at=now()
+            obr_name="deleted_campaign",
+            detection_status="PENDING",
+            virus="ABC",
+            country=self.org_unit,
+            onset_at=now(),
+            account=self.account,
         )
 
         campaign_active = Campaign(
-            obr_name="active campaign", detection_status="PENDING", virus="ABC", country=self.org_unit, onset_at=now()
+            obr_name="active campaign",
+            detection_status="PENDING",
+            virus="ABC",
+            country=self.org_unit,
+            onset_at=now(),
+            account=self.account,
         )
 
         country_user_grp = CountryUsersGroup(country=self.org_unit)
@@ -274,9 +293,10 @@ class PolioAPITestCase(APITestCase):
         self.assertEqual(send_notification_email(campaign_deleted), False)
         self.assertEqual(send_notification_email(campaign_active), True)
 
-    def create_multiple_campaigns(self, count: int):
+    def create_multiple_campaigns(self, count: int) -> None:
         for n in range(count):
             payload = {
+                "account": self.account.pk,
                 "obr_name": "campaign_{0}".format(n),
                 "detection_status": "PENDING",
             }
@@ -365,11 +385,15 @@ class PolioAPITestCase(APITestCase):
             version=self.star_wars.default_version,
         )
 
-        c = Campaign.objects.create(country_id=org_unit.id, obr_name="orb campaign", vacine="vacin")
+        c = Campaign.objects.create(
+            country_id=org_unit.id, obr_name="orb campaign", vacine="vacin", account=self.account
+        )
         c_round_1 = c.rounds.create(number=1, started_at=datetime.date(2022, 1, 1), ended_at=datetime.date(2022, 1, 2))
         c_round_2 = c.rounds.create(number=2, started_at=datetime.date(2022, 3, 1), ended_at=datetime.date(2022, 3, 2))
 
-        c2 = Campaign.objects.create(country_id=org_unit_2.id, obr_name="orb campaign 2", vacine="vacin")
+        c2 = Campaign.objects.create(
+            country_id=org_unit_2.id, obr_name="orb campaign 2", vacine="vacin", account=self.account
+        )
         c2_round_1 = c2.rounds.create(
             number=1, started_at=datetime.date(2022, 1, 1), ended_at=datetime.date(2022, 1, 2)
         )
@@ -389,16 +413,16 @@ class PolioAPITestCase(APITestCase):
         self.assertEqual(data_dict["COUNTRY"][0], org_unit.name)
         self.assertEqual(data_dict["COUNTRY"][1], org_unit_2.name)
         self.assertEqual(data_dict["January"][0], self.format_date_to_test(c, c_round_1))
-        self.assertEqual(
-            data_dict["January"][1], self.format_date_to_test(c2, c2_round_1) + self.format_date_to_test(c2, c2_round_2)
-        )
+        self.assertEqual(data_dict["January"][1], self.format_date_to_test(c2, c2_round_1))
+        self.assertEqual(data_dict["January"][2], self.format_date_to_test(c2, c2_round_2))
+        #  + self.format_date_to_test(c2, c2_round_2)
 
     def test_create_calendar_xlsx_sheet_campaign_without_country(self):
         """
         When a campaign was not linked to a country, export XLSX calendar triggered an error('NoneType' object has no attribute 'id'):
             - This test checks if the error does not occur even when a campaign is not linked to country
         """
-        c = Campaign.objects.create(obr_name="orb campaign", vacine="vacin")
+        c = Campaign.objects.create(obr_name="orb campaign", vacine="vacin", account=self.account)
         c.rounds.create(number=1, started_at=datetime.date(2022, 1, 1), ended_at=datetime.date(2022, 1, 2))
 
         response = self.client.get("/api/polio/campaigns/create_calendar_xlsx_sheet/", {"currentDate": "2022-10-01"})
@@ -420,7 +444,9 @@ class PolioAPITestCase(APITestCase):
             version=self.star_wars.default_version,
         )
 
-        c = Campaign.objects.create(country_id=org_unit.id, obr_name="orb campaign", vacine="vacin")
+        c = Campaign.objects.create(
+            country_id=org_unit.id, obr_name="orb campaign", vacine="vacin", account=self.account
+        )
         round = c.rounds.create(number=1, started_at=datetime.date(2022, 1, 1), ended_at=None)
 
         response = self.client.get("/api/polio/campaigns/create_calendar_xlsx_sheet/", {"currentDate": "2022-10-01"})
@@ -441,7 +467,9 @@ class PolioAPITestCase(APITestCase):
             org_unit_type=self.jedi_squad,
             version=self.star_wars.default_version,
         )
-        c = Campaign.objects.create(country_id=org_unit.id, obr_name="orb campaign", vacine="vacin", is_test=True)
+        c = Campaign.objects.create(
+            country_id=org_unit.id, obr_name="orb campaign", vacine="vacin", is_test=True, account=self.account
+        )
         c.rounds.create(number=1, started_at=datetime.date(2022, 1, 1), ended_at=datetime.date(2022, 1, 2))
 
         response = self.client.get("/api/polio/campaigns/create_calendar_xlsx_sheet/", {"currentDate": "2022-10-01"})
@@ -465,7 +493,6 @@ class PolioAPITestCase(APITestCase):
             + ended_at
             + "\n"
             + campaign.vacine
-            + "\n\n"
         )
 
     def test_handle_restore_active_campaign(self):
@@ -723,7 +750,7 @@ class LQASIMPolioTestCase(APITestCase):
         self.assertEqual(is_cached, True)
 
     def test_general_status(self):
-        c = Campaign.objects.create()
+        c = Campaign.objects.create(account=self.star_wars)
         c.rounds.create(number=1, started_at=datetime.date(2021, 1, 1), ended_at=datetime.date(2021, 1, 2))
         c.rounds.create(number=2, started_at=datetime.date(2021, 3, 1), ended_at=datetime.date(2021, 3, 2))
         c.rounds.create(number=3, started_at=datetime.date(2021, 4, 1), ended_at=datetime.date(2021, 4, 20))
@@ -740,196 +767,3 @@ class LQASIMPolioTestCase(APITestCase):
         with patch("django.utils.timezone.now", lambda: datetime.datetime(2021, 4, 20, 10, 2, 2)):
             d = CampaignSerializer(instance=c).data
             self.assertEqual(d["general_status"], "Round 3 started")
-
-
-class BudgetPolioTestCase(APITestCase):
-    @classmethod
-    def setUpTestData(cls):
-        cls.data_source = m.DataSource.objects.create(name="Default source")
-        cls.now = now()
-
-        cls.source_version_1 = m.SourceVersion.objects.create(data_source=cls.data_source, number=1)
-        cls.source_version_2 = m.SourceVersion.objects.create(data_source=cls.data_source, number=2)
-
-        account = Account.objects.create(name="Global Health Initiative", default_version=cls.source_version_1)
-        second_account = Account.objects.create(name="WHO", default_version=cls.source_version_1)
-
-        cls.yoda = cls.create_user_with_profile(username="yoda", account=account, permissions=["iaso_polio_budget"])
-        cls.grogu = cls.create_user_with_profile(
-            username="Grogu", account=second_account, permissions=["iaso_polio_budget"]
-        )
-
-        cls.org_unit = m.OrgUnit.objects.create(
-            org_unit_type=m.OrgUnitType.objects.create(name="Jedi Council", short_name="Cnc"),
-            version=cls.source_version_1,
-            name="Jedi Council A",
-            validation_status=m.OrgUnit.VALIDATION_VALID,
-            source_ref="PvtAI4RUMkr",
-        )
-
-        cls.child_org_unit = m.OrgUnit.objects.create(
-            org_unit_type=m.OrgUnitType.objects.create(name="Jedi Council", short_name="Cnc"),
-            version=cls.source_version_1,
-            name="Sub Jedi Council A",
-            parent_id=cls.org_unit.id,
-            validation_status=m.OrgUnit.VALIDATION_VALID,
-            source_ref="PvtAI4RUMkr",
-        )
-
-        cls.org_units = [
-            cls.org_unit,
-            cls.child_org_unit,
-            m.OrgUnit.objects.create(
-                org_unit_type=m.OrgUnitType.objects.create(name="Jedi Council", short_name="Cnc"),
-                version=cls.source_version_1,
-                name="Jedi Council B",
-                validation_status=m.OrgUnit.VALIDATION_VALID,
-                source_ref="PvtAI4RUMkr",
-            ),
-        ]
-
-        cls.luke = cls.create_user_with_profile(
-            username="luke", account=account, permissions=["iaso_forms"], org_units=[cls.child_org_unit]
-        )
-
-        cls.campaign_test = Campaign.objects.create(
-            obr_name="obr_name", detection_status="PENDING", country=cls.org_unit
-        )
-
-        cls.project1 = project1 = account.project_set.create(name="project1")
-        cls.team1 = Team.objects.create(project=project1, name="team1", manager=cls.yoda)
-        cls.team1.users.set([cls.yoda.iaso_profile.user_id])
-        cls.team2 = Team.objects.create(project=project1, name="team2", manager=cls.grogu)
-        cls.approval_team = Team.objects.create(project=project1, name="approval team", manager=cls.yoda)
-        cls.approval_team.users.set([cls.yoda.iaso_profile.user_id])
-
-    def test_create_polio_budget(self):
-        self.client.force_authenticate(self.yoda)
-
-        data = {
-            "campaign": self.campaign_test.pk,
-            "type": "submission",
-            "target_teams": [self.team1.pk],
-            "status": "validation_ongoing",
-        }
-
-        response = self.client.post("/api/polio/budgetevent/", data=data, format="json")
-
-        budget_events = BudgetEvent.objects.all()
-
-        budget_event = BudgetEvent.objects.last()
-
-        self.assertEqual(response.status_code, 201)
-        self.assertEqual(1, len(budget_events))
-        self.assertEqual(budget_event.author, self.yoda)
-        self.assertEqual(budget_event.status, "validation_ongoing")
-        self.assertEqual(budget_event.type, "submission")
-        self.assertEqual(budget_event.campaign, self.campaign_test)
-
-    def test_budgets_are_multi_tenancy(self):
-        self.client.force_authenticate(self.yoda)
-
-        budget = BudgetEvent.objects.create(
-            campaign=self.campaign_test, type="submission", author=self.grogu, status="validation_ongoing"
-        )
-
-        budget.target_teams.set([self.team1])
-        budget.save()
-
-        response = self.client.get("/api/polio/budgetevent/")
-
-        budget_events = BudgetEvent.objects.all()
-
-        self.assertEqual(len(response.data), 0)
-        self.assertEqual(response.status_code, 200)
-        self.assertEqual(len(budget_events), 1)
-
-    def test_budget_upload_file(self):
-        self.client.force_authenticate(self.grogu)
-
-        budget = BudgetEvent.objects.create(
-            campaign=self.campaign_test, type="submission", author=self.grogu, status="validation_ongoing"
-        )
-
-        budget.target_teams.set([self.team1])
-        budget.save()
-
-        data = File(open("iaso/tests/fixtures/test_user_bulk_create_valid.csv", "rb"))
-        upload_file = SimpleUploadedFile(
-            "test_user_bulk_create_valid.csv", data.read(), content_type="multipart/form-data"
-        )
-
-        payload = {
-            "event": budget.pk,
-            "file": upload_file,
-            "cc_emails": "lil_grogu@mandalorians.com, master_yoda@jedi.force",
-        }
-
-        response = self.client.post(
-            "/api/polio/budgetfiles/",
-            data=payload,
-            content_disposition="attachment; filename=test_user_bulk_create_valid.csv",
-        )
-
-        budget_files = BudgetFiles.objects.all()
-        budget_event = BudgetEvent.objects.all()
-
-        self.assertEqual(len(budget_event), 1)
-        self.assertEqual(response.status_code, 200)
-        self.assertEqual(len(budget_files), 1)
-
-    def test_finalize_budget(self):
-        self.client.force_authenticate(self.grogu)
-
-        budget = BudgetEvent.objects.create(
-            campaign=self.campaign_test, type="submission", author=self.yoda, status="validation_ongoing"
-        )
-
-        budget.target_teams.set([self.team1])
-        budget.save()
-
-        data = File(open("iaso/tests/fixtures/test_user_bulk_create_valid.csv", "rb"))
-        upload_file = SimpleUploadedFile(
-            "test_user_bulk_create_valid.csv", data.read(), content_type="multipart/form-data"
-        )
-
-        payload = {
-            "event": budget.pk,
-            "file": upload_file,
-            "cc_emails": "lil_grogu@mandalorians.com, master_yoda@jedi.force",
-        }
-
-        response = self.client.post(
-            "/api/polio/budgetfiles/",
-            data=payload,
-            content_disposition="attachment; filename=test_user_bulk_create_valid.csv",
-        )
-
-        data_finalize = {
-            "event": budget.pk,
-            "is_finalized": "true",
-        }
-
-        response_f = self.client.put("/api/polio/budgetevent/confirm_budget/", data=data_finalize, format="json")
-
-        budget = BudgetEvent.objects.get(pk=budget.pk)
-
-        print(response_f.json())
-        self.assertEqual(response.status_code, 200)
-        self.assertEqual(response_f.status_code, 200)
-        self.assertEqual(budget.is_finalized, True)
-        self.assertEqual(budget.is_email_sent, True)
-
-    def test_authentication_link_token(self):
-        link = "testbluesquarestuff.com"
-        final_link = generate_auto_authentication_link(link, self.grogu)
-
-        token = final_link[final_link.find("token=") + 6 : final_link.find("next=")][:-1]
-        decoded_token = jwt.decode(token, verify=False)
-
-        user_id_from_token = decoded_token["user_id"]
-        token_type = decoded_token["token_type"]
-
-        self.assertEqual(self.grogu.pk, user_id_from_token)
-        self.assertEqual(token_type, "access")
-        self.assertEqual(link, final_link[final_link.find("next=") + 5 :])

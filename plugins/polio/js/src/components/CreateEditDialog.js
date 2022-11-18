@@ -17,10 +17,16 @@ import {
     Tabs,
     Typography,
     Tooltip,
+    Box,
 } from '@material-ui/core';
 
-import { useSafeIntl, LoadingSpinner } from 'bluesquare-components';
 import { FormattedMessage } from 'react-intl';
+
+import {
+    useSafeIntl,
+    LoadingSpinner,
+    IconButton as IconButtonComponent,
+} from 'bluesquare-components';
 import { convertEmptyStringToNull } from '../utils/convertEmptyStringToNull';
 import { PreparednessForm } from '../forms/PreparednessForm';
 import { useFormValidator } from '../hooks/useFormValidator';
@@ -31,13 +37,16 @@ import { ScopeForm } from '../forms/ScopeForm.tsx';
 import { BudgetForm } from '../forms/BudgetForm';
 import { Form } from '../forms/Form';
 import { RoundsForm } from '../forms/RoundsForm';
+import { VaccineManagementForm } from '../forms/VaccineManagementForm.tsx';
 import { RoundsEmptyDates } from './Rounds/RoundsEmptyDates.tsx';
 
 import { useSaveCampaign } from '../hooks/useSaveCampaign';
+import { useGetCampaignLogs } from '../hooks/useGetCampaignHistory.ts';
+
+import { CAMPAIGN_HISTORY_URL } from '../constants/routes';
 
 import { useStyles } from '../styles/theme';
 import MESSAGES from '../constants/messages';
-import { VaccineManangementForm } from '../forms/VaccineManangementForm.tsx';
 
 const CreateEditDialog = ({
     isOpen,
@@ -46,6 +55,11 @@ const CreateEditDialog = ({
     isFetching,
 }) => {
     const { mutate: saveCampaign } = useSaveCampaign();
+
+    const { data: campaignLogs } = useGetCampaignLogs(
+        selectedCampaign?.id,
+        isOpen,
+    );
 
     const schema = useFormValidator();
     const { formatMessage } = useSafeIntl();
@@ -130,7 +144,7 @@ const CreateEditDialog = ({
             },
             {
                 title: formatMessage(MESSAGES.vaccineManagement),
-                form: VaccineManangementForm,
+                form: VaccineManagementForm,
             },
         ];
     }, [
@@ -175,11 +189,34 @@ const CreateEditDialog = ({
             className={classes.mainModal}
         >
             {isFetching && <LoadingSpinner absolute />}
-            <DialogTitle className={classes.title}>
-                {selectedCampaign?.id
-                    ? formatMessage(MESSAGES.editCampaign)
-                    : formatMessage(MESSAGES.createCampaign)}
-            </DialogTitle>
+
+            <Grid container>
+                <Grid item xs={12} md={6}>
+                    <Box pr={4} justifyContent="center" alignContent="center">
+                        <DialogTitle className={classes.title}>
+                            {selectedCampaign?.id
+                                ? formatMessage(MESSAGES.editCampaign)
+                                : formatMessage(MESSAGES.createCampaign)}
+                        </DialogTitle>
+                    </Box>
+                </Grid>
+
+                {selectedCampaign && campaignLogs?.length > 0 && (
+                    <Grid item xs={12} md={6} className={classes.historyLink}>
+                        <Box pr={4} alignItems="center">
+                            <IconButtonComponent
+                                url={`${CAMPAIGN_HISTORY_URL}/campaignId/${selectedCampaign?.id}`}
+                                icon="history"
+                                tooltipMessage={MESSAGES.campaignHistory}
+                                classes={{
+                                    linkButton: classes.linkButton,
+                                }}
+                            />
+                        </Box>
+                    </Grid>
+                )}
+            </Grid>
+
             <DialogContent className={classes.content}>
                 <Tabs
                     value={selectedTab}
@@ -196,22 +233,23 @@ const CreateEditDialog = ({
                             title === formatMessage(MESSAGES.scope)
                         ) {
                             return (
-                                <Tooltip
-                                    title={
-                                        <FormattedMessage
-                                            {...MESSAGES.scopeUnlockConditions}
-                                        />
-                                    }
-                                >
-                                    {/* the wrapping span is to enable the tooltip while the tab is disabled */}
-                                    <span>
-                                        <Tab
+                                <Tab
+                                    key={title}
+                                    style={{ pointerEvents: 'auto' }}
+                                    label={
+                                        <Tooltip
                                             key={title}
-                                            label={title}
-                                            disabled={disabled || false}
-                                        />
-                                    </span>
-                                </Tooltip>
+                                            title={
+                                                <FormattedMessage
+                                                    {...MESSAGES.scopeUnlockConditions}
+                                                />
+                                            }
+                                        >
+                                            <span>{title}</span>
+                                        </Tooltip>
+                                    }
+                                    disabled={disabled || false}
+                                />
                             );
                         }
                         return (

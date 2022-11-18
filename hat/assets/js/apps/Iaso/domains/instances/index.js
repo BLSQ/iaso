@@ -1,4 +1,4 @@
-import React, { useCallback, useState } from 'react';
+import React, { useCallback, useState, useMemo } from 'react';
 import { Box, Grid, makeStyles } from '@material-ui/core';
 import { useDispatch } from 'react-redux';
 
@@ -7,7 +7,6 @@ import PropTypes from 'prop-types';
 import {
     AddButton as AddButtonComponent,
     commonStyles,
-    LoadingSpinner,
     selectionInitialState,
     setTableSelection,
     useSafeIntl,
@@ -20,10 +19,14 @@ import {
     fetchFormDetailsForInstance,
     fetchInstancesAsDict,
     fetchInstancesAsSmallDict,
-    fetchPossibleFields,
 } from './requests';
 
-import { getEndpointUrl, getFilters, getSelectionActions } from './utils';
+import {
+    getEndpointUrl,
+    getFilters,
+    getSelectionActions,
+    getExportUrl,
+} from './utils';
 
 import { InstancesTopBar as TopBar } from './components/InstancesTopBar';
 import DownloadButtonsComponent from '../../components/DownloadButtonsComponent';
@@ -38,7 +41,7 @@ import { useSnackQuery } from '../../libs/apiHooks.ts';
 import snackMessages from '../../components/snackBars/messages';
 import { TableWithDeepLink } from '../../components/tables/TableWithDeepLink';
 import { PaginatedInstanceFiles } from './components/PaginatedInstancesFiles';
-import { convertObjectToString } from '../../utils';
+import { useGetPossibleFields } from '../forms/hooks/useGetPossibleFields.ts';
 
 const baseUrl = baseUrls.instances;
 
@@ -61,18 +64,37 @@ const Instances = ({ params }) => {
     const [tableColumns, setTableColumns] = useState([]);
     const [tab, setTab] = useState(params.tab ?? 'list');
 
-    const [resetPageToOne, setResetPageToOne] = useState(
-        convertObjectToString(params),
+    const formIds = params.formIds?.split(',');
+    const formId = formIds?.length === 1 ? formIds[0] : undefined;
+
+    const { possibleFields, isLoading: isLoadingPossibleFields } =
+        useGetPossibleFields(formId);
+    const fieldsSearchApi = useMemo(() => {
+        let newFieldsSearch = params.fieldsSearch;
+
+        possibleFields.forEach(field => {
+            if (newFieldsSearch?.includes(field.fieldKey)) {
+                newFieldsSearch = newFieldsSearch.replace(
+                    field.fieldKey,
+                    field.name,
+                );
+            }
+        });
+        return possibleFields.length === 0 ? undefined : newFieldsSearch;
+    }, [params.fieldsSearch, possibleFields]);
+    const apiParams = useMemo(
+        () => ({ ...params, fieldsSearch: fieldsSearchApi }),
+        [fieldsSearchApi, params],
     );
 
     // Data for the map
     const { data: instancesSmall, isLoading: loadingMap } = useSnackQuery(
-        ['instances', 'small', params],
+        ['instances', 'small', apiParams],
         // Ugly fix to limit results displayed on map, IA-904
         () =>
             fetchInstancesAsSmallDict(
-                `${getEndpointUrl(params, false, '', true)}&limit=${
-                    params.mapResults || 3000
+                `${getEndpointUrl(apiParams, false, '', true)}&limit=${
+                    apiParams.mapResults || 3000
                 }`,
             ),
         snackMessages.fetchInstanceLocationError,
@@ -82,24 +104,16 @@ const Instances = ({ params }) => {
             select: result => result.instances,
         },
     );
-
-    const {
-        data,
-        isLoading: loadingList,
-        isFetching: fetchingList,
-    } = useSnackQuery(
-        ['instances', params],
-        () => fetchInstancesAsDict(getEndpointUrl(params)),
+    const { data, isFetching: fetchingList } = useSnackQuery(
+        ['instances', apiParams],
+        () => fetchInstancesAsDict(getEndpointUrl(apiParams)),
         snackMessages.fetchInstanceDictError,
-        { keepPreviousData: true },
+        { keepPreviousData: true, enabled: !isLoadingPossibleFields },
     );
     // Move to delete when we port dialog to react-query
     const refetchInstances = () => queryClient.invalidateQueries(['instances']);
 
-    const formIds = params.formIds?.split(',');
-    const formId = formIds?.length === 1 ? formIds[0] : undefined;
-
-    const { data: formDetails, fetching: fetchingDetail } = useSnackQuery(
+    const { data: formDetails } = useSnackQuery(
         ['formDetailsForInstance', `${formId}`],
         () => fetchFormDetailsForInstance(formId),
         undefined,
@@ -109,16 +123,6 @@ const Instances = ({ params }) => {
     const formName = formDetails?.name ?? '';
     const periodType = formDetails?.period_type;
     const orgUnitTypes = formDetails?.org_unit_type_ids ?? [];
-
-    const { data: possibleFields } = useSnackQuery(
-        ['possibleFieldForForm', formId],
-        () => fetchPossibleFields(formId),
-        undefined,
-        {
-            enabled: Boolean(formId),
-            select: response => response.possible_fields,
-        },
-    );
 
     const handleChangeTab = useCallback(
         newTab => {
@@ -135,13 +139,11 @@ const Instances = ({ params }) => {
     const onSearch = useCallback(
         newParams => {
             setSelection(selectionInitialState);
-            setResetPageToOne(convertObjectToString(newParams));
             dispatch(redirectToReplace(baseUrl, newParams));
         },
         [dispatch],
     );
 
-    const fetching = loadingMap || loadingList || fetchingDetail;
     return (
         <section className={classes.relativeContainer}>
             <TopBar
@@ -155,13 +157,14 @@ const Instances = ({ params }) => {
                 labelKeys={labelKeys}
                 possibleFields={possibleFields}
                 formDetails={formDetails}
+                tableColumns={tableColumns}
             />
 
-            {fetching && <LoadingSpinner />}
             <Box className={classes.containerFullHeightPadded}>
                 <InstancesFiltersComponent
                     params={params}
                     onSearch={onSearch}
+                    possibleFields={possibleFields}
                 />
                 {tab === 'list' && (
                     <Grid
@@ -209,14 +212,9 @@ const Instances = ({ params }) => {
                                         justifyContent="flex-end"
                                     >
                                         <DownloadButtonsComponent
-                                            csvUrl={getEndpointUrl(
+                                            csvUrl={getExportUrl(params, 'csv')}
+                                            xlsxUrl={getExportUrl(
                                                 params,
-                                                true,
-                                                'csv',
-                                            )}
-                                            xlsxUrl={getEndpointUrl(
-                                                params,
-                                                true,
                                                 'xlsx',
                                             )}
                                         />
@@ -261,7 +259,6 @@ const Instances = ({ params }) => {
                         extraProps={{
                             loading: fetchingList,
                         }}
-                        resetPageToOne={resetPageToOne}
                     />
                 )}
                 {tab === 'map' && (

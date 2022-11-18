@@ -256,8 +256,10 @@ class TeamViewSet(AuditMixin, ModelViewSet):
     queryset = Team.objects.all()
     ordering_fields = ["id", "name", "created_at", "updated_at", "type"]
     filterset_fields = {
+        "id": ["in"],
         "name": ["icontains"],
         "project": ["exact"],
+        "type": ["exact"],
     }
 
     audit_serializer = AuditTeamSerializer  # type: ignore

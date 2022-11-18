@@ -24,7 +24,15 @@ def has_access_to(user: User, obj: Union[OrgUnit, Instance, models.Model]):
         return user.has_perm("menupermissions.iaso_submissions") and instances.filter(id=obj.id).exists()
     if isinstance(obj, Form):
         forms = Form.objects.filter_for_user_and_app_id(user)
-        return obj in forms
+        return forms.filter(id=obj.id).exists()
+    # FIXME Hotfix to prevent an error when loading the app without the polio plugins
+    from plugins.polio.models import Campaign
+
+    if isinstance(obj, Campaign):
+        return (
+            user.has_perm("menupermissions.iaso_polio")
+            and Campaign.objects.filter_for_user(user).filter(id=obj.id).exists()
+        )
     return False
 
 
@@ -38,7 +46,7 @@ class LogsViewSet(viewsets.ViewSet):
         - new_value
         - field_diffs
 
-    contentType parameter can be one of:  iaso.orgunit, iaso.form, iaso.instance
+    contentType parameter can be one of:  iaso.orgunit, iaso.form, iaso.instance, polio.campaign
 
     list:
     Returns the list of modifications

@@ -1,4 +1,5 @@
 export const DASHBOARD_BASE_URL = 'polio/list';
+export const CAMPAIGN_HISTORY_URL = 'polio/campaignHistory';
 export const CALENDAR_BASE_URL = 'polio/calendar';
 export const CONFIG_BASE_URL = 'polio/config';
 export const LQAS_BASE_URL = 'polio/lqas';

@@ -100,7 +100,7 @@ const goToPage = (
     });
     cy.intercept(
         'GET',
-        '/api/forms/?all=true&order=name&fields=name%2Cperiod_type%2Clabel_keys%2Cid',
+        '/api/forms/?all=true&order=name&fields=name%2Cperiod_type%2Clabel_keys%2Cid%2Clatest_form_version',
         {
             fixture: 'forms/list.json',
         },

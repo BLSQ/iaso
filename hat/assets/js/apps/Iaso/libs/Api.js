@@ -65,15 +65,22 @@ export const getRequest = async (url, signal) => {
 export const basePostRequest = (url, data, fileData = {}, signal) => {
     // Send as form if files included else in JSON
     let init = {};
-
     if (Object.keys(fileData).length > 0) {
         const formData = new FormData();
         // multipart mode
         Object.entries(data).forEach(([key, value]) => {
-            formData.append(key, value);
+            let newvalue = value;
+            if (typeof newvalue === 'object') {
+                newvalue = JSON.stringify(newvalue);
+            }
+            formData.append(key, newvalue);
         });
         Object.entries(fileData).forEach(([key, value]) => {
-            formData.append(key, value);
+            if (Array.isArray(value)) {
+                value.forEach(file => formData.append(key, file));
+            } else {
+                formData.append(key, value);
+            }
         });
         init = { method: 'POST', body: formData, signal };
     } else {
@@ -86,7 +93,12 @@ export const basePostRequest = (url, data, fileData = {}, signal) => {
         };
     }
 
-    return iasoFetch(url, init).then(response => response.json());
+    return iasoFetch(url, init).then(response => {
+        if (response.status === 204) {
+            return null;
+        }
+        return response.json();
+    });
 };
 
 export const postRequest = (arg1, arg2, arg3, arg4) => {

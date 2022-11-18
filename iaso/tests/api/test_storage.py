@@ -433,7 +433,7 @@ class StorageAPITestCase(APITestCase):
                     "created_at": 1580608922.0,
                     "storage_id": "EXISTING_STORAGE",
                     "storage_type": "NFC",
-                    "storage_status": {"status": "OK", "reason": "", "comment": "", "updated_at": None},
+                    "storage_status": {"status": "OK", "updated_at": None},
                     "org_unit": None,
                     "entity": None,
                 },
@@ -547,7 +547,7 @@ class StorageAPITestCase(APITestCase):
                     "created_at": 1580608922.0,
                     "storage_id": "EXISTING_STORAGE",
                     "storage_type": "NFC",
-                    "storage_status": {"status": "OK", "reason": "", "comment": "", "updated_at": None},
+                    "storage_status": {"status": "OK", "updated_at": None},
                     "org_unit": None,
                     "entity": None,
                 },
@@ -766,7 +766,7 @@ class StorageAPITestCase(APITestCase):
                 "created_at": 1580608922.0,
                 "storage_id": "EXISTING_STORAGE",
                 "storage_type": "NFC",
-                "storage_status": {"status": "OK", "reason": "", "comment": "", "updated_at": None},
+                "storage_status": {"status": "OK", "updated_at": None},
                 "org_unit": None,
                 "entity": None,
                 "logs": [
@@ -796,14 +796,14 @@ class StorageAPITestCase(APITestCase):
 
         self.assertEqual(response.status_code, 200)
         received_json = response.json()
-        self.assertEqual(
+        self.assertDictEqual(
             received_json,
             {
                 "updated_at": 1580608922.0,
                 "created_at": 1580608922.0,
                 "storage_id": "EXISTING_STORAGE",
                 "storage_type": "NFC",
-                "storage_status": {"status": "OK", "reason": "", "comment": "", "updated_at": None},
+                "storage_status": {"status": "OK", "updated_at": None},
                 "org_unit": None,
                 "entity": None,
                 "logs": [],
@@ -827,14 +827,14 @@ class StorageAPITestCase(APITestCase):
         response = self.client.get(f"/api/storage/NFC/EXISTING_STORAGE/logs?org_unit_id={self.org_unit.id}")
         received_json = response.json()
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(
+        self.assertDictEqual(
             received_json,
             {
                 "updated_at": 1580608922.0,
                 "created_at": 1580608922.0,
                 "storage_id": "EXISTING_STORAGE",
                 "storage_type": "NFC",
-                "storage_status": {"status": "OK", "reason": "", "comment": "", "updated_at": None},
+                "storage_status": {"status": "OK", "updated_at": None},
                 "org_unit": None,
                 "entity": None,
                 "logs": [
@@ -864,14 +864,14 @@ class StorageAPITestCase(APITestCase):
         response = self.client.get(f"/api/storage/NFC/EXISTING_STORAGE/logs?types=WRITE_PROFILE")
         received_json = response.json()
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(
+        self.assertDictEqual(
             received_json,
             {
                 "updated_at": 1580608922.0,
                 "created_at": 1580608922.0,
                 "storage_id": "EXISTING_STORAGE",
                 "storage_type": "NFC",
-                "storage_status": {"status": "OK", "reason": "", "comment": "", "updated_at": None},
+                "storage_status": {"status": "OK", "updated_at": None},
                 "org_unit": None,
                 "entity": None,
                 "logs": [
@@ -897,14 +897,14 @@ class StorageAPITestCase(APITestCase):
         response = self.client.get(f"/api/storage/NFC/EXISTING_STORAGE/logs?types=WRITE_RECORD")
         self.assertEqual(response.status_code, 200)
         received_json = response.json()
-        self.assertEqual(
+        self.assertDictEqual(
             received_json,
             {
                 "updated_at": 1580608922.0,
                 "created_at": 1580608922.0,
                 "storage_id": "EXISTING_STORAGE",
                 "storage_type": "NFC",
-                "storage_status": {"status": "OK", "reason": "", "comment": "", "updated_at": None},
+                "storage_status": {"status": "OK", "updated_at": None},
                 "org_unit": None,
                 "entity": None,
                 "logs": [],
@@ -915,14 +915,14 @@ class StorageAPITestCase(APITestCase):
         response = self.client.get(f"/api/storage/NFC/EXISTING_STORAGE/logs?types=WRITE_PROFILE,WRITE_RECORD")
         self.assertEqual(response.status_code, 200)
         received_json = response.json()
-        self.assertEqual(
+        self.assertDictEqual(
             received_json,
             {
                 "updated_at": 1580608922.0,
                 "created_at": 1580608922.0,
                 "storage_id": "EXISTING_STORAGE",
                 "storage_type": "NFC",
-                "storage_status": {"status": "OK", "reason": "", "comment": "", "updated_at": None},
+                "storage_status": {"status": "OK", "updated_at": None},
                 "org_unit": None,
                 "entity": None,
                 "logs": [
@@ -964,7 +964,7 @@ class StorageAPITestCase(APITestCase):
                 "created_at": 1580608922.0,
                 "storage_id": "EXISTING_STORAGE",
                 "storage_type": "NFC",
-                "storage_status": {"status": "OK", "reason": "", "comment": "", "updated_at": None},
+                "storage_status": {"status": "OK", "updated_at": None},
                 "org_unit": None,
                 "entity": None,
                 "logs": [
@@ -1015,7 +1015,7 @@ class StorageAPITestCase(APITestCase):
                 "created_at": 1580608922.0,
                 "storage_id": "EXISTING_STORAGE",
                 "storage_type": "NFC",
-                "storage_status": {"status": "OK", "reason": "", "comment": "", "updated_at": None},
+                "storage_status": {"status": "OK", "updated_at": None},
                 "org_unit": None,
                 "entity": None,
                 "logs": [
@@ -1048,7 +1048,7 @@ class StorageAPITestCase(APITestCase):
                 "created_at": 1580608922.0,
                 "storage_id": "EXISTING_STORAGE",
                 "storage_type": "NFC",
-                "storage_status": {"status": "OK", "reason": "", "comment": "", "updated_at": None},
+                "storage_status": {"status": "OK", "updated_at": None},
                 "org_unit": None,
                 "entity": None,
                 "logs": [],
@@ -1069,7 +1069,7 @@ class StorageAPITestCase(APITestCase):
                 "created_at": 1580608922.0,
                 "storage_id": "EXISTING_STORAGE",
                 "storage_type": "NFC",
-                "storage_status": {"status": "OK", "reason": "", "comment": "", "updated_at": None},
+                "storage_status": {"status": "OK", "updated_at": None},
                 "org_unit": None,
                 "entity": None,
                 "logs": [],
@@ -1122,7 +1122,7 @@ class StorageAPITestCase(APITestCase):
                     "created_at": 1580608922.0,
                     "storage_id": "EXISTING_STORAGE",
                     "storage_type": "NFC",
-                    "storage_status": {"status": "OK", "reason": "", "comment": "", "updated_at": None},
+                    "storage_status": {"status": "OK", "updated_at": None},
                     "org_unit": None,
                     "entity": None,
                     "logs": [
@@ -1162,7 +1162,7 @@ class StorageAPITestCase(APITestCase):
                     "created_at": 1580608922.0,
                     "storage_id": "EXISTING_STORAGE",
                     "storage_type": "NFC",
-                    "storage_status": {"status": "OK", "reason": "", "comment": "", "updated_at": None},
+                    "storage_status": {"status": "OK", "updated_at": None},
                     "org_unit": None,
                     "entity": None,
                     "logs": [
@@ -1202,7 +1202,7 @@ class StorageAPITestCase(APITestCase):
                     "created_at": 1580608922.0,
                     "storage_id": "EXISTING_STORAGE",
                     "storage_type": "NFC",
-                    "storage_status": {"status": "OK", "reason": "", "comment": "", "updated_at": None},
+                    "storage_status": {"status": "OK", "updated_at": None},
                     "org_unit": None,
                     "entity": None,
                     "logs": [

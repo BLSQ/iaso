@@ -80,6 +80,16 @@ class StorageStatusSerializer(serializers.Serializer):
     updated_at: Field = serializers.DateTimeField(source="status_updated_at", read_only=True)
     comment = serializers.CharField(source="status_comment", required=False, allow_blank=True)
 
+    def to_representation(self, obj):
+        ret = super(StorageStatusSerializer, self).to_representation(obj)
+
+        # If status is OK, we don't want to return the reason nor the comment
+        if obj.status == StorageDevice.OK:
+            ret.pop("reason")
+            ret.pop("comment")
+
+        return ret
+
     def validate(self, data):
         """
         Ensure that a reason is set if changed to a non-ok status

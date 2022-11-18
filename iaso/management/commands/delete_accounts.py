@@ -1,4 +1,5 @@
 import pdb
+from iaso.models import ExportLog
 from django.db.models import TextField
 from django.db.models.functions import Cast
 
@@ -299,6 +300,22 @@ class Command(BaseCommand):
         )
 
         dump_modification_stats()
+
+        print("******* Starting delete of orphaned export log")
+
+        print("Delete orphaned export log", ExportLog.objects.filter(exportstatus=None).count())
+
+        # This table is so big and the content too, that django is fetching all the deleted models (not only the id)
+        # that I had to delete it with this strange construct deleting by x records and via sql instead of django queryset .delete()
+        has_more_export_logs = True
+        while has_more_export_logs:
+            export_logs_ids = ExportLog.objects.filter(exportstatus=None).values_list("id", flat=True)[0:500]
+            if len(export_logs_ids) > 0:
+                cursor.execute(
+                    "delete from iaso_exportlog where id in (" + ",".join([str(id) for id in export_logs_ids]) + " )"
+                )
+                print("deleted", export_logs_ids)
+            has_more_export_logs = len(export_logs_ids) > 0
 
         # raise err
         counts_after = dump_counts()

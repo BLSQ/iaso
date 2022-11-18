@@ -2,7 +2,7 @@ import dhis2
 from rest_framework.decorators import action
 from rest_framework.response import Response
 
-from .common import ModelViewSet
+from .common import ModelViewSet, HasPermission
 from iaso.models import DataSource, OrgUnit, SourceVersion, ExternalCredentials
 from rest_framework import serializers, permissions
 from rest_framework.generics import get_object_or_404
@@ -173,7 +173,10 @@ class DataSourceViewSet(ModelViewSet):
     GET /api/datasources/<id>
     """
 
-    permission_classes = [permissions.IsAuthenticated]
+    permission_classes = [
+        permissions.IsAuthenticated,
+        HasPermission("menupermissions.iaso_mappings", "menupermissions.iaso_org_units", "menupermissions.iaso_links"),
+    ]
     serializer_class = DataSourceSerializer
     results_key = "sources"
     queryset = DataSource.objects.all()

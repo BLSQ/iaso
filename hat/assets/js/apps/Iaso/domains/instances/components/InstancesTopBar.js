@@ -98,8 +98,7 @@ const InstancesTopBar = ({
         if (formIds?.length === 1) {
             // if detail loaded
             if (formDetails) {
-                // possibleFields set by default to null, array if fetched
-                if (possibleFields) {
+                if (possibleFields.length > 0) {
                     newCols = getInstancesVisibleColumns({
                         formatMessage,
                         columns: newColsString,
@@ -121,7 +120,9 @@ const InstancesTopBar = ({
                 defaultOrder,
             });
         }
-        handleChangeVisibleColmuns(newCols, !params.columns);
+        if (newCols.length > 0) {
+            handleChangeVisibleColmuns(newCols, !params.columns);
+        }
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [possibleFields, formDetails]);
 

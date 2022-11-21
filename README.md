@@ -619,10 +619,28 @@ regenerate the translations:
 This will update `hat/locale/fr/LC_MESSAGES/django.po` with the new strings to
 translate.
 
+If you get an error about `/opt/app` or cannot accessing docker:
+Change in settings.py LOCALE_PATHS to
+```python
+LOCALE_PATHS = [ "hat/locale/"]
+```
+
+And specify --ignore
+```sh
+makemessages --locale=fr --extension txt --extension html --ignore /opt/app --ignore docker --ignore node_modules
+```
+
+
 After updating it with the translation you need to following command to have
 them reflected in the interface:
 
 ```manage.py compilemessages```
+
+This is done automatically when you launch the docker image so if new translations
+you just pulled in git don't appear, relaunch the iaso docker.
+
+
+You do not need to manage local for English as it is the default language
 
 
 Code reloading

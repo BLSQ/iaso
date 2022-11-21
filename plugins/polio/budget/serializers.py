@@ -7,9 +7,9 @@ from rest_framework import serializers
 from iaso.api.common import DynamicFieldsModelSerializer
 from iaso.models.microplanning import Team
 from plugins.polio.models import Campaign
-from plugins.polio.serializers import CampaignSerializer, UserSerializerForPolio
+from plugins.polio.serializers import CampaignSerializer, UserSerializer
 from .models import BudgetStep, BudgetStepFile, BudgetStepLink, send_budget_mails, get_workflow
-from .workflow import next_transitions, can_user_transition, Transition
+from .workflow import next_transitions, can_user_transition, Transition, Category, effective_teams
 
 
 class TransitionSerializer(serializers.Serializer):
@@ -21,15 +21,9 @@ class TransitionSerializer(serializers.Serializer):
     reason_not_allowed = serializers.CharField(required=False)
     required_fields = serializers.ListField(child=serializers.CharField())
     displayed_fields = serializers.ListField(child=serializers.CharField())
-    # Note : implemented as a Css class in the frontend
+    # Note : implemented as a Css class in the frontend. Color of the button for approval
     color = serializers.ChoiceField(choices=["primary", "green", "red"], required=False)
-    emails_destination_team_ids = serializers.SerializerMethodField()
-
-    def get_emails_destination_team_ids(self, transition: Transition):
-        teams = []
-        for _, teams_ids in transition.emails_to_send:
-            teams += teams_ids
-        return set(teams)
+    emails_destination_team_ids = serializers.ListField(child=serializers.IntegerField(), required=False)
 
 
 class NestedTransitionSerializer(TransitionSerializer):
@@ -48,6 +42,28 @@ class WorkflowSerializer(serializers.Serializer):
     states = NodeSerializer(many=True, source="nodes")
 
 
+class CategoryItemSerializer(serializers.Serializer):
+    # https://github.com/typeddjango/djangorestframework-stubs/issues/78 bug in mypy remove in future
+    label = serializers.CharField()  # type: ignore
+    performed_by = UserSerializer(required=False)
+    performed_at = serializers.DateTimeField(required=False)
+    step_id = serializers.IntegerField(required=False)
+
+
+class CategorySerializer(serializers.Serializer):
+    key = serializers.CharField()
+    # https://github.com/typeddjango/djangorestframework-stubs/issues/78 bug in mypy remove in future
+    label = serializers.CharField()  # type: ignore
+    color = serializers.CharField(help_text="Color completed according to the progress")
+    items = CategoryItemSerializer(many=True)
+    completed = serializers.BooleanField(help_text="Every step in the category is done")
+    active = serializers.BooleanField(help_text="Category has been started")
+
+
+class TimelineSerializer(serializers.Serializer):
+    categories = CategorySerializer(many=True)
+
+
 # noinspection PyMethodMayBeStatic
 class CampaignBudgetSerializer(CampaignSerializer, DynamicFieldsModelSerializer):
     class Meta:
@@ -63,6 +79,7 @@ class CampaignBudgetSerializer(CampaignSerializer, DynamicFieldsModelSerializer)
             "possible_states",
             "cvdpv2_notified_at",
             "possible_transitions",
+            "timeline",
         ]
         default_fields = [
             "created_at",
@@ -79,6 +96,7 @@ class CampaignBudgetSerializer(CampaignSerializer, DynamicFieldsModelSerializer)
     # To be used for override
     possible_states = serializers.SerializerMethodField()
     possible_transitions = serializers.SerializerMethodField()
+    timeline = serializers.SerializerMethodField()
 
     next_transitions = serializers.SerializerMethodField()
     # will need to use country__name for sorting
@@ -108,10 +126,20 @@ class CampaignBudgetSerializer(CampaignSerializer, DynamicFieldsModelSerializer)
         transitions = next_transitions(workflow.transitions, campaign.budget_current_state_key)
         user = self.context["request"].user
         for transition in transitions:
-            allowed = can_user_transition(transition, user)
+            allowed = can_user_transition(transition, user, campaign)
             transition.allowed = allowed
             if not allowed:
-                transition.reason_not_allowed = "User doesn't have permission"
+                if not effective_teams(campaign, transition.teams_ids_can_transition):
+                    reason = "No team configured for this country and transition"
+                else:
+                    reason = "User doesn't have permission"
+                transition.reason_not_allowed = reason
+
+            # FIXME: filter on effective teams, need campaign
+            teams = []
+            for _, teams_ids in transition.emails_to_send:
+                teams += effective_teams(campaign, teams_ids).values_list("id", flat=True)
+            transition.emails_destination_team_ids = set(teams)
 
         return TransitionSerializer(transitions, many=True).data
 
@@ -128,6 +156,97 @@ class CampaignBudgetSerializer(CampaignSerializer, DynamicFieldsModelSerializer)
         workflow = get_workflow()
         transitions = workflow.transitions
         return NestedTransitionSerializer(transitions, many=True).data
+
+    @swagger_serializer_method(serializer_or_field=TimelineSerializer())
+    def get_timeline(self, campaign):
+        """Represent the progression of the budget process, per category
+
+        State/Nodes are stored in category.
+        For each category, we return a merge between the Step leading to that node and the node that we still need to visit
+        (marked as mandatory).
+
+        So you will get something like
+        CategoryA:
+           NodeA : Performed by Xavier on 1 Jan
+           NodeB : Performed by Olivier on 2 Feb
+           NodeC : to do
+
+        We also return a color to mark the progress in each category. In the future we may want to modulate this
+        color according to the delay.
+
+        We may want to cache this in the future because this a bit of calculation, and only change when a step is done
+        but it is not critical for now as we only query one campaign at the time in the current design.
+
+        """
+        workflow = get_workflow()
+        r = []
+        c: Category
+        steps = list(campaign.budget_steps.filter(deleted_at__isnull=True).order_by("created_at"))
+        for c in workflow.categories:
+            items = []
+            node_dict = {node.key: node for node in c.nodes}
+            node_passed_by = set()  # Keys
+            node_remaining = set()
+            step: BudgetStep
+            for step in steps:
+                transition = workflow.transitions_dict[step.transition_key]
+                to_node_key = transition.to_node
+                if to_node_key in node_dict.keys():
+                    # If this is in the category
+                    node = node_dict[to_node_key]
+                    for other_key in node.mark_nodes_as_completed:
+                        if other_key not in node_passed_by:
+                            other_node = node_dict.get(other_key)
+                            items.append(
+                                {
+                                    "label": other_node.label,
+                                    "performed_by": step.created_by,
+                                    "performed_at": step.created_at,
+                                    "step_id": step.id,
+                                }
+                            )
+                            node_passed_by.add(other_key)
+
+                    items.append(
+                        {
+                            "label": node.label,
+                            "performed_by": step.created_by,
+                            "performed_at": step.created_at,
+                            "step_id": step.id,
+                        }
+                    )
+                    node_passed_by.add(to_node_key)
+
+            for node in c.nodes:  # Node are already sorted
+                if not node.mandatory:
+                    continue
+                if node.key in node_passed_by:
+                    continue
+                node_remaining.add(node.key)
+                items.append({"label": node.label})
+            # color calculation
+            active = len(node_passed_by) > 0
+            completed = len(node_remaining) == 0
+            if completed:
+                # category done
+                color = "green"
+            elif active:
+                color = "lightgreen"
+            else:
+                # Category not started
+                color = "grey"
+
+            r.append(
+                {
+                    "label": c.label,
+                    "key": c.key,
+                    "color": color,
+                    "items": items,
+                    "active": active,
+                    "completed": completed,
+                }
+            )
+        return TimelineSerializer({"categories": r}).data
 
 
 class TransitionError(Enum):
@@ -182,7 +301,7 @@ class TransitionToSerializer(serializers.Serializer):
                 }
             )
         transition = transitions[0]
-        if not can_user_transition(transition, user):
+        if not can_user_transition(transition, user, campaign):
             raise serializers.ValidationError({"transition_key": [TransitionError.NOT_ALLOWED]})
 
         for field in transition.required_fields:
@@ -234,7 +353,10 @@ class BudgetFileSerializer(serializers.ModelSerializer):
             "id",
             "file",  # url
             "filename",
+            "permanent_url",
         ]
+
+    permanent_url = serializers.URLField(source="get_absolute_url", read_only=True)
 
 
 class BudgetStepSerializer(serializers.ModelSerializer):
@@ -259,13 +381,12 @@ class BudgetStepSerializer(serializers.ModelSerializer):
     files = BudgetFileSerializer(many=True)
     links = BudgetLinkSerializer(many=True)
     created_by_team: serializers.SlugRelatedField = serializers.SlugRelatedField(slug_field="name", read_only=True)
-    created_by = UserSerializerForPolio()
+    created_by = UserSerializer()
 
     @swagger_serializer_method(serializer_or_field=serializers.CharField)
-    def get_transition_label(self, budget_step: BudgetStep):
+    def get_transition_label(self, budget_step: BudgetStep) -> str:
         workflow = get_workflow()
-        transition = workflow.get_transition_by_key(budget_step.transition_key)
-        return transition.label
+        return workflow.get_transition_label_safe(budget_step.transition_key)
 
 
 class UpdateBudgetStepSerializer(serializers.ModelSerializer):

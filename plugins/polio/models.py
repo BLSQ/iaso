@@ -110,13 +110,22 @@ class CampaignScope(models.Model):
         ordering = ["campaign", "vaccine"]
 
 
+class Destruction(models.Model):
+    vials_destroyed = models.IntegerField(null=True, blank=True)
+    date_report_received = models.DateField(null=True, blank=True)
+    date_report = models.DateField(null=True, blank=True)
+    comment = models.TextField(null=True, blank=True)
+    round = models.ForeignKey("Round", related_name="destructions", on_delete=models.CASCADE, null=True)
+
+
 class Shipment(models.Model):
     vaccine_name = models.CharField(max_length=5, choices=VACCINES)
     po_numbers = models.IntegerField(null=True, blank=True)
-    doses_received = models.IntegerField(null=True, blank=True)
+    vials_received = models.IntegerField(null=True, blank=True)
     estimated_arrival_date = models.DateField(null=True, blank=True)
     reception_pre_alert = models.DateField(null=True, blank=True)
     date_reception = models.DateField(null=True, blank=True)
+    comment = models.TextField(null=True, blank=True)
     round = models.ForeignKey("Round", related_name="shipments", on_delete=models.CASCADE, null=True)
 
 
@@ -180,6 +189,8 @@ class Round(models.Model):
     forma_missing_vials = models.IntegerField(null=True, blank=True)
     forma_usable_vials = models.IntegerField(null=True, blank=True)
     forma_unusable_vials = models.IntegerField(null=True, blank=True)
+    forma_date = models.DateField(null=True, blank=True)
+    forma_comment = models.TextField(blank=True, null=True)
 
     def get_item_by_key(self, key):
         return getattr(self, key)
@@ -339,11 +350,12 @@ class Campaign(SoftDeletableModel):
     budget_responsible = models.CharField(max_length=10, choices=RESPONSIBLES, null=True, blank=True)
     is_test = models.BooleanField(default=False)
 
+    # Deprecated
     last_budget_event = models.ForeignKey(
         "BudgetEvent", null=True, blank=True, on_delete=models.SET_NULL, related_name="lastbudgetevent"
     )
 
-    budget_current_state_key = models.CharField(max_length=100, null=True, blank=True)
+    budget_current_state_key = models.CharField(max_length=100, default="-")
     budget_current_state_label = models.CharField(max_length=100, null=True, blank=True)
 
     who_disbursed_to_co_at = models.DateField(
@@ -556,6 +568,8 @@ class CountryUsersGroup(models.Model):
     language = models.CharField(max_length=32, choices=LANGUAGES, default="EN")
     created_at = models.DateTimeField(auto_now_add=True, db_index=True)
     updated_at = models.DateTimeField(auto_now=True)
+    # used for workflow
+    teams = models.ManyToManyField(Team, help_text="Teams used by the country", blank=True)
 
     def __str__(self):
         return str(self.country)
@@ -626,6 +640,7 @@ class CampaignGroup(SoftDeletableModel):
     campaigns = models.ManyToManyField(Campaign, related_name="grouped_campaigns")
 
 
+# Deprecated
 class BudgetEvent(SoftDeletableModel):
 
     TYPES = (
@@ -667,6 +682,7 @@ class BudgetEvent(SoftDeletableModel):
         self.campaign.save()
 
 
+# Deprecated
 class BudgetFiles(models.Model):
     event = models.ForeignKey(BudgetEvent, on_delete=models.PROTECT, related_name="event_files")
     file = models.FileField()

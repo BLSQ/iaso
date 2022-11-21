@@ -1,7 +1,6 @@
 import { useMemo } from 'react';
 import { useSnackQuery } from 'Iaso/libs/apiHooks.ts';
 import { getRequest } from 'Iaso/libs/Api';
-import { getApiParamDateString } from 'Iaso/utils/dates.ts';
 
 const DEFAULT_PAGE_SIZE = 40;
 const DEFAULT_PAGE = 1;
@@ -76,8 +75,8 @@ export const useCampaignParams = params => {
             page: params?.page ?? DEFAULT_PAGE,
             countries: params.countries,
             search: params.search,
-            roundStartFrom: getApiParamDateString(params.roundStartFrom),
-            roundStartTo: getApiParamDateString(params.roundStartTo),
+            roundStartFrom: params.roundStartFrom,
+            roundStartTo: params.roundStartTo,
             showOnlyDeleted: params.showOnlyDeleted,
             campaignType: params.campaignType,
             campaignGroups: params.campaignGroups,

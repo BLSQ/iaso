@@ -259,6 +259,7 @@ class TeamViewSet(AuditMixin, ModelViewSet):
         "id": ["in"],
         "name": ["icontains"],
         "project": ["exact"],
+        "type": ["exact"],
     }
 
     audit_serializer = AuditTeamSerializer  # type: ignore

@@ -13,10 +13,19 @@ def fullname(o):
     return module + "." + klass.__qualname__
 
 
-def model_and_fields_with_files():
+def model_and_fields_with_files(account_id_to_keep, model_to_copy, offset):
     for ct in ContentType.objects.all():
         m = ct.model_class()
+        skip = False
         if m:
+            if model_to_copy and m.__name__ == model_to_copy:
+                skip = False
+            elif model_to_copy == None:
+                skip = False
+            else:
+                skip = True
+
+        if m and not skip:
             file_fields = []
             for field in m._meta.get_fields():
                 if fullname(field) == "django.db.models.fields.files.FileField":
@@ -33,11 +42,13 @@ def model_and_fields_with_files():
                     )
 
                 print("\t", "count", m.objects.count())
-                for object in m.objects.all():
+
+                all_objects = m.objects.order_by("id").all()[offset:] if offset else m.objects.order_by("id").all()
+                for object in all_objects:
                     values = object.__dict__
                     for field in file_fields:
                         if values.get(field.name):
-                            target_file_name = "./media/account/" + values.get(field.name)
+                            target_file_name = "./media/account/" + account_id_to_keep + "/" + values.get(field.name)
 
                             if not os.path.exists(target_file_name):
                                 # avoid touching the s3 storage before this line so resuming the copy is faster
@@ -64,8 +75,26 @@ class Command(BaseCommand):
     help = "Copy account files to another bucket or local directory"
 
     def add_arguments(self, parser):
-        parser.add_argument("--account", type=int)
+        parser.add_argument("--account", type=str)
+        parser.add_argument("--model", type=str, required=False)
+        parser.add_argument("--offset", type=int, required=False)
 
     def handle(self, *args, **options):
+        account_id_to_keep = options.get("account")
+        model = options.get("model")
+        offset = options.get("offset")
+
         print("Copy files from S3 to other s3 or local directory")
-        model_and_fields_with_files()
+
+        for ct in ContentType.objects.all():
+            m = ct.model_class()
+            if m:
+                file_fields = []
+                for field in m._meta.get_fields():
+                    if fullname(field) == "django.db.models.fields.files.FileField":
+                        file_fields.append(field)
+
+                if len(file_fields) > 0:
+                    print(m.__module__, m.__name__, file_fields)
+
+        model_and_fields_with_files(account_id_to_keep, model, offset)

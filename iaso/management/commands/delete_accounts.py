@@ -202,19 +202,21 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         account_id_to_keep = options.get("account_to_keep")
         if account_id_to_keep is None:
-            for account in Account.objects.all():
+            for account in Account.objects.order_by("id").all():
                 print(account.id, account.name)
             raise Exception("No account id provided via --account-to-keep")
-        for account in Account.objects.all():
+        for account in Account.objects.order_by("id").all():
             print(account.id, account.name)
         account_to_keep = Account.objects.get(pk=account_id_to_keep)
         print("*****")
         print("keeping", account_id_to_keep, account_to_keep)
 
+        print("****** counting")
+        print("   the first time is slow tons of audit_modification and apiimports")
         counts_before = dump_counts()
 
         print("keeping ", account_to_keep.name)
-        accounts = Account.objects.filter(~Q(id=account_id_to_keep))
+        accounts = Account.objects.filter(~Q(id=account_id_to_keep)).order_by("id")
         print("all the others")
 
         cursor = connection.cursor()

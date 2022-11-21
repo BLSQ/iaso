@@ -510,6 +510,11 @@ const MESSAGES = defineMessages({
         id: 'iaso.label.hasNoGeometryAndGps',
         defaultMessage: 'Without geographic data',
     },
+
+    depth: {
+        id: 'iaso.label.depth',
+        defaultMessage: 'Depth',
+    },
 });
 
 export default MESSAGES;

@@ -174,7 +174,7 @@ class DataSourceViewSet(ModelViewSet):
     """
 
     permission_classes = [
-        permissions.IsAuthenticatedOrReadOnly,
+        permissions.IsAuthenticated,
         HasPermission("menupermissions.iaso_mappings", "menupermissions.iaso_org_units", "menupermissions.iaso_links"),  # type: ignore
     ]
     serializer_class = DataSourceSerializer

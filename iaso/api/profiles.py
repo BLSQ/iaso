@@ -71,8 +71,7 @@ class ProfilesViewSet(viewsets.ViewSet):
             ).distinct()
 
         if perms:
-            perms = perms.split(",")
-            queryset = queryset.filter(user__user_permissions__codename__in=perms).distinct()
+            queryset = queryset.filter(user__user_permissions__codename__icontains=perms).distinct()
 
         if location:
             queryset = queryset.filter(user__iaso_profile__org_units__pk=location).distinct()

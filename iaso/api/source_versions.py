@@ -71,8 +71,8 @@ class SourceVersionViewSet(ModelViewSet):
     """
 
     permission_classes = [
-        permissions.IsAuthenticated,
-        HasPermission("menupermissions.iaso_mappings", "menupermissions.iaso_org_units", "menupermissions.iaso_links"),
+        permissions.IsAuthenticatedOrReadOnly,
+        HasPermission("menupermissions.iaso_mappings", "menupermissions.iaso_org_units", "menupermissions.iaso_links"),  # type: ignore
     ]
     serializer_class = SourceVersionSerializer
     results_key = "versions"

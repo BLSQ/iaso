@@ -163,20 +163,42 @@ class TestCredentialSerializer(serializers.Serializer):
         return rep
 
 
+class DataSourcePermission(permissions.BasePermission):
+    def has_permission(self, request, view):
+        # see permission logic on view
+        read_perms = (
+            "menupermissions.iaso_mappings",
+            "menupermissions.iaso_org_units",
+            "menupermissions.iaso_links",
+            "menupermissions.iaso_sources",
+        )
+        write_perms = ("menupermissions.iaso_sources",)
+
+        if (
+            request.method in permissions.SAFE_METHODS
+            and request.user
+            and any(request.user.has_perm(perm) for perm in read_perms)
+        ):
+            return True
+        if request.method == "DELETE":
+            return False
+        return request.user and any(request.user.has_perm(perm) for perm in write_perms)
+
+
 class DataSourceViewSet(ModelViewSet):
     """Data source API
 
-    This API is restricted to authenticated users having at least one of the "menupermissions.iaso_mappings",
-    "menupermissions.iaso_org_units", and "menupermissions.iaso_links" permissions
+    This API is restricted to authenticated users:
+    Read permission are restricted to user with at least one of the "menupermissions.iaso_sources",
+        "menupermissions.iaso_mappings","menupermissions.iaso_org_units", and "menupermissions.iaso_links" permissions
+    Write permission are restricted to user having the iaso_sources permissions.
 
     GET /api/datasources/
     GET /api/datasources/<id>
     """
 
-    permission_classes = [
-        permissions.IsAuthenticated,
-        HasPermission("menupermissions.iaso_mappings", "menupermissions.iaso_org_units", "menupermissions.iaso_links"),  # type: ignore
-    ]
+    permission_classes = [DataSourcePermission]  # type: ignore
+
     serializer_class = DataSourceSerializer
     results_key = "sources"
     queryset = DataSource.objects.all()

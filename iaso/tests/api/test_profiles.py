@@ -365,7 +365,6 @@ class ProfileAPITestCase(APITestCase):
         print(response_data["account"])
         self.assertEqual(response_data["account"]["feature_flags"], [])
 
-
     def test_search_user_by_permissions(self):
         self.client.force_authenticate(self.jane)
 
@@ -383,4 +382,3 @@ class ProfileAPITestCase(APITestCase):
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.json()["profiles"][0]["user_name"], "janedoe")
         self.assertEqual(len(response.json()["profiles"]), 1)
-

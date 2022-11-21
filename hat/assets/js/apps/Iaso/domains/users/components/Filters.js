@@ -72,7 +72,7 @@ const Filters = ({ baseUrl, params }) => {
 
     return (
         <>
-            <Grid container spacing={4}>
+            <Grid container spacing={2}>
                 <Grid item xs={3}>
                     <InputComponent
                         keyValue="search"
@@ -114,7 +114,7 @@ const Filters = ({ baseUrl, params }) => {
             </Grid>
             <Grid
                 container
-                spacing={4}
+                spacing={2}
                 justifyContent="flex-end"
                 alignItems="center"
             >

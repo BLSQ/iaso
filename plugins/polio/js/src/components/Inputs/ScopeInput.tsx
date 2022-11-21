@@ -132,14 +132,15 @@ export const ScopeInput: FunctionComponent<Props> = ({
                 setFilteredDistricts(newListAfterRemove);
             }
 
-            scope.group.org_units = scope.group.org_units.filter(OrgUnitId => {
-                let orgIdToRemove: number | undefined;
+            const orgUnits: Array<number> = [];
+
+            scope.group.org_units.forEach(OrgUnitId => {
                 if (!OrgUnitsIdInSameRegion.includes(OrgUnitId)) {
-                    orgIdToRemove = OrgUnitId;
+                    orgUnits.push(OrgUnitId);
                     addNewScopeId(OrgUnitId, '');
                 }
-                return orgIdToRemove;
             });
+            scope.group.org_units = orgUnits;
         } else {
             // Remove the OrgUnits from all the scopes
             newScopes.forEach(s => {
@@ -151,16 +152,18 @@ export const ScopeInput: FunctionComponent<Props> = ({
 
             if ((searchLaunched || searchScopeChecked) && districtShapes) {
                 let newListAfterAdding = [...filteredDistricts];
-                const addedDistricts = districtShapes.filter(dist => {
-                    let addedDistr: FilteredDistricts | undefined;
+                const addedDistricts: FilteredDistricts[] = [];
+                districtShapes.forEach(dist => {
                     if (OrgUnitsIdInSameRegion.includes(dist.id)) {
-                        addedDistr = dist;
+                        const addedDistr: FilteredDistricts | undefined = {
+                            ...dist,
+                        };
                         if (addedDistr) {
                             addedDistr.vaccineName = selectedVaccine;
+                            addedDistricts.push(addedDistr);
                             addNewScopeId(dist.id, selectedVaccine);
                         }
                     }
-                    return addedDistr;
                 });
                 newListAfterAdding = uniqBy(
                     newListAfterAdding.concat(addedDistricts),

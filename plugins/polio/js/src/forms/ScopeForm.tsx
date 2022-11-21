@@ -136,8 +136,13 @@ export const ScopeForm: FunctionComponent = () => {
         if (districtShapes) {
             searchDistrictByName();
         }
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [currentTab, districtShapes, searchScope, scopePerRound]);
+    }, [
+        currentTab,
+        districtShapes,
+        searchScope,
+        scopePerRound,
+        searchDistrictByName,
+    ]);
 
     const addNewScopeId = useCallback(
         (id: number, vaccineName: string) => {

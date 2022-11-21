@@ -202,7 +202,7 @@ class DataSourceViewSet(ModelViewSet):
     serializer_class = DataSourceSerializer
     results_key = "sources"
     queryset = DataSource.objects.all()
-    http_method_names = ["get", "post", "put", "head", "options", "trace", "delete"]
+    http_method_names = ["get", "post", "put", "head", "options", "trace"]
 
     def get_queryset(self):
         linked_to = self.kwargs.get("linkedTo", None)

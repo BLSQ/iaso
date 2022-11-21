@@ -134,8 +134,8 @@ class DataSourcesAPITestCase(APITestCase):
         # user with write
         self.client.force_authenticate(self.joe)
         response = self.client.delete(f"/api/datasources/{source_id}/")
-        j = self.assertJSONResponse(response, 204)
-        self.assertEqual(m.DataSource.objects.filter(id=source_id).count(), 0)
+        j = self.assertJSONResponse(response, 405)
+        self.assertEqual(m.DataSource.objects.filter(id=source_id).count(), 1)
 
         response = self.client.get(f"/api/datasources/{source_id}/")
-        j = self.assertJSONResponse(response, 404)
+        j = self.assertJSONResponse(response, 200)

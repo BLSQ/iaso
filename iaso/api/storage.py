@@ -77,8 +77,18 @@ class StorageStatusSerializer(serializers.Serializer):
     reason = serializers.ChoiceField(
         source="status_reason", required=False, choices=StorageDevice.STATUS_REASON_CHOICES
     )
-    updated_at = serializers.DateTimeField(source="status_updated_at", read_only=True)
+    updated_at: Field = serializers.DateTimeField(source="status_updated_at", read_only=True)
     comment = serializers.CharField(source="status_comment", required=False, allow_blank=True)
+
+    def to_representation(self, obj):
+        ret = super(StorageStatusSerializer, self).to_representation(obj)
+
+        # If status is OK, we don't want to return the reason nor the comment
+        if obj.status == StorageDevice.OK:
+            ret.pop("reason")
+            ret.pop("comment")
+
+        return ret
 
     def validate(self, data):
         """
@@ -93,10 +103,16 @@ class StorageStatusSerializer(serializers.Serializer):
         return data
 
 
+class StorageStatusSerializerForMobile(StorageStatusSerializer):
+    """Like StorageStatusSerializer, but updated_at is a timestamp instead of a datetime"""
+
+    updated_at = TimestampField(source="status_updated_at", read_only=True)
+
+
 class StorageSerializer(serializers.ModelSerializer):
     storage_id = serializers.CharField(source="customer_chosen_id")
     storage_type = serializers.CharField(source="type")
-    status = StorageStatusSerializer(source="*")
+    storage_status = StorageStatusSerializer(source="*")
     entity = EntityNestedSerializer(read_only=True)
     org_unit = OrgUnitNestedSerializer(read_only=True)
     created_at = TimestampField(read_only=True)
@@ -109,7 +125,7 @@ class StorageSerializer(serializers.ModelSerializer):
             "created_at",
             "storage_id",
             "storage_type",
-            "status",
+            "storage_status",
             "org_unit",
             "entity",
         )
@@ -482,9 +498,24 @@ def logs_per_device(request, storage_customer_chosen_id: str, storage_type: str)
         return logs_for_device_generate_export(queryset=log_entries_queryset, file_format=file_format_export)
 
 
+class StorageSerializerForBlacklisted(serializers.ModelSerializer):
+    # Since the blacklisted endpoint is open to everyone, we have a specific serializer that expose as little information as possible
+    storage_id = serializers.CharField(source="customer_chosen_id")
+    storage_type = serializers.CharField(source="type")
+    storage_status = StorageStatusSerializerForMobile(source="*")
+
+    class Meta:
+        model = StorageDevice
+        fields: Tuple[str, ...] = (
+            "storage_id",
+            "storage_type",
+            "storage_status",
+        )
+
+
 class StorageBlacklistedViewSet(ListModelMixin, viewsets.GenericViewSet):
     queryset = StorageDevice.objects.filter(status=StorageDevice.BLACKLISTED)
-    serializer_class = StorageSerializer
+    serializer_class = StorageSerializerForBlacklisted
 
     permission_classes = [AllowAny]
 

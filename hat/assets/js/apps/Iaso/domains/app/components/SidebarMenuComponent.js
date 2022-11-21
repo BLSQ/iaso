@@ -12,6 +12,8 @@ import {
     Divider,
     Typography,
     Tooltip,
+    useMediaQuery,
+    useTheme,
 } from '@material-ui/core';
 
 import ArrowBackIcon from '@material-ui/icons/ArrowBack';
@@ -115,6 +117,8 @@ const SidebarMenu = ({
     const { plugins } = useContext(PluginsContext);
     const defaultSourceVersion = getDefaultSourceVersion(currentUser);
     const menuItems = getMenuItems(currentUser, plugins, defaultSourceVersion);
+    const theme = useTheme();
+    const isMobileLayout = useMediaQuery(theme.breakpoints.down('md'));
 
     return (
         <Drawer anchor="left" open={isOpen} onClose={toggleSidebar}>
@@ -141,13 +145,16 @@ const SidebarMenu = ({
             </List>
             <Box className={classes.user}>
                 <LanguageSwitch />
-                <Typography
-                    variant="body2"
-                    color="textSecondary"
-                    className={classes.userName}
-                >
-                    {currentUser.user_name}
-                </Typography>
+                {isMobileLayout && (
+                    <Typography
+                        variant="body2"
+                        color="textSecondary"
+                        className={classes.userName}
+                    >
+                        {currentUser.user_name}
+                    </Typography>
+                )}
+
                 {currentUser.account && (
                     <Typography
                         variant="body2"

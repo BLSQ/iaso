@@ -7,7 +7,7 @@ class DataSourcesAPITestCase(APITestCase):
     def setUpTestData(cls):
         cls.ghi = ghi = m.Account.objects.create(name="Global Health Initiative")
 
-        cls.jane = cls.create_user_with_profile(username="janedoe", account=ghi, permissions=["iaso_sources"])
+        cls.jane = cls.create_user_with_profile(username="janedoe", account=ghi, permissions=["iaso_mappings"])
         cls.jim = cls.create_user_with_profile(username="jimdoe", account=ghi)
 
         cls.ghi_project = m.Project.objects.create(name="ghi_project", account=ghi)

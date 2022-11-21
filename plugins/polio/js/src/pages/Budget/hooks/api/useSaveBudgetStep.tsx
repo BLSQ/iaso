@@ -1,4 +1,6 @@
 /* eslint-disable camelcase */
+// @ts-ignore
+import { convertToNumber } from 'bluesquare-components';
 import { BudgetStep, LinkWithAlias } from '../../types';
 import MESSAGES from '../../../../constants/messages';
 import { postRequest } from '../../../../../../../../hat/assets/js/apps/Iaso/libs/Api';
@@ -20,16 +22,23 @@ type PostRequestBody = {
 };
 
 const postBudgetStep = (body: Payload): Promise<BudgetStep> => {
-    const filteredParams = Object.fromEntries(
+    const filteredParams: Partial<Payload> = Object.fromEntries(
         Object.entries(body).filter(
             // eslint-disable-next-line no-unused-vars
             ([key, value]) => value !== undefined && key !== 'general',
         ),
     );
-    const { links }: { links?: LinkWithAlias[] } = filteredParams;
+    const {
+        links,
+        amount,
+    }: { links?: LinkWithAlias[]; amount?: number | string } = filteredParams;
+
     if (links) {
         const filteredLinks = links.filter(link => link.alias && link.url);
         filteredParams.links = filteredLinks;
+    }
+    if (typeof amount === 'string') {
+        filteredParams.amount = convertToNumber(amount);
     }
     const requestBody: PostRequestBody = {
         url: '/api/polio/budget/transition_to/',

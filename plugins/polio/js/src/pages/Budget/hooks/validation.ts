@@ -1,15 +1,7 @@
 import { useMemo } from 'react';
 // @ts-ignore
-import { useSafeIntl } from 'bluesquare-components';
-import {
-    mixed,
-    array,
-    object,
-    string,
-    number,
-    ObjectSchema,
-    addMethod,
-} from 'yup';
+import { useSafeIntl, convertToNumber } from 'bluesquare-components';
+import { mixed, array, object, string, ObjectSchema, addMethod } from 'yup';
 import MESSAGES from '../../../constants/messages';
 import { ValidationError } from '../../../../../../../hat/assets/js/apps/Iaso/types/utils';
 import { useAPIErrorValidator } from '../../../../../../../hat/assets/js/apps/Iaso/libs/validation';
@@ -72,6 +64,23 @@ addMethod(
     },
 );
 
+addMethod(
+    string,
+    'convertNumberWithThousands',
+    function convertNumberWithThousands(message) {
+        return this.test('convertNumberWithThousands', '', (value, context) => {
+            const { path, createError } = context;
+            if (!Number.isNaN(convertToNumber(value))) {
+                return true;
+            }
+            return createError({
+                path,
+                message,
+            });
+        });
+    },
+);
+
 export const useBudgetStepValidation = (
     errors: ValidationError = {},
     payload: any,
@@ -116,7 +125,8 @@ export const useBudgetStepValidation = (
                 fieldRequired,
             ),
             amount: makeRequired(
-                number().nullable(),
+                // @ts-ignore
+                string().nullable().convertNumberWithThousands(formatMessage),
                 requiredFields.includes('amount'),
                 fieldRequired,
             ).typeError(typeError),

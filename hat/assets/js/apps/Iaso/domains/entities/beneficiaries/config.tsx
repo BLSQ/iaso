@@ -190,39 +190,28 @@ export const useBeneficiariesDetailsColumns = (
         () => [
             {
                 Header: formatMessage(MESSAGES.form),
-                // TODO make sortable
-                sortable: false,
-                id: 'form_name',
+                id: 'form__name',
                 accessor: 'form_name',
             },
             {
                 Header: formatMessage(MESSAGES.created_at),
-                // TODO make sortable
-                sortable: false,
                 id: 'created_at',
                 accessor: 'created_at',
                 Cell: DateTimeCell,
             },
             {
                 Header: formatMessage(MESSAGES.last_sync_at),
-                // TODO make sortable
-                // TODO get correct key when implemented on backend
-                sortable: false,
                 id: 'updated_at',
                 accessor: 'updated_at',
                 Cell: DateTimeCell,
             },
             {
                 Header: formatMessage(MESSAGES.OrgUnitName),
-                // TODO make sortable
-                sortable: false,
-                id: 'org_unit.name',
+                id: 'org_unit__name',
                 accessor: 'org_unit.name',
             },
             {
                 Header: formatMessage(MESSAGES.keyInfo),
-                // TODO get correct key when implemented on backend
-                sortable: false,
                 id: 'key_info',
                 accessor: 'key_info',
                 // eslint-disable-next-line no-unused-vars
@@ -232,9 +221,7 @@ export const useBeneficiariesDetailsColumns = (
             },
             {
                 Header: formatMessage(MESSAGES.submitter),
-                // TODO make sortable
-                sortable: false,
-                id: 'created_by.user_name',
+                id: 'created_by',
                 accessor: 'created_by.user_name',
                 Cell: settings => {
                     const { created_by: user } = settings.row.original;

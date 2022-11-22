@@ -1,7 +1,13 @@
 import React, { useCallback, useContext } from 'react';
 import { useDispatch } from 'react-redux';
-
-import { IconButton, makeStyles, Grid, Box } from '@material-ui/core';
+import {
+    IconButton,
+    makeStyles,
+    Grid,
+    useMediaQuery,
+    useTheme,
+    Box,
+} from '@material-ui/core';
 import AppBar from '@material-ui/core/AppBar';
 import Toolbar from '@material-ui/core/Toolbar';
 import Typography from '@material-ui/core/Typography';
@@ -13,7 +19,7 @@ import PropTypes from 'prop-types';
 
 import { toggleSidebarMenu } from '../../redux/sidebarMenuReducer';
 import { ThemeConfigContext } from '../../domains/app/contexts/ThemeConfigContext.tsx';
-import getDisplayName, { useCurrentUser } from '../../utils/usersUtils';
+import getDisplayName, { useCurrentUser } from '../../utils/usersUtils.ts';
 
 const styles = theme => ({
     menuButton: {
@@ -21,6 +27,11 @@ const styles = theme => ({
             marginRight: theme.spacing(2),
             marginLeft: theme.spacing(1),
         },
+    },
+    version: {
+        fontSize: 9,
+        display: 'block',
+        marginTop: 5,
     },
 });
 
@@ -40,6 +51,8 @@ function TopBar(props) {
         [dispatch],
     );
     const currentUser = useCurrentUser();
+    const theme = useTheme();
+    const isMobileLayout = useMediaQuery(theme.breakpoints.down('md'));
 
     return (
         <>
@@ -88,21 +101,35 @@ function TopBar(props) {
                                 {title}
                             </Typography>
                         </Grid>
-                        {currentUser && (
+                        {currentUser && !isMobileLayout && (
                             <Grid
                                 container
                                 item
                                 xs={3}
-                                alignContent="flex-end"
                                 justifyContent="flex-end"
                             >
-                                <Typography
-                                    variant="body2"
-                                    className={classes.userName}
-                                    title={getDisplayName(currentUser)}
+                                <Box
+                                    display="flex"
+                                    alignItems="flex-end"
+                                    justifyContent="flex-end"
+                                    flexDirection="column"
                                 >
-                                    {currentUser?.user_name}
-                                </Typography>
+                                    <Typography
+                                        variant="body2"
+                                        title={getDisplayName(currentUser)}
+                                    >
+                                        {currentUser.user_name}
+                                    </Typography>
+                                    {window.IASO_VERSION && (
+                                        <Typography
+                                            variant="body2"
+                                            className={classes.version}
+                                            title={getDisplayName(currentUser)}
+                                        >
+                                            {window.IASO_VERSION}
+                                        </Typography>
+                                    )}
+                                </Box>
                             </Grid>
                         )}
                     </Grid>

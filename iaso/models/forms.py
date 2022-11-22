@@ -133,6 +133,12 @@ class Form(SoftDeletableModel):
 
         return res
 
+    def as_dict_for_completeness_stats(self):
+        return {
+            "name": self.name,
+            "id": self.id,
+        }
+
     def update_possible_fields(self: "Form"):
         """Keep accumulated list of all the flat fields that were present at some point in a version of the form.
         This is used to build a table view of the form answers without having to parse the xml files

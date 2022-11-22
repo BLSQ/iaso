@@ -5,28 +5,49 @@ import { useSnackQuery } from '../../../../libs/apiHooks';
 import { makeUrlWithParams } from '../../../../libs/utils';
 import { PaginatedStorage, StorageDetailsParams } from '../../types/storages';
 
-const getStorageLogs = async (
-    options: StorageDetailsParams,
-): Promise<PaginatedStorage> => {
+type ApiParams = {
+    limit: string;
+    order: string;
+    page: string;
+    types?: string;
+    performed_at?: string;
+    type: string;
+    storageId: string;
+};
+type GetAPiParams = {
+    url: string;
+    apiParams: ApiParams;
+};
+export const useGetApiParams = (params: StorageDetailsParams): GetAPiParams => {
     const {
-        type,
-        storageId,
         pageSize,
         operationType,
         performedAt,
         order,
         page,
-    } = options as Record<string, any>;
-    const baseUrl = `/api/storage/${type}/${storageId}/logs`;
-
-    const apiParams = {
-        limit: pageSize || 20,
+        type,
+        storageId,
+    }: StorageDetailsParams = params;
+    const apiParams: ApiParams = {
+        limit: pageSize || '20',
         types: operationType,
         performed_at: performedAt,
         order,
         page,
+        type,
+        storageId,
     };
-
+    const baseUrl = `/api/storage/${type}/${storageId}/logs`;
+    const url = makeUrlWithParams(baseUrl, apiParams);
+    return {
+        url,
+        apiParams,
+    };
+};
+const getStorageLogs = async (
+    apiParams: ApiParams,
+    baseUrl: string,
+): Promise<PaginatedStorage> => {
     const url = makeUrlWithParams(baseUrl, apiParams);
     return getRequest(url) as Promise<PaginatedStorage>;
 };
@@ -35,10 +56,15 @@ export const useGetStorageLogs = (
     options: StorageDetailsParams,
 ): UseQueryResult<PaginatedStorage, Error> => {
     const queryKey: any[] = ['storageLog', options];
-    const { select } = options as Record<string, any>;
+
+    const { url, apiParams } = useGetApiParams(options);
     // @ts-ignore
-    return useSnackQuery(queryKey, () => getStorageLogs(options), undefined, {
-        select,
-        enabled: Boolean(options.type) && Boolean(options.storageId),
-    });
+    return useSnackQuery(
+        queryKey,
+        () => getStorageLogs(apiParams, url),
+        undefined,
+        {
+            enabled: Boolean(options.type) && Boolean(options.storageId),
+        },
+    );
 };

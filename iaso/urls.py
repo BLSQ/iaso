@@ -9,6 +9,7 @@ from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 from hat.api.authentication import WfpLogin, wfp_callback
 from .api.bulk_create_users import BulkCreateUserFromCsvViewSet
 from .api.comment import CommentViewSet
+from .api.completeness_stats import CompletenessStatsViewSet
 from .api.entity import EntityViewSet, EntityTypeViewSet
 from .api.logs import LogsViewSet
 from .api.microplanning import TeamViewSet, PlanningViewSet, AssignmentViewSet, MobilePlanningViewSet
@@ -97,6 +98,7 @@ router.register(r"algorithms", AlgorithmsViewSet, basename="algorithms")
 router.register(r"algorithmsruns", AlgorithmsRunsViewSet, basename="algorithmsruns")
 router.register(r"groups", GroupsViewSet, basename="groups")
 router.register(r"completeness", CompletenessViewSet, basename="completeness")
+router.register(r"completeness_stats", CompletenessStatsViewSet, basename="completeness_stats")
 router.register(r"exportrequests", ExportRequestsViewSet, basename="exportrequests")
 router.register(r"mappings", MappingsViewSet, basename="mappings")
 router.register(r"mappingversions", MappingVersionsViewSet, basename="mappingversions")

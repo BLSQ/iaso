@@ -257,7 +257,7 @@ class BulkCreateCsvTestCase(APITestCase):
         print(self.jedi_council.id, self.jedi_council.id, 9999, self.tatooine.id)
 
         self.assertEqual(ou_list, [9999])
-        self.assertEqual(ou_f_list, [self.jedi_council_corruscant.id, self.tatooine.id, 9999])
+        self.assertCountEqual(ou_f_list, [self.jedi_council_corruscant.id, self.tatooine.id, 9999])
         self.assertEqual(response.status_code, 200)
 
     def test_cant_create_user_without_access_to_ou(self):

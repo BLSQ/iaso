@@ -108,7 +108,7 @@ const CreateBudgetStep: FunctionComponent<Props> = ({
         const fileLinks = previousStep?.files;
         const filesAsLinks = (fileLinks ?? []).map(fileLink => ({
             alias: fileLink.filename,
-            url: fileLink.file,
+            url: fileLink.permanent_url,
         }));
         const previousStepLinks = previousStep?.links;
         if (!quickTransition) {

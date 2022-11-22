@@ -9,6 +9,8 @@ import {
     useSnackMutation,
     useSnackQuery,
 } from '../../../../../../../../hat/assets/js/apps/Iaso/libs/apiHooks';
+import { Paginated } from '../../../../../../../../hat/assets/js/apps/Iaso/types/table';
+import { BudgetStep } from '../../types';
 
 const getBudgetDetails = (params: any) => {
     const { pageSize, ...otherParams } = params;
@@ -26,7 +28,7 @@ const getBudgetDetails = (params: any) => {
     return getRequest(`/api/polio/budgetsteps/?${queryString}`);
 };
 
-type DetailsParams = {
+export type DetailsParams = {
     action?: any;
     campaign_id: string;
     country?: string;
@@ -38,7 +40,9 @@ type DetailsParams = {
     transition_key__in?: any;
 };
 
-export const useGetBudgetDetails = (params: DetailsParams): UseQueryResult => {
+export const useGetBudgetDetails = (
+    params: DetailsParams,
+): UseQueryResult<Paginated<BudgetStep>, Error> => {
     return useSnackQuery({
         queryFn: () => getBudgetDetails(params),
         queryKey: ['budget', 'details', params],

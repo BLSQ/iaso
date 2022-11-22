@@ -172,7 +172,7 @@ export const ScopeForm: FunctionComponent = () => {
                 addNewScopeId={(id, vacciName) => addNewScopeId(id, vacciName)}
                 isFetchingDistricts={isFetchingDistricts || !filteredDistricts}
                 isFetchingRegions={isFetchingRegions || !regionShapes}
-                districtShapes={filteredDistricts}
+                districtShapes={districtShapes}
                 regionShapes={regionShapes}
                 searchComponent={
                     <ScopeSearch

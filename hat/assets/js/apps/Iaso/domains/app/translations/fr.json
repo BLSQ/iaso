@@ -527,6 +527,8 @@
     "iaso.label.withLocation": "Uniquement les points",
     "iaso.label.without": "Sans",
     "iaso.label.withShape": "Uniquement les territoires",
+    "iaso.label.workflow": "Workflow",
+    "iaso.label.workflows": "Workflows",
     "iaso.label.xls_form_file": "Fichier XLSForm",
     "iaso.label.year": "Année",
     "iaso.label.yearNoCap": "ans",

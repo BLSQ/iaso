@@ -44,6 +44,7 @@ class StorageAPITestCase(APITestCase):
             account=cls.star_wars,
             type="NFC",
             status="OK",
+            entity=cls.entity,
         )
 
         StorageLogEntry.objects.create(
@@ -435,7 +436,7 @@ class StorageAPITestCase(APITestCase):
                     "storage_type": "NFC",
                     "storage_status": {"status": "OK", "updated_at": None},
                     "org_unit": None,
-                    "entity": None,
+                    "entity": {"id": mock.ANY, "name": "New Client 3"},
                 },
                 {
                     "updated_at": 1580608922.0,
@@ -549,7 +550,7 @@ class StorageAPITestCase(APITestCase):
                     "storage_type": "NFC",
                     "storage_status": {"status": "OK", "updated_at": None},
                     "org_unit": None,
-                    "entity": None,
+                    "entity": {"id": mock.ANY, "name": "New Client 3"},
                 },
                 {
                     "updated_at": 1580608922.0,
@@ -588,9 +589,18 @@ class StorageAPITestCase(APITestCase):
         received_json = response.json()
 
         # If the filter was not operational we would get 3 results.
-        self.assertEqual(
+        self.assertListEqual(
             received_json,
             [
+                {
+                    "updated_at": 1580608922.0,
+                    "created_at": 1580608922.0,
+                    "storage_id": "EXISTING_STORAGE",
+                    "storage_type": "NFC",
+                    "storage_status": {"status": "OK", "updated_at": None},
+                    "org_unit": None,
+                    "entity": {"id": mock.ANY, "name": "New Client 3"},
+                },
                 {
                     "updated_at": 1580608922.0,
                     "created_at": 1580608922.0,
@@ -603,8 +613,8 @@ class StorageAPITestCase(APITestCase):
                         "comment": "",
                     },
                     "org_unit": None,
-                    "entity": {"id": self.entity.id, "name": "New Client 3"},
-                }
+                    "entity": {"id": mock.ANY, "name": "New Client 3"},
+                },
             ],
         )
 
@@ -759,7 +769,7 @@ class StorageAPITestCase(APITestCase):
         response = self.client.get("/api/storage/NFC/EXISTING_STORAGE/logs")
         self.assertEqual(response.status_code, 200)
         received_json = response.json()
-        self.assertEqual(
+        self.assertDictEqual(
             received_json,
             {
                 "updated_at": 1580608922.0,
@@ -768,7 +778,7 @@ class StorageAPITestCase(APITestCase):
                 "storage_type": "NFC",
                 "storage_status": {"status": "OK", "updated_at": None},
                 "org_unit": None,
-                "entity": None,
+                "entity": {"id": mock.ANY, "name": "New Client 3"},
                 "logs": [
                     {
                         "id": "e4200710-bf82-4d29-a29b-6a042f79ef25",
@@ -805,7 +815,7 @@ class StorageAPITestCase(APITestCase):
                 "storage_type": "NFC",
                 "storage_status": {"status": "OK", "updated_at": None},
                 "org_unit": None,
-                "entity": None,
+                "entity": {"id": mock.ANY, "name": "New Client 3"},
                 "logs": [],
             },
         )
@@ -836,7 +846,7 @@ class StorageAPITestCase(APITestCase):
                 "storage_type": "NFC",
                 "storage_status": {"status": "OK", "updated_at": None},
                 "org_unit": None,
-                "entity": None,
+                "entity": {"id": mock.ANY, "name": "New Client 3"},
                 "logs": [
                     {
                         "id": "e4200710-bf82-4d29-a29b-6a042f79ef26",
@@ -873,7 +883,7 @@ class StorageAPITestCase(APITestCase):
                 "storage_type": "NFC",
                 "storage_status": {"status": "OK", "updated_at": None},
                 "org_unit": None,
-                "entity": None,
+                "entity": {"id": mock.ANY, "name": "New Client 3"},
                 "logs": [
                     {
                         "id": "e4200710-bf82-4d29-a29b-6a042f79ef25",
@@ -906,7 +916,7 @@ class StorageAPITestCase(APITestCase):
                 "storage_type": "NFC",
                 "storage_status": {"status": "OK", "updated_at": None},
                 "org_unit": None,
-                "entity": None,
+                "entity": {"id": mock.ANY, "name": "New Client 3"},
                 "logs": [],
             },
         )
@@ -924,7 +934,7 @@ class StorageAPITestCase(APITestCase):
                 "storage_type": "NFC",
                 "storage_status": {"status": "OK", "updated_at": None},
                 "org_unit": None,
-                "entity": None,
+                "entity": {"id": mock.ANY, "name": "New Client 3"},
                 "logs": [
                     {
                         "id": "e4200710-bf82-4d29-a29b-6a042f79ef25",
@@ -966,7 +976,7 @@ class StorageAPITestCase(APITestCase):
                 "storage_type": "NFC",
                 "storage_status": {"status": "OK", "updated_at": None},
                 "org_unit": None,
-                "entity": None,
+                "entity": {"id": mock.ANY, "name": "New Client 3"},
                 "logs": [
                     {
                         "id": "e4200710-bf82-4d29-a29b-6a042f79ef25",
@@ -1008,7 +1018,7 @@ class StorageAPITestCase(APITestCase):
         response = self.client.get(f"/api/storage/NFC/EXISTING_STORAGE/logs?status=OK")
         self.assertEqual(response.status_code, 200)
         received_json = response.json()
-        self.assertEqual(
+        self.assertDictEqual(
             received_json,
             {
                 "updated_at": 1580608922.0,
@@ -1017,7 +1027,7 @@ class StorageAPITestCase(APITestCase):
                 "storage_type": "NFC",
                 "storage_status": {"status": "OK", "updated_at": None},
                 "org_unit": None,
-                "entity": None,
+                "entity": {"id": mock.ANY, "name": "New Client 3"},
                 "logs": [
                     {
                         "id": "e4200710-bf82-4d29-a29b-6a042f79ef25",
@@ -1050,7 +1060,7 @@ class StorageAPITestCase(APITestCase):
                 "storage_type": "NFC",
                 "storage_status": {"status": "OK", "updated_at": None},
                 "org_unit": None,
-                "entity": None,
+                "entity": {"id": mock.ANY, "name": "New Client 3"},
                 "logs": [],
             },
         )
@@ -1071,7 +1081,7 @@ class StorageAPITestCase(APITestCase):
                 "storage_type": "NFC",
                 "storage_status": {"status": "OK", "updated_at": None},
                 "org_unit": None,
-                "entity": None,
+                "entity": {"id": mock.ANY, "name": "New Client 3"},
                 "logs": [],
             },
         )
@@ -1124,7 +1134,7 @@ class StorageAPITestCase(APITestCase):
                     "storage_type": "NFC",
                     "storage_status": {"status": "OK", "updated_at": None},
                     "org_unit": None,
-                    "entity": None,
+                    "entity": {"id": mock.ANY, "name": "New Client 3"},
                     "logs": [
                         {
                             "id": "e4200710-bf82-4d29-a29b-6a042f79ef25",
@@ -1164,7 +1174,7 @@ class StorageAPITestCase(APITestCase):
                     "storage_type": "NFC",
                     "storage_status": {"status": "OK", "updated_at": None},
                     "org_unit": None,
-                    "entity": None,
+                    "entity": {"id": mock.ANY, "name": "New Client 3"},
                     "logs": [
                         {
                             "id": "e4200710-bf82-4d29-a29b-6a042f79ef26",
@@ -1204,7 +1214,7 @@ class StorageAPITestCase(APITestCase):
                     "storage_type": "NFC",
                     "storage_status": {"status": "OK", "updated_at": None},
                     "org_unit": None,
-                    "entity": None,
+                    "entity": {"id": mock.ANY, "name": "New Client 3"},
                     "logs": [
                         {
                             "id": "e4200710-bf82-4d29-a29b-6a042f79ef25",

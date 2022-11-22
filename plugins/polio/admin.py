@@ -18,7 +18,6 @@ from .models import (
     CampaignGroup,
     BudgetEvent,
     BudgetFiles,
-    CampaignFormTemplate,
 )
 
 
@@ -126,4 +125,3 @@ admin.site.register(SpreadSheetImport, SpreadSheetImportAdmin)
 admin.site.register(BudgetStep, BudgetStepAdmin)
 admin.site.register(MailTemplate, MailTemplateAdmin)
 admin.site.register(WorkflowModel, WorkflowAdmin)
-admin.site.register(CampaignFormTemplate)

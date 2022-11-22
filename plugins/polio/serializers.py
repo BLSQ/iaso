@@ -30,7 +30,6 @@ from .models import (
     BudgetFiles,
     RoundScope,
     CampaignScope,
-    CampaignFormTemplate,
 )
 from .preparedness.calculator import get_preparedness_score, preparedness_summary
 from .preparedness.parser import (
@@ -868,12 +867,5 @@ class CampaignGroupSerializer(serializers.ModelSerializer):
 class BudgetFilesSerializer(serializers.ModelSerializer):
     class Meta:
         model = BudgetFiles
-        fields = "__all__"
-        read_only_fields = ["created_at", "updated_at"]
-
-
-class CampaignFormTemplateSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = CampaignFormTemplate
         fields = "__all__"
         read_only_fields = ["created_at", "updated_at"]

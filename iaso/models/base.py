@@ -30,12 +30,10 @@ from ..utils.jsonlogic import jsonlogic_to_q
 
 logger = getLogger(__name__)
 
-
 YEAR = "YEAR"
 QUARTER = "QUARTER"
 MONTH = "MONTH"
 SIX_MONTH = "SIX_MONTH"
-
 
 AGGREGATE = "AGGREGATE"
 EVENT = "EVENT"
@@ -399,6 +397,9 @@ class Group(models.Model):
             res["org_unit_count"] = self.org_units.count()
 
         return res
+
+    def user_has_access_to(self, user: User) -> bool:
+        return user.iaso_profile.account.default_version == self.source_version
 
 
 class GroupSet(models.Model):

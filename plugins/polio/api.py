@@ -57,7 +57,6 @@ from plugins.polio.serializers import (
     BudgetFilesSerializer,
     serialize_campaign,
     log_campaign_modification,
-    CampaignFormTemplateSerializer,
 )
 from plugins.polio.serializers import (
     CountryUsersGroupSerializer,
@@ -80,7 +79,6 @@ from .models import (
     BudgetFiles,
     CampaignScope,
     RoundScope,
-    CampaignFormTemplate,
 )
 from .models import CountryUsersGroup
 from .preparedness.calculator import preparedness_summary
@@ -602,240 +600,6 @@ where group_id = polio_roundscope.group_id""",
 
         cache.set(key_name, json.dumps(res), 3600 * 24, version=CACHE_VERSION)
         return JsonResponse(res)
-
-    @action(methods=["GET", "POST"], detail=False)
-    def generate_xlsform(self, request):
-        """
-        Export a xlsform out of a campaign. A template is required. Specific data can be extracted from campaigns by
-        starting the name variable by 'insert_' in the xls file in "calculate" row. The data will be saved in the
-        calculation column.
-        """
-        campaign_id = request.query_params.get("id", None)
-        campaign = get_object_or_404(Campaign, id=campaign_id)
-        campaign_scope = get_object_or_404(CampaignScope, campaign=campaign).group.org_units.all()
-        form_name = request.query_params.get("form_name", None)
-
-        authorized_fields = [
-            "id",
-            "epid",
-            "obr_name",
-            "gpei_email",
-            "description",
-            "creation_email_send_at",
-            "onset_at",
-            "three_level_call_at",
-            "cvdpv_notified_at",
-            "cvdpv2_notified_at",
-            "pv_notified_at",
-            "pv2_notified_at",
-            "virus",
-            "detection_status",
-            "detection_responsible",
-            "detection_first_draft_submitted_at",
-            "detection_rrt_oprtt_approval_at",
-            "risk_assessment_status",
-            "risk_assessment_responsible",
-            "investigation_at",
-            "risk_assessment_first_draft_submitted_at",
-            "risk_assessment_rrt_oprtt_approval_at",
-            "ag_nopv_group_met_at",
-            "dg_authorized_at",
-            "verification_score",
-            "doses_requested",
-            "preperadness_spreadsheet_url",
-            "preperadness_sync_status",
-            "surge_spreadsheet_url",
-            "country_name_in_surge_spreadsheet",
-            "budget_status",
-            "budget_responsible",
-            "created_at",
-            "updated_at",
-            "district_count",
-            "round_one",
-            "round_two",
-            "vacine",
-            "obr_name",
-        ]
-
-        try:
-            path = CampaignFormTemplate.objects.get(name=form_name).form_template.path
-        except ValueError:
-            raise serializers.ValidationError({"error": f"No template form is linked to the campaign {campaign}."})
-
-        wb = openpyxl.load_workbook(path)
-        ws = wb.active
-        sheet = wb.get_sheet_by_name("choices")
-        choices_row = 2
-        choices_column = 1
-        cell = list(string.ascii_uppercase)
-        q_sheet = wb.get_sheet_by_name("survey")
-        survey_columns = []
-        survey_last_empty_row = len(list(q_sheet.rows))
-        for l in cell:
-            survey_columns.append(q_sheet[f"{l}1"].value)
-
-        ou_tree_list = []
-
-        # create dictionary with OU tree
-        for ou in campaign_scope:
-            ou_tree_dict = {ou.org_unit_type.name: ou}
-            ou_parent = ou.parent
-            if ou_parent is not None:
-                ou_tree_dict[ou_parent.org_unit_type.name] = ou_parent
-            while ou_parent is not None:
-                ou_tree_dict[ou_parent.org_unit_type.name] = ou_parent
-                ou_parent = ou_parent.parent
-                if ou_parent is not None:
-                    ou_tree_dict[ou_parent.org_unit_type.name] = ou_parent
-            ou_tree_list.append(ou_tree_dict)
-            ou_children = ou.descendants()
-            for ou_child in ou_children:
-                ou_tree_dict[ou_child.org_unit_type.name] = ou_child
-
-        added_countries = []
-        added_regions = []
-        added_district = []
-        added_facilities = []
-        region_added = False
-        district_added = False
-        facility_added = False
-
-        # create xls columns
-        sheet[cell[choices_column - 1] + "1"] = "list name"
-        sheet[cell[choices_column] + "1"] = "name"
-        sheet[cell[choices_column + 1] + "1"] = "label"
-        sheet[cell[choices_column + 2] + "1"] = "id"
-        sheet[cell[choices_column + 3] + "1"] = "country"
-        sheet[cell[choices_column + 4] + "1"] = "region"
-        sheet[cell[choices_column + 5] + "1"] = "district"
-        sheet[cell[choices_column + 6] + "1"] = "health facility"
-
-        # insert rows to add the org units fields at the top of the file
-        ws.insert_rows(3, 5)
-
-        # populate csv with OU
-        for ou_dic in ou_tree_list:
-            for k, v in ou_dic.items():
-                if k == "COUNTRY" and v not in added_countries:
-                    added_countries.append(v)
-                    q_sheet[cell[0] + str(3)] = "select_one ou_country"
-                    q_sheet[cell[1] + str(3)] = "ou_country"
-                    q_sheet[cell[2] + str(3)] = "Select Country"
-                    q_sheet[cell[3] + str(3)] = "yes"
-                    sheet[cell[choices_column - 1] + str(choices_row)] = "ou_country"
-                    sheet[cell[choices_column] + str(choices_row)] = v.id
-                    sheet[cell[choices_column + 1] + str(choices_row)] = str(v.name)
-                    choices_row += 1
-                    survey_last_empty_row += 1
-                if k == "REGION" and v not in added_regions:
-                    survey_last_empty_row += 2
-                    added_regions.append(v)
-                    if not region_added:
-                        q_sheet[cell[0] + str(4)] = "select_one ou_region"
-                        q_sheet[cell[1] + str(4)] = "ou_region"
-                        q_sheet[cell[2] + str(4)] = "Select a Region"
-                        q_sheet[cell[9] + str(4)] = "country=${ou_country}"
-                        region_added = True
-                    sheet[cell[choices_column - 1] + str(choices_row)] = "ou_region"
-                    sheet[cell[choices_column] + str(choices_row)] = v.id
-                    sheet[cell[choices_column + 1] + str(choices_row)] = str(v.name)
-                    sheet[cell[choices_column + 3] + str(choices_row)] = (
-                        ou_dic.get("COUNTRY", None)
-                        if ou_dic.get("COUNTRY", None) is None
-                        else ou_dic.get("COUNTRY", None).pk
-                    )
-                    choices_row += 1
-                    survey_last_empty_row += 1
-
-                if k == "DISTRICT" and v not in added_district:
-                    survey_last_empty_row += 4
-                    added_district.append(v)
-                    if not district_added:
-                        q_sheet[cell[0] + str(5)] = "select_one ou_district"
-                        q_sheet[cell[1] + str(5)] = "ou_district"
-                        q_sheet[cell[2] + str(5)] = "Select a District"
-                        q_sheet[cell[9] + str(5)] = "region=${ou_region}"
-                        district_added = True
-                    sheet[cell[choices_column - 1] + str(choices_row)] = "ou_district"
-                    sheet[cell[choices_column] + str(choices_row)] = v.id
-                    sheet[cell[choices_column + 1] + str(choices_row)] = str(v.name)
-                    sheet[cell[choices_column + 3] + str(choices_row)] = (
-                        ou_dic.get("COUNTRY", None)
-                        if ou_dic.get("COUNTRY", None) is None
-                        else ou_dic.get("COUNTRY", None).pk
-                    )
-                    sheet[cell[choices_column + 4] + str(choices_row)] = (
-                        ou_dic.get("REGION", None)
-                        if ou_dic.get("REGION", None) is None
-                        else ou_dic.get("REGION", None).pk
-                    )
-                    choices_row += 1
-                    survey_last_empty_row += 1
-
-                if k == "HEALTH FACILITY" and v not in added_facilities:
-                    survey_last_empty_row += 6
-                    added_facilities.append(v)
-                    if not facility_added:
-                        q_sheet[cell[0] + str(6)] = "select_one ou_facility"
-                        q_sheet[cell[1] + str(6)] = "ou_facility"
-                        q_sheet[cell[2] + str(6)] = "Select a Health Facility"
-                        q_sheet[cell[9] + str(6)] = "district=${ou_district}"
-                        district_added = True
-                    sheet[cell[choices_column - 1] + str(choices_row)] = ""
-                    sheet[cell[choices_column] + str(choices_row)] = v.id
-                    sheet[cell[choices_column + 1] + str(choices_row)] = str(v.name)
-                    sheet[cell[choices_column + 3] + str(choices_row)] = (
-                        ou_dic.get("COUNTRY", None)
-                        if ou_dic.get("COUNTRY", None) is None
-                        else ou_dic.get("COUNTRY", None).pk
-                    )
-                    sheet[cell[choices_column + 4] + str(choices_row)] = (
-                        ou_dic.get("REGION", None)
-                        if ou_dic.get("REGION", None) is None
-                        else ou_dic.get("REGION", None).pk
-                    )
-                    sheet[cell[choices_column + 5] + str(choices_row)] = (
-                        ou_dic.get("DISTRICT", None)
-                        if ou_dic.get("DISTRICT", None) is None
-                        else ou_dic.get("DISTRICT", None).name
-                    )
-                    choices_row += 1
-                    survey_last_empty_row += 1
-
-        row = q_sheet.max_row
-
-        # Get Calculation column position
-        calculation_index = 0
-        for row_calc in q_sheet.rows:
-            iterator = 0
-            for cell in row_calc:
-                iterator += 1
-                if cell.value == "calculation":
-                    calculation_index = iterator
-                    break
-
-        # Insert data as calculation
-        for i in range(2, row + 1):
-            cell_obj = q_sheet.cell(row=i, column=2)
-            cell_value_start = cell_obj.value[:7] if cell_obj.value is not None else ""
-            if cell_value_start == "insert_":
-                str_request = cell_obj.value[7:]
-                if str_request in authorized_fields:
-                    cell_obj = q_sheet.cell(row=i, column=calculation_index)
-                    cell_obj.value = str(getattr(campaign, str_request))
-
-        filename = f"FORM_{campaign.obr_name}_{datetime.now().date()}.xlsx"
-
-        with NamedTemporaryFile() as tmp:
-            wb.save(tmp.name)
-            tmp.seek(0)
-            stream = tmp.read()
-
-            response = HttpResponse(
-                stream, content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
-            )
-            response["Content-Disposition"] = "attachment; filename=%s" % filename
-            return response
 
 
 class CountryUsersGroupViewSet(ModelViewSet):
@@ -2317,22 +2081,22 @@ class BudgetFilesViewset(ModelViewSet):
         return Response(serializer.data)
 
 
-class CampaignFormTemplateViewSet(ModelViewSet):
-    # FIXME make sure once campaigns are multi tenancy proof that forms are accessible only if the user has access to the campaign
-    results_key = "results"
-    serializer_class = CampaignFormTemplateSerializer
-    remove_results_key_if_paginated = True
-
-    def get_queryset(self):
-        queryset = CampaignFormTemplate.objects.filter(account=self.request.user.iaso_profile.account)
-        return queryset
-
-    def create(self, request, *args, **kwargs):
-        name = request.data["name"]
-        account = request.user.iaso_profile.account
-        form_template = request.data["form_template"]
-
-        return super().create(request, name, account, form_template)
+# class CampaignFormTemplateViewSet(ModelViewSet):
+#     # FIXME make sure once campaigns are multi tenancy proof that forms are accessible only if the user has access to the campaign
+#     results_key = "results"
+#     serializer_class = CampaignFormTemplateSerializer
+#     remove_results_key_if_paginated = True
+#
+#     def get_queryset(self):
+#         queryset = CampaignFormTemplate.objects.filter(account=self.request.user.iaso_profile.account)
+#         return queryset
+#
+#     def create(self, request, *args, **kwargs):
+#         name = request.data["name"]
+#         account = request.user.iaso_profile.account
+#         form_template = request.data["form_template"]
+#
+#         return super().create(request, name, account, form_template)
 
 
 router = routers.SimpleRouter()
@@ -2355,4 +2119,3 @@ router.register(r"polio/linelistimport", LineListImportViewSet, basename="lineli
 router.register(r"polio/orgunitspercampaign", OrgUnitsPerCampaignViewset, basename="orgunitspercampaign")
 router.register(r"polio/budgetevent", BudgetEventViewset, basename="budget")
 router.register(r"polio/budgetfiles", BudgetFilesViewset, basename="budgetfiles")
-router.register(r"polio/campaignformtemplate", CampaignFormTemplateViewSet, basename="campaigntemplateform")

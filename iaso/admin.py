@@ -45,6 +45,7 @@ from .models import (
     StorageLogEntry,
 )
 from .models.microplanning import Team, Planning, Assignment
+from .models.xls_form_template import XlsFormTemplate
 from .utils.gis import convert_2d_point_to_3d
 
 
@@ -453,7 +454,6 @@ class StorageDeviceAdmin(admin.ModelAdmin):
         StorageLogEntryInline,
     ]
 
-
 admin.site.register(Link, LinkAdmin)
 admin.site.register(Form, FormAdmin)
 admin.site.register(Instance, InstanceAdmin)
@@ -489,3 +489,4 @@ admin.site.register(BulkCreateUserCsvFile)
 admin.site.register(Assignment, AssignmentAdmin)
 admin.site.register(InstanceLock, InstanceLockAdmin)
 admin.site.register(StorageDevice, StorageDeviceAdmin)
+admin.site.register(XlsFormTemplate)

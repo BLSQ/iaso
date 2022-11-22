@@ -14,8 +14,6 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name="campaign",
             name="form_template",
-            field=models.FileField(
-                blank=True, null=True, upload_to=plugins.polio.models._campaign_template_form_upload_to
-            ),
+            field=models.FileField(blank=True, null=True, upload_to="temp_fold"),
         ),
     ]

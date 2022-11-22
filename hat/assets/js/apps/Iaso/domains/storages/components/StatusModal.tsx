@@ -42,7 +42,7 @@ const StatusModal: FunctionComponent<Props> = ({
 }) => {
     const { formatMessage } = useSafeIntl();
     const allStatus = useGetStatus();
-    const [status, setStatus] = useState<StorageStatus>(storage.status);
+    const [status, setStatus] = useState<StorageStatus>(storage.storage_status);
     const reasons = useGetReasons();
     const { mutate: saveStatus } = useSaveStatus(closeDialog);
     const handleConfirm = () => {

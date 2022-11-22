@@ -4,6 +4,7 @@ import React, {
     useMemo,
     useCallback,
 } from 'react';
+import isEqual from 'lodash/isEqual';
 
 import {
     // @ts-ignore
@@ -60,8 +61,8 @@ const StatusModal: FunctionComponent<Props> = ({
                 [key]: value,
             };
             if (key === 'status' && value === 'OK') {
-                newStatus.reason = undefined;
-                newStatus.comment = undefined;
+                delete newStatus.reason;
+                delete newStatus.comment;
             }
             setStatus(newStatus);
         },
@@ -76,8 +77,8 @@ const StatusModal: FunctionComponent<Props> = ({
         if (status?.status === 'BLACKLISTED' && !status.reason) {
             return false;
         }
-        return true;
-    }, [status.reason, status?.status]);
+        return !isEqual(status, storage.storage_status);
+    }, [status, storage.storage_status]);
     return (
         <ConfirmCancelModal
             allowConfirm={allowConfirm}

@@ -27,6 +27,6 @@ export const NumberInput: FunctionComponent<Props> = ({
         }}
         min={min}
         max={max}
-        // markThousands
+        markThousands
     />
 );

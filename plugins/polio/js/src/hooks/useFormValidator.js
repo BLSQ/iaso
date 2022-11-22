@@ -314,12 +314,10 @@ const useShipmentShape = () => {
             .typeError(formatMessage(MESSAGES.positiveNumber))
             .hasAllShipmentFieldsNumber(formatMessage),
         vials_received: yup
-            .number()
+            .string()
             .nullable()
-            .integer()
-            .min(0)
             .typeError(formatMessage(MESSAGES.positiveNumber))
-            .hasAllShipmentFieldsNumber(formatMessage),
+            .hasAllShipmentFieldsString(formatMessage),
         reception_pre_alert: yup
             .date()
             .nullable()

@@ -195,7 +195,7 @@ const InstancesFiltersComponent = ({
     return (
         <div className={classes.marginBottomBig}>
             <UserOrgUnitRestriction />
-            <Grid container spacing={4}>
+            <Grid container spacing={2}>
                 <Grid item xs={4}>
                     <InputComponent
                         keyValue="search"

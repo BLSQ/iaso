@@ -326,6 +326,11 @@ class Command(BaseCommand):
             Instance.objects.filter(form__in=forms_without_projects).delete(),
         )
 
+        print("******* delete unrelated projects")
+
+        print(Project.objects.filter(account=None).delete())
+        print(Form.objects_include_deleted.filter(form_id=None).delete())
+
         for f in forms_without_projects:
             print(OrgUnitType.objects.filter(reference_form=f).update(reference_form=None))
             f.org_unit_types.clear()

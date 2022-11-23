@@ -8,7 +8,7 @@ import { VaccinesLegend } from './VaccinesLegend';
 import { CampaignsLegend } from './CampaignsLegend';
 import { useStyles } from '../Styles';
 import { useMergedShapes, useShapes } from './hooks.ts';
-import { makeSelections, findFirstAndLastRounds } from './utils.ts';
+import { makeSelections } from './utils.ts';
 import 'leaflet/dist/leaflet.css';
 import { CalendarMapPanesRegular } from './CalendarMapPanesRegular.tsx';
 import { CalendarMapPanesMerged } from './CalendarMapPanesMerged.tsx';
@@ -16,14 +16,10 @@ import { defaultViewport, boundariesZoomLimit } from './constants.ts';
 
 const CalendarMap = ({ campaigns, loadingCampaigns, isPdf }) => {
     const classes = useStyles();
-    const [viewport, setViewPort] = useState(defaultViewport);
     const map = useRef();
+    const [viewport, setViewPort] = useState(defaultViewport);
     const [selection, setSelection] = useState('latest');
     const options = useMemo(() => makeSelections(campaigns), [campaigns]);
-
-    const firstAndLastRounds = useMemo(() => {
-        return findFirstAndLastRounds(campaigns);
-    }, [campaigns]);
 
     const {
         shapes: campaignsShapes,
@@ -35,7 +31,6 @@ const CalendarMap = ({ campaigns, loadingCampaigns, isPdf }) => {
         campaigns,
         roundsDict,
         selection,
-        firstAndLastRounds,
     });
 
     const loadingShapes =

@@ -3,6 +3,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useQueries } from 'react-query';
 import { useGetMergedCampaignShapes } from '../../../hooks/useGetMergedCampaignShapes';
 import {
+    findFirstAndLastRounds,
     findLatestRounds,
     findRoundForCampaigns,
     makeQueriesForCampaigns,
@@ -48,14 +49,13 @@ export const useRoundsQueries = (campaigns, loadingCampaigns): any[] => {
     return queries;
 };
 
-export const useMergedShapes = ({
-    campaigns,
-    roundsDict,
-    selection,
-    firstAndLastRounds,
-}) => {
+export const useMergedShapes = ({ campaigns, roundsDict, selection }) => {
     const { data: mergedShapes, isLoading: isLoadingMergedShapes } =
         useGetMergedCampaignShapes().query;
+
+    const firstAndLastRounds = useMemo(() => {
+        return findFirstAndLastRounds(campaigns);
+    }, [campaigns]);
 
     const campaignColors = useMemo(() => {
         const color = {};

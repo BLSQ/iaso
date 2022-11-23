@@ -3,6 +3,7 @@ import uuid
 
 from django.contrib.auth.models import User
 from django.db import models
+from django.db.models import QuerySet
 from django.utils import timezone
 
 from iaso.models import Entity, Instance, OrgUnit, Account
@@ -115,7 +116,7 @@ class StorageLogEntryManager(models.Manager):
         user,
         concerned_orgunit,
         concerned_entity,
-        concerned_instances,
+        concerned_instances: QuerySet[Instance],
     ) -> None:
         """
         Create a new StorageLogEntry, and perform StorageDevice-related operations:
@@ -144,9 +145,13 @@ class StorageLogEntryManager(models.Manager):
         device.org_unit = concerned_orgunit
         device.save()
 
-        # Blacklist old devices for the same entity
+        # Blacklist old devices with OK status and the same entity
         if operation_type == StorageLogEntry.WRITE_PROFILE:
-            old_devices = StorageDevice.objects.filter(entity=concerned_entity).exclude(id=device.id)
+            old_devices = (
+                StorageDevice.objects.filter(entity=concerned_entity)
+                .filter(status=StorageDevice.OK)
+                .exclude(id=device.id)
+            )
             for old_device in old_devices:
                 old_device.change_status(
                     new_status=StorageDevice.BLACKLISTED,

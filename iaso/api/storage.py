@@ -309,7 +309,9 @@ class StorageLogViewSet(CreateModelMixin, viewsets.GenericViewSet):
 
                 performed_at = timestamp_to_utc_datetime(int(log_data["performed_at"]))
 
-                concerned_instances = Instance.objects.filter(uuid__in=log_data["instances"])
+                concerned_instances = Instance.objects.none()
+                if "instances" in log_data:
+                    concerned_instances = Instance.objects.filter(uuid__in=log_data["instances"])
 
                 concerned_orgunit = None
                 if "org_unit_id" in log_data and log_data["org_unit_id"] is not None:

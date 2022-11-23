@@ -70,6 +70,7 @@ from .dhis2.authentication import dhis2_callback  # type: ignore
 from hat.api.token_authentication import token_auth
 
 from .api.workflows import WorkflowViewSet
+from .api.mobile.workflows import MobileWorkflowViewSet
 
 URL = Union[URLPattern, URLResolver]
 URLList = List[URL]
@@ -130,7 +131,7 @@ router.register(r"mobile/storage/logs", StorageLogViewSet, basename="storagelogs
 router.register(r"mobile/storage/blacklisted", StorageBlacklistedViewSet, basename="storageblacklisted")
 
 router.register(r"workflow", WorkflowViewSet, basename="workflow")
-router.register(r"mobile/workflow", WorkflowViewSet, basename="mobileworkflow")
+router.register(r"mobile/workflow", MobileWorkflowViewSet, basename="mobileworkflow")
 
 router.registry.extend(plugins_router.registry)
 

@@ -810,10 +810,12 @@ class Instance(models.Model):
 
     objects = InstanceManager()
 
-    # TODO: investigate why this model doesn't use SoftDeletableModel as other models and if it thi should be changed
+    # Is instance SoftDeleted. It doesn't use the SoftDeleteModel deleted_at like the rest for historical reason.
     deleted = models.BooleanField(default=False)
+    # See public_create_url workflow in enketo/README.md. used to tell we should export immediately
     to_export = models.BooleanField(default=False)
 
+    # Used by Django Admin to link to the submission page in the dashboard
     def get_absolute_url(self):
         return f"/dashboard/forms/submission/instanceId/{self.pk}"
 

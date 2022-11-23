@@ -12,6 +12,12 @@ export const useGetProfiles = params => {
         if (params.search) {
             newParams.search = params.search;
         }
+        if (params.permissions) {
+            newParams.permissions = params.permissions;
+        }
+        if (params.location) {
+            newParams.location = params.location;
+        }
     }
 
     const searchParams = new URLSearchParams(newParams);

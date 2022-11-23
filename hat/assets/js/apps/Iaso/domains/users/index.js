@@ -47,9 +47,12 @@ const Users = ({ params }) => {
     const dispatch = useDispatch();
 
     const { data, isFetching: fetchingProfiles } = useGetProfiles(params);
+
     const { mutate: deleteProfile, isLoading: deletingProfile } =
         useDeleteProfile();
+
     const { mutate: saveProfile, isLoading: savingProfile } = useSaveProfile();
+
     const isLoading = fetchingProfiles || deletingProfile || savingProfile;
 
     useSkipEffectOnMount(() => {

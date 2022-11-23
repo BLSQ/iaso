@@ -3,21 +3,16 @@ import functools
 import json
 import datetime as dt
 from datetime import timedelta, datetime, date
-import logging
-from typing import Any, Dict, List, Optional
+from typing import Any, Optional
 from collections import defaultdict
 from functools import lru_cache
 from logging import getLogger
 from openpyxl.writer.excel import save_virtual_workbook  # type: ignore
 
-from django.core.files import File
 from django.core.cache import cache
-from django.core.exceptions import ObjectDoesNotExist
-from django.core.mail import EmailMultiAlternatives
 from django.core.mail import send_mail
 from django.db.models import Q, Max, Min
 from django.db.models import Value, TextField, UUIDField
-from django.contrib.auth.models import User
 from django.db.models.expressions import RawSQL
 from django.http import HttpResponse
 from django.http import JsonResponse
@@ -25,19 +20,14 @@ from django.http.response import HttpResponseBadRequest
 from django.shortcuts import get_object_or_404
 from django.utils.timezone import now, make_aware
 from django_filters.rest_framework import DjangoFilterBackend  # type: ignore
-from django.template.loader import render_to_string
 from gspread.utils import extract_id_from_url  # type: ignore
-from hat.settings import DEFAULT_FROM_EMAIL
 from rest_framework import routers, filters, viewsets, serializers, permissions, status
 from rest_framework.decorators import action
 from rest_framework.request import Request
 from rest_framework.response import Response
 from django.conf import settings
-from hat.api.token_authentication import generate_auto_authentication_link
 from iaso.api.common import ModelViewSet, DeletionFilterBackend, CONTENT_TYPE_XLSX, CONTENT_TYPE_CSV
 from iaso.models import OrgUnit
-from iaso.models.microplanning import Team
-from iaso.models.org_unit import OrgUnitType
 from plugins.polio.serializers import (
     OrgUnitSerializer,
     CampaignSerializer,
@@ -59,7 +49,7 @@ from .forma import (
     make_orgunits_cache,
     find_orgunit_in_cache,
 )
-from .helpers import get_url_content
+from .helpers import get_url_content, CustomFilterBackend
 from .models import (
     Campaign,
     Config,
@@ -78,26 +68,6 @@ from .export_utils import generate_xlsx_campaigns_calendar, xlsx_file_name
 logger = getLogger(__name__)
 
 CACHE_VERSION = 7
-
-
-class CustomFilterBackend(filters.BaseFilterBackend):
-    def filter_queryset(self, request, queryset, view):
-        search = request.query_params.get("search")
-        if search:
-            country_types = OrgUnitType.objects.countries().only("id")
-            org_units = OrgUnit.objects.filter(
-                name__icontains=search, org_unit_type__in=country_types, path__isnull=False
-            ).only("id")
-
-            query = Q(obr_name__icontains=search) | Q(epid__icontains=search)
-            if len(org_units) > 0:
-                query.add(
-                    Q(initial_org_unit__path__descendants=OrgUnit.objects.query_for_related_org_units(org_units)), Q.OR
-                )
-
-            return queryset.filter(query)
-
-        return queryset
 
 
 class PolioOrgunitViewSet(ModelViewSet):

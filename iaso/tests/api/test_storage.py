@@ -372,6 +372,62 @@ class StorageAPITestCase(APITestCase):
         # Also make sure nothing was added to the database
         self.assertEqual(StorageLogEntry.objects.count(), num_logs_before)
 
+    def test_post_log_auto_blacklist(self):
+        """When a WRITE_PROFILE operation is performed on a new device, all other devices associated with the same entity
+        are automatically blacklisted"""
+        self.client.force_authenticate(self.yoda)
+
+        post_body = [
+            {
+                "id": "65434567-e89b-12d3-a456-426614174000",
+                "storage_id": "COMPLETELY_NEW_STORAGE",
+                "storage_type": "NFC",
+                "operation_type": "WRITE_PROFILE",
+                "entity_id": self.entity.uuid,
+                "performed_at": 1666002739.171,
+            }
+        ]
+
+        self.client.post("/api/mobile/storage/logs/", post_body, format="json")
+
+        # This device had the OK status, but should now be blacklisted
+        old_device_was_ok = self.existing_storage_device
+        old_device_was_ok.refresh_from_db()
+        self.assertEqual(old_device_was_ok.status, "BLACKLISTED")
+        self.assertIn("Profile was written on COMPLETELY_NEW_STORAGE on ", old_device_was_ok.status_comment)
+        self.assertEqual(old_device_was_ok.status_reason, "OTHER")
+
+        # This device was already blacklisted, it should stay unchanged
+        old_device_already_blacklisted = self.existing_storage_device_3
+        old_device_already_blacklisted.refresh_from_db()
+        self.assertEqual(old_device_already_blacklisted.status, "BLACKLISTED")
+        self.assertEqual(old_device_already_blacklisted.status_comment, "")
+        self.assertEqual(old_device_already_blacklisted.status_reason, "ABUSE")
+
+    def test_post_log_auto_blacklist_same_device(self):
+        """If the profile is re-written on the same card, it doesn't blacklist the current card."""
+        self.client.force_authenticate(self.yoda)
+
+        post_body = [
+            {
+                "id": "65434567-e89b-12d3-a456-426614174000",
+                "storage_id": "EXISTING_STORAGE",
+                "storage_type": "NFC",
+                "operation_type": "WRITE_PROFILE",
+                "entity_id": self.entity.uuid,
+                "performed_at": 1666002739.171,
+            }
+        ]
+
+        self.client.post("/api/mobile/storage/logs/", post_body, format="json")
+
+        # This device status hasn't changed
+        device = self.existing_storage_device
+        device.refresh_from_db()
+        self.assertEqual(device.status, "OK")
+        self.assertIn("", device.status_comment)
+        self.assertEqual(device.status_reason, "")
+
     def test_post_log_empty_instances(self):
         """Posting a new log entry with an empty instances list should be accepted"""
         self.client.force_authenticate(self.yoda)

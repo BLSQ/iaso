@@ -5,8 +5,6 @@ from django.core.files.uploadedfile import SimpleUploadedFile
 
 from iaso.models.xls_form_template import XlsFormTemplate
 
-import typing
-
 from django.utils.timezone import now
 
 from iaso import models as m
@@ -65,3 +63,23 @@ class XlsFormGeneratorAPITestCase(APITestCase):
         self.assertEquals(
             response.get("Content-Disposition"), f"attachment; filename=FORM_A_FORM_1_{date_now}.xlsx"
         )
+
+    def test_upload_xls_form_template(self):
+        self.client.force_authenticate(self.yoda)
+
+        file = File(open("iaso/tests/fixtures/testcampaignformtemplate.xlsx", "rb"))
+        upload_file = SimpleUploadedFile(
+            "testcampaignformtemplate.xlsx", file.read(), content_type="multipart/form-data"
+        )
+
+        data = {
+            "file": upload_file,
+            "name": "FORM_TEMPLATE",
+            "account": self.yoda.iaso_profile.account.pk
+        }
+
+        response = self.client.post("/api/generate_xlsform/", data=data)
+
+        self.assertEqual(response.status_code, 201)
+        self.assertEqual(response.json()["name"], "FORM_TEMPLATE")
+        self.assertEqual(response.json()["account"], self.yoda.iaso_profile.account.pk)

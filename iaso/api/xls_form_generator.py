@@ -5,7 +5,7 @@ from django.http import HttpResponse
 from django.shortcuts import get_object_or_404
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.decorators import action
-from rest_framework import serializers, permissions, filters
+from rest_framework import serializers, filters
 from rest_framework.viewsets import ModelViewSet
 
 from django.db import connection

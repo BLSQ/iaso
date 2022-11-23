@@ -1,5 +1,6 @@
 # TODO: need better type annotations in this file
 import uuid
+from datetime import datetime
 
 from django.contrib.auth.models import User
 from django.db import models
@@ -109,13 +110,13 @@ class StorageLogEntryManager(models.Manager):
     # TODO: this manager method deserves its own unit tests and proper type annotations
     def create_and_update_device(
         self,
-        log_id,
-        device,
-        operation_type,
-        performed_at,
-        user,
-        concerned_orgunit,
-        concerned_entity,
+        log_id: str,
+        device: StorageDevice,
+        operation_type: str,
+        performed_at: datetime,
+        user: User,
+        concerned_orgunit: OrgUnit,
+        concerned_entity: Entity,
         concerned_instances: QuerySet[Instance],
     ) -> None:
         """

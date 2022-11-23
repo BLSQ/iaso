@@ -176,3 +176,14 @@ export const makeRoundDict = (selection, campaigns) => {
     });
     return result;
 };
+
+export const findFirstAndLastRounds = campaigns => {
+    const result = {};
+    campaigns.forEach(campaign => {
+        const lastRound = campaign.rounds[campaign.rounds.length - 1].number;
+        // Getting the first round in case there's a round 0
+        const firstRound = campaign.rounds[0].number;
+        result[campaign.id] = { firstRound, lastRound };
+    });
+    return result;
+};

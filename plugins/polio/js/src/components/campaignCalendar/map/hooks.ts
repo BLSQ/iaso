@@ -1,4 +1,6 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import moment from 'moment';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useQueries } from 'react-query';
 import { useGetMergedCampaignShapes } from '../../../hooks/useGetMergedCampaignShapes';
 import {
     findLatestRounds,
@@ -122,4 +124,26 @@ export const useMergedShapes = ({
     return useMemo(() => {
         return { mergedShapes: mergedShapesToDisplay, isLoadingMergedShapes };
     }, [isLoadingMergedShapes, mergedShapesToDisplay]);
+};
+
+export const useShapes = (selection, campaigns, loadingCampaigns) => {
+    // storing the date in a ref to avoid an infinite loop.
+    const today = useRef(moment());
+    const { campaigns: campaignsForMap, roundsDict } = useRoundSelection(
+        selection,
+        campaigns,
+        today.current,
+    );
+    const queries = useRoundsQueries(campaignsForMap, loadingCampaigns);
+    const shapesQueries = useQueries(queries);
+    const campaignsShapes = useMemo(
+        () => shapesQueries.filter(sq => sq.data).map(sq => sq.data),
+        [shapesQueries],
+    );
+    const isLoadingShapes = shapesQueries.some(q => q.isLoading);
+
+    return useMemo(
+        () => ({ isLoadingShapes, shapes: campaignsShapes, roundsDict }),
+        [campaignsShapes, isLoadingShapes, roundsDict],
+    );
 };

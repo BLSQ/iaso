@@ -1,22 +1,14 @@
-import React, { useRef, useState, useMemo, useCallback } from 'react';
+import React, { useRef, useState, useMemo } from 'react';
 import PropTypes from 'prop-types';
 import { LoadingSpinner } from 'bluesquare-components';
 import { Box } from '@material-ui/core';
 import { Map, TileLayer } from 'react-leaflet';
-import { useQueries } from 'react-query';
-
-import moment from 'moment';
-import { useGetMergedCampaignShapes } from '../../../hooks/useGetMergedCampaignShapes.ts';
 import { MapRoundSelector } from './MapRoundSelector.tsx';
 import { VaccinesLegend } from './VaccinesLegend';
 import { CampaignsLegend } from './CampaignsLegend';
 import { useStyles } from '../Styles';
-import {
-    useRoundSelection,
-    useRoundsQueries,
-    useMergedShapes,
-} from './hooks.ts';
-import { makeSelections } from './utils.ts';
+import { useMergedShapes, useShapes } from './hooks.ts';
+import { makeSelections, findFirstAndLastRounds } from './utils.ts';
 import 'leaflet/dist/leaflet.css';
 import { CalendarMapPanesRegular } from './CalendarMapPanesRegular.tsx';
 import { CalendarMapPanesMerged } from './CalendarMapPanesMerged.tsx';
@@ -27,36 +19,17 @@ const CalendarMap = ({ campaigns, loadingCampaigns, isPdf }) => {
     const [viewport, setViewPort] = useState(defaultViewport);
     const map = useRef();
     const [selection, setSelection] = useState('latest');
-
-    // storing the date in a ref to avoid an infinite loop.
-    const today = useRef(moment());
-    const { campaigns: campaignsForMap, roundsDict } = useRoundSelection(
-        selection,
-        campaigns,
-        today.current,
-    );
+    const options = useMemo(() => makeSelections(campaigns), [campaigns]);
 
     const firstAndLastRounds = useMemo(() => {
-        const result = {};
-        campaigns.forEach(campaign => {
-            const lastRound =
-                campaign.rounds[campaign.rounds.length - 1].number;
-            // Getting the first round in case there's a round 0
-            const firstRound = campaign.rounds[0].number;
-            result[campaign.id] = { firstRound, lastRound };
-        });
-        return result;
+        return findFirstAndLastRounds(campaigns);
     }, [campaigns]);
 
-    const queries = useRoundsQueries(campaignsForMap, loadingCampaigns);
-
-    const shapesQueries = useQueries(queries);
-
-    const campaignsShapes = shapesQueries
-        .filter(sq => sq.data)
-        .map(sq => sq.data);
-
-    const options = useMemo(() => makeSelections(campaigns), [campaigns]);
+    const {
+        shapes: campaignsShapes,
+        isLoadingShapes,
+        roundsDict,
+    } = useShapes(selection, campaigns, loadingCampaigns);
 
     const { mergedShapes, isLoadingMergedShapes } = useMergedShapes({
         campaigns,
@@ -66,9 +39,7 @@ const CalendarMap = ({ campaigns, loadingCampaigns, isPdf }) => {
     });
 
     const loadingShapes =
-        viewport.zoom <= 6
-            ? isLoadingMergedShapes
-            : shapesQueries.some(q => q.isLoading);
+        viewport.zoom <= 6 ? isLoadingMergedShapes : isLoadingShapes;
 
     return (
         <Box position="relative">

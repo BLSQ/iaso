@@ -8,6 +8,14 @@ from rest_framework.decorators import action
 from rest_framework import serializers, permissions, filters
 from rest_framework.viewsets import ModelViewSet
 
+import string
+from datetime import datetime
+
+from tempfile import NamedTemporaryFile
+
+import openpyxl
+
+
 from iaso.api.common import DeletionFilterBackend, TimestampField
 from iaso.models import Group
 from iaso.models.xls_form_template import XlsFormTemplate
@@ -77,7 +85,6 @@ class XlsFormGeneratorViewSet(ModelViewSet):
         # create dictionary with OU tree
         for ou in group_ou:
             ou_tree_dict = {ou.org_unit_type.name: ou}
-            print(ou)
             ou_parent = ou.parent
             if ou_parent is not None:
                 ou_tree_dict[ou_parent.org_unit_type.name] = ou_parent
@@ -90,8 +97,6 @@ class XlsFormGeneratorViewSet(ModelViewSet):
             ou_children = ou.descendants()
             for ou_child in ou_children:
                 ou_tree_dict[ou_child.org_unit_type.name] = ou_child
-
-        return HttpResponse(ou_tree_list)
 
         added_countries = []
         added_regions = []
@@ -114,126 +119,125 @@ class XlsFormGeneratorViewSet(ModelViewSet):
         # insert rows to add the org units fields at the top of the file
         ws.insert_rows(3, 5)
 
-        # populate csv with OU
-        # for ou_dic in ou_tree_list:
-        #     for k, v in ou_dic.items():
-        #         if k == "COUNTRY" and v not in added_countries:
-        #             added_countries.append(v)
-        #             q_sheet[cell[0] + str(3)] = "select_one ou_country"
-        #             q_sheet[cell[1] + str(3)] = "ou_country"
-        #             q_sheet[cell[2] + str(3)] = "Select Country"
-        #             q_sheet[cell[3] + str(3)] = "yes"
-        #             sheet[cell[choices_column - 1] + str(choices_row)] = "ou_country"
-        #             sheet[cell[choices_column] + str(choices_row)] = v.id
-        #             sheet[cell[choices_column + 1] + str(choices_row)] = str(v.name)
-        #             choices_row += 1
-        #             survey_last_empty_row += 1
-        #         if k == "REGION" and v not in added_regions:
-        #             survey_last_empty_row += 2
-        #             added_regions.append(v)
-        #             if not region_added:
-        #                 q_sheet[cell[0] + str(4)] = "select_one ou_region"
-        #                 q_sheet[cell[1] + str(4)] = "ou_region"
-        #                 q_sheet[cell[2] + str(4)] = "Select a Region"
-        #                 q_sheet[cell[9] + str(4)] = "country=${ou_country}"
-        #                 region_added = True
-        #             sheet[cell[choices_column - 1] + str(choices_row)] = "ou_region"
-        #             sheet[cell[choices_column] + str(choices_row)] = v.id
-        #             sheet[cell[choices_column + 1] + str(choices_row)] = str(v.name)
-        #             sheet[cell[choices_column + 3] + str(choices_row)] = (
-        #                 ou_dic.get("COUNTRY", None)
-        #                 if ou_dic.get("COUNTRY", None) is None
-        #                 else ou_dic.get("COUNTRY", None).pk
-        #             )
-        #             choices_row += 1
-        #             survey_last_empty_row += 1
-        #
-        #         if k == "DISTRICT" and v not in added_district:
-        #             survey_last_empty_row += 4
-        #             added_district.append(v)
-        #             if not district_added:
-        #                 q_sheet[cell[0] + str(5)] = "select_one ou_district"
-        #                 q_sheet[cell[1] + str(5)] = "ou_district"
-        #                 q_sheet[cell[2] + str(5)] = "Select a District"
-        #                 q_sheet[cell[9] + str(5)] = "region=${ou_region}"
-        #                 district_added = True
-        #             sheet[cell[choices_column - 1] + str(choices_row)] = "ou_district"
-        #             sheet[cell[choices_column] + str(choices_row)] = v.id
-        #             sheet[cell[choices_column + 1] + str(choices_row)] = str(v.name)
-        #             sheet[cell[choices_column + 3] + str(choices_row)] = (
-        #                 ou_dic.get("COUNTRY", None)
-        #                 if ou_dic.get("COUNTRY", None) is None
-        #                 else ou_dic.get("COUNTRY", None).pk
-        #             )
-        #             sheet[cell[choices_column + 4] + str(choices_row)] = (
-        #                 ou_dic.get("REGION", None)
-        #                 if ou_dic.get("REGION", None) is None
-        #                 else ou_dic.get("REGION", None).pk
-        #             )
-        #             choices_row += 1
-        #             survey_last_empty_row += 1
-        #
-        #         if k == "HEALTH FACILITY" and v not in added_facilities:
-        #             survey_last_empty_row += 6
-        #             added_facilities.append(v)
-        #             if not facility_added:
-        #                 q_sheet[cell[0] + str(6)] = "select_one ou_facility"
-        #                 q_sheet[cell[1] + str(6)] = "ou_facility"
-        #                 q_sheet[cell[2] + str(6)] = "Select a Health Facility"
-        #                 q_sheet[cell[9] + str(6)] = "district=${ou_district}"
-        #                 district_added = True
-        #             sheet[cell[choices_column - 1] + str(choices_row)] = ""
-        #             sheet[cell[choices_column] + str(choices_row)] = v.id
-        #             sheet[cell[choices_column + 1] + str(choices_row)] = str(v.name)
-        #             sheet[cell[choices_column + 3] + str(choices_row)] = (
-        #                 ou_dic.get("COUNTRY", None)
-        #                 if ou_dic.get("COUNTRY", None) is None
-        #                 else ou_dic.get("COUNTRY", None).pk
-        #             )
-        #             sheet[cell[choices_column + 4] + str(choices_row)] = (
-        #                 ou_dic.get("REGION", None)
-        #                 if ou_dic.get("REGION", None) is None
-        #                 else ou_dic.get("REGION", None).pk
-        #             )
-        #             sheet[cell[choices_column + 5] + str(choices_row)] = (
-        #                 ou_dic.get("DISTRICT", None)
-        #                 if ou_dic.get("DISTRICT", None) is None
-        #                 else ou_dic.get("DISTRICT", None).name
-        #             )
-        #             choices_row += 1
-        #             survey_last_empty_row += 1
-        #
-        # row = q_sheet.max_row
-        #
-        # # Get Calculation column position
-        # calculation_index = 0
-        # for row_calc in q_sheet.rows:
-        #     iterator = 0
-        #     for cell in row_calc:
-        #         iterator += 1
-        #         if cell.value == "calculation":
-        #             calculation_index = iterator
-        #             break
-        #
-        # # Insert data as calculation
-        # for i in range(2, row + 1):
-        #     cell_obj = q_sheet.cell(row=i, column=2)
-        #     cell_value_start = cell_obj.value[:7] if cell_obj.value is not None else ""
-        #     if cell_value_start == "insert_":
-        #         str_request = cell_obj.value[7:]
-        #         if str_request in authorized_fields:
-        #             cell_obj = q_sheet.cell(row=i, column=calculation_index)
-        #             cell_obj.value = str(getattr(campaign, str_request))
-        #
-        # filename = f"FORM_{campaign.obr_name}_{datetime.now().date()}.xlsx"
-        #
-        # with NamedTemporaryFile() as tmp:
-        #     wb.save(tmp.name)
-        #     tmp.seek(0)
-        #     stream = tmp.read()
-        #
-        #     response = HttpResponse(
-        #         stream, content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
-        #     )
-        #     response["Content-Disposition"] = "attachment; filename=%s" % filename
-        #     return response
+        # populate xls with OU
+        for ou_dic in ou_tree_list:
+            for k, v in ou_dic.items():
+                if k == "COUNTRY" and v not in added_countries:
+                    added_countries.append(v)
+                    q_sheet[cell[0] + str(3)] = "select_one ou_country"
+                    q_sheet[cell[1] + str(3)] = "ou_country"
+                    q_sheet[cell[2] + str(3)] = "Select Country"
+                    q_sheet[cell[3] + str(3)] = "yes"
+                    sheet[cell[choices_column - 1] + str(choices_row)] = "ou_country"
+                    sheet[cell[choices_column] + str(choices_row)] = v.id
+                    sheet[cell[choices_column + 1] + str(choices_row)] = str(v.name)
+                    choices_row += 1
+                    survey_last_empty_row += 1
+                if k == "REGION" and v not in added_regions:
+                    survey_last_empty_row += 2
+                    added_regions.append(v)
+                    if not region_added:
+                        q_sheet[cell[0] + str(4)] = "select_one ou_region"
+                        q_sheet[cell[1] + str(4)] = "ou_region"
+                        q_sheet[cell[2] + str(4)] = "Select a Region"
+                        q_sheet[cell[9] + str(4)] = "country=${ou_country}"
+                        region_added = True
+                    sheet[cell[choices_column - 1] + str(choices_row)] = "ou_region"
+                    sheet[cell[choices_column] + str(choices_row)] = v.id
+                    sheet[cell[choices_column + 1] + str(choices_row)] = str(v.name)
+                    sheet[cell[choices_column + 3] + str(choices_row)] = (
+                        ou_dic.get("COUNTRY", None)
+                        if ou_dic.get("COUNTRY", None) is None
+                        else ou_dic.get("COUNTRY", None).pk
+                    )
+                    choices_row += 1
+                    survey_last_empty_row += 1
+
+                if k == "DISTRICT" and v not in added_district:
+                    survey_last_empty_row += 4
+                    added_district.append(v)
+                    if not district_added:
+                        q_sheet[cell[0] + str(5)] = "select_one ou_district"
+                        q_sheet[cell[1] + str(5)] = "ou_district"
+                        q_sheet[cell[2] + str(5)] = "Select a District"
+                        q_sheet[cell[9] + str(5)] = "region=${ou_region}"
+                        district_added = True
+                    sheet[cell[choices_column - 1] + str(choices_row)] = "ou_district"
+                    sheet[cell[choices_column] + str(choices_row)] = v.id
+                    sheet[cell[choices_column + 1] + str(choices_row)] = str(v.name)
+                    sheet[cell[choices_column + 3] + str(choices_row)] = (
+                        ou_dic.get("COUNTRY", None)
+                        if ou_dic.get("COUNTRY", None) is None
+                        else ou_dic.get("COUNTRY", None).pk
+                    )
+                    sheet[cell[choices_column + 4] + str(choices_row)] = (
+                        ou_dic.get("REGION", None)
+                        if ou_dic.get("REGION", None) is None
+                        else ou_dic.get("REGION", None).pk
+                    )
+                    choices_row += 1
+                    survey_last_empty_row += 1
+
+                if k == "HEALTH FACILITY" and v not in added_facilities:
+                    survey_last_empty_row += 6
+                    added_facilities.append(v)
+                    if not facility_added:
+                        q_sheet[cell[0] + str(6)] = "select_one ou_facility"
+                        q_sheet[cell[1] + str(6)] = "ou_facility"
+                        q_sheet[cell[2] + str(6)] = "Select a Health Facility"
+                        q_sheet[cell[9] + str(6)] = "district=${ou_district}"
+                        district_added = True
+                    sheet[cell[choices_column - 1] + str(choices_row)] = ""
+                    sheet[cell[choices_column] + str(choices_row)] = v.id
+                    sheet[cell[choices_column + 1] + str(choices_row)] = str(v.name)
+                    sheet[cell[choices_column + 3] + str(choices_row)] = (
+                        ou_dic.get("COUNTRY", None)
+                        if ou_dic.get("COUNTRY", None) is None
+                        else ou_dic.get("COUNTRY", None).pk
+                    )
+                    sheet[cell[choices_column + 4] + str(choices_row)] = (
+                        ou_dic.get("REGION", None)
+                        if ou_dic.get("REGION", None) is None
+                        else ou_dic.get("REGION", None).pk
+                    )
+                    sheet[cell[choices_column + 5] + str(choices_row)] = (
+                        ou_dic.get("DISTRICT", None)
+                        if ou_dic.get("DISTRICT", None) is None
+                        else ou_dic.get("DISTRICT", None).name
+                    )
+                    choices_row += 1
+                    survey_last_empty_row += 1
+
+        row = q_sheet.max_row
+
+        # Get Calculation column position
+        calculation_index = 0
+        for row_calc in q_sheet.rows:
+            iterator = 0
+            for cell in row_calc:
+                iterator += 1
+                if cell.value == "calculation":
+                    calculation_index = iterator
+                    break
+
+        # Insert data as calculation
+        for i in range(2, row + 1):
+            cell_obj = q_sheet.cell(row=i, column=2)
+            cell_value_start = cell_obj.value[:7] if cell_obj.value is not None else ""
+            if cell_value_start == "insert_":
+                str_request = cell_obj.value[7:]
+                cell_obj = q_sheet.cell(row=i, column=calculation_index)
+                cell_obj.value = form_name
+
+        filename = f"FORM_{form_name}_{datetime.now().date()}.xlsx"
+
+        with NamedTemporaryFile() as tmp:
+            wb.save(tmp.name)
+            tmp.seek(0)
+            stream = tmp.read()
+
+            response = HttpResponse(
+                stream, content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+            )
+            response["Content-Disposition"] = "attachment; filename=%s" % filename
+            return response

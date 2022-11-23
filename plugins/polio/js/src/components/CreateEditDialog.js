@@ -39,6 +39,7 @@ import { Form } from '../forms/Form';
 import { RoundsForm } from '../forms/RoundsForm';
 import { VaccineManagementForm } from '../forms/VaccineManagementForm.tsx';
 import { RoundsEmptyDates } from './Rounds/RoundsEmptyDates.tsx';
+import { TabErrors } from './errors/TabError';
 
 import { useSaveCampaign } from '../hooks/useSaveCampaign';
 import { useGetCampaignLogs } from '../hooks/useGetCampaignHistory.ts';
@@ -175,6 +176,11 @@ const CreateEditDialog = ({
         (isFormChanged && !formik.isValid) ||
         formik.isSubmitting;
 
+    const hasErrors = Object.keys(formik.errors)?.length > 0;
+
+    console.log('formik errors', formik.errors);
+    console.log('tab', tabs[selectedTab] === tabs.indexOf());
+
     return (
         <Dialog
             fullWidth
@@ -276,6 +282,14 @@ const CreateEditDialog = ({
                             )}
                         </Grid>
                     </Grid>
+                    {hasErrors && (
+                        <TabErrors
+                            errors={hasErrors}
+                            selectedTab={selectedTab}
+                            tabs={tabs}
+                        />
+                    )}
+
                     {formik.errors?.rounds && (
                         <RoundsEmptyDates
                             roundErrors={formik.errors.rounds}

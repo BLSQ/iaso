@@ -5,29 +5,35 @@ import { Box } from '@material-ui/core';
 import { Map, TileLayer } from 'react-leaflet';
 import { useQueries } from 'react-query';
 
+import moment from 'moment';
 import { useGetMergedCampaignShapes } from '../../../hooks/useGetMergedCampaignShapes.ts';
 import { MapRoundSelector } from './MapRoundSelector.tsx';
 import { VaccinesLegend } from './VaccinesLegend';
 import { CampaignsLegend } from './CampaignsLegend';
-
 import { useStyles } from '../Styles';
-import { useRoundSelection, useRoundsQueries } from './hooks.ts';
+import {
+    useRoundSelection,
+    useRoundsQueries,
+    useMergedShapes,
+} from './hooks.ts';
 import { makeSelections } from './utils.ts';
 import 'leaflet/dist/leaflet.css';
 import { CalendarMapPanesRegular } from './CalendarMapPanesRegular.tsx';
 import { CalendarMapPanesMerged } from './CalendarMapPanesMerged.tsx';
 import { defaultViewport, boundariesZoomLimit } from './constants.ts';
 
-// CurrentDate should be today, for map purposes
-const CalendarMap = ({ campaigns, loadingCampaigns, isPdf, currentDate }) => {
+const CalendarMap = ({ campaigns, loadingCampaigns, isPdf }) => {
     const classes = useStyles();
     const [viewport, setViewPort] = useState(defaultViewport);
     const map = useRef();
     const [selection, setSelection] = useState('latest');
+
+    // storing the date in a ref to avoid an infinite loop.
+    const today = useRef(moment());
     const { campaigns: campaignsForMap, roundsDict } = useRoundSelection(
         selection,
         campaigns,
-        currentDate,
+        today.current,
     );
 
     const firstAndLastRounds = useMemo(() => {
@@ -44,87 +50,25 @@ const CalendarMap = ({ campaigns, loadingCampaigns, isPdf, currentDate }) => {
 
     const queries = useRoundsQueries(campaignsForMap, loadingCampaigns);
 
-    const options = useMemo(() => makeSelections(campaigns), [campaigns]);
-
     const shapesQueries = useQueries(queries);
 
-    const { data: mergedShapes, isLoading: isLoadingMergedShapes } =
-        useGetMergedCampaignShapes().query;
+    const campaignsShapes = shapesQueries
+        .filter(sq => sq.data)
+        .map(sq => sq.data);
 
-    const campaignColors = useMemo(() => {
-        const color = {};
-        campaigns.forEach(campaign => {
-            color[campaign.id] = campaign.color;
-        });
-        return color;
-    }, [campaigns]);
+    const options = useMemo(() => makeSelections(campaigns), [campaigns]);
 
-    const campaignIds = useMemo(
-        () => campaigns.map(campaign => campaign.id),
-        [campaigns],
-    );
-
-    const addShapeColor = useCallback(
-        shape => {
-            return { ...shape, color: campaignColors[shape.properties.id] };
-        },
-        [campaignColors],
-    );
-
-    const mergedShapesToDisplay = useMemo(() => {
-        const shapesForSelectedCampaign = mergedShapes?.features.filter(shape =>
-            campaignIds.includes(shape.properties.id),
-        );
-        if (selection === 'all') {
-            return shapesForSelectedCampaign?.map(addShapeColor);
-        }
-
-        // This will only work if there are separate scopes per round
-        if (selection === 'latest') {
-            return shapesForSelectedCampaign
-                ?.filter(shape => {
-                    return (
-                        `${shape.properties.round_number}` ===
-                            roundsDict[shape.properties.id] ||
-                        !shape.properties.round_number
-                    );
-                })
-                .map(addShapeColor);
-        }
-        // This will only work if there are separate scopes per round
-        return shapesForSelectedCampaign
-            ?.filter(shape => {
-                if (shape.properties.round_number) {
-                    return `${shape.properties.round_number}` === selection;
-                }
-                if (firstAndLastRounds[shape.properties.id]) {
-                    return (
-                        firstAndLastRounds[shape.properties.id].firstRound <=
-                            parseInt(selection, 10) &&
-                        parseInt(selection, 10) <=
-                            firstAndLastRounds[shape.properties.id].lastRound
-                    );
-                }
-                return false;
-            })
-            .map(addShapeColor);
-    }, [
-        addShapeColor,
-        campaignIds,
-        firstAndLastRounds,
-        mergedShapes?.features,
+    const { mergedShapes, isLoadingMergedShapes } = useMergedShapes({
+        campaigns,
         roundsDict,
         selection,
-    ]);
+        firstAndLastRounds,
+    });
 
     const loadingShapes =
         viewport.zoom <= 6
             ? isLoadingMergedShapes
             : shapesQueries.some(q => q.isLoading);
-
-    const campaignsShapes = shapesQueries
-        .filter(sq => sq.data)
-        .map(sq => sq.data);
 
     return (
         <Box position="relative">
@@ -171,7 +115,7 @@ const CalendarMap = ({ campaigns, loadingCampaigns, isPdf, currentDate }) => {
                 )}
                 {viewport.zoom <= 6 && (
                     <CalendarMapPanesMerged
-                        mergedShapes={mergedShapesToDisplay}
+                        mergedShapes={mergedShapes}
                         viewport={viewport}
                     />
                 )}

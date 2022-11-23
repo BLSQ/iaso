@@ -12,7 +12,7 @@ from django.core.management.base import BaseCommand
 from uuid import uuid4
 from collections import defaultdict
 from django.db.models import Q
-from iaso.models import Account
+from iaso.models import Account, OrgUnitType, CommentIaso
 from django.db import router
 
 import random
@@ -199,6 +199,52 @@ class Command(BaseCommand):
 
         Instance.objects.raw("delete from vector_control_apiimport")
 
+    def delete_modification_logs_and_comments(self):
+        dump_modification_stats()
+
+        # this part is a bit brittle, may should become a loop on ContentType.objects.all() ?
+
+        print(
+            "instance related",
+            Modification.objects.filter(
+                content_type=ContentType.objects.get_by_natural_key(app_label="iaso", model="instance")
+            )
+            .exclude(
+                object_id__in=Instance.objects.all().annotate(id_as_str=Cast("id", TextField())).values("id_as_str")
+            )
+            .delete(),
+        )
+
+        print(
+            "form related",
+            Modification.objects.filter(
+                content_type=ContentType.objects.get_by_natural_key(app_label="iaso", model="form")
+            )
+            .exclude(object_id__in=Form.objects.all().annotate(id_as_str=Cast("id", TextField())).values("id_as_str"))
+            .delete(),
+        )
+
+        orgunit_content_type = ContentType.objects.get_by_natural_key(app_label="iaso", model="orgunit")
+
+        print(
+            "orgunit related",
+            Modification.objects.filter(content_type=orgunit_content_type)
+            .exclude(
+                object_id__in=OrgUnit.objects.all().annotate(id_as_str=Cast("id", TextField())).values("id_as_str")
+            )
+            .delete(),
+        )
+        print(
+            "Comments on orgunit to clean",
+            CommentIaso.objects.filter(content_type=orgunit_content_type)
+            .exclude(
+                object_pk__in=OrgUnit.objects.all().annotate(id_as_str=Cast("id", TextField())).values("id_as_str")
+            )
+            .delete(),
+        )
+
+        dump_modification_stats()
+
     def handle(self, *args, **options):
         account_id_to_keep = options.get("account_to_keep")
         if account_id_to_keep is None:
@@ -268,43 +314,27 @@ class Command(BaseCommand):
 
         print(datasources_to_delete.delete())
 
-        print("***** Deleting Modification (might take a while too)")
-        dump_modification_stats()
-
-        # this part is a bit brittle, may should become a loop on ContentType.objects.all() ?
+        forms_without_projects = [f for f in Form.objects_include_deleted.all() if len(f.projects.all()) == 0]
 
         print(
-            "instance related",
-            Modification.objects.filter(
-                content_type=ContentType.objects.get_by_natural_key(app_label="iaso", model="instance")
-            )
-            .exclude(
-                object_id__in=Instance.objects.all().annotate(id_as_str=Cast("id", TextField())).values("id_as_str")
-            )
-            .delete(),
+            "Delete unrelated file instances (forms without project)",
+            InstanceFile.objects.filter(instance__in=Instance.objects.filter(form__in=forms_without_projects)).delete(),
         )
 
         print(
-            "form related",
-            Modification.objects.filter(
-                content_type=ContentType.objects.get_by_natural_key(app_label="iaso", model="form")
-            )
-            .exclude(object_id__in=Form.objects.all().annotate(id_as_str=Cast("id", TextField())).values("id_as_str"))
-            .delete(),
+            "Delete unrelated instances (forms without project)",
+            Instance.objects.filter(form__in=forms_without_projects).delete(),
         )
 
-        print(
-            "orgunit related",
-            Modification.objects.filter(
-                content_type=ContentType.objects.get_by_natural_key(app_label="iaso", model="orgunit")
-            )
-            .exclude(
-                object_id__in=OrgUnit.objects.all().annotate(id_as_str=Cast("id", TextField())).values("id_as_str")
-            )
-            .delete(),
-        )
+        for f in forms_without_projects:
+            print(OrgUnitType.objects.filter(reference_form=f).update(reference_form=None))
+            f.org_unit_types.clear()
+            print("deleting hard", f.name)
+            f.delete_hard()
 
-        dump_modification_stats()
+        print("******* Deleting Modification (might take a while too)")
+
+        self.delete_modification_logs_and_comments()
 
         print("******* Starting delete of orphaned export log")
 

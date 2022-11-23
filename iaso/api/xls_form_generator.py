@@ -8,6 +8,8 @@ from rest_framework.decorators import action
 from rest_framework import serializers, permissions, filters
 from rest_framework.viewsets import ModelViewSet
 
+from django.db import connection
+
 import string
 from datetime import datetime
 
@@ -32,7 +34,7 @@ class XlsFormTemplateSerializer(serializers.ModelSerializer):
 
 class XlsFormGeneratorViewSet(ModelViewSet):
 
-    results_key = "entities"
+    results_key = "xlsformgenerator"
     remove_results_key_if_paginated = True
     filter_backends = [filters.OrderingFilter, DjangoFilterBackend, DeletionFilterBackend]
 
@@ -41,13 +43,12 @@ class XlsFormGeneratorViewSet(ModelViewSet):
 
     def get_queryset(self):
         queryset = XlsFormTemplate.objects.filter(account=self.request.user.iaso_profile.account)
-
         return queryset
 
     @action(methods=["GET"], detail=False)
-    def xlsform_generator(self, request):
+    def xlsform_generator(self, request) -> HttpResponse:
         """
-        Export a xlsform out of a campaign. A template is required. Specific data can be extracted from campaigns by
+        Export a xlsform out using a group as OU source. A template is required. Specific data can be extracted from campaigns by
         starting the name variable by 'insert_' in the xls file in "calculate" row. The data will be saved in the
         calculation column.
         """
@@ -82,7 +83,7 @@ class XlsFormGeneratorViewSet(ModelViewSet):
         ou_tree_list = []
         group_ou = group.org_units.all()
 
-        # create dictionary with OU tree
+        # create list of dictionary with OU tree
         for ou in group_ou:
             ou_tree_dict = {ou.org_unit_type.name: ou}
             ou_parent = ou.parent
@@ -93,6 +94,7 @@ class XlsFormGeneratorViewSet(ModelViewSet):
                 ou_parent = ou_parent.parent
                 if ou_parent is not None:
                     ou_tree_dict[ou_parent.org_unit_type.name] = ou_parent
+            print(ou_tree_dict)
             ou_tree_list.append(ou_tree_dict)
             ou_children = ou.descendants()
             for ou_child in ou_children:
@@ -221,6 +223,7 @@ class XlsFormGeneratorViewSet(ModelViewSet):
                     break
 
         # Insert data as calculation
+        # FIXME: Use to be relevant when we were extracting data from campaign but now ?
         for i in range(2, row + 1):
             cell_obj = q_sheet.cell(row=i, column=2)
             cell_value_start = cell_obj.value[:7] if cell_obj.value is not None else ""
@@ -228,6 +231,7 @@ class XlsFormGeneratorViewSet(ModelViewSet):
                 str_request = cell_obj.value[7:]
                 cell_obj = q_sheet.cell(row=i, column=calculation_index)
                 cell_obj.value = form_name
+                # cell_obj.value = str(getattr(campaign, str_request))
 
         filename = f"FORM_{form_name}_{datetime.now().date()}.xlsx"
 

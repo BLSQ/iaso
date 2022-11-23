@@ -16,7 +16,7 @@ import { DropdownOptions } from '../../../../../../../hat/assets/js/apps/Iaso/ty
 
 type Props = {
     label: string;
-    selection: 'all' | 'latest' | number;
+    selection: 'all' | 'latest' | string;
     // eslint-disable-next-line no-unused-vars
     onChange: (value: 'all' | 'latest' | number) => void;
     options: DropdownOptions<'all' | 'latest' | number>[];
@@ -29,21 +29,7 @@ const MapRoundSelector: FunctionComponent<Props> = ({
     options,
 }) => {
     const classes = useStyles();
-    const parsedSelection =
-        typeof selection === 'number' ? String(selection) : selection;
-    console.log('selection', selection, 'parsed', parsedSelection);
 
-    const handleChange = useCallback(
-        (_keyValue: string, value: 'all' | 'latest' | number) => {
-            const parsed = parseInt(value as unknown as string, 10);
-            if (!Number.isNaN(parsed)) {
-                onChange(parsed);
-            } else {
-                onChange(value);
-            }
-        },
-        [onChange],
-    );
     return (
         <Accordion elevation={1} className={classes.mapLegendCampaigns}>
             <AccordionSummary expandIcon={<ExpandMoreIcon />}>
@@ -60,8 +46,8 @@ const MapRoundSelector: FunctionComponent<Props> = ({
                     <InputComponent
                         type="radio"
                         keyValue="showRound"
-                        value={parsedSelection}
-                        onChange={handleChange}
+                        value={selection}
+                        onChange={onChange}
                         options={options}
                         labelString="Shape of water"
                     />

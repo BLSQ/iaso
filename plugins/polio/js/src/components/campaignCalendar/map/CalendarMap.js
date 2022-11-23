@@ -1,222 +1,47 @@
-import React, {
-    useEffect,
-    useRef,
-    useState,
-    useMemo,
-    useCallback,
-} from 'react';
+import React, { useRef, useState, useMemo, useCallback } from 'react';
 import PropTypes from 'prop-types';
 import { LoadingSpinner } from 'bluesquare-components';
 import { Box } from '@material-ui/core';
 import { Map, TileLayer } from 'react-leaflet';
 import { useQueries } from 'react-query';
-import { getRequest } from 'Iaso/libs/Api';
-import moment from 'moment';
+
 import { useGetMergedCampaignShapes } from '../../../hooks/useGetMergedCampaignShapes.ts';
 import { MapRoundSelector } from './MapRoundSelector.tsx';
 import { VaccinesLegend } from './VaccinesLegend';
 import { CampaignsLegend } from './CampaignsLegend';
-import { appId } from '../../../constants/app';
-import { useStyles } from '../Styles';
 
+import { useStyles } from '../Styles';
+import { useRoundSelection, useRoundsQueries } from './hooks.ts';
+import { makeSelections } from './utils.ts';
 import 'leaflet/dist/leaflet.css';
 import { CalendarMapPanesRegular } from './CalendarMapPanesRegular.tsx';
 import { CalendarMapPanesMerged } from './CalendarMapPanesMerged.tsx';
 import { defaultViewport, boundariesZoomLimit } from './constants.ts';
-import { polioVaccines } from '../../../constants/virus.ts';
-import { deepCopy } from '../../../../../../../hat/assets/js/apps/Iaso/utils/dataManipulation.ts';
-
-const getShapeQuery = (loadingCampaigns, groupId, campaign, vaccine, round) => {
-    const baseParams = {
-        asLocation: true,
-        limit: 3000,
-        group: groupId,
-        app_id: appId,
-    };
-    const queryString = new URLSearchParams(baseParams);
-    return {
-        queryKey: ['campaignShape', baseParams],
-        queryFn: () => getRequest(`/api/orgunits/?${queryString.toString()}`),
-        select: data => ({
-            campaign,
-            shapes: data,
-            vaccine,
-            color: polioVaccines.find(v => v.value === vaccine)?.color,
-            round,
-        }),
-        enabled: !loadingCampaigns,
-    };
-};
-
-const makeSelections = campaigns => {
-    let maxRound = null;
-    let showRoundZero = false;
-    campaigns.forEach(campaign => {
-        const lastRound = campaign.rounds[campaign.rounds.length - 1];
-        const { number } = lastRound ?? {};
-        if (
-            Number.isInteger(number) &&
-            (!maxRound || (maxRound && number > maxRound))
-        ) {
-            maxRound = number;
-        }
-
-        if (number === 0) {
-            showRoundZero = true;
-        }
-    });
-    // TODO translate
-    const selections = [
-        { value: 'all', label: 'All' },
-        { value: 'latest', label: 'Latest' },
-    ];
-    if (showRoundZero) {
-        selections.push({ value: 0, label: `Round 0}` });
-    }
-    for (let i = 1; i <= maxRound; i += 1) {
-        selections.push({ value: i, label: `Round ${i}` });
-    }
-    return selections;
-};
-
-const findLatestRounds = (currentDate, campaigns) => {
-    const campaignsCopy = deepCopy(campaigns);
-    const roundsDict = {};
-    campaigns.forEach((c, i) => {
-        // What do I do if !rounds?
-        const currentRound = c.rounds.find(round => {
-            const startDate = moment(round.started_at);
-            const endDate = moment(round.ended_at); // TODO handle rounds with no end date
-            return (
-                startDate.isSameOrBefore(currentDate) &&
-                endDate.isSameOrAfter(currentDate)
-            );
-        });
-        if (currentRound) {
-            campaignsCopy[i].rounds = [currentRound];
-            roundsDict[c.name] = currentRound.number;
-            return;
-        }
-        const nextRound = c.rounds.find(round => {
-            const startDate = moment(round.started_at);
-            return startDate.isAfter(currentDate);
-        });
-        if (nextRound) {
-            campaignsCopy[i].rounds = [nextRound];
-            roundsDict[c.name] = nextRound.number;
-            return;
-        }
-        campaignsCopy[i].rounds = [c.rounds[c.rounds.length - 1]];
-        roundsDict[c.name] = c.rounds[c.rounds.length - 1].number;
-    });
-    return { campaigns: campaignsCopy, roundsDict };
-};
-
-const makeQueriesForCampaigns = (campaigns, loadingCampaigns) => {
-    const queries = [];
-    if (!campaigns || campaigns.length === 0) return queries;
-    campaigns.forEach(campaign => {
-        if (campaign.separateScopesPerRound) {
-            campaign.rounds.forEach(round => {
-                round.scopes.forEach(scope => {
-                    queries.push(
-                        getShapeQuery(
-                            loadingCampaigns,
-                            scope.group.id,
-                            campaign,
-                            scope.vaccine,
-                            round,
-                        ),
-                    );
-                });
-            });
-        } else {
-            campaign.scopes.forEach(scope => {
-                queries.push(
-                    getShapeQuery(
-                        loadingCampaigns,
-                        scope.group.id,
-                        campaign,
-                        scope.vaccine,
-                    ),
-                );
-            });
-        }
-    });
-    return queries;
-};
-
-const findRoundForCampaigns = (campaigns, selection) => {
-    const campaignsCopy = deepCopy(campaigns);
-    campaigns.forEach((c, i) => {
-        campaignsCopy[i].rounds = campaignsCopy[i].rounds.filter(
-            r => r.number === selection,
-        );
-    });
-    return campaignsCopy;
-};
-
-const makeRoundDict = (selection, campaigns) => {
-    const result = {};
-    campaigns?.forEach(campaign => {
-        result[campaign.name] = selection;
-    });
-    return result;
-};
-
-const useRoundSelection = (selection, campaigns, currentDate) => {
-    const [updatedCampaigns, setUpdatedCampaigns] = useState(campaigns);
-    const [rounds, setRounds] = useState({});
-
-    useEffect(() => {
-        if (selection === 'latest') {
-            const { campaigns: newCampaigns, roundsDict } = findLatestRounds(
-                currentDate,
-                campaigns,
-            );
-            setUpdatedCampaigns(newCampaigns);
-            setRounds(roundsDict);
-        }
-        if (selection === 'all') {
-            setUpdatedCampaigns(campaigns);
-            setRounds({});
-        }
-        if (typeof selection === 'number') {
-            setUpdatedCampaigns(findRoundForCampaigns(campaigns, selection));
-            setRounds(makeRoundDict(selection, campaigns));
-        }
-    }, [campaigns, currentDate, selection]);
-
-    // console.log('updatedCampaigns', updatedCampaigns, selection, rounds);
-
-    return {
-        campaigns: updatedCampaigns,
-        roundsDict: rounds,
-    };
-};
-
-const useRoundsQueries = (campaigns, loadingCampaigns) => {
-    const [queries, setQueries] = useState([]);
-
-    useEffect(() => {
-        setQueries(makeQueriesForCampaigns(campaigns, loadingCampaigns));
-    }, [campaigns, loadingCampaigns]);
-
-    return queries;
-};
 
 // CurrentDate should be today, for map purposes
 const CalendarMap = ({ campaigns, loadingCampaigns, isPdf, currentDate }) => {
     const classes = useStyles();
     const [viewport, setViewPort] = useState(defaultViewport);
     const map = useRef();
-    const [selection, setSelection] = useState(2);
+    const [selection, setSelection] = useState('latest');
     const { campaigns: campaignsForMap, roundsDict } = useRoundSelection(
         selection,
         campaigns,
         currentDate,
     );
-    console.log(currentDate);
+
+    const firstAndLastRounds = useMemo(() => {
+        const result = {};
+        campaigns.forEach(campaign => {
+            const lastRound =
+                campaign.rounds[campaign.rounds.length - 1].number;
+            // Getting the first round in case there's a round 0
+            const firstRound = campaign.rounds[0].number;
+            result[campaign.id] = { firstRound, lastRound };
+        });
+        return result;
+    }, [campaigns]);
+
     const queries = useRoundsQueries(campaignsForMap, loadingCampaigns);
 
     const options = useMemo(() => makeSelections(campaigns), [campaigns]);
@@ -228,7 +53,6 @@ const CalendarMap = ({ campaigns, loadingCampaigns, isPdf, currentDate }) => {
 
     const campaignColors = useMemo(() => {
         const color = {};
-
         campaigns.forEach(campaign => {
             color[campaign.id] = campaign.color;
         });
@@ -258,23 +82,36 @@ const CalendarMap = ({ campaigns, loadingCampaigns, isPdf, currentDate }) => {
         // This will only work if there are separate scopes per round
         if (selection === 'latest') {
             return shapesForSelectedCampaign
-                ?.filter(
-                    shape =>
-                        shape.properties.round_number ===
-                        roundsDict[shape.properties.obr_name],
-                )
+                ?.filter(shape => {
+                    return (
+                        `${shape.properties.round_number}` ===
+                            roundsDict[shape.properties.id] ||
+                        !shape.properties.round_number
+                    );
+                })
                 .map(addShapeColor);
         }
         // This will only work if there are separate scopes per round
-        if (typeof selection === 'number') {
-            return shapesForSelectedCampaign
-                ?.filter(shape => shape.properties.round_number === selection)
-                .map(addShapeColor);
-        }
-        return shapesForSelectedCampaign?.map(addShapeColor);
+        return shapesForSelectedCampaign
+            ?.filter(shape => {
+                if (shape.properties.round_number) {
+                    return `${shape.properties.round_number}` === selection;
+                }
+                if (firstAndLastRounds[shape.properties.id]) {
+                    return (
+                        firstAndLastRounds[shape.properties.id].firstRound <=
+                            parseInt(selection, 10) &&
+                        parseInt(selection, 10) <=
+                            firstAndLastRounds[shape.properties.id].lastRound
+                    );
+                }
+                return false;
+            })
+            .map(addShapeColor);
     }, [
         addShapeColor,
         campaignIds,
+        firstAndLastRounds,
         mergedShapes?.features,
         roundsDict,
         selection,
@@ -296,7 +133,7 @@ const CalendarMap = ({ campaigns, loadingCampaigns, isPdf, currentDate }) => {
                 <MapRoundSelector
                     selection={selection}
                     options={options}
-                    onChange={value => {
+                    onChange={(_, value) => {
                         setSelection(value);
                     }}
                     label="Show round"
@@ -324,6 +161,7 @@ const CalendarMap = ({ campaigns, loadingCampaigns, isPdf, currentDate }) => {
                 <TileLayer
                     attribution='&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors'
                     url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                    position="bottomleft"
                 />
                 {viewport.zoom > 6 && (
                     <CalendarMapPanesRegular

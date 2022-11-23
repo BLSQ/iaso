@@ -117,7 +117,7 @@ class StorageLogEntryManager(models.Manager):
         user: User,
         concerned_orgunit: OrgUnit,
         concerned_entity: Entity,
-        concerned_instances: QuerySet["Instance"],
+        concerned_instances: "QuerySet[Instance]",
     ) -> None:
         """
         Create a new StorageLogEntry, and perform StorageDevice-related operations:

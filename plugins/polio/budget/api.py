@@ -1,6 +1,6 @@
 from typing import Type
 
-from django.db.models import QuerySet, Max
+from django.db.models import QuerySet, Max, Q
 from django.http import HttpResponse
 from django.shortcuts import redirect
 from django_filters.rest_framework import DjangoFilterBackend  # type: ignore
@@ -52,7 +52,11 @@ class BudgetCampaignViewSet(ModelViewSet):
         return campaigns
 
     def filter_queryset(self, queryset):
+        print("IICI")
         queryset = super().filter_queryset(queryset)
+        search = self.request.query_params.get("search")
+        if search:
+            queryset = queryset.filter(Q(obr_name__icontains=search)).distinct()
         return queryset
 
     ordering_fields = [

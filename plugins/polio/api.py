@@ -486,7 +486,7 @@ where polio_campaignscope.campaign_id = polio_campaign.id""",
         )
 
         update_dates = [
-            last_org_unit_updated.updated_at if last_campaign_updated else None,
+            last_org_unit_updated.updated_at if last_org_unit_updated else None,
             last_roundscope_org_unit_updated.updated_at if last_roundscope_org_unit_updated else None,
             last_campaign_updated.updated_at if last_campaign_updated else None,
         ]

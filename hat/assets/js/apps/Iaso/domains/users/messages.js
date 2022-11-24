@@ -89,6 +89,10 @@ const MESSAGES = defineMessages({
         defaultMessage: 'Search org unit to add',
         id: 'iaso.orgUnits.add',
     },
+    orgUnitsType: {
+        id: 'iaso.orgUnits.type',
+        defaultMessage: 'Org Unit type',
+    },
     locale: {
         defaultMessage: 'Language',
         id: 'iaso.users.dialog.locale',

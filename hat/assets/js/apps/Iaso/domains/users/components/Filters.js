@@ -14,6 +14,7 @@ import { useGetPermissionsDropDown } from '../hooks/useGetPermissionsDropdown.ts
 import { OrgUnitTreeviewModal } from '../../orgUnits/components/TreeView/OrgUnitTreeviewModal';
 import { useGetOrgUnit } from '../../orgUnits/components/TreeView/requests';
 
+
 const useStyles = makeStyles(theme => ({
     ...commonStyles(theme),
 }));
@@ -31,6 +32,8 @@ const Filters = ({ baseUrl, params }) => {
     const [initialOrgUnitId, setInitialOrgUnitId] = useState(params?.location);
     const { data: dropdown, isFetching } = useGetPermissionsDropDown();
     const { data: initialOrgUnit } = useGetOrgUnit(initialOrgUnitId);
+    const { data: orgUnitTypes, isFetching: fetchingTypes } =
+        useGetOrgUnitTypesOptions();
 
     const handleSearch = useCallback(() => {
         if (filtersUpdated) {
@@ -110,6 +113,19 @@ const Filters = ({ baseUrl, params }) => {
                             initialSelection={initialOrgUnit}
                         />
                     </Box>
+                </Grid>
+                <Grid item xs={4}>
+                    <InputComponent
+                        keyValue="ou-type-filter"
+                        onChange={handleChange}
+                        value={filters.permissions}
+                        type="select"
+                        multi
+                        options={dropdown ?? []}
+                        label={MESSAGES.orgUnitsType}
+                        loading={isFetching}
+                        onEnterPressed={handleSearchPerms}
+                    />
                 </Grid>
             </Grid>
             <Grid

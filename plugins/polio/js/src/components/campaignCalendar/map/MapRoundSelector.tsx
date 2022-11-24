@@ -12,7 +12,7 @@ type Props = {
     selection: 'all' | 'latest' | string;
     // eslint-disable-next-line no-unused-vars
     onChange: (value: 'all' | 'latest' | string) => void;
-    options: DropdownOptions<'all' | 'latest' | number>[];
+    options: DropdownOptions<'all' | 'latest' | string>[];
     isOpen: boolean;
     closeDialog: CallableFunction;
     id?: string;

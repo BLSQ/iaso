@@ -45,7 +45,7 @@ const CalendarMap = ({ campaigns, loadingCampaigns, isPdf }) => {
                     onChange={value => {
                         setSelection(value);
                     }}
-                    iconProps={{ selection }}
+                    iconProps={{ selection, viewport }}
                 />
                 {viewport.zoom > boundariesZoomLimit && (
                     <Box mt={2}>

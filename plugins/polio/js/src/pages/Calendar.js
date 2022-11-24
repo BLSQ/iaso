@@ -1,3 +1,4 @@
+/* eslint-disable camelcase */
 import React, { useMemo, useEffect, useState } from 'react';
 import PropTypes from 'prop-types';
 import moment from 'moment';

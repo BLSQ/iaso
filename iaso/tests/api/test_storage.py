@@ -61,6 +61,7 @@ class StorageAPITestCase(APITestCase):
             type="NFC",
             status="BLACKLISTED",
             status_reason="STOLEN",
+            status_updated_at=datetime(2022, 11, 8, 13, 12, 56, 0, tzinfo=timezone.utc),
         )
 
         cls.existing_storage_device_3 = StorageDevice.objects.create(
@@ -69,6 +70,7 @@ class StorageAPITestCase(APITestCase):
             type="SD",
             status="BLACKLISTED",
             status_reason="ABUSE",
+            status_updated_at=datetime(2022, 11, 8, 13, 12, 56, 0, tzinfo=timezone.utc),
             entity=cls.entity,
         )
 
@@ -423,7 +425,7 @@ class StorageAPITestCase(APITestCase):
         response = self.client.get("/api/storage/")
         self.assertEqual(response.status_code, 200)
         received_json = response.json()
-        self.assertEqual(
+        self.assertListEqual(
             received_json,
             [
                 {
@@ -431,7 +433,7 @@ class StorageAPITestCase(APITestCase):
                     "created_at": 1580608922.0,
                     "storage_id": "EXISTING_STORAGE",
                     "storage_type": "NFC",
-                    "status": {"status": "OK", "reason": "", "comment": "", "updated_at": None},
+                    "storage_status": {"status": "OK", "updated_at": None},
                     "org_unit": None,
                     "entity": None,
                 },
@@ -440,7 +442,12 @@ class StorageAPITestCase(APITestCase):
                     "created_at": 1580608922.0,
                     "storage_id": "ANOTHER_EXISTING_STORAGE_BLACKLISTED_STOLEN",
                     "storage_type": "NFC",
-                    "status": {"status": "BLACKLISTED", "reason": "STOLEN", "comment": "", "updated_at": None},
+                    "storage_status": {
+                        "status": "BLACKLISTED",
+                        "reason": "STOLEN",
+                        "comment": "",
+                        "updated_at": "2022-11-08T13:12:56Z",
+                    },
                     "org_unit": None,
                     "entity": None,
                 },
@@ -449,7 +456,12 @@ class StorageAPITestCase(APITestCase):
                     "created_at": 1580608922.0,
                     "storage_id": "ANOTHER_EXISTING_STORAGE_BLACKLISTED_ABUSE",
                     "storage_type": "SD",
-                    "status": {"status": "BLACKLISTED", "reason": "ABUSE", "comment": "", "updated_at": None},
+                    "storage_status": {
+                        "status": "BLACKLISTED",
+                        "reason": "ABUSE",
+                        "comment": "",
+                        "updated_at": "2022-11-08T13:12:56Z",
+                    },
                     "org_unit": None,
                     "entity": {"id": self.entity.id, "name": "New Client 3"},
                 },
@@ -469,7 +481,12 @@ class StorageAPITestCase(APITestCase):
                     "created_at": 1580608922.0,
                     "storage_id": "ANOTHER_EXISTING_STORAGE_BLACKLISTED_STOLEN",
                     "storage_type": "NFC",
-                    "status": {"status": "BLACKLISTED", "reason": "STOLEN", "comment": "", "updated_at": None},
+                    "storage_status": {
+                        "status": "BLACKLISTED",
+                        "reason": "STOLEN",
+                        "comment": "",
+                        "updated_at": "2022-11-08T13:12:56Z",
+                    },
                     "org_unit": None,
                     "entity": None,
                 },
@@ -478,7 +495,12 @@ class StorageAPITestCase(APITestCase):
                     "created_at": 1580608922.0,
                     "storage_id": "ANOTHER_EXISTING_STORAGE_BLACKLISTED_ABUSE",
                     "storage_type": "SD",
-                    "status": {"status": "BLACKLISTED", "reason": "ABUSE", "comment": "", "updated_at": None},
+                    "storage_status": {
+                        "status": "BLACKLISTED",
+                        "reason": "ABUSE",
+                        "comment": "",
+                        "updated_at": "2022-11-08T13:12:56Z",
+                    },
                     "org_unit": None,
                     "entity": {"id": self.entity.id, "name": "New Client 3"},
                 },
@@ -500,7 +522,12 @@ class StorageAPITestCase(APITestCase):
                     "created_at": 1580608922.0,
                     "storage_id": "ANOTHER_EXISTING_STORAGE_BLACKLISTED_STOLEN",
                     "storage_type": "NFC",
-                    "status": {"status": "BLACKLISTED", "reason": "STOLEN", "comment": "", "updated_at": None},
+                    "storage_status": {
+                        "status": "BLACKLISTED",
+                        "reason": "STOLEN",
+                        "comment": "",
+                        "updated_at": "2022-11-08T13:12:56Z",
+                    },
                     "org_unit": None,
                     "entity": None,
                 }
@@ -520,7 +547,7 @@ class StorageAPITestCase(APITestCase):
                     "created_at": 1580608922.0,
                     "storage_id": "EXISTING_STORAGE",
                     "storage_type": "NFC",
-                    "status": {"status": "OK", "reason": "", "comment": "", "updated_at": None},
+                    "storage_status": {"status": "OK", "updated_at": None},
                     "org_unit": None,
                     "entity": None,
                 },
@@ -529,7 +556,12 @@ class StorageAPITestCase(APITestCase):
                     "created_at": 1580608922.0,
                     "storage_id": "ANOTHER_EXISTING_STORAGE_BLACKLISTED_STOLEN",
                     "storage_type": "NFC",
-                    "status": {"status": "BLACKLISTED", "reason": "STOLEN", "comment": "", "updated_at": None},
+                    "storage_status": {
+                        "status": "BLACKLISTED",
+                        "reason": "STOLEN",
+                        "comment": "",
+                        "updated_at": "2022-11-08T13:12:56Z",
+                    },
                     "org_unit": None,
                     "entity": None,
                 },
@@ -564,7 +596,12 @@ class StorageAPITestCase(APITestCase):
                     "created_at": 1580608922.0,
                     "storage_id": "ANOTHER_EXISTING_STORAGE_BLACKLISTED_ABUSE",
                     "storage_type": "SD",
-                    "status": {"status": "BLACKLISTED", "reason": "ABUSE", "updated_at": None, "comment": ""},
+                    "storage_status": {
+                        "status": "BLACKLISTED",
+                        "reason": "ABUSE",
+                        "updated_at": "2022-11-08T13:12:56Z",
+                        "comment": "",
+                    },
                     "org_unit": None,
                     "entity": {"id": self.entity.id, "name": "New Client 3"},
                 }
@@ -729,7 +766,7 @@ class StorageAPITestCase(APITestCase):
                 "created_at": 1580608922.0,
                 "storage_id": "EXISTING_STORAGE",
                 "storage_type": "NFC",
-                "status": {"status": "OK", "reason": "", "comment": "", "updated_at": None},
+                "storage_status": {"status": "OK", "updated_at": None},
                 "org_unit": None,
                 "entity": None,
                 "logs": [
@@ -759,14 +796,14 @@ class StorageAPITestCase(APITestCase):
 
         self.assertEqual(response.status_code, 200)
         received_json = response.json()
-        self.assertEqual(
+        self.assertDictEqual(
             received_json,
             {
                 "updated_at": 1580608922.0,
                 "created_at": 1580608922.0,
                 "storage_id": "EXISTING_STORAGE",
                 "storage_type": "NFC",
-                "status": {"status": "OK", "reason": "", "comment": "", "updated_at": None},
+                "storage_status": {"status": "OK", "updated_at": None},
                 "org_unit": None,
                 "entity": None,
                 "logs": [],
@@ -790,14 +827,14 @@ class StorageAPITestCase(APITestCase):
         response = self.client.get(f"/api/storage/NFC/EXISTING_STORAGE/logs?org_unit_id={self.org_unit.id}")
         received_json = response.json()
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(
+        self.assertDictEqual(
             received_json,
             {
                 "updated_at": 1580608922.0,
                 "created_at": 1580608922.0,
                 "storage_id": "EXISTING_STORAGE",
                 "storage_type": "NFC",
-                "status": {"status": "OK", "reason": "", "comment": "", "updated_at": None},
+                "storage_status": {"status": "OK", "updated_at": None},
                 "org_unit": None,
                 "entity": None,
                 "logs": [
@@ -827,14 +864,14 @@ class StorageAPITestCase(APITestCase):
         response = self.client.get(f"/api/storage/NFC/EXISTING_STORAGE/logs?types=WRITE_PROFILE")
         received_json = response.json()
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(
+        self.assertDictEqual(
             received_json,
             {
                 "updated_at": 1580608922.0,
                 "created_at": 1580608922.0,
                 "storage_id": "EXISTING_STORAGE",
                 "storage_type": "NFC",
-                "status": {"status": "OK", "reason": "", "comment": "", "updated_at": None},
+                "storage_status": {"status": "OK", "updated_at": None},
                 "org_unit": None,
                 "entity": None,
                 "logs": [
@@ -860,14 +897,14 @@ class StorageAPITestCase(APITestCase):
         response = self.client.get(f"/api/storage/NFC/EXISTING_STORAGE/logs?types=WRITE_RECORD")
         self.assertEqual(response.status_code, 200)
         received_json = response.json()
-        self.assertEqual(
+        self.assertDictEqual(
             received_json,
             {
                 "updated_at": 1580608922.0,
                 "created_at": 1580608922.0,
                 "storage_id": "EXISTING_STORAGE",
                 "storage_type": "NFC",
-                "status": {"status": "OK", "reason": "", "comment": "", "updated_at": None},
+                "storage_status": {"status": "OK", "updated_at": None},
                 "org_unit": None,
                 "entity": None,
                 "logs": [],
@@ -878,14 +915,14 @@ class StorageAPITestCase(APITestCase):
         response = self.client.get(f"/api/storage/NFC/EXISTING_STORAGE/logs?types=WRITE_PROFILE,WRITE_RECORD")
         self.assertEqual(response.status_code, 200)
         received_json = response.json()
-        self.assertEqual(
+        self.assertDictEqual(
             received_json,
             {
                 "updated_at": 1580608922.0,
                 "created_at": 1580608922.0,
                 "storage_id": "EXISTING_STORAGE",
                 "storage_type": "NFC",
-                "status": {"status": "OK", "reason": "", "comment": "", "updated_at": None},
+                "storage_status": {"status": "OK", "updated_at": None},
                 "org_unit": None,
                 "entity": None,
                 "logs": [
@@ -927,7 +964,7 @@ class StorageAPITestCase(APITestCase):
                 "created_at": 1580608922.0,
                 "storage_id": "EXISTING_STORAGE",
                 "storage_type": "NFC",
-                "status": {"status": "OK", "reason": "", "comment": "", "updated_at": None},
+                "storage_status": {"status": "OK", "updated_at": None},
                 "org_unit": None,
                 "entity": None,
                 "logs": [
@@ -978,7 +1015,7 @@ class StorageAPITestCase(APITestCase):
                 "created_at": 1580608922.0,
                 "storage_id": "EXISTING_STORAGE",
                 "storage_type": "NFC",
-                "status": {"status": "OK", "reason": "", "comment": "", "updated_at": None},
+                "storage_status": {"status": "OK", "updated_at": None},
                 "org_unit": None,
                 "entity": None,
                 "logs": [
@@ -1011,7 +1048,7 @@ class StorageAPITestCase(APITestCase):
                 "created_at": 1580608922.0,
                 "storage_id": "EXISTING_STORAGE",
                 "storage_type": "NFC",
-                "status": {"status": "OK", "reason": "", "comment": "", "updated_at": None},
+                "storage_status": {"status": "OK", "updated_at": None},
                 "org_unit": None,
                 "entity": None,
                 "logs": [],
@@ -1032,7 +1069,7 @@ class StorageAPITestCase(APITestCase):
                 "created_at": 1580608922.0,
                 "storage_id": "EXISTING_STORAGE",
                 "storage_type": "NFC",
-                "status": {"status": "OK", "reason": "", "comment": "", "updated_at": None},
+                "storage_status": {"status": "OK", "updated_at": None},
                 "org_unit": None,
                 "entity": None,
                 "logs": [],
@@ -1085,7 +1122,7 @@ class StorageAPITestCase(APITestCase):
                     "created_at": 1580608922.0,
                     "storage_id": "EXISTING_STORAGE",
                     "storage_type": "NFC",
-                    "status": {"status": "OK", "reason": "", "comment": "", "updated_at": None},
+                    "storage_status": {"status": "OK", "updated_at": None},
                     "org_unit": None,
                     "entity": None,
                     "logs": [
@@ -1125,7 +1162,7 @@ class StorageAPITestCase(APITestCase):
                     "created_at": 1580608922.0,
                     "storage_id": "EXISTING_STORAGE",
                     "storage_type": "NFC",
-                    "status": {"status": "OK", "reason": "", "comment": "", "updated_at": None},
+                    "storage_status": {"status": "OK", "updated_at": None},
                     "org_unit": None,
                     "entity": None,
                     "logs": [
@@ -1165,7 +1202,7 @@ class StorageAPITestCase(APITestCase):
                     "created_at": 1580608922.0,
                     "storage_id": "EXISTING_STORAGE",
                     "storage_type": "NFC",
-                    "status": {"status": "OK", "reason": "", "comment": "", "updated_at": None},
+                    "storage_status": {"status": "OK", "updated_at": None},
                     "org_unit": None,
                     "entity": None,
                     "logs": [
@@ -1284,6 +1321,170 @@ class StorageAPITestCase(APITestCase):
         response_string = "\n".join(s.decode("U8") for s in response).replace("\r\n\n", "\r\n")
         reader = csv.reader(StringIO(response_string), delimiter=",")
         return list(reader)
+
+    def test_export_devices_csv(self):
+        """CSV export of devices: we have the same results as the JSON endpoint"""
+        self.client.force_authenticate(self.yoda)
+
+        # 1. Check the response status and content type
+        response = self.client.get("/api/storage/?csv=true")
+        self.assertEqual(response.status_code, 200)
+
+        self.assertEqual(response["Content-Type"], "text/csv")
+
+        data = self._csv_response_to_list(response)
+
+        # 2. Check the headers
+        headers = data[0]
+        self.assertEqual(
+            headers,
+            [
+                "Storage ID",
+                "Storage Type",
+                "Created at",
+                "Updated at",
+                "Status",
+                "Status reason",
+                "Status comment",
+                "Status updated at",
+                "Org unit id",
+                "Entity id",
+            ],
+        )
+
+        self.assertEqual(len(data), 4)  # 3 rows + header
+        self.assertListEqual(
+            data[1],
+            ["EXISTING_STORAGE", "NFC", "2020-02-02 02:02:02", "2020-02-02 02:02:02", "OK", "", "", "", "", ""],
+        )
+        self.assertListEqual(
+            data[2],
+            [
+                "ANOTHER_EXISTING_STORAGE_BLACKLISTED_STOLEN",
+                "NFC",
+                "2020-02-02 02:02:02",
+                "2020-02-02 02:02:02",
+                "BLACKLISTED",
+                "STOLEN",
+                "",
+                "",
+                "",
+                "",
+            ],
+        )
+        self.assertListEqual(
+            data[3],
+            [
+                "ANOTHER_EXISTING_STORAGE_BLACKLISTED_ABUSE",
+                "SD",
+                "2020-02-02 02:02:02",
+                "2020-02-02 02:02:02",
+                "BLACKLISTED",
+                "ABUSE",
+                "",
+                "",
+                "",
+                mock.ANY,
+            ],
+        )
+
+    def test_export_devices_xlsx(self):
+        self.client.force_authenticate(self.yoda)
+
+        # 1. Check the response status and content type
+        response = self.client.get("/api/storage/?xlsx=true")
+        self.assertEqual(response.status_code, 200)
+
+        self.assertEqual(response["Content-Type"], "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
+
+        excel_data = pd.read_excel(response.content, engine="openpyxl")
+
+        # 2. Check the headers
+        excel_columns = list(excel_data.columns.ravel())
+        self.assertEqual(
+            excel_columns,
+            [
+                "Storage ID",
+                "Storage Type",
+                "Created at",
+                "Updated at",
+                "Status",
+                "Status reason",
+                "Status comment",
+                "Status updated at",
+                "Org unit id",
+                "Entity id",
+            ],
+        )
+
+        # 3. Check the data
+        data_dict = excel_data.replace({np.nan: None}).to_dict()
+        self.assertDictEqual(
+            data_dict,
+            {
+                "Storage ID": {
+                    0: "EXISTING_STORAGE",
+                    1: "ANOTHER_EXISTING_STORAGE_BLACKLISTED_STOLEN",
+                    2: "ANOTHER_EXISTING_STORAGE_BLACKLISTED_ABUSE",
+                },
+                "Storage Type": {0: "NFC", 1: "NFC", 2: "SD"},
+                "Created at": {0: "2020-02-02 02:02:02", 1: "2020-02-02 02:02:02", 2: "2020-02-02 02:02:02"},
+                "Updated at": {0: "2020-02-02 02:02:02", 1: "2020-02-02 02:02:02", 2: "2020-02-02 02:02:02"},
+                "Status": {0: "OK", 1: "BLACKLISTED", 2: "BLACKLISTED"},
+                "Status reason": {0: None, 1: "STOLEN", 2: "ABUSE"},
+                "Status comment": {0: None, 1: None, 2: None},
+                "Status updated at": {0: None, 1: None, 2: None},
+                "Org unit id": {0: None, 1: None, 2: None},
+                "Entity id": {0: None, 1: None, 2: mock.ANY},
+            },
+        )
+
+    def test_export_devices_filtering(self):
+        self.client.force_authenticate(self.yoda)
+
+        response = self.client.get("/api/storage/?csv=true&status=BLACKLISTED")
+
+        data = self._csv_response_to_list(response)
+
+        self.assertEqual(len(data), 3)  # 2 rows + header
+        self.assertListEqual(
+            data[1],
+            [
+                "ANOTHER_EXISTING_STORAGE_BLACKLISTED_STOLEN",
+                "NFC",
+                "2020-02-02 02:02:02",
+                "2020-02-02 02:02:02",
+                "BLACKLISTED",
+                "STOLEN",
+                "",
+                "",
+                "",
+                "",
+            ],
+        )
+        self.assertListEqual(
+            data[2],
+            [
+                "ANOTHER_EXISTING_STORAGE_BLACKLISTED_ABUSE",
+                "SD",
+                "2020-02-02 02:02:02",
+                "2020-02-02 02:02:02",
+                "BLACKLISTED",
+                "ABUSE",
+                "",
+                "",
+                "",
+                mock.ANY,
+            ],
+        )
+
+    def test_export_devices_can_be_ordered(self):
+        self.client.force_authenticate(self.yoda)
+
+        response = self.client.get(f"/api/storage/?csv=true&order=-type")
+        data = self._csv_response_to_list(response)
+        data_without_header = data[1:]
+        self.assertListEqual([e[1] for e in data_without_header], ["SD", "NFC", "NFC"])
 
     def test_export_logs_per_device_csv(self):
         """A CSV download with decent content is returned"""
@@ -1452,22 +1653,24 @@ class StorageAPITestCase(APITestCase):
             {
                 "storages": [
                     {
-                        "updated_at": 1580608922.0,
-                        "created_at": 1580608922.0,
                         "storage_id": "ANOTHER_EXISTING_STORAGE_BLACKLISTED_STOLEN",
                         "storage_type": "NFC",
-                        "status": {"status": "BLACKLISTED", "reason": "STOLEN", "comment": "", "updated_at": None},
-                        "org_unit": None,
-                        "entity": None,
+                        "storage_status": {
+                            "status": "BLACKLISTED",
+                            "reason": "STOLEN",
+                            "updated_at": 1667913176.0,
+                            "comment": "",
+                        },
                     },
                     {
-                        "updated_at": 1580608922.0,
-                        "created_at": 1580608922.0,
                         "storage_id": "ANOTHER_EXISTING_STORAGE_BLACKLISTED_ABUSE",
                         "storage_type": "SD",
-                        "status": {"status": "BLACKLISTED", "reason": "ABUSE", "comment": "", "updated_at": None},
-                        "org_unit": None,
-                        "entity": {"id": self.entity.id, "name": "New Client 3"},
+                        "storage_status": {
+                            "status": "BLACKLISTED",
+                            "reason": "ABUSE",
+                            "updated_at": 1667913176.0,
+                            "comment": "",
+                        },
                     },
                 ]
             },

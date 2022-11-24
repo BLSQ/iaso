@@ -364,3 +364,21 @@ class ProfileAPITestCase(APITestCase):
         self.assertIn("account", response_data)
         print(response_data["account"])
         self.assertEqual(response_data["account"]["feature_flags"], [])
+
+    def test_search_user_by_permissions(self):
+        self.client.force_authenticate(self.jane)
+
+        response = self.client.get("/api/profiles/?permissions=iaso_users")
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.json()["profiles"][0]["user_name"], "jim")
+        self.assertEqual(len(response.json()["profiles"]), 1)
+
+    def test_search_user_by_org_units(self):
+        self.client.force_authenticate(self.jane)
+        self.jane.iaso_profile.org_units.set([self.jedi_council_corruscant])
+
+        response = self.client.get(f"/api/profiles/?location={self.jedi_council_corruscant.pk}")
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.json()["profiles"][0]["user_name"], "janedoe")
+        self.assertEqual(len(response.json()["profiles"]), 1)

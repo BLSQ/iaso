@@ -9,7 +9,9 @@ import TopBar from '../../components/nav/TopBarComponent';
 import { TableWithDeepLink } from '../../components/tables/TableWithDeepLink';
 import { StorageParams } from './types/storages';
 import { Filters } from './components/Filters';
+import DownloadButtonsComponent from '../../components/DownloadButtonsComponent';
 import { useGetStorages } from './hooks/requests/useGetStorages';
+import { useGetStorageApiParams } from './hooks/requests/requests';
 import { redirectToReplace } from '../../routing/actions';
 
 import MESSAGES from './messages';
@@ -28,7 +30,9 @@ export const Storages: FunctionComponent<Props> = ({ params }) => {
     const classes: Record<string, string> = useStyles();
     const { formatMessage } = useSafeIntl();
     const { data, isFetching } = useGetStorages(params);
+    const { url: apiUrl } = useGetStorageApiParams(params);
     const columns = useGetColumns(params);
+
     return (
         <>
             <TopBar
@@ -49,6 +53,11 @@ export const Storages: FunctionComponent<Props> = ({ params }) => {
                         dispatch(redirectToReplace(baseUrl, p))
                     }
                     extraProps={{ loading: isFetching }}
+                />
+
+                <DownloadButtonsComponent
+                    csvUrl={`${apiUrl}&csv=true`}
+                    xlsxUrl={`${apiUrl}&xlsx=true`}
                 />
             </Box>
         </>

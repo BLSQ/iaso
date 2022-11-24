@@ -95,17 +95,19 @@ export const BudgetList: FunctionComponent<Props> = ({ router }) => {
                 title={formatMessage(MESSAGES.budget)}
                 displayBackButton={false}
             >
-                <Box
-                    position="absolute"
-                    top={theme.spacing(2)}
-                    right={theme.spacing(2)}
-                >
-                    <SearchIcon
-                        onClick={() => {
-                            setExpand(value => !value);
-                        }}
-                    />
-                </Box>
+                {isMobileLayout && (
+                    <Box
+                        position="absolute"
+                        top={theme.spacing(2)}
+                        right={theme.spacing(2)}
+                    >
+                        <SearchIcon
+                            onClick={() => {
+                                setExpand(value => !value);
+                            }}
+                        />
+                    </Box>
+                )}
             </TopBar>
             {/* @ts-ignore */}
             <Box className={classes.containerFullHeightNoTabPadded}>

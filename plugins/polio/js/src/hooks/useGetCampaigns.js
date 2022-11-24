@@ -56,7 +56,7 @@ export const useGetCampaigns = (
             () => getRequest(getURL(params)),
             undefined,
             {
-                cacheTime: 0,
+                cacheTime: Infinity,
                 structuralSharing: false,
                 refetchOnWindowFocus: false,
                 enabled: !!params.enabled,

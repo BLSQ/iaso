@@ -265,15 +265,21 @@ class StorageViewSet(ListModelMixin, viewsets.GenericViewSet):
         csv_format = request.GET.get("csv", None)
         xlsx_format = request.GET.get("xlsx", None)
         file_export = False
-        if csv_format is not None or xlsx_format is not None:
+
+        if csv_format is not None:
             file_export = True
-            file_format_export = FileFormatEnum.CSV if csv_format is not None else FileFormatEnum.XLSX
+            file_format_export = FileFormatEnum.CSV
+        if xlsx_format is not None:
+            file_export = True
+            file_format_export = FileFormatEnum.XLSX
 
         queryset = self.get_queryset()
         queryset = queryset.order_by(*order)
         serializer = StorageSerializer
 
-        if not file_export:
+        if file_export:
+            return device_generate_export(queryset=queryset, file_format=file_format_export)
+        else:  # JSON response for the frontend
             if limit_str is not None:
                 limit = int(limit_str)
                 page_offset = int(page_offset)
@@ -291,8 +297,6 @@ class StorageViewSet(ListModelMixin, viewsets.GenericViewSet):
                 return Response(res)
             else:
                 return Response(StorageSerializer(queryset, many=True).data)
-        else:  # This is a file export
-            return device_generate_export(queryset=queryset, file_format=file_format_export)
 
     @action(detail=False, methods=["post"])
     def blacklisted(self, request):

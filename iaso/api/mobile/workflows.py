@@ -43,7 +43,7 @@ class MobileWorkflowVersionSerializer(serializers.ModelSerializer):
 
 
 class MobileWorkflowViewSet(GenericViewSet):
-    """Mobile orkflow API
+    """Mobile workflow API
 
     Return the workflow versions for the workflow associated with the provided entity_type_id
 
@@ -54,14 +54,15 @@ class MobileWorkflowViewSet(GenericViewSet):
     serializer_class = MobileWorkflowVersionSerializer
     results_key = "workflows"
 
+    pagination_class = None
+    paginator = None
+
     def list(self, request, *args, **kwargs):
+        app_id = request.GET.get("app_id", None)
+
         queryset = self.get_queryset(**kwargs)
 
-        print("paginator", self.paginator)
-
         page = self.paginate_queryset(queryset)
-
-        print("page", page)
 
         if page is not None:
             serializer = self.get_serializer(page, many=True)

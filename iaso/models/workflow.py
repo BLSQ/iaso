@@ -30,89 +30,71 @@ class Workflow(SoftDeletableModel):
 
 the_schema_followups = {
     "schema": "http://json-schema.org/draft-04/schema#",
-    "type": "object",
-    "properties": {
-        "follow_ups": {
-            "type": "array",
-            "items": [
-                {
-                    "type": "object",
-                    "properties": {
-                        "condition": {"type": "string"},
-                        "order": {"type": "integer"},
-                        "created_at": {"type": "string"},
-                        "updated_at": {"type": "string"},
-                        "form_ids": {"type": "array", "items": [{"type": "string"}]},
-                    },
-                    "required": ["condition", "created_at", "updated_at", "form_ids", "order"],
-                }
-            ],
+    "type": "array",
+    "items": [
+        {
+            "type": "object",
+            "properties": {
+                "condition": {"type": "string"},
+                "order": {"type": "integer"},
+                "created_at": {"type": "string"},
+                "updated_at": {"type": "string"},
+                "form_ids": {"type": "array", "items": [{"type": "string"}]},
+            },
+            "required": ["condition", "created_at", "updated_at", "form_ids", "order"],
         }
-    },
-    "required": ["follow_ups"],
+    ],
 }
 
 
 the_schema_changes = {
     "schema": "http://json-schema.org/draft-04/schema#",
-    "type": "object",
-    "properties": {
-        "changes": {
-            "type": "array",
-            "items": [
-                {
-                    "type": "object",
-                    "properties": {
-                        "form": {"type": "string"},
-                        "mapped_fields": {
-                            "type": "array",
-                            "items": [
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "source_form": {"type": "string"},
-                                        "mappings": {"type": "object"},
-                                        "updated_at": {"type": "string"},
-                                        "created_at": {"type": "string"},
-                                    },
-                                    "required": ["source_form", "mappings", "updated_at", "created_at"],
-                                }
-                            ],
-                        },
-                    },
-                    "required": ["form", "mapped_fields"],
-                }
-            ],
+    "type": "array",
+    "items": [
+        {
+            "type": "object",
+            "properties": {
+                "form": {"type": "string"},
+                "mapped_fields": {
+                    "type": "array",
+                    "items": [
+                        {
+                            "type": "object",
+                            "properties": {
+                                "source_form": {"type": "string"},
+                                "mappings": {"type": "object"},
+                                "updated_at": {"type": "string"},
+                                "created_at": {"type": "string"},
+                            },
+                            "required": ["source_form", "mappings", "updated_at", "created_at"],
+                        }
+                    ],
+                },
+            },
+            "required": ["form", "mapped_fields"],
         }
-    },
-    "required": ["changes"],
+    ],
 }
 
 
 def changes_default():
-    return {
-        "changes": [
-            {
-                "form": "None",
-                "mapped_fields": [
-                    {
-                        "source_form": "None",
-                        "mappings": {"from": "to"},
-                        "updated_at": "None",
-                        "created_at": "None",
-                    }
-                ],
-            }
-        ]
-    }
+    return [
+        {
+            "form": "None",
+            "mapped_fields": [
+                {
+                    "source_form": "None",
+                    "mappings": {"from": "to"},
+                    "updated_at": "None",
+                    "created_at": "None",
+                }
+            ],
+        }
+    ]
 
 
 def followups_default():
-    return {
-        "follow_ups": [
-            {"condition": "None", "order": 0, "form_ids": ["None"], "created_at": "None", "updated_at": "None"}
-        ]
-    }
+    return [{"condition": "None", "order": 0, "form_ids": ["None"], "created_at": "None", "updated_at": "None"}]
 
 
 def validate_from_schema(value, the_schema):

@@ -12,7 +12,6 @@ import { Field, useFormikContext } from 'formik';
 import { useSafeIntl } from 'bluesquare-components';
 import { TabContext, TabList, TabPanel } from '@material-ui/lab';
 import { Tab, Grid } from '@material-ui/core';
-import isEmpty from 'lodash/isEmpty';
 
 import { ScopeInput } from '../components/Inputs/ScopeInput';
 import { BooleanInput } from '../components/Inputs';
@@ -58,6 +57,7 @@ export const ScopeForm: FunctionComponent = () => {
     const [searchScopeChecked, setSearchScopeChecked] = useState(false);
     const handleChangeTab = (event, newValue) => {
         setCurrentTab(newValue);
+        setSearchLaunched(true);
     };
 
     const { data: country } = useGetParentOrgUnit(values.initial_org_unit);
@@ -87,8 +87,6 @@ export const ScopeForm: FunctionComponent = () => {
 
     const [search, setSearch] = useState('');
 
-    const [newScopeId, setNewScopeId] = useState({ newScope: {} });
-
     const searchDistrictByName = useCallback(() => {
         if (districtShapes) {
             let filtreds: FilteredDistricts[] = [...districtShapes].map(
@@ -101,11 +99,15 @@ export const ScopeForm: FunctionComponent = () => {
                     };
                 },
             );
-            if (!isEmpty(newScopeId.newScope)) {
+            if (scopes) {
                 filtreds.forEach((d, index) => {
-                    if (newScopeId.newScope[d.id] !== undefined) {
-                        filtreds[index].vaccineName = newScopeId.newScope[d.id];
-                    }
+                    scopes.forEach(scope => {
+                        scope.group.org_units.forEach(ouId => {
+                            if (d.id === ouId) {
+                                filtreds[index].vaccineName = scope.vaccine;
+                            }
+                        });
+                    });
                 });
             }
 
@@ -121,42 +123,31 @@ export const ScopeForm: FunctionComponent = () => {
                 );
             }
             setFilteredDistricts(filtreds);
+            setSearchLaunched(false);
+            setPage(0);
         }
-        setPage(0);
-    }, [
-        districtShapes,
-        newScopeId.newScope,
-        regionShapes,
-        scopes,
-        search,
-        searchScope,
-    ]);
+    }, [districtShapes, regionShapes, scopes, search, searchScope]);
 
     useEffect(() => {
-        if (districtShapes) {
+        if (searchLaunched) {
             searchDistrictByName();
         }
-    }, [
-        currentTab,
-        districtShapes,
-        searchScope,
-        scopePerRound,
-        searchDistrictByName,
-    ]);
+    }, [currentTab, searchScope, searchDistrictByName, searchLaunched]);
 
-    const addNewScopeId = useCallback(
-        (id: number, vaccineName: string) => {
-            const scopeIds = newScopeId;
-            newScopeId.newScope[id] = vaccineName;
-            setNewScopeId(scopeIds);
-        },
-        [newScopeId],
-    );
+    useEffect(() => {
+        setSearchLaunched(true);
+    }, [scopePerRound, scopes]);
+
+    useEffect(() => {
+        if (districtShapes && !filteredDistricts) {
+            searchDistrictByName();
+        }
+    }, [districtShapes, filteredDistricts, searchDistrictByName]);
 
     const onChangeSearchScope = () => {
+        setSearchLaunched(true);
         setSearchScopeChecked(true);
         setSearchScope(!searchScope);
-        searchDistrictByName();
     };
 
     const renderField = (name: string): ReactNode => {
@@ -164,12 +155,12 @@ export const ScopeForm: FunctionComponent = () => {
             <Field
                 name={name}
                 component={ScopeInput}
-                filteredDistrictsResult={filteredDistricts}
+                filteredDistricts={filteredDistricts}
+                setFilteredDistricts={setFilteredDistricts}
                 searchLaunched={searchLaunched}
                 searchScopeValue={searchScope}
                 onChangeSearchScopeFunction={onChangeSearchScope}
                 searchScopeChecked={searchScopeChecked}
-                addNewScopeId={(id, vacciName) => addNewScopeId(id, vacciName)}
                 isFetchingDistricts={isFetchingDistricts || !filteredDistricts}
                 isFetchingRegions={isFetchingRegions || !regionShapes}
                 districtShapes={districtShapes}

@@ -2,7 +2,6 @@
 import React, {
     FunctionComponent,
     useCallback,
-    useEffect,
     useState,
     ReactNode,
 } from 'react';
@@ -24,7 +23,6 @@ import cloneDeep from 'lodash/cloneDeep';
 
 // @ts-ignore
 import InputComponent from 'Iaso/components/forms/InputComponent';
-import uniqBy from 'lodash/uniqBy';
 import MESSAGES from '../../constants/messages';
 
 import { DistrictScopeTable } from '../Scopes/DistrictScopeTable';
@@ -33,13 +31,13 @@ import { MapScope } from '../Scopes/MapScope';
 import { Scope, Shape, Values, FilteredDistricts } from '../Scopes/types';
 
 type ExtraProps = {
-    filteredDistrictsResult: FilteredDistricts[];
+    filteredDistricts: FilteredDistricts[];
+    // eslint-disable-next-line no-unused-vars
+    setFilteredDistricts: (districts: FilteredDistricts[]) => void;
     searchLaunched: boolean;
     searchScopeValue: boolean;
     searchScopeChecked: boolean;
     onChangeSearchScopeFunction: () => void;
-    // eslint-disable-next-line no-unused-vars
-    addNewScopeId: (id: number, vaccineName: string) => void;
     isFetchingDistricts: boolean;
     isFetchingRegions: boolean;
     districtShapes?: FilteredDistricts[];
@@ -55,12 +53,12 @@ type Props = FieldProps<Scope[], Values> & ExtraProps;
 export const ScopeInput: FunctionComponent<Props> = ({
     field,
     form: { values },
-    filteredDistrictsResult,
+    filteredDistricts,
+    setFilteredDistricts,
     searchLaunched,
     searchScopeValue,
     searchScopeChecked,
     onChangeSearchScopeFunction,
-    addNewScopeId,
     isFetchingDistricts,
     isFetchingRegions,
     districtShapes,
@@ -71,9 +69,6 @@ export const ScopeInput: FunctionComponent<Props> = ({
 }) => {
     const [selectRegion, setSelectRegion] = useState(false);
     const [selectedVaccine, setSelectedVaccine] = useState<string>('mOPV2');
-    const [filteredDistricts, setFilteredDistricts] = useState<
-        FilteredDistricts[]
-    >(filteredDistrictsResult);
     const [, , helpers] = useField(field.name);
     const { formatMessage } = useSafeIntl();
     const { value: scopes = [] } = field;
@@ -84,11 +79,6 @@ export const ScopeInput: FunctionComponent<Props> = ({
     const toggleRegionSelect = () => {
         setSelectRegion(!selectRegion);
     };
-
-    useEffect(() => {
-        const filtereds = filteredDistrictsResult;
-        setFilteredDistricts(filtereds);
-    }, [filteredDistrictsResult]);
 
     const toggleRegion = (
         selectOrgUnit: Shape,
@@ -125,7 +115,6 @@ export const ScopeInput: FunctionComponent<Props> = ({
                     let distrToRemove: FilteredDistricts | undefined;
                     if (!OrgUnitsIdInSameRegion.includes(dist.id)) {
                         distrToRemove = dist;
-                        addNewScopeId(dist.id, '');
                     }
                     return distrToRemove;
                 });
@@ -137,45 +126,17 @@ export const ScopeInput: FunctionComponent<Props> = ({
             scope.group.org_units.forEach(OrgUnitId => {
                 if (!OrgUnitsIdInSameRegion.includes(OrgUnitId)) {
                     orgUnits.push(OrgUnitId);
-                    addNewScopeId(OrgUnitId, '');
                 }
             });
             scope.group.org_units = orgUnits;
         } else {
             // Remove the OrgUnits from all the scopes
             newScopes.forEach(s => {
-                // eslint-disable-next-line no-param-reassign
-                s.group.org_units = s.group.org_units.filter(
+                const newScope = { ...s };
+                newScope.group.org_units = s.group.org_units.filter(
                     OrgUnitId => !OrgUnitsIdInSameRegion.includes(OrgUnitId),
                 );
             });
-
-            if ((searchLaunched || searchScopeChecked) && districtShapes) {
-                let newListAfterAdding = [...filteredDistricts];
-                const addedDistricts: FilteredDistricts[] = [];
-                districtShapes.forEach(dist => {
-                    if (OrgUnitsIdInSameRegion.includes(dist.id)) {
-                        const addedDistr: FilteredDistricts | undefined = {
-                            ...dist,
-                        };
-                        if (addedDistr) {
-                            addedDistr.vaccineName = selectedVaccine;
-                            addedDistricts.push(addedDistr);
-                            addNewScopeId(dist.id, selectedVaccine);
-                        }
-                    }
-                });
-                newListAfterAdding = uniqBy(
-                    newListAfterAdding.concat(addedDistricts),
-                    'id',
-                );
-
-                setFilteredDistricts(newListAfterAdding);
-            } else {
-                OrgUnitsIdInSameRegion.forEach(orgId => {
-                    addNewScopeId(orgId, selectedVaccine);
-                });
-            }
 
             // Add the OrgUnit in the scope for selected vaccine
             scope.group.org_units = [
@@ -204,13 +165,6 @@ export const ScopeInput: FunctionComponent<Props> = ({
             }
             // Remove org unit from selection if it's part of the scope
             if (scope.group.org_units.includes(district.id)) {
-                if (searchLaunched || searchScopeChecked) {
-                    const newListAfterRemove = filteredDistricts.filter(
-                        dist => dist.id !== district.id,
-                    );
-                    setFilteredDistricts(newListAfterRemove);
-                }
-                addNewScopeId(district.id, '');
                 scope.group.org_units = scope.group.org_units.filter(
                     OrgUnitId => OrgUnitId !== district.id,
                 );
@@ -218,41 +172,18 @@ export const ScopeInput: FunctionComponent<Props> = ({
                 // Remove the orgunit from all the scope in case it's part of another scope
                 newScopes.forEach(s => {
                     if (s.group.org_units.includes(district.id)) {
-                        // eslint-disable-next-line no-param-reassign
-                        s.group.org_units = s.group.org_units.filter(
+                        const newScope = { ...s };
+                        newScope.group.org_units = s.group.org_units.filter(
                             OrgUnitId => OrgUnitId !== district.id,
                         );
                     }
                 });
-
-                if ((searchLaunched || searchScopeChecked) && districtShapes) {
-                    const newListAfterAdding = [...filteredDistricts];
-                    const addedDistrict = districtShapes.filter(
-                        dist => dist.id === district.id,
-                    );
-                    if (addedDistrict[0]) {
-                        addedDistrict[0].vaccineName = selectedVaccine;
-                        newListAfterAdding.push(addedDistrict[0]);
-                    }
-
-                    setFilteredDistricts(newListAfterAdding);
-                }
-                addNewScopeId(district.id, selectedVaccine);
                 // Add org unit to proper scope
                 scope.group.org_units = [...scope.group.org_units, district.id];
             }
             setScopes(newScopes);
         },
-        [
-            addNewScopeId,
-            districtShapes,
-            filteredDistricts,
-            scopes,
-            searchLaunched,
-            searchScopeChecked,
-            selectedVaccine,
-            setScopes,
-        ],
+        [scopes, setScopes],
     );
 
     const onSelectOrgUnit = shape => {
@@ -279,13 +210,10 @@ export const ScopeInput: FunctionComponent<Props> = ({
                 </Box>
                 <DistrictScopeTable
                     field={field}
-                    searchLaunched={searchLaunched}
-                    searchScopeChecked={searchScopeChecked}
-                    addNewScopeId={addNewScopeId}
                     selectedVaccine={selectedVaccine}
                     regionShapes={regionShapes || []}
-                    districtShapes={filteredDistricts}
-                    setFilteredDistricts={setFilteredDistricts}
+                    filteredDistricts={filteredDistricts}
+                    districtShapes={districtShapes}
                     toggleDistrictInVaccineScope={toggleDistrictInVaccineScope}
                     setPage={setPage}
                     page={page}

@@ -21,14 +21,12 @@ import {
     TablePagination,
     TableRow,
     Typography,
-    Box,
 } from '@material-ui/core';
 import cloneDeep from 'lodash/cloneDeep';
 import sortBy from 'lodash/sortBy';
 
 import CheckIcon from '@material-ui/icons/Check';
 import SelectAllIcon from '@material-ui/icons/SelectAll';
-// @ts-ignore
 import MESSAGES from '../../constants/messages';
 import { useStyles } from '../../styles/theme';
 
@@ -36,18 +34,16 @@ import { Scope, Shape, FilteredDistricts, ShapeRow } from './types';
 import { findScopeWithOrgUnit, findRegion } from './utils';
 
 import { TableText } from './TableText';
+import { TablePlaceHolder } from './TablePlaceHolder';
 
 type Props = {
     field: FieldInputProps<Scope[]>;
-    searchLaunched: boolean;
-    searchScopeChecked: boolean;
-    // eslint-disable-next-line no-unused-vars
-    addNewScopeId: (id: number, vaccineName: string) => void;
     selectedVaccine: string;
     regionShapes: Shape[];
+    filteredDistricts?: FilteredDistricts[];
     districtShapes?: FilteredDistricts[];
     // eslint-disable-next-line no-unused-vars
-    setFilteredDistricts: (id: FilteredDistricts[]) => void;
+    // setFilteredDistricts: (id: FilteredDistricts[]) => void;
     toggleDistrictInVaccineScope: (
         // eslint-disable-next-line no-unused-vars
         district: FilteredDistricts,
@@ -62,13 +58,11 @@ type Props = {
 
 export const DistrictScopeTable: FunctionComponent<Props> = ({
     field,
-    searchLaunched,
-    searchScopeChecked,
-    addNewScopeId,
     selectedVaccine,
     regionShapes,
+    filteredDistricts,
     districtShapes,
-    setFilteredDistricts,
+    // setFilteredDistricts,
     toggleDistrictInVaccineScope,
     page,
     setPage,
@@ -102,30 +96,10 @@ export const DistrictScopeTable: FunctionComponent<Props> = ({
             if (!scope.group.org_units.includes(district.id)) {
                 scope.group.org_units.push(district.id);
             }
-            // when the add is done on searched result and update the filteredDistricts state
-            if ((searchLaunched || searchScopeChecked) && districtShapes) {
-                const newListAfterAdding = [...districtShapes];
-                districtShapes.forEach((dist, index) => {
-                    if (dist.id === district.id) {
-                        newListAfterAdding[index].vaccineName = selectedVaccine;
-                        addNewScopeId(district.id, selectedVaccine);
-                    }
-                });
-                setFilteredDistricts(newListAfterAdding);
-            }
 
             setScopes(newScopes);
         },
-        [
-            addNewScopeId,
-            districtShapes,
-            scopes,
-            searchLaunched,
-            searchScopeChecked,
-            selectedVaccine,
-            setFilteredDistricts,
-            setScopes,
-        ],
+        [scopes, selectedVaccine, setScopes],
     );
 
     const removeDistrictFromTable = useCallback(
@@ -156,76 +130,37 @@ export const DistrictScopeTable: FunctionComponent<Props> = ({
                         let idToRemove: number | undefined;
                         if (!OrgUnitIdsToRemove?.includes(OrgUnitId)) {
                             idToRemove = OrgUnitId;
-                            addNewScopeId(OrgUnitId, '');
+                            // addNewScopeId(OrgUnitId, '');
                         }
                         return idToRemove;
                     },
                 );
             });
 
-            if ((searchLaunched || searchScopeChecked) && districtShapes) {
-                const newListAfterRegionRemoved = [...districtShapes];
-                districtShapes.forEach((dist, index) => {
-                    if (OrgUnitIdsToRemove?.includes(dist.id)) {
-                        newListAfterRegionRemoved[index].vaccineName = '';
-                        addNewScopeId(dist.id, '');
-                    }
-                });
-                setFilteredDistricts(newListAfterRegionRemoved);
-            }
-
             setScopes(newScopes);
         },
-        [
-            addNewScopeId,
-            districtShapes,
-            scopes,
-            searchLaunched,
-            searchScopeChecked,
-            setFilteredDistricts,
-            setScopes,
-        ],
+        [districtShapes, scopes, setScopes],
     );
 
     // Add all district in the same region as this district
     const addRegionToTable = useCallback(
         (shape: ShapeRow) => {
-            const OrgUnitIdsToAdd = districtShapes
-                .filter(s => s.parent_id === shape.parent_id)
-                .map(s => s.id);
+            if (filteredDistricts && districtShapes) {
+                const OrgUnitIdsToAdd = districtShapes
+                    .filter(s => s.parent_id === shape.parent_id)
+                    .map(s => s.id);
 
-            const newScopes: Scope[] = cloneDeep(scopes);
-            newScopes
-                .filter(sc => sc.vaccine === selectedVaccine)
-                .forEach((scope, index) => {
-                    newScopes[index].group.org_units =
-                        scope.group.org_units.concat(OrgUnitIdsToAdd);
-                });
-
-            if (searchLaunched || searchScopeChecked) {
-                const newListAfterRegionAdded = [...districtShapes];
-                districtShapes.forEach((dist, index) => {
-                    if (OrgUnitIdsToAdd.includes(dist.id)) {
-                        newListAfterRegionAdded[index].vaccineName =
-                            selectedVaccine;
-                        addNewScopeId(dist.id, selectedVaccine);
-                    }
-                });
-                setFilteredDistricts(newListAfterRegionAdded);
+                const newScopes: Scope[] = cloneDeep(scopes);
+                newScopes
+                    .filter(sc => sc.vaccine === selectedVaccine)
+                    .forEach((scope, index) => {
+                        newScopes[index].group.org_units =
+                            scope.group.org_units.concat(OrgUnitIdsToAdd);
+                    });
+                setScopes(newScopes);
             }
-
-            setScopes(newScopes);
         },
-        [
-            addNewScopeId,
-            districtShapes,
-            scopes,
-            searchLaunched,
-            searchScopeChecked,
-            selectedVaccine,
-            setFilteredDistricts,
-            setScopes,
-        ],
+        [filteredDistricts, districtShapes, scopes, selectedVaccine, setScopes],
     );
 
     const handleSort = useCallback(
@@ -251,11 +186,11 @@ export const DistrictScopeTable: FunctionComponent<Props> = ({
     };
 
     const shapesForTable = useMemo(() => {
-        if (!regionShapes || !districtShapes) {
+        if (!regionShapes || !filteredDistricts) {
             return null;
         }
 
-        let ds: ShapeRow[] = districtShapes.map(district => {
+        let ds: ShapeRow[] = filteredDistricts.map(district => {
             return {
                 ...district,
                 region: findRegion(district, regionShapes),
@@ -275,13 +210,17 @@ export const DistrictScopeTable: FunctionComponent<Props> = ({
         return ds.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage);
     }, [
         regionShapes,
-        districtShapes,
+        filteredDistricts,
         sortFocus,
         orderBy,
         page,
         rowsPerPage,
         scopes,
     ]);
+    const displayPlacHolder = useMemo(
+        () => isFetching || (!isFetching && filteredDistricts?.length === 0),
+        [filteredDistricts?.length, isFetching],
+    );
     return (
         <>
             <TableContainer className={classes.districtList}>
@@ -327,19 +266,11 @@ export const DistrictScopeTable: FunctionComponent<Props> = ({
                         </TableRow>
                     </TableHead>
                     <TableBody>
-                        {(isFetching ||
-                            (!isFetching && districtShapes?.length === 0)) && (
-                            <TableRow>
-                                <TableCell colSpan={4}>
-                                    <Box textAlign="center" width="100%">
-                                        {isFetching &&
-                                            formatMessage(MESSAGES.loading)}
-                                        {!isFetching &&
-                                            districtShapes?.length === 0 &&
-                                            formatMessage(MESSAGES.noOptions)}
-                                    </Box>
-                                </TableCell>
-                            </TableRow>
+                        {displayPlacHolder && (
+                            <TablePlaceHolder
+                                isFetching={isFetching}
+                                filteredDistricts={filteredDistricts}
+                            />
                         )}
                         {shapesForTable?.map((shape, i) => {
                             return (
@@ -430,7 +361,7 @@ export const DistrictScopeTable: FunctionComponent<Props> = ({
                 className={classes.tablePagination}
                 rowsPerPageOptions={[5, 10, 25]}
                 component="div"
-                count={districtShapes?.length ?? 0}
+                count={filteredDistricts?.length ?? 0}
                 rowsPerPage={rowsPerPage}
                 page={page}
                 labelRowsPerPage="Rows"

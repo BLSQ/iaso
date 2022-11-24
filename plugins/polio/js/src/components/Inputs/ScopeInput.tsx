@@ -33,11 +33,8 @@ import { Scope, Shape, Values, FilteredDistricts } from '../Scopes/types';
 type ExtraProps = {
     filteredDistricts: FilteredDistricts[];
     // eslint-disable-next-line no-unused-vars
-    setFilteredDistricts: (districts: FilteredDistricts[]) => void;
-    searchLaunched: boolean;
-    searchScopeValue: boolean;
-    searchScopeChecked: boolean;
-    onChangeSearchScopeFunction: () => void;
+    searchScope: boolean;
+    onChangeSearchScope: () => void;
     isFetchingDistricts: boolean;
     isFetchingRegions: boolean;
     districtShapes?: FilteredDistricts[];
@@ -54,11 +51,8 @@ export const ScopeInput: FunctionComponent<Props> = ({
     field,
     form: { values },
     filteredDistricts,
-    setFilteredDistricts,
-    searchLaunched,
-    searchScopeValue,
-    searchScopeChecked,
-    onChangeSearchScopeFunction,
+    searchScope,
+    onChangeSearchScope,
     isFetchingDistricts,
     isFetchingRegions,
     districtShapes,
@@ -110,17 +104,6 @@ export const ScopeInput: FunctionComponent<Props> = ({
                 scope.group.org_units.includes(OrgUnitId),
             )
         ) {
-            if (searchLaunched || searchScopeChecked) {
-                const newListAfterRemove = filteredDistricts.filter(dist => {
-                    let distrToRemove: FilteredDistricts | undefined;
-                    if (!OrgUnitsIdInSameRegion.includes(dist.id)) {
-                        distrToRemove = dist;
-                    }
-                    return distrToRemove;
-                });
-                setFilteredDistricts(newListAfterRemove);
-            }
-
             const orgUnits: Array<number> = [];
 
             scope.group.org_units.forEach(OrgUnitId => {
@@ -203,8 +186,8 @@ export const ScopeInput: FunctionComponent<Props> = ({
                         keyValue="searchScope"
                         type="checkbox"
                         withMarginTop={false}
-                        onChange={onChangeSearchScopeFunction}
-                        value={searchScopeValue}
+                        onChange={onChangeSearchScope}
+                        value={searchScope}
                         label={MESSAGES.searchInScopeOrAllDistricts}
                     />
                 </Box>

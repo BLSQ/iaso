@@ -1,15 +1,9 @@
 /* eslint-disable camelcase */
-import React, {
-    FunctionComponent,
-    useState,
-    useMemo,
-    useCallback,
-    useEffect,
-    ReactNode,
-} from 'react';
+import React, { FunctionComponent, useState, useMemo, ReactNode } from 'react';
 import { Field, useFormikContext } from 'formik';
+import { useDebounce } from 'use-debounce';
 // @ts-ignore
-import { useSafeIntl } from 'bluesquare-components';
+import { useSafeIntl, useSkipEffectOnMount } from 'bluesquare-components';
 import { TabContext, TabList, TabPanel } from '@material-ui/lab';
 import { Tab, Grid } from '@material-ui/core';
 
@@ -24,12 +18,12 @@ import { useGetParentOrgUnit } from '../hooks/useGetParentOrgUnit';
 import { useGetGeoJson } from '../hooks/useGetGeoJson';
 import { findScopeWithOrgUnit, findRegion } from '../components/Scopes/utils';
 
-import { FilteredDistricts, Round } from '../components/Scopes/types';
+import { FilteredDistricts, Round, Scope } from '../components/Scopes/types';
 
 type Values = {
     separate_scopes_per_round?: boolean;
     rounds: Round[];
-    scopes: any;
+    scopes: Scope[];
     initial_org_unit: number;
 };
 
@@ -38,6 +32,13 @@ export const ScopeForm: FunctionComponent = () => {
     const { formatMessage } = useSafeIntl();
     const { separate_scopes_per_round: scopePerRound, rounds } = values;
     const classes: Record<string, string> = useStyles();
+    const [page, setPage] = useState(0);
+    const [searchScope, setSearchScope] = useState(true);
+    const [currentTab, setCurrentTab] = useState('1');
+    const [search, setSearch] = useState('');
+
+    const [debouncedSearch] = useDebounce(search, 500);
+
     const sortedRounds: Round[] = useMemo(
         () =>
             [...rounds]
@@ -47,20 +48,20 @@ export const ScopeForm: FunctionComponent = () => {
                 .sort((a, b) => a.number - b.number),
         [rounds],
     );
-    const [page, setPage] = useState(0);
-    const [searchScope, setSearchScope] = useState(true);
-    const [currentTab, setCurrentTab] = useState('1');
-    const [filteredDistricts, setFilteredDistricts] = useState<
-        FilteredDistricts[] | undefined
-    >();
-    const [searchLaunched, setSearchLaunched] = useState(false);
-    const [searchScopeChecked, setSearchScopeChecked] = useState(false);
-    const handleChangeTab = (event, newValue) => {
-        setCurrentTab(newValue);
-        setSearchLaunched(true);
-    };
 
     const { data: country } = useGetParentOrgUnit(values.initial_org_unit);
+    const parentCountryId =
+        country?.country_parent?.id || country?.root?.id || country?.id;
+    const { data: districtShapes, isFetching: isFetchingDistricts } =
+        useGetGeoJson(parentCountryId, 'DISTRICT');
+    const { data: regionShapes, isFetching: isFetchingRegions } = useGetGeoJson(
+        parentCountryId,
+        'REGION',
+    );
+
+    const handleChangeTab = (event, newValue) => {
+        setCurrentTab(newValue);
+    };
 
     const scopes = useMemo(() => {
         if (!scopePerRound) {
@@ -74,20 +75,8 @@ export const ScopeForm: FunctionComponent = () => {
         }
         return [];
     }, [currentTab, rounds, scopePerRound, sortedRounds, values.scopes]);
-    const parentCountryId =
-        country?.country_parent?.id || country?.root?.id || country?.id;
 
-    const { data: districtShapes, isFetching: isFetchingDistricts } =
-        useGetGeoJson(parentCountryId, 'DISTRICT');
-
-    const { data: regionShapes, isFetching: isFetchingRegions } = useGetGeoJson(
-        parentCountryId,
-        'REGION',
-    );
-
-    const [search, setSearch] = useState('');
-
-    const searchDistrictByName = useCallback(() => {
+    const filteredDistricts = useMemo(() => {
         if (districtShapes) {
             let filtreds: FilteredDistricts[] = [...districtShapes].map(
                 district => {
@@ -117,38 +106,21 @@ export const ScopeForm: FunctionComponent = () => {
                 );
             }
 
-            if (search !== '') {
+            if (debouncedSearch !== '') {
                 filtreds = filtreds.filter(d =>
-                    d.name.toLowerCase().includes(search.toLowerCase()),
+                    d.name
+                        .toLowerCase()
+                        .includes(debouncedSearch.toLowerCase()),
                 );
             }
-            setFilteredDistricts(filtreds);
-            setSearchLaunched(false);
-            setPage(0);
+            return filtreds;
         }
-    }, [districtShapes, regionShapes, scopes, search, searchScope]);
+        return undefined;
+    }, [districtShapes, regionShapes, scopes, debouncedSearch, searchScope]);
 
-    useEffect(() => {
-        if (searchLaunched) {
-            searchDistrictByName();
-        }
-    }, [currentTab, searchScope, searchDistrictByName, searchLaunched]);
-
-    useEffect(() => {
-        setSearchLaunched(true);
-    }, [scopePerRound, scopes]);
-
-    useEffect(() => {
-        if (districtShapes && !filteredDistricts) {
-            searchDistrictByName();
-        }
-    }, [districtShapes, filteredDistricts, searchDistrictByName]);
-
-    const onChangeSearchScope = () => {
-        setSearchLaunched(true);
-        setSearchScopeChecked(true);
-        setSearchScope(!searchScope);
-    };
+    useSkipEffectOnMount(() => {
+        setPage(0);
+    }, [filteredDistricts]);
 
     const renderField = (name: string): ReactNode => {
         return (
@@ -156,24 +128,14 @@ export const ScopeForm: FunctionComponent = () => {
                 name={name}
                 component={ScopeInput}
                 filteredDistricts={filteredDistricts}
-                setFilteredDistricts={setFilteredDistricts}
-                searchLaunched={searchLaunched}
-                searchScopeValue={searchScope}
-                onChangeSearchScopeFunction={onChangeSearchScope}
-                searchScopeChecked={searchScopeChecked}
+                searchScope={searchScope}
+                onChangeSearchScope={() => setSearchScope(!searchScope)}
                 isFetchingDistricts={isFetchingDistricts || !filteredDistricts}
                 isFetchingRegions={isFetchingRegions || !regionShapes}
                 districtShapes={districtShapes}
                 regionShapes={regionShapes}
                 searchComponent={
-                    <ScopeSearch
-                        search={search}
-                        setSearch={setSearch}
-                        onSearch={() => [
-                            searchDistrictByName(),
-                            setSearchLaunched(true),
-                        ]}
-                    />
+                    <ScopeSearch search={search} setSearch={setSearch} />
                 }
                 page={page}
                 setPage={setPage}

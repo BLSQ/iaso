@@ -42,8 +42,6 @@ type Props = {
     regionShapes: Shape[];
     filteredDistricts?: FilteredDistricts[];
     districtShapes?: FilteredDistricts[];
-    // eslint-disable-next-line no-unused-vars
-    // setFilteredDistricts: (id: FilteredDistricts[]) => void;
     toggleDistrictInVaccineScope: (
         // eslint-disable-next-line no-unused-vars
         district: FilteredDistricts,
@@ -62,7 +60,6 @@ export const DistrictScopeTable: FunctionComponent<Props> = ({
     regionShapes,
     filteredDistricts,
     districtShapes,
-    // setFilteredDistricts,
     toggleDistrictInVaccineScope,
     page,
     setPage,

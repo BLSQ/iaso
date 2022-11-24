@@ -108,7 +108,6 @@ export const findLatestRounds = (
     const campaignsCopy = cloneDeep(campaigns);
     const roundsDict = {};
     campaigns.forEach((c, i) => {
-        // What do I do if !rounds?
         const currentRound = c.rounds.find(round => {
             const startDate = moment(round.started_at);
             const endDate = moment(round.ended_at); // TODO handle rounds with no end date

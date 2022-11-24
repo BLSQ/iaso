@@ -1,6 +1,6 @@
-import moment from 'moment';
+import moment, { Moment } from 'moment';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { useQueries } from 'react-query';
+import { useQueries, Query as RQQuery } from 'react-query';
 // @ts-ignore
 import { useSafeIntl } from 'bluesquare-components';
 import { useGetMergedCampaignShapes } from '../../../hooks/useGetMergedCampaignShapes';
@@ -12,8 +12,23 @@ import {
     makeRoundDict,
 } from './utils';
 import MESSAGES from '../../../constants/messages';
+import {
+    MappedCampaign,
+    MergedShapeWithColor,
+    Query,
+    ShapeForCalendarMap,
+} from '../types';
 
-export const useRoundSelection = (selection, campaigns, currentDate) => {
+type RoundSelection = {
+    campaigns: MappedCampaign[];
+    roundsDict: Record<string, string>;
+};
+
+export const useRoundSelection = (
+    selection: string,
+    campaigns: MappedCampaign[],
+    currentDate: Moment,
+): RoundSelection => {
     const [updatedCampaigns, setUpdatedCampaigns] = useState(campaigns);
     const [rounds, setRounds] = useState({});
 
@@ -42,8 +57,11 @@ export const useRoundSelection = (selection, campaigns, currentDate) => {
     };
 };
 
-export const useRoundsQueries = (campaigns, loadingCampaigns): any[] => {
-    const [queries, setQueries] = useState<any[]>([]);
+export const useRoundsQueries = (
+    campaigns: MappedCampaign[],
+    loadingCampaigns: boolean,
+): Query[] => {
+    const [queries, setQueries] = useState<Query[]>([]);
 
     useEffect(() => {
         setQueries(makeQueriesForCampaigns(campaigns, loadingCampaigns));
@@ -52,7 +70,22 @@ export const useRoundsQueries = (campaigns, loadingCampaigns): any[] => {
     return queries;
 };
 
-export const useMergedShapes = ({ campaigns, roundsDict, selection }) => {
+type UseMergedShapesArgs = {
+    campaigns: MappedCampaign[];
+    roundsDict: Record<string, string>;
+    selection: string;
+};
+
+type UseMergedShapesResult = {
+    mergedShapes: MergedShapeWithColor[];
+    isLoadingMergedShapes: boolean;
+};
+
+export const useMergedShapes = ({
+    campaigns,
+    roundsDict,
+    selection,
+}: UseMergedShapesArgs): UseMergedShapesResult => {
     const { data: mergedShapes, isLoading: isLoadingMergedShapes } =
         useGetMergedCampaignShapes().query;
 
@@ -79,15 +112,14 @@ export const useMergedShapes = ({ campaigns, roundsDict, selection }) => {
         },
         [campaignColors],
     );
-    const mergedShapesToDisplay = useMemo(() => {
-        const shapesForSelectedCampaign = mergedShapes?.features.filter(shape =>
-            campaignIds.includes(shape.properties.id),
+    const mergedShapesToDisplay: MergedShapeWithColor[] = useMemo(() => {
+        const shapesForSelectedCampaign = (mergedShapes?.features ?? []).filter(
+            shape => campaignIds.includes(shape.properties.id),
         );
         if (selection === 'all') {
             return shapesForSelectedCampaign?.map(addShapeColor);
         }
 
-        // This will only work if there are separate scopes per round
         if (selection === 'latest') {
             return shapesForSelectedCampaign
                 ?.filter(shape => {
@@ -99,7 +131,6 @@ export const useMergedShapes = ({ campaigns, roundsDict, selection }) => {
                 })
                 .map(addShapeColor);
         }
-        // This will only work if there are separate scopes per round
         return shapesForSelectedCampaign
             ?.filter(shape => {
                 if (shape.properties.round_number) {
@@ -129,7 +160,17 @@ export const useMergedShapes = ({ campaigns, roundsDict, selection }) => {
     }, [isLoadingMergedShapes, mergedShapesToDisplay]);
 };
 
-export const useShapes = (selection, campaigns, loadingCampaigns) => {
+type UseShapesResult = {
+    isLoadingShapes: boolean;
+    roundsDict: Record<string, string>;
+    shapes: ShapeForCalendarMap[];
+};
+
+export const useShapes = (
+    selection: string,
+    campaigns: MappedCampaign[],
+    loadingCampaigns: boolean,
+): UseShapesResult => {
     // storing the date in a ref to avoid an infinite loop.
     const today = useRef(moment());
     const { campaigns: campaignsForMap, roundsDict } = useRoundSelection(
@@ -138,9 +179,12 @@ export const useShapes = (selection, campaigns, loadingCampaigns) => {
         today.current,
     );
     const queries = useRoundsQueries(campaignsForMap, loadingCampaigns);
-    const shapesQueries = useQueries(queries);
-    const campaignsShapes = useMemo(
-        () => shapesQueries.filter(sq => sq.data).map(sq => sq.data),
+    const shapesQueries = useQueries(queries as unknown as RQQuery[]);
+    const campaignsShapes: ShapeForCalendarMap[] = useMemo(
+        () =>
+            shapesQueries
+                .filter(sq => sq.data)
+                .map(sq => sq.data as ShapeForCalendarMap),
         [shapesQueries],
     );
     const isLoadingShapes = shapesQueries.some(q => q.isLoading);

@@ -1,26 +1,36 @@
-import React, { useRef, useState, useMemo } from 'react';
-import PropTypes from 'prop-types';
+import React, { useRef, useState, useMemo, FunctionComponent } from 'react';
+// @ts-ignore
 import { LoadingSpinner } from 'bluesquare-components';
 import { Box } from '@material-ui/core';
 import { Map, TileLayer } from 'react-leaflet';
-import { MapRoundSelector } from './MapRoundSelector.tsx';
+import { MapRoundSelector } from './MapRoundSelector';
 import { VaccinesLegend } from './VaccinesLegend';
 import { CampaignsLegend } from './CampaignsLegend';
 import { useStyles } from '../Styles';
-import { useMergedShapes, useShapes } from './hooks.ts';
-import { makeSelections } from './utils.ts';
+import { useMergedShapes, useShapes } from './hooks';
+import { makeSelections } from './utils';
 import 'leaflet/dist/leaflet.css';
-import { CalendarMapPanesRegular } from './CalendarMapPanesRegular.tsx';
-import { CalendarMapPanesMerged } from './CalendarMapPanesMerged.tsx';
-import { defaultViewport, boundariesZoomLimit } from './constants.ts';
+import { CalendarMapPanesRegular } from './CalendarMapPanesRegular';
+import { CalendarMapPanesMerged } from './CalendarMapPanesMerged';
+import { defaultViewport, boundariesZoomLimit } from './constants';
+import { MappedCampaign } from '../types';
 
-const CalendarMap = ({ campaigns, loadingCampaigns, isPdf }) => {
+type Props = {
+    isPdf?: boolean;
+    loadingCampaigns: boolean;
+    campaigns: MappedCampaign[];
+};
+
+export const CalendarMap: FunctionComponent<Props> = ({
+    campaigns,
+    loadingCampaigns,
+    isPdf = false,
+}) => {
     const classes = useStyles();
     const map = useRef();
     const [viewport, setViewPort] = useState(defaultViewport);
     const [selection, setSelection] = useState('latest');
     const options = useMemo(() => makeSelections(campaigns), [campaigns]);
-
     const {
         shapes: campaignsShapes,
         isLoadingShapes,
@@ -88,15 +98,3 @@ const CalendarMap = ({ campaigns, loadingCampaigns, isPdf }) => {
         </Box>
     );
 };
-
-CalendarMap.defaultProps = {
-    isPdf: false,
-};
-
-CalendarMap.propTypes = {
-    campaigns: PropTypes.array.isRequired,
-    loadingCampaigns: PropTypes.bool.isRequired,
-    isPdf: PropTypes.bool,
-};
-
-export { CalendarMap };

@@ -4,6 +4,7 @@ import EditIcon from '@material-ui/icons/Edit';
 import classnames from 'classnames';
 import { useIconLabel } from './hooks';
 import { useStyles } from '../Styles';
+import { ViewPort } from '../../../constants/types';
 
 const style = theme => {
     return {
@@ -26,7 +27,7 @@ type MapRoundButton = {
     onClick: () => void;
     disabled?: boolean;
     selection: string;
-    viewport: { center: number[]; zoom: number };
+    viewport: ViewPort;
 };
 
 export const MapRoundButton: FunctionComponent<MapRoundButton> = ({

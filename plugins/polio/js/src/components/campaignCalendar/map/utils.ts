@@ -1,4 +1,4 @@
-import moment from 'moment';
+import moment, { Moment } from 'moment';
 import { cloneDeep } from 'lodash';
 import { ViewPort } from '../../../constants/types';
 import { vaccineOpacity } from '../Styles';
@@ -6,6 +6,11 @@ import { boundariesZoomLimit } from './constants';
 import { polioVaccines } from '../../../constants/virus';
 import { appId } from '../../../constants/app';
 import { getRequest } from '../../../../../../../hat/assets/js/apps/Iaso/libs/Api';
+import { MappedCampaign, Query } from '../types';
+import {
+    DropdownOptions,
+    Nullable,
+} from '../../../../../../../hat/assets/js/apps/Iaso/types/utils';
 
 export const getGeoJsonStyle = (
     fillColor: string,
@@ -34,7 +39,7 @@ export const getShapeQuery = ({
     campaign,
     vaccine,
     round,
-}: ShapeQueryArgs): any => {
+}: ShapeQueryArgs): Query => {
     const baseParams = {
         asLocation: 'true',
         limit: '3000',
@@ -56,12 +61,15 @@ export const getShapeQuery = ({
     };
 };
 
-export const makeSelections = campaigns => {
-    let maxRound = null;
+export const makeSelections = (
+    campaigns: MappedCampaign[],
+): DropdownOptions<string>[] => {
+    let maxRound: Nullable<number> = null;
     let showRoundZero = false;
     campaigns.forEach(campaign => {
         const lastRound = campaign.rounds[campaign.rounds.length - 1];
         const { number } = lastRound ?? {};
+
         if (
             Number.isInteger(number) &&
             (!maxRound || (maxRound && number > maxRound))
@@ -73,7 +81,6 @@ export const makeSelections = campaigns => {
             showRoundZero = true;
         }
     });
-    // TODO translate
     const selections = [
         { value: 'all', label: 'All' },
         { value: 'latest', label: 'Latest' },
@@ -89,7 +96,15 @@ export const makeSelections = campaigns => {
     return selections;
 };
 
-export const findLatestRounds = (currentDate, campaigns) => {
+type LatestRoundsResult = {
+    roundsDict: Record<string, string>;
+    campaigns: MappedCampaign[];
+};
+
+export const findLatestRounds = (
+    currentDate: Moment,
+    campaigns: MappedCampaign[],
+): LatestRoundsResult => {
     const campaignsCopy = cloneDeep(campaigns);
     const roundsDict = {};
     campaigns.forEach((c, i) => {
@@ -123,9 +138,9 @@ export const findLatestRounds = (currentDate, campaigns) => {
 };
 
 export const makeQueriesForCampaigns = (
-    campaigns: any,
+    campaigns: MappedCampaign[],
     loadingCampaigns: boolean,
-): any[] => {
+): Query[] => {
     const queries = [];
     if (!campaigns || campaigns.length === 0) return queries;
     campaigns.forEach(campaign => {
@@ -159,7 +174,10 @@ export const makeQueriesForCampaigns = (
     return queries;
 };
 
-export const findRoundForCampaigns = (campaigns, selection) => {
+export const findRoundForCampaigns = (
+    campaigns: MappedCampaign[],
+    selection: string,
+): MappedCampaign[] => {
     const campaignsCopy = cloneDeep(campaigns);
     campaigns.forEach((c, i) => {
         campaignsCopy[i].rounds = campaignsCopy[i].rounds.filter(
@@ -169,7 +187,10 @@ export const findRoundForCampaigns = (campaigns, selection) => {
     return campaignsCopy;
 };
 
-export const makeRoundDict = (selection, campaigns) => {
+export const makeRoundDict = (
+    selection: string,
+    campaigns: MappedCampaign[],
+): Record<string, string> => {
     const result = {};
     campaigns?.forEach(campaign => {
         result[campaign.id] = selection;
@@ -177,7 +198,14 @@ export const makeRoundDict = (selection, campaigns) => {
     return result;
 };
 
-export const findFirstAndLastRounds = campaigns => {
+type FirstAndLastRounds = {
+    firstRound: number;
+    lastRound: number;
+};
+
+export const findFirstAndLastRounds = (
+    campaigns: MappedCampaign[],
+): Record<string, FirstAndLastRounds> => {
     const result = {};
     campaigns.forEach(campaign => {
         const lastRound = campaign.rounds[campaign.rounds.length - 1].number;

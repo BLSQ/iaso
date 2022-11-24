@@ -193,5 +193,220 @@ export type CampaignFieldType =
     | 'xml-external';
 
 export type Translations = {
-    messages: Record<string, any>;
+    messages: Record<
+        string,
+        { id: string; defaultMessage: string; values?: string }
+    >;
+};
+
+export type Scope = {
+    vaccine: string;
+    group: { name: string; id: number; org_units: number[] };
+};
+
+export type RoundVaccine = {
+    wastage_ratio_forecast: string;
+    doses_per_vial: number;
+    name: string;
+    id: number;
+};
+
+export type Shipment = {
+    id: number;
+    po_numbers: number;
+    vials_received: number;
+    estimated_arrival_date: string;
+    vaccine_name: string;
+    date_reception: string;
+    reception_pre_alert: string;
+    comment: Nullable<string>;
+};
+
+export type Destruction = {
+    id: number;
+    vials_destroyed: number;
+    date_report: string;
+    date_report_received: string;
+    comment: Nullable<string>;
+};
+
+export type Round = {
+    id: string;
+    started_at: string;
+    ended_at: string;
+    mop_up_started_at: Nullable<string>;
+    mop_up_ended_at: Nullable<string>;
+    im_started_at: Nullable<string>;
+    im_ended_at: Nullable<string>;
+    lqas_started_at: Nullable<string>;
+    lqas_ended_at: Nullable<string>;
+    target_population: Nullable<number>;
+    doses_requested: Nullable<number>;
+    cost: string;
+    im_percentage_children_missed_in_household: Nullable<number>;
+    im_percentage_children_missed_out_household: Nullable<number>;
+    im_percentage_children_missed_in_plus_out_household: Nullable<number>;
+    awareness_of_campaign_plannning: Nullable<number>;
+    main_awareness_problem: Nullable<string>;
+    lqas_districts_passing: Nullable<number>;
+    lqas_districts_failing: Nullable<number>;
+    preparedness_spreadsheet_url: Nullable<string>;
+    preparedness_sync_status: Nullable<string>;
+    scopes: Scope[];
+    vaccines: RoundVaccine[];
+    shipments: Shipment[];
+    destructions: Destruction[];
+    number: number;
+    date_signed_vrf_received: Nullable<string>;
+    date_destruction: Nullable<string>;
+    vials_destroyed: Nullable<number>;
+    reporting_delays_hc_to_district: Nullable<number>;
+    reporting_delays_district_to_region: Nullable<number>;
+    reporting_delays_region_to_national: Nullable<number>;
+    forma_reception: Nullable<string>;
+    forma_date: Nullable<string>;
+    forma_comment: Nullable<string>;
+    forma_missing_vials: Nullable<number>;
+    forma_unusable_vials: Nullable<number>;
+    forma_usable_vials: Nullable<number>;
+    campaign: string;
+};
+
+export type Campaign = {
+    id: string;
+    created_at: string;
+    updated_at: string;
+    round_one?: any[];
+    round_two?: any[];
+    rounds: Round[];
+    org_unit: {
+        id: number;
+        name: string;
+        root: {
+            id: number;
+            name: string;
+        };
+        country_parent: {
+            id: number;
+            name: string;
+        };
+    };
+    top_level_org_unit_name: string;
+    top_level_org_unit_id: number;
+    general_status: string;
+    grouped_campaigns: number[];
+    account: number;
+    // Maybe vaccine name can be typed more strictly
+    scopes: Scope[];
+    last_surge: Nullable<string | number>;
+    obr_name: string;
+    vaccines: string;
+    deleted_at: Nullable<string | number>;
+    epid: Nullable<string>;
+    gpei_coordinator: Nullable<string>;
+    gpei_email: Nullable<string>;
+    description: Nullable<string>;
+    separate_scopes_per_round: boolean;
+    creation_email_sent_at: Nullable<string | number>;
+    onset_at: Nullable<string | number>;
+    three_level_call_at: Nullable<string | number>;
+    cvdpv_notified_at: Nullable<string | number>;
+    cvdpv2_notified_at: Nullable<string | number>;
+    pv_notified_at: Nullable<string | number>;
+    pv2_notified_at: Nullable<string | number>;
+    virus: Nullable<string>;
+    vacine: Nullable<string>;
+    detection_status: string; // could be more strict
+    detection_responsible: Nullable<string>;
+    detection_first_draft_submitted_at: Nullable<string | number>;
+    detection_rrt_oprrt_approval_at: Nullable<string | number>;
+    risk_assessment_status: string; // could be more strict
+    risk_assessment_responsible: Nullable<string>;
+    risk_assessment_first_draft_submitted_at: Nullable<string | number>;
+    risk_assessment_rrt_oprrt_approval_at: Nullable<string | number>;
+    investigation_at: Nullable<string | number>;
+    ag_nopv_group_met_at: Nullable<string | number>;
+    dg_authorized_at: Nullable<string | number>;
+    verification_score: Nullable<string | number>;
+    doses_requested: Nullable<number>;
+    preparedness_spreadsheet_url: Nullable<string>;
+    preparedness_sync_status: Nullable<string>;
+    surge_spreadsheet_url: Nullable<string>;
+    country_name_in_surge_spreadsheet: Nullable<string>;
+    budget_status: Nullable<string>;
+    budget_responsible: Nullable<string>;
+    is_test: boolean;
+    budget_current_state_key: string;
+    budget_current_state_label: Nullable<string>;
+    who_disbursed_to_co_at: Nullable<string | number>;
+    who_disbursed_to_moh_at: Nullable<string | number>;
+    unicef_disbursed_to_co_at: Nullable<string | number>;
+    unicef_disbursed_to_moh_at: Nullable<string | number>;
+    eomg: Nullable<unknown>;
+    no_regret_fund_amount: Nullable<number>;
+    payment_mode: Nullable<unknown>;
+    district_count: Nullable<number>;
+    budget_rrt_oprrt_approval_at: Nullable<string | number>;
+    budget_submitted_at: Nullable<string | number>;
+    is_preventive: boolean;
+    enable_send_weekly_emails: boolean;
+    initial_org_unit: number;
+    country: number;
+    group: Nullable<unknown>;
+    last_budget_event: Nullable<unknown>;
+};
+
+export type MergedShapeProperties = {
+    obr_name: string;
+    id: string;
+    vaccine: string;
+    scope_key: string;
+    top_level_org_unit_name: string;
+    round_number?: number;
+};
+export type MergedShape = {
+    type: string;
+    properties: MergedShapeProperties;
+    geometry: {
+        type: 'string';
+        coordinates: number[];
+    };
+    color?: string;
+};
+export type MergedShapes = {
+    type: string;
+    features: MergedShape[];
+    cache_creation_date: number;
+};
+
+export type GeoJson = {
+    type: string;
+    features: {
+        id: number;
+        type: string;
+        geometry: {
+            type: string;
+            coordinates: Array<Array<[number, number]>>;
+        };
+        properties: Record<string, unknown>;
+    }[];
+    crs: { type: string; properties: Record<string, unknown> };
+};
+
+export type Shape = {
+    altitude: Nullable<number>;
+    geo_json;
+    has_geo_json: boolean;
+    id: number;
+    latitude: Nullable<number>;
+    longitude: Nullable<number>;
+    name: string;
+    org_unit_type: string;
+    org_unit_type_depth: number;
+    org_unit_type_id: number;
+    parent_id: number;
+    parent_name: Nullable<string>;
+    short_name: string;
+    source_id: number;
+    source_name: string;
 };

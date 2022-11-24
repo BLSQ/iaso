@@ -1,60 +1,66 @@
 /* eslint-disable react/jsx-props-no-spreading */
-import React, { FunctionComponent } from 'react';
-import { FormattedMessage } from 'react-intl';
-import {
-    Typography,
-    Accordion,
-    AccordionSummary,
-    AccordionDetails,
-    Box,
-} from '@material-ui/core';
-import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
-import { useStyles } from '../Styles';
+import React, { FunctionComponent, useState } from 'react';
+import { Box } from '@material-ui/core';
+// @ts-ignore
+import { ConfirmCancelModal, makeFullModal } from 'bluesquare-components';
 import InputComponent from '../../../../../../../hat/assets/js/apps/Iaso/components/forms/InputComponent';
 import MESSAGES from '../../../constants/messages';
 import { DropdownOptions } from '../../../../../../../hat/assets/js/apps/Iaso/types/utils';
+import { MapRoundButton } from './MapRoundButton';
 
 type Props = {
-    label: string;
     selection: 'all' | 'latest' | string;
     // eslint-disable-next-line no-unused-vars
-    onChange: (value: 'all' | 'latest' | number) => void;
+    onChange: (value: 'all' | 'latest' | string) => void;
     options: DropdownOptions<'all' | 'latest' | number>[];
+    isOpen: boolean;
+    closeDialog: CallableFunction;
+    id?: string;
 };
 
 const MapRoundSelector: FunctionComponent<Props> = ({
-    label,
     selection,
     onChange,
     options,
+    isOpen,
+    closeDialog,
+    id,
 }) => {
-    const classes = useStyles();
+    const [radio, setRadio] = useState<string>(selection);
 
     return (
-        <Accordion elevation={1} className={classes.mapLegendCampaigns}>
-            <AccordionSummary expandIcon={<ExpandMoreIcon />}>
-                <Typography
-                    variant="subtitle1"
-                    className={classes.mapLegendCampaignTitle}
-                >
-                    {/* <FormattedMessage {...MESSAGES[label]} /> */}
-                    La la land
-                </Typography>
-            </AccordionSummary>
-            <AccordionDetails>
-                <Box display="block">
-                    <InputComponent
-                        type="radio"
-                        keyValue="showRound"
-                        value={selection}
-                        onChange={onChange}
-                        options={options}
-                        labelString="Shape of water"
-                    />
-                </Box>
-            </AccordionDetails>
-        </Accordion>
+        <ConfirmCancelModal
+            allowConfirm
+            titleMessage={MESSAGES.selectRoundsToDisplay}
+            onConfirm={() => {
+                onChange(radio);
+            }}
+            onCancel={() => {
+                setRadio(selection);
+            }}
+            maxWidth="xs"
+            cancelMessage={MESSAGES.cancel}
+            confirmMessage={MESSAGES.confirm}
+            open={isOpen}
+            closeDialog={closeDialog}
+            id={id ?? 'editMapRound'}
+            dataTestId="editMapRound"
+            onClose={() => null}
+        >
+            <Box display="block">
+                <InputComponent
+                    type="radio"
+                    keyValue="showRound"
+                    value={radio}
+                    onChange={(_: never, value: string) => setRadio(value)}
+                    options={options}
+                    labelString=""
+                />
+            </Box>
+        </ConfirmCancelModal>
     );
 };
 
-export { MapRoundSelector };
+const modalWithButton = makeFullModal(MapRoundSelector, MapRoundButton);
+
+export { modalWithButton as MapRoundSelector };

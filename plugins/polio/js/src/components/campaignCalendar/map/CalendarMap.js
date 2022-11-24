@@ -35,7 +35,6 @@ const CalendarMap = ({ campaigns, loadingCampaigns, isPdf }) => {
 
     const loadingShapes =
         viewport.zoom <= 6 ? isLoadingMergedShapes : isLoadingShapes;
-
     return (
         <Box position="relative">
             {(loadingCampaigns || loadingShapes) && <LoadingSpinner absolute />}
@@ -43,10 +42,10 @@ const CalendarMap = ({ campaigns, loadingCampaigns, isPdf }) => {
                 <MapRoundSelector
                     selection={selection}
                     options={options}
-                    onChange={(_, value) => {
+                    onChange={value => {
                         setSelection(value);
                     }}
-                    label="Show round"
+                    iconProps={{ selection }}
                 />
                 {viewport.zoom > boundariesZoomLimit && (
                     <Box mt={2}>

@@ -1,6 +1,8 @@
 import moment from 'moment';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useQueries } from 'react-query';
+// @ts-ignore
+import { useSafeIntl } from 'bluesquare-components';
 import { useGetMergedCampaignShapes } from '../../../hooks/useGetMergedCampaignShapes';
 import {
     findFirstAndLastRounds,
@@ -9,6 +11,7 @@ import {
     makeQueriesForCampaigns,
     makeRoundDict,
 } from './utils';
+import MESSAGES from '../../../constants/messages';
 
 export const useRoundSelection = (selection, campaigns, currentDate) => {
     const [updatedCampaigns, setUpdatedCampaigns] = useState(campaigns);
@@ -146,4 +149,23 @@ export const useShapes = (selection, campaigns, loadingCampaigns) => {
         () => ({ isLoadingShapes, shapes: campaignsShapes, roundsDict }),
         [campaignsShapes, isLoadingShapes, roundsDict],
     );
+};
+
+export const useIconLabel = (selection: string): string => {
+    const { formatMessage } = useSafeIntl();
+    const [label, setLabel] = useState<string>('');
+
+    useEffect(() => {
+        const parsed = parseInt(selection, 10);
+        if (!Number.isNaN(parsed)) {
+            setLabel(`${formatMessage(MESSAGES.round)} ${parsed}`);
+        } else if (selection === 'all' || selection === 'latest') {
+            setLabel(formatMessage(MESSAGES[selection]));
+        } else {
+            console.warn(`Incorrect selection value: ${selection}`);
+            setLabel(formatMessage(MESSAGES.unknown));
+        }
+    }, [formatMessage, selection]);
+
+    return label;
 };

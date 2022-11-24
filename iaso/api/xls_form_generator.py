@@ -83,20 +83,8 @@ def create_ou_tree_list(group_ou):
     # create list of dictionary with OU tree
     ou_tree_list = []
     for ou in group_ou:
-        ou_tree_dict = {ou.org_unit_type.name: ou}
-        ou_parent = ou.parent
-        if ou_parent is not None:
-            ou_tree_dict[ou_parent.org_unit_type.name] = ou_parent
-        while ou_parent is not None:
-            ou_tree_dict[ou_parent.org_unit_type.name] = ou_parent
-            ou_parent = ou_parent.parent
-            if ou_parent is not None:
-                ou_tree_dict[ou_parent.org_unit_type.name] = ou_parent
+        ou_tree_dict = {ou.org_unit_type.name: ou for ou in ou.create_ou_tree()}
         ou_tree_list.append(ou_tree_dict)
-        ou_children = ou.descendants()
-        for ou_child in ou_children:
-            ou_tree_dict[ou_child.org_unit_type.name] = ou_child
-
     return ou_tree_list
 
 

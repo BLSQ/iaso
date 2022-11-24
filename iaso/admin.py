@@ -454,6 +454,7 @@ class StorageDeviceAdmin(admin.ModelAdmin):
         StorageLogEntryInline,
     ]
 
+
 admin.site.register(Link, LinkAdmin)
 admin.site.register(Form, FormAdmin)
 admin.site.register(Instance, InstanceAdmin)

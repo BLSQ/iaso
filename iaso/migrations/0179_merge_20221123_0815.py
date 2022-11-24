@@ -6,9 +6,8 @@ from django.db import migrations
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('iaso', '0177_xlsformtemplate'),
-        ('iaso', '0178_remove_beneficiary_user_perm'),
+        ("iaso", "0177_xlsformtemplate"),
+        ("iaso", "0178_remove_beneficiary_user_perm"),
     ]
 
-    operations = [
-    ]
+    operations = []

@@ -60,9 +60,7 @@ class XlsFormGeneratorAPITestCase(APITestCase):
         date_now = datetime.datetime.today().strftime("%Y-%m-%d")
 
         self.assertEqual(response.status_code, 200)
-        self.assertEquals(
-            response.get("Content-Disposition"), f"attachment; filename=FORM_A_FORM_1_{date_now}.xlsx"
-        )
+        self.assertEquals(response.get("Content-Disposition"), f"attachment; filename=FORM_A_FORM_1_{date_now}.xlsx")
 
     def test_upload_xls_form_template(self):
         self.client.force_authenticate(self.yoda)
@@ -72,11 +70,7 @@ class XlsFormGeneratorAPITestCase(APITestCase):
             "testcampaignformtemplate.xlsx", file.read(), content_type="multipart/form-data"
         )
 
-        data = {
-            "file": upload_file,
-            "name": "FORM_TEMPLATE",
-            "account": self.yoda.iaso_profile.account.pk
-        }
+        data = {"file": upload_file, "name": "FORM_TEMPLATE", "account": self.yoda.iaso_profile.account.pk}
 
         response = self.client.post("/api/generate_xlsform/", data=data)
 

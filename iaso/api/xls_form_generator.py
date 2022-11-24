@@ -1,26 +1,17 @@
-import string
-
-import openpyxl
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.decorators import action
 from rest_framework import serializers, filters
 from rest_framework.viewsets import ModelViewSet
-
-from django.db import connection
-
 import string
 from datetime import datetime
-
 from tempfile import NamedTemporaryFile
-
 import openpyxl
-
-
 from iaso.api.common import DeletionFilterBackend, TimestampField
 from iaso.models import Group
 from iaso.models.xls_form_template import XlsFormTemplate
+from plugins.polio.models import Campaign
 
 
 class XlsFormTemplateSerializer(serializers.ModelSerializer):
@@ -30,6 +21,83 @@ class XlsFormTemplateSerializer(serializers.ModelSerializer):
 
     created_at = TimestampField(read_only=True)
     updated_at = TimestampField(read_only=True)
+
+
+def get_data_from_campaigns(campaign_id, row, q_sheet, calculation_index):
+    """This function get the data from a campaign and insert it in the calculation row
+    of the xlsform. It's tagged as 'insert_field' in the xlsform.
+    """
+    authorized_fields = [
+        "id",
+        "epid",
+        "obr_name",
+        "gpei_email",
+        "description",
+        "creation_email_send_at",
+        "onset_at",
+        "three_level_call_at",
+        "cvdpv_notified_at",
+        "cvdpv2_notified_at",
+        "pv_notified_at",
+        "pv2_notified_at",
+        "virus",
+        "detection_status",
+        "detection_responsible",
+        "detection_first_draft_submitted_at",
+        "detection_rrt_oprtt_approval_at",
+        "risk_assessment_status",
+        "risk_assessment_responsible",
+        "investigation_at",
+        "risk_assessment_first_draft_submitted_at",
+        "risk_assessment_rrt_oprtt_approval_at",
+        "ag_nopv_group_met_at",
+        "dg_authorized_at",
+        "verification_score",
+        "doses_requested",
+        "preperadness_spreadsheet_url",
+        "preperadness_sync_status",
+        "surge_spreadsheet_url",
+        "country_name_in_surge_spreadsheet",
+        "budget_status",
+        "budget_responsible",
+        "created_at",
+        "updated_at",
+        "district_count",
+        "round_one",
+        "round_two",
+        "vacine",
+        "obr_name",
+    ]
+    campaign = get_object_or_404(Campaign, id=campaign_id)
+    for i in range(2, row + 1):
+        cell_obj = q_sheet.cell(row=i, column=2)
+        cell_value_start = cell_obj.value[:7] if cell_obj.value is not None else ""
+        if cell_value_start == "insert_":
+            str_request = cell_obj.value[7:]
+            if str_request in authorized_fields:
+                cell_obj = q_sheet.cell(row=i, column=calculation_index)
+                cell_obj.value = str(getattr(campaign, str_request))
+
+
+def create_ou_tree_list(group_ou):
+    # create list of dictionary with OU tree
+    ou_tree_list = []
+    for ou in group_ou:
+        ou_tree_dict = {ou.org_unit_type.name: ou}
+        ou_parent = ou.parent
+        if ou_parent is not None:
+            ou_tree_dict[ou_parent.org_unit_type.name] = ou_parent
+        while ou_parent is not None:
+            ou_tree_dict[ou_parent.org_unit_type.name] = ou_parent
+            ou_parent = ou_parent.parent
+            if ou_parent is not None:
+                ou_tree_dict[ou_parent.org_unit_type.name] = ou_parent
+        ou_tree_list.append(ou_tree_dict)
+        ou_children = ou.descendants()
+        for ou_child in ou_children:
+            ou_tree_dict[ou_child.org_unit_type.name] = ou_child
+
+    return ou_tree_list
 
 
 class XlsFormGeneratorViewSet(ModelViewSet):
@@ -48,16 +116,18 @@ class XlsFormGeneratorViewSet(ModelViewSet):
     @action(methods=["GET"], detail=False)
     def xlsform_generator(self, request) -> HttpResponse:
         """
-        Export a xlsform out using a group as OU source. A template is required. Specific data can be extracted from campaigns by
+        Export a xlsform by using a group as OU source. A template is required. Specific data can be extracted from campaigns by
         starting the name variable by 'insert_' in the xls file in "calculate" row. The data will be saved in the
         calculation column.
         """
         group_id = request.query_params.get("groupid", None)
-        group = get_object_or_404(Group, id=group_id)
         form_name = request.query_params.get("form_name", None)
+        campaign_id = request.query_params.get("campaignid", None)
 
         if not form_name:
             raise serializers.ValidationError({"error": "No form provided."})
+
+        group = get_object_or_404(Group, id=group_id)
 
         # Check if User has access to Group
         if not group.user_has_access_to(request.user):
@@ -67,6 +137,10 @@ class XlsFormGeneratorViewSet(ModelViewSet):
             path = XlsFormTemplate.objects.get(name=form_name).form_template.path
         except ValueError:
             raise serializers.ValidationError({"error": f"Bad Template Name."})
+
+        group_ou = group.org_units.all()
+
+        ou_tree_list = create_ou_tree_list(group_ou)
 
         wb = openpyxl.load_workbook(path)
         ws = wb.active
@@ -79,26 +153,6 @@ class XlsFormGeneratorViewSet(ModelViewSet):
         survey_last_empty_row = len(list(q_sheet.rows))
         for l in cell:
             survey_columns.append(q_sheet[f"{l}1"].value)
-
-        ou_tree_list = []
-        group_ou = group.org_units.all()
-
-        # create list of dictionary with OU tree
-        for ou in group_ou:
-            ou_tree_dict = {ou.org_unit_type.name: ou}
-            ou_parent = ou.parent
-            if ou_parent is not None:
-                ou_tree_dict[ou_parent.org_unit_type.name] = ou_parent
-            while ou_parent is not None:
-                ou_tree_dict[ou_parent.org_unit_type.name] = ou_parent
-                ou_parent = ou_parent.parent
-                if ou_parent is not None:
-                    ou_tree_dict[ou_parent.org_unit_type.name] = ou_parent
-            print(ou_tree_dict)
-            ou_tree_list.append(ou_tree_dict)
-            ou_children = ou.descendants()
-            for ou_child in ou_children:
-                ou_tree_dict[ou_child.org_unit_type.name] = ou_child
 
         added_countries = []
         added_regions = []
@@ -222,16 +276,9 @@ class XlsFormGeneratorViewSet(ModelViewSet):
                     calculation_index = iterator
                     break
 
-        # Insert data as calculation
-        # FIXME: Use to be relevant when we were extracting data from campaign but now ?
-        for i in range(2, row + 1):
-            cell_obj = q_sheet.cell(row=i, column=2)
-            cell_value_start = cell_obj.value[:7] if cell_obj.value is not None else ""
-            if cell_value_start == "insert_":
-                str_request = cell_obj.value[7:]
-                cell_obj = q_sheet.cell(row=i, column=calculation_index)
-                cell_obj.value = form_name
-                # cell_obj.value = str(getattr(campaign, str_request))
+        # Insert data as calculation from campaigns
+        if campaign_id and request.user.has_perm("iaso_polio"):
+            get_data_from_campaigns(campaign_id, row, q_sheet, calculation_index)
 
         filename = f"FORM_{form_name}_{datetime.now().date()}.xlsx"
 

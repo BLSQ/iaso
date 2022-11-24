@@ -69,7 +69,7 @@ from .api.tasks.create.import_gpkg import ImportGPKGViewSet
 from .dhis2.authentication import dhis2_callback  # type: ignore
 from hat.api.token_authentication import token_auth
 
-from .api.workflows import WorkflowViewSet
+from .api.workflows import WorkflowVersionList, WorkflowVersionPost, WorkflowVersionDetail
 from .api.mobile.workflows import MobileWorkflowViewSet
 
 URL = Union[URLPattern, URLResolver]
@@ -130,7 +130,6 @@ router.register(r"storage", StorageViewSet, basename="storage")
 router.register(r"mobile/storage/logs", StorageLogViewSet, basename="storagelogs")
 router.register(r"mobile/storage/blacklisted", StorageBlacklistedViewSet, basename="storageblacklisted")
 
-router.register(r"workflow", WorkflowViewSet, basename="workflow")
 router.register(r"mobile/workflow", MobileWorkflowViewSet, basename="mobileworkflow")
 
 router.registry.extend(plugins_router.registry)
@@ -181,6 +180,17 @@ urlpatterns = urlpatterns + [
     path("auth0/login/", WfpLogin.as_view(), name="openid"),
     path("dhis2/<dhis2_slug>/login/", dhis2_callback, name="dhis2_callback"),
     path("token_auth/", token_auth),
+]
+
+
+# Workflows
+urlpatterns = urlpatterns + [
+    path("worfkflow/<int:entity_type_id>/", WorkflowVersionList.as_view(), name="workflow"),
+    path("worfkflow/<int:entity_type_id>/version/<int:version_id>/", WorkflowVersionDetail.as_view(), name="workflow"),
+    path("worfkflow/<int:entity_type_id>/version/", WorkflowVersionPost.as_view(), name="workflow_post"),
+    path(
+        "worfkflow/<int:entity_type_id>/version/<int:version_id>/", WorkflowVersionPost.as_view(), name="workflow_post"
+    ),
 ]
 
 

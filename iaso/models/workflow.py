@@ -132,6 +132,8 @@ class WorkflowVersion(SoftDeletableModel):
     follow_ups = models.JSONField(default=followups_default, validators=[followups_validate])
     changes = models.JSONField(default=changes_default, validators=[changes_validate])
 
+    name = models.CharField(max_length=50, default="No Name")
+
     status = models.CharField(
         max_length=2, choices=WorkflowVersionsStatus.choices, default=WorkflowVersionsStatus.DRAFT
     )

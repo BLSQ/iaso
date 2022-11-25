@@ -1,9 +1,11 @@
 import math
 from django.http import Http404
 
-from iaso.models import Workflow, WorkflowVersion, EntityType
+from iaso.models import Workflow, WorkflowVersion, EntityType, WorkflowFollowup, WorkflowChange
 from iaso.models.workflow import WorkflowVersionsStatus
 from iaso.api.common import Paginator
+from iaso.api.entity import EntityTypeSerializer
+from iaso.api.forms import FormSerializer
 
 from rest_framework import serializers, permissions
 from rest_framework.generics import get_object_or_404, ListAPIView, CreateAPIView, RetrieveAPIView
@@ -39,15 +41,67 @@ class WorkflowSerializer(serializers.ModelSerializer):
         ]
 
 
-class WorkflowDetailSerializer(serializers.ModelSerializer):
+class WorkflowChangeSerializer(serializers.ModelSerializer):
+    form_id = serializers.SerializerMethodField()
+
     class Meta:
-        model = Workflow
+        model = WorkflowChange
+        fields = ["form_id", "mapping", "created_at", "updated_at"]
+
+    @staticmethod
+    def get_form_id(instance):
+        return instance.form.pk
+
+
+class WorkflowFollowupSerializer(serializers.ModelSerializer):
+    form_ids = serializers.SerializerMethodField()
+
+    class Meta:
+        model = WorkflowFollowup
+        fields = ["id", "order", "condition", "form_ids", "created_at", "updated_at"]
+
+    @staticmethod
+    def get_form_ids(instance):
+        return list(map(lambda x: x.pk, instance.forms.all()))
+
+
+class WorkflowVersionDetailSerializer(serializers.ModelSerializer):
+    status = serializers.SerializerMethodField()
+    version_id = serializers.SerializerMethodField()
+    reference_form = serializers.SerializerMethodField()
+    entity_type = serializers.SerializerMethodField()
+    changes = WorkflowChangeSerializer(many=True)
+    follow_ups = WorkflowFollowupSerializer(many=True)
+
+    class Meta:
+        model = WorkflowVersion
 
         fields = [
-            "entity_type_id",
+            "version_id",
+            "status",
+            "name",
+            "entity_type",
+            "reference_form",
             "created_at",
             "updated_at",
+            "changes",
+            "follow_ups",
         ]
+
+    @staticmethod
+    def get_entity_type(instance):
+        return EntityTypeSerializer(instance.workflow.entity_type).data
+
+    def get_reference_form(self, instance):
+        return FormSerializer(instance.reference_form, context=self.context).data
+
+    @staticmethod
+    def get_version_id(instance):
+        return instance.pk
+
+    @staticmethod
+    def get_status(instance):
+        return WorkflowVersionsStatus(instance.status).name
 
 
 def get_or_create_wf_for_entity_type(et):
@@ -102,7 +156,7 @@ class WorkflowVersionPost(CreateAPIView):
 
 class WorkflowVersionDetail(RetrieveAPIView):
     permission_classes = [permissions.IsAuthenticated]
-    serializer_class = WorkflowDetailSerializer
+    serializer_class = WorkflowVersionDetailSerializer
 
     def get(self, request, *args, **kwargs):
         entity_type_id = kwargs.get("entity_type_id", None)
@@ -113,7 +167,12 @@ class WorkflowVersionDetail(RetrieveAPIView):
         elif version_id is None:
             return Response(status=404, data="Must provide version_id path param")
         else:
-            return Response("Will process")
+
+            the_wf = get_object_or_404(Workflow, entity_type_id=entity_type_id)
+            the_version = get_object_or_404(WorkflowVersion, workflow=the_wf, pk=version_id)
+            seri = self.get_serializer(the_version)
+
+            return Response(seri.data)
 
 
 class WorkflowVersionList(ListAPIView):

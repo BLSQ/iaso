@@ -45,6 +45,8 @@ from .models import (
     StorageLogEntry,
     Workflow,
     WorkflowVersion,
+    WorkflowChange,
+    WorkflowFollowup,
 )
 from .models.microplanning import Team, Planning, Assignment
 from .utils.gis import convert_2d_point_to_3d
@@ -460,8 +462,17 @@ class WorkflowAdmin(admin.ModelAdmin):
     readonly_fields = ("created_at", "updated_at")
 
 
+class WorkflowChangeInline(admin.TabularInline):
+    model = WorkflowChange
+
+
+class WorkflowFollowupInline(admin.TabularInline):
+    model = WorkflowFollowup
+
+
 class WorkflowVersionAdmin(admin.ModelAdmin):
     readonly_fields = ("created_at", "updated_at")
+    inlines = [WorkflowChangeInline, WorkflowFollowupInline]
 
 
 admin.site.register(Link, LinkAdmin)

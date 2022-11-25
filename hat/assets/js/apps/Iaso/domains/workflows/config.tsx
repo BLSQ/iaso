@@ -18,7 +18,7 @@ export const defaultSorted = [{ id: 'version_id', desc: false }];
 
 export const baseUrl = baseUrls.workflows;
 
-export const useGetColumns = (): Array<Column> => {
+export const useGetColumns = (entityTypeId: string): Array<Column> => {
     const { formatMessage }: { formatMessage: IntlFormatMessage } =
         useSafeIntl();
     const columns: Array<Column> = [
@@ -46,10 +46,11 @@ export const useGetColumns = (): Array<Column> => {
             resizable: false,
             sortable: false,
             accessor: 'actions',
-            Cell: () => {
+            Cell: settings => {
+                const { version_id: versionId } = settings.row.original;
                 return (
                     <IconButtonComponent
-                        url={`${baseUrls.workflowDetail}/`}
+                        url={`${baseUrls.workflowDetail}/entityTypeId/${entityTypeId}/versionId/${versionId}`}
                         icon="remove-red-eye"
                         tooltipMessage={MESSAGES.see}
                     />

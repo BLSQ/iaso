@@ -46,9 +46,10 @@ export const Workflows: FunctionComponent<Props> = ({ params, router }) => {
     const classes: Record<string, string> = useStyles();
     const { formatMessage } = useSafeIntl();
     const { data, isFetching } = useGetWorkflows(params);
-    const columns = useGetColumns();
+    const { entityTypeId } = params;
+    const columns = useGetColumns(entityTypeId);
 
-    const { data: entityType } = useGetType(params.entityTypeId);
+    const { data: entityType } = useGetType(entityTypeId);
     const title = useMemo(
         () =>
             entityType

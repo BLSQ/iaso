@@ -1,13 +1,50 @@
 /* eslint-disable camelcase */
 import { Pagination, UrlParams } from '../../../types/table';
+import { EntityType } from '../../entities/entityTypes/types/entityType';
+
+export type WorkflowParams = UrlParams & {
+    entityTypeId: string;
+    versionId: string;
+};
 
 export type WorkflowsParams = UrlParams & {
     entityTypeId: string;
-    name: string;
+    search: string;
     status: Status;
 };
 
 export type Status = 'DRAFT' | 'UNPUBLISHED' | 'PUBLISHED';
+
+export type Change = {
+    form_id: number;
+    mapping: Record<string, string>;
+    created_at: number;
+    updated_at: number;
+};
+
+export type FollowUps = {
+    id: string;
+    order: number;
+    condition: Record<string, string>;
+    form_ids: string[];
+    created_at: number;
+    updated_at: number;
+};
+
+export type WorkflowDetail = {
+    version_id: string;
+    name: string;
+    status: Status;
+    entity_type: EntityType;
+    reference_form: {
+        id: number;
+        name: string;
+    };
+    created_at: number;
+    updated_at: number;
+    changes: Change[];
+    follow_ups: FollowUps[];
+};
 
 export type Workflow = {
     version_id: string;

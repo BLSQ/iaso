@@ -873,6 +873,8 @@
     "iaso.versionsDialog.label.newVersionGpkg": "Nouvelle version sur base d'un Geopackage",
     "iaso.versionsDialog.label.number": "Nombre",
     "iaso.versionsDialog.label.updatedAt": "Dernière mise à jour",
+    "iaso.workflows.changes": "Changements",
+    "iaso.workflows.followUps": "Suivis",
     "iaso.zone": "Zone de santé",
     "map.draw.label.cancel": "Annuler",
     "map.draw.label.circle": "Dessiner un cercle",

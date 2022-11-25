@@ -32,6 +32,7 @@ import { Planning } from '../domains/plannings/index.tsx';
 import { Teams } from '../domains/teams/index.tsx';
 import { Storages } from '../domains/storages/index.tsx';
 import { Workflows } from '../domains/workflows/index.tsx';
+import { Details as WorkflowDetails } from '../domains/workflows/details.tsx';
 import { Details as StorageDetails } from '../domains/storages/details.tsx';
 import { Assignments } from '../domains/assignments/index.tsx';
 import { CompareInstanceLogs } from '../domains/instances/compare/components/CompareInstanceLogs.tsx';
@@ -813,6 +814,23 @@ export const workflowsPath = {
         })),
     ],
 };
+export const workflowsDetailPath = {
+    baseUrl: baseUrls.workflowDetail,
+    permissions: ['iaso_workflows'],
+    component: props => <WorkflowDetails {...props} />,
+    params: [
+        {
+            isRequired: true,
+            key: 'entityTypeId',
+        },
+        {
+            isRequired: true,
+            key: 'versionId',
+        },
+        // pagination to sort changes
+        ...paginationPathParams,
+    ],
+};
 
 export const page401 = {
     baseUrl: baseUrls.error401,
@@ -868,4 +886,5 @@ export const routeConfigs = [
     storagesPath,
     storageDetailPath,
     workflowsPath,
+    workflowsDetailPath,
 ];

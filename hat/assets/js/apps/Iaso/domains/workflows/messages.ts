@@ -45,6 +45,26 @@ const MESSAGES = defineMessages({
         defaultMessage: 'Published',
         id: 'iaso.label.published',
     },
+    infos: {
+        defaultMessage: 'Informations',
+        id: 'iaso.instance.infos',
+    },
+    type: {
+        defaultMessage: 'Type',
+        id: 'iaso.entities.type',
+    },
+    referenceForm: {
+        id: 'iaso.orgUnits.referenceForm',
+        defaultMessage: 'Reference form',
+    },
+    followUps: {
+        id: 'iaso.workflows.followUps',
+        defaultMessage: 'Follow ups',
+    },
+    changes: {
+        id: 'iaso.workflows.changes',
+        defaultMessage: 'Changes',
+    },
 });
 
 export default MESSAGES;

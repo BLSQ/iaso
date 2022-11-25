@@ -33,7 +33,7 @@ export const baseUrls = {
     storages: 'storages',
     storageDetail: 'storages/detail',
     workflows: 'workflows',
-    workflowDetail: 'workflows/detail',
+    workflowDetail: 'workflows/details',
     apiLogs: 'api/logs',
     error401: '401',
     error500: '500',

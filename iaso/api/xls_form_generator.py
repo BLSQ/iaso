@@ -1,3 +1,5 @@
+from pprint import pprint
+
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404
 from django_filters.rest_framework import DjangoFilterBackend
@@ -111,6 +113,7 @@ class XlsFormGeneratorViewSet(ModelViewSet):
         group_id = request.query_params.get("groupid", None)
         form_name = request.query_params.get("form_name", None)
         campaign_id = request.query_params.get("campaignid", None)
+        org_unit_type_list = request.GET.get("outypelist", None).split(",")
 
         if not form_name:
             raise serializers.ValidationError({"error": "No form provided."})
@@ -155,102 +158,116 @@ class XlsFormGeneratorViewSet(ModelViewSet):
         sheet[cell[choices_column] + "1"] = "name"
         sheet[cell[choices_column + 1] + "1"] = "label"
         sheet[cell[choices_column + 2] + "1"] = "id"
-        sheet[cell[choices_column + 3] + "1"] = "country"
-        sheet[cell[choices_column + 4] + "1"] = "region"
-        sheet[cell[choices_column + 5] + "1"] = "district"
-        sheet[cell[choices_column + 6] + "1"] = "health facility"
+        i = 2
+        for ou_type in org_unit_type_list:
+            sheet[cell[choices_column + i] + "1"] = ou_type
+            i += 1
+
 
         # insert rows to add the org units fields at the top of the file
         ws.insert_rows(3, 5)
 
+        added_ou_list = []
+        key_added_to_choice_list = []
+        starting_row = 3
+
         # populate xls with OU
         for ou_dic in ou_tree_list:
             for k, v in ou_dic.items():
-                if k == "COUNTRY" and v not in added_countries:
-                    added_countries.append(v)
-                    q_sheet[cell[0] + str(3)] = "select_one ou_country"
-                    q_sheet[cell[1] + str(3)] = "ou_country"
-                    q_sheet[cell[2] + str(3)] = "Select Country"
-                    q_sheet[cell[3] + str(3)] = "yes"
-                    sheet[cell[choices_column - 1] + str(choices_row)] = "ou_country"
+                if v.id not in added_ou_list:
+                    added_ou_list.append(v.id)
+                    if k not in key_added_to_choice_list:
+                        key_added_to_choice_list.append(k)
+                        q_sheet[cell[0] + str(starting_row)] = f"select_one ou_{str(k).lower()}"
+                        q_sheet[cell[1] + str(starting_row)] = f"ou_{str(k).lower()}"
+                        q_sheet[cell[2] + str(starting_row)] = f"Select {k}"
+                        q_sheet[cell[3] + str(starting_row)] = "yes"
+                    sheet[cell[choices_column - 1] + str(choices_row)] = f"ou_{str(k).lower()}"
                     sheet[cell[choices_column] + str(choices_row)] = v.id
                     sheet[cell[choices_column + 1] + str(choices_row)] = str(v.name)
                     choices_row += 1
+                    starting_row += 1
                     survey_last_empty_row += 1
-                if k == "REGION" and v not in added_regions:
-                    survey_last_empty_row += 2
-                    added_regions.append(v)
-                    if not region_added:
-                        q_sheet[cell[0] + str(4)] = "select_one ou_region"
-                        q_sheet[cell[1] + str(4)] = "ou_region"
-                        q_sheet[cell[2] + str(4)] = "Select a Region"
-                        q_sheet[cell[9] + str(4)] = "country=${ou_country}"
-                        region_added = True
-                    sheet[cell[choices_column - 1] + str(choices_row)] = "ou_region"
-                    sheet[cell[choices_column] + str(choices_row)] = v.id
-                    sheet[cell[choices_column + 1] + str(choices_row)] = str(v.name)
-                    sheet[cell[choices_column + 3] + str(choices_row)] = (
-                        ou_dic.get("COUNTRY", None)
-                        if ou_dic.get("COUNTRY", None) is None
-                        else ou_dic.get("COUNTRY", None).pk
-                    )
-                    choices_row += 1
-                    survey_last_empty_row += 1
+                # if k == "COUNTRY" and v not in added_countries:
+                #     sheet[cell[choices_column - 1] + str(choices_row)] = "ou_country"
+                #     sheet[cell[choices_column] + str(choices_row)] = v.id
+                #     sheet[cell[choices_column + 1] + str(choices_row)] = str(v.name)
+                #     choices_row += 1
+                #     survey_last_empty_row += 1
+                # if k == "REGION" and v not in added_regions:
+                #     survey_last_empty_row += 2
+                #     added_regions.append(v)
+                #     if not region_added:
+                #         q_sheet[cell[0] + str(4)] = "select_one ou_region"
+                #         q_sheet[cell[1] + str(4)] = "ou_region"
+                #         q_sheet[cell[2] + str(4)] = "Select a Region"
+                #         q_sheet[cell[9] + str(4)] = "country=${ou_country}"
+                #         region_added = True
+                #     sheet[cell[choices_column - 1] + str(choices_row)] = "ou_region"
+                #     sheet[cell[choices_column] + str(choices_row)] = v.id
+                #     sheet[cell[choices_column + 1] + str(choices_row)] = str(v.name)
+                #     sheet[cell[choices_column + 3] + str(choices_row)] = (
+                #         ou_dic.get("COUNTRY", None)
+                #         if ou_dic.get("COUNTRY", None) is None
+                #         else ou_dic.get("COUNTRY", None).pk
+                #     )
+                #     choices_row += 1
+                #     survey_last_empty_row += 1
 
-                if k == "DISTRICT" and v not in added_district:
-                    survey_last_empty_row += 4
-                    added_district.append(v)
-                    if not district_added:
-                        q_sheet[cell[0] + str(5)] = "select_one ou_district"
-                        q_sheet[cell[1] + str(5)] = "ou_district"
-                        q_sheet[cell[2] + str(5)] = "Select a District"
-                        q_sheet[cell[9] + str(5)] = "region=${ou_region}"
-                        district_added = True
-                    sheet[cell[choices_column - 1] + str(choices_row)] = "ou_district"
-                    sheet[cell[choices_column] + str(choices_row)] = v.id
-                    sheet[cell[choices_column + 1] + str(choices_row)] = str(v.name)
-                    sheet[cell[choices_column + 3] + str(choices_row)] = (
-                        ou_dic.get("COUNTRY", None)
-                        if ou_dic.get("COUNTRY", None) is None
-                        else ou_dic.get("COUNTRY", None).pk
-                    )
-                    sheet[cell[choices_column + 4] + str(choices_row)] = (
-                        ou_dic.get("REGION", None)
-                        if ou_dic.get("REGION", None) is None
-                        else ou_dic.get("REGION", None).pk
-                    )
-                    choices_row += 1
-                    survey_last_empty_row += 1
-
-                if k == "HEALTH FACILITY" and v not in added_facilities:
-                    survey_last_empty_row += 6
-                    added_facilities.append(v)
-                    if not facility_added:
-                        q_sheet[cell[0] + str(6)] = "select_one ou_facility"
-                        q_sheet[cell[1] + str(6)] = "ou_facility"
-                        q_sheet[cell[2] + str(6)] = "Select a Health Facility"
-                        q_sheet[cell[9] + str(6)] = "district=${ou_district}"
-                        district_added = True
-                    sheet[cell[choices_column - 1] + str(choices_row)] = ""
-                    sheet[cell[choices_column] + str(choices_row)] = v.id
-                    sheet[cell[choices_column + 1] + str(choices_row)] = str(v.name)
-                    sheet[cell[choices_column + 3] + str(choices_row)] = (
-                        ou_dic.get("COUNTRY", None)
-                        if ou_dic.get("COUNTRY", None) is None
-                        else ou_dic.get("COUNTRY", None).pk
-                    )
-                    sheet[cell[choices_column + 4] + str(choices_row)] = (
-                        ou_dic.get("REGION", None)
-                        if ou_dic.get("REGION", None) is None
-                        else ou_dic.get("REGION", None).pk
-                    )
-                    sheet[cell[choices_column + 5] + str(choices_row)] = (
-                        ou_dic.get("DISTRICT", None)
-                        if ou_dic.get("DISTRICT", None) is None
-                        else ou_dic.get("DISTRICT", None).name
-                    )
-                    choices_row += 1
-                    survey_last_empty_row += 1
+                # if k == "DISTRICT" and v not in added_district:
+                #     survey_last_empty_row += 4
+                #     added_district.append(v)
+                #     if not district_added:
+                #         q_sheet[cell[0] + str(5)] = "select_one ou_district"
+                #         q_sheet[cell[1] + str(5)] = "ou_district"
+                #         q_sheet[cell[2] + str(5)] = "Select a District"
+                #         q_sheet[cell[9] + str(5)] = "region=${ou_region}"
+                #         district_added = True
+                #     sheet[cell[choices_column - 1] + str(choices_row)] = "ou_district"
+                #     sheet[cell[choices_column] + str(choices_row)] = v.id
+                #     sheet[cell[choices_column + 1] + str(choices_row)] = str(v.name)
+                #     sheet[cell[choices_column + 3] + str(choices_row)] = (
+                #         ou_dic.get("COUNTRY", None)
+                #         if ou_dic.get("COUNTRY", None) is None
+                #         else ou_dic.get("COUNTRY", None).pk
+                #     )
+                #     sheet[cell[choices_column + 4] + str(choices_row)] = (
+                #         ou_dic.get("REGION", None)
+                #         if ou_dic.get("REGION", None) is None
+                #         else ou_dic.get("REGION", None).pk
+                #     )
+                #     choices_row += 1
+                #     survey_last_empty_row += 1
+                #
+                # if k == "HEALTH FACILITY" and v not in added_facilities:
+                #     survey_last_empty_row += 6
+                #     added_facilities.append(v)
+                #     if not facility_added:
+                #         q_sheet[cell[0] + str(6)] = "select_one ou_facility"
+                #         q_sheet[cell[1] + str(6)] = "ou_facility"
+                #         q_sheet[cell[2] + str(6)] = "Select a Health Facility"
+                #         q_sheet[cell[9] + str(6)] = "district=${ou_district}"
+                #         district_added = True
+                #     sheet[cell[choices_column - 1] + str(choices_row)] = ""
+                #     sheet[cell[choices_column] + str(choices_row)] = v.id
+                #     sheet[cell[choices_column + 1] + str(choices_row)] = str(v.name)
+                #     sheet[cell[choices_column + 3] + str(choices_row)] = (
+                #         ou_dic.get("COUNTRY", None)
+                #         if ou_dic.get("COUNTRY", None) is None
+                #         else ou_dic.get("COUNTRY", None).pk
+                #     )
+                #     sheet[cell[choices_column + 4] + str(choices_row)] = (
+                #         ou_dic.get("REGION", None)
+                #         if ou_dic.get("REGION", None) is None
+                #         else ou_dic.get("REGION", None).pk
+                #     )
+                #     sheet[cell[choices_column + 5] + str(choices_row)] = (
+                #         ou_dic.get("DISTRICT", None)
+                #         if ou_dic.get("DISTRICT", None) is None
+                #         else ou_dic.get("DISTRICT", None).name
+                #     )
+                #     choices_row += 1
+                #     survey_last_empty_row += 1
 
         row = q_sheet.max_row
 

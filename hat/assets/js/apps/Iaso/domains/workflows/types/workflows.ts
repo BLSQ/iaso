@@ -9,6 +9,7 @@ export type Status = 'DRAFT' | 'UNPUBLISHED' | 'PUBLISHED';
 
 export type Workflow = {
     version_id: string;
+    name: string;
     status: 'DRAFT' | 'UNPUBLISHED' | 'PUBLISHED';
     created_at: number;
     updated_at: number;

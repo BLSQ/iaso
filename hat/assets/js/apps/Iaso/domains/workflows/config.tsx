@@ -28,6 +28,11 @@ export const useGetColumns = (): Array<Column> => {
             accessor: 'version_id',
         },
         {
+            Header: formatMessage(MESSAGES.name),
+            id: 'name',
+            accessor: 'name',
+        },
+        {
             Header: formatMessage(MESSAGES.status),
             id: 'status',
             accessor: 'status',

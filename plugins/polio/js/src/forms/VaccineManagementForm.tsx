@@ -14,12 +14,13 @@ import classnames from 'classnames';
 import { useSafeIntl } from 'bluesquare-components';
 import { useStyles } from '../styles/theme';
 import MESSAGES from '../constants/messages';
-import { DateInput, TextInput } from '../components/Inputs';
+import { DateInput } from '../components/Inputs';
 import { ShipmentsForm } from './ShipmentsForm';
 import { ReportingDelays } from './ReportingDelays';
 import { RoundVaccinesForm } from './RoundVaccinesForm';
 import { MultilineText } from '../components/Inputs/MultilineText';
 import { DestructionsForm } from './DestructionsForm';
+import { NumberInput } from '../components/Inputs/NumberInput';
 
 type Props = any;
 
@@ -175,7 +176,7 @@ export const VaccineManagementForm: FunctionComponent<Props> = () => {
                                         MESSAGES.formAUnusableVials,
                                     )}
                                     name={`${accessor}.forma_unusable_vials`}
-                                    component={TextInput}
+                                    component={NumberInput}
                                     className={classes.input}
                                 />
                             </Grid>
@@ -185,7 +186,7 @@ export const VaccineManagementForm: FunctionComponent<Props> = () => {
                                         MESSAGES.formAMissingVials,
                                     )}
                                     name={`${accessor}.forma_missing_vials`}
-                                    component={TextInput}
+                                    component={NumberInput}
                                     className={classes.input}
                                 />
                             </Grid>
@@ -195,7 +196,7 @@ export const VaccineManagementForm: FunctionComponent<Props> = () => {
                                         MESSAGES.formAUsableVials,
                                     )}
                                     name={`${accessor}.forma_usable_vials`}
-                                    component={TextInput}
+                                    component={NumberInput}
                                     className={classes.input}
                                 />
                             </Grid>

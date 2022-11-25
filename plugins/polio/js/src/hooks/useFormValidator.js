@@ -1,7 +1,7 @@
 /* eslint-disable camelcase */
 import * as yup from 'yup';
 import moment from 'moment';
-import { useSafeIntl } from 'bluesquare-components';
+import { useSafeIntl, convertToNumber } from 'bluesquare-components';
 import MESSAGES from '../constants/messages';
 import { dateFormat } from '../components/campaignCalendar/constants';
 
@@ -90,10 +90,10 @@ yup.addMethod(
 );
 
 yup.addMethod(
-    yup.number,
-    'hasAllFormAFieldsNumber',
-    function hasAllFormAFieldsNumber(formatMessage) {
-        return this.test('hasAllFormAFieldsNumber', '', (value, context) => {
+    yup.string,
+    'hasAllFormAFieldsString',
+    function hasAllFormAFieldsString(formatMessage) {
+        return this.test('hasAllFormAFieldsString', '', (value, context) => {
             const { path, createError, parent } = context;
             const {
                 forma_reception,
@@ -104,7 +104,6 @@ yup.addMethod(
             } = parent;
             if (
                 !value &&
-                value !== 0 &&
                 (forma_unusable_vials ||
                     forma_usable_vials ||
                     forma_missing_vials ||
@@ -217,6 +216,26 @@ yup.addMethod(
 );
 
 yup.addMethod(
+    yup.string,
+    'convertNumberWithThousands',
+    function convertNumberWithThousands(message) {
+        return this.test('convertNumberWithThousands', '', (value, context) => {
+            const { path, createError } = context;
+            if (!value) {
+                return true;
+            }
+            if (Number.isInteger(convertToNumber(value))) {
+                return true;
+            }
+            return createError({
+                path,
+                message,
+            });
+        });
+    },
+);
+
+yup.addMethod(
     yup.date,
     'destructionFieldsDateCheck',
     function destructionFieldsDateCheck(formatMessage) {
@@ -238,11 +257,11 @@ yup.addMethod(
     },
 );
 yup.addMethod(
-    yup.number,
-    'destructionFieldsNumberCheck',
-    function destructionFieldsNumberCheck(formatMessage) {
+    yup.string,
+    'destructionFieldsStringCheck',
+    function destructionFieldsStringCheck(formatMessage) {
         return this.test(
-            'destructionFieldsNumberCheck',
+            'destructionFieldsStringCheck',
             '',
             (value, context) => {
                 const { path, createError, parent } = context;
@@ -250,7 +269,6 @@ yup.addMethod(
                     parent;
                 if (
                     !value &&
-                    value !== 0 &&
                     (date_report || vials_destroyed || date_report_received)
                 ) {
                     return createError({
@@ -307,16 +325,14 @@ const useShipmentShape = () => {
             .trim()
             .hasAllShipmentFieldsString(formatMessage),
         po_numbers: yup
-            .number()
+            .string()
             .nullable()
-            .integer()
-            .min(0)
-            .typeError(formatMessage(MESSAGES.positiveNumber))
-            .hasAllShipmentFieldsNumber(formatMessage),
+            .convertNumberWithThousands(formatMessage(MESSAGES.positiveNumber))
+            .hasAllShipmentFieldsString(formatMessage),
         vials_received: yup
             .string()
             .nullable()
-            .typeError(formatMessage(MESSAGES.positiveNumber))
+            .convertNumberWithThousands(formatMessage(MESSAGES.positiveNumber))
             .hasAllShipmentFieldsString(formatMessage),
         reception_pre_alert: yup
             .date()
@@ -340,12 +356,10 @@ const useDestructionShape = () => {
     const { formatMessage } = useSafeIntl();
     return yup.object().shape({
         vials_destroyed: yup
-            .number()
+            .string()
             .nullable()
-            .integer()
-            .min(0)
-            .typeError(formatMessage(MESSAGES.positiveNumber))
-            .destructionFieldsNumberCheck(formatMessage),
+            .convertNumberWithThousands(formatMessage(MESSAGES.positiveNumber))
+            .destructionFieldsStringCheck(formatMessage),
         date_report: yup
             .date()
             .nullable()
@@ -469,26 +483,20 @@ const useRoundShape = () => {
             .min(0)
             .typeError(formatMessage(MESSAGES.positiveNumber)),
         forma_unusable_vials: yup
-            .number()
-            .integer()
+            .string()
             .nullable()
-            .min(0)
-            .typeError(formatMessage(MESSAGES.positiveNumber))
-            .hasAllFormAFieldsNumber(formatMessage),
+            .convertNumberWithThousands(formatMessage(MESSAGES.positiveNumber))
+            .hasAllFormAFieldsString(formatMessage),
         forma_usable_vials: yup
-            .number()
-            .integer()
+            .string()
             .nullable()
-            .min(0)
-            .typeError(formatMessage(MESSAGES.positiveNumber))
-            .hasAllFormAFieldsNumber(formatMessage),
+            .convertNumberWithThousands(formatMessage(MESSAGES.positiveNumber))
+            .hasAllFormAFieldsString(formatMessage),
         forma_missing_vials: yup
-            .number()
-            .integer()
+            .string()
             .nullable()
-            .min(0)
-            .typeError(formatMessage(MESSAGES.positiveNumber))
-            .hasAllFormAFieldsNumber(formatMessage),
+            .convertNumberWithThousands(formatMessage(MESSAGES.positiveNumber))
+            .hasAllFormAFieldsString(formatMessage),
         reporting_delays_hc_to_district: yup
             .number()
             .integer()

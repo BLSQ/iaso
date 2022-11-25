@@ -6,7 +6,7 @@ import { Grid } from '@material-ui/core';
 import { Field } from 'formik';
 import MESSAGES from '../constants/messages';
 import { useStyles } from '../styles/theme';
-import { DateInput, Select, TextInput } from '../components/Inputs';
+import { DateInput, Select } from '../components/Inputs';
 import { polioVaccines } from '../constants/virus';
 import { NumberInput } from '../components/Inputs/NumberInput';
 import { MultilineText } from '../components/Inputs/MultilineText';
@@ -42,7 +42,7 @@ export const ShipmentForm: FunctionComponent<Props> = ({ index, accessor }) => {
                     <Field
                         label={formatMessage(MESSAGES.poNumbers)}
                         name={`${accessor}.shipments[${index}].po_numbers`}
-                        component={TextInput}
+                        component={NumberInput}
                         className={classes.input}
                     />
                 </Grid>

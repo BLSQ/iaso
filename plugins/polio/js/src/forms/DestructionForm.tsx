@@ -5,9 +5,9 @@ import React, { FunctionComponent } from 'react';
 import { useSafeIntl } from 'bluesquare-components';
 import MESSAGES from '../constants/messages';
 import { DateInput } from '../components/Inputs/DateInput';
-import { TextInput } from '../components/Inputs';
 import { useStyles } from '../styles/theme';
 import { MultilineText } from '../components/Inputs/MultilineText';
+import { NumberInput } from '../components/Inputs/NumberInput';
 
 type Props = { accessor: string; index: number };
 
@@ -40,7 +40,7 @@ export const DestructionForm: FunctionComponent<Props> = ({
                 <Field
                     label={formatMessage(MESSAGES.vialsDestroyed)}
                     name={`${accessor}.destructions[${index}].vials_destroyed`}
-                    component={TextInput}
+                    component={NumberInput}
                     className={classes.input}
                 />
             </Grid>

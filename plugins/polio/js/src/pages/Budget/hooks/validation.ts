@@ -70,7 +70,10 @@ addMethod(
     function convertNumberWithThousands(message) {
         return this.test('convertNumberWithThousands', '', (value, context) => {
             const { path, createError } = context;
-            if (!Number.isNaN(convertToNumber(value))) {
+            if (!value) {
+                return true;
+            }
+            if (Number.isInteger(convertToNumber(value))) {
                 return true;
             }
             return createError({
@@ -89,6 +92,7 @@ export const useBudgetStepValidation = (
     const { formatMessage } = useSafeIntl();
     const fieldRequired = formatMessage(MESSAGES.requiredField);
     const typeError = formatMessage(MESSAGES.budgetTypeError);
+    const amountError = formatMessage(MESSAGES.positiveInteger);
     const apiValidator = useAPIErrorValidator<Partial<any>>(errors, payload);
     return useMemo(() => {
         return object().shape({
@@ -126,7 +130,7 @@ export const useBudgetStepValidation = (
             ),
             amount: makeRequired(
                 // @ts-ignore
-                string().nullable().convertNumberWithThousands(formatMessage),
+                string().nullable().convertNumberWithThousands(amountError),
                 requiredFields.includes('amount'),
                 fieldRequired,
             ).typeError(typeError),
@@ -139,5 +143,12 @@ export const useBudgetStepValidation = (
                     formatMessage,
                 ),
         });
-    }, [apiValidator, fieldRequired, formatMessage, requiredFields, typeError]);
+    }, [
+        amountError,
+        apiValidator,
+        fieldRequired,
+        formatMessage,
+        requiredFields,
+        typeError,
+    ]);
 };

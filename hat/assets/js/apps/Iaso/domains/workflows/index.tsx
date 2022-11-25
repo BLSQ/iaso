@@ -9,10 +9,11 @@ import { baseUrls } from '../../constants/urls';
 
 import TopBar from '../../components/nav/TopBarComponent';
 import { TableWithDeepLink } from '../../components/tables/TableWithDeepLink';
-import { WorkflowsParams } from './types/workflows';
+import { Filters } from './components/Filters';
 
 import { useGetWorkflows } from './hooks/requests/useGetWorkflows';
 import { useGetType } from '../entities/entityTypes/hooks/requests/entitiyTypes';
+import { WorkflowsParams } from './types/workflows';
 
 import { redirectToReplace } from '../../routing/actions';
 
@@ -69,6 +70,7 @@ export const Workflows: FunctionComponent<Props> = ({ params, router }) => {
                 }}
             />
             <Box className={classes.containerFullHeightNoTabPadded}>
+                <Filters params={params} />
                 <TableWithDeepLink
                     baseUrl={baseUrl}
                     data={data?.results ?? []}

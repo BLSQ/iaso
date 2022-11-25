@@ -3,6 +3,8 @@ import { Pagination, UrlParams } from '../../../types/table';
 
 export type WorkflowsParams = UrlParams & {
     entityTypeId: string;
+    name: string;
+    status: Status;
 };
 
 export type Status = 'DRAFT' | 'UNPUBLISHED' | 'PUBLISHED';
@@ -10,7 +12,7 @@ export type Status = 'DRAFT' | 'UNPUBLISHED' | 'PUBLISHED';
 export type Workflow = {
     version_id: string;
     name: string;
-    status: 'DRAFT' | 'UNPUBLISHED' | 'PUBLISHED';
+    status: Status;
     created_at: number;
     updated_at: number;
 };

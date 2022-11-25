@@ -29,6 +29,22 @@ const MESSAGES = defineMessages({
         defaultMessage: 'Name',
         id: 'iaso.label.name',
     },
+    search: {
+        defaultMessage: 'Search',
+        id: 'iaso.search',
+    },
+    draft: {
+        defaultMessage: 'Draft',
+        id: 'iaso.label.draft',
+    },
+    unpublished: {
+        defaultMessage: 'Unpublished',
+        id: 'iaso.label.unpublished',
+    },
+    published: {
+        defaultMessage: 'Published',
+        id: 'iaso.label.published',
+    },
 });
 
 export default MESSAGES;

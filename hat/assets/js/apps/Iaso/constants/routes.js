@@ -799,6 +799,14 @@ export const workflowsPath = {
             isRequired: true,
             key: 'entityTypeId',
         },
+        {
+            isRequired: false,
+            key: 'search',
+        },
+        {
+            isRequired: false,
+            key: 'status',
+        },
         ...paginationPathParams.map(p => ({
             ...p,
             isRequired: true,

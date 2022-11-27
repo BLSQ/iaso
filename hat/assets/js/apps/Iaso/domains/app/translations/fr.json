@@ -39,6 +39,7 @@
     "iaso.completeness.generateDerivedInstances": "Générer les instances dérivées",
     "iaso.completeness.title": "Complétude des données",
     "iaso.completeness.tooMuchDepth": "La différence de niveau entre le parent et le type est trop grande",
+    "iaso.completenessStats.title": "Statistiques de complétude",
     "iaso.datasources.addAskTitle": "{title} - Source: {source} - Version: {version}",
     "iaso.datasources.button.label.copy": "Copier",
     "iaso.datasources.button.label.csvPreview": "Aperçu",

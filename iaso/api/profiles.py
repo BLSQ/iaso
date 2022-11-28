@@ -201,10 +201,7 @@ class ProfilesViewSet(viewsets.ViewSet):
             return JsonResponse({"errorKey": "password", "errorMessage": _("Mot de passe requis")}, status=400)
         existing_user = User.objects.filter(username__iregex=r"{0}".format(username))
         if existing_user:
-            return JsonResponse(
-                            {"errorKey": "user_name", "errorMessage": _(f"Nom d'utilisateur existant")}, status=400
-                        )
-
+            return JsonResponse({"errorKey": "user_name", "errorMessage": _(f"Nom d'utilisateur existant")}, status=400)
 
         user = User()
         user.first_name = request.data.get("first_name", "")

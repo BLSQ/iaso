@@ -242,22 +242,32 @@ def workflow_version_new(request, entity_type_id):
 version_id_param = openapi.Parameter("version_id", openapi.IN_QUERY, description="Version ID", type=openapi.TYPE_STRING)
 
 
-class WorkflowVersionPost(GenericViewSet):
+class WorkflowVersionViewSet(GenericViewSet):
     """Workflow API
-    POST /api/workflow/{entity_type_id}/version/?version_id=XXX
+    POST /api/workflow/{entity_type_id}/?version_id=XXX
     version_id is not mandatory.
     This endpoint either:
         creates a new workflow from scratch (empty) if the version_id is not provided
         copies the content of the version referred to by the version_id
     The new version is always in DRAFT
 
-    GET /api/workflow/{entity_type_id}/version/?version_id=XXX
+    GET /api/workflow/{entity_type_id}/?version_id=XXX
     version_id is mandatory
     """
 
     lookup_field = "entity_type_id"
     permission_classes = [permissions.IsAuthenticated, HasPermission("menupermissions.iaso_workflows")]
     serializer_class = WorkflowVersionSerializer
+    pagination_class = WorkflowPaginator
+
+    def get_queryset(self):
+        pk = self.kwargs.get("entity_type_id", None)
+        if pk is None:
+            raise Http404("Must provide entity type id/pk")
+        else:
+            et = get_object_or_404(EntityType, pk=pk)
+            wf = get_or_create_wf_for_entity_type(et)
+            return wf.workflow_versions.all()
 
     @swagger_auto_schema(manual_parameters=[version_id_param])
     def retrieve(self, request, *args, **kwargs):

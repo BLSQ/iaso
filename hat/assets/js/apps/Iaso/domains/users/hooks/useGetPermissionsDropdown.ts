@@ -17,7 +17,9 @@ export const useGetPermissionsDropDown = (): UseQueryResult => {
                 return data.permissions.map(permission => {
                     return {
                         value: permission.codename,
-                        label: formatMessage(MESSAGES[permission.codename]),
+                        label:
+                            formatMessage(MESSAGES[permission.codename]) ??
+                            permission.codename,
                     };
                 });
             },

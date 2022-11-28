@@ -1,15 +1,17 @@
 import math
+from copy import deepcopy
 from django.http import Http404
 
 from iaso.models import Workflow, WorkflowVersion, EntityType, WorkflowFollowup, WorkflowChange
 from iaso.models.workflow import WorkflowVersionsStatus
-from iaso.api.common import Paginator
+from iaso.api.common import Paginator, HasPermission
 from iaso.api.entity import EntityTypeSerializer
 from iaso.api.forms import FormSerializer
 
 from rest_framework import serializers, permissions
-from rest_framework.generics import get_object_or_404, ListAPIView, CreateAPIView, RetrieveAPIView
+from rest_framework.generics import get_object_or_404, ListAPIView, RetrieveAPIView
 from rest_framework.response import Response
+from rest_framework.decorators import api_view, permission_classes
 
 
 class WorkflowVersionSerializer(serializers.ModelSerializer):
@@ -117,45 +119,121 @@ class WorkflowPaginator(Paginator):
     page_size = 2
 
 
-class WorkflowVersionPost(CreateAPIView):
-    """Workflow API
-    POST /api/workflow/{entity_type_id}/version/{version_id}
+def clone_change(new_version):
+    def clone_change_real(orig_change):
+        new_change = deepcopy(orig_change)
+        new_change.workflow = new_version
+        new_change.id = None
+        new_change.save()
 
-    version_id is not mandatory.
+        return new_change
 
-    This endpoint either:
-        creates a new workflow from scratch (empty) if the version_id is not provided
-        copies the content of the version referred to by the version_id
+    return clone_change_real
 
-    The new version is always in DRAFT
-    """
 
-    permission_classes = [permissions.IsAuthenticated]
-    serializer_class = WorkflowVersionSerializer
+def clone_followup(new_version):
+    def clone_followup_real(orig_followup):
+        new_followup = deepcopy(orig_followup)
+        new_followup.workflow = new_version
+        new_followup.id = None
+        new_followup.save()
 
-    def post(self, request, *args, **kwargs):
+        return new_followup
 
-        entity_type_id = kwargs.get("entity_type_id", None)
-        version_id = kwargs.get("version_id", None)
+    return clone_followup_real
 
-        if entity_type_id is None:
-            return Response(status=404, data="Must provide entity type id/pk")
 
-        if version_id is None:
-            wv = WorkflowVersion.objects.create(workflow=Workflow.objects.get(entity_type_id=entity_type_id))
-            seri_data = self.get_serializer(wv).data
-            return Response(seri_data)
-        else:
-            wv_orig = WorkflowVersion.objects.get(pk=version_id)
-            wv_orig.pk = None
-            wv_orig.name = "Copy from " + wv_orig.name
-            wv_orig.save()
-            seri_data = self.get_serializer(wv_orig).data
-            return Response(seri_data)
+def make_deep_copy_with_relations(orig_version):
+    orig_changes = WorkflowChange.objects.filter(workflow=orig_version)
+    orig_follow_ups = WorkflowFollowup.objects.filter(workflow=orig_version)
+
+    new_version = deepcopy(orig_version)
+    new_version.id = None
+    new_version.name = "Copy of " + orig_version.name
+    new_version.status = WorkflowVersionsStatus.DRAFT
+    new_version.save()
+
+    for oc in orig_changes:
+        new_change = deepcopy(oc)
+        new_change.workflow = new_version
+        new_change.id = None
+        new_change.save()
+
+    for of in orig_follow_ups:  # Doesn't copy the forms !
+        new_followup = deepcopy(of)
+        new_followup.workflow = new_version
+        new_followup.id = None
+        new_followup.save()
+
+        new_followup.forms.clear()
+
+        orig_forms = of.forms.all()
+        new_followup.forms.add(*orig_forms)
+
+    return new_version
+
+
+def workflow_version_post_real(entity_type_id, version_id=None):
+    if entity_type_id is None:
+        return Response(status=404, data="Must provide entity type id/pk")
+
+    if version_id is None:
+        wv = WorkflowVersion.objects.create(workflow=Workflow.objects.get(entity_type_id=entity_type_id))
+        seri_data = WorkflowVersionSerializer(wv).data
+        return Response(seri_data)
+    else:
+        wv_orig = WorkflowVersion.objects.get(pk=version_id)
+        new_vw = make_deep_copy_with_relations(wv_orig)
+        seri_data = WorkflowVersionSerializer(new_vw).data
+        return Response(seri_data)
+
+
+def workflow_version_get(entity_type_id, version_id):
+    if entity_type_id is None:
+        return Response(status=404, data="Must provide entity_type_id path param")
+    elif version_id is None:
+        return Response(status=404, data="Must provide version_id path param")
+    else:
+
+        the_wf = get_object_or_404(Workflow, entity_type_id=entity_type_id)
+        the_version = get_object_or_404(WorkflowVersion, workflow=the_wf, pk=version_id)
+        seri = WorkflowVersionDetailSerializer(the_version)
+
+        return Response(seri.data)
+
+
+@api_view(["POST", "GET"])
+@permission_classes([permissions.IsAuthenticated, HasPermission("menupermissions.iaso_workflows")])
+def workflow_version_versionid(request, entity_type_id, version_id):
+    if request.method == "GET":
+        return workflow_version_get(entity_type_id, version_id)
+    elif request.method == "POST":
+        return workflow_version_post_real(entity_type_id, version_id)
+    else:
+        return Response(status=403, data="Forbidden Method")
+
+
+@api_view(["POST"])
+@permission_classes([permissions.IsAuthenticated, HasPermission("menupermissions.iaso_workflows")])
+def workflow_version_new(request, entity_type_id):
+    return workflow_version_post_real(entity_type_id, None)
+
+
+# class WorkflowVersion(ModelViewSet):
+#     lookup_field = 'entity_type_id'
+#     lookup_url_kwarg = 'entity_type_id'
+#
+#     @action(methods=['post'], url_path="versions", url_name="clone_version")
+#     def versions_clone(self, request, entity_type_id):
+#         print("versions_clone request", request)
+#
+#     @action(methods=['get'], url_path="versions", url_name="list_versions"):
+#     def versions_list(self, request, entity_type_id):
+#         print("versions_list request", request)
 
 
 class WorkflowVersionDetail(RetrieveAPIView):
-    permission_classes = [permissions.IsAuthenticated]
+    permission_classes = [permissions.IsAuthenticated, HasPermission("menupermissions.iaso_workflows")]
     serializer_class = WorkflowVersionDetailSerializer
 
     def get(self, request, *args, **kwargs):
@@ -184,7 +262,7 @@ class WorkflowVersionList(ListAPIView):
     GET /api/workflow/{entity_type_id}/
     """
 
-    permission_classes = [permissions.IsAuthenticated]
+    permission_classes = [permissions.IsAuthenticated, HasPermission("menupermissions.iaso_workflows")]
     serializer_class = WorkflowVersionSerializer
     pagination_class = WorkflowPaginator
 

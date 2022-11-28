@@ -69,7 +69,11 @@ from .api.tasks.create.import_gpkg import ImportGPKGViewSet
 from .dhis2.authentication import dhis2_callback  # type: ignore
 from hat.api.token_authentication import token_auth
 
-from .api.workflows import WorkflowVersionList, WorkflowVersionPost, WorkflowVersionDetail
+from .api.workflows import (
+    WorkflowVersionList,
+    workflow_version_new,
+    workflow_version_versionid,
+)
 from .api.mobile.workflows import MobileWorkflowViewSet
 
 URL = Union[URLPattern, URLResolver]
@@ -186,10 +190,11 @@ urlpatterns = urlpatterns + [
 # Workflows
 urlpatterns = urlpatterns + [
     path("worfkflow/<int:entity_type_id>/", WorkflowVersionList.as_view(), name="workflow"),
-    path("worfkflow/<int:entity_type_id>/version/<int:version_id>/", WorkflowVersionDetail.as_view(), name="workflow"),
-    path("worfkflow/<int:entity_type_id>/version/", WorkflowVersionPost.as_view(), name="workflow_post"),
+    path("worfkflow/<int:entity_type_id>/version/", workflow_version_new, name="workflow_version_new"),
     path(
-        "worfkflow/<int:entity_type_id>/version/<int:version_id>/", WorkflowVersionPost.as_view(), name="workflow_post"
+        "worfkflow/<int:entity_type_id>/version/<int:version_id>/",
+        workflow_version_versionid,
+        name="workflow_version_versionid",
     ),
 ]
 

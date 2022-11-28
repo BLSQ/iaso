@@ -188,7 +188,7 @@ def workflow_version_post_real(entity_type_id, version_id=None):
         return Response(seri_data)
 
 
-def workflow_version_get(entity_type_id, version_id):
+def workflow_version_get(request, entity_type_id, version_id):
     if entity_type_id is None:
         return Response(status=404, data="Must provide entity_type_id path param")
     elif version_id is None:
@@ -197,7 +197,9 @@ def workflow_version_get(entity_type_id, version_id):
 
         the_wf = get_object_or_404(Workflow, entity_type_id=entity_type_id)
         the_version = get_object_or_404(WorkflowVersion, workflow=the_wf, pk=version_id)
-        seri = WorkflowVersionDetailSerializer(the_version)
+        fake_context = {}
+        fake_context["request"] = request
+        seri = WorkflowVersionDetailSerializer(the_version, context=fake_context)
 
         return Response(seri.data)
 
@@ -206,7 +208,7 @@ def workflow_version_get(entity_type_id, version_id):
 @permission_classes([permissions.IsAuthenticated, HasPermission("menupermissions.iaso_workflows")])
 def workflow_version_versionid(request, entity_type_id, version_id):
     if request.method == "GET":
-        return workflow_version_get(entity_type_id, version_id)
+        return workflow_version_get(request, entity_type_id, version_id)
     elif request.method == "POST":
         return workflow_version_post_real(entity_type_id, version_id)
     else:

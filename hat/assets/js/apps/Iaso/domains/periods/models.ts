@@ -96,7 +96,7 @@ export class Period {
     }
 
     static parse(periodString) {
-        if (!periodString) return null;
+        if (!periodString) return [null, null];
         if (periodString.includes('Q')) {
             return [
                 PERIOD_TYPE_QUARTER,

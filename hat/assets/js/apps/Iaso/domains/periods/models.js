@@ -20,6 +20,9 @@ export class Period {
         this.periodString = periodString;
     }
 
+    // Cast period as another period type. (Throw away data?)
+    // seems to be done. By converting it to as string and then converting it
+    // letting the new Period constructor parse it back
     asPeriodType(periodType) {
         let periodTypeString;
         switch (periodType) {
@@ -428,6 +431,7 @@ export class Period {
         if (period.includes('July')) {
             return this.nextFinancialJuly(period);
         }
+        return period;
 
         throw new Error(`unsupported period format ${period}`);
     }
@@ -448,6 +452,7 @@ export class Period {
         if (period.includes('July')) {
             return this.previousFinancialJuly(period);
         }
+        return period;
         throw new Error(`unsupported period format ${period}`);
     }
 

@@ -2,7 +2,7 @@ import math
 from copy import deepcopy
 from django.http import Http404
 
-from iaso.models import Workflow, WorkflowVersion, EntityType, WorkflowFollowup, WorkflowChange
+from iaso.models import Workflow, WorkflowVersion, EntityType, WorkflowFollowup, WorkflowChange, Form
 from iaso.models.workflow import WorkflowVersionsStatus
 from iaso.api.common import Paginator, HasPermission
 from iaso.api.entity import EntityTypeSerializer
@@ -18,6 +18,12 @@ from rest_framework.decorators import action
 
 from drf_yasg import openapi
 from drf_yasg.utils import swagger_auto_schema
+
+
+class FormMiniSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Form
+        fields = ["id", "name"]
 
 
 class WorkflowVersionSerializer(serializers.ModelSerializer):
@@ -50,27 +56,19 @@ class WorkflowSerializer(serializers.ModelSerializer):
 
 
 class WorkflowChangeSerializer(serializers.ModelSerializer):
-    form_id = serializers.SerializerMethodField()
+    form = FormMiniSerializer(many=False)
 
     class Meta:
         model = WorkflowChange
-        fields = ["form_id", "mapping", "created_at", "updated_at"]
-
-    @staticmethod
-    def get_form_id(instance):
-        return instance.form.pk
+        fields = ["form", "mapping", "created_at", "updated_at"]
 
 
 class WorkflowFollowupSerializer(serializers.ModelSerializer):
-    form_ids = serializers.SerializerMethodField()
+    forms = FormMiniSerializer(many=True)
 
     class Meta:
         model = WorkflowFollowup
-        fields = ["id", "order", "condition", "form_ids", "created_at", "updated_at"]
-
-    @staticmethod
-    def get_form_ids(instance):
-        return list(map(lambda x: x.pk, instance.forms.all()))
+        fields = ["id", "order", "condition", "forms", "created_at", "updated_at"]
 
 
 class WorkflowVersionDetailSerializer(serializers.ModelSerializer):

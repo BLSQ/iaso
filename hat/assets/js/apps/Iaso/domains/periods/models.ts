@@ -119,7 +119,6 @@ export class Period {
     }
 
     static parse(periodString: string): [string, PeriodObject] {
-        // if (!periodString) return [null, null];
         if (periodString.includes('Q')) {
             return [
                 PERIOD_TYPE_QUARTER,

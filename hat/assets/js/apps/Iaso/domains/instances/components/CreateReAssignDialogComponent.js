@@ -30,7 +30,7 @@ const CreateReAssignDialogComponent = ({
         // Should have day
         // Or just move this logic to the Period object
 
-        // Apparently we just build the sprint and parse it afterward
+        // Apparently we just build the string and parse it afterward
         const period = new Period(
             toDay.getFullYear() + `0${toDay.getMonth() + 1}`.slice(-2),
         );

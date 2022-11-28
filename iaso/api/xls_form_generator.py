@@ -91,7 +91,6 @@ def create_ou_tree_list(group_ou):
 
 
 class XlsFormGeneratorViewSet(ModelViewSet):
-
     results_key = "xlsformgenerator"
     remove_results_key_if_paginated = True
     filter_backends = [filters.OrderingFilter, DjangoFilterBackend, DeletionFilterBackend]
@@ -114,6 +113,7 @@ class XlsFormGeneratorViewSet(ModelViewSet):
         form_name = request.query_params.get("form_name", None)
         campaign_id = request.query_params.get("campaignid", None)
         org_unit_type_list = request.GET.get("outypelist", None).split(",")
+        ou_hierarchy_list = request.GET.get("ouhierarchy", None).split(",")
 
         if not form_name:
             raise serializers.ValidationError({"error": "No form provided."})
@@ -123,6 +123,9 @@ class XlsFormGeneratorViewSet(ModelViewSet):
         # Check if User has access to Group
         if not group.user_has_access_to(request.user):
             raise serializers.ValidationError({"error": "You don't have the access to this Org Unit group."})
+
+        if not ou_hierarchy_list:
+            raise serializers.ValidationError({"error": "You must provied an Org unit hierarchy."})
 
         try:
             path = XlsFormTemplate.objects.get(name=form_name).form_template.path
@@ -163,13 +166,13 @@ class XlsFormGeneratorViewSet(ModelViewSet):
             sheet[cell[choices_column + i] + "1"] = ou_type
             i += 1
 
-
         # insert rows to add the org units fields at the top of the file
         ws.insert_rows(3, 5)
 
         added_ou_list = []
         key_added_to_choice_list = []
         starting_row = 3
+        ou_hierarchy_list = [d.lower() for d in ou_hierarchy_list]
 
         # populate xls with OU
         for ou_dic in ou_tree_list:
@@ -185,9 +188,29 @@ class XlsFormGeneratorViewSet(ModelViewSet):
                     sheet[cell[choices_column - 1] + str(choices_row)] = f"ou_{str(k).lower()}"
                     sheet[cell[choices_column] + str(choices_row)] = v.id
                     sheet[cell[choices_column + 1] + str(choices_row)] = str(v.name)
+
+                    pprint(ou_hierarchy_list)
+                    index_hierarchy = ou_hierarchy_list.index(str(k.lower()))
+
+                    calculation_index = 0
+                    for selected_ou_type in ou_hierarchy_list:
+                        # if index_hierarchy > 0:
+                        #     index_hierarchy -= 1
+                        #     for row_calc in q_sheet.rows:
+                        #         iterator = 0
+                        #         for cell in row_calc:
+                        #             iterator += 1
+                        #             if str(cell.value).lower() == ou_hierarchy_list[index_hierarchy].lower():
+                        #                 calculation_index = iterator
+                        #                 break
+                        ou_dic = {k.lower(): v for k, v in ou_dic.items()}
+                        parent_ou_id = ou_dic.get(ou_hierarchy_list[index_hierarchy].lower()).id
+                        sheet[cell[choices_column] + str(choices_row)] = str(parent_ou_id)
+
                     choices_row += 1
                     starting_row += 1
                     survey_last_empty_row += 1
+
                 # if k == "COUNTRY" and v not in added_countries:
                 #     sheet[cell[choices_column - 1] + str(choices_row)] = "ou_country"
                 #     sheet[cell[choices_column] + str(choices_row)] = v.id

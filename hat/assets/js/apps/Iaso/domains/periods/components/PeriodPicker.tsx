@@ -3,6 +3,7 @@ import { Grid, makeStyles, Box, Typography } from '@material-ui/core';
 import { useTheme } from '@material-ui/core/styles';
 import PropTypes from 'prop-types';
 
+// @ts-ignore
 import { DatePicker, useSafeIntl, commonStyles } from 'bluesquare-components';
 import InputComponent from '../../../components/forms/InputComponent';
 
@@ -12,7 +13,7 @@ import {
     hasFeatureFlag,
     HIDE_PERIOD_QUARTER_NAME,
 } from '../../../utils/featureFlags';
-import { Period } from '../models';
+import { Period, PeriodObject } from '../models';
 
 import {
     PERIOD_TYPE_DAY,
@@ -27,7 +28,7 @@ import {
     SEMESTERS_RANGE,
 } from '../constants';
 import MESSAGES from '../messages';
-import { useCurrentUser } from '../../../utils/usersUtils.ts';
+import { useCurrentUser } from '../../../utils/usersUtils';
 
 const useStyles = makeStyles(theme => ({
     ...commonStyles(theme),
@@ -48,7 +49,7 @@ const PeriodPicker = ({
     const classes = useStyles();
     const theme = useTheme();
     const { formatMessage } = useSafeIntl();
-    const [currentPeriod, setCurrentPeriod] = useState(
+    const [currentPeriod, setCurrentPeriod] = useState<PeriodObject | null>(
         activePeriodString && Period.getPeriodType(activePeriodString)
             ? Period.parse(activePeriodString)[1]
             : null,
@@ -63,8 +64,13 @@ const PeriodPicker = ({
         setCurrentPeriodType(periodType);
     }, [periodType, currentPeriodType]);
 
-    const handleChange = (changedKeyName, value) => {
-        let newPeriod = {
+    const handleChange = (
+        changedKeyName: 'month' | 'year' | 'quarter' | 'semester',
+        value: number,
+    ) => {
+        // FIXME: Figure out appropriate typescript
+        // @ts-ignore
+        let newPeriod: null | PeriodObject = {
             ...currentPeriod,
             [changedKeyName]: value,
         };
@@ -104,6 +110,7 @@ const PeriodPicker = ({
     if (!periodType) {
         return null;
     }
+
     return (
         <Box
             id={keyName}
@@ -128,6 +135,7 @@ const PeriodPicker = ({
             )}
             {currentPeriodType !== PERIOD_TYPE_DAY && (
                 <>
+                    {/*@ts-ignore*/}
                     <Typography variant="h6" className={classes.title}>
                         {title}
                     </Typography>

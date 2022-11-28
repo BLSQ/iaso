@@ -244,15 +244,14 @@ version_id_param = openapi.Parameter("version_id", openapi.IN_QUERY, description
 
 class WorkflowVersionViewSet(GenericViewSet):
     """Workflow API
-    POST /api/workflow/{entity_type_id}/?version_id=XXX
-    version_id is not mandatory.
-    This endpoint either:
-        creates a new workflow from scratch (empty) if the version_id is not provided
-        copies the content of the version referred to by the version_id
+    POST /api/workflow/{entity_type_id}/new/?version_id=XXX
+    if version_id is provided, copies the content of the version referred to by the version_idcreates a new w
+    if version_id is NOT provided, orkflow from scratch (empty) if the version_id is not provided
     The new version is always in DRAFT
 
     GET /api/workflow/{entity_type_id}/?version_id=XXX
-    version_id is mandatory
+    if version_id is provided, it will return details on this specific version.
+    if version_id is NOT provided, it will return the (paginated) list of versions for this workflow.
     """
 
     lookup_field = "entity_type_id"

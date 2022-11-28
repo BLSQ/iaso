@@ -51,6 +51,23 @@ const details = {
     changes: [
         {
             form_id: 89,
+            form_name: 'form name',
+            form: {
+                id: 89,
+                name: 'form name',
+            },
+            mapping: {
+                key: 'value',
+                key2: 'value2',
+            },
+            created_at: 1667821202.186868,
+            updated_at: 1667821202.186868,
+        },
+        {
+            form: {
+                id: 90,
+                name: 'form name 2',
+            },
             mapping: {
                 key: 'value',
                 key2: 'value2',
@@ -64,7 +81,16 @@ const details = {
             id: 'THE_ID',
             order: 1,
             condition: {},
-            form_ids: [90, 91],
+            forms: [
+                {
+                    id: 89,
+                    name: 'form name',
+                },
+                {
+                    id: 90,
+                    name: 'form name 2',
+                },
+            ],
             created_at: 1667821202.186868,
             updated_at: 1667821202.186868,
         },

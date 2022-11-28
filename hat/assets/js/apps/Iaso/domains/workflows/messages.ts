@@ -65,6 +65,26 @@ const MESSAGES = defineMessages({
         id: 'iaso.workflows.changes',
         defaultMessage: 'Changes',
     },
+    form: {
+        id: 'iaso.instance.formShort',
+        defaultMessage: 'Form',
+    },
+    updated_at: {
+        id: 'iaso.forms.updated_at',
+        defaultMessage: 'Updated',
+    },
+    created_at: {
+        id: 'iaso.forms.created_at',
+        defaultMessage: 'Created',
+    },
+    results: {
+        id: 'iaso.label.resultsLower',
+        defaultMessage: 'result(s)',
+    },
+    forms: {
+        defaultMessage: 'Forms',
+        id: 'iaso.forms.title',
+    },
 });
 
 export default MESSAGES;

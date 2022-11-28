@@ -16,17 +16,22 @@ export type WorkflowsParams = UrlParams & {
 export type Status = 'DRAFT' | 'UNPUBLISHED' | 'PUBLISHED';
 
 export type Change = {
-    form_id: number;
+    form: Form;
     mapping: Record<string, string>;
     created_at: number;
     updated_at: number;
+};
+
+type Form = {
+    id: string;
+    name: string;
 };
 
 export type FollowUps = {
     id: string;
     order: number;
     condition: Record<string, string>;
-    form_ids: string[];
+    forms: Form[];
     created_at: number;
     updated_at: number;
 };
@@ -36,10 +41,7 @@ export type WorkflowDetail = {
     name: string;
     status: Status;
     entity_type: EntityType;
-    reference_form: {
-        id: number;
-        name: string;
-    };
+    reference_form: Form;
     created_at: number;
     updated_at: number;
     changes: Change[];

@@ -6,6 +6,10 @@ import {
     commonStyles,
     // @ts-ignore
     LoadingSpinner,
+    // @ts-ignore
+    formatThousand,
+    // @ts-ignore
+    Table,
 } from 'bluesquare-components';
 import { Box, Grid, makeStyles } from '@material-ui/core';
 import { useDispatch, useSelector } from 'react-redux';
@@ -22,6 +26,9 @@ import { WorkflowDetail, WorkflowParams } from './types/workflows';
 import { WorkflowBaseInfo } from './components/WorkflowBaseInfo';
 
 import WidgetPaper from '../../components/papers/WidgetPaperComponent';
+import { TableWithDeepLink } from '../../components/tables/TableWithDeepLink';
+
+import { useGetChangesColumns, useGetFollowUpsColumns } from './config';
 
 type Router = {
     goBack: () => void;
@@ -51,10 +58,14 @@ export const Details: FunctionComponent<Props> = ({ router }) => {
 
     const {
         data: workflow,
+        isLoading,
     }: {
         data?: WorkflowDetail;
         isLoading: boolean;
     } = useGetWorkflow(versionId, entityTypeId);
+
+    const changesColumns = useGetChangesColumns(entityTypeId, versionId);
+    const followUpsColumns = useGetFollowUpsColumns(entityTypeId, versionId);
 
     return (
         <>
@@ -92,7 +103,34 @@ export const Details: FunctionComponent<Props> = ({ router }) => {
                         className={classes.fullWidth}
                         title={formatMessage(MESSAGES.followUps)}
                     >
-                        WIP
+                        <Table
+                            marginTop={false}
+                            countOnTop={false}
+                            elevation={0}
+                            showPagination={false}
+                            baseUrl={baseUrls.workflowDetail}
+                            data={workflow?.follow_ups ?? []}
+                            pages={1}
+                            defaultSorted={[{ id: 'order', desc: false }]}
+                            columns={followUpsColumns}
+                            count={workflow?.follow_ups.length}
+                            params={params}
+                            extraProps={{
+                                isLoading,
+                            }}
+                        />
+                        <Box
+                            display="flex"
+                            justifyContent="flex-end"
+                            pr={2}
+                            pb={2}
+                            mt={-2}
+                        >
+                            {`${formatThousand(
+                                workflow?.follow_ups.length ?? 0,
+                            )} `}
+                            {formatMessage(MESSAGES.results)}
+                        </Box>
                     </WidgetPaper>
                 </Box>
                 <Box mt={2}>
@@ -100,7 +138,42 @@ export const Details: FunctionComponent<Props> = ({ router }) => {
                         className={classes.fullWidth}
                         title={formatMessage(MESSAGES.changes)}
                     >
-                        WIP
+                        <TableWithDeepLink
+                            marginTop={false}
+                            countOnTop={false}
+                            elevation={0}
+                            showPagination={false}
+                            baseUrl={baseUrls.workflowDetail}
+                            data={workflow?.changes ?? []}
+                            pages={1}
+                            defaultSorted={[{ id: 'updated_at', desc: false }]}
+                            columns={changesColumns}
+                            count={workflow?.changes.length}
+                            params={params}
+                            onTableParamsChange={p =>
+                                dispatch(
+                                    redirectToReplace(
+                                        baseUrls.workflowDetail,
+                                        p,
+                                    ),
+                                )
+                            }
+                            extraProps={{
+                                isLoading,
+                            }}
+                        />
+                        <Box
+                            display="flex"
+                            justifyContent="flex-end"
+                            pr={2}
+                            pb={2}
+                            mt={-2}
+                        >
+                            {`${formatThousand(
+                                workflow?.changes.length ?? 0,
+                            )} `}
+                            {formatMessage(MESSAGES.results)}
+                        </Box>
                     </WidgetPaper>
                 </Box>
             </Box>

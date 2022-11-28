@@ -6,7 +6,7 @@ import {
     TableRow,
     TableCell,
 } from '@material-ui/core';
-import React, { FunctionComponent } from 'react';
+import React, { FunctionComponent, ReactNode } from 'react';
 // @ts-ignore
 import { useSafeIntl } from 'bluesquare-components';
 
@@ -15,6 +15,7 @@ import MESSAGES from '../messages';
 import { WorkflowDetail } from '../types/workflows';
 
 import { StatusCell } from './StatusCell';
+import { LinkToForm } from '../../forms/components/LinkToForm';
 
 const useStyles = makeStyles(theme => ({
     leftCell: {
@@ -26,7 +27,7 @@ const useStyles = makeStyles(theme => ({
 
 type RowProps = {
     label: string;
-    value?: string;
+    value?: string | ReactNode;
 };
 
 const Row: FunctionComponent<RowProps> = ({ label, value }) => {
@@ -59,7 +60,16 @@ export const WorkflowBaseInfo: FunctionComponent<Props> = ({ workflow }) => {
                     />
                     <Row
                         label={formatMessage(MESSAGES.referenceForm)}
-                        value={workflow?.reference_form.name}
+                        value={
+                            workflow ? (
+                                <LinkToForm
+                                    formId={workflow.reference_form.id}
+                                    formName={workflow.reference_form.name}
+                                />
+                            ) : (
+                                ''
+                            )
+                        }
                     />
                     <Row
                         label={formatMessage(MESSAGES.version)}

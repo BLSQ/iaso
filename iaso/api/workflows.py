@@ -9,9 +9,15 @@ from iaso.api.entity import EntityTypeSerializer
 from iaso.api.forms import FormSerializer
 
 from rest_framework import serializers, permissions
-from rest_framework.generics import get_object_or_404, ListAPIView, RetrieveAPIView
+from rest_framework.generics import get_object_or_404, ListAPIView, RetrieveAPIView, CreateAPIView
 from rest_framework.response import Response
 from rest_framework.decorators import api_view, permission_classes
+from rest_framework.viewsets import GenericViewSet
+from rest_framework.decorators import action
+
+
+from drf_yasg import openapi
+from drf_yasg.utils import swagger_auto_schema
 
 
 class WorkflowVersionSerializer(serializers.ModelSerializer):
@@ -232,6 +238,69 @@ def workflow_version_new(request, entity_type_id):
 #     @action(methods=['get'], url_path="versions", url_name="list_versions"):
 #     def versions_list(self, request, entity_type_id):
 #         print("versions_list request", request)
+
+version_id_param = openapi.Parameter("version_id", openapi.IN_QUERY, description="Version ID", type=openapi.TYPE_STRING)
+version_id_param_required = openapi.Parameter(
+    "version_id", openapi.IN_QUERY, description="Version ID", type=openapi.TYPE_STRING, required=True
+)
+entity_type_id_param = openapi.Parameter(
+    "entity_type_id", openapi.IN_PATH, description="Entity Type ID", type=openapi.TYPE_STRING
+)
+
+
+class WorkflowVersionPost(GenericViewSet):
+    """Workflow API
+    POST /api/workflow/{entity_type_id}/version/?version_id=XXX
+    version_id is not mandatory.
+    This endpoint either:
+        creates a new workflow from scratch (empty) if the version_id is not provided
+        copies the content of the version referred to by the version_id
+    The new version is always in DRAFT
+
+    GET /api/workflow/{entity_type_id}/version/?version_id=XXX
+    version_id is mandatory
+    """
+
+    lookup_field = "entity_type_id"
+    permission_classes = [permissions.IsAuthenticated, HasPermission("menupermissions.iaso_workflows")]
+    serializer_class = WorkflowVersionSerializer
+
+    @swagger_auto_schema(manual_parameters=[version_id_param_required])
+    def retrieve(self, request, *args, **kwargs):
+        entity_type_id = kwargs.get("entity_type_id", None)
+        version_id = request.query_params.get("version_id", None)
+
+        return workflow_version_get(request, entity_type_id, version_id)
+
+    @swagger_auto_schema(manual_parameters=[version_id_param], request_body=None)
+    @action(
+        detail=True,
+        methods=["post"],
+        permission_classes=[permissions.IsAuthenticated, HasPermission("menupermissions.iaso_workflows")],
+    )
+    def new(self, request, entity_type_id):
+        version_id = request.query_params.get("version_id", None)
+
+        if entity_type_id is None:
+            return Response(status=404, data="Must provide entity type id/pk")
+
+        if version_id is None:
+            return workflow_version_post_real(entity_type_id, None)
+        else:
+            return workflow_version_post_real(entity_type_id, version_id)
+
+    # def create(self, request, *args, **kwargs):
+    #
+    #     entity_type_id = kwargs.get("entity_type_id", None)
+    #     version_id = request.query_params.get("version_id", None)
+    #
+    #     if entity_type_id is None:
+    #         return Response(status=404, data="Must provide entity type id/pk")
+    #
+    #     if version_id is None:
+    #         return workflow_version_post_real(entity_type_id, None)
+    #     else:
+    #         return workflow_version_post_real(entity_type_id, version_id)
 
 
 class WorkflowVersionDetail(RetrieveAPIView):

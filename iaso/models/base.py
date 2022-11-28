@@ -25,16 +25,17 @@ from iaso.models.org_unit import OrgUnit
 from iaso.models.data_source import SourceVersion, DataSource
 from .device import DeviceOwnership, Device
 from .forms import Form, FormVersion
+from .. import periods
 
 from ..utils.jsonlogic import jsonlogic_to_q
 
 logger = getLogger(__name__)
 
 
-YEAR = "YEAR"
-QUARTER = "QUARTER"
-MONTH = "MONTH"
-SIX_MONTH = "SIX_MONTH"
+# For compat
+QUARTER = periods.PERIOD_TYPE_QUARTER
+MONTH = periods.PERIOD_TYPE_MONTH
+SIX_MONTH = periods.PERIOD_TYPE_SIX_MONTH
 
 
 AGGREGATE = "AGGREGATE"

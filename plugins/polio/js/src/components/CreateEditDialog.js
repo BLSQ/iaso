@@ -233,23 +233,23 @@ const CreateEditDialog = ({
                             title === formatMessage(MESSAGES.scope)
                         ) {
                             return (
-                                <Tooltip
+                                <Tab
                                     key={title}
-                                    title={
-                                        <FormattedMessage
-                                            {...MESSAGES.scopeUnlockConditions}
-                                        />
-                                    }
-                                >
-                                    {/* the wrapping span is to enable the tooltip while the tab is disabled */}
-                                    <span>
-                                        <Tab
+                                    style={{ pointerEvents: 'auto' }}
+                                    label={
+                                        <Tooltip
                                             key={title}
-                                            label={title}
-                                            disabled={disabled || false}
-                                        />
-                                    </span>
-                                </Tooltip>
+                                            title={
+                                                <FormattedMessage
+                                                    {...MESSAGES.scopeUnlockConditions}
+                                                />
+                                            }
+                                        >
+                                            <span>{title}</span>
+                                        </Tooltip>
+                                    }
+                                    disabled={disabled || false}
+                                />
                             );
                         }
                         return (

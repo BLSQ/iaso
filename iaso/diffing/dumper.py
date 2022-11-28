@@ -95,7 +95,7 @@ class Dumper:
                     results.append(str(comparison.before))
                     results.append(str(comparison.after))
                 else:
-                    if "MULTIPOLYGON" in str(comparison.before):
+                    if "MULTIPOLYGON" in str(comparison.before) or "MULTIPOLYGON" in str(comparison.after):
                         results.append(str(comparison.before)[:40])
                         results.append(str(comparison.after)[:40])
                     else:

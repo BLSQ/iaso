@@ -59,16 +59,6 @@ const useStyles = makeStyles(theme => ({
     infoPaperBox: { minHeight: '100px' },
 }));
 
-// const mapFileContent = (
-//     fileContent?: Record<string, string>,
-// ): ReactElement | null => {
-//     if (!fileContent) return null;
-//     const keys = Object.keys(fileContent);
-//     return keys.map(key => {
-//         return <Grid container item xs={12}></Grid>;
-//     });
-// };
-
 export const Details: FunctionComponent<Props> = ({ router }) => {
     const { params } = router;
     const classes: Record<string, string> = useStyles();
@@ -86,12 +76,7 @@ export const Details: FunctionComponent<Props> = ({ router }) => {
         data?: Beneficiary;
         isLoading: boolean;
     } = useGetBeneficiary(entityId);
-    const columns = useBeneficiariesDetailsColumns(
-        beneficiary?.id ?? null,
-        // @ts-ignore
-        // beneficiary?.entity_type?.fields_detail_info_view ?? [],
-        [],
-    );
+    const columns = useBeneficiariesDetailsColumns(beneficiary?.id ?? null, []);
 
     const { data, isLoading: isLoadingSubmissions } = useGetSubmissions(
         params,

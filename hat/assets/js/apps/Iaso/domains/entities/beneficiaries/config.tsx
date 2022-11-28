@@ -211,15 +211,6 @@ export const useBeneficiariesDetailsColumns = (
                 accessor: 'org_unit.name',
             },
             {
-                Header: formatMessage(MESSAGES.keyInfo),
-                id: 'key_info',
-                accessor: 'key_info',
-                // eslint-disable-next-line no-unused-vars
-                Cell: _settings => {
-                    return <>--</>;
-                },
-            },
-            {
                 Header: formatMessage(MESSAGES.submitter),
                 id: 'created_by',
                 accessor: 'created_by.user_name',

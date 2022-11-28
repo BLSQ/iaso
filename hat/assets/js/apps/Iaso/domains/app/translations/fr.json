@@ -661,6 +661,7 @@
     "iaso.periods.start": "Période de début",
     "iaso.permissions.assignments": "Attributions",
     "iaso.permissions.completeness": "Complétude des données",
+    "iaso.permissions.completeness_stats": "Statitiques de complétude",
     "iaso.permissions.dataTasks": "Tâches",
     "iaso.permissions.entities": "Bénéficiaires",
     "iaso.permissions.forms": "Formulaires",

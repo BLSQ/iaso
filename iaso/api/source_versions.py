@@ -3,7 +3,7 @@ from rest_framework.decorators import action
 from rest_framework.response import Response
 
 from iaso.models import SourceVersion
-from .common import ModelViewSet, CONTENT_TYPE_CSV
+from .common import ModelViewSet, CONTENT_TYPE_CSV, HasPermission
 from iaso.models import DataSource
 from rest_framework import serializers, permissions
 
@@ -70,7 +70,10 @@ class SourceVersionViewSet(ModelViewSet):
     GET /api/sourceversions/<id>
     """
 
-    permission_classes = [permissions.IsAuthenticated]
+    permission_classes = [
+        permissions.IsAuthenticated,
+        HasPermission("menupermissions.iaso_mappings", "menupermissions.iaso_org_units", "menupermissions.iaso_links"),  # type: ignore
+    ]
     serializer_class = SourceVersionSerializer
     results_key = "versions"
     queryset = DataSource.objects.all()

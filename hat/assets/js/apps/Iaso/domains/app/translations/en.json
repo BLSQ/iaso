@@ -664,6 +664,7 @@
     "iaso.periods.start": "Start period",
     "iaso.permissions.assignments": "Assignments",
     "iaso.permissions.completeness": "Data completeness",
+    "iaso.permissions.completeness_stats": "Completeness stats",
     "iaso.permissions.dataTasks": "Tasks",
     "iaso.permissions.entities": "Beneficiaries",
     "iaso.permissions.forms": "Forms",

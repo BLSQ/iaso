@@ -240,12 +240,6 @@ def workflow_version_new(request, entity_type_id):
 #         print("versions_list request", request)
 
 version_id_param = openapi.Parameter("version_id", openapi.IN_QUERY, description="Version ID", type=openapi.TYPE_STRING)
-version_id_param_required = openapi.Parameter(
-    "version_id", openapi.IN_QUERY, description="Version ID", type=openapi.TYPE_STRING, required=True
-)
-entity_type_id_param = openapi.Parameter(
-    "entity_type_id", openapi.IN_PATH, description="Entity Type ID", type=openapi.TYPE_STRING
-)
 
 
 class WorkflowVersionPost(GenericViewSet):
@@ -265,12 +259,29 @@ class WorkflowVersionPost(GenericViewSet):
     permission_classes = [permissions.IsAuthenticated, HasPermission("menupermissions.iaso_workflows")]
     serializer_class = WorkflowVersionSerializer
 
-    @swagger_auto_schema(manual_parameters=[version_id_param_required])
+    @swagger_auto_schema(manual_parameters=[version_id_param])
     def retrieve(self, request, *args, **kwargs):
         entity_type_id = kwargs.get("entity_type_id", None)
         version_id = request.query_params.get("version_id", None)
 
-        return workflow_version_get(request, entity_type_id, version_id)
+        if version_id is None:
+            if entity_type_id is None:
+                raise Http404("Must provide entity type id/pk")
+            else:
+                et = get_object_or_404(EntityType, pk=entity_type_id)
+                wf = get_or_create_wf_for_entity_type(et)
+                queryset = wf.workflow_versions.all()
+
+            page = self.paginate_queryset(queryset)
+            if page is not None:
+                serializer = self.get_serializer(page, many=True)
+                return self.get_paginated_response(serializer.data)
+
+            serializer = self.get_serializer(queryset, many=True)
+            return Response(serializer.data)
+
+        else:
+            return workflow_version_get(request, entity_type_id, version_id)
 
     @swagger_auto_schema(manual_parameters=[version_id_param], request_body=None)
     @action(
@@ -288,19 +299,6 @@ class WorkflowVersionPost(GenericViewSet):
             return workflow_version_post_real(entity_type_id, None)
         else:
             return workflow_version_post_real(entity_type_id, version_id)
-
-    # def create(self, request, *args, **kwargs):
-    #
-    #     entity_type_id = kwargs.get("entity_type_id", None)
-    #     version_id = request.query_params.get("version_id", None)
-    #
-    #     if entity_type_id is None:
-    #         return Response(status=404, data="Must provide entity type id/pk")
-    #
-    #     if version_id is None:
-    #         return workflow_version_post_real(entity_type_id, None)
-    #     else:
-    #         return workflow_version_post_real(entity_type_id, version_id)
 
 
 class WorkflowVersionDetail(RetrieveAPIView):

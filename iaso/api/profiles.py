@@ -1,6 +1,5 @@
 from django.contrib.auth import update_session_auth_hash
 from django.contrib.sites.shortcuts import get_current_site
-from django.db import connection
 
 from rest_framework import viewsets, permissions
 from rest_framework.response import Response
@@ -201,7 +200,6 @@ class ProfilesViewSet(viewsets.ViewSet):
         if not password and not send_email_invitation:
             return JsonResponse({"errorKey": "password", "errorMessage": _("Mot de passe requis")}, status=400)
         existing_user = User.objects.filter(username__iexact=username)
-        print(len(connection.queries))
         if existing_user:
             return JsonResponse({"errorKey": "user_name", "errorMessage": _("Nom d'utilisateur existant")}, status=400)
 

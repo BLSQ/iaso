@@ -1,5 +1,3 @@
-from pprint import pprint
-
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404
 from django_filters.rest_framework import DjangoFilterBackend
@@ -81,6 +79,15 @@ def get_data_from_campaigns(campaign_id, row, q_sheet, calculation_index):
                 cell_obj.value = str(getattr(campaign, str_request))
 
 
+def get_column_position(column_name, sheet):
+    for row_calc in sheet.rows:
+        column_position = 0
+        for s_cell in row_calc:
+            column_position += 1
+            if str(s_cell.value).lower() == column_name:
+                return column_position
+
+
 def create_ou_tree_list(group_ou):
     # create list of dictionary with OU tree
     ou_tree_list = []
@@ -107,7 +114,7 @@ class XlsFormGeneratorViewSet(ModelViewSet):
         """
         Export a xlsform by using a group as OU source. A template is required. Specific data can be extracted from campaigns by
         starting the name variable by 'insert_' in the xls file in "calculate" row. The data will be saved in the
-        calculation column.
+        calculation column. By adding campaignid to the params you can extract data from a campaign.
         """
         group_id = request.query_params.get("groupid", None)
         form_name = request.query_params.get("form_name", None)
@@ -148,14 +155,6 @@ class XlsFormGeneratorViewSet(ModelViewSet):
         for l in cell:
             survey_columns.append(q_sheet[f"{l}1"].value)
 
-        added_countries = []
-        added_regions = []
-        added_district = []
-        added_facilities = []
-        region_added = False
-        district_added = False
-        facility_added = False
-
         # create xls columns
         sheet[cell[choices_column - 1] + "1"] = "list name"
         sheet[cell[choices_column] + "1"] = "name"
@@ -186,6 +185,12 @@ class XlsFormGeneratorViewSet(ModelViewSet):
                         q_sheet[cell[1] + str(starting_row)] = f"ou_{str(k).lower()}"
                         q_sheet[cell[2] + str(starting_row)] = f"Select {k}"
                         q_sheet[cell[3] + str(starting_row)] = "yes"
+                        if ou_hierarchy_list.index(k.lower()) != 0:
+                            parent_type = ou_hierarchy_list[ou_hierarchy_list.index(str(k.lower())) - 1]
+                            q_sheet[cell[get_column_position("choice_filter", q_sheet) - 1] + str(starting_row)] = (
+                                f"{parent_type}=$" "{" f"ou_{parent_type}" "} "
+                            )
+                    # Add org units as hierarchy into the choices sheet.
                     sheet[cell[choices_column - 1] + str(choices_row)] = f"ou_{str(k).lower()}"
                     sheet[cell[choices_column] + str(choices_row)] = v.id
                     sheet[cell[choices_column + 1] + str(choices_row)] = str(v.name)
@@ -194,118 +199,24 @@ class XlsFormGeneratorViewSet(ModelViewSet):
                     ou_dic = {k.lower(): v for k, v in ou_dic.items()}
 
                     calculation_index = 0
-                    print(index_hierarchy)
                     if index_hierarchy > 0:
                         index_hierarchy -= 1
                         for row_calc in sheet.rows:
                             iterator = 0
                             for s_cell in row_calc:
                                 iterator += 1
-                                print(f"CELL : {s_cell.value}")
-                                print(f"OU : {ou_hierarchy_list[index_hierarchy].lower()}")
                                 if str(s_cell.value).lower() == ou_hierarchy_list[index_hierarchy].lower():
-                                    print("fOUND ?")
                                     calculation_index += iterator
                                     break
                     parent_ou_id = ou_dic.get(ou_hierarchy_list[index_hierarchy].lower()).id
-                    sheet[cell[choices_column + calculation_index - 1] + str(choices_row)] = str(parent_ou_id)
+                    sheet[cell[choices_column + calculation_index - 2] + str(choices_row)] = str(parent_ou_id)
 
                     choices_row += 1
                     starting_row += 1
                     survey_last_empty_row += 1
 
-                # if k == "COUNTRY" and v not in added_countries:
-                #     sheet[cell[choices_column - 1] + str(choices_row)] = "ou_country"
-                #     sheet[cell[choices_column] + str(choices_row)] = v.id
-                #     sheet[cell[choices_column + 1] + str(choices_row)] = str(v.name)
-                #     choices_row += 1
-                #     survey_last_empty_row += 1
-                # if k == "REGION" and v not in added_regions:
-                #     survey_last_empty_row += 2
-                #     added_regions.append(v)
-                #     if not region_added:
-                #         q_sheet[cell[0] + str(4)] = "select_one ou_region"
-                #         q_sheet[cell[1] + str(4)] = "ou_region"
-                #         q_sheet[cell[2] + str(4)] = "Select a Region"
-                #         q_sheet[cell[9] + str(4)] = "country=${ou_country}"
-                #         region_added = True
-                #     sheet[cell[choices_column - 1] + str(choices_row)] = "ou_region"
-                #     sheet[cell[choices_column] + str(choices_row)] = v.id
-                #     sheet[cell[choices_column + 1] + str(choices_row)] = str(v.name)
-                #     sheet[cell[choices_column + 3] + str(choices_row)] = (
-                #         ou_dic.get("COUNTRY", None)
-                #         if ou_dic.get("COUNTRY", None) is None
-                #         else ou_dic.get("COUNTRY", None).pk
-                #     )
-                #     choices_row += 1
-                #     survey_last_empty_row += 1
-
-                # if k == "DISTRICT" and v not in added_district:
-                #     survey_last_empty_row += 4
-                #     added_district.append(v)
-                #     if not district_added:
-                #         q_sheet[cell[0] + str(5)] = "select_one ou_district"
-                #         q_sheet[cell[1] + str(5)] = "ou_district"
-                #         q_sheet[cell[2] + str(5)] = "Select a District"
-                #         q_sheet[cell[9] + str(5)] = "region=${ou_region}"
-                #         district_added = True
-                #     sheet[cell[choices_column - 1] + str(choices_row)] = "ou_district"
-                #     sheet[cell[choices_column] + str(choices_row)] = v.id
-                #     sheet[cell[choices_column + 1] + str(choices_row)] = str(v.name)
-                #     sheet[cell[choices_column + 3] + str(choices_row)] = (
-                #         ou_dic.get("COUNTRY", None)
-                #         if ou_dic.get("COUNTRY", None) is None
-                #         else ou_dic.get("COUNTRY", None).pk
-                #     )
-                #     sheet[cell[choices_column + 4] + str(choices_row)] = (
-                #         ou_dic.get("REGION", None)
-                #         if ou_dic.get("REGION", None) is None
-                #         else ou_dic.get("REGION", None).pk
-                #     )
-                #     choices_row += 1
-                #     survey_last_empty_row += 1
-                #
-                # if k == "HEALTH FACILITY" and v not in added_facilities:
-                #     survey_last_empty_row += 6
-                #     added_facilities.append(v)
-                #     if not facility_added:
-                #         q_sheet[cell[0] + str(6)] = "select_one ou_facility"
-                #         q_sheet[cell[1] + str(6)] = "ou_facility"
-                #         q_sheet[cell[2] + str(6)] = "Select a Health Facility"
-                #         q_sheet[cell[9] + str(6)] = "district=${ou_district}"
-                #         district_added = True
-                #     sheet[cell[choices_column - 1] + str(choices_row)] = ""
-                #     sheet[cell[choices_column] + str(choices_row)] = v.id
-                #     sheet[cell[choices_column + 1] + str(choices_row)] = str(v.name)
-                #     sheet[cell[choices_column + 3] + str(choices_row)] = (
-                #         ou_dic.get("COUNTRY", None)
-                #         if ou_dic.get("COUNTRY", None) is None
-                #         else ou_dic.get("COUNTRY", None).pk
-                #     )
-                #     sheet[cell[choices_column + 4] + str(choices_row)] = (
-                #         ou_dic.get("REGION", None)
-                #         if ou_dic.get("REGION", None) is None
-                #         else ou_dic.get("REGION", None).pk
-                #     )
-                #     sheet[cell[choices_column + 5] + str(choices_row)] = (
-                #         ou_dic.get("DISTRICT", None)
-                #         if ou_dic.get("DISTRICT", None) is None
-                #         else ou_dic.get("DISTRICT", None).name
-                #     )
-                #     choices_row += 1
-                #     survey_last_empty_row += 1
-
         row = q_sheet.max_row
-
-        # Get Calculation column position
-        calculation_index = 0
-        for row_calc in q_sheet.rows:
-            iterator = 0
-            for cell in row_calc:
-                iterator += 1
-                if cell.value == "calculation":
-                    calculation_index = iterator
-                    break
+        calculation_index = get_column_position("calculation", q_sheet)
 
         # Insert data as calculation from campaigns
         if campaign_id and request.user.has_perm("iaso_polio"):

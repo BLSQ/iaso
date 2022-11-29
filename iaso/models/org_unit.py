@@ -345,7 +345,7 @@ class OrgUnit(TreeModel):
     def __str__(self):
         return "%s %s %d" % (self.org_unit_type, self.name, self.id if self.id else -1)
 
-    def create_ou_tree(self) -> "QuerySet[self]":
+    def create_ou_tree(self):
         return self.ancestors().union(self.descendants())
 
     def as_dict_for_mobile_lite(self):

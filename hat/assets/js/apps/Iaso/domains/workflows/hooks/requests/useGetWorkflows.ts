@@ -22,10 +22,9 @@ const getWorkflows = async (
         params.limit = pageSize;
     }
     // TODO: plug me to the api
-    // const url = makeUrlWithParams(
-    //     `/api/workflow/entity_type_id/${entityTypeId}/`,
-    //     params,
-    // );
+
+    // const url = makeUrlWithParams(`/api/workflow/${entityTypeId}/`, params);
+
     return list as WorkflowsPaginated;
     // return getRequest(url) as Promise<WorkflowsPaginated>;
 };
@@ -52,7 +51,7 @@ const getWorkflow = async (
     // TODO: plug me to the api
     return details as WorkflowDetail;
     // return getRequest(
-    //     `/api/workflow/entity_type_id/${entityTypeId}/version_id/${versionId}/`,
+    //     `/api/workflow/${entityTypeId}/?version_id=${versionId}`,
     // ) as Promise<WorkflowDetail>;
 };
 

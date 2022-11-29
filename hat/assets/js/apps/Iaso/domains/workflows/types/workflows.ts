@@ -18,8 +18,8 @@ export type Status = 'DRAFT' | 'UNPUBLISHED' | 'PUBLISHED';
 export type Change = {
     form: Form;
     mapping: Record<string, string>;
-    created_at: number;
-    updated_at: number;
+    created_at: string;
+    updated_at: string;
 };
 
 type Form = {
@@ -32,8 +32,8 @@ export type FollowUps = {
     order: number;
     condition: Record<string, string>;
     forms: Form[];
-    created_at: number;
-    updated_at: number;
+    created_at: string;
+    updated_at: string;
 };
 
 export type WorkflowDetail = {
@@ -42,8 +42,8 @@ export type WorkflowDetail = {
     status: Status;
     entity_type: EntityType;
     reference_form: Form;
-    created_at: number;
-    updated_at: number;
+    created_at: string;
+    updated_at: string;
     changes: Change[];
     follow_ups: FollowUps[];
 };
@@ -52,8 +52,8 @@ export type Workflow = {
     version_id: string;
     name: string;
     status: Status;
-    created_at: number;
-    updated_at: number;
+    created_at: string;
+    updated_at: string;
 };
 export type Workflows = Array<Workflow>;
 

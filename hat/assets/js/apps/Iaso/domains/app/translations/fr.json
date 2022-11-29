@@ -874,6 +874,8 @@
     "iaso.versionsDialog.label.number": "Nombre",
     "iaso.versionsDialog.label.updatedAt": "Dernière mise à jour",
     "iaso.workflows.changes": "Changements",
+    "iaso.workflows.condition": "Condition",
+    "iaso.workflows.mapping": "Correspondance",
     "iaso.workflows.followUps": "Suivis",
     "iaso.zone": "Zone de santé",
     "map.draw.label.cancel": "Annuler",

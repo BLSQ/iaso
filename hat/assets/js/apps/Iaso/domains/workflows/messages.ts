@@ -85,6 +85,14 @@ const MESSAGES = defineMessages({
         defaultMessage: 'Forms',
         id: 'iaso.forms.title',
     },
+    condition: {
+        defaultMessage: 'Condition',
+        id: 'iaso.workflows.condition',
+    },
+    mapping: {
+        defaultMessage: 'Mapping',
+        id: 'i,aso.workflows.mapping',
+    },
 });
 
 export default MESSAGES;

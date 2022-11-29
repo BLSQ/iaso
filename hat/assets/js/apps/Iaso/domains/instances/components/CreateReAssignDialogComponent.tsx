@@ -42,29 +42,30 @@ const CreateReAssignDialogComponent: FunctionComponent<Props> = ({
 }) => {
     const { formatMessage } = useSafeIntl();
     const [fieldValue, setFieldValue] = React.useState(() => {
-        let initialPeriod = currentInstance?.period;
-        // if this is a new Submission or there isn't a current permission calculate
-        // an initial
-        if (initialPeriod === undefined || initialPeriod === '') {
-            // We don't have a current Period
+        let initialPeriod: string | undefined;
+        if (currentInstance) {
+            initialPeriod = currentInstance?.period;
+        } else if (formType.periodType) {
+            // On creation make a default period
             const toDay = new Date();
             const period = new Period(
                 toDay.getFullYear() + `0${toDay.getMonth() + 1}`.slice(-2),
             );
-            if (
-                formType.periodType !== null &&
-                formType.periodType !== undefined
-            ) {
-                initialPeriod = period.asPeriodType(
-                    formType.periodType,
-                ).periodString;
-            }
+            initialPeriod = period.asPeriodType(
+                formType.periodType,
+            ).periodString;
         }
         return {
             orgUnit: { value: currentInstance?.org_unit, errors: [] },
             period: { value: initialPeriod, errors: [] },
         };
     });
+    const isPeriodRequired = Boolean(formType.periodType);
+    const allowConform =
+        Boolean(fieldValue.orgUnit.value) &&
+        isPeriodRequired &&
+        Boolean(fieldValue.period.value);
+    // TODO Above logic should be moved to Formik
     const isOriginalPeriodValid = isValidPeriod(
         currentInstance?.period,
         formType.periodType,
@@ -79,7 +80,6 @@ const CreateReAssignDialogComponent: FunctionComponent<Props> = ({
         closeDialog();
     };
 
-    const isPeriodRequired = Boolean(formType.periodType);
     return (
         <>
             <ConfirmCancelModal
@@ -89,11 +89,7 @@ const CreateReAssignDialogComponent: FunctionComponent<Props> = ({
                 confirmMessage={confirmMessage}
                 cancelMessage={cancelMessage}
                 maxWidth="xs"
-                allowConfirm={
-                    Boolean(fieldValue.orgUnit.value) &&
-                    isPeriodRequired &&
-                    Boolean(fieldValue.period.value)
-                }
+                allowConfirm={allowConform}
                 closeDialog={closeDialog}
                 onCancel={closeDialog}
             >

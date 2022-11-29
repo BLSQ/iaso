@@ -7,7 +7,7 @@ type GetAPiParams = {
     apiParams: StorageParams;
 };
 export const useGetStorageApiParams = (params: StorageParams): GetAPiParams => {
-    const apiParams: StorageParams = {
+    const apiParams: Omit<StorageParams, 'select'> = {
         order: params.order,
         page: params.page,
         pageSize: params.pageSize,

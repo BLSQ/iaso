@@ -19,7 +19,9 @@ import TopBar from '../../components/nav/TopBarComponent';
 
 import { runsTableColumns } from './config';
 
-import SingleTable from '../../components/tables/SingleTable';
+import SingleTable, {
+    useSingleTableParams,
+} from '../../components/tables/SingleTable';
 import AddRunDialogComponent from './components/AddRunDialogComponent';
 
 import { runsFilters } from '../../constants/filters';
@@ -97,6 +99,7 @@ const Runs = ({ params }) => {
             s => s.id === parseInt(params.destination, 10),
         );
     }
+    const apiParams = useSingleTableParams(params);
     return (
         <>
             <TopBar title={intl.formatMessage(MESSAGES.runsTitle)} />
@@ -108,7 +111,7 @@ const Runs = ({ params }) => {
                 forceRefresh={forceRefresh}
                 onForceRefreshDone={() => setForceRefresh(false)}
                 apiParams={{
-                    ...params,
+                    ...apiParams,
                 }}
                 searchActive={params.searchActive === 'true'}
                 fetchItems={fetchAlgorithmRuns}

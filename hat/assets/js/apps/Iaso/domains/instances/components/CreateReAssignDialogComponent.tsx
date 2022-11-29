@@ -1,5 +1,4 @@
 import React, { FunctionComponent, useState } from 'react';
-import { Typography } from '@material-ui/core';
 // @ts-ignore
 import { ConfirmCancelModal, useSafeIntl } from 'bluesquare-components';
 import { Period } from '../../periods/models';
@@ -46,7 +45,7 @@ export const CreateReAssignDialogComponent: FunctionComponent<Props> = ({
     closeDialog,
 }) => {
     const { formatMessage } = useSafeIntl();
-    const [fieldValue, setFieldValue] = React.useState(() => {
+    const [fieldValue, setFieldValue] = useState(() => {
         let initialPeriod: string | undefined;
         let initialPeriodErrors: string[] = [];
         if (currentInstance) {
@@ -56,7 +55,9 @@ export const CreateReAssignDialogComponent: FunctionComponent<Props> = ({
                 formType.periodType,
             );
             initialPeriodErrors.push(
-                `Current period on Instance is invalid: ${currentInstance.period}`,
+                formatMessage(MESSAGES.initialPeriodError, {
+                    period: currentInstance.period,
+                }),
             );
             return {
                 orgUnit: { value: currentInstance.org_unit, errors: [] },
@@ -93,6 +94,7 @@ export const CreateReAssignDialogComponent: FunctionComponent<Props> = ({
             period: fieldValue.period.value,
             org_unit: fieldValue.orgUnit.value?.id,
         });
+        // TODO Better error handling
         closeDialog();
     };
 

@@ -20,6 +20,7 @@ from plugins.polio.budget.serializers import (
     UpdateBudgetStepSerializer,
     WorkflowSerializer,
 )
+from plugins.polio.helpers import CustomFilterBackend
 from plugins.polio.models import Campaign
 
 
@@ -43,6 +44,7 @@ class BudgetCampaignViewSet(ModelViewSet):
         filters.OrderingFilter,
         DjangoFilterBackend,
         DeletionFilterBackend,
+        CustomFilterBackend,
     ]
 
     def get_queryset(self) -> QuerySet:

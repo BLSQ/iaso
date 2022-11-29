@@ -412,6 +412,7 @@ class TeamAdmin(admin.ModelAdmin):
     )
     list_filter = ("project", "type")
     date_hierarchy = "created_at"
+    readonly_fields = ("path",)
 
 
 @admin_attr_decorator

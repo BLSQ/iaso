@@ -182,6 +182,19 @@ class ProfileAPITestCase(APITestCase):
         response_data = response.json()
         self.assertEqual(response_data["errorKey"], "user_name")
 
+    def test_create_profile_duplicate_user_with_capitale_letters(self):
+        self.client.force_authenticate(self.jim)
+        data = {
+            "user_name": "JaNeDoE",
+            "password": "unittest_password",
+            "first_name": "unittest_first_name",
+            "last_name": "unittest_last_name",
+        }
+        response = self.client.post("/api/profiles/", data=data, format="json")
+        self.assertEqual(response.status_code, 400)
+        response_data = response.json()
+        self.assertEqual(response_data["errorKey"], "user_name")
+
     def test_create_profile_then_delete(self):
         self.client.force_authenticate(self.jim)
         data = {

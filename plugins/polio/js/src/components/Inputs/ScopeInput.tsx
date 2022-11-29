@@ -74,72 +74,72 @@ export const ScopeInput: FunctionComponent<Props> = ({
         setSelectRegion(!selectRegion);
     };
 
-    const toggleRegion = (
-        selectOrgUnit: Shape,
-        _selectedVaccine,
-        allDistricts: Shape[],
-    ) => {
-        const OrgUnitsIdInSameRegion: number[] = allDistricts
-            .filter(s => s.parent_id === selectOrgUnit.parent_id)
-            .map(s => s.id);
-        const newScopes: Scope[] = cloneDeep(scopes);
-        // Find scope for vaccine
-        let scope: Scope | undefined = newScopes.find(
-            s => s.vaccine === _selectedVaccine,
-        );
-        if (!scope) {
-            scope = {
-                vaccine: _selectedVaccine,
-                group: {
-                    org_units: [],
-                },
-            };
-            newScopes.push(scope);
-        }
-        // if all the orgunits from this region are already in this vaccine scope, remove them
-        // @ts-ignore
-        if (
-            OrgUnitsIdInSameRegion.every(OrgUnitId =>
-                // @ts-ignore
-                scope.group.org_units.includes(OrgUnitId),
-            )
-        ) {
-            const orgUnits: Array<number> = [];
+    const toggleRegion = useCallback(
+        (selectOrgUnit: Shape) => {
+            const OrgUnitsIdInSameRegion: number[] = (districtShapes || [])
+                .filter(s => s.parent_id === selectOrgUnit.parent_id)
+                .map(s => s.id);
+            const newScopes: Scope[] = cloneDeep(scopes);
+            // Find scope for vaccine
+            let scope: Scope | undefined = newScopes.find(
+                s => s.vaccine === selectedVaccine,
+            );
+            if (!scope) {
+                scope = {
+                    vaccine: selectedVaccine,
+                    group: {
+                        org_units: [],
+                    },
+                };
+                newScopes.push(scope);
+            }
+            // if all the orgunits from this region are already in this vaccine scope, remove them
+            // @ts-ignore
+            if (
+                OrgUnitsIdInSameRegion.every(OrgUnitId =>
+                    // @ts-ignore
+                    scope.group.org_units.includes(OrgUnitId),
+                )
+            ) {
+                const orgUnits: Array<number> = [];
 
-            scope.group.org_units.forEach(OrgUnitId => {
-                if (!OrgUnitsIdInSameRegion.includes(OrgUnitId)) {
-                    orgUnits.push(OrgUnitId);
-                }
-            });
-            scope.group.org_units = orgUnits;
-        } else {
-            // Remove the OrgUnits from all the scopes
-            newScopes.forEach(s => {
-                const newScope = { ...s };
-                newScope.group.org_units = s.group.org_units.filter(
-                    OrgUnitId => !OrgUnitsIdInSameRegion.includes(OrgUnitId),
-                );
-            });
+                scope.group.org_units.forEach(OrgUnitId => {
+                    if (!OrgUnitsIdInSameRegion.includes(OrgUnitId)) {
+                        orgUnits.push(OrgUnitId);
+                    }
+                });
+                scope.group.org_units = orgUnits;
+            } else {
+                // Remove the OrgUnits from all the scopes
+                newScopes.forEach(s => {
+                    const newScope = { ...s };
+                    newScope.group.org_units = s.group.org_units.filter(
+                        OrgUnitId =>
+                            !OrgUnitsIdInSameRegion.includes(OrgUnitId),
+                    );
+                });
 
-            // Add the OrgUnit in the scope for selected vaccine
-            scope.group.org_units = [
-                ...scope.group.org_units,
-                ...OrgUnitsIdInSameRegion,
-            ];
-        }
-        setScopes(newScopes);
-    };
+                // Add the OrgUnit in the scope for selected vaccine
+                scope.group.org_units = [
+                    ...scope.group.org_units,
+                    ...OrgUnitsIdInSameRegion,
+                ];
+            }
+            setScopes(newScopes);
+        },
+        [districtShapes, scopes, selectedVaccine, setScopes],
+    );
 
     const toggleDistrictInVaccineScope = useCallback(
-        (district, _selectedVaccine) => {
+        district => {
             const newScopes: Scope[] = cloneDeep(scopes);
             let scope: Scope | undefined = newScopes.find(
-                s => s.vaccine === _selectedVaccine,
+                s => s.vaccine === selectedVaccine,
             );
 
             if (!scope) {
                 scope = {
-                    vaccine: _selectedVaccine,
+                    vaccine: selectedVaccine,
                     group: {
                         org_units: [],
                     },
@@ -166,16 +166,24 @@ export const ScopeInput: FunctionComponent<Props> = ({
             }
             setScopes(newScopes);
         },
-        [scopes, setScopes],
+        [scopes, selectedVaccine, setScopes],
     );
 
-    const onSelectOrgUnit = shape => {
-        if (selectRegion && districtShapes) {
-            toggleRegion(shape, selectedVaccine, districtShapes);
-        } else {
-            toggleDistrictInVaccineScope(shape, selectedVaccine);
-        }
-    };
+    const onSelectOrgUnit = useCallback(
+        shape => {
+            if (selectRegion && districtShapes) {
+                toggleRegion(shape);
+            } else {
+                toggleDistrictInVaccineScope(shape);
+            }
+        },
+        [
+            districtShapes,
+            selectRegion,
+            toggleDistrictInVaccineScope,
+            toggleRegion,
+        ],
+    );
 
     return (
         <Grid container spacing={2}>
@@ -195,16 +203,8 @@ export const ScopeInput: FunctionComponent<Props> = ({
                     field={field}
                     regionShapes={regionShapes || []}
                     filteredDistricts={filteredDistricts}
-                    toggleDistrictInVaccineScope={shape =>
-                        toggleDistrictInVaccineScope(shape, selectedVaccine)
-                    }
-                    toggleRegion={shape =>
-                        toggleRegion(
-                            shape,
-                            selectedVaccine,
-                            districtShapes || [],
-                        )
-                    }
+                    toggleDistrictInVaccineScope={toggleDistrictInVaccineScope}
+                    toggleRegion={toggleRegion}
                     setPage={setPage}
                     page={page}
                     isFetching={isFetching}

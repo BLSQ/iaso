@@ -1,15 +1,14 @@
 /* eslint-disable camelcase */
-import React, { FunctionComponent, useState, useMemo, ReactNode } from 'react';
+import React, { FunctionComponent, useState, useMemo } from 'react';
 import { Field, useFormikContext } from 'formik';
 import { useDebounce } from 'use-debounce';
+import cloneDeep from 'lodash/cloneDeep';
 // @ts-ignore
 import { useSafeIntl, useSkipEffectOnMount } from 'bluesquare-components';
 import { TabContext, TabList, TabPanel } from '@material-ui/lab';
 import { Tab, Grid } from '@material-ui/core';
 
-import { ScopeInput } from '../components/Inputs/ScopeInput';
 import { BooleanInput } from '../components/Inputs';
-import { ScopeSearch } from '../components/Scopes/ScopeSearch';
 
 import MESSAGES from '../constants/messages';
 import { useStyles } from '../styles/theme';
@@ -17,6 +16,7 @@ import { useStyles } from '../styles/theme';
 import { useGetParentOrgUnit } from '../hooks/useGetParentOrgUnit';
 import { useGetGeoJson } from '../hooks/useGetGeoJson';
 import { findScopeWithOrgUnit, findRegion } from '../components/Scopes/utils';
+import { ScopeField } from '../components/Inputs/ScopeField';
 
 import { FilteredDistricts, Round, Scope } from '../components/Scopes/types';
 
@@ -32,20 +32,21 @@ export const ScopeForm: FunctionComponent = () => {
     const { formatMessage } = useSafeIntl();
     const { separate_scopes_per_round: scopePerRound, rounds } = values;
     const classes: Record<string, string> = useStyles();
-    const [page, setPage] = useState(0);
-    const [searchScope, setSearchScope] = useState(true);
-    const [currentTab, setCurrentTab] = useState('1');
+    const [page, setPage] = useState<number>(0);
+    const [searchScope, setSearchScope] = useState<boolean>(true);
+    const [currentTab, setCurrentTab] = useState<string>(
+        rounds[0] ? `${rounds[0].number}` : '1',
+    );
     const [search, setSearch] = useState('');
-
     const [debouncedSearch] = useDebounce(search, 500);
 
     const sortedRounds: Round[] = useMemo(
         () =>
-            [...rounds]
+            rounds
                 .map((round, roundIndex) => {
                     return { ...round, originalIndex: roundIndex };
                 })
-                .sort((a, b) => a.number - b.number),
+                .sort((a, b) => a.number - b.number), // useless as already done in back-end
         [rounds],
     );
 
@@ -68,8 +69,10 @@ export const ScopeForm: FunctionComponent = () => {
             return values.scopes;
         }
         if (rounds) {
-            const currentRound = sortedRounds[parseInt(currentTab, 10) - 1];
-            if (currentRound) {
+            const currentRound = sortedRounds.find(
+                round => `${round.number}` === currentTab,
+            );
+            if (currentRound?.scopes) {
                 return currentRound.scopes;
             }
         }
@@ -78,22 +81,20 @@ export const ScopeForm: FunctionComponent = () => {
 
     const filteredDistricts = useMemo(() => {
         if (districtShapes) {
-            let filtreds: FilteredDistricts[] = [...districtShapes].map(
-                district => {
-                    return {
-                        ...district,
-                        region: findRegion(district, regionShapes),
-                        vaccineName: findScopeWithOrgUnit(scopes, district.id)
-                            ?.vaccine,
-                    };
-                },
-            );
+            let filtered: FilteredDistricts[] = districtShapes.map(district => {
+                return {
+                    ...cloneDeep(district),
+                    region: findRegion(district, regionShapes),
+                    vaccineName: findScopeWithOrgUnit(scopes, district.id)
+                        ?.vaccine,
+                };
+            });
             if (scopes) {
-                filtreds.forEach((d, index) => {
+                filtered.forEach((d, index) => {
                     scopes.forEach(scope => {
                         scope.group.org_units.forEach(ouId => {
                             if (d.id === ouId) {
-                                filtreds[index].vaccineName = scope.vaccine;
+                                filtered[index].vaccineName = scope.vaccine;
                             }
                         });
                     });
@@ -101,19 +102,19 @@ export const ScopeForm: FunctionComponent = () => {
             }
 
             if (searchScope) {
-                filtreds = filtreds.filter(d =>
+                filtered = filtered.filter(d =>
                     scopes.some(scope => scope.group.org_units.includes(d.id)),
                 );
             }
 
             if (debouncedSearch !== '') {
-                filtreds = filtreds.filter(d =>
+                filtered = filtered.filter(d =>
                     d.name
                         .toLowerCase()
                         .includes(debouncedSearch.toLowerCase()),
                 );
             }
-            return filtreds;
+            return filtered;
         }
         return undefined;
     }, [districtShapes, regionShapes, scopes, debouncedSearch, searchScope]);
@@ -121,27 +122,6 @@ export const ScopeForm: FunctionComponent = () => {
     useSkipEffectOnMount(() => {
         setPage(0);
     }, [filteredDistricts]);
-
-    const renderField = (name: string): ReactNode => {
-        return (
-            <Field
-                name={name}
-                component={ScopeInput}
-                filteredDistricts={filteredDistricts}
-                searchScope={searchScope}
-                onChangeSearchScope={() => setSearchScope(!searchScope)}
-                isFetchingDistricts={isFetchingDistricts || !filteredDistricts}
-                isFetchingRegions={isFetchingRegions || !regionShapes}
-                districtShapes={districtShapes}
-                regionShapes={regionShapes}
-                searchComponent={
-                    <ScopeSearch search={search} setSearch={setSearch} />
-                }
-                page={page}
-                setPage={setPage}
-            />
-        );
-    };
 
     return (
         <>
@@ -168,7 +148,24 @@ export const ScopeForm: FunctionComponent = () => {
                         ))}
                     </TabList>
                 )}
-                {!scopePerRound && renderField('scopes')}
+                {!scopePerRound && (
+                    <ScopeField
+                        name="scopes"
+                        search={search}
+                        filteredDistricts={filteredDistricts}
+                        searchScope={searchScope}
+                        setSearchScope={setSearchScope}
+                        isFetchingDistricts={
+                            isFetchingDistricts || !filteredDistricts
+                        }
+                        isFetchingRegions={isFetchingRegions || !regionShapes}
+                        districtShapes={districtShapes}
+                        regionShapes={regionShapes}
+                        setSearch={setSearch}
+                        page={page}
+                        setPage={setPage}
+                    />
+                )}
                 {scopePerRound &&
                     sortedRounds.map(round => (
                         <TabPanel
@@ -176,9 +173,24 @@ export const ScopeForm: FunctionComponent = () => {
                             key={round.number}
                             className={classes.tabPanel}
                         >
-                            {renderField(
-                                `rounds[${round.originalIndex}].scopes`,
-                            )}
+                            <ScopeField
+                                name={`rounds[${round.originalIndex}].scopes`}
+                                search={search}
+                                filteredDistricts={filteredDistricts}
+                                searchScope={searchScope}
+                                setSearchScope={setSearchScope}
+                                isFetchingDistricts={
+                                    isFetchingDistricts || !filteredDistricts
+                                }
+                                isFetchingRegions={
+                                    isFetchingRegions || !regionShapes
+                                }
+                                districtShapes={districtShapes}
+                                regionShapes={regionShapes}
+                                setSearch={setSearch}
+                                page={page}
+                                setPage={setPage}
+                            />
                         </TabPanel>
                     ))}
             </TabContext>

@@ -125,10 +125,8 @@ export const DistrictScopeTable: FunctionComponent<Props> = ({
         scopes,
     ]);
 
-    const displayPlaceHolder = useMemo(
-        () => isFetching || (!isFetching && filteredDistricts?.length === 0),
-        [filteredDistricts?.length, isFetching],
-    );
+    const displayPlaceHolder =
+        isFetching || (!isFetching && filteredDistricts?.length === 0);
     return (
         <>
             <TableContainer className={classes.districtList}>

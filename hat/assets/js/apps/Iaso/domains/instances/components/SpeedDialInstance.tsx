@@ -6,7 +6,6 @@ import { bindActionCreators } from 'redux';
 import {
     fetchEditUrl as fetchEditUrlAction,
     fetchInstanceDetail as fetchInstanceDetailAction,
-    reAssignInstance as reAssignInstanceAction,
     restoreInstance as restoreInstanceAction,
     setCurrentInstance as setCurrentInstanceAction,
     softDeleteInstance as softDeleteAction,
@@ -34,7 +33,6 @@ type Props = {
     fetchEditUrl: CallableFunction;
     softDelete: CallableFunction;
     restoreInstance: CallableFunction;
-    reAssignInstance: CallableFunction;
     params: {
         instanceId: string;
         referenceFormId?: string;
@@ -43,7 +41,6 @@ type Props = {
 
 const SpeedDialInstance: FunctionComponent<Props> = props => {
     const {
-        reAssignInstance,
         params: { referenceFormId },
         currentInstance,
         currentInstance: { form_id: formId },
@@ -85,8 +82,6 @@ const SpeedDialInstance: FunctionComponent<Props> = props => {
         currentInstance,
         data?.orgUnitTypeIds as number[], // forcing the type cast as the select in react-query prevent it from being undefined
         data?.periodType,
-        // @ts-ignore
-        reAssignInstance,
     );
 
     const editLocationWithInstanceGps =
@@ -147,7 +142,6 @@ const MapDispatchToProps = dispatch => ({
             softDelete: softDeleteAction,
             restoreInstance: restoreInstanceAction,
             setCurrentInstance: setCurrentInstanceAction,
-            reAssignInstance: reAssignInstanceAction,
         },
         dispatch,
     ),

@@ -7,6 +7,7 @@ import { isValidPeriod } from '../../periods/utils';
 import MESSAGES from '../messages';
 import { OrgUnitTreeviewModal } from '../../orgUnits/components/TreeView/OrgUnitTreeviewModal';
 import PeriodPicker from '../../periods/components/PeriodPicker';
+import { Instance } from '../types/instance';
 
 type Props = {
     titleMessage: any;
@@ -22,14 +23,18 @@ type Props = {
         // eslint-disable-next-line camelcase
         org_unit?: any;
     };
-    // eslint-disable-next-line no-unused-vars
-    onCreateOrReAssign: (_: any, __: any) => any;
+    onCreateOrReAssign: (
+        // eslint-disable-next-line no-unused-vars
+        instanceOrForm: Instance | { id: number },
+        // eslint-disable-next-line no-unused-vars,camelcase
+        options: { period: any; org_unit: any },
+    ) => void;
     orgUnitTypes: number[];
     isOpen: boolean;
     closeDialog: () => void;
 };
 
-const CreateReAssignDialogComponent: FunctionComponent<Props> = ({
+export const CreateReAssignDialogComponent: FunctionComponent<Props> = ({
     titleMessage,
     confirmMessage = MESSAGES.ok,
     cancelMessage = MESSAGES.cancel,

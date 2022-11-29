@@ -180,6 +180,7 @@ class XlsFormGeneratorViewSet(ModelViewSet):
                 if v.id not in added_ou_list:
                     added_ou_list.append(v.id)
                     if k not in key_added_to_choice_list:
+                        # Add the ou type to the select choices of the xls form
                         key_added_to_choice_list.append(k)
                         q_sheet[cell[0] + str(starting_row)] = f"select_one ou_{str(k).lower()}"
                         q_sheet[cell[1] + str(starting_row)] = f"ou_{str(k).lower()}"
@@ -189,23 +190,25 @@ class XlsFormGeneratorViewSet(ModelViewSet):
                     sheet[cell[choices_column] + str(choices_row)] = v.id
                     sheet[cell[choices_column + 1] + str(choices_row)] = str(v.name)
 
-                    pprint(ou_hierarchy_list)
                     index_hierarchy = ou_hierarchy_list.index(str(k.lower()))
+                    ou_dic = {k.lower(): v for k, v in ou_dic.items()}
 
                     calculation_index = 0
-                    for selected_ou_type in ou_hierarchy_list:
-                        # if index_hierarchy > 0:
-                        #     index_hierarchy -= 1
-                        #     for row_calc in q_sheet.rows:
-                        #         iterator = 0
-                        #         for cell in row_calc:
-                        #             iterator += 1
-                        #             if str(cell.value).lower() == ou_hierarchy_list[index_hierarchy].lower():
-                        #                 calculation_index = iterator
-                        #                 break
-                        ou_dic = {k.lower(): v for k, v in ou_dic.items()}
-                        parent_ou_id = ou_dic.get(ou_hierarchy_list[index_hierarchy].lower()).id
-                        sheet[cell[choices_column] + str(choices_row)] = str(parent_ou_id)
+                    print(index_hierarchy)
+                    if index_hierarchy > 0:
+                        index_hierarchy -= 1
+                        for row_calc in sheet.rows:
+                            iterator = 0
+                            for s_cell in row_calc:
+                                iterator += 1
+                                print(f"CELL : {s_cell.value}")
+                                print(f"OU : {ou_hierarchy_list[index_hierarchy].lower()}")
+                                if str(s_cell.value).lower() == ou_hierarchy_list[index_hierarchy].lower():
+                                    print("fOUND ?")
+                                    calculation_index += iterator
+                                    break
+                    parent_ou_id = ou_dic.get(ou_hierarchy_list[index_hierarchy].lower()).id
+                    sheet[cell[choices_column + calculation_index - 1] + str(choices_row)] = str(parent_ou_id)
 
                     choices_row += 1
                     starting_row += 1

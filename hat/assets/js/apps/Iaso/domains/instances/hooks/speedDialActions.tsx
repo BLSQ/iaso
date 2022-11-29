@@ -34,6 +34,7 @@ export type SpeedDialAction = {
 export const useBaseActions = (
     currentInstance: Instance,
     orgUnitTypeIds: number[],
+    periodType: string | undefined | null,
     reAssignInstance: (
         // eslint-disable-next-line no-unused-vars
         instance: Instance,
@@ -74,6 +75,9 @@ export const useBaseActions = (
                         confirmMessage={MESSAGES.reAssignInstanceAction}
                         currentInstance={currentInstance}
                         orgUnitTypes={orgUnitTypeIds}
+                        formType={{
+                            periodType,
+                        }}
                         onCreateOrReAssign={reAssignInstance}
                         renderTrigger={({ openDialog }) => (
                             <UpdateIcon onClick={openDialog} />

@@ -1,52 +1,73 @@
-import React, { useRef, useCallback } from 'react';
-import PropTypes from 'prop-types';
-import InputComponent from '../../../components/forms/InputComponent';
+import React, { FunctionComponent, useCallback, useRef } from 'react';
 import ConfirmCancelDialogComponent from '../../../components/dialogs/ConfirmCancelDialogComponent';
 import { Period } from '../../periods/models';
-import { usePrettyPeriod } from '../../periods/utils';
+import { isValidPeriod } from '../../periods/utils';
 import MESSAGES from '../messages';
 import { OrgUnitTreeviewModal } from '../../orgUnits/components/TreeView/OrgUnitTreeviewModal';
+import PeriodPicker from '../../periods/components/PeriodPicker';
+import { useSafeIntl } from 'bluesquare-components';
+import { Typography } from '@material-ui/core';
 
-const CreateReAssignDialogComponent = ({
+type Props = {
+    titleMessage: any;
+    confirmMessage: any;
+    cancelMessage: any;
+    formType: {
+        id?: number;
+        periodType: string;
+    };
+    currentInstance?: {
+        id: number;
+        period?: string;
+        org_unit?: any;
+    };
+    onCreateOrReAssign: (_: any, _: any) => any;
+    renderTrigger: (any) => any;
+    orgUnitTypes: number[];
+};
+
+const CreateReAssignDialogComponent: FunctionComponent<Props> = ({
     titleMessage,
-    confirmMessage,
-    cancelMessage,
+    confirmMessage = MESSAGES.ok,
+    cancelMessage = MESSAGES.cancel,
     renderTrigger,
     formType,
     currentInstance,
     onCreateOrReAssign,
-    orgUnitTypes,
+    orgUnitTypes = [],
 }) => {
-    const formatPeriod = usePrettyPeriod();
+    const { formatMessage } = useSafeIntl();
     const currentFormOrInstanceProp = currentInstance || formType;
     const currentFormOrInstance = { ...currentFormOrInstanceProp };
 
-    // Begin check if this is a Form type
-    if (
-        currentFormOrInstance.period === undefined ||
-        currentFormOrInstance.period === ''
-    ) {
-        const toDay = new Date();
-        // Should have day
-        // Or just move this logic to the Period object
-
-        // Apparently we just build the string and parse it afterward
-        const period = new Period(
-            toDay.getFullYear() + `0${toDay.getMonth() + 1}`.slice(-2),
-        );
-        currentFormOrInstance.period =
-            currentFormOrInstance.periodType !== null &&
-            currentFormOrInstance.periodType !== undefined
-                ? period.asPeriodType(currentFormOrInstance.periodType)
-                      .periodString
-                : null;
-    }
-    // End check if this is a Form type
-
-    const [fieldValue, setFieldValue] = React.useState({
-        orgUnit: { value: currentFormOrInstance.org_unit, errors: [] },
-        period: { value: currentFormOrInstance.period, errors: [] },
+    const [fieldValue, setFieldValue] = React.useState(() => {
+        let initialPeriod = currentInstance?.period;
+        // if this is a new Submission or there isn't a current permission calculate
+        // an initial
+        if (initialPeriod === undefined || initialPeriod === '') {
+            // We don't have a current Period
+            const toDay = new Date();
+            const period = new Period(
+                toDay.getFullYear() + `0${toDay.getMonth() + 1}`.slice(-2),
+            );
+            if (
+                formType.periodType !== null &&
+                formType.periodType !== undefined
+            ) {
+                initialPeriod = period.asPeriodType(
+                    formType.periodType,
+                ).periodString;
+            }
+        }
+        return {
+            orgUnit: { value: currentInstance?.org_unit, errors: [] },
+            period: { value: initialPeriod, errors: [] },
+        };
     });
+    const isOriginalPeriodValid = isValidPeriod(
+        currentInstance?.period,
+        formType.periodType,
+    );
 
     // copying the current value of the state to restore it on cancel
     const orgUnitCopy = useRef(currentFormOrInstance.org_unit);
@@ -74,22 +95,7 @@ const CreateReAssignDialogComponent = ({
         closeDialog();
     };
 
-    let period;
-    let nextPeriods;
-    let allPeriods = [];
-    let previousPeriods = [];
-    if (
-        currentFormOrInstance.period !== undefined &&
-        currentFormOrInstance.period !== null
-    ) {
-        period = new Period(currentFormOrInstance.period);
-
-        nextPeriods = period.nextPeriods(2);
-        previousPeriods = period.previousPeriods(3);
-        previousPeriods.push(currentFormOrInstance.period);
-        allPeriods = previousPeriods.concat(nextPeriods);
-    }
-    const isPeriodDisabled = !currentFormOrInstance.period;
+    const isPeriodDisabled = formType.periodType;
     return (
         <ConfirmCancelDialogComponent
             renderTrigger={renderTrigger}
@@ -105,35 +111,29 @@ const CreateReAssignDialogComponent = ({
                     (!isPeriodDisabled && Boolean(fieldValue.period.value)))
             }
         >
-            {currentFormOrInstance.period !== undefined &&
-                currentFormOrInstance.period !== null && (
-                    <InputComponent
-                        disabled={
-                            currentFormOrInstance.period === undefined ||
-                            currentFormOrInstance.period === null
-                        }
-                        clearable={false}
-                        keyValue="period"
-                        onChange={(_key, value) =>
-                            setFieldValue({
-                                ...fieldValue,
-                                period: {
-                                    ...fieldValue.period,
-                                    value,
-                                },
-                            })
-                        }
-                        value={fieldValue.period.value}
-                        errors={fieldValue.period.errors}
-                        type="select"
-                        options={allPeriods.map(p => ({
-                            label: formatPeriod(p),
-                            value: p,
-                        }))}
-                        label={MESSAGES.period}
-                        required
-                    />
-                )}
+            {!isOriginalPeriodValid && (
+                <Typography color="error">
+                    Current period on Instance is invalid:
+                    {currentInstance?.period}
+                </Typography>
+            )}
+            {formType.periodType && (
+                <PeriodPicker
+                    title={formatMessage(MESSAGES.period)}
+                    periodType={formType.periodType}
+                    keyName="period"
+                    onChange={value => {
+                        setFieldValue({
+                            ...fieldValue,
+                            period: {
+                                ...fieldValue.period,
+                                value,
+                            },
+                        });
+                    }}
+                    activePeriodString={fieldValue.period.value}
+                />
+            )}
             <>
                 <OrgUnitTreeviewModal
                     required
@@ -156,25 +156,6 @@ const CreateReAssignDialogComponent = ({
             </>
         </ConfirmCancelDialogComponent>
     );
-};
-
-CreateReAssignDialogComponent.defaultProps = {
-    formType: undefined,
-    currentInstance: undefined,
-    cancelMessage: MESSAGES.cancel,
-    confirmMessage: MESSAGES.ok,
-    orgUnitTypes: [],
-};
-
-CreateReAssignDialogComponent.propTypes = {
-    titleMessage: PropTypes.object.isRequired,
-    confirmMessage: PropTypes.object,
-    cancelMessage: PropTypes.object,
-    formType: PropTypes.object,
-    currentInstance: PropTypes.object,
-    onCreateOrReAssign: PropTypes.func.isRequired,
-    renderTrigger: PropTypes.func.isRequired,
-    orgUnitTypes: PropTypes.array,
 };
 
 export default CreateReAssignDialogComponent;

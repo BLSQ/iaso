@@ -48,7 +48,7 @@ const SpeedDialInstance: FunctionComponent<Props> = props => {
         currentInstance,
         currentInstance: { form_id: formId },
     } = props;
-    const { data: orgUnitTypeIds } = useGetOrgUnitTypes(formId);
+    const { data } = useGetOrgUnitTypes(formId);
     const currentUser = useCurrentUser();
     const hasfeatureFlag = hasFeatureFlag(
         currentUser,
@@ -83,7 +83,8 @@ const SpeedDialInstance: FunctionComponent<Props> = props => {
 
     const baseActions = useBaseActions(
         currentInstance,
-        orgUnitTypeIds as number[], // forcing the type cast as the select in react-query prevent it from being undefined
+        data?.orgUnitTypeIds as number[], // forcing the type cast as the select in react-query prevent it from being undefined
+        data?.periodType,
         // @ts-ignore
         reAssignInstance,
     );

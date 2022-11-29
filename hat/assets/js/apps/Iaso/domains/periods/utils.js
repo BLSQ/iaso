@@ -87,6 +87,9 @@ export const getPeriodsErrors = (startPeriod, endPeriod, pType) => {
 };
 
 export const getPeriodPickerString = (periodType, period, value) => {
+    if (period === null) {
+        return '';
+    }
     switch (periodType) {
         case PERIOD_TYPE_DAY: {
             return value;

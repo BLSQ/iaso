@@ -29,7 +29,7 @@ export class Period {
 
     private readonly day: number;
 
-    private readonly periodString: string;
+    public readonly periodString: string;
 
     constructor(periodString: string) {
         const [periodType, periodParts] = Period.parse(periodString);

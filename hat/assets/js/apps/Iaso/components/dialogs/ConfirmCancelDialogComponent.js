@@ -85,7 +85,7 @@ export const ConfirmCancelActions = withStyles(actionStyles)(
     RawConfirmCancelActions,
 );
 
-export default function ConfirmCancelDialogComponent({
+function ConfirmCancelDialogComponent({
     allowConfirm,
     onConfirm,
     confirmMessage,
@@ -152,3 +152,5 @@ ConfirmCancelDialogComponent.propTypes = {
     id: PropTypes.string,
     dataTestId: PropTypes.string,
 };
+
+export default ConfirmCancelDialogComponent;

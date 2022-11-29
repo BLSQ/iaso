@@ -48,8 +48,20 @@ export const CreateReAssignDialogComponent: FunctionComponent<Props> = ({
     const { formatMessage } = useSafeIntl();
     const [fieldValue, setFieldValue] = React.useState(() => {
         let initialPeriod: string | undefined;
+        let initialPeriodErrors: string[] = [];
         if (currentInstance) {
-            initialPeriod = currentInstance?.period;
+            initialPeriod = currentInstance.period;
+            const isOriginalPeriodValid = isValidPeriod(
+                initialPeriod,
+                formType.periodType,
+            );
+            initialPeriodErrors.push(
+                `Current period on Instance is invalid: ${currentInstance.period}`,
+            );
+            return {
+                orgUnit: { value: currentInstance.org_unit, errors: [] },
+                period: { value: initialPeriod, errors: initialPeriodErrors },
+            };
         } else if (formType.periodType) {
             // On creation make a default period
             const toDay = new Date();
@@ -62,7 +74,7 @@ export const CreateReAssignDialogComponent: FunctionComponent<Props> = ({
         }
         return {
             orgUnit: { value: currentInstance?.org_unit, errors: [] },
-            period: { value: initialPeriod, errors: [] },
+            period: { value: initialPeriod, errors: initialPeriodErrors },
         };
     });
     const isPeriodRequired = Boolean(formType.periodType);
@@ -71,13 +83,12 @@ export const CreateReAssignDialogComponent: FunctionComponent<Props> = ({
         isPeriodRequired &&
         Boolean(fieldValue.period.value);
     // TODO Above logic should be moved to Formik
-    const isOriginalPeriodValid = isValidPeriod(
-        currentInstance?.period,
-        formType.periodType,
-    );
 
     const onConfirm = () => {
         const currentFormOrInstanceProp = currentInstance || formType;
+        // ignore ts error for currentFormOrInstanceProp as the logic ensure there is one
+        // open to cleaner option
+        // @ts-ignore
         onCreateOrReAssign(currentFormOrInstanceProp, {
             period: fieldValue.period.value,
             org_unit: fieldValue.orgUnit.value?.id,
@@ -98,12 +109,6 @@ export const CreateReAssignDialogComponent: FunctionComponent<Props> = ({
                 closeDialog={closeDialog}
                 onCancel={closeDialog}
             >
-                {!isOriginalPeriodValid && (
-                    <Typography color="error">
-                        Current period on Instance is invalid:
-                        {currentInstance?.period}
-                    </Typography>
-                )}
                 {isPeriodRequired && (
                     <PeriodPicker
                         title={formatMessage(MESSAGES.period)}
@@ -114,11 +119,13 @@ export const CreateReAssignDialogComponent: FunctionComponent<Props> = ({
                                 ...fieldValue,
                                 period: {
                                     ...fieldValue.period,
+                                    errors: [],
                                     value,
                                 },
                             });
                         }}
                         activePeriodString={fieldValue.period.value}
+                        errors={fieldValue.period.errors}
                     />
                 )}
                 <>

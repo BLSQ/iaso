@@ -1,5 +1,11 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { Grid, makeStyles, Box, Typography } from '@material-ui/core';
+import {
+    Grid,
+    makeStyles,
+    Box,
+    Typography,
+    FormHelperText,
+} from '@material-ui/core';
 import { useTheme } from '@material-ui/core/styles';
 import PropTypes from 'prop-types';
 
@@ -45,6 +51,7 @@ const PeriodPicker = ({
     activePeriodString,
     hasError,
     keyName,
+    errors,
 }) => {
     const classes = useStyles();
     const theme = useTheme();
@@ -110,6 +117,7 @@ const PeriodPicker = ({
     if (!periodType) {
         return null;
     }
+    const hasError2 = hasError || errors?.length > 0;
 
     return (
         <Box
@@ -120,7 +128,7 @@ const PeriodPicker = ({
             border={currentPeriodType === PERIOD_TYPE_DAY ? 0 : 1}
             borderRadius={5}
             borderColor={
-                hasError ? theme.palette.error.main : 'rgba(0,0,0,0.23)'
+                hasError2 ? theme.palette.error.main : 'rgba(0,0,0,0.23)'
             }
         >
             {currentPeriodType === PERIOD_TYPE_DAY && (
@@ -244,6 +252,7 @@ const PeriodPicker = ({
                     </Grid>
                 </>
             )}
+            <FormHelperText error={hasError2}>{errors}</FormHelperText>
         </Box>
     );
 };
@@ -263,6 +272,7 @@ PeriodPicker.propTypes = {
         PropTypes.object,
     ]),
     hasError: PropTypes.bool,
+    errors: PropTypes.array,
     keyName: PropTypes.string.isRequired,
 };
 

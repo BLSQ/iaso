@@ -53,9 +53,9 @@ def get_or_create_org_unit_type(name: str, depth: int, account: "Account", prefe
             return OrgUnitType.objects.get(**out_defining_fields, projects__in=all_projects_from_account)
         except OrgUnitType.MultipleObjectsReturned:
             # We have multiple similar OUT in the account and no way to choose the better one, so let's pick the first
-            return OrgUnitType.objects.filter(
+            return OrgUnitType.objects.filter(  # type: ignore
                 **out_defining_fields, projects__in=all_projects_from_account
-            ).first()  # type: ignore
+            ).first()
         except OrgUnitType.DoesNotExist:
             # We have no similar OUT in the account, so let's create a new one
             return OrgUnitType.objects.create(**out_defining_fields, short_name=name[:4])

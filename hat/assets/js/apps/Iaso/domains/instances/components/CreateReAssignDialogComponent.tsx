@@ -27,7 +27,7 @@ type Props = {
         // eslint-disable-next-line no-unused-vars
         instanceOrForm: Instance | { id: number },
         // eslint-disable-next-line no-unused-vars,camelcase
-        options: { period: any; org_unit: any },
+        payload: { period: any; org_unit: any },
     ) => void;
     orgUnitTypes: number[];
     isOpen: boolean;

@@ -80,7 +80,7 @@ const details = {
         {
             id: 'THE_ID',
             order: 1,
-            condition: {},
+            condition: '{"and":[{"==":[{"var":"name"},"2"]}]}',
             forms: [
                 {
                     id: 89,

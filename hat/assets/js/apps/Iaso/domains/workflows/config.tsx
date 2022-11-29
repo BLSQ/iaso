@@ -151,9 +151,9 @@ export const useGetChangesColumns = (
             Cell: settings => {
                 return (
                     <>
-                        {Object.keys(settings.row.original.mapping).map(
-                            mapKey => mapKey,
-                        )}
+                        {Object.keys(settings.row.original.mapping)
+                            .map(mapKey => mapKey)
+                            .join(', ')}
                     </>
                 );
             },

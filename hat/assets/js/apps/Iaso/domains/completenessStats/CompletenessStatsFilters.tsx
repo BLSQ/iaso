@@ -3,6 +3,7 @@ import React, {
     FunctionComponent,
     useCallback,
     useEffect,
+    useMemo,
     useState,
 } from 'react';
 // @ts-ignore
@@ -17,6 +18,7 @@ import { useGetOrgUnit } from '../orgUnits/components/TreeView/requests';
 import { useGetFormsOptions } from './hooks/api/useGetFormsOptions';
 import { useGetOrgUnitTypesOptions } from './hooks/api/useGetOrgUnitTypesOptions';
 import MESSAGES from './messages';
+import { commaSeparatedIdsToStringArray } from '../../utils/forms';
 
 type Props = {
     params: UrlParams & any;
@@ -44,12 +46,19 @@ export const CompletenessStatsFilters: FunctionComponent<Props> = ({
             ouType => ouType.original.id === selectedOrgUnit?.org_unit_type_id,
         )?.original.depth ?? 0;
 
-    const selectedOrgUnitTypeDepth =
-        (orgUnitTypes ?? []).find(
-            ouType =>
-                ouType.original.id ===
-                parseInt(filters.orgUnitTypeId as string, 10),
-        )?.original.depth ?? 0;
+    const selectedOrgUnitTypeMaxDepth = useMemo(
+        () =>
+            commaSeparatedIdsToStringArray(filters.orgUnitTypeIds)
+                .map(ouTypeId =>
+                    (orgUnitTypes ?? []).find(
+                        ouType => ouType.original.id === parseInt(ouTypeId, 10),
+                    ),
+                )
+                .map(ouType => ouType.original?.depth ?? 0)
+                // If the array is empty, we return the same depth as the orgUnit, to avoid showing an error
+                .sort((a, b) => b - a)[0] ?? selectedOrgUnitDepth,
+        [filters.orgUnitTypeIds, orgUnitTypes, selectedOrgUnitDepth],
+    );
 
     const handleOrgUnitChange = useCallback(
         orgUnit => {
@@ -60,19 +69,19 @@ export const CompletenessStatsFilters: FunctionComponent<Props> = ({
         },
         [handleChange],
     );
-
     const isReasonableDepth =
-        selectedOrgUnitTypeDepth - selectedOrgUnitDepth < REASONABLE_DEPTH;
+        Math.abs(selectedOrgUnitTypeMaxDepth - selectedOrgUnitDepth) <
+        REASONABLE_DEPTH;
 
     const isOrgUnitTypeDisabled = !filters.parentId;
 
     const showError = !isOrgUnitTypeDisabled && !isReasonableDepth;
 
     useEffect(() => {
-        if (isOrgUnitTypeDisabled && filters.orgUnitTypeId) {
-            handleChange('orgUnitTypeId', undefined);
+        if (isOrgUnitTypeDisabled && filters.orgUnitTypeIds) {
+            handleChange('orgUnitTypeIds', undefined);
         }
-    }, [filters.orgUnitTypeId, handleChange, isOrgUnitTypeDisabled]);
+    }, [filters.orgUnitTypeIds, handleChange, isOrgUnitTypeDisabled]);
 
     return (
         <>
@@ -107,9 +116,9 @@ export const CompletenessStatsFilters: FunctionComponent<Props> = ({
                         type="select"
                         multi
                         onChange={handleChange}
-                        keyValue="orgUnitTypeId"
+                        keyValue="orgUnitTypeIds"
                         label={MESSAGES.orgUnitType}
-                        value={filters.orgUnitTypeId}
+                        value={filters.orgUnitTypeIds}
                         loading={fetchingTypes}
                         options={orgUnitTypes ?? []}
                         disabled={isOrgUnitTypeDisabled}
@@ -128,7 +137,7 @@ export const CompletenessStatsFilters: FunctionComponent<Props> = ({
                 <Grid container item xs={3} justifyContent="flex-end">
                     <Box mt={2}>
                         <FilterButton
-                            disabled={!filtersUpdated}
+                            disabled={!filtersUpdated || !isReasonableDepth}
                             onFilter={handleSearch}
                         />
                     </Box>

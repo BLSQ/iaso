@@ -48,7 +48,7 @@ import {
     getLinksSources,
     getOrgUnitsTree,
 } from './utils';
-import { useCurrentUser } from '../../utils/usersUtils';
+import { useCurrentUser } from '../../utils/usersUtils.ts';
 
 const baseUrl = baseUrls.orgUnitDetails;
 const useStyles = makeStyles(theme => ({
@@ -375,7 +375,11 @@ const OrgUnitDetail = ({ params, router }) => {
                             router.goBack();
                         }, 300);
                     } else {
-                        dispatch(redirectTo(baseUrls.orgUnits, {}));
+                        dispatch(
+                            redirectTo(baseUrls.orgUnits, {
+                                accountId: params.accountId,
+                            }),
+                        );
                     }
                 }}
             >

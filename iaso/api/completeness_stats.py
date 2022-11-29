@@ -7,6 +7,7 @@ for a given form in a given orgunit.
 This one is planned to become a "default" and be reused, not to be confused with the more specialized preexisting
 completeness API.
 """
+from django.db.models import Q
 
 # TODO: clarify permissions: new iaso_completeness_stats permission?
 # TODO: clarify with FE what's needed in terms of pagination
@@ -37,9 +38,9 @@ class CompletenessStatsViewSet(viewsets.ViewSet):
         org_unit_type_str = request.query_params.get("org_unit_type_id", None)
         requested_forms = request.query_params.get("form_id", None)
         if org_unit_type_str is not None:
-            org_unit_type = OrgUnitType.objects.get(id=org_unit_type_str)
+            org_unit_types = OrgUnitType.objects.filter(id__in=org_unit_type_str.split(","))
         else:
-            org_unit_type = None
+            org_unit_types = None
 
         parent_org_unit_id_str = request.GET.get("parent_id", None)
 
@@ -66,9 +67,19 @@ class CompletenessStatsViewSet(viewsets.ViewSet):
             org_units = org_units.hierarchy(parent_org_unit)
 
         top_ous = org_units
-        if org_unit_type is not None:
-            top_ous = top_ous.filter(org_unit_type__id=org_unit_type.id)
-        top_ous = top_ous.exclude(parent__in=top_ous)
+
+        # Filtering by org unit type
+        if org_unit_types is not None:
+            top_ous = top_ous.filter(org_unit_type__id__in=[o.id for o in org_unit_types])
+
+        # Cutting the list, so we only keep the heads (top-level of the selection)
+        if org_unit_types is None:
+            # Normal case: we only keep the top-level org units
+            top_ous = top_ous.exclude(parent__in=top_ous)
+        else:
+            # Edge case: if parent/children are selected because of the requested OU types, we need to keep the children
+            top_ous = top_ous.exclude(Q(parent__in=top_ous) & ~Q(org_unit_type__id__in=[o.id for o in org_unit_types]))
+
         top_ous = top_ous.order_by(*order)
 
         res = []
@@ -83,7 +94,7 @@ class CompletenessStatsViewSet(viewsets.ViewSet):
                 ou_filled = ou_to_fill.filter(instance__form=form)
                 ou_filled_count = ou_filled.count()
 
-                # TODO: response as serializer for swagger
+                # TODO: response as serializer for Swagger
 
                 parent_data = None
                 if top_ou.parent is not None:

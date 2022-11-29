@@ -36,7 +36,7 @@ export const CompletenessStatsFilters: FunctionComponent<Props> = ({
         useGetOrgUnitTypesOptions();
     const { filters, handleSearch, handleChange, filtersUpdated } =
         useFilterState({ baseUrl, params });
-    const [initialOrgUnitId, setInitialOrgUnitId] = useState(params?.parentId);
+    const [initialOrgUnitId, setInitialOrgUnitId] = useState(params?.orgUnitId);
 
     const { data: initialOrgUnit } = useGetOrgUnit(initialOrgUnitId);
 
@@ -65,7 +65,7 @@ export const CompletenessStatsFilters: FunctionComponent<Props> = ({
             const id = orgUnit ? [orgUnit.id] : undefined;
             setInitialOrgUnitId(id);
             setSelectedOrgUnit(orgUnit);
-            handleChange('parentId', id);
+            handleChange('orgUnitId', id);
         },
         [handleChange],
     );
@@ -73,7 +73,7 @@ export const CompletenessStatsFilters: FunctionComponent<Props> = ({
         Math.abs(selectedOrgUnitTypeMaxDepth - selectedOrgUnitDepth) <
         REASONABLE_DEPTH;
 
-    const isOrgUnitTypeDisabled = !filters.parentId;
+    const isOrgUnitTypeDisabled = !filters.orgUnitId;
 
     const showError = !isOrgUnitTypeDisabled && !isReasonableDepth;
 

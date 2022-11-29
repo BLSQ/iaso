@@ -476,7 +476,7 @@ export const completenessStatsPath = {
         ...paginationPathParams,
         {
             isRequired: false,
-            key: 'parentId',
+            key: 'orgUnitId',
         },
         {
             isRequired: false,

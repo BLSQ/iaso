@@ -145,36 +145,3 @@ export const CreateReAssignDialogComponent: FunctionComponent<Props> = ({
         </>
     );
 };
-
-type DialogProps = {
-    renderTrigger: any;
-    defaultOpen: boolean;
-    iconProps: any;
-} & Props;
-export const CreateReAssignDialog: FunctionComponent<DialogProps> = ({
-    renderTrigger,
-    defaultOpen = false,
-    // eslint-disable-next-line no-unused-vars,@typescript-eslint/no-unused-vars
-    iconProps = {}, // FIXME: Use when converting render trigger
-    ...modalProps
-}) => {
-    const [openModal, setOpenModal] = useState<boolean>(defaultOpen ?? false);
-    return (
-        <>
-            {/* // FIXME change render trigger in calling component */}
-            {renderTrigger({
-                openDialog: () => setOpenModal(true),
-            })}
-            {openModal && (
-                <CreateReAssignDialogComponent
-                    /* eslint-disable-next-line react/jsx-props-no-spreading */
-                    {...modalProps}
-                    closeDialog={() => setOpenModal(false)}
-                    isOpen={openModal}
-                />
-            )}
-        </>
-    );
-};
-
-export default CreateReAssignDialog;

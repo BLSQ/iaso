@@ -43,7 +43,7 @@ from iaso.api.serializers import OrgUnitSerializer
 
 class InstanceSerializer(serializers.ModelSerializer):
     org_unit = serializers.PrimaryKeyRelatedField(queryset=OrgUnit.objects.all())
-    period = serializers.CharField(max_length=6, allow_blank=True)
+    period = serializers.CharField(max_length=8, allow_blank=True)
 
     class Meta:
         model = Instance

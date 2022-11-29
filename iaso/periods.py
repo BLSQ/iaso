@@ -7,7 +7,7 @@ PERIOD_TYPE_SIX_MONTH = "SIX_MONTH"
 PERIOD_TYPE_YEAR = "YEAR"
 
 
-def detect(dhis2_period):
+def detect(dhis2_period: str):
     if len(dhis2_period) == 4:
         return PERIOD_TYPE_YEAR
 
@@ -19,7 +19,8 @@ def detect(dhis2_period):
 
     if len(dhis2_period) == 6:
         return PERIOD_TYPE_MONTH
-
+    if len(dhis2_period) == 8:
+        return PERIOD_TYPE_DAY
     raise Exception("unsupported dhis2 period format for '" + dhis2_period + "'")
 
 

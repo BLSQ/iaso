@@ -16,8 +16,11 @@ import MESSAGES from '../../messages';
 import { makeUrlWithParams } from '../../../../libs/utils';
 
 import { Beneficiary } from '../types/beneficiary';
-import { Pagination } from '../../../../types/table';
-import { Instance } from '../../../instances/types/instance';
+import { Pagination, UrlParams } from '../../../../types/table';
+import {
+    Instance,
+    PaginatedInstances,
+} from '../../../instances/types/instance';
 import { DropdownOptions } from '../../../../types/utils';
 import getDisplayName, { Profile } from '../../../../utils/usersUtils';
 import { DropdownTeamsOptions, Team } from '../../../teams/types/team';
@@ -102,7 +105,7 @@ export const useGetBeneficiaryTypesDropdown = (): UseQueryResult<
 > =>
     useSnackQuery({
         queryKey: ['beneficiaryTypes'],
-        queryFn: () => getRequest('/api/entitytype'),
+        queryFn: () => getRequest('/api/entitytype/'),
         options: {
             select: data =>
                 data?.map(
@@ -136,7 +139,7 @@ export const useSaveBeneficiary = (): UseMutationResult =>
     );
 
 const getBeneficiary = (entityId: string | undefined): Promise<Beneficiary> => {
-    return getRequest(`/api/entity/${entityId}`);
+    return getRequest(`/api/entity/${entityId}/`);
 };
 export const useGetBeneficiary = (
     entityId: string | undefined,
@@ -152,23 +155,32 @@ export const useGetBeneficiary = (
     });
 };
 
-const getSubmissions = (id?: number) => {
-    return getRequest(`/api/instances/?entityId=${id}`);
+const getSubmissions = (
+    { pageSize, order, page }: Partial<UrlParams>,
+    entityId?: number,
+): Promise<PaginatedInstances> => {
+    const baseUrl = '/api/instances/';
+    const apiParams = {
+        limit: pageSize || 20,
+        order,
+        page,
+        entityId,
+    };
+
+    const url = makeUrlWithParams(baseUrl, apiParams);
+    return getRequest(url) as Promise<PaginatedInstances>;
 };
 
 export const useGetSubmissions = (
-    id?: number,
-): UseQueryResult<Instance[], Error> => {
+    params: Partial<UrlParams>,
+    entityId?: number,
+): UseQueryResult<PaginatedInstances, Error> => {
     return useSnackQuery({
-        queryKey: ['submissionsForEntity', id],
-        queryFn: () => getSubmissions(id),
+        queryKey: ['submissionsForEntity', entityId, params],
+        queryFn: () => getSubmissions(params, entityId),
         options: {
             retry: false,
-            enabled: Boolean(id),
-            select: data => {
-                if (!data) return [];
-                return data.instances;
-            },
+            enabled: Boolean(entityId),
         },
     });
 };
@@ -178,7 +190,7 @@ export const useGetUsersDropDown = (
 ): UseQueryResult<DropdownOptions<number>, Error> => {
     return useSnackQuery(
         ['profiles', team],
-        () => getRequest('/api/profiles'),
+        () => getRequest('/api/profiles/'),
         MESSAGES.projectsError,
         {
             select: data => {
@@ -213,7 +225,7 @@ export const useGetUsersDropDown = (
 };
 
 const getTeams = async (): Promise<Team[]> => {
-    return getRequest('/api/microplanning/teams') as Promise<Team[]>;
+    return getRequest('/api/microplanning/teams/') as Promise<Team[]>;
 };
 
 export const useGetTeamsDropdown = (): UseQueryResult<
@@ -243,7 +255,7 @@ export const useGetTeamsDropdown = (): UseQueryResult<
 };
 
 const getVisitSubmission = (submissionId: string): Promise<any> => {
-    return getRequest(`/api/instances/${submissionId}`);
+    return getRequest(`/api/instances/${submissionId}/`);
 };
 
 export const useGetVisitSubmission = (

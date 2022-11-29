@@ -1,5 +1,5 @@
 import { getRequest } from 'Iaso/libs/Api';
-import { useSnackQuery } from 'Iaso/libs/apiHooks';
+import { useSnackQuery } from 'Iaso/libs/apiHooks.ts';
 
 export const useGetProfiles = params => {
     let newParams = {};
@@ -11,6 +11,12 @@ export const useGetProfiles = params => {
         };
         if (params.search) {
             newParams.search = params.search;
+        }
+        if (params.permissions) {
+            newParams.permissions = params.permissions;
+        }
+        if (params.location) {
+            newParams.location = params.location;
         }
     }
 

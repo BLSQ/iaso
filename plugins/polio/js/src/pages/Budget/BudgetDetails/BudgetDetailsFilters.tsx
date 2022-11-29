@@ -1,6 +1,8 @@
 /* eslint-disable react/require-default-props */
 /* eslint-disable camelcase */
 import React, { FunctionComponent } from 'react';
+// @ts-ignore
+import { useSafeIntl } from 'bluesquare-components';
 import { Box, Grid, useMediaQuery, useTheme } from '@material-ui/core';
 import { UrlParams } from '../../../../../../../hat/assets/js/apps/Iaso/types/table';
 import { BUDGET_DETAILS } from '../../../constants/routes';
@@ -23,13 +25,18 @@ type Props = {
     };
     stepsList?: DropdownOptions<string>[];
     buttonSize?: 'medium' | 'small' | 'large' | undefined;
+    showHidden: boolean;
+    // eslint-disable-next-line no-unused-vars
+    setShowHidden: (show: boolean) => void;
 };
-
 export const BudgetDetailsFilters: FunctionComponent<Props> = ({
     params,
     buttonSize = 'medium',
     stepsList = [],
+    showHidden,
+    setShowHidden,
 }) => {
+    const { formatMessage } = useSafeIntl();
     const { filters, handleSearch, handleChange, filtersUpdated } =
         useFilterState({
             baseUrl: BUDGET_DETAILS,
@@ -45,7 +52,7 @@ export const BudgetDetailsFilters: FunctionComponent<Props> = ({
                 spacing={isXSLayout ? 0 : 2}
                 justifyContent="flex-end"
             >
-                <Grid item xs={12} sm={6} md={2}>
+                <Grid item xs={12} md={4}>
                     <InputComponent
                         keyValue="transition_key"
                         onChange={handleChange}
@@ -55,16 +62,19 @@ export const BudgetDetailsFilters: FunctionComponent<Props> = ({
                         value={filters.transition_key}
                         label={MESSAGES.step}
                     />
+                    <InputComponent
+                        type="checkbox"
+                        keyValue="showHidden"
+                        labelString={formatMessage(MESSAGES.showHidden)}
+                        onChange={(_keyValue, newValue) => {
+                            setShowHidden(newValue);
+                        }}
+                        value={showHidden}
+                        withMarginTop={false}
+                    />
                 </Grid>
-                <Grid
-                    container
-                    item
-                    xs={12}
-                    sm={6}
-                    md={10}
-                    justifyContent="flex-end"
-                >
-                    <Box mt={2}>
+                <Grid container item xs={12} md={8} justifyContent="flex-end">
+                    <Box mt={2} mb={isXSLayout ? 2 : 0}>
                         <FilterButton
                             disabled={!filtersUpdated}
                             onFilter={handleSearch}

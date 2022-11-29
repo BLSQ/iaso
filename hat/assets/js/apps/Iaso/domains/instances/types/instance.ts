@@ -77,3 +77,6 @@ export type FileContent = {
     logA: Record<string, any>;
     logB: Record<string, any>;
 };
+export interface PaginatedInstances extends Pagination {
+    instances: Instance[];
+}

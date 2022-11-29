@@ -2,15 +2,17 @@ from typing import Type
 
 from django.db.models import QuerySet, Max
 from django.http import HttpResponse
+from django.shortcuts import redirect
 from django_filters.rest_framework import DjangoFilterBackend  # type: ignore
 from drf_yasg.utils import swagger_auto_schema
 from rest_framework import permissions, filters, status, serializers
 from rest_framework.decorators import action
+from rest_framework.generics import get_object_or_404
 from rest_framework.response import Response
 from rest_framework.viewsets import ViewSet
 
 from iaso.api.common import ModelViewSet, DeletionFilterBackend, HasPermission
-from plugins.polio.budget.models import BudgetStep, MailTemplate, get_workflow
+from plugins.polio.budget.models import BudgetStep, MailTemplate, get_workflow, BudgetStepFile
 from plugins.polio.budget.serializers import (
     CampaignBudgetSerializer,
     TransitionToSerializer,
@@ -18,6 +20,7 @@ from plugins.polio.budget.serializers import (
     UpdateBudgetStepSerializer,
     WorkflowSerializer,
 )
+from plugins.polio.helpers import CustomFilterBackend
 from plugins.polio.models import Campaign
 
 
@@ -41,6 +44,7 @@ class BudgetCampaignViewSet(ModelViewSet):
         filters.OrderingFilter,
         DjangoFilterBackend,
         DeletionFilterBackend,
+        CustomFilterBackend,
     ]
 
     def get_queryset(self) -> QuerySet:
@@ -131,6 +135,19 @@ class BudgetStepViewSet(ModelViewSet):
         "transition_key": ["exact", "in"],
     }
 
+    @action(detail=True, methods=["GET"], url_path="files/(?P<file_pk>[0-9]+)")
+    def files(self, request, pk, file_pk):
+        "Redirect to the static file"
+        # Since on AWS S3 the signed url created (for the media upload files) are only valid a certain amount of time
+        # This is endpoint is used to give a permanent url to the users.
+
+        # Use the queryset to ensure the user has the proper access rights to this step
+        # and keep down the url guessing.
+        step: BudgetStep = self.get_queryset().get(pk=pk)
+        stepFile: BudgetStepFile = get_object_or_404(step.files, pk=file_pk)
+        url = stepFile.file.url
+        return redirect(url, permanent=False)
+
     @action(detail=True, permission_classes=[permissions.IsAdminUser])
     def mail_template(self, request, pk):
         step = self.get_queryset().get(pk=pk)
@@ -168,5 +185,5 @@ class WorkflowViewSet(ViewSet):
         try:
             workflow = get_workflow()
         except Exception as e:
-            return {"error": "Error getting workflow", "details": e}
+            return Response({"error": "Error getting workflow", "details": str(e)})
         return Response(WorkflowSerializer(workflow).data)

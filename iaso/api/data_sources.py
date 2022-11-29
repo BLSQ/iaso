@@ -1,8 +1,11 @@
+import logging
+
 import dhis2
+import requests
 from rest_framework.decorators import action
 from rest_framework.response import Response
 
-from .common import ModelViewSet
+from .common import ModelViewSet, HasPermission
 from iaso.models import DataSource, OrgUnit, SourceVersion, ExternalCredentials
 from rest_framework import serializers, permissions
 from rest_framework.generics import get_object_or_404
@@ -56,7 +59,7 @@ class DataSourceSerializer(serializers.ModelSerializer):
 
     def create(self, validated_data):
         # TO-DO use credentials serializer as https://github.com/BLSQ/iaso/blob/development/iaso/api/forms.py
-        credentials = self.context["request"].data["credentials"]
+        credentials = self.context["request"].data.get("credentials", None)
         account = self.context["request"].user.iaso_profile.account
         ds = DataSource(**validated_data)
         if credentials:
@@ -70,14 +73,14 @@ class DataSourceSerializer(serializers.ModelSerializer):
             ds.credentials = new_credentials
 
         ds.save()
-        projects = account.project_set.filter(id__in=self.context["request"].data["project_ids"])
+        projects = account.project_set.filter(id__in=self.context["request"].data.get("project_ids", []))
         if projects is not None:
             for project in projects:
                 ds.projects.add(project)
         return ds
 
     def update(self, data_source, validated_data):
-        credentials = self.context["request"].data["credentials"]
+        credentials = self.context["request"].data.get("credentials", None)
         account = self.context["request"].user.iaso_profile.account
 
         if credentials:
@@ -102,7 +105,7 @@ class DataSourceSerializer(serializers.ModelSerializer):
         read_only = validated_data.pop("read_only", None)
         description = validated_data.pop("description", None)
         default_version_id = self.context["request"].data["default_version_id"]
-        projects = account.project_set.filter(id__in=self.context["request"].data["project_ids"])
+        projects = account.project_set.filter(id__in=self.context["request"].data.get("project_ids", None))
         if name is not None:
             data_source.name = name
         if read_only is not None:
@@ -160,24 +163,54 @@ class TestCredentialSerializer(serializers.Serializer):
                 print(err)
                 raise serializers.ValidationError({"dhis2_password": ["Invalid user or password"]})
             raise serializers.ValidationError({"dhis2_password": [err.description]})
+        except requests.exceptions.ConnectionError as err:
+            raise serializers.ValidationError({"dhis2_url": ["Could not connect to server"]})
+        except Exception as err:
+            logging.exception(err)
+            raise
         return rep
+
+
+class DataSourcePermission(permissions.BasePermission):
+    def has_permission(self, request, view):
+        # see permission logic on view
+        read_perms = (
+            "menupermissions.iaso_mappings",
+            "menupermissions.iaso_org_units",
+            "menupermissions.iaso_links",
+            "menupermissions.iaso_sources",
+        )
+        write_perms = ("menupermissions.iaso_sources",)
+
+        if (
+            request.method in permissions.SAFE_METHODS
+            and request.user
+            and any(request.user.has_perm(perm) for perm in read_perms)
+        ):
+            return True
+        if request.method == "DELETE":
+            return False
+        return request.user and any(request.user.has_perm(perm) for perm in write_perms)
 
 
 class DataSourceViewSet(ModelViewSet):
     """Data source API
 
-    This API is restricted to authenticated users having at least one of the "menupermissions.iaso_mappings",
-    "menupermissions.iaso_org_units", and "menupermissions.iaso_links" permissions
+    This API is restricted to authenticated users:
+    Read permission are restricted to user with at least one of the "menupermissions.iaso_sources",
+        "menupermissions.iaso_mappings","menupermissions.iaso_org_units", and "menupermissions.iaso_links" permissions
+    Write permission are restricted to user having the iaso_sources permissions.
 
     GET /api/datasources/
     GET /api/datasources/<id>
     """
 
-    permission_classes = [permissions.IsAuthenticated]
+    permission_classes = [DataSourcePermission]  # type: ignore
+
     serializer_class = DataSourceSerializer
     results_key = "sources"
     queryset = DataSource.objects.all()
-    http_method_names = ["get", "post", "put", "head", "options", "trace", "delete"]
+    http_method_names = ["get", "post", "put", "head", "options", "trace"]
 
     def get_queryset(self):
         linked_to = self.kwargs.get("linkedTo", None)

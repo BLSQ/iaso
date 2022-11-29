@@ -20,6 +20,12 @@ const styles = theme => ({
             marginBottom: 0,
         },
     },
+
+    title: {
+        [theme.breakpoints.down('md')]: {
+            fontSize: '1.4rem',
+        },
+    },
     paperTitle: {
         padding: theme.spacing(2),
         display: 'flex',
@@ -77,7 +83,11 @@ const WidgetPaper = ({
                                     : ''
                             }
                         >
-                            <Typography color="primary" variant="h5">
+                            <Typography
+                                color="primary"
+                                variant="h5"
+                                className={classes.title}
+                            >
                                 {title}
                             </Typography>
                             {expandable &&

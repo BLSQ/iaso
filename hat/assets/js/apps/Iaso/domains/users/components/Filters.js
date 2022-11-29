@@ -1,8 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, useCallback } from 'react';
 import { useDispatch } from 'react-redux';
 import PropTypes from 'prop-types';
 
-import { Grid, Button, makeStyles } from '@material-ui/core';
+import { Grid, Button, makeStyles, Box } from '@material-ui/core';
 import SearchIcon from '@material-ui/icons/Search';
 
 import { commonStyles, useSafeIntl } from 'bluesquare-components';
@@ -10,6 +10,9 @@ import { commonStyles, useSafeIntl } from 'bluesquare-components';
 import InputComponent from 'Iaso/components/forms/InputComponent';
 import { redirectTo } from '../../../routing/actions';
 import MESSAGES from '../messages';
+import { useGetPermissionsDropDown } from '../hooks/useGetPermissionsDropdown.ts';
+import { OrgUnitTreeviewModal } from '../../orgUnits/components/TreeView/OrgUnitTreeviewModal';
+import { useGetOrgUnit } from '../../orgUnits/components/TreeView/requests';
 
 const useStyles = makeStyles(theme => ({
     ...commonStyles(theme),
@@ -22,8 +25,14 @@ const Filters = ({ baseUrl, params }) => {
     const dispatch = useDispatch();
     const [filters, setFilters] = useState({
         search: params.search,
+        permissions: params.permissions,
+        location: params.location,
     });
-    const handleSearch = () => {
+    const [initialOrgUnitId, setInitialOrgUnitId] = useState(params?.location);
+    const { data: dropdown, isFetching } = useGetPermissionsDropDown();
+    const { data: initialOrgUnit } = useGetOrgUnit(initialOrgUnitId);
+
+    const handleSearch = useCallback(() => {
         if (filtersUpdated) {
             setFiltersUpdated(false);
             const tempParams = {
@@ -33,17 +42,37 @@ const Filters = ({ baseUrl, params }) => {
             tempParams.page = 1;
             dispatch(redirectTo(baseUrl, tempParams));
         }
-    };
-    const handleChange = (key, value) => {
-        setFiltersUpdated(true);
-        setFilters({
-            ...filters,
-            [key]: value,
-        });
-    };
+    }, [baseUrl, dispatch, filters, filtersUpdated, params]);
+
+    const handleChange = useCallback(
+        (key, value) => {
+            setFiltersUpdated(true);
+            if (key === 'location') {
+                setInitialOrgUnitId(value);
+            }
+            setFilters({
+                ...filters,
+                [key]: value,
+            });
+        },
+        [filters],
+    );
+
+    const handleSearchPerms = useCallback(() => {
+        if (filtersUpdated) {
+            setFiltersUpdated(false);
+            const tempParams = {
+                ...params,
+                ...filters,
+            };
+            tempParams.page = 1;
+            dispatch(redirectTo(baseUrl, tempParams));
+        }
+    }, [baseUrl, dispatch, filters, filtersUpdated, params]);
+
     return (
         <>
-            <Grid container spacing={4}>
+            <Grid container spacing={2}>
                 <Grid item xs={3}>
                     <InputComponent
                         keyValue="search"
@@ -54,10 +83,38 @@ const Filters = ({ baseUrl, params }) => {
                         onEnterPressed={handleSearch}
                     />
                 </Grid>
+                <Grid item xs={3}>
+                    <InputComponent
+                        keyValue="permissions"
+                        onChange={handleChange}
+                        value={filters.permissions}
+                        type="select"
+                        multi
+                        options={dropdown ?? []}
+                        label={MESSAGES.permissions}
+                        loading={isFetching}
+                        onEnterPressed={handleSearchPerms}
+                    />
+                </Grid>
+                <Grid item xs={3}>
+                    <Box id="ou-tree-input">
+                        <OrgUnitTreeviewModal
+                            toggleOnLabelClick={false}
+                            titleMessage={MESSAGES.location}
+                            onConfirm={orgUnit =>
+                                handleChange(
+                                    'location',
+                                    orgUnit ? [orgUnit.id] : undefined,
+                                )
+                            }
+                            initialSelection={initialOrgUnit}
+                        />
+                    </Box>
+                </Grid>
             </Grid>
             <Grid
                 container
-                spacing={4}
+                spacing={2}
                 justifyContent="flex-end"
                 alignItems="center"
             >

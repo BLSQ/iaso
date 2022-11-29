@@ -486,7 +486,7 @@ class InstancesAPITestCase(APITestCase):
             period="202001",
             org_unit=self.jedi_council_corruscant,
             project=self.project,
-            json={"name": "a", "age": 18, "gender": "M"},
+            json={"name": "a", "age": "18", "gender": "M"},
         )
 
         b = self.create_form_instance(
@@ -494,7 +494,7 @@ class InstancesAPITestCase(APITestCase):
             period="202001",
             org_unit=self.jedi_council_corruscant,
             project=self.project,
-            json={"name": "b", "age": 19, "gender": "F"},
+            json={"name": "b", "age": "19", "gender": "F"},
         )
 
         self.create_form_instance(
@@ -502,7 +502,7 @@ class InstancesAPITestCase(APITestCase):
             period="202001",
             org_unit=self.jedi_council_corruscant,
             project=self.project,
-            json={"name": "c", "age": 30, "gender": "F"},
+            json={"name": "c", "age": "30", "gender": "F"},
         )
 
         self.client.force_authenticate(self.yoda)
@@ -520,7 +520,7 @@ class InstancesAPITestCase(APITestCase):
             period="202001",
             org_unit=self.jedi_council_corruscant,
             project=self.project,
-            json={"name": "a", "age": 18, "gender": "M"},
+            json={"name": "a", "age": "18", "gender": "M"},
         )
 
         b = self.create_form_instance(
@@ -528,7 +528,7 @@ class InstancesAPITestCase(APITestCase):
             period="202001",
             org_unit=self.jedi_council_corruscant,
             project=self.project,
-            json={"name": "b", "age": 19, "gender": "F"},
+            json={"name": "b", "age": "19", "gender": "F"},
         )
 
         c = self.create_form_instance(

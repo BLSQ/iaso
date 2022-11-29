@@ -193,11 +193,18 @@ export const ScopeInput: FunctionComponent<Props> = ({
                 </Box>
                 <DistrictScopeTable
                     field={field}
-                    selectedVaccine={selectedVaccine}
                     regionShapes={regionShapes || []}
                     filteredDistricts={filteredDistricts}
-                    districtShapes={districtShapes}
-                    toggleDistrictInVaccineScope={toggleDistrictInVaccineScope}
+                    toggleDistrictInVaccineScope={shape =>
+                        toggleDistrictInVaccineScope(shape, selectedVaccine)
+                    }
+                    toggleRegion={shape =>
+                        toggleRegion(
+                            shape,
+                            selectedVaccine,
+                            districtShapes || [],
+                        )
+                    }
                     setPage={setPage}
                     page={page}
                     isFetching={isFetching}

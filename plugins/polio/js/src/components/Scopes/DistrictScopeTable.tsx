@@ -5,7 +5,7 @@ import React, {
     useMemo,
     useState,
 } from 'react';
-import { useField, FieldInputProps } from 'formik';
+import { FieldInputProps } from 'formik';
 import {
     // @ts-ignore
     IconButton as IconButtonComponent,
@@ -22,7 +22,6 @@ import {
     TableRow,
     Typography,
 } from '@material-ui/core';
-import cloneDeep from 'lodash/cloneDeep';
 import sortBy from 'lodash/sortBy';
 
 import CheckIcon from '@material-ui/icons/Check';
@@ -38,15 +37,15 @@ import { TablePlaceHolder } from './TablePlaceHolder';
 
 type Props = {
     field: FieldInputProps<Scope[]>;
-    selectedVaccine: string;
     regionShapes: Shape[];
     filteredDistricts?: FilteredDistricts[];
-    districtShapes?: FilteredDistricts[];
     toggleDistrictInVaccineScope: (
         // eslint-disable-next-line no-unused-vars
         district: FilteredDistricts,
+    ) => void;
+    toggleRegion: (
         // eslint-disable-next-line no-unused-vars
-        selectedVac: string,
+        district: FilteredDistricts,
     ) => void;
     page: number;
     // eslint-disable-next-line no-unused-vars
@@ -56,109 +55,20 @@ type Props = {
 
 export const DistrictScopeTable: FunctionComponent<Props> = ({
     field,
-    selectedVaccine,
     regionShapes,
     filteredDistricts,
-    districtShapes,
     toggleDistrictInVaccineScope,
+    toggleRegion,
     page,
     setPage,
     isFetching,
 }) => {
-    const [, , helpers] = useField(field.name);
     const classes: Record<string, string> = useStyles();
     const { formatMessage } = useSafeIntl();
     const { value: scopes = [] } = field;
-    const { setValue: setScopes } = helpers;
     const [rowsPerPage, setRowsPerPage] = useState(10);
     const [orderBy, setOrderBy] = useState('asc');
     const [sortFocus, setSortFocus] = useState('DISTRICT');
-
-    const addDistrictInVaccineScope = useCallback(
-        district => {
-            const newScopes: Scope[] = cloneDeep(scopes);
-            let scope: Scope | undefined = newScopes.find(
-                s => s.vaccine === selectedVaccine,
-            );
-            if (!scope) {
-                scope = {
-                    vaccine: selectedVaccine,
-                    group: {
-                        org_units: [],
-                    },
-                };
-                newScopes.push(scope);
-            }
-            // Add org unit in selection if it's not part of the scope
-            if (!scope.group.org_units.includes(district.id)) {
-                scope.group.org_units.push(district.id);
-            }
-
-            setScopes(newScopes);
-        },
-        [scopes, selectedVaccine, setScopes],
-    );
-
-    const removeDistrictFromTable = useCallback(
-        (shape: ShapeRow) => {
-            toggleDistrictInVaccineScope(shape, shape.vaccineName);
-        },
-        [toggleDistrictInVaccineScope],
-    );
-
-    const addDistrictToTable = useCallback(
-        (shape: ShapeRow) => {
-            addDistrictInVaccineScope(shape);
-        },
-        [addDistrictInVaccineScope],
-    );
-
-    // Remove all district in the same region as this district
-    const removeRegionFromTable = useCallback(
-        (shape: ShapeRow) => {
-            const OrgUnitIdsToRemove = districtShapes
-                ?.filter(s => s.parent_id === shape.parent_id)
-                .map(s => s.id);
-
-            const newScopes: Scope[] = cloneDeep(scopes);
-            scopes.forEach((scope, index) => {
-                newScopes[index].group.org_units = scope.group.org_units.filter(
-                    OrgUnitId => {
-                        let idToRemove: number | undefined;
-                        if (!OrgUnitIdsToRemove?.includes(OrgUnitId)) {
-                            idToRemove = OrgUnitId;
-                            // addNewScopeId(OrgUnitId, '');
-                        }
-                        return idToRemove;
-                    },
-                );
-            });
-
-            setScopes(newScopes);
-        },
-        [districtShapes, scopes, setScopes],
-    );
-
-    // Add all district in the same region as this district
-    const addRegionToTable = useCallback(
-        (shape: ShapeRow) => {
-            if (filteredDistricts && districtShapes) {
-                const OrgUnitIdsToAdd = districtShapes
-                    .filter(s => s.parent_id === shape.parent_id)
-                    .map(s => s.id);
-
-                const newScopes: Scope[] = cloneDeep(scopes);
-                newScopes
-                    .filter(sc => sc.vaccine === selectedVaccine)
-                    .forEach((scope, index) => {
-                        newScopes[index].group.org_units =
-                            scope.group.org_units.concat(OrgUnitIdsToAdd);
-                    });
-                setScopes(newScopes);
-            }
-        },
-        [filteredDistricts, districtShapes, scopes, selectedVaccine, setScopes],
-    );
 
     const handleSort = useCallback(
         columnToSortBy => {
@@ -214,7 +124,8 @@ export const DistrictScopeTable: FunctionComponent<Props> = ({
         rowsPerPage,
         scopes,
     ]);
-    const displayPlacHolder = useMemo(
+
+    const displayPlaceHolder = useMemo(
         () => isFetching || (!isFetching && filteredDistricts?.length === 0),
         [filteredDistricts?.length, isFetching],
     );
@@ -263,7 +174,7 @@ export const DistrictScopeTable: FunctionComponent<Props> = ({
                         </TableRow>
                     </TableHead>
                     <TableBody>
-                        {displayPlacHolder && (
+                        {displayPlaceHolder && (
                             <TablePlaceHolder
                                 isFetching={isFetching}
                                 filteredDistricts={filteredDistricts}
@@ -298,9 +209,7 @@ export const DistrictScopeTable: FunctionComponent<Props> = ({
                                                 <IconButtonComponent
                                                     size="small"
                                                     onClick={() =>
-                                                        removeRegionFromTable(
-                                                            shape,
-                                                        )
+                                                        toggleRegion(shape)
                                                     }
                                                     icon="clearAll"
                                                     tooltipMessage={
@@ -310,7 +219,7 @@ export const DistrictScopeTable: FunctionComponent<Props> = ({
                                                 <IconButtonComponent
                                                     size="small"
                                                     onClick={() =>
-                                                        removeDistrictFromTable(
+                                                        toggleDistrictInVaccineScope(
                                                             shape,
                                                         )
                                                     }
@@ -326,7 +235,7 @@ export const DistrictScopeTable: FunctionComponent<Props> = ({
                                                 <IconButtonComponent
                                                     size="small"
                                                     onClick={() =>
-                                                        addRegionToTable(shape)
+                                                        toggleRegion(shape)
                                                     }
                                                     overrideIcon={SelectAllIcon}
                                                     tooltipMessage={
@@ -336,7 +245,7 @@ export const DistrictScopeTable: FunctionComponent<Props> = ({
                                                 <IconButtonComponent
                                                     size="small"
                                                     onClick={() =>
-                                                        addDistrictToTable(
+                                                        toggleDistrictInVaccineScope(
                                                             shape,
                                                         )
                                                     }

@@ -1,4 +1,3 @@
-import math
 from copy import deepcopy
 from django.http import Http404
 
@@ -9,9 +8,8 @@ from iaso.api.entity import EntityTypeSerializer
 from iaso.api.forms import FormSerializer
 
 from rest_framework import serializers, permissions
-from rest_framework.generics import get_object_or_404, ListAPIView, RetrieveAPIView
+from rest_framework.generics import get_object_or_404
 from rest_framework.response import Response
-from rest_framework.decorators import api_view, permission_classes
 from rest_framework.viewsets import GenericViewSet
 from rest_framework.decorators import action
 
@@ -183,13 +181,13 @@ version_id_param = openapi.Parameter("version_id", openapi.IN_QUERY, description
 class WorkflowVersionViewSet(GenericViewSet):
     """Workflow API
     POST /api/workflow/{entity_type_id}/new/?version_id=XXX
-    if version_id is provided, copies the content of the version referred to by the version_idcreates a new w
-    if version_id is NOT provided, orkflow from scratch (empty) if the version_id is not provided
+    if version_id is provided, copies the content of the version referred to by the version_id
+    if version_id is NOT provided, creates a new workflow from scratch (empty).
     The new version is always in DRAFT
 
     GET /api/workflow/{entity_type_id}/?version_id=XXX
     if version_id is provided, it will return details on this specific version.
-    if version_id is NOT provided, it will return the (paginated) list of versions for this workflow.
+    if version_id is NOT provided, it will return the (paginated) list of all versions for this workflow.
     """
 
     lookup_field = "entity_type_id"
@@ -204,7 +202,7 @@ class WorkflowVersionViewSet(GenericViewSet):
         else:
             et = get_object_or_404(EntityType, pk=pk)
             wf = get_or_create_wf_for_entity_type(et)
-            return wf.workflow_versions.all()
+            return wf.workflow_versions.order_by("pk").all()
 
     @swagger_auto_schema(manual_parameters=[version_id_param])
     def retrieve(self, request, *args, **kwargs):
@@ -216,7 +214,19 @@ class WorkflowVersionViewSet(GenericViewSet):
         elif version_id is None:
             et = get_object_or_404(EntityType, pk=entity_type_id)
             wf = get_or_create_wf_for_entity_type(et)
-            queryset = wf.workflow_versions.all()
+
+            queryset_base = wf.workflow_versions.order_by("pk")
+
+            filter_status = self.request.query_params.get("status")
+            if filter_status is not None:
+                ok_status = WorkflowVersionsStatus[filter_status.strip().upper()]
+                queryset_base = queryset_base.filter(status=ok_status)
+
+            filter_name = self.request.query_params.get("name")
+            if filter_name is not None:
+                queryset_base = queryset_base.filter(name__icontains=filter_name)
+
+            queryset = queryset_base.all()
 
             page = self.paginate_queryset(queryset)
             if page is not None:

@@ -24,7 +24,7 @@ type Props = {
     params: UrlParams & any;
 };
 
-const REASONABLE_DEPTH = 2;
+const REASONABLE_DEPTH = 3;
 const baseUrl = baseUrls.completenessStats;
 
 export const CompletenessStatsFilters: FunctionComponent<Props> = ({
@@ -54,7 +54,7 @@ export const CompletenessStatsFilters: FunctionComponent<Props> = ({
                         ouType => ouType.original.id === parseInt(ouTypeId, 10),
                     ),
                 )
-                .map(ouType => ouType.original?.depth ?? 0)
+                .map(ouType => ouType?.original?.depth ?? 0)
                 // If the array is empty, we return the same depth as the orgUnit, to avoid showing an error
                 .sort((a, b) => b - a)[0] ?? selectedOrgUnitDepth,
         [filters.orgUnitTypeIds, orgUnitTypes, selectedOrgUnitDepth],
@@ -69,11 +69,12 @@ export const CompletenessStatsFilters: FunctionComponent<Props> = ({
         },
         [handleChange],
     );
-    const isReasonableDepth =
-        Math.abs(selectedOrgUnitTypeMaxDepth - selectedOrgUnitDepth) <
-        REASONABLE_DEPTH;
+    const isReasonableDepth = selectedOrgUnit
+        ? Math.abs(selectedOrgUnitTypeMaxDepth - selectedOrgUnitDepth) <
+          REASONABLE_DEPTH
+        : true;
 
-    const isOrgUnitTypeDisabled = !filters.parentId;
+    const isOrgUnitTypeDisabled = !filters.parentId && !filters.formId;
 
     const showError = !isOrgUnitTypeDisabled && !isReasonableDepth;
 

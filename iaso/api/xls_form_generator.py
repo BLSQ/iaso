@@ -145,11 +145,11 @@ class XlsFormGeneratorViewSet(ModelViewSet):
 
         wb = openpyxl.load_workbook(path)
         ws = wb.active
-        sheet = wb.get_sheet_by_name("choices")
+        sheet = wb.get_sheet_by_name("choices")  # type: ignore
         choices_row = 2
         choices_column = 1
         cell = list(string.ascii_uppercase)
-        q_sheet = wb.get_sheet_by_name("survey")
+        q_sheet = wb.get_sheet_by_name("survey")  # type: ignore
         survey_columns = []
         survey_last_empty_row = len(list(q_sheet.rows))
         for l in cell:

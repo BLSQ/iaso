@@ -4,7 +4,7 @@ import { useSelector } from 'react-redux';
 export type Profile = {
     id: string;
     first_name: string;
-    user_name: string;
+    user_name?: string;
     username?: string;
     last_name: string;
     email: string;
@@ -16,7 +16,7 @@ export type User = {
     id: number;
     first_name: string;
     last_name: string;
-    user_name: string;
+    user_name?: string;
     username?: string;
     email: string;
     account: {

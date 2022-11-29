@@ -53,7 +53,9 @@ function MenuItem(props) {
     const path = urlLink ? `${currentPath}` : `${currentPath}/${menuItem.key}`;
     const activePath = location.pathname.split('/', subMenuLevel + 1).join('/');
     const isMenuActive = path === activePath;
-    const fullPath = menuItem.extraPath ? `${path}${menuItem.extraPath}` : path;
+    const fullPath = `${
+        menuItem.extraPath ? `${path}${menuItem.extraPath}` : path
+    }/accountId/${currentUser.account.id}`;
     const [open, setOpen] = React.useState(isMenuActive);
     const toggleOpen = () => {
         setOpen(!open);
@@ -72,11 +74,7 @@ function MenuItem(props) {
         <>
             <Link
                 className={classes.linkButton}
-                to={
-                    !hasSubMenu
-                        ? `${fullPath}/accountId/${currentUser.account.id}`
-                        : ''
-                }
+                to={!hasSubMenu ? fullPath : ''}
                 target={urlLink ? '_blank' : ''}
             >
                 <ListItem
@@ -136,6 +134,7 @@ function MenuItem(props) {
 MenuItem.defaultProps = {
     subMenuLevel: 1,
     currentPath: '',
+    url: '',
 };
 
 MenuItem.propTypes = {
@@ -147,6 +146,7 @@ MenuItem.propTypes = {
     subMenuLevel: PropTypes.number,
     currentPath: PropTypes.string,
     currentUser: PropTypes.object.isRequired,
+    url: PropTypes.string,
 };
 
 export default withStyles(styles)(injectIntl(MenuItem));

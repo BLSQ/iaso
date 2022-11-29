@@ -6,6 +6,7 @@ import {
     getSort,
 } from 'bluesquare-components';
 
+import { cloneDeep } from 'lodash';
 import { baseUrls } from '../constants/urls';
 import { getChipColors } from '../constants/chipColors';
 
@@ -110,7 +111,7 @@ const getRedirections = overrideLanding => {
     ];
 };
 const getRoutes = (baseRoutes, overrideLanding) =>
-    [...baseRoutes].concat(
+    cloneDeep(baseRoutes).concat(
         getRedirections(overrideLanding).map(redirection => {
             if (redirection.component) {
                 return (

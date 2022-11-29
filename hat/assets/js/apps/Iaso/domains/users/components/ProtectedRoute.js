@@ -42,11 +42,14 @@ const ProtectedRoute = ({
         }
     }, [currentUser.language, dispatch]);
 
+    let isAuthorized =
+        permissions.length > 0
+            ? userHasOneOfPermissions(permissions, currentUser)
+            : true;
+    if (featureFlag && !hasFeatureFlag(currentUser, featureFlag)) {
+        isAuthorized = false;
+    }
     useEffect(() => {
-        const isAuthorized =
-            permissions.length > 0
-                ? userHasOneOfPermissions(permissions, currentUser)
-                : true;
         if (!isAuthorized && isRootUrl) {
             const newBaseUrl = getFirstAllowedUrl(
                 permissions,
@@ -57,15 +60,14 @@ const ProtectedRoute = ({
                 dispatch(redirectTo(newBaseUrl, {}));
             }
         }
-    }, [allRoutes, currentUser, dispatch, isRootUrl, permissions]);
-
-    let isAuthorized =
-        permissions.length > 0
-            ? userHasOneOfPermissions(permissions, currentUser)
-            : true;
-    if (featureFlag && !hasFeatureFlag(currentUser, featureFlag)) {
-        isAuthorized = false;
-    }
+    }, [
+        allRoutes,
+        currentUser,
+        dispatch,
+        isAuthorized,
+        isRootUrl,
+        permissions,
+    ]);
     if (!currentUser) {
         return null;
     }

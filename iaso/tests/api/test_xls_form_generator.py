@@ -56,7 +56,9 @@ class XlsFormGeneratorAPITestCase(APITestCase):
 
         group = self.group_2
 
-        response = self.client.get(f"/api/generate_xlsform/xlsform_generator/?groupid={group.id}&form_name=A_FORM_1&outypelist=country,region&ouhierarchy=country,region")
+        response = self.client.get(
+            f"/api/generate_xlsform/xlsform_generator/?groupid={group.id}&form_name=A_FORM_1&outypelist=country,region&ouhierarchy=country,region"
+        )
         date_now = datetime.datetime.today().strftime("%Y-%m-%d")
 
         self.assertEqual(response.status_code, 200)

@@ -26,7 +26,7 @@ import {
     useLinkToOrgUnitAction,
     useLockAction,
 } from '../hooks/speedDialActions';
-import { useGetOrgUnitTypes } from '../hooks/speeddials';
+import { useGetForDataForInstance } from '../hooks/speeddials';
 
 type Props = {
     currentInstance: Instance;
@@ -45,7 +45,7 @@ const SpeedDialInstance: FunctionComponent<Props> = props => {
         currentInstance,
         currentInstance: { form_id: formId },
     } = props;
-    const { data } = useGetOrgUnitTypes(formId);
+    const { data } = useGetForDataForInstance(formId);
     const currentUser = useCurrentUser();
     const hasfeatureFlag = hasFeatureFlag(
         currentUser,

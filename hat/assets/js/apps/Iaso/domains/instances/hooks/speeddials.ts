@@ -64,7 +64,7 @@ type FormDef = {
 };
 
 // TODO move to hooks.js
-export const useGetOrgUnitTypes = (
+export const useGetForDataForInstance = (
     formId: number | string | undefined,
 ): UseQueryResult<FormDef, Error> => {
     return useSnackQuery(

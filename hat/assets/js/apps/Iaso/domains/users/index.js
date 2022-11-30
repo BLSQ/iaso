@@ -25,7 +25,7 @@ import usersTableColumns from './config';
 import MESSAGES from './messages';
 
 import { redirectTo } from '../../routing/actions';
-import { convertObjectToString } from '../../utils';
+import { convertObjectToString } from '../../utils/dataManipulation.ts';
 import { useCurrentUser } from '../../utils/usersUtils.ts';
 
 const baseUrl = baseUrls.users;

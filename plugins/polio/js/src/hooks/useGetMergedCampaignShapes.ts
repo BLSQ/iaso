@@ -1,6 +1,13 @@
+import { UseQueryResult } from 'react-query';
+import { MergedShapes } from '../constants/types';
 import { useGetCampaigns } from './useGetCampaigns';
 
 const URL = '/api/polio/campaigns/v2/merged_shapes.geojson/';
 
-export const useGetMergedCampaignShapes = (options = {}) =>
+type Result = {
+    exportToCSV: CallableFunction;
+    query: UseQueryResult<MergedShapes>;
+};
+
+export const useGetMergedCampaignShapes = (options = {}): Result =>
     useGetCampaigns(options, URL, 'mergedCampaigns');

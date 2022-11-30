@@ -153,8 +153,9 @@ const ProjectsDialog: FunctionComponent<Props> = ({
             project.name &&
             project.name.value !== '' &&
             project.app_id &&
-            project.app_id.value !== '',
-        [project],
+            project.app_id.value !== '' &&
+            !isFetchingFeatureFlags,
+        [project, isFetchingFeatureFlags],
     );
 
     return (

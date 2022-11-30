@@ -307,7 +307,7 @@ class FormAStocksViewSetV2(viewsets.ViewSet):
         r = get_forma_scope_df(campaigns).to_json(orient="table")
         return HttpResponse(r, content_type="application/json")
 
-    @method_decorator(cache_page(60 * 60 * 1)) #cache result for one hour
+    @method_decorator(cache_page(60 * 60 * 1))  # cache result for one hour
     def list(self, request):
         df = fetch_and_match_forma_data()
         # Need to drop all the Django orm object, since Panda can't serialize them

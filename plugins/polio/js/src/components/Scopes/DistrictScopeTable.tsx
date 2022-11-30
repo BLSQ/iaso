@@ -122,7 +122,17 @@ export const DistrictScopeTable: FunctionComponent<Props> = ({
         if (orderBy === 'desc') {
             ds = ds.reverse();
         }
-        return ds.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage);
+        ds = ds.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage);
+        ds = ds.map(shape => ({
+            ...shape,
+            fullRegionIsPartOfScope: checkFullRegionIsPartOfScope(
+                shape,
+                selectedVaccine,
+                districtShapes,
+                scopes,
+            ),
+        }));
+        return ds;
     }, [
         regionShapes,
         filteredDistricts,
@@ -131,6 +141,8 @@ export const DistrictScopeTable: FunctionComponent<Props> = ({
         page,
         rowsPerPage,
         scopes,
+        selectedVaccine,
+        districtShapes,
     ]);
 
     const displayPlaceHolder =
@@ -211,12 +223,7 @@ export const DistrictScopeTable: FunctionComponent<Props> = ({
                                             textAlign: 'center',
                                         }}
                                     >
-                                        {checkFullRegionIsPartOfScope(
-                                            shape,
-                                            selectedVaccine,
-                                            districtShapes,
-                                            scopes,
-                                        ) && (
+                                        {shape.fullRegionIsPartOfScope && (
                                             <IconButtonComponent
                                                 size="small"
                                                 onClick={() =>
@@ -228,12 +235,7 @@ export const DistrictScopeTable: FunctionComponent<Props> = ({
                                                 }
                                             />
                                         )}
-                                        {!checkFullRegionIsPartOfScope(
-                                            shape,
-                                            selectedVaccine,
-                                            districtShapes,
-                                            scopes,
-                                        ) && (
+                                        {!shape.fullRegionIsPartOfScope && (
                                             <IconButtonComponent
                                                 size="small"
                                                 onClick={() =>

@@ -19,26 +19,29 @@ type Props = {
     // eslint-disable-next-line no-unused-vars
     setFieldValue: (key: string, value: string) => void;
     currentProject: ProjectForm;
-    featureFlags: Array<FeatureFlag>;
+    featureFlags?: Array<FeatureFlag>;
+    isFetchingFeatureFlag: boolean;
 };
 
 const ProjectFeatureFlags: FunctionComponent<Props> = ({
     setFieldValue,
     currentProject,
     featureFlags,
+    isFetchingFeatureFlag,
 }) => {
     return (
         <InputComponent
             multi
             clearable
             keyValue="feature_flags"
+            loading={isFetchingFeatureFlag}
             onChange={(key, value) =>
                 setFieldValue(key, commaSeparatedIdsToArray(value))
             }
             value={currentProject.feature_flags.value.join(',')}
             errors={currentProject.feature_flags.errors}
             type="select"
-            options={featureFlags.map(fF => ({
+            options={featureFlags?.map(fF => ({
                 label: fF.name,
                 value: fF.id,
             }))}

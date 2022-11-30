@@ -181,10 +181,10 @@ class XlsFormGeneratorViewSet(ModelViewSet):
                     if k not in key_added_to_choice_list:
                         # Add the ou type to the select choices of the xls form
                         key_added_to_choice_list.append(k)
-                        q_sheet[cell[0] + str(starting_row)] = f"select_one ou_{str(k).lower()}"
-                        q_sheet[cell[1] + str(starting_row)] = f"ou_{str(k).lower()}"
-                        q_sheet[cell[2] + str(starting_row)] = f"Select {k}"
-                        q_sheet[cell[3] + str(starting_row)] = "yes"
+                        q_sheet[cell[get_column_position("type", q_sheet) - 1] + str(starting_row)] = f"select_one ou_{str(k).lower()}"
+                        q_sheet[cell[get_column_position("name", q_sheet) - 1] + str(starting_row)] = f"ou_{str(k).lower()}"
+                        q_sheet[cell[get_column_position("label", q_sheet) - 1] + str(starting_row)] = f"Select {k}"
+                        q_sheet[cell[get_column_position("required", q_sheet) - 1] + str(starting_row)] = "yes"
                         if ou_hierarchy_list.index(k.lower()) != 0:
                             parent_type = ou_hierarchy_list[ou_hierarchy_list.index(str(k.lower())) - 1]
                             q_sheet[cell[get_column_position("choice_filter", q_sheet) - 1] + str(starting_row)] = (

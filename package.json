@@ -44,6 +44,8 @@
     "dependencies": {
         "@babel/runtime": "^7.12.1",
         "@date-io/moment": "1.x",
+        "@dnd-kit/core": "^6.0.5",
+        "@dnd-kit/sortable": "^7.0.1",
         "@material-ui/core": "^4.9.9",
         "@material-ui/icons": "^4.2.1",
         "@material-ui/lab": "^4.0.0-alpha.48",

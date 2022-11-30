@@ -86,9 +86,3 @@ export const fakeResponse =
         await waitFor(200);
         return response;
     };
-
-// Will not work with nested objects as their value will be "[object Object]"
-export const convertObjectToString = value =>
-    Object.entries(value)
-        .map(([key, entry]) => `${key}-${String(entry)}`)
-        .toString();

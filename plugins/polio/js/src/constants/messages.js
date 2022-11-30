@@ -1890,6 +1890,14 @@ const MESSAGES = defineMessages({
         id: 'iaso.label.noOptions',
         defaultMessage: 'No result found',
     },
+    selectRoundsToDisplay: {
+        id: 'iaso.polio.form.label.selectRoundsToDisplay',
+        defaultMessage: 'Select rounds to display',
+    },
+    latest: {
+        id: 'iaso.polio.form.label.latest',
+        defaultMessage: 'Latest',
+    },
 });
 
 export default MESSAGES;

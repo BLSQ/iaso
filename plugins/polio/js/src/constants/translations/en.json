@@ -1,5 +1,4 @@
 {
-    "Date of the destruction report": "Date of the destruction report",
     "iaso.forms.options.budgetTypeError": "Value should be one of \"submission\", \"comments\" or \"validation\"",
     "iaso.forms.options.emailFormat": "Please use correctly formatted email addresses",
     "iaso.forms.options.urlFormat": "Please use correctly formatted URL",
@@ -64,6 +63,7 @@
     "iaso.polio.form.label.gpeiCoordinator": "GPEI Coordinator",
     "iaso.polio.form.label.imEnd": "IM End",
     "iaso.polio.form.label.imStart": "IM Start",
+    "iaso.polio.form.label.latest": "Latest",
     "iaso.polio.form.label.lqasEnd": "LQAS End",
     "iaso.polio.form.label.lqasStart": "LQAS Start",
     "iaso.polio.form.label.mainReasonForNonVaccination": "Main reason for non-vaccination",
@@ -86,6 +86,7 @@
     "iaso.polio.form.label.roundtwoStart": "Round 2 Start",
     "iaso.polio.form.label.rrtOprttApproval": "RRT/OPRTT Approval",
     "iaso.polio.form.label.selectInitialRegion": "Select initial region",
+    "iaso.polio.form.label.selectRoundsToDisplay": "Select rounds to display",
     "iaso.polio.form.label.targetpopulationRound": "Target population Round",
     "iaso.polio.form.label.threelevelCall": "3 level call",
     "iaso.polio.form.label.verificationScore": "Verification Score (/20)",

@@ -6,14 +6,14 @@ import { CompletenessApiResponse } from '../../types';
 
 const queryParamsMap = new Map([
     ['orgUnitId', 'org_unit_id'],
-    ['orgUnitTypeId', 'org_unit_type_id'],
+    ['orgUnitTypeIds', 'org_unit_type_id'],
     ['formId', 'form_id'],
 ]);
 
 export type CompletenessGETParams = UrlParams & {
     orgUnitId?: string;
     formId?: string;
-    orgUnitTypeId?: string;
+    orgUnitTypeIds?: string;
 };
 
 const apiParamsKeys = ['order', 'page', 'limit', 'search'];
@@ -22,7 +22,7 @@ const getCompletenessStats = async (
     params: CompletenessGETParams,
 ): Promise<CompletenessApiResponse> => {
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const { pageSize, orgUnitId, orgUnitTypeId, formId, ...urlParams } = params;
+    const { pageSize, orgUnitId, orgUnitTypeIds, formId, ...urlParams } = params;
     const apiParams = { ...urlParams, limit: pageSize ?? 50 };
     const queryParams = {};
     apiParamsKeys.forEach(apiParamKey => {

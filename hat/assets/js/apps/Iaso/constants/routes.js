@@ -484,7 +484,7 @@ export const completenessStatsPath = {
         },
         {
             isRequired: false,
-            key: 'orgUnitTypeId',
+            key: 'orgUnitTypeIds',
         },
     ],
 };

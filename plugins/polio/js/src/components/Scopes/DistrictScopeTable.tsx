@@ -30,7 +30,11 @@ import MESSAGES from '../../constants/messages';
 import { useStyles } from '../../styles/theme';
 
 import { Scope, Shape, FilteredDistricts, ShapeRow } from './types';
-import { findScopeWithOrgUnit, findRegion } from './utils';
+import {
+    findScopeWithOrgUnit,
+    findRegion,
+    checkFullRegionIsPartOfScope,
+} from './utils';
 
 import { TableText } from './TableText';
 import { TablePlaceHolder } from './TablePlaceHolder';
@@ -51,6 +55,8 @@ type Props = {
     // eslint-disable-next-line no-unused-vars
     setPage: (page: number) => void;
     isFetching: boolean;
+    districtShapes: FilteredDistricts[];
+    selectedVaccine: string;
 };
 
 export const DistrictScopeTable: FunctionComponent<Props> = ({
@@ -62,6 +68,8 @@ export const DistrictScopeTable: FunctionComponent<Props> = ({
     page,
     setPage,
     isFetching,
+    selectedVaccine,
+    districtShapes,
 }) => {
     const classes: Record<string, string> = useStyles();
     const { formatMessage } = useSafeIntl();
@@ -127,6 +135,7 @@ export const DistrictScopeTable: FunctionComponent<Props> = ({
 
     const displayPlaceHolder =
         isFetching || (!isFetching && filteredDistricts?.length === 0);
+
     return (
         <>
             <TableContainer className={classes.districtList}>
@@ -202,18 +211,42 @@ export const DistrictScopeTable: FunctionComponent<Props> = ({
                                             textAlign: 'center',
                                         }}
                                     >
+                                        {checkFullRegionIsPartOfScope(
+                                            shape,
+                                            selectedVaccine,
+                                            districtShapes,
+                                            scopes,
+                                        ) && (
+                                            <IconButtonComponent
+                                                size="small"
+                                                onClick={() =>
+                                                    toggleRegion(shape)
+                                                }
+                                                icon="clearAll"
+                                                tooltipMessage={
+                                                    MESSAGES.removeRegion
+                                                }
+                                            />
+                                        )}
+                                        {!checkFullRegionIsPartOfScope(
+                                            shape,
+                                            selectedVaccine,
+                                            districtShapes,
+                                            scopes,
+                                        ) && (
+                                            <IconButtonComponent
+                                                size="small"
+                                                onClick={() =>
+                                                    toggleRegion(shape)
+                                                }
+                                                overrideIcon={SelectAllIcon}
+                                                tooltipMessage={
+                                                    MESSAGES.addRegion
+                                                }
+                                            />
+                                        )}
                                         {shape.vaccineName && (
                                             <>
-                                                <IconButtonComponent
-                                                    size="small"
-                                                    onClick={() =>
-                                                        toggleRegion(shape)
-                                                    }
-                                                    icon="clearAll"
-                                                    tooltipMessage={
-                                                        MESSAGES.removeRegion
-                                                    }
-                                                />
                                                 <IconButtonComponent
                                                     size="small"
                                                     onClick={() =>
@@ -230,16 +263,6 @@ export const DistrictScopeTable: FunctionComponent<Props> = ({
                                         )}
                                         {!shape.vaccineName && (
                                             <>
-                                                <IconButtonComponent
-                                                    size="small"
-                                                    onClick={() =>
-                                                        toggleRegion(shape)
-                                                    }
-                                                    overrideIcon={SelectAllIcon}
-                                                    tooltipMessage={
-                                                        MESSAGES.addRegion
-                                                    }
-                                                />
                                                 <IconButtonComponent
                                                     size="small"
                                                     onClick={() =>

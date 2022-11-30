@@ -76,7 +76,7 @@ export const ScopeInput: FunctionComponent<Props> = ({
 
     const toggleRegion = useCallback(
         (selectOrgUnit: Shape) => {
-            const OrgUnitsIdInSameRegion: number[] = (districtShapes || [])
+            const orgUnitsIdInSameRegion: number[] = (districtShapes || [])
                 .filter(s => s.parent_id === selectOrgUnit.parent_id)
                 .map(s => s.id);
             const newScopes: Scope[] = cloneDeep(scopes);
@@ -96,7 +96,7 @@ export const ScopeInput: FunctionComponent<Props> = ({
             // if all the orgunits from this region are already in this vaccine scope, remove them
             // @ts-ignore
             if (
-                OrgUnitsIdInSameRegion.every(OrgUnitId =>
+                orgUnitsIdInSameRegion.every(OrgUnitId =>
                     // @ts-ignore
                     scope.group.org_units.includes(OrgUnitId),
                 )
@@ -104,7 +104,7 @@ export const ScopeInput: FunctionComponent<Props> = ({
                 const orgUnits: Array<number> = [];
 
                 scope.group.org_units.forEach(OrgUnitId => {
-                    if (!OrgUnitsIdInSameRegion.includes(OrgUnitId)) {
+                    if (!orgUnitsIdInSameRegion.includes(OrgUnitId)) {
                         orgUnits.push(OrgUnitId);
                     }
                 });
@@ -115,14 +115,14 @@ export const ScopeInput: FunctionComponent<Props> = ({
                     const newScope = { ...s };
                     newScope.group.org_units = s.group.org_units.filter(
                         OrgUnitId =>
-                            !OrgUnitsIdInSameRegion.includes(OrgUnitId),
+                            !orgUnitsIdInSameRegion.includes(OrgUnitId),
                     );
                 });
 
                 // Add the OrgUnit in the scope for selected vaccine
                 scope.group.org_units = [
                     ...scope.group.org_units,
-                    ...OrgUnitsIdInSameRegion,
+                    ...orgUnitsIdInSameRegion,
                 ];
             }
             setScopes(newScopes);
@@ -133,10 +133,11 @@ export const ScopeInput: FunctionComponent<Props> = ({
     const toggleDistrictInVaccineScope = useCallback(
         district => {
             const newScopes: Scope[] = cloneDeep(scopes);
+            // check if a scope exists for currently selected vaccine
             let scope: Scope | undefined = newScopes.find(
                 s => s.vaccine === selectedVaccine,
             );
-
+            // if not create one that is initially empty
             if (!scope) {
                 scope = {
                     vaccine: selectedVaccine,
@@ -162,6 +163,7 @@ export const ScopeInput: FunctionComponent<Props> = ({
                     }
                 });
                 // Add org unit to proper scope
+                // scope.group.org_units = [...scope.group.org_units, district.id];
                 scope.group.org_units = [...scope.group.org_units, district.id];
             }
             setScopes(newScopes);
@@ -208,6 +210,8 @@ export const ScopeInput: FunctionComponent<Props> = ({
                     setPage={setPage}
                     page={page}
                     isFetching={isFetching}
+                    districtShapes={districtShapes || []}
+                    selectedVaccine={selectedVaccine}
                 />
             </Grid>
             <Grid xs={7} item>

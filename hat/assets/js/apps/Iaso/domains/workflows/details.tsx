@@ -1,4 +1,9 @@
-import React, { FunctionComponent } from 'react';
+import React, {
+    FunctionComponent,
+    useCallback,
+    useState,
+    useEffect,
+} from 'react';
 import {
     // @ts-ignore
     useSafeIntl,
@@ -10,6 +15,10 @@ import {
     formatThousand,
     // @ts-ignore
     Table,
+    // @ts-ignore
+    SortableTable,
+    // @ts-ignore
+    SortableList,
 } from 'bluesquare-components';
 import { Box, Grid, makeStyles } from '@material-ui/core';
 import { useDispatch, useSelector } from 'react-redux';
@@ -21,9 +30,11 @@ import { baseUrls } from '../../constants/urls';
 
 import { useGetWorkflow } from './hooks/requests/useGetWorkflows';
 
-import { WorkflowDetail, WorkflowParams } from './types/workflows';
+import { WorkflowDetail, WorkflowParams, FollowUps } from './types/workflows';
 
 import { WorkflowBaseInfo } from './components/WorkflowBaseInfo';
+import { SortableItem } from './components/SortableItem';
+import { SortableFollowUp } from './components/SortableFollowUp';
 
 import WidgetPaper from '../../components/papers/WidgetPaperComponent';
 import { TableWithDeepLink } from '../../components/tables/TableWithDeepLink';
@@ -49,6 +60,7 @@ const useStyles = makeStyles(theme => ({
 export const Details: FunctionComponent<Props> = ({ router }) => {
     const { params } = router;
     const classes: Record<string, string> = useStyles();
+    const [followUps, setFollowUps] = useState<FollowUps[]>([]);
     const { entityTypeId, versionId } = params;
     const { formatMessage } = useSafeIntl();
 
@@ -64,9 +76,19 @@ export const Details: FunctionComponent<Props> = ({ router }) => {
         isLoading: boolean;
     } = useGetWorkflow(versionId, entityTypeId);
 
+    useEffect(() => {
+        if (workflow?.follow_ups) {
+            setFollowUps(workflow.follow_ups);
+        }
+    }, [workflow?.follow_ups]);
+
     const changesColumns = useGetChangesColumns(entityTypeId, versionId);
     const followUpsColumns = useGetFollowUpsColumns(entityTypeId, versionId);
-
+    const handleSortChange = useCallback((items: any) => {
+        setFollowUps(
+            items.map((item, index) => ({ ...item, order: index + 1 })),
+        );
+    }, []);
     return (
         <>
             <TopBar
@@ -98,11 +120,35 @@ export const Details: FunctionComponent<Props> = ({ router }) => {
                         </WidgetPaper>
                     </Grid>
                 </Grid>
+                <Box mt={2} mb={2} width="30%">
+                    <SortableList
+                        items={followUps}
+                        onChange={handleSortChange}
+                        handle
+                        renderItem={props => <SortableItem {...props} />}
+                    />
+                </Box>
+
                 <Box mt={2}>
                     <WidgetPaper
                         className={classes.fullWidth}
                         title={formatMessage(MESSAGES.followUps)}
                     >
+                        <SortableTable
+                            items={followUps}
+                            onChange={handleSortChange}
+                            handle
+                            renderItem={props => (
+                                <SortableFollowUp {...props} />
+                            )}
+                            headers={[
+                                '',
+                                formatMessage(MESSAGES.forms),
+                                formatMessage(MESSAGES.created_at),
+                                formatMessage(MESSAGES.updated_at),
+                                // formatMessage(MESSAGES.actions),
+                            ]}
+                        />
                         <Table
                             marginTop={false}
                             countOnTop={false}

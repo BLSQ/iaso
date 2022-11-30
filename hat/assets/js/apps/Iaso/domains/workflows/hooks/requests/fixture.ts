@@ -94,6 +94,40 @@ const details = {
             created_at: '2022-11-15T09:47:34.094067Z',
             updated_at: '2022-11-15T09:47:34.094067Z',
         },
+        {
+            id: 'THE_ID_2',
+            order: 2,
+            condition: 'true',
+            forms: [
+                {
+                    id: 89,
+                    name: 'form name',
+                },
+                {
+                    id: 91,
+                    name: 'form name 20',
+                },
+            ],
+            created_at: '2022-01-15T09:47:34.094067Z',
+            updated_at: '2022-01-15T09:47:34.094067Z',
+        },
+        {
+            id: 'THE_ID_3',
+            order: 3,
+            condition: '{"and":[{"==":[{"var":"name"},"2"]}]}',
+            forms: [
+                {
+                    id: 30,
+                    name: 'form name 10',
+                },
+                {
+                    id: 900,
+                    name: 'form name 200',
+                },
+            ],
+            created_at: '2022-10-15T09:47:34.094067Z',
+            updated_at: '2022-10-15T09:47:34.094067Z',
+        },
     ],
 };
 export { list, details };

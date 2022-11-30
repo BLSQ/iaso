@@ -18,6 +18,14 @@ from drf_yasg import openapi
 from drf_yasg.utils import swagger_auto_schema
 
 
+# Entity Type -> Account : users -> List of users ?
+# Entity Type -> Reference form <- Forms <- Project
+# Project -> Account
+
+# queryset = form_objects.filter_for_user_and_app_id(self.request.user, self.request.query_params.get("app_id"))
+#  user -> iaso_profile -> account
+
+
 class FormMiniSerializer(serializers.ModelSerializer):
     class Meta:
         model = Form
@@ -118,7 +126,7 @@ def get_or_create_wf_for_entity_type(et):
 
 
 class WorkflowPaginator(Paginator):
-    page_size = 2
+    page_size = 10
 
 
 def clone_change(new_version):
@@ -178,6 +186,42 @@ def make_deep_copy_with_relations(orig_version):
 version_id_param = openapi.Parameter("version_id", openapi.IN_QUERY, description="Version ID", type=openapi.TYPE_STRING)
 
 
+from django.contrib.auth.models import User
+
+
+def user_can_access_entity_type(entity_type: EntityType, user: User):
+    return user.iaso_profile.account.id == entity_type.account.id
+
+
+def user_can_access_all_forms_of_workflow_all_versions(entity_type: EntityType, user: User):
+    if not entity_type.reference_form.projects.filter(account=user.iaso_profile.account).exists():
+        return False
+
+    for v in entity_type.workflow.workflow_versions.all():
+        if not v.follow_ups.filter(forms__projects__account=user.iaso_profile.account).exists():
+            return False
+
+        if not v.changes.filter(form__projects__account=user.iaso_profile.account).exists():
+            return False
+
+    return True
+
+
+def user_can_access_all_forms_of_workflow_version(workflow_version: WorkflowVersion, user: User):
+    if not workflow_version.workflow.entity_type.reference_form.projects.filter(
+        account=user.iaso_profile.account
+    ).exists():
+        return False
+
+    if not workflow_version.follow_ups.filter(forms__projects__account=user.iaso_profile.account).exists():
+        return False
+
+    if not workflow_version.changes.filter(form__projects__account=user.iaso_profile.account).exists():
+        return False
+
+    return True
+
+
 class WorkflowVersionViewSet(GenericViewSet):
     """Workflow API
     POST /api/workflow/{entity_type_id}/new/?version_id=XXX
@@ -213,6 +257,13 @@ class WorkflowVersionViewSet(GenericViewSet):
             return Response(status=404, data="Must provide entity_type_id path param")
         elif version_id is None:
             et = get_object_or_404(EntityType, pk=entity_type_id)
+
+            if not user_can_access_entity_type(et, request.user):
+                return Response(status=404, data="User doesn't have access to Entity Type")
+
+            if not user_can_access_all_forms_of_workflow_all_versions(et, request.user):
+                return Response(status=404, data="User doesn't have access to all workflow versions forms")
+
             wf = get_or_create_wf_for_entity_type(et)
 
             queryset_base = wf.workflow_versions.order_by("pk")
@@ -237,8 +288,17 @@ class WorkflowVersionViewSet(GenericViewSet):
             return Response(serializer.data)
 
         else:
+            et = get_object_or_404(EntityType, pk=entity_type_id)
+
+            if not user_can_access_entity_type(et, request.user):
+                return Response(status=404, data="User doesn't have access to Entity Type")
+
             the_wf = get_object_or_404(Workflow, entity_type_id=entity_type_id)
             the_version = get_object_or_404(WorkflowVersion, workflow=the_wf, pk=version_id)
+
+            if not user_can_access_all_forms_of_workflow_version(the_version, request.user):
+                return Response(status=404, data="User doesn't have access to workflow version " + str(the_version.pk))
+
             serialized_data = WorkflowVersionDetailSerializer(the_version, context={"request": request}).data
             return Response(serialized_data)
 

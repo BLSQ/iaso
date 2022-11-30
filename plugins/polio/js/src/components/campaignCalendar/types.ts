@@ -14,7 +14,9 @@ export type Query = {
     enabled: boolean;
 };
 
-export type MergedShapeWithColor = MergedShape & { color: string };
+export type MergedShapeWithCacheDate = MergedShape & { cache: number };
+
+export type MergedShapeWithColor = MergedShapeWithCacheDate & { color: string };
 
 export type CalendarRound = Round & {
     weeksCount: number;

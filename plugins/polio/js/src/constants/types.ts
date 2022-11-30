@@ -424,6 +424,7 @@ export type MergedShape = {
     };
     color?: string;
 };
+
 export type MergedShapes = {
     type: string;
     features: MergedShape[];

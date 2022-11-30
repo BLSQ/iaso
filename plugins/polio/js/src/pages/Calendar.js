@@ -71,8 +71,11 @@ const Calendar = ({ params }) => {
         params.search,
     ]);
 
-    const { data: campaigns = [], isLoading } =
-        useGetCampaigns(queryOptions).query;
+    const {
+        data: campaigns = [],
+        isLoading,
+        isFetching,
+    } = useGetCampaigns(queryOptions).query;
 
     const currentDate = params.currentDate
         ? moment(params.currentDate, dateFormat)
@@ -237,7 +240,7 @@ const Calendar = ({ params }) => {
                         <Grid item xs={12} lg={!isPdf ? 4 : 12}>
                             <CalendarMap
                                 campaigns={filteredCampaigns}
-                                loadingCampaigns={isLoading}
+                                loadingCampaigns={isFetching}
                                 isPdf={isPdf}
                             />
                         </Grid>

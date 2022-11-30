@@ -86,9 +86,8 @@ export const useMergedShapes = ({
     roundsDict,
     selection,
 }: UseMergedShapesArgs): UseMergedShapesResult => {
-    const { data: mergedShapes, isLoading: isLoadingMergedShapes } =
+    const { data: mergedShapes, isFetching: isLoadingMergedShapes } =
         useGetMergedCampaignShapes().query;
-
     const firstAndLastRounds = useMemo(() => {
         return findFirstAndLastRounds(campaigns);
     }, [campaigns]);
@@ -113,9 +112,14 @@ export const useMergedShapes = ({
         [campaignColors],
     );
     const mergedShapesToDisplay: MergedShapeWithColor[] = useMemo(() => {
-        const shapesForSelectedCampaign = (mergedShapes?.features ?? []).filter(
-            shape => campaignIds.includes(shape.properties.id),
-        );
+        const shapesForSelectedCampaign = (mergedShapes?.features ?? [])
+            .filter(shape => campaignIds.includes(shape.properties.id))
+            .map(shape => {
+                return {
+                    ...shape,
+                    cache: mergedShapes?.cache_creation_date ?? 0,
+                };
+            });
         if (selection === 'all') {
             return shapesForSelectedCampaign?.map(addShapeColor);
         }
@@ -151,6 +155,7 @@ export const useMergedShapes = ({
         addShapeColor,
         campaignIds,
         firstAndLastRounds,
+        mergedShapes?.cache_creation_date,
         mergedShapes?.features,
         roundsDict,
         selection,

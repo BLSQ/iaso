@@ -140,6 +140,14 @@ class CompletenessStatsAPITestCase(APITestCase):
 
     def test_only_valid_ou_returned(self):
         """OUs with a non-valid status are excluded from the API"""
+        self.client.force_authenticate(self.user)
+
+        response = self.client.get(f"/api/completeness_stats/")
+        json = response.json()
+        ou_ids = [result["org_unit"]["id"] for result in json["results"]]
+        # Those two OUs have a non-valid status
+        self.assertNotIn(8, ou_ids)
+        self.assertNotIn(9, ou_ids)
 
     def test_filter_by_org_unit_type(self):
         pass

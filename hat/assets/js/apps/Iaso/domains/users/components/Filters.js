@@ -2,7 +2,14 @@ import React, { useState, useCallback } from 'react';
 import { useDispatch } from 'react-redux';
 import PropTypes from 'prop-types';
 
-import { Grid, Button, makeStyles, Box } from '@material-ui/core';
+import {
+    Grid,
+    Button,
+    makeStyles,
+    Box,
+    useTheme,
+    useMediaQuery,
+} from '@material-ui/core';
 import SearchIcon from '@material-ui/icons/Search';
 
 import { commonStyles, useSafeIntl } from 'bluesquare-components';
@@ -31,6 +38,9 @@ const Filters = ({ baseUrl, params }) => {
     const [initialOrgUnitId, setInitialOrgUnitId] = useState(params?.location);
     const { data: dropdown, isFetching } = useGetPermissionsDropDown();
     const { data: initialOrgUnit } = useGetOrgUnit(initialOrgUnitId);
+
+    const theme = useTheme();
+    const isLargeLayout = useMediaQuery(theme.breakpoints.up('md'));
 
     const handleSearch = useCallback(() => {
         if (filtersUpdated) {
@@ -73,7 +83,7 @@ const Filters = ({ baseUrl, params }) => {
     return (
         <>
             <Grid container spacing={2}>
-                <Grid item xs={3}>
+                <Grid item xs={12} md={3}>
                     <InputComponent
                         keyValue="search"
                         onChange={handleChange}
@@ -83,7 +93,7 @@ const Filters = ({ baseUrl, params }) => {
                         onEnterPressed={handleSearch}
                     />
                 </Grid>
-                <Grid item xs={3}>
+                <Grid item xs={12} md={3}>
                     <InputComponent
                         keyValue="permissions"
                         onChange={handleChange}
@@ -96,7 +106,7 @@ const Filters = ({ baseUrl, params }) => {
                         onEnterPressed={handleSearchPerms}
                     />
                 </Grid>
-                <Grid item xs={3}>
+                <Grid item xs={12} md={3}>
                     <Box id="ou-tree-input">
                         <OrgUnitTreeviewModal
                             toggleOnLabelClick={false}
@@ -111,31 +121,25 @@ const Filters = ({ baseUrl, params }) => {
                         />
                     </Box>
                 </Grid>
-            </Grid>
-            <Grid
-                container
-                spacing={2}
-                justifyContent="flex-end"
-                alignItems="center"
-            >
                 <Grid
-                    item
-                    xs={2}
                     container
+                    item
+                    xs={isLargeLayout ? 3 : 12}
                     justifyContent="flex-end"
-                    alignItems="center"
                 >
-                    <Button
-                        data-test="search-button"
-                        disabled={!filtersUpdated}
-                        variant="contained"
-                        className={classes.button}
-                        color="primary"
-                        onClick={() => handleSearch()}
-                    >
-                        <SearchIcon className={classes.buttonIcon} />
-                        {formatMessage(MESSAGES.search)}
-                    </Button>
+                    <Box mt={isLargeLayout ? 2 : 0}>
+                        <Button
+                            data-test="search-button"
+                            disabled={!filtersUpdated}
+                            variant="contained"
+                            className={classes.button}
+                            color="primary"
+                            onClick={() => handleSearch()}
+                        >
+                            <SearchIcon className={classes.buttonIcon} />
+                            {formatMessage(MESSAGES.search)}
+                        </Button>
+                    </Box>
                 </Grid>
             </Grid>
         </>

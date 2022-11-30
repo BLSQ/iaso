@@ -1,4 +1,4 @@
-import { Box, Grid } from '@material-ui/core';
+import { Box, Grid, useTheme, useMediaQuery } from '@material-ui/core';
 import React, {
     FunctionComponent,
     useCallback,
@@ -77,6 +77,9 @@ export const CompletenessStatsFilters: FunctionComponent<Props> = ({
 
     const showError = !isOrgUnitTypeDisabled && !isReasonableDepth;
 
+    const theme = useTheme();
+    const isLargeLayout = useMediaQuery(theme.breakpoints.up('md'));
+
     useEffect(() => {
         if (isOrgUnitTypeDisabled && filters.orgUnitTypeIds) {
             handleChange('orgUnitTypeIds', undefined);
@@ -87,7 +90,7 @@ export const CompletenessStatsFilters: FunctionComponent<Props> = ({
         <>
             <Grid container spacing={2}>
                 {/* select forms. Multiselect */}
-                <Grid item xs={3}>
+                <Grid item xs={12} md={3}>
                     <InputComponent
                         type="select"
                         multi
@@ -100,7 +103,7 @@ export const CompletenessStatsFilters: FunctionComponent<Props> = ({
                     />
                 </Grid>
                 {/* select parent. Treeview modal */}
-                <Grid item xs={3}>
+                <Grid item xs={12} md={3}>
                     <Box id="ou-tree-input">
                         <OrgUnitTreeviewModal
                             toggleOnLabelClick={false}
@@ -111,7 +114,7 @@ export const CompletenessStatsFilters: FunctionComponent<Props> = ({
                     </Box>
                 </Grid>
                 {/* select org unit types. Multiselect */}
-                <Grid item xs={3}>
+                <Grid item xs={12} md={3}>
                     <InputComponent
                         type="select"
                         multi
@@ -134,8 +137,13 @@ export const CompletenessStatsFilters: FunctionComponent<Props> = ({
                         }
                     />
                 </Grid>
-                <Grid container item xs={3} justifyContent="flex-end">
-                    <Box mt={2}>
+                <Grid
+                    container
+                    item
+                    xs={isLargeLayout ? 3 : 12}
+                    justifyContent="flex-end"
+                >
+                    <Box mt={isLargeLayout ? 2 : 0}>
                         <FilterButton
                             disabled={!filtersUpdated || !isReasonableDepth}
                             onFilter={handleSearch}

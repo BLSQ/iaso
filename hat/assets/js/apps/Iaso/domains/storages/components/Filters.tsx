@@ -1,4 +1,4 @@
-import { Box, Grid } from '@material-ui/core';
+import { Box, Grid, useTheme, useMediaQuery } from '@material-ui/core';
 import React, { FunctionComponent } from 'react';
 
 import { FilterButton } from '../../../components/FilterButton';
@@ -25,10 +25,14 @@ export const Filters: FunctionComponent<Props> = ({ params }) => {
     const reasons = useGetReasons();
     const { filters, handleSearch, handleChange, filtersUpdated } =
         useFilterState({ baseUrl, params });
+
+    const theme = useTheme();
+    const isMobileLayout = useMediaQuery(theme.breakpoints.down('md'));
+
     return (
         <>
             <Grid container spacing={2}>
-                <Grid item xs={4}>
+                <Grid item xs={12} md={3}>
                     <InputComponent
                         keyValue="search"
                         onChange={handleChange}
@@ -38,7 +42,7 @@ export const Filters: FunctionComponent<Props> = ({ params }) => {
                         onEnterPressed={handleSearch}
                     />
                 </Grid>
-                <Grid item xs={4}>
+                <Grid item xs={12} md={3}>
                     <InputComponent
                         type="select"
                         multi
@@ -49,7 +53,7 @@ export const Filters: FunctionComponent<Props> = ({ params }) => {
                         options={types}
                     />
                 </Grid>
-                <Grid item xs={4}>
+                <Grid item xs={12} md={3}>
                     <InputComponent
                         type="select"
                         keyValue="status"
@@ -69,13 +73,16 @@ export const Filters: FunctionComponent<Props> = ({ params }) => {
                         />
                     )}
                 </Grid>
+
+                <Grid container item xs={12} md={3} justifyContent="flex-end">
+                    <Box mt={!isMobileLayout && 2}>
+                        <FilterButton
+                            disabled={!filtersUpdated}
+                            onFilter={handleSearch}
+                        />
+                    </Box>
+                </Grid>
             </Grid>
-            <Box display="flex" justifyContent="flex-end" mt={2}>
-                <FilterButton
-                    disabled={!filtersUpdated}
-                    onFilter={handleSearch}
-                />
-            </Box>
         </>
     );
 };

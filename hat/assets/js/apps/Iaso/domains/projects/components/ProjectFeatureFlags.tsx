@@ -29,6 +29,14 @@ const ProjectFeatureFlags: FunctionComponent<Props> = ({
     featureFlags,
     isFetchingFeatureFlag,
 }) => {
+    const options = React.useMemo(
+        () =>
+            featureFlags?.map(fF => ({
+                label: fF.name,
+                value: fF.id,
+            })),
+        [featureFlags],
+    );
     return (
         <InputComponent
             multi
@@ -41,10 +49,7 @@ const ProjectFeatureFlags: FunctionComponent<Props> = ({
             value={currentProject.feature_flags.value.join(',')}
             errors={currentProject.feature_flags.errors}
             type="select"
-            options={featureFlags?.map(fF => ({
-                label: fF.name,
-                value: fF.id,
-            }))}
+            options={options}
             label={MESSAGES.featureFlags}
         />
     );

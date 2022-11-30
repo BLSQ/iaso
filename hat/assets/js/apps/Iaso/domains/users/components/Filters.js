@@ -11,9 +11,9 @@ import InputComponent from 'Iaso/components/forms/InputComponent';
 import { redirectTo } from '../../../routing/actions';
 import MESSAGES from '../messages';
 import { useGetPermissionsDropDown } from '../hooks/useGetPermissionsDropdown.ts';
+import { useGetOrgUnitTypes } from '../../orgUnits/hooks/requests/useGetOrgUnitTypes.ts';
 import { OrgUnitTreeviewModal } from '../../orgUnits/components/TreeView/OrgUnitTreeviewModal';
 import { useGetOrgUnit } from '../../orgUnits/components/TreeView/requests';
-
 
 const useStyles = makeStyles(theme => ({
     ...commonStyles(theme),
@@ -28,12 +28,13 @@ const Filters = ({ baseUrl, params }) => {
         search: params.search,
         permissions: params.permissions,
         location: params.location,
+        orgUnitTypes: params.orgUnitTypes,
     });
     const [initialOrgUnitId, setInitialOrgUnitId] = useState(params?.location);
     const { data: dropdown, isFetching } = useGetPermissionsDropDown();
     const { data: initialOrgUnit } = useGetOrgUnit(initialOrgUnitId);
-    const { data: orgUnitTypes, isFetching: fetchingTypes } =
-        useGetOrgUnitTypesOptions();
+    const { data: orgUnitTypeDropdown, isFetchingOuType } =
+        useGetOrgUnitTypes();
 
     const handleSearch = useCallback(() => {
         if (filtersUpdated) {
@@ -114,16 +115,15 @@ const Filters = ({ baseUrl, params }) => {
                         />
                     </Box>
                 </Grid>
-                <Grid item xs={4}>
+                <Grid item xs={2}>
                     <InputComponent
-                        keyValue="ou-type-filter"
+                        keyValue="orgUnitTypes"
                         onChange={handleChange}
-                        value={filters.permissions}
+                        value={filters.orgunitTypes}
                         type="select"
-                        multi
-                        options={dropdown ?? []}
+                        options={orgUnitTypeDropdown || []}
                         label={MESSAGES.orgUnitsType}
-                        loading={isFetching}
+                        loading={isFetchingOuType}
                         onEnterPressed={handleSearchPerms}
                     />
                 </Grid>

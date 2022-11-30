@@ -18,6 +18,9 @@ export const useGetProfiles = params => {
         if (params.location) {
             newParams.location = params.location;
         }
+        if (params.orgUnitTypes) {
+            newParams.orgUnitTypes = params.orgUnitTypes;
+        }
     }
 
     const searchParams = new URLSearchParams(newParams);

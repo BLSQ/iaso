@@ -506,6 +506,10 @@ export const usersPath = {
             isRequired: false,
             key: 'location',
         },
+        {
+            isRequired: false,
+            key: 'orgUnitTypes',
+        },
         ...paginationPathParams.map(p => ({
             ...p,
             isRequired: true,

@@ -33,7 +33,7 @@ const Filters = ({ baseUrl, params }) => {
     const [initialOrgUnitId, setInitialOrgUnitId] = useState(params?.location);
     const { data: dropdown, isFetching } = useGetPermissionsDropDown();
     const { data: initialOrgUnit } = useGetOrgUnit(initialOrgUnitId);
-    const { data: orgUnitTypeDropdown, isFetchingOuType } =
+    const { data: orgUnitTypeDropdown, isFetchingOuTypes } =
         useGetOrgUnitTypes();
 
     const handleSearch = useCallback(() => {
@@ -115,15 +115,15 @@ const Filters = ({ baseUrl, params }) => {
                         />
                     </Box>
                 </Grid>
-                <Grid item xs={2}>
+                <Grid item xs={3}>
                     <InputComponent
-                        keyValue="orgUnitTypes"
+                        keyValue="orgUnitTypesDropDown"
                         onChange={handleChange}
                         value={filters.orgUnitTypes}
                         type="select"
                         options={orgUnitTypeDropdown}
-                        label={MESSAGES.orgUnitsType}
-                        loading={isFetchingOuType}
+                        label={MESSAGES.orgUnitTypesDropdown}
+                        loading={isFetchingOuTypes}
                         onEnterPressed={handleSearchPerms}
                         clearable
                     />

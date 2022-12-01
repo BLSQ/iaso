@@ -72,13 +72,7 @@ const Filters: FunctionComponent<Props> = ({ params }) => {
                         onEnterPressed={handleSearch}
                     />
                 </Grid>
-            </Grid>
-            <Grid
-                container
-                spacing={2}
-                justifyContent="flex-end"
-                alignItems="center"
-            >
+
                 <Grid
                     item
                     xs={12}

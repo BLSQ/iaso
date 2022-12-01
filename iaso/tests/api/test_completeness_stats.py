@@ -1,5 +1,3 @@
-from unittest import mock
-
 from iaso.models import Account, Form, OrgUnitType, OrgUnit
 from iaso.test import APITestCase
 from django.contrib.auth.models import User, Permission
@@ -31,14 +29,14 @@ class CompletenessStatsAPITestCase(APITestCase):
         cls.project_1.forms.add(cls.form_hs_2)
         cls.project_1.forms.add(cls.form_hs_4)
         cls.project_1.save()
-        cls.org_unit_type_1 = OrgUnitType.objects.get(pk=5)  # alternate pk: 4
-        cls.org_unit_type_2 = OrgUnitType.objects.get(pk=4)  # alternate pk: 4
-        cls.form_hs_1.org_unit_types.add(cls.org_unit_type_1)
-        cls.form_hs_2.org_unit_types.add(cls.org_unit_type_1)
-        cls.form_hs_3.org_unit_types.add(cls.org_unit_type_2)
-        cls.form_hs_4.org_unit_types.add(cls.org_unit_type_2)
-        cls.org_unit = OrgUnit.objects.filter(org_unit_type=cls.org_unit_type_1).first()
-        cls.create_form_instance(form=cls.form_hs_1, org_unit=cls.org_unit)
+        cls.org_unit_type_hopital = OrgUnitType.objects.get(pk=5)
+        cls.org_unit_type_aire_sante = OrgUnitType.objects.get(pk=4)
+        cls.form_hs_1.org_unit_types.add(cls.org_unit_type_hopital)
+        cls.form_hs_2.org_unit_types.add(cls.org_unit_type_hopital)
+        cls.form_hs_3.org_unit_types.add(cls.org_unit_type_aire_sante)
+        cls.form_hs_4.org_unit_types.add(cls.org_unit_type_aire_sante)
+        cls.hopital_aaa_ou = OrgUnit.objects.filter(org_unit_type=cls.org_unit_type_hopital).first()
+        cls.create_form_instance(form=cls.form_hs_1, org_unit=cls.hopital_aaa_ou)
 
     def test_row_listing_anonymous(self):
         """An anonymous user should not be able to access the API"""
@@ -85,7 +83,7 @@ class CompletenessStatsAPITestCase(APITestCase):
                         "org_unit": {"name": "LaLaland", "id": 1},
                         "form": {"name": "Hydroponics study 4", "id": self.form_hs_4.id},
                         "forms_filled": 0,
-                        "forms_to_fill": 1,
+                        "forms_to_fill": 2,
                         "completeness_ratio": "0.0%",
                     },
                 ],
@@ -150,23 +148,60 @@ class CompletenessStatsAPITestCase(APITestCase):
         self.assertNotIn(9, ou_ids)
 
     def test_filter_by_org_unit_type(self):
-        pass
+        self.client.force_authenticate(self.user)
+
+        response = self.client.get(f"/api/completeness_stats/?org_unit_type_id={self.org_unit_type_hopital.id}")
+        json = response.json()
+        for result in json["results"]:
+            self.assertEqual(result["org_unit_type"]["id"], self.org_unit_type_hopital.id)
 
     def test_filter_by_multiple_org_unit_types(self):
-        pass
+        self.client.force_authenticate(self.user)
 
-    def test_filter_by_parent_org_unit(self):
+        response = self.client.get(
+            f"/api/completeness_stats/?org_unit_type_id={self.org_unit_type_hopital.id}, {self.org_unit_type_aire_sante.id}"
+        )
+        json = response.json()
+        for result in json["results"]:
+            self.assertIn(
+                result["org_unit_type"]["id"], [self.org_unit_type_hopital.id, self.org_unit_type_aire_sante.id]
+            )
+
+    def test_filter_by_org_unit(self):
         self.client.force_authenticate(self.user)
 
         response = self.client.get(f"/api/completeness_stats/?parent_id=1")
+        # The "parent" name is misleading and will be fixed soon
         json = response.json()
         # TODO: implement once the correct behaviour is clarified
 
     def test_combined_filters(self):
         pass
 
+    def test_pagination(self):
+        pass
+
+    def test_row_count(self):
+        self.client.force_authenticate(self.user)
+
+        response = self.client.get(f"/api/completeness_stats/")
+        json = response.json()
+        # One OU, 3 forms => 3 rows
+        self.assertEqual(len(json["results"]), 3)
+
+    def test_percentage_calculation(self):
+        pass
+
+    def test_percentage_calculation_with_zero_forms_to_fill(self):
+        pass
+
+    def test_count_filled_forms(self):
+        pass
+
+    def test_count_forms_to_fill(self):
+        pass
+
     # TODO: test that we can get N/A instead of divide by 0
     # TODO: Test the data is filtered by account
-    # TODO: Test that data can be filtered by OU type
     # TODO: Test that data can be filtered by parent OU
     # TODO: Test that data can be filtered by form_ids

@@ -209,6 +209,10 @@ const MESSAGES = defineMessages({
         defaultMessage: 'Home page',
         id: 'iaso.users.label.homePage',
     },
+    dropDownOuRs: {
+        defaultMessage: 'Org Unit Relationship',
+        id: 'iaso.users.label.dropDownOuRs',
+    },
 });
 
 export default MESSAGES;

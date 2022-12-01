@@ -27,10 +27,12 @@ const Filters = ({ baseUrl, params }) => {
         search: params.search,
         permissions: params.permissions,
         location: params.location,
+        dropDownOuRs: params.dropDownOuRs,
     });
     const [initialOrgUnitId, setInitialOrgUnitId] = useState(params?.location);
     const { data: dropdown, isFetching } = useGetPermissionsDropDown();
     const { data: initialOrgUnit } = useGetOrgUnit(initialOrgUnitId);
+    const { dropDownOuRs } = ['Parents', 'Children'];
 
     const handleSearch = useCallback(() => {
         if (filtersUpdated) {
@@ -112,6 +114,27 @@ const Filters = ({ baseUrl, params }) => {
                     </Box>
                 </Grid>
             </Grid>
+            <Grid
+                container
+                spacing={2}
+                justifyContent="flex"
+                alignItems="center"
+            >
+                <Grid item xs={2}>
+                    <InputComponent
+                        keyValue="dropDownOuRs"
+                        onChange={handleChange}
+                        value={dropDownOuRs}
+                        type="select"
+                        clearable
+                        options={dropDownOuRs}
+                        label={MESSAGES.dropDownOuRs}
+                        loading={isFetching}
+                        onEnterPressed={handleSearchPerms}
+                    />
+                </Grid>
+            </Grid>
+
             <Grid
                 container
                 spacing={2}

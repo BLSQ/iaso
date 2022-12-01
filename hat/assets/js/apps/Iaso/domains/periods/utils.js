@@ -138,7 +138,7 @@ export const getPrettyPeriod = (period, formatMessage, currentUser) => {
     const prettyPeriod = `${period.substring(4, 6)}-${periodClass.year}`;
     switch (periodClass.periodType) {
         case PERIOD_TYPE_DAY: {
-            return `${prettyPeriod}`;
+            return `${periodClass.year}-${periodClass.month}-${periodClass.day}`;
         }
         case PERIOD_TYPE_MONTH:
         case PERIOD_TYPE_SIX_MONTH: {

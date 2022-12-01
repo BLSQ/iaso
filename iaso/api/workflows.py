@@ -193,36 +193,67 @@ from django.contrib.auth.models import User
 
 
 def user_can_access_entity_type(entity_type: EntityType, user: User):
-    return user.iaso_profile.account.id == entity_type.account.id
+    if user.iaso_profile.account.id == entity_type.account.id:
+        return {"can_access": True}
+    else:
+        return {"can_access": False, "reason": "User profile account != entity_type account"}
 
 
 def user_can_access_all_forms_of_workflow_all_versions(entity_type: EntityType, user: User):
     if not entity_type.reference_form.projects.filter(account=user.iaso_profile.account).exists():
-        return False
+        return {
+            "can_access": False,
+            "reason": f"User {user.username} Cannot Access Reference Form for Workflow Version {WorkflowVersion.pk}",
+        }
 
     for v in entity_type.workflow.workflow_versions.all():
-        if not v.follow_ups.filter(forms__projects__account=user.iaso_profile.account).exists():
-            return False
+        if (
+            v.follow_ups.count() > 0
+            and not v.follow_ups.filter(forms__projects__account=user.iaso_profile.account).exists()
+        ):
+            return {
+                "can_access": False,
+                "reason": f"User {user.username} Cannot Access FollowUps Form for Workflow Version {v.pk}",
+            }
 
-        if not v.changes.filter(form__projects__account=user.iaso_profile.account).exists():
-            return False
+        if v.changes.count() > 0 and not v.changes.filter(form__projects__account=user.iaso_profile.account).exists():
+            return {
+                "can_access": False,
+                "reason": f"User {user.username} Cannot Access Changes Form for Workflow Version {v.pk}",
+            }
 
-    return True
+    return {"can_access": True}
 
 
 def user_can_access_all_forms_of_workflow_version(workflow_version: WorkflowVersion, user: User):
     if not workflow_version.workflow.entity_type.reference_form.projects.filter(
         account=user.iaso_profile.account
     ).exists():
-        return False
 
-    if not workflow_version.follow_ups.filter(forms__projects__account=user.iaso_profile.account).exists():
-        return False
+        return {
+            "can_access": False,
+            "reason": f"User {user.username} Cannot Access Reference Form for Workflow Version {WorkflowVersion.pk}",
+        }
 
-    if not workflow_version.changes.filter(form__projects__account=user.iaso_profile.account).exists():
-        return False
+    if (
+        workflow_version.follow_ups.count() > 0
+        and not workflow_version.follow_ups.filter(forms__projects__account=user.iaso_profile.account).exists()
+    ):
+        return {
+            "can_access": False,
+            "reason": f"User {user.username} Cannot Access FollowUps Form for Workflow Version {workflow_version.pk}",
+        }
 
-    return True
+    if (
+        workflow_version.changes.count() > 0
+        and not workflow_version.changes.filter(form__projects__account=user.iaso_profile.account).exists()
+    ):
+        return {
+            "can_access": False,
+            "reason": f"User {user.username} Cannot Access Changes Form for Workflow Version {workflow_version.pk}",
+        }
+
+    return {"can_access": True}
 
 
 class WorkflowVersionViewSet(GenericViewSet):
@@ -263,11 +294,13 @@ class WorkflowVersionViewSet(GenericViewSet):
         elif version_id is None:
             et = get_object_or_404(EntityType, pk=entity_type_id)
 
-            if not user_can_access_entity_type(et, request.user):
-                return Response(status=404, data="User doesn't have access to Entity Type")
+            r = user_can_access_entity_type(et, request.user)
+            if not r["can_access"]:
+                return Response(status=404, data=r["reason"])
 
-            if not user_can_access_all_forms_of_workflow_all_versions(et, request.user):
-                return Response(status=404, data="User doesn't have access to all workflow versions forms")
+            r2 = user_can_access_all_forms_of_workflow_all_versions(et, request.user)
+            if not r2["can_access"]:
+                return Response(status=404, data=r2["reason"])
 
             wf = get_or_create_wf_for_entity_type(et)
 
@@ -295,14 +328,16 @@ class WorkflowVersionViewSet(GenericViewSet):
         else:
             et = get_object_or_404(EntityType, pk=entity_type_id)
 
-            if not user_can_access_entity_type(et, request.user):
-                return Response(status=404, data="User doesn't have access to Entity Type")
+            r = user_can_access_entity_type(et, request.user)
+            if not r["can_access"]:
+                return Response(status=404, data=r["reason"])
 
             the_wf = get_object_or_404(Workflow, entity_type_id=entity_type_id)
             the_version = get_object_or_404(WorkflowVersion, workflow=the_wf, pk=version_id)
 
-            if not user_can_access_all_forms_of_workflow_version(the_version, request.user):
-                return Response(status=404, data="User doesn't have access to workflow version " + str(the_version.pk))
+            r2 = user_can_access_all_forms_of_workflow_version(the_version, request.user)
+            if not r2["can_access"]:
+                return Response(status=404, data=r2["reason"])
 
             serialized_data = WorkflowVersionDetailSerializer(the_version, context={"request": request}).data
             return Response(serialized_data)

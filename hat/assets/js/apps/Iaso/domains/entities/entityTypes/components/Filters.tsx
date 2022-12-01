@@ -61,7 +61,7 @@ const Filters: FunctionComponent<Props> = ({ params }) => {
 
     return (
         <>
-            <Grid container spacing={4}>
+            <Grid container spacing={2}>
                 <Grid item xs={12} sm={6} md={4}>
                     <InputComponent
                         keyValue="search"
@@ -72,7 +72,13 @@ const Filters: FunctionComponent<Props> = ({ params }) => {
                         onEnterPressed={handleSearch}
                     />
                 </Grid>
-
+            </Grid>
+            <Grid
+                container
+                spacing={2}
+                justifyContent="flex-end"
+                alignItems="center"
+            >
                 <Grid
                     item
                     xs={12}

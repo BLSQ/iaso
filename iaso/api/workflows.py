@@ -13,6 +13,9 @@ from rest_framework.response import Response
 from rest_framework.viewsets import GenericViewSet
 from rest_framework.decorators import action
 
+from django_filters import filters
+from django_filters.rest_framework import DjangoFilterBackend
+
 
 from drf_yasg import openapi
 from drf_yasg.utils import swagger_auto_schema
@@ -238,6 +241,8 @@ class WorkflowVersionViewSet(GenericViewSet):
     permission_classes = [permissions.IsAuthenticated, HasPermission("menupermissions.iaso_workflows")]
     serializer_class = WorkflowVersionSerializer
     pagination_class = WorkflowPaginator
+
+    # filter_backends = [filters.OrderingFilter, DjangoFilterBackend]
 
     def get_queryset(self):
         pk = self.kwargs.get("entity_type_id", None)

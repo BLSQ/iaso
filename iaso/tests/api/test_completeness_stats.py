@@ -31,6 +31,8 @@ class CompletenessStatsAPITestCase(APITestCase):
         cls.project_1.save()
         cls.org_unit_type_hopital = OrgUnitType.objects.get(pk=5)
         cls.org_unit_type_aire_sante = OrgUnitType.objects.get(pk=4)
+        cls.org_unit_type_district = OrgUnitType.objects.get(pk=3)
+        cls.form_hs_1.org_unit_types.add(cls.org_unit_type_district)
         cls.form_hs_1.org_unit_types.add(cls.org_unit_type_hopital)
         cls.form_hs_2.org_unit_types.add(cls.org_unit_type_hopital)
         cls.form_hs_3.org_unit_types.add(cls.org_unit_type_aire_sante)
@@ -64,9 +66,10 @@ class CompletenessStatsAPITestCase(APITestCase):
                         "org_unit_type": {"name": "Country", "id": 1},
                         "org_unit": {"name": "LaLaland", "id": 1},
                         "form": {"name": "Hydroponics study 1", "id": self.form_hs_1.id},
-                        "forms_filled": 1,
-                        "forms_to_fill": 1,
-                        "completeness_ratio": "100.0%",
+                        # "Hydroponics study 1" applies to OUt "District" and "Hospital"
+                        "forms_filled": 1,  # Only one form instance for "Hospital"
+                        "forms_to_fill": 3,  # 2 OUs of type "District" and 1 of type "Hospital" in the tree with LalaLand on top
+                        "completeness_ratio": "33.3%",
                     },
                     {
                         "parent_org_unit": None,
@@ -170,10 +173,11 @@ class CompletenessStatsAPITestCase(APITestCase):
     def test_filter_by_org_unit(self):
         self.client.force_authenticate(self.user)
 
-        response = self.client.get(f"/api/completeness_stats/?parent_id=1")
+        response = self.client.get(f"/api/completeness_stats/?parent_id=7")
         # The "parent" name is misleading and will be fixed soon
         json = response.json()
         # TODO: implement once the correct behaviour is clarified
+        pass
 
     def test_combined_filters(self):
         pass
@@ -195,11 +199,37 @@ class CompletenessStatsAPITestCase(APITestCase):
     def test_percentage_calculation_with_zero_forms_to_fill(self):
         pass
 
-    def test_count_filled_forms(self):
-        pass
+    def test_counts_include_current_ou_and_children(self):
+        """The forms_to_fill count include the forms for the OU and all its children"""
+        self.client.force_authenticate(self.user)
 
-    def test_count_forms_to_fill(self):
-        pass
+        # We filter to get only the district A.A
+        response = self.client.get(f"/api/completeness_stats/?parent_id=4")
+        json = response.json()
+
+        result_form_1 = next(result for result in json["results"] if result["form"]["id"] == self.form_hs_1.id)
+        # Form 1 targets both district (ou 4) and hospital (there's one under ou 4: ou 7), so 2 forms to fill
+        self.assertEqual(result_form_1["forms_to_fill"], 2)
+        # But only one form is filled (for the hospital)
+        self.assertEqual(result_form_1["forms_filled"], 1)
+        # Let'scheck the percentage calculation is correct
+        self.assertEqual(result_form_1["completeness_ratio"], "50.0%")
+
+    def test_counts_dont_include_parents(self):
+        self.client.force_authenticate(self.user)
+        # We have the same situation as in test_counts_include_current_ou_and_children(), except that we filter to only
+        # get the hospital (ou 7). Therefore, the form_to_fill count doens't include the form for the district (ou 4)
+        # because it's a parent of the hospital (ou 7), and the count is 1/1
+        response = self.client.get(f"/api/completeness_stats/?parent_id=7")
+        json = response.json()
+
+        result_form_1 = next(result for result in json["results"] if result["form"]["id"] == self.form_hs_1.id)
+        # Form 1 targets both district (ou 4) and hospital (there's one under ou 4: ou 7), so 2 forms to fill
+        self.assertEqual(result_form_1["forms_to_fill"], 1)
+        # But only one form is filled (for the hospital)
+        self.assertEqual(result_form_1["forms_filled"], 1)
+        # Let'scheck the percentage calculation is correct
+        self.assertEqual(result_form_1["completeness_ratio"], "100.0%")
 
     # TODO: test that we can get N/A instead of divide by 0
     # TODO: Test the data is filtered by account

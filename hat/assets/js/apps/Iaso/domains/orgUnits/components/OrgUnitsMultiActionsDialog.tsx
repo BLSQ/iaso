@@ -61,6 +61,7 @@ const useStyles = makeStyles(theme => ({
     },
     warningTitle: {
         display: 'flex',
+        alignItems: 'center',
     },
     warningIcon: {
         display: 'inline-block',

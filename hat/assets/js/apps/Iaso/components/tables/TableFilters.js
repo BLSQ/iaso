@@ -63,7 +63,7 @@ const Filters = ({
     };
     return (
         <>
-            <Grid container spacing={4}>
+            <Grid container spacing={2}>
                 {Array(3)
                     .fill()
                     .map((x, i) => i + 1)
@@ -72,7 +72,7 @@ const Filters = ({
                             container
                             item
                             xs={12}
-                            md={4}
+                            md={3}
                             className={classes.column}
                             key={`column-${column}`}
                         >
@@ -87,21 +87,24 @@ const Filters = ({
                             />
                         </Grid>
                     ))}
+
+                <Grid item container justifyContent="flex-end" xs={12} md={3}>
+                    <Box mb={2} mt={2}>
+                        {extraComponent}
+                        <Button
+                            data-test="search-button"
+                            disabled={!filtersUpdated}
+                            variant="contained"
+                            className={classes.button}
+                            color="primary"
+                            onClick={() => handleSearch()}
+                        >
+                            <SearchIcon className={classes.buttonIcon} />
+                            <FormattedMessage {...MESSAGES.search} />
+                        </Button>
+                    </Box>
+                </Grid>
             </Grid>
-            <Box mb={2} mt={2} display="flex" justifyContent="flex-end">
-                {extraComponent}
-                <Button
-                    data-test="search-button"
-                    disabled={!filtersUpdated}
-                    variant="contained"
-                    className={classes.button}
-                    color="primary"
-                    onClick={() => handleSearch()}
-                >
-                    <SearchIcon className={classes.buttonIcon} />
-                    <FormattedMessage {...MESSAGES.search} />
-                </Button>
-            </Box>
         </>
     );
 };

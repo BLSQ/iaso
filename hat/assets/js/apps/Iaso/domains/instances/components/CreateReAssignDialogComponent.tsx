@@ -54,11 +54,13 @@ export const CreateReAssignDialogComponent: FunctionComponent<Props> = ({
                 initialPeriod,
                 formType.periodType,
             );
-            initialPeriodErrors.push(
-                formatMessage(MESSAGES.initialPeriodError, {
-                    period: currentInstance.period,
-                }),
-            );
+            if (!isOriginalPeriodValid) {
+                initialPeriodErrors.push(
+                    formatMessage(MESSAGES.initialPeriodError, {
+                        period: currentInstance.period,
+                    }),
+                );
+            }
             return {
                 orgUnit: { value: currentInstance.org_unit, errors: [] },
                 period: { value: initialPeriod, errors: initialPeriodErrors },

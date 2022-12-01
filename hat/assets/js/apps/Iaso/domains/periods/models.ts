@@ -453,8 +453,6 @@ export class Period {
         if (period.includes('July')) {
             return this.nextFinancialJuly(period);
         }
-        // TODO FIXME
-        return period;
 
         throw new Error(`unsupported period format ${period}`);
     }
@@ -475,8 +473,6 @@ export class Period {
         if (period.includes('July')) {
             return this.previousFinancialJuly(period);
         }
-        // TODO FIXME
-        return period;
 
         throw new Error(`unsupported period format ${period}`);
     }

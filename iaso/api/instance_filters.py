@@ -4,12 +4,20 @@ from typing import Dict, Any, Optional
 from django.http import QueryDict
 
 from iaso.models import Form
-from iaso.periods import Period
+from iaso.periods import Period, DayPeriod
 
 
 def parse_instance_filters(req: QueryDict) -> Dict[str, Any]:
+    periods_bound = None
     if req.get("startPeriod", None) or req.get("endPeriod", None):
-        periods = Period.range_string_with_sub_periods(req.get("startPeriod", None), req.get("endPeriod", None))
+        # as a compromise for now to limit the performance impact when we search for higher level we don't include
+        #  the day periods
+        from_period, to_period = Period.bound_range(req.get("startPeriod", None), req.get("endPeriod", None))
+        if isinstance(from_period, DayPeriod) or isinstance(to_period, DayPeriod):
+            periods = None
+            periods_bound = str(from_period), str(to_period)
+        else:
+            periods = Period.range_string_with_sub_periods()
     else:
         # TODO: the following line feels weird, is it really doing what we want?
         periods = req.get("period_ids", req.get("periods", req.get("period", None)))  # type: ignore
@@ -32,6 +40,7 @@ def parse_instance_filters(req: QueryDict) -> Dict[str, Any]:
         "org_unit_parent_id": req.get("orgUnitParentId", None),
         "org_unit_id": req.get("orgUnitId", None),
         "period_ids": periods,
+        "periods_bound": periods_bound,
         "search": req.get("search", None),
         "status": req.get("status", None),
         "from_date": req.get("dateFrom", None),

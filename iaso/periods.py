@@ -39,7 +39,9 @@ class Period:
             return QuarterPeriod(period_string)
         elif period_type == PERIOD_TYPE_SIX_MONTH:
             return SemesterPeriod(period_string)
-        raise ValueError("unsupported period type: {period_type}")
+        elif period_type == PERIOD_TYPE_DAY:
+            return DayPeriod(period_string)
+        raise ValueError(f"unsupported period type: {period_type}")
 
     @staticmethod
     def bound_range(from_string: Optional[str], to_string: Optional[str]) -> Tuple["Period", "Period"]:
@@ -65,8 +67,7 @@ class Period:
         return [str(p) for p in range_periods]
 
     @staticmethod
-    def range_string_with_sub_periods(from_string: Optional[str], to_string: Optional[str]) -> List[str]:
-        from_period, to_period = Period.bound_range(from_string, to_string)
+    def range_string_with_sub_periods(from_period: Optional["Period"], to_period: Optional["Period"]) -> List[str]:
         range_periods = from_period.range_period_to(to_period)
         sub_periods = []
         for period in range_periods:
@@ -230,6 +231,27 @@ class MonthPeriod(Period):
             n_year = year
 
         return MonthPeriod.from_parts(n_year, n_month)
+
+    def gen_sub_periods(self):
+        return []
+
+
+class DayPeriod(Period):
+
+    LOWER_BOUND = None
+    HIGHER_BOUND = None
+
+    @staticmethod
+    def from_parts(year, month, day):
+        return DayPeriod(f"{year:04}{month:02}:{day:02}")
+
+    @property
+    def parts(self):
+        year, month, day = int(self.value[:4]), int(self.value[4:6]), int(self.value[6:])
+        return year, month
+
+    def next_period(self):
+        raise Exception
 
     def gen_sub_periods(self):
         return []

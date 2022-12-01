@@ -631,6 +631,7 @@ class InstanceQuerySet(models.QuerySet):
         org_unit_parent_id=None,
         org_unit_id=None,
         period_ids=None,
+        periods_bound=None,
         status=None,
         instance_id=None,
         search=None,
@@ -652,6 +653,11 @@ class InstanceQuerySet(models.QuerySet):
             if isinstance(period_ids, str):
                 period_ids = period_ids.split(",")
             queryset = queryset.filter(period__in=period_ids)
+        if periods_bound:
+            if periods_bound[0]:
+                queryset = queryset.filter(period__gte=periods_bound[0])
+            if periods_bound[1]:
+                queryset = queryset.filter(period__lte=periods_bound[1])
 
         if instance_id:
             queryset = queryset.filter(id=instance_id)

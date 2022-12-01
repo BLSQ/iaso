@@ -32,7 +32,6 @@ import { WorkflowBaseInfo } from './components/WorkflowBaseInfo';
 
 import WidgetPaper from '../../components/papers/WidgetPaperComponent';
 import { TableWithDeepLink } from '../../components/tables/TableWithDeepLink';
-
 import { useGetChangesColumns, useGetFollowUpsColumns } from './config';
 
 type Router = {
@@ -114,7 +113,6 @@ export const Details: FunctionComponent<Props> = ({ router }) => {
                         </WidgetPaper>
                     </Grid>
                 </Grid>
-
                 <Box mt={2}>
                     <WidgetPaper
                         className={classes.fullWidth}

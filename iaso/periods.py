@@ -67,7 +67,7 @@ class Period:
         return [str(p) for p in range_periods]
 
     @staticmethod
-    def range_string_with_sub_periods(from_period: Optional["Period"], to_period: Optional["Period"]) -> List[str]:
+    def range_string_with_sub_periods(from_period: "Period", to_period: "Period") -> List[str]:
         range_periods = from_period.range_period_to(to_period)
         sub_periods = []
         for period in range_periods:

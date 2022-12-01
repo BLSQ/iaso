@@ -15,9 +15,9 @@ def parse_instance_filters(req: QueryDict) -> Dict[str, Any]:
         from_period, to_period = Period.bound_range(req.get("startPeriod", None), req.get("endPeriod", None))
         if isinstance(from_period, DayPeriod) or isinstance(to_period, DayPeriod):
             periods = None
-            periods_bound = str(from_period), str(to_period)
+            periods_bound = str(from_period) if from_period else None, str(to_period) if to_period else None
         else:
-            periods = Period.range_string_with_sub_periods()
+            periods = Period.range_string_with_sub_periods(from_period, to_period)
     else:
         # TODO: the following line feels weird, is it really doing what we want?
         periods = req.get("period_ids", req.get("periods", req.get("period", None)))  # type: ignore

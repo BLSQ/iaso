@@ -119,12 +119,13 @@ const Filters = ({ baseUrl, params }) => {
                     <InputComponent
                         keyValue="orgUnitTypes"
                         onChange={handleChange}
-                        value={filters.orgunitTypes}
+                        value={filters.orgUnitTypes}
                         type="select"
-                        options={orgUnitTypeDropdown || []}
+                        options={orgUnitTypeDropdown}
                         label={MESSAGES.orgUnitsType}
                         loading={isFetchingOuType}
                         onEnterPressed={handleSearchPerms}
+                        clearable
                     />
                 </Grid>
             </Grid>

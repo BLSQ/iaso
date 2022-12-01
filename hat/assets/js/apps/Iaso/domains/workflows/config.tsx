@@ -73,13 +73,11 @@ export const useGetFollowUpsColumns = (
     const columns: Array<Column> = [
         {
             Header: formatMessage(MESSAGES.condition),
-            id: 'condition',
             accessor: 'condition',
         },
         {
             Header: formatMessage(MESSAGES.forms),
-            id: 'forms',
-            sortable: false,
+            accessor: 'forms',
             Cell: settings => {
                 const { forms } = settings.row.original;
                 return forms.map((form, index) => (
@@ -93,21 +91,15 @@ export const useGetFollowUpsColumns = (
         {
             Header: formatMessage(MESSAGES.created_at),
             accessor: 'created_at',
-            sortable: false,
-            id: 'created_at',
             Cell: DateCell,
         },
         {
             Header: formatMessage(MESSAGES.updated_at),
             accessor: 'updated_at',
-            sortable: false,
-            id: 'updated_at',
             Cell: DateCell,
         },
         {
             Header: formatMessage(MESSAGES.actions),
-            resizable: false,
-            sortable: false,
             accessor: 'actions',
             Cell: settings => {
                 return (

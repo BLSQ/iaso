@@ -137,17 +137,10 @@ export const Details: FunctionComponent<Props> = ({ router }) => {
                         <SortableTable
                             items={followUps}
                             onChange={handleSortChange}
-                            handle
                             renderItem={props => (
                                 <SortableFollowUp {...props} />
                             )}
-                            headers={[
-                                '',
-                                formatMessage(MESSAGES.forms),
-                                formatMessage(MESSAGES.created_at),
-                                formatMessage(MESSAGES.updated_at),
-                                // formatMessage(MESSAGES.actions),
-                            ]}
+                            columns={followUpsColumns}
                         />
                         <Table
                             marginTop={false}

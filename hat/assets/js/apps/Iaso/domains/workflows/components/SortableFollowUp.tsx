@@ -1,6 +1,5 @@
 import React, { FunctionComponent } from 'react';
-import DragIndicatorIcon from '@material-ui/icons/DragIndicator';
-import { TableCell, IconButton, Box } from '@material-ui/core';
+import { TableCell, Box } from '@material-ui/core';
 
 import { DateCell } from '../../../components/Cells/DateTimeCell';
 import { LinkToForm } from '../../forms/components/LinkToForm';
@@ -9,30 +8,20 @@ import { FollowUps } from '../types/workflows';
 
 type Props = {
     item: FollowUps;
-    index: number;
-    handleProps?: any;
 };
 
-export const SortableFollowUp: FunctionComponent<Props> = ({
-    item,
-    index,
-    handleProps,
-}) => {
+export const SortableFollowUp: FunctionComponent<Props> = ({ item }) => {
     if (!item) return null;
-    const { forms, created_at: createdAt, updated_at: updatedAt } = item;
+    const {
+        forms,
+        created_at: createdAt,
+        updated_at: updatedAt,
+        condition,
+    } = item;
     return (
         <>
-            <TableCell width={10}>
-                <IconButton
-                    data-sortable-index={index}
-                    component="span"
-                    disableRipple
-                    {...handleProps}
-                >
-                    <DragIndicatorIcon />
-                </IconButton>
-            </TableCell>
-            <TableCell>
+            <TableCell align="center">{condition}</TableCell>
+            <TableCell align="center">
                 {forms.map((form, ind) => (
                     <Box key={form.id}>
                         <LinkToForm formId={form.id} formName={form.name} />
@@ -40,8 +29,13 @@ export const SortableFollowUp: FunctionComponent<Props> = ({
                     </Box>
                 ))}
             </TableCell>
-            <TableCell>{DateCell({ value: createdAt })}</TableCell>
-            <TableCell>{DateCell({ value: updatedAt })}</TableCell>
+            <TableCell align="center">
+                {DateCell({ value: createdAt })}
+            </TableCell>
+            <TableCell align="center">
+                {DateCell({ value: updatedAt })}
+            </TableCell>
+            <TableCell align="center" />
         </>
     );
 };

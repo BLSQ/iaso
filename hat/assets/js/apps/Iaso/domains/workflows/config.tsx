@@ -79,8 +79,8 @@ export const useGetFollowUpsColumns = (
             Header: formatMessage(MESSAGES.forms),
             accessor: 'forms',
             Cell: settings => {
-                const { forms } = settings.row.original;
-                return forms.map((form, index) => (
+                const forms = settings.value;
+                return forms?.map((form, index) => (
                     <Box key={form.id}>
                         <LinkToForm formId={form.id} formName={form.name} />
                         {index + 1 < forms.length ? ', ' : ''}
@@ -100,11 +100,11 @@ export const useGetFollowUpsColumns = (
         },
         {
             Header: formatMessage(MESSAGES.actions),
-            accessor: 'actions',
+            accessor: 'id',
             Cell: settings => {
                 return (
                     <IconButtonComponent
-                        url={`${baseUrls.workflowDetail}/entityTypeId/${entityTypeId}/versionId/${versionId}/followUp/${settings.row.original.id}`}
+                        url={`${baseUrls.workflowDetail}/entityTypeId/${entityTypeId}/versionId/${versionId}/followUp/${settings.value}`}
                         icon="remove-red-eye"
                         tooltipMessage={MESSAGES.see}
                     />

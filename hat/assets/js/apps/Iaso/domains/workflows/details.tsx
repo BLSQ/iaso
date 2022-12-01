@@ -14,11 +14,7 @@ import {
     // @ts-ignore
     formatThousand,
     // @ts-ignore
-    Table,
-    // @ts-ignore
     SortableTable,
-    // @ts-ignore
-    SortableList,
 } from 'bluesquare-components';
 import { Box, Grid, makeStyles } from '@material-ui/core';
 import { useDispatch, useSelector } from 'react-redux';
@@ -33,8 +29,6 @@ import { useGetWorkflow } from './hooks/requests/useGetWorkflows';
 import { WorkflowDetail, WorkflowParams, FollowUps } from './types/workflows';
 
 import { WorkflowBaseInfo } from './components/WorkflowBaseInfo';
-import { SortableItem } from './components/SortableItem';
-import { SortableFollowUp } from './components/SortableFollowUp';
 
 import WidgetPaper from '../../components/papers/WidgetPaperComponent';
 import { TableWithDeepLink } from '../../components/tables/TableWithDeepLink';
@@ -120,14 +114,6 @@ export const Details: FunctionComponent<Props> = ({ router }) => {
                         </WidgetPaper>
                     </Grid>
                 </Grid>
-                <Box mt={2} mb={2} width="30%">
-                    <SortableList
-                        items={followUps}
-                        onChange={handleSortChange}
-                        handle
-                        renderItem={props => <SortableItem {...props} />}
-                    />
-                </Box>
 
                 <Box mt={2}>
                     <WidgetPaper
@@ -137,39 +123,8 @@ export const Details: FunctionComponent<Props> = ({ router }) => {
                         <SortableTable
                             items={followUps}
                             onChange={handleSortChange}
-                            renderItem={props => (
-                                <SortableFollowUp {...props} />
-                            )}
                             columns={followUpsColumns}
                         />
-                        <Table
-                            marginTop={false}
-                            countOnTop={false}
-                            elevation={0}
-                            showPagination={false}
-                            baseUrl={baseUrls.workflowDetail}
-                            data={workflow?.follow_ups ?? []}
-                            pages={1}
-                            defaultSorted={[{ id: 'order', desc: false }]}
-                            columns={followUpsColumns}
-                            count={workflow?.follow_ups.length}
-                            params={params}
-                            extraProps={{
-                                isLoading,
-                            }}
-                        />
-                        <Box
-                            display="flex"
-                            justifyContent="flex-end"
-                            pr={2}
-                            pb={2}
-                            mt={-2}
-                        >
-                            {`${formatThousand(
-                                workflow?.follow_ups.length ?? 0,
-                            )} `}
-                            {formatMessage(MESSAGES.results)}
-                        </Box>
                     </WidgetPaper>
                 </Box>
                 <Box mt={2}>

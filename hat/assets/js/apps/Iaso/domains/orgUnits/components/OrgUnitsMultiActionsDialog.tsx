@@ -9,7 +9,6 @@ import {
     Button,
     makeStyles,
     Box,
-    Grid,
     Typography,
 } from '@material-ui/core';
 import {
@@ -20,6 +19,7 @@ import {
     // @ts-ignore
     useSafeIntl,
 } from 'bluesquare-components';
+import ReportIcon from '@material-ui/icons/Report';
 // @ts-ignore
 import { useCurrentUser } from 'Iaso/utils/usersUtils';
 import { useGetOrgUnitTypes } from '../hooks/requests/useGetOrgUnitTypes';
@@ -58,6 +58,14 @@ const useStyles = makeStyles(theme => ({
     action: {
         paddingBottom: theme.spacing(2),
         paddingRight: theme.spacing(2),
+    },
+    warningTitle: {
+        display: 'flex',
+    },
+    warningIcon: {
+        display: 'inline-block',
+        marginLeft: theme.spacing(1),
+        marginRight: theme.spacing(1),
     },
 }));
 
@@ -320,30 +328,31 @@ export const OrgUnitsMultiActionsDialog: FunctionComponent<Props> = ({
                     </Button>
 
                     <ConfirmDialog
+                        withDivider
                         btnMessage={formatMessage(MESSAGES.validate)}
+                        message={
+                            <Box display="flex" justifyContent="center">
+                                <Typography variant="body2" color="error">
+                                    {formatMessage(MESSAGES.bulkChangeCount, {
+                                        count: `${formatThousand(selectCount)}`,
+                                    })}
+                                </Typography>
+                            </Box>
+                        }
                         question={
-                            <Grid direction="column" container>
-                                <Grid item>
-                                    <Box>
-                                        {formatMessage(
-                                            MESSAGES.confirmMultiChange,
-                                        )}
-                                        <>🚨</>
-                                    </Box>
-                                </Grid>
-                                <Grid item>
-                                    <Box>
-                                        <Typography variant="body2">
-                                            {formatMessage(
-                                                MESSAGES.bulkChangeCount,
-                                                {
-                                                    count: `${selectedItems.length}`,
-                                                },
-                                            )}
-                                        </Typography>
-                                    </Box>
-                                </Grid>
-                            </Grid>
+                            <Box className={classes.warningTitle}>
+                                <ReportIcon
+                                    className={classes.warningIcon}
+                                    color="error"
+                                    fontSize="large"
+                                />
+                                {formatMessage(MESSAGES.confirmMultiChange)}
+                                <ReportIcon
+                                    className={classes.warningIcon}
+                                    color="error"
+                                    fontSize="large"
+                                />
+                            </Box>
                         }
                         confirm={() => saveAndReset()}
                         btnDisabled={isSaveDisabled()}

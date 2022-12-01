@@ -27,7 +27,7 @@ export const Filters: FunctionComponent<Props> = ({ params }) => {
         useFilterState({ baseUrl, params });
 
     const theme = useTheme();
-    const isMobileLayout = useMediaQuery(theme.breakpoints.down('md'));
+    const isLargeLayout = useMediaQuery(theme.breakpoints.up('md'));
 
     return (
         <>
@@ -75,7 +75,7 @@ export const Filters: FunctionComponent<Props> = ({ params }) => {
                 </Grid>
 
                 <Grid container item xs={12} md={3} justifyContent="flex-end">
-                    <Box mt={!isMobileLayout && 2}>
+                    <Box mt={isLargeLayout ? 2 : 0}>
                         <FilterButton
                             disabled={!filtersUpdated}
                             onFilter={handleSearch}

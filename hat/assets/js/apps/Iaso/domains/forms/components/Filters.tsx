@@ -3,6 +3,7 @@ import React, { useState, FunctionComponent, useEffect } from 'react';
 import {
     Grid,
     Button,
+    Box,
     makeStyles,
     useMediaQuery,
     useTheme,
@@ -55,7 +56,7 @@ const Filters: FunctionComponent<Props> = ({
     );
 
     const theme = useTheme();
-    const isMobileLayout = useMediaQuery(theme.breakpoints.down('md'));
+    const isLargeLayout = useMediaQuery(theme.breakpoints.up('md'));
 
     useEffect(() => {
         if (filters.search !== undefined) {
@@ -96,19 +97,21 @@ const Filters: FunctionComponent<Props> = ({
                     justifyContent="flex-end"
                     alignItems="center"
                 >
-                    <Button
-                        data-test="search-button"
-                        disabled={
-                            (!showDeleted && !filtersUpdated) || hasErrors
-                        }
-                        variant="contained"
-                        className={classes.button}
-                        color="primary"
-                        onClick={() => handleSearch()}
-                    >
-                        <SearchIcon className={classes.buttonIcon} />
-                        {formatMessage(MESSAGES.search)}
-                    </Button>
+                    <Box mt={isLargeLayout ? 2 : 0}>
+                        <Button
+                            data-test="search-button"
+                            disabled={
+                                (!showDeleted && !filtersUpdated) || hasErrors
+                            }
+                            variant="contained"
+                            className={classes.button}
+                            color="primary"
+                            onClick={() => handleSearch()}
+                        >
+                            <SearchIcon className={classes.buttonIcon} />
+                            {formatMessage(MESSAGES.search)}
+                        </Button>
+                    </Box>
                 </Grid>
             </Grid>
             <Grid container>

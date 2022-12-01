@@ -196,7 +196,7 @@ const InstancesFiltersComponent = ({
         <div className={classes.marginBottomBig}>
             <UserOrgUnitRestriction />
             <Grid container spacing={4}>
-                <Grid item xs={4}>
+                <Grid item xs={12} md={3}>
                     <InputComponent
                         keyValue="search"
                         onChange={handleFormChange}
@@ -266,7 +266,7 @@ const InstancesFiltersComponent = ({
                         loading={fetchingOrgUnitTypes}
                     />
                 </Grid>
-                <Grid item xs={4}>
+                <Grid item xs={12} md={3}>
                     <InputComponent
                         keyValue="status"
                         clearable
@@ -309,7 +309,7 @@ const InstancesFiltersComponent = ({
                         label={MESSAGES.showDeleted}
                     />
                 </Grid>
-                <Grid item xs={4}>
+                <Grid item xs={12} md={3}>
                     <DatesRange
                         xs={12}
                         sm={12}
@@ -364,39 +364,42 @@ const InstancesFiltersComponent = ({
                         </Box>
                     )}
                 </Grid>
+
+                <Grid
+                    item
+                    xs={12}
+                    md={3}
+                    container
+                    justifyContent="flex-end"
+                    alignItems="flex-start"
+                >
+                    <Box mt={2}>
+                        <Button
+                            disabled={
+                                !isInstancesFilterUpdated ||
+                                periodError ||
+                                startPeriodError ||
+                                endPeriodError ||
+                                hasLocationLimitError
+                            }
+                            variant="contained"
+                            className={classes.button}
+                            color="primary"
+                            data-test="search-button"
+                            onClick={() => handleSearch()}
+                        >
+                            <Search className={classes.buttonIcon} />
+                            {formatMessage(MESSAGES.search)}
+                        </Button>
+                    </Box>
+                </Grid>
             </Grid>
             <Grid
                 container
                 spacing={4}
                 justifyContent="flex-end"
                 alignItems="center"
-            >
-                <Grid
-                    item
-                    xs={2}
-                    container
-                    justifyContent="flex-end"
-                    alignItems="center"
-                >
-                    <Button
-                        disabled={
-                            !isInstancesFilterUpdated ||
-                            periodError ||
-                            startPeriodError ||
-                            endPeriodError ||
-                            hasLocationLimitError
-                        }
-                        variant="contained"
-                        className={classes.button}
-                        color="primary"
-                        data-test="search-button"
-                        onClick={() => handleSearch()}
-                    >
-                        <Search className={classes.buttonIcon} />
-                        {formatMessage(MESSAGES.search)}
-                    </Button>
-                </Grid>
-            </Grid>
+            />
         </div>
     );
 };

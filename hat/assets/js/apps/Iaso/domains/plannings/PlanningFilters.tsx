@@ -1,4 +1,4 @@
-import { Box, Grid } from '@material-ui/core';
+import { Box, Grid, useTheme, useMediaQuery } from '@material-ui/core';
 import React, { FunctionComponent } from 'react';
 // @ts-ignore
 import { useSafeIntl } from 'bluesquare-components';
@@ -29,11 +29,13 @@ export const PlanningFilters: FunctionComponent<Props> = ({ params }) => {
     const { filters, handleSearch, handleChange, filtersUpdated } =
         useFilterState({ baseUrl, params });
     const { formatMessage } = useSafeIntl();
+    const theme = useTheme();
+    const isLargeLayout = useMediaQuery(theme.breakpoints.up('md'));
     return (
         <>
             <Grid container spacing={0}>
-                <Grid container item xs={10} lg={11} spacing={2}>
-                    <Grid item xs={3}>
+                <Grid container spacing={2}>
+                    <Grid item xs={12} md={3}>
                         <InputComponent
                             keyValue="search"
                             onChange={handleChange}
@@ -43,7 +45,7 @@ export const PlanningFilters: FunctionComponent<Props> = ({ params }) => {
                             onEnterPressed={handleSearch}
                         />
                     </Grid>
-                    <Grid item xs={6}>
+                    <Grid item xs={12} md={3}>
                         <DatesRange
                             onChangeDate={handleChange}
                             dateFrom={filters.dateFrom}
@@ -52,7 +54,7 @@ export const PlanningFilters: FunctionComponent<Props> = ({ params }) => {
                             labelTo={MESSAGES.endDateUntil}
                         />
                     </Grid>
-                    <Grid item xs={3}>
+                    <Grid item xs={12} md={3}>
                         <InputComponent
                             type="select"
                             multi={false}
@@ -64,8 +66,8 @@ export const PlanningFilters: FunctionComponent<Props> = ({ params }) => {
                         />
                     </Grid>
                 </Grid>
-                <Grid container item xs={2} lg={1} justifyContent="flex-end">
-                    <Box mt={2} mr={-2}>
+                <Grid container item xs={12} justifyContent="flex-end">
+                    <Box mt={isLargeLayout ? 0 : 2} mb={2}>
                         <FilterButton
                             disabled={!filtersUpdated}
                             onFilter={handleSearch}

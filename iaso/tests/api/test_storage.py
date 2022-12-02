@@ -1355,7 +1355,18 @@ class StorageAPITestCase(APITestCase):
         self.assertEqual(len(data), 4)  # 3 rows + header
         self.assertListEqual(
             data[1],
-            ["EXISTING_STORAGE", "NFC", "2020-02-02 02:02:02", "2020-02-02 02:02:02", "OK", "", "", "", "", ""],
+            [
+                "EXISTING_STORAGE",
+                "NFC",
+                "2020-02-02 02:02:02",
+                "2020-02-02 02:02:02",
+                "OK",
+                "",
+                "",
+                "2020-02-02 02:02:02+00:00",
+                "",
+                "",
+            ],
         )
         self.assertListEqual(
             data[2],

@@ -7,13 +7,10 @@ import {
     useMediaQuery,
     useTheme,
     Box,
-    Tooltip,
 } from '@material-ui/core';
 import AppBar from '@material-ui/core/AppBar';
 import Toolbar from '@material-ui/core/Toolbar';
 import Typography from '@material-ui/core/Typography';
-
-import { useSafeIntl } from 'bluesquare-components';
 
 import MenuIcon from '@material-ui/icons/Menu';
 import ArrowBackIcon from '@material-ui/icons/ArrowBack';
@@ -22,10 +19,9 @@ import PropTypes from 'prop-types';
 
 import { toggleSidebarMenu } from '../../redux/sidebarMenuReducer';
 import { ThemeConfigContext } from '../../domains/app/contexts/ThemeConfigContext.tsx';
-import getDisplayName, { useCurrentUser } from '../../utils/usersUtils.ts';
-import { getDefaultSourceVersion } from '../../domains/dataSources/utils';
+import { useCurrentUser } from '../../utils/usersUtils.ts';
 
-import MESSAGES from '../../domains/app/components/messages';
+import { CurrentUserInfos } from './CurrentUser/index.tsx';
 
 const styles = theme => ({
     menuButton: {
@@ -45,7 +41,9 @@ const useStyles = makeStyles(styles);
 
 function TopBar(props) {
     const { title, children, displayBackButton, goBack } = props;
+    // const { formatMessage } = useSafeIntl();
     const classes = useStyles();
+
     const { APP_TITLE } = useContext(ThemeConfigContext);
     // Set the page title from the top bar title.
     React.useEffect(() => {
@@ -56,9 +54,8 @@ function TopBar(props) {
         () => dispatch(toggleSidebarMenu()),
         [dispatch],
     );
-    const intl = useSafeIntl();
+
     const currentUser = useCurrentUser();
-    const defaultSourceVersion = getDefaultSourceVersion(currentUser);
     const theme = useTheme();
     const isMobileLayout = useMediaQuery(theme.breakpoints.down('md'));
 
@@ -122,37 +119,9 @@ function TopBar(props) {
                                     justifyContent="flex-end"
                                     flexDirection="column"
                                 >
-                                    <Tooltip
-                                        classes={{
-                                            popper: classes.popperFixed,
-                                        }}
-                                        placement="bottom"
-                                        title={`${intl.formatMessage(
-                                            MESSAGES.source,
-                                        )}: ${
-                                            (defaultSourceVersion.source &&
-                                                defaultSourceVersion.source
-                                                    .name) ||
-                                            '-'
-                                        }, ${intl.formatMessage(
-                                            MESSAGES.version,
-                                        )} ${
-                                            (defaultSourceVersion.version &&
-                                                defaultSourceVersion.version
-                                                    .number) ||
-                                            '-'
-                                        }`}
-                                    >
-                                        <div>
-                                            <Typography variant="body2">
-                                                {currentUser.user_name}
-                                            </Typography>
-
-                                            <Typography variant="body2">
-                                                {currentUser.account.name}
-                                            </Typography>
-                                        </div>
-                                    </Tooltip>
+                                    <CurrentUserInfos
+                                        currentUser={currentUser}
+                                    />
                                 </Box>
                             </Grid>
                         )}

@@ -7,10 +7,13 @@ import {
     useMediaQuery,
     useTheme,
     Box,
+    Tooltip,
 } from '@material-ui/core';
 import AppBar from '@material-ui/core/AppBar';
 import Toolbar from '@material-ui/core/Toolbar';
 import Typography from '@material-ui/core/Typography';
+
+import { useSafeIntl } from 'bluesquare-components';
 
 import MenuIcon from '@material-ui/icons/Menu';
 import ArrowBackIcon from '@material-ui/icons/ArrowBack';
@@ -20,6 +23,9 @@ import PropTypes from 'prop-types';
 import { toggleSidebarMenu } from '../../redux/sidebarMenuReducer';
 import { ThemeConfigContext } from '../../domains/app/contexts/ThemeConfigContext.tsx';
 import getDisplayName, { useCurrentUser } from '../../utils/usersUtils.ts';
+import { getDefaultSourceVersion } from '../../domains/dataSources/utils';
+
+import MESSAGES from '../../domains/app/components/messages';
 
 const styles = theme => ({
     menuButton: {
@@ -50,7 +56,9 @@ function TopBar(props) {
         () => dispatch(toggleSidebarMenu()),
         [dispatch],
     );
+    const intl = useSafeIntl();
     const currentUser = useCurrentUser();
+    const defaultSourceVersion = getDefaultSourceVersion(currentUser);
     const theme = useTheme();
     const isMobileLayout = useMediaQuery(theme.breakpoints.down('md'));
 
@@ -114,21 +122,47 @@ function TopBar(props) {
                                     justifyContent="flex-end"
                                     flexDirection="column"
                                 >
-                                    <Typography
-                                        variant="body2"
-                                        title={getDisplayName(currentUser)}
+                                    <Tooltip
+                                        classes={{
+                                            popper: classes.popperFixed,
+                                        }}
+                                        placement="bottom"
+                                        title={`${intl.formatMessage(
+                                            MESSAGES.source,
+                                        )}: ${
+                                            (defaultSourceVersion.source &&
+                                                defaultSourceVersion.source
+                                                    .name) ||
+                                            '-'
+                                        }, ${intl.formatMessage(
+                                            MESSAGES.version,
+                                        )} ${
+                                            (defaultSourceVersion.version &&
+                                                defaultSourceVersion.version
+                                                    .number) ||
+                                            '-'
+                                        }`}
                                     >
-                                        {currentUser.user_name}
-                                    </Typography>
-                                    {window.IASO_VERSION && (
-                                        <Typography
-                                            variant="body2"
-                                            className={classes.version}
-                                            title={getDisplayName(currentUser)}
-                                        >
-                                            {window.IASO_VERSION}
-                                        </Typography>
-                                    )}
+                                        <div>
+                                            <Typography
+                                                variant="body2"
+                                                title={getDisplayName(
+                                                    currentUser,
+                                                )}
+                                            >
+                                                {currentUser.user_name}
+                                            </Typography>
+
+                                            <Typography
+                                                variant="body2"
+                                                title={getDisplayName(
+                                                    currentUser,
+                                                )}
+                                            >
+                                                {currentUser.account.name}
+                                            </Typography>
+                                        </div>
+                                    </Tooltip>
                                 </Box>
                             </Grid>
                         )}

@@ -92,7 +92,9 @@ export class Period {
         }
     }
 
-    static toDate(value?: PeriodObject | null): string | undefined | null {
+    static toDate(
+        value?: Partial<PeriodObject> | null,
+    ): string | undefined | null {
         if (!value) return value;
         const result = `${value.year}${String(value?.month ?? '1').padStart(
             2,

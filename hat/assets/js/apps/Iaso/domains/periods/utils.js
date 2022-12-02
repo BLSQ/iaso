@@ -87,7 +87,7 @@ export const getPeriodsErrors = (startPeriod, endPeriod, pType) => {
 };
 
 export const getPeriodPickerString = (periodType, period, value) => {
-    if (period === null) {
+    if (!period) {
         return '';
     }
     switch (periodType) {

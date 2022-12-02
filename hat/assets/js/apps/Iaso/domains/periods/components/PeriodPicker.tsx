@@ -1,4 +1,9 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, {
+    useState,
+    useEffect,
+    useCallback,
+    FunctionComponent,
+} from 'react';
 import {
     Grid,
     makeStyles,
@@ -7,7 +12,6 @@ import {
     FormHelperText,
 } from '@material-ui/core';
 import { useTheme } from '@material-ui/core/styles';
-import PropTypes from 'prop-types';
 
 // @ts-ignore
 import { DatePicker, useSafeIntl, commonStyles } from 'bluesquare-components';
@@ -44,7 +48,17 @@ const useStyles = makeStyles(theme => ({
     },
 }));
 
-const PeriodPicker = ({
+type Props = {
+    periodType: string | object;
+    title: string;
+    onChange: (_) => {};
+    activePeriodString: string;
+    hasError: boolean;
+    errors?: string[];
+    keyName: string;
+};
+
+const PeriodPicker: FunctionComponent<Props> = ({
     periodType,
     title,
     onChange,
@@ -56,11 +70,12 @@ const PeriodPicker = ({
     const classes = useStyles();
     const theme = useTheme();
     const { formatMessage } = useSafeIntl();
-    const [currentPeriod, setCurrentPeriod] = useState<PeriodObject | null>(
-        activePeriodString && Period.getPeriodType(activePeriodString)
-            ? Period.parse(activePeriodString)[1]
-            : null,
-    );
+    const [currentPeriod, setCurrentPeriod] =
+        useState<Partial<PeriodObject> | null>(
+            activePeriodString && Period.getPeriodType(activePeriodString)
+                ? Period.parse(activePeriodString)[1]
+                : null,
+        );
     const [currentPeriodType, setCurrentPeriodType] = useState(periodType);
     const currentUser = useCurrentUser();
 
@@ -76,8 +91,7 @@ const PeriodPicker = ({
         value: number,
     ) => {
         // FIXME: Figure out appropriate typescript
-        // @ts-ignore
-        let newPeriod: null | PeriodObject = {
+        let newPeriod: null | Partial<PeriodObject> = {
             ...currentPeriod,
             [changedKeyName]: value,
         };
@@ -117,7 +131,7 @@ const PeriodPicker = ({
     if (!periodType) {
         return null;
     }
-    const hasError2 = hasError || errors?.length > 0;
+    const displayError = hasError || (errors?.length ?? 0) > 0;
 
     return (
         <Box
@@ -128,7 +142,7 @@ const PeriodPicker = ({
             border={currentPeriodType === PERIOD_TYPE_DAY ? 0 : 1}
             borderRadius={5}
             borderColor={
-                hasError2 ? theme.palette.error.main : 'rgba(0,0,0,0.23)'
+                displayError ? theme.palette.error.main : 'rgba(0,0,0,0.23)'
             }
         >
             {currentPeriodType === PERIOD_TYPE_DAY && (
@@ -252,7 +266,7 @@ const PeriodPicker = ({
                     </Grid>
                 </>
             )}
-            <FormHelperText error={hasError2}>{errors}</FormHelperText>
+            <FormHelperText error={displayError}>{errors}</FormHelperText>
         </Box>
     );
 };
@@ -261,19 +275,6 @@ PeriodPicker.defaultProps = {
     activePeriodString: undefined,
     periodType: undefined,
     hasError: false,
-};
-
-PeriodPicker.propTypes = {
-    periodType: PropTypes.oneOfType([PropTypes.string, PropTypes.object]),
-    title: PropTypes.string.isRequired,
-    onChange: PropTypes.func.isRequired,
-    activePeriodString: PropTypes.oneOfType([
-        PropTypes.string,
-        PropTypes.object,
-    ]),
-    hasError: PropTypes.bool,
-    errors: PropTypes.array,
-    keyName: PropTypes.string.isRequired,
 };
 
 export default PeriodPicker;

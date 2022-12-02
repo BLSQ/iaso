@@ -144,21 +144,11 @@ function TopBar(props) {
                                         }`}
                                     >
                                         <div>
-                                            <Typography
-                                                variant="body2"
-                                                title={getDisplayName(
-                                                    currentUser,
-                                                )}
-                                            >
+                                            <Typography variant="body2">
                                                 {currentUser.user_name}
                                             </Typography>
 
-                                            <Typography
-                                                variant="body2"
-                                                title={getDisplayName(
-                                                    currentUser,
-                                                )}
-                                            >
+                                            <Typography variant="body2">
                                                 {currentUser.account.name}
                                             </Typography>
                                         </div>

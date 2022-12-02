@@ -33,7 +33,7 @@ const Filters = ({ baseUrl, params }) => {
     const [initialOrgUnitId, setInitialOrgUnitId] = useState(params?.location);
     const { data: dropdown, isFetching } = useGetPermissionsDropDown();
     const { data: initialOrgUnit } = useGetOrgUnit(initialOrgUnitId);
-    const { data: orgUnitTypeDropdown, isFetchingOuTypes } =
+    const { data: orgUnitTypeDropdown, isFetching: isFetchingOuTypes } =
         useGetOrgUnitTypes();
 
     const handleSearch = useCallback(() => {

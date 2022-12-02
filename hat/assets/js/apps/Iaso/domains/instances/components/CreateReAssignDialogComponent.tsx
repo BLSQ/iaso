@@ -94,58 +94,56 @@ export const CreateReAssignDialogComponent: FunctionComponent<Props> = ({
     };
 
     return (
-        <>
-            <ConfirmCancelModal
-                titleMessage={titleMessage}
-                onConfirm={onConfirm}
-                open={isOpen}
-                confirmMessage={confirmMessage}
-                cancelMessage={cancelMessage}
-                maxWidth="xs"
-                allowConfirm={allowConform}
-                closeDialog={closeDialog}
-                onCancel={closeDialog}
-            >
-                {isPeriodRequired && (
-                    <PeriodPicker
-                        title={formatMessage(MESSAGES.period)}
-                        periodType={formType.periodType}
-                        keyName="period"
-                        onChange={value => {
-                            setFieldValue({
-                                ...fieldValue,
-                                period: {
-                                    ...fieldValue.period,
-                                    errors: [],
-                                    value,
-                                },
-                            });
-                        }}
-                        activePeriodString={fieldValue.period.value}
-                        errors={fieldValue.period.errors}
-                    />
-                )}
-                <>
-                    <OrgUnitTreeviewModal
-                        required
-                        clearable={false}
-                        titleMessage={MESSAGES.selectedOrgUnit}
-                        toggleOnLabelClick={false}
-                        onConfirm={orgUnit => {
-                            setFieldValue({
-                                ...fieldValue,
-                                orgUnit: {
-                                    ...fieldValue.orgUnit,
-                                    value: orgUnit,
-                                },
-                            });
-                        }}
-                        multiselect={false}
-                        initialSelection={fieldValue.orgUnit.value}
-                        allowedTypes={orgUnitTypes}
-                    />
-                </>
-            </ConfirmCancelModal>
-        </>
+        <ConfirmCancelModal
+            titleMessage={titleMessage}
+            onConfirm={onConfirm}
+            open={isOpen}
+            confirmMessage={confirmMessage}
+            cancelMessage={cancelMessage}
+            maxWidth="xs"
+            allowConfirm={allowConform}
+            closeDialog={closeDialog}
+            onCancel={closeDialog}
+        >
+            {isPeriodRequired && (
+                <PeriodPicker
+                    title={formatMessage(MESSAGES.period)}
+                    periodType={formType.periodType}
+                    keyName="period"
+                    onChange={value => {
+                        setFieldValue({
+                            ...fieldValue,
+                            period: {
+                                ...fieldValue.period,
+                                errors: [],
+                                value,
+                            },
+                        });
+                    }}
+                    activePeriodString={fieldValue.period.value}
+                    errors={fieldValue.period.errors}
+                />
+            )}
+            <>
+                <OrgUnitTreeviewModal
+                    required
+                    clearable={false}
+                    titleMessage={MESSAGES.selectedOrgUnit}
+                    toggleOnLabelClick={false}
+                    onConfirm={orgUnit => {
+                        setFieldValue({
+                            ...fieldValue,
+                            orgUnit: {
+                                ...fieldValue.orgUnit,
+                                value: orgUnit,
+                            },
+                        });
+                    }}
+                    multiselect={false}
+                    initialSelection={fieldValue.orgUnit.value}
+                    allowedTypes={orgUnitTypes}
+                />
+            </>
+        </ConfirmCancelModal>
     );
 };

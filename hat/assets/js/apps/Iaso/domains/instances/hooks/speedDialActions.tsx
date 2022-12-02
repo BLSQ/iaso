@@ -25,7 +25,7 @@ import { Instance } from '../types/instance';
 import ConfirmCancelDialogComponent from '../../../components/dialogs/ConfirmCancelDialogComponent';
 import { useSaveOrgUnit } from '../../orgUnits/hooks';
 import { usePostLockInstance } from '../hooks';
-import { useLinkOrgUnitToReferenceSubmission } from './speeddials';
+import { FormDef, useLinkOrgUnitToReferenceSubmission } from './speeddials';
 import { Nullable } from '../../../types/utils';
 import { useDispatch } from 'react-redux';
 import { reAssignInstance } from '../actions';
@@ -38,8 +38,7 @@ export type SpeedDialAction = {
 
 export const useBaseActions = (
     currentInstance: Instance,
-    orgUnitTypeIds: number[],
-    periodType: string | undefined | null,
+    formDef?: FormDef,
 ): SpeedDialAction[] => {
     const CreateReAssignDialog = useMemo(
         () => makeFullModal(CreateReAssignDialogComponent, UpdateIcon),
@@ -84,17 +83,15 @@ export const useBaseActions = (
                         titleMessage={MESSAGES.reAssignInstance}
                         confirmMessage={MESSAGES.reAssignInstanceAction}
                         currentInstance={currentInstance}
-                        orgUnitTypes={orgUnitTypeIds}
-                        formType={{
-                            periodType,
-                        }}
+                        orgUnitTypes={formDef?.orgUnitTypeIds}
+                        formType={formDef}
                         onCreateOrReAssign={onReAssignInstance}
                     />
                 ),
                 disabled: currentInstance && currentInstance.deleted,
             },
         ];
-    }, [currentInstance, orgUnitTypeIds, reAssignInstance]);
+    }, [currentInstance, formDef, reAssignInstance]);
 };
 
 export const useEditLocationWithGpsAction = (

@@ -56,15 +56,17 @@ type FormOrgUnitTypes = {
     // eslint-disable-next-line camelcase
     org_unit_type_ids: number[];
     period_type: string | null;
+    id: number;
 };
 
-type FormDef = {
+export type FormDef = {
     orgUnitTypeIds: number[];
     periodType: string | null;
+    id: number;
 };
 
 // TODO move to hooks.js
-export const useGetForDataForInstance = (
+export const useGetFormDefForInstance = (
     formId: number | string | undefined,
 ): UseQueryResult<FormDef, Error> => {
     return useSnackQuery(
@@ -79,8 +81,9 @@ export const useGetForDataForInstance = (
             retry: false,
             select: (data: FormOrgUnitTypes): FormDef => {
                 return {
-                    orgUnitTypeIds: data?.org_unit_type_ids ?? [],
-                    periodType: data?.period_type,
+                    id: data.id,
+                    orgUnitTypeIds: data.org_unit_type_ids ?? [],
+                    periodType: data.period_type,
                 };
             },
         },

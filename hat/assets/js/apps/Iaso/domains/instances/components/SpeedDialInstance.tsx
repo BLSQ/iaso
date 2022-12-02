@@ -26,7 +26,7 @@ import {
     useLinkToOrgUnitAction,
     useLockAction,
 } from '../hooks/speedDialActions';
-import { useGetForDataForInstance } from '../hooks/speeddials';
+import { useGetFormDefForInstance } from '../hooks/speeddials';
 
 type Props = {
     currentInstance: Instance;
@@ -45,7 +45,7 @@ const SpeedDialInstance: FunctionComponent<Props> = props => {
         currentInstance,
         currentInstance: { form_id: formId },
     } = props;
-    const { data } = useGetForDataForInstance(formId);
+    const { data: formDef } = useGetFormDefForInstance(formId);
     const currentUser = useCurrentUser();
     const hasfeatureFlag = hasFeatureFlag(
         currentUser,
@@ -78,11 +78,7 @@ const SpeedDialInstance: FunctionComponent<Props> = props => {
         hasfeatureFlag &&
         formId.toString() === referenceFormId;
 
-    const baseActions = useBaseActions(
-        currentInstance,
-        data?.orgUnitTypeIds as number[], // forcing the type cast as the select in react-query prevent it from being undefined
-        data?.periodType,
-    );
+    const baseActions = useBaseActions(currentInstance, formDef);
 
     const editLocationWithInstanceGps =
         useEditLocationWithGpsAction(currentInstance);

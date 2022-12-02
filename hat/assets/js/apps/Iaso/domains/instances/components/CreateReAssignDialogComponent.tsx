@@ -13,7 +13,7 @@ type Props = {
     confirmMessage: any;
     cancelMessage: any;
     formType: {
-        id?: number;
+        id: number;
         periodType: string;
     };
     currentInstance?: {
@@ -85,9 +85,6 @@ export const CreateReAssignDialogComponent: FunctionComponent<Props> = ({
 
     const onConfirm = () => {
         const currentFormOrInstanceProp = currentInstance || formType;
-        // ignore ts error for currentFormOrInstanceProp as the logic ensure there is one
-        // open to cleaner option
-        // @ts-ignore
         onCreateOrReAssign(currentFormOrInstanceProp, {
             period: fieldValue.period.value,
             org_unit: fieldValue.orgUnit.value?.id,

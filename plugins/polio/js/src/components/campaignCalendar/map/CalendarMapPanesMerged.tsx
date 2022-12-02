@@ -6,21 +6,10 @@ import { ViewPort } from '../../../constants/types';
 import { CalendarMapTooltip } from './CalendarMapTooltip';
 import { getGeoJsonStyle } from './utils';
 import { polioVaccines } from '../../../constants/virus';
-
-type MergeShape = {
-    geom: any;
-    color: string;
-    properties: {
-        scope_key: string;
-        id: string; // the campaign id
-        vaccine: string;
-        top_level_org_unit_name: string;
-        obr_name: string;
-    };
-};
+import { MergedShapeWithColor } from '../types';
 
 type Props = {
-    mergedShapes: MergeShape[];
+    mergedShapes: MergedShapeWithColor[];
     viewport: ViewPort;
 };
 
@@ -37,7 +26,7 @@ export const CalendarMapPanesMerged: FunctionComponent<Props> = ({
                         key={`campaign-${mergedShape.properties.scope_key}`}
                     >
                         <GeoJSON
-                            key={mergedShape.properties.id}
+                            key={`${mergedShape.properties.id}-${mergedShape.cache}`}
                             data={mergedShape}
                             style={() =>
                                 getGeoJsonStyle(

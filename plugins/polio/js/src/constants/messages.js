@@ -1,6 +1,10 @@
 import { defineMessages } from 'react-intl';
 
 const MESSAGES = defineMessages({
+    selectOrgUnit: {
+        id: 'iaso.polio.label.selectOrgUnit',
+        defaultMessage: 'Select intial region',
+    },
     polio: {
         defaultMessage: 'Polio',
         id: 'iaso.label.polio',
@@ -60,6 +64,14 @@ const MESSAGES = defineMessages({
     removeRegion: {
         defaultMessage: 'Unselect region',
         id: 'iaso.polio.button.label.removeRegion',
+    },
+    addDistrict: {
+        defaultMessage: 'Select district',
+        id: 'iaso.polio.button.label.addDistrict',
+    },
+    addRegion: {
+        defaultMessage: 'Select region',
+        id: 'iaso.polio.button.label.addRegion',
     },
     confirm: {
         defaultMessage: 'Confirm',
@@ -1854,9 +1866,37 @@ const MESSAGES = defineMessages({
         id: 'iaso.polio.label.nextSteps',
         defaultMessage: 'Next steps',
     },
+    searchInScopeOrAllDistricts: {
+        id: 'iaso.polio.label.searchInScopeOrAllDistricts',
+        defaultMessage: 'Search districts in scope',
+    },
     emailWillBeSentTo: {
         id: 'iaso.polio.label.emailWillBeSentTo',
         defaultMessage: 'The following teams will be notified by email:',
+    },
+    teams: {
+        id: 'iaso.polio.config.teams',
+        defaultMessage: 'Team(s) for the Budget workflow',
+    },
+    rrtOprttApproval: {
+        id: 'iaso.polio.form.label.rrtOprttApproval',
+        defaultMessage: 'RRT/OPRTT Approval',
+    },
+    loading: {
+        id: 'iaso.label.loading',
+        defaultMessage: 'Loading',
+    },
+    noOptions: {
+        id: 'iaso.label.noOptions',
+        defaultMessage: 'No result found',
+    },
+    selectRoundsToDisplay: {
+        id: 'iaso.polio.form.label.selectRoundsToDisplay',
+        defaultMessage: 'Select rounds to display',
+    },
+    latest: {
+        id: 'iaso.polio.form.label.latest',
+        defaultMessage: 'Latest',
     },
 });
 

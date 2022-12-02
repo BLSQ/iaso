@@ -60,6 +60,8 @@ class ProfilesViewSet(viewsets.ViewSet):
         page_offset = request.GET.get("page", 1)
         orders = request.GET.get("order", "user__username").split(",")
         search = request.GET.get("search", None)
+        perms = request.GET.get("permissions", None)
+        location = request.GET.get("location", None)
 
         queryset = self.get_queryset()
         if search:
@@ -67,7 +69,13 @@ class ProfilesViewSet(viewsets.ViewSet):
                 Q(user__username__icontains=search)
                 | Q(user__first_name__icontains=search)
                 | Q(user__last_name__icontains=search)
-            )
+            ).distinct()
+
+        if perms:
+            queryset = queryset.filter(user__user_permissions__codename__icontains=perms).distinct()
+
+        if location:
+            queryset = queryset.filter(user__iaso_profile__org_units__pk=location).distinct()
 
         if limit:
             queryset = queryset.order_by(*orders)
@@ -191,8 +199,8 @@ class ProfilesViewSet(viewsets.ViewSet):
             return JsonResponse({"errorKey": "user_name", "errorMessage": _("Nom d'utilisateur requis")}, status=400)
         if not password and not send_email_invitation:
             return JsonResponse({"errorKey": "password", "errorMessage": _("Mot de passe requis")}, status=400)
-        existing_profile = User.objects.filter(username=username).first()
-        if existing_profile:
+        existing_user = User.objects.filter(username__iexact=username)
+        if existing_user:
             return JsonResponse({"errorKey": "user_name", "errorMessage": _("Nom d'utilisateur existant")}, status=400)
 
         user = User()

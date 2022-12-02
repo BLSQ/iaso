@@ -33,6 +33,10 @@ const MESSAGES = defineMessages({
         defaultMessage: 'Completeness',
         id: 'iaso.completeness.title',
     },
+    completenessStats: {
+        defaultMessage: 'Completeness Stats',
+        id: 'iaso.completenessStats.title',
+    },
     archived: {
         defaultMessage: 'Archived',
         id: 'iaso.archived.title',

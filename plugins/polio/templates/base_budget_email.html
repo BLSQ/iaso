@@ -57,6 +57,14 @@ Base file to be reused in the MailTemplate for the budget workflow engine
     </tr>
   {% endif %}
   {% include "_files.html" with attachments=attachments only %}
+  {% if skipped_attachments > 0 %}
+    <tr>
+      <td align="left" style="padding:5px;">
+        <br />
+        {{ skipped_attachments }} file(s) has(have) not been attached to this message due to their size. Please use the link(s)
+        above to view them.
+    </tr>
+  {% endif %}
   <tr>
     <td style="height:20px;padding:0;font-size:0;line-height:0;">&nbsp;</td>
   </tr>
@@ -66,26 +74,26 @@ Base file to be reused in the MailTemplate for the budget workflow engine
     </td>
   <tr>
     {% if buttons %}
-  <tr>
-    <td style="height:20px;padding:0;font-size:0;line-height:0;">&nbsp;</td>
-  </tr>
-  <tr>
-    <td align="left" style="padding:5px;">
-      You can follow up using one of the buttons below:
-    </td>
-  </tr>
-  <tr>
-    <td style="height:20px;padding:0;font-size:0;line-height:0;">&nbsp;</td>
-  </tr>
+      <tr>
+        <td style="height:20px;padding:0;font-size:0;line-height:0;">&nbsp;</td>
+      </tr>
+      <tr>
+        <td align="left" style="padding:5px;">
+          You can follow up using one of the buttons below:
+        </td>
+      </tr>
+      <tr>
+        <td style="height:20px;padding:0;font-size:0;line-height:0;">&nbsp;</td>
+      </tr>
 
-  <table role="presentation"
-         style="width:100%;max-width:600px;border-collapse:collapse;border:0;border-spacing:0;background:#ffffff;">
-    <tr>
-      {% include "_buttons.html" with buttons=buttons only %}
+      <table role="presentation"
+             style="width:100%;max-width:600px;border-collapse:collapse;border:0;border-spacing:0;background:#ffffff;">
+        <tr>
+          {% include "_buttons.html" with buttons=buttons only %}
 
-    </tr>
-  </table>
-  {% endif %}
+        </tr>
+      </table>
+    {% endif %}
 {% endblock content %}
 <table role="presentation" style="width:100%;max-width:600px;">
   <tr>

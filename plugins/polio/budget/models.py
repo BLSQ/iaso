@@ -9,11 +9,12 @@ from django.core.mail import EmailMultiAlternatives
 from django.db import models
 from django.template import Engine, TemplateSyntaxError, Context
 from django.utils.translation import ugettext_lazy as _
+from django.urls import reverse
 
 from hat.api.token_authentication import generate_auto_authentication_link
-from iaso.models.microplanning import Team
 from iaso.utils.models.soft_deletable import SoftDeletableModel
-from plugins.polio.budget.workflow import next_transitions, can_user_transition, Transition, Node, Workflow
+from plugins.polio.budget.workflow import next_transitions, can_user_transition, Transition, Node, Workflow, Category
+from plugins.polio.budget import workflow
 from plugins.polio.time_cache import time_cache
 
 
@@ -59,6 +60,9 @@ class BudgetStepFile(models.Model):
     filename = models.CharField(blank=True, null=True, max_length=100)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+
+    def get_absolute_url(self):
+        return reverse("BudgetStep-files", kwargs={"pk": self.step_id, "file_pk": self.id})
 
     class Meta:
         verbose_name = "Budget Step File"
@@ -124,6 +128,7 @@ class MailTemplate(models.Model):
         return str(self.slug)
 
     def render_for_step(self, step: BudgetStep, receiver: User, request=None) -> EmailMultiAlternatives:
+        msg = EmailMultiAlternatives(from_email=settings.DEFAULT_FROM_EMAIL, to=[receiver.email])
         site = get_current_site(request)
         base_url = "https://" if settings.SSL_ON else "http://"
         base_url += site.domain  # type: ignore
@@ -148,15 +153,24 @@ class MailTemplate(models.Model):
                     "url": generate_auto_authentication_link(button_url, receiver),
                     "label": transition.label,
                     "color": transition.color if transition.color != "primary" else "black",
-                    "allowed": can_user_transition(transition, receiver),
+                    "allowed": can_user_transition(transition, receiver, campaign),
                 }
             )
         transition = workflow.get_transition_by_key(step.transition_key)
         attachments = []
         for f in step.files.all():
-            attachments.append({"url": f.file.url, "name": f.filename})
+            file_url = base_url + f.get_absolute_url()
+            attachments.append({"url": file_url, "name": f.filename})
         for l in step.links.all():
             attachments.append({"url": l.url, "name": l.alias})
+
+        skipped_attachements = 0
+        for f in step.files.all():
+            # only attach file smaller than 500k
+            if f.file.size < 1024 * 500:
+                msg.attach(f.filename, f.file.read())
+            else:
+                skipped_attachements += 1
 
         context = Context(
             {
@@ -173,6 +187,7 @@ class MailTemplate(models.Model):
                 "comment": step.comment,
                 "amount": step.amount,
                 "attachments": attachments,
+                "skipped_attachments": skipped_attachements,
                 "files": step.files.all(),
                 "links": step.links.all(),
             }
@@ -186,8 +201,11 @@ class MailTemplate(models.Model):
         subject_template = Engine.get_default().from_string(self.subject_template)
         subject_content = subject_template.render(context)
 
-        msg = EmailMultiAlternatives(subject_content, text_content, settings.DEFAULT_FROM_EMAIL, [receiver.email])
+        msg.subject = subject_content
+        msg.body = text_content
+
         msg.attach_alternative(html_content, "text/html")
+
         return msg
 
 
@@ -203,7 +221,7 @@ def send_budget_mails(step: BudgetStep, transition, request) -> None:
             logger.exception(e)
             continue
 
-        teams = Team.objects.filter(id__in=team_ids)
+        teams = workflow.effective_teams(step.campaign, team_ids)
         # Ensure we don't send an email twice to the same user
         users = User.objects.filter(teams__in=teams).distinct()
         for user in users:
@@ -227,8 +245,10 @@ def get_workflow():
     workflow_model = WorkflowModel.objects.last()
     transition_defs = workflow_model.definition["transitions"]
     node_defs = workflow_model.definition["nodes"]
-    if not any(n["key"] == None for n in node_defs):
-        node_defs.append({"key": None, "label": "No budget submitted"})
+    categories_defs = workflow_model.definition["categories"]
+    if not any(n["key"] == "-" for n in node_defs):
+        node_defs.insert(0, {"key": "-", "label": "No budget submitted"})
     transitions = [Transition(**transition_def) for transition_def in transition_defs]
     nodes = [Node(**node_def) for node_def in node_defs]
-    return Workflow(transitions, nodes)
+    categories = [Category(**categories_def) for categories_def in categories_defs]
+    return Workflow(transitions, nodes, categories)

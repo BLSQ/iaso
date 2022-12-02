@@ -43,7 +43,7 @@ export type Storage = {
     updated_at: number;
     created_at: number;
     storage_type: 'NFC' | 'USB' | 'SD';
-    status: StorageStatus;
+    storage_status: StorageStatus;
     entity: Entity;
     logs?: Array<Log>;
     org_unit: ShortOrgUnit;
@@ -57,9 +57,12 @@ export type Storages = Array<Storage>;
 export interface StoragePaginated extends Pagination {
     results: Storages;
 }
-export type StorageDetailsParams = Pagination & {
+export type StorageDetailsParams = {
     type: string;
     storageId: string;
+    pageSize: string;
+    order: string;
+    page: string;
     operationType?: string;
     performedAt?: string;
 };

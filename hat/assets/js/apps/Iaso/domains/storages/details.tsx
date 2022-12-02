@@ -6,11 +6,12 @@ import {
     commonStyles,
 } from 'bluesquare-components';
 // @ts-ignore
-import { Box, Grid, makeStyles } from '@material-ui/core';
+import { Box, Divider, Grid, makeStyles } from '@material-ui/core';
 import { useDispatch, useSelector } from 'react-redux';
 import TopBar from '../../components/nav/TopBarComponent';
 import { Infos } from './components/Infos';
 import { TableWithDeepLink } from '../../components/tables/TableWithDeepLink';
+import DownloadButtonsComponent from '../../components/DownloadButtonsComponent';
 
 import MESSAGES from './messages';
 
@@ -21,7 +22,10 @@ import WidgetPaper from '../../components/papers/WidgetPaperComponent';
 import { LogsFilters } from './components/LogsFilters';
 
 import { StorageDetailsParams } from './types/storages';
-import { useGetStorageLogs } from './hooks/requests/useGetStorageLogs';
+import {
+    useGetStorageLogs,
+    useGetApiParams,
+} from './hooks/requests/useGetStorageLogs';
 
 import { useGetDetailsColumns } from './config';
 
@@ -46,6 +50,7 @@ const useStyles = makeStyles(theme => ({
 export const Details: FunctionComponent<Props> = ({ params, router }) => {
     const { formatMessage } = useSafeIntl();
     const { data, isFetching } = useGetStorageLogs(params);
+    const { url: apiUrl } = useGetApiParams(params);
 
     const storageDetail = data?.results;
 
@@ -56,6 +61,8 @@ export const Details: FunctionComponent<Props> = ({ params, router }) => {
     const dispatch = useDispatch();
 
     const columns = useGetDetailsColumns();
+
+    const storageDetailLogs = storageDetail?.logs ?? [];
     return (
         <>
             <TopBar
@@ -84,31 +91,44 @@ export const Details: FunctionComponent<Props> = ({ params, router }) => {
                         className={classes.fullWith}
                         title={formatMessage(MESSAGES.logs)}
                     >
-                        <Box mb={-4} position="relative">
+                        <Box position="relative">
                             <LogsFilters params={params} />
-                            <TableWithDeepLink
-                                marginTop={false}
-                                countOnTop={false}
-                                elevation={0}
-                                baseUrl={baseUrls.storageDetail}
-                                data={storageDetail?.logs ?? []}
-                                pages={data?.pages}
-                                defaultSorted={[
-                                    { id: 'performed_at', desc: false },
-                                ]}
-                                columns={columns}
-                                count={data?.count}
-                                params={params}
-                                onTableParamsChange={p =>
-                                    dispatch(
-                                        redirectToReplace(
-                                            baseUrls.storageDetail,
-                                            p,
-                                        ),
-                                    )
-                                }
-                                extraProps={{ loading: isFetching }}
-                            />
+                            <Box mb={-4}>
+                                <TableWithDeepLink
+                                    marginTop={false}
+                                    countOnTop={false}
+                                    elevation={0}
+                                    baseUrl={baseUrls.storageDetail}
+                                    data={storageDetailLogs}
+                                    pages={data?.pages}
+                                    defaultSorted={[
+                                        { id: 'performed_at', desc: false },
+                                    ]}
+                                    columns={columns}
+                                    count={data?.count}
+                                    params={params}
+                                    onTableParamsChange={p =>
+                                        dispatch(
+                                            redirectToReplace(
+                                                baseUrls.storageDetail,
+                                                p,
+                                            ),
+                                        )
+                                    }
+                                    extraProps={{ loading: isFetching }}
+                                />
+                            </Box>
+                            {storageDetailLogs.length > 0 && (
+                                <>
+                                    <Divider />
+                                    <Box mb={2} mt={2}>
+                                        <DownloadButtonsComponent
+                                            csvUrl={`${apiUrl}&csv=true`}
+                                            xlsxUrl={`${apiUrl}&xlsx=true`}
+                                        />
+                                    </Box>
+                                </>
+                            )}
                         </Box>
                     </WidgetPaper>
                 </Box>

@@ -15,6 +15,7 @@ export const baseUrls = {
     links: 'orgunits/sources/links/list',
     algos: 'orgunits/sources/links/runs',
     completeness: 'forms/completeness',
+    completenessStats: 'forms/completenessStats',
     users: 'settings/users',
     projects: 'settings/projects',
     sources: 'orgunits/sources/list',

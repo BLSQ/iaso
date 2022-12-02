@@ -6,8 +6,6 @@ import {
     commonStyles,
     // @ts-ignore
     LoadingSpinner,
-    // @ts-ignore
-    Table,
 } from 'bluesquare-components';
 import { Box, Divider, Grid, makeStyles } from '@material-ui/core';
 import { useDispatch, useSelector } from 'react-redux';
@@ -20,12 +18,12 @@ import { baseUrls } from '../../../constants/urls';
 import { useGetBeneficiary, useGetSubmissions } from './hooks/requests';
 
 import { Beneficiary } from './types/beneficiary';
-import { useResetPageToOne } from '../../../hooks/useResetPageToOne';
 import { useBeneficiariesDetailsColumns } from './config';
 import { CsvButton } from '../../../components/Buttons/CsvButton';
 import { XlsxButton } from '../../../components/Buttons/XslxButton';
 import { BeneficiaryBaseInfo } from './components/BeneficiaryBaseInfo';
 import WidgetPaper from '../../../components/papers/WidgetPaperComponent';
+import { TableWithDeepLink } from '../../../components/tables/TableWithDeepLink';
 
 type Props = {
     router: any;
@@ -56,18 +54,10 @@ const useStyles = makeStyles(theme => ({
         borderTop: 'none',
     },
     titleRow: { fontWeight: 'bold' },
-    fullWith: { width: '100%' },
+    fullWidth: { width: '100%' },
+    infoPaper: { width: '100%', position: 'relative' },
+    infoPaperBox: { minHeight: '100px' },
 }));
-
-// const mapFileContent = (
-//     fileContent?: Record<string, string>,
-// ): ReactElement | null => {
-//     if (!fileContent) return null;
-//     const keys = Object.keys(fileContent);
-//     return keys.map(key => {
-//         return <Grid container item xs={12}></Grid>;
-//     });
-// };
 
 export const Details: FunctionComponent<Props> = ({ router }) => {
     const { params } = router;
@@ -78,7 +68,6 @@ export const Details: FunctionComponent<Props> = ({ router }) => {
     // @ts-ignore
     const prevPathname = useSelector(state => state.routerCustom.prevPathname);
     const dispatch = useDispatch();
-    const resetPageToOne = useResetPageToOne({ params });
 
     const {
         data: beneficiary,
@@ -87,15 +76,12 @@ export const Details: FunctionComponent<Props> = ({ router }) => {
         data?: Beneficiary;
         isLoading: boolean;
     } = useGetBeneficiary(entityId);
-    const columns = useBeneficiariesDetailsColumns(
-        beneficiary?.id ?? null,
-        // @ts-ignore
-        // beneficiary?.entity_type?.fields_detail_info_view ?? [],
-        [],
-    );
+    const columns = useBeneficiariesDetailsColumns(beneficiary?.id ?? null, []);
 
-    const { data: submissions, isLoading: isLoadingSubmissions } =
-        useGetSubmissions(entityId);
+    const { data, isLoading: isLoadingSubmissions } = useGetSubmissions(
+        params,
+        entityId,
+    );
     return (
         <>
             <TopBar
@@ -110,14 +96,18 @@ export const Details: FunctionComponent<Props> = ({ router }) => {
                 }}
             />
             <Box className={`${classes.containerFullHeightNoTabPadded}`}>
-                {isLoadingBeneficiary && <LoadingSpinner />}
                 <Grid container spacing={2}>
                     <Grid container item xs={4}>
                         <WidgetPaper
-                            className={classes.fullWith}
+                            className={classes.infoPaper}
                             title={formatMessage(MESSAGES.beneficiaryInfo)}
                         >
-                            <BeneficiaryBaseInfo beneficiary={beneficiary} />
+                            <Box className={classes.infoPaperBox}>
+                                {!beneficiary && <LoadingSpinner absolute />}
+                                <BeneficiaryBaseInfo
+                                    beneficiary={beneficiary}
+                                />
+                            </Box>
                         </WidgetPaper>
                     </Grid>
                     {/* TODO uncomment when edition is possible */}
@@ -140,22 +130,29 @@ export const Details: FunctionComponent<Props> = ({ router }) => {
                 </Grid>
                 <Box mt={2}>
                     <WidgetPaper
-                        className={classes.fullWith}
+                        className={classes.fullWidth}
                         title={formatMessage(MESSAGES.submissions)}
                     >
-                        <Table
-                            elevation={0}
-                            data={submissions ?? []}
-                            columns={columns}
-                            resetPageToOne={resetPageToOne}
-                            count={1}
-                            pages={1}
-                            params={params}
-                            marginBottom={false}
+                        <TableWithDeepLink
                             marginTop={false}
                             countOnTop={false}
+                            elevation={0}
+                            baseUrl={baseUrls.entityDetails}
+                            data={data?.instances ?? []}
+                            pages={data?.pages}
+                            defaultSorted={[{ id: 'id', desc: false }]}
+                            columns={columns}
+                            count={data?.count}
+                            params={params}
+                            onTableParamsChange={p =>
+                                dispatch(
+                                    redirectToReplace(
+                                        baseUrls.entityDetails,
+                                        p,
+                                    ),
+                                )
+                            }
                             extraProps={{
-                                colums: columns,
                                 loading:
                                     isLoadingBeneficiary ||
                                     isLoadingSubmissions,

@@ -3,9 +3,10 @@ name: Iaso Cypress manual testing
 on:
   issue_comment:
     types: [created]
-
+  workflow_dispatch: {}
+  
 concurrency: 
-  group: ${{ github.workflow }}-${{ github.ref }}
+  group: ${{ github.head_ref || github.run_id }}
   cancel-in-progress: true
 
 env:
@@ -14,7 +15,7 @@ env:
 
 jobs:
   build-image:
-    if: github.event.issue.pull_request && contains(github.event.comment.body, '@cypress') == true
+    if: ((github.event_name == 'workflow_dispatch') || (contains(github.event.comment.body, '@cypress')))
     permissions:
       issues: write
       contents: read
@@ -28,22 +29,25 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Mark comment as success
+      - name: Mark comment as seen
+        if: github.event_name != 'workflow_dispatch'
         uses: dkershner6/reaction-action@v1
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           reaction: 'eyes'
 
       - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v1
+        uses: docker/setup-buildx-action@v2
+      
       - name: Log in to the Container registry
-        uses: docker/login-action@f054a8b539a109f9f41c372932f1ae047eff08c9
+        uses: docker/login-action@v2
         with:
           registry: ${{ env.REGISTRY }}
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
+      
       - name: Build and push Docker image
-        uses: docker/build-push-action@v2
+        uses: docker/build-push-action@v3
         with:
           push: true
           tags: ghcr.io/blsq/iaso:${{github.sha}}
@@ -54,7 +58,7 @@ jobs:
 
       - name: Comment PR with failure
         uses: actions/github-script@v6
-        if: failure()
+        if: ((failure()) && (github.event_name != 'workflow_dispatch'))
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
@@ -67,7 +71,7 @@ jobs:
             });
 
   test_cypress:
-    if: github.event.issue.pull_request && contains(github.event.comment.body, '@cypress') == true
+    if: ((github.event_name == 'workflow_dispatch') || (contains(github.event.comment.body, '@cypress')))
     timeout-minutes: 60
     runs-on: ubuntu-latest
     needs: build-image
@@ -122,7 +126,7 @@ jobs:
         uses: actions/cache@v3
         with:
           path: ./node_modules
-          key: node_modules-${{ hashFiles('package-lock.json') }}
+          key: node_modules-20221121-${{ hashFiles('package-lock.json') }}
 
       - name: upgrade npm
         run: |
@@ -130,29 +134,29 @@ jobs:
 
       - run: npm ci
         if: steps.cache.outputs.cache-hit != 'true'
-
+        
       - name: Cypress run
         uses: cypress-io/github-action@v4
         with:
           browser: chrome
           wait-on: 'http://localhost:8081'
           spec: hat/assets/js/cypress/integration/**/*.spec.js
-          install: false
         env:
           CYPRESS_USERNAME: "test"
           CYPRESS_PASSWORD: "test"
           CYPRESS_BASE_URL: "http://localhost:8081"
-      
+
+
       - name: Mark comment as success
         uses: dkershner6/reaction-action@v1
-        if: success()
+        if: ((success()) && (github.event_name != 'workflow_dispatch'))
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           reaction: 'hooray'
 
       - name: Comment PR with failure
         uses: actions/github-script@v6
-        if: failure()
+        if: ((failure()) && (github.event_name != 'workflow_dispatch'))
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |

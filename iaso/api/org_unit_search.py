@@ -37,6 +37,7 @@ def build_org_units_queryset(queryset, params, profile):
     ignore_empty_names = params.get("ignoreEmptyNames", False)
 
     org_unit_type_category = params.get("orgUnitTypeCategory", None)
+    path_depth = params.get("depth", None)
 
     if validation_status != "all":
         queryset = queryset.filter(validation_status=validation_status)
@@ -200,6 +201,9 @@ def build_org_units_queryset(queryset, params, profile):
 
     if ignore_empty_names:
         queryset = queryset.filter(~Q(name=""))
+
+    if path_depth is not None:
+        queryset = queryset.filter(path__depth=path_depth)
 
     queryset = queryset.select_related("version__data_source")
     queryset = queryset.select_related("org_unit_type")

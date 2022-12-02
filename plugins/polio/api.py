@@ -3,21 +3,16 @@ import functools
 import json
 import datetime as dt
 from datetime import timedelta, datetime, date
-import logging
-from typing import Any, Dict, List, Optional
+from typing import Any, Optional
 from collections import defaultdict
 from functools import lru_cache
 from logging import getLogger
 from openpyxl.writer.excel import save_virtual_workbook  # type: ignore
 
-from django.core.files import File
 from django.core.cache import cache
-from django.core.exceptions import ObjectDoesNotExist
-from django.core.mail import EmailMultiAlternatives
 from django.core.mail import send_mail
 from django.db.models import Q, Max, Min
 from django.db.models import Value, TextField, UUIDField
-from django.contrib.auth.models import User
 from django.db.models.expressions import RawSQL
 from django.http import HttpResponse
 from django.http import JsonResponse
@@ -25,19 +20,14 @@ from django.http.response import HttpResponseBadRequest
 from django.shortcuts import get_object_or_404
 from django.utils.timezone import now, make_aware
 from django_filters.rest_framework import DjangoFilterBackend  # type: ignore
-from django.template.loader import render_to_string
 from gspread.utils import extract_id_from_url  # type: ignore
-from hat.settings import DEFAULT_FROM_EMAIL
 from rest_framework import routers, filters, viewsets, serializers, permissions, status
 from rest_framework.decorators import action
 from rest_framework.request import Request
 from rest_framework.response import Response
 from django.conf import settings
-from hat.api.token_authentication import generate_auto_authentication_link
-from iaso.api.common import ModelViewSet, DeletionFilterBackend
+from iaso.api.common import ModelViewSet, DeletionFilterBackend, CONTENT_TYPE_XLSX, CONTENT_TYPE_CSV
 from iaso.models import OrgUnit
-from iaso.models.microplanning import Team
-from iaso.models.org_unit import OrgUnitType
 from plugins.polio.serializers import (
     OrgUnitSerializer,
     CampaignSerializer,
@@ -47,8 +37,6 @@ from plugins.polio.serializers import (
     SmallCampaignSerializer,
     get_current_preparedness,
     CampaignGroupSerializer,
-    BudgetEventSerializer,
-    BudgetFilesSerializer,
     serialize_campaign,
     log_campaign_modification,
 )
@@ -61,7 +49,7 @@ from .forma import (
     make_orgunits_cache,
     find_orgunit_in_cache,
 )
-from .helpers import get_url_content
+from .helpers import get_url_content, CustomFilterBackend
 from .models import (
     Campaign,
     Config,
@@ -69,8 +57,6 @@ from .models import (
     SpreadSheetImport,
     Round,
     CampaignGroup,
-    BudgetEvent,
-    BudgetFiles,
     CampaignScope,
     RoundScope,
 )
@@ -82,26 +68,6 @@ from .export_utils import generate_xlsx_campaigns_calendar, xlsx_file_name
 logger = getLogger(__name__)
 
 CACHE_VERSION = 7
-
-
-class CustomFilterBackend(filters.BaseFilterBackend):
-    def filter_queryset(self, request, queryset, view):
-        search = request.query_params.get("search")
-        if search:
-            country_types = OrgUnitType.objects.countries().only("id")
-            org_units = OrgUnit.objects.filter(
-                name__icontains=search, org_unit_type__in=country_types, path__isnull=False
-            ).only("id")
-
-            query = Q(obr_name__icontains=search) | Q(epid__icontains=search)
-            if len(org_units) > 0:
-                query.add(
-                    Q(initial_org_unit__path__descendants=OrgUnit.objects.query_for_related_org_units(org_units)), Q.OR
-                )
-
-            return queryset.filter(query)
-
-        return queryset
 
 
 class PolioOrgunitViewSet(ModelViewSet):
@@ -141,12 +107,8 @@ class CampaignViewSet(ModelViewSet):
         "first_round_started_at",
         "last_round_started_at",
         "country__name",
-        "last_budget_event__created_at",
-        "last_budget_event__type",
-        "last_budget_event__status",
     ]
     filterset_fields = {
-        "last_budget_event__status": ["exact"],
         "country__name": ["exact"],
         "country__id": ["in"],
         "grouped_campaigns__id": ["in", "exact"],
@@ -232,7 +194,7 @@ class CampaignViewSet(ModelViewSet):
 
         response = HttpResponse(
             save_virtual_workbook(xlsx_file),
-            content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+            content_type=CONTENT_TYPE_XLSX,
         )
         response["Content-Disposition"] = "attachment; filename=%s" % filename + ".xlsx"
         return response
@@ -457,7 +419,7 @@ Timeline tracker Automated message
 
         round_scope_queryset = campaigns.filter(separate_scopes_per_round=True).annotate(
             geom=RawSQL(
-                """select st_asgeojson(st_simplify(st_union(st_buffer(iaso_orgunit.geom::geometry, 0)), 0.01)::geography)
+                """select st_asgeojson(st_simplify(st_union(st_buffer(iaso_orgunit.simplified_geom::geometry, 0)), 0.01)::geography)
 from iaso_orgunit
 right join iaso_group_org_units ON iaso_group_org_units.orgunit_id = iaso_orgunit.id
 right join polio_roundscope ON iaso_group_org_units.group_id =  polio_roundscope.group_id
@@ -469,7 +431,7 @@ where polio_round.campaign_id = polio_campaign.id""",
         # For campaign scope
         campain_scope_queryset = campaigns.filter(separate_scopes_per_round=False).annotate(
             geom=RawSQL(
-                """select st_asgeojson(st_simplify(st_union(st_buffer(iaso_orgunit.geom::geometry, 0)), 0.01)::geography)
+                """select st_asgeojson(st_simplify(st_union(st_buffer(iaso_orgunit.simplified_geom::geometry, 0)), 0.01)::geography)
 from iaso_orgunit
 right join iaso_group_org_units ON iaso_group_org_units.orgunit_id = iaso_orgunit.id
 right join polio_campaignscope ON iaso_group_org_units.group_id =  polio_campaignscope.group_id
@@ -524,7 +486,7 @@ where polio_campaignscope.campaign_id = polio_campaign.id""",
         )
 
         update_dates = [
-            last_org_unit_updated.updated_at if last_campaign_updated else None,
+            last_org_unit_updated.updated_at if last_org_unit_updated else None,
             last_roundscope_org_unit_updated.updated_at if last_roundscope_org_unit_updated else None,
             last_campaign_updated.updated_at if last_campaign_updated else None,
         ]
@@ -535,9 +497,11 @@ where polio_campaignscope.campaign_id = polio_campaign.id""",
         campaign_scopes = CampaignScope.objects.filter(campaign__in=campaigns.filter(separate_scopes_per_round=False))
         campaign_scopes = campaign_scopes.prefetch_related("campaign")
         campaign_scopes = campaign_scopes.prefetch_related("campaign__country")
+
+        # noinspection SqlResolve
         campaign_scopes = campaign_scopes.annotate(
             geom=RawSQL(
-                """select st_asgeojson(st_simplify(st_union(st_buffer(iaso_orgunit.geom::geometry, 0)), 0.01)::geography)
+                """SELECT st_asgeojson(st_simplify(st_union(st_buffer(iaso_orgunit.simplified_geom::geometry, 0)), 0.01)::geography)
 from iaso_orgunit right join iaso_group_org_units ON iaso_group_org_units.orgunit_id = iaso_orgunit.id
 where group_id = polio_campaignscope.group_id""",
                 [],
@@ -564,9 +528,10 @@ where group_id = polio_campaignscope.group_id""",
         round_scopes = RoundScope.objects.filter(round__campaign__in=campaigns.filter(separate_scopes_per_round=True))
         round_scopes = round_scopes.prefetch_related("round__campaign")
         round_scopes = round_scopes.prefetch_related("round__campaign__country")
+        # noinspection SqlResolve
         round_scopes = round_scopes.annotate(
             geom=RawSQL(
-                """select st_asgeojson(st_simplify(st_union(st_buffer(iaso_orgunit.geom::geometry, 0)), 0.01)::geography)
+                """select st_asgeojson(st_simplify(st_union(st_buffer(iaso_orgunit.simplified_geom::geometry, 0)), 0.01)::geography)
 from iaso_orgunit right join iaso_group_org_units ON iaso_group_org_units.orgunit_id = iaso_orgunit.id
 where group_id = polio_roundscope.group_id""",
                 [],
@@ -1182,7 +1147,7 @@ def handle_ona_request_with_key(request, key):
             mails,
         )
     if as_csv:
-        response = HttpResponse(content_type="text/csv")
+        response = HttpResponse(content_type=CONTENT_TYPE_CSV)
         writer = csv.writer(response)
         i = 1
         for item in res:
@@ -1268,7 +1233,7 @@ class OrgUnitsPerCampaignViewset(viewsets.ViewSet):
         res = [headers]
         res.extend([org_unit_as_array(o) for o in queryset])
         if as_csv:
-            response = HttpResponse(content_type="text/csv")
+            response = HttpResponse(content_type=CONTENT_TYPE_CSV)
             writer = csv.writer(response)
             for item in res:
                 writer.writerow(item)
@@ -1631,450 +1596,6 @@ class CampaignGroupViewSet(ModelViewSet):
     }
 
 
-class HasPoliobudgetPermission(permissions.BasePermission):
-    def has_permission(self, request, view) -> bool:
-        if not request.user.has_perm("menupermissions.iaso_polio_budget"):
-            return False
-        return True
-
-
-def email_subject(event_type: str, campaign_name: str) -> str:
-    email_subject_template = "New {} for {}"
-    return email_subject_template.format(event_type, campaign_name)
-
-
-def event_creation_email(
-    event_type: str, first_name: str, last_name: str, comment: str, file: str, links: str, link: str, dns_domain: str
-) -> str:
-    email_template = """%s by %s %s.
-
-Comment: %s
-
-Files: %s
-
-Links: %s
-
-------------
-
-you can access the history of this budget here: %s
-
-------------    
-This is an automated email from %s
-"""
-    return email_template % (event_type, first_name, last_name, comment, file, links, link, dns_domain)
-
-
-def creation_email_with_two_links(
-    event_type: str,
-    first_name: str,
-    last_name: str,
-    comment: Optional[str],
-    files: str,
-    links: Optional[str],
-    validation_link: str,
-    rejection_link: str,
-    dns_domain: str,
-) -> str:
-    email_template = """%s by %s %s.
-
-Comment: %s
-
-Files:  %s
-
-Links: %s
-
-------------
-
-you can validate the budget here: %s
-
-you can reject and add a comment here : %s
-
-------------    
-This is an automated email from %s
-"""
-    return email_template % (
-        event_type,
-        first_name,
-        last_name,
-        comment,
-        files,
-        links,
-        validation_link,
-        rejection_link,
-        dns_domain,
-    )
-
-
-def budget_approval_email_subject(campaign_name: str) -> str:
-    email_subject_validation_template = "APPROVED: Budget For Campaign {}"
-    return email_subject_validation_template.format(campaign_name)
-
-
-def budget_approval_email(campaign_name: str, link: str, dns_domain: str) -> str:
-    email_template = """
-            
-                    The budget for campaign {0} has been approved.
-                    Click here to see the details :
-                    {1}
-            
-                    ------------
-                    This is an automated email from {2}
-                    """
-    return email_template.format(campaign_name, link, dns_domain)
-
-
-def send_approval_budget_mail(event: BudgetEvent) -> None:
-    mails_list = list()
-    events = BudgetEvent.objects.filter(campaign=event.campaign)
-    link_to_send = "https://%s/dashboard/polio/budget/details/campaignId/%s/campaignName/%s/country/%d" % (
-        settings.DNS_DOMAIN,
-        event.campaign.id,
-        event.campaign.obr_name,
-        # FIXME: check if the country might be None
-        event.campaign.country.id,  # type: ignore
-    )
-    subject = budget_approval_email_subject(event.campaign.obr_name)
-    for e in events:
-        teams = e.target_teams.all()
-        for team in teams:
-            for user in team.users.all():
-                if user.email not in mails_list:
-                    mails_list.append(user.email)
-                    text_content = budget_approval_email(
-                        event.campaign.obr_name,
-                        generate_auto_authentication_link(link_to_send, user),
-                        settings.DNS_DOMAIN,
-                    )
-
-                    msg = EmailMultiAlternatives(subject, text_content, DEFAULT_FROM_EMAIL, [user.email])
-                    html_content = render_to_string(
-                        "budget_approved_email.html",
-                        {
-                            "campaign": event.campaign.obr_name,
-                            "LANGUAGE_CODE": user.iaso_profile.language,
-                            "sender": settings.DNS_DOMAIN,
-                            "link": generate_auto_authentication_link(link_to_send, user),
-                        },
-                    )
-                    msg.attach_alternative(html_content, "text/html")
-                    msg.send(fail_silently=False)
-
-
-def send_approvers_email(
-    user: User,
-    author_team: Team,
-    event: BudgetEvent,
-    event_type: str,
-    approval_link: str,
-    rejection_link: str,
-    files_info: Optional[List[Dict[str, Any]]],
-    links_string: Optional[str],
-) -> None:
-    # if user is in other approval team, send the mail with the fat buttons
-    subject = email_subject(event_type, event.campaign.obr_name)
-    from_email = settings.DEFAULT_FROM_EMAIL
-    files_string = "None"
-    if files_info:
-        files_string = ",\n ".join([f["path"] for f in files_info])
-    links = None
-    if links_string:
-        links = links_string.split(",")
-    auto_authentication_approval_link = generate_auto_authentication_link(approval_link, user)
-    auto_authentication_rejection_link = generate_auto_authentication_link(rejection_link, user)
-    text_content = creation_email_with_two_links(
-        event.type,
-        event.author.first_name,
-        event.author.last_name,
-        event.comment,
-        files_string,
-        links_string,
-        auto_authentication_approval_link,
-        auto_authentication_rejection_link,
-        settings.DNS_DOMAIN,
-    )
-    msg = EmailMultiAlternatives(subject, text_content, from_email, [user.email])
-    html_content = render_to_string(
-        "validation_email.html",
-        {
-            "LANGUAGE_CODE": user.iaso_profile.language,
-            "campaign": event.campaign.obr_name,
-            "comment": event.comment,
-            "author_first_name": event.author.first_name,
-            "author_last_name": event.author.last_name,
-            "validation_link": auto_authentication_approval_link,
-            "rejection_link": auto_authentication_rejection_link,
-            "team": author_team.name,
-            "sender": settings.DNS_DOMAIN,
-            "event_type": event_type,
-            "files": files_info,
-            "links": links,
-        },
-    )
-    msg.attach_alternative(html_content, "text/html")
-    msg.send(fail_silently=False)
-
-
-def send_approval_confirmation_to_users(event: BudgetEvent) -> None:
-    # modify campaign.budget_status instead of event.status
-    event.status = "validated"
-    event.save()
-    send_approval_budget_mail(event)
-
-
-def is_budget_approved(user: User, event: BudgetEvent) -> bool:
-    val_teams = (
-        Team.objects.filter(name__icontains="approval")
-        .filter(project__account=user.iaso_profile.account)
-        .filter(deleted_at=None)
-    )
-    validation_count = 0
-    for val_team in val_teams:
-        for user in val_team.users.all():
-            try:
-                count = BudgetEvent.objects.filter(author=user, campaign=event.campaign, type="validation").count()
-                if count > 0:
-                    validation_count += 1
-                    break
-            except ObjectDoesNotExist:
-                pass
-    if validation_count == val_teams.count():
-        return True
-    return False
-
-
-def format_file_link(event_file: BudgetFiles) -> Dict[str, str]:
-    serialized_file = BudgetFilesSerializer(event_file).data
-    return {"path": serialized_file["file"], "name": event_file.file.name}
-
-
-def make_budget_event_file_links(event: BudgetEvent) -> Optional[List[Dict[str, str]]]:
-    event_files = event.event_files.all()
-    if not event_files:
-        return None
-    return [format_file_link(f) for f in event_files]
-
-
-class RecipientFilterBackend(filters.BaseFilterBackend):
-    def filter_queryset(self, request, queryset, view):
-        recipient = request.query_params.get("recipient")
-        if recipient:
-            queryset = queryset.filter(target_teams__in=[int(recipient)])
-        return queryset
-
-
-class BudgetEventTypeFilterBackend(filters.BaseFilterBackend):
-    def filter_queryset(self, request, queryset, view):
-        type = request.query_params.get("type", "all")
-        if type == "all":
-            return queryset
-        else:
-            return queryset.filter(type=type)
-
-
-class SenderTeamFilterBackend(filters.BaseFilterBackend):
-    def filter_queryset(self, request, queryset, view):
-        sender_team_id = request.query_params.get("senderTeam")
-        if sender_team_id:
-            try:
-                sender_team = Team.objects.get(id=int(sender_team_id))
-                queryset = queryset.filter(author__in=list(sender_team.users.all()))
-            except:
-                logging.debug("No team found for id ", sender_team_id)
-
-        return queryset
-
-
-class BudgetEventViewset(ModelViewSet):
-    result_key = "results"
-    remove_results_key_if_paginated = True
-    serializer_class = BudgetEventSerializer
-    permission_classes = [permissions.IsAuthenticated, HasPoliobudgetPermission]
-    filter_backends = [
-        filters.OrderingFilter,
-        DjangoFilterBackend,
-        BudgetEventTypeFilterBackend,
-        RecipientFilterBackend,
-        SenderTeamFilterBackend,
-    ]
-    ordering_fields = [
-        "created_at",
-        "updated_at",
-        "type",
-        "author",
-    ]
-
-    def get_serializer_class(self):
-        return BudgetEventSerializer
-
-    def get_queryset(self):
-        user = self.request.user
-        queryset = BudgetEvent.objects.filter(author__iaso_profile__account=self.request.user.iaso_profile.account)
-        show_non_internals = Q(internal=False)
-        show_internals = Q(internal=True) & (Q(author=user) | Q(target_teams__users=user))
-        queryset = queryset.filter(show_internals | show_non_internals)
-        show_deleted = self.request.query_params.get("show_deleted")
-        if show_deleted == "false":
-            queryset = queryset.filter(deleted_at=None)
-        campaign_id = self.request.query_params.get("campaign_id")
-        if campaign_id is not None:
-            queryset = queryset.filter(campaign_id=campaign_id)
-        return queryset.distinct()
-
-    def perform_create(self, serializer):
-        # block event creation if user is not part of a team
-        if not self.request.user.iaso_profile.has_a_team():
-            raise serializers.ValidationError({"general": ["userWithoutTeam"]})
-        event = serializer.save(author=self.request.user)
-        serializer = BudgetEventSerializer(event, many=False)
-        return Response(serializer.data)
-
-    @action(methods=["PUT"], detail=False, serializer_class=BudgetEventSerializer)
-    def confirm_budget(self, request):
-        if request.method == "PUT":
-            event_pk = request.data["event"]
-            event = BudgetEvent.objects.get(pk=event_pk)
-            if not event.author.iaso_profile.has_a_team():
-                raise serializers.ValidationError({"general": ["userWithoutTeam"]})
-            event.is_finalized = True if request.data["is_finalized"] else False
-            event.save()
-            files_string = "None"
-            files_info = make_budget_event_file_links(event)
-            if files_info:
-                files_string = ",\n ".join([f["path"] for f in files_info])
-
-            current_user = self.request.user
-            event_type = "approval" if event.type == "validation" else event.type
-
-            if event.is_finalized and not event.is_email_sent:
-                recipients = set()
-                for team in event.target_teams.all():
-                    for user in team.users.all():
-                        if user.email:
-                            recipients.add(user)
-
-                link_to_send = "https://%s/dashboard/polio/budget/details/campaignId/%s/campaignName/%s/country/%d" % (
-                    settings.DNS_DOMAIN,
-                    event.campaign.id,
-                    event.campaign.obr_name,
-                    event.campaign.country.id,
-                )
-                approval_link = link_to_send + "/action/confirmApproval"
-                rejection_link = link_to_send + "/action/addComment"
-                # If other approval teams still have to approve the budget, notify their members with html email
-                if event_type == "approval" and not is_budget_approved(current_user, event):
-                    # We're assuming a user can only be in one approval team
-                    author_team = event.author.teams.filter(name__icontains="approval").filter(deleted_at=None).first()
-                    # if not author_team:
-                    #     raise serializers.ValidationError({"general":"userWithoutTeam"})
-                    other_approval_teams = (
-                        Team.objects.filter(name__icontains="approval")
-                        .exclude(id=author_team.id)
-                        .filter(deleted_at=None)
-                    )
-                    approvers = other_approval_teams.values("users")
-
-                    for approver in approvers:
-                        user = User.objects.get(id=approver["users"])
-                        send_approvers_email(
-                            user, author_team, event, event_type, approval_link, rejection_link, files_info, event.links
-                        )
-                        # TODO check that this works
-                        recipients.discard(user)
-                # Send email with link to all approvers if event is a submission
-                elif event_type == "submission" or event_type == "transmission":
-                    author_team = event.author.teams.filter(name__icontains="approval").filter(deleted_at=None).first()
-                    if not author_team:
-                        author_team = event.author.teams.first()
-                    # if not author_team:
-                    #     raise serializers.ValidationError({"general":"userWithoutTeam"})
-                    approval_teams = Team.objects.filter(name__icontains="approval").filter(deleted_at=None)
-                    approvers = approval_teams.values("users")
-                    for approver in approvers:
-                        user = User.objects.get(id=approver["users"])
-                        send_approvers_email(
-                            user, author_team, event, event_type, approval_link, rejection_link, files_info, event.links
-                        )
-                        recipients.discard(user)
-                for user in recipients:
-                    subject = email_subject(event_type, event.campaign.obr_name)
-                    text_content = event_creation_email(
-                        event.type,
-                        event.author.first_name,
-                        event.author.last_name,
-                        event.comment,
-                        files_string,
-                        event.links,
-                        generate_auto_authentication_link(link_to_send, user),
-                        settings.DNS_DOMAIN,
-                    )
-                    msg = EmailMultiAlternatives(subject, text_content, DEFAULT_FROM_EMAIL, [user.email])
-                    links = event.links
-                    if links:
-                        links = links.split(",")
-                    html_content = render_to_string(
-                        "event_created_email.html",
-                        {
-                            "campaign": event.campaign.obr_name,
-                            "LANGUAGE_CODE": user.iaso_profile.language,
-                            "sender": settings.DNS_DOMAIN,
-                            "link": generate_auto_authentication_link(link_to_send, user),
-                            "first_name": event.author.first_name,
-                            "last_name": event.author.last_name,
-                            "comment": event.comment,
-                            "event_type": event_type,
-                            "files": files_info,
-                            "links": links,
-                        },
-                    )
-                    msg.attach_alternative(html_content, "text/html")
-                    msg.send(fail_silently=False)
-
-                event.is_email_sent = True
-                event.save()
-                # If the budget is approved as a results of the events creation, send the confirmation email as well
-                if event_type == "approval" and is_budget_approved(current_user, event):
-                    send_approval_confirmation_to_users(event)
-            serializer = BudgetEventSerializer(event, many=False)
-            return Response(serializer.data)
-
-        event = BudgetEvent.objects.none()
-        serializer = BudgetEventSerializer(event, many=False)
-        return Response(serializer.data)
-
-    def team_budget_validation(self, request):
-        pass
-
-
-class BudgetFilesViewset(ModelViewSet):
-    results_key = "results"
-    serializer_class = BudgetFilesSerializer
-    remove_results_key_if_paginated = True
-    permission_classes = [HasPoliobudgetPermission]
-
-    def get_serializer_class(self):
-        return BudgetFilesSerializer
-
-    def get_queryset(self):
-        queryset = BudgetFiles.objects.filter(
-            event__author__iaso_profile__account=self.request.user.iaso_profile.account
-        )
-        event_id = self.request.query_params.get("event_id")
-        if event_id is not None:
-            queryset = queryset.filter(event_id=event_id)
-        return queryset
-
-    def create(self, request, *args, **kwargs):
-        event = request.data["event"]
-        event = get_object_or_404(BudgetEvent, id=event)
-        for file in request.FILES.items():
-            budget_file = BudgetFiles.objects.create(file=File(file[1]), event=event)
-            budget_file.save()
-
-        files = BudgetFiles.objects.filter(event__author__iaso_profile__account=self.request.user.iaso_profile.account)
-        serializer = BudgetFilesSerializer(files, many=True)
-        return Response(serializer.data)
-
-
 router = routers.SimpleRouter()
 router.register(r"polio/orgunits", PolioOrgunitViewSet, basename="PolioOrgunit")
 router.register(r"polio/campaigns", CampaignViewSet, basename="Campaign")
@@ -2093,5 +1614,3 @@ router.register(r"polio/v2/forma", FormAStocksViewSetV2, basename="forma")
 router.register(r"polio/countryusersgroup", CountryUsersGroupViewSet, basename="countryusersgroup")
 router.register(r"polio/linelistimport", LineListImportViewSet, basename="linelistimport")
 router.register(r"polio/orgunitspercampaign", OrgUnitsPerCampaignViewset, basename="orgunitspercampaign")
-router.register(r"polio/budgetevent", BudgetEventViewset, basename="budget")
-router.register(r"polio/budgetfiles", BudgetFilesViewset, basename="budgetfiles")

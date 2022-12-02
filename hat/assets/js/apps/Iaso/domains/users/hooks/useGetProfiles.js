@@ -1,7 +1,9 @@
 import { getRequest } from 'Iaso/libs/Api';
 import { useSnackQuery } from 'Iaso/libs/apiHooks.ts';
+import { makeUrlWithParams } from '../../../libs/utils.tsx';
 
 export const useGetProfiles = params => {
+    const url = makeUrlWithParams(`/api/profiles/`, params);
     let newParams = {};
     if (params) {
         newParams = {
@@ -9,22 +11,11 @@ export const useGetProfiles = params => {
             order: params.order,
             page: params.page,
         };
-        if (params.search) {
-            newParams.search = params.search;
-        }
-        if (params.permissions) {
-            newParams.permissions = params.permissions;
-        }
-        if (params.location) {
-            newParams.location = params.location;
-        }
-        if (params.orgUnitTypes) {
-            newParams.orgUnitTypes = params.orgUnitTypes;
-        }
+        newParams.orgUnitTypes = params.orgUnitTypes;
+        newParams.search = params.search;
+        newParams.location = params.location;
+        newParams.permissions = params.permissions;
     }
 
-    const searchParams = new URLSearchParams(newParams);
-    return useSnackQuery(['profiles', newParams], () =>
-        getRequest(`/api/profiles/?${searchParams.toString()}`),
-    );
+    return useSnackQuery(['profiles', newParams], () => getRequest(url));
 };

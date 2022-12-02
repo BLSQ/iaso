@@ -117,7 +117,7 @@ const Filters = ({ baseUrl, params }) => {
                 </Grid>
                 <Grid item xs={3}>
                     <InputComponent
-                        keyValue="orgUnitTypesDropDown"
+                        keyValue="orgUnitTypes"
                         onChange={handleChange}
                         value={filters.orgUnitTypes}
                         type="select"

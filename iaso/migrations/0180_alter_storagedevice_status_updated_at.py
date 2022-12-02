@@ -6,13 +6,13 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('iaso', '0179_set_storagedevice_status_updated_at'),
+        ("iaso", "0179_set_storagedevice_status_updated_at"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='storagedevice',
-            name='status_updated_at',
+            model_name="storagedevice",
+            name="status_updated_at",
             field=models.DateTimeField(auto_now_add=True),
         ),
     ]

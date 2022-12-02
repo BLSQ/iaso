@@ -102,6 +102,7 @@
         "babel-loader": "^8.0.6",
         "babel-plugin-require-context-hook": "^1.0.0",
         "babel-polyfill": "^6.26.0",
+        "canvas": "^2.10.2",
         "chai": "^4.2.0",
         "css-loader": "^3.0.0",
         "cypress": "^9.5.4",

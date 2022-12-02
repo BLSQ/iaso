@@ -27,12 +27,11 @@ export const getDefaultPeriodString = () => {
 export const getDefaultPeriod = () => new Period(getDefaultPeriodString());
 
 export const isValidPeriod = (pString, periodType = PERIOD_TYPE_DAY) => {
-    if (!pString) return true;
-    const pType = Period.getPeriodType(pString);
-    if (pType && pType === periodType) {
+    if (!pString) {
         return true;
     }
-    return false;
+    const pType = Period.getPeriodType(pString);
+    return Boolean(pType && pType === periodType);
 };
 
 export const errorTypes = {

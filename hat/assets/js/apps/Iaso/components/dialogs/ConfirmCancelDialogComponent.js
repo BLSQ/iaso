@@ -85,7 +85,7 @@ export const ConfirmCancelActions = withStyles(actionStyles)(
     RawConfirmCancelActions,
 );
 
-function ConfirmCancelDialogComponent({
+const ConfirmCancelDialogComponent = ({
     allowConfirm,
     onConfirm,
     confirmMessage,
@@ -98,7 +98,7 @@ function ConfirmCancelDialogComponent({
     id,
     dataTestId,
     ...dialogProps
-}) {
+}) => {
     return (
         <DialogComponent
             dataTestId={dataTestId}
@@ -120,7 +120,7 @@ function ConfirmCancelDialogComponent({
             {...dialogProps}
         />
     );
-}
+};
 ConfirmCancelDialogComponent.defaultProps = {
     allowConfirm: true,
     onCancel: closeDialog => closeDialog(),

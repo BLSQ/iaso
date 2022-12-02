@@ -61,10 +61,6 @@ export const CreateReAssignDialogComponent: FunctionComponent<Props> = ({
                     }),
                 );
             }
-            return {
-                orgUnit: { value: currentInstance.org_unit, errors: [] },
-                period: { value: initialPeriod, errors: initialPeriodErrors },
-            };
         } else if (formType.periodType) {
             // On creation make a default period
             const toDay = new Date();

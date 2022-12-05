@@ -13,20 +13,8 @@ from rest_framework.response import Response
 from rest_framework.viewsets import GenericViewSet
 from rest_framework.decorators import action
 
-from django_filters import filters
-from django_filters.rest_framework import DjangoFilterBackend
-
-
 from drf_yasg import openapi
 from drf_yasg.utils import swagger_auto_schema
-
-
-# Entity Type -> Account : users -> List of users ?
-# Entity Type -> Reference form <- Forms <- Project
-# Project -> Account
-
-# queryset = form_objects.filter_for_user_and_app_id(self.request.user, self.request.query_params.get("app_id"))
-#  user -> iaso_profile -> account
 
 
 class FormMiniSerializer(serializers.ModelSerializer):
@@ -193,14 +181,17 @@ from django.contrib.auth.models import User
 
 
 def user_can_access_entity_type(entity_type: EntityType, user: User):
-    if user.iaso_profile.account.id == entity_type.account.id:
+    if user.iaso_profile.account.pk == entity_type.account.pk:
         return {"can_access": True}
     else:
         return {"can_access": False, "reason": "User profile account != entity_type account"}
 
 
 def user_can_access_all_forms_of_workflow_all_versions(entity_type: EntityType, user: User):
-    if not entity_type.reference_form.projects.filter(account=user.iaso_profile.account).exists():
+    if (
+        entity_type.reference_form is not None
+        and not entity_type.reference_form.projects.filter(account=user.iaso_profile.account).exists()
+    ):
         return {
             "can_access": False,
             "reason": f"User {user.username} Cannot Access Reference Form for Workflow Version {WorkflowVersion.pk}",
@@ -226,9 +217,12 @@ def user_can_access_all_forms_of_workflow_all_versions(entity_type: EntityType, 
 
 
 def user_can_access_all_forms_of_workflow_version(workflow_version: WorkflowVersion, user: User):
-    if not workflow_version.workflow.entity_type.reference_form.projects.filter(
-        account=user.iaso_profile.account
-    ).exists():
+    if (
+        workflow_version.workflow.entity_type.reference_form is not None
+        and not workflow_version.workflow.entity_type.reference_form.projects.filter(
+            account=user.iaso_profile.account
+        ).exists()
+    ):
 
         return {
             "can_access": False,
@@ -269,7 +263,7 @@ class WorkflowVersionViewSet(GenericViewSet):
     """
 
     lookup_field = "entity_type_id"
-    permission_classes = [permissions.IsAuthenticated, HasPermission("menupermissions.iaso_workflows")]
+    permission_classes = [permissions.IsAuthenticated, HasPermission("menupermissions.iaso_workflows")]  # type: ignore
     serializer_class = WorkflowVersionSerializer
     pagination_class = WorkflowPaginator
 

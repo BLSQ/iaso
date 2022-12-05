@@ -25,6 +25,26 @@ const MESSAGES = defineMessages({
         defaultMessage: 'List',
         id: 'iaso.label.list',
     },
+    formList: {
+        defaultMessage: 'Form List',
+        id: 'iaso.label.formList',
+    },
+    orgUnitList: {
+        defaultMessage: 'Org unit List',
+        id: 'iaso.label.orgUnitList',
+    },
+    dataSourceList: {
+        defaultMessage: 'Data Sources List',
+        id: 'iaso.label.dataSourceList',
+    },
+    beneficiariesList: {
+        defaultMessage: 'Beneficiaries List',
+        id: 'iaso.label.beneficiariesList',
+    },
+    planningList: {
+        defaultMessage: 'Planning List',
+        id: 'iaso.label.planningList',
+    },
     dhis2Mappings: {
         defaultMessage: 'DHIS mappings',
         id: 'iaso.label.dhis2Mappings',

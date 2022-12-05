@@ -54,7 +54,7 @@ export const CompletenessStatsFilters: FunctionComponent<Props> = ({
                         ouType => ouType.original.id === parseInt(ouTypeId, 10),
                     ),
                 )
-                .map(ouType => ouType.original?.depth ?? 0)
+                .map(ouType => ouType?.original?.depth ?? 0)
                 // If the array is empty, we return the same depth as the orgUnit, to avoid showing an error
                 .sort((a, b) => b - a)[0] ?? selectedOrgUnitDepth,
         [filters.orgUnitTypeIds, orgUnitTypes, selectedOrgUnitDepth],

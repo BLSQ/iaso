@@ -34,7 +34,7 @@ import { Search } from './types/search';
 
 // UTILS
 import { decodeSearch } from './utils';
-import { convertObjectToString } from '../../utils';
+import { convertObjectToString } from '../../utils/dataManipulation';
 import { redirectTo, redirectToReplace } from '../../routing/actions';
 import { getChipColors } from '../../constants/chipColors';
 // UTILS

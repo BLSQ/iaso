@@ -35,6 +35,12 @@ const styles = theme => ({
         display: 'block',
         marginTop: 5,
     },
+
+    root: {
+        '&.MuiToolbar-gutters': {
+            paddingRight: '48px',
+        },
+    },
 });
 
 const useStyles = makeStyles(styles);
@@ -62,7 +68,7 @@ function TopBar(props) {
     return (
         <>
             <AppBar position="relative" color="primary" id="top-bar">
-                <Toolbar>
+                <Toolbar className={classes.root}>
                     <Grid
                         container
                         justifyContent="space-between"

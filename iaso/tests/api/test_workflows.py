@@ -19,6 +19,19 @@ def var_dump(what):
         pprint(what.__dict__)
 
 
+post_answer_schema = {
+    "type": "object",
+    "properties": {
+        "created_at": {"type": "string"},
+        "updated_at": {"type": "string"},
+        "name": {"type": "string"},
+        "status": {"type": "string"},
+        "version_id": {"type": "number"},
+    },
+    "required": ["created_at", "updated_at", "name", "status", "version_id"],
+}
+
+
 class WorkflowsAPITestCase(APITestCase):
     @classmethod
     def setUpTestData(cls):
@@ -303,10 +316,113 @@ class WorkflowsAPITestCase(APITestCase):
             self.fail(msg=str(ex))
 
     def test_new_version_empty(self):
-        pass
+        self.client.force_authenticate(self.blue_adult_1)
+
+        response = self.client.post(f"/api/workflow/{self.et_adults_blue.pk}/new/")
+
+        self.assertJSONResponse(response, 200)
+
+        try:
+            jsonschema.validate(instance=response.data, schema=post_answer_schema)
+        except jsonschema.exceptions.ValidationError as ex:
+            self.fail(msg=str(ex))
+
+        try:
+            w_version = WorkflowVersion.objects.get(pk=response.data["version_id"])
+
+            assert w_version.pk == response.data["version_id"]
+            assert w_version.name == response.data["name"]
+
+        except WorkflowVersion.DoesNotExist as ex:
+            self.fail(msg=str(ex))
 
     def test_new_version_from_copy(self):
-        pass
+        self.client.force_authenticate(self.blue_adult_1)
 
-    def test_mobile_api(self):
-        pass
+        response = self.client.post(
+            f"/api/workflow/{self.et_adults_blue.pk}/new/?version_id={self.workflow_version_et_adults_blue.pk}"
+        )
+
+        var_dump(response)
+
+        self.assertJSONResponse(response, 200)
+
+        try:
+            jsonschema.validate(instance=response.data, schema=post_answer_schema)
+        except jsonschema.exceptions.ValidationError as ex:
+            self.fail(msg=str(ex))
+
+        try:
+            w_version = WorkflowVersion.objects.get(pk=response.data["version_id"])
+
+            assert w_version.pk == response.data["version_id"]
+            assert w_version.name == str("Copy of " + self.workflow_version_et_adults_blue.name)
+
+        except WorkflowVersion.DoesNotExist as ex:
+            self.fail(msg=str(ex))
+
+    def test_mobile_api_without_app_id(self):
+        self.client.force_authenticate(self.blue_adult_1)
+
+        response = self.client.get("/api/mobile/workflow/")
+
+        self.assertJSONResponse(response, 200)
+
+        assert response.data == "No app_id provided"
+
+    def test_mobile_api_with_nonexisting_app_id(self):
+        self.client.force_authenticate(self.blue_adult_1)
+
+        response = self.client.get("/api/mobile/workflow/?app_id=wrong_app_id")
+
+        self.assertJSONResponse(response, 404)
+
+        assert response.data == "Corresponding project not found"
+
+    def test_mobile_api_with_nonaccessible_app_id(self):
+        self.client.force_authenticate(self.blue_adult_1)
+
+        response = self.client.get("/api/mobile/workflow/?app_id=red.adults.project")
+
+        self.assertJSONResponse(response, 404)
+
+        assert response.data == "User not found in Projects for this app id or project not found"
+
+    def test_mobile_api_ok(self):
+        self.client.force_authenticate(self.blue_adult_1)
+
+        set_tl_schema = {
+            "type": "object",
+            "properties": {
+                "workflows": {
+                    "type": "array",
+                    "items": {
+                        "type": "object",
+                        "properties": {
+                            "status": {"type": "string"},
+                            "created_at": {"type": "number"},
+                            "updated_at": {"type": "number"},
+                            "version_id": {"type": "number"},
+                            "entity_type_id": {"type": "number"},
+                            "name": {"type": "string"},
+                            "changes": {"type": "array"},
+                            "follow_ups": {"type": "array"},
+                        },
+                    },
+                }
+            },
+            "required": ["workflows"],
+        }
+
+        response = self.client.get("/api/mobile/workflow/?app_id=blue.adults.project")
+
+        var_dump(response)
+
+        self.assertJSONResponse(response, 200)
+
+        try:
+            jsonschema.validate(instance=response.data, schema=set_tl_schema)
+        except jsonschema.exceptions.ValidationError as ex:
+            self.fail(msg=str(ex))
+
+        assert len(response.data["workflows"]) == 1

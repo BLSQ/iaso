@@ -1,9 +1,10 @@
 import time
 
+from django.db.models import Q
 
 from iaso.models.workflow import WorkflowVersionsStatus
 from rest_framework import serializers, permissions
-from iaso.models import WorkflowVersion, Project
+from iaso.models import WorkflowVersion, Project, Workflow
 from rest_framework.viewsets import GenericViewSet
 from rest_framework.response import Response
 
@@ -74,19 +75,11 @@ class MobileWorkflowViewSet(GenericViewSet):
 
         if self.request.user.is_anonymous:
             return Response(status=401, data="User cannot be anonymous")
-        else:
-            try:
-                p = Project.objects.get(app_id=app_id)
-                account_users = p.account.users.all()
-
-                if request.user not in account_users:
-                    return Response(status=404, data="User not found in Project's users ")
-
-            except Project.DoesNotExist:
-                return Response(status=404, data="Corresponding project not found")
+        elif not Project.objects.filter(app_id=app_id, account=self.request.user.iaso_profile.account).exists():
+            return Response(status=404, data="User not found in Projects for this app id or project not found")
 
         # project -> account -> users
-        queryset = self.get_queryset(**kwargs)
+        queryset = self.get_queryset(**dict(kwargs, app_id=app_id, user=request.user))
 
         page = self.paginate_queryset(queryset)
 
@@ -98,4 +91,35 @@ class MobileWorkflowViewSet(GenericViewSet):
         return Response({"workflows": serializer.data})
 
     def get_queryset(self, **kwargs):
-        return WorkflowVersion.objects.order_by("workflow__pk", "-created_at").distinct("workflow__pk")
+        app_id = kwargs["app_id"]
+        user = kwargs["user"]
+
+        ok_wfs = Workflow.objects.filter(
+            entity_type__account=user.iaso_profile.account,
+            entity_type__reference_form__projects__account=user.iaso_profile.account,
+        )
+
+        ok_wfs_ids = list(map(lambda x: x.pk, ok_wfs))
+
+        print("ok_wfs_ids", ok_wfs_ids)
+        print("user.iaso_profile.account", user.iaso_profile.account)
+        print(
+            "WorkflowVersion.objects.filter(workflow__in=ok_wfs_ids) count",
+            WorkflowVersion.objects.filter(workflow__in=ok_wfs_ids).count(),
+        )
+
+        return (
+            WorkflowVersion.objects.filter(workflow__in=ok_wfs_ids)
+            .filter(
+                Q(follow_ups__forms__projects__account=user.iaso_profile.account)
+                | Q(follow_ups__isnull=True)
+                | Q(follow_ups__isnull=False, follow_ups__forms__isnull=True)
+            )
+            .filter(
+                Q(changes__form__projects__account=user.iaso_profile.account)
+                | Q(changes__isnull=True)
+                | Q(changes__isnull=False, changes__form__isnull=True)
+            )
+            .order_by("workflow__pk", "-created_at")
+            .distinct("workflow__pk")
+        )

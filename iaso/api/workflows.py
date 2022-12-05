@@ -181,7 +181,9 @@ from django.contrib.auth.models import User
 
 
 def user_can_access_entity_type(entity_type: EntityType, user: User):
-    if user.iaso_profile.account.pk == entity_type.account.pk:
+    if entity_type.account is None:
+        return {"can_access": False, "reason": "Entity type does not have an account"}
+    elif user.iaso_profile.account.pk == entity_type.account.pk:
         return {"can_access": True}
     else:
         return {"can_access": False, "reason": "User profile account != entity_type account"}

@@ -135,6 +135,7 @@ export const OrgUnits: FunctionComponent<Props> = ({ params }) => {
         refetch: fetchOrgUnits,
     } = useGetOrgUnits({
         params: apiParams,
+        isSearchActive,
     });
     const {
         data: orgUnitsDataLocation,
@@ -143,6 +144,7 @@ export const OrgUnits: FunctionComponent<Props> = ({ params }) => {
     } = useGetOrgUnitsLocations({
         params: apiParamsLocations,
         searches,
+        isSearchActive,
     });
     // REQUESTS HOOKS
 
@@ -164,9 +166,11 @@ export const OrgUnits: FunctionComponent<Props> = ({ params }) => {
     );
 
     const handleSearch = useCallback(() => {
-        fetchOrgUnits();
-        fetchOrgUnitsLocations();
-    }, [fetchOrgUnits, fetchOrgUnitsLocations]);
+        if (isSearchActive) {
+            fetchOrgUnits();
+            fetchOrgUnitsLocations();
+        }
+    }, [fetchOrgUnits, fetchOrgUnitsLocations, isSearchActive]);
 
     const onSearch = useCallback(
         newParams => {
@@ -253,7 +257,7 @@ export const OrgUnits: FunctionComponent<Props> = ({ params }) => {
                     params={params}
                     onSearch={onSearch}
                     currentTab={tab}
-                    defaultSearches={searches}
+                    paramsSearches={searches}
                     orgunitTypes={orgunitTypes || []}
                     isFetchingOrgunitTypes={isFetchingOrgunitTypes}
                     counts={(!isLoading && orgUnitsData?.counts) || []}

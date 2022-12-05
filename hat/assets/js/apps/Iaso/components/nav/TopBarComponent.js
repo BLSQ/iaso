@@ -127,6 +127,7 @@ function TopBar(props) {
                                 >
                                     <CurrentUserInfos
                                         currentUser={currentUser}
+                                        version={window.IASO_VERSION}
                                     />
                                 </Box>
                             </Grid>

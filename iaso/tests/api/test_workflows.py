@@ -1,11 +1,7 @@
-import typing
-
 import jsonschema
 
 from django.utils.timezone import now
 from django.contrib.auth.models import AnonymousUser
-
-from pprint import pprint
 
 from iaso import models as m
 from iaso.models import Form, Workflow, WorkflowVersion, WorkflowFollowup, WorkflowChange
@@ -266,8 +262,6 @@ class WorkflowsAPITestCase(APITestCase):
 
         response = self.client.get(f"/api/workflow/{self.et_adults_blue.pk}/")
 
-        var_dump(response)
-
         self.assertJSONResponse(response, 200)
         self.assertEqual(response.json()["count"], 1)  # 1 version available
 
@@ -335,8 +329,6 @@ class WorkflowsAPITestCase(APITestCase):
             f"/api/workflow/{self.et_adults_blue.pk}/new/?version_id={self.workflow_version_et_adults_blue.pk}"
         )
 
-        var_dump(response)
-
         self.assertJSONResponse(response, 200)
 
         try:
@@ -358,7 +350,7 @@ class WorkflowsAPITestCase(APITestCase):
 
         response = self.client.get("/api/mobile/workflow/")
 
-        self.assertJSONResponse(response, 200)
+        self.assertJSONResponse(response, 404)
 
         assert response.data == "No app_id provided"
 
@@ -369,7 +361,7 @@ class WorkflowsAPITestCase(APITestCase):
 
         self.assertJSONResponse(response, 404)
 
-        assert response.data == "Corresponding project not found"
+        assert response.data == "User not found in Projects for this app id or project not found"
 
     def test_mobile_api_with_nonaccessible_app_id(self):
         self.client.force_authenticate(self.blue_adult_1)

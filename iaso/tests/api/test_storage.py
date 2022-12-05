@@ -1421,7 +1421,18 @@ class StorageAPITestCase(APITestCase):
         self.assertEqual(len(data), 4)  # 3 rows + header
         self.assertListEqual(
             data[1],
-            ["EXISTING_STORAGE", "NFC", "2020-02-02 02:02:02", "2020-02-02 02:02:02", "OK", "", "", "", "", ""],
+            [
+                "EXISTING_STORAGE",
+                "NFC",
+                "2020-02-02 02:02:02",
+                "2020-02-02 02:02:02",
+                "OK",
+                "",
+                "",
+                "",
+                "",
+                str(self.entity.id),
+            ],
         )
         self.assertListEqual(
             data[2],
@@ -1501,7 +1512,8 @@ class StorageAPITestCase(APITestCase):
                 "Status comment": {0: None, 1: None, 2: None},
                 "Status updated at": {0: None, 1: 44873.55064814815, 2: 44873.55064814815},
                 "Org unit id": {0: None, 1: None, 2: None},
-                "Entity id": {0: None, 1: None, 2: mock.ANY},
+                # FIXME this is a float for a pk?
+                "Entity id": {0: self.entity.id * 1.0, 1: None, 2: self.entity.id * 1.0},
             },
         )
 

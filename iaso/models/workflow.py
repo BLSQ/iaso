@@ -4,6 +4,9 @@ from ..utils.models.soft_deletable import SoftDeletableModel
 
 
 class Workflow(SoftDeletableModel):
+    """A workflow is linked one to one with a entity type.
+    A workflow has versions of the type WorkflowVersion which includes the real content of the workflow."""
+
     entity_type = models.OneToOneField(
         EntityType,
         on_delete=models.CASCADE,
@@ -25,6 +28,8 @@ WorkflowVersionsStatusAllowedTransitions = {"D": {"U", "P"}, "U": {"P"}, "P": {"
 
 
 class WorkflowVersionsStatus(models.TextChoices):
+    """WorkflowVersionsStatus is an Enum-like class for the Status of a workflow Version."""
+
     DRAFT = "D", "Draft"
     UNPUBLISHED = "U", "Unpublished"
     PUBLISHED = "P", "Published"
@@ -35,6 +40,13 @@ class WorkflowVersionsStatus(models.TextChoices):
 
 
 class WorkflowVersion(models.Model):
+    """
+    WorkflowVersion has 'workflow' foreign key to the Workflow object.
+    reverse relations :
+        changes -> WorkflowChange
+        follow_ups -> WorkflowFollowup
+    """
+
     workflow = models.ForeignKey(Workflow, on_delete=models.CASCADE, related_name="workflow_versions")
 
     name = models.CharField(max_length=50, default="No Name")
@@ -58,6 +70,8 @@ class WorkflowFollowup(models.Model):
     order = models.IntegerField(default=0)
     condition = models.TextField()
     forms = models.ManyToManyField(Form)
+
+    # this actually points to a WorkflowVersion
     workflow = models.ForeignKey(WorkflowVersion, on_delete=models.CASCADE, related_name="follow_ups")
 
     created_at = models.DateTimeField(auto_now_add=True)
@@ -66,7 +80,11 @@ class WorkflowFollowup(models.Model):
 
 class WorkflowChange(models.Model):
     form = models.ForeignKey(Form, on_delete=models.CASCADE)
-    mapping = models.JSONField(default=dict)
+    mapping = models.JSONField(
+        default=dict
+    )  # dict objects with keys a field name from reference_form and value the target field name in form.
+
+    # this actually points to a WorkflowVersion
     workflow = models.ForeignKey(WorkflowVersion, on_delete=models.CASCADE, related_name="changes")
 
     created_at = models.DateTimeField(auto_now_add=True)

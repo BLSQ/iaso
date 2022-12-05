@@ -101,24 +101,17 @@ class MobileWorkflowViewSet(GenericViewSet):
 
         ok_wfs_ids = list(map(lambda x: x.pk, ok_wfs))
 
-        print("ok_wfs_ids", ok_wfs_ids)
-        print("user.iaso_profile.account", user.iaso_profile.account)
-        print(
-            "WorkflowVersion.objects.filter(workflow__in=ok_wfs_ids) count",
-            WorkflowVersion.objects.filter(workflow__in=ok_wfs_ids).count(),
-        )
-
         return (
             WorkflowVersion.objects.filter(workflow__in=ok_wfs_ids)
             .filter(
                 Q(follow_ups__forms__projects__account=user.iaso_profile.account)
                 | Q(follow_ups__isnull=True)
-                | Q(follow_ups__isnull=False, follow_ups__forms__isnull=True)
+                | Q(follow_ups__isnull=False, follow_ups__forms__isnull=True)  # no follow ups or no forms on follow ups
             )
             .filter(
                 Q(changes__form__projects__account=user.iaso_profile.account)
                 | Q(changes__isnull=True)
-                | Q(changes__isnull=False, changes__form__isnull=True)
+                | Q(changes__isnull=False, changes__form__isnull=True)  # no changes or no forms on changes
             )
             .order_by("workflow__pk", "-created_at")
             .distinct("workflow__pk")

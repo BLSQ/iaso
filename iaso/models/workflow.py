@@ -1,3 +1,5 @@
+from typing import Set
+
 from django.db import models
 from iaso.models.entity import EntityType, Form
 from ..utils.models.soft_deletable import SoftDeletableModel
@@ -35,7 +37,7 @@ class WorkflowVersionsStatus(models.TextChoices):
     PUBLISHED = "P", "Published"
 
     def is_transition_allowed(self, new_status: "WorkflowVersionsStatus"):
-        allowed_set = WorkflowVersionsStatusAllowedTransitions.get(self.value, {})
+        allowed_set: Set[str] = WorkflowVersionsStatusAllowedTransitions.get(self.value, {})
         return new_status.value in allowed_set
 
 

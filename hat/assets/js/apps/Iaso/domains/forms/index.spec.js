@@ -62,6 +62,8 @@ const requestForDeletedForms = [
 const userWithFormPermission = {
     users: {
         current: {
+            id: 1,
+            account: { name: '' },
             permissions: ['iaso_forms'],
         },
     },

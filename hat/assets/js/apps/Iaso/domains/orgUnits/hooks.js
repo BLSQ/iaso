@@ -14,6 +14,16 @@ export const useOrgUnitDetailData = (
     orgUnitId,
     setCurrentOrgUnit,
 ) => {
+    const { data: originalOrgUnit, isFetching: isFetchingDetail } =
+        useSnackQuery(
+            ['currentOrgUnit', orgUnitId],
+            () => getRequest(`/api/orgunits/${orgUnitId}/`),
+            MESSAGES.fetchOrgUnitError,
+            {
+                enabled: !isNewOrgunit,
+                onSuccess: ou => setCurrentOrgUnit(ou),
+            },
+        );
     const [
         { data: algorithms = [], isFetching: isFetchingAlgorithm },
         { data: algorithmRuns = [], isFetching: isFetchingAlgorithmRuns },
@@ -42,12 +52,15 @@ export const useOrgUnitDetailData = (
             queryFn: () =>
                 getRequest(
                     `/api/groups/${
-                        isNewOrgunit ? '?&defaultVersion=true' : ''
+                        isNewOrgunit
+                            ? '?&defaultVersion=true'
+                            : `?&dataSource=${originalOrgUnit?.source_id}`
                     }`,
                 ),
             snackErrorMsg: MESSAGES.fetchGroupsError,
             options: {
                 select: data => data.groups,
+                enabled: Boolean(originalOrgUnit),
             },
         },
         {
@@ -114,18 +127,6 @@ export const useOrgUnitDetailData = (
         ? isFetchingPlainSources
         : isFetchingAssociatedDataSources;
 
-    const { data: originalOrgUnit, isFetching: isFetchingDetail } =
-        useSnackQuery(
-            ['currentOrgUnit', orgUnitId],
-            () => getRequest(`/api/orgunits/${orgUnitId}/`),
-            MESSAGES.fetchOrgUnitError,
-            {
-                enabled:
-                    !isNewOrgunit && !isFetchingSources && !isFetchingLinks,
-                onSuccess: ou => setCurrentOrgUnit(ou),
-            },
-        );
-
     return {
         algorithms,
         algorithmRuns,
@@ -144,6 +145,8 @@ export const useOrgUnitDetailData = (
         sources: isNewOrgunit ? sources : associatedDataSources,
         originalOrgUnit,
         isFetchingDetail,
+        isFetchingOrgUnitTypes,
+        isFetchingGroups,
     };
 };
 

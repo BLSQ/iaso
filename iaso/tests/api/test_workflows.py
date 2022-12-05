@@ -11,14 +11,6 @@ from iaso import models as m
 from iaso.models import Form, Workflow, WorkflowVersion, WorkflowFollowup, WorkflowChange
 from iaso.test import APITestCase
 
-
-def var_dump(what):
-    if type(what) is dict:
-        pprint(what)
-    else:
-        pprint(what.__dict__)
-
-
 post_answer_schema = {
     "type": "object",
     "properties": {
@@ -415,8 +407,6 @@ class WorkflowsAPITestCase(APITestCase):
         }
 
         response = self.client.get("/api/mobile/workflow/?app_id=blue.adults.project")
-
-        var_dump(response)
 
         self.assertJSONResponse(response, 200)
 

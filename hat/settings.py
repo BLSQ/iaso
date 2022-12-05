@@ -473,3 +473,15 @@ SOCIALACCOUNT_PROVIDERS = {
 CACHES = {"default": {"BACKEND": "django.core.cache.backends.db.DatabaseCache", "LOCATION": "django_cache_table"}}
 
 DASHBOARD_ENABLE_FULL_EXPORT = True  # allow csv export on /explore
+
+from pathlib import Path
+
+
+def is_docker():
+    cgroup = Path("/proc/self/cgroup")
+    return Path("/.dockerenv").is_file() or cgroup.is_file() and cgroup.read_text().find("docker") > -1
+
+
+if not is_docker():
+    GEOS_LIBRARY_PATH = "/opt/homebrew/Cellar/geos/3.11.1/lib/libgeos_c.dylib"
+    GDAL_LIBRARY_PATH = "/opt/homebrew/Cellar/gdal/3.5.3_1/lib/libgdal.dylib"

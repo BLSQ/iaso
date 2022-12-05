@@ -68,6 +68,10 @@ const useStyles = makeStyles(theme => ({
         marginLeft: theme.spacing(1),
         marginRight: theme.spacing(1),
     },
+    warningMessage: {
+        display: 'flex',
+        justifyContent: 'center',
+    },
 }));
 
 const stringOfIdsToArrayofIds = stringValue =>
@@ -332,13 +336,16 @@ export const OrgUnitsMultiActionsDialog: FunctionComponent<Props> = ({
                         withDivider
                         btnMessage={formatMessage(MESSAGES.validate)}
                         message={
-                            <Box display="flex" justifyContent="center">
-                                <Typography variant="body2" color="error">
-                                    {formatMessage(MESSAGES.bulkChangeCount, {
-                                        count: `${formatThousand(selectCount)}`,
-                                    })}
-                                </Typography>
-                            </Box>
+                            <Typography
+                                variant="body2"
+                                color="error"
+                                component="span"
+                                className={classes.warningMessage}
+                            >
+                                {formatMessage(MESSAGES.bulkChangeCount, {
+                                    count: `${formatThousand(selectCount)}`,
+                                })}
+                            </Typography>
                         }
                         question={
                             <Box className={classes.warningTitle}>

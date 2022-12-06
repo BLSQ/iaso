@@ -252,7 +252,7 @@ class OrgUnitViewSet(viewsets.ViewSet):
                 "instances_count",
             )
 
-            user_account_name = request.user.iaso_profile.account.name
+            user_account_name = profile.account.name if profile else ""
             environment = settings.ENVIRONMENT
             filename = "org_units"
             filename = "%s-%s-%s-%s" % (environment, user_account_name, filename, strftime("%Y-%m-%d-%H-%M", gmtime()))

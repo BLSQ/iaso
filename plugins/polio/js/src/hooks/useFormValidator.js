@@ -166,12 +166,14 @@ yup.addMethod(
             } = parent;
             if (
                 !value &&
-                (vaccine_name ||
-                    po_numbers ||
-                    vials_received ||
-                    reception_pre_alert ||
-                    estimated_arrival_date ||
-                    date_reception)
+                !(
+                    vaccine_name &&
+                    po_numbers &&
+                    vials_received &&
+                    reception_pre_alert &&
+                    estimated_arrival_date &&
+                    date_reception
+                )
             ) {
                 return createError({
                     path,
@@ -199,12 +201,14 @@ yup.addMethod(
             if (
                 !value &&
                 value !== 0 &&
-                (vaccine_name ||
-                    po_numbers ||
-                    vials_received ||
-                    reception_pre_alert ||
-                    estimated_arrival_date ||
-                    date_reception)
+                !(
+                    vaccine_name &&
+                    po_numbers &&
+                    vials_received &&
+                    reception_pre_alert &&
+                    estimated_arrival_date &&
+                    date_reception
+                )
             ) {
                 return createError({
                     path,
@@ -226,7 +230,7 @@ yup.addMethod(
                 parent;
             if (
                 !value &&
-                (date_report || vials_destroyed || date_report_received)
+                !(date_report && vials_destroyed && date_report_received)
             ) {
                 return createError({
                     path,
@@ -251,7 +255,7 @@ yup.addMethod(
                 if (
                     !value &&
                     value !== 0 &&
-                    (date_report || vials_destroyed || date_report_received)
+                    !(date_report && vials_destroyed && date_report_received)
                 ) {
                     return createError({
                         path,
@@ -282,12 +286,14 @@ yup.addMethod(
             } = parent;
             if (
                 !value &&
-                (vaccine_name ||
-                    po_numbers ||
-                    vials_received ||
-                    reception_pre_alert ||
-                    estimated_arrival_date ||
-                    date_reception)
+                !(
+                    vaccine_name &&
+                    po_numbers &&
+                    vials_received &&
+                    reception_pre_alert &&
+                    estimated_arrival_date &&
+                    date_reception
+                )
             ) {
                 return createError({
                     path,

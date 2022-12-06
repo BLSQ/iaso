@@ -1,6 +1,7 @@
 import React, { FunctionComponent, useState } from 'react';
 
 import { Popover, Typography, makeStyles } from '@material-ui/core';
+import classnames from 'classnames';
 // @ts-ignore
 import { useSafeIntl } from 'bluesquare-components';
 import { getDefaultSourceVersion } from '../../../domains/dataSources/utils';
@@ -22,6 +23,9 @@ const useStyles = makeStyles(theme => ({
     currentUserInfos: {
         display: 'block',
         textAlign: 'right',
+    },
+    account: {
+        fontSize: 9,
     },
     popOverInfos: {
         display: 'block',
@@ -65,7 +69,12 @@ export const CurrentUserInfos: FunctionComponent<Props> = ({
                     {currentUser?.user_name}
                 </span>
 
-                <span className={classes.currentUserInfos}>
+                <span
+                    className={classnames(
+                        classes.currentUserInfos,
+                        classes.account,
+                    )}
+                >
                     {currentUser?.account?.name}
                 </span>
             </Typography>
@@ -89,7 +98,7 @@ export const CurrentUserInfos: FunctionComponent<Props> = ({
                 onClose={handlePopoverClose}
                 disableRestoreFocus
             >
-                <Typography>
+                <Typography component="div">
                     <div className={classes.popOverInfos}>
                         <span className={classes.popOverLabel}>
                             {formatMessage(MESSAGES.source)}:

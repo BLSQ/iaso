@@ -42,6 +42,8 @@ export const ShipmentForm: FunctionComponent<Props> = ({ index, accessor }) => {
                         label={formatMessage(MESSAGES.poNumbers)}
                         name={`${accessor}.shipments[${index}].po_numbers`}
                         component={TextInput}
+                        // don't change the filed.touch value on Focus to avoid the component being in error state on first click
+                        touchOnFocus={false}
                         className={classes.input}
                     />
                 </Grid>
@@ -50,6 +52,8 @@ export const ShipmentForm: FunctionComponent<Props> = ({ index, accessor }) => {
                         label={formatMessage(MESSAGES.vialsShipped)}
                         name={`${accessor}.shipments[${index}].vials_received`}
                         component={TextInput}
+                        // don't change the filed.touch value on Focus to avoid the component being in error state on first click
+                        touchOnFocus={false}
                         className={classes.input}
                     />
                 </Grid>

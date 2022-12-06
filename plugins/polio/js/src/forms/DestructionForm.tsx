@@ -41,6 +41,8 @@ export const DestructionForm: FunctionComponent<Props> = ({
                     label={formatMessage(MESSAGES.vialsDestroyed)}
                     name={`${accessor}.destructions[${index}].vials_destroyed`}
                     component={TextInput}
+                    // don't change the filed.touch value on Focus to avoid the component being in error state on first click
+                    touchOnFocus={false}
                     className={classes.input}
                 />
             </Grid>

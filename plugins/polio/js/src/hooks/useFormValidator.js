@@ -105,6 +105,17 @@ yup.addMethod(
             if (
                 !value &&
                 value !== 0 &&
+                !forma_unusable_vials &&
+                !forma_usable_vials &&
+                !forma_missing_vials &&
+                !forma_reception &&
+                !forma_date
+            ) {
+                return true;
+            }
+            if (
+                !value &&
+                value !== 0 &&
                 !(
                     forma_unusable_vials &&
                     forma_usable_vials &&
@@ -135,6 +146,16 @@ yup.addMethod(
                 forma_unusable_vials,
                 forma_date,
             } = parent;
+            if (
+                !value &&
+                !forma_unusable_vials &&
+                !forma_usable_vials &&
+                !forma_missing_vials &&
+                !forma_reception &&
+                !forma_date
+            ) {
+                return true;
+            }
             if (
                 !value &&
                 !(

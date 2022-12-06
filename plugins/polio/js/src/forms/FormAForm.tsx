@@ -25,13 +25,17 @@ export const FormAForm: FunctionComponent<Props> = ({
 }) => {
     const { formatMessage } = useSafeIntl();
     const classes: Record<string, string> = useStyles();
-    const { values = {} as any, setFieldTouched } = useFormikContext();
+    const {
+        values = {} as any,
+        setFieldTouched,
+        setFieldValue,
+    } = useFormikContext();
     const fieldValues = useMemo(
         () => values?.rounds[roundIndex],
         [roundIndex, values?.rounds],
     );
 
-    // Make all fields error by setting touched to true if any other formA field has a value
+    // // Make all fields error by setting touched to true if any other formA field has a value
     useEffect(() => {
         // Using every to be able to break the loop
         formAFieldNames.every(key => {
@@ -46,7 +50,7 @@ export const FormAForm: FunctionComponent<Props> = ({
         });
     }, [accessor, fieldValues, setFieldTouched]);
 
-    // Remove error state if no field has value
+    // // Remove error state if no field has value
     useEffect(() => {
         const isFormAEmpty = formAFieldNames.every(key => !fieldValues[key]);
         if (isFormAEmpty) {
@@ -55,6 +59,25 @@ export const FormAForm: FunctionComponent<Props> = ({
             });
         }
     }, [accessor, fieldValues, setFieldTouched]);
+
+    // // Set TextFields values to null if empty to avoid 400.
+    useEffect(() => {
+        if (fieldValues.forma_usable_vials === '') {
+            setFieldValue(`${accessor}.forma_usable_vials`, null);
+        }
+        if (fieldValues.forma_unusable_vials === '') {
+            setFieldValue(`${accessor}.forma_unusable_vials`, null);
+        }
+        if (fieldValues.forma_missing_vials === '') {
+            setFieldValue(`${accessor}.forma_missing_vials`, null);
+        }
+    }, [
+        accessor,
+        fieldValues.forma_missing_vials,
+        fieldValues.forma_unusable_vials,
+        fieldValues.forma_usable_vials,
+        setFieldValue,
+    ]);
 
     return (
         <>

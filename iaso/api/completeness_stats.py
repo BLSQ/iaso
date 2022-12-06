@@ -42,12 +42,12 @@ class CompletenessStatsViewSet(viewsets.ViewSet):
         else:
             org_unit_types = None
 
-        parent_org_unit_id_str = request.GET.get("parent_id", None)
+        requested_org_unit_id_str = request.GET.get("org_unit_id", None)
 
-        if parent_org_unit_id_str is not None:
-            parent_org_unit = OrgUnit.objects.get(id=parent_org_unit_id_str)
+        if requested_org_unit_id_str is not None:
+            requested_org_unit = OrgUnit.objects.get(id=requested_org_unit_id_str)
         else:
-            parent_org_unit = None
+            requested_org_unit = None
 
         requested_form_ids = requested_forms.split(",") if requested_forms is not None else []
         profile = request.user.iaso_profile
@@ -63,8 +63,8 @@ class CompletenessStatsViewSet(viewsets.ViewSet):
         org_units = OrgUnit.objects.filter(version=version).filter(
             validation_status="VALID"
         )  # don't forget to think about org unit status
-        if parent_org_unit:
-            org_units = org_units.hierarchy(parent_org_unit)
+        if requested_org_unit:
+            org_units = org_units.hierarchy(requested_org_unit)
 
         top_ous = org_units
 

@@ -105,11 +105,13 @@ yup.addMethod(
             if (
                 !value &&
                 value !== 0 &&
-                (forma_unusable_vials ||
-                    forma_usable_vials ||
-                    forma_missing_vials ||
-                    forma_reception ||
-                    forma_date)
+                !(
+                    forma_unusable_vials &&
+                    forma_usable_vials &&
+                    forma_missing_vials &&
+                    forma_reception &&
+                    forma_date
+                )
             ) {
                 return createError({
                     path,
@@ -135,11 +137,13 @@ yup.addMethod(
             } = parent;
             if (
                 !value &&
-                (forma_unusable_vials ||
-                    forma_usable_vials ||
-                    forma_missing_vials ||
-                    forma_reception ||
-                    forma_date)
+                !(
+                    forma_unusable_vials &&
+                    forma_usable_vials &&
+                    forma_missing_vials &&
+                    forma_reception &&
+                    forma_date
+                )
             ) {
                 return createError({
                     path,

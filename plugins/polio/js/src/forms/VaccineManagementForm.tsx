@@ -14,12 +14,12 @@ import classnames from 'classnames';
 import { useSafeIntl } from 'bluesquare-components';
 import { useStyles } from '../styles/theme';
 import MESSAGES from '../constants/messages';
-import { DateInput, TextInput } from '../components/Inputs';
+import { DateInput } from '../components/Inputs';
 import { ShipmentsForm } from './ShipmentsForm';
 import { ReportingDelays } from './ReportingDelays';
 import { RoundVaccinesForm } from './RoundVaccinesForm';
-import { MultilineText } from '../components/Inputs/MultilineText';
 import { DestructionsForm } from './DestructionsForm';
+import { FormAForm } from './FormAForm';
 
 type Props = any;
 
@@ -156,80 +156,7 @@ export const VaccineManagementForm: FunctionComponent<Props> = () => {
                                 </Typography>
                             </Box>
                         </Grid>
-                        <Grid
-                            container
-                            direction="row"
-                            item
-                            xs={12}
-                            spacing={2}
-                        >
-                            <Grid item lg={3} md={6}>
-                                <Field
-                                    label={formatMessage(
-                                        MESSAGES.formAReception,
-                                    )}
-                                    name={`${accessor}.forma_reception`}
-                                    component={DateInput}
-                                    className={classes.input}
-                                />
-                            </Grid>
-                            <Grid item lg={3} md={6}>
-                                <Field
-                                    label={formatMessage(
-                                        MESSAGES.formAUnusableVials,
-                                    )}
-                                    name={`${accessor}.forma_unusable_vials`}
-                                    component={TextInput}
-                                    className={classes.input}
-                                />
-                            </Grid>
-                            <Grid item lg={3} md={6}>
-                                <Field
-                                    label={formatMessage(
-                                        MESSAGES.formAMissingVials,
-                                    )}
-                                    name={`${accessor}.forma_missing_vials`}
-                                    component={TextInput}
-                                    className={classes.input}
-                                />
-                            </Grid>
-                            <Grid item lg={3} md={6}>
-                                <Field
-                                    label={formatMessage(
-                                        MESSAGES.formAUsableVials,
-                                    )}
-                                    name={`${accessor}.forma_usable_vials`}
-                                    component={TextInput}
-                                    className={classes.input}
-                                />
-                            </Grid>
-                        </Grid>
-                        <Grid
-                            container
-                            direction="row"
-                            item
-                            xs={12}
-                            spacing={2}
-                            justifyContent="flex-start"
-                        >
-                            <Grid item lg={3} md={6}>
-                                <Field
-                                    label={formatMessage(MESSAGES.formADate)}
-                                    name={`${accessor}.forma_date`}
-                                    component={DateInput}
-                                    className={classes.input}
-                                />
-                            </Grid>
-                            <Grid item lg={3} md={6}>
-                                <Field
-                                    label={formatMessage(MESSAGES.formAComment)}
-                                    name={`${accessor}.forma_comment`}
-                                    component={MultilineText}
-                                    className={classes.input}
-                                    debounceTime={1000}
-                                />
-                            </Grid>
-                        </Grid>
+                        <FormAForm accessor={accessor} roundIndex={index} />
 
                         {/* fourth row: destruction */}
                         <Divider className={customClasses.marginTop} />

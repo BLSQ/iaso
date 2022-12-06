@@ -257,7 +257,7 @@ export const OrgUnits: FunctionComponent<Props> = ({ params }) => {
                     params={params}
                     onSearch={onSearch}
                     currentTab={tab}
-                    paramsSearches={searches}
+                    paramsSearches={searches || []}
                     orgunitTypes={orgunitTypes || []}
                     isFetchingOrgunitTypes={isFetchingOrgunitTypes}
                     counts={(!isLoading && orgUnitsData?.counts) || []}

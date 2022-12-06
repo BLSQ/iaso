@@ -81,7 +81,7 @@ export const useGetFormDescriptor = (
             enabled: Boolean(formId),
             select: (data: FormDescriptor | undefined) => {
                 if (!data) return data;
-                return data.form_versions[0].descriptor;
+                return data.form_versions[0]?.descriptor;
             },
         },
     });

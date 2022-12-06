@@ -31,7 +31,7 @@ export type Instance = {
     correlation_id?: string;
     deleted: boolean;
     org_unit: OrgUnit;
-    period: unknown;
+    period?: string;
     file_content: Record<string, string>;
     form_descriptor: unknown;
     last_export_success_at: unknown;

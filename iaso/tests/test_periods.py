@@ -79,8 +79,9 @@ class PeriodTests(TestCase):
         )
 
     def test_range_sub(self):
+        from_period, to_period = Period.bound_range("2021Q1", "2021Q4")
         self.assertEqual(
-            Period.range_string_with_sub_periods("2021Q1", "2021Q4"),
+            Period.range_string_with_sub_periods(from_period, to_period),
             [
                 "2021Q1",
                 "2021Q2",

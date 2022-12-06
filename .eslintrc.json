@@ -46,7 +46,7 @@
           "no-use-before-define": 0,
           "no-tabs": "off",
           "no-console":["error",{"allow":["warn","error"]}],
-          "prettier/prettier": "error",
+          "prettier/prettier": "warn",
           "camelcase": "warn",
           "constructor-super": "warn",
           "import/no-extraneous-dependencies": "off",

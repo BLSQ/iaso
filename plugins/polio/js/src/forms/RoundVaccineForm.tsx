@@ -3,10 +3,11 @@ import { Field, useFormikContext } from 'formik';
 import React, { FunctionComponent, useMemo } from 'react';
 // @ts-ignore
 import { useSafeIntl } from 'bluesquare-components';
-import { Select, TextInput } from '../components/Inputs';
+import { TextInput } from '../components/Inputs';
 import MESSAGES from '../constants/messages';
 import { useStyles } from '../styles/theme';
 import { DropdownOptions } from '../../../../../hat/assets/js/apps/Iaso/types/utils';
+import { SingleSelect } from '../components/Inputs/SingleSelect';
 
 type Props = {
     vaccineIndex: number;
@@ -64,7 +65,8 @@ export const RoundVaccineForm: FunctionComponent<Props> = ({
                         name={`${accessor}.name`}
                         className={classes.input}
                         options={options}
-                        component={Select}
+                        clearable={false}
+                        component={SingleSelect}
                     />
                 </Box>
             </Grid>
@@ -75,7 +77,8 @@ export const RoundVaccineForm: FunctionComponent<Props> = ({
                         name={`${accessor}.doses_per_vial`}
                         className={classes.input}
                         options={dosesOptions}
-                        component={Select}
+                        clearable={false}
+                        component={SingleSelect}
                     />
                 </Box>
             </Grid>

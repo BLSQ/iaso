@@ -44,6 +44,7 @@ class StorageAPITestCase(APITestCase):
             account=cls.star_wars,
             type="NFC",
             status="OK",
+            entity=cls.entity,
         )
 
         StorageLogEntry.objects.create(
@@ -371,6 +372,62 @@ class StorageAPITestCase(APITestCase):
         # Also make sure nothing was added to the database
         self.assertEqual(StorageLogEntry.objects.count(), num_logs_before)
 
+    def test_post_log_auto_blacklist(self):
+        """When a WRITE_PROFILE operation is performed on a new device, all other devices associated with the same entity
+        are automatically blacklisted"""
+        self.client.force_authenticate(self.yoda)
+
+        post_body = [
+            {
+                "id": "65434567-e89b-12d3-a456-426614174000",
+                "storage_id": "COMPLETELY_NEW_STORAGE",
+                "storage_type": "NFC",
+                "operation_type": "WRITE_PROFILE",
+                "entity_id": self.entity.uuid,
+                "performed_at": 1666002739.171,
+            }
+        ]
+
+        self.client.post("/api/mobile/storage/logs/", post_body, format="json")
+
+        # This device had the OK status, but should now be blacklisted
+        old_device_was_ok = self.existing_storage_device
+        old_device_was_ok.refresh_from_db()
+        self.assertEqual(old_device_was_ok.status, "BLACKLISTED")
+        self.assertIn("Profile was written on COMPLETELY_NEW_STORAGE on ", old_device_was_ok.status_comment)
+        self.assertEqual(old_device_was_ok.status_reason, "OTHER")
+
+        # This device was already blacklisted, it should stay unchanged
+        old_device_already_blacklisted = self.existing_storage_device_3
+        old_device_already_blacklisted.refresh_from_db()
+        self.assertEqual(old_device_already_blacklisted.status, "BLACKLISTED")
+        self.assertEqual(old_device_already_blacklisted.status_comment, "")
+        self.assertEqual(old_device_already_blacklisted.status_reason, "ABUSE")
+
+    def test_post_log_auto_blacklist_same_device(self):
+        """If the profile is re-written on the same card, it doesn't blacklist the current card."""
+        self.client.force_authenticate(self.yoda)
+
+        post_body = [
+            {
+                "id": "65434567-e89b-12d3-a456-426614174000",
+                "storage_id": "EXISTING_STORAGE",
+                "storage_type": "NFC",
+                "operation_type": "WRITE_PROFILE",
+                "entity_id": self.entity.uuid,
+                "performed_at": 1666002739.171,
+            }
+        ]
+
+        self.client.post("/api/mobile/storage/logs/", post_body, format="json")
+
+        # This device status hasn't changed
+        device = self.existing_storage_device
+        device.refresh_from_db()
+        self.assertEqual(device.status, "OK")
+        self.assertIn("", device.status_comment)
+        self.assertEqual(device.status_reason, "")
+
     def test_post_log_empty_instances(self):
         """Posting a new log entry with an empty instances list should be accepted"""
         self.client.force_authenticate(self.yoda)
@@ -435,7 +492,7 @@ class StorageAPITestCase(APITestCase):
                     "storage_type": "NFC",
                     "storage_status": {"status": "OK", "updated_at": None},
                     "org_unit": None,
-                    "entity": None,
+                    "entity": {"id": mock.ANY, "name": "New Client 3"},
                 },
                 {
                     "updated_at": 1580608922.0,
@@ -549,7 +606,7 @@ class StorageAPITestCase(APITestCase):
                     "storage_type": "NFC",
                     "storage_status": {"status": "OK", "updated_at": None},
                     "org_unit": None,
-                    "entity": None,
+                    "entity": {"id": mock.ANY, "name": "New Client 3"},
                 },
                 {
                     "updated_at": 1580608922.0,
@@ -588,9 +645,18 @@ class StorageAPITestCase(APITestCase):
         received_json = response.json()
 
         # If the filter was not operational we would get 3 results.
-        self.assertEqual(
+        self.assertListEqual(
             received_json,
             [
+                {
+                    "updated_at": 1580608922.0,
+                    "created_at": 1580608922.0,
+                    "storage_id": "EXISTING_STORAGE",
+                    "storage_type": "NFC",
+                    "storage_status": {"status": "OK", "updated_at": None},
+                    "org_unit": None,
+                    "entity": {"id": mock.ANY, "name": "New Client 3"},
+                },
                 {
                     "updated_at": 1580608922.0,
                     "created_at": 1580608922.0,
@@ -604,7 +670,7 @@ class StorageAPITestCase(APITestCase):
                     },
                     "org_unit": None,
                     "entity": {"id": self.entity.id, "name": "New Client 3"},
-                }
+                },
             ],
         )
 
@@ -759,7 +825,7 @@ class StorageAPITestCase(APITestCase):
         response = self.client.get("/api/storage/NFC/EXISTING_STORAGE/logs")
         self.assertEqual(response.status_code, 200)
         received_json = response.json()
-        self.assertEqual(
+        self.assertDictEqual(
             received_json,
             {
                 "updated_at": 1580608922.0,
@@ -768,7 +834,7 @@ class StorageAPITestCase(APITestCase):
                 "storage_type": "NFC",
                 "storage_status": {"status": "OK", "updated_at": None},
                 "org_unit": None,
-                "entity": None,
+                "entity": {"id": mock.ANY, "name": "New Client 3"},
                 "logs": [
                     {
                         "id": "e4200710-bf82-4d29-a29b-6a042f79ef25",
@@ -805,7 +871,7 @@ class StorageAPITestCase(APITestCase):
                 "storage_type": "NFC",
                 "storage_status": {"status": "OK", "updated_at": None},
                 "org_unit": None,
-                "entity": None,
+                "entity": {"id": mock.ANY, "name": "New Client 3"},
                 "logs": [],
             },
         )
@@ -836,7 +902,7 @@ class StorageAPITestCase(APITestCase):
                 "storage_type": "NFC",
                 "storage_status": {"status": "OK", "updated_at": None},
                 "org_unit": None,
-                "entity": None,
+                "entity": {"id": mock.ANY, "name": "New Client 3"},
                 "logs": [
                     {
                         "id": "e4200710-bf82-4d29-a29b-6a042f79ef26",
@@ -873,7 +939,7 @@ class StorageAPITestCase(APITestCase):
                 "storage_type": "NFC",
                 "storage_status": {"status": "OK", "updated_at": None},
                 "org_unit": None,
-                "entity": None,
+                "entity": {"id": mock.ANY, "name": "New Client 3"},
                 "logs": [
                     {
                         "id": "e4200710-bf82-4d29-a29b-6a042f79ef25",
@@ -906,7 +972,7 @@ class StorageAPITestCase(APITestCase):
                 "storage_type": "NFC",
                 "storage_status": {"status": "OK", "updated_at": None},
                 "org_unit": None,
-                "entity": None,
+                "entity": {"id": mock.ANY, "name": "New Client 3"},
                 "logs": [],
             },
         )
@@ -924,7 +990,7 @@ class StorageAPITestCase(APITestCase):
                 "storage_type": "NFC",
                 "storage_status": {"status": "OK", "updated_at": None},
                 "org_unit": None,
-                "entity": None,
+                "entity": {"id": mock.ANY, "name": "New Client 3"},
                 "logs": [
                     {
                         "id": "e4200710-bf82-4d29-a29b-6a042f79ef25",
@@ -966,7 +1032,7 @@ class StorageAPITestCase(APITestCase):
                 "storage_type": "NFC",
                 "storage_status": {"status": "OK", "updated_at": None},
                 "org_unit": None,
-                "entity": None,
+                "entity": {"id": mock.ANY, "name": "New Client 3"},
                 "logs": [
                     {
                         "id": "e4200710-bf82-4d29-a29b-6a042f79ef25",
@@ -1008,7 +1074,7 @@ class StorageAPITestCase(APITestCase):
         response = self.client.get(f"/api/storage/NFC/EXISTING_STORAGE/logs?status=OK")
         self.assertEqual(response.status_code, 200)
         received_json = response.json()
-        self.assertEqual(
+        self.assertDictEqual(
             received_json,
             {
                 "updated_at": 1580608922.0,
@@ -1017,7 +1083,7 @@ class StorageAPITestCase(APITestCase):
                 "storage_type": "NFC",
                 "storage_status": {"status": "OK", "updated_at": None},
                 "org_unit": None,
-                "entity": None,
+                "entity": {"id": mock.ANY, "name": "New Client 3"},
                 "logs": [
                     {
                         "id": "e4200710-bf82-4d29-a29b-6a042f79ef25",
@@ -1050,7 +1116,7 @@ class StorageAPITestCase(APITestCase):
                 "storage_type": "NFC",
                 "storage_status": {"status": "OK", "updated_at": None},
                 "org_unit": None,
-                "entity": None,
+                "entity": {"id": mock.ANY, "name": "New Client 3"},
                 "logs": [],
             },
         )
@@ -1071,7 +1137,7 @@ class StorageAPITestCase(APITestCase):
                 "storage_type": "NFC",
                 "storage_status": {"status": "OK", "updated_at": None},
                 "org_unit": None,
-                "entity": None,
+                "entity": {"id": mock.ANY, "name": "New Client 3"},
                 "logs": [],
             },
         )
@@ -1124,7 +1190,7 @@ class StorageAPITestCase(APITestCase):
                     "storage_type": "NFC",
                     "storage_status": {"status": "OK", "updated_at": None},
                     "org_unit": None,
-                    "entity": None,
+                    "entity": {"id": mock.ANY, "name": "New Client 3"},
                     "logs": [
                         {
                             "id": "e4200710-bf82-4d29-a29b-6a042f79ef25",
@@ -1164,7 +1230,7 @@ class StorageAPITestCase(APITestCase):
                     "storage_type": "NFC",
                     "storage_status": {"status": "OK", "updated_at": None},
                     "org_unit": None,
-                    "entity": None,
+                    "entity": {"id": mock.ANY, "name": "New Client 3"},
                     "logs": [
                         {
                             "id": "e4200710-bf82-4d29-a29b-6a042f79ef26",
@@ -1204,7 +1270,7 @@ class StorageAPITestCase(APITestCase):
                     "storage_type": "NFC",
                     "storage_status": {"status": "OK", "updated_at": None},
                     "org_unit": None,
-                    "entity": None,
+                    "entity": {"id": mock.ANY, "name": "New Client 3"},
                     "logs": [
                         {
                             "id": "e4200710-bf82-4d29-a29b-6a042f79ef25",
@@ -1355,7 +1421,18 @@ class StorageAPITestCase(APITestCase):
         self.assertEqual(len(data), 4)  # 3 rows + header
         self.assertListEqual(
             data[1],
-            ["EXISTING_STORAGE", "NFC", "2020-02-02 02:02:02", "2020-02-02 02:02:02", "OK", "", "", "", "", ""],
+            [
+                "EXISTING_STORAGE",
+                "NFC",
+                "2020-02-02 02:02:02",
+                "2020-02-02 02:02:02",
+                "OK",
+                "",
+                "",
+                "",
+                "",
+                str(self.entity.id),
+            ],
         )
         self.assertListEqual(
             data[2],
@@ -1435,7 +1512,8 @@ class StorageAPITestCase(APITestCase):
                 "Status comment": {0: None, 1: None, 2: None},
                 "Status updated at": {0: None, 1: 44873.55064814815, 2: 44873.55064814815},
                 "Org unit id": {0: None, 1: None, 2: None},
-                "Entity id": {0: None, 1: None, 2: mock.ANY},
+                # FIXME this is a float for a pk?
+                "Entity id": {0: self.entity.id * 1.0, 1: None, 2: self.entity.id * 1.0},
             },
         )
 

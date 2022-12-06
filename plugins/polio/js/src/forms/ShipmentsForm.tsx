@@ -8,20 +8,22 @@ import React, {
 // @ts-ignore
 import { useSafeIntl } from 'bluesquare-components';
 import { Box, Button, Grid } from '@material-ui/core';
-import { ShipmentForm } from './ShipmentForm';
+import { shipmentFieldNames, ShipmentForm } from './ShipmentForm';
 import MESSAGES from '../constants/messages';
 
 type Props = {
     round: any;
     accessor: string;
+    roundIndex: number;
 };
 
 export const ShipmentsForm: FunctionComponent<Props> = ({
     round,
     accessor,
+    roundIndex,
 }) => {
     const { formatMessage } = useSafeIntl();
-    const { setFieldValue } = useFormikContext();
+    const { setFieldValue, setFieldTouched } = useFormikContext();
     const { shipments = [] } = round ?? {};
     const [enableRemoveButton, setEnableRemoveButton] =
         useState<boolean>(false);
@@ -36,8 +38,15 @@ export const ShipmentsForm: FunctionComponent<Props> = ({
     const handleRemoveLastShipment = useCallback(() => {
         const newShipments = [...shipments];
         newShipments.pop();
+
         setFieldValue(`${accessor}.shipments`, newShipments);
-    }, [accessor, setFieldValue, shipments]);
+        shipmentFieldNames.forEach(field => {
+            setFieldTouched(
+                `${accessor}.shipments[${newShipments.length}].${field}`,
+                false,
+            );
+        });
+    }, [accessor, setFieldTouched, setFieldValue, shipments]);
 
     // determine whether to show delete button or not
 
@@ -60,7 +69,11 @@ export const ShipmentsForm: FunctionComponent<Props> = ({
                     // eslint-disable-next-line react/no-array-index-key
                     <Grid item xs={12} key={`shipment${index}`}>
                         <Box mt={2}>
-                            <ShipmentForm index={index} accessor={accessor} />
+                            <ShipmentForm
+                                index={index}
+                                accessor={accessor}
+                                roundIndex={roundIndex}
+                            />
                         </Box>
                     </Grid>
                 ))}

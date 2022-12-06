@@ -141,7 +141,11 @@ export const VaccineManagementForm: FunctionComponent<Props> = () => {
                             </Box>
                         </Grid>
                         <Grid container item xs={12}>
-                            <ShipmentsForm accessor={accessor} round={round} />
+                            <ShipmentsForm
+                                accessor={accessor}
+                                round={round}
+                                roundIndex={index}
+                            />
                         </Grid>
                         {/* third row: Form A */}
                         <Divider style={{ width: '100%' }} />
@@ -236,7 +240,11 @@ export const VaccineManagementForm: FunctionComponent<Props> = () => {
                                 </Typography>
                             </Box>
                         </Grid>
-                        <DestructionsForm accessor={accessor} round={round} />
+                        <DestructionsForm
+                            accessor={accessor}
+                            round={round}
+                            roundIndex={index}
+                        />
                     </Grid>
                 );
             })}

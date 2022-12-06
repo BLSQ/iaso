@@ -1,6 +1,6 @@
 import { Grid } from '@material-ui/core';
-import { Field } from 'formik';
-import React, { FunctionComponent } from 'react';
+import { Field, useFormikContext } from 'formik';
+import React, { FunctionComponent, useEffect, useMemo } from 'react';
 // @ts-ignore
 import { useSafeIntl } from 'bluesquare-components';
 import MESSAGES from '../constants/messages';
@@ -9,14 +9,43 @@ import { TextInput } from '../components/Inputs';
 import { useStyles } from '../styles/theme';
 import { MultilineText } from '../components/Inputs/MultilineText';
 
-type Props = { accessor: string; index: number };
+type Props = { accessor: string; index: number; roundIndex: number };
+
+export const destructionFieldNames = [
+    'date_report_received',
+    'date_report',
+    'vials_destroyed',
+    'comment',
+];
 
 export const DestructionForm: FunctionComponent<Props> = ({
     accessor,
     index,
+    roundIndex,
 }) => {
     const { formatMessage } = useSafeIntl();
     const classes: Record<string, string> = useStyles();
+    const { values = {} as any, setFieldTouched } = useFormikContext();
+    const fieldValues = useMemo(
+        () => values?.rounds?.[roundIndex].destructions?.[index],
+        [index, roundIndex, values?.rounds],
+    );
+    useEffect(() => {
+        // Using every to be able to break the loop
+        destructionFieldNames.every(key => {
+            if (fieldValues[key]) {
+                destructionFieldNames.forEach(name => {
+                    setFieldTouched(
+                        `${accessor}.destructions[${index}].${name}`,
+                        true,
+                    );
+                });
+                // break the loop if any field has a value
+                return false;
+            }
+            return true;
+        });
+    }, [accessor, fieldValues, index, setFieldTouched]);
 
     return (
         <Grid container direction="row" spacing={2} item xs={12}>

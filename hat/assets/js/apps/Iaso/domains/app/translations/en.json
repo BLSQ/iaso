@@ -379,6 +379,7 @@
     "iaso.label.hasGeometry": "With geographic data",
     "iaso.label.hasNoGeometryAndGps": "Without geographic data",
     "iaso.label.history": "History",
+    "iaso.label.iasoVersion": "App version",
     "iaso.label.id": "Identifier",
     "iaso.label.iframe": "Iframe",
     "iaso.label.images": "Images",

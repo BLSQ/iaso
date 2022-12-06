@@ -117,7 +117,12 @@ export const CurrentUserInfos: FunctionComponent<Props> = ({
                     </div>
 
                     {version && (
-                        <span className={classes.popOverInfos}>{version}</span>
+                        <div className={classes.popOverInfos}>
+                            <span className={classes.popOverLabel}>
+                                {formatMessage(MESSAGES.iasoVersion)}:
+                            </span>
+                            <span>{version}</span>
+                        </div>
                     )}
                 </Typography>
             </Popover>

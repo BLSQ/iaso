@@ -173,8 +173,7 @@ class CompletenessStatsAPITestCase(APITestCase):
     def test_filter_by_org_unit(self):
         self.client.force_authenticate(self.user)
 
-        response = self.client.get(f"/api/completeness_stats/?parent_id=7")
-        # The "parent" name is misleading and will be fixed soon
+        response = self.client.get(f"/api/completeness_stats/?org_unit_id=7")
         json = response.json()
         # TODO: implement once the correct behaviour is clarified
         pass
@@ -204,7 +203,7 @@ class CompletenessStatsAPITestCase(APITestCase):
         self.client.force_authenticate(self.user)
 
         # We request a form/OU combination that has no forms to fill.
-        response = self.client.get(f"/api/completeness_stats/?parent_id=3&form_id={self.form_hs_2.id}")
+        response = self.client.get(f"/api/completeness_stats/?org_unit_id=3&form_id={self.form_hs_2.id}")
         json = response.json()
         # 0 forms to fill: the percentage should be returned as N/A and not as 0% or as a division error :)
         row = json["results"][0]
@@ -216,7 +215,7 @@ class CompletenessStatsAPITestCase(APITestCase):
         self.client.force_authenticate(self.user)
 
         # We filter to get only the district A.A
-        response = self.client.get(f"/api/completeness_stats/?parent_id=4")
+        response = self.client.get(f"/api/completeness_stats/?org_unit_id=4")
         json = response.json()
 
         result_form_1 = next(result for result in json["results"] if result["form"]["id"] == self.form_hs_1.id)
@@ -232,7 +231,7 @@ class CompletenessStatsAPITestCase(APITestCase):
         # We have the same situation as in test_counts_include_current_ou_and_children(), except that we filter to only
         # get the hospital (ou 7). Therefore, the form_to_fill count doens't include the form for the district (ou 4)
         # because it's a parent of the hospital (ou 7), and the count is 1/1
-        response = self.client.get(f"/api/completeness_stats/?parent_id=7")
+        response = self.client.get(f"/api/completeness_stats/?org_unit_id=7")
         json = response.json()
 
         result_form_1 = next(result for result in json["results"] if result["form"]["id"] == self.form_hs_1.id)

@@ -9,7 +9,6 @@ import {
     Typography,
 } from '@material-ui/core';
 import { Field, useFormikContext } from 'formik';
-import classnames from 'classnames';
 // @ts-ignore
 import { useSafeIntl } from 'bluesquare-components';
 import { useStyles } from '../styles/theme';
@@ -42,16 +41,11 @@ export const VaccineManagementForm: FunctionComponent<Props> = () => {
         values: { rounds = [] },
     } = useFormikContext<any>(); // TODO add campaign typing
 
-    const [currentRoundNumber, setCurrentRoundNumber] = useState(
-        rounds.length > 0 ? rounds[0].number : undefined,
-    );
     const [currentIndex, setCurrentIndex] = useState<number>(0);
 
     const handleRoundTabChange = (_, newValue) => {
-        // setCurrentRoundNumber(newValue);
         setCurrentIndex(newValue);
     };
-    // console.log('render');
     const accessor = `rounds[${currentIndex}]`;
 
     return (
@@ -69,7 +63,8 @@ export const VaccineManagementForm: FunctionComponent<Props> = () => {
                             >
                                 {rounds.map((round, index) => (
                                     <Tab
-                                        key={round.number}
+                                        // eslint-disable-next-line react/no-array-index-key
+                                        key={`${round.number}-${index}`}
                                         className={classes.subTab}
                                         label={
                                             <span>
@@ -173,97 +168,6 @@ export const VaccineManagementForm: FunctionComponent<Props> = () => {
                     roundIndex={currentIndex}
                 />
             </Grid>
-            {/* {rounds.map((round, index) => {
-                const accessor = `rounds[${index}]`;
-                return (
-                    <Grid
-                        key={round.number}
-                        container
-                        spacing={2}
-                        className={classnames(
-                            round.number !== currentRoundNumber &&
-                                customClasses.hiddenOpacity,
-                        )}
-                    >
-                        <Divider style={{ width: '100%' }} />
-                        <Grid item xs={12}>
-                            <Box mt={1} mb={1}>
-                                <Typography variant="button">
-                                    {formatMessage(MESSAGES.vaccines)}
-                                </Typography>
-                            </Box>
-                        </Grid>
-                        <Grid
-                            container
-                            direction="row"
-                            item
-                            xs={12}
-                            spacing={2}
-                            justifyContent="center"
-                        >
-                            <Grid container item lg={6} md={12}>
-                                <RoundVaccinesForm
-                                    roundIndex={index}
-                                    round={round}
-                                />
-                            </Grid>
-                            <Grid item lg={3} md={6}>
-                                <Box mb={1}>
-                                    <ReportingDelays accessor={accessor} />
-                                </Box>
-                            </Grid>
-                            <Grid item lg={3} md={6}>
-                                <Field
-                                    label={formatMessage(
-                                        MESSAGES.dateSignedVrf,
-                                    )}
-                                    fullWidth
-                                    name={`${accessor}.date_signed_vrf_received`}
-                                    component={DateInput}
-                                />
-                            </Grid>
-                        </Grid>
-                        <Divider style={{ width: '100%' }} />
-                        <Grid item xs={12}>
-                            <Box mt={1} mb={1}>
-                                <Typography variant="button">
-                                    {formatMessage(MESSAGES.shipments)}
-                                </Typography>
-                            </Box>
-                        </Grid>
-                        <Grid container item xs={12}>
-                            <ShipmentsForm
-                                accessor={accessor}
-                                round={round}
-                                roundIndex={index}
-                            />
-                        </Grid>
-                        <Divider style={{ width: '100%' }} />
-                        <Grid item xs={12}>
-                            <Box mt={1} mb={1}>
-                                <Typography variant="button">
-                                    {formatMessage(MESSAGES.formA)}
-                                </Typography>
-                            </Box>
-                        </Grid>
-                        <FormAForm accessor={accessor} roundIndex={index} />
-
-                        <Divider className={customClasses.marginTop} />
-                        <Grid item xs={12}>
-                            <Box mt={1} mb={1}>
-                                <Typography variant="button">
-                                    {formatMessage(MESSAGES.destruction)}
-                                </Typography>
-                            </Box>
-                        </Grid>
-                        <DestructionsForm
-                            accessor={accessor}
-                            round={round}
-                            roundIndex={index}
-                        />
-                    </Grid>
-                );
-            })} */}
         </>
     );
 };

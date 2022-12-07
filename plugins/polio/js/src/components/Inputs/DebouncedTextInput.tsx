@@ -63,6 +63,11 @@ export const DebouncedTextInput: FunctionComponent<Props> = ({
     const [textValue, setTextValue] = useState(parsedValue);
     const [debouncedValue] = useDebounce(textValue, debounceTime);
 
+    useEffect(() => {
+        prevDebounced.current = parsedValue;
+        // leaving the deps empty because the effect should only run once
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
     // Reset state when value changes to prevent wrongly persisting the state value
     useEffect(() => {
         if (field.value !== prevValue.current) {

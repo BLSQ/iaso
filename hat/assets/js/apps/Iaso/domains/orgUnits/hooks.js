@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import {
     useSnackQuery,
     useSnackMutation,
@@ -24,6 +24,17 @@ export const useOrgUnitDetailData = (
                 onSuccess: ou => setCurrentOrgUnit(ou),
             },
         );
+
+    const groupsUrl = useMemo(() => {
+        const basUrl = '/api/groups/';
+        if (isNewOrgunit) {
+            return `${basUrl}?&defaultVersion=true'`;
+        }
+        if (originalOrgUnit?.source_id) {
+            return `${basUrl}?&dataSource=${originalOrgUnit.source_id}`;
+        }
+        return basUrl;
+    }, [isNewOrgunit, originalOrgUnit?.source_id]);
     const [
         { data: algorithms = [], isFetching: isFetchingAlgorithm },
         { data: algorithmRuns = [], isFetching: isFetchingAlgorithmRuns },
@@ -49,14 +60,7 @@ export const useOrgUnitDetailData = (
         },
         {
             queryKey: ['groups'],
-            queryFn: () =>
-                getRequest(
-                    `/api/groups/${
-                        isNewOrgunit
-                            ? '?&defaultVersion=true'
-                            : `?&dataSource=${originalOrgUnit?.source_id}`
-                    }`,
-                ),
+            queryFn: () => getRequest(groupsUrl),
             snackErrorMsg: MESSAGES.fetchGroupsError,
             options: {
                 select: data => data.groups,

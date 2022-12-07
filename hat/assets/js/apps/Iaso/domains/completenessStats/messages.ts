@@ -17,13 +17,21 @@ const MESSAGES = defineMessages({
         id: 'iaso.instance.formShort',
         defaultMessage: 'Form',
     },
-    completeness: {
-        id: 'iaso.completeness.title',
-        defaultMessage: 'Completeness',
+    completenessWithDescendants: {
+        id: 'iaso.completeness.titleWithDescendants',
+        defaultMessage: 'Completeness (with descendants)',
     },
-    formsFilled: {
-        id: 'iaso.completeness.formsFilled',
-        defaultMessage: '# Forms filled',
+    formsFilledWithDescendants: {
+        id: 'iaso.completeness.formsFilledWithDescendants',
+        defaultMessage: '# Forms filled (with descendants)',
+    },
+    completenessDirect: {
+        id: 'iaso.completeness.titleDirect',
+        defaultMessage: 'Completeness (direct)',
+    },
+    formsFilledDirect: {
+        id: 'iaso.completeness.formsFilledDirect',
+        defaultMessage: '# Forms filled (direct)',
     },
     chooseParent: {
         id: 'iaso.completeness.chooseParent',

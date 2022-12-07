@@ -59,23 +59,43 @@ export const useCompletenessStatsColumns = () => {
                 },
             },
             {
-                Header: formatMessage(MESSAGES.formsFilled),
+                Header: formatMessage(MESSAGES.formsFilledWithDescendants),
                 id: 'forms_filled',
                 accessor: 'forms_filled',
-                sortable: true,
+                sortable: false,
                 Cell: settings => {
                     return (
                         <span>
-                            {settings.row.original.forms_filled ?? '--'} /
+                            {settings.row.original.forms_filled ?? '--'}/
                             {settings.row.original.forms_to_fill ?? '--'}
                         </span>
                     );
                 },
             },
             {
-                Header: formatMessage(MESSAGES.completeness),
+                Header: formatMessage(MESSAGES.completenessWithDescendants),
                 id: 'completeness_ratio',
                 accessor: 'completeness_ratio',
+                sortable: false,
+            },
+            {
+                Header: formatMessage(MESSAGES.formsFilledDirect),
+                id: 'forms_filled_direct',
+                accessor: 'forms_filled_direct',
+                sortable: false,
+                Cell: settings => {
+                    return (
+                        <span>
+                            {settings.row.original.forms_filled_direct ?? '--'}/
+                            {settings.row.original.forms_to_fill_direct ?? '--'}
+                        </span>
+                    );
+                },
+            },
+            {
+                Header: formatMessage(MESSAGES.completenessDirect),
+                id: 'completeness_ratio_direct',
+                accessor: 'completeness_ratio_direct',
                 sortable: false,
             },
         ],

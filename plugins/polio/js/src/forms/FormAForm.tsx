@@ -7,6 +7,7 @@ import MESSAGES from '../constants/messages';
 import { DateInput, TextInput } from '../components/Inputs';
 import { useStyles } from '../styles/theme';
 import { MultilineText } from '../components/Inputs/MultilineText';
+import { DebouncedTextInput } from '../components/Inputs/DebouncedTextInput';
 
 type Props = { accessor: string; roundIndex: number };
 
@@ -94,9 +95,10 @@ export const FormAForm: FunctionComponent<Props> = ({
                     <Field
                         label={formatMessage(MESSAGES.formAUnusableVials)}
                         name={`${accessor}.forma_unusable_vials`}
-                        component={TextInput}
+                        component={DebouncedTextInput}
                         // don't change the filed.touch value on Focus to avoid the component being in error state on first click
-                        touchOnFocus={false}
+                        // touchOnFocus={false}
+                        debounceTime={500}
                         className={classes.input}
                     />
                 </Grid>

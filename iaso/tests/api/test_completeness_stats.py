@@ -175,8 +175,9 @@ class CompletenessStatsAPITestCase(APITestCase):
 
         response = self.client.get(f"/api/completeness_stats/?org_unit_id=7")
         json = response.json()
-        # TODO: implement once the correct behaviour is clarified
-        pass
+        # We have only rows concerning the requested OU
+        for result in json["results"]:
+            self.assertEqual(result["org_unit"]["id"], 7)
 
     def test_pagination(self):
         self.client.force_authenticate(self.user)

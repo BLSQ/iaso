@@ -15,10 +15,10 @@ import { ProjectInfos } from './ProjectInfos';
 import { ProjectFeatureFlags } from './ProjectFeatureFlags';
 
 import { Project } from '../types/project';
-import { FeatureFlag } from '../types/featureFlag';
 import { IntlMessage } from '../../../types/intl';
 
 import MESSAGES from '../messages';
+import { useGetFeatureFlags } from '../hooks/requests';
 
 type RenderTriggerProps = {
     openDialog: () => void;
@@ -32,7 +32,6 @@ type Props = {
     initialData?: Project | null;
     // eslint-disable-next-line no-unused-vars
     saveProject: (s: Project) => Promise<any>;
-    featureFlags: Array<FeatureFlag>;
 };
 
 const useStyles = makeStyles(theme => ({
@@ -65,9 +64,10 @@ const ProjectsDialog: FunctionComponent<Props> = ({
         app_id: null,
         feature_flags: [],
     },
-    featureFlags,
     saveProject,
 }) => {
+    const { data: featureFlags, isFetching: isFetchingFeatureFlags } =
+        useGetFeatureFlags();
     const { formatMessage } = useSafeIntl();
     const classes: Record<string, string> = useStyles();
     const initialProject = useCallback(
@@ -153,8 +153,9 @@ const ProjectsDialog: FunctionComponent<Props> = ({
             project.name &&
             project.name.value !== '' &&
             project.app_id &&
-            project.app_id.value !== '',
-        [project],
+            project.app_id.value !== '' &&
+            !isFetchingFeatureFlags,
+        [project, isFetchingFeatureFlags],
     );
 
     return (
@@ -210,6 +211,7 @@ const ProjectsDialog: FunctionComponent<Props> = ({
                         }
                         currentProject={project}
                         featureFlags={featureFlags}
+                        isFetchingFeatureFlag={isFetchingFeatureFlags}
                     />
                 )}
             </div>

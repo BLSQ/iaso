@@ -13,6 +13,10 @@ const MESSAGES = defineMessages({
         id: 'iaso.label.month',
         defaultMessage: 'Month',
     },
+    day: {
+        id: 'iaso.label.day',
+        defaultMessage: 'Day',
+    },
     six_month: {
         id: 'iaso.label.six_month',
         defaultMessage: 'Semester',

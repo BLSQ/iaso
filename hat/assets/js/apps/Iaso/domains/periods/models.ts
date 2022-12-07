@@ -1,3 +1,4 @@
+/* eslint-disable radix */
 import _ from 'lodash/fp';
 import {
     PERIOD_TYPE_DAY,
@@ -7,8 +8,30 @@ import {
     PERIOD_TYPE_YEAR,
 } from './constants';
 
+export type PeriodObject = {
+    month: number;
+    quarter: number;
+    semester: number;
+    year: number;
+    day: number;
+};
+
 export class Period {
-    constructor(periodString) {
+    private readonly periodType: string;
+
+    private readonly year: number;
+
+    private readonly month: number;
+
+    private readonly quarter: number;
+
+    private readonly semester: number;
+
+    private readonly day: number;
+
+    public readonly periodString: string;
+
+    constructor(periodString: string) {
         const [periodType, periodParts] = Period.parse(periodString);
 
         this.periodType = periodType;
@@ -20,7 +43,10 @@ export class Period {
         this.periodString = periodString;
     }
 
-    asPeriodType(periodType) {
+    // Cast period as another period type. (Throw away data?)
+    // seems to be done. By converting it to as string and then converting it
+    // letting the new Period constructor parse it back
+    asPeriodType(periodType: string): Period {
         let periodTypeString;
         switch (periodType) {
             case PERIOD_TYPE_DAY:
@@ -51,7 +77,7 @@ export class Period {
         return new Period(periodTypeString);
     }
 
-    get monthRange() {
+    get monthRange(): number[] {
         switch (this.periodType) {
             case PERIOD_TYPE_DAY:
                 throw new Error(`Invalid period type ${this.periodType}`);
@@ -66,7 +92,9 @@ export class Period {
         }
     }
 
-    static toDate(value) {
+    static toDate(
+        value?: Partial<PeriodObject> | null,
+    ): string | undefined | null {
         if (!value) return value;
         const result = `${value.year}${String(value?.month ?? '1').padStart(
             2,
@@ -75,7 +103,7 @@ export class Period {
         return result;
     }
 
-    toCode() {
+    toCode(): string {
         switch (this.periodType) {
             case PERIOD_TYPE_DAY:
                 return `${String(this.day).padStart(2, '0')}/${String(
@@ -92,8 +120,7 @@ export class Period {
         }
     }
 
-    static parse(periodString) {
-        if (!periodString) return null;
+    static parse(periodString: string): [string, PeriodObject] {
         if (periodString.includes('Q')) {
             return [
                 PERIOD_TYPE_QUARTER,
@@ -119,7 +146,7 @@ export class Period {
         throw new Error(`Invalid period string ${periodString}`);
     }
 
-    static getPeriodType(periodString) {
+    static getPeriodType(periodString: string): string | null {
         if (periodString.includes('Q') && periodString.length === 6) {
             return PERIOD_TYPE_QUARTER;
         }
@@ -139,7 +166,7 @@ export class Period {
         return null;
     }
 
-    static parseQuarterString(quarterString) {
+    static parseQuarterString(quarterString: string): PeriodObject {
         const [year, quarter] = quarterString.split('Q').map(Number);
 
         return {
@@ -151,7 +178,7 @@ export class Period {
         };
     }
 
-    static parseSemesterString(semesterString) {
+    static parseSemesterString(semesterString: string): PeriodObject {
         const [year, semester] = semesterString.split('S').map(Number);
 
         return {
@@ -163,7 +190,7 @@ export class Period {
         };
     }
 
-    static parseMonthString(monthString) {
+    static parseMonthString(monthString: string): PeriodObject {
         const year = Number(monthString.slice(0, 4));
         const month = Number(monthString.slice(4, 6));
 
@@ -176,7 +203,7 @@ export class Period {
         };
     }
 
-    static parseDayString(monthString) {
+    static parseDayString(monthString: string): PeriodObject {
         const year = Number(monthString.slice(0, 4));
         const month = Number(monthString.slice(4, 6));
         const day = Number(monthString.slice(6, 8));
@@ -190,7 +217,7 @@ export class Period {
         };
     }
 
-    static parseYearString(yearString) {
+    static parseYearString(yearString: string): PeriodObject {
         const year = Number(yearString);
 
         return {
@@ -202,11 +229,11 @@ export class Period {
         };
     }
 
-    static padMonth(n) {
+    static padMonth(n: number): string | number {
         return n < 10 ? `0${n}` : n;
     }
 
-    static isBefore(p1String, p2String) {
+    static isBefore(p1String: string, p2String: string): boolean {
         const p1 = new Period(p1String);
         const p2 = new Period(p2String);
         if (p1.year < p2.year) {
@@ -233,7 +260,7 @@ export class Period {
         return false;
     }
 
-    static isBeforeOrEqual(p1String, p2String) {
+    static isBeforeOrEqual(p1String: string, p2String: string): boolean {
         const p1 = new Period(p1String);
         const p2 = new Period(p2String);
         if (p1.year < p2.year) {
@@ -262,7 +289,7 @@ export class Period {
         return false;
     }
 
-    static isAfter(p1String, p2String) {
+    static isAfter(p1String: string, p2String: string): boolean {
         const p1 = new Period(p1String);
         const p2 = new Period(p2String);
         if (p1.year > p2.year) {
@@ -289,7 +316,7 @@ export class Period {
         return false;
     }
 
-    static isAfterOrEqual(p1String, p2String) {
+    static isAfterOrEqual(p1String: string, p2String: string): boolean {
         const p1 = new Period(p1String);
         const p2 = new Period(p2String);
         if (p1.year > p2.year) {
@@ -320,7 +347,7 @@ export class Period {
 
     // more period functions -----------------
 
-    nextYearMonth(period) {
+    nextYearMonth(period: string): string {
         let year = parseInt(period.slice(0, 4), 0);
         let month = parseInt(period.slice(4, 6), 0);
         if (month === 12) {
@@ -332,7 +359,7 @@ export class Period {
         return `${year}${Period.padMonth(month)}`;
     }
 
-    previousYearMonth(period) {
+    previousYearMonth(period: string): string {
         let year = parseInt(period.slice(0, 4), 0);
         let month = parseInt(period.slice(4, 6), 0);
         if (month === 1) {
@@ -344,27 +371,27 @@ export class Period {
         return `${year}${Period.padMonth(month)}`;
     }
 
-    nextYear(period) {
+    nextYear(period: string): string {
         const year = parseInt(period.slice(0, 4), 0);
         return `${year + 1}`;
     }
 
-    previousYear(period) {
+    previousYear(period: string): string {
         const year = parseInt(period.slice(0, 4), 0);
         return `${year - 1}`;
     }
 
-    nextFinancialJuly(period) {
+    nextFinancialJuly(period: string): string {
         const year = parseInt(period.slice(0, 4), 0);
         return `${year + 1}July`;
     }
 
-    previousFinancialJuly(period) {
+    previousFinancialJuly(period: string): string {
         const year = parseInt(period.slice(0, 4), 0);
         return `${year - 1}July`;
     }
 
-    nextQuarter(period) {
+    nextQuarter(period: string): string {
         let year = parseInt(period.slice(0, 4), 0);
         let quarter = parseInt(period.slice(5, 6), 0);
         if (quarter === 4) {
@@ -376,7 +403,7 @@ export class Period {
         return `${year}Q${quarter}`;
     }
 
-    nextSixMonth(period) {
+    nextSixMonth(period: string): string {
         let year = parseInt(period.slice(0, 4), 0);
         let sixMonth = parseInt(period.slice(5, 6), 0);
         if (sixMonth === 2) {
@@ -388,7 +415,7 @@ export class Period {
         return `${year}S${sixMonth}`;
     }
 
-    previousQuarter(period) {
+    previousQuarter(period: string): string {
         let year = parseInt(period.slice(0, 4), 0);
         let quarter = parseInt(period.slice(5, 6), 0);
         if (quarter === 1) {
@@ -400,7 +427,7 @@ export class Period {
         return `${year}Q${quarter}`;
     }
 
-    previousSixMonth(period) {
+    previousSixMonth(period: string): string {
         let year = parseInt(period.slice(0, 4), 0);
         let sixMonth = parseInt(period.slice(5, 6), 0);
         if (sixMonth === 1) {
@@ -412,7 +439,7 @@ export class Period {
         return `${year}S${sixMonth}`;
     }
 
-    next(period) {
+    next(period: string): string {
         if (period.includes('Q')) {
             return this.nextQuarter(period);
         }
@@ -432,7 +459,7 @@ export class Period {
         throw new Error(`unsupported period format ${period}`);
     }
 
-    previous(period) {
+    previous(period: string): string {
         if (period.includes('Q')) {
             return this.previousQuarter(period);
         }
@@ -448,12 +475,13 @@ export class Period {
         if (period.includes('July')) {
             return this.previousFinancialJuly(period);
         }
+
         throw new Error(`unsupported period format ${period}`);
     }
 
-    previousPeriods(numberOfPeriods) {
+    previousPeriods(numberOfPeriods: number): string[] {
         let previous = '';
-        const previousPeriods = [];
+        const previousPeriods: string[] = [];
         let tempPeriodString = this.periodString;
 
         for (let i = 0; i < numberOfPeriods; i += 1) {
@@ -466,9 +494,9 @@ export class Period {
         return previousPeriods.reverse();
     }
 
-    nextPeriods(numberOfPeriods) {
+    nextPeriods(numberOfPeriods: number): string[] {
         let next = '';
-        const nextPeriods = [];
+        const nextPeriods: string[] = [];
         let tempPeriodString = this.periodString;
 
         for (let i = 0; i < numberOfPeriods; i += 1) {

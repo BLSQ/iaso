@@ -1,7 +1,13 @@
 import React, { useCallback, useContext } from 'react';
 import { useDispatch } from 'react-redux';
-
-import { IconButton, makeStyles, Grid, Box } from '@material-ui/core';
+import {
+    IconButton,
+    makeStyles,
+    Grid,
+    useMediaQuery,
+    useTheme,
+    Box,
+} from '@material-ui/core';
 import AppBar from '@material-ui/core/AppBar';
 import Toolbar from '@material-ui/core/Toolbar';
 import Typography from '@material-ui/core/Typography';
@@ -13,7 +19,9 @@ import PropTypes from 'prop-types';
 
 import { toggleSidebarMenu } from '../../redux/sidebarMenuReducer';
 import { ThemeConfigContext } from '../../domains/app/contexts/ThemeConfigContext.tsx';
-import getDisplayName, { useCurrentUser } from '../../utils/usersUtils';
+import { useCurrentUser } from '../../utils/usersUtils.ts';
+
+import { CurrentUserInfos } from './CurrentUser/index.tsx';
 
 const styles = theme => ({
     menuButton: {
@@ -22,13 +30,26 @@ const styles = theme => ({
             marginLeft: theme.spacing(1),
         },
     },
+    version: {
+        fontSize: 9,
+        display: 'block',
+        marginTop: 5,
+    },
+
+    root: {
+        '&.MuiToolbar-gutters': {
+            paddingRight: '48px',
+        },
+    },
 });
 
 const useStyles = makeStyles(styles);
 
 function TopBar(props) {
     const { title, children, displayBackButton, goBack } = props;
+    // const { formatMessage } = useSafeIntl();
     const classes = useStyles();
+
     const { APP_TITLE } = useContext(ThemeConfigContext);
     // Set the page title from the top bar title.
     React.useEffect(() => {
@@ -39,12 +60,15 @@ function TopBar(props) {
         () => dispatch(toggleSidebarMenu()),
         [dispatch],
     );
+
     const currentUser = useCurrentUser();
+    const theme = useTheme();
+    const isMobileLayout = useMediaQuery(theme.breakpoints.down('md'));
 
     return (
         <>
             <AppBar position="relative" color="primary" id="top-bar">
-                <Toolbar>
+                <Toolbar className={classes.root}>
                     <Grid
                         container
                         justifyContent="space-between"
@@ -88,21 +112,24 @@ function TopBar(props) {
                                 {title}
                             </Typography>
                         </Grid>
-                        {currentUser && (
+                        {currentUser && !isMobileLayout && (
                             <Grid
                                 container
                                 item
                                 xs={3}
-                                alignContent="flex-end"
                                 justifyContent="flex-end"
                             >
-                                <Typography
-                                    variant="body2"
-                                    className={classes.userName}
-                                    title={getDisplayName(currentUser)}
+                                <Box
+                                    display="flex"
+                                    alignItems="flex-end"
+                                    justifyContent="flex-end"
+                                    flexDirection="column"
                                 >
-                                    {currentUser?.user_name}
-                                </Typography>
+                                    <CurrentUserInfos
+                                        currentUser={currentUser}
+                                        version={window.IASO_VERSION}
+                                    />
+                                </Box>
                             </Grid>
                         )}
                     </Grid>

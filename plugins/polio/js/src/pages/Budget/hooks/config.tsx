@@ -53,6 +53,7 @@ export const useBudgetColumns = (): Column[] => {
             },
             {
                 Header: formatMessage(MESSAGES.country),
+                id: 'country__name',
                 accessor: 'country_name',
                 sortable: true,
             },

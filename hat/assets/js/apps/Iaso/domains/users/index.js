@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import PropTypes from 'prop-types';
-import { useDispatch, useSelector } from 'react-redux';
+import { useDispatch } from 'react-redux';
 import { makeStyles, Box, Grid } from '@material-ui/core';
 
 import {
@@ -25,8 +25,8 @@ import usersTableColumns from './config';
 import MESSAGES from './messages';
 
 import { redirectTo } from '../../routing/actions';
-import { convertObjectToString } from '../../utils';
-import { useCurrentUser } from '../../utils/usersUtils';
+import { convertObjectToString } from '../../utils/dataManipulation.ts';
+import { useCurrentUser } from '../../utils/usersUtils.ts';
 
 const baseUrl = baseUrls.users;
 
@@ -47,9 +47,12 @@ const Users = ({ params }) => {
     const dispatch = useDispatch();
 
     const { data, isFetching: fetchingProfiles } = useGetProfiles(params);
+
     const { mutate: deleteProfile, isLoading: deletingProfile } =
         useDeleteProfile();
+
     const { mutate: saveProfile, isLoading: savingProfile } = useSaveProfile();
+
     const isLoading = fetchingProfiles || deletingProfile || savingProfile;
 
     useSkipEffectOnMount(() => {

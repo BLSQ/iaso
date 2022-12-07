@@ -21,6 +21,7 @@ type Props = {
     errors?: string[];
     required?: boolean;
     debounceTime?: number; // debounce time in ms
+    disabled?: boolean;
 };
 
 const useStyles = makeStyles(theme => ({
@@ -73,6 +74,7 @@ export const TextArea: FunctionComponent<Props> = ({
     errors = [],
     required = false,
     debounceTime = 0,
+    disabled = false,
 }) => {
     const classes: Record<string, string> = useStyles();
     const [focus, setFocus] = useState<boolean>(false);
@@ -122,6 +124,7 @@ export const TextArea: FunctionComponent<Props> = ({
                     setTextValue(e.target.value);
                 }}
                 value={textValue}
+                disabled={disabled}
             />
         </FormControl>
     );

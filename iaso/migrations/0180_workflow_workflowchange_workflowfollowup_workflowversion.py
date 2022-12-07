@@ -7,7 +7,7 @@ import django.db.models.deletion
 class Migration(migrations.Migration):
 
     dependencies = [
-        ("iaso", "0178_remove_beneficiary_user_perm"),
+        ("iaso", "0179_alter_form_period_type"),
     ]
 
     operations = [

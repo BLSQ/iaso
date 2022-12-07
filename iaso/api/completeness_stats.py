@@ -96,10 +96,10 @@ class CompletenessStatsViewSet(viewsets.ViewSet):
                 ou_filled = ou_to_fill.filter(instance__form=form)
                 ou_filled_count = ou_filled.count()
 
-                ou_to_fill_strict = org_units.filter(org_unit_type__in=ou_types_of_form).filter(pk=row_ou.pk)
-                ou_to_fill_strict_count = ou_to_fill_strict.count()
-                ou_filled_strict = ou_to_fill_strict.filter(instance__form=form)
-                ou_filled_strict_count = ou_filled_strict.count()
+                ou_to_fill_direct = org_units.filter(org_unit_type__in=ou_types_of_form).filter(pk=row_ou.pk)
+                ou_to_fill_direct_count = ou_to_fill_direct.count()
+                ou_filled_direct = ou_to_fill_direct.filter(instance__form=form)
+                ou_filled_direct_count = ou_filled_direct.count()
 
                 # TODO: response as serializer for Swagger
 
@@ -117,11 +117,11 @@ class CompletenessStatsViewSet(viewsets.ViewSet):
                         "forms_filled": ou_filled_count,
                         "forms_to_fill": ou_to_fill_count,
                         "completeness_ratio": formatted_percentage(part=ou_filled_count, total=ou_to_fill_count),
-                        # Those counts strictly target the row org unit (no descendants included)
-                        "forms_filled_strict": ou_filled_strict_count,
-                        "forms_to_fill_strict": ou_to_fill_strict_count,
-                        "completeness_ratio_strict": formatted_percentage(
-                            part=ou_filled_strict_count, total=ou_to_fill_strict_count
+                        # Those counts strictly/directly target the row org unit (no descendants included)
+                        "forms_filled_direct": ou_filled_direct_count,
+                        "forms_to_fill_direct": ou_to_fill_direct_count,
+                        "completeness_ratio_direct": formatted_percentage(
+                            part=ou_filled_direct_count, total=ou_to_fill_direct_count
                         ),
                     }
                 )

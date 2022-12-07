@@ -27,8 +27,6 @@ export const columns = (
     formatMessage: (msg: IntlMessage) => string,
     // eslint-disable-next-line no-unused-vars
     params: Params,
-    featureFlags: Array<FeatureFlag>,
-    // eslint-disable-next-line no-unused-vars
     saveProject: (s: Project) => Promise<any>,
 ): Array<Column> => [
     {
@@ -64,7 +62,6 @@ export const columns = (
                     initialData={settings.row.original}
                     titleMessage={MESSAGES.updateProject}
                     key={settings.row.original.updated_at}
-                    featureFlags={featureFlags}
                     saveProject={saveProject}
                 />
             </section>

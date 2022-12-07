@@ -9,9 +9,21 @@ import { withQueryClientProvider } from '../../../../test/utils';
 
 const requests = [
     {
-        url: '/api/profiles/?order=undefined&limit=undefined&page=undefined',
+        url: '/api/profiles/?',
         body: {
             profiles: [],
+        },
+    },
+    {
+        url: '/api/permissions/',
+        body: {
+            permissions: [],
+        },
+    },
+    {
+        url: '/api/orgunittypes/',
+        body: {
+            orgUnitTypes: [],
         },
     },
 ];

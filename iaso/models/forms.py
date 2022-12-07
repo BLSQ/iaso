@@ -65,6 +65,7 @@ class Form(SoftDeletableModel):
     """
 
     PERIOD_TYPE_CHOICES = (
+        (periods.PERIOD_TYPE_DAY, _("Day")),
         (periods.PERIOD_TYPE_MONTH, _("Month")),
         (periods.PERIOD_TYPE_QUARTER, _("Quarter")),
         (periods.PERIOD_TYPE_SIX_MONTH, _("Six-month")),

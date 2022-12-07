@@ -37,6 +37,10 @@ const MESSAGES = defineMessages({
         defaultMessage: 'Permissions',
         id: 'iaso.users.permissions',
     },
+    orgUnitTypesDropdown: {
+        defaultMessage: 'Org Unit Types',
+        id: 'iaso.users.orgUnitTypesDropdown',
+    },
     isSuperUser: {
         defaultMessage: 'User is a super admin and has all rights',
         id: 'iaso.users.isSuperUser',
@@ -88,6 +92,10 @@ const MESSAGES = defineMessages({
     addOrgUnit: {
         defaultMessage: 'Search org unit to add',
         id: 'iaso.orgUnits.add',
+    },
+    orgUnitsType: {
+        id: 'iaso.orgUnits.type',
+        defaultMessage: 'Org Unit type',
     },
     locale: {
         defaultMessage: 'Language',

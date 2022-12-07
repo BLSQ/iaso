@@ -19,7 +19,9 @@ import PropTypes from 'prop-types';
 
 import { toggleSidebarMenu } from '../../redux/sidebarMenuReducer';
 import { ThemeConfigContext } from '../../domains/app/contexts/ThemeConfigContext.tsx';
-import getDisplayName, { useCurrentUser } from '../../utils/usersUtils.ts';
+import { useCurrentUser } from '../../utils/usersUtils.ts';
+
+import { CurrentUserInfos } from './CurrentUser/index.tsx';
 
 const styles = theme => ({
     menuButton: {
@@ -33,13 +35,21 @@ const styles = theme => ({
         display: 'block',
         marginTop: 5,
     },
+
+    root: {
+        '&.MuiToolbar-gutters': {
+            paddingRight: '48px',
+        },
+    },
 });
 
 const useStyles = makeStyles(styles);
 
 function TopBar(props) {
     const { title, children, displayBackButton, goBack } = props;
+    // const { formatMessage } = useSafeIntl();
     const classes = useStyles();
+
     const { APP_TITLE } = useContext(ThemeConfigContext);
     // Set the page title from the top bar title.
     React.useEffect(() => {
@@ -50,6 +60,7 @@ function TopBar(props) {
         () => dispatch(toggleSidebarMenu()),
         [dispatch],
     );
+
     const currentUser = useCurrentUser();
     const theme = useTheme();
     const isMobileLayout = useMediaQuery(theme.breakpoints.down('md'));
@@ -57,7 +68,7 @@ function TopBar(props) {
     return (
         <>
             <AppBar position="relative" color="primary" id="top-bar">
-                <Toolbar>
+                <Toolbar className={classes.root}>
                     <Grid
                         container
                         justifyContent="space-between"
@@ -114,21 +125,10 @@ function TopBar(props) {
                                     justifyContent="flex-end"
                                     flexDirection="column"
                                 >
-                                    <Typography
-                                        variant="body2"
-                                        title={getDisplayName(currentUser)}
-                                    >
-                                        {currentUser.user_name}
-                                    </Typography>
-                                    {window.IASO_VERSION && (
-                                        <Typography
-                                            variant="body2"
-                                            className={classes.version}
-                                            title={getDisplayName(currentUser)}
-                                        >
-                                            {window.IASO_VERSION}
-                                        </Typography>
-                                    )}
+                                    <CurrentUserInfos
+                                        currentUser={currentUser}
+                                        version={window.IASO_VERSION}
+                                    />
                                 </Box>
                             </Grid>
                         )}

@@ -1,8 +1,19 @@
-import React, { useState, useEffect, useCallback } from 'react';
-import { Grid, makeStyles, Box, Typography } from '@material-ui/core';
+import React, {
+    useState,
+    useEffect,
+    useCallback,
+    FunctionComponent,
+} from 'react';
+import {
+    Grid,
+    makeStyles,
+    Box,
+    Typography,
+    FormHelperText,
+} from '@material-ui/core';
 import { useTheme } from '@material-ui/core/styles';
-import PropTypes from 'prop-types';
 
+// @ts-ignore
 import { DatePicker, useSafeIntl, commonStyles } from 'bluesquare-components';
 import InputComponent from '../../../components/forms/InputComponent';
 
@@ -12,7 +23,7 @@ import {
     hasFeatureFlag,
     HIDE_PERIOD_QUARTER_NAME,
 } from '../../../utils/featureFlags';
-import { Period } from '../models';
+import { Period, PeriodObject } from '../models';
 
 import {
     PERIOD_TYPE_DAY,
@@ -27,7 +38,7 @@ import {
     SEMESTERS_RANGE,
 } from '../constants';
 import MESSAGES from '../messages';
-import { useCurrentUser } from '../../../utils/usersUtils.ts';
+import { useCurrentUser } from '../../../utils/usersUtils';
 
 const useStyles = makeStyles(theme => ({
     ...commonStyles(theme),
@@ -37,22 +48,34 @@ const useStyles = makeStyles(theme => ({
     },
 }));
 
-const PeriodPicker = ({
+type Props = {
+    periodType: string | object;
+    title: string;
+    onChange: (_) => {};
+    activePeriodString: string;
+    hasError: boolean;
+    errors?: string[];
+    keyName: string;
+};
+
+const PeriodPicker: FunctionComponent<Props> = ({
     periodType,
     title,
     onChange,
     activePeriodString,
     hasError,
     keyName,
+    errors,
 }) => {
     const classes = useStyles();
     const theme = useTheme();
     const { formatMessage } = useSafeIntl();
-    const [currentPeriod, setCurrentPeriod] = useState(
-        activePeriodString && Period.getPeriodType(activePeriodString)
-            ? Period.parse(activePeriodString)[1]
-            : null,
-    );
+    const [currentPeriod, setCurrentPeriod] =
+        useState<Partial<PeriodObject> | null>(
+            activePeriodString && Period.getPeriodType(activePeriodString)
+                ? Period.parse(activePeriodString)[1]
+                : null,
+        );
     const [currentPeriodType, setCurrentPeriodType] = useState(periodType);
     const currentUser = useCurrentUser();
 
@@ -63,8 +86,12 @@ const PeriodPicker = ({
         setCurrentPeriodType(periodType);
     }, [periodType, currentPeriodType]);
 
-    const handleChange = (changedKeyName, value) => {
-        let newPeriod = {
+    const handleChange = (
+        changedKeyName: 'month' | 'year' | 'quarter' | 'semester',
+        value: number,
+    ) => {
+        // FIXME: Figure out appropriate typescript
+        let newPeriod: null | Partial<PeriodObject> = {
             ...currentPeriod,
             [changedKeyName]: value,
         };
@@ -104,6 +131,8 @@ const PeriodPicker = ({
     if (!periodType) {
         return null;
     }
+    const displayError = hasError || (errors?.length ?? 0) > 0;
+
     return (
         <Box
             id={keyName}
@@ -113,7 +142,7 @@ const PeriodPicker = ({
             border={currentPeriodType === PERIOD_TYPE_DAY ? 0 : 1}
             borderRadius={5}
             borderColor={
-                hasError ? theme.palette.error.main : 'rgba(0,0,0,0.23)'
+                displayError ? theme.palette.error.main : 'rgba(0,0,0,0.23)'
             }
         >
             {currentPeriodType === PERIOD_TYPE_DAY && (
@@ -128,6 +157,7 @@ const PeriodPicker = ({
             )}
             {currentPeriodType !== PERIOD_TYPE_DAY && (
                 <>
+                    {/*@ts-ignore*/}
                     <Typography variant="h6" className={classes.title}>
                         {title}
                     </Typography>
@@ -236,6 +266,7 @@ const PeriodPicker = ({
                     </Grid>
                 </>
             )}
+            <FormHelperText error={displayError}>{errors}</FormHelperText>
         </Box>
     );
 };
@@ -244,18 +275,6 @@ PeriodPicker.defaultProps = {
     activePeriodString: undefined,
     periodType: undefined,
     hasError: false,
-};
-
-PeriodPicker.propTypes = {
-    periodType: PropTypes.oneOfType([PropTypes.string, PropTypes.object]),
-    title: PropTypes.string.isRequired,
-    onChange: PropTypes.func.isRequired,
-    activePeriodString: PropTypes.oneOfType([
-        PropTypes.string,
-        PropTypes.object,
-    ]),
-    hasError: PropTypes.bool,
-    keyName: PropTypes.string.isRequired,
 };
 
 export default PeriodPicker;

@@ -346,7 +346,7 @@ describe('Submissions', () => {
             cy.get('body').click();
         };
         const testPeriod = (periodTypeIndex, startPeriod, endPeriod) => {
-            const mapping = ['#month', '#quarter'];
+            const mapping = ['#day', '#month', '#quarter'];
             const secondId = mapping[periodTypeIndex];
             cy.fillMultiSelect('#periodType', [periodTypeIndex], false);
             cy.get('[data-test="search-button"]').as('searchButton');
@@ -393,9 +393,10 @@ describe('Submissions', () => {
             });
         };
         cy.wait('@getSubmissions').then(() => {
-            testPeriod(0, '201801', '201901');
-            testPeriod(1, '2018Q1', '2019Q1');
-            testPeriod(2, '2018', '2019');
+            // TODO: test new period type day
+            testPeriod(1, '201801', '201901');
+            testPeriod(2, '2018Q1', '2019Q1');
+            testPeriod(3, '2018', '2019');
         });
     });
 

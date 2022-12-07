@@ -27,12 +27,11 @@ export const getDefaultPeriodString = () => {
 export const getDefaultPeriod = () => new Period(getDefaultPeriodString());
 
 export const isValidPeriod = (pString, periodType = PERIOD_TYPE_DAY) => {
-    if (!pString) return true;
-    const pType = Period.getPeriodType(pString);
-    if (pType && pType === periodType) {
+    if (!pString) {
         return true;
     }
-    return false;
+    const pType = Period.getPeriodType(pString);
+    return Boolean(pType && pType === periodType);
 };
 
 export const errorTypes = {
@@ -87,6 +86,9 @@ export const getPeriodsErrors = (startPeriod, endPeriod, pType) => {
 };
 
 export const getPeriodPickerString = (periodType, period, value) => {
+    if (!period) {
+        return '';
+    }
     switch (periodType) {
         case PERIOD_TYPE_DAY: {
             return value;
@@ -131,20 +133,25 @@ const getMonthRangeString = (monthRange, formatMessage) => {
 export const getPrettyPeriod = (period, formatMessage, currentUser) => {
     if (!period) return textPlaceholder;
     const periodClass = new Period(period);
-    const monthRangeString = getMonthRangeString(
-        periodClass.monthRange,
-        formatMessage,
-    );
+
     const prettyPeriod = `${period.substring(4, 6)}-${periodClass.year}`;
     switch (periodClass.periodType) {
         case PERIOD_TYPE_DAY: {
-            return `${prettyPeriod}`;
+            return `${periodClass.year}-${periodClass.month}-${periodClass.day}`;
         }
         case PERIOD_TYPE_MONTH:
         case PERIOD_TYPE_SIX_MONTH: {
+            const monthRangeString = getMonthRangeString(
+                periodClass.monthRange,
+                formatMessage,
+            );
             return `${prettyPeriod} (${monthRangeString})`;
         }
         case PERIOD_TYPE_QUARTER: {
+            const monthRangeString = getMonthRangeString(
+                periodClass.monthRange,
+                formatMessage,
+            );
             if (hasFeatureFlag(currentUser, HIDE_PERIOD_QUARTER_NAME)) {
                 return `${monthRangeString} ${periodClass.year}`;
             }

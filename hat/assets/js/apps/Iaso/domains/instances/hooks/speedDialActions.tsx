@@ -1,5 +1,5 @@
 /* eslint-disable camelcase */
-import React, { ReactElement, useMemo } from 'react';
+import React, { ReactElement, useCallback, useMemo } from 'react';
 import DeleteIcon from '@material-ui/icons/Delete';
 import UpdateIcon from '@material-ui/icons/Update';
 import EditLocationIcon from '@material-ui/icons/EditLocation';
@@ -7,23 +7,28 @@ import RestoreFromTrashIcon from '@material-ui/icons/RestoreFromTrash';
 import LinkIcon from '@material-ui/icons/Link';
 import LinkOffIcon from '@material-ui/icons/LinkOff';
 import LockIcon from '@material-ui/icons/Lock';
+
 import {
     // @ts-ignore
     ExportButton,
+    // @ts-ignore
+    makeFullModal,
     // @ts-ignore
     useSafeIntl,
 } from 'bluesquare-components';
 import { DialogContentText } from '@material-ui/core';
 import EnketoIcon from '../components/EnketoIcon';
-import CreateReAssignDialogComponent from '../components/CreateReAssignDialogComponent';
+import { CreateReAssignDialogComponent } from '../components/CreateReAssignDialogComponent';
 import ExportInstancesDialogComponent from '../components/ExportInstancesDialogComponent';
 import MESSAGES from '../messages';
 import { Instance } from '../types/instance';
 import ConfirmCancelDialogComponent from '../../../components/dialogs/ConfirmCancelDialogComponent';
 import { useSaveOrgUnit } from '../../orgUnits/hooks';
 import { usePostLockInstance } from '../hooks';
-import { useLinkOrgUnitToReferenceSubmission } from './speeddials';
+import { FormDef, useLinkOrgUnitToReferenceSubmission } from './speeddials';
 import { Nullable } from '../../../types/utils';
+import { useDispatch } from 'react-redux';
+import { reAssignInstance } from '../actions';
 
 export type SpeedDialAction = {
     id: string;
@@ -33,14 +38,19 @@ export type SpeedDialAction = {
 
 export const useBaseActions = (
     currentInstance: Instance,
-    orgUnitTypeIds: number[],
-    reAssignInstance: (
-        // eslint-disable-next-line no-unused-vars
-        instance: Instance,
-        // eslint-disable-next-line no-unused-vars
-        options: { period: any; org_unit: any },
-    ) => void,
+    formDef?: FormDef,
 ): SpeedDialAction[] => {
+    const CreateReAssignDialog = useMemo(
+        () => makeFullModal(CreateReAssignDialogComponent, UpdateIcon),
+        [],
+    );
+    const dispatch = useDispatch();
+    const onReAssignInstance = useCallback(
+        (...props) => {
+            dispatch(reAssignInstance(...props));
+        },
+        [dispatch],
+    );
     return useMemo(() => {
         return [
             {
@@ -69,21 +79,19 @@ export const useBaseActions = (
             {
                 id: 'instanceReAssignAction',
                 icon: (
-                    <CreateReAssignDialogComponent
+                    <CreateReAssignDialog
                         titleMessage={MESSAGES.reAssignInstance}
                         confirmMessage={MESSAGES.reAssignInstanceAction}
                         currentInstance={currentInstance}
-                        orgUnitTypes={orgUnitTypeIds}
-                        onCreateOrReAssign={reAssignInstance}
-                        renderTrigger={({ openDialog }) => (
-                            <UpdateIcon onClick={openDialog} />
-                        )}
+                        orgUnitTypes={formDef?.orgUnitTypeIds}
+                        formType={formDef}
+                        onCreateOrReAssign={onReAssignInstance}
                     />
                 ),
                 disabled: currentInstance && currentInstance.deleted,
             },
         ];
-    }, [currentInstance, orgUnitTypeIds, reAssignInstance]);
+    }, [currentInstance, formDef, reAssignInstance]);
 };
 
 export const useEditLocationWithGpsAction = (

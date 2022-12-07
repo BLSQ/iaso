@@ -18,8 +18,8 @@ FieldName = Literal["comment", "amount", "attachments"]
 class Transition:
     label: str
     key: str
-    required_fields: List[str]
-    displayed_fields: List[str]
+    required_fields: List[str] = field(default_factory=list)
+    displayed_fields: List[str] = field(default_factory=list)
     from_node: str = "-"
     to_node: str = "-"
     teams_ids_can_transition: Union[list, None] = None  # if none unrestricted

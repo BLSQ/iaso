@@ -54,35 +54,27 @@ export const DebouncedTextInput: FunctionComponent<Props> = ({
         },
         [name, setFieldTouched, setFieldValue],
     );
-    const prevValue = useRef();
+    const parsedValue =
+        typeof field?.value === 'number'
+            ? `${field.value}`
+            : field?.value ?? '';
+    const prevValue = useRef<string>();
     const prevDebounced = useRef();
-    const [textValue, setTextValue] = useState(field.value ?? '');
+    const [textValue, setTextValue] = useState(parsedValue);
     const [debouncedValue] = useDebounce(textValue, debounceTime);
-
-    // const handleChangeAndFocus = useCallback(
-    //     e => {
-    //         form?.setFieldTouched(field.name, true);
-    //         field?.onChange(e);
-    //     },
-    //     [form, field],
-    // );
-
-    // const handleChange = useMemo(
-    //     () => (touchOnFocus ? field.onChange : handleChangeAndFocus),
-    //     [field.onChange, handleChangeAndFocus, touchOnFocus],
-    // );
 
     // Reset state when value changes to prevent wrongly persisting the state value
     useEffect(() => {
         if (field.value !== prevValue.current) {
-            setTextValue(field.value ?? '');
+            // using parsedValue to avoid type error
+            setTextValue(parsedValue ?? '');
             prevValue.current = field.value;
         }
-    }, [field.value]);
+    }, [field.value, parsedValue]);
 
     useSkipEffectOnMount(() => {
         if (debouncedValue !== prevDebounced.current) {
-            // Only call onChange if debouncedVAlue has been updated to avoid unwanted overwrites
+            // Only call onChange if debouncedValue has been updated to avoid unwanted overwrites
             prevDebounced.current = debouncedValue;
             onChange(debouncedValue);
         }

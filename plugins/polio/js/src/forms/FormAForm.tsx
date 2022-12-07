@@ -4,7 +4,7 @@ import { useSafeIntl } from 'bluesquare-components';
 import { Field, useFormikContext } from 'formik';
 import { Grid } from '@material-ui/core';
 import MESSAGES from '../constants/messages';
-import { DateInput, TextInput } from '../components/Inputs';
+import { DateInput } from '../components/Inputs';
 import { useStyles } from '../styles/theme';
 import { MultilineText } from '../components/Inputs/MultilineText';
 import { DebouncedTextInput } from '../components/Inputs/DebouncedTextInput';
@@ -40,7 +40,7 @@ export const FormAForm: FunctionComponent<Props> = ({
     useEffect(() => {
         // Using every to be able to break the loop
         formAFieldNames.every(key => {
-            if (fieldValues[key]) {
+            if (fieldValues?.[key]) {
                 formAFieldNames.forEach(name => {
                     setFieldTouched(`${accessor}.${name}`, true);
                 });
@@ -53,7 +53,7 @@ export const FormAForm: FunctionComponent<Props> = ({
 
     // // Remove error state if no field has value
     useEffect(() => {
-        const isFormAEmpty = formAFieldNames.every(key => !fieldValues[key]);
+        const isFormAEmpty = formAFieldNames.every(key => !fieldValues?.[key]);
         if (isFormAEmpty) {
             formAFieldNames.forEach(key => {
                 setFieldTouched(`${accessor}.${key}`, false);
@@ -63,20 +63,20 @@ export const FormAForm: FunctionComponent<Props> = ({
 
     // // Set TextFields values to null if empty to avoid 400.
     useEffect(() => {
-        if (fieldValues.forma_usable_vials === '') {
+        if (fieldValues?.forma_usable_vials === '') {
             setFieldValue(`${accessor}.forma_usable_vials`, null);
         }
-        if (fieldValues.forma_unusable_vials === '') {
+        if (fieldValues?.forma_unusable_vials === '') {
             setFieldValue(`${accessor}.forma_unusable_vials`, null);
         }
-        if (fieldValues.forma_missing_vials === '') {
+        if (fieldValues?.forma_missing_vials === '') {
             setFieldValue(`${accessor}.forma_missing_vials`, null);
         }
     }, [
         accessor,
-        fieldValues.forma_missing_vials,
-        fieldValues.forma_unusable_vials,
-        fieldValues.forma_usable_vials,
+        fieldValues?.forma_missing_vials,
+        fieldValues?.forma_unusable_vials,
+        fieldValues?.forma_usable_vials,
         setFieldValue,
     ]);
 
@@ -96,9 +96,7 @@ export const FormAForm: FunctionComponent<Props> = ({
                         label={formatMessage(MESSAGES.formAUnusableVials)}
                         name={`${accessor}.forma_unusable_vials`}
                         component={DebouncedTextInput}
-                        // don't change the filed.touch value on Focus to avoid the component being in error state on first click
-                        // touchOnFocus={false}
-                        debounceTime={500}
+                        debounceTime={300}
                         className={classes.input}
                     />
                 </Grid>
@@ -106,9 +104,8 @@ export const FormAForm: FunctionComponent<Props> = ({
                     <Field
                         label={formatMessage(MESSAGES.formAMissingVials)}
                         name={`${accessor}.forma_missing_vials`}
-                        component={TextInput}
-                        // don't change the filed.touch value on Focus to avoid the component being in error state on first click
-                        touchOnFocus={false}
+                        component={DebouncedTextInput}
+                        debounceTime={300}
                         className={classes.input}
                     />
                 </Grid>
@@ -116,9 +113,8 @@ export const FormAForm: FunctionComponent<Props> = ({
                     <Field
                         label={formatMessage(MESSAGES.formAUsableVials)}
                         name={`${accessor}.forma_usable_vials`}
-                        component={TextInput}
-                        // don't change the filed.touch value on Focus to avoid the component being in error state on first click
-                        touchOnFocus={false}
+                        component={DebouncedTextInput}
+                        debounceTime={300}
                         className={classes.input}
                     />
                 </Grid>

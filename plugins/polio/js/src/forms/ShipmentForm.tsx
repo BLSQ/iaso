@@ -6,10 +6,11 @@ import { Grid } from '@material-ui/core';
 import { Field, useFormikContext } from 'formik';
 import MESSAGES from '../constants/messages';
 import { useStyles } from '../styles/theme';
-import { DateInput, TextInput } from '../components/Inputs';
+import { DateInput } from '../components/Inputs';
 import { polioVaccines } from '../constants/virus';
 import { MultilineText } from '../components/Inputs/MultilineText';
 import { SingleSelect } from '../components/Inputs/SingleSelect';
+import { DebouncedTextInput } from '../components/Inputs/DebouncedTextInput';
 
 type Props = {
     index: number;
@@ -79,9 +80,8 @@ export const ShipmentForm: FunctionComponent<Props> = ({
                     <Field
                         label={formatMessage(MESSAGES.poNumbers)}
                         name={`${accessor}.shipments[${index}].po_numbers`}
-                        component={TextInput}
-                        // don't change the filed.touch value on Focus to avoid the component being in error state on first click
-                        touchOnFocus={false}
+                        component={DebouncedTextInput}
+                        debounceTime={300}
                         className={classes.input}
                     />
                 </Grid>
@@ -89,9 +89,8 @@ export const ShipmentForm: FunctionComponent<Props> = ({
                     <Field
                         label={formatMessage(MESSAGES.vialsShipped)}
                         name={`${accessor}.shipments[${index}].vials_received`}
-                        component={TextInput}
-                        // don't change the filed.touch value on Focus to avoid the component being in error state on first click
-                        touchOnFocus={false}
+                        component={DebouncedTextInput}
+                        debounceTime={300}
                         className={classes.input}
                     />
                 </Grid>

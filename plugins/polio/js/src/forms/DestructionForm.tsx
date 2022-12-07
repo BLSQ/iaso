@@ -5,9 +5,9 @@ import React, { FunctionComponent, useEffect, useMemo } from 'react';
 import { useSafeIntl } from 'bluesquare-components';
 import MESSAGES from '../constants/messages';
 import { DateInput } from '../components/Inputs/DateInput';
-import { TextInput } from '../components/Inputs';
 import { useStyles } from '../styles/theme';
 import { MultilineText } from '../components/Inputs/MultilineText';
+import { DebouncedTextInput } from '../components/Inputs/DebouncedTextInput';
 
 type Props = { accessor: string; index: number; roundIndex: number };
 
@@ -69,9 +69,8 @@ export const DestructionForm: FunctionComponent<Props> = ({
                 <Field
                     label={formatMessage(MESSAGES.vialsDestroyed)}
                     name={`${accessor}.destructions[${index}].vials_destroyed`}
-                    component={TextInput}
-                    // don't change the filed.touch value on Focus to avoid the component being in error state on first click
-                    touchOnFocus={false}
+                    component={DebouncedTextInput}
+                    debounceTime={300}
                     className={classes.input}
                 />
             </Grid>

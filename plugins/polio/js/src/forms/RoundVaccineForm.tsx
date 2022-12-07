@@ -3,11 +3,11 @@ import { Field, useFormikContext } from 'formik';
 import React, { FunctionComponent, useMemo } from 'react';
 // @ts-ignore
 import { useSafeIntl } from 'bluesquare-components';
-import { TextInput } from '../components/Inputs';
 import MESSAGES from '../constants/messages';
 import { useStyles } from '../styles/theme';
 import { DropdownOptions } from '../../../../../hat/assets/js/apps/Iaso/types/utils';
 import { SingleSelect } from '../components/Inputs/SingleSelect';
+import { DebouncedTextInput } from '../components/Inputs/DebouncedTextInput';
 
 type Props = {
     vaccineIndex: number;
@@ -86,7 +86,8 @@ export const RoundVaccineForm: FunctionComponent<Props> = ({
                 <Field
                     label={formatMessage(MESSAGES.wastageRatio)}
                     name={`${accessor}.wastage_ratio_forecast`}
-                    component={TextInput} // TODO make NumberInput
+                    component={DebouncedTextInput}
+                    debounceTime={300}
                     className={classes.input}
                 />
             </Grid>

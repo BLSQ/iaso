@@ -28,6 +28,13 @@ def formatted_percentage(part: int, total: int) -> str:
     return "{:.1%}".format(part / total)
 
 
+def get_instance_counters(ous_to_fill: "QuerySet[OrgUnit]", form_type: Form) -> "Tuple[int, int, str]":
+    """Returns a dict such as (forms to fill counters, forms filled counters) with the number
+    of instances to fill and filled for the given form type"""
+    filled = ous_to_fill.filter(instance__form=form_type)
+    return ous_to_fill.count(), filled.count()
+
+
 class CompletenessStatsViewSet(viewsets.ViewSet):
     """Completeness Stats API"""
 
@@ -85,21 +92,22 @@ class CompletenessStatsViewSet(viewsets.ViewSet):
         top_ous = top_ous.order_by(*order)
 
         res = []
+
         for row_ou in top_ous:
             for form in form_qs:
                 form = Form.objects.get(id=form.id)
 
                 ou_types_of_form = form.org_unit_types.all()
 
-                ou_to_fill = org_units.filter(org_unit_type__in=ou_types_of_form).hierarchy(row_ou)
-                ou_to_fill_count = ou_to_fill.count()
-                ou_filled = ou_to_fill.filter(instance__form=form)
-                ou_filled_count = ou_filled.count()
+                # Instance counters for the row OU + all descendants
+                ou_to_fill_with_descendants = org_units.filter(org_unit_type__in=ou_types_of_form).hierarchy(row_ou)
+                ou_to_fill_with_descendants_count, ou_filled_with_descendants_count = get_instance_counters(
+                    ou_to_fill_with_descendants, form
+                )
 
+                # Instance counters strictly/directly for the row OU
                 ou_to_fill_direct = org_units.filter(org_unit_type__in=ou_types_of_form).filter(pk=row_ou.pk)
-                ou_to_fill_direct_count = ou_to_fill_direct.count()
-                ou_filled_direct = ou_to_fill_direct.filter(instance__form=form)
-                ou_filled_direct_count = ou_filled_direct.count()
+                ou_to_fill_direct_count, ou_filled_direct_count = get_instance_counters(ou_to_fill_direct, form)
 
                 # TODO: response as serializer for Swagger
 
@@ -114,9 +122,11 @@ class CompletenessStatsViewSet(viewsets.ViewSet):
                         "org_unit": row_ou.as_dict_for_completeness_stats(),
                         "form": form.as_dict_for_completeness_stats(),
                         # Those counts target the row org unit and all of its descendants
-                        "forms_filled": ou_filled_count,
-                        "forms_to_fill": ou_to_fill_count,
-                        "completeness_ratio": formatted_percentage(part=ou_filled_count, total=ou_to_fill_count),
+                        "forms_filled": ou_filled_with_descendants_count,
+                        "forms_to_fill": ou_to_fill_with_descendants_count,
+                        "completeness_ratio": formatted_percentage(
+                            part=ou_filled_with_descendants_count, total=ou_to_fill_with_descendants_count
+                        ),
                         # Those counts strictly/directly target the row org unit (no descendants included)
                         "forms_filled_direct": ou_filled_direct_count,
                         "forms_to_fill_direct": ou_to_fill_direct_count,

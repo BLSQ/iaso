@@ -85,32 +85,44 @@ class CompletenessStatsViewSet(viewsets.ViewSet):
         top_ous = top_ous.order_by(*order)
 
         res = []
-        for top_ou in top_ous:
+        for row_ou in top_ous:
             for form in form_qs:
                 form = Form.objects.get(id=form.id)
 
                 ou_types_of_form = form.org_unit_types.all()
-                ou_to_fill = org_units.filter(org_unit_type__in=ou_types_of_form).hierarchy(top_ou)
 
+                ou_to_fill = org_units.filter(org_unit_type__in=ou_types_of_form).hierarchy(row_ou)
                 ou_to_fill_count = ou_to_fill.count()
                 ou_filled = ou_to_fill.filter(instance__form=form)
                 ou_filled_count = ou_filled.count()
 
+                ou_to_fill_strict = org_units.filter(org_unit_type__in=ou_types_of_form).filter(pk=row_ou.pk)
+                ou_to_fill_strict_count = ou_to_fill_strict.count()
+                ou_filled_strict = ou_to_fill_strict.filter(instance__form=form)
+                ou_filled_strict_count = ou_filled_strict.count()
+
                 # TODO: response as serializer for Swagger
 
                 parent_data = None
-                if top_ou.parent is not None:
-                    parent_data = (top_ou.parent.as_dict_for_completeness_stats(),)
+                if row_ou.parent is not None:
+                    parent_data = (row_ou.parent.as_dict_for_completeness_stats(),)
 
                 res.append(
                     {
                         "parent_org_unit": parent_data,
-                        "org_unit_type": top_ou.org_unit_type.as_dict_for_completeness_stats(),
-                        "org_unit": top_ou.as_dict_for_completeness_stats(),
+                        "org_unit_type": row_ou.org_unit_type.as_dict_for_completeness_stats(),
+                        "org_unit": row_ou.as_dict_for_completeness_stats(),
                         "form": form.as_dict_for_completeness_stats(),
+                        # Those counts target the row org unit and all of its descendants
                         "forms_filled": ou_filled_count,
                         "forms_to_fill": ou_to_fill_count,
                         "completeness_ratio": formatted_percentage(part=ou_filled_count, total=ou_to_fill_count),
+                        # Those counts strictly target the row org unit (no descendants included)
+                        "forms_filled_strict": ou_filled_strict_count,
+                        "forms_to_fill_strict": ou_to_fill_strict_count,
+                        "completeness_ratio_strict": formatted_percentage(
+                            part=ou_filled_strict_count, total=ou_to_fill_strict_count
+                        ),
                     }
                 )
         limit = int(request.GET.get("limit", "50"))

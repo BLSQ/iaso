@@ -59,26 +59,6 @@ export const useCompletenessStatsColumns = () => {
                 },
             },
             {
-                Header: formatMessage(MESSAGES.formsFilledWithDescendants),
-                id: 'forms_filled',
-                accessor: 'forms_filled',
-                sortable: false,
-                Cell: settings => {
-                    return (
-                        <span>
-                            {settings.row.original.forms_filled ?? '--'}/
-                            {settings.row.original.forms_to_fill ?? '--'}
-                        </span>
-                    );
-                },
-            },
-            {
-                Header: formatMessage(MESSAGES.completenessWithDescendants),
-                id: 'completeness_ratio',
-                accessor: 'completeness_ratio',
-                sortable: false,
-            },
-            {
                 Header: formatMessage(MESSAGES.formsFilledDirect),
                 id: 'forms_filled_direct',
                 accessor: 'forms_filled_direct',
@@ -96,6 +76,26 @@ export const useCompletenessStatsColumns = () => {
                 Header: formatMessage(MESSAGES.completenessDirect),
                 id: 'completeness_ratio_direct',
                 accessor: 'completeness_ratio_direct',
+                sortable: false,
+            },
+            {
+                Header: formatMessage(MESSAGES.formsFilledWithDescendants),
+                id: 'forms_filled',
+                accessor: 'forms_filled',
+                sortable: false,
+                Cell: settings => {
+                    return (
+                        <span>
+                            {settings.row.original.forms_filled ?? '--'}/
+                            {settings.row.original.forms_to_fill ?? '--'}
+                        </span>
+                    );
+                },
+            },
+            {
+                Header: formatMessage(MESSAGES.completenessWithDescendants),
+                id: 'completeness_ratio',
+                accessor: 'completeness_ratio',
                 sortable: false,
             },
         ],

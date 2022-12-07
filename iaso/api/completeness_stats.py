@@ -7,7 +7,9 @@ for a given form in a given orgunit.
 This one is planned to become a "default" and be reused, not to be confused with the more specialized preexisting
 completeness API.
 """
-from django.db.models import Q
+from typing import Tuple
+
+from django.db.models import Q, QuerySet
 
 # TODO: clarify permissions: new iaso_completeness_stats permission?
 # TODO: clarify with FE what's needed in terms of pagination
@@ -28,7 +30,7 @@ def formatted_percentage(part: int, total: int) -> str:
     return "{:.1%}".format(part / total)
 
 
-def get_instance_counters(ous_to_fill: "QuerySet[OrgUnit]", form_type: Form) -> "Tuple[int, int, str]":
+def get_instance_counters(ous_to_fill: "QuerySet[OrgUnit]", form_type: Form) -> Tuple[int, int]:
     """Returns a dict such as (forms to fill counters, forms filled counters) with the number
     of instances to fill and filled for the given form type"""
     filled = ous_to_fill.filter(instance__form=form_type)

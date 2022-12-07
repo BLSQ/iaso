@@ -179,11 +179,18 @@ class CompletenessStatsAPITestCase(APITestCase):
         # TODO: implement once the correct behaviour is clarified
         pass
 
-    def test_combined_filters(self):
-        pass
-
     def test_pagination(self):
-        pass
+        self.client.force_authenticate(self.user)
+
+        response = self.client.get("/api/completeness_stats/?page=1&limit=1")
+        j = self.assertJSONResponse(response, 200)
+        self.assertEqual(j["count"], 3)
+        self.assertEqual(j["page"], 1)
+        self.assertEqual(j["pages"], 3)
+        self.assertEqual(j["limit"], 1)
+        self.assertEqual(len(j["results"]), 1)
+        self.assertTrue(j["has_next"])
+        self.assertFalse(j["has_previous"])
 
     def test_row_count(self):
         self.client.force_authenticate(self.user)
@@ -193,11 +200,16 @@ class CompletenessStatsAPITestCase(APITestCase):
         # One OU, 3 forms => 3 rows
         self.assertEqual(len(json["results"]), 3)
 
-    def test_percentage_calculation(self):
-        pass
-
     def test_percentage_calculation_with_zero_forms_to_fill(self):
-        pass
+        self.client.force_authenticate(self.user)
+
+        # We request a form/OU combination that has no forms to fill.
+        response = self.client.get(f"/api/completeness_stats/?parent_id=3&form_id={self.form_hs_2.id}")
+        json = response.json()
+        # 0 forms to fill: the percentage should be returned as N/A and not as 0% or as a division error :)
+        row = json["results"][0]
+        self.assertEqual(row["forms_to_fill"], 0)
+        self.assertEqual(row["completeness_ratio"], "N/A")
 
     def test_counts_include_current_ou_and_children(self):
         """The forms_to_fill count include the forms for the OU and all its children"""
@@ -228,10 +240,5 @@ class CompletenessStatsAPITestCase(APITestCase):
         self.assertEqual(result_form_1["forms_to_fill"], 1)
         # But only one form is filled (for the hospital)
         self.assertEqual(result_form_1["forms_filled"], 1)
-        # Let'scheck the percentage calculation is correct
+        # Let's check the percentage calculation is correct
         self.assertEqual(result_form_1["completeness_ratio"], "100.0%")
-
-    # TODO: test that we can get N/A instead of divide by 0
-    # TODO: Test the data is filtered by account
-    # TODO: Test that data can be filtered by parent OU
-    # TODO: Test that data can be filtered by form_ids

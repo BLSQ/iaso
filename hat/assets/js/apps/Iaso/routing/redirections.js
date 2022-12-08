@@ -24,66 +24,56 @@ const getRedirections = overrideLanding => {
             to: overrideLanding ?? baseUrls.forms,
         },
         {
-            path: `${baseUrls.orgUnits}/accountId/:accountId`,
+            path: `${baseUrls.orgUnits}`,
             to: `${
                 baseUrls.orgUnits
             }/locationLimit/${locationLimitMax}${getPaginationParams(
-                null,
+                undefined,
                 50,
             )}/searchTabIndex/0/searches/[{"validation_status":"all", "color":"${getChipColors(
                 0,
-            ).replace('#', '')}"}]/accountId/:accountId`,
+            ).replace('#', '')}"}]`,
         },
         {
-            path: `${baseUrls.mappings}/accountId/:accountId`,
+            path: `${baseUrls.mappings}`,
             to: `${baseUrls.mappings}${getPaginationParams(
                 'form_version__form__name,form_version__version_id,mapping__mapping_type',
-            )}/accountId/:accountId`,
+            )}`,
         },
         {
-            path: `${baseUrls.users}/accountId/:accountId`,
-            to: `${baseUrls.users}${getPaginationParams(
-                'user__username',
-            )}/accountId/:accountId`,
+            path: `${baseUrls.users}`,
+            to: `${baseUrls.users}${getPaginationParams('user__username')}`,
         },
         {
-            path: `${baseUrls.entities}/accountId/:accountId`,
+            path: `${baseUrls.entities}`,
             to: `${baseUrls.entities}${getPaginationParams(
                 'last_saved_instance',
-            )}/accountId/:accountId`,
+            )}`,
         },
         {
-            path: `${baseUrls.entityTypes}/accountId/:accountId`,
-            to: `${baseUrls.entityTypes}${getPaginationParams(
-                'name',
-            )}/accountId/:accountId`,
+            path: `${baseUrls.entityTypes}`,
+            to: `${baseUrls.entityTypes}${getPaginationParams('name')}`,
         },
         {
-            path: `${baseUrls.groups}/accountId/:accountId`,
-            to: `${baseUrls.groups}${getPaginationParams(
-                'name',
-            )}/accountId/:accountId`,
+            path: `${baseUrls.groups}`,
+            to: `${baseUrls.groups}${getPaginationParams('name')}`,
         },
         {
-            path: `${baseUrls.orgUnitTypes}/accountId/:accountId`,
-            to: `${baseUrls.orgUnitTypes}${getPaginationParams(
-                'name',
-            )}/accountId/:accountId`,
+            path: `${baseUrls.orgUnitTypes}`,
+            to: `${baseUrls.orgUnitTypes}${getPaginationParams('name')}`,
         },
         {
-            path: `${baseUrls.planning}/accountId/:accountId`,
+            path: `${baseUrls.planning}`,
             to: `${baseUrls.planning}/publishingStatus/all${getPaginationParams(
                 'name',
-            )}/accountId/:accountId`,
+            )}`,
         },
         {
-            path: `${baseUrls.teams}/accountId/:accountId`,
-            to: `${baseUrls.teams}${getPaginationParams(
-                'name',
-            )}/accountId/:accountId`,
+            path: `${baseUrls.teams}`,
+            to: `${baseUrls.teams}${getPaginationParams('name')}`,
         },
         {
-            path: `${baseUrls.storages}/accountId/:accountId`,
+            path: `${baseUrls.storages}`,
             to: `${baseUrls.storages}${getPaginationParams(
                 getSort(storageDefaultSort),
             )}/accountId/:accountId`,

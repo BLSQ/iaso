@@ -4,7 +4,7 @@ import PropTypes from 'prop-types';
 
 import SidebarMenu from '../../app/components/SidebarMenuComponent';
 
-import { redirectTo } from '../../../routing/actions';
+import { redirectToReplace } from '../../../routing/actions';
 
 import { userHasOneOfPermissions, getFirstAllowedUrl } from '../utils';
 
@@ -27,7 +27,7 @@ const ProtectedRoute = ({
     useEffect(() => {
         if (!params.accountId && currentUser.account) {
             dispatch(
-                redirectTo(baseUrl, {
+                redirectToReplace(baseUrl, {
                     ...params,
                     accountId: currentUser.account.id,
                 }),

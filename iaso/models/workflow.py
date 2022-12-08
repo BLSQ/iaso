@@ -40,9 +40,10 @@ class WorkflowVersionsStatus(models.TextChoices):
     UNPUBLISHED = "UNPUBLISHED", "Unpublished"
     PUBLISHED = "PUBLISHED", "Published"
 
-    def is_transition_allowed(self, new_status: "WorkflowVersionsStatus"):
-        allowed_set: Set[str] = WorkflowVersionsStatusAllowedTransitions.get(self.value, set())
-        return new_status.value in allowed_set
+
+def is_transition_allowed(cur_status_str, new_status_str: str):
+    allowed_set: Set[str] = WorkflowVersionsStatusAllowedTransitions.get(cur_status_str, set())
+    return new_status_str in allowed_set
 
 
 class WorkflowVersion(models.Model):
@@ -64,6 +65,22 @@ class WorkflowVersion(models.Model):
 
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+
+    def transition_to_status(self, new_status_str: str):
+        old_status_str = self.status
+
+        if is_transition_allowed(old_status_str, new_status_str):
+            self.status = new_status_str
+            self.save()
+
+            if new_status_str == "PUBLISHED":
+                # We passed all the other PUBLISHED -> UNPUBLISHED
+                WorkflowVersion.objects.filter(workflow=self.workflow, status="PUBLISHED").update(status="UNPUBLISHED")
+
+            return {"success": True}
+
+        else:
+            return {"success": False, "error": f"Transition from {old_status_str} to {new_status_str} is not allowed"}
 
     def __str__(self):
         status_label = self.status

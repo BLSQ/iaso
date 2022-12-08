@@ -165,7 +165,7 @@ class WorkflowVersionViewSet(ModelViewSet):
 
     filterset_fields = {"workflow__entity_type": ["exact"]}
 
-    http_method_names = ["get", "post"]
+    http_method_names = ["get", "post", "patch"]
 
     @swagger_auto_schema(request_body=no_body)
     @action(detail=True, methods=["post"])
@@ -178,6 +178,32 @@ class WorkflowVersionViewSet(ModelViewSet):
         wv_orig = WorkflowVersion.objects.get(pk=version_id)
         new_vw = make_deep_copy_with_relations(wv_orig)
         serialized_data = WorkflowVersionSerializer(new_vw).data
+        return Response(serialized_data)
+
+    def partial_update(self, request, *args, **kwargs):
+        version_id = request.query_params.get("version_id", kwargs.get("version_id", None))
+        wv_orig = WorkflowVersion.objects.get(pk=version_id)
+
+        print("version_id", version_id)
+        print("wv_orig before", wv_orig)
+
+        changed_status = request.data.get("status", None)
+        changed_name = request.data.get("name", None)
+
+        if changed_name is not None:
+            wv_orig.name = changed_name
+
+        if changed_status is not None:
+            res = wv_orig.transition_to_status(changed_status)
+            if not res["success"]:
+                return Response(res["error"], status=401)
+
+        wv_orig.save()
+
+        print("wv_orig after", wv_orig)
+
+        serialized_data = WorkflowVersionSerializer(wv_orig).data
+
         return Response(serialized_data)
 
     @swagger_auto_schema(manual_parameters=[entity_type_id_param], request_body=no_body)

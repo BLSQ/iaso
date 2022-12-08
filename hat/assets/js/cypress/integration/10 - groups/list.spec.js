@@ -76,15 +76,16 @@ const testRowContent = (index, group = listFixture.groups[index]) => {
 
     cy.get('table').as('table');
     cy.get('@table').find('tbody').find('tr').eq(index).as('row');
-    cy.get('@row').find('td').eq(0).should('contain', group.name);
-    cy.get('@row').find('td').eq(1).should('contain', updatedAt);
+    cy.get('@row').find('td').eq(0).should('contain', group.id);
+    cy.get('@row').find('td').eq(1).should('contain', group.name);
+    cy.get('@row').find('td').eq(2).should('contain', updatedAt);
 
     cy.get('@row')
         .find('td')
-        .eq(2)
+        .eq(3)
         .should('contain', group.source_version.data_source.name);
-    cy.get('@row').find('td').eq(3).should('contain', group.source_ref);
-    cy.get('@row').find('td').eq(4).should('contain', group.org_unit_count);
+    cy.get('@row').find('td').eq(4).should('contain', group.source_ref);
+    cy.get('@row').find('td').eq(5).should('contain', group.org_unit_count);
 };
 
 const mockListCall = (keyName, body) => {
@@ -208,7 +209,7 @@ describe('Groups', () => {
         testTablerender({
             baseUrl: baseUrlWithAccount,
             rows: listFixture.groups.length,
-            columns: 6,
+            columns: 7,
             apiKey: 'groups',
         });
         testPagination({
@@ -245,7 +246,7 @@ describe('Groups', () => {
                     '/dashboard/orgunits/list/locationLimit/3000/order/id/pageSize/50/page/1/searchTabIndex/0/searchActive/true/searches/[{"validation_status":"all", "color":"f4511e", "group":"1", "source": null}]';
                 table = cy.get('table');
                 row = table.find('tbody').find('tr').eq(0);
-                const orgUnitLinkCol = row.find('td').eq(4);
+                const orgUnitLinkCol = row.find('td').eq(5);
                 orgUnitLinkCol.find('a').should('have.attr', 'href', href);
             });
         });

@@ -1,4 +1,5 @@
 from django.contrib.auth.decorators import login_required
+from django.core.exceptions import ObjectDoesNotExist
 from django.views.decorators.http import require_http_methods
 from django.shortcuts import render
 from django.http.request import HttpRequest
@@ -8,7 +9,12 @@ from hat.__version__ import VERSION
 
 
 def _base_iaso(request: HttpRequest) -> HttpResponse:
-    USER_HOME_PAGE = request.user.iaso_profile.home_page if request.user.is_authenticated else ""
+    try:
+        USER_HOME_PAGE = request.user.iaso_profile.home_page if request.user.is_authenticated else ""
+    except ObjectDoesNotExist:
+        return HttpResponse(
+            f"User {request.user.username} has no iaso_profile. Please contact your administrator.", status=403
+        )
     return render(
         request,
         "iaso/index.html",

@@ -526,6 +526,10 @@ const MESSAGES = defineMessages({
         id: 'iaso.instance.queryBuilder',
         defaultMessage: 'Search in submitted fields',
     },
+    initialPeriodError: {
+        id: 'iaso.instance.initialPeriodError',
+        defaultMessage: 'Current period on submission is invalid: {period}',
+    },
 });
 
 export default MESSAGES;

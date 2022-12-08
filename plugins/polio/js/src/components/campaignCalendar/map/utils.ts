@@ -86,7 +86,7 @@ export const makeSelections = (
         { value: 'latest', label: 'Latest' },
     ];
     if (showRoundZero) {
-        selections.push({ value: '0', label: `Round 0}` });
+        selections.push({ value: '0', label: `Round 0` });
     }
     if (maxRound) {
         for (let i = 1; i <= maxRound; i += 1) {

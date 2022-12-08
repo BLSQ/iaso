@@ -43,7 +43,7 @@ from iaso.api.serializers import OrgUnitSerializer
 
 class InstanceSerializer(serializers.ModelSerializer):
     org_unit = serializers.PrimaryKeyRelatedField(queryset=OrgUnit.objects.all())
-    period = serializers.CharField(max_length=6, allow_blank=True)
+    period = serializers.CharField(max_length=8, allow_blank=True)
 
     class Meta:
         model = Instance
@@ -67,9 +67,11 @@ class InstanceSerializer(serializers.ModelSerializer):
         Check if period is of self.instance.form.period_type.
         """
 
-        if self.instance.period and (periods.detect(value) == self.instance.form.period_type):
+        if periods.detect(value) == self.instance.form.period_type:
             return value
-        raise serializers.ValidationError("Wrong period type")
+        raise serializers.ValidationError(
+            f"Wrong period type, expecting: {self.instance.form.period_type}. Received type: {periods.detect(value)}"
+        )
 
 
 class HasInstancePermission(permissions.BasePermission):

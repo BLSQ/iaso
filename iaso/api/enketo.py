@@ -255,7 +255,7 @@ def enketo_form_list(request):
 
     Require a param `formID` which is actually an Instance UUID"""
     form_id_str = request.GET["formID"]
-    i = Instance.objects.exclude(deleted=True).get(uuid=form_id_str)
+    i = Instance.objects.exclude(deleted=True).filter(uuid=form_id_str).order_by("updated_at").last()
     latest_form_version = i.form.latest_version
     # will it work through s3, what about "signing" infos if they expires ?
     downloadurl = public_url_for_enketo(request, "/api/enketo/formDownload/?uuid=%s" % i.uuid)
@@ -283,7 +283,7 @@ def enketo_form_download(request):
     We insert the instance.id In the form definition so the "Form" is unique per instance.
     """
     uuid = request.GET.get("uuid")
-    i = Instance.objects.get(uuid=uuid)
+    i = Instance.objects.filter(uuid=uuid).order_by("updated_at").last()
     xml_string = i.form.latest_version.file.read().decode("utf-8")
     injected_xml = inject_instance_id_in_form(xml_string, i.id)
     return HttpResponse(injected_xml, content_type="application/xml")

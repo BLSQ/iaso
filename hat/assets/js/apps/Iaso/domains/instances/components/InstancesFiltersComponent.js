@@ -2,7 +2,15 @@ import React, { useCallback, useMemo, useState } from 'react';
 import PropTypes from 'prop-types';
 import { useDispatch, useSelector } from 'react-redux';
 
-import { Box, Button, Grid, makeStyles, Typography } from '@material-ui/core';
+import {
+    Box,
+    Button,
+    Grid,
+    makeStyles,
+    Typography,
+    useMediaQuery,
+    useTheme,
+} from '@material-ui/core';
 
 import Search from '@material-ui/icons/Search';
 import {
@@ -192,6 +200,9 @@ const InstancesFiltersComponent = ({
         );
     };
 
+    const theme = useTheme();
+    const isLargeLayout = useMediaQuery(theme.breakpoints.up('md'));
+
     return (
         <div className={classes.marginBottomBig}>
             <UserOrgUnitRestriction />
@@ -238,33 +249,12 @@ const InstancesFiltersComponent = ({
                             }}
                         />
                     )}
-
-                    <Box id="ou-tree-input">
-                        <OrgUnitTreeviewModal
-                            toggleOnLabelClick={false}
-                            titleMessage={MESSAGES.org_unit}
-                            onConfirm={orgUnit =>
-                                handleFormChange(
-                                    'levels',
-                                    orgUnit ? [orgUnit.id] : undefined,
-                                )
-                            }
-                            initialSelection={initialOrgUnit}
-                        />
-                    </Box>
                     <InputComponent
-                        keyValue="orgUnitTypeId"
-                        clearable
-                        multi
+                        keyValue="showDeleted"
                         onChange={handleFormChange}
-                        value={formState.orgUnitTypeId.value || null}
-                        type="select"
-                        options={orgUnitTypes.map(t => ({
-                            label: t.name,
-                            value: t.id,
-                        }))}
-                        label={MESSAGES.org_unit_type_id}
-                        loading={fetchingOrgUnitTypes}
+                        value={formState.showDeleted.value}
+                        type="checkbox"
+                        label={MESSAGES.showDeleted}
                     />
                 </Grid>
                 <Grid item xs={12} md={3}>
@@ -302,12 +292,34 @@ const InstancesFiltersComponent = ({
                             setHasError={setHasLocationLimitError}
                         />
                     </Box>
+                </Grid>
+                <Grid item xs={12} md={3}>
+                    <Box id="ou-tree-input">
+                        <OrgUnitTreeviewModal
+                            toggleOnLabelClick={false}
+                            titleMessage={MESSAGES.org_unit}
+                            onConfirm={orgUnit =>
+                                handleFormChange(
+                                    'levels',
+                                    orgUnit ? [orgUnit.id] : undefined,
+                                )
+                            }
+                            initialSelection={initialOrgUnit}
+                        />
+                    </Box>
                     <InputComponent
-                        keyValue="showDeleted"
+                        keyValue="orgUnitTypeId"
+                        clearable
+                        multi
                         onChange={handleFormChange}
-                        value={formState.showDeleted.value}
-                        type="checkbox"
-                        label={MESSAGES.showDeleted}
+                        value={formState.orgUnitTypeId.value || null}
+                        type="select"
+                        options={orgUnitTypes.map(t => ({
+                            label: t.name,
+                            value: t.id,
+                        }))}
+                        label={MESSAGES.org_unit_type_id}
+                        loading={fetchingOrgUnitTypes}
                     />
                 </Grid>
                 <Grid item xs={12} md={3}>
@@ -365,16 +377,16 @@ const InstancesFiltersComponent = ({
                         </Box>
                     )}
                 </Grid>
-
+            </Grid>
+            <Grid container spacing={2}>
                 <Grid
                     item
                     xs={12}
-                    md={3}
                     container
                     justifyContent="flex-end"
-                    alignItems="flex-start"
+                    alignItems="center"
                 >
-                    <Box mt={2}>
+                    <Box mt={isLargeLayout ? 0 : 2}>
                         <Button
                             disabled={
                                 !isInstancesFilterUpdated ||
@@ -395,12 +407,6 @@ const InstancesFiltersComponent = ({
                     </Box>
                 </Grid>
             </Grid>
-            <Grid
-                container
-                spacing={4}
-                justifyContent="flex-end"
-                alignItems="center"
-            />
         </div>
     );
 };

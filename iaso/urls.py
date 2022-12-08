@@ -130,7 +130,7 @@ router.register(r"storage", StorageViewSet, basename="storage")
 router.register(r"mobile/storage/logs", StorageLogViewSet, basename="storagelogs")
 router.register(r"mobile/storage/blacklisted", StorageBlacklistedViewSet, basename="storageblacklisted")
 
-router.register(r"workflow", WorkflowVersionViewSet, basename="workflow")
+router.register(r"workflowversion", WorkflowVersionViewSet, basename="workflowversion")
 router.register(r"mobile/workflow", MobileWorkflowViewSet, basename="mobileworkflow")
 
 router.registry.extend(plugins_router.registry)

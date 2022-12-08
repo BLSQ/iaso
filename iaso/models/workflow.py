@@ -26,15 +26,19 @@ class Workflow(SoftDeletableModel):
         return f"Workflow for {self.entity_type.name}"
 
 
-WorkflowVersionsStatusAllowedTransitions = {"D": {"U", "P"}, "U": {"P"}, "P": {"U"}}
+WorkflowVersionsStatusAllowedTransitions = {
+    "DRAFT": {"UNPUBLISHED", "PUBLISHED"},
+    "UNPUBLISHED": {"PUBLISHED"},
+    "PUBLISHED": {"UNPUBLISHED"},
+}
 
 
 class WorkflowVersionsStatus(models.TextChoices):
     """WorkflowVersionsStatus is an Enum-like class for the Status of a workflow Version."""
 
-    DRAFT = "D", "Draft"
-    UNPUBLISHED = "U", "Unpublished"
-    PUBLISHED = "P", "Published"
+    DRAFT = "DRAFT", "Draft"
+    UNPUBLISHED = "UNPUBLISHED", "Unpublished"
+    PUBLISHED = "PUBLISHED", "Published"
 
     def is_transition_allowed(self, new_status: "WorkflowVersionsStatus"):
         allowed_set: Set[str] = WorkflowVersionsStatusAllowedTransitions.get(self.value, set())
@@ -55,14 +59,14 @@ class WorkflowVersion(models.Model):
     reference_form = models.ForeignKey(Form, on_delete=models.CASCADE, default=None, null=True)
 
     status = models.CharField(
-        max_length=2, choices=WorkflowVersionsStatus.choices, default=WorkflowVersionsStatus.DRAFT
+        max_length=12, choices=WorkflowVersionsStatus.choices, default=WorkflowVersionsStatus.DRAFT
     )
 
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
     def __str__(self):
-        status_label = WorkflowVersionsStatus(self.status).label
+        status_label = self.status
         e_name = self.workflow.entity_type.name
         created_disp = self.created_at.strftime("%Y-%m-%d %H:%M:%S")
         return f"Workflow ({status_label}) ({e_name}) @ {created_disp}"
@@ -74,7 +78,7 @@ class WorkflowFollowup(models.Model):
     forms = models.ManyToManyField(Form)
 
     # this actually points to a WorkflowVersion
-    workflow = models.ForeignKey(WorkflowVersion, on_delete=models.CASCADE, related_name="follow_ups")
+    workflow_version = models.ForeignKey(WorkflowVersion, on_delete=models.CASCADE, related_name="follow_ups")
 
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
@@ -87,7 +91,7 @@ class WorkflowChange(models.Model):
     )  # dict objects with keys a field name from reference_form and value the target field name in form.
 
     # this actually points to a WorkflowVersion
-    workflow = models.ForeignKey(WorkflowVersion, on_delete=models.CASCADE, related_name="changes")
+    workflow_version = models.ForeignKey(WorkflowVersion, on_delete=models.CASCADE, related_name="changes")
 
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)

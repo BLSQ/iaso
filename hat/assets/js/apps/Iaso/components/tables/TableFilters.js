@@ -1,3 +1,4 @@
+/* eslint-disable react/jsx-props-no-spreading */
 import React from 'react';
 import { defineMessages, FormattedMessage } from 'react-intl';
 import PropTypes from 'prop-types';
@@ -61,10 +62,13 @@ const Filters = ({
         }
         onSearch(tempParams);
     };
+
+    const runsBaseUrl = 'orgunits/sources/links/runs';
+    const isRunsBaseUrl = baseUrl === runsBaseUrl;
     return (
         <>
             <Grid container spacing={2}>
-                {Array(3)
+                {Array(isRunsBaseUrl ? 3 : 4)
                     .fill()
                     .map((x, i) => i + 1)
                     .map(column => (
@@ -88,8 +92,14 @@ const Filters = ({
                         </Grid>
                     ))}
 
-                <Grid item container justifyContent="flex-end" xs={12} md={3}>
-                    <Box mb={2} mt={2}>
+                <Grid
+                    item
+                    container
+                    justifyContent="flex-end"
+                    xs={12}
+                    md={isRunsBaseUrl ? 3 : 12}
+                >
+                    <Box mb={2} mt={isRunsBaseUrl ? 2 : 0} p={0}>
                         {extraComponent}
                         <Button
                             data-test="search-button"

@@ -57,6 +57,16 @@ export const ShipmentForm: FunctionComponent<Props> = ({
         });
     }, [accessor, fieldValues, index, setFieldTouched]);
 
+    const disableComment = !(
+        values?.round?.[roundIndex]?.shipments?.[index]?.vaccine_name &&
+        values?.round?.[roundIndex]?.shipments?.[index]?.po_numbers &&
+        values?.round?.[roundIndex]?.shipments?.[index]?.vials_received &&
+        values?.round?.[roundIndex]?.shipments?.[index]?.reception_pre_alert &&
+        values?.round?.[roundIndex]?.shipments?.[index]
+            ?.estimated_arrival_date &&
+        values?.round?.[roundIndex]?.shipments?.[index]?.date_reception
+    );
+
     return (
         <>
             <Grid
@@ -127,6 +137,7 @@ export const ShipmentForm: FunctionComponent<Props> = ({
                         component={MultilineText}
                         className={classes.input}
                         debounceTime={1000}
+                        disabled={disableComment}
                     />
                 </Grid>
             </Grid>

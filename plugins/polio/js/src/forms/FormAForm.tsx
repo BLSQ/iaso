@@ -80,6 +80,14 @@ export const FormAForm: FunctionComponent<Props> = ({
         setFieldValue,
     ]);
 
+    const disableComment = !(
+        fieldValues?.forma_missing_vials &&
+        fieldValues?.forma_unusable_vials &&
+        fieldValues?.forma_usable_vials &&
+        fieldValues?.forma_date &&
+        fieldValues?.forma_reception
+    );
+
     return (
         <>
             <Grid container direction="row" item xs={12} spacing={2}>
@@ -142,6 +150,7 @@ export const FormAForm: FunctionComponent<Props> = ({
                         component={MultilineText}
                         className={classes.input}
                         debounceTime={1000}
+                        disabled={disableComment}
                     />
                 </Grid>
             </Grid>

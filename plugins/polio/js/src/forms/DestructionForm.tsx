@@ -47,12 +47,18 @@ export const DestructionForm: FunctionComponent<Props> = ({
         });
     }, [accessor, fieldValues, index, setFieldTouched]);
 
+    const disableComment = !(
+        values?.round?.[roundIndex]?.destructions?.[index]?.date_report &&
+        values?.round?.[roundIndex]?.destructions?.[index]
+            ?.date_report_received &&
+        values?.round?.[roundIndex]?.destructions?.[index]?.vials_destroyed
+    );
+
     return (
         <Grid container direction="row" spacing={2} item xs={12}>
             <Grid item xs={3}>
                 <Field
                     label={formatMessage(MESSAGES.destructionReceptionDate)}
-                    // fullWidth
                     name={`${accessor}.destructions[${index}].date_report_received`}
                     component={DateInput}
                 />
@@ -81,6 +87,7 @@ export const DestructionForm: FunctionComponent<Props> = ({
                     component={MultilineText}
                     className={classes.input}
                     debounceTime={1000}
+                    disabled={disableComment}
                 />
             </Grid>
         </Grid>

@@ -36,7 +36,10 @@ class CompletenessStatsViewSet(viewsets.ViewSet):
     def list(self, request):
         order = request.GET.get("order", "name").split(",")
         org_unit_type_str = request.query_params.get("org_unit_type_id", None)
-        requested_forms = request.query_params.get("form_id", None)
+
+        requested_forms_str = request.query_params.get("form_id", None)
+        requested_form_ids = requested_forms_str.split(",") if requested_forms_str is not None else []
+
         if org_unit_type_str is not None:
             org_unit_types = OrgUnitType.objects.filter(id__in=org_unit_type_str.split(","))
         else:
@@ -49,7 +52,6 @@ class CompletenessStatsViewSet(viewsets.ViewSet):
         else:
             requested_org_unit = None
 
-        requested_form_ids = requested_forms.split(",") if requested_forms is not None else []
         profile = request.user.iaso_profile
 
         # Forms to take into account: we take everything for the user's account, then filter by the form_ids if provided

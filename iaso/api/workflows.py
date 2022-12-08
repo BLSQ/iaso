@@ -1,14 +1,18 @@
 from copy import deepcopy
-from django.http import Http404
 
 from iaso.models import Workflow, WorkflowVersion, EntityType, WorkflowFollowup, WorkflowChange, Form
 from iaso.models.workflow import WorkflowVersionsStatus
-from iaso.api.entity import EntityTypeSerializer
+
 
 from rest_framework import serializers, filters, permissions
+from rest_framework.decorators import action
+from rest_framework.response import Response
 from django_filters.rest_framework import DjangoFilterBackend  # type: ignore
 
-from iaso.api.common import ModelViewSet, DeletionFilterBackend, HasPermission
+from iaso.api.common import ModelViewSet, HasPermission
+
+from drf_yasg import openapi
+from drf_yasg.utils import swagger_auto_schema, no_body
 
 
 class FormMiniSerializer(serializers.ModelSerializer):
@@ -136,7 +140,19 @@ def make_deep_copy_with_relations(orig_version):
     return new_version
 
 
+entity_type_id_param = openapi.Parameter(
+    "entity_type_id", openapi.IN_QUERY, description="Entity Type ID", type=openapi.TYPE_STRING, required=True
+)
+
+
 class WorkflowVersionViewSet(ModelViewSet):
+    """Workflow API
+    GET /api/workflowversion/
+    GET /api/workflowversion/{version_id}/
+    If version_id is provided returns the detail of this workflow version.
+    Else returns a paginated list of all the workflow versions.
+    """
+
     permission_classes = [permissions.IsAuthenticated, HasPermission("menupermissions.iaso_workflows")]  # type: ignore
     filter_backends = [filters.OrderingFilter, DjangoFilterBackend]
     ordering_fields = ["name", "created_at"]
@@ -145,12 +161,35 @@ class WorkflowVersionViewSet(ModelViewSet):
     remove_results_key_if_paginated = False
     model = WorkflowVersion
 
-    filterset_fields = {
-        "workflow__entity_type": ["exact"],
-    }
+    lookup_url_kwarg = "version_id"
 
-    http_method_names = ["get"]
-    # http_method_names = ["get", "head", "options", "trace"]
+    filterset_fields = {"workflow__entity_type": ["exact"]}
+
+    http_method_names = ["get", "post"]
+
+    @swagger_auto_schema(request_body=no_body)
+    @action(detail=True, methods=["post"])
+    def copy(self, request):
+        """POST /api/workflowversion/{version_id}/copy
+        Creates a new workflow version by copying the exiting version given by {version_id}
+        """
+
+        version_id = request.query_params.get("version_id", None)
+        wv_orig = WorkflowVersion.objects.get(pk=version_id)
+        new_vw = make_deep_copy_with_relations(wv_orig)
+        serialized_data = WorkflowVersionSerializer(new_vw).data
+        return Response(serialized_data)
+
+    @swagger_auto_schema(manual_parameters=[entity_type_id_param], request_body=no_body)
+    def create(self, request, *args, **kwargs):
+        """POST /api/workflowversion/?entity_type_id=XXX
+        Create a new empty and DRAFT workflow version for the workflow connected to Entity Type 'entity_type_id'
+        """
+        entity_type_id = request.query_params.get("entity_type_id", None)
+        wf, wf_created = Workflow.objects.get_or_create(entity_type_id=entity_type_id)
+        wv = WorkflowVersion.objects.create(workflow=wf)
+        serialized_data = WorkflowVersionSerializer(wv).data
+        return Response(serialized_data)
 
     def get_queryset(self):
         """Always filter the base queryset by account"""

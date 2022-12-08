@@ -66,7 +66,8 @@ export const useCompletenessStatsColumns = () => {
                 Cell: settings => {
                     return (
                         <span>
-                            {settings.row.original.forms_filled ?? '--'}
+                            {settings.row.original.forms_filled ?? '--'} /
+                            {settings.row.original.forms_to_fill ?? '--'}
                         </span>
                     );
                 },
@@ -76,12 +77,6 @@ export const useCompletenessStatsColumns = () => {
                 id: 'completeness_ratio',
                 accessor: 'completeness_ratio',
                 sortable: false,
-                // Cell: settings => {
-                //     const filled = settings.row.original.ou_filled_count ?? 0;
-                //     const toFill = settings.row.original.ou_to_fill_count || 1;
-                //     const completed = Math.round((filled / toFill) * 100);
-                //     return <span>{completeness_ratio}</span>;
-                // },
             },
         ],
         [formatMessage],

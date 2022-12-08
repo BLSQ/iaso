@@ -18,6 +18,10 @@ COPY package-lock.json .
 
 
 RUN npm install -g npm@8.5
+
+RUN rm -rf node_modules
+RUN npm cache clean --force
+RUN npm cache verify
 # ci install the exact version of package, compared to install which might a bump minor version
 RUN npm ci
 
@@ -34,16 +38,15 @@ RUN ls ./hat/assets
 FROM python:3.6 as base
 
 RUN apt-get update && apt-get --yes  --no-install-recommends install \
-		gettext \
-		gettext-base \
-		postgresql-client \
-		binutils libproj-dev gdal-bin \
+    gettext \
+    gettext-base \
+    postgresql-client \
+    binutils libproj-dev gdal-bin \
     &&  apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
 WORKDIR /opt/app
 COPY requirements.txt /opt/app/requirements.txt
-COPY requirements-dev.txt /opt/app/requirements-dev.txt
-RUN pip install -r requirements-dev.txt
+RUN pip install -r requirements.txt
 
 COPY --from=npmbuilder /opt/app/hat/assets /opt/app/hat/assets
 COPY . /opt/app

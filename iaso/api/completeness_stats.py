@@ -7,6 +7,7 @@ for a given form in a given orgunit.
 This one is planned to become a "default" and be reused, not to be confused with the more specialized preexisting
 completeness API.
 """
+from django.db.models import Q
 
 # TODO: clarify permissions: new iaso_completeness_stats permission?
 # TODO: clarify with FE what's needed in terms of pagination
@@ -20,6 +21,13 @@ from iaso.models import OrgUnit, Form, OrgUnitType
 from django.core.paginator import Paginator
 
 
+def formatted_percentage(part: int, total: int) -> str:
+    if total == 0:
+        return "N/A"
+
+    return "{:.1%}".format(part / total)
+
+
 class CompletenessStatsViewSet(viewsets.ViewSet):
     """Completeness Stats API"""
 
@@ -30,16 +38,16 @@ class CompletenessStatsViewSet(viewsets.ViewSet):
         org_unit_type_str = request.query_params.get("org_unit_type_id", None)
         requested_forms = request.query_params.get("form_id", None)
         if org_unit_type_str is not None:
-            org_unit_type = OrgUnitType.objects.get(id=org_unit_type_str)
+            org_unit_types = OrgUnitType.objects.filter(id__in=org_unit_type_str.split(","))
         else:
-            org_unit_type = None
+            org_unit_types = None
 
-        parent_org_unit_id_str = request.GET.get("parent_id", None)
+        requested_org_unit_id_str = request.GET.get("org_unit_id", None)
 
-        if parent_org_unit_id_str is not None:
-            parent_org_unit = OrgUnit.objects.get(id=parent_org_unit_id_str)
+        if requested_org_unit_id_str is not None:
+            requested_org_unit = OrgUnit.objects.get(id=requested_org_unit_id_str)
         else:
-            parent_org_unit = None
+            requested_org_unit = None
 
         requested_form_ids = requested_forms.split(",") if requested_forms is not None else []
         profile = request.user.iaso_profile
@@ -52,49 +60,55 @@ class CompletenessStatsViewSet(viewsets.ViewSet):
         account = profile.account
         version = account.default_version
 
-        org_units = (
-            OrgUnit.objects.filter(version=version).filter(parent=parent_org_unit).filter(validation_status="VALID")
+        org_units = OrgUnit.objects.filter(version=version).filter(
+            validation_status="VALID"
         )  # don't forget to think about org unit status
+        if requested_org_unit:
+            org_units = org_units.hierarchy(requested_org_unit)
 
-        top_ous = org_units.exclude(parent__in=org_units)
-        if org_unit_type is not None:
-            top_ous = top_ous.filter(org_unit_type__id=org_unit_type.id)
+        top_ous = org_units
+
+        # Filtering by org unit type
+        if org_unit_types is not None:
+            top_ous = top_ous.filter(org_unit_type__id__in=[o.id for o in org_unit_types])
+
+        # Cutting the list, so we only keep the heads (top-level of the selection)
+        if org_unit_types is None:
+            # Normal case: we only keep the top-level org units
+            top_ous = top_ous.exclude(parent__in=top_ous)
+        else:
+            # Edge case: if parent/children are selected because of the requested OU types, we need to keep the children
+            top_ous = top_ous.exclude(Q(parent__in=top_ous) & ~Q(org_unit_type__id__in=[o.id for o in org_unit_types]))
 
         top_ous = top_ous.order_by(*order)
 
         res = []
-        for ou in top_ous:
+        for top_ou in top_ous:
             for form in form_qs:
                 form = Form.objects.get(id=form.id)
 
-                ou_types = form.org_unit_types.all()
-                if org_unit_type is not None:
-                    ou_types = ou_types.filter(id=org_unit_type.id)
-
-                ou_to_fill = OrgUnit.objects.hierarchy(ou).filter(org_unit_type__in=ou_types)
+                ou_types_of_form = form.org_unit_types.all()
+                ou_to_fill = org_units.filter(org_unit_type__in=ou_types_of_form).hierarchy(top_ou)
 
                 ou_to_fill_count = ou_to_fill.count()
                 ou_filled = ou_to_fill.filter(instance__form=form)
                 ou_filled_count = ou_filled.count()
 
-                # TODO: response as serializer for swagger
+                # TODO: response as serializer for Swagger
 
                 parent_data = None
-                if ou.parent is not None:
-                    parent_data = (ou.parent.as_dict_for_completeness_stats(),)
+                if top_ou.parent is not None:
+                    parent_data = (top_ou.parent.as_dict_for_completeness_stats(),)
+
                 res.append(
                     {
                         "parent_org_unit": parent_data,
-                        "org_unit_type": ou.org_unit_type.as_dict_for_completeness_stats(),
-                        "org_unit": ou.as_dict_for_completeness_stats(),
+                        "org_unit_type": top_ou.org_unit_type.as_dict_for_completeness_stats(),
+                        "org_unit": top_ou.as_dict_for_completeness_stats(),
                         "form": form.as_dict_for_completeness_stats(),
                         "forms_filled": ou_filled_count,
                         "forms_to_fill": ou_to_fill_count,
-                        "completeness_ratio": (
-                            (ou_filled_count / min(ou_to_fill_count, 1)) * 100
-                        )  # handle case when ou_to_fill is None or 1
-                        if ou_filled_count > 0
-                        else 0,
+                        "completeness_ratio": formatted_percentage(part=ou_filled_count, total=ou_to_fill_count),
                     }
                 )
         limit = int(request.GET.get("limit", "50"))

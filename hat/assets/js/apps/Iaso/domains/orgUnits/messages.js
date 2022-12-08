@@ -513,6 +513,9 @@ const MESSAGES = defineMessages({
     orgunitDetailInfosTitle: {
         id: 'iaso.orgUnits.infos.title',
         defaultMessage: 'Org unit infos',
+    depth: {
+        id: 'iaso.orgUnits.depth',
+        defaultMessage: 'Depth',
     },
 });
 

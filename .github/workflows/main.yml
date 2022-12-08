@@ -11,7 +11,7 @@ env:
   IMAGE_NAME: ${{ github.repository }}
 jobs:
   test_js:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-20.04
     steps:
       - uses: actions/checkout@v2
       - name: Use node.js 14
@@ -43,7 +43,7 @@ jobs:
           MSG_MINIMAL: true
         if: failure()
   build-and-push-image:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-20.04
     permissions:
       contents: read
       packages: write
@@ -80,7 +80,7 @@ jobs:
           cache-from: type=registry,ref=ghcr.io/blsq/iaso:buildcache
           cache-to: type=registry,ref=ghcr.io/blsq/iaso:buildcache,mode=max
   test_python:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-20.04
     services:
       postgres:
         image: mdillon/postgis:10
@@ -110,7 +110,7 @@ jobs:
             ${{ runner.os }}-venv-
           # Build a virtualenv, but only if it doesn't already exist
       - run: python -v && python -m venv ./venv && . ./venv/bin/activate && pip install -U pip &&
-          pip install -r requirements-dev.txt
+          pip install -r requirements.txt
         if: steps.cache-venv.outputs.cache-hit != 'true'
       - name: Environment info
         run: |

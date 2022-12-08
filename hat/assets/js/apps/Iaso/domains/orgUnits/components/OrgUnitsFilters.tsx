@@ -84,6 +84,7 @@ export const OrgUnitFilters: FunctionComponent<Props> = ({
     const [sourceVersionId, setSourceVersionId] = useState<
         number | undefined
     >();
+    const [depth, setDepth] = useState<number | undefined>();
     const [initialOrgUnitId, setInitialOrgUnitId] = useState<
         string | undefined
     >(currentSearch?.levels);
@@ -256,6 +257,14 @@ export const OrgUnitFilters: FunctionComponent<Props> = ({
                             options={versionsDropDown}
                             clearable={false}
                             loading={isFetchingOrgunitTypes}
+                        />
+                        <InputComponent
+                            type="number"
+                            keyValue="depth"
+                            onChange={handleChange}
+                            value={filters?.depth}
+                            label={MESSAGES.depth}
+                            clearable
                         />
                         <Typography
                             className={classes.advancedSettings}

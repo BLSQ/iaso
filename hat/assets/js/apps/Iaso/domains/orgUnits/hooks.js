@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import {
     useSnackQuery,
     useSnackMutation,
@@ -14,6 +14,27 @@ export const useOrgUnitDetailData = (
     orgUnitId,
     setCurrentOrgUnit,
 ) => {
+    const { data: originalOrgUnit, isFetching: isFetchingDetail } =
+        useSnackQuery(
+            ['currentOrgUnit', orgUnitId],
+            () => getRequest(`/api/orgunits/${orgUnitId}/`),
+            MESSAGES.fetchOrgUnitError,
+            {
+                enabled: !isNewOrgunit,
+                onSuccess: ou => setCurrentOrgUnit(ou),
+            },
+        );
+
+    const groupsUrl = useMemo(() => {
+        const basUrl = '/api/groups/';
+        if (isNewOrgunit) {
+            return `${basUrl}?&defaultVersion=true'`;
+        }
+        if (originalOrgUnit?.source_id) {
+            return `${basUrl}?&dataSource=${originalOrgUnit.source_id}`;
+        }
+        return basUrl;
+    }, [isNewOrgunit, originalOrgUnit?.source_id]);
     const [
         { data: algorithms = [], isFetching: isFetchingAlgorithm },
         { data: algorithmRuns = [], isFetching: isFetchingAlgorithmRuns },
@@ -39,15 +60,11 @@ export const useOrgUnitDetailData = (
         },
         {
             queryKey: ['groups'],
-            queryFn: () =>
-                getRequest(
-                    `/api/groups/${
-                        isNewOrgunit ? '?&defaultVersion=true' : ''
-                    }`,
-                ),
+            queryFn: () => getRequest(groupsUrl),
             snackErrorMsg: MESSAGES.fetchGroupsError,
             options: {
                 select: data => data.groups,
+                enabled: Boolean(originalOrgUnit),
             },
         },
         {
@@ -114,18 +131,6 @@ export const useOrgUnitDetailData = (
         ? isFetchingPlainSources
         : isFetchingAssociatedDataSources;
 
-    const { data: originalOrgUnit, isFetching: isFetchingDetail } =
-        useSnackQuery(
-            ['currentOrgUnit', orgUnitId],
-            () => getRequest(`/api/orgunits/${orgUnitId}/`),
-            MESSAGES.fetchOrgUnitError,
-            {
-                enabled:
-                    !isNewOrgunit && !isFetchingSources && !isFetchingLinks,
-                onSuccess: ou => setCurrentOrgUnit(ou),
-            },
-        );
-
     return {
         algorithms,
         algorithmRuns,
@@ -144,6 +149,8 @@ export const useOrgUnitDetailData = (
         sources: isNewOrgunit ? sources : associatedDataSources,
         originalOrgUnit,
         isFetchingDetail,
+        isFetchingOrgUnitTypes,
+        isFetchingGroups,
     };
 };
 

@@ -89,7 +89,7 @@ class WorkflowVersionDetailSerializer(serializers.ModelSerializer):
 def clone_change(new_version):
     def clone_change_real(orig_change):
         new_change = deepcopy(orig_change)
-        new_change.workflow = new_version
+        new_change.workflow_version = new_version
         new_change.id = None
         new_change.save()
 
@@ -101,7 +101,7 @@ def clone_change(new_version):
 def clone_followup(new_version):
     def clone_followup_real(orig_followup):
         new_followup = deepcopy(orig_followup)
-        new_followup.workflow = new_version
+        new_followup.workflow_version = new_version
         new_followup.id = None
         new_followup.save()
 
@@ -111,8 +111,8 @@ def clone_followup(new_version):
 
 
 def make_deep_copy_with_relations(orig_version):
-    orig_changes = WorkflowChange.objects.filter(workflow=orig_version)
-    orig_follow_ups = WorkflowFollowup.objects.filter(workflow=orig_version)
+    orig_changes = WorkflowChange.objects.filter(workflow_version=orig_version)
+    orig_follow_ups = WorkflowFollowup.objects.filter(workflow_version=orig_version)
 
     new_version = deepcopy(orig_version)
     new_version.id = None
@@ -122,13 +122,13 @@ def make_deep_copy_with_relations(orig_version):
 
     for oc in orig_changes:
         new_change = deepcopy(oc)
-        new_change.workflow = new_version
+        new_change.workflow_version = new_version
         new_change.id = None
         new_change.save()
 
     for of in orig_follow_ups:  # Doesn't copy the forms !
         new_followup = deepcopy(of)
-        new_followup.workflow = new_version
+        new_followup.workflow_version = new_version
         new_followup.id = None
         new_followup.save()
 
@@ -155,7 +155,7 @@ class WorkflowVersionViewSet(ModelViewSet):
 
     permission_classes = [permissions.IsAuthenticated, HasPermission("menupermissions.iaso_workflows")]  # type: ignore
     filter_backends = [filters.OrderingFilter, DjangoFilterBackend]
-    ordering_fields = ["name", "created_at"]
+    ordering_fields = ["name", "created_at", "updated_at"]
     serializer_class = WorkflowVersionDetailSerializer
     results_key = "workflow_versions"
     remove_results_key_if_paginated = False
@@ -169,12 +169,12 @@ class WorkflowVersionViewSet(ModelViewSet):
 
     @swagger_auto_schema(request_body=no_body)
     @action(detail=True, methods=["post"])
-    def copy(self, request):
+    def copy(self, request, **kwargs):
         """POST /api/workflowversion/{version_id}/copy
         Creates a new workflow version by copying the exiting version given by {version_id}
         """
 
-        version_id = request.query_params.get("version_id", None)
+        version_id = request.query_params.get("version_id", kwargs.get("version_id", None))
         wv_orig = WorkflowVersion.objects.get(pk=version_id)
         new_vw = make_deep_copy_with_relations(wv_orig)
         serialized_data = WorkflowVersionSerializer(new_vw).data

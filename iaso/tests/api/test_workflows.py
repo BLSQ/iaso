@@ -4,8 +4,18 @@ from django.utils.timezone import now
 from django.contrib.auth.models import AnonymousUser
 
 from iaso import models as m
-from iaso.models import Form, Workflow, WorkflowVersion, WorkflowFollowup, WorkflowChange
+from iaso.models import Workflow, WorkflowVersion
 from iaso.test import APITestCase
+
+from pprint import pprint
+
+
+def var_dump(what):
+    if type(what) is dict:
+        pprint(what)
+    else:
+        pprint(what.__dict__)
+
 
 post_answer_schema = {
     "type": "object",
@@ -27,10 +37,9 @@ class WorkflowsAPITestCase(APITestCase):
 
         blue_adults = m.Account.objects.create(name="Blue Adults")
         blue_children = m.Account.objects.create(name="Blue Children")
-        red_adults = m.Account.objects.create(name="Red Adults")
-        red_children = m.Account.objects.create(name="Red Children")
 
         cls.anon = AnonymousUser()
+
         cls.blue_adult_1 = cls.create_user_with_profile(
             username="blue_adult_1", account=blue_adults, permissions=["iaso_workflows"]
         )
@@ -42,45 +51,20 @@ class WorkflowsAPITestCase(APITestCase):
         # He doesn't have permissions
         cls.blue_adult_np = cls.create_user_with_profile(username="blue_adult_np", account=blue_adults)
 
-        cls.red_adult_1 = cls.create_user_with_profile(
-            username="red_adult_1", account=red_adults, permissions=["iaso_workflows"]
-        )
-
         cls.project_blue_adults = m.Project.objects.create(
             name="Blue Adults Project", app_id="blue.adults.project", account=blue_adults
         )
 
-        cls.project_blue_children = m.Project.objects.create(
-            name="Blue Children Project", app_id="blue.children.project", account=blue_children
-        )
-
-        cls.project_red_adults = m.Project.objects.create(
-            name="Red Adult Project", app_id="red.adults.project", account=red_adults
+        cls.form_adults_blue = m.Form.objects.create(
+            name="Blue Adults Form", form_id="adults_form_blue", created_at=cls.now
         )
 
         cls.form_children_blue = m.Form.objects.create(
             name="Blue Children Form", form_id="children_form_blue", created_at=cls.now
         )
-        cls.form_adults_blue = m.Form.objects.create(
-            name="Blue Adults Form", form_id="adults_form_blue", created_at=cls.now
-        )
-
-        cls.form_children_red = m.Form.objects.create(
-            name="Red Children Form", form_id="children_form_red", created_at=cls.now
-        )
-        cls.form_adults_red = m.Form.objects.create(
-            name="Red Adults Form", form_id="adults_form_red", created_at=cls.now
-        )
 
         cls.project_blue_adults.forms.add(cls.form_adults_blue)
         cls.project_blue_adults.save()
-
-        cls.project_blue_children.forms.add(cls.form_children_blue)
-        cls.project_blue_children.save()
-
-        cls.project_red_adults.forms.add(cls.form_children_red)
-        cls.project_red_adults.forms.add(cls.form_adults_red)
-        cls.project_red_adults.save()
 
         cls.et_children_blue = m.EntityType.objects.create(
             name="Children of Blue",
@@ -89,29 +73,7 @@ class WorkflowsAPITestCase(APITestCase):
             reference_form=cls.form_children_blue,
         )
 
-        cls.et_children_blue2 = m.EntityType.objects.create(
-            name="Children of Blue 2",
-            created_at=cls.now,
-            account=blue_children,
-            reference_form=cls.form_children_blue,
-        )
-
-        cls.et_children_blue3 = m.EntityType.objects.create(
-            name="Children of Blur 3",
-            created_at=cls.now,
-            account=blue_children,
-            reference_form=cls.form_children_blue,
-        )
-
-        cls.et_children_blue = m.EntityType.objects.create(
-            name="Children of Blur Inaccessible Reference Form",
-            created_at=cls.now,
-            account=blue_children,  # <--- Entity inaccessible if you are only blue or red
-            reference_form=cls.form_adults_red,  # <---
-        )
         cls.workflow_et_children_blue = Workflow.objects.create(entity_type=cls.et_children_blue)
-        cls.workflow_et_children_blue2 = Workflow.objects.create(entity_type=cls.et_children_blue2)
-        cls.workflow_et_children_blue3 = Workflow.objects.create(entity_type=cls.et_children_blue3)
 
         cls.et_adults_blue = m.EntityType.objects.create(
             name="Adults of Blue",
@@ -121,48 +83,6 @@ class WorkflowsAPITestCase(APITestCase):
         )
         cls.workflow_et_adults_blue = Workflow.objects.create(entity_type=cls.et_adults_blue)
 
-        cls.et_children_red = m.EntityType.objects.create(
-            name="Children of Red", created_at=cls.now, account=red_children, reference_form=cls.form_children_red
-        )
-        cls.workflow_et_children_red = Workflow.objects.create(entity_type=cls.et_children_red)
-
-        cls.et_adults_red = m.EntityType.objects.create(
-            name="Adults of Red", created_at=cls.now, account=red_adults, reference_form=cls.form_adults_red
-        )
-
-        cls.workflow_et_adults_red = Workflow.objects.create(entity_type=cls.et_adults_red)
-
-        # This is not accessible, because Project, Entity Type, Workflow and Workflow version are accessible
-        # by Blue Children But the reference_form is only accessible By Blue Adults so ... Nobody is both
-        cls.workflow_version_et_children_blue_inaccessible_reference_form = WorkflowVersion.objects.create(
-            workflow=cls.workflow_et_children_blue,
-            name="workflow_version_et_children_blue V1",
-            reference_form=cls.form_adults_blue,
-        )
-
-        cls.workflow_version_et_children_blue2_inaccessible_followup_form = WorkflowVersion.objects.create(
-            workflow=cls.workflow_et_children_blue2,
-            name="workflow_version_et_children_blue2 V1",
-            reference_form=cls.form_children_blue,
-        )
-
-        cls.workflow_version_et_children_blue3_inaccessible_changes = WorkflowVersion.objects.create(
-            workflow=cls.workflow_et_children_blue3,
-            name="workflow_version_et_children_blue3 V1",
-            reference_form=cls.form_children_blue,
-        )
-
-        cls.inaccessible_follow_up = WorkflowFollowup.objects.create(
-            order=1, condition="true", workflow=cls.workflow_version_et_children_blue2_inaccessible_followup_form
-        )
-
-        cls.inaccessible_follow_up.forms.add(cls.form_adults_blue)
-        cls.inaccessible_follow_up.save()
-
-        cls.inaccessible_change = WorkflowChange.objects.create(
-            form=cls.form_adults_blue, workflow=cls.workflow_version_et_children_blue3_inaccessible_changes
-        )
-
         cls.workflow_version_et_adults_blue = WorkflowVersion.objects.create(
             workflow=cls.workflow_et_adults_blue,
             name="workflow_version_et_adults_blue V1",
@@ -170,7 +90,7 @@ class WorkflowsAPITestCase(APITestCase):
         )
 
     def test_user_without_auth(self):
-        response = self.client.get(f"/api/workflow/{self.et_adults_red.pk}/")
+        response = self.client.get(f"/api/workflowversion/?workflow__entity_type={self.et_adults_blue.pk}/")
 
         self.assertJSONResponse(response, 403)
         self.assertEqual(response.data["detail"].code, "not_authenticated")
@@ -178,7 +98,7 @@ class WorkflowsAPITestCase(APITestCase):
 
     def test_user_anonymous(self):
         self.client.force_authenticate(self.anon)
-        response = self.client.get(f"/api/workflow/{self.et_adults_red.pk}/")
+        response = self.client.get(f"/api/workflowversion/?workflow__entity_type={self.et_adults_blue.pk}/")
 
         self.assertJSONResponse(response, 403)
         self.assertEqual(response.data["detail"].code, "permission_denied")
@@ -187,7 +107,7 @@ class WorkflowsAPITestCase(APITestCase):
     def test_user_with_auth_no_permissions(self):
         self.client.force_authenticate(self.blue_adult_np)
 
-        response = self.client.get(f"/api/workflow/{self.et_children_blue.pk}/")
+        response = self.client.get(f"/api/workflowversion/?workflow__entity_type={self.et_children_blue.pk}/")
 
         self.assertJSONResponse(response, 403)
         self.assertEqual(response.data["detail"].code, "permission_denied")
@@ -196,40 +116,15 @@ class WorkflowsAPITestCase(APITestCase):
     def test_user_with_auth_no_access_to_entity_type(self):
         self.client.force_authenticate(self.blue_adult_1)
 
-        response = self.client.get(f"/api/workflow/{self.et_adults_red.pk}/")
+        # {"workflow__entity_type": ["Select a valid choice. That choice is not one of the available choices."]}
+        response = self.client.get(f"/api/workflowversion/?workflow__entity_type={self.et_children_blue.pk}/")
 
-        self.assertJSONResponse(response, 404)
-        assert "User profile account != entity_type account" in response.data
-
-    def test_user_with_auth_access_entity_ok_no_access_to_reference_form(self):
-        self.client.force_authenticate(self.blue_child_1)
-
-        response = self.client.get(
-            f"/api/workflow/{self.et_children_blue.pk}/?version_id={self.workflow_version_et_children_blue_inaccessible_reference_form.pk}"
+        self.assertJSONResponse(response, 400)
+        assert "workflow__entity_type" in response.data
+        assert (
+            response.data["workflow__entity_type"][0]
+            == "Select a valid choice. That choice is not one of the available choices."
         )
-
-        self.assertJSONResponse(response, 404)
-        assert "Cannot Access Reference Form for Workflow Version" in response.data
-
-    def test_user_with_auth_access_entity_ok_no_access_to_follow_ups_form(self):
-        self.client.force_authenticate(self.blue_child_1)
-
-        response = self.client.get(
-            f"/api/workflow/{self.et_children_blue2.pk}/?version_id={self.workflow_version_et_children_blue2_inaccessible_followup_form.pk}"
-        )
-
-        self.assertJSONResponse(response, 404)
-        assert "Cannot Access FollowUps Form for Workflow" in response.data
-
-    def test_user_with_auth_access_entity_ok_no_access_to_changes_forms(self):
-        self.client.force_authenticate(self.blue_child_1)
-
-        response = self.client.get(
-            f"/api/workflow/{self.et_children_blue3.pk}/?version_id={self.workflow_version_et_children_blue3_inaccessible_changes.pk}"
-        )
-
-        self.assertJSONResponse(response, 404)
-        assert "Cannot Access Changes Form for Workflow" in response.data
 
     def test_user_all_access_ok(self):
         self.client.force_authenticate(self.blue_adult_1)
@@ -243,7 +138,7 @@ class WorkflowsAPITestCase(APITestCase):
                 "limit": {"type": "number"},
                 "page": {"type": "number"},
                 "pages": {"type": "number"},
-                "results": {
+                "workflow_versions": {
                     "type": "array",
                     "items": {
                         "type": "object",
@@ -257,10 +152,10 @@ class WorkflowsAPITestCase(APITestCase):
                     },
                 },
             },
-            "required": ["count", "has_next", "has_previous", "limit", "page", "pages", "results"],
+            "required": ["count", "has_next", "has_previous", "limit", "page", "pages", "workflow_versions"],
         }
 
-        response = self.client.get(f"/api/workflow/{self.et_adults_blue.pk}/")
+        response = self.client.get(f"/api/workflowversion/?limit=2")
 
         self.assertJSONResponse(response, 200)
         self.assertEqual(response.json()["count"], 1)  # 1 version available
@@ -290,9 +185,9 @@ class WorkflowsAPITestCase(APITestCase):
             "required": ["status", "name", "updated_at", "reference_form", "entity_type", "follow_ups", "version_id"],
         }
 
-        response = self.client.get(
-            f"/api/workflow/{self.et_adults_blue.pk}/?version_id={self.workflow_version_et_adults_blue.pk}"
-        )
+        response = self.client.get(f"/api/workflowversion/{self.workflow_version_et_adults_blue.pk}/")
+
+        print(response)
 
         self.assertJSONResponse(response, 200)
 
@@ -304,7 +199,7 @@ class WorkflowsAPITestCase(APITestCase):
     def test_new_version_empty(self):
         self.client.force_authenticate(self.blue_adult_1)
 
-        response = self.client.post(f"/api/workflow/{self.et_adults_blue.pk}/new/")
+        response = self.client.post(f"/api/workflowversion/?entity_type_id={self.et_adults_blue.pk}")
 
         self.assertJSONResponse(response, 200)
 
@@ -325,9 +220,7 @@ class WorkflowsAPITestCase(APITestCase):
     def test_new_version_from_copy(self):
         self.client.force_authenticate(self.blue_adult_1)
 
-        response = self.client.post(
-            f"/api/workflow/{self.et_adults_blue.pk}/new/?version_id={self.workflow_version_et_adults_blue.pk}"
-        )
+        response = self.client.post(f"/api/workflowversion/{self.workflow_version_et_adults_blue.pk}/copy/")
 
         self.assertJSONResponse(response, 200)
 

@@ -510,9 +510,6 @@ const MESSAGES = defineMessages({
         id: 'iaso.label.hasNoGeometryAndGps',
         defaultMessage: 'Without geographic data',
     },
-    orgunitDetailInfosTitle: {
-        id: 'iaso.orgUnits.infos.title',
-        defaultMessage: 'Org unit infos',
     depth: {
         id: 'iaso.orgUnits.depth',
         defaultMessage: 'Depth',

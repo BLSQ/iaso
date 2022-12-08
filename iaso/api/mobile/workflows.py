@@ -8,41 +8,32 @@ from iaso.models import WorkflowVersion, Project, Workflow
 from rest_framework.viewsets import GenericViewSet
 from rest_framework.response import Response
 
+from iaso.api.common import TimestampField
+
 from drf_yasg.utils import swagger_auto_schema
 from drf_yasg import openapi
 
 
 class MobileWorkflowVersionSerializer(serializers.ModelSerializer):
-    version_id = serializers.SerializerMethodField()
-    entity_type_id = serializers.SerializerMethodField()
-    status = serializers.SerializerMethodField()
-    created_at = serializers.SerializerMethodField()
-    updated_at = serializers.SerializerMethodField()
+    version_id = serializers.IntegerField(source="pk")
+    entity_type_id = serializers.IntegerField(source="workflow.entity_type.pk")
+
+    created_at = TimestampField()
+    updated_at = TimestampField()
 
     class Meta:
         model = WorkflowVersion
 
-        fields = ["status", "created_at", "updated_at", "version_id", "entity_type_id", "changes", "follow_ups", "name"]
-
-    @staticmethod
-    def get_version_id(instance):
-        return instance.pk
-
-    @staticmethod
-    def get_entity_type_id(instance):
-        return instance.workflow.entity_type.pk
-
-    @staticmethod
-    def get_created_at(instance):
-        return time.mktime(instance.created_at.timetuple())
-
-    @staticmethod
-    def get_updated_at(instance):
-        return time.mktime(instance.updated_at.timetuple())
-
-    @staticmethod
-    def get_status(instance):
-        return WorkflowVersionsStatus(instance.status).name
+        fields = [
+            "status",
+            "created_at",
+            "updated_at",
+            "version_id",
+            "entity_type_id",
+            "changes",
+            "follow_ups",
+            "name",
+        ]
 
 
 app_id_param = openapi.Parameter(
@@ -73,46 +64,19 @@ class MobileWorkflowViewSet(GenericViewSet):
         if app_id is None:
             return Response(status=404, data="No app_id provided")
 
-        if self.request.user.is_anonymous:
-            return Response(status=401, data="User cannot be anonymous")
-        elif not Project.objects.filter(app_id=app_id, account=self.request.user.iaso_profile.account).exists():
+        if not Project.objects.filter(app_id=app_id, account=self.request.user.iaso_profile.account).exists():
             return Response(status=404, data="User not found in Projects for this app id or project not found")
 
         # project -> account -> users
-        queryset = self.get_queryset(**dict(kwargs, app_id=app_id, user=request.user))
-
-        page = self.paginate_queryset(queryset)
-
-        if page is not None:
-            serializer = self.get_serializer(page, many=True)
-            return self.get_paginated_response(serializer.data)
-
+        queryset = self.get_queryset(**dict(kwargs, user=request.user))
         serializer = self.get_serializer(queryset, many=True)
         return Response({"workflows": serializer.data})
 
     def get_queryset(self, **kwargs):
-        app_id = kwargs["app_id"]
         user = kwargs["user"]
 
-        ok_wfs = Workflow.objects.filter(
-            entity_type__account=user.iaso_profile.account,
-            entity_type__reference_form__projects__account=user.iaso_profile.account,
-        )
-
-        ok_wfs_ids = list(map(lambda x: x.pk, ok_wfs))
-
         return (
-            WorkflowVersion.objects.filter(workflow__in=ok_wfs_ids)
-            .filter(
-                Q(follow_ups__forms__projects__account=user.iaso_profile.account)
-                | Q(follow_ups__isnull=True)
-                | Q(follow_ups__isnull=False, follow_ups__forms__isnull=True)  # no follow ups or no forms on follow ups
-            )
-            .filter(
-                Q(changes__form__projects__account=user.iaso_profile.account)
-                | Q(changes__isnull=True)
-                | Q(changes__isnull=False, changes__form__isnull=True)  # no changes or no forms on changes
-            )
+            WorkflowVersion.objects.filter(workflow__entity_type__account=user.iaso_profile.account)
             .order_by("workflow__pk", "-created_at")
             .distinct("workflow__pk")
         )

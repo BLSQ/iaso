@@ -1,4 +1,4 @@
-import { Box, Grid, useTheme, useMediaQuery } from '@material-ui/core';
+import { Box, Grid } from '@material-ui/core';
 import React, { FunctionComponent } from 'react';
 // @ts-ignore
 import { useSafeIntl } from 'bluesquare-components';
@@ -29,8 +29,7 @@ export const PlanningFilters: FunctionComponent<Props> = ({ params }) => {
     const { filters, handleSearch, handleChange, filtersUpdated } =
         useFilterState({ baseUrl, params });
     const { formatMessage } = useSafeIntl();
-    const theme = useTheme();
-    const isLargeLayout = useMediaQuery(theme.breakpoints.up('md'));
+
     return (
         <>
             <Grid container spacing={0}>
@@ -45,7 +44,7 @@ export const PlanningFilters: FunctionComponent<Props> = ({ params }) => {
                             onEnterPressed={handleSearch}
                         />
                     </Grid>
-                    <Grid item xs={12} md={3}>
+                    <Grid item xs={12} md={6}>
                         <DatesRange
                             onChangeDate={handleChange}
                             dateFrom={filters.dateFrom}
@@ -65,14 +64,14 @@ export const PlanningFilters: FunctionComponent<Props> = ({ params }) => {
                             label={MESSAGES.publishingStatus}
                         />
                     </Grid>
-                </Grid>
-                <Grid container item xs={12} justifyContent="flex-end">
-                    <Box mt={isLargeLayout ? 0 : 2} mb={2}>
-                        <FilterButton
-                            disabled={!filtersUpdated}
-                            onFilter={handleSearch}
-                        />
-                    </Box>
+                    <Grid container item xs={12} justifyContent="flex-end">
+                        <Box mt={2} mb={2}>
+                            <FilterButton
+                                disabled={!filtersUpdated}
+                                onFilter={handleSearch}
+                            />
+                        </Box>
+                    </Grid>
                 </Grid>
             </Grid>
         </>

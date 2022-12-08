@@ -6,23 +6,27 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('iaso', '0180_workflow_workflowchange_workflowfollowup_workflowversion'),
+        ("iaso", "0180_workflow_workflowchange_workflowfollowup_workflowversion"),
     ]
 
     operations = [
         migrations.RenameField(
-            model_name='workflowchange',
-            old_name='workflow',
-            new_name='workflow_version',
+            model_name="workflowchange",
+            old_name="workflow",
+            new_name="workflow_version",
         ),
         migrations.RenameField(
-            model_name='workflowfollowup',
-            old_name='workflow',
-            new_name='workflow_version',
+            model_name="workflowfollowup",
+            old_name="workflow",
+            new_name="workflow_version",
         ),
         migrations.AlterField(
-            model_name='workflowversion',
-            name='status',
-            field=models.CharField(choices=[('DRAFT', 'Draft'), ('UNPUBLISHED', 'Unpublished'), ('PUBLISHED', 'Published')], default='DRAFT', max_length=12),
+            model_name="workflowversion",
+            name="status",
+            field=models.CharField(
+                choices=[("DRAFT", "Draft"), ("UNPUBLISHED", "Unpublished"), ("PUBLISHED", "Published")],
+                default="DRAFT",
+                max_length=12,
+            ),
         ),
     ]

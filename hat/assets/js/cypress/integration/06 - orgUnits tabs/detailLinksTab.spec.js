@@ -228,7 +228,7 @@ const goToPage = () => {
         page2,
     ).as('page2');
     cy.visit(baseUrl);
-    cy.wait('@socks', { timeout: 10000 });
+    // cy.wait('@socks', { timeout: 10000 });
     cy.wait('@me');
     cy.wait('@algorithmsRuns');
     // cy.wait('@getOuDetail');// duplicate in tablePagination test

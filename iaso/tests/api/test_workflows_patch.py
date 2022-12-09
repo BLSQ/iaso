@@ -7,13 +7,15 @@ from iaso import models as m
 from iaso.models import Workflow, WorkflowVersion
 from iaso.test import APITestCase
 
-from iaso.tests.api.test_workflows import var_dump
+from iaso.tests.api.test_workflows import var_dump, post_answer_schema
 
 
 class WorkflowsPatchAPITestCase(APITestCase):
     @classmethod
     def setUpTestData(cls):
         cls.now = now()
+
+        cls.anon = AnonymousUser()
 
         blue_adults = m.Account.objects.create(name="Blue Adults")
 
@@ -46,17 +48,33 @@ class WorkflowsPatchAPITestCase(APITestCase):
             reference_form=cls.form_adults_blue,
         )
 
+    def test_user_without_auth(self):
+        response = self.client.patch(
+            f"/api/workflowversion/{self.workflow_version_et_adults_blue.pk}/", data={"status": "PUBLISHED"}
+        )
+
+        self.assertJSONResponse(response, 403)
+        self.assertEqual(response.data["detail"].code, "not_authenticated")
+        self.assertEqual(response.data["detail"], "Authentication credentials were not provided.")
+
+    def test_user_anonymous(self):
+        self.client.force_authenticate(self.anon)
+        response = self.client.patch(
+            f"/api/workflowversion/{self.workflow_version_et_adults_blue.pk}/", data={"status": "PUBLISHED"}
+        )
+
+        self.assertJSONResponse(response, 403)
+        self.assertEqual(response.data["detail"].code, "permission_denied")
+        self.assertEqual(response.data["detail"], "You do not have permission to perform this action.")
+
     def test_patch_nonexisting_fails(self):
         self.client.force_authenticate(self.blue_adult_1)
 
         response = self.client.patch(f"/api/workflowversion/1000/", data={"status": "PUBLISHED"})
 
-        var_dump(response)
-
-        self.assertJSONResponse(response, 400)
-
-    def test_patch_transition_forbidden(self):
-        pass
+        self.assertJSONResponse(response, 404)
+        assert "detail" in response.data
+        assert response.data["detail"] == "Not found."
 
     def test_patch_transition_ok(self):
         self.client.force_authenticate(self.blue_adult_1)
@@ -65,15 +83,41 @@ class WorkflowsPatchAPITestCase(APITestCase):
             f"/api/workflowversion/{self.workflow_version_et_adults_blue.pk}/", data={"status": "PUBLISHED"}
         )
 
-        var_dump(response)
-        #
-        # 'data': {'created_at': '2022-12-08T15:49:35.770681Z',
-        #          iaso - iaso - 1 | 'name': 'workflow_version_et_adults_blue V1',
-        #          iaso - iaso - 1 | 'status': 'PUBLISHED',
-        #          iaso - iaso - 1 | 'updated_at': '2022-12-08T15:49:35.942069Z',
-        #          iaso - iaso - 1 | 'version_id': 1},
+        self.assertJSONResponse(response, 200)
+
+        try:
+            jsonschema.validate(instance=response.data, schema=post_answer_schema)
+        except jsonschema.exceptions.ValidationError as ex:
+            self.fail(msg=str(ex))
+
+    def test_patch_transition_forbidden(self):
+        self.client.force_authenticate(self.blue_adult_1)
+
+        self.workflow_version_et_adults_blue.status = "PUBLISHED"
+        self.workflow_version_et_adults_blue.save()
+
+        response = self.client.patch(
+            f"/api/workflowversion/{self.workflow_version_et_adults_blue.pk}/", data={"status": "DRAFT"}
+        )
+
+        self.assertJSONResponse(response, 401)
+
+        assert response.data == "Transition from PUBLISHED to DRAFT is not allowed"
+
+    def test_patch_change_name_only(self):
+        self.client.force_authenticate(self.blue_adult_1)
+
+        new_name = "BROL"
+
+        response = self.client.patch(
+            f"/api/workflowversion/{self.workflow_version_et_adults_blue.pk}/", data={"name": new_name}
+        )
 
         self.assertJSONResponse(response, 200)
 
-    def test_patch_change_name_only(self):
-        pass
+        try:
+            jsonschema.validate(instance=response.data, schema=post_answer_schema)
+        except jsonschema.exceptions.ValidationError as ex:
+            self.fail(msg=str(ex))
+
+        assert response.data["name"] == new_name

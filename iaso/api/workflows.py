@@ -14,6 +14,8 @@ from iaso.api.common import ModelViewSet, HasPermission
 from drf_yasg import openapi
 from drf_yasg.utils import swagger_auto_schema, no_body
 
+from django.shortcuts import get_object_or_404
+
 
 class FormMiniSerializer(serializers.ModelSerializer):
     class Meta:
@@ -182,13 +184,15 @@ class WorkflowVersionViewSet(ModelViewSet):
 
     def partial_update(self, request, *args, **kwargs):
         version_id = request.query_params.get("version_id", kwargs.get("version_id", None))
-        wv_orig = WorkflowVersion.objects.get(pk=version_id)
+        wv_orig = get_object_or_404(WorkflowVersion, pk=version_id)
 
         print("version_id", version_id)
         print("wv_orig before", wv_orig)
 
         changed_status = request.data.get("status", None)
         changed_name = request.data.get("name", None)
+
+        print("changed_status", changed_status)
 
         if changed_name is not None:
             wv_orig.name = changed_name

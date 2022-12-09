@@ -12,13 +12,13 @@ import { testTablerender } from '../../support/testTableRender';
 
 const siteBaseUrl = Cypress.env('siteBaseUrl');
 
-const baseUrl = `${siteBaseUrl}/dashboard/orgunits/detail/orgUnitId/${orgUnit.id}/tab/children/accountId/1`;
+const baseUrl = `${siteBaseUrl}/dashboard/orgunits/detail/orgUnitId/${orgUnit.id}/tab/children`;
 
 const interceptList = [
     'profiles',
     'algorithms',
     'algorithmsruns',
-    'groups',
+    // 'groups',
     'orgunittypes',
 ];
 const defaultQuery = {
@@ -154,6 +154,9 @@ const goToPage = () => {
         cy.intercept('GET', `/api/${i}/`, {
             fixture: `${i}/list.json`,
         });
+    });
+    cy.intercept('GET', `/api/groups/?&dataSource=33`, {
+        fixture: `groups/list.json`,
     });
     cy.intercept(
         'GET',

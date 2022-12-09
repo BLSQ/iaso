@@ -7,13 +7,13 @@ import { testPermission } from '../../support/testPermission';
 
 const siteBaseUrl = Cypress.env('siteBaseUrl');
 
-const baseUrl = `${siteBaseUrl}/dashboard/orgunits/detail/orgUnitId/${orgUnit.id}/accountId/1`;
+const baseUrl = `${siteBaseUrl}/dashboard/orgunits/detail/orgUnitId/${orgUnit.id}`;
 
 const interceptList = [
     'profiles',
     'algorithms',
     'algorithmsruns',
-    'groups',
+    // 'groups',
     'orgunittypes',
 ];
 
@@ -84,6 +84,13 @@ describe('infos tab', () => {
                 fixture: `${i}/list.json`,
             });
         });
+        cy.intercept('GET', `/api/groups/?&dataSource=33`, {
+            fixture: `groups/list.json`,
+        });
+        cy.intercept('GET', `/api/groups/?&dataSource=33`, {
+            fixture: `groups/list.json`,
+        });
+
         cy.intercept(
             'GET',
             ` /api/forms/?&orgUnitId=${orgUnit.id}&limit=10&order=name`,

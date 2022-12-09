@@ -6,13 +6,13 @@ import { testPermission } from '../../support/testPermission';
 
 const siteBaseUrl = Cypress.env('siteBaseUrl');
 
-const baseUrl = `${siteBaseUrl}/dashboard/orgunits/detail/orgUnitId/${orgUnit.id}/tab/map/accountId/1`;
+const baseUrl = `${siteBaseUrl}/dashboard/orgunits/detail/orgUnitId/${orgUnit.id}/tab/map`;
 
 const interceptList = [
     'profiles',
     'algorithms',
     'algorithmsruns',
-    'groups',
+    // 'groups',
     'orgunittypes',
 ];
 
@@ -37,6 +37,9 @@ describe('map tab', () => {
             cy.intercept('GET', `/api/${i}/`, {
                 fixture: `${i}/list.json`,
             });
+        });
+        cy.intercept('GET', `/api/groups/?&dataSource=33`, {
+            fixture: `groups/list.json`,
         });
         cy.intercept(
             'GET',

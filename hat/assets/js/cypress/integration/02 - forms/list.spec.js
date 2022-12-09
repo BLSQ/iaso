@@ -6,7 +6,7 @@ import superUser from '../../fixtures/profiles/me/superuser.json';
 const siteBaseUrl = Cypress.env('siteBaseUrl');
 
 const search = 'ZELDA';
-const baseUrl = `${siteBaseUrl}/dashboard/forms/list/accountId/1`;
+const baseUrl = `${siteBaseUrl}/dashboard/forms/list/`;
 
 let interceptFlag = false;
 let table;
@@ -66,7 +66,7 @@ describe('Forms', () => {
             cy.get('[data-test=add-form-button]').click();
             cy.url().should(
                 'eq',
-                `${siteBaseUrl}/dashboard/forms/detail/formId/0/accountId/1`,
+                `${siteBaseUrl}/dashboard/forms/detail/accountId/1/formId/0`,
             );
         });
 
@@ -104,7 +104,7 @@ describe('Forms', () => {
                 cy.get('[data-test="search-button"]').click();
                 cy.url().should(
                     'eq',
-                    `${siteBaseUrl}/dashboard/forms/list/page/1/search/${search}/accountId/1`,
+                    `${siteBaseUrl}/dashboard/forms/list/accountId/1/page/1/search/${search}`,
                 );
             });
         });

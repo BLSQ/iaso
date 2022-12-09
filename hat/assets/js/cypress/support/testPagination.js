@@ -26,7 +26,7 @@ export const testPagination = ({
                 cy.get(selector).find('[data-test="search-button"]').click();
             }
 
-            cy.wait('@query');
+            cy.wait('@query', { timeout: 10000 });
             cy.get(selector).as('selector');
             cy.get('@selector').should('exist');
         });
@@ -108,32 +108,43 @@ export const testPagination = ({
                     .should('have.value', 1);
             });
         });
-        it('changing rows count should display the correct ammount of rows', () => {
-            const pageSize = 5;
-            const res = { ...fixture };
-            res[apiKey] = res[apiKey].slice(0, pageSize);
-            cy.intercept(
-                {
-                    pathname: apiPath,
-                    query: {
-                        limit: `${pageSize}`,
-                    },
+        it(
+            'changing rows count should display the correct ammount of rows',
+            {
+                retries: {
+                    runMode: 2,
+                    openMode: 2,
                 },
-                res,
-            ).as('getData');
-            cy.wait(1000);
-            cy.get(`${selector} .pagination-row-select`)
-                .should('exist')
-                .click();
-            cy.get(`.row-option-${pageSize}`).click();
+            },
+            () => {
+                const pageSize = 5;
+                const res = { ...fixture };
+                res[apiKey] = res[apiKey].slice(0, pageSize);
+                cy.intercept(
+                    {
+                        pathname: apiPath,
+                        query: {
+                            limit: `${pageSize}`,
+                        },
+                    },
+                    res,
+                ).as('getData');
 
-            cy.wait('@getData').then(() => {
-                const table = cy.get('@selector').find('table');
-                table.should('have.length', 1);
-                const rows = table.find('tbody').find('tr');
-                rows.should('have.length', pageSize);
-            });
-        });
+                cy.wait(1000);
+                cy.get(`${selector} .pagination-row-select`)
+                    // .as('rowSelector')
+                    // .should('exist')
+                    .click();
+                cy.get(`.row-option-${pageSize}`).click();
+
+                cy.wait('@getData').then(() => {
+                    const table = cy.get('@selector').find('table');
+                    table.should('have.length', 1);
+                    const rows = table.find('tbody').find('tr');
+                    rows.should('have.length', pageSize);
+                });
+            },
+        );
         if (withSearch)
             it('search again should go to first page', () => {
                 cy.intercept(

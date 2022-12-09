@@ -17,7 +17,6 @@ let interceptFlagGroups = false;
 
 const search = 'mugen';
 const baseUrl = `${siteBaseUrl}/dashboard/orgunits/groups`;
-const baseUrlWithAccount = `${baseUrl}/accountId/1`;
 
 let interceptFlag = false;
 let table;
@@ -52,7 +51,7 @@ const goToPage = ({
             body: fixture,
         });
     }).as('getGroups');
-    cy.visit(baseUrlWithAccount);
+    cy.visit(baseUrl);
 };
 
 const openDialogForIndex = index => {
@@ -133,12 +132,12 @@ describe('Groups', () => {
             cy.wait('@getGroups').then(() => {
                 cy.url().should(
                     'eq',
-                    `${baseUrl}/order/name/pageSize/20/page/1/accountId/1`,
+                    `${baseUrl}/accountId/1/order/name/pageSize/20/page/1`,
                 );
             });
         });
         it('should not be accessible if user does not have permission', () => {
-            testPermission(baseUrlWithAccount);
+            testPermission(baseUrl);
         });
     });
 
@@ -207,13 +206,13 @@ describe('Groups', () => {
         });
 
         testTablerender({
-            baseUrl: baseUrlWithAccount,
+            baseUrl,
             rows: listFixture.groups.length,
             columns: 7,
             apiKey: 'groups',
         });
         testPagination({
-            baseUrl: baseUrlWithAccount,
+            baseUrl,
             apiPath: '/api/groups/**',
             apiKey: 'groups',
             withSearch: false,

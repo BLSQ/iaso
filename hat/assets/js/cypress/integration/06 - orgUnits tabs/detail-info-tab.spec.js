@@ -4,12 +4,12 @@ import orgUnit from '../../fixtures/orgunits/details.json';
 import orgUnitsList from '../../fixtures/orgunits/list.json';
 
 const siteBaseUrl = Cypress.env('siteBaseUrl');
-const baseUrl = `${siteBaseUrl}/dashboard/orgunits/detail/orgUnitId/${orgUnit.id}/accountId/1`;
+const baseUrl = `${siteBaseUrl}/dashboard/orgunits/detail/orgUnitId/${orgUnit.id}`;
 const interceptList = [
     'profiles',
     'algorithms',
     'algorithmsruns',
-    'groups',
+    // 'groups',
     'orgunittypes',
 ];
 const newSourceIndex = 2;
@@ -77,6 +77,9 @@ describe('infos tab', () => {
             cy.intercept('GET', `/api/${i}/`, {
                 fixture: `${i}/list.json`,
             });
+        });
+        cy.intercept('GET', `/api/groups/?&dataSource=33`, {
+            fixture: `groups/list.json`,
         });
         cy.intercept(
             'GET',

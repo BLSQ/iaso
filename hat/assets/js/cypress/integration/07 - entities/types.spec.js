@@ -54,7 +54,7 @@ const goToPage = (
             res.send({ fixture });
         });
     }).as('getEntitiesTypes');
-    cy.visit(`${baseUrl}/accountId/1`);
+    cy.visit(baseUrl);
 };
 
 const openDialogForIndex = index => {
@@ -73,7 +73,7 @@ describe('Entities types', () => {
             cy.wait('@getEntitiesTypes').then(() => {
                 cy.url().should(
                     'eq',
-                    `${baseUrl}/order/name/pageSize/20/page/1/accountId/1`,
+                    `${baseUrl}/accountId/1/order/name/pageSize/20/page/1`,
                 );
             });
         });
@@ -122,11 +122,11 @@ describe('Entities types', () => {
             });
         });
         it('action should deep link search', () => {
-            cy.wait('@getEntitiesTypes').then(() => {
+            cy.wait('@getEntitiesTypes', { timeout: 10000 }).then(() => {
                 cy.get('#search-search').type(search);
 
                 cy.get('[data-test="search-button"]').click();
-                cy.url().should('contain', `${baseUrl}/search/${search}`);
+                cy.url().should('contain', `/search/${search}`);
             });
         });
     });

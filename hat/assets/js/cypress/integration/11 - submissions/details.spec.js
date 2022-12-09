@@ -8,7 +8,7 @@ import { testPermission } from '../../support/testPermission';
 
 const siteBaseUrl = Cypress.env('siteBaseUrl');
 
-const baseUrl = `${siteBaseUrl}/dashboard/forms/submission/instanceId/1007/accountId/1`;
+const baseUrl = `${siteBaseUrl}/dashboard/forms/submission/instanceId/1007`;
 
 const topBarTitle = `${submission.form_name}: ${submission.file_name.replace(
     '.xml',

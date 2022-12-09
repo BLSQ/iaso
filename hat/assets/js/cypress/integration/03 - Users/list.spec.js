@@ -40,7 +40,7 @@ const goToPage = (
             res.send({ fixture });
         });
     }).as('getUsers');
-    cy.visit(`${baseUrl}/accountId/1`);
+    cy.visit(baseUrl);
 };
 const openDialogForUserIndex = index => {
     table = cy.get('table');
@@ -65,7 +65,7 @@ describe('Users', () => {
             cy.wait('@getUsers').then(() => {
                 cy.url().should(
                     'eq',
-                    `${baseUrl}/order/user__username/pageSize/20/page/1/accountId/1`,
+                    `${baseUrl}/accountId/1/order/user__username/pageSize/20/page/1`,
                 );
             });
         });
@@ -118,7 +118,7 @@ describe('Users', () => {
                 cy.get('#search-search').type(search);
 
                 cy.get('[data-test="search-button"]').click();
-                cy.url().should('contain', `${baseUrl}/search/${search}`);
+                cy.url().should('contain', `/search/${search}`);
             });
         });
     });

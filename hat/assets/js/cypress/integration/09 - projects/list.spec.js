@@ -11,7 +11,7 @@ import { testPagination } from '../../support/testPagination';
 const siteBaseUrl = Cypress.env('siteBaseUrl');
 let interceptFlagProjects = false;
 
-const baseUrl = `${siteBaseUrl}/dashboard/settings/projects/accountId/1`;
+const baseUrl = `${siteBaseUrl}/dashboard/settings/projects`;
 
 let interceptFlag = false;
 const emptyFixture = 'projects/empty.json';

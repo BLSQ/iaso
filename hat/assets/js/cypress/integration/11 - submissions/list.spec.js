@@ -14,7 +14,7 @@ import { testPageFilters } from '../../support/testPageFilters';
 
 const siteBaseUrl = Cypress.env('siteBaseUrl');
 
-const baseUrl = `${siteBaseUrl}/dashboard/forms/submissions/tab/list/mapResults/3000/accountId/1`;
+const baseUrl = `${siteBaseUrl}/dashboard/forms/submissions/tab/list/mapResults/3000`;
 
 let interceptFlag = false;
 let table;
@@ -151,7 +151,7 @@ describe('Submissions', () => {
             goToPage();
             cy.url().should(
                 'eq',
-                `${siteBaseUrl}/dashboard/forms/submissions/tab/list/columns/form__name,updated_at,period,org_unit__name,status/mapResults/3000/accountId/1`,
+                `${siteBaseUrl}/dashboard/forms/submissions/accountId/1/tab/list/columns/form__name,updated_at,period,org_unit__name,status/mapResults/3000`,
             );
         });
 

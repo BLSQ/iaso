@@ -11,13 +11,13 @@ import { testTablerender } from '../../support/testTableRender';
 
 const siteBaseUrl = Cypress.env('siteBaseUrl');
 
-const baseUrl = `${siteBaseUrl}/dashboard/orgunits/detail/orgUnitId/${orgUnit.id}/tab/history/accountId/1`;
+const baseUrl = `${siteBaseUrl}/dashboard/orgunits/detail/orgUnitId/${orgUnit.id}/tab/history`;
 
 const interceptList = [
     'profiles',
     'algorithms',
     'algorithmsruns',
-    'groups',
+    // 'groups',
     'orgunittypes',
 ];
 
@@ -56,6 +56,12 @@ const goToPage = () => {
             fixture: `${i}/list.json`,
         });
     });
+    cy.intercept('GET', `/api/groups/?&dataSource=33`, {
+        fixture: `groups/list.json`,
+    });
+    cy.intercept('GET', `/api/groups/?&dataSource=33`, {
+        fixture: `groups/list.json`,
+    });
     cy.intercept(
         'GET',
         ` /api/forms/?&orgUnitId=${orgUnit.id}&limit=10&order=name`,
@@ -74,6 +80,13 @@ const goToPage = () => {
     cy.intercept('GET', `/api/datasources/?linkedTo=${orgUnit.id}`, {
         fixture: `datasources/details-ou.json`,
     });
+    cy.intercept(
+        'GET',
+        `/api/orgunits/?linkedTo=${orgUnit.id}&linkValidated=all&linkSource=69&validation_status=all&withShapes=true`,
+        {
+            body: { orgUnits: [] },
+        },
+    ).as('linkedOrgUnits');
     cy.intercept(
         'GET',
         `/api/comments/?object_pk=${orgUnit.id}&content_type=iaso-orgunit&limit=4`,

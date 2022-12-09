@@ -10,13 +10,13 @@ import { testTablerender } from '../../support/testTableRender';
 
 const siteBaseUrl = Cypress.env('siteBaseUrl');
 
-const baseUrl = `${siteBaseUrl}/dashboard/orgunits/detail/orgUnitId/${orgUnit.id}/tab/forms/accountId/1`;
+const baseUrl = `${siteBaseUrl}/dashboard/orgunits/detail/orgUnitId/${orgUnit.id}/tab/forms`;
 
 const interceptList = [
     'profiles',
     'algorithms',
     'algorithmsruns',
-    'groups',
+    // 'groups',
     'orgunittypes',
 ];
 
@@ -67,6 +67,10 @@ const goToPage = () => {
         cy.intercept('GET', `/api/${i}/`, {
             fixture: `${i}/list.json`,
         });
+    });
+    // data source id comes from fixtures
+    cy.intercept('GET', `/api/groups/?&dataSource=33`, {
+        fixture: `groups/list.json`,
     });
     cy.intercept(
         'GET',
@@ -145,7 +149,7 @@ describe('forms tab', () => {
 
     testPermission(baseUrl);
 
-    describe.only('Table', () => {
+    describe('Table', () => {
         it('should render correct infos', () => {
             cy.wait('@getOuDetail').then(() => {
                 cy.get('[data-test="forms-tab"]').find('table').as('table');

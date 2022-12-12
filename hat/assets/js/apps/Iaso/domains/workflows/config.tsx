@@ -98,19 +98,21 @@ export const useGetFollowUpsColumns = (
             accessor: 'updated_at',
             Cell: DateCell,
         },
-        {
-            Header: formatMessage(MESSAGES.actions),
-            accessor: 'id',
-            Cell: settings => {
-                return (
-                    <IconButtonComponent
-                        url={`${baseUrls.workflowDetail}/entityTypeId/${entityTypeId}/versionId/${versionId}/followUp/${settings.value}`}
-                        icon="remove-red-eye"
-                        tooltipMessage={MESSAGES.see}
-                    />
-                );
-            },
-        },
+        // {
+        //     Header: formatMessage(MESSAGES.actions),
+        //     resizable: false,
+        //     sortable: false,
+        //     accessor: 'actions',
+        //     Cell: settings => {
+        //         return (
+        //             <IconButtonComponent
+        //                 url={`${baseUrls.workflowDetail}/entityTypeId/${entityTypeId}/versionId/${versionId}/followUp/${settings.row.original.id}`}
+        //                 icon="remove-red-eye"
+        //                 tooltipMessage={MESSAGES.see}
+        //             />
+        //         );
+        //     },
+        // },
     ];
     return columns;
 };
@@ -162,21 +164,21 @@ export const useGetChangesColumns = (
             id: 'updated_at',
             Cell: DateCell,
         },
-        {
-            Header: formatMessage(MESSAGES.actions),
-            resizable: false,
-            sortable: false,
-            accessor: 'actions',
-            Cell: settings => {
-                return (
-                    <IconButtonComponent
-                        url={`${baseUrls.workflowDetail}/entityTypeId/${entityTypeId}/versionId/${versionId}/change/${settings.row.original.form_id}`}
-                        icon="remove-red-eye"
-                        tooltipMessage={MESSAGES.see}
-                    />
-                );
-            },
-        },
+        // {
+        //     Header: formatMessage(MESSAGES.actions),
+        //     resizable: false,
+        //     sortable: false,
+        //     accessor: 'actions',
+        //     Cell: settings => {
+        //         return (
+        //             <IconButtonComponent
+        //                 url={`${baseUrls.workflowDetail}/entityTypeId/${entityTypeId}/versionId/${versionId}/change/${settings.row.original.form_id}`}
+        //                 icon="remove-red-eye"
+        //                 tooltipMessage={MESSAGES.see}
+        //             />
+        //         );
+        //     },
+        // },
     ];
     return columns;
 };

@@ -16,6 +16,8 @@ from iaso.models import *
 from plugins.polio.helpers import get_url_content
 from plugins.polio.models import Campaign
 from plugins.polio.models import Config
+from django.utils.decorators import method_decorator
+from django.views.decorators.cache import cache_page
 
 from logging import getLogger
 
@@ -298,12 +300,14 @@ class FormAStocksViewSetV2(viewsets.ViewSet):
     for display in PowerBI
     """
 
+    @method_decorator(cache_page(60 * 60 * 1))  # cache result for one hour
     @action(detail=False)
     def scopes(self, request):
         campaigns = Campaign.objects.filter(deleted_at=None).all()
         r = get_forma_scope_df(campaigns).to_json(orient="table")
         return HttpResponse(r, content_type="application/json")
 
+    @method_decorator(cache_page(60 * 60 * 1))  # cache result for one hour
     def list(self, request):
         df = fetch_and_match_forma_data()
         # Need to drop all the Django orm object, since Panda can't serialize them

@@ -4,6 +4,7 @@ import PropTypes from 'prop-types';
 import { FormattedMessage } from 'react-intl';
 
 import { Button } from '@material-ui/core';
+import Divider from '@material-ui/core/Divider';
 import Dialog from '@material-ui/core/Dialog';
 import DialogActions from '@material-ui/core/DialogActions';
 import DialogTitle from '@material-ui/core/DialogTitle';
@@ -21,6 +22,7 @@ const ConfirmDialog = ({
     btnVariant,
     btnDisabled,
     btnSize,
+    withDivider,
 }) => {
     const [open, setOpen] = React.useState(false);
 
@@ -57,6 +59,7 @@ const ConfirmDialog = ({
                 }}
             >
                 <DialogTitle>{question}</DialogTitle>
+                {withDivider && <Divider />}
                 {message !== '' && (
                     <DialogContent>
                         <DialogContentText id="alert-dialog-description">
@@ -87,6 +90,7 @@ ConfirmDialog.defaultProps = {
     btnVariant: 'outlined',
     message: '',
     btnSize: 'medium',
+    withDivider: false,
 };
 
 ConfirmDialog.propTypes = {
@@ -98,6 +102,7 @@ ConfirmDialog.propTypes = {
     btnDisabled: PropTypes.bool,
     btnVariant: PropTypes.string,
     btnSize: PropTypes.string,
+    withDivider: PropTypes.bool,
 };
 
 export default ConfirmDialog;

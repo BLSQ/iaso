@@ -48,7 +48,7 @@ import {
     getLinksSources,
     getOrgUnitsTree,
 } from './utils';
-import { useCurrentUser } from '../../utils/usersUtils';
+import { useCurrentUser } from '../../utils/usersUtils.ts';
 
 const baseUrl = baseUrls.orgUnitDetails;
 const useStyles = makeStyles(theme => ({
@@ -237,6 +237,8 @@ const OrgUnitDetail = ({ params, router }) => {
         isFetchingDatas,
         originalOrgUnit,
         isFetchingDetail,
+        isFetchingOrgUnitTypes,
+        isFetchingGroups,
     } = useOrgUnitDetailData(isNewOrgunit, params.orgUnitId, setCurrentOrgUnit);
 
     const goToRevision = useCallback(
@@ -419,6 +421,8 @@ const OrgUnitDetail = ({ params, router }) => {
                                 saveOrgUnit={handleSaveOrgUnit}
                                 params={params}
                                 baseUrl={baseUrl}
+                                isFetchingOrgUnitTypes={isFetchingOrgUnitTypes}
+                                isFetchingGroups={isFetchingGroups}
                             />
                         </Box>
                     )}

@@ -24,9 +24,12 @@ const getUrl = groupId => {
 };
 const TableColumns = (formatMessage, params, deleteGroup, saveGroup) => [
     {
+        Header: 'Id',
+        accessor: 'id',
+    },
+    {
         Header: formatMessage(MESSAGES.name),
         accessor: 'name',
-        align: 'left',
     },
     {
         Header: formatMessage(MESSAGES.updatedAt),

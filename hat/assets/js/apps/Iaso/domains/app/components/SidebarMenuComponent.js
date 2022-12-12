@@ -155,7 +155,7 @@ const SidebarMenu = ({
                     </Typography>
                 )}
 
-                {currentUser.account && (
+                {currentUser.account && isMobileLayout && (
                     <Typography
                         variant="body2"
                         color="textSecondary"

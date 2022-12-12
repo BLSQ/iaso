@@ -476,7 +476,7 @@ export const completenessStatsPath = {
         ...paginationPathParams,
         {
             isRequired: false,
-            key: 'parentId',
+            key: 'orgUnitId',
         },
         {
             isRequired: false,
@@ -484,7 +484,7 @@ export const completenessStatsPath = {
         },
         {
             isRequired: false,
-            key: 'orgUnitTypeId',
+            key: 'orgUnitTypeIds',
         },
     ],
 };
@@ -505,6 +505,10 @@ export const usersPath = {
         {
             isRequired: false,
             key: 'location',
+        },
+        {
+            isRequired: false,
+            key: 'orgUnitTypes',
         },
         ...paginationPathParams.map(p => ({
             ...p,

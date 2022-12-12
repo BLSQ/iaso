@@ -35,21 +35,28 @@ class CompletenessStatsViewSet(viewsets.ViewSet):
 
     def list(self, request):
         order = request.GET.get("order", "name").split(",")
-        org_unit_type_str = request.query_params.get("org_unit_type_id", None)
-        requested_forms = request.query_params.get("form_id", None)
-        if org_unit_type_str is not None:
-            org_unit_types = OrgUnitType.objects.filter(id__in=org_unit_type_str.split(","))
+        requested_org_unit_type_str = request.query_params.get("org_unit_type_id", None)
+
+        requested_forms_str = request.query_params.get("form_id", None)
+        requested_form_ids = requested_forms_str.split(",") if requested_forms_str is not None else []
+
+        if requested_org_unit_type_str is not None:
+            org_unit_types = OrgUnitType.objects.filter(id__in=requested_org_unit_type_str.split(","))
         else:
             org_unit_types = None
 
-        parent_org_unit_id_str = request.GET.get("parent_id", None)
-
-        if parent_org_unit_id_str is not None:
-            parent_org_unit = OrgUnit.objects.get(id=parent_org_unit_id_str)
+        requested_org_unit_id_str = request.GET.get("org_unit_id", None)
+        if requested_org_unit_id_str is not None:
+            requested_org_unit = OrgUnit.objects.get(id=requested_org_unit_id_str)
         else:
-            parent_org_unit = None
+            requested_org_unit = None
 
-        requested_form_ids = requested_forms.split(",") if requested_forms is not None else []
+        requested_parent_org_unit_id_str = request.GET.get("parent_org_unit_id", None)
+        if requested_parent_org_unit_id_str is not None:
+            requested_parent_org_unit = OrgUnit.objects.get(id=requested_parent_org_unit_id_str)
+        else:
+            requested_parent_org_unit = None
+
         profile = request.user.iaso_profile
 
         # Forms to take into account: we take everything for the user's account, then filter by the form_ids if provided
@@ -63,8 +70,14 @@ class CompletenessStatsViewSet(viewsets.ViewSet):
         org_units = OrgUnit.objects.filter(version=version).filter(
             validation_status="VALID"
         )  # don't forget to think about org unit status
-        if parent_org_unit:
-            org_units = org_units.hierarchy(parent_org_unit)
+
+        # Filtering per org unit: we drop the rows that don't match the requested org_unit
+        if requested_org_unit:
+            org_units = org_units.hierarchy(requested_org_unit)
+
+        # Filtering per parent org unit: we drop the rows that are not direct children of the requested parent org unit
+        if requested_parent_org_unit:
+            org_units = org_units.filter(parent=requested_parent_org_unit)
 
         top_ous = org_units
 

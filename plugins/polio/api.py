@@ -7,7 +7,9 @@ from typing import Any, Optional
 from collections import defaultdict
 from functools import lru_cache
 from logging import getLogger
-
+from openpyxl.writer.excel import save_virtual_workbook  # type: ignore
+from django.views.decorators.cache import cache_page
+from django.utils.decorators import method_decorator
 from django.core.cache import cache
 from django.core.mail import send_mail
 from django.db.models import Q, Max, Min
@@ -1163,6 +1165,7 @@ class VaccineStocksViewSet(viewsets.ViewSet):
     sample config: [{"url": "https://afro.who.int/api/v1/data/yyy", "login": "d", "country": "hyrule", "password": "zeldarules", "country_id": 2115781}]
     """
 
+    @method_decorator(cache_page(60 * 60 * 1))  # cache result for one hour
     def list(self, request):
         return handle_ona_request_with_key(request, "vaccines")
 

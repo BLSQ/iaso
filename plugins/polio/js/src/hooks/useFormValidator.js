@@ -105,11 +105,24 @@ yup.addMethod(
             if (
                 !value &&
                 value !== 0 &&
-                (forma_unusable_vials ||
-                    forma_usable_vials ||
-                    forma_missing_vials ||
-                    forma_reception ||
-                    forma_date)
+                !forma_unusable_vials &&
+                !forma_usable_vials &&
+                !forma_missing_vials &&
+                !forma_reception &&
+                !forma_date
+            ) {
+                return true;
+            }
+            if (
+                !value &&
+                value !== 0 &&
+                !(
+                    forma_unusable_vials &&
+                    forma_usable_vials &&
+                    forma_missing_vials &&
+                    forma_reception &&
+                    forma_date
+                )
             ) {
                 return createError({
                     path,
@@ -135,11 +148,23 @@ yup.addMethod(
             } = parent;
             if (
                 !value &&
-                (forma_unusable_vials ||
-                    forma_usable_vials ||
-                    forma_missing_vials ||
-                    forma_reception ||
-                    forma_date)
+                !forma_unusable_vials &&
+                !forma_usable_vials &&
+                !forma_missing_vials &&
+                !forma_reception &&
+                !forma_date
+            ) {
+                return true;
+            }
+            if (
+                !value &&
+                !(
+                    forma_unusable_vials &&
+                    forma_usable_vials &&
+                    forma_missing_vials &&
+                    forma_reception &&
+                    forma_date
+                )
             ) {
                 return createError({
                     path,
@@ -166,12 +191,14 @@ yup.addMethod(
             } = parent;
             if (
                 !value &&
-                (vaccine_name ||
-                    po_numbers ||
-                    vials_received ||
-                    reception_pre_alert ||
-                    estimated_arrival_date ||
-                    date_reception)
+                !(
+                    vaccine_name &&
+                    po_numbers &&
+                    vials_received &&
+                    reception_pre_alert &&
+                    estimated_arrival_date &&
+                    date_reception
+                )
             ) {
                 return createError({
                     path,
@@ -199,12 +226,14 @@ yup.addMethod(
             if (
                 !value &&
                 value !== 0 &&
-                (vaccine_name ||
-                    po_numbers ||
-                    vials_received ||
-                    reception_pre_alert ||
-                    estimated_arrival_date ||
-                    date_reception)
+                !(
+                    vaccine_name &&
+                    po_numbers &&
+                    vials_received &&
+                    reception_pre_alert &&
+                    estimated_arrival_date &&
+                    date_reception
+                )
             ) {
                 return createError({
                     path,
@@ -226,7 +255,7 @@ yup.addMethod(
                 parent;
             if (
                 !value &&
-                (date_report || vials_destroyed || date_report_received)
+                !(date_report && vials_destroyed && date_report_received)
             ) {
                 return createError({
                     path,
@@ -251,7 +280,7 @@ yup.addMethod(
                 if (
                     !value &&
                     value !== 0 &&
-                    (date_report || vials_destroyed || date_report_received)
+                    !(date_report && vials_destroyed && date_report_received)
                 ) {
                     return createError({
                         path,
@@ -282,12 +311,14 @@ yup.addMethod(
             } = parent;
             if (
                 !value &&
-                (vaccine_name ||
-                    po_numbers ||
-                    vials_received ||
-                    reception_pre_alert ||
-                    estimated_arrival_date ||
-                    date_reception)
+                !(
+                    vaccine_name &&
+                    po_numbers &&
+                    vials_received &&
+                    reception_pre_alert &&
+                    estimated_arrival_date &&
+                    date_reception
+                )
             ) {
                 return createError({
                     path,
@@ -365,7 +396,10 @@ const useDestructionShape = () => {
 const useVaccineShape = () => {
     const { formatMessage } = useSafeIntl();
     return yup.object().shape({
-        name: yup.string().trim().required(), // TODO restrict string value to vaccines
+        name: yup
+            .string()
+            .trim()
+            .required(formatMessage(MESSAGES.fieldRequired)), // TODO restrict string value to vaccines
         wastage_ratio_forecast: yup
             .number()
             .nullable()

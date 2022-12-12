@@ -9,6 +9,7 @@ import {
     commonStyles,
     useSafeIntl,
     QueryBuilderInput,
+    useSkipEffectOnMount,
 } from 'bluesquare-components';
 import InputComponent from '../../../components/forms/InputComponent';
 
@@ -71,9 +72,14 @@ const InstancesFiltersComponent = ({
     const [formState, setFormState] = useFormState(
         filterDefault(defaultFilters),
     );
-
     const [initialOrgUnitId, setInitialOrgUnitId] = useState(params?.levels);
     const { data: initialOrgUnit } = useGetOrgUnit(initialOrgUnitId);
+    useSkipEffectOnMount(() => {
+        Object.entries(params).forEach(([key, value]) => {
+            setFormState(key, value);
+        });
+        setInitialOrgUnitId(params?.levels);
+    }, [defaultFilters]);
 
     const orgUnitTypes = useSelector(state => state.orgUnits.orgUnitTypes);
     const isInstancesFilterUpdated = useSelector(
@@ -200,7 +206,7 @@ const InstancesFiltersComponent = ({
                     <InputComponent
                         keyValue="search"
                         onChange={handleFormChange}
-                        value={formState.search.value || null}
+                        value={formState.search.value || ''}
                         type="search"
                         label={MESSAGES.textSearch}
                         onEnterPressed={() => handleSearch()}

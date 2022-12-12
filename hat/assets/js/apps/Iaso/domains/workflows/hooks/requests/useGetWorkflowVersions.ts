@@ -4,14 +4,14 @@ import { getRequest } from '../../../../libs/Api';
 import { useSnackQuery } from '../../../../libs/apiHooks';
 import { makeUrlWithParams } from '../../../../libs/utils';
 import {
-    WorkflowsPaginated,
+    WorkflowVersionsPaginated,
     WorkflowsParams,
-    WorkflowDetail,
+    WorkflowVersionDetail,
 } from '../../types/workflows';
 
-const getWorkflows = async (
+const getWorkflowVersions = async (
     options: WorkflowsParams,
-): Promise<WorkflowsPaginated> => {
+): Promise<WorkflowVersionsPaginated> => {
     const { pageSize, entityTypeId, ...params } = options as Record<
         string,
         any
@@ -22,41 +22,43 @@ const getWorkflows = async (
     params.workflow__entity_type = entityTypeId;
     // TODO: plug me to the api
 
-    const url = makeUrlWithParams(`/api/workflowversion/`, params);
+    const url = makeUrlWithParams(`/api/workflowversions/`, params);
 
-    return getRequest(url) as Promise<WorkflowsPaginated>;
+    return getRequest(url) as Promise<WorkflowVersionsPaginated>;
 };
 
-export const useGetWorkflows = (
+export const useGetWorkflowVersions = (
     options: WorkflowsParams,
-): UseQueryResult<WorkflowsPaginated, Error> => {
+): UseQueryResult<WorkflowVersionsPaginated, Error> => {
     const queryKey: any[] = ['workflows', options];
     const { select } = options as Record<string, any>;
     // @ts-ignore
     return useSnackQuery({
         queryKey,
-        queryFn: () => getWorkflows(options),
+        queryFn: () => getWorkflowVersions(options),
         options: {
             select,
         },
     });
 };
 
-const getWorkflow = async (versionId: string): Promise<WorkflowDetail> => {
+const getWorkflowVersion = async (
+    versionId: string,
+): Promise<WorkflowVersionDetail> => {
     // TODO: plug me to the api
     return getRequest(
-        `/api/workflowversion/?version_id=${versionId}`,
-    ) as Promise<WorkflowDetail>;
+        `/api/workflowversions/${versionId}/`,
+    ) as Promise<WorkflowVersionDetail>;
 };
 
-export const useGetWorkflow = (
+export const useGetWorkflowVersion = (
     versionId: string,
-): UseQueryResult<WorkflowDetail, Error> => {
+): UseQueryResult<WorkflowVersionDetail, Error> => {
     const queryKey: any[] = ['workflow', versionId];
     // @ts-ignore
     return useSnackQuery({
         queryKey,
-        queryFn: () => getWorkflow(versionId),
+        queryFn: () => getWorkflowVersion(versionId),
         options: { enabled: Boolean(versionId) },
     });
 };

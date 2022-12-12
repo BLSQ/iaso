@@ -10,7 +10,7 @@ import string
 from datetime import datetime
 from tempfile import NamedTemporaryFile
 import openpyxl
-from iaso.api.common import DeletionFilterBackend, TimestampField
+from iaso.api.common import DeletionFilterBackend, TimestampField, CONTENT_TYPE_XLSX
 from iaso.models import Group
 from iaso.models.xls_form_template import XlsFormTemplate
 from plugins.polio.models import Campaign
@@ -236,7 +236,7 @@ class XlsFormGeneratorViewSet(ModelViewSet):
             stream = tmp.read()
 
             response = HttpResponse(
-                stream, content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+                stream, content_type=CONTENT_TYPE_XLSX
             )
             response["Content-Disposition"] = "attachment; filename=%s" % filename
             return response

@@ -91,6 +91,9 @@ def get_column_position(column_name, sheet):
 
 
 def create_ou_tree_list(group_ou):
+    """
+    This function create a list of dictionaries that contains orgunits from top of hierarchy to bottom.
+    """
     # create list of dictionary with OU tree
     ou_tree_list = []
     for ou in group_ou:

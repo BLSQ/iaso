@@ -33,7 +33,7 @@ export const DestructionForm: FunctionComponent<Props> = ({
     useEffect(() => {
         // Using every to be able to break the loop
         destructionFieldNames.every(key => {
-            if (fieldValues[key]) {
+            if (fieldValues?.[key]) {
                 destructionFieldNames.forEach(name => {
                     setFieldTouched(
                         `${accessor}.destructions[${index}].${name}`,

@@ -35,7 +35,7 @@ export const TextInput = ({
             onFocus={
                 touchOnFocus
                     ? () => form.setFieldTouched(field.name, true)
-                    : undefined
+                    : () => null
             }
             onBlur={touchOnFocus ? field.onBlur : undefined}
             onChange={touchOnFocus ? field.onChange : handleChangeAndFocus}

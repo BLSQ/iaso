@@ -20,7 +20,6 @@ type Props = {
     debounceTime?: number;
     withMarginTop?: boolean;
     clearable?: boolean;
-    // touchOnFocus?: boolean;
 };
 
 export const DebouncedTextInput: FunctionComponent<Props> = ({
@@ -31,7 +30,6 @@ export const DebouncedTextInput: FunctionComponent<Props> = ({
     debounceTime = 0,
     withMarginTop = false,
     clearable = false,
-    // touchOnFocus = true,
 }) => {
     const { name } = field;
     const {

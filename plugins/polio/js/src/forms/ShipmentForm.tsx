@@ -43,7 +43,7 @@ export const ShipmentForm: FunctionComponent<Props> = ({
     useEffect(() => {
         // Using every to be able to break the loop
         shipmentFieldNames.every(key => {
-            if (fieldValues[key]) {
+            if (fieldValues?.[key]) {
                 shipmentFieldNames.forEach(name => {
                     setFieldTouched(
                         `${accessor}.shipments[${index}].${name}`,

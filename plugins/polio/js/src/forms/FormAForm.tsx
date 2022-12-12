@@ -101,6 +101,14 @@ export const FormAForm: FunctionComponent<Props> = ({
                 </Grid>
                 <Grid item lg={3} md={6}>
                     <Field
+                        label={formatMessage(MESSAGES.formADate)}
+                        name={`${accessor}.forma_date`}
+                        component={DateInput}
+                        className={classes.input}
+                    />
+                </Grid>
+                <Grid item lg={3} md={6}>
+                    <Field
                         label={formatMessage(MESSAGES.formAUnusableVials)}
                         name={`${accessor}.forma_unusable_vials`}
                         component={DebouncedTextInput}
@@ -123,23 +131,6 @@ export const FormAForm: FunctionComponent<Props> = ({
                         name={`${accessor}.forma_usable_vials`}
                         component={DebouncedTextInput}
                         debounceTime={300}
-                        className={classes.input}
-                    />
-                </Grid>
-            </Grid>
-            <Grid
-                container
-                direction="row"
-                item
-                xs={12}
-                spacing={2}
-                justifyContent="flex-start"
-            >
-                <Grid item lg={3} md={6}>
-                    <Field
-                        label={formatMessage(MESSAGES.formADate)}
-                        name={`${accessor}.forma_date`}
-                        component={DateInput}
                         className={classes.input}
                     />
                 </Grid>

@@ -19,6 +19,7 @@ import { ReportingDelays } from './ReportingDelays';
 import { RoundVaccinesForm } from './RoundVaccinesForm';
 import { DestructionsForm } from './DestructionsForm';
 import { FormAForm } from './FormAForm';
+import { Campaign } from '../constants/types';
 
 type Props = any;
 
@@ -39,7 +40,7 @@ export const VaccineManagementForm: FunctionComponent<Props> = () => {
     const { formatMessage } = useSafeIntl();
     const {
         values: { rounds = [] },
-    } = useFormikContext<any>(); // TODO add campaign typing
+    } = useFormikContext<Campaign>();
 
     const [currentIndex, setCurrentIndex] = useState<number>(0);
 
@@ -55,7 +56,6 @@ export const VaccineManagementForm: FunctionComponent<Props> = () => {
                     <Grid item>
                         <Box mb={2}>
                             <Tabs
-                                // value={currentRoundNumber}
                                 value={currentIndex}
                                 className={classes.subTabs}
                                 textColor="primary"
@@ -63,8 +63,7 @@ export const VaccineManagementForm: FunctionComponent<Props> = () => {
                             >
                                 {rounds.map((round, index) => (
                                     <Tab
-                                        // eslint-disable-next-line react/no-array-index-key
-                                        key={`${round.number}-${index}`}
+                                        key={`${round.number}-${round.id}`}
                                         className={classes.subTab}
                                         label={
                                             <span>
@@ -80,16 +79,7 @@ export const VaccineManagementForm: FunctionComponent<Props> = () => {
                     </Grid>
                 </Grid>
             )}
-            <Grid
-                key={currentIndex}
-                container
-                spacing={2}
-                // className={classnames(
-                //     round.number !== currentRoundNumber &&
-                //         customClasses.hiddenOpacity,
-                // )}
-            >
-                <Divider style={{ width: '100%' }} />
+            <Grid key={currentIndex} container spacing={2}>
                 {/* First row: vaccine */}
                 <Grid item xs={12}>
                     <Box mt={1} mb={1}>

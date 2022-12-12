@@ -115,17 +115,11 @@ def make_deep_copy_with_relations(orig_version):
     return new_version
 
 
-entity_type_id_param = openapi.Parameter(
-    "entity_type_id", openapi.IN_QUERY, description="Entity Type ID", type=openapi.TYPE_STRING, required=True
-)
-
-
-class WorfklowPostSerializer(serializers.Serializer):
+class WorkflowPostSerializer(serializers.Serializer):
     entity_type_id = serializers.IntegerField(required=True)
     user_id = serializers.IntegerField(required=True)
 
     def validate(self, data):
-        print("self", self)
         et = EntityType.objects.get(pk=data["entity_type_id"])
         usr = User.objects.get(pk=data["user_id"])
         if not et.account == usr.iaso_profile.account:
@@ -175,13 +169,13 @@ class WorkflowVersionViewSet(ModelViewSet):
         serialized_data = WorkflowVersionSerializer(new_vw).data
         return Response(serialized_data)
 
-    @swagger_auto_schema(request_body=WorfklowPostSerializer)
+    @swagger_auto_schema(request_body=WorkflowPostSerializer)
     def create(self, request, *args, **kwargs):
         """POST /api/workflowversion/
         Create a new empty and DRAFT workflow version for the workflow connected to Entity Type 'entity_type_id'
         """
         user_info = {"user_id": request.user.pk}
-        serializer = WorfklowPostSerializer(data={**request.data, **user_info})
+        serializer = WorkflowPostSerializer(data={**request.data, **user_info})
         serializer.is_valid(raise_exception=True)
         res = serializer.save()
         serialized_data = WorkflowVersionSerializer(res).data

@@ -40,6 +40,7 @@ const Filters = ({
     toggleActiveSearch,
     extraComponent,
     paramsPrefix,
+    filtersColumnsCount,
 }) => {
     const [filtersUpdated, setFiltersUpdated] = React.useState(
         !defaultFiltersUpdated,
@@ -63,12 +64,10 @@ const Filters = ({
         onSearch(tempParams);
     };
 
-    const runsBaseUrl = 'orgunits/sources/links/runs';
-    const isRunsBaseUrl = baseUrl === runsBaseUrl;
     return (
         <>
             <Grid container spacing={2}>
-                {Array(isRunsBaseUrl ? 3 : 4)
+                {Array(filtersColumnsCount)
                     .fill()
                     .map((x, i) => i + 1)
                     .map(column => (
@@ -76,7 +75,7 @@ const Filters = ({
                             container
                             item
                             xs={12}
-                            md={3}
+                            md={12 / filtersColumnsCount}
                             className={classes.column}
                             key={`column-${column}`}
                         >
@@ -97,9 +96,9 @@ const Filters = ({
                     container
                     justifyContent="flex-end"
                     xs={12}
-                    md={isRunsBaseUrl ? 3 : 12}
+                    md={filtersColumnsCount === 3 ? 3 : 12}
                 >
-                    <Box mb={2} mt={isRunsBaseUrl ? 2 : 0} p={0}>
+                    <Box mb={2} mt={filtersColumnsCount === 3 ? 2 : 0} p={0}>
                         {extraComponent}
                         <Button
                             data-test="search-button"
@@ -126,6 +125,7 @@ Filters.defaultProps = {
     toggleActiveSearch: false,
     extraComponent: <></>,
     paramsPrefix: null,
+    filtersColumnsCount: 3,
 };
 
 Filters.propTypes = {
@@ -138,6 +138,7 @@ Filters.propTypes = {
     toggleActiveSearch: PropTypes.bool,
     extraComponent: PropTypes.node,
     paramsPrefix: PropTypes.string,
+    filtersColumnsCount: PropTypes.number,
 };
 
 export default Filters;

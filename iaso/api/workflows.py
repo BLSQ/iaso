@@ -12,7 +12,6 @@ from django_filters.rest_framework import DjangoFilterBackend  # type: ignore
 
 from iaso.api.common import ModelViewSet, HasPermission
 
-from drf_yasg import openapi
 from drf_yasg.utils import swagger_auto_schema, no_body
 
 
@@ -117,17 +116,14 @@ def make_deep_copy_with_relations(orig_version):
 
 class WorkflowPostSerializer(serializers.Serializer):
     entity_type_id = serializers.IntegerField(required=True)
-    user_id = serializers.IntegerField(required=True)
 
-    def validate(self, data):
-        et = EntityType.objects.get(pk=data["entity_type_id"])
-        usr = User.objects.get(pk=data["user_id"])
-        if not et.account == usr.iaso_profile.account:
-            raise serializers.ValidationError(
-                "User doesn't have access to Entity Type : " + str(data["entity_type_id"])
-            )
+    def validate_entity_type_id(self, entity_type_id):
+        et = EntityType.objects.get(pk=entity_type_id)
 
-        return data
+        if not et.account == self.context["request"].user.iaso_profile.account:
+            raise serializers.ValidationError("User doesn't have access to Entity Type : " + str(entity_type_id))
+
+        return entity_type_id
 
     def create(self, validated_data):
         wf, wf_created = Workflow.objects.get_or_create(entity_type_id=validated_data["entity_type_id"])
@@ -171,8 +167,7 @@ class WorkflowVersionViewSet(ModelViewSet):
         """POST /api/workflowversions/
         Create a new empty and DRAFT workflow version for the workflow connected to Entity Type 'entity_type_id'
         """
-        user_info = {"user_id": request.user.pk}
-        serializer = WorkflowPostSerializer(data={**request.data, **user_info})
+        serializer = WorkflowPostSerializer(data=request.data, context={"request": request})
         serializer.is_valid(raise_exception=True)
         res = serializer.save()
         serialized_data = WorkflowVersionSerializer(res).data
@@ -180,4 +175,4 @@ class WorkflowVersionViewSet(ModelViewSet):
 
     def get_queryset(self):
         """Always filter the base queryset by account"""
-        return WorkflowVersion.objects.filter_for_user(self.request.user)
+        return WorkflowVersion.objects.filter_for_user(self.request.user).order_by("pk")

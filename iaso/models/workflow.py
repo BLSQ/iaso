@@ -48,7 +48,7 @@ class WorkflowVersionsStatus(models.TextChoices):
 
 class WorkflowVersionQuerySet(models.QuerySet):
     def filter_for_user(self, user: typing.Union[User, AnonymousUser, None]):
-        if user and user.is_anonymous:
+        if not user or user.is_anonymous:
             return self.none()
 
         queryset = self.all()

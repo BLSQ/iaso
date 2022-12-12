@@ -199,9 +199,6 @@ class WorkflowsAPITestCase(APITestCase):
     def test_new_version_empty(self):
         self.client.force_authenticate(self.blue_adult_1)
 
-        print("self.et_adults_blue.pk", self.et_adults_blue.pk)
-        print("type self.et_adults_blue.pk", type(self.et_adults_blue.pk))
-
         response = self.client.post(
             f"/api/workflowversions/", format="json", data={"entity_type_id": self.et_adults_blue.pk}
         )

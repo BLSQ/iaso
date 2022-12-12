@@ -75,13 +75,8 @@ const InstancesFiltersComponent = ({
     const [initialOrgUnitId, setInitialOrgUnitId] = useState(params?.levels);
     const { data: initialOrgUnit } = useGetOrgUnit(initialOrgUnitId);
     useSkipEffectOnMount(() => {
-        Object.entries(formState).forEach(([key, field]) => {
-            if (
-                (field.value && `${field.value}` !== params[key]) ||
-                (!field.value && params[key])
-            ) {
-                setFormState(key, params[key] || null);
-            }
+        Object.entries(params).forEach(([key, value]) => {
+            setFormState(key, value);
         });
         setInitialOrgUnitId(params?.levels);
     }, [defaultFilters]);

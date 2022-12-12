@@ -2,14 +2,12 @@
 import { UseQueryResult } from 'react-query';
 import { getRequest } from '../../../../libs/Api';
 import { useSnackQuery } from '../../../../libs/apiHooks';
-// import { makeUrlWithParams } from '../../../../libs/utils';
+import { makeUrlWithParams } from '../../../../libs/utils';
 import {
     WorkflowsPaginated,
     WorkflowsParams,
     WorkflowDetail,
 } from '../../types/workflows';
-
-import { list, details } from './fixture';
 
 const getWorkflows = async (
     options: WorkflowsParams,
@@ -21,12 +19,12 @@ const getWorkflows = async (
     if (pageSize) {
         params.limit = pageSize;
     }
+    params.workflow__entity_type = entityTypeId;
     // TODO: plug me to the api
 
-    // const url = makeUrlWithParams(`/api/workflow/${entityTypeId}/`, params);
+    const url = makeUrlWithParams(`/api/workflowversion/`, params);
 
-    return list as WorkflowsPaginated;
-    // return getRequest(url) as Promise<WorkflowsPaginated>;
+    return getRequest(url) as Promise<WorkflowsPaginated>;
 };
 
 export const useGetWorkflows = (
@@ -44,26 +42,21 @@ export const useGetWorkflows = (
     });
 };
 
-const getWorkflow = async (
-    versionId: string,
-    entityTypeId: string,
-): Promise<WorkflowDetail> => {
+const getWorkflow = async (versionId: string): Promise<WorkflowDetail> => {
     // TODO: plug me to the api
-    return details as WorkflowDetail;
-    // return getRequest(
-    //     `/api/workflow/${entityTypeId}/?version_id=${versionId}`,
-    // ) as Promise<WorkflowDetail>;
+    return getRequest(
+        `/api/workflowversion/?version_id=${versionId}`,
+    ) as Promise<WorkflowDetail>;
 };
 
 export const useGetWorkflow = (
     versionId: string,
-    entityTypeId: string,
 ): UseQueryResult<WorkflowDetail, Error> => {
     const queryKey: any[] = ['workflow', versionId];
     // @ts-ignore
     return useSnackQuery({
         queryKey,
-        queryFn: () => getWorkflow(versionId, entityTypeId),
-        options: { enabled: Boolean(versionId) && Boolean(entityTypeId) },
+        queryFn: () => getWorkflow(versionId),
+        options: { enabled: Boolean(versionId) },
     });
 };

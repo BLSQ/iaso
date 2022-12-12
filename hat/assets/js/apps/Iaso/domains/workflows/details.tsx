@@ -62,7 +62,7 @@ export const Details: FunctionComponent<Props> = ({ router }) => {
     }: {
         data?: WorkflowDetail;
         isLoading: boolean;
-    } = useGetWorkflow(versionId, entityTypeId);
+    } = useGetWorkflow(versionId);
 
     const changesColumns = useGetChangesColumns(entityTypeId, versionId);
     const followUpsColumns = useGetFollowUpsColumns(entityTypeId, versionId);

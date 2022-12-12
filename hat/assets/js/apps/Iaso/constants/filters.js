@@ -638,7 +638,6 @@ export const linksFilters = props => {
         fetchingAlgorithms,
         fetchingSources,
     } = props;
-    console.log('OUTYPES', orgUnitTypes);
     const filters = [
         {
             ...search(),

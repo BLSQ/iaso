@@ -68,15 +68,13 @@ class MobileWorkflowViewSet(GenericViewSet):
             return Response(status=404, data="User not found in Projects for this app id or project not found")
 
         # project -> account -> users
-        queryset = self.get_queryset(**dict(kwargs, user=request.user))
+        queryset = self.get_queryset(**kwargs)
         serializer = self.get_serializer(queryset, many=True)
         return Response({"workflows": serializer.data})
 
     def get_queryset(self, **kwargs):
-        user = kwargs["user"]
-
         return (
-            WorkflowVersion.objects.filter(workflow__entity_type__account=user.iaso_profile.account)
+            WorkflowVersion.objects.filter_for_user(self.request.user)
             .order_by("workflow__pk", "-created_at")
             .distinct("workflow__pk")
         )

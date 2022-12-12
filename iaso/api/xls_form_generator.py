@@ -1,3 +1,4 @@
+import os
 import uuid
 
 from django.http import HttpResponse
@@ -13,7 +14,11 @@ import openpyxl
 from iaso.api.common import DeletionFilterBackend, TimestampField, CONTENT_TYPE_XLSX
 from iaso.models import Group
 from iaso.models.xls_form_template import XlsFormTemplate
-from plugins.polio.models import Campaign
+
+
+polio_plugin = os.environ.get("polio")
+if polio_plugin:
+    from plugins.polio.models import Campaign
 
 
 class XlsFormTemplateSerializer(serializers.ModelSerializer):
@@ -228,7 +233,7 @@ class XlsFormGeneratorViewSet(ModelViewSet):
         calculation_index = get_column_position("calculation", q_sheet)
 
         # Insert data as calculation from campaigns
-        if campaign_id and request.user.has_perm("iaso_polio"):
+        if campaign_id and request.user.has_perm("iaso_polio") and polio_plugin:
             get_data_from_campaigns(campaign_id, row, q_sheet, calculation_index)
 
         filename = f"FORM_{form_name}_{datetime.now().date()}.xlsx"
@@ -238,8 +243,6 @@ class XlsFormGeneratorViewSet(ModelViewSet):
             tmp.seek(0)
             stream = tmp.read()
 
-            response = HttpResponse(
-                stream, content_type=CONTENT_TYPE_XLSX
-            )
+            response = HttpResponse(stream, content_type=CONTENT_TYPE_XLSX)
             response["Content-Disposition"] = "attachment; filename=%s" % filename
             return response

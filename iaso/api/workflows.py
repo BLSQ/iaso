@@ -136,8 +136,8 @@ class WorkflowPostSerializer(serializers.Serializer):
 
 class WorkflowVersionViewSet(ModelViewSet):
     """Workflow API
-    GET /api/workflowversion/
-    GET /api/workflowversion/{version_id}/
+    GET /api/workflowversions/
+    GET /api/workflowversions/{version_id}/
     If version_id is provided returns the detail of this workflow version.
     Else returns a paginated list of all the workflow versions.
     """
@@ -159,7 +159,7 @@ class WorkflowVersionViewSet(ModelViewSet):
     @swagger_auto_schema(request_body=no_body)
     @action(detail=True, methods=["post"])
     def copy(self, request, **kwargs):
-        """POST /api/workflowversion/{version_id}/copy
+        """POST /api/workflowversions/{version_id}/copy
         Creates a new workflow version by copying the exiting version given by {version_id}
         """
 
@@ -171,7 +171,7 @@ class WorkflowVersionViewSet(ModelViewSet):
 
     @swagger_auto_schema(request_body=WorkflowPostSerializer)
     def create(self, request, *args, **kwargs):
-        """POST /api/workflowversion/
+        """POST /api/workflowversions/
         Create a new empty and DRAFT workflow version for the workflow connected to Entity Type 'entity_type_id'
         """
         user_info = {"user_id": request.user.pk}

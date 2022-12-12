@@ -25,6 +25,14 @@ const MESSAGES = defineMessages({
         id: 'iaso.completeness.formsFilled',
         defaultMessage: '# Forms filled',
     },
+    chooseParent: {
+        id: 'iaso.completeness.chooseParent',
+        defaultMessage: 'Select a form or a parent org unit to enable',
+    },
+    tooMuchDepth: {
+        id: 'iaso.completeness.tooMuchDepth',
+        defaultMessage: 'Too much depth between parent and type',
+    },
 });
 
 export default MESSAGES;

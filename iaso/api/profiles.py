@@ -62,6 +62,7 @@ class ProfilesViewSet(viewsets.ViewSet):
         search = request.GET.get("search", None)
         perms = request.GET.get("permissions", None)
         location = request.GET.get("location", None)
+        org_unit_type = request.GET.get("orgUnitTypes", None)
 
         queryset = self.get_queryset()
         if search:
@@ -75,7 +76,12 @@ class ProfilesViewSet(viewsets.ViewSet):
             queryset = queryset.filter(user__user_permissions__codename__icontains=perms).distinct()
 
         if location:
-            queryset = queryset.filter(user__iaso_profile__org_units__pk=location).distinct()
+            queryset = queryset.filter(
+                user__iaso_profile__org_units__pk=location,
+            ).distinct()
+
+        if org_unit_type:
+            queryset = queryset.filter(user__iaso_profile__org_units__org_unit_type__pk=org_unit_type).distinct()
 
         if limit:
             queryset = queryset.order_by(*orders)
@@ -199,8 +205,8 @@ class ProfilesViewSet(viewsets.ViewSet):
             return JsonResponse({"errorKey": "user_name", "errorMessage": _("Nom d'utilisateur requis")}, status=400)
         if not password and not send_email_invitation:
             return JsonResponse({"errorKey": "password", "errorMessage": _("Mot de passe requis")}, status=400)
-        existing_profile = User.objects.filter(username=username).first()
-        if existing_profile:
+        existing_user = User.objects.filter(username__iexact=username)
+        if existing_user:
             return JsonResponse({"errorKey": "user_name", "errorMessage": _("Nom d'utilisateur existant")}, status=400)
 
         user = User()

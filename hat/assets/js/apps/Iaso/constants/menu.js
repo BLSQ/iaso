@@ -41,7 +41,7 @@ const menuItems = defaultSourceId => [
         icon: props => <DataSourceIcon {...props} />,
         subMenu: [
             {
-                label: MESSAGES.list,
+                label: MESSAGES.formList,
                 permissions: paths.formsPath.permissions,
                 key: 'list',
                 icon: props => <FormatListBulleted {...props} />,
@@ -72,7 +72,7 @@ const menuItems = defaultSourceId => [
                 icon: props => <DoneAll {...props} />,
             },
             {
-                label: MESSAGES.completeness,
+                label: MESSAGES.completenessStats,
                 permissions: paths.completenessStatsPath.permissions,
                 key: 'completenessStats',
                 icon: props => <DoneAll {...props} />,
@@ -85,7 +85,7 @@ const menuItems = defaultSourceId => [
         icon: props => <OrgUnitSvg {...props} />,
         subMenu: [
             {
-                label: MESSAGES.list,
+                label: MESSAGES.orgUnitList,
                 permissions: paths.orgUnitsPath.permissions,
                 extraPath: `/locationLimit/${locationLimitMax}/order/id/pageSize/50/page/1/searchTabIndex/0/searches/[{"validation_status":"all","color":"${getChipColors(
                     0,
@@ -113,7 +113,7 @@ const menuItems = defaultSourceId => [
                 icon: props => <DnsRoundedIcon {...props} />,
                 subMenu: [
                     {
-                        label: MESSAGES.list,
+                        label: MESSAGES.dataSourceList,
                         permissions: paths.dataSourcesPath.permissions,
                         key: 'list',
                         icon: props => <FormatListBulleted {...props} />,
@@ -124,7 +124,7 @@ const menuItems = defaultSourceId => [
                         icon: props => <Link {...props} />,
                         subMenu: [
                             {
-                                label: MESSAGES.list,
+                                label: MESSAGES.dataSourceList,
                                 permissions: paths.linksPath.permissions,
                                 key: 'list',
                                 icon: props => (
@@ -149,7 +149,7 @@ const menuItems = defaultSourceId => [
         icon: props => <BeneficiarySvg {...props} />,
         subMenu: [
             {
-                label: MESSAGES.list,
+                label: MESSAGES.beneficiariesList,
                 permissions: paths.entitiesPath.permissions,
                 key: 'list',
                 icon: props => <FormatListBulleted {...props} />,
@@ -174,7 +174,7 @@ const menuItems = defaultSourceId => [
         icon: props => <AssignmentIcon {...props} />,
         subMenu: [
             {
-                label: MESSAGES.list,
+                label: MESSAGES.planningList,
                 permissions: paths.planningPath.permissions,
                 key: 'list',
                 icon: props => <FormatListBulleted {...props} />,

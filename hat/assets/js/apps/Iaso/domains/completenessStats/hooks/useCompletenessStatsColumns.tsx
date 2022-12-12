@@ -66,7 +66,8 @@ export const useCompletenessStatsColumns = () => {
                 Cell: settings => {
                     return (
                         <span>
-                            {settings.row.original.forms_filled ?? '--'} / {settings.row.original.forms_to_fill ?? '--'}
+                            {settings.row.original.forms_filled ?? '--'} /
+                            {settings.row.original.forms_to_fill ?? '--'}
                         </span>
                     );
                 },

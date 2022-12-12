@@ -6,7 +6,6 @@ import { bindActionCreators } from 'redux';
 import {
     fetchEditUrl as fetchEditUrlAction,
     fetchInstanceDetail as fetchInstanceDetailAction,
-    reAssignInstance as reAssignInstanceAction,
     restoreInstance as restoreInstanceAction,
     setCurrentInstance as setCurrentInstanceAction,
     softDeleteInstance as softDeleteAction,
@@ -27,14 +26,13 @@ import {
     useLinkToOrgUnitAction,
     useLockAction,
 } from '../hooks/speedDialActions';
-import { useGetOrgUnitTypes } from '../hooks/speeddials';
+import { useGetFormDefForInstance } from '../hooks/speeddials';
 
 type Props = {
     currentInstance: Instance;
     fetchEditUrl: CallableFunction;
     softDelete: CallableFunction;
     restoreInstance: CallableFunction;
-    reAssignInstance: CallableFunction;
     params: {
         instanceId: string;
         referenceFormId?: string;
@@ -43,12 +41,11 @@ type Props = {
 
 const SpeedDialInstance: FunctionComponent<Props> = props => {
     const {
-        reAssignInstance,
         params: { referenceFormId },
         currentInstance,
         currentInstance: { form_id: formId },
     } = props;
-    const { data: orgUnitTypeIds } = useGetOrgUnitTypes(formId);
+    const { data: formDef } = useGetFormDefForInstance(formId);
     const currentUser = useCurrentUser();
     const hasfeatureFlag = hasFeatureFlag(
         currentUser,
@@ -81,12 +78,7 @@ const SpeedDialInstance: FunctionComponent<Props> = props => {
         hasfeatureFlag &&
         formId.toString() === referenceFormId;
 
-    const baseActions = useBaseActions(
-        currentInstance,
-        orgUnitTypeIds as number[], // forcing the type cast as the select in react-query prevent it from being undefined
-        // @ts-ignore
-        reAssignInstance,
-    );
+    const baseActions = useBaseActions(currentInstance, formDef);
 
     const editLocationWithInstanceGps =
         useEditLocationWithGpsAction(currentInstance);
@@ -146,7 +138,6 @@ const MapDispatchToProps = dispatch => ({
             softDelete: softDeleteAction,
             restoreInstance: restoreInstanceAction,
             setCurrentInstance: setCurrentInstanceAction,
-            reAssignInstance: reAssignInstanceAction,
         },
         dispatch,
     ),

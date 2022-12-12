@@ -7,6 +7,7 @@ import PropTypes from 'prop-types';
 import {
     AddButton as AddButtonComponent,
     commonStyles,
+    makeFullModal,
     selectionInitialState,
     setTableSelection,
     useSafeIntl,
@@ -32,7 +33,7 @@ import { InstancesTopBar as TopBar } from './components/InstancesTopBar';
 import DownloadButtonsComponent from '../../components/DownloadButtonsComponent';
 import InstancesMap from './components/InstancesMapComponent';
 import InstancesFiltersComponent from './components/InstancesFiltersComponent';
-import CreateReAssignDialogComponent from './components/CreateReAssignDialogComponent';
+import { CreateReAssignDialogComponent } from './components/CreateReAssignDialogComponent';
 
 import { baseUrls } from '../../constants/urls';
 
@@ -42,6 +43,7 @@ import snackMessages from '../../components/snackBars/messages';
 import { TableWithDeepLink } from '../../components/tables/TableWithDeepLink';
 import { PaginatedInstanceFiles } from './components/PaginatedInstancesFiles';
 import { useGetPossibleFields } from '../forms/hooks/useGetPossibleFields.ts';
+import UpdateIcon from '@material-ui/icons/Update';
 
 const baseUrl = baseUrls.instances;
 
@@ -143,6 +145,10 @@ const Instances = ({ params }) => {
         },
         [dispatch],
     );
+    const CreateReAssignDialog = useMemo(
+        () => makeFullModal(CreateReAssignDialogComponent, AddButtonComponent),
+        [],
+    );
 
     return (
         <section className={classes.relativeContainer}>
@@ -176,7 +182,7 @@ const Instances = ({ params }) => {
                         <Grid xs={12} item className={classes.textAlignRight}>
                             {formIds?.length === 1 && (
                                 <div className={classes.paddingBottomBig}>
-                                    <CreateReAssignDialogComponent
+                                    <CreateReAssignDialog
                                         titleMessage={
                                             MESSAGES.instanceCreationDialogTitle
                                         }
@@ -199,11 +205,6 @@ const Instances = ({ params }) => {
                                                 ),
                                             )
                                         }
-                                        renderTrigger={({ openDialog }) => (
-                                            <AddButtonComponent
-                                                onClick={openDialog}
-                                            />
-                                        )}
                                     />
                                     <Box
                                         mb={2}

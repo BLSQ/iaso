@@ -11,7 +11,7 @@ import TopBar from '../../components/nav/TopBarComponent';
 import { TableWithDeepLink } from '../../components/tables/TableWithDeepLink';
 import { Filters } from './components/Filters';
 
-import { useGetWorkflows } from './hooks/requests/useGetWorkflows';
+import { useGetWorkflowVersions } from './hooks/requests/useGetWorkflowVersions';
 import { useGetType } from '../entities/entityTypes/hooks/requests/entitiyTypes';
 import { WorkflowsParams } from './types/workflows';
 
@@ -45,7 +45,7 @@ export const Workflows: FunctionComponent<Props> = ({ params, router }) => {
     const dispatch = useDispatch();
     const classes: Record<string, string> = useStyles();
     const { formatMessage } = useSafeIntl();
-    const { data, isFetching } = useGetWorkflows(params);
+    const { data, isFetching } = useGetWorkflowVersions(params);
     const { entityTypeId } = params;
     const columns = useGetColumns(entityTypeId);
 
@@ -74,7 +74,7 @@ export const Workflows: FunctionComponent<Props> = ({ params, router }) => {
                 <Filters params={params} />
                 <TableWithDeepLink
                     baseUrl={baseUrl}
-                    data={data?.results ?? []}
+                    data={data?.workflow_versions ?? []}
                     pages={data?.pages ?? 1}
                     defaultSorted={defaultSorted}
                     columns={columns}

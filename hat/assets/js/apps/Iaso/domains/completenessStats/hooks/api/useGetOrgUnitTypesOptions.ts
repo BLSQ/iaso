@@ -5,7 +5,7 @@ export const useGetOrgUnitTypesOptions = () => {
     const params = {
         all: 'true',
         order: 'name',
-        fields: 'name,id',
+        fields: 'name,id,depth',
     };
     const queryString = new URLSearchParams(params);
 
@@ -18,8 +18,10 @@ export const useGetOrgUnitTypesOptions = () => {
                 return data.orgUnitTypes.map(orgUnitType => ({
                     value: orgUnitType.id,
                     label: orgUnitType.name,
+                    original: orgUnitType,
                 }));
             },
+            cacheTime: 60000,
         },
     });
 };

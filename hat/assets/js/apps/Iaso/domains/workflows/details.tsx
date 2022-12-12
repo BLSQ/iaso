@@ -24,9 +24,13 @@ import MESSAGES from './messages';
 import { redirectToReplace } from '../../routing/actions';
 import { baseUrls } from '../../constants/urls';
 
-import { useGetWorkflow } from './hooks/requests/useGetWorkflows';
+import { useGetWorkflowVersion } from './hooks/requests/useGetWorkflowVersions';
 
-import { WorkflowDetail, WorkflowParams, FollowUps } from './types/workflows';
+import {
+    WorkflowVersionDetail,
+    WorkflowParams,
+    FollowUps,
+} from './types/workflows';
 
 import { WorkflowBaseInfo } from './components/WorkflowBaseInfo';
 
@@ -65,9 +69,9 @@ export const Details: FunctionComponent<Props> = ({ router }) => {
         data: workflow,
         isLoading,
     }: {
-        data?: WorkflowDetail;
+        data?: WorkflowVersionDetail;
         isLoading: boolean;
-    } = useGetWorkflow(versionId, entityTypeId);
+    } = useGetWorkflowVersion(versionId);
 
     useEffect(() => {
         if (workflow?.follow_ups) {

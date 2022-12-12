@@ -146,6 +146,33 @@ class OrgUnitAPITestCase(APITestCase):
         self.assertJSONResponse(response, 200)
         self.assertEqual(response.json()["count"], 2)
 
+    def test_org_unit_list_depth(self):
+        """GET /orgunits/ with a search based on refs"""
+
+        self.client.force_authenticate(self.yoda)
+
+        response = self.client.get(
+            '/api/orgunits/?&order=id&page=1&searchTabIndex=0&searches=[{"validation_status":"all","color":"4dd0e1","depth":"2"}]&limit=50'
+        )
+        self.assertJSONResponse(response, 200)
+        self.assertEqual(response.json()["count"], 2)
+
+        response = self.client.get(
+            '/api/orgunits/?&order=id&page=1&searchTabIndex=0&searches=[{"validation_status":"all","color":"4dd0e1","depth":"1"}]&limit=50'
+        )
+        self.assertJSONResponse(response, 200)
+        self.assertEqual(response.json()["count"], 3)
+        response = self.client.get(
+            '/api/orgunits/?&order=id&page=1&searchTabIndex=0&searches=[{"validation_status":"all","color":"4dd0e1","depth":"0"}]&limit=50'
+        )
+        self.assertJSONResponse(response, 200)
+        self.assertEqual(response.json()["count"], 0)
+        response = self.client.get(
+            '/api/orgunits/?&order=id&page=1&searchTabIndex=0&searches=[{"validation_status":"all","color":"4dd0e1","depth":"3"}]&limit=50'
+        )
+        self.assertJSONResponse(response, 200)
+        self.assertEqual(response.json()["count"], 0)
+
     def test_org_unit_search_with_ref(self):
         """GET /orgunits/ with a search based on ids"""
 

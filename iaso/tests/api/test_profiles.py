@@ -182,6 +182,19 @@ class ProfileAPITestCase(APITestCase):
         response_data = response.json()
         self.assertEqual(response_data["errorKey"], "user_name")
 
+    def test_create_profile_duplicate_user_with_capitale_letters(self):
+        self.client.force_authenticate(self.jim)
+        data = {
+            "user_name": "JaNeDoE",
+            "password": "unittest_password",
+            "first_name": "unittest_first_name",
+            "last_name": "unittest_last_name",
+        }
+        response = self.client.post("/api/profiles/", data=data, format="json")
+        self.assertEqual(response.status_code, 400)
+        response_data = response.json()
+        self.assertEqual(response_data["errorKey"], "user_name")
+
     def test_create_profile_then_delete(self):
         self.client.force_authenticate(self.jim)
         data = {
@@ -378,6 +391,16 @@ class ProfileAPITestCase(APITestCase):
         self.jane.iaso_profile.org_units.set([self.jedi_council_corruscant])
 
         response = self.client.get(f"/api/profiles/?location={self.jedi_council_corruscant.pk}")
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.json()["profiles"][0]["user_name"], "janedoe")
+        self.assertEqual(len(response.json()["profiles"]), 1)
+
+    def test_search_user_by_org_units_type(self):
+        self.client.force_authenticate(self.jane)
+        self.jane.iaso_profile.org_units.set([self.jedi_council_corruscant])
+
+        response = self.client.get(f"/api/profiles/?orgUnitTypes={self.jedi_council.pk}")
 
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.json()["profiles"][0]["user_name"], "janedoe")

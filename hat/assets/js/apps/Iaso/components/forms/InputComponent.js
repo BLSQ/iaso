@@ -53,7 +53,7 @@ class InputComponent extends Component {
         } = this.props;
         const { isFocused, displayPassword } = this.state;
         const labelText =
-            labelString !== ''
+            typeof labelString === 'string'
                 ? labelString
                 : formatMessage(label || MESSAGES[keyValue]);
         const inputValue =
@@ -202,7 +202,7 @@ InputComponent.defaultProps = {
     multiline: false,
     clearable: true,
     label: undefined,
-    labelString: '',
+    labelString: null,
     required: false,
     onEnterPressed: () => null,
     onChange: () => null,

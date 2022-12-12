@@ -21,7 +21,7 @@ import Filters from './TableFilters';
 
 import DownloadButtonsComponent from '../DownloadButtonsComponent';
 import { redirectToReplace } from '../../routing/actions';
-import { convertObjectToString } from '../../utils';
+import { convertObjectToString } from '../../utils/dataManipulation.ts';
 import { useAbortController } from '../../libs/apiHooks.ts';
 
 const useStyles = makeStyles(theme => ({

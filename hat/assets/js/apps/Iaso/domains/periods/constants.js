@@ -14,6 +14,7 @@ export const PERIOD_TYPES = [
 ];
 
 export const periodTypeOptions = [
+    PERIOD_TYPE_DAY,
     PERIOD_TYPE_MONTH,
     PERIOD_TYPE_QUARTER,
     PERIOD_TYPE_YEAR,

@@ -69,6 +69,9 @@ from .api.tasks.create.import_gpkg import ImportGPKGViewSet
 from .dhis2.authentication import dhis2_callback  # type: ignore
 from hat.api.token_authentication import token_auth
 
+from .api.workflows import WorkflowVersionViewSet
+from .api.mobile.workflows import MobileWorkflowViewSet
+
 URL = Union[URLPattern, URLResolver]
 URLList = List[URL]
 
@@ -126,6 +129,9 @@ router.register(r"mobile/plannings", MobilePlanningViewSet, basename="mobileplan
 router.register(r"storage", StorageViewSet, basename="storage")
 router.register(r"mobile/storage/logs", StorageLogViewSet, basename="storagelogs")
 router.register(r"mobile/storage/blacklisted", StorageBlacklistedViewSet, basename="storageblacklisted")
+
+router.register(r"workflowversions", WorkflowVersionViewSet, basename="workflowversions")
+router.register(r"mobile/workflows", MobileWorkflowViewSet, basename="mobileworkflows")
 
 router.registry.extend(plugins_router.registry)
 

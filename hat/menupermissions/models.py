@@ -10,7 +10,7 @@ MAPPINGS = _("Correspondances avec DHIS2")
 COMPLETENESS = _("Complétude des données")
 ORG_UNITS = _("Unités d'organisations")
 LINKS = _("Correspondances sources")
-USERS = _("Utilisateurs")
+USERS = _("Utilisateurs")  # Duplicated
 PAGES = _("Pages")
 PROJECTS = _("Projets")
 SOURCES = _("Sources")
@@ -28,6 +28,7 @@ ENTITIES = _("Entities")
 BENEFICIARIES = _("Beneficiaries")
 STORAGES = _("Storages")
 COMPLETENESS_STATS = _("Completeness stats")
+WORKFLOWS = _("Workflows")
 
 
 # When adding a new permission, it also needs to be added in
@@ -81,4 +82,5 @@ class CustomPermissionSupport(models.Model):
             ("iaso_entities", ENTITIES),
             ("iaso_storages", STORAGES),
             ("iaso_completeness_stats", COMPLETENESS_STATS),
+            ("iaso_workflows", WORKFLOWS),
         )

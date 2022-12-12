@@ -36,7 +36,7 @@ export type FollowUps = {
     updated_at: string;
 };
 
-export type WorkflowDetail = {
+export type WorkflowVersionDetail = {
     version_id: string;
     name: string;
     status: Status;
@@ -48,15 +48,15 @@ export type WorkflowDetail = {
     follow_ups: FollowUps[];
 };
 
-export type Workflow = {
+export type WorkflowVersion = {
     version_id: string;
     name: string;
     status: Status;
     created_at: string;
     updated_at: string;
 };
-export type Workflows = Array<Workflow>;
+export type WorkflowVersions = Array<WorkflowVersion>;
 
-export interface WorkflowsPaginated extends Pagination {
-    results: Workflows;
+export interface WorkflowVersionsPaginated extends Pagination {
+    workflow_versions: WorkflowVersions;
 }

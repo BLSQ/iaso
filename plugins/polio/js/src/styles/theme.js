@@ -70,7 +70,8 @@ export const useStyles = makeStyles(() => ({
     },
     districtList: {
         overflow: 'auto',
-        height: '500px',
+        height: 'auto',
+        maxHeight: 400,
         '& thead tr th': {
             boxShadow: `2px 2px ${theme.palette.ligthGray.main}`,
         },

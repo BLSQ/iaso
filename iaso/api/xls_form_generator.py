@@ -1,9 +1,9 @@
 import os
-import uuid
 
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404
 from django_filters.rest_framework import DjangoFilterBackend  # type: ignore
+from openpyxl.worksheet.worksheet import Worksheet
 from rest_framework.decorators import action
 from rest_framework import serializers, filters
 from rest_framework.viewsets import ModelViewSet
@@ -30,7 +30,7 @@ class XlsFormTemplateSerializer(serializers.ModelSerializer):
     updated_at = TimestampField(read_only=True)
 
 
-def get_data_from_campaigns(campaign_id: uuid, row: any, q_sheet: any, calculation_index: int):
+def get_data_from_campaigns(campaign_id: str, row: int, q_sheet: Worksheet, calculation_index: int):
     """This function get the data from a campaign and insert it in the calculation row
     of the xlsform. It's tagged as 'insert_field' in the xlsform.
     """
@@ -230,6 +230,8 @@ class XlsFormGeneratorViewSet(ModelViewSet):
                     survey_last_empty_row += 1
 
         row = q_sheet.max_row
+        print(type(row))
+        print(type(q_sheet))
         calculation_index = get_column_position("calculation", q_sheet)
 
         # Insert data as calculation from campaigns

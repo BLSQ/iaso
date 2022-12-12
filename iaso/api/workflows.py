@@ -144,7 +144,7 @@ class WorkflowVersionViewSet(ModelViewSet):
 
     permission_classes = [permissions.IsAuthenticated, HasPermission("menupermissions.iaso_workflows")]  # type: ignore
     filter_backends = [filters.OrderingFilter, DjangoFilterBackend]
-    ordering_fields = ["name", "created_at", "updated_at"]
+    ordering_fields = ["name", "created_at", "updated_at", "id"]
     serializer_class = WorkflowVersionDetailSerializer
     results_key = "workflow_versions"
     remove_results_key_if_paginated = False
@@ -152,7 +152,7 @@ class WorkflowVersionViewSet(ModelViewSet):
 
     lookup_url_kwarg = "version_id"
 
-    filterset_fields = {"workflow__entity_type": ["exact"]}
+    filterset_fields = {"workflow__entity_type": ["exact"], "status": ["exact"], "id": ["exact"]}
 
     http_method_names = ["get", "post"]
 

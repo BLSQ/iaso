@@ -27,7 +27,7 @@ export const useGetColumns = (entityTypeId: string): Array<Column> => {
     const columns: Array<Column> = [
         {
             Header: formatMessage(MESSAGES.version),
-            id: 'version_id',
+            id: 'id',
             accessor: 'version_id',
         },
         {

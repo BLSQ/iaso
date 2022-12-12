@@ -1,4 +1,7 @@
 import pdb
+
+import django
+
 from iaso.models import ExportLog
 from django.db.models import TextField
 from django.db.models.functions import Cast
@@ -266,8 +269,12 @@ class Command(BaseCommand):
         print("all the others")
 
         cursor = connection.cursor()
+
         # OLD triplelym table, it's safe
-        cursor.execute("delete from users_profile")
+        try:
+            cursor.execute("delete from users_profile")
+        except django.db.utils.ProgrammingError:
+            pass
         # audit log, hard to clean, so keeping them in the saas db but no in the tenant db
         cursor.execute("delete from vector_control_apiimport")
 

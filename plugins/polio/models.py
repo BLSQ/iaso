@@ -1,5 +1,4 @@
 from typing import Union
-import pathlib
 from uuid import uuid4
 
 from django.contrib.auth.models import User, AnonymousUser

@@ -1,3 +1,5 @@
+import uuid
+
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404
 from django_filters.rest_framework import DjangoFilterBackend  # type: ignore
@@ -23,7 +25,7 @@ class XlsFormTemplateSerializer(serializers.ModelSerializer):
     updated_at = TimestampField(read_only=True)
 
 
-def get_data_from_campaigns(campaign_id, row, q_sheet, calculation_index):
+def get_data_from_campaigns(campaign_id: uuid, row: any, q_sheet: any, calculation_index: int):
     """This function get the data from a campaign and insert it in the calculation row
     of the xlsform. It's tagged as 'insert_field' in the xlsform.
     """

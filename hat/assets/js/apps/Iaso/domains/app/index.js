@@ -24,10 +24,13 @@ const getBaseRoutes = plugins => {
                     if (route.allowAnonymous) return route;
                     return {
                         ...route,
-                        params: [...route.params].concat({
-                            isRequired: false,
-                            key: 'accountId',
-                        }),
+                        params: [
+                            {
+                                isRequired: false,
+                                key: 'accountId',
+                            },
+                            ...route.params,
+                        ],
                     };
                 }),
             )

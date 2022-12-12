@@ -125,6 +125,19 @@ const Filters = ({ baseUrl, params }) => {
                         />
                     </Box>
                 </Grid>
+                <Grid item xs={3}>
+                    <InputComponent
+                        keyValue="orgUnitTypes"
+                        onChange={handleChange}
+                        value={filters.orgUnitTypes}
+                        type="select"
+                        options={orgUnitTypeDropdown}
+                        label={MESSAGES.orgUnitTypesDropdown}
+                        loading={isFetchingOuTypes}
+                        onEnterPressed={handleSearchPerms}
+                        clearable
+                    />
+                </Grid>
                 <Grid
                     container
                     item

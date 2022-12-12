@@ -179,6 +179,15 @@ class CompletenessStatsAPITestCase(APITestCase):
         for result in json["results"]:
             self.assertEqual(result["org_unit"]["id"], 7)
 
+    def test_filter_by_parent_org_unit(self):
+        self.client.force_authenticate(self.user)
+
+        response = self.client.get(f"/api/completeness_stats/?parent_org_unit_id=1")
+        json = response.json()
+        # All the rows we get are direct children of the Country (region A and B)
+        for result in json["results"]:
+            self.assertEqual(result["parent_org_unit"][0]["id"], 1)
+
     def test_pagination(self):
         self.client.force_authenticate(self.user)
 

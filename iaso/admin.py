@@ -43,6 +43,10 @@ from .models import (
     InstanceLock,
     StorageDevice,
     StorageLogEntry,
+    Workflow,
+    WorkflowVersion,
+    WorkflowChange,
+    WorkflowFollowup,
 )
 from .models.microplanning import Team, Planning, Assignment
 from .utils.gis import convert_2d_point_to_3d
@@ -455,6 +459,23 @@ class StorageDeviceAdmin(admin.ModelAdmin):
     ]
 
 
+class WorkflowAdmin(admin.ModelAdmin):
+    readonly_fields = ("created_at", "updated_at")
+
+
+class WorkflowChangeInline(admin.TabularInline):
+    model = WorkflowChange
+
+
+class WorkflowFollowupInline(admin.TabularInline):
+    model = WorkflowFollowup
+
+
+class WorkflowVersionAdmin(admin.ModelAdmin):
+    readonly_fields = ("created_at", "updated_at")
+    inlines = [WorkflowChangeInline, WorkflowFollowupInline]
+
+
 admin.site.register(Link, LinkAdmin)
 admin.site.register(Form, FormAdmin)
 admin.site.register(Instance, InstanceAdmin)
@@ -490,3 +511,5 @@ admin.site.register(BulkCreateUserCsvFile)
 admin.site.register(Assignment, AssignmentAdmin)
 admin.site.register(InstanceLock, InstanceLockAdmin)
 admin.site.register(StorageDevice, StorageDeviceAdmin)
+admin.site.register(Workflow, WorkflowAdmin)
+admin.site.register(WorkflowVersion, WorkflowVersionAdmin)

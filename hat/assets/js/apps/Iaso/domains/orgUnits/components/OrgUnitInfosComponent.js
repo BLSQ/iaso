@@ -236,7 +236,6 @@ const OrgUnitCreationDetails = ({ orgUnit, formatMessage, classes }) => {
                 value={moment.unix(orgUnit.updated_at).format('LTS')}
                 disabled
             />
-           
 
             {!orgUnit.has_geo_json && !latitudeLongitude && (
                 <Grid
@@ -295,6 +294,8 @@ const OrgUnitInfosComponent = ({
     resetTrigger,
     fetchEditUrl,
     params,
+    isFetchingOrgUnitTypes,
+    isFetchingGroups,
 }) => {
     const { mutateAsync: saveOu } = useSaveOrgUnit();
     const classes = useStyles();
@@ -306,14 +307,15 @@ const OrgUnitInfosComponent = ({
     const [setFieldErrors] = useFormState(
         initialFormState(orgUnit, instanceId),
     );
-
+    const showSpeedDialsActions =
+        orgUnit.reference_instance ||
+        (formId === referenceFormId &&
+            formId !== undefined &&
+            referenceFormId !== undefined);
     return (
         <Grid container spacing={4}>
-            {(orgUnit.reference_instance ||
-                (formId === referenceFormId &&
-                    formId !== undefined &&
-                    referenceFormId !== undefined)) && (
-                    <SpeedDialInstanceActions
+            {showSpeedDialsActions && (
+                <SpeedDialInstanceActions
                     speedDialClasses={classes.speedDialTop}
                     actions={Actions(
                         orgUnit,
@@ -352,9 +354,14 @@ const OrgUnitInfosComponent = ({
                     keyValue="org_unit_type_id"
                     onChange={onChangeInfo}
                     required
-                    value={orgUnit.org_unit_type_id.value}
+                    value={
+                        isFetchingOrgUnitTypes
+                            ? undefined
+                            : orgUnit.org_unit_type_id.value
+                    }
                     errors={orgUnit.org_unit_type_id.errors}
                     type="select"
+                    loading={isFetchingOrgUnitTypes}
                     options={orgUnitTypes.map(t => ({
                         label: t.name,
                         value: t.id,
@@ -367,11 +374,8 @@ const OrgUnitInfosComponent = ({
                         onChangeInfo(name, commaSeparatedIdsToArray(value))
                     }
                     multi
-                    value={
-                        orgUnit.groups.value.length > 0
-                            ? orgUnit.groups.value
-                            : null
-                    }
+                    value={isFetchingGroups ? undefined : orgUnit.groups.value}
+                    loading={isFetchingGroups}
                     errors={orgUnit.groups.errors}
                     type="select"
                     options={groups.map(g => ({
@@ -557,6 +561,8 @@ OrgUnitInfosComponent.propTypes = {
     resetTrigger: PropTypes.bool,
     fetchEditUrl: PropTypes.func.isRequired,
     params: PropTypes.object.isRequired,
+    isFetchingOrgUnitTypes: PropTypes.bool.isRequired,
+    isFetchingGroups: PropTypes.bool.isRequired,
 };
 OrgUnitInfosComponent.defaultProps = {
     resetTrigger: false,

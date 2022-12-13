@@ -13,7 +13,7 @@ type Props = {
     required?: boolean;
 };
 
-export const MultiSelect: FunctionComponent<Props> = ({
+export const SingleSelect: FunctionComponent<Props> = ({
     options,
     label,
     field,
@@ -31,7 +31,6 @@ export const MultiSelect: FunctionComponent<Props> = ({
             type="select"
             withMarginTop={withMarginTop}
             value={field.value}
-            multi
             options={options}
             clearable={clearable}
             required={required}

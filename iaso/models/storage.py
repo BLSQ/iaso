@@ -1,8 +1,10 @@
 # TODO: need better type annotations in this file
 import uuid
+from datetime import datetime
 
 from django.contrib.auth.models import User
 from django.db import models
+from django.db.models import QuerySet
 from django.utils import timezone
 
 from iaso.models import Entity, Instance, OrgUnit, Account
@@ -97,6 +99,9 @@ class StorageDevice(models.Model):
             status_comment=comment,
         )
 
+    def __str__(self):
+        return f"{self.customer_chosen_id} ({self.type})"
+
     class Meta:
         unique_together = ("customer_chosen_id", "account", "type")
 
@@ -105,22 +110,25 @@ class StorageLogEntryManager(models.Manager):
     # TODO: this manager method deserves its own unit tests and proper type annotations
     def create_and_update_device(
         self,
-        log_id,
-        device,
-        operation_type,
-        performed_at,
-        user,
-        concerned_orgunit,
-        concerned_entity,
-        concerned_instances,
+        log_id: str,
+        device: StorageDevice,
+        operation_type: str,
+        performed_at: datetime,
+        user: User,
+        concerned_orgunit: OrgUnit,
+        concerned_entity: Entity,
+        concerned_instances: "QuerySet[Instance]",
     ) -> None:
         """
-        Create a new StorageLogEntry and update the StorageDevice if needed
+        Create a new StorageLogEntry, and perform StorageDevice-related operations:
+
+        - update the device, so it is linked to the org unit and entity referenced in the log entry
+        - if the log entry is of type WRITE_PROFILE to a new Storage device, blacklist old devices for the same entity
 
         This is the preferred method to create new log entries. It is assumed the StorageDevice already exists when this
         method is called.
         """
-        # 2. Create the log entry
+
         log_entry = self.create(
             id=log_id,
             device=device,
@@ -134,10 +142,24 @@ class StorageLogEntryManager(models.Manager):
         log_entry.instances.set(concerned_instances)
 
         # We update the orgunit and entity of the device to reflect what was pushed as the last log
-        # TODO: discuss: should we do that? What if the mobile pushes multiple logs in the wrong "order" for a given device? should we merge data instead?
         device.entity = concerned_entity
         device.org_unit = concerned_orgunit
         device.save()
+
+        # Blacklist old devices with OK status and the same entity
+        if operation_type == StorageLogEntry.WRITE_PROFILE:
+            old_devices = (
+                StorageDevice.objects.filter(entity=concerned_entity)
+                .filter(status=StorageDevice.OK)
+                .exclude(id=device.id)
+            )
+            for old_device in old_devices:
+                old_device.change_status(
+                    new_status=StorageDevice.BLACKLISTED,
+                    reason=StorageDevice.OTHER,
+                    comment=f"Profile was written on {device.customer_chosen_id} on {performed_at}",
+                    performed_by=user,
+                )
 
 
 class StorageLogEntry(models.Model):

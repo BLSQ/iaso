@@ -13,7 +13,7 @@ import { useSafeIntl } from 'bluesquare-components';
 import classnames from 'classnames';
 import { Field } from 'formik';
 import MESSAGES from '../constants/messages';
-import { TextInput } from '../components/Inputs';
+import { DebouncedTextInput } from '../components/Inputs/DebouncedTextInput';
 
 const useStyles = makeStyles(theme => ({
     rightCell: {
@@ -59,7 +59,8 @@ export const ReportingDelays: FunctionComponent<Props> = ({ accessor }) => {
                             <Field
                                 label=""
                                 name={`${accessor}.reporting_delays_hc_to_district`}
-                                component={TextInput}
+                                component={DebouncedTextInput}
+                                debounceTime={300}
                             />
                         </TableCell>
                     </TableRow>
@@ -71,7 +72,8 @@ export const ReportingDelays: FunctionComponent<Props> = ({ accessor }) => {
                             <Field
                                 label=""
                                 name={`${accessor}.reporting_delays_district_to_region`}
-                                component={TextInput}
+                                component={DebouncedTextInput}
+                                debounceTime={300}
                             />
                         </TableCell>
                     </TableRow>
@@ -83,7 +85,8 @@ export const ReportingDelays: FunctionComponent<Props> = ({ accessor }) => {
                             <Field
                                 label=""
                                 name={`${accessor}.reporting_delays_region_to_national`}
-                                component={TextInput}
+                                component={DebouncedTextInput}
+                                debounceTime={300}
                             />
                         </TableCell>
                     </TableRow>

@@ -84,7 +84,6 @@ export const OrgUnitFilters: FunctionComponent<Props> = ({
     const [sourceVersionId, setSourceVersionId] = useState<
         number | undefined
     >();
-    const [depth, setDepth] = useState<number | undefined>();
     const [initialOrgUnitId, setInitialOrgUnitId] = useState<
         string | undefined
     >(currentSearch?.levels);
@@ -92,6 +91,10 @@ export const OrgUnitFilters: FunctionComponent<Props> = ({
     const [showAdvancedSettings, setShowAdvancedSettings] = useState(false);
 
     const { data: initialOrgUnit } = useGetOrgUnit(initialOrgUnitId);
+
+    useSkipEffectOnMount(() => {
+        setInitialOrgUnitId(currentSearch?.levels);
+    }, [currentSearch?.levels]);
 
     const { data: dataSources, isFetching: isFetchingDataSources } =
         useGetDataSources();

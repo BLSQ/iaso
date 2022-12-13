@@ -111,7 +111,7 @@ const Filters = ({ baseUrl, params }) => {
                     />
                 </Grid>
                 <Grid item xs={12} md={3}>
-                    <Box id="ou-tree-input">
+                    <Box id="ou-tree-input" mb={isLargeLayout ? 0 : -2}>
                         <OrgUnitTreeviewModal
                             toggleOnLabelClick={false}
                             titleMessage={MESSAGES.location}
@@ -125,7 +125,7 @@ const Filters = ({ baseUrl, params }) => {
                         />
                     </Box>
                 </Grid>
-                <Grid item xs={3}>
+                <Grid item xs={12} md={3}>
                     <InputComponent
                         keyValue="orgUnitTypes"
                         onChange={handleChange}
@@ -138,13 +138,8 @@ const Filters = ({ baseUrl, params }) => {
                         clearable
                     />
                 </Grid>
-                <Grid
-                    container
-                    item
-                    xs={isLargeLayout ? 3 : 12}
-                    justifyContent="flex-end"
-                >
-                    <Box mt={isLargeLayout ? 2 : 0}>
+                <Grid container item xs={12} justifyContent="flex-end">
+                    <Box>
                         <Button
                             data-test="search-button"
                             disabled={!filtersUpdated}

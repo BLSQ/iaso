@@ -651,7 +651,7 @@ class StorageAPITestCase(APITestCase):
                     "created_at": 1580608922.0,
                     "storage_id": "EXISTING_STORAGE",
                     "storage_type": "NFC",
-                    "storage_status": {"status": "OK", "updated_at": None},
+                    "storage_status": {"status": "OK", "updated_at": "2020-02-02T02:02:02Z"},
                     "org_unit": None,
                     "entity": {"id": mock.ANY, "name": "New Client 3"},
                 },
@@ -1429,7 +1429,7 @@ class StorageAPITestCase(APITestCase):
                 "",
                 "2020-02-02 02:02:02+00:00",
                 "",
-                "",
+                str(self.entity.id),
             ],
             [
                 "EXISTING_STORAGE",

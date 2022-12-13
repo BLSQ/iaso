@@ -103,10 +103,11 @@ const Filters: FunctionComponent<Props> = ({ params, types }) => {
         },
         [filters],
     );
+
     return (
         <Box mb={1}>
             <Grid container spacing={2}>
-                <Grid item xs={3}>
+                <Grid item xs={12} sm={3}>
                     <InputComponent
                         keyValue="search"
                         onChange={handleChange}
@@ -125,7 +126,7 @@ const Filters: FunctionComponent<Props> = ({ params, types }) => {
                         multi
                     />
                 </Grid>
-                <Grid item xs={3}>
+                <Grid item xs={12} sm={3}>
                     <DatesRange
                         xs={12}
                         sm={12}
@@ -138,7 +139,7 @@ const Filters: FunctionComponent<Props> = ({ params, types }) => {
                         dateTo={filters.dateTo}
                     />
                 </Grid>
-                <Grid item xs={3}>
+                <Grid item xs={12} sm={3}>
                     <InputComponent
                         keyValue="submitterTeamId"
                         onChange={handleTeamChange}
@@ -156,7 +157,7 @@ const Filters: FunctionComponent<Props> = ({ params, types }) => {
                         options={usersOptions}
                     />
                 </Grid>
-                <Grid item xs={3}>
+                <Grid item xs={12} sm={3}>
                     <Box id="ou-tree-input">
                         <OrgUnitTreeviewModal
                             toggleOnLabelClick={false}
@@ -180,7 +181,6 @@ const Filters: FunctionComponent<Props> = ({ params, types }) => {
             >
                 <Grid
                     item
-                    xs={2}
                     container
                     justifyContent="flex-end"
                     alignItems="center"

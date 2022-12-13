@@ -15,7 +15,7 @@ function CompletenessFiltersComponent({
 }) {
     return (
         <>
-            <Grid container spacing={4}>
+            <Grid container spacing={2}>
                 <Grid item xs={3}>
                     <InputComponent
                         type="select"

@@ -18,27 +18,27 @@ export const TeamFilters: FunctionComponent<Props> = ({ params }) => {
     return (
         <>
             <Grid container spacing={0}>
-                <Grid container item xs={10} lg={11} spacing={2}>
-                    <Grid item xs={3}>
-                        <InputComponent
-                            keyValue="search"
-                            onChange={handleChange}
-                            value={filters.search}
-                            type="search"
-                            label={MESSAGES.search}
-                            onEnterPressed={handleSearch}
-                        />
-                    </Grid>
+                <Grid item xs={12} sm={6} md={3}>
+                    <InputComponent
+                        keyValue="search"
+                        onChange={handleChange}
+                        value={filters.search}
+                        type="search"
+                        label={MESSAGES.search}
+                        onEnterPressed={handleSearch}
+                    />
                 </Grid>
+
                 <Grid
                     container
                     item
-                    xs={2}
-                    lg={1}
+                    xs={12}
+                    sm={6}
+                    md={9}
                     justifyContent="flex-end"
                     spacing={0}
                 >
-                    <Box mt={2} mr={-2}>
+                    <Box mt={2} mb={2}>
                         <FilterButton
                             disabled={!filtersUpdated}
                             onFilter={handleSearch}

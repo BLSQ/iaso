@@ -134,6 +134,8 @@ const OrgUnitForm = ({
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [orgUnit.id]);
 
+    // console.log('form state', formState);
+
     return (
         <>
             <OrgUnitInfos
@@ -177,7 +179,7 @@ const OrgUnitForm = ({
                             <FormattedMessage {...MESSAGES.cancel} />
                         </Button>
                     )}
-                    <Button
+                    {/* <Button
                         id="save-ou"
                         disabled={!orgUnitModified}
                         variant="contained"
@@ -186,7 +188,7 @@ const OrgUnitForm = ({
                         onClick={() => handleSave()}
                     >
                         <FormattedMessage {...MESSAGES.save} />
-                    </Button>
+                    </Button> */}
                 </Grid>
             </Grid>
         </>

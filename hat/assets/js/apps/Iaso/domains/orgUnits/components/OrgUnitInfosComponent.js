@@ -1,10 +1,12 @@
 /* eslint-disable import/extensions */
 /* eslint-disable react/jsx-props-no-spreading */
 /* eslint-disable react/prop-types */
-import React from 'react';
-import classnames from 'classnames';
+import React, { useEffect, useState } from 'react';
+// import classnames from 'classnames';
 
 import {
+    Button,
+    Box,
     Grid,
     DialogContentText,
     Table,
@@ -346,9 +348,10 @@ const OrgUnitInfosComponent = ({
     const { referenceFormId } = params;
     const { instanceId } = params;
 
-    const [setFieldErrors] = useFormState(
-        initialFormState(orgUnit, instanceId),
-    );
+    const [formState, setFieldValue, setFieldErrors, setFormState] =
+        useFormState(initialFormState(orgUnit, instanceId));
+
+    const [isSaveDisabled, setSaveDisabled] = useState(true);
 
     const showSpeedDialInstanceActions =
         orgUnit.reference_instance ||
@@ -357,14 +360,27 @@ const OrgUnitInfosComponent = ({
             referenceFormId !== undefined);
 
     const theme = useTheme();
-    const isMobileLayout = useMediaQuery(theme.breakpoints.down('md'));
+    // const isMobileLayout = useMediaQuery(theme.breakpoints.down('md'));
     const isNewOrgunit = params.orgUnitId === '0';
+
+    useEffect(() => {
+        console.log('form state', formState);
+        console.log('name', formState.name);
+        console.log('org unit type id', formState.org_unit_type_id);
+
+        const { name, org_unit_type_id } = formState;
+        if (name.value !== '' && org_unit_type_id.value !== undefined) {
+            setSaveDisabled(false);
+        } else {
+            setSaveDisabled(true);
+        }
+    }, [formState]);
 
     return (
         <Grid
             container
             spacing={!isNewOrgunit ? 4 : 2}
-            className={classnames(isNewOrgunit && classes.alignCenter)}
+            // className={classnames(isNewOrgunit && classes.alignCenter)}
         >
             {showSpeedDialInstanceActions && (
                 <SpeedDialInstanceActions
@@ -535,7 +551,7 @@ const OrgUnitInfosComponent = ({
 
             {isNewOrgunit && (
                 <>
-                    <Grid item xs={12} md={isMobileLayout ? 6 : 4}>
+                    <Grid item xs={12} md={3}>
                         <InputComponent
                             keyValue="name"
                             required
@@ -558,6 +574,16 @@ const OrgUnitInfosComponent = ({
                             }))}
                             label={MESSAGES.org_unit_type_id}
                         />
+
+                        <InputComponent
+                            keyValue="aliases"
+                            onChange={onChangeInfo}
+                            value={orgUnit.aliases.value}
+                            type="arrayInput"
+                        />
+                    </Grid>
+
+                    <Grid item xs={12} md={3}>
                         <InputComponent
                             keyValue="groups"
                             onChange={(name, value) =>
@@ -582,15 +608,6 @@ const OrgUnitInfosComponent = ({
                         />
 
                         <InputComponent
-                            keyValue="aliases"
-                            onChange={onChangeInfo}
-                            value={orgUnit.aliases.value}
-                            type="arrayInput"
-                        />
-                    </Grid>
-
-                    <Grid item xs={12} md={isMobileLayout ? 6 : 4}>
-                        <InputComponent
                             keyValue="validation_status"
                             isClearable={false}
                             onChange={onChangeInfo}
@@ -613,6 +630,9 @@ const OrgUnitInfosComponent = ({
                                 },
                             ]}
                         />
+                    </Grid>
+
+                    <Grid item xs={12} md={3}>
                         <InputComponent
                             keyValue="source_ref"
                             value={orgUnit.source_ref.value || ''}
@@ -643,6 +663,27 @@ const OrgUnitInfosComponent = ({
                                 resetTrigger={resetTrigger}
                             />
                         </FormControlComponent>
+                    </Grid>
+
+                    <Grid
+                        container
+                        item
+                        xs={12}
+                        md={3}
+                        justifyContent="flex-end"
+                    >
+                        <Box mt={2}>
+                            <Button
+                                id="save-ou"
+                                disabled={!isSaveDisabled}
+                                variant="contained"
+                                className={classes.marginLeft}
+                                color="primary"
+                                // onClick={() => handleSave()}
+                            >
+                                <FormattedMessage {...MESSAGES.save} />
+                            </Button>
+                        </Box>
                     </Grid>
                 </>
             )}

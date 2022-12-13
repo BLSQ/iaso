@@ -1,10 +1,7 @@
-import time
+import json
 
-from django.db.models import Q
-
-from iaso.models.workflow import WorkflowVersionsStatus
 from rest_framework import serializers, permissions
-from iaso.models import WorkflowVersion, Project, Workflow
+from iaso.models import WorkflowVersion, Project, WorkflowFollowup
 from rest_framework.viewsets import GenericViewSet
 from rest_framework.response import Response
 
@@ -14,9 +11,22 @@ from drf_yasg.utils import swagger_auto_schema
 from drf_yasg import openapi
 
 
+class FollowupNestedSerializer(serializers.ModelSerializer):
+
+    condition = serializers.SerializerMethodField()
+
+    class Meta:
+        model = WorkflowFollowup
+        fields = ["order", "condition", "forms", "created_at", "updated_at"]
+
+    def get_condition(self, obj):
+        return json.dumps(obj.condition)
+
+
 class MobileWorkflowVersionSerializer(serializers.ModelSerializer):
     version_id = serializers.IntegerField(source="pk")
     entity_type_id = serializers.IntegerField(source="workflow.entity_type.pk")
+    follow_ups = FollowupNestedSerializer(many=True)
 
     created_at = TimestampField()
     updated_at = TimestampField()

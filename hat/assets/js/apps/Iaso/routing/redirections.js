@@ -76,7 +76,7 @@ const getRedirections = overrideLanding => {
             path: `${baseUrls.storages}`,
             to: `${baseUrls.storages}${getPaginationParams(
                 getSort(storageDefaultSort),
-            )}/accountId/:accountId`,
+            )}`,
         },
         // Keep compatibility with the olds url for instance as they got renamed in Nov 2021
         {

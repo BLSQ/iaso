@@ -12,7 +12,6 @@ const interceptList = [
     'profiles',
     'algorithms',
     'algorithmsruns',
-    'groups',
     'orgunittypes',
 ];
 
@@ -36,6 +35,9 @@ describe('comments tab', () => {
             cy.intercept('GET', `/api/${i}/`, {
                 fixture: `${i}/list.json`,
             });
+        });
+        cy.intercept('GET', `/api/groups/?&dataSource=${orgUnit.source_id}`, {
+            fixture: `groups/list.json`,
         });
         cy.intercept(
             'GET',

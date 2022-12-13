@@ -33,12 +33,30 @@ Base file to be reused in the MailTemplate for the budget workflow engine
 
   <tr>
     <td align="left" style="padding:5px;">
-      {% block text %}
-        A new budget update has been done on the polio campaign <em>{{ campaign.obr_name }}</em>  by {{ author_name }}
-        from team {{ team }}: {{ transition.label }}.
+      {% block campaign %}
+        The status of polio campaign {{ campaign.obr_name }} as been updated.
       {% endblock %}
     </td>
-
+  </tr>
+  <tr>
+    <td align="left" style="padding:5px;">
+      {% block author %}
+        Updated by: {{ author_name }} from <strong>{{ team }}</strong>.
+      {% endblock %}
+    </td>
+  </tr>
+  <tr>
+    <td align="left" style="padding:5px;">
+      {% block status %}
+        New status:  <strong>{{ node.label }}</strong> 
+      {% endblock %}
+    </td>
+  </tr>
+  <tr>
+    <td style="height:20px;padding:5px;font-size:0;line-height:0;">&nbsp;</td>
+  </tr>
+  <tr>
+    <td height="1" bgcolor="#ffffff" style="border:none; border-bottom: 1px solid #cccccc; font-size:1px; line-height:1px;">&nbsp;</td>
   </tr>
   {% if comment %}
     <tr>
@@ -50,10 +68,13 @@ Base file to be reused in the MailTemplate for the budget workflow engine
       </td>
     </tr>
     <tr>
+        <td style="height:20px;padding:5px;font-size:0;line-height:0;">&nbsp;</td>
+      </tr>
+    <tr>
       <td align="left" style="padding:0px 15px; margin-left: 5">
-        <quote>
-          {{ comment }}
-        </quote>
+        <p>
+          <em>"{{ comment }}"</em>
+        </p>
     </tr>
   {% endif %}
   {% include "_files.html" with attachments=attachments only %}
@@ -66,11 +87,17 @@ Base file to be reused in the MailTemplate for the budget workflow engine
     </tr>
   {% endif %}
   <tr>
+    <td style="height:20px;padding:5px;font-size:0;line-height:0;">&nbsp;</td>
+  </tr>
+  <tr>
+    <td height="1" bgcolor="#ffffff" style="border:none; border-bottom: 1px solid #cccccc; font-size:1px; line-height:1px;">&nbsp;</td>
+  </tr>
+  <tr>
     <td style="height:20px;padding:0;font-size:0;line-height:0;">&nbsp;</td>
   </tr>
   <tr>
     <td align="left" style="padding:5px;">
-      Consult the <a href="{{ budget_url }}">campaign page</a> for the complet budget history and more information.
+      Consult the <a href="{{ budget_url }}">campaign page</a> for the complete budget history and more information.
     </td>
   <tr>
     {% if buttons %}

@@ -75,7 +75,7 @@ const Filters = ({
                             container
                             item
                             xs={12}
-                            md={12 / filtersColumnsCount}
+                            md={3}
                             className={classes.column}
                             key={`column-${column}`}
                         >

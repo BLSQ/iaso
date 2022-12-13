@@ -26,6 +26,9 @@ from iaso.models import Form, Instance, InstanceFile, OrgUnit, Project, Profile
 from hat.audit.models import log_modification, INSTANCE_API
 from iaso.models import User
 from uuid import uuid4
+from logging import getLogger
+
+logger = getLogger(__name__)
 
 
 def public_url_for_enketo(request, path):
@@ -255,7 +258,13 @@ def enketo_form_list(request):
 
     Require a param `formID` which is actually an Instance UUID"""
     form_id_str = request.GET["formID"]
-    i = Instance.objects.exclude(deleted=True).filter(uuid=form_id_str).order_by("updated_at").last()
+    try:
+        i = Instance.objects.exclude(deleted=True).get(uuid=form_id_str)
+    except Instance.MultipleObjectsReturned:
+        logger.exception("Instance duplicate  uuid when editing")
+        # Prioritize instance with a json content, and then the more recently updated
+        i = Instance.objects.exclude(deleted=True).filter(uuid=form_id_str).order_by("json", "-updated_at").first()
+
     latest_form_version = i.form.latest_version
     # will it work through s3, what about "signing" infos if they expires ?
     downloadurl = public_url_for_enketo(request, "/api/enketo/formDownload/?uuid=%s" % i.uuid)
@@ -283,7 +292,12 @@ def enketo_form_download(request):
     We insert the instance.id In the form definition so the "Form" is unique per instance.
     """
     uuid = request.GET.get("uuid")
-    i = Instance.objects.filter(uuid=uuid).order_by("updated_at").last()
+    try:
+        i = Instance.objects.get(uuid=uuid)
+    except Instance.MultipleObjectsReturned:
+        logger.exception("Instance duplicate  uuid when editing")
+        # Prioritize instance with a json content, and then the more recently updated
+        i = Instance.objects.filter(uuid=uuid).order_by("json", "-updated_at").first()
     xml_string = i.form.latest_version.file.read().decode("utf-8")
     injected_xml = inject_instance_id_in_form(xml_string, i.id)
     return HttpResponse(injected_xml, content_type="application/xml")

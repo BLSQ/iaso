@@ -26,7 +26,7 @@ def populate_status_updated_at(apps, schema_editor):
 class Migration(migrations.Migration):
 
     dependencies = [
-        ("iaso", "0178_remove_beneficiary_user_perm"),
+        ("iaso", "0182_alter_workflowfollowup_condition"),
     ]
 
     operations = [

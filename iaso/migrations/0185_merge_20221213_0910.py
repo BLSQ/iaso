@@ -7,7 +7,7 @@ class Migration(migrations.Migration):
 
     dependencies = [
         ("iaso", "0179_alter_form_period_type"),
-        ("iaso", "0180_alter_storagedevice_status_updated_at"),
+        ("iaso", "0184_alter_storagedevice_status_updated_at"),
     ]
 
     operations = []

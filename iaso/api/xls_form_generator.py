@@ -174,9 +174,9 @@ def get_data_from_campaigns(campaign_id: str, row: int, q_sheet: Worksheet, calc
     campaign = get_object_or_404(Campaign, id=campaign_id)
     for i in range(2, row + 1):
         cell_obj = q_sheet.cell(row=i, column=2)
-        cell_value_start = cell_obj.value[:7] if cell_obj.value is not None else ""
+        cell_value_start = cell_obj.value[:7] if cell_obj.value is not None else ""  # type: ignore
         if cell_value_start == "insert_":
-            str_request = cell_obj.value[7:]
+            str_request = cell_obj.value[7:]  # type: ignore
             if str_request in authorized_fields:
                 cell_obj = q_sheet.cell(row=i, column=calculation_index)
                 cell_obj.value = str(getattr(campaign, str_request))

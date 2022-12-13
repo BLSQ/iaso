@@ -1,3 +1,5 @@
+from django.utils import timezone
+
 from iaso.models import Account, StorageDevice
 from iaso.test import TestCase
 
@@ -14,6 +16,6 @@ class StorageModelTestCase(TestCase):
         self.assertEqual(storage.status, StorageDevice.OK)
         self.assertEqual(storage.status_reason, "")
         self.assertEqual(storage.status_comment, "")
-        self.assertEqual(
-            storage.status_updated_at.replace(microsecond=0), storage.created_at.replace(microsecond=0)
-        )  # tiny time difference is OK, hence the microsecond=0
+        self.assertAlmostEqual(
+            storage.status_updated_at, storage.created_at, delta=timezone.timedelta(seconds=1)
+        )  # tiny time difference is OK

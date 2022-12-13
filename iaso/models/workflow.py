@@ -90,7 +90,7 @@ class WorkflowVersion(models.Model):
 
 class WorkflowFollowup(models.Model):
     order = models.IntegerField(default=0)
-    condition = models.TextField()
+    condition = models.JSONField(default=dict)
     forms = models.ManyToManyField(Form)
 
     # this actually points to a WorkflowVersion

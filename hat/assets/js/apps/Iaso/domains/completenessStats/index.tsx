@@ -44,7 +44,7 @@ export const CompletessStats: FunctionComponent<Props> = ({ params }) => {
                 title={formatMessage(MESSAGES.completeness)}
                 displayBackButton={false}
             />
-            <Box p={2} className={classes.container} pb={2}>
+            <Box p={4} className={classes.container}>
                 <Box>
                     <CompletenessStatsFilters params={params} />
                 </Box>

@@ -2,7 +2,15 @@ import React, { useCallback, useMemo, useState } from 'react';
 import PropTypes from 'prop-types';
 import { useDispatch, useSelector } from 'react-redux';
 
-import { Box, Button, Grid, makeStyles, Typography } from '@material-ui/core';
+import {
+    Box,
+    Button,
+    Grid,
+    makeStyles,
+    Typography,
+    useMediaQuery,
+    useTheme,
+} from '@material-ui/core';
 
 import Search from '@material-ui/icons/Search';
 import {
@@ -198,11 +206,15 @@ const InstancesFiltersComponent = ({
         );
     };
 
+    const theme = useTheme();
+    const isLargeLayout = useMediaQuery(theme.breakpoints.up('md'));
+
     return (
         <div className={classes.marginBottomBig}>
             <UserOrgUnitRestriction />
-            <Grid container spacing={4}>
-                <Grid item xs={4}>
+
+            <Grid container spacing={2}>
+                <Grid item xs={12} md={3}>
                     <InputComponent
                         keyValue="search"
                         onChange={handleFormChange}
@@ -243,36 +255,15 @@ const InstancesFiltersComponent = ({
                             }}
                         />
                     )}
-
-                    <Box id="ou-tree-input">
-                        <OrgUnitTreeviewModal
-                            toggleOnLabelClick={false}
-                            titleMessage={MESSAGES.org_unit}
-                            onConfirm={orgUnit =>
-                                handleFormChange(
-                                    'levels',
-                                    orgUnit ? [orgUnit.id] : undefined,
-                                )
-                            }
-                            initialSelection={initialOrgUnit}
-                        />
-                    </Box>
                     <InputComponent
-                        keyValue="orgUnitTypeId"
-                        clearable
-                        multi
+                        keyValue="showDeleted"
                         onChange={handleFormChange}
-                        value={formState.orgUnitTypeId.value || null}
-                        type="select"
-                        options={orgUnitTypes.map(t => ({
-                            label: t.name,
-                            value: t.id,
-                        }))}
-                        label={MESSAGES.org_unit_type_id}
-                        loading={fetchingOrgUnitTypes}
+                        value={formState.showDeleted.value}
+                        type="checkbox"
+                        label={MESSAGES.showDeleted}
                     />
                 </Grid>
-                <Grid item xs={4}>
+                <Grid item xs={12} md={3}>
                     <InputComponent
                         keyValue="status"
                         clearable
@@ -307,15 +298,37 @@ const InstancesFiltersComponent = ({
                             setHasError={setHasLocationLimitError}
                         />
                     </Box>
+                </Grid>
+                <Grid item xs={12} md={3}>
+                    <Box id="ou-tree-input">
+                        <OrgUnitTreeviewModal
+                            toggleOnLabelClick={false}
+                            titleMessage={MESSAGES.org_unit}
+                            onConfirm={orgUnit =>
+                                handleFormChange(
+                                    'levels',
+                                    orgUnit ? [orgUnit.id] : undefined,
+                                )
+                            }
+                            initialSelection={initialOrgUnit}
+                        />
+                    </Box>
                     <InputComponent
-                        keyValue="showDeleted"
+                        keyValue="orgUnitTypeId"
+                        clearable
+                        multi
                         onChange={handleFormChange}
-                        value={formState.showDeleted.value}
-                        type="checkbox"
-                        label={MESSAGES.showDeleted}
+                        value={formState.orgUnitTypeId.value || null}
+                        type="select"
+                        options={orgUnitTypes.map(t => ({
+                            label: t.name,
+                            value: t.id,
+                        }))}
+                        label={MESSAGES.org_unit_type_id}
+                        loading={fetchingOrgUnitTypes}
                     />
                 </Grid>
-                <Grid item xs={4}>
+                <Grid item xs={12} md={3}>
                     <DatesRange
                         xs={12}
                         sm={12}
@@ -371,36 +384,33 @@ const InstancesFiltersComponent = ({
                     )}
                 </Grid>
             </Grid>
-            <Grid
-                container
-                spacing={4}
-                justifyContent="flex-end"
-                alignItems="center"
-            >
+            <Grid container spacing={2}>
                 <Grid
                     item
-                    xs={2}
+                    xs={12}
                     container
                     justifyContent="flex-end"
                     alignItems="center"
                 >
-                    <Button
-                        disabled={
-                            !isInstancesFilterUpdated ||
-                            periodError ||
-                            startPeriodError ||
-                            endPeriodError ||
-                            hasLocationLimitError
-                        }
-                        variant="contained"
-                        className={classes.button}
-                        color="primary"
-                        data-test="search-button"
-                        onClick={() => handleSearch()}
-                    >
-                        <Search className={classes.buttonIcon} />
-                        {formatMessage(MESSAGES.search)}
-                    </Button>
+                    <Box mt={isLargeLayout ? 0 : 2}>
+                        <Button
+                            disabled={
+                                !isInstancesFilterUpdated ||
+                                periodError ||
+                                startPeriodError ||
+                                endPeriodError ||
+                                hasLocationLimitError
+                            }
+                            variant="contained"
+                            className={classes.button}
+                            color="primary"
+                            data-test="search-button"
+                            onClick={() => handleSearch()}
+                        >
+                            <Search className={classes.buttonIcon} />
+                            {formatMessage(MESSAGES.search)}
+                        </Button>
+                    </Box>
                 </Grid>
             </Grid>
         </div>

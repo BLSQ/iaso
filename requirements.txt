@@ -34,6 +34,7 @@ https://github.com/BLSQ/django-webpack-loader/archive/e94f76d0f8372193f0b662e2a1
 
 # importing tools
 jsonschema==3.2.0
+types-jsonschema==3.2.0
 
 # exporting tools
 xlsxwriter==1.2.7

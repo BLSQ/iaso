@@ -40,7 +40,6 @@
     "iaso.completeness.title": "Completeness",
     "iaso.completeness.titleDescendants": "Completeness (with descendants)",
     "iaso.completeness.titleDirect": "Completeness (direct)",
-    "iaso.completeness.tooMuchDepth": "Too much depth between parent and type",
     "iaso.completenessStats.title": "Completeness stats",
     "iaso.datasources.addAskTitle": "{title} - Source: {source} - Version: {version}",
     "iaso.datasources.button.label.copy": "Copy",

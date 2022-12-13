@@ -30,6 +30,102 @@ class XlsFormTemplateSerializer(serializers.ModelSerializer):
     updated_at = TimestampField(read_only=True)
 
 
+def generate_xls_form(path, org_unit_type_list, ou_hierarchy_list, ou_tree_list, campaign_id, request, form_name):
+    """
+    This function create a xls form with a selectable org unit tree. It is also possible to inject data dynamically
+    by add insert_yourfield in the xls form. Refer to the xls form template from the test for an example.
+    """
+    wb = openpyxl.load_workbook(path)
+    ws = wb.active
+    sheet = wb.get_sheet_by_name("choices")  # type: ignore
+    choices_row = 2
+    choices_column = 1
+    cell = list(string.ascii_uppercase)
+    q_sheet = wb.get_sheet_by_name("survey")  # type: ignore
+    survey_columns = []
+    survey_last_empty_row = len(list(q_sheet.rows))
+    for l in cell:
+        survey_columns.append(q_sheet[f"{l}1"].value)
+
+    # create xls columns
+    sheet[cell[choices_column - 1] + "1"] = "list name"
+    sheet[cell[choices_column] + "1"] = "name"
+    sheet[cell[choices_column + 1] + "1"] = "label"
+    sheet[cell[choices_column + 2] + "1"] = "id"
+    i = 2
+    for ou_type in org_unit_type_list:
+        sheet[cell[choices_column + i] + "1"] = ou_type
+        i += 1
+
+    # insert rows to add the org units fields at the top of the file
+    ws.insert_rows(3, 5)
+
+    added_ou_list = []
+    key_added_to_choice_list = []
+    starting_row = 3
+    ou_hierarchy_list = [d.lower() for d in ou_hierarchy_list]
+
+    # populate xls with OU
+    for ou_dic in ou_tree_list:
+        for k, v in ou_dic.items():
+            if v.id not in added_ou_list:
+                added_ou_list.append(v.id)
+                if k not in key_added_to_choice_list:
+                    # Add the ou type to the select choices of the xls form
+                    key_added_to_choice_list.append(k)
+                    q_sheet[
+                        cell[get_column_position("type", q_sheet) - 1] + str(starting_row)
+                    ] = f"select_one ou_{str(k).lower()}"
+                    q_sheet[cell[get_column_position("name", q_sheet) - 1] + str(starting_row)] = f"ou_{str(k).lower()}"
+                    q_sheet[cell[get_column_position("label", q_sheet) - 1] + str(starting_row)] = f"Select {k}"
+                    q_sheet[cell[get_column_position("required", q_sheet) - 1] + str(starting_row)] = "yes"
+                    if ou_hierarchy_list.index(k.lower()) != 0:
+                        parent_type = ou_hierarchy_list[ou_hierarchy_list.index(str(k.lower())) - 1]
+                        q_sheet[cell[get_column_position("choice_filter", q_sheet) - 1] + str(starting_row)] = (
+                            f"{parent_type}=$" "{" f"ou_{parent_type}" "} "
+                        )
+                # Add org units as hierarchy into the choices sheet.
+                sheet[cell[choices_column - 1] + str(choices_row)] = f"ou_{str(k).lower()}"
+                sheet[cell[choices_column] + str(choices_row)] = v.id
+                sheet[cell[choices_column + 1] + str(choices_row)] = str(v.name)
+
+                index_hierarchy = ou_hierarchy_list.index(str(k.lower()))
+                ou_dic = {k.lower(): v for k, v in ou_dic.items()}
+
+                calculation_index = 0
+                if index_hierarchy > 0:
+                    index_hierarchy -= 1
+                    for row_calc in sheet.rows:
+                        iterator = 0
+                        for s_cell in row_calc:
+                            iterator += 1
+                            if str(s_cell.value).lower() == ou_hierarchy_list[index_hierarchy].lower():
+                                calculation_index += iterator
+                                break
+                parent_ou_id = ou_dic.get(ou_hierarchy_list[index_hierarchy].lower()).id
+                sheet[cell[choices_column + calculation_index - 2] + str(choices_row)] = str(parent_ou_id)
+
+                choices_row += 1
+                starting_row += 1
+                survey_last_empty_row += 1
+
+    row = q_sheet.max_row
+    calculation_index = get_column_position("calculation", q_sheet)
+
+    # Insert data as calculation from campaigns
+    if campaign_id and request.user.has_perm("iaso_polio") and polio_plugin:
+        get_data_from_campaigns(campaign_id, row, q_sheet, calculation_index)
+
+    filename = f"FORM_{form_name}_{datetime.now().date()}.xlsx"
+
+    with NamedTemporaryFile() as tmp:
+        wb.save(tmp.name)
+        tmp.seek(0)
+        stream = tmp.read()
+
+    return stream, filename
+
+
 def get_data_from_campaigns(campaign_id: str, row: int, q_sheet: Worksheet, calculation_index: int):
     """This function get the data from a campaign and insert it in the calculation row
     of the xlsform. It's tagged as 'insert_field' in the xlsform.
@@ -149,102 +245,13 @@ class XlsFormGeneratorViewSet(ModelViewSet):
         except ValueError:
             raise serializers.ValidationError({"error": f"Bad Template Name."})
 
+        # create the org unist hierarchy and generate the xls form
         group_ou = group.org_units.all()
-
         ou_tree_list = create_ou_tree_list(group_ou)
+        stream, filename = generate_xls_form(
+            path, org_unit_type_list, ou_hierarchy_list, ou_tree_list, campaign_id, request, form_name
+        )
 
-        wb = openpyxl.load_workbook(path)
-        ws = wb.active
-        sheet = wb.get_sheet_by_name("choices")  # type: ignore
-        choices_row = 2
-        choices_column = 1
-        cell = list(string.ascii_uppercase)
-        q_sheet = wb.get_sheet_by_name("survey")  # type: ignore
-        survey_columns = []
-        survey_last_empty_row = len(list(q_sheet.rows))
-        for l in cell:
-            survey_columns.append(q_sheet[f"{l}1"].value)
-
-        # create xls columns
-        sheet[cell[choices_column - 1] + "1"] = "list name"
-        sheet[cell[choices_column] + "1"] = "name"
-        sheet[cell[choices_column + 1] + "1"] = "label"
-        sheet[cell[choices_column + 2] + "1"] = "id"
-        i = 2
-        for ou_type in org_unit_type_list:
-            sheet[cell[choices_column + i] + "1"] = ou_type
-            i += 1
-
-        # insert rows to add the org units fields at the top of the file
-        ws.insert_rows(3, 5)
-
-        added_ou_list = []
-        key_added_to_choice_list = []
-        starting_row = 3
-        ou_hierarchy_list = [d.lower() for d in ou_hierarchy_list]
-
-        # populate xls with OU
-        for ou_dic in ou_tree_list:
-            for k, v in ou_dic.items():
-                if v.id not in added_ou_list:
-                    added_ou_list.append(v.id)
-                    if k not in key_added_to_choice_list:
-                        # Add the ou type to the select choices of the xls form
-                        key_added_to_choice_list.append(k)
-                        q_sheet[
-                            cell[get_column_position("type", q_sheet) - 1] + str(starting_row)
-                        ] = f"select_one ou_{str(k).lower()}"
-                        q_sheet[
-                            cell[get_column_position("name", q_sheet) - 1] + str(starting_row)
-                        ] = f"ou_{str(k).lower()}"
-                        q_sheet[cell[get_column_position("label", q_sheet) - 1] + str(starting_row)] = f"Select {k}"
-                        q_sheet[cell[get_column_position("required", q_sheet) - 1] + str(starting_row)] = "yes"
-                        if ou_hierarchy_list.index(k.lower()) != 0:
-                            parent_type = ou_hierarchy_list[ou_hierarchy_list.index(str(k.lower())) - 1]
-                            q_sheet[cell[get_column_position("choice_filter", q_sheet) - 1] + str(starting_row)] = (
-                                f"{parent_type}=$" "{" f"ou_{parent_type}" "} "
-                            )
-                    # Add org units as hierarchy into the choices sheet.
-                    sheet[cell[choices_column - 1] + str(choices_row)] = f"ou_{str(k).lower()}"
-                    sheet[cell[choices_column] + str(choices_row)] = v.id
-                    sheet[cell[choices_column + 1] + str(choices_row)] = str(v.name)
-
-                    index_hierarchy = ou_hierarchy_list.index(str(k.lower()))
-                    ou_dic = {k.lower(): v for k, v in ou_dic.items()}
-
-                    calculation_index = 0
-                    if index_hierarchy > 0:
-                        index_hierarchy -= 1
-                        for row_calc in sheet.rows:
-                            iterator = 0
-                            for s_cell in row_calc:
-                                iterator += 1
-                                if str(s_cell.value).lower() == ou_hierarchy_list[index_hierarchy].lower():
-                                    calculation_index += iterator
-                                    break
-                    parent_ou_id = ou_dic.get(ou_hierarchy_list[index_hierarchy].lower()).id
-                    sheet[cell[choices_column + calculation_index - 2] + str(choices_row)] = str(parent_ou_id)
-
-                    choices_row += 1
-                    starting_row += 1
-                    survey_last_empty_row += 1
-
-        row = q_sheet.max_row
-        print(type(row))
-        print(type(q_sheet))
-        calculation_index = get_column_position("calculation", q_sheet)
-
-        # Insert data as calculation from campaigns
-        if campaign_id and request.user.has_perm("iaso_polio") and polio_plugin:
-            get_data_from_campaigns(campaign_id, row, q_sheet, calculation_index)
-
-        filename = f"FORM_{form_name}_{datetime.now().date()}.xlsx"
-
-        with NamedTemporaryFile() as tmp:
-            wb.save(tmp.name)
-            tmp.seek(0)
-            stream = tmp.read()
-
-            response = HttpResponse(stream, content_type=CONTENT_TYPE_XLSX)
-            response["Content-Disposition"] = "attachment; filename=%s" % filename
-            return response
+        response = HttpResponse(stream, content_type=CONTENT_TYPE_XLSX)
+        response["Content-Disposition"] = "attachment; filename=%s" % filename
+        return response

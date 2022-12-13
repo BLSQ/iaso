@@ -1,5 +1,5 @@
 import json
-import urllib
+import urllib.parse
 
 from django.core.files.uploadedfile import UploadedFile
 

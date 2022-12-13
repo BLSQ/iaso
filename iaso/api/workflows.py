@@ -2,35 +2,32 @@ from copy import deepcopy
 
 from iaso.models import Workflow, WorkflowVersion, EntityType, WorkflowFollowup, WorkflowChange, Form
 from iaso.models.workflow import WorkflowVersionsStatus
-
+from iaso.api.common import ModelViewSet, HasPermission
 
 from rest_framework import serializers, filters, permissions
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from django_filters.rest_framework import DjangoFilterBackend  # type: ignore
 
-from iaso.api.common import ModelViewSet, HasPermission
-
-from drf_yasg import openapi
 from drf_yasg.utils import swagger_auto_schema, no_body
 
 from django.shortcuts import get_object_or_404
 
 
-class FormMiniSerializer(serializers.ModelSerializer):
+class FormNestedSerializer(serializers.ModelSerializer):
     class Meta:
         model = Form
         fields = ["id", "name"]
 
 
-class EntityTypeMiniSerializer(serializers.ModelSerializer):
+class EntityTypeNestedSerializer(serializers.ModelSerializer):
     class Meta:
         model = EntityType
         fields = ["id", "name", "reference_form"]
 
 
 class WorkflowVersionSerializer(serializers.ModelSerializer):
-    version_id = serializers.IntegerField(source="pk")
+    version_id = serializers.IntegerField(source="id")
 
     class Meta:
         model = WorkflowVersion
@@ -50,7 +47,7 @@ class WorkflowSerializer(serializers.ModelSerializer):
 
 
 class WorkflowChangeSerializer(serializers.ModelSerializer):
-    form = FormMiniSerializer(many=False)
+    form = FormNestedSerializer(many=False)
 
     class Meta:
         model = WorkflowChange
@@ -58,7 +55,7 @@ class WorkflowChangeSerializer(serializers.ModelSerializer):
 
 
 class WorkflowFollowupSerializer(serializers.ModelSerializer):
-    forms = FormMiniSerializer(many=True)
+    forms = FormNestedSerializer(many=True)
 
     class Meta:
         model = WorkflowFollowup
@@ -67,8 +64,8 @@ class WorkflowFollowupSerializer(serializers.ModelSerializer):
 
 class WorkflowVersionDetailSerializer(serializers.ModelSerializer):
     version_id = serializers.IntegerField(source="pk")
-    reference_form = FormMiniSerializer()
-    entity_type = EntityTypeMiniSerializer(source="workflow.entity_type")
+    reference_form = FormNestedSerializer()
+    entity_type = EntityTypeNestedSerializer(source="workflow.entity_type")
     changes = WorkflowChangeSerializer(many=True)
     follow_ups = WorkflowFollowupSerializer(many=True)
 
@@ -86,30 +83,6 @@ class WorkflowVersionDetailSerializer(serializers.ModelSerializer):
             "changes",
             "follow_ups",
         ]
-
-
-def clone_change(new_version):
-    def clone_change_real(orig_change):
-        new_change = deepcopy(orig_change)
-        new_change.workflow_version = new_version
-        new_change.id = None
-        new_change.save()
-
-        return new_change
-
-    return clone_change_real
-
-
-def clone_followup(new_version):
-    def clone_followup_real(orig_followup):
-        new_followup = deepcopy(orig_followup)
-        new_followup.workflow_version = new_version
-        new_followup.id = None
-        new_followup.save()
-
-        return new_followup
-
-    return clone_followup_real
 
 
 def make_deep_copy_with_relations(orig_version):
@@ -134,45 +107,51 @@ def make_deep_copy_with_relations(orig_version):
         new_followup.id = None
         new_followup.save()
 
-        new_followup.forms.clear()
-
         orig_forms = of.forms.all()
-        new_followup.forms.add(*orig_forms)
+        new_followup.forms.set(*orig_forms)
 
     return new_version
 
 
-entity_type_id_param = openapi.Parameter(
-    "entity_type_id", openapi.IN_QUERY, description="Entity Type ID", type=openapi.TYPE_STRING, required=True
-)
+class WorkflowPostSerializer(serializers.Serializer):
+    entity_type_id = serializers.IntegerField(required=True)
+
+    def validate_entity_type_id(self, entity_type_id):
+        et = EntityType.objects.get(pk=entity_type_id)
+
+        if not et.account == self.context["request"].user.iaso_profile.account:
+            raise serializers.ValidationError("User doesn't have access to Entity Type : " + str(entity_type_id))
+
+        return entity_type_id
+
+    def create(self, validated_data):
+        wf, wf_created = Workflow.objects.get_or_create(entity_type_id=validated_data["entity_type_id"])
+        return WorkflowVersion.objects.create(workflow=wf)
 
 
 class WorkflowVersionViewSet(ModelViewSet):
     """Workflow API
-    GET /api/workflowversion/
-    GET /api/workflowversion/{version_id}/
+    GET /api/workflowversions/
+    GET /api/workflowversions/{version_id}/
     If version_id is provided returns the detail of this workflow version.
     Else returns a paginated list of all the workflow versions.
     """
 
     permission_classes = [permissions.IsAuthenticated, HasPermission("menupermissions.iaso_workflows")]  # type: ignore
     filter_backends = [filters.OrderingFilter, DjangoFilterBackend]
-    ordering_fields = ["name", "created_at", "updated_at"]
+    ordering_fields = ["name", "created_at", "updated_at", "id"]
     serializer_class = WorkflowVersionDetailSerializer
     results_key = "workflow_versions"
     remove_results_key_if_paginated = False
     model = WorkflowVersion
-
     lookup_url_kwarg = "version_id"
-
-    filterset_fields = {"workflow__entity_type": ["exact"]}
-
+    filterset_fields = {"workflow__entity_type": ["exact"], "status": ["exact"], "id": ["exact"]}
     http_method_names = ["get", "post", "patch"]
 
     @swagger_auto_schema(request_body=no_body)
     @action(detail=True, methods=["post"])
     def copy(self, request, **kwargs):
-        """POST /api/workflowversion/{version_id}/copy
+        """POST /api/workflowversions/{version_id}/copy
         Creates a new workflow version by copying the exiting version given by {version_id}
         """
 
@@ -210,20 +189,17 @@ class WorkflowVersionViewSet(ModelViewSet):
 
         return Response(serialized_data)
 
-    @swagger_auto_schema(manual_parameters=[entity_type_id_param], request_body=no_body)
+    @swagger_auto_schema(request_body=WorkflowPostSerializer)
     def create(self, request, *args, **kwargs):
-        """POST /api/workflowversion/?entity_type_id=XXX
+        """POST /api/workflowversions/
         Create a new empty and DRAFT workflow version for the workflow connected to Entity Type 'entity_type_id'
         """
-        entity_type_id = request.query_params.get("entity_type_id", None)
-        wf, wf_created = Workflow.objects.get_or_create(entity_type_id=entity_type_id)
-        wv = WorkflowVersion.objects.create(workflow=wf)
-        serialized_data = WorkflowVersionSerializer(wv).data
+        serializer = WorkflowPostSerializer(data=request.data, context={"request": request})
+        serializer.is_valid(raise_exception=True)
+        res = serializer.save()
+        serialized_data = WorkflowVersionSerializer(res).data
         return Response(serialized_data)
 
     def get_queryset(self):
         """Always filter the base queryset by account"""
-
-        return WorkflowVersion.objects.filter(
-            workflow__entity_type__account=self.request.user.iaso_profile.account
-        ).order_by("pk")
+        return WorkflowVersion.objects.filter_for_user(self.request.user).order_by("pk")

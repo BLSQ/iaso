@@ -1,6 +1,7 @@
-from typing import Set
+import typing
 
 from django.db import models
+from django.contrib.auth.models import User, AnonymousUser
 from iaso.models.entity import EntityType, Form
 from ..utils.models.soft_deletable import SoftDeletableModel
 
@@ -41,9 +42,22 @@ class WorkflowVersionsStatus(models.TextChoices):
     PUBLISHED = "PUBLISHED", "Published"
 
 
-def is_transition_allowed(cur_status_str, new_status_str: str):
-    allowed_set: Set[str] = WorkflowVersionsStatusAllowedTransitions.get(cur_status_str, set())
-    return new_status_str in allowed_set
+def is_transition_allowed(self, new_status: "WorkflowVersionsStatus"):
+    allowed_set: typing.Set[str] = WorkflowVersionsStatusAllowedTransitions.get(self.value, set())
+    return new_status.value in allowed_set
+
+
+class WorkflowVersionQuerySet(models.QuerySet):
+    def filter_for_user(self, user: typing.Union[User, AnonymousUser, None]):
+        if not user or user.is_anonymous:
+            return self.none()
+
+        queryset = self.all()
+
+        if user and user.is_authenticated:
+            queryset = queryset.filter(workflow__entity_type__account=user.iaso_profile.account)
+
+        return queryset
 
 
 class WorkflowVersion(models.Model):
@@ -65,6 +79,8 @@ class WorkflowVersion(models.Model):
 
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+
+    objects = WorkflowVersionQuerySet.as_manager()
 
     def transition_to_status(self, new_status_str: str):
         old_status_str = self.status
@@ -91,7 +107,7 @@ class WorkflowVersion(models.Model):
 
 class WorkflowFollowup(models.Model):
     order = models.IntegerField(default=0)
-    condition = models.TextField()
+    condition = models.JSONField(default=dict)
     forms = models.ManyToManyField(Form)
 
     # this actually points to a WorkflowVersion

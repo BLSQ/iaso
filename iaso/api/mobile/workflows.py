@@ -1,10 +1,7 @@
-import time
+import json
 
-from django.db.models import Q
-
-from iaso.models.workflow import WorkflowVersionsStatus
 from rest_framework import serializers, permissions
-from iaso.models import WorkflowVersion, Project, Workflow
+from iaso.models import WorkflowVersion, Project, WorkflowFollowup
 from rest_framework.viewsets import GenericViewSet
 from rest_framework.response import Response
 
@@ -14,9 +11,22 @@ from drf_yasg.utils import swagger_auto_schema
 from drf_yasg import openapi
 
 
+class FollowupNestedSerializer(serializers.ModelSerializer):
+
+    condition = serializers.SerializerMethodField()
+
+    class Meta:
+        model = WorkflowFollowup
+        fields = ["order", "condition", "forms", "created_at", "updated_at"]
+
+    def get_condition(self, obj):
+        return json.dumps(obj.condition)
+
+
 class MobileWorkflowVersionSerializer(serializers.ModelSerializer):
     version_id = serializers.IntegerField(source="pk")
     entity_type_id = serializers.IntegerField(source="workflow.entity_type.pk")
+    follow_ups = FollowupNestedSerializer(many=True)
 
     created_at = TimestampField()
     updated_at = TimestampField()
@@ -68,15 +78,13 @@ class MobileWorkflowViewSet(GenericViewSet):
             return Response(status=404, data="User not found in Projects for this app id or project not found")
 
         # project -> account -> users
-        queryset = self.get_queryset(**dict(kwargs, user=request.user))
+        queryset = self.get_queryset(**kwargs)
         serializer = self.get_serializer(queryset, many=True)
         return Response({"workflows": serializer.data})
 
     def get_queryset(self, **kwargs):
-        user = kwargs["user"]
-
         return (
-            WorkflowVersion.objects.filter(workflow__entity_type__account=user.iaso_profile.account)
+            WorkflowVersion.objects.filter_for_user(self.request.user)
             .order_by("workflow__pk", "-created_at")
             .distinct("workflow__pk")
         )

@@ -702,7 +702,7 @@ export const linksFilters = props => {
                 'destination',
                 formatMessage(MESSAGES.sourcedestination),
             ),
-            column: 3,
+            column: 4,
         },
         {
             ...version(
@@ -717,7 +717,7 @@ export const linksFilters = props => {
                 'destinationVersion',
                 formatMessage(MESSAGES.sourcedestinationversion),
             ),
-            column: 3,
+            column: 4,
         },
     ];
     return filters;

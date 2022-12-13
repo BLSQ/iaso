@@ -21,6 +21,7 @@ type Props = {
     errors?: string[];
     required?: boolean;
     debounceTime?: number; // debounce time in ms
+    disabled?: boolean;
 };
 
 const useStyles = makeStyles(theme => ({
@@ -64,6 +65,16 @@ const useStyles = makeStyles(theme => ({
         },
     },
     errorText: { color: theme.palette.error.main },
+    // @ts-ignore
+    disabledLabel: { backgroundColor: theme.palette.ligthGray.background },
+    disabledTextArea: {
+        '&:hover': {
+            // @ts-ignore
+            border: `1px solid rgba(0, 0, 0, 0.23)`,
+        },
+        // @ts-ignore
+        backgroundColor: theme.palette.ligthGray.background,
+    },
 }));
 
 export const TextArea: FunctionComponent<Props> = ({
@@ -73,12 +84,13 @@ export const TextArea: FunctionComponent<Props> = ({
     errors = [],
     required = false,
     debounceTime = 0,
+    disabled = false,
 }) => {
-    const prevValue = useRef<Optional<string>>();
-    const prevDebounced = useRef<Optional<string>>();
     const classes: Record<string, string> = useStyles();
     const [focus, setFocus] = useState<boolean>(false);
     const hasErrors = errors.length > 0;
+    const prevValue = useRef<Optional<string>>();
+    const prevDebounced = useRef<Optional<string>>();
     const [textValue, setTextValue] = useState<string>(value ?? '');
     const [debouncedValue] = useDebounce(textValue, debounceTime);
 
@@ -92,7 +104,7 @@ export const TextArea: FunctionComponent<Props> = ({
 
     useSkipEffectOnMount(() => {
         if (debouncedValue !== prevDebounced.current) {
-            // Only call onChange if debouncedVAlue has been updated to avoid unwanted overwrites
+            // Only call onChange if debouncedValue has been updated to avoid unwanted overwrites
             prevDebounced.current = debouncedValue;
             onChange(debouncedValue);
         }
@@ -107,6 +119,7 @@ export const TextArea: FunctionComponent<Props> = ({
                     focus && classes.inputLabelFocus,
                     Boolean(value) && classes.inputLabelShrink,
                     hasErrors && classes.errorText,
+                    disabled && classes.disabledLabel,
                 )}
                 required={required}
             >
@@ -117,11 +130,13 @@ export const TextArea: FunctionComponent<Props> = ({
                 className={classnames(
                     classes.textArea,
                     hasErrors && classes.errorArea,
+                    disabled && classes.disabledTextArea,
                 )}
                 onChange={e => {
                     setTextValue(e.target.value);
                 }}
                 value={textValue}
+                disabled={disabled}
             />
         </FormControl>
     );

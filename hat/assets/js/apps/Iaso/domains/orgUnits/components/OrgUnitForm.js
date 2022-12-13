@@ -39,6 +39,8 @@ const OrgUnitForm = ({
     params,
     baseUrl,
     onResetOrgUnit,
+    isFetchingOrgUnitTypes,
+    isFetchingGroups,
 }) => {
     const [formState, setFieldValue, setFieldErrors, setFormState] =
         useFormState(initialFormState(orgUnit));
@@ -127,6 +129,8 @@ const OrgUnitForm = ({
                 groups={groups}
                 onChangeInfo={handleChangeInfo}
                 resetTrigger={!orgUnitModified}
+                isFetchingOrgUnitTypes={isFetchingOrgUnitTypes}
+                isFetchingGroups={isFetchingGroups}
             />
             <Grid
                 container
@@ -170,6 +174,8 @@ OrgUnitForm.propTypes = {
     onResetOrgUnit: PropTypes.func.isRequired,
     params: PropTypes.object.isRequired,
     baseUrl: PropTypes.string.isRequired,
+    isFetchingOrgUnitTypes: PropTypes.bool.isRequired,
+    isFetchingGroups: PropTypes.bool.isRequired,
 };
 
 export default withStyles(styles)(OrgUnitForm);

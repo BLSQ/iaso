@@ -2,7 +2,7 @@ import React from 'react';
 import { getParamsKey } from 'bluesquare-components';
 import MESSAGES from '../domains/forms/messages';
 import FullStarsSvg from '../components/stars/FullStarsSvgComponent';
-import getDisplayName from '../utils/usersUtils';
+import getDisplayName from '../utils/usersUtils.ts';
 import { usePrettyPeriod } from '../domains/periods/utils';
 import { orgUnitLabelString } from '../domains/orgUnits/utils';
 import { capitalize } from '../utils/index';

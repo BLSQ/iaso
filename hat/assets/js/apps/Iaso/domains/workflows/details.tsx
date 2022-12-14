@@ -120,7 +120,7 @@ export const Details: FunctionComponent<Props> = ({ router }) => {
                         </WidgetPaper>
                     </Grid>
                 </Grid>
-                <Box mt={2} width={200}>
+                {/* <Box mt={2} width={200}>
                     <WidgetPaper
                         className={classes.fullWidth}
                         title={formatMessage(MESSAGES.followUps)}
@@ -131,7 +131,7 @@ export const Details: FunctionComponent<Props> = ({ router }) => {
                             RenderItem={props => <SortableItem {...props} />}
                         />
                     </WidgetPaper>
-                </Box>
+                </Box> */}
                 <Box mt={2}>
                     <WidgetPaper
                         className={classes.fullWidth}

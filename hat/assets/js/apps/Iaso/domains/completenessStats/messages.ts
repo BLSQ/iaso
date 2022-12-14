@@ -37,6 +37,10 @@ const MESSAGES = defineMessages({
         id: 'iaso.completeness.chooseParent',
         defaultMessage: 'Select a form or a parent org unit to enable',
     },
+    completenessStats: {
+        defaultMessage: 'Completeness Stats',
+        id: 'iaso.completenessStats.title',
+    },
 });
 
 export default MESSAGES;

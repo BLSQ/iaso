@@ -25,16 +25,26 @@ export const CompletenessStatsFilters: FunctionComponent<Props> = ({
         useGetOrgUnitTypesOptions();
     const { filters, handleSearch, handleChange, filtersUpdated } =
         useFilterState({ baseUrl, params });
-    const [initialOrgUnitId, setInitialOrgUnitId] = useState(params?.orgUnitId);
 
+    const [initialOrgUnitId, setInitialOrgUnitId] = useState(params?.orgUnitId);
     const { data: initialOrgUnit } = useGetOrgUnit(initialOrgUnitId);
+
+    const [initialParentId, setInitialParentId] = useState(params?.parentId);
+    const { data: initialParent } = useGetOrgUnit(initialParentId);
 
     const handleOrgUnitChange = useCallback(
         orgUnit => {
             const id = orgUnit ? [orgUnit.id] : undefined;
             setInitialOrgUnitId(id);
-            // setSelectedOrgUnit(orgUnit);
             handleChange('orgUnitId', id);
+        },
+        [handleChange],
+    );
+    const handleParentChange = useCallback(
+        orgUnit => {
+            const id = orgUnit ? [orgUnit.id] : undefined;
+            setInitialParentId(id);
+            handleChange('parentId', id);
         },
         [handleChange],
     );
@@ -56,8 +66,6 @@ export const CompletenessStatsFilters: FunctionComponent<Props> = ({
                         loading={fetchingForms}
                         options={forms ?? []}
                     />
-                </Grid>
-                <Grid item xs={12} md={3}>
                     <Box id="ou-tree-input">
                         <OrgUnitTreeviewModal
                             toggleOnLabelClick={false}
@@ -68,6 +76,14 @@ export const CompletenessStatsFilters: FunctionComponent<Props> = ({
                     </Box>
                 </Grid>
                 <Grid item xs={12} md={3}>
+                    <Box id="ou-tree-input-parent">
+                        <OrgUnitTreeviewModal
+                            toggleOnLabelClick={false}
+                            titleMessage={MESSAGES.parent}
+                            onConfirm={handleParentChange}
+                            initialSelection={initialParent}
+                        />
+                    </Box>
                     <InputComponent
                         type="select"
                         multi
@@ -82,7 +98,7 @@ export const CompletenessStatsFilters: FunctionComponent<Props> = ({
                 <Grid
                     container
                     item
-                    xs={isLargeLayout ? 3 : 12}
+                    xs={isLargeLayout ? 6 : 12}
                     justifyContent="flex-end"
                 >
                     <Box mt={isLargeLayout ? 2 : 0}>

@@ -15,6 +15,8 @@ import {
     formatThousand,
     // @ts-ignore
     SortableTable,
+    // @ts-ignore
+    SortableList,
 } from 'bluesquare-components';
 import { Box, Grid, makeStyles } from '@material-ui/core';
 import { useDispatch, useSelector } from 'react-redux';
@@ -33,6 +35,7 @@ import {
 } from './types/workflows';
 
 import { WorkflowBaseInfo } from './components/WorkflowBaseInfo';
+import { SortableItem } from './components/SortableItem';
 
 import WidgetPaper from '../../components/papers/WidgetPaperComponent';
 import { TableWithDeepLink } from '../../components/tables/TableWithDeepLink';
@@ -117,6 +120,18 @@ export const Details: FunctionComponent<Props> = ({ router }) => {
                         </WidgetPaper>
                     </Grid>
                 </Grid>
+                <Box mt={2} width={200}>
+                    <WidgetPaper
+                        className={classes.fullWidth}
+                        title={formatMessage(MESSAGES.followUps)}
+                    >
+                        <SortableList
+                            items={followUps}
+                            onChange={handleSortChange}
+                            RenderItem={props => <SortableItem {...props} />}
+                        />
+                    </WidgetPaper>
+                </Box>
                 <Box mt={2}>
                     <WidgetPaper
                         className={classes.fullWidth}

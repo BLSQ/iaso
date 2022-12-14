@@ -42,9 +42,9 @@ class WorkflowVersionsStatus(models.TextChoices):
     PUBLISHED = "PUBLISHED", "Published"
 
 
-def is_transition_allowed(self, new_status: "WorkflowVersionsStatus"):
-    allowed_set: typing.Set[str] = WorkflowVersionsStatusAllowedTransitions.get(self.value, set())
-    return new_status.value in allowed_set
+def is_transition_allowed(self: "WorkflowVersion", new_status: str):
+    allowed_set: typing.Set[str] = WorkflowVersionsStatusAllowedTransitions.get(self.status, set())
+    return new_status in allowed_set
 
 
 class WorkflowVersionQuerySet(models.QuerySet):
@@ -82,12 +82,13 @@ class WorkflowVersion(models.Model):
 
     objects = WorkflowVersionQuerySet.as_manager()
 
-    def transition_to_status(self, new_status_str: str):
+    def transition_to_status(self, new_status_str: str, do_save=True):
         old_status_str = self.status
 
-        if is_transition_allowed(old_status_str, new_status_str):
+        if is_transition_allowed(self, new_status_str):
             self.status = new_status_str
-            self.save()
+            if do_save:
+                self.save()
 
             if new_status_str == "PUBLISHED":
                 # We passed all the other PUBLISHED -> UNPUBLISHED

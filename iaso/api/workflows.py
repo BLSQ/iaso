@@ -129,6 +129,43 @@ class WorkflowPostSerializer(serializers.Serializer):
         return WorkflowVersion.objects.create(workflow=wf)
 
 
+class WorkflowPartialUpdateSerializer(serializers.Serializer):
+
+    status = serializers.CharField(required=False)
+    name = serializers.CharField(required=False)
+
+    def validate_status(self, new_status):
+        if hasattr(WorkflowVersionsStatus, new_status):
+            return new_status
+        else:
+            raise serializers.ValidationError(new_status + "is not recognized as proper status value")
+
+    def validate_name(self, new_name):
+        if len(new_name) <= 1:
+            raise serializers.ValidationError("name '" + new_name + "' is too short")
+        return new_name
+
+    def update(self, instance, validated_data):
+        instance_changed = False
+
+        if "name" in validated_data:
+            instance.name = validated_data["name"]
+            instance_changed = True
+
+        if "status" in validated_data:
+            res = instance.transition_to_status(validated_data["status"], do_save=False)
+
+            if not res["success"]:
+                raise serializers.ValidationError(res["error"])
+            else:
+                instance_changed = True
+
+        if instance_changed:
+            instance.save()
+
+        return instance
+
+
 class WorkflowVersionViewSet(ModelViewSet):
     """Workflow API
     GET /api/workflowversions/
@@ -161,32 +198,15 @@ class WorkflowVersionViewSet(ModelViewSet):
         serialized_data = WorkflowVersionSerializer(new_vw).data
         return Response(serialized_data)
 
+    @swagger_auto_schema(request_body=WorkflowPartialUpdateSerializer)
     def partial_update(self, request, *args, **kwargs):
         version_id = request.query_params.get("version_id", kwargs.get("version_id", None))
         wv_orig = get_object_or_404(WorkflowVersion, pk=version_id)
 
-        print("version_id", version_id)
-        print("wv_orig before", wv_orig)
-
-        changed_status = request.data.get("status", None)
-        changed_name = request.data.get("name", None)
-
-        print("changed_status", changed_status)
-
-        if changed_name is not None:
-            wv_orig.name = changed_name
-
-        if changed_status is not None:
-            res = wv_orig.transition_to_status(changed_status)
-            if not res["success"]:
-                return Response(res["error"], status=401)
-
-        wv_orig.save()
-
-        print("wv_orig after", wv_orig)
-
-        serialized_data = WorkflowVersionSerializer(wv_orig).data
-
+        serializer = WorkflowPartialUpdateSerializer(data=request.data, context={"request": request}, partial=True)
+        serializer.is_valid(raise_exception=True)
+        res = serializer.update(wv_orig, serializer.validated_data)
+        serialized_data = WorkflowVersionSerializer(res).data
         return Response(serialized_data)
 
     @swagger_auto_schema(request_body=WorkflowPostSerializer)

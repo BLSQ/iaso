@@ -57,7 +57,7 @@ const GroupedCampaignsFilter: FunctionComponent<Props> = ({
     return (
         <>
             <Box display="inline-flex" width="85%">
-                <Grid container spacing={4}>
+                <Grid container spacing={2}>
                     <Grid item xs={3}>
                         <InputComponent
                             keyValue="search"

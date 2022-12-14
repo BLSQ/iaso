@@ -59,7 +59,7 @@ export const BudgetFilters: FunctionComponent<Props> = ({
                         label={MESSAGES.status}
                     />
                 </Grid>
-                <Grid container item xs={12} justifyContent="flex-end">
+                <Grid container item xs={12} md={6} justifyContent="flex-end">
                     <Box mt={2}>
                         <FilterButton
                             disabled={!filtersUpdated}

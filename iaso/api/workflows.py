@@ -1,18 +1,17 @@
 from copy import deepcopy
 
-from django.contrib.auth.models import User
 from iaso.models import Workflow, WorkflowVersion, EntityType, WorkflowFollowup, WorkflowChange, Form
 from iaso.models.workflow import WorkflowVersionsStatus
-
+from iaso.api.common import ModelViewSet, HasPermission
 
 from rest_framework import serializers, filters, permissions
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from django_filters.rest_framework import DjangoFilterBackend  # type: ignore
 
-from iaso.api.common import ModelViewSet, HasPermission
-
 from drf_yasg.utils import swagger_auto_schema, no_body
+
+from django.shortcuts import get_object_or_404
 
 
 class FormNestedSerializer(serializers.ModelSerializer):
@@ -130,6 +129,43 @@ class WorkflowPostSerializer(serializers.Serializer):
         return WorkflowVersion.objects.create(workflow=wf)
 
 
+class WorkflowPartialUpdateSerializer(serializers.Serializer):
+
+    status = serializers.CharField(required=False)
+    name = serializers.CharField(required=False)
+
+    def validate_status(self, new_status):
+        if hasattr(WorkflowVersionsStatus, new_status):
+            return new_status
+        else:
+            raise serializers.ValidationError(new_status + "is not recognized as proper status value")
+
+    def validate_name(self, new_name):
+        if len(new_name) <= 1:
+            raise serializers.ValidationError("name '" + new_name + "' is too short")
+        return new_name
+
+    def update(self, instance, validated_data):
+        instance_changed = False
+
+        if "name" in validated_data:
+            instance.name = validated_data["name"]
+            instance_changed = True
+
+        if "status" in validated_data:
+            res = instance.transition_to_status(validated_data["status"], do_save=False)
+
+            if not res["success"]:
+                raise serializers.ValidationError(res["error"])
+            else:
+                instance_changed = True
+
+        if instance_changed:
+            instance.save()
+
+        return instance
+
+
 class WorkflowVersionViewSet(ModelViewSet):
     """Workflow API
     GET /api/workflowversions/
@@ -147,7 +183,7 @@ class WorkflowVersionViewSet(ModelViewSet):
     model = WorkflowVersion
     lookup_url_kwarg = "version_id"
     filterset_fields = {"workflow__entity_type": ["exact"], "status": ["exact"], "id": ["exact"]}
-    http_method_names = ["get", "post"]
+    http_method_names = ["get", "post", "patch"]
 
     @swagger_auto_schema(request_body=no_body)
     @action(detail=True, methods=["post"])
@@ -160,6 +196,17 @@ class WorkflowVersionViewSet(ModelViewSet):
         wv_orig = WorkflowVersion.objects.get(pk=version_id)
         new_vw = make_deep_copy_with_relations(wv_orig)
         serialized_data = WorkflowVersionSerializer(new_vw).data
+        return Response(serialized_data)
+
+    @swagger_auto_schema(request_body=WorkflowPartialUpdateSerializer)
+    def partial_update(self, request, *args, **kwargs):
+        version_id = request.query_params.get("version_id", kwargs.get("version_id", None))
+        wv_orig = get_object_or_404(WorkflowVersion, pk=version_id)
+
+        serializer = WorkflowPartialUpdateSerializer(data=request.data, context={"request": request}, partial=True)
+        serializer.is_valid(raise_exception=True)
+        res = serializer.update(wv_orig, serializer.validated_data)
+        serialized_data = WorkflowVersionSerializer(res).data
         return Response(serialized_data)
 
     @swagger_auto_schema(request_body=WorkflowPostSerializer)

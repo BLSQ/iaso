@@ -2,7 +2,14 @@ import React, { useState, useCallback } from 'react';
 import { useDispatch } from 'react-redux';
 import PropTypes from 'prop-types';
 
-import { Grid, Button, makeStyles, Box } from '@material-ui/core';
+import {
+    Grid,
+    Button,
+    makeStyles,
+    Box,
+    useTheme,
+    useMediaQuery,
+} from '@material-ui/core';
 import SearchIcon from '@material-ui/icons/Search';
 
 import { commonStyles, useSafeIntl } from 'bluesquare-components';
@@ -35,6 +42,9 @@ const Filters = ({ baseUrl, params }) => {
     const { data: initialOrgUnit } = useGetOrgUnit(initialOrgUnitId);
     const { data: orgUnitTypeDropdown, isFetching: isFetchingOuTypes } =
         useGetOrgUnitTypes();
+
+    const theme = useTheme();
+    const isLargeLayout = useMediaQuery(theme.breakpoints.up('md'));
 
     const handleSearch = useCallback(() => {
         if (filtersUpdated) {
@@ -77,7 +87,7 @@ const Filters = ({ baseUrl, params }) => {
     return (
         <>
             <Grid container spacing={2}>
-                <Grid item xs={3}>
+                <Grid item xs={12} md={3}>
                     <InputComponent
                         keyValue="search"
                         onChange={handleChange}
@@ -87,7 +97,7 @@ const Filters = ({ baseUrl, params }) => {
                         onEnterPressed={handleSearch}
                     />
                 </Grid>
-                <Grid item xs={3}>
+                <Grid item xs={12} md={3}>
                     <InputComponent
                         keyValue="permissions"
                         onChange={handleChange}
@@ -100,8 +110,8 @@ const Filters = ({ baseUrl, params }) => {
                         onEnterPressed={handleSearchPerms}
                     />
                 </Grid>
-                <Grid item xs={3}>
-                    <Box id="ou-tree-input">
+                <Grid item xs={12} md={3}>
+                    <Box id="ou-tree-input" mb={isLargeLayout ? 0 : -2}>
                         <OrgUnitTreeviewModal
                             toggleOnLabelClick={false}
                             titleMessage={MESSAGES.location}
@@ -115,7 +125,7 @@ const Filters = ({ baseUrl, params }) => {
                         />
                     </Box>
                 </Grid>
-                <Grid item xs={3}>
+                <Grid item xs={12} md={3}>
                     <InputComponent
                         keyValue="orgUnitTypes"
                         onChange={handleChange}
@@ -128,31 +138,20 @@ const Filters = ({ baseUrl, params }) => {
                         clearable
                     />
                 </Grid>
-            </Grid>
-            <Grid
-                container
-                spacing={2}
-                justifyContent="flex-end"
-                alignItems="center"
-            >
-                <Grid
-                    item
-                    xs={2}
-                    container
-                    justifyContent="flex-end"
-                    alignItems="center"
-                >
-                    <Button
-                        data-test="search-button"
-                        disabled={!filtersUpdated}
-                        variant="contained"
-                        className={classes.button}
-                        color="primary"
-                        onClick={() => handleSearch()}
-                    >
-                        <SearchIcon className={classes.buttonIcon} />
-                        {formatMessage(MESSAGES.search)}
-                    </Button>
+                <Grid container item xs={12} justifyContent="flex-end">
+                    <Box>
+                        <Button
+                            data-test="search-button"
+                            disabled={!filtersUpdated}
+                            variant="contained"
+                            className={classes.button}
+                            color="primary"
+                            onClick={() => handleSearch()}
+                        >
+                            <SearchIcon className={classes.buttonIcon} />
+                            {formatMessage(MESSAGES.search)}
+                        </Button>
+                    </Box>
                 </Grid>
             </Grid>
         </>

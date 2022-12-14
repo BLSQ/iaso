@@ -1,12 +1,11 @@
 import { Box, makeStyles, Divider } from '@material-ui/core';
-import React, { FunctionComponent, useState, useEffect, useMemo } from 'react';
+import React, { FunctionComponent, useMemo } from 'react';
 import classnames from 'classnames';
 import Stepper from '@material-ui/core/Stepper';
 import Step from '@material-ui/core/Step';
 import StepLabel from '@material-ui/core/StepLabel';
 import { CheckCircleOutline } from '@material-ui/icons';
 import moment from 'moment';
-import { findLastIndex } from 'lodash';
 import { Categories } from '../types';
 
 type Props = {

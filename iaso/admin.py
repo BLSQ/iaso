@@ -43,6 +43,10 @@ from .models import (
     InstanceLock,
     StorageDevice,
     StorageLogEntry,
+    Workflow,
+    WorkflowVersion,
+    WorkflowChange,
+    WorkflowFollowup,
 )
 from .models.microplanning import Team, Planning, Assignment
 from .models.xls_form_template import XlsFormTemplate
@@ -445,15 +449,36 @@ class StorageDeviceAdmin(admin.ModelAdmin):
         "status",
         "status_reason",
         "status_comment",
+        "status_updated_at",
         "org_unit",
         "entity",
+        "created_at",
+        "updated_at",
     )
+    readonly_fields = ("created_at", "updated_at", "status_updated_at")
     list_display = ("account", "type", "customer_chosen_id")
     list_filter = ("account", "type", "status")
     raw_id_fields = ("org_unit",)
     inlines = [
         StorageLogEntryInline,
     ]
+
+
+class WorkflowAdmin(admin.ModelAdmin):
+    readonly_fields = ("created_at", "updated_at")
+
+
+class WorkflowChangeInline(admin.TabularInline):
+    model = WorkflowChange
+
+
+class WorkflowFollowupInline(admin.TabularInline):
+    model = WorkflowFollowup
+
+
+class WorkflowVersionAdmin(admin.ModelAdmin):
+    readonly_fields = ("created_at", "updated_at")
+    inlines = [WorkflowChangeInline, WorkflowFollowupInline]
 
 
 admin.site.register(Link, LinkAdmin)
@@ -491,4 +516,6 @@ admin.site.register(BulkCreateUserCsvFile)
 admin.site.register(Assignment, AssignmentAdmin)
 admin.site.register(InstanceLock, InstanceLockAdmin)
 admin.site.register(StorageDevice, StorageDeviceAdmin)
+admin.site.register(Workflow, WorkflowAdmin)
+admin.site.register(WorkflowVersion, WorkflowVersionAdmin)
 admin.site.register(XlsFormTemplate)

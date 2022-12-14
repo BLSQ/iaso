@@ -70,6 +70,10 @@ class CompletenessStatsAPITestCase(APITestCase):
                         "forms_filled": 1,  # Only one form instance for "Hospital"
                         "forms_to_fill": 3,  # 2 OUs of type "District" and 1 of type "Hospital" in the tree with LalaLand on top
                         "completeness_ratio": "33.3%",
+                        # No forms/instances are directly associated to "LaLaland" (only to its children)
+                        "forms_filled_direct": 0,
+                        "forms_to_fill_direct": 0,
+                        "completeness_ratio_direct": "N/A",
                     },
                     {
                         "parent_org_unit": None,
@@ -79,6 +83,9 @@ class CompletenessStatsAPITestCase(APITestCase):
                         "forms_filled": 0,
                         "forms_to_fill": 1,
                         "completeness_ratio": "0.0%",
+                        "forms_filled_direct": 0,
+                        "forms_to_fill_direct": 0,
+                        "completeness_ratio_direct": "N/A",
                     },
                     {
                         "parent_org_unit": None,
@@ -88,6 +95,9 @@ class CompletenessStatsAPITestCase(APITestCase):
                         "forms_filled": 0,
                         "forms_to_fill": 2,
                         "completeness_ratio": "0.0%",
+                        "forms_filled_direct": 0,
+                        "forms_to_fill_direct": 0,
+                        "completeness_ratio_direct": "N/A",
                     },
                 ],
                 "has_next": False,
@@ -221,7 +231,7 @@ class CompletenessStatsAPITestCase(APITestCase):
         self.assertEqual(row["completeness_ratio"], "N/A")
 
     def test_counts_include_current_ou_and_children(self):
-        """The forms_to_fill count include the forms for the OU and all its children"""
+        """The forms_to_fill/forms_filled counts include the forms for the OU and all its children"""
         self.client.force_authenticate(self.user)
 
         # We filter to get only the district A.A
@@ -233,8 +243,26 @@ class CompletenessStatsAPITestCase(APITestCase):
         self.assertEqual(result_form_1["forms_to_fill"], 2)
         # But only one form is filled (for the hospital)
         self.assertEqual(result_form_1["forms_filled"], 1)
-        # Let'scheck the percentage calculation is correct
+        # Let's check the percentage calculation is correct
         self.assertEqual(result_form_1["completeness_ratio"], "50.0%")
+
+    def test_direct_counts_dont_include_children(self):
+        """The forms_to_fill_direct/forms_filled_direct counts don't include the forms for the children of the OU"""
+        self.client.force_authenticate(self.user)
+
+        # We filter to get only the district A.A
+        response = self.client.get(f"/api/completeness_stats/?org_unit_id=4")
+        json = response.json()
+
+        result_form_1 = next(result for result in json["results"] if result["form"]["id"] == self.form_hs_1.id)
+
+        # Form 1 targets both district (ou 4) and hospital (there's one under ou 4: ou 7), but the
+        # hospital shouldn't be counted in the direct counts
+        self.assertEqual(result_form_1["forms_to_fill_direct"], 1)
+        # But only one form is filled (for the hospital), so it shouldn't be counted in the direct counts
+        self.assertEqual(result_form_1["forms_filled_direct"], 0)
+        # Let's check the percentage calculation is correct
+        self.assertEqual(result_form_1["completeness_ratio_direct"], "0.0%")
 
     def test_counts_dont_include_parents(self):
         self.client.force_authenticate(self.user)

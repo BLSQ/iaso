@@ -52,8 +52,8 @@ const Filters = ({ params }) => {
     );
     return (
         <>
-            <Grid container spacing={4}>
-                <Grid item xs={3}>
+            <Grid container spacing={2}>
+                <Grid item xs={12} sm={6} md={3}>
                     <InputComponent
                         keyValue="search"
                         onChange={handleChange}
@@ -63,16 +63,12 @@ const Filters = ({ params }) => {
                         onEnterPressed={handleSearch}
                     />
                 </Grid>
-            </Grid>
-            <Grid
-                container
-                spacing={4}
-                justifyContent="flex-end"
-                alignItems="center"
-            >
+
                 <Grid
                     item
-                    xs={2}
+                    xs={12}
+                    sm={6}
+                    md={9}
                     container
                     justifyContent="flex-end"
                     alignItems="center"

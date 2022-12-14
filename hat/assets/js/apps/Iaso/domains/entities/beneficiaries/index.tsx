@@ -118,7 +118,7 @@ export const Beneficiaries: FunctionComponent<Props> = ({ params }) => {
                     <Tab value="map" label={formatMessage(MESSAGES.map)} />
                 </Tabs>
             </TopBar>
-            <Box p={2} className={classes.container} pb={2}>
+            <Box p={4} className={classes.container}>
                 <Filters params={params} types={types || []} />
 
                 <Box position="relative" width="100%" mt={2}>

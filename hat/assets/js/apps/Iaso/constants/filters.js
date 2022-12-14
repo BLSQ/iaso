@@ -432,7 +432,10 @@ export const orgUnitFilters = (
             column: 1,
         },
         {
-            ...orgUnitType({ orgUnitTypes }),
+            ...orgUnitType({
+                orgUnitTypes,
+                labelString: formatMessage(MESSAGES.orgUnitsTypes),
+            }),
             column: 1,
         },
         {

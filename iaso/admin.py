@@ -7,6 +7,8 @@ from django.utils.safestring import mark_safe
 from typing import Any
 from typing_extensions import Protocol
 
+from django_json_widget.widgets import JSONEditorWidget
+
 from .models import (
     OrgUnitType,
     OrgUnit,
@@ -469,10 +471,12 @@ class WorkflowAdmin(admin.ModelAdmin):
 
 class WorkflowChangeInline(admin.TabularInline):
     model = WorkflowChange
+    formfield_overrides = {models.JSONField: {"widget": JSONEditorWidget}}
 
 
 class WorkflowFollowupInline(admin.TabularInline):
     model = WorkflowFollowup
+    formfield_overrides = {models.JSONField: {"widget": JSONEditorWidget}}
 
 
 class WorkflowVersionAdmin(admin.ModelAdmin):

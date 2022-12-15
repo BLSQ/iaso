@@ -104,7 +104,7 @@ class CompletenessStatsAPITestCase(APITestCase):
                 "has_previous": False,
                 "page": 1,
                 "pages": 1,
-                "limit": 50,
+                "limit": 10,
             },
             j,
         )
@@ -210,6 +210,14 @@ class CompletenessStatsAPITestCase(APITestCase):
         self.assertEqual(len(j["results"]), 1)
         self.assertTrue(j["has_next"])
         self.assertFalse(j["has_previous"])
+
+    def test_pagination_default_limit(self):
+        """Test that the default limit parameter is 10"""
+        self.client.force_authenticate(self.user)
+
+        response = self.client.get("/api/completeness_stats/")
+        json = self.assertJSONResponse(response, 200)
+        self.assertEqual(json["limit"], 10)
 
     def test_row_count(self):
         self.client.force_authenticate(self.user)

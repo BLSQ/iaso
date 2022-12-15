@@ -25,7 +25,7 @@ const getCompletenessStats = async (
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { pageSize, orgUnitId, orgUnitTypeIds, formId, ...urlParams } =
         params;
-    const apiParams = { ...urlParams, limit: pageSize ?? 50 };
+    const apiParams = { ...urlParams, limit: pageSize ?? 10 };
     const queryParams = {};
     apiParamsKeys.forEach(apiParamKey => {
         const apiParam = apiParams[apiParamKey];

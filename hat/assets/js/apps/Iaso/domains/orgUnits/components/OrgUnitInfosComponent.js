@@ -13,8 +13,6 @@ import {
     TableBody,
     TableRow,
     TableCell,
-    useMediaQuery,
-    useTheme,
 } from '@material-ui/core';
 
 import PropTypes from 'prop-types';
@@ -70,6 +68,9 @@ const useStyles = makeStyles(theme => ({
     alignCenter: {
         display: 'flex',
         justifyContent: 'center',
+    },
+    marginLeft: {
+        marginLeft: '8px',
     },
 }));
 
@@ -231,12 +232,17 @@ const Actions = (
 };
 
 const OrgUnitCreationDetails = ({ orgUnit, formatMessage, classes }) => {
+    const latitude = `${formatMessage(MESSAGES.latitude)}: ${
+        orgUnit.latitude
+    },`;
+    const longitude = `${formatMessage(MESSAGES.longitude)}: ${
+        orgUnit.longitude
+    },`;
+
     const latitudeLongitude =
-        orgUnit.latitude && orgUnit.longitude
-            ? `${formatMessage(MESSAGES.latitude)}: ${
-                  orgUnit.latitude
-              },  ${formatMessage(MESSAGES.longitude)}: ${orgUnit.longitude}`
-            : false;
+        orgUnit.latitude && orgUnit.longitude ? latitude + longitude : false;
+    const orgUnitCreatedAt = moment.unix(orgUnit.created_at).format('LTS');
+    const orgUnitUpdatedAt = moment.unix(orgUnit.updated_at).format('LTS');
 
     return (
         <>
@@ -266,7 +272,7 @@ const OrgUnitCreationDetails = ({ orgUnit, formatMessage, classes }) => {
                                 {formatMessage(MESSAGES.created_at)}
                             </TableCell>
                             <TableCell>
-                                {moment.unix(orgUnit.created_at).format('LTS')}
+                                {orgUnit.created_at ? orgUnitCreatedAt : '-'}
                             </TableCell>
                         </TableRow>
 
@@ -275,7 +281,7 @@ const OrgUnitCreationDetails = ({ orgUnit, formatMessage, classes }) => {
                                 {formatMessage(MESSAGES.updated_at)}
                             </TableCell>
                             <TableCell>
-                                {moment.unix(orgUnit.updated_at).format('LTS')}
+                                {orgUnit.updated_at ? orgUnitUpdatedAt : '-'}
                             </TableCell>
                         </TableRow>
 
@@ -340,6 +346,9 @@ const OrgUnitInfosComponent = ({
     resetTrigger,
     fetchEditUrl,
     params,
+    handleSave,
+    handleReset,
+    orgUnitModified,
 }) => {
     const { mutateAsync: saveOu } = useSaveOrgUnit();
     const classes = useStyles();
@@ -348,8 +357,9 @@ const OrgUnitInfosComponent = ({
     const { referenceFormId } = params;
     const { instanceId } = params;
 
-    const [formState, setFieldValue, setFieldErrors, setFormState] =
-        useFormState(initialFormState(orgUnit, instanceId));
+    const [setFieldErrors] = useFormState(
+        initialFormState(orgUnit, instanceId),
+    );
 
     const [isSaveDisabled, setSaveDisabled] = useState(true);
 
@@ -359,29 +369,21 @@ const OrgUnitInfosComponent = ({
             formId !== undefined &&
             referenceFormId !== undefined);
 
-    const theme = useTheme();
-    // const isMobileLayout = useMediaQuery(theme.breakpoints.down('md'));
     const isNewOrgunit = params.orgUnitId === '0';
 
     useEffect(() => {
-        console.log('form state', formState);
-        console.log('name', formState.name);
-        console.log('org unit type id', formState.org_unit_type_id);
-
-        const { name, org_unit_type_id } = formState;
-        if (name.value !== '' && org_unit_type_id.value !== undefined) {
-            setSaveDisabled(false);
-        } else {
+        if (
+            orgUnit.name.value === '' ||
+            orgUnit.org_unit_type_id.value === null
+        ) {
             setSaveDisabled(true);
+        } else {
+            setSaveDisabled(false);
         }
-    }, [formState]);
+    }, [orgUnit]);
 
     return (
-        <Grid
-            container
-            spacing={!isNewOrgunit ? 4 : 2}
-            // className={classnames(isNewOrgunit && classes.alignCenter)}
-        >
+        <Grid container spacing={!isNewOrgunit ? 4 : 2}>
             {showSpeedDialInstanceActions && (
                 <SpeedDialInstanceActions
                     speedDialClasses={classes.speedDialTop}
@@ -403,289 +405,183 @@ const OrgUnitInfosComponent = ({
                 />
             )}
 
-            {!isNewOrgunit && (
-                <>
-                    <Grid item xs={12} md={!orgUnit.id.value ? 6 : 4}>
-                        <InputComponent
-                            keyValue="name"
-                            required
-                            onChange={onChangeInfo}
-                            value={orgUnit.name.value}
-                            errors={orgUnit.name.errors}
-                            label={MESSAGES.name}
-                            withMarginTop
-                        />
-                        <InputComponent
-                            keyValue="org_unit_type_id"
-                            onChange={onChangeInfo}
-                            required
-                            value={orgUnit.org_unit_type_id.value}
-                            errors={orgUnit.org_unit_type_id.errors}
-                            type="select"
-                            options={orgUnitTypes.map(t => ({
-                                label: t.name,
-                                value: t.id,
-                            }))}
-                            label={MESSAGES.org_unit_type_id}
-                        />
-                        <InputComponent
-                            keyValue="groups"
-                            onChange={(name, value) =>
-                                onChangeInfo(
-                                    name,
-                                    commaSeparatedIdsToArray(value),
-                                )
-                            }
-                            multi
-                            value={
-                                orgUnit.groups.value.length > 0
-                                    ? orgUnit.groups.value
-                                    : null
-                            }
-                            errors={orgUnit.groups.errors}
-                            type="select"
-                            options={groups.map(g => ({
-                                label: g.name,
-                                value: g.id,
-                            }))}
-                            label={MESSAGES.groups}
-                        />
+            <>
+                <Grid item xs={12} md={4}>
+                    <InputComponent
+                        keyValue="name"
+                        required
+                        onChange={onChangeInfo}
+                        value={orgUnit.name.value}
+                        errors={orgUnit.name.errors}
+                        label={MESSAGES.name}
+                        withMarginTop={!orgUnit.reference_instance}
+                    />
+                    <InputComponent
+                        keyValue="org_unit_type_id"
+                        onChange={onChangeInfo}
+                        required
+                        value={orgUnit.org_unit_type_id.value}
+                        errors={orgUnit.org_unit_type_id.errors}
+                        type="select"
+                        options={orgUnitTypes.map(t => ({
+                            label: t.name,
+                            value: t.id,
+                        }))}
+                        label={MESSAGES.org_unit_type_id}
+                    />
 
-                        <InputComponent
-                            keyValue="aliases"
-                            onChange={onChangeInfo}
-                            value={orgUnit.aliases.value}
-                            type="arrayInput"
-                        />
+                    <InputComponent
+                        keyValue="groups"
+                        onChange={(name, value) =>
+                            onChangeInfo(name, commaSeparatedIdsToArray(value))
+                        }
+                        multi
+                        value={
+                            orgUnit.groups.value.length > 0
+                                ? orgUnit.groups.value
+                                : null
+                        }
+                        errors={orgUnit.groups.errors}
+                        type="select"
+                        options={groups.map(g => ({
+                            label: g.name,
+                            value: g.id,
+                        }))}
+                        label={MESSAGES.groups}
+                    />
 
-                        <InputComponent
-                            keyValue="validation_status"
-                            isClearable={false}
-                            onChange={onChangeInfo}
-                            errors={orgUnit.validation_status.errors}
-                            value={orgUnit.validation_status.value}
-                            type="select"
-                            label={MESSAGES.status}
-                            options={[
-                                {
-                                    label: formatMessage(MESSAGES.new),
-                                    value: 'NEW',
-                                },
-                                {
-                                    label: formatMessage(MESSAGES.validated),
-                                    value: 'VALID',
-                                },
-                                {
-                                    label: formatMessage(MESSAGES.rejected),
-                                    value: 'REJECTED',
-                                },
-                            ]}
-                        />
-                        <InputComponent
-                            keyValue="source_ref"
-                            value={orgUnit.source_ref.value || ''}
-                            onChange={onChangeInfo}
-                            errors={orgUnit.source_ref.errors}
-                        />
-                        <FormControlComponent
-                            errors={orgUnit.parent_id.errors}
-                            id="ou-tree-input"
-                        >
-                            <OrgUnitTreeviewModal
-                                toggleOnLabelClick={false}
-                                titleMessage={MESSAGES.selectParentOrgUnit}
-                                onConfirm={treeviewOrgUnit => {
-                                    if (
-                                        (treeviewOrgUnit
-                                            ? treeviewOrgUnit.id
-                                            : null) !== orgUnit.parent_id.value
-                                    ) {
-                                        onChangeInfo(
-                                            'parent_id',
-                                            treeviewOrgUnit?.id,
-                                        );
-                                    }
-                                }}
-                                source={orgUnit.source_id}
-                                initialSelection={reformatOrgUnit(orgUnit)}
-                                resetTrigger={resetTrigger}
-                            />
-                        </FormControlComponent>
-                    </Grid>
+                    <InputComponent
+                        keyValue="aliases"
+                        onChange={onChangeInfo}
+                        value={orgUnit.aliases.value}
+                        type="arrayInput"
+                    />
+                </Grid>
 
-                    <Grid
-                        item
-                        xs={12}
-                        md={8}
-                        className={classes.orgunitDetailInfos}
+                <Grid item xs={12} md={4}>
+                    <InputComponent
+                        keyValue="validation_status"
+                        isClearable={false}
+                        onChange={onChangeInfo}
+                        errors={orgUnit.validation_status.errors}
+                        value={orgUnit.validation_status.value}
+                        type="select"
+                        label={MESSAGES.status}
+                        options={[
+                            {
+                                label: formatMessage(MESSAGES.new),
+                                value: 'NEW',
+                            },
+                            {
+                                label: formatMessage(MESSAGES.validated),
+                                value: 'VALID',
+                            },
+                            {
+                                label: formatMessage(MESSAGES.rejected),
+                                value: 'REJECTED',
+                            },
+                        ]}
+                    />
+                    <InputComponent
+                        keyValue="source_ref"
+                        value={orgUnit.source_ref.value || ''}
+                        onChange={onChangeInfo}
+                        errors={orgUnit.source_ref.errors}
+                    />
+
+                    <FormControlComponent
+                        errors={orgUnit.parent_id.errors}
+                        id="ou-tree-input"
                     >
-                        <OrgUnitCreationDetails
-                            orgUnit={orgUnit}
-                            formatMessage={formatMessage}
-                            classes={classes}
+                        <OrgUnitTreeviewModal
+                            toggleOnLabelClick={false}
+                            titleMessage={MESSAGES.selectParentOrgUnit}
+                            onConfirm={treeviewOrgUnit => {
+                                if (
+                                    (treeviewOrgUnit
+                                        ? treeviewOrgUnit.id
+                                        : null) !== orgUnit.parent_id.value
+                                ) {
+                                    onChangeInfo(
+                                        'parent_id',
+                                        treeviewOrgUnit?.id,
+                                    );
+                                }
+                            }}
+                            source={orgUnit.source_id}
+                            initialSelection={reformatOrgUnit(orgUnit)}
+                            resetTrigger={resetTrigger}
                         />
-                        {orgUnit.reference_instance && (
-                            <WidgetPaper
-                                id="form-contents"
-                                title={formatMessage(MESSAGES.detailTitle)}
-                                IconButton={IconButtonComponent}
-                                iconButtonProps={{
-                                    onClick: () =>
-                                        window.open(
-                                            orgUnit.reference_instance.file_url,
-                                            '_blank',
-                                        ),
-                                    icon: 'xml',
-                                    color: 'secondary',
-                                    tooltipMessage: MESSAGES.downloadXml,
-                                }}
-                            >
-                                <InstanceFileContent
-                                    instance={orgUnit.reference_instance}
-                                />
-                            </WidgetPaper>
-                        )}
-                    </Grid>
-                </>
-            )}
-
-            {isNewOrgunit && (
-                <>
-                    <Grid item xs={12} md={3}>
-                        <InputComponent
-                            keyValue="name"
-                            required
-                            onChange={onChangeInfo}
-                            value={orgUnit.name.value}
-                            errors={orgUnit.name.errors}
-                            label={MESSAGES.name}
-                            withMarginTop={!orgUnit.reference_instance}
-                        />
-                        <InputComponent
-                            keyValue="org_unit_type_id"
-                            onChange={onChangeInfo}
-                            required
-                            value={orgUnit.org_unit_type_id.value}
-                            errors={orgUnit.org_unit_type_id.errors}
-                            type="select"
-                            options={orgUnitTypes.map(t => ({
-                                label: t.name,
-                                value: t.id,
-                            }))}
-                            label={MESSAGES.org_unit_type_id}
-                        />
-
-                        <InputComponent
-                            keyValue="aliases"
-                            onChange={onChangeInfo}
-                            value={orgUnit.aliases.value}
-                            type="arrayInput"
-                        />
-                    </Grid>
-
-                    <Grid item xs={12} md={3}>
-                        <InputComponent
-                            keyValue="groups"
-                            onChange={(name, value) =>
-                                onChangeInfo(
-                                    name,
-                                    commaSeparatedIdsToArray(value),
-                                )
-                            }
-                            multi
-                            value={
-                                orgUnit.groups.value.length > 0
-                                    ? orgUnit.groups.value
-                                    : null
-                            }
-                            errors={orgUnit.groups.errors}
-                            type="select"
-                            options={groups.map(g => ({
-                                label: g.name,
-                                value: g.id,
-                            }))}
-                            label={MESSAGES.groups}
-                        />
-
-                        <InputComponent
-                            keyValue="validation_status"
-                            isClearable={false}
-                            onChange={onChangeInfo}
-                            errors={orgUnit.validation_status.errors}
-                            value={orgUnit.validation_status.value}
-                            type="select"
-                            label={MESSAGES.status}
-                            options={[
-                                {
-                                    label: formatMessage(MESSAGES.new),
-                                    value: 'NEW',
-                                },
-                                {
-                                    label: formatMessage(MESSAGES.validated),
-                                    value: 'VALID',
-                                },
-                                {
-                                    label: formatMessage(MESSAGES.rejected),
-                                    value: 'REJECTED',
-                                },
-                            ]}
-                        />
-                    </Grid>
-
-                    <Grid item xs={12} md={3}>
-                        <InputComponent
-                            keyValue="source_ref"
-                            value={orgUnit.source_ref.value || ''}
-                            onChange={onChangeInfo}
-                            errors={orgUnit.source_ref.errors}
-                        />
-                        <FormControlComponent
-                            errors={orgUnit.parent_id.errors}
-                            id="ou-tree-input"
-                        >
-                            <OrgUnitTreeviewModal
-                                toggleOnLabelClick={false}
-                                titleMessage={MESSAGES.selectParentOrgUnit}
-                                onConfirm={treeviewOrgUnit => {
-                                    if (
-                                        (treeviewOrgUnit
-                                            ? treeviewOrgUnit.id
-                                            : null) !== orgUnit.parent_id.value
-                                    ) {
-                                        onChangeInfo(
-                                            'parent_id',
-                                            treeviewOrgUnit?.id,
-                                        );
-                                    }
-                                }}
-                                source={orgUnit.source_id}
-                                initialSelection={reformatOrgUnit(orgUnit)}
-                                resetTrigger={resetTrigger}
-                            />
-                        </FormControlComponent>
-                    </Grid>
-
+                    </FormControlComponent>
                     <Grid
                         container
                         item
                         xs={12}
-                        md={3}
                         justifyContent="flex-end"
+                        alignItems="center"
                     >
-                        <Box mt={2}>
+                        <Box mt={1}>
                             <Button
                                 id="save-ou"
-                                disabled={!isSaveDisabled}
+                                disabled={isSaveDisabled}
                                 variant="contained"
                                 className={classes.marginLeft}
                                 color="primary"
-                                // onClick={() => handleSave()}
+                                onClick={handleSave}
                             >
                                 <FormattedMessage {...MESSAGES.save} />
                             </Button>
+
+                            {!isNewOrgunit && (
+                                <Button
+                                    className={classes.marginLeft}
+                                    disabled={!orgUnitModified}
+                                    variant="contained"
+                                    onClick={() => handleReset()}
+                                >
+                                    <FormattedMessage {...MESSAGES.cancel} />
+                                </Button>
+                            )}
                         </Box>
                     </Grid>
-                </>
+                </Grid>
+
+                <Grid
+                    item
+                    xs={12}
+                    md={4}
+                    className={classes.orgunitDetailInfos}
+                >
+                    <OrgUnitCreationDetails
+                        orgUnit={orgUnit}
+                        formatMessage={formatMessage}
+                        classes={classes}
+                    />
+                </Grid>
+            </>
+
+            {orgUnit.reference_instance && (
+                <Grid container item xs={12} md={4}>
+                    <WidgetPaper
+                        id="form-contents"
+                        title={formatMessage(MESSAGES.detailTitle)}
+                        IconButton={IconButtonComponent}
+                        iconButtonProps={{
+                            onClick: () =>
+                                window.open(
+                                    orgUnit.reference_instance.file_url,
+                                    '_blank',
+                                ),
+                            icon: 'xml',
+                            color: 'secondary',
+                            tooltipMessage: MESSAGES.downloadXml,
+                        }}
+                    >
+                        <InstanceFileContent
+                            instance={orgUnit.reference_instance}
+                        />
+                    </WidgetPaper>
+                </Grid>
             )}
         </Grid>
     );
@@ -700,6 +596,9 @@ OrgUnitInfosComponent.propTypes = {
     resetTrigger: PropTypes.bool,
     fetchEditUrl: PropTypes.func.isRequired,
     params: PropTypes.object.isRequired,
+    handleSave: PropTypes.func.isRequired,
+    handleReset: PropTypes.func.isRequired,
+    orgUnitModified: PropTypes.bool.isRequired,
 };
 OrgUnitInfosComponent.defaultProps = {
     resetTrigger: false,

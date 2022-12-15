@@ -2,20 +2,12 @@ import React, { useState, useCallback, useEffect } from 'react';
 import classnames from 'classnames';
 import mapValues from 'lodash/mapValues';
 import PropTypes from 'prop-types';
-import {
-    withStyles,
-    Button,
-    Grid,
-    useMediaQuery,
-    useTheme,
-} from '@material-ui/core';
-import { FormattedMessage } from 'react-intl';
+import { withStyles, Grid, useMediaQuery, useTheme } from '@material-ui/core';
 
 import { commonStyles } from 'bluesquare-components';
 import { isEqual } from 'lodash';
 import { useFormState } from '../../../hooks/form';
 import OrgUnitInfos from './OrgUnitInfosComponent';
-import MESSAGES from '../messages';
 
 const initialFormState = orgUnit => {
     return {
@@ -89,7 +81,7 @@ const OrgUnitForm = ({
         [setFieldValue],
     );
 
-    // TODO change compoenent in blsq-comp library to avoid separate handler
+    // TODO change component in blsq-comp library to avoid separate handler
     // This fix assumes we can only add one alias at a time
     const handleChangeAlias = useCallback(
         (key, value) => {
@@ -134,23 +126,8 @@ const OrgUnitForm = ({
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [orgUnit.id]);
 
-    // console.log('form state', formState);
-
     return (
         <>
-            <OrgUnitInfos
-                params={params}
-                baseUrl={baseUrl}
-                orgUnit={{
-                    ...orgUnit,
-                    ...formState,
-                }}
-                orgUnitTypes={orgUnitTypes}
-                groups={groups}
-                onChangeInfo={handleChangeInfo}
-                resetTrigger={!orgUnitModified}
-            />
-
             <Grid
                 container
                 spacing={0}
@@ -161,35 +138,21 @@ const OrgUnitForm = ({
                     isNewOrgunit && isMobileLayout && classes.alignRight,
                 )}
             >
-                <Grid
-                    xs={!isNewOrgunit ? 12 : 8}
-                    item
-                    className={classnames(
-                        classes.textAlignRight,
-                        isNewOrgunit && classes.marginTop,
-                    )}
-                >
-                    {!isNewOrgunit && (
-                        <Button
-                            className={classes.marginLeft}
-                            disabled={!orgUnitModified}
-                            variant="contained"
-                            onClick={() => handleReset()}
-                        >
-                            <FormattedMessage {...MESSAGES.cancel} />
-                        </Button>
-                    )}
-                    {/* <Button
-                        id="save-ou"
-                        disabled={!orgUnitModified}
-                        variant="contained"
-                        className={classes.marginLeft}
-                        color="primary"
-                        onClick={() => handleSave()}
-                    >
-                        <FormattedMessage {...MESSAGES.save} />
-                    </Button> */}
-                </Grid>
+                <OrgUnitInfos
+                    params={params}
+                    baseUrl={baseUrl}
+                    orgUnit={{
+                        ...orgUnit,
+                        ...formState,
+                    }}
+                    orgUnitTypes={orgUnitTypes}
+                    groups={groups}
+                    onChangeInfo={handleChangeInfo}
+                    resetTrigger={!orgUnitModified}
+                    handleSave={handleSave}
+                    handleReset={handleReset}
+                    orgUnitModified={orgUnitModified}
+                />
             </Grid>
         </>
     );

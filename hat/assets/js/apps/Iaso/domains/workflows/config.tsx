@@ -75,9 +75,13 @@ export const useGetFollowUpsColumns = (
             Header: formatMessage(MESSAGES.condition),
             id: 'condition',
             accessor: 'condition',
+            Cell: settings => {
+                const condition = settings.value;
+                return <>{condition ? JSON.stringify(condition) : '-'}</>;
+            },
         },
         {
-            Header: formatMessage(MESSAGES.forms),
+            Header: formatMessage(MESSAGES.form),
             id: 'forms',
             sortable: false,
             Cell: settings => {

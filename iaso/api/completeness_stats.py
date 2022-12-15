@@ -148,7 +148,7 @@ class CompletenessStatsViewSet(viewsets.ViewSet):
                         ),
                     }
                 )
-        limit = int(request.GET.get("limit", "50"))
+        limit = int(request.GET.get("limit", 10))
         page_offset = int(request.GET.get("page", "1"))
         paginator = Paginator(res, limit)
         if page_offset > paginator.num_pages:

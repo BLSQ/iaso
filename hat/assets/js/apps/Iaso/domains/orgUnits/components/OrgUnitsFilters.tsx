@@ -211,7 +211,7 @@ export const OrgUnitFilters: FunctionComponent<Props> = ({
 
     return (
         <Grid container spacing={2}>
-            <Grid item xs={4}>
+            <Grid item xs={12} sm={4}>
                 <Box mt={4} mb={4}>
                     <ColorPicker
                         currentColor={currentColor}
@@ -280,7 +280,7 @@ export const OrgUnitFilters: FunctionComponent<Props> = ({
                 )}
             </Grid>
 
-            <Grid item xs={4}>
+            <Grid item xs={12} sm={4}>
                 <InputComponent
                     type="select"
                     multi
@@ -344,7 +344,7 @@ export const OrgUnitFilters: FunctionComponent<Props> = ({
                 )}
             </Grid>
 
-            <Grid item xs={4}>
+            <Grid item xs={12} sm={4}>
                 <Box mb={1}>
                     <OrgUnitTreeviewModal
                         toggleOnLabelClick={false}

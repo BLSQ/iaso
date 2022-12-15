@@ -1,3 +1,4 @@
+/* eslint-disable react/jsx-props-no-spreading */
 import React from 'react';
 import { defineMessages, FormattedMessage } from 'react-intl';
 import PropTypes from 'prop-types';
@@ -39,6 +40,7 @@ const Filters = ({
     toggleActiveSearch,
     extraComponent,
     paramsPrefix,
+    filtersColumnsCount,
 }) => {
     const [filtersUpdated, setFiltersUpdated] = React.useState(
         !defaultFiltersUpdated,
@@ -61,10 +63,11 @@ const Filters = ({
         }
         onSearch(tempParams);
     };
+
     return (
         <>
-            <Grid container spacing={4}>
-                {Array(3)
+            <Grid container spacing={2}>
+                {Array(filtersColumnsCount)
                     .fill()
                     .map((x, i) => i + 1)
                     .map(column => (
@@ -72,7 +75,7 @@ const Filters = ({
                             container
                             item
                             xs={12}
-                            md={4}
+                            md={3}
                             className={classes.column}
                             key={`column-${column}`}
                         >
@@ -87,21 +90,30 @@ const Filters = ({
                             />
                         </Grid>
                     ))}
-            </Grid>
-            <Box mb={2} mt={2} display="flex" justifyContent="flex-end">
-                {extraComponent}
-                <Button
-                    data-test="search-button"
-                    disabled={!filtersUpdated}
-                    variant="contained"
-                    className={classes.button}
-                    color="primary"
-                    onClick={() => handleSearch()}
+
+                <Grid
+                    item
+                    container
+                    justifyContent="flex-end"
+                    xs={12}
+                    md={filtersColumnsCount === 3 ? 3 : 12}
                 >
-                    <SearchIcon className={classes.buttonIcon} />
-                    <FormattedMessage {...MESSAGES.search} />
-                </Button>
-            </Box>
+                    <Box mb={2} mt={filtersColumnsCount === 3 ? 2 : 0} p={0}>
+                        {extraComponent}
+                        <Button
+                            data-test="search-button"
+                            disabled={!filtersUpdated}
+                            variant="contained"
+                            className={classes.button}
+                            color="primary"
+                            onClick={() => handleSearch()}
+                        >
+                            <SearchIcon className={classes.buttonIcon} />
+                            <FormattedMessage {...MESSAGES.search} />
+                        </Button>
+                    </Box>
+                </Grid>
+            </Grid>
         </>
     );
 };
@@ -113,6 +125,7 @@ Filters.defaultProps = {
     toggleActiveSearch: false,
     extraComponent: <></>,
     paramsPrefix: null,
+    filtersColumnsCount: 3,
 };
 
 Filters.propTypes = {
@@ -125,6 +138,7 @@ Filters.propTypes = {
     toggleActiveSearch: PropTypes.bool,
     extraComponent: PropTypes.node,
     paramsPrefix: PropTypes.string,
+    filtersColumnsCount: PropTypes.number,
 };
 
 export default Filters;

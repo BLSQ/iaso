@@ -8,6 +8,7 @@ const queryParamsMap = new Map([
     ['orgUnitId', 'org_unit_id'],
     ['orgUnitTypeIds', 'org_unit_type_id'],
     ['formId', 'form_id'],
+    ['parentId', 'parent_org_unit_id'],
 ]);
 
 export type CompletenessGETParams = UrlParams & {
@@ -22,7 +23,8 @@ const getCompletenessStats = async (
     params: CompletenessGETParams,
 ): Promise<CompletenessApiResponse> => {
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const { pageSize, orgUnitId, orgUnitTypeIds, formId, ...urlParams } = params;
+    const { pageSize, orgUnitId, orgUnitTypeIds, formId, ...urlParams } =
+        params;
     const apiParams = { ...urlParams, limit: pageSize ?? 50 };
     const queryParams = {};
     apiParamsKeys.forEach(apiParamKey => {

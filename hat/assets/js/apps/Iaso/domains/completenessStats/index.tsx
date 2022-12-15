@@ -36,7 +36,7 @@ export const CompletessStats: FunctionComponent<Props> = ({ params }) => {
     const { formatMessage } = useSafeIntl();
     const { data: completenessStats, isFetching } =
         useGetCompletenessStats(params);
-    const columns = useCompletenessStatsColumns();
+    const columns = useCompletenessStatsColumns(params);
 
     return (
         <>

@@ -81,7 +81,7 @@ export const useGetFollowUpsColumns = (
             },
         },
         {
-            Header: formatMessage(MESSAGES.forms),
+            Header: formatMessage(MESSAGES.form),
             id: 'forms',
             sortable: false,
             Cell: settings => {

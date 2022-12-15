@@ -1,4 +1,4 @@
-import React, { FunctionComponent, useMemo } from 'react';
+import React, { FunctionComponent } from 'react';
 // @ts-ignore
 import { makeStyles, Box } from '@material-ui/core';
 // @ts-ignore
@@ -50,13 +50,9 @@ export const Workflows: FunctionComponent<Props> = ({ params, router }) => {
     const columns = useGetColumns(entityTypeId);
 
     const { data: entityType } = useGetType(entityTypeId);
-    const title = useMemo(
-        () =>
-            entityType
-                ? `${entityType.name} - ${formatMessage(MESSAGES.workflows)}`
-                : '',
-        [entityType, formatMessage],
-    );
+    const title = entityType
+        ? `${entityType.name} - ${formatMessage(MESSAGES.workflows)}`
+        : '';
     return (
         <>
             <TopBar

@@ -12,7 +12,7 @@ import { useSafeIntl } from 'bluesquare-components';
 
 import MESSAGES from '../messages';
 
-import { WorkflowDetail } from '../types/workflows';
+import { WorkflowVersionDetail } from '../types/workflows';
 
 import { StatusCell } from './StatusCell';
 import { LinkToForm } from '../../forms/components/LinkToForm';
@@ -41,7 +41,7 @@ const Row: FunctionComponent<RowProps> = ({ label, value }) => {
 };
 
 type Props = {
-    workflow?: WorkflowDetail;
+    workflow?: WorkflowVersionDetail;
 };
 export const WorkflowBaseInfo: FunctionComponent<Props> = ({ workflow }) => {
     const { formatMessage } = useSafeIntl();

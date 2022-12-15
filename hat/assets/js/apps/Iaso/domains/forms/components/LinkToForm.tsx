@@ -13,7 +13,7 @@ type Props = {
 
 const useStyles = makeStyles(theme => ({
     link: {
-        color: theme.palette.primary.main,
+        color: theme.palette.info.dark,
         textDecoration: 'none',
         '&:hover': { textDecoration: 'underline' },
     },

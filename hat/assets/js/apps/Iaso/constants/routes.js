@@ -801,6 +801,10 @@ export const workflowsPath = {
     component: props => <Workflows {...props} />,
     params: [
         {
+            isRequired: false,
+            key: 'accountId',
+        },
+        {
             isRequired: true,
             key: 'entityTypeId',
         },
@@ -823,6 +827,10 @@ export const workflowsDetailPath = {
     permissions: ['iaso_workflows'],
     component: props => <WorkflowDetails {...props} />,
     params: [
+        {
+            isRequired: false,
+            key: 'accountId',
+        },
         {
             isRequired: true,
             key: 'entityTypeId',

@@ -12,7 +12,9 @@ import {
 const getWorkflowVersions = async (
     options: WorkflowsParams,
 ): Promise<WorkflowVersionsPaginated> => {
-    const { pageSize, entityTypeId, ...params } = options as Record<
+    // taking accountId out in order not to pass it to API
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const { pageSize, entityTypeId, accountId, ...params } = options as Record<
         string,
         any
     >;
@@ -20,7 +22,6 @@ const getWorkflowVersions = async (
         params.limit = pageSize;
     }
     params.workflow__entity_type = entityTypeId;
-    // TODO: plug me to the api
 
     const url = makeUrlWithParams(`/api/workflowversions/`, params);
 
@@ -31,7 +32,9 @@ export const useGetWorkflowVersions = (
     options: WorkflowsParams,
 ): UseQueryResult<WorkflowVersionsPaginated, Error> => {
     const queryKey: any[] = ['workflows', options];
-    const { select } = options as Record<string, any>;
+    // taking accountId out in order not to pass it to API
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars, no-unused-vars
+    const { select, accountId } = options as Record<string, any>;
     // @ts-ignore
     return useSnackQuery({
         queryKey,

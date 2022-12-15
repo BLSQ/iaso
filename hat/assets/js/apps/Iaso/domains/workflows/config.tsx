@@ -76,7 +76,7 @@ export const useGetFollowUpsColumns = (
             accessor: 'condition',
             Cell: settings => {
                 const condition = settings.value;
-                return condition ? JSON.stringify(condition) : '-';
+                return <>{condition ? JSON.stringify(condition) : '-'}</>;
             },
         },
         {

@@ -41,7 +41,6 @@
     "iaso.completeness.title": "Complétude des données",
     "iaso.completeness.titleDirect": "Complétude des données (direct)",
     "iaso.completeness.titleWithDescendants": "Complétude des données (avec niv. inf.)",
-    "iaso.completeness.tooMuchDepth": "La différence de niveau entre le parent et le type est trop grande",
     "iaso.completenessStats.title": "Statistiques de complétude",
     "iaso.datasources.addAskTitle": "{title} - Source: {source} - Version: {version}",
     "iaso.datasources.button.label.copy": "Copier",

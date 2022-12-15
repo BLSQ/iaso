@@ -1,5 +1,7 @@
 import { Box, Grid, useTheme, useMediaQuery } from '@material-ui/core';
 import React, { FunctionComponent, useCallback, useState } from 'react';
+// @ts-ignore
+import { useSkipEffectOnMount } from 'bluesquare-components';
 import { FilterButton } from '../../components/FilterButton';
 import InputComponent from '../../components/forms/InputComponent';
 import { baseUrls } from '../../constants/urls';
@@ -31,6 +33,11 @@ export const CompletenessStatsFilters: FunctionComponent<Props> = ({
 
     const [initialParentId, setInitialParentId] = useState(params?.parentId);
     const { data: initialParent } = useGetOrgUnit(initialParentId);
+
+    useSkipEffectOnMount(() => {
+        setInitialParentId(params?.parentId);
+        setInitialOrgUnitId(params?.orgUnitId);
+    }, [params]);
 
     const handleOrgUnitChange = useCallback(
         orgUnit => {

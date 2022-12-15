@@ -79,8 +79,7 @@ export const CreateReAssignDialogComponent: FunctionComponent<Props> = ({
     const isPeriodRequired = Boolean(formType.periodType);
     const allowConform =
         Boolean(fieldValue.orgUnit.value) &&
-        isPeriodRequired &&
-        Boolean(fieldValue.period.value);
+        (!isPeriodRequired || Boolean(fieldValue.period.value));
     // TODO Above logic should be moved to Formik
 
     const onConfirm = () => {

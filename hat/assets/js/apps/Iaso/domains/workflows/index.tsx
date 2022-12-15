@@ -3,9 +3,9 @@ import React, { FunctionComponent } from 'react';
 import { makeStyles, Box } from '@material-ui/core';
 // @ts-ignore
 import { commonStyles, useSafeIntl } from 'bluesquare-components';
-import { useDispatch, useSelector } from 'react-redux';
+import { useDispatch } from 'react-redux';
 
-import { baseUrls } from '../../constants/urls';
+import { useGoBack } from '../../routing/useGoBack';
 
 import TopBar from '../../components/nav/TopBarComponent';
 import { TableWithDeepLink } from '../../components/tables/TableWithDeepLink';
@@ -23,13 +23,7 @@ import { useGetColumns, defaultSorted, baseUrl } from './config';
 const useStyles = makeStyles(theme => ({
     ...commonStyles(theme),
 }));
-// TODO: centralize those types
-type RouterCustom = {
-    prevPathname: string | undefined;
-};
-type State = {
-    routerCustom: RouterCustom;
-};
+
 type Router = {
     goBack: () => void;
 };
@@ -39,10 +33,8 @@ type Props = {
 };
 
 export const Workflows: FunctionComponent<Props> = ({ params, router }) => {
-    const prevPathname = useSelector(
-        (state: State) => state.routerCustom.prevPathname,
-    );
     const dispatch = useDispatch();
+    const goBack = useGoBack(router);
     const classes: Record<string, string> = useStyles();
     const { formatMessage } = useSafeIntl();
     const { data, isFetching } = useGetWorkflowVersions(params);
@@ -55,17 +47,7 @@ export const Workflows: FunctionComponent<Props> = ({ params, router }) => {
         : '';
     return (
         <>
-            <TopBar
-                title={title}
-                displayBackButton
-                goBack={() => {
-                    if (prevPathname) {
-                        router.goBack();
-                    } else {
-                        dispatch(redirectToReplace(baseUrls.entityTypes, {}));
-                    }
-                }}
-            />
+            <TopBar title={title} displayBackButton goBack={() => goBack()} />
             <Box className={classes.containerFullHeightNoTabPadded}>
                 <Filters params={params} />
                 <TableWithDeepLink

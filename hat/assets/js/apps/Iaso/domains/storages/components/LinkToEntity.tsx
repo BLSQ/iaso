@@ -10,7 +10,7 @@ import { Entity } from '../../entities/types/entity';
 const useStyles = makeStyles(theme => ({
     root: {
         textDecoration: 'none',
-        color: theme.palette.primary.main,
+        color: theme.palette.info.dark,
         '&:hover': {
             textDecoration: 'underline',
         },

@@ -98,15 +98,14 @@ const InstancesTopBar = ({
         if (formIds?.length === 1) {
             // if detail loaded
             if (formDetails) {
-                if (possibleFields.length > 0) {
-                    newCols = getInstancesVisibleColumns({
-                        formatMessage,
-                        columns: newColsString,
-                        order: params.order,
-                        defaultOrder,
-                        possibleFields,
-                    });
-                }
+                newCols = getInstancesVisibleColumns({
+                    formatMessage,
+                    columns: newColsString,
+                    order: params.order,
+                    defaultOrder,
+                    possibleFields:
+                        possibleFields.length > 0 ? possibleFields : undefined,
+                });
             } else if (visibleColumns.length > 0) {
                 // remove columns while reloading
                 handleChangeVisibleColmuns([], false);

@@ -448,9 +448,13 @@ class StorageDeviceAdmin(admin.ModelAdmin):
         "status",
         "status_reason",
         "status_comment",
+        "status_updated_at",
         "org_unit",
         "entity",
+        "created_at",
+        "updated_at",
     )
+    readonly_fields = ("created_at", "updated_at", "status_updated_at")
     list_display = ("account", "type", "customer_chosen_id")
     list_filter = ("account", "type", "status")
     raw_id_fields = ("org_unit",)

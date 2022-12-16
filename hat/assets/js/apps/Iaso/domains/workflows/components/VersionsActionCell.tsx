@@ -36,11 +36,13 @@ export const VersionsActionCell: FunctionComponent<Props> = ({
                 icon={icon}
                 tooltipMessage={tooltipMessage}
             />
-            <IconButtonComponent
-                onClick={() => copyWorkflowVersion(versionId)}
-                overrideIcon={FileCopyIcon}
-                tooltipMessage={MESSAGES.copy}
-            />
+            {status !== 'DRAFT' && (
+                <IconButtonComponent
+                    onClick={() => copyWorkflowVersion(versionId)}
+                    overrideIcon={FileCopyIcon}
+                    tooltipMessage={MESSAGES.copy}
+                />
+            )}
             {status === 'DRAFT' && (
                 <DeleteDialog
                     keyName={`workflow-version-${versionId}`}

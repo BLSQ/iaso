@@ -88,19 +88,13 @@ class CompletenessStatsViewSet(viewsets.ViewSet):
         if requested_parent_org_unit:
             org_units = org_units.filter(parent=requested_parent_org_unit)
 
-        top_ous = org_units
+        # Cutting the list, so we only keep the heads (top-level of the selection)
+        top_ous = org_units.exclude(parent__in=org_units)
 
         # Filtering by org unit type
         if org_unit_types is not None:
+            # This needs to be applied on the top_ous, not on the org_units (to act as a real filter, not something that changes the level of OUs in the table)
             top_ous = top_ous.filter(org_unit_type__id__in=[o.id for o in org_unit_types])
-
-        # Cutting the list, so we only keep the heads (top-level of the selection)
-        if org_unit_types is None:
-            # Normal case: we only keep the top-level org units
-            top_ous = top_ous.exclude(parent__in=top_ous)
-        else:
-            # Edge case: if parent/children are selected because of the requested OU types, we need to keep the children
-            top_ous = top_ous.exclude(Q(parent__in=top_ous) & ~Q(org_unit_type__id__in=[o.id for o in org_unit_types]))
 
         top_ous = top_ous.order_by(*order)
 
@@ -148,7 +142,7 @@ class CompletenessStatsViewSet(viewsets.ViewSet):
                         ),
                     }
                 )
-        limit = int(request.GET.get("limit", "50"))
+        limit = int(request.GET.get("limit", 10))
         page_offset = int(request.GET.get("page", "1"))
         paginator = Paginator(res, limit)
         if page_offset > paginator.num_pages:

@@ -181,7 +181,7 @@ class MailTemplate(models.Model):
                 "team": step.created_by_team,
                 "step": step,
                 "campaign": campaign,
-                "budget_link": campaign_url,
+                "budget_url": campaign_url,
                 "site_url": base_url,
                 "site_name": site.name,
                 "comment": step.comment,

@@ -70,7 +70,7 @@ class StorageDevice(models.Model):
     status = models.CharField(max_length=64, choices=STATUS_CHOICES, default=OK)
     status_reason = models.CharField(max_length=64, choices=STATUS_REASON_CHOICES, blank=True)
     status_comment = models.TextField(blank=True)
-    status_updated_at = models.DateTimeField(blank=True, null=True)
+    status_updated_at = models.DateTimeField(auto_now_add=True)
 
     org_unit = models.ForeignKey(OrgUnit, on_delete=models.SET_NULL, null=True, blank=True)
     entity = models.ForeignKey(Entity, on_delete=models.SET_NULL, null=True, blank=True)

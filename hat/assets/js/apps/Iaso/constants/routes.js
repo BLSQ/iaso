@@ -488,6 +488,10 @@ export const completenessStatsPath = {
             isRequired: false,
             key: 'orgUnitTypeIds',
         },
+        {
+            isRequired: false,
+            key: 'parentId',
+        },
     ],
 };
 

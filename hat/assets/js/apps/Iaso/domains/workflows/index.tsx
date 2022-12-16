@@ -10,6 +10,7 @@ import { useGoBack } from '../../routing/useGoBack';
 import TopBar from '../../components/nav/TopBarComponent';
 import { TableWithDeepLink } from '../../components/tables/TableWithDeepLink';
 import { Filters } from './components/Filters';
+import { AddVersionModal } from './components/AddVersionModal';
 
 import { useGetWorkflowVersions } from './hooks/requests/useGetWorkflowVersions';
 import { useGetType } from '../entities/entityTypes/hooks/requests/entitiyTypes';
@@ -63,6 +64,9 @@ export const Workflows: FunctionComponent<Props> = ({ params, router }) => {
                     }
                     extraProps={{ loading: isFetching }}
                 />
+                <Box mt={2} display="flex" justifyContent="flex-end">
+                    <AddVersionModal entityTypeId={entityTypeId} />
+                </Box>
             </Box>
         </>
     );

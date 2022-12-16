@@ -93,6 +93,43 @@ const MESSAGES = defineMessages({
         defaultMessage: 'Mapping',
         id: 'i,aso.workflows.mapping',
     },
+    addWorkflowVersion: {
+        defaultMessage: 'Add workflow version',
+        id: 'iaso.workflows.addWorkflowVersion',
+    },
+    confirm: {
+        defaultMessage: 'Confirm',
+        id: 'iaso.label.confirm',
+    },
+    cancel: {
+        defaultMessage: 'Cancel',
+        id: 'iaso.label.cancel',
+    },
+    add: {
+        id: 'iaso.label.add',
+        defaultMessage: 'Add',
+    },
+    copy: {
+        id: 'iaso.workflows.copy',
+        defaultMessage: 'Copy version',
+    },
+    edit: {
+        id: 'iaso.label.edit',
+        defaultMessage: 'Edit',
+    },
+    delete: {
+        id: 'iaso.label.delete',
+        defaultMessage: 'Delete',
+    },
+    deleteTitle: {
+        id: 'iaso.workflows.dialog.deleteTitle',
+        defaultMessage:
+            'Are you sure you want to delete this workflow version?',
+    },
+    deleteText: {
+        id: 'iaso.label.deleteText',
+        defaultMessage: 'This operation cannot be undone.',
+    },
 });
 
 export default MESSAGES;

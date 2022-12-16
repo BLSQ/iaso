@@ -480,15 +480,15 @@ export const completenessStatsPath = {
         },
         {
             isRequired: false,
-            key: 'parentId',
-        },
-        {
-            isRequired: false,
             key: 'formId',
         },
         {
             isRequired: false,
             key: 'orgUnitTypeIds',
+        },
+        {
+            isRequired: false,
+            key: 'parentId',
         },
     ],
 };

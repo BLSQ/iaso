@@ -41,6 +41,14 @@ const MESSAGES = defineMessages({
         defaultMessage: 'Completeness Stats',
         id: 'iaso.completenessStats.title',
     },
+    actions: {
+        defaultMessage: 'Actions',
+        id: 'iaso.label.actions',
+    },
+    seeChildren: {
+        defaultMessage: 'See children',
+        id: 'iaso.label.seeChildren',
+    },
 });
 
 export default MESSAGES;

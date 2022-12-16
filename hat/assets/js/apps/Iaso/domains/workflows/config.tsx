@@ -17,7 +17,7 @@ import { baseUrls } from '../../constants/urls';
 
 import { StatusCell } from './components/StatusCell';
 
-export const defaultSorted = [{ id: 'version_id', desc: false }];
+export const defaultSorted = [{ id: 'id', desc: true }];
 
 export const baseUrl = baseUrls.workflows;
 

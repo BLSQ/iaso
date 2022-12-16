@@ -116,6 +116,12 @@ def make_deep_copy_with_relations(orig_version):
 
 class WorkflowPostSerializer(serializers.Serializer):
     entity_type_id = serializers.IntegerField(required=True)
+    name = serializers.CharField(required=False)
+
+    def validate_name(self, new_name):
+        if len(new_name) <= 1:
+            raise serializers.ValidationError("name '" + new_name + "' is too short")
+        return new_name
 
     def validate_entity_type_id(self, entity_type_id):
         et = EntityType.objects.get(pk=entity_type_id)
@@ -126,8 +132,17 @@ class WorkflowPostSerializer(serializers.Serializer):
         return entity_type_id
 
     def create(self, validated_data):
-        wf, wf_created = Workflow.objects.get_or_create(entity_type_id=validated_data["entity_type_id"])
-        return WorkflowVersion.objects.create(workflow=wf)
+        entity_type_id = validated_data["entity_type_id"]
+        wf, wf_created = Workflow.objects.get_or_create(entity_type_id=entity_type_id)
+
+        wfv = WorkflowVersion.objects.create(workflow=wf)
+        et = EntityType.objects.get(pk=entity_type_id)
+        # TODO reference form and name should be tested
+        wfv.reference_form = et.reference_form
+        if "name" in validated_data:
+            wfv.name = validated_data["name"]
+        wfv.save()
+        return wfv
 
 
 class WorkflowVersionViewSet(ModelViewSet):
@@ -140,7 +155,7 @@ class WorkflowVersionViewSet(ModelViewSet):
 
     permission_classes = [permissions.IsAuthenticated, HasPermission("menupermissions.iaso_workflows")]  # type: ignore
     filter_backends = [filters.OrderingFilter, DjangoFilterBackend]
-    ordering_fields = ["name", "created_at", "updated_at", "id"]
+    ordering_fields = ["name", "created_at", "updated_at", "id", "status"]
     serializer_class = WorkflowVersionDetailSerializer
     results_key = "workflow_versions"
     remove_results_key_if_paginated = False

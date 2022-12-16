@@ -93,6 +93,22 @@ const MESSAGES = defineMessages({
         defaultMessage: 'Mapping',
         id: 'i,aso.workflows.mapping',
     },
+    addWorkflowVersion: {
+        defaultMessage: 'Add workflow version',
+        id: 'iaso.workflows.addWorkflowVersion',
+    },
+    confirm: {
+        defaultMessage: 'Confirm',
+        id: 'iaso.label.confirm',
+    },
+    cancel: {
+        defaultMessage: 'Cancel',
+        id: 'iaso.label.cancel',
+    },
+    add: {
+        id: 'iaso.label.add',
+        defaultMessage: 'Add',
+    },
 });
 
 export default MESSAGES;

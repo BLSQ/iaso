@@ -893,6 +893,7 @@
     "iaso.versionsDialog.label.newVersionGpkg": "New version from a Geopackage",
     "iaso.versionsDialog.label.number": "Number",
     "iaso.versionsDialog.label.updatedAt": "Updated",
+    "iaso.workflows.addWorkflowVersion": "Add workflow version",
     "iaso.workflows.changes": "Changes",
     "iaso.workflows.condition": "Condition",
     "iaso.workflows.followUps": "Follow ups",

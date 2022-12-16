@@ -903,6 +903,8 @@
     "iaso.workflows.dialog.deleteTitle": "Are you sure you want to delete this workflow version?",
     "iaso.workflows.followUps": "Follow ups",
     "iaso.workflows.mapping": "Mapping",
+    "iaso.workflows.publish": "Publish",
+    "iaso.workflows.unpublish": "Unpublish",
     "iaso.zone": "Health zone",
     "map.draw.label.cancel": "Cancel",
     "map.draw.label.circle": "Draw a circle",

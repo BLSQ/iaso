@@ -18,6 +18,8 @@ import { WorkflowsParams } from './types/workflows';
 
 import { redirectToReplace } from '../../routing/actions';
 
+import { baseUrls } from '../../constants/urls';
+
 import MESSAGES from './messages';
 import { useGetColumns, defaultSorted, baseUrl } from './config';
 
@@ -35,7 +37,7 @@ type Props = {
 
 export const Workflows: FunctionComponent<Props> = ({ params, router }) => {
     const dispatch = useDispatch();
-    const goBack = useGoBack(router);
+    const goBack = useGoBack(router, baseUrls.entityTypes);
     const classes: Record<string, string> = useStyles();
     const { formatMessage } = useSafeIntl();
     const { data, isFetching } = useGetWorkflowVersions(params);

@@ -4,7 +4,10 @@ import {
     // @ts-ignore
     IconButton as IconButtonComponent,
 } from 'bluesquare-components';
+import { Box, makeStyles } from '@material-ui/core';
 import FileCopyIcon from '@material-ui/icons/FileCopy';
+import PublishIcon from '@material-ui/icons/Publish';
+import BlockIcon from '@material-ui/icons/Block';
 
 import { WorkflowVersion } from '../types/workflows';
 
@@ -14,19 +17,34 @@ import DeleteDialog from '../../../components/dialogs/DeleteDialogComponent';
 
 import { useCopyWorkflowVersion } from '../hooks/requests/useCopyWorkflowVersion';
 import { useDeleteWorkflowVersion } from '../hooks/requests/useDeleteWorkflowVersion';
+import { useUpdateWorkflowVersion } from '../hooks/requests/useUpdateWorkflowVersion';
 
 type Props = {
     workflowVersion: WorkflowVersion;
     entityTypeId: number;
 };
 
+const useStyles = makeStyles(theme => ({
+    publishIcon: {
+        display: 'inline-block',
+        '& svg': {
+            color: theme.palette.success.main,
+        },
+    },
+}));
+
 export const VersionsActionCell: FunctionComponent<Props> = ({
     workflowVersion,
     entityTypeId,
 }) => {
+    const classes = useStyles();
+    const { version_id: versionId, status } = workflowVersion;
     const { mutate: copyWorkflowVersion } = useCopyWorkflowVersion();
     const { mutate: deleteWorkflowVersion } = useDeleteWorkflowVersion();
-    const { version_id: versionId, status } = workflowVersion;
+    const { mutate: updateWorkflowVersion } = useUpdateWorkflowVersion(
+        'workflowVersions',
+        versionId,
+    );
     const icon = status === 'DRAFT' ? 'edit' : 'remove-red-eye';
     const tooltipMessage = status === 'DRAFT' ? MESSAGES.edit : MESSAGES.see;
     return (
@@ -49,6 +67,28 @@ export const VersionsActionCell: FunctionComponent<Props> = ({
                     titleMessage={MESSAGES.deleteTitle}
                     message={MESSAGES.deleteText}
                     onConfirm={() => deleteWorkflowVersion(versionId)}
+                />
+            )}
+            {status !== 'PUBLISHED' && (
+                <Box className={classes.publishIcon}>
+                    <IconButtonComponent
+                        onClick={() =>
+                            updateWorkflowVersion({ status: 'PUBLISHED' })
+                        }
+                        overrideIcon={PublishIcon}
+                        tooltipMessage={MESSAGES.publish}
+                        color="inherit"
+                    />
+                </Box>
+            )}
+            {status === 'PUBLISHED' && (
+                <IconButtonComponent
+                    onClick={() =>
+                        updateWorkflowVersion({ status: 'UNPUBLISHED' })
+                    }
+                    overrideIcon={BlockIcon}
+                    tooltipMessage={MESSAGES.unpublish}
+                    color="error"
                 />
             )}
         </>

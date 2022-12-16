@@ -130,6 +130,18 @@ const MESSAGES = defineMessages({
         id: 'iaso.label.deleteText',
         defaultMessage: 'This operation cannot be undone.',
     },
+    save: {
+        id: 'iaso.label.save',
+        defaultMessage: 'Save',
+    },
+    publish: {
+        id: 'iaso.workflows.publish',
+        defaultMessage: 'Publish',
+    },
+    unpublish: {
+        id: 'iaso.workflows.unpublish',
+        defaultMessage: 'Unpublish',
+    },
 });
 
 export default MESSAGES;

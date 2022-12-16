@@ -1,12 +1,14 @@
-/* eslint-disable react/require-default-props */
 import {
     makeStyles,
     Table,
     TableBody,
     TableRow,
     TableCell,
+    Divider,
+    Box,
+    Button,
 } from '@material-ui/core';
-import React, { FunctionComponent, ReactNode } from 'react';
+import React, { FunctionComponent, ReactNode, useCallback } from 'react';
 // @ts-ignore
 import { useSafeIntl } from 'bluesquare-components';
 
@@ -15,7 +17,10 @@ import MESSAGES from '../messages';
 import { WorkflowVersionDetail } from '../types/workflows';
 
 import { StatusCell } from './StatusCell';
+import { DetailsForm } from './DetailsForm';
 import { LinkToForm } from '../../forms/components/LinkToForm';
+
+import { useUpdateWorkflowVersion } from '../hooks/requests/useUpdateWorkflowVersion';
 
 const useStyles = makeStyles(theme => ({
     leftCell: {
@@ -41,19 +46,34 @@ const Row: FunctionComponent<RowProps> = ({ label, value }) => {
 };
 
 type Props = {
-    workflow?: WorkflowVersionDetail;
+    workflow: WorkflowVersionDetail;
 };
 export const WorkflowBaseInfo: FunctionComponent<Props> = ({ workflow }) => {
     const { formatMessage } = useSafeIntl();
 
+    const { mutate: updateWorkflowVersion } = useUpdateWorkflowVersion(
+        'workflowVersion',
+        workflow.version_id,
+    );
+    const handleSave = useCallback(() => {
+        updateWorkflowVersion({ status: 'PUBLISHED' });
+    }, [updateWorkflowVersion]);
     return (
         <>
+            {workflow?.status === 'DRAFT' && (
+                <>
+                    <DetailsForm workflow={workflow} />
+                    <Divider />
+                </>
+            )}
             <Table size="small">
                 <TableBody>
-                    <Row
-                        label={formatMessage(MESSAGES.name)}
-                        value={workflow?.name}
-                    />
+                    {workflow?.status && workflow?.status !== 'DRAFT' && (
+                        <Row
+                            label={formatMessage(MESSAGES.name)}
+                            value={workflow?.name}
+                        />
+                    )}
                     <Row
                         label={formatMessage(MESSAGES.type)}
                         value={workflow?.entity_type.name}
@@ -87,6 +107,21 @@ export const WorkflowBaseInfo: FunctionComponent<Props> = ({ workflow }) => {
                     />
                 </TableBody>
             </Table>
+            {workflow?.status === 'DRAFT' && (
+                <>
+                    <Divider />
+                    <Box p={2} display="flex" justifyContent="flex-end">
+                        <Button
+                            color="primary"
+                            data-test="save-name-button"
+                            onClick={handleSave}
+                            variant="contained"
+                        >
+                            {formatMessage(MESSAGES.publish)}
+                        </Button>
+                    </Box>
+                </>
+            )}
         </>
     );
 };

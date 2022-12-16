@@ -895,6 +895,8 @@
     "iaso.workflows.dialog.deleteTitle": "Êtes-vous certain de vouloir effacer version de workflow ?",
     "iaso.workflows.followUps": "Suivis",
     "iaso.workflows.mapping": "Correspondance",
+    "iaso.workflows.publish": "Publier",
+    "iaso.workflows.unpublish": "Dépublier",
     "iaso.zone": "Zone de santé",
     "map.draw.label.cancel": "Annuler",
     "map.draw.label.circle": "Dessiner un cercle",

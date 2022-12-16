@@ -29,6 +29,7 @@ class CompletenessStatsAPITestCase(APITestCase):
         cls.project_1.forms.add(cls.form_hs_2)
         cls.project_1.forms.add(cls.form_hs_4)
         cls.project_1.save()
+        cls.org_unit_type_country = OrgUnitType.objects.get(pk=1)
         cls.org_unit_type_hopital = OrgUnitType.objects.get(pk=5)
         cls.org_unit_type_aire_sante = OrgUnitType.objects.get(pk=4)
         cls.org_unit_type_district = OrgUnitType.objects.get(pk=3)
@@ -179,6 +180,29 @@ class CompletenessStatsAPITestCase(APITestCase):
             self.assertIn(
                 result["org_unit_type"]["id"], [self.org_unit_type_hopital.id, self.org_unit_type_aire_sante.id]
             )
+
+    def test_filter_by_org_unit_type_no_results(self):
+        # We don't specify the parent_org_unit_id filter (so we only have the root OUs - a country)
+        # Then we ask to filter to only keep the hospitals: nothing at this level is a hospital => no results
+        self.client.force_authenticate(self.user)
+
+        response = self.client.get(f"/api/completeness_stats/?org_unit_type_id={self.org_unit_type_hopital.id}")
+        json = response.json()
+        self.assertListEqual(json["results"], [])
+
+    def test_filter_by_org_unit_type_with_results(self):
+        # Opposite scenario compared to test_filter_by_org_unit_type_no_results()
+        # We don't specify the parent_org_unit_id filter (so we only have the root OUs - a country)
+        # Then we ask to filter to only keep the countries: results should be identical than without the filter
+        self.client.force_authenticate(self.user)
+
+        response_with_filter = self.client.get(
+            f"/api/completeness_stats/?org_unit_type_id={self.org_unit_type_country.id}"
+        )
+        results_with_filter = response_with_filter.json()["results"]
+        response_without_filter = self.client.get(f"/api/completeness_stats/")
+        results_without_filter = response_without_filter.json()["results"]
+        self.assertListEqual(results_with_filter, results_without_filter)
 
     def test_filter_by_org_unit(self):
         self.client.force_authenticate(self.user)

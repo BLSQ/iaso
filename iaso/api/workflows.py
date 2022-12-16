@@ -162,7 +162,8 @@ class WorkflowVersionViewSet(ModelViewSet):
     model = WorkflowVersion
     lookup_url_kwarg = "version_id"
     filterset_fields = {"workflow__entity_type": ["exact"], "status": ["exact"], "id": ["exact"]}
-    http_method_names = ["get", "post"]
+    # TODO should test soft delete
+    http_method_names = ["get", "post", "delete"]
 
     @swagger_auto_schema(request_body=no_body)
     @action(detail=True, methods=["post"])

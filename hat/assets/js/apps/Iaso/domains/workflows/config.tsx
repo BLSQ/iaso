@@ -3,10 +3,9 @@ import React from 'react';
 import {
     // @ts-ignore
     useSafeIntl,
-    // @ts-ignore
-    IconButton as IconButtonComponent,
 } from 'bluesquare-components';
 import { Box } from '@material-ui/core';
+
 import MESSAGES from './messages';
 import { DateCell } from '../../components/Cells/DateTimeCell';
 import { LinkToForm } from '../forms/components/LinkToForm';
@@ -16,6 +15,7 @@ import { Column } from '../../types/table';
 import { baseUrls } from '../../constants/urls';
 
 import { StatusCell } from './components/StatusCell';
+import { VersionsActionCell } from './components/VersionsActionCell';
 
 export const defaultSorted = [{ id: 'id', desc: true }];
 
@@ -49,16 +49,12 @@ export const useGetColumns = (entityTypeId: string): Array<Column> => {
             resizable: false,
             sortable: false,
             accessor: 'actions',
-            Cell: settings => {
-                const { version_id: versionId } = settings.row.original;
-                return (
-                    <IconButtonComponent
-                        url={`${baseUrls.workflowDetail}/entityTypeId/${entityTypeId}/versionId/${versionId}`}
-                        icon="remove-red-eye"
-                        tooltipMessage={MESSAGES.see}
-                    />
-                );
-            },
+            Cell: settings => (
+                <VersionsActionCell
+                    workflowVersion={settings.row.original}
+                    entityTypeId={parseInt(entityTypeId, 10)}
+                />
+            ),
         },
     ];
     return columns;

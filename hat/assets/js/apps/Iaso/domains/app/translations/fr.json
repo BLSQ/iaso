@@ -888,6 +888,8 @@
     "iaso.workflows.addWorkflowVersion": "Ajouter une version",
     "iaso.workflows.changes": "Changements",
     "iaso.workflows.condition": "Condition",
+    "iaso.workflows.copy": "Copier la version",
+    "iaso.workflows.dialog.deleteTitle": "Êtes-vous certain de vouloir effacer version de workflow ?",
     "iaso.workflows.followUps": "Suivis",
     "iaso.workflows.mapping": "Correspondance",
     "iaso.zone": "Zone de santé",

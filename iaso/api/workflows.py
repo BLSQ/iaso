@@ -136,12 +136,12 @@ class WorkflowPostSerializer(serializers.Serializer):
 
         wfv = WorkflowVersion.objects.create(workflow=wf)
         et = EntityType.objects.get(pk=entity_type_id)
-        # TODO reference form and name should be tested
         wfv.reference_form = et.reference_form
         if "name" in validated_data:
             wfv.name = validated_data["name"]
         wfv.save()
         return wfv
+
 
 class WorkflowPartialUpdateSerializer(serializers.Serializer):
 
@@ -197,7 +197,6 @@ class WorkflowVersionViewSet(ModelViewSet):
     model = WorkflowVersion
     lookup_url_kwarg = "version_id"
     filterset_fields = {"workflow__entity_type": ["exact"], "status": ["exact"], "id": ["exact"]}
-    # TODO should test soft delete
     http_method_names = ["get", "post", "patch", "delete"]
 
     @swagger_auto_schema(request_body=no_body)

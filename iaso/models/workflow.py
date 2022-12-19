@@ -3,7 +3,16 @@ import typing
 from django.db import models
 from django.contrib.auth.models import User, AnonymousUser
 from iaso.models.entity import EntityType, Form
-from ..utils.models.soft_deletable import SoftDeletableModel
+from ..utils.models.soft_deletable import (
+    SoftDeletableModel,
+    DefaultSoftDeletableManager,
+    OnlyDeletedSoftDeletableManager,
+    IncludeDeletedSoftDeletableManager,
+)
+
+
+class WorkflowQuerySet(models.QuerySet):
+    pass
 
 
 class Workflow(SoftDeletableModel):
@@ -18,6 +27,12 @@ class Workflow(SoftDeletableModel):
 
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+
+    objects = DefaultSoftDeletableManager.from_queryset(WorkflowQuerySet)()
+
+    objects_only_deleted = OnlyDeletedSoftDeletableManager.from_queryset(WorkflowQuerySet)()
+
+    objects_include_deleted = IncludeDeletedSoftDeletableManager.from_queryset(WorkflowQuerySet)()
 
     @property
     def latest_version(self):
@@ -60,7 +75,7 @@ class WorkflowVersionQuerySet(models.QuerySet):
         return queryset
 
 
-class WorkflowVersion(models.Model):
+class WorkflowVersion(SoftDeletableModel):
     """
     WorkflowVersion has 'workflow' foreign key to the Workflow object.
     reverse relations :
@@ -80,7 +95,11 @@ class WorkflowVersion(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
-    objects = WorkflowVersionQuerySet.as_manager()
+    objects = DefaultSoftDeletableManager.from_queryset(WorkflowVersionQuerySet)()
+
+    objects_only_deleted = OnlyDeletedSoftDeletableManager.from_queryset(WorkflowVersionQuerySet)()
+
+    objects_include_deleted = IncludeDeletedSoftDeletableManager.from_queryset(WorkflowVersionQuerySet)()
 
     def transition_to_status(self, new_status_str: str, do_save=True):
         old_status_str = self.status

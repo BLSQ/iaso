@@ -108,7 +108,7 @@ class MailTemplate(models.Model):
         validators=[validator_template],
         help_text="Template for the Email subject, use the Django Template language, "
         "see https://docs.djangoproject.com/en/4.1/ref/templates/language/ for reference. Please keep it as one line.",
-        default="{{author_name}} updated the the budget  for campaign {{campaign.obr_name}}",
+        default="Budget for campaign {{campaign.obr_name}} updated to {{node.label}}",
     )
     html_template = models.TextField(
         validators=[validator_template],
@@ -157,6 +157,7 @@ class MailTemplate(models.Model):
                 }
             )
         transition = workflow.get_transition_by_key(step.transition_key)
+        node = workflow.get_node_by_key(transition.to_node)
         attachments = []
         for f in step.files.all():
             file_url = base_url + f.get_absolute_url()
@@ -177,7 +178,7 @@ class MailTemplate(models.Model):
                 "author": step.created_by,
                 "author_name": step.created_by.get_full_name() or step.created_by.username,
                 "buttons": buttons,
-                "transition": transition,
+                "node": node,
                 "team": step.created_by_team,
                 "step": step,
                 "campaign": campaign,

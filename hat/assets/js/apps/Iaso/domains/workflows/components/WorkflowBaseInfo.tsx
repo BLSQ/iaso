@@ -8,7 +8,7 @@ import {
     Box,
     Button,
 } from '@material-ui/core';
-import React, { FunctionComponent, ReactNode, useCallback } from 'react';
+import React, { FunctionComponent, ReactNode } from 'react';
 // @ts-ignore
 import { useSafeIntl } from 'bluesquare-components';
 
@@ -55,9 +55,6 @@ export const WorkflowBaseInfo: FunctionComponent<Props> = ({ workflow }) => {
         'workflowVersion',
         workflow.version_id,
     );
-    const handleSave = useCallback(() => {
-        updateWorkflowVersion({ status: 'PUBLISHED' });
-    }, [updateWorkflowVersion]);
     return (
         <>
             {workflow?.status === 'DRAFT' && (
@@ -114,7 +111,9 @@ export const WorkflowBaseInfo: FunctionComponent<Props> = ({ workflow }) => {
                         <Button
                             color="primary"
                             data-test="save-name-button"
-                            onClick={handleSave}
+                            onClick={() =>
+                                updateWorkflowVersion({ status: 'PUBLISHED' })
+                            }
                             variant="contained"
                         >
                             {formatMessage(MESSAGES.publish)}

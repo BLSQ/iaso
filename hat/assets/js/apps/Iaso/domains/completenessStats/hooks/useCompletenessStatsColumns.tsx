@@ -1,10 +1,27 @@
 import React, { useMemo } from 'react';
-// @ts-ignore
-import { useSafeIntl } from 'bluesquare-components';
+import {
+    // @ts-ignore
+    useSafeIntl,
+    // @ts-ignore
+    IconButton as IconButtonComponent,
+} from 'bluesquare-components';
+import { useDispatch } from 'react-redux';
+import { cloneDeep } from 'lodash';
+import AccountTreeIcon from '@material-ui/icons/AccountTree';
+import { redirectTo } from '../../../routing/actions';
 import MESSAGES from '../messages';
+import { baseUrls } from '../../../constants/urls';
 
-export const useCompletenessStatsColumns = () => {
+const baseUrl = `${baseUrls.completenessStats}`;
+
+export const useCompletenessStatsColumns = (params: any) => {
     const { formatMessage } = useSafeIntl();
+    const redirectionParams: Record<string, any> = useMemo(() => {
+        const clonedParams = cloneDeep(params);
+        delete clonedParams.parentId;
+        return clonedParams;
+    }, [params]);
+    const dispatch = useDispatch();
     return useMemo(
         () => [
             {
@@ -24,20 +41,26 @@ export const useCompletenessStatsColumns = () => {
                 id: 'org_unit_type__name',
                 accessor: 'org_unit_type__name',
                 sortable: true,
-                Cell: settings => (
-                    <span>
-                        {settings.row.original.org_unit_type?.name ?? '--'}
-                    </span>
-                ),
+                Cell: settings => {
+                    return (
+                        <span>
+                            {settings.row.original.org_unit_type?.name ?? '--'}
+                        </span>
+                    );
+                },
             },
             {
                 Header: formatMessage(MESSAGES.orgUnit),
                 id: 'name',
                 accessor: 'name',
                 sortable: true,
-                Cell: settings => (
-                    <span>{settings.row.original.org_unit?.name ?? '--'}</span>
-                ),
+                Cell: settings => {
+                    return (
+                        <span>
+                            {settings.row.original.org_unit?.name ?? '--'}
+                        </span>
+                    );
+                },
             },
             {
                 Header: formatMessage(MESSAGES.form),
@@ -84,7 +107,33 @@ export const useCompletenessStatsColumns = () => {
                 accessor: 'completeness_ratio',
                 sortable: false,
             },
+            {
+                Header: formatMessage(MESSAGES.actions),
+                id: 'bleh',
+                accessor: 'blej',
+                sortable: false,
+                Cell: settings => {
+                    return (
+                        <>
+                            <IconButtonComponent
+                                onClick={() => {
+                                    dispatch(
+                                        redirectTo(baseUrl, {
+                                            ...redirectionParams,
+                                            parentId:
+                                                settings.row.original.org_unit
+                                                    ?.id,
+                                        }),
+                                    );
+                                }}
+                                tooltipMessage={MESSAGES.seeChildren}
+                                overrideIcon={AccountTreeIcon}
+                            />
+                        </>
+                    );
+                },
+            },
         ],
-        [formatMessage],
+        [dispatch, formatMessage, redirectionParams],
     );
 };

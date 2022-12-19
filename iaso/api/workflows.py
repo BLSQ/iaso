@@ -1,6 +1,5 @@
 from copy import deepcopy
 
-from django.contrib.auth.models import User
 from iaso.models import Workflow, WorkflowVersion, EntityType, WorkflowFollowup, WorkflowChange, Form
 from iaso.models.workflow import WorkflowVersionsStatus
 

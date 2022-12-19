@@ -1,4 +1,9 @@
-import React, { FunctionComponent } from 'react';
+import React, {
+    FunctionComponent,
+    useCallback,
+    useState,
+    useEffect,
+} from 'react';
 import {
     // @ts-ignore
     useSafeIntl,
@@ -9,7 +14,9 @@ import {
     // @ts-ignore
     formatThousand,
     // @ts-ignore
-    Table,
+    SortableTable,
+    // @ts-ignore
+    SortableList,
 } from 'bluesquare-components';
 import { Box, Grid, makeStyles } from '@material-ui/core';
 import { useDispatch, useSelector } from 'react-redux';
@@ -21,13 +28,17 @@ import { baseUrls } from '../../constants/urls';
 
 import { useGetWorkflowVersion } from './hooks/requests/useGetWorkflowVersions';
 
-import { WorkflowVersionDetail, WorkflowParams } from './types/workflows';
+import {
+    WorkflowVersionDetail,
+    WorkflowParams,
+    FollowUps,
+} from './types/workflows';
 
 import { WorkflowBaseInfo } from './components/WorkflowBaseInfo';
+import { SortableItem } from './components/SortableItem';
 
 import WidgetPaper from '../../components/papers/WidgetPaperComponent';
 import { TableWithDeepLink } from '../../components/tables/TableWithDeepLink';
-
 import { useGetChangesColumns, useGetFollowUpsColumns } from './config';
 
 type Router = {
@@ -49,6 +60,7 @@ const useStyles = makeStyles(theme => ({
 export const Details: FunctionComponent<Props> = ({ router }) => {
     const { params } = router;
     const classes: Record<string, string> = useStyles();
+    const [followUps, setFollowUps] = useState<FollowUps[]>([]);
     const { entityTypeId, versionId } = params;
     const { formatMessage } = useSafeIntl();
 
@@ -64,9 +76,19 @@ export const Details: FunctionComponent<Props> = ({ router }) => {
         isLoading: boolean;
     } = useGetWorkflowVersion(versionId);
 
+    useEffect(() => {
+        if (workflow?.follow_ups) {
+            setFollowUps(workflow.follow_ups);
+        }
+    }, [workflow?.follow_ups]);
+
     const changesColumns = useGetChangesColumns(entityTypeId, versionId);
     const followUpsColumns = useGetFollowUpsColumns(entityTypeId, versionId);
-
+    const handleSortChange = useCallback((items: any) => {
+        setFollowUps(
+            items.map((item, index) => ({ ...item, order: index + 1 })),
+        );
+    }, []);
     return (
         <>
             <TopBar
@@ -98,39 +120,28 @@ export const Details: FunctionComponent<Props> = ({ router }) => {
                         </WidgetPaper>
                     </Grid>
                 </Grid>
+                {/* <Box mt={2} width={200}>
+                    <WidgetPaper
+                        className={classes.fullWidth}
+                        title={formatMessage(MESSAGES.followUps)}
+                    >
+                        <SortableList
+                            items={followUps}
+                            onChange={handleSortChange}
+                            RenderItem={props => <SortableItem {...props} />}
+                        />
+                    </WidgetPaper>
+                </Box> */}
                 <Box mt={2}>
                     <WidgetPaper
                         className={classes.fullWidth}
                         title={formatMessage(MESSAGES.followUps)}
                     >
-                        <Table
-                            marginTop={false}
-                            countOnTop={false}
-                            elevation={0}
-                            showPagination={false}
-                            baseUrl={baseUrls.workflowDetail}
-                            data={workflow?.follow_ups ?? []}
-                            pages={1}
-                            defaultSorted={[{ id: 'order', desc: false }]}
+                        <SortableTable
+                            items={followUps}
+                            onChange={handleSortChange}
                             columns={followUpsColumns}
-                            count={workflow?.follow_ups.length}
-                            params={params}
-                            extraProps={{
-                                isLoading,
-                            }}
                         />
-                        <Box
-                            display="flex"
-                            justifyContent="flex-end"
-                            pr={2}
-                            pb={2}
-                            mt={-2}
-                        >
-                            {`${formatThousand(
-                                workflow?.follow_ups.length ?? 0,
-                            )} `}
-                            {formatMessage(MESSAGES.results)}
-                        </Box>
                     </WidgetPaper>
                 </Box>
                 <Box mt={2}>

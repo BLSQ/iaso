@@ -2,7 +2,13 @@ import React, { useState, useCallback, useEffect } from 'react';
 import classnames from 'classnames';
 import mapValues from 'lodash/mapValues';
 import PropTypes from 'prop-types';
-import { withStyles, Grid, useMediaQuery, useTheme } from '@material-ui/core';
+import {
+    withStyles,
+    Grid,
+    Box,
+    useMediaQuery,
+    useTheme,
+} from '@material-ui/core';
 
 import { commonStyles } from 'bluesquare-components';
 import { isEqual } from 'lodash';
@@ -127,7 +133,7 @@ const OrgUnitForm = ({
     }, [orgUnit.id]);
 
     return (
-        <>
+        <Box pt={isNewOrgunit ? 2 : 0}>
             <Grid
                 container
                 spacing={0}
@@ -154,7 +160,7 @@ const OrgUnitForm = ({
                     orgUnitModified={orgUnitModified}
                 />
             </Grid>
-        </>
+        </Box>
     );
 };
 

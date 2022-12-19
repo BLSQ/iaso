@@ -5,8 +5,8 @@ import React, { useEffect, useState } from 'react';
 // import classnames from 'classnames';
 
 import {
-    Button,
     Box,
+    Button,
     Grid,
     DialogContentText,
     Table,
@@ -62,15 +62,15 @@ const useStyles = makeStyles(theme => ({
     geometryExistence: {
         marginTop: '16px',
     },
-    orgunitDetailInfos: {
-        marginTop: '16px',
-    },
     alignCenter: {
         display: 'flex',
         justifyContent: 'center',
     },
     marginLeft: {
         marginLeft: '8px',
+    },
+    formContents: {
+        width: '100%',
     },
 }));
 
@@ -255,7 +255,7 @@ const OrgUnitCreationDetails = ({ orgUnit, formatMessage, classes }) => {
                             <TableCell className={classes.leftCell}>
                                 {formatMessage(MESSAGES.source)}
                             </TableCell>
-                            <TableCell>{orgUnit.source}</TableCell>
+                            <TableCell>{orgUnit.source ?? '-'}</TableCell>
                         </TableRow>
 
                         {orgUnit.creator.value && (
@@ -383,7 +383,7 @@ const OrgUnitInfosComponent = ({
     }, [orgUnit]);
 
     return (
-        <Grid container spacing={!isNewOrgunit ? 4 : 2}>
+        <Grid container spacing={2}>
             {showSpeedDialInstanceActions && (
                 <SpeedDialInstanceActions
                     speedDialClasses={classes.speedDialTop}
@@ -414,7 +414,7 @@ const OrgUnitInfosComponent = ({
                         value={orgUnit.name.value}
                         errors={orgUnit.name.errors}
                         label={MESSAGES.name}
-                        withMarginTop={!orgUnit.reference_instance}
+                        withMarginTop={false}
                     />
                     <InputComponent
                         keyValue="org_unit_type_id"
@@ -481,6 +481,7 @@ const OrgUnitInfosComponent = ({
                                 value: 'REJECTED',
                             },
                         ]}
+                        withMarginTop={false}
                     />
                     <InputComponent
                         keyValue="source_ref"
@@ -546,12 +547,7 @@ const OrgUnitInfosComponent = ({
                     </Grid>
                 </Grid>
 
-                <Grid
-                    item
-                    xs={12}
-                    md={4}
-                    className={classes.orgunitDetailInfos}
-                >
+                <Grid item xs={12} md={4}>
                     <OrgUnitCreationDetails
                         orgUnit={orgUnit}
                         formatMessage={formatMessage}
@@ -561,26 +557,28 @@ const OrgUnitInfosComponent = ({
             </>
 
             {orgUnit.reference_instance && (
-                <Grid container item xs={12} md={4}>
-                    <WidgetPaper
-                        id="form-contents"
-                        title={formatMessage(MESSAGES.detailTitle)}
-                        IconButton={IconButtonComponent}
-                        iconButtonProps={{
-                            onClick: () =>
-                                window.open(
-                                    orgUnit.reference_instance.file_url,
-                                    '_blank',
-                                ),
-                            icon: 'xml',
-                            color: 'secondary',
-                            tooltipMessage: MESSAGES.downloadXml,
-                        }}
-                    >
-                        <InstanceFileContent
-                            instance={orgUnit.reference_instance}
-                        />
-                    </WidgetPaper>
+                <Grid container item xs={12} md={8}>
+                    <Box mt={4} className={classes.formContents}>
+                        <WidgetPaper
+                            id="form-contents"
+                            title={formatMessage(MESSAGES.detailTitle)}
+                            IconButton={IconButtonComponent}
+                            iconButtonProps={{
+                                onClick: () =>
+                                    window.open(
+                                        orgUnit.reference_instance.file_url,
+                                        '_blank',
+                                    ),
+                                icon: 'xml',
+                                color: 'secondary',
+                                tooltipMessage: MESSAGES.downloadXml,
+                            }}
+                        >
+                            <InstanceFileContent
+                                instance={orgUnit.reference_instance}
+                            />
+                        </WidgetPaper>
+                    </Box>
                 </Grid>
             )}
         </Grid>

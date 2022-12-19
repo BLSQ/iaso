@@ -65,13 +65,12 @@ class WorkflowFollowupSerializer(serializers.ModelSerializer):
 class WorkflowFollowupCreateSerializer(serializers.Serializer):
     order = serializers.IntegerField()
     condition = serializers.JSONField()
-    forms = serializers.ListField(child=serializers.IntegerField())
+    form_ids = serializers.ListField(child=serializers.IntegerField())
 
-    def validate_forms(self, forms):
-        print("validate_forms : START")
+    def validate_form_ids(self, form_ids):
         user = self.context["request"].user
 
-        for form_id in forms:
+        for form_id in form_ids:
             if not Form.objects.filter(pk=form_id).exists():
                 raise serializers.ValidationError(f"Form {form_id} does not exist")
 
@@ -80,11 +79,9 @@ class WorkflowFollowupCreateSerializer(serializers.Serializer):
                 if p.account != user.iaso_profile.account:
                     raise serializers.ValidationError(f"User doesn't have access to form {form_id}")
 
-        print("validate_forms : END")
-        return forms
+        return form_ids
 
     def create(self, validated_data):
-        print("Create : START")
         version_id = self.context["version_id"]
 
         wfv = get_object_or_404(WorkflowVersion, pk=version_id)
@@ -95,10 +92,8 @@ class WorkflowFollowupCreateSerializer(serializers.Serializer):
         wf.conditions = validated_data["condition"]
         wf.order = validated_data["order"]
 
-        wf.forms.set(validated_data["forms"])
+        wf.forms.set(validated_data["form_ids"])
         wf.save()
-
-        print("Create : END")
         return wf
 
 
@@ -230,7 +225,6 @@ def validate_version_id(version_id, user):
     if not et.account == user.iaso_profile.account:
         raise serializers.ValidationError(f"User doesn't have access to Entity Type : {wfv.workflow.entity_type_id}")
 
-    print("validate_version_id: OK")
     return version_id
 
 

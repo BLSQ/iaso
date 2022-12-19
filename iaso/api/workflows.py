@@ -62,6 +62,46 @@ class WorkflowFollowupSerializer(serializers.ModelSerializer):
         fields = ["id", "order", "condition", "forms", "created_at", "updated_at"]
 
 
+class WorkflowFollowupCreateSerializer(serializers.Serializer):
+    order = serializers.IntegerField()
+    condition = serializers.JSONField()
+    forms = serializers.ListField(child=serializers.IntegerField())
+
+    def validate_forms(self, forms):
+        print("validate_forms : START")
+        user = self.context["request"].user
+
+        for form_id in forms:
+            if not Form.objects.filter(pk=form_id).exists():
+                raise serializers.ValidationError(f"Form {form_id} does not exist")
+
+            form = Form.objects.get(pk=form_id)
+            for p in form.projects.all():
+                if p.account != user.iaso_profile.account:
+                    raise serializers.ValidationError(f"User doesn't have access to form {form_id}")
+
+        print("validate_forms : END")
+        return forms
+
+    def create(self, validated_data):
+        print("Create : START")
+        version_id = self.context["version_id"]
+
+        wfv = get_object_or_404(WorkflowVersion, pk=version_id)
+        wf = WorkflowFollowup.objects.create(
+            order=validated_data["order"], condition=validated_data["condition"], workflow_version=wfv
+        )
+
+        wf.conditions = validated_data["condition"]
+        wf.order = validated_data["order"]
+
+        wf.forms.set(validated_data["forms"])
+        wf.save()
+
+        print("Create : END")
+        return wf
+
+
 class WorkflowVersionDetailSerializer(serializers.ModelSerializer):
     version_id = serializers.IntegerField(source="pk")
     reference_form = FormNestedSerializer()
@@ -180,6 +220,20 @@ class WorkflowPartialUpdateSerializer(serializers.Serializer):
         return instance
 
 
+def validate_version_id(version_id, user):
+    wfv = get_object_or_404(WorkflowVersion, pk=version_id)
+    et = get_object_or_404(EntityType, pk=wfv.workflow.entity_type_id)
+
+    if wfv.status != WorkflowVersionsStatus.DRAFT:
+        raise serializers.ValidationError(f"WorkflowVersion {version_id} is not in draft status")
+
+    if not et.account == user.iaso_profile.account:
+        raise serializers.ValidationError(f"User doesn't have access to Entity Type : {wfv.workflow.entity_type_id}")
+
+    print("validate_version_id: OK")
+    return version_id
+
+
 class WorkflowVersionViewSet(ModelViewSet):
     """Workflow API
     GET /api/workflowversions/
@@ -210,6 +264,24 @@ class WorkflowVersionViewSet(ModelViewSet):
         wv_orig = WorkflowVersion.objects.get(pk=version_id)
         new_vw = make_deep_copy_with_relations(wv_orig)
         serialized_data = WorkflowVersionSerializer(new_vw).data
+        return Response(serialized_data)
+
+    @swagger_auto_schema(request_body=WorkflowFollowupCreateSerializer)
+    @action(detail=True, methods=["post"])
+    def followup(self, request, *args, **kwargs):
+        """POST /api/workflowversions/{version_id}/followup
+        Creates a new followup for WorkflowVersion {version_id} with the body data
+        """
+        version_id = request.query_params.get("version_id", kwargs.get("version_id", None))
+        validate_version_id(version_id, request.user)
+
+        serializer = WorkflowFollowupCreateSerializer(
+            data=request.data, context={"request": request, "version_id": version_id}
+        )
+        serializer.is_valid(raise_exception=True)
+        res = serializer.save()
+
+        serialized_data = WorkflowFollowupSerializer(res).data
         return Response(serialized_data)
 
     @swagger_auto_schema(request_body=WorkflowPartialUpdateSerializer)

@@ -29,6 +29,8 @@ const useStyles = makeStyles(theme => ({
 const Filters = ({ baseUrl, params }) => {
     const [filtersUpdated, setFiltersUpdated] = useState(false);
     const classes = useStyles();
+    const [ouParent, setOuParent] = useState(false);
+    const [ouChildren, setOuChildren] = useState(false);
     const { formatMessage } = useSafeIntl();
     const dispatch = useDispatch();
     const [filters, setFilters] = useState({
@@ -36,6 +38,7 @@ const Filters = ({ baseUrl, params }) => {
         permissions: params.permissions,
         location: params.location,
         orgUnitTypes: params.orgUnitTypes,
+        ouParent: params.ouParent,
     });
     const [initialOrgUnitId, setInitialOrgUnitId] = useState(params?.location);
     const { data: dropdown, isFetching } = useGetPermissionsDropDown();
@@ -136,6 +139,34 @@ const Filters = ({ baseUrl, params }) => {
                         loading={isFetchingOuTypes}
                         onEnterPressed={handleSearchPerms}
                         clearable
+                    />
+                </Grid>
+                <Grid item xs={12} md={3}>
+                    <InputComponent
+                        keyValue="ouParent"
+                        type="checkbox"
+                        checked={ouParent}
+                        onChange={(key, value) => {
+                            handleChange('ouParent', !ouParent);
+                            setOuParent(value);
+                        }}
+                        value={ouParent}
+                        label={MESSAGES.ouParentCheckbox}
+                        onEnterPressed={handleSearchPerms}
+                    />
+                </Grid>
+                <Grid item xs={12} md={3}>
+                    <InputComponent
+                        keyValue="ouChildren"
+                        type="checkbox"
+                        checked={ouChildren}
+                        onChange={(key, value) => {
+                            handleChange('ouChildren', !ouChildren);
+                            setOuChildren(value);
+                        }}
+                        value={ouChildren}
+                        label={MESSAGES.ouChildrenCheckbox}
+                        onEnterPressed={handleSearchPerms}
                     />
                 </Grid>
                 <Grid container item xs={12} justifyContent="flex-end">

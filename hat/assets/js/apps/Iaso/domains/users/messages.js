@@ -217,6 +217,14 @@ const MESSAGES = defineMessages({
         defaultMessage: 'Home page',
         id: 'iaso.users.label.homePage',
     },
+    ouChildrenCheckbox: {
+        defaultMessage: 'Show OU Children',
+        id: 'iaso.users.ouChildrenCheckbox',
+    },
+    ouParentCheckbox: {
+        defaultMessage: 'Show OU parent',
+        id: 'iaso.users.ouChildrenCheckbox',
+    },
 });
 
 export default MESSAGES;

@@ -50,7 +50,7 @@ class WorkflowsPatchAPITestCase(APITestCase):
 
     def test_user_without_auth(self):
         response = self.client.patch(
-            f"/api/workflowversion/{self.workflow_version_et_adults_blue.pk}/", data={"status": "PUBLISHED"}
+            f"/api/workflowversions/{self.workflow_version_et_adults_blue.pk}/", data={"status": "PUBLISHED"}
         )
 
         self.assertJSONResponse(response, 403)
@@ -60,7 +60,7 @@ class WorkflowsPatchAPITestCase(APITestCase):
     def test_user_anonymous(self):
         self.client.force_authenticate(self.anon)
         response = self.client.patch(
-            f"/api/workflowversion/{self.workflow_version_et_adults_blue.pk}/", data={"status": "PUBLISHED"}
+            f"/api/workflowversions/{self.workflow_version_et_adults_blue.pk}/", data={"status": "PUBLISHED"}
         )
 
         self.assertJSONResponse(response, 403)
@@ -70,7 +70,7 @@ class WorkflowsPatchAPITestCase(APITestCase):
     def test_patch_nonexisting_fails(self):
         self.client.force_authenticate(self.blue_adult_1)
 
-        response = self.client.patch(f"/api/workflowversion/1000/", data={"status": "PUBLISHED"})
+        response = self.client.patch(f"/api/workflowversions/1000/", data={"status": "PUBLISHED"})
 
         self.assertJSONResponse(response, 404)
         assert "detail" in response.data
@@ -80,7 +80,7 @@ class WorkflowsPatchAPITestCase(APITestCase):
         self.client.force_authenticate(self.blue_adult_1)
 
         response = self.client.patch(
-            f"/api/workflowversion/{self.workflow_version_et_adults_blue.pk}/", data={"status": "PUBLISHED"}
+            f"/api/workflowversions/{self.workflow_version_et_adults_blue.pk}/", data={"status": "PUBLISHED"}
         )
 
         self.assertJSONResponse(response, 200)
@@ -97,12 +97,15 @@ class WorkflowsPatchAPITestCase(APITestCase):
         self.workflow_version_et_adults_blue.save()
 
         response = self.client.patch(
-            f"/api/workflowversion/{self.workflow_version_et_adults_blue.pk}/", data={"status": "DRAFT"}
+            f"/api/workflowversions/{self.workflow_version_et_adults_blue.pk}/", data={"status": "DRAFT"}
         )
 
-        self.assertJSONResponse(response, 401)
+        self.assertJSONResponse(response, 400)
 
-        assert response.data == "Transition from PUBLISHED to DRAFT is not allowed"
+        assert (
+            str(response.data)
+            == "[ErrorDetail(string='Transition from PUBLISHED to DRAFT is not allowed', code='invalid')]"
+        )
 
     def test_patch_change_name_only(self):
         self.client.force_authenticate(self.blue_adult_1)
@@ -110,7 +113,7 @@ class WorkflowsPatchAPITestCase(APITestCase):
         new_name = "BROL"
 
         response = self.client.patch(
-            f"/api/workflowversion/{self.workflow_version_et_adults_blue.pk}/", data={"name": new_name}
+            f"/api/workflowversions/{self.workflow_version_et_adults_blue.pk}/", data={"name": new_name}
         )
 
         self.assertJSONResponse(response, 200)

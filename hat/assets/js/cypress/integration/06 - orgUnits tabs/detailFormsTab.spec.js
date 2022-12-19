@@ -16,7 +16,6 @@ const interceptList = [
     'profiles',
     'algorithms',
     'algorithmsruns',
-    // 'groups',
     'orgunittypes',
 ];
 
@@ -68,8 +67,7 @@ const goToPage = () => {
             fixture: `${i}/list.json`,
         });
     });
-    // data source id comes from fixtures
-    cy.intercept('GET', `/api/groups/?&dataSource=33`, {
+    cy.intercept('GET', `/api/groups/?&dataSource=${orgUnit.source_id}`, {
         fixture: `groups/list.json`,
     });
     cy.intercept(

@@ -14,6 +14,7 @@ import { locationLimitMax } from '../domains/orgUnits/constants/orgUnitConstants
 import Page404 from '../components/errors/Page404';
 
 import { defaultSorted as storageDefaultSort } from '../domains/storages/config.tsx';
+import { defaultSorted as workflowDefaultSort } from '../domains/workflows/config.tsx';
 
 const getRedirections = overrideLanding => {
     const getPaginationParams = (order = 'id', pageSize = 20) =>
@@ -77,6 +78,14 @@ const getRedirections = overrideLanding => {
             to: `${baseUrls.storages}${getPaginationParams(
                 getSort(storageDefaultSort),
             )}`,
+        },
+        {
+            path: `${baseUrls.workflows}/entityTypeId/:entityTypeId`,
+            to: `${
+                baseUrls.workflows
+            }/entityTypeId/:entityTypeId/order/${getSort(
+                workflowDefaultSort,
+            )}/pageSize/20/page/1`,
         },
         // Keep compatibility with the olds url for instance as they got renamed in Nov 2021
         {

@@ -1,6 +1,13 @@
 import React, { useState, FunctionComponent, useEffect } from 'react';
 
-import { Grid, Button, makeStyles } from '@material-ui/core';
+import {
+    Grid,
+    Button,
+    Box,
+    makeStyles,
+    useMediaQuery,
+    useTheme,
+} from '@material-ui/core';
 import SearchIcon from '@material-ui/icons/Search';
 // @ts-ignore
 import { commonStyles, useSafeIntl } from 'bluesquare-components';
@@ -48,6 +55,9 @@ const Filters: FunctionComponent<Props> = ({
         filters.showDeleted === 'true',
     );
 
+    const theme = useTheme();
+    const isLargeLayout = useMediaQuery(theme.breakpoints.up('md'));
+
     useEffect(() => {
         if (filters.search !== undefined) {
             const hasForbiddenChar = containsForbiddenCharacter(filters.search);
@@ -65,8 +75,8 @@ const Filters: FunctionComponent<Props> = ({
 
     return (
         <>
-            <Grid container spacing={4}>
-                <Grid item xs={3}>
+            <Grid container spacing={2}>
+                <Grid item xs={12} sm={6} md={3}>
                     <InputComponent
                         keyValue="search"
                         onChange={handleChange}
@@ -77,9 +87,35 @@ const Filters: FunctionComponent<Props> = ({
                         errors={textSearchErrors}
                     />
                 </Grid>
+
+                <Grid
+                    item
+                    xs={12}
+                    sm={6}
+                    md={9}
+                    container
+                    justifyContent="flex-end"
+                    alignItems="center"
+                >
+                    <Box mt={isLargeLayout ? 2 : 0}>
+                        <Button
+                            data-test="search-button"
+                            disabled={
+                                (!showDeleted && !filtersUpdated) || hasErrors
+                            }
+                            variant="contained"
+                            className={classes.button}
+                            color="primary"
+                            onClick={() => handleSearch()}
+                        >
+                            <SearchIcon className={classes.buttonIcon} />
+                            {formatMessage(MESSAGES.search)}
+                        </Button>
+                    </Box>
+                </Grid>
             </Grid>
-            <Grid container spacing={4}>
-                <Grid item xs={3}>
+            <Grid container>
+                <Grid item xs={12}>
                     <InputComponent
                         keyValue="showDeleted"
                         onChange={(key, value) => {
@@ -90,35 +126,6 @@ const Filters: FunctionComponent<Props> = ({
                         type="checkbox"
                         label={MESSAGES.showDeleted}
                     />
-                </Grid>
-            </Grid>
-
-            <Grid
-                container
-                spacing={4}
-                justifyContent="flex-end"
-                alignItems="center"
-            >
-                <Grid
-                    item
-                    xs={2}
-                    container
-                    justifyContent="flex-end"
-                    alignItems="center"
-                >
-                    <Button
-                        data-test="search-button"
-                        disabled={
-                            (!showDeleted && !filtersUpdated) || hasErrors
-                        }
-                        variant="contained"
-                        className={classes.button}
-                        color="primary"
-                        onClick={() => handleSearch()}
-                    >
-                        <SearchIcon className={classes.buttonIcon} />
-                        {formatMessage(MESSAGES.search)}
-                    </Button>
                 </Grid>
             </Grid>
         </>

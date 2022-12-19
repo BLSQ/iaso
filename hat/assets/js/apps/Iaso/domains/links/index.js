@@ -134,6 +134,7 @@ export const Links = ({ params, router }) => {
                         />
                     ) : null
                 }
+                filtersColumnsCount={4}
             />
         </>
     );

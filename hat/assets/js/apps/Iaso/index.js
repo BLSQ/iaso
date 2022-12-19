@@ -1,14 +1,12 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
-// import { Route } from 'react-router';
 import { Provider } from 'react-redux';
 import { MuiThemeProvider } from '@material-ui/core/styles';
 import CssBaseline from '@material-ui/core/CssBaseline';
 import { theme } from 'bluesquare-components';
 import { QueryClient, QueryClientProvider } from 'react-query';
+
 import App from './domains/app';
-// import { routeConfigs, getPath } from './constants/routes';
-// import ProtectedRoute from './domains/users/components/ProtectedRoute';
 import { store, history } from './redux/store';
 import { getPlugins, PluginsContext } from './utils';
 import { getOverriddenTheme } from './styles';

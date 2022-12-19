@@ -29,11 +29,12 @@ export const PlanningFilters: FunctionComponent<Props> = ({ params }) => {
     const { filters, handleSearch, handleChange, filtersUpdated } =
         useFilterState({ baseUrl, params });
     const { formatMessage } = useSafeIntl();
+
     return (
         <>
             <Grid container spacing={0}>
-                <Grid container item xs={10} lg={11} spacing={2}>
-                    <Grid item xs={3}>
+                <Grid container spacing={2}>
+                    <Grid item xs={12} md={3}>
                         <InputComponent
                             keyValue="search"
                             onChange={handleChange}
@@ -43,7 +44,7 @@ export const PlanningFilters: FunctionComponent<Props> = ({ params }) => {
                             onEnterPressed={handleSearch}
                         />
                     </Grid>
-                    <Grid item xs={6}>
+                    <Grid item xs={12} md={6}>
                         <DatesRange
                             onChangeDate={handleChange}
                             dateFrom={filters.dateFrom}
@@ -52,7 +53,7 @@ export const PlanningFilters: FunctionComponent<Props> = ({ params }) => {
                             labelTo={MESSAGES.endDateUntil}
                         />
                     </Grid>
-                    <Grid item xs={3}>
+                    <Grid item xs={12} md={3}>
                         <InputComponent
                             type="select"
                             multi={false}
@@ -63,14 +64,14 @@ export const PlanningFilters: FunctionComponent<Props> = ({ params }) => {
                             label={MESSAGES.publishingStatus}
                         />
                     </Grid>
-                </Grid>
-                <Grid container item xs={2} lg={1} justifyContent="flex-end">
-                    <Box mt={2} mr={-2}>
-                        <FilterButton
-                            disabled={!filtersUpdated}
-                            onFilter={handleSearch}
-                        />
-                    </Box>
+                    <Grid container item xs={12} justifyContent="flex-end">
+                        <Box mt={2} mb={2}>
+                            <FilterButton
+                                disabled={!filtersUpdated}
+                                onFilter={handleSearch}
+                            />
+                        </Box>
+                    </Grid>
                 </Grid>
             </Grid>
         </>

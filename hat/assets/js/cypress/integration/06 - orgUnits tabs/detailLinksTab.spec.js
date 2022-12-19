@@ -146,9 +146,9 @@ const goToPage = () => {
             fixture: `${i}/list.json`,
         }).as(`${i}List`);
     });
-    cy.intercept('GET', `/api/groups/?&dataSource=33`, {
+    cy.intercept('GET', `/api/groups/?&dataSource=${orgUnit.source_id}`, {
         fixture: `groups/list.json`,
-    }).as('groupList');
+    });
     cy.intercept(
         'GET',
         `/api/forms/?&orgUnitId=${orgUnit.id}&limit=10&order=name`,

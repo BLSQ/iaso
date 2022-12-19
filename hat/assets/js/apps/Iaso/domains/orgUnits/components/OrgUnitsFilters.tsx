@@ -84,7 +84,6 @@ export const OrgUnitFilters: FunctionComponent<Props> = ({
     const [sourceVersionId, setSourceVersionId] = useState<
         number | undefined
     >();
-    const [depth, setDepth] = useState<number | undefined>();
     const [initialOrgUnitId, setInitialOrgUnitId] = useState<
         string | undefined
     >(currentSearch?.levels);
@@ -92,6 +91,10 @@ export const OrgUnitFilters: FunctionComponent<Props> = ({
     const [showAdvancedSettings, setShowAdvancedSettings] = useState(false);
 
     const { data: initialOrgUnit } = useGetOrgUnit(initialOrgUnitId);
+
+    useSkipEffectOnMount(() => {
+        setInitialOrgUnitId(currentSearch?.levels);
+    }, [currentSearch?.levels]);
 
     const { data: dataSources, isFetching: isFetchingDataSources } =
         useGetDataSources();
@@ -208,7 +211,7 @@ export const OrgUnitFilters: FunctionComponent<Props> = ({
 
     return (
         <Grid container spacing={2}>
-            <Grid item xs={4}>
+            <Grid item xs={12} sm={4}>
                 <Box mt={4} mb={4}>
                     <ColorPicker
                         currentColor={currentColor}
@@ -277,7 +280,7 @@ export const OrgUnitFilters: FunctionComponent<Props> = ({
                 )}
             </Grid>
 
-            <Grid item xs={4}>
+            <Grid item xs={12} sm={4}>
                 <InputComponent
                     type="select"
                     multi
@@ -341,7 +344,7 @@ export const OrgUnitFilters: FunctionComponent<Props> = ({
                 )}
             </Grid>
 
-            <Grid item xs={4}>
+            <Grid item xs={12} sm={4}>
                 <Box mb={1}>
                     <OrgUnitTreeviewModal
                         toggleOnLabelClick={false}

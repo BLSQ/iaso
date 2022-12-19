@@ -37,6 +37,7 @@ const useStyles = makeStyles(theme => ({
 
 const SingleTable = ({
     filters,
+    filtersColumnsCount,
     columns,
     paramsPrefix,
     params,
@@ -252,6 +253,7 @@ const SingleTable = ({
                         setResetPagination(convertObjectToString(newParams));
                         dispatch(redirectToReplace(key, newParams));
                     }}
+                    filtersColumnsCount={filtersColumnsCount}
                 />
             )}
             {((count > 0 && exportButtons) || extraComponent) && (
@@ -333,6 +335,7 @@ SingleTable.defaultProps = {
     selectionActions: [],
     propsToWatch: null,
     resetPageToOne: '',
+    filtersColumnsCount: 3,
 };
 
 SingleTable.propTypes = {
@@ -364,6 +367,7 @@ SingleTable.propTypes = {
     selectionActions: PropTypes.array,
     propsToWatch: PropTypes.any,
     resetPageToOne: PropTypes.string,
+    filtersColumnsCount: PropTypes.number,
 };
 
 export default withRouter(SingleTable);

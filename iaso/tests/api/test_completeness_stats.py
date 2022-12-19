@@ -29,6 +29,7 @@ class CompletenessStatsAPITestCase(APITestCase):
         cls.project_1.forms.add(cls.form_hs_2)
         cls.project_1.forms.add(cls.form_hs_4)
         cls.project_1.save()
+        cls.org_unit_type_country = OrgUnitType.objects.get(pk=1)
         cls.org_unit_type_hopital = OrgUnitType.objects.get(pk=5)
         cls.org_unit_type_aire_sante = OrgUnitType.objects.get(pk=4)
         cls.org_unit_type_district = OrgUnitType.objects.get(pk=3)
@@ -70,6 +71,10 @@ class CompletenessStatsAPITestCase(APITestCase):
                         "forms_filled": 1,  # Only one form instance for "Hospital"
                         "forms_to_fill": 3,  # 2 OUs of type "District" and 1 of type "Hospital" in the tree with LalaLand on top
                         "completeness_ratio": "33.3%",
+                        # No forms/instances are directly associated to "LaLaland" (only to its children)
+                        "forms_filled_direct": 0,
+                        "forms_to_fill_direct": 0,
+                        "completeness_ratio_direct": "N/A",
                     },
                     {
                         "parent_org_unit": None,
@@ -79,6 +84,9 @@ class CompletenessStatsAPITestCase(APITestCase):
                         "forms_filled": 0,
                         "forms_to_fill": 1,
                         "completeness_ratio": "0.0%",
+                        "forms_filled_direct": 0,
+                        "forms_to_fill_direct": 0,
+                        "completeness_ratio_direct": "N/A",
                     },
                     {
                         "parent_org_unit": None,
@@ -88,13 +96,16 @@ class CompletenessStatsAPITestCase(APITestCase):
                         "forms_filled": 0,
                         "forms_to_fill": 2,
                         "completeness_ratio": "0.0%",
+                        "forms_filled_direct": 0,
+                        "forms_to_fill_direct": 0,
+                        "completeness_ratio_direct": "N/A",
                     },
                 ],
                 "has_next": False,
                 "has_previous": False,
                 "page": 1,
                 "pages": 1,
-                "limit": 50,
+                "limit": 10,
             },
             j,
         )
@@ -170,6 +181,29 @@ class CompletenessStatsAPITestCase(APITestCase):
                 result["org_unit_type"]["id"], [self.org_unit_type_hopital.id, self.org_unit_type_aire_sante.id]
             )
 
+    def test_filter_by_org_unit_type_no_results(self):
+        # We don't specify the parent_org_unit_id filter (so we only have the root OUs - a country)
+        # Then we ask to filter to only keep the hospitals: nothing at this level is a hospital => no results
+        self.client.force_authenticate(self.user)
+
+        response = self.client.get(f"/api/completeness_stats/?org_unit_type_id={self.org_unit_type_hopital.id}")
+        json = response.json()
+        self.assertListEqual(json["results"], [])
+
+    def test_filter_by_org_unit_type_with_results(self):
+        # Opposite scenario compared to test_filter_by_org_unit_type_no_results()
+        # We don't specify the parent_org_unit_id filter (so we only have the root OUs - a country)
+        # Then we ask to filter to only keep the countries: results should be identical than without the filter
+        self.client.force_authenticate(self.user)
+
+        response_with_filter = self.client.get(
+            f"/api/completeness_stats/?org_unit_type_id={self.org_unit_type_country.id}"
+        )
+        results_with_filter = response_with_filter.json()["results"]
+        response_without_filter = self.client.get(f"/api/completeness_stats/")
+        results_without_filter = response_without_filter.json()["results"]
+        self.assertListEqual(results_with_filter, results_without_filter)
+
     def test_filter_by_org_unit(self):
         self.client.force_authenticate(self.user)
 
@@ -178,6 +212,15 @@ class CompletenessStatsAPITestCase(APITestCase):
         # We have only rows concerning the requested OU
         for result in json["results"]:
             self.assertEqual(result["org_unit"]["id"], 7)
+
+    def test_filter_by_parent_org_unit(self):
+        self.client.force_authenticate(self.user)
+
+        response = self.client.get(f"/api/completeness_stats/?parent_org_unit_id=1")
+        json = response.json()
+        # All the rows we get are direct children of the Country (region A and B)
+        for result in json["results"]:
+            self.assertEqual(result["parent_org_unit"][0]["id"], 1)
 
     def test_pagination(self):
         self.client.force_authenticate(self.user)
@@ -191,6 +234,14 @@ class CompletenessStatsAPITestCase(APITestCase):
         self.assertEqual(len(j["results"]), 1)
         self.assertTrue(j["has_next"])
         self.assertFalse(j["has_previous"])
+
+    def test_pagination_default_limit(self):
+        """Test that the default limit parameter is 10"""
+        self.client.force_authenticate(self.user)
+
+        response = self.client.get("/api/completeness_stats/")
+        json = self.assertJSONResponse(response, 200)
+        self.assertEqual(json["limit"], 10)
 
     def test_row_count(self):
         self.client.force_authenticate(self.user)
@@ -212,7 +263,7 @@ class CompletenessStatsAPITestCase(APITestCase):
         self.assertEqual(row["completeness_ratio"], "N/A")
 
     def test_counts_include_current_ou_and_children(self):
-        """The forms_to_fill count include the forms for the OU and all its children"""
+        """The forms_to_fill/forms_filled counts include the forms for the OU and all its children"""
         self.client.force_authenticate(self.user)
 
         # We filter to get only the district A.A
@@ -224,8 +275,26 @@ class CompletenessStatsAPITestCase(APITestCase):
         self.assertEqual(result_form_1["forms_to_fill"], 2)
         # But only one form is filled (for the hospital)
         self.assertEqual(result_form_1["forms_filled"], 1)
-        # Let'scheck the percentage calculation is correct
+        # Let's check the percentage calculation is correct
         self.assertEqual(result_form_1["completeness_ratio"], "50.0%")
+
+    def test_direct_counts_dont_include_children(self):
+        """The forms_to_fill_direct/forms_filled_direct counts don't include the forms for the children of the OU"""
+        self.client.force_authenticate(self.user)
+
+        # We filter to get only the district A.A
+        response = self.client.get(f"/api/completeness_stats/?org_unit_id=4")
+        json = response.json()
+
+        result_form_1 = next(result for result in json["results"] if result["form"]["id"] == self.form_hs_1.id)
+
+        # Form 1 targets both district (ou 4) and hospital (there's one under ou 4: ou 7), but the
+        # hospital shouldn't be counted in the direct counts
+        self.assertEqual(result_form_1["forms_to_fill_direct"], 1)
+        # But only one form is filled (for the hospital), so it shouldn't be counted in the direct counts
+        self.assertEqual(result_form_1["forms_filled_direct"], 0)
+        # Let's check the percentage calculation is correct
+        self.assertEqual(result_form_1["completeness_ratio_direct"], "0.0%")
 
     def test_counts_dont_include_parents(self):
         self.client.force_authenticate(self.user)

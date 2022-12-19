@@ -38,7 +38,7 @@ describe('map tab', () => {
                 fixture: `${i}/list.json`,
             });
         });
-        cy.intercept('GET', `/api/groups/?&dataSource=33`, {
+        cy.intercept('GET', `/api/groups/?&dataSource=${orgUnit.source_id}`, {
             fixture: `groups/list.json`,
         });
         cy.intercept(

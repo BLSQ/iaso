@@ -142,6 +142,10 @@ const MESSAGES = defineMessages({
         id: 'iaso.workflows.unpublish',
         defaultMessage: 'Unpublish',
     },
+    editFollowUp: {
+        id: 'iaso.workflows.editFollowUp',
+        defaultMessage: 'Edit follow up',
+    },
 });
 
 export default MESSAGES;

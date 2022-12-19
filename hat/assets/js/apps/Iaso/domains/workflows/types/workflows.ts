@@ -23,7 +23,7 @@ export type Change = {
 };
 
 type Form = {
-    id: string;
+    id: number;
     name: string;
 };
 

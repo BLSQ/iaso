@@ -2,6 +2,8 @@ import React, { FunctionComponent } from 'react';
 import {
     // @ts-ignore
     useSafeIntl,
+    // @ts-ignore
+    IconButton,
 } from 'bluesquare-components';
 
 import { Button, Box } from '@material-ui/core';
@@ -12,7 +14,7 @@ import MESSAGES from '../messages';
 type Props = {
     onClick: () => void;
 };
-export const ModalButton: FunctionComponent<Props> = ({ onClick }) => {
+export const AddButton: FunctionComponent<Props> = ({ onClick }) => {
     const { formatMessage } = useSafeIntl();
     return (
         <Button
@@ -26,5 +28,15 @@ export const ModalButton: FunctionComponent<Props> = ({ onClick }) => {
             </Box>
             {formatMessage(MESSAGES.add)}
         </Button>
+    );
+};
+
+export const EditIconButton: FunctionComponent<Props> = ({ onClick }) => {
+    return (
+        <IconButton
+            onClick={onClick}
+            icon="edit"
+            tooltipMessage={MESSAGES.edit}
+        />
     );
 };

@@ -80,8 +80,8 @@ export const Details: FunctionComponent<Props> = ({ router }) => {
         }
     }, [workflow?.follow_ups]);
 
-    const changesColumns = useGetChangesColumns(entityTypeId, versionId);
-    const followUpsColumns = useGetFollowUpsColumns(entityTypeId, versionId);
+    const changesColumns = useGetChangesColumns();
+    const followUpsColumns = useGetFollowUpsColumns(workflow);
     const handleSortChange = useCallback((items: any) => {
         setFollowUps(
             items.map((item, index) => ({ ...item, order: index + 1 })),

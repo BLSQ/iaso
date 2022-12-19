@@ -897,6 +897,7 @@
     "iaso.workflows.mapping": "Correspondance",
     "iaso.workflows.publish": "Publier",
     "iaso.workflows.unpublish": "Dépublier",
+    "iaso.workflows.editFollowUp": "Editer un suivi",
     "iaso.zone": "Zone de santé",
     "map.draw.label.cancel": "Annuler",
     "map.draw.label.circle": "Dessiner un cercle",

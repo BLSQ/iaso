@@ -24,8 +24,8 @@ import InputComponent from '../../../components/forms/InputComponent';
 import { periodTypeOptions } from '../../periods/constants';
 import { isValidPeriod } from '../../periods/utils';
 import DatesRange from '../../../components/filters/DatesRange';
-import PeriodPicker from '../../periods/components/PeriodPicker';
-import { Period } from '../../periods/models';
+import PeriodPicker from '../../periods/components/PeriodPicker.tsx';
+import { Period } from '../../periods/models.ts';
 
 import { INSTANCE_STATUSES } from '../constants';
 import { setInstancesFilterUpdated } from '../actions';

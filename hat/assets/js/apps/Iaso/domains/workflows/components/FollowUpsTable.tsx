@@ -27,9 +27,8 @@ export const FollowUpsTable: FunctionComponent<Props> = ({
     workflow,
     isLoading,
 }) => {
-    const { entityTypeId, versionId } = params;
     const { formatMessage } = useSafeIntl();
-    const followUpsColumns = useGetFollowUpsColumns(entityTypeId, versionId);
+    const followUpsColumns = useGetFollowUpsColumns(workflow);
 
     return (
         <>

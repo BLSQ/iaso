@@ -6,13 +6,13 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('iaso', '0185_merge_20221213_0910'),
+        ("iaso", "0185_merge_20221213_0910"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='workflowversion',
-            name='deleted_at',
+            model_name="workflowversion",
+            name="deleted_at",
             field=models.DateTimeField(blank=True, default=None, null=True),
         ),
     ]

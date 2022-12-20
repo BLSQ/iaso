@@ -53,7 +53,7 @@ const getFieldType = (
 
 export const parseJson = ({ value, parent, fields }: Props): JSONValue => {
     // @ts-ignore
-    if (!value.var) {
+    if (value && !value.var) {
         const fieldType = getFieldType(parent, fields);
         if (fieldType === 'date') {
             return moment(value as MomentInput).format(apiDateFormat);

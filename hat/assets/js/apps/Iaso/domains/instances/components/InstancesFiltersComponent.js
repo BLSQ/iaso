@@ -34,7 +34,10 @@ import { setInstancesFilterUpdated } from '../actions';
 import { useGetFormDescriptor } from '../compare/hooks/useGetInstanceLogs.ts';
 import { useGetForms, useInstancesFiltersData } from '../hooks';
 import { getInstancesFilterValues, useFormState } from '../../../hooks/form';
-import { useGetQueryBuildersFields } from '../hooks/useGetQueryBuildersFields.ts';
+import {
+    useGetQueryBuildersFields,
+    useGetQueryBuilderListToReplace,
+} from '../hooks/queryBuilder.ts';
 import { parseJson } from '../utils/jsonLogicParse.ts';
 
 import MESSAGES from '../messages';
@@ -104,8 +107,11 @@ const InstancesFiltersComponent = ({
 
     const { data: formDescriptor } = useGetFormDescriptor(formId);
     const fields = useGetQueryBuildersFields(formDescriptor, possibleFields);
-
-    const getHumanReadableJsonLogic = useHumanReadableJsonLogic(fields);
+    const queryBuilderListToReplace = useGetQueryBuilderListToReplace();
+    const getHumanReadableJsonLogic = useHumanReadableJsonLogic(
+        fields,
+        queryBuilderListToReplace,
+    );
     useInstancesFiltersData(formIds, setFetchingOrgUnitTypes);
     const handleSearch = useCallback(() => {
         if (isInstancesFilterUpdated) {
@@ -211,7 +217,7 @@ const InstancesFiltersComponent = ({
     const theme = useTheme();
     const isLargeLayout = useMediaQuery(theme.breakpoints.up('md'));
 
-    const searchJson = formState.fieldsSearch.value
+    const fieldsSearchJson = formState.fieldsSearch.value
         ? JSON.parse(formState.fieldsSearch.value)
         : undefined;
     return (
@@ -246,11 +252,13 @@ const InstancesFiltersComponent = ({
                         <QueryBuilderInput
                             label={MESSAGES.queryBuilder}
                             onChange={handleChangeQueryBuilder}
-                            initialLogic={searchJson}
+                            initialLogic={fieldsSearchJson}
                             fields={fields}
                             iconProps={{
                                 label: MESSAGES.queryBuilder,
-                                value: getHumanReadableJsonLogic(searchJson),
+                                value: getHumanReadableJsonLogic(
+                                    fieldsSearchJson,
+                                ),
                                 onClear: () =>
                                     handleFormChange('fieldsSearch', undefined),
                             }}

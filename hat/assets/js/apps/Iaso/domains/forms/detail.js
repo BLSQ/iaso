@@ -14,7 +14,6 @@ import {
     useSafeIntl,
 } from 'bluesquare-components';
 import { fetchAllProjects } from '../projects/actions';
-import { fetchAllOrgUnitTypes } from '../orgUnits/orgUnitTypes/actions';
 import { redirectToReplace } from '../../routing/actions';
 
 import TopBar from '../../components/nav/TopBarComponent';
@@ -86,7 +85,7 @@ const formatFormData = value => {
 const FormDetail = ({ router, params }) => {
     const queryClient = useQueryClient();
     const prevPathname = useSelector(state => state.routerCustom.prevPathname);
-    const allOrgUnitTypes = useSelector(state => state.orgUnitsTypes.allTypes);
+    // const allOrgUnitTypes = useSelector(state => state.orgUnitsTypes.allTypes);
     const allProjects = useSelector(state => state.projects.allProjects);
     const { data: form, isLoading: isFormLoading } = useGetForm(params.formId);
     const [isLoading, setIsLoading] = useState(false);
@@ -177,9 +176,6 @@ const FormDetail = ({ router, params }) => {
     useEffect(() => {
         if (!allProjects) {
             dispatch(fetchAllProjects());
-        }
-        if (!allOrgUnitTypes) {
-            dispatch(fetchAllOrgUnitTypes());
         }
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);

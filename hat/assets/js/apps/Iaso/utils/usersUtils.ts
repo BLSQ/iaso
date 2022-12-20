@@ -4,7 +4,8 @@ import { useSelector } from 'react-redux';
 export type Profile = {
     id: string;
     first_name: string;
-    user_name: string;
+    user_name?: string;
+    username?: string;
     last_name: string;
     email: string;
     language?: null | undefined | string;
@@ -15,8 +16,8 @@ export type User = {
     id: number;
     first_name: string;
     last_name: string;
-    user_name: string;
-    username: string;
+    user_name?: string;
+    username?: string;
     email: string;
     account: {
         name: string;
@@ -62,7 +63,7 @@ export const getDisplayName = (
     // Some endpoint have user_name and some username (without the _, fun)
     const userName = user.user_name ?? user?.username;
     if (!user.first_name && !user.last_name) {
-        return userName;
+        return userName || '';
     }
     return `${userName} (${user.first_name ? `${user.first_name}` : ''}${
         user.first_name && user.last_name ? ' ' : ''

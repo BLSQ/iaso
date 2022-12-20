@@ -11,7 +11,9 @@ import { linksTableColumns } from './config';
 
 import TopBar from '../../components/nav/TopBarComponent';
 import LinksDetails from './components/LinksDetailsComponent';
-import SingleTable from '../../components/tables/SingleTable';
+import SingleTable, {
+    useSingleTableParams,
+} from '../../components/tables/SingleTable';
 
 import { baseUrls } from '../../constants/urls';
 import { linksFilters } from '../../constants/filters';
@@ -78,7 +80,7 @@ export const Links = ({ params, router }) => {
             s => s.id === parseInt(params.destination, 10),
         );
     }
-
+    const apiParams = useSingleTableParams(params);
     return (
         <>
             <TopBar
@@ -92,7 +94,7 @@ export const Links = ({ params, router }) => {
                 hideGpkg
                 dataKey="links"
                 apiParams={{
-                    ...params,
+                    ...apiParams,
                 }}
                 forceRefresh={forceRefresh}
                 onForceRefreshDone={() => setForceRefresh(false)}

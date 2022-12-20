@@ -14,6 +14,7 @@ import { redirectTo } from '../../routing/actions';
 import { planningColumns } from './config';
 import { CreateEditPlanning } from './CreateEditPlanning/CreateEditPlanning';
 import { useDeletePlanning } from './hooks/requests/useDeletePlanning';
+import { useSingleTableParams } from '../../components/tables/SingleTable';
 
 const useStyles = makeStyles(theme => ({
     ...commonStyles(theme),
@@ -24,10 +25,11 @@ type Props = {
 };
 const baseUrl = baseUrls.planning;
 export const Planning: FunctionComponent<Props> = ({ params }) => {
+    const apiParams = useSingleTableParams(params);
     const dispatch = useDispatch();
     const classes: Record<string, string> = useStyles();
     const { formatMessage } = useSafeIntl();
-    const { data, isFetching } = useGetPlannings(params);
+    const { data, isFetching } = useGetPlannings(apiParams);
     const { mutateAsync: deletePlanning } = useDeletePlanning();
 
     return (
@@ -38,7 +40,7 @@ export const Planning: FunctionComponent<Props> = ({ params }) => {
             />
 
             <Box className={classes.containerFullHeightNoTabPadded}>
-                <PlanningFilters params={params} />
+                <PlanningFilters params={apiParams} />
                 <Grid container item justifyContent="flex-end">
                     <CreateEditPlanning type="create" />
                 </Grid>
@@ -49,7 +51,7 @@ export const Planning: FunctionComponent<Props> = ({ params }) => {
                     defaultSorted={[{ id: 'name', desc: false }]}
                     columns={planningColumns(formatMessage, deletePlanning)}
                     count={data?.count ?? 0}
-                    params={params}
+                    params={apiParams}
                     onTableParamsChange={p => dispatch(redirectTo(baseUrl, p))}
                     extraProps={{ loading: isFetching }}
                 />

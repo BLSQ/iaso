@@ -141,7 +141,7 @@ const Filters = ({ baseUrl, params }) => {
                         clearable
                     />
                 </Grid>
-                <Grid item xs={12} md={3}>
+                <Grid item xs={12} md={2}>
                     <InputComponent
                         keyValue="ouParent"
                         type="checkbox"
@@ -150,6 +150,7 @@ const Filters = ({ baseUrl, params }) => {
                             handleChange('ouParent', !ouParent);
                             setOuParent(value);
                         }}
+                        disabled={ouChildren || !initialOrgUnit}
                         value={ouParent}
                         label={MESSAGES.ouParentCheckbox}
                         onEnterPressed={handleSearchPerms}
@@ -164,6 +165,7 @@ const Filters = ({ baseUrl, params }) => {
                             handleChange('ouChildren', !ouChildren);
                             setOuChildren(value);
                         }}
+                        disabled={ouParent || !initialOrgUnit}
                         value={ouChildren}
                         label={MESSAGES.ouChildrenCheckbox}
                         onEnterPressed={handleSearchPerms}

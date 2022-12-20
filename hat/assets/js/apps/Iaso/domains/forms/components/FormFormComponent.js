@@ -51,6 +51,7 @@ const FormForm = ({ currentForm, setFieldValue }) => {
     const [showAdvancedSettings, setshowAdvancedSettings] = useState(false);
     const allProjects = useSelector(state => state.projects.allProjects);
     const allOrgUnitTypes = useSelector(state => state.orgUnitsTypes.allTypes);
+    const isLoadingOUTypes = (allOrgUnitTypes ?? []).length === 0;
     const setPeriodType = value => {
         setFieldValue('period_type', value);
         if (value === null) {
@@ -216,6 +217,7 @@ const FormForm = ({ currentForm, setFieldValue }) => {
                                 : []
                         }
                         label={MESSAGES.orgUnitsTypes}
+                        loading={isLoadingOUTypes}
                     />
                     {showAdvancedSettings && (
                         <>

@@ -32,6 +32,8 @@ export const baseUrls = {
     entitySubmissionDetail: 'entities/submission',
     storages: 'storages',
     storageDetail: 'storages/detail',
+    workflows: 'workflows',
+    workflowDetail: 'workflows/details',
     apiLogs: 'api/logs',
     error401: '401',
     error500: '500',

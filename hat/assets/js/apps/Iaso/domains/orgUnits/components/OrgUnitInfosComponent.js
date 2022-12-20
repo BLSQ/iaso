@@ -349,6 +349,8 @@ const OrgUnitInfosComponent = ({
     handleSave,
     handleReset,
     orgUnitModified,
+    isFetchingOrgUnitTypes,
+    isFetchingGroups,
 }) => {
     const { mutateAsync: saveOu } = useSaveOrgUnit();
     const classes = useStyles();
@@ -362,8 +364,8 @@ const OrgUnitInfosComponent = ({
     );
 
     const [isSaveDisabled, setSaveDisabled] = useState(true);
-
-    const showSpeedDialInstanceActions =
+    
+    const showSpeedDialsActions =
         orgUnit.reference_instance ||
         (formId === referenceFormId &&
             formId !== undefined &&
@@ -384,7 +386,7 @@ const OrgUnitInfosComponent = ({
 
     return (
         <Grid container spacing={2}>
-            {showSpeedDialInstanceActions && (
+            {showSpeedDialsActions && (
                 <SpeedDialInstanceActions
                     speedDialClasses={classes.speedDialTop}
                     actions={Actions(
@@ -404,7 +406,56 @@ const OrgUnitInfosComponent = ({
                     }
                 />
             )}
-
+            <Grid item xs={12} md={4}>
+                <InputComponent
+                    keyValue="name"
+                    required
+                    onChange={onChangeInfo}
+                    value={orgUnit.name.value}
+                    errors={orgUnit.name.errors}
+                    label={MESSAGES.name}
+                    withMarginTop={!orgUnit.reference_instance}
+                />
+                <InputComponent
+                    keyValue="creator"
+                    value={orgUnit.creator.value}
+                    label={MESSAGES.creator}
+                    disabled
+                />
+                <InputComponent
+                    keyValue="org_unit_type_id"
+                    onChange={onChangeInfo}
+                    required
+                    value={
+                        isFetchingOrgUnitTypes
+                            ? undefined
+                            : orgUnit.org_unit_type_id.value
+                    }
+                    errors={orgUnit.org_unit_type_id.errors}
+                    type="select"
+                    loading={isFetchingOrgUnitTypes}
+                    options={orgUnitTypes.map(t => ({
+                        label: t.name,
+                        value: t.id,
+                    }))}
+                    label={MESSAGES.org_unit_type_id}
+                />
+                <InputComponent
+                    keyValue="groups"
+                    onChange={(name, value) =>
+                        onChangeInfo(name, commaSeparatedIdsToArray(value))
+                    }
+                    multi
+                    value={isFetchingGroups ? undefined : orgUnit.groups.value}
+                    loading={isFetchingGroups}
+                    errors={orgUnit.groups.errors}
+                    type="select"
+                    options={groups.map(g => ({
+                        label: g.name,
+                        value: g.id,
+                    }))}
+                    label={MESSAGES.groups}
+                />
             <>
                 <Grid item xs={12} md={4}>
                     <InputComponent
@@ -597,6 +648,8 @@ OrgUnitInfosComponent.propTypes = {
     handleSave: PropTypes.func.isRequired,
     handleReset: PropTypes.func.isRequired,
     orgUnitModified: PropTypes.bool.isRequired,
+    isFetchingOrgUnitTypes: PropTypes.bool.isRequired,
+    isFetchingGroups: PropTypes.bool.isRequired,
 };
 OrgUnitInfosComponent.defaultProps = {
     resetTrigger: false,

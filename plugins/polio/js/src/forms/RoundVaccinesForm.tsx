@@ -24,9 +24,9 @@ const DEFAULT_DELAY_DISTRICT = 5;
 const DEFAULT_DELAY_REGION = 7;
 
 const DEFAULT_WASTAGE_RATIOS = {
-    mOPV2: 1.15,
-    nOPV2: 1.33,
-    bOPV: 1.18,
+    mOPV2: '1.15',
+    nOPV2: '1.33',
+    bOPV: '1.18',
 };
 
 const DEFAULT_DOSES_PER_VIAL = 50;

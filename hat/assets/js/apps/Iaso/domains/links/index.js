@@ -78,6 +78,7 @@ export const Links = ({ params, router }) => {
             s => s.id === parseInt(params.destination, 10),
         );
     }
+
     return (
         <>
             <TopBar
@@ -131,6 +132,7 @@ export const Links = ({ params, router }) => {
                         />
                     ) : null
                 }
+                filtersColumnsCount={4}
             />
         </>
     );

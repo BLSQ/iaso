@@ -25,15 +25,18 @@ export type Result = Pagination & {
 type Props = {
     params: ApiParams;
     callback?: () => void;
+    isSearchActive: boolean;
 };
 
 type PropsLocation = {
     params: ApiParams;
     searches: Search[];
+    isSearchActive: boolean;
 };
 
 export const useGetOrgUnits = ({
     params,
+    isSearchActive,
     callback = () => null,
 }: Props): UseQueryResult<Result, Error> => {
     const onSuccess = () => callback();
@@ -46,6 +49,12 @@ export const useGetOrgUnits = ({
             staleTime: Infinity,
             keepPreviousData: true,
             onSuccess,
+            select: data => {
+                if (isSearchActive) {
+                    return data;
+                }
+                return undefined;
+            },
         },
     });
 };
@@ -53,7 +62,8 @@ export const useGetOrgUnits = ({
 export const useGetOrgUnitsLocations = ({
     params,
     searches,
-}: PropsLocation): UseQueryResult<Locations, Error> => {
+    isSearchActive,
+}: PropsLocation): UseQueryResult<Locations | undefined, Error> => {
     const queryString = new URLSearchParams(params);
     return useSnackQuery({
         queryKey: ['orgunitslocations'],
@@ -61,7 +71,12 @@ export const useGetOrgUnitsLocations = ({
         options: {
             enabled: false,
             staleTime: Infinity,
-            select: data => mapOrgUnitByLocation(data, searches),
+            select: data => {
+                if (isSearchActive) {
+                    return mapOrgUnitByLocation(data, searches);
+                }
+                return undefined;
+            },
         },
     });
 };

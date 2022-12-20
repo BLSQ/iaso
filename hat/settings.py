@@ -110,7 +110,6 @@ LOGGING: Dict[str, Any] = {
         "iaso": {"level": LOGGING_LEVEL},
         "plugins": {"level": LOGGING_LEVEL},
         "beanstalk_worker": {"level": LOGGING_LEVEL},
-        #  Uncomment to print all sql query
         "": {"handlers": ["console"]},
     },
 }

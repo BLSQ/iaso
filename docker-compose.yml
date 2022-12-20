@@ -51,7 +51,7 @@ services:
       DB_READONLY_USERNAME: postgres
       DB_READONLY_PASSWORD: postgres
       DEBUG: "true"
-      DEBUG_SQL: ${DEBUG_SQL}
+      DEBUG_SQL:
       TEST_PROD:
       SECRET_KEY: secret
       AWS_STORAGE_BUCKET_NAME:

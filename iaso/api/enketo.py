@@ -26,16 +26,25 @@ from iaso.models import Form, Instance, InstanceFile, OrgUnit, Project, Profile
 from hat.audit.models import log_modification, INSTANCE_API
 from iaso.models import User
 from uuid import uuid4
+from logging import getLogger
+
+logger = getLogger(__name__)
 
 
 def public_url_for_enketo(request, path):
+    """Utility function, used for giving Enketo an url by which they can contact our Iaso server,
+    so they can download form definitions"""
+
     resolved_path = request.build_absolute_uri(path)
 
+    # This hack allow it to work in the docker-compose environment, where the server name from outside the container
+    # network are not the same that in the inside.
     if enketo_settings().get("ENKETO_DEV"):
         resolved_path = resolved_path.replace("localhost:8081", "iaso:8081")
     return resolved_path
 
 
+# Used by Create submission in Iaso Dashboard
 @api_view(["POST"])
 @permission_classes([permissions.IsAuthenticated])
 def enketo_create_url(request):
@@ -76,16 +85,9 @@ def enketo_create_url(request):
 def enketo_public_create_url(request):
     """This endpoint is used by web page outside of IASO to fill a form for an org unit and period.
 
-    Different behaviours:
+    See iaso/enketo/README.md for more information on the flow and how to test.
 
-    * form is single per period:
-        1. No submission exist for period and org unit: Create a new one
-        2. 1 submission exists, open Enketo to edit it.
-        3. 2 or more for exist: Error state
-    * form !single_per_period
-        1. Always create a new submssion
-
-    It contacts enketo to generate a Form url and return that url"""
+    Return an url to Enketo"""
 
     token = request.GET.get("token")
     form_id = request.GET.get("form_id")
@@ -180,6 +182,7 @@ def enketo_public_create_url(request):
             return JsonResponse({"error": str(error)}, status=409)
 
 
+# TODO : Check if this is used
 def enketo_public_launch(request, form_uuid, org_unit_id, period=None):
     form = get_object_or_404(Form, uuid=form_uuid)
 
@@ -230,6 +233,10 @@ def _build_url_for_edition(request, instance, user_id=None):
 @api_view(["GET"])
 @permission_classes([HasPermission("menupermissions.iaso_update_submission")])  # type: ignore
 def enketo_edit_url(request, instance_uuid):
+    """Used by Edit submission feature in Iaso Dashboard.
+    Restricted to user with the `update submission` permission, to submissions in their account.
+
+    Return an in Enketo service that the front end will redirect to."""
     instance = Instance.objects.filter(uuid=instance_uuid, project__account=request.user.iaso_profile.account).first()
 
     if instance is None:
@@ -247,8 +254,17 @@ def enketo_edit_url(request, instance_uuid):
 @api_view(["GET", "HEAD"])
 @permission_classes([permissions.AllowAny])
 def enketo_form_list(request):
+    """Called by Enketo to get the list of form.
+
+    Require a param `formID` which is actually an Instance UUID"""
     form_id_str = request.GET["formID"]
-    i = Instance.objects.exclude(deleted=True).get(uuid=form_id_str)
+    try:
+        i = Instance.objects.exclude(deleted=True).get(uuid=form_id_str)
+    except Instance.MultipleObjectsReturned:
+        logger.exception("Instance duplicate  uuid when editing")
+        # Prioritize instance with a json content, and then the more recently updated
+        i = Instance.objects.exclude(deleted=True).filter(uuid=form_id_str).order_by("json", "-updated_at").first()
+
     latest_form_version = i.form.latest_version
     # will it work through s3, what about "signing" infos if they expires ?
     downloadurl = public_url_for_enketo(request, "/api/enketo/formDownload/?uuid=%s" % i.uuid)
@@ -270,8 +286,18 @@ def enketo_form_list(request):
 @api_view(["GET", "HEAD"])
 @permission_classes([permissions.AllowAny])
 def enketo_form_download(request):
+    """Called by Enketo to Download the form definition as an XML file (the list of question and so on)
+
+    Require a param `formID` which is actually an Instance UUID.
+    We insert the instance.id In the form definition so the "Form" is unique per instance.
+    """
     uuid = request.GET.get("uuid")
-    i = Instance.objects.get(uuid=uuid)
+    try:
+        i = Instance.objects.get(uuid=uuid)
+    except Instance.MultipleObjectsReturned:
+        logger.exception("Instance duplicate  uuid when editing")
+        # Prioritize instance with a json content, and then the more recently updated
+        i = Instance.objects.filter(uuid=uuid).order_by("json", "-updated_at").first()
     xml_string = i.form.latest_version.file.read().decode("utf-8")
     injected_xml = inject_instance_id_in_form(xml_string, i.id)
     return HttpResponse(injected_xml, content_type="application/xml")

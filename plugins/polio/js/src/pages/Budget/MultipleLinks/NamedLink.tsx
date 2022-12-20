@@ -77,13 +77,13 @@ export const NamedLink: FunctionComponent<Props> = ({ index }) => {
                 </Grid>
                 {/* IconButton from blsq-comp with url prop doesn't seem to work, so we're using the one from Material UI instead (cf Preparedness) */}
                 <Grid item xs={6}>
+                    {/* TS complains about target and href props which are passed by IconButton to its rroot element (BaseButton) */}
+                    {/* @ts-ignore */}
                     <IconButton
                         target="_blank"
                         variant="outlined"
-                        // @ts-ignore
                         href={links?.[index]?.url ?? ''}
-                        // @ts-ignore
-                        color="action"
+                        color="default"
                         disabled={!links?.[index]?.url}
                     >
                         <OpenInNewIcon />

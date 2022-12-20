@@ -3,10 +3,15 @@ import { useDispatch } from 'react-redux';
 import { makeStyles, Box, Grid } from '@material-ui/core';
 
 import {
+    // @ts-ignore
     commonStyles,
+    // @ts-ignore
     Table,
+    // @ts-ignore
     LoadingSpinner,
+    // @ts-ignore
     useSafeIntl,
+    // @ts-ignore
     AddButton as AddButtonComponent,
 } from 'bluesquare-components';
 
@@ -39,7 +44,7 @@ export const Projects: FunctionComponent<Props> = ({ params }) => {
 
     const { data, isFetching: fetchingProjects } =
         useGetProjectsPaginated(params);
-    const { data: featureFlags = [] } = useGetFeatureFlags();
+
     const { mutateAsync: saveProject, isLoading: saving } = useSave();
 
     const isLoading = fetchingProjects || saving;
@@ -67,7 +72,6 @@ export const Projects: FunctionComponent<Props> = ({ params }) => {
                                 onClick={openDialog}
                             />
                         )}
-                        featureFlags={featureFlags}
                         saveProject={saveProject}
                     />
                 </Grid>
@@ -75,12 +79,7 @@ export const Projects: FunctionComponent<Props> = ({ params }) => {
                     data={data?.projects ?? []}
                     pages={data?.pages ?? 1}
                     defaultSorted={[{ id: 'name', desc: false }]}
-                    columns={columns(
-                        formatMessage,
-                        params,
-                        featureFlags,
-                        saveProject,
-                    )}
+                    columns={columns(formatMessage, params, saveProject)}
                     count={data?.count ?? 0}
                     baseUrl={baseUrl}
                     params={params}

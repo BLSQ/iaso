@@ -9,19 +9,21 @@ import React, {
 import { useSafeIntl } from 'bluesquare-components';
 import { Box, Button, Grid } from '@material-ui/core';
 import MESSAGES from '../constants/messages';
-import { DestructionForm } from './DestructionForm';
+import { destructionFieldNames, DestructionForm } from './DestructionForm';
 
 type Props = {
     round: any;
     accessor: string;
+    roundIndex: number;
 };
 
 export const DestructionsForm: FunctionComponent<Props> = ({
     round,
     accessor,
+    roundIndex,
 }) => {
     const { formatMessage } = useSafeIntl();
-    const { setFieldValue } = useFormikContext();
+    const { setFieldValue, setFieldTouched } = useFormikContext();
     const { destructions = [] } = round ?? {};
     const [enableRemoveButton, setEnableRemoveButton] =
         useState<boolean>(false);
@@ -37,7 +39,13 @@ export const DestructionsForm: FunctionComponent<Props> = ({
         const newDestructions = [...destructions];
         newDestructions.pop();
         setFieldValue(`${accessor}.destructions`, newDestructions);
-    }, [accessor, setFieldValue, destructions]);
+        destructionFieldNames.forEach(field => {
+            setFieldTouched(
+                `${accessor}.destructions[${newDestructions.length}].${field}`,
+                false,
+            );
+        });
+    }, [destructions, setFieldValue, accessor, setFieldTouched]);
 
     // determine whether to show delete button or not
 
@@ -63,6 +71,7 @@ export const DestructionsForm: FunctionComponent<Props> = ({
                             <DestructionForm
                                 index={index}
                                 accessor={accessor}
+                                roundIndex={roundIndex}
                             />
                         </Box>
                     </Grid>

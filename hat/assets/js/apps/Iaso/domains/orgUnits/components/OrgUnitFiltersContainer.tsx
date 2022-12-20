@@ -8,6 +8,8 @@ import {
     useSafeIntl,
     // @ts-ignore
     DynamicTabs,
+    // @ts-ignore
+    useSkipEffectOnMount,
 } from 'bluesquare-components';
 import React, {
     FunctionComponent,
@@ -17,6 +19,7 @@ import React, {
 } from 'react';
 import classnames from 'classnames';
 
+import { isEqual } from 'lodash';
 import { useCurrentUser } from '../../../utils/usersUtils';
 
 import { SearchButton } from '../../../components/SearchButton';
@@ -39,7 +42,7 @@ import MESSAGES from '../messages';
 
 type Props = {
     params: OrgUnitParams;
-    defaultSearches: [Search];
+    paramsSearches: [Search];
     // eslint-disable-next-line no-unused-vars
     onSearch: (searches: any) => void;
     currentTab: string;
@@ -81,7 +84,7 @@ export const OrgUnitFiltersContainer: FunctionComponent<Props> = ({
     params,
     onSearch,
     currentTab,
-    defaultSearches,
+    paramsSearches,
     orgunitTypes,
     isFetchingOrgunitTypes,
     counts,
@@ -100,7 +103,7 @@ export const OrgUnitFiltersContainer: FunctionComponent<Props> = ({
 
     const [hasLocationLimitError, setHasLocationLimitError] =
         useState<boolean>(false);
-    const [searches, setSearches] = useState<[Search]>(defaultSearches);
+    const [searches, setSearches] = useState<[Search]>(paramsSearches);
     const [textSearchError, setTextSearchError] = useState<boolean>(false);
     const currentSearchIndex = parseInt(params.searchTabIndex, 10);
 
@@ -141,6 +144,13 @@ export const OrgUnitFiltersContainer: FunctionComponent<Props> = ({
         },
         [dispatch],
     );
+
+    // update filter state if search changed in the url
+    useSkipEffectOnMount(() => {
+        if (!isEqual(decodeSearch(decodeURI(params.searches)), searches)) {
+            setSearches(paramsSearches);
+        }
+    }, [params.searches]);
 
     return (
         <>

@@ -16,7 +16,6 @@ const interceptList = [
     'profiles',
     'algorithms',
     'algorithmsruns',
-    'groups',
     'orgunittypes',
 ];
 
@@ -67,6 +66,9 @@ const goToPage = () => {
         cy.intercept('GET', `/api/${i}/`, {
             fixture: `${i}/list.json`,
         });
+    });
+    cy.intercept('GET', `/api/groups/?&dataSource=${orgUnit.source_id}`, {
+        fixture: `groups/list.json`,
     });
     cy.intercept(
         'GET',
@@ -145,7 +147,7 @@ describe('forms tab', () => {
 
     testPermission(baseUrl);
 
-    describe.only('Table', () => {
+    describe('Table', () => {
         it('should render correct infos', () => {
             cy.wait('@getOuDetail').then(() => {
                 cy.get('[data-test="forms-tab"]').find('table').as('table');

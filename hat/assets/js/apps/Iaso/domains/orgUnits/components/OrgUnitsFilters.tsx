@@ -92,6 +92,10 @@ export const OrgUnitFilters: FunctionComponent<Props> = ({
 
     const { data: initialOrgUnit } = useGetOrgUnit(initialOrgUnitId);
 
+    useSkipEffectOnMount(() => {
+        setInitialOrgUnitId(currentSearch?.levels);
+    }, [currentSearch?.levels]);
+
     const { data: dataSources, isFetching: isFetchingDataSources } =
         useGetDataSources();
     const { data: groups, isFetching: isFetchingGroups } = useGetGroups({
@@ -207,7 +211,7 @@ export const OrgUnitFilters: FunctionComponent<Props> = ({
 
     return (
         <Grid container spacing={2}>
-            <Grid item xs={4}>
+            <Grid item xs={12} sm={4}>
                 <Box mt={4} mb={4}>
                     <ColorPicker
                         currentColor={currentColor}
@@ -257,6 +261,14 @@ export const OrgUnitFilters: FunctionComponent<Props> = ({
                             clearable={false}
                             loading={isFetchingOrgunitTypes}
                         />
+                        <InputComponent
+                            type="number"
+                            keyValue="depth"
+                            onChange={handleChange}
+                            value={filters?.depth}
+                            label={MESSAGES.depth}
+                            clearable
+                        />
                         <Typography
                             className={classes.advancedSettings}
                             variant="overline"
@@ -268,7 +280,7 @@ export const OrgUnitFilters: FunctionComponent<Props> = ({
                 )}
             </Grid>
 
-            <Grid item xs={4}>
+            <Grid item xs={12} sm={4}>
                 <InputComponent
                     type="select"
                     multi
@@ -332,7 +344,7 @@ export const OrgUnitFilters: FunctionComponent<Props> = ({
                 )}
             </Grid>
 
-            <Grid item xs={4}>
+            <Grid item xs={12} sm={4}>
                 <Box mb={1}>
                     <OrgUnitTreeviewModal
                         toggleOnLabelClick={false}

@@ -1,5 +1,7 @@
-import { Box, Grid } from '@material-ui/core';
+import { Box, Grid, useTheme, useMediaQuery } from '@material-ui/core';
 import React, { FunctionComponent, useCallback, useState } from 'react';
+// @ts-ignore
+import { useSkipEffectOnMount } from 'bluesquare-components';
 import { FilterButton } from '../../components/FilterButton';
 import InputComponent from '../../components/forms/InputComponent';
 import { baseUrls } from '../../constants/urls';
@@ -25,24 +27,42 @@ export const CompletenessStatsFilters: FunctionComponent<Props> = ({
         useGetOrgUnitTypesOptions();
     const { filters, handleSearch, handleChange, filtersUpdated } =
         useFilterState({ baseUrl, params });
-    const [initialOrgUnitId, setInitialOrgUnitId] = useState(params?.parentId);
 
+    const [initialOrgUnitId, setInitialOrgUnitId] = useState(params?.orgUnitId);
     const { data: initialOrgUnit } = useGetOrgUnit(initialOrgUnitId);
+
+    const [initialParentId, setInitialParentId] = useState(params?.parentId);
+    const { data: initialParent } = useGetOrgUnit(initialParentId);
+
+    useSkipEffectOnMount(() => {
+        setInitialParentId(params?.parentId);
+        setInitialOrgUnitId(params?.orgUnitId);
+    }, [params]);
 
     const handleOrgUnitChange = useCallback(
         orgUnit => {
             const id = orgUnit ? [orgUnit.id] : undefined;
             setInitialOrgUnitId(id);
+            handleChange('orgUnitId', id);
+        },
+        [handleChange],
+    );
+    const handleParentChange = useCallback(
+        orgUnit => {
+            const id = orgUnit ? [orgUnit.id] : undefined;
+            setInitialParentId(id);
             handleChange('parentId', id);
         },
         [handleChange],
     );
 
+    const theme = useTheme();
+    const isLargeLayout = useMediaQuery(theme.breakpoints.up('md'));
+
     return (
         <>
             <Grid container spacing={2}>
-                {/* select forms. Multiselect */}
-                <Grid item xs={3}>
+                <Grid item xs={12} md={3}>
                     <InputComponent
                         type="select"
                         multi
@@ -53,22 +73,6 @@ export const CompletenessStatsFilters: FunctionComponent<Props> = ({
                         loading={fetchingForms}
                         options={forms ?? []}
                     />
-                </Grid>
-                {/* select org unit types. Multiselect */}
-                <Grid item xs={3}>
-                    <InputComponent
-                        type="select"
-                        multi
-                        onChange={handleChange}
-                        keyValue="orgUnitTypeId"
-                        label={MESSAGES.orgUnitType}
-                        value={filters.orgUnitTypeId}
-                        loading={fetchingTypes}
-                        options={orgUnitTypes ?? []}
-                    />
-                </Grid>
-                {/* select parent. Treeview modal */}
-                <Grid item xs={3}>
                     <Box id="ou-tree-input">
                         <OrgUnitTreeviewModal
                             toggleOnLabelClick={false}
@@ -78,12 +82,36 @@ export const CompletenessStatsFilters: FunctionComponent<Props> = ({
                         />
                     </Box>
                 </Grid>
-                <Grid container item xs={3} justifyContent="flex-end">
-                    <Box mt={2}>
+                <Grid item xs={12} md={3}>
+                    <Box id="ou-tree-input-parent">
+                        <OrgUnitTreeviewModal
+                            toggleOnLabelClick={false}
+                            titleMessage={MESSAGES.parent}
+                            onConfirm={handleParentChange}
+                            initialSelection={initialParent}
+                        />
+                    </Box>
+                    <InputComponent
+                        type="select"
+                        multi
+                        onChange={handleChange}
+                        keyValue="orgUnitTypeIds"
+                        label={MESSAGES.orgUnitType}
+                        value={filters.orgUnitTypeIds}
+                        loading={fetchingTypes}
+                        options={orgUnitTypes ?? []}
+                    />
+                </Grid>
+                <Grid
+                    container
+                    item
+                    xs={isLargeLayout ? 6 : 12}
+                    justifyContent="flex-end"
+                >
+                    <Box mt={isLargeLayout ? 2 : 0}>
                         <FilterButton
                             disabled={!filtersUpdated}
                             onFilter={handleSearch}
-                            // size={buttonSize}
                         />
                     </Box>
                 </Grid>

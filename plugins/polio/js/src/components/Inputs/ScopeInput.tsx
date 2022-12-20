@@ -2,136 +2,71 @@
 import React, {
     FunctionComponent,
     useCallback,
-    useMemo,
     useState,
+    ReactNode,
 } from 'react';
-import { useField } from 'formik';
+import { useField, FieldProps } from 'formik';
 import {
-    // @ts-ignore
-    IconButton as IconButtonComponent,
     // @ts-ignore
     LoadingSpinner,
     // @ts-ignore
     useSafeIntl,
 } from 'bluesquare-components';
 import {
-    FormControl,
     FormControlLabel,
     FormGroup,
     Grid,
     Switch,
-    Table as MuiTable,
-    TableBody,
-    TableCell,
-    TableContainer,
-    TableHead,
-    TablePagination,
-    TableRow,
-    Tooltip,
-    Typography,
     Box,
-    List,
-    ListItem,
 } from '@material-ui/core';
 import cloneDeep from 'lodash/cloneDeep';
-import sortBy from 'lodash/sortBy';
 
-import { FieldProps } from 'formik/dist/Field';
-
-import { MapComponent } from '../MapComponent/MapComponent';
-import { MapLegend } from '../../../../../../hat/assets/js/apps/Iaso/components/maps/MapLegend';
-
+// @ts-ignore
+import InputComponent from 'Iaso/components/forms/InputComponent';
 import MESSAGES from '../../constants/messages';
-import { polioVaccines } from '../../constants/virus';
 
-import { useGetParentOrgUnit } from '../../hooks/useGetParentOrgUnit';
-import { useGetGeoJson } from '../../hooks/useGetGeoJson';
+import { DistrictScopeTable } from '../Scopes/DistrictScopeTable';
+import { MapScope } from '../Scopes/MapScope';
 
-import {
-    initialDistrict,
-    selectedPathOptions,
-    unselectedPathOptions,
-} from '../../styles/constants';
-import { useStyles } from '../../styles/theme';
+import { Scope, Shape, Values, FilteredDistricts } from '../Scopes/types';
 
-type Scope = {
-    vaccine: string;
-    group: {
-        org_units: number[];
-        id?: number;
-    };
+type ExtraProps = {
+    filteredDistricts: FilteredDistricts[];
+    // eslint-disable-next-line no-unused-vars
+    searchScope: boolean;
+    onChangeSearchScope: () => void;
+    isFetchingDistricts: boolean;
+    isFetchingRegions: boolean;
+    districtShapes?: FilteredDistricts[];
+    regionShapes?: Shape[];
+    searchComponent: ReactNode;
+    page: number;
+    // eslint-disable-next-line no-unused-vars
+    setPage: (page: number) => void;
 };
 
-type Shape = {
-    name: string;
-    id: number;
-    parent_id: number;
-    country_parent?: { id: number };
-    root?: { id: number };
-};
-type ShapeRow = Shape & {
-    region: string;
-    vaccineName: string;
-};
+type Props = FieldProps<Scope[], Values> & ExtraProps;
 
-const findRegion = (shape: Shape, regionShapes: Shape[]) => {
-    return regionShapes.filter(
-        regionShape => regionShape.id === shape.parent_id,
-    )[0]?.name;
-};
-
-const findScopeWithOrgUnit = (scopes: Scope[], orgUnitId: number) => {
-    const scope = scopes.find(s => {
-        return s.group?.org_units.includes(orgUnitId);
-    });
-    return scope;
-};
-type Values = {
-    scopes?: Scope[];
-    org_unit: Shape;
-    initial_org_unit: number;
-};
-
-export const ScopeInput: FunctionComponent<FieldProps<Scope[], Values>> = ({
+export const ScopeInput: FunctionComponent<Props> = ({
     field,
     form: { values },
+    filteredDistricts,
+    searchScope,
+    onChangeSearchScope,
+    isFetchingDistricts,
+    isFetchingRegions,
+    districtShapes,
+    regionShapes,
+    searchComponent,
+    page,
+    setPage,
 }) => {
-    // eslint-disable-next-line no-unused-vars
-    const [_field, _meta, helpers] = useField(field.name);
-    const classes: Record<string, string> = useStyles();
-    const { formatMessage } = useSafeIntl();
     const [selectRegion, setSelectRegion] = useState(false);
+    const [selectedVaccine, setSelectedVaccine] = useState<string>('mOPV2');
+    const [, , helpers] = useField(field.name);
+    const { formatMessage } = useSafeIntl();
     const { value: scopes = [] } = field;
     const { setValue: setScopes } = helpers;
-
-    // Group contains selected orgunits
-    const vaccineCount = useMemo(
-        () =>
-            Object.fromEntries(
-                scopes.map(scope => [
-                    scope.vaccine,
-                    scope.group?.org_units?.length ?? 0,
-                ]),
-            ),
-        [scopes],
-    );
-    const [page, setPage] = useState(0);
-    const [rowsPerPage, setRowsPerPage] = useState(10);
-    const [orderBy, setOrderBy] = useState('asc');
-    const [sortFocus, setSortFocus] = useState('DISTRICT');
-
-    const { data: country } = useGetParentOrgUnit(values.initial_org_unit);
-
-    const parentCountryId =
-        country?.country_parent?.id || country?.root?.id || country?.id;
-
-    const { data: districtShapes, isFetching: isFetchingDistricts } =
-        useGetGeoJson(parentCountryId, 'DISTRICT');
-
-    const { data: regionShapes, isFetching: isFetchingRegions } = useGetGeoJson(
-        parentCountryId,
-        'REGION',
-    );
 
     const isFetching = isFetchingDistricts || isFetchingRegions;
 
@@ -139,93 +74,73 @@ export const ScopeInput: FunctionComponent<FieldProps<Scope[], Values>> = ({
         setSelectRegion(!selectRegion);
     };
 
-    const getShapeStyle = useCallback(
-        shape => {
-            const scope = findScopeWithOrgUnit(scopes, shape.id);
-
-            if (scope) {
-                const vaccine = polioVaccines.find(
-                    v => v.value === scope.vaccine,
-                );
-                return {
-                    ...selectedPathOptions,
-                    color: vaccine?.color,
+    const toggleRegion = useCallback(
+        (selectOrgUnit: Shape) => {
+            const orgUnitsIdInSameRegion: number[] = (districtShapes || [])
+                .filter(s => s.parent_id === selectOrgUnit.parent_id)
+                .map(s => s.id);
+            const newScopes: Scope[] = cloneDeep(scopes);
+            // Find scope for vaccine
+            let scope: Scope | undefined = newScopes.find(
+                s => s.vaccine === selectedVaccine,
+            );
+            if (!scope) {
+                scope = {
+                    vaccine: selectedVaccine,
+                    group: {
+                        org_units: [],
+                    },
                 };
+                newScopes.push(scope);
             }
-            if (values.org_unit?.id === shape.id) return initialDistrict;
-            return unselectedPathOptions;
+            // if all the orgunits from this region are already in this vaccine scope, remove them
+            // @ts-ignore
+            if (
+                orgUnitsIdInSameRegion.every(OrgUnitId =>
+                    // @ts-ignore
+                    scope.group.org_units.includes(OrgUnitId),
+                )
+            ) {
+                const orgUnits: Array<number> = [];
+
+                scope.group.org_units.forEach(OrgUnitId => {
+                    if (!orgUnitsIdInSameRegion.includes(OrgUnitId)) {
+                        orgUnits.push(OrgUnitId);
+                    }
+                });
+                scope.group.org_units = orgUnits;
+            } else {
+                // Remove the OrgUnits from all the scopes
+                newScopes.forEach(s => {
+                    const newScope = { ...s };
+                    newScope.group.org_units = s.group.org_units.filter(
+                        OrgUnitId =>
+                            !orgUnitsIdInSameRegion.includes(OrgUnitId),
+                    );
+                });
+
+                // Add the OrgUnit in the scope for selected vaccine
+                scope.group.org_units = [
+                    ...scope.group.org_units,
+                    ...orgUnitsIdInSameRegion,
+                ];
+            }
+            setScopes(newScopes);
         },
-        [values.org_unit?.id, scopes],
+        [districtShapes, scopes, selectedVaccine, setScopes],
     );
 
-    const getBackgroundLayerStyle = () => {
-        return {
-            color: 'grey',
-            opacity: '1',
-            fillColor: 'transparent',
-        };
-    };
-
-    const toggleRegion = (
-        selectOrgUnit: Shape,
-        _selectedVaccine,
-        allDistricts: Shape[],
-    ) => {
-        const OrgUnitsIdInSameRegion: number[] = allDistricts
-            .filter(s => s.parent_id === selectOrgUnit.parent_id)
-            .map(s => s.id);
-        const newScopes: Scope[] = cloneDeep(scopes);
-        // Find scope for vaccine
-        let scope: Scope | undefined = newScopes.find(
-            s => s.vaccine === _selectedVaccine,
-        );
-        if (scope === undefined) {
-            scope = {
-                vaccine: _selectedVaccine,
-                group: {
-                    org_units: [],
-                },
-            };
-            newScopes.push(scope);
-        }
-        // if all the orgunits from this region are already in this vaccine scope, remove them
-        // @ts-ignore
-        if (
-            OrgUnitsIdInSameRegion.every(OrgUnitId =>
-                // @ts-ignore
-                scope.group.org_units.includes(OrgUnitId),
-            )
-        ) {
-            scope.group.org_units = scope.group.org_units.filter(
-                OrgUnitId => !OrgUnitsIdInSameRegion.includes(OrgUnitId),
-            );
-        } else {
-            // Remove the OrgUnits from all the scopes
-            newScopes.forEach(s => {
-                // eslint-disable-next-line no-param-reassign
-                s.group.org_units = s.group.org_units.filter(
-                    OrgUnitId => !OrgUnitsIdInSameRegion.includes(OrgUnitId),
-                );
-            });
-            // Add the OrgUnit in the scope for selected vaccine
-            scope.group.org_units = [
-                ...scope.group.org_units,
-                ...OrgUnitsIdInSameRegion,
-            ];
-        }
-        setScopes(newScopes);
-    };
-    const [selectedVaccine, setSelectedVaccine] = useState('mOPV2');
-
     const toggleDistrictInVaccineScope = useCallback(
-        (district, _selectedVaccine) => {
+        district => {
             const newScopes: Scope[] = cloneDeep(scopes);
+            // check if a scope exists for currently selected vaccine
             let scope: Scope | undefined = newScopes.find(
-                s => s.vaccine === _selectedVaccine,
+                s => s.vaccine === selectedVaccine,
             );
-            if (scope === undefined) {
+            // if not create one that is initially empty
+            if (!scope) {
                 scope = {
-                    vaccine: _selectedVaccine,
+                    vaccine: selectedVaccine,
                     group: {
                         org_units: [],
                     },
@@ -241,205 +156,75 @@ export const ScopeInput: FunctionComponent<FieldProps<Scope[], Values>> = ({
                 // Remove the orgunit from all the scope in case it's part of another scope
                 newScopes.forEach(s => {
                     if (s.group.org_units.includes(district.id)) {
-                        // eslint-disable-next-line no-param-reassign
-                        s.group.org_units = s.group.org_units.filter(
+                        const newScope = { ...s };
+                        newScope.group.org_units = s.group.org_units.filter(
                             OrgUnitId => OrgUnitId !== district.id,
                         );
                     }
                 });
                 // Add org unit to proper scope
+                // scope.group.org_units = [...scope.group.org_units, district.id];
                 scope.group.org_units = [...scope.group.org_units, district.id];
             }
             setScopes(newScopes);
         },
-        [scopes, setScopes],
-    );
-    //
-    const onSelectOrgUnit = shape => {
-        if (selectRegion) {
-            toggleRegion(shape, selectedVaccine, districtShapes);
-        } else {
-            toggleDistrictInVaccineScope(shape, selectedVaccine);
-        }
-    };
-
-    const removeDistrictFromTable = useCallback(
-        (shape: ShapeRow) => {
-            toggleDistrictInVaccineScope(shape, shape.vaccineName);
-        },
-        [toggleDistrictInVaccineScope],
+        [scopes, selectedVaccine, setScopes],
     );
 
-    // Remove all district in the same region as this district
-    const removeRegionFromTable = useCallback(
-        (shape: ShapeRow) => {
-            const OrgUnitIdsToRemove = districtShapes
-                .filter(s => s.parent_id === shape.parent_id)
-                .map(s => s.id);
-
-            const newScopes: Scope[] = cloneDeep(scopes);
-            newScopes.forEach(scope => {
-                // eslint-disable-next-line no-param-reassign
-                scope.group.org_units = scope.group.org_units.filter(
-                    OrgUnitId => !OrgUnitIdsToRemove.includes(OrgUnitId),
-                );
-            });
-            setScopes(newScopes);
-        },
-        [districtShapes, scopes, setScopes],
-    );
-
-    const handleSort = useCallback(
-        columnToSortBy => {
-            if (sortFocus !== columnToSortBy) {
-                setSortFocus(columnToSortBy);
-            } else if (orderBy === 'asc') {
-                setOrderBy('desc');
+    const onSelectOrgUnit = useCallback(
+        shape => {
+            if (selectRegion && districtShapes) {
+                toggleRegion(shape);
             } else {
-                setOrderBy('asc');
+                toggleDistrictInVaccineScope(shape);
             }
         },
-        [orderBy, sortFocus],
+        [
+            districtShapes,
+            selectRegion,
+            toggleDistrictInVaccineScope,
+            toggleRegion,
+        ],
     );
 
-    const handleChangePage = (_event, newPage) => {
-        setPage(newPage);
-    };
-
-    const handleChangeRowsPerPage = event => {
-        setRowsPerPage(parseInt(event.target.value, 10));
-        setPage(0);
-    };
-
-    const shapesForTable = useMemo(() => {
-        if (!regionShapes || !districtShapes) {
-            return null;
-        }
-
-        let ds: ShapeRow[] = districtShapes
-            .map(district => {
-                return {
-                    ...district,
-                    region: findRegion(district, regionShapes),
-                    vaccineName: findScopeWithOrgUnit(scopes, district.id)
-                        ?.vaccine,
-                };
-            })
-            .filter(d => d.vaccineName);
-
-        if (sortFocus === 'REGION') {
-            ds = sortBy(ds, ['region']);
-        } else if (sortFocus === 'VACCINE') {
-            ds = sortBy(ds, ['vaccineName']);
-        }
-        if (orderBy === 'desc') {
-            ds = ds.reverse();
-        }
-
-        return ds;
-    }, [regionShapes, districtShapes, sortFocus, orderBy, scopes]);
-
-    const makeTableText = text => {
-        return (
-            <Tooltip placement="bottom" title={text ?? 'no text'}>
-                <Typography
-                    variant="overline"
-                    style={{
-                        maxWidth: '100px',
-                        overflow: 'hidden',
-                        textOverflow: 'ellipsis',
-                    }}
-                >
-                    {text}
-                </Typography>
-            </Tooltip>
-        );
-    };
     return (
-        <Grid container spacing={4}>
-            <Grid xs={7} item>
-                {isFetching && !districtShapes && <LoadingSpinner />}
-                {!isFetching && !districtShapes && (
-                    // FIXME should not be needed
-                    <Typography>
-                        {formatMessage(MESSAGES.pleaseSaveCampaign)}
-                    </Typography>
-                )}
-                <Box position="relative">
-                    <MapComponent
-                        name="ScopeMap"
-                        mainLayer={districtShapes}
-                        backgroundLayer={regionShapes}
-                        onSelectShape={onSelectOrgUnit}
-                        getMainLayerStyle={getShapeStyle}
-                        getBackgroundLayerStyle={getBackgroundLayerStyle}
-                        tooltipLabels={{
-                            main: 'District',
-                            background: 'Region',
-                        }}
-                    />
-
-                    <MapLegend
-                        titleMessage={MESSAGES.vaccine}
-                        width={175}
-                        content={
-                            <FormControl id="vaccine">
-                                <List>
-                                    {polioVaccines.map(vaccine => (
-                                        <ListItem
-                                            key={vaccine.value}
-                                            button
-                                            className={classes.vaccinesList}
-                                            onClick={() =>
-                                                setSelectedVaccine(
-                                                    vaccine.value,
-                                                )
-                                            }
-                                        >
-                                            <Box
-                                                className={
-                                                    classes.vaccinesSelect
-                                                }
-                                            >
-                                                <span
-                                                    style={{
-                                                        backgroundColor:
-                                                            vaccine.color,
-                                                    }}
-                                                    className={
-                                                        classes.roundColor
-                                                    }
-                                                >
-                                                    {selectedVaccine ===
-                                                        vaccine.value && (
-                                                        <span
-                                                            className={
-                                                                classes.roundColorInner
-                                                            }
-                                                        />
-                                                    )}
-                                                </span>
-                                                <span
-                                                    className={
-                                                        classes.vaccineName
-                                                    }
-                                                >
-                                                    {vaccine.value}
-                                                </span>
-                                                {': '}
-                                                {vaccineCount[vaccine.value] ??
-                                                    0}{' '}
-                                                {formatMessage(
-                                                    MESSAGES.districts,
-                                                )}
-                                            </Box>
-                                        </ListItem>
-                                    ))}
-                                </List>
-                            </FormControl>
-                        }
+        <Grid container spacing={2}>
+            <Grid xs={5} item>
+                <Box mb={2} mt={2}>
+                    {searchComponent}
+                    <InputComponent
+                        keyValue="searchScope"
+                        type="checkbox"
+                        withMarginTop={false}
+                        onChange={onChangeSearchScope}
+                        value={searchScope}
+                        label={MESSAGES.searchInScopeOrAllDistricts}
                     />
                 </Box>
+                <DistrictScopeTable
+                    field={field}
+                    regionShapes={regionShapes || []}
+                    filteredDistricts={filteredDistricts}
+                    toggleDistrictInVaccineScope={toggleDistrictInVaccineScope}
+                    toggleRegion={toggleRegion}
+                    setPage={setPage}
+                    page={page}
+                    isFetching={isFetching}
+                    districtShapes={districtShapes || []}
+                    selectedVaccine={selectedVaccine}
+                />
+            </Grid>
+            <Grid xs={7} item>
+                {isFetching && <LoadingSpinner />}
+                <MapScope
+                    field={field}
+                    values={values}
+                    regionShapes={regionShapes || []}
+                    districtShapes={districtShapes || []}
+                    onSelectOrgUnit={onSelectOrgUnit}
+                    selectedVaccine={selectedVaccine}
+                    setSelectedVaccine={setSelectedVaccine}
+                />
                 <FormGroup>
                     <FormControlLabel
                         style={{ width: 'max-content' }}
@@ -454,133 +239,7 @@ export const ScopeInput: FunctionComponent<FieldProps<Scope[], Values>> = ({
                         label={formatMessage(MESSAGES.selectRegion)}
                     />
                 </FormGroup>
-                {districtShapes && isFetching && (
-                    <Typography align="right">
-                        {formatMessage(MESSAGES.refreshing)}
-                    </Typography>
-                )}
             </Grid>
-            <Grid xs={5} item>
-                <TableContainer className={classes.districtList}>
-                    <MuiTable stickyHeader size="small">
-                        <TableHead>
-                            <TableRow>
-                                <TableCell
-                                    onClick={() => handleSort('REGION')}
-                                    variant="head"
-                                    style={{ cursor: 'pointer' }}
-                                >
-                                    <Typography>
-                                        {formatMessage(MESSAGES.region)}
-                                    </Typography>
-                                </TableCell>
-                                <TableCell
-                                    onClick={() => handleSort('DISTRICT')}
-                                    variant="head"
-                                    style={{ cursor: 'pointer' }}
-                                >
-                                    <Typography>
-                                        {formatMessage(MESSAGES.district)}
-                                    </Typography>
-                                </TableCell>
-                                <TableCell
-                                    onClick={() => handleSort('VACCINE')}
-                                    variant="head"
-                                    style={{ cursor: 'pointer' }}
-                                >
-                                    <Typography>
-                                        {formatMessage(MESSAGES.vaccine)}
-                                    </Typography>
-                                </TableCell>
-                                <TableCell
-                                    variant="head"
-                                    style={{
-                                        cursor: 'pointer',
-                                        textAlign: 'center',
-                                    }}
-                                >
-                                    {formatMessage(MESSAGES.actions)}
-                                </TableCell>
-                            </TableRow>
-                        </TableHead>
-                        <TableBody>
-                            {shapesForTable
-                                ?.slice(
-                                    page * rowsPerPage,
-                                    page * rowsPerPage + rowsPerPage,
-                                )
-                                .map((shape, i) => {
-                                    return (
-                                        <TableRow
-                                            key={shape.id}
-                                            className={
-                                                i % 2 > 0
-                                                    ? classes.districtListRow
-                                                    : ''
-                                            }
-                                        >
-                                            <TableCell>
-                                                {makeTableText(shape.region)}
-                                            </TableCell>
-                                            <TableCell>
-                                                {makeTableText(shape.name)}
-                                            </TableCell>
-                                            <TableCell>
-                                                {makeTableText(
-                                                    shape.vaccineName,
-                                                )}
-                                            </TableCell>
-                                            <TableCell
-                                                style={{
-                                                    padding: 0,
-                                                    cursor: 'pointer',
-                                                    textAlign: 'center',
-                                                }}
-                                            >
-                                                <IconButtonComponent
-                                                    size="small"
-                                                    onClick={() =>
-                                                        removeRegionFromTable(
-                                                            shape,
-                                                        )
-                                                    }
-                                                    icon="clearAll"
-                                                    tooltipMessage={
-                                                        MESSAGES.removeRegion
-                                                    }
-                                                />
-                                                <IconButtonComponent
-                                                    size="small"
-                                                    onClick={() =>
-                                                        removeDistrictFromTable(
-                                                            shape,
-                                                        )
-                                                    }
-                                                    icon="clear"
-                                                    tooltipMessage={
-                                                        MESSAGES.removeDistrict
-                                                    }
-                                                />
-                                            </TableCell>
-                                        </TableRow>
-                                    );
-                                })}
-                        </TableBody>
-                    </MuiTable>
-                </TableContainer>
-                <TablePagination
-                    className={classes.tablePagination}
-                    rowsPerPageOptions={[5, 10, 25]}
-                    component="div"
-                    count={shapesForTable?.length ?? 0}
-                    rowsPerPage={rowsPerPage}
-                    page={page}
-                    labelRowsPerPage="Rows"
-                    onPageChange={handleChangePage}
-                    onRowsPerPageChange={handleChangeRowsPerPage}
-                />
-            </Grid>
-            <Grid container />
         </Grid>
     );
 };

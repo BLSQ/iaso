@@ -1,7 +1,7 @@
 // @ts-ignore
 import { useSkipEffectOnMount } from 'bluesquare-components';
 import { useState } from 'react';
-import { convertObjectToString } from '../utils';
+import { convertObjectToString } from '../utils/dataManipulation';
 
 type Params = {
     params: Record<string, any>;

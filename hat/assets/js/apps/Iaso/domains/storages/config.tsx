@@ -54,8 +54,8 @@ export const useGetColumns = (params: StorageParams): Array<Column> => {
             accessor: 'status',
             id: 'status',
             Cell: settings => {
-                const { status } = settings.row.original;
-                return <StatusCell status={status} />;
+                const { storage_status } = settings.row.original;
+                return <StatusCell status={storage_status} />;
             },
         },
         {

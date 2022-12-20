@@ -17,13 +17,37 @@ const MESSAGES = defineMessages({
         id: 'iaso.instance.formShort',
         defaultMessage: 'Form',
     },
-    completeness: {
-        id: 'iaso.completeness.title',
-        defaultMessage: 'Completeness',
+    completenessWithDescendants: {
+        id: 'iaso.completeness.titleWithDescendants',
+        defaultMessage: 'Completeness (with descendants)',
     },
-    formsFilled: {
-        id: 'iaso.completeness.formsFilled',
-        defaultMessage: '# Forms filled',
+    formsFilledWithDescendants: {
+        id: 'iaso.completeness.formsFilledWithDescendants',
+        defaultMessage: '# Forms filled (with descendants)',
+    },
+    completenessDirect: {
+        id: 'iaso.completeness.titleDirect',
+        defaultMessage: 'Completeness (direct)',
+    },
+    formsFilledDirect: {
+        id: 'iaso.completeness.formsFilledDirect',
+        defaultMessage: '# Forms filled (direct)',
+    },
+    chooseParent: {
+        id: 'iaso.completeness.chooseParent',
+        defaultMessage: 'Select a form or a parent org unit to enable',
+    },
+    completenessStats: {
+        defaultMessage: 'Completeness Stats',
+        id: 'iaso.completenessStats.title',
+    },
+    actions: {
+        defaultMessage: 'Actions',
+        id: 'iaso.label.actions',
+    },
+    seeChildren: {
+        defaultMessage: 'See children',
+        id: 'iaso.label.seeChildren',
     },
 });
 

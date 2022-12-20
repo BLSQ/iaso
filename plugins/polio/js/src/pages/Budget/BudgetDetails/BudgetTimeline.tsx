@@ -11,7 +11,6 @@ import { Categories } from '../types';
 type Props = {
     categories?: Categories;
 };
-
 const useStyles = makeStyles(theme => ({
     root: {
         width: '100%',
@@ -60,7 +59,7 @@ const useStyles = makeStyles(theme => ({
     stepActive: {
         '& + div .MuiStepConnector-lineHorizontal': {
             // @ts-ignore
-            borderColor: theme.palette.success.background,
+            borderColor: theme.palette.yellow.main,
         },
     },
     stepInactive: {
@@ -73,7 +72,7 @@ const useStyles = makeStyles(theme => ({
 
 const getColor = category => {
     switch (category.color) {
-        case 'lightgreen':
+        case 'yellow':
             return 'stepActive';
         case 'green':
             return 'stepCompleted';

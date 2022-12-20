@@ -1,4 +1,16 @@
+import pdb
+import csv
 from random import randint, random
+from django.contrib.contenttypes.models import ContentType
+import requests
+from iaso.api.comment import ContentTypeField
+from iaso.models.base import AccountFeatureFlag
+from iaso.models.comment import CommentIaso
+from django.contrib.sites.models import Site
+from iaso.models.device import Device
+from iaso.models.entity import Entity, EntityType
+from iaso.models.microplanning import Planning, Team
+from iaso.models.pages import Page
 from lxml import etree
 from io import BytesIO
 from django.core.files.uploadedfile import InMemoryUploadedFile
@@ -50,13 +62,24 @@ class Command(BaseCommand):
 
     def handle(self, *args, **options):
         dhis2_version = options.get("dhis2version")
+
+        response = requests.get(f"http://play.dhis2.org/{dhis2_version}")
+        dhis2_url = response.url.replace("/dhis-web-commons/security/login.action", "")
+        dhis2_version = dhis2_url.split("/")[-1]
+        print("dhis2_version resolved to ", dhis2_version)
+
         mode = options.get("mode")
 
         account, account_created = Account.objects.get_or_create(name="Organisation Name" + dhis2_version)
 
+        for feat in AccountFeatureFlag.objects.all():
+            account.feature_flags.add(feat)
+
         user, user_created = User.objects.get_or_create(
             username="testemail" + dhis2_version, email="testemail" + dhis2_version + "@bluesquarehub.com"
         )
+        user.name = "testemail" + dhis2_version
+        user.save()
         if user.password == "":
             user.set_password("testemail" + dhis2_version)
         user.user_permissions.clear()
@@ -90,14 +113,51 @@ class Command(BaseCommand):
 
         project, p_created = Project.objects.get_or_create(name="Test" + dhis2_version, account=account)
 
+        project.app_id = "org.bluesquare.play"
+        project.save()
+
         datasource, _ds_created = DataSource.objects.get_or_create(
             name="reference_play_test" + dhis2_version, credentials=credentials
         )
         datasource.projects.add(project)
         source_version, _created = SourceVersion.objects.get_or_create(number=1, data_source=datasource)
 
+        datasource.default_version = source_version
+        datasource.save()
+
+        account.default_version = source_version
+        account.save()
+
+        page, _page_created = Page.objects.get_or_create(
+            account=account, name=f"dhis2{dhis2_version}", slug=f"dhis2{dhis2_version}"
+        )
+
+        page.type = "RAW"
+        page.content = f"<html><body>https://play.dhis2.org/{dhis2_version}</body></html>"
+
+        page.save()
+        user.pages.add(page)
+
         orgunit_type, created = OrgUnitType.objects.get_or_create(name="FosaPlay", short_name="FosaPlay")
         orgunit_type.projects.add(project)
+        site = Site.objects.first()
+        content_type = ContentType.objects.filter(model="orgunit").first()
+
+        with transaction.atomic():
+            for orgunit in source_version.orgunit_set.all():
+                orgunit.org_unit_type = orgunit_type
+                orgunit.save()
+
+                newComment = CommentIaso(
+                    user=user,
+                    comment="demo comment",
+                    object_pk=orgunit.id,
+                    content_type=content_type,
+                    site=site,
+                )
+
+                newComment.save()
+
         # quantity
         quantity_form, created = Form.objects.get_or_create(
             form_id="quantity_pca_" + dhis2_version,
@@ -105,6 +165,9 @@ class Command(BaseCommand):
             period_type="MONTH",
             single_per_period=True,
         )
+        quantity_form.device_field = "imei"
+        quantity_form.save()
+
         project.forms.add(quantity_form)
         quantity_form.org_unit_types.add(orgunit_type)
         quantity_mapping_version = self.seed_form(
@@ -124,6 +187,10 @@ class Command(BaseCommand):
         )
         quality_form.org_unit_types.add(orgunit_type)
         project.forms.add(quality_form)
+
+        quality_form.device_field = "imei"
+        quality_form.save()
+
         quality_form_version = self.seed_form(
             quality_form,
             datasource,
@@ -144,6 +211,8 @@ class Command(BaseCommand):
             single_per_period=False,
         )
         cvs_form.org_unit_types.add(orgunit_type)
+        cvs_form.device_field = "imei"
+        cvs_form.save()
 
         cvs_mapping_version = self.seed_form(
             cvs_form,
@@ -181,6 +250,9 @@ class Command(BaseCommand):
             form_id="event_tracker" + dhis2_version, name="Event Tracker " + dhis2_version, single_per_period=False
         )
 
+        event_tracker_form.device_field = "imei"
+        event_tracker_form.save()
+
         event_tracker_form.org_unit_types.add(orgunit_type)
 
         event_tracker_form_version = self.seed_form(
@@ -194,6 +266,37 @@ class Command(BaseCommand):
 
         project.forms.add(event_tracker_form)
 
+        entity_form, created = Form.objects.get_or_create(
+            form_id="entity_form" + dhis2_version, name="Entity form " + dhis2_version, single_per_period=False
+        )
+
+        entity_form.device_field = "imei"
+        entity_form.possible_fields = [
+            {"name": "What_is_the_father_s_name", "type": "text", "label": "Father's name"},
+            {"name": "What_is_the_child_s_name", "type": "text", "label": "Prénom"},
+        ]
+        entity_form.label_keys = ["What_is_the_child_s_name", "What_is_the_father_s_name"]
+
+        entity_form.label_keys
+        entity_form.save()
+
+        entity_form.org_unit_types.add(orgunit_type)
+        project.forms.add(entity_form)
+
+        entity_form_version = self.seed_form(
+            entity_form,
+            datasource,
+            credentials,
+            xls_file="./testdata/seed-data-command-entity-form.xlsx",
+            xls_xml_file="./testdata/seed-data-command-entity-form.xml",
+        )
+
+        entity_type, created = EntityType.objects.get_or_create(
+            account=account, name="Child", reference_form=entity_form
+        )
+        entity_type.fields_list_view = entity_form.label_keys
+        entity_type.save()
+
         self.project = project
 
         periods = ["201801", "201802", "201803"]
@@ -201,7 +304,10 @@ class Command(BaseCommand):
 
         print("********* FORM seed done")
         if mode == "seed":
-            print("******** delete previous instances")
+            print("******** delete previous instances and plannings")
+            print(Planning.objects.filter(org_unit__in=source_version.orgunit_set.all()).delete())
+            print(Instance.objects.filter(org_unit__in=source_version.orgunit_set.all()).update(entity=None))
+            print(Entity.objects.filter(account=account).delete())
             print(Instance.objects.filter(org_unit__in=source_version.orgunit_set.all()).delete())
 
             print("********* Importing orgunits")
@@ -218,19 +324,33 @@ class Command(BaseCommand):
                 validate=True,
             )
 
+            self.seed_entities(source_version, entity_form, entity_form_version, account, project, entity_type, user)
+
+            self.seed_micro_planning(source_version, dhis2_version, account, project, user)
+
             print("********* generating instances")
 
             self.seed_instances(
-                source_version, event_tracker_form, [None], event_tracker_form_version, fixed_instance_count=1
+                dhis2_version,
+                source_version,
+                event_tracker_form,
+                [None],
+                event_tracker_form_version,
+                fixed_instance_count=1,
             )
 
             self.seed_instances(
-                source_version, cvs_form, quarter_periods[0:1], cvs_mapping_version, fixed_instance_count=50
+                dhis2_version,
+                source_version,
+                cvs_form,
+                quarter_periods[0:1],
+                cvs_mapping_version,
+                fixed_instance_count=50,
             )
             print("generated", cvs_form.name, cvs_form.instances.count(), "instances")
-            self.seed_instances(source_version, quantity_form, periods, quantity_mapping_version)
+            self.seed_instances(dhis2_version, source_version, quantity_form, periods, quantity_mapping_version)
             print("generated", quantity_form.name, quantity_form.instances.count(), "instances")
-            self.seed_instances(source_version, quality_form, quarter_periods, quality_form_version)
+            self.seed_instances(dhis2_version, source_version, quality_form, quarter_periods, quality_form_version)
             print("generated", quality_form.name, quality_form.instances.count(), "instances")
 
         if mode == "derived":
@@ -276,6 +396,24 @@ class Command(BaseCommand):
             print("fixing categoryOptions sharing", timezone.now())
             self.make_category_options_public(credentials)
 
+        print("********")
+        print("For Iaso web")
+        print("  log into http://localhost:8081/")
+        print("  with user and password : ", "testemail" + dhis2_version)
+        print("")
+        print("For Iaso mobile")
+        print("  now you need to start ngrok")
+        print("     with : ngrok http 8081")
+        print("     adapt .env and set the FILE_SERVER_URL to the ngrok https url in Forwarding section")
+        print("     restart iaso (so .env is reloaded) : docker-compose up")
+        print("  install the generic iaso mobile app and launch the app")
+        print("        https://play.google.com/store/apps/details?id=com.bluesquarehub.iaso")
+        print("     in the menu ")
+        print("        Change the App ID : ", project.app_id)
+        print("        Change URL server : with the ngrok one (good luck, try to send it by email)")
+        print("     then in the Connection section")
+        print("        user and password : ", "testemail" + dhis2_version)
+
     def assign_orgunits_to_program(self, credentials):
         api = Api(credentials.url, credentials.login, credentials.password)
         program_id = "eBAyeGv0exc"
@@ -315,19 +453,20 @@ class Command(BaseCommand):
         mapping_type="AGGREGATE",
         mapping_file=None,
         xls_file="testdata/seed-data-command-form.xlsx",
+        xls_xml_file="./testdata/seed-data-command-form.xml",
     ):
         form_version, created = FormVersion.objects.get_or_create(form=form, version_id=1)
         # don't use uploadedFile in get_or_create, it will end up non unique
         form_version.file = UploadedFile(
             # TODO: use better fixture
-            open("./testdata/seed-data-command-form.xml")
+            open(xls_xml_file)
         )
         form_version.xls_file = UploadedFile(open(xls_file, "rb+"))
 
         form_version.save()
 
         if not mapping_file:
-            return
+            return form_version
 
         mapping_version_name = mapping_type
 
@@ -350,7 +489,49 @@ class Command(BaseCommand):
         return mapping_version
 
     @transaction.atomic
-    def seed_instances(self, source_version, form, periods, mapping_version, fixed_instance_count=None):
+    def seed_entities(self, source_version, form, form_version, account, project, entity_type, user):
+        print("********* seeding entities")
+        reader = csv.DictReader(open("./testdata/seed-data-command-names.csv"))
+        names = [line for line in reader]
+
+        for org_unit in source_version.orgunit_set.all()[0:1000]:
+            name = names[randint(0, len(names) - 1)]
+            firstname = names[randint(0, len(names) - 1)]
+            entityUuid = str(uuid4())
+            entityTypeId = entity_type.id
+
+            entity, created = Entity.objects.get_or_create(
+                uuid=entityUuid, entity_type_id=entityTypeId, account=account
+            )
+
+            instance = Instance(project=project)
+            instance.created_at = parse_datetime("2018-02-16T11:00:00+00")
+            instance.org_unit = org_unit
+            instance.form = form
+            instance.file_name = "fake_it_until_you_make_it.xml"
+            instance.uuid = str(uuid4())
+            instance.created_by = user
+            instance.json = {
+                "entityUuid": entityUuid,
+                "entityTypeId": entityTypeId,
+                "What_is_the_child_s_name": name["name"],
+                "What_is_the_father_s_name": firstname["name"],
+                "_version": str(1),
+            }
+            with_location = randint(1, 3) == 2
+            if with_location:
+                instance.location = Point(-11.7868289 + (2 * random()), 8.4494988 + (2 * random()), 0)
+            instance.entity = entity
+            instance.save()
+            entity.attributes = instance
+            entity.name = " ".join([str(instance.json[k]) for k in form.label_keys])
+            entity.save()
+
+            self.generate_xml_file(instance, form_version)
+            instance.save()
+
+    @transaction.atomic
+    def seed_instances(self, dhis2_version, source_version, form, periods, mapping_version, fixed_instance_count=None):
         for org_unit in source_version.orgunit_set.all():
             instances = []
             for period in periods:
@@ -384,9 +565,13 @@ class Command(BaseCommand):
                     instance.json = test_data
                     instance.form = form
 
+                    imei_prefix = "testi_" + dhis2_version if randint(1, 10) < 5 else "testimei"
+
                     if mapping_version.mapping.is_event_tracker():
                         instance.json.clear()
+
                         instance.json = {
+                            "imei": "testimeivalue" + str(randint(1, 100)),
                             "DE_2005736": "2.5",
                             "DE_2006098": "5",
                             "DE_2006101": "1",
@@ -425,6 +610,8 @@ class Command(BaseCommand):
                         self.generate_xml_file(instance, form.latest_version)
                     else:
                         instance.json["instanceID"] = "uuid:" + str(uuid4())
+                        instance.json["imei"] = "testimeivalue" + str(randint(1, 100))
+
                         xml_string = (
                             open("./testdata/seed-data-command-instance.xml")
                             .read()
@@ -444,6 +631,12 @@ class Command(BaseCommand):
                         instance.file = file
 
                         UploadedFile()
+
+                    if instance.json["imei"] is not None:
+                        device, created = Device.objects.get_or_create(imei=instance.json["imei"])
+                        instance.device = device
+                        if created:
+                            device.projects.add(instance.project)
 
                     instances.append(instance)
             Instance.objects.bulk_create(instances)
@@ -475,8 +668,8 @@ class Command(BaseCommand):
                 child.text = str(instance.json[k])
                 root.append(child)
 
-        root.attrib["version"] = form_version.version_id
-        root.attrib["id"] = form_version.form.form_id
+        root.attrib["version"] = str(form_version.version_id)
+        root.attrib["id"] = str(form_version.form.form_id)
 
         # generate <meta><instanceID>uuid:3679c645-24ec-4860-93ea-fce1d068b58f</instanceID></meta>
         meta = etree.Element("meta")
@@ -492,3 +685,53 @@ class Command(BaseCommand):
     def mapping_json(self, file):
         with open(file) as json_file:
             return json.load(json_file)
+
+    def seed_micro_planning(self, source_version, dhis2_version, account, project, user):
+
+        print("********* seed_micro_planning")
+        team1, _ignore1 = Team.objects.get_or_create(
+            project=project, name="team 1", description="team 1", type="TEAM_OF_USERS", manager=user
+        )
+        team2, _ignore2 = Team.objects.get_or_create(
+            project=project, name="team 2", description="", type="TEAM_OF_USERS", manager=user
+        )
+        team3, _ignore3 = Team.objects.get_or_create(
+            project=project, name="team 3", description="", type="TEAM_OF_USERS", manager=user
+        )
+        team4, _ignore4 = Team.objects.get_or_create(
+            project=project, name="team 4", description="", type="TEAM_OF_USERS", manager=user
+        )
+        team5, _ignore5 = Team.objects.get_or_create(
+            project=project, name="team 5", description="", type="TEAM_OF_USERS", manager=user
+        )
+        basic_teams = [team1, team2, team3, team4, team5]
+
+        team_main, _ignore1 = Team.objects.get_or_create(
+            project=project, name="team-main", type="TEAM_OF_TEAMS", manager=user
+        )
+
+        for sub_team in basic_teams:
+            sub_team.users.set([user])
+            team_main.sub_teams.add(sub_team)
+            sub_team.calculate_paths(force_recalculate=True)
+            sub_team.save()
+
+        team_main.calculate_paths(force_recalculate=True)
+        team_main.save()
+
+        country = source_version.orgunit_set.filter(source_ref="ImspTQPwCqd").first()
+        print("country ", country.name)
+
+        p = Planning.objects.create(project=project, name="planning-cvs", team=team_main, org_unit=country)
+
+        child_index = 0
+        for region in country.children():
+            assigned_team = basic_teams[child_index % len(basic_teams)]
+            print(" assigning", region.name, assigned_team.name)
+            for child_org_unit in region.descendants():
+                p.assignment_set.get_or_create(org_unit=child_org_unit, team=assigned_team, user=user)
+            child_index += 1
+
+        p = Planning.objects.get_or_create(
+            project=self.project, name="planning-vaccination", team=team_main, org_unit=country
+        )

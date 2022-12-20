@@ -107,7 +107,10 @@ class CompletenessStatsViewSet(viewsets.ViewSet):
                 ou_types_of_form = form.org_unit_types.all()
 
                 # Instance counters for the row OU + all descendants
-                ou_to_fill_with_descendants = org_units.filter(org_unit_type__in=ou_types_of_form).hierarchy(row_ou)
+                ou_to_fill_with_descendants = row_ou.descendants().filter(
+                    org_unit_type__in=ou_types_of_form
+                )  # Apparently .descendants() also includes the row_ou itself
+
                 ou_to_fill_with_descendants_count, ou_filled_with_descendants_count = get_instance_counters(
                     ou_to_fill_with_descendants, form
                 )

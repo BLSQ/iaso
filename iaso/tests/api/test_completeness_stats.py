@@ -38,6 +38,7 @@ class CompletenessStatsAPITestCase(APITestCase):
         cls.form_hs_2.org_unit_types.add(cls.org_unit_type_hopital)
         cls.form_hs_3.org_unit_types.add(cls.org_unit_type_aire_sante)
         cls.form_hs_4.org_unit_types.add(cls.org_unit_type_aire_sante)
+        cls.form_hs_4.org_unit_types.add(cls.org_unit_type_country)
         cls.hopital_aaa_ou = OrgUnit.objects.filter(org_unit_type=cls.org_unit_type_hopital).first()
         cls.create_form_instance(form=cls.form_hs_1, org_unit=cls.hopital_aaa_ou)
 
@@ -94,11 +95,11 @@ class CompletenessStatsAPITestCase(APITestCase):
                         "org_unit": {"name": "LaLaland", "id": 1},
                         "form": {"name": "Hydroponics study 4", "id": self.form_hs_4.id},
                         "forms_filled": 0,
-                        "forms_to_fill": 2,
+                        "forms_to_fill": 3,
                         "completeness_ratio": "0.0%",
                         "forms_filled_direct": 0,
-                        "forms_to_fill_direct": 0,
-                        "completeness_ratio_direct": "N/A",
+                        "forms_to_fill_direct": 1,
+                        "completeness_ratio_direct": "0.0%",
                     },
                 ],
                 "has_next": False,
@@ -311,3 +312,52 @@ class CompletenessStatsAPITestCase(APITestCase):
         self.assertEqual(result_form_1["forms_filled"], 1)
         # Let's check the percentage calculation is correct
         self.assertEqual(result_form_1["completeness_ratio"], "100.0%")
+
+    def test_counts_with_skipped_levels(self):
+        """Regression test: make sure the direct/indirect counts make sense even when there are skipped levels"""
+        # Form hs_4 is linked to the two AS at the bottom of the tree and also to the country at the top, but not to the
+        # region and district in between. We'll check direct and indirect counters for each level, starting at the
+        # country and going down.
+        self.client.force_authenticate(self.user)
+
+        # We filter to get only the country and the relevant form
+        response = self.client.get(f"/api/completeness_stats/?form_id={self.form_hs_4.id}")
+        json = response.json()
+        results_country = json["results"][0]
+        self.assertEqual(results_country["forms_to_fill"], 3)
+        self.assertEqual(results_country["forms_filled"], 0)
+        self.assertEqual(results_country["forms_to_fill_direct"], 1)
+        self.assertEqual(results_country["forms_filled_direct"], 0)
+
+        # We filter to get only the region and the relevant form
+        # no direct here, but the two grandchildren should be counted
+        response = self.client.get(
+            f"/api/completeness_stats/?form_id={self.form_hs_4.id}&parent_org_unit_id=1&org_unit_id=3"
+        )
+        json = response.json()
+        results_region_b = json["results"][0]
+        self.assertEqual(results_region_b["forms_to_fill"], 2)
+        self.assertEqual(results_region_b["forms_filled"], 0)
+        self.assertEqual(results_region_b["forms_to_fill_direct"], 0)
+        self.assertEqual(results_region_b["forms_filled_direct"], 0)
+
+        # We filter to get only the district A.B and the relevant form
+        # no direct here, but the two children should be counted
+        response = self.client.get(f"/api/completeness_stats/?form_id={self.form_hs_4.id}&parent_org_unit_id=3")
+        json = response.json()
+        results_district_ab = json["results"][0]
+        self.assertEqual(results_district_ab["forms_to_fill"], 2)
+        self.assertEqual(results_district_ab["forms_filled"], 0)
+        self.assertEqual(results_district_ab["forms_to_fill_direct"], 0)
+        self.assertEqual(results_district_ab["forms_filled_direct"], 0)
+
+        # Finally, we request the two AS at the bottom of the tree
+        # each one is targeted by one form, with no submission
+        response = self.client.get(f"/api/completeness_stats/?form_id={self.form_hs_4.id}&parent_org_unit_id=5")
+        json = response.json()
+        results_as = json["results"]
+        for result_as in results_as:
+            self.assertEqual(result_as["forms_to_fill"], 1)
+            self.assertEqual(result_as["forms_filled"], 0)
+            self.assertEqual(result_as["forms_to_fill_direct"], 1)
+            self.assertEqual(result_as["forms_filled_direct"], 0)

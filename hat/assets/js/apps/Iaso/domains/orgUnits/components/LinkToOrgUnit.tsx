@@ -16,7 +16,7 @@ import MESSAGES from '../../assignments/messages';
 const useStyles = makeStyles(theme => ({
     root: {
         textDecoration: 'none',
-        color: theme.palette.primary.main,
+        color: theme.palette.info.dark,
         '&:hover': {
             textDecoration: 'underline',
         },

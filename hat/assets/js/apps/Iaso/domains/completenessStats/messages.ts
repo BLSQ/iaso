@@ -37,9 +37,17 @@ const MESSAGES = defineMessages({
         id: 'iaso.completeness.chooseParent',
         defaultMessage: 'Select a form or a parent org unit to enable',
     },
-    tooMuchDepth: {
-        id: 'iaso.completeness.tooMuchDepth',
-        defaultMessage: 'Too much depth between parent and type',
+    completenessStats: {
+        defaultMessage: 'Completeness Stats',
+        id: 'iaso.completenessStats.title',
+    },
+    actions: {
+        defaultMessage: 'Actions',
+        id: 'iaso.label.actions',
+    },
+    seeChildren: {
+        defaultMessage: 'See children',
+        id: 'iaso.label.seeChildren',
     },
 });
 

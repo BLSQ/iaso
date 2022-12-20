@@ -67,6 +67,16 @@ export const useGetTypes = (): UseQueryResult<Array<EntityType>, Error> => {
     });
 };
 
+export const useGetType = (
+    typeId: string,
+): UseQueryResult<EntityType, Error> => {
+    // @ts-ignore
+    return useSnackQuery({
+        queryKey: ['entitytype', typeId],
+        queryFn: () => getRequest(`/api/entitytype/${typeId}`),
+    });
+};
+
 export const useSave = (): UseMutationResult => {
     const { account } = useCurrentUser();
     return useSnackMutation({

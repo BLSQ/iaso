@@ -1,5 +1,5 @@
 import json
-import urllib
+import urllib.parse
 
 from django.core.files.uploadedfile import UploadedFile
 
@@ -51,7 +51,9 @@ class EnketoAPITestCase(APITestCase):
         )
 
         cls.form_version_1 = m.FormVersion.objects.create(
-            form=cls.form_1, version_id="1", file=UploadedFile(open("iaso/tests/fixtures/hydroponics_test_upload.xml"))
+            form=cls.form_1,
+            version_id="1",
+            file=UploadedFile(open("iaso/tests/fixtures/form_rapide_1666691000.xml")),
         )
 
         cls.create_form_instance(
@@ -158,7 +160,7 @@ class EnketoAPITestCase(APITestCase):
                 f"<formID>{instance.uuid}</formID>",
                 "<name>Hydroponics study</name>",
                 "<version>1</version>",
-                "<hash>md5:0803e94efbd5e88e444dffa60c015931</hash>",
+                "<hash>md5:4571fa4a8caa18cb4b8b97d81430077a</hash>",
                 "<descriptionText>Hydroponics study</descriptionText>",
                 f"<downloadUrl>http://testserver/api/enketo/formDownload/?uuid={instance.uuid}</downloadUrl>",
                 "</xform>",
@@ -193,12 +195,11 @@ class EnketoAPITestCase(APITestCase):
             self.assertEqual(instance, modification.content_object)
 
     def assertXmlResponse(self, response, expected_status_code):
-        self.assertEqual(expected_status_code, response.status_code)
+        self.assertEqual(expected_status_code, response.status_code, response)
         if expected_status_code != 204:
             self.assertEqual("application/xml", response["Content-Type"])
 
     def test_save_last_user_modified_submission(self):
-
         with open("iaso/tests/fixtures/hydroponics_test_upload_modified.xml") as modified_xml:
             instance = self.form_1.instances.first()
             f = SimpleUploadedFile(
@@ -387,3 +388,153 @@ class EnketoAPITestCase(APITestCase):
         # self.assertEqual(responses.calls[0].request.url, 1)
         self.assertTrue(responses.assert_call_count("https://enketo_url.host.test/api_v2/survey/single", 1))
         self.assertEqual(old_count + 1, Instance.objects.count())
+
+    def test_form_list_work_with_duplicate_instance(self):
+        "Check form list work when there are two instances with the same UUID"
+        uuid_dup = "uuid-dup"
+        instance1 = self.create_form_instance(
+            form=self.form_1,
+            period="202001",
+            org_unit=self.jedi_council_corruscant,
+            project=self.project,
+            uuid=uuid_dup,
+        )
+        instance2 = self.create_form_instance(
+            form=self.form_1,
+            period="202001",
+            org_unit=self.jedi_council_corruscant,
+            project=self.project,
+            uuid=uuid_dup,
+        )
+        response = self.client.get(f"/api/enketo/formList?formID={uuid_dup}")
+        self.assertXmlResponse(response, 200)
+
+        expected_list = "".join(
+            [
+                '<xforms xmlns="http://openrosa.org/xforms/xformsList">',
+                "<xform>",
+                f"<formID>{uuid_dup}</formID>",
+                "<name>Hydroponics study</name>",
+                "<version>1</version>",
+                "<hash>md5:4571fa4a8caa18cb4b8b97d81430077a</hash>",
+                "<descriptionText>Hydroponics study</descriptionText>",
+                f"<downloadUrl>http://testserver/api/enketo/formDownload/?uuid={uuid_dup}</downloadUrl>",
+                "</xform>",
+                "</xforms>",
+            ]
+        )
+        self.assertEquals(response.content.decode("utf-8"), expected_list)
+
+    def test_duplicate_instance_download(self):
+        "form download works if there is two instance"
+        uuid_dup = "uuid-dup"
+        instance1 = self.create_form_instance(
+            form=self.form_1,
+            period="202001",
+            org_unit=self.jedi_council_corruscant,
+            project=self.project,
+            uuid=uuid_dup,
+            json={"a": 2, "hello": "world"},
+        )
+        # json empty
+        instance2 = self.create_form_instance(
+            form=self.form_1,
+            period="202001",
+            org_unit=self.jedi_council_corruscant,
+            project=self.project,
+            uuid=uuid_dup,
+        )
+        response = self.client.get(f"/api/enketo/formDownload/?uuid={uuid_dup}")
+        self.assertXmlResponse(response, 200)
+        content = response.content.decode("utf-8")
+        self.assertEqual(
+            content,
+            f"""<h:html xmlns="http://www.w3.org/2002/xforms" xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:h="http://www.w3.org/1999/xhtml" xmlns:jr="http://openrosa.org/javarosa" xmlns:odk="http://www.opendatakit.org/xforms" xmlns:orx="http://openrosa.org/xforms" xmlns:xsd="http://www.w3.org/2001/XMLSchema" iasoInstance="{instance1.id}">
+  <h:head>
+    <h:title>Very quick form for test</h:title>
+    <model odk:xforms-version="1.0.0">
+      <submission orx:auto-delete="default" orx:auto-send="default"/>
+      <itext>
+        <translation lang="French">
+          <text id="/data/mon_champ:label">
+            <value>Une valeur</value>
+          </text>
+        </translation>
+        <translation lang="English">
+          <text id="/data/mon_champ:label">
+            <value>A value</value>
+          </text>
+        </translation>
+      </itext>
+      <instance>
+        <data id="Form-rapide" version="1666691000" iasoInstance="{instance1.id}">
+          <mon_champ>Valeur par default</mon_champ>
+          <meta>
+            <instanceID/>
+          </meta>
+        </data>
+      </instance>
+      <bind nodeset="/data/mon_champ" type="string"/>
+      <bind jr:preload="uid" nodeset="/data/meta/instanceID" readonly="true()" type="string"/>
+    </model>
+  </h:head>
+  <h:body>
+    <input ref="/data/mon_champ">
+      <label ref="jr:itext('/data/mon_champ:label')"/>
+    </input>
+  </h:body>
+</h:html>""",
+        )
+
+    def test_form_download(self):
+        "form download works"
+        submission_uuid = "uuid-dup"
+        instance1 = self.create_form_instance(
+            form=self.form_1,
+            period="202001",
+            org_unit=self.jedi_council_corruscant,
+            project=self.project,
+            uuid=submission_uuid,
+        )
+
+        response = self.client.get(f"/api/enketo/formDownload/?uuid={submission_uuid}")
+        self.assertXmlResponse(response, 200)
+        content = response.content.decode("utf-8")
+        self.assertEqual(
+            content,
+            f"""<h:html xmlns="http://www.w3.org/2002/xforms" xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:h="http://www.w3.org/1999/xhtml" xmlns:jr="http://openrosa.org/javarosa" xmlns:odk="http://www.opendatakit.org/xforms" xmlns:orx="http://openrosa.org/xforms" xmlns:xsd="http://www.w3.org/2001/XMLSchema" iasoInstance="{instance1.id}">
+  <h:head>
+    <h:title>Very quick form for test</h:title>
+    <model odk:xforms-version="1.0.0">
+      <submission orx:auto-delete="default" orx:auto-send="default"/>
+      <itext>
+        <translation lang="French">
+          <text id="/data/mon_champ:label">
+            <value>Une valeur</value>
+          </text>
+        </translation>
+        <translation lang="English">
+          <text id="/data/mon_champ:label">
+            <value>A value</value>
+          </text>
+        </translation>
+      </itext>
+      <instance>
+        <data id="Form-rapide" version="1666691000" iasoInstance="{instance1.id}">
+          <mon_champ>Valeur par default</mon_champ>
+          <meta>
+            <instanceID/>
+          </meta>
+        </data>
+      </instance>
+      <bind nodeset="/data/mon_champ" type="string"/>
+      <bind jr:preload="uid" nodeset="/data/meta/instanceID" readonly="true()" type="string"/>
+    </model>
+  </h:head>
+  <h:body>
+    <input ref="/data/mon_champ">
+      <label ref="jr:itext('/data/mon_champ:label')"/>
+    </input>
+  </h:body>
+</h:html>""",
+        )

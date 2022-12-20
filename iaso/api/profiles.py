@@ -92,6 +92,16 @@ class ProfilesViewSet(viewsets.ViewSet):
             ).distinct()
             queryset = queryset_location | parent_ou_queryset
 
+        if children_ou == "true" and location:
+            queryset_location = queryset.filter(
+                user__iaso_profile__org_units__pk=location,
+            ).distinct()
+            children_ou = get_object_or_404(OrgUnit, parent__pk=location)
+            children_ou_queryset = queryset.filter(
+                user__iaso_profile__org_units__pk=children_ou.pk,
+            ).distinct()
+            queryset = queryset_location | children_ou_queryset
+
         if org_unit_type:
             queryset = queryset.filter(user__iaso_profile__org_units__org_unit_type__pk=org_unit_type).distinct()
 

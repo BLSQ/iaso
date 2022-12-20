@@ -231,7 +231,17 @@ const Actions = (
     ];
 };
 
-const OrgUnitCreationDetails = ({ orgUnit, formatMessage, classes }) => {
+const Row = ({ label, value }) => {
+    const classes = useStyles();
+    return (
+        <TableRow>
+            <TableCell className={classes.leftCell}>{label}</TableCell>
+            <TableCell>{value}</TableCell>
+        </TableRow>
+    );
+};
+
+const OrgUnitCreationDetails = ({ orgUnit, formatMessage }) => {
     const latitude = `${formatMessage(MESSAGES.latitude)}: ${
         orgUnit.latitude
     },`;
@@ -251,83 +261,47 @@ const OrgUnitCreationDetails = ({ orgUnit, formatMessage, classes }) => {
             <WidgetPaper showHeader={false} title="">
                 <Table size="medium">
                     <TableBody>
-                        <TableRow>
-                            <TableCell className={classes.leftCell}>
-                                {formatMessage(MESSAGES.source)}
-                            </TableCell>
-                            <TableCell>{orgUnit.source ?? '-'}</TableCell>
-                        </TableRow>
-
-                        {orgUnit.creator.value && (
-                            <TableRow>
-                                <TableCell className={classes.leftCell}>
-                                    {formatMessage(MESSAGES.creator)}
-                                </TableCell>
-                                <TableCell>{orgUnit.creator.value}</TableCell>
-                            </TableRow>
-                        )}
-
-                        <TableRow>
-                            <TableCell className={classes.leftCell}>
-                                {formatMessage(MESSAGES.created_at)}
-                            </TableCell>
-                            <TableCell>
-                                {orgUnit.created_at ? orgUnitCreatedAt : '-'}
-                            </TableCell>
-                        </TableRow>
-
-                        <TableRow>
-                            <TableCell className={classes.leftCell}>
-                                {formatMessage(MESSAGES.updated_at)}
-                            </TableCell>
-                            <TableCell>
-                                {orgUnit.updated_at ? orgUnitUpdatedAt : '-'}
-                            </TableCell>
-                        </TableRow>
-
+                        <Row
+                            label={formatMessage(MESSAGES.source)}
+                            value={orgUnit.source ?? '-'}
+                        />
+                        <Row
+                            label={formatMessage(MESSAGES.creator)}
+                            value={orgUnit.creator.value ?? '-'}
+                        />
+                        <Row
+                            label={formatMessage(MESSAGES.created_at)}
+                            value={orgUnit.created_at ? orgUnitCreatedAt : '-'}
+                        />
+                        <Row
+                            label={formatMessage(MESSAGES.updated_at)}
+                            value={orgUnit.updated_at ? orgUnitUpdatedAt : '-'}
+                        />
                         {!orgUnit.has_geo_json && !latitudeLongitude && (
-                            <TableRow>
-                                <TableCell className={classes.leftCell}>
-                                    <GpsOffIcon color="primary" />
-                                </TableCell>
-
-                                <TableCell>
-                                    {formatMessage(
-                                        MESSAGES.hasNoGeometryAndGps,
-                                    )}
-                                </TableCell>
-                            </TableRow>
+                            <Row
+                                label={<GpsOffIcon color="primary" />}
+                                value={formatMessage(
+                                    MESSAGES.hasNoGeometryAndGps,
+                                )}
+                            />
                         )}
-
                         {orgUnit.has_geo_json && (
-                            <TableRow>
-                                <TableCell className={classes.leftCell}>
-                                    <GpsFixedIcon color="primary" />
-                                </TableCell>
-
-                                <TableCell>
-                                    {formatMessage(MESSAGES.hasGeometry)}
-                                </TableCell>
-                            </TableRow>
+                            <Row
+                                label={<GpsFixedIcon color="primary" />}
+                                value={formatMessage(MESSAGES.hasGeometry)}
+                            />
                         )}
-
                         {latitudeLongitude && (
                             <>
-                                <TableRow>
-                                    <TableCell className={classes.leftCell}>
-                                        {formatMessage(MESSAGES.latitude)}
-                                    </TableCell>
+                                <Row
+                                    label={formatMessage(MESSAGES.latitude)}
+                                    value={orgUnit.latitude}
+                                />
 
-                                    <TableCell>{orgUnit.latitude}</TableCell>
-                                </TableRow>
-
-                                <TableRow>
-                                    <TableCell className={classes.leftCell}>
-                                        {formatMessage(MESSAGES.longitude)}
-                                    </TableCell>
-
-                                    <TableCell>{orgUnit.longitude}</TableCell>
-                                </TableRow>
+                                <Row
+                                    label={formatMessage(MESSAGES.LONGITUDE)}
+                                    value={orgUnit.longitude}
+                                />
                             </>
                         )}
                     </TableBody>
@@ -363,26 +337,16 @@ const OrgUnitInfosComponent = ({
         initialFormState(orgUnit, instanceId),
     );
 
-    const [isSaveDisabled, setSaveDisabled] = useState(true);
-    
     const showSpeedDialsActions =
         orgUnit.reference_instance ||
         (formId === referenceFormId &&
-            formId !== undefined &&
-            referenceFormId !== undefined);
+            Boolean(formId) &&
+            Boolean(referenceFormId));
 
     const isNewOrgunit = params.orgUnitId === '0';
 
-    useEffect(() => {
-        if (
-            orgUnit.name.value === '' ||
-            orgUnit.org_unit_type_id.value === null
-        ) {
-            setSaveDisabled(true);
-        } else {
-            setSaveDisabled(false);
-        }
-    }, [orgUnit]);
+    const isSaveDisabled =
+        orgUnit.name.value === '' || orgUnit.org_unit_type_id.value === null;
 
     return (
         <Grid container spacing={2}>
@@ -416,12 +380,7 @@ const OrgUnitInfosComponent = ({
                     label={MESSAGES.name}
                     withMarginTop={!orgUnit.reference_instance}
                 />
-                <InputComponent
-                    keyValue="creator"
-                    value={orgUnit.creator.value}
-                    label={MESSAGES.creator}
-                    disabled
-                />
+
                 <InputComponent
                     keyValue="org_unit_type_id"
                     onChange={onChangeInfo}
@@ -456,156 +415,111 @@ const OrgUnitInfosComponent = ({
                     }))}
                     label={MESSAGES.groups}
                 />
-            <>
-                <Grid item xs={12} md={4}>
-                    <InputComponent
-                        keyValue="name"
-                        required
-                        onChange={onChangeInfo}
-                        value={orgUnit.name.value}
-                        errors={orgUnit.name.errors}
-                        label={MESSAGES.name}
-                        withMarginTop={false}
-                    />
-                    <InputComponent
-                        keyValue="org_unit_type_id"
-                        onChange={onChangeInfo}
-                        required
-                        value={orgUnit.org_unit_type_id.value}
-                        errors={orgUnit.org_unit_type_id.errors}
-                        type="select"
-                        options={orgUnitTypes.map(t => ({
-                            label: t.name,
-                            value: t.id,
-                        }))}
-                        label={MESSAGES.org_unit_type_id}
-                    />
 
-                    <InputComponent
-                        keyValue="groups"
-                        onChange={(name, value) =>
-                            onChangeInfo(name, commaSeparatedIdsToArray(value))
-                        }
-                        multi
-                        value={
-                            orgUnit.groups.value.length > 0
-                                ? orgUnit.groups.value
-                                : null
-                        }
-                        errors={orgUnit.groups.errors}
-                        type="select"
-                        options={groups.map(g => ({
-                            label: g.name,
-                            value: g.id,
-                        }))}
-                        label={MESSAGES.groups}
-                    />
+                <InputComponent
+                    keyValue="aliases"
+                    onChange={onChangeInfo}
+                    value={orgUnit.aliases.value}
+                    type="arrayInput"
+                />
+            </Grid>
 
-                    <InputComponent
-                        keyValue="aliases"
-                        onChange={onChangeInfo}
-                        value={orgUnit.aliases.value}
-                        type="arrayInput"
-                    />
-                </Grid>
+            <Grid item xs={12} md={4}>
+                <InputComponent
+                    keyValue="validation_status"
+                    isClearable={false}
+                    onChange={onChangeInfo}
+                    errors={orgUnit.validation_status.errors}
+                    value={orgUnit.validation_status.value}
+                    type="select"
+                    label={MESSAGES.status}
+                    options={[
+                        {
+                            label: formatMessage(MESSAGES.new),
+                            value: 'NEW',
+                        },
+                        {
+                            label: formatMessage(MESSAGES.validated),
+                            value: 'VALID',
+                        },
+                        {
+                            label: formatMessage(MESSAGES.rejected),
+                            value: 'REJECTED',
+                        },
+                    ]}
+                    withMarginTop
+                />
+                <InputComponent
+                    keyValue="source_ref"
+                    value={orgUnit.source_ref.value || ''}
+                    onChange={onChangeInfo}
+                    errors={orgUnit.source_ref.errors}
+                />
 
-                <Grid item xs={12} md={4}>
-                    <InputComponent
-                        keyValue="validation_status"
-                        isClearable={false}
-                        onChange={onChangeInfo}
-                        errors={orgUnit.validation_status.errors}
-                        value={orgUnit.validation_status.value}
-                        type="select"
-                        label={MESSAGES.status}
-                        options={[
-                            {
-                                label: formatMessage(MESSAGES.new),
-                                value: 'NEW',
-                            },
-                            {
-                                label: formatMessage(MESSAGES.validated),
-                                value: 'VALID',
-                            },
-                            {
-                                label: formatMessage(MESSAGES.rejected),
-                                value: 'REJECTED',
-                            },
-                        ]}
-                        withMarginTop={false}
+                <FormControlComponent
+                    errors={orgUnit.parent_id.errors}
+                    id="ou-tree-input"
+                >
+                    <OrgUnitTreeviewModal
+                        toggleOnLabelClick={false}
+                        titleMessage={MESSAGES.selectParentOrgUnit}
+                        onConfirm={treeviewOrgUnit => {
+                            if (
+                                (treeviewOrgUnit
+                                    ? treeviewOrgUnit.id
+                                    : null) !== orgUnit.parent_id.value
+                            ) {
+                                onChangeInfo('parent_id', treeviewOrgUnit?.id);
+                            }
+                        }}
+                        source={orgUnit.source_id}
+                        initialSelection={reformatOrgUnit(orgUnit)}
+                        resetTrigger={resetTrigger}
                     />
-                    <InputComponent
-                        keyValue="source_ref"
-                        value={orgUnit.source_ref.value || ''}
-                        onChange={onChangeInfo}
-                        errors={orgUnit.source_ref.errors}
-                    />
+                </FormControlComponent>
 
-                    <FormControlComponent
-                        errors={orgUnit.parent_id.errors}
-                        id="ou-tree-input"
-                    >
-                        <OrgUnitTreeviewModal
-                            toggleOnLabelClick={false}
-                            titleMessage={MESSAGES.selectParentOrgUnit}
-                            onConfirm={treeviewOrgUnit => {
-                                if (
-                                    (treeviewOrgUnit
-                                        ? treeviewOrgUnit.id
-                                        : null) !== orgUnit.parent_id.value
-                                ) {
-                                    onChangeInfo(
-                                        'parent_id',
-                                        treeviewOrgUnit?.id,
-                                    );
-                                }
-                            }}
-                            source={orgUnit.source_id}
-                            initialSelection={reformatOrgUnit(orgUnit)}
-                            resetTrigger={resetTrigger}
-                        />
-                    </FormControlComponent>
-                    <Grid
-                        container
-                        item
-                        xs={12}
-                        justifyContent="flex-end"
-                        alignItems="center"
-                    >
-                        <Box mt={1}>
+                <Grid
+                    container
+                    item
+                    xs={12}
+                    justifyContent="flex-end"
+                    alignItems="center"
+                >
+                    <Box mt={1}>
+                        <Button
+                            id="save-ou"
+                            disabled={isSaveDisabled}
+                            variant="contained"
+                            className={classes.marginLeft}
+                            color="primary"
+                            onClick={handleSave}
+                        >
+                            <FormattedMessage {...MESSAGES.save} />
+                        </Button>
+
+                        {!isNewOrgunit && (
                             <Button
-                                id="save-ou"
-                                disabled={isSaveDisabled}
-                                variant="contained"
                                 className={classes.marginLeft}
-                                color="primary"
-                                onClick={handleSave}
+                                disabled={!orgUnitModified}
+                                variant="contained"
+                                onClick={() => handleReset()}
                             >
-                                <FormattedMessage {...MESSAGES.save} />
+                                <FormattedMessage {...MESSAGES.cancel} />
                             </Button>
-
-                            {!isNewOrgunit && (
-                                <Button
-                                    className={classes.marginLeft}
-                                    disabled={!orgUnitModified}
-                                    variant="contained"
-                                    onClick={() => handleReset()}
-                                >
-                                    <FormattedMessage {...MESSAGES.cancel} />
-                                </Button>
-                            )}
-                        </Box>
-                    </Grid>
+                        )}
+                    </Box>
                 </Grid>
+            </Grid>
 
-                <Grid item xs={12} md={4}>
+            <Grid item xs={12} md={4}>
+                <Box mt={2}>
                     <OrgUnitCreationDetails
                         orgUnit={orgUnit}
                         formatMessage={formatMessage}
                         classes={classes}
                     />
-                </Grid>
-            </>
+                </Box>
+            </Grid>
 
             {orgUnit.reference_instance && (
                 <Grid container item xs={12} md={8}>

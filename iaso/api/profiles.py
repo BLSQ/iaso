@@ -64,8 +64,7 @@ class ProfilesViewSet(viewsets.ViewSet):
         location = request.GET.get("location", None)
         org_unit_type = request.GET.get("orgUnitTypes", None)
         parent_ou = request.GET.get("ouParent", None)
-
-        print("PARENT OU: ", parent_ou)
+        children_ou = request.GET.get("ouChildren", None)
 
         queryset = self.get_queryset()
         if search:
@@ -83,12 +82,18 @@ class ProfilesViewSet(viewsets.ViewSet):
                 user__iaso_profile__org_units__pk=location,
             ).distinct()
 
-            # if parent_ou:
-            #     queryset_parent =
+        if parent_ou == "true" and location:
+            queryset_location = queryset.filter(
+                user__iaso_profile__org_units__pk=location,
+            ).distinct()
+            parent_ou = get_object_or_404(OrgUnit, parent__pk=location)
+            parent_ou_queryset = queryset.filter(
+                user__iaso_profile__org_units__pk=parent_ou.pk,
+            ).distinct()
+            queryset = queryset_location | parent_ou_queryset
 
         if org_unit_type:
             queryset = queryset.filter(user__iaso_profile__org_units__org_unit_type__pk=org_unit_type).distinct()
-
 
         if limit:
             queryset = queryset.order_by(*orders)

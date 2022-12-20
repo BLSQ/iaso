@@ -136,7 +136,6 @@ const OrgUnitForm = ({
 
     return (
         <Box pt={isNewOrgunit ? 2 : 0}>
-        <>
             <Grid
                 container
                 spacing={0}
@@ -161,6 +160,8 @@ const OrgUnitForm = ({
                     handleSave={handleSave}
                     handleReset={handleReset}
                     orgUnitModified={orgUnitModified}
+                    isFetchingOrgUnitTypes={isFetchingOrgUnitTypes}
+                    isFetchingGroups={isFetchingGroups}
                 />
             </Grid>
         </Box>

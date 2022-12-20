@@ -1,6 +1,5 @@
 import React, { Component } from 'react';
 import { Map, ScaleControl, TileLayer } from 'react-leaflet';
-import Control from 'react-leaflet-control';
 import { FormattedMessage } from 'react-intl';
 import L from 'leaflet';
 
@@ -26,6 +25,15 @@ const styles = theme => ({
         height: 400,
         minWidth: 200,
         marginBottom: 0,
+        position: 'relative',
+    },
+    legendLayers: {
+        position: 'absolute',
+        right: theme.spacing(1),
+        top: theme.spacing(1),
+        zIndex: 400,
+        borderRadius: 4,
+        border: '2px solid rgba(0,0,0,0.2)',
     },
     barButton: {
         display: 'flex',
@@ -137,19 +145,17 @@ class MarkerMap extends Component {
                             longitude,
                         }}
                     />
-                    <Control position="topright">
-                        <div className="leaflet-bar">
-                            <span
-                                className={classes.barButton}
-                                role="button"
-                                tabIndex="0"
-                                onClick={() => this.toggleTilePopup()}
-                            >
-                                <Layers fontSize="small" />
-                            </span>
-                        </div>
-                    </Control>
                 </Map>
+                <div className={classes.legendLayers}>
+                    <span
+                        className={classes.barButton}
+                        role="button"
+                        tabIndex="0"
+                        onClick={() => this.toggleTilePopup()}
+                    >
+                        <Layers fontSize="small" />
+                    </span>
+                </div>
             </div>
         );
     }

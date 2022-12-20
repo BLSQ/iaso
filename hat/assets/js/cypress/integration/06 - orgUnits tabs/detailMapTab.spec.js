@@ -12,7 +12,6 @@ const interceptList = [
     'profiles',
     'algorithms',
     'algorithmsruns',
-    // 'groups',
     'orgunittypes',
 ];
 

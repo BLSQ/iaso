@@ -231,7 +231,7 @@ class CampaignBudgetSerializer(CampaignSerializer, DynamicFieldsModelSerializer)
                 # category done
                 color = "green"
             elif active:
-                color = "lightgreen"
+                color = "yellow"
             else:
                 # Category not started
                 color = "grey"

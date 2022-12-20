@@ -31,6 +31,8 @@ import Pages from '../domains/pages';
 import { Planning } from '../domains/plannings/index.tsx';
 import { Teams } from '../domains/teams/index.tsx';
 import { Storages } from '../domains/storages/index.tsx';
+import { Workflows } from '../domains/workflows/index.tsx';
+import { Details as WorkflowDetails } from '../domains/workflows/details.tsx';
 import { Details as StorageDetails } from '../domains/storages/details.tsx';
 import { Assignments } from '../domains/assignments/index.tsx';
 import { CompareInstanceLogs } from '../domains/instances/compare/components/CompareInstanceLogs.tsx';
@@ -486,6 +488,10 @@ export const completenessStatsPath = {
             isRequired: false,
             key: 'orgUnitTypeIds',
         },
+        {
+            isRequired: false,
+            key: 'parentId',
+        },
     ],
 };
 
@@ -798,10 +804,55 @@ export const storageDetailPath = {
             isRequired: false,
             key: 'performedAt',
         },
+        ...paginationPathParams,
+    ],
+};
+export const workflowsPath = {
+    baseUrl: baseUrls.workflows,
+    permissions: ['iaso_workflows'],
+    component: props => <Workflows {...props} />,
+    params: [
+        {
+            isRequired: false,
+            key: 'accountId',
+        },
+        {
+            isRequired: true,
+            key: 'entityTypeId',
+        },
+        {
+            isRequired: false,
+            key: 'search',
+        },
+        {
+            isRequired: false,
+            key: 'status',
+        },
         ...paginationPathParams.map(p => ({
             ...p,
-            isRequired: false,
+            isRequired: true,
         })),
+    ],
+};
+export const workflowsDetailPath = {
+    baseUrl: baseUrls.workflowDetail,
+    permissions: ['iaso_workflows'],
+    component: props => <WorkflowDetails {...props} />,
+    params: [
+        {
+            isRequired: false,
+            key: 'accountId',
+        },
+        {
+            isRequired: true,
+            key: 'entityTypeId',
+        },
+        {
+            isRequired: true,
+            key: 'versionId',
+        },
+        // pagination to sort changes
+        ...paginationPathParams,
     ],
 };
 
@@ -858,4 +909,6 @@ export const routeConfigs = [
     entitySubmissionDetailPath,
     storagesPath,
     storageDetailPath,
+    workflowsPath,
+    workflowsDetailPath,
 ];

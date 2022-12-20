@@ -36,12 +36,12 @@ export const CompletessStats: FunctionComponent<Props> = ({ params }) => {
     const { formatMessage } = useSafeIntl();
     const { data: completenessStats, isFetching } =
         useGetCompletenessStats(params);
-    const columns = useCompletenessStatsColumns();
+    const columns = useCompletenessStatsColumns(params);
 
     return (
         <>
             <TopBar
-                title={formatMessage(MESSAGES.completeness)}
+                title={formatMessage(MESSAGES.completenessStats)}
                 displayBackButton={false}
             />
             <Box p={4} className={classes.container}>

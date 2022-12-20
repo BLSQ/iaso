@@ -60,7 +60,6 @@ const useStyles = makeStyles(theme => ({
         '& + div .MuiStepConnector-lineHorizontal': {
             // @ts-ignore
             borderColor: theme.palette.yellow.main,
-            // borderColor: '#FFD835',
         },
     },
     stepInactive: {

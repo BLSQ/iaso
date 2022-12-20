@@ -390,7 +390,7 @@ class EnketoAPITestCase(APITestCase):
         self.assertEqual(old_count + 1, Instance.objects.count())
 
     def test_form_list_work_with_duplicate_instance(self):
-        "Check form list work when there is two instance with the same uuid"
+        "Check form list work when there are two instances with the same UUID"
         uuid_dup = "uuid-dup"
         instance1 = self.create_form_instance(
             form=self.form_1,

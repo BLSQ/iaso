@@ -18,6 +18,7 @@ import {
     useSafeIntl,
     QueryBuilderInput,
     useSkipEffectOnMount,
+    useHumanReadableJsonLogic,
 } from 'bluesquare-components';
 import InputComponent from '../../../components/forms/InputComponent';
 
@@ -104,6 +105,7 @@ const InstancesFiltersComponent = ({
     const { data: formDescriptor } = useGetFormDescriptor(formId);
     const fields = useGetQueryBuildersFields(formDescriptor, possibleFields);
 
+    const getHumanReadableJsonLogic = useHumanReadableJsonLogic(fields);
     useInstancesFiltersData(formIds, setFetchingOrgUnitTypes);
     const handleSearch = useCallback(() => {
         if (isInstancesFilterUpdated) {
@@ -209,6 +211,9 @@ const InstancesFiltersComponent = ({
     const theme = useTheme();
     const isLargeLayout = useMediaQuery(theme.breakpoints.up('md'));
 
+    const searchJson = formState.fieldsSearch.value
+        ? JSON.parse(formState.fieldsSearch.value)
+        : undefined;
     return (
         <div className={classes.marginBottomBig}>
             <UserOrgUnitRestriction />
@@ -241,15 +246,11 @@ const InstancesFiltersComponent = ({
                         <QueryBuilderInput
                             label={MESSAGES.queryBuilder}
                             onChange={handleChangeQueryBuilder}
-                            initialLogic={
-                                formState.fieldsSearch.value
-                                    ? JSON.parse(formState.fieldsSearch.value)
-                                    : undefined
-                            }
+                            initialLogic={searchJson}
                             fields={fields}
                             iconProps={{
                                 label: MESSAGES.queryBuilder,
-                                value: formState.fieldsSearch.value,
+                                value: getHumanReadableJsonLogic(searchJson),
                                 onClear: () =>
                                     handleFormChange('fieldsSearch', undefined),
                             }}

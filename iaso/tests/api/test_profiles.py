@@ -56,6 +56,19 @@ class ProfileAPITestCase(APITestCase):
         )
         cls.jedi_council_corruscant.groups.set([cls.elite_group])
 
+        cls.jedi_council_corruscant_child = m.OrgUnit.objects.create(
+            org_unit_type=cls.jedi_council,
+            version=sw_version_1,
+            name="Corruscant Jedi Council",
+            geom=cls.mock_multipolygon,
+            simplified_geom=cls.mock_multipolygon,
+            catchment=cls.mock_multipolygon,
+            location=cls.mock_point,
+            validation_status=m.OrgUnit.VALIDATION_VALID,
+            source_ref="PvtAI4RUMkr",
+            parent=cls.jedi_council_corruscant,
+        )
+
     def test_can_delete_dhis2_id(self):
         self.client.force_authenticate(self.john)
         jim = Profile.objects.get(user=self.jim)
@@ -402,6 +415,26 @@ class ProfileAPITestCase(APITestCase):
 
         response = self.client.get(f"/api/profiles/?orgUnitTypes={self.jedi_council.pk}")
 
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.json()["profiles"][0]["user_name"], "janedoe")
+        self.assertEqual(len(response.json()["profiles"]), 1)
+
+    def test_search_user_by_children_ou(self):
+        self.client.force_authenticate(self.jane)
+        self.jane.iaso_profile.org_units.set([self.jedi_council_corruscant_child])
+
+        response = self.client.get(f"/api/profiles/?location={self.jedi_council_corruscant.pk}&ouParent=false&ouChildren=true")
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.json()["profiles"][0]["user_name"], "janedoe")
+        self.assertEqual(len(response.json()["profiles"]), 1)
+
+    def test_search_user_by_parent_ou(self):
+        self.client.force_authenticate(self.jane)
+        self.jane.iaso_profile.org_units.set([self.jedi_council_corruscant])
+
+        response = self.client.get(
+            f"/api/profiles/?location={self.jedi_council_corruscant_child.pk}&ouParent=true&ouChildren=false")
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.json()["profiles"][0]["user_name"], "janedoe")
         self.assertEqual(len(response.json()["profiles"]), 1)

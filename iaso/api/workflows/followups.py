@@ -35,7 +35,7 @@ class WorkflowFollowupViewSet(ModelViewSet):
         "form_ids": Int[], // Can not be empty or null
     }
 
-    PATCH /api/workflowfollowups/
+    POST /api/workflowfollowups/bulkupdate/
     Modify one or more followup
     id and at least one of the other fields must be provided
     the array cannot be empty or null and must contain at least one followup
@@ -61,7 +61,7 @@ class WorkflowFollowupViewSet(ModelViewSet):
     model = WorkflowFollowup
     lookup_url_kwarg = "followup_id"
     filterset_fields = {"workflow_version": ["exact"]}
-    http_method_names = ["post", "patch", "delete"]
+    http_method_names = ["post", "delete"]
 
     @swagger_auto_schema(
         manual_parameters=[workflow_version_id_param], request_body=ser.WorkflowFollowupCreateSerializer
@@ -81,7 +81,7 @@ class WorkflowFollowupViewSet(ModelViewSet):
         return Response(serialized_data)
 
     @swagger_auto_schema(request_body=ser.WorkflowFollowupModifySerializer(many=True))
-    @action(detail=False, methods=["patch"], url_path="bulkupdate")
+    @action(detail=False, methods=["post"], url_path="bulkupdate")
     def bulk_update(self, request, *args, **kwargs):
 
         return Response("udpated")

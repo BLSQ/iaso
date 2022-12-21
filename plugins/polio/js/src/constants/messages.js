@@ -424,6 +424,10 @@ const MESSAGES = defineMessages({
         id: 'iaso.polio.form.label.costPerChildRound',
         defaultMessage: 'Cost/Child Round',
     },
+    costPerChild: {
+        id: 'iaso.polio.form.label.costPerChild',
+        defaultMessage: 'Cost per child',
+    },
     costPerChildTotal: {
         id: 'iaso.polio.form.label.costPerChildTotal',
         defaultMessage: 'Cost/Child Total',
@@ -1977,6 +1981,30 @@ const MESSAGES = defineMessages({
     budget_requested: {
         id: 'iaso.polio.form.label.budget_requested',
         defaultMessage: 'Budget requested',
+    },
+    fundsRelease: {
+        id: 'iaso.polio.form.label.fundsRelease',
+        defaultMessage: 'Funds release',
+    },
+    budgetApproval: {
+        id: 'iaso.polio.form.label.budgetApproval',
+        defaultMessage: 'Budget Approval',
+    },
+    approval: {
+        id: 'iaso.polio.form.label.approval',
+        defaultMessage: 'Approval',
+    },
+    ORPGReview: {
+        id: 'iaso.polio.form.label.ORPGReview',
+        defaultMessage: 'ORPG review',
+    },
+    RRTReview: {
+        id: 'iaso.polio.form.label.RRTReview',
+        defaultMessage: 'RRT review',
+    },
+    budgetRequest: {
+        id: 'iaso.polio.form.label.budgetRequest',
+        defaultMessage: 'Budget request',
     },
 });
 

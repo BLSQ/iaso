@@ -2,13 +2,7 @@ import React, { useState, useCallback, useEffect } from 'react';
 import classnames from 'classnames';
 import mapValues from 'lodash/mapValues';
 import PropTypes from 'prop-types';
-import {
-    withStyles,
-    Grid,
-    Box,
-    useMediaQuery,
-    useTheme,
-} from '@material-ui/core';
+import { withStyles, Grid, Box } from '@material-ui/core';
 
 import { commonStyles } from 'bluesquare-components';
 import { isEqual } from 'lodash';
@@ -34,17 +28,6 @@ const initialFormState = orgUnit => {
 
 const styles = theme => ({
     ...commonStyles(theme),
-    alignCenter: {
-        display: 'flex',
-        justifyContent: 'center',
-    },
-    alignRight: {
-        display: 'flex',
-        justifyContent: 'flex-end',
-    },
-    marginTop: {
-        marginTop: '-32px',
-    },
 });
 const OrgUnitForm = ({
     orgUnit,
@@ -123,9 +106,7 @@ const OrgUnitForm = ({
         onResetOrgUnit();
     };
 
-    const theme = useTheme();
     const isNewOrgunit = params.orgUnitId === '0';
-    const isMobileLayout = useMediaQuery(theme.breakpoints.down('md'));
 
     useEffect(() => {
         if (orgUnit.id !== formState.id.value) {
@@ -140,11 +121,7 @@ const OrgUnitForm = ({
                 container
                 spacing={0}
                 alignItems="center"
-                className={classnames(
-                    !isNewOrgunit && classes.marginTopBig,
-                    isNewOrgunit ? classes.alignCenter : classes.alignRight,
-                    isNewOrgunit && isMobileLayout && classes.alignRight,
-                )}
+                className={classnames(!isNewOrgunit && classes.marginTopBig)}
             >
                 <OrgUnitInfos
                     params={params}

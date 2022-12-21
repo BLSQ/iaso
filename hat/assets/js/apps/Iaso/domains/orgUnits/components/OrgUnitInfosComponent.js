@@ -1,8 +1,7 @@
 /* eslint-disable import/extensions */
 /* eslint-disable react/jsx-props-no-spreading */
 /* eslint-disable react/prop-types */
-import React, { useEffect, useState } from 'react';
-// import classnames from 'classnames';
+import React from 'react';
 
 import {
     Box,
@@ -58,13 +57,6 @@ import {
 const useStyles = makeStyles(theme => ({
     speedDialTop: {
         top: theme.spacing(12.5),
-    },
-    geometryExistence: {
-        marginTop: '16px',
-    },
-    alignCenter: {
-        display: 'flex',
-        justifyContent: 'center',
     },
     marginLeft: {
         marginLeft: '8px',

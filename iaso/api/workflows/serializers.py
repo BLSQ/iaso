@@ -80,7 +80,7 @@ class WorkflowFollowupModifySerializer(serializers.Serializer):
                         raise serializers.ValidationError(f"form_id {f.id} is not accessible to the user")
 
         follow_up = get_object_or_404(WorkflowFollowup, pk=data["id"])
-        utils.validate_version_id(follow_up.workflow_version.workflow.id, self.context["user"])
+        utils.validate_version_id(follow_up.workflow_version.workflow.id, self.context["request"].user)
 
         return data
 

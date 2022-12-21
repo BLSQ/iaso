@@ -84,7 +84,27 @@ class WorkflowFollowupViewSet(ModelViewSet):
     @action(detail=False, methods=["post"], url_path="bulkupdate")
     def bulk_update(self, request, *args, **kwargs):
 
-        return Response("udpated")
+        print("bulk_update", request)
+        print("bulk_update", request.data)
+
+        modifs = []
+
+        for followup in request.data:
+            if "id" not in followup:
+                raise ValueError("id is required for bulk update")
+            else:
+                followup_orig = WorkflowFollowup.objects.get(id=followup["id"])
+                serializer = ser.WorkflowFollowupModifySerializer(
+                    data=followup, context={"request": request}, partial=True
+                )
+                serializer.is_valid(raise_exception=True)
+                res = serializer.update(followup_orig, serializer.validated_data)
+                modifs.append(res)
+
+        print("modifs", modifs)
+
+        resp = ser.WorkflowFollowupSerializer(modifs, many=True).data
+        return Response(resp)
 
     @swagger_auto_schema(request_body=no_body)
     def destroy(self, request, *args, **kwargs):

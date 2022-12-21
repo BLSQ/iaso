@@ -13,22 +13,22 @@ import {
 import { WorkflowParams, WorkflowVersionDetail } from '../types/workflows';
 import MESSAGES from '../messages';
 import { baseUrls } from '../../../constants/urls';
-
-import { useGetFollowUpsColumns } from '../config';
+import { Column } from '../../../types/table';
 
 type Props = {
     params: WorkflowParams;
     workflowVersion: WorkflowVersionDetail;
     isLoading: boolean;
+    followUpsColumns: Array<Column>;
 };
 
 export const FollowUpsTable: FunctionComponent<Props> = ({
     params,
     workflowVersion,
     isLoading,
+    followUpsColumns,
 }) => {
     const { formatMessage } = useSafeIntl();
-    const followUpsColumns = useGetFollowUpsColumns(workflowVersion);
 
     return (
         <>

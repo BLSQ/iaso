@@ -15,6 +15,8 @@ import {
     formatThousand,
     // @ts-ignore
     SortableTable,
+    // @ts-ignore
+    useHumanReadableJsonLogic,
 } from 'bluesquare-components';
 import { Box, Grid, makeStyles } from '@material-ui/core';
 import { useDispatch } from 'react-redux';
@@ -26,6 +28,12 @@ import { redirectToReplace } from '../../routing/actions';
 import { baseUrls } from '../../constants/urls';
 
 import { useGetWorkflowVersion } from './hooks/requests/useGetWorkflowVersions';
+import {
+    useGetQueryBuildersFields,
+    useGetQueryBuilderListToReplace,
+} from './hooks/queryBuilder';
+
+import { useGetFormDescriptor } from './hooks/requests/useGetFormDescriptor';
 
 import {
     WorkflowVersionDetail,
@@ -39,6 +47,7 @@ import { FollowUpsTable } from './components/FollowUpsTable';
 import WidgetPaper from '../../components/papers/WidgetPaperComponent';
 import { TableWithDeepLink } from '../../components/tables/TableWithDeepLink';
 import { useGetChangesColumns, useGetFollowUpsColumns } from './config';
+import { useGetPossibleFields } from '../forms/hooks/useGetPossibleFields';
 
 type Router = {
     goBack: () => void;
@@ -79,14 +88,30 @@ export const Details: FunctionComponent<Props> = ({ router }) => {
             setFollowUps(workflowVersion.follow_ups);
         }
     }, [workflowVersion?.follow_ups]);
+    const { possibleFields } = useGetPossibleFields(
+        workflowVersion?.reference_form.id,
+    );
+    const { data: formDescriptor } = useGetFormDescriptor(
+        workflowVersion?.reference_form.id,
+    );
+    const fields = useGetQueryBuildersFields(formDescriptor, possibleFields);
 
+    const queryBuilderListToReplace = useGetQueryBuilderListToReplace();
+    const getHumanReadableJsonLogic = useHumanReadableJsonLogic(
+        fields,
+        queryBuilderListToReplace,
+    );
     const changesColumns = useGetChangesColumns();
-    const followUpsColumns = useGetFollowUpsColumns(workflowVersion);
+    const followUpsColumns = useGetFollowUpsColumns(
+        getHumanReadableJsonLogic,
+        workflowVersion,
+    );
     const handleSortChange = useCallback((items: any) => {
         setFollowUps(
             items.map((item, index) => ({ ...item, order: index + 1 })),
         );
     }, []);
+
     return (
         <>
             <TopBar
@@ -136,6 +161,7 @@ export const Details: FunctionComponent<Props> = ({ router }) => {
                                             params={params}
                                             workflowVersion={workflowVersion}
                                             isLoading={isLoading}
+                                            followUpsColumns={followUpsColumns}
                                         />
                                     )}
                                 </>

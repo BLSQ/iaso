@@ -64,10 +64,13 @@ export const useGetColumns = (entityTypeId: string): Array<Column> => {
 };
 
 export const useGetFollowUpsColumns = (
+    // eslint-disable-next-line no-unused-vars
+    getHumanReadableJsonLogic: (logic: Record<string, string>) => string,
     workflow?: WorkflowVersionDetail,
 ): Array<Column> => {
     const { formatMessage }: { formatMessage: IntlFormatMessage } =
         useSafeIntl();
+
     const columns: Array<Column> = [
         {
             Header: formatMessage(MESSAGES.condition),
@@ -75,7 +78,11 @@ export const useGetFollowUpsColumns = (
             accessor: 'condition',
             Cell: settings => {
                 const condition = settings.value;
-                return <>{condition ? JSON.stringify(condition) : '-'}</>;
+                return (
+                    <>
+                        {condition ? getHumanReadableJsonLogic(condition) : '-'}
+                    </>
+                );
             },
         },
         {

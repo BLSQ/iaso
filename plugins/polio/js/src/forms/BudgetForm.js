@@ -1,5 +1,5 @@
 import React, { useMemo } from 'react';
-import { Grid, Typography, Box } from '@material-ui/core';
+import { Grid, Typography, Box, Divider } from '@material-ui/core';
 import { Field, useFormikContext } from 'formik';
 import { useSafeIntl } from 'bluesquare-components';
 import { useStyles } from '../styles/theme';
@@ -11,6 +11,7 @@ import {
     TextInput,
     PaymentField,
 } from '../components/Inputs';
+import { BUDGET_STATES, WORKFLOW_SUFFIX } from '../styles/constants';
 
 const defaultToZero = value => (value === '' ? 0 : value);
 const getRoundData = round => {
@@ -48,25 +49,89 @@ export const BudgetForm = () => {
         return totalPopulation ? (totalCost / totalPopulation).toFixed(2) : '-';
     }, [rounds]);
 
+    const firstBudgetColumn = BUDGET_STATES.slice(0, 7);
+    const secondBudgetColumn = BUDGET_STATES.slice(7, 14);
+    const thirdBudgetColumn = BUDGET_STATES.slice(14, BUDGET_STATES.length);
     return (
         <>
             <Grid container spacing={2}>
                 <Grid container direction="row" item spacing={2}>
-                    <Grid xs={12} md={6} item>
+                    <Grid xs={12} md={9} item>
+                        <Box mb={2}>
+                            <Typography variant="button">
+                                Budget Approval
+                            </Typography>
+                        </Box>
+                        <Box mb={2}>
+                            <Divider style={{ height: '1px', width: '100%' }} />
+                        </Box>
+                    </Grid>
+                    <Grid xs={12} md={3} item>
+                        <Box mb={2}>
+                            <Typography variant="button">
+                                Funds Release
+                            </Typography>
+                        </Box>
+                        <Box mb={2}>
+                            <Divider style={{ height: '1px', width: '100%' }} />
+                        </Box>
+                    </Grid>
+                </Grid>
+
+                <Grid item md={3}>
+                    <Box mb={2}>
                         <Field
                             name="budget_status"
                             component={RABudgetStatusField}
                         />
-                    </Grid>
-                    <Grid xs={12} md={6} item>
+                    </Box>
+
+                    {firstBudgetColumn.map(node => {
+                        return (
+                            <Field
+                                key={node}
+                                label={formatMessage(MESSAGES[node])}
+                                name={`${node}${WORKFLOW_SUFFIX}`}
+                                component={DateInput}
+                                fullWidth
+                            />
+                        );
+                    })}
+                </Grid>
+                <Grid item md={3}>
+                    <Box mb={2}>
                         <Field
                             name="budget_responsible"
                             component={ResponsibleField}
                         />
-                    </Grid>
-                </Grid>
+                    </Box>
 
-                <Grid xs={12} md={6} item>
+                    {secondBudgetColumn.map(node => {
+                        return (
+                            <Field
+                                key={node}
+                                label={formatMessage(MESSAGES[node])}
+                                name={`${node}${WORKFLOW_SUFFIX}`}
+                                component={DateInput}
+                                fullWidth
+                            />
+                        );
+                    })}
+                </Grid>
+                <Grid item md={3}>
+                    {thirdBudgetColumn.map(node => {
+                        return (
+                            <Field
+                                key={node}
+                                label={formatMessage(MESSAGES[node])}
+                                name={`${node}${WORKFLOW_SUFFIX}`}
+                                component={DateInput}
+                                fullWidth
+                            />
+                        );
+                    })}
+                </Grid>
+                <Grid xs={12} md={3} item>
                     <Box mb={2}>
                         <Field
                             name="payment_mode"
@@ -98,32 +163,6 @@ export const BudgetForm = () => {
                         component={DateInput}
                         fullWidth
                     />
-                </Grid>
-
-                <Grid item md={6}>
-                    <Field
-                        label={formatMessage(
-                            MESSAGES.budget_rrt_oprtt_approval_at,
-                        )}
-                        name="budget_rrt_oprtt_approval_at"
-                        component={DateInput}
-                        fullWidth
-                    />
-
-                    <Field
-                        label={formatMessage(MESSAGES.eomg)}
-                        name="eomg"
-                        component={DateInput}
-                        fullWidth
-                    />
-
-                    <Field
-                        label={formatMessage(MESSAGES.budget_submitted_at)}
-                        name="budget_submitted_at"
-                        component={DateInput}
-                        fullWidth
-                    />
-
                     <Field
                         label={formatMessage(MESSAGES.district_count)}
                         name="district_count"
@@ -138,7 +177,7 @@ export const BudgetForm = () => {
                         className={classes.input}
                     />
 
-                    {rounds.map((round, i) => {
+                    {/* {rounds.map((round, i) => {
                         const roundData = getRoundData(round);
                         return (
                             <Box key={round.number}>
@@ -168,7 +207,7 @@ export const BudgetForm = () => {
                     <Typography>
                         {formatMessage(MESSAGES.costPerChildTotal)}: $
                         {totalCostPerChild}
-                    </Typography>
+                    </Typography> */}
                 </Grid>
             </Grid>
         </>

@@ -12,24 +12,32 @@ type Props = {
     openOnMount?: boolean;
     children: ReactChildren;
     label: string;
+    preventCollapse?: boolean;
 };
 
 export const ExpandableItem: FunctionComponent<Props> = ({
     openOnMount = false,
     children,
     label,
+    preventCollapse = false,
 }) => {
     const [open, setOpen] = useState<boolean>(openOnMount);
     return (
         <>
-            <ListItem button onClick={() => setOpen(value => !value)}>
+            <ListItem
+                button
+                onClick={() => {
+                    setOpen(value => !value);
+                }}
+                disableRipple={preventCollapse}
+            >
                 <ListItemText>
                     <Typography>{label}</Typography>
                 </ListItemText>
-                {open && <ExpandLess />}
-                {!open && <ExpandMore />}
+                {(open || preventCollapse) && <ExpandLess />}
+                {!open && !preventCollapse && <ExpandMore />}
             </ListItem>
-            <Collapse in={open} timeout="auto" unmountOnExit>
+            <Collapse in={open || preventCollapse} timeout="auto" unmountOnExit>
                 {children}
             </Collapse>
         </>

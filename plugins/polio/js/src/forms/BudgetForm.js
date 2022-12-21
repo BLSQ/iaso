@@ -20,6 +20,7 @@ import {
     WORKFLOW_SUFFIX,
 } from '../constants/budget.ts';
 import { ExpandableItem } from '../../../../../hat/assets/js/apps/Iaso/domains/app/components/ExpandableItem.tsx';
+import { hasFormikFieldError } from '../../../../../hat/assets/js/apps/Iaso/utils/forms';
 
 const defaultToZero = value => (value === '' ? 0 : value);
 const getRoundData = round => {
@@ -37,9 +38,18 @@ const getRoundData = round => {
     };
 };
 
+const findErrorInFieldList = (keys, errors, touched) => {
+    return Boolean(
+        keys.find(key =>
+            hasFormikFieldError(`${key}${WORKFLOW_SUFFIX}`, errors, touched),
+        ),
+    );
+};
+
 export const BudgetForm = () => {
     const classes = useStyles();
     const { formatMessage } = useSafeIntl();
+    const { touched, errors } = useFormikContext();
 
     const { values } = useFormikContext();
     const { rounds = [] } = values;
@@ -56,6 +66,22 @@ export const BudgetForm = () => {
         });
         return totalPopulation ? (totalCost / totalPopulation).toFixed(2) : '-';
     }, [rounds]);
+    const hasRequestFieldsError = findErrorInFieldList(
+        BUDGET_REQUEST,
+        errors,
+        touched,
+    );
+    const hasRRTReviewError = findErrorInFieldList(RRT_REVIEW, errors, touched);
+    const hasORPGReviewError = findErrorInFieldList(
+        ORPG_REVIEW,
+        errors,
+        touched,
+    );
+    const hasApprovalFieldsError = findErrorInFieldList(
+        REVIEW_FOR_APPROVAL,
+        errors,
+        touched,
+    );
 
     return (
         <>
@@ -105,30 +131,38 @@ export const BudgetForm = () => {
                     </Box>
                     <ExpandableItem
                         label={formatMessage(MESSAGES.budgetRequest)}
+                        preventCollapse={hasRequestFieldsError}
                     >
-                        {BUDGET_REQUEST.map(node => {
+                        {BUDGET_REQUEST.map((node, index) => {
                             return (
-                                <Field
-                                    key={node}
-                                    label={formatMessage(MESSAGES[node])}
-                                    name={`${node}${WORKFLOW_SUFFIX}`}
-                                    component={DateInput}
-                                    fullWidth
-                                />
+                                <Box mt={index === 0 ? 2 : 0}>
+                                    <Field
+                                        key={node}
+                                        label={formatMessage(MESSAGES[node])}
+                                        name={`${node}${WORKFLOW_SUFFIX}`}
+                                        component={DateInput}
+                                        fullWidth
+                                    />
+                                </Box>
                             );
                         })}
                     </ExpandableItem>
                     <Divider style={{ height: '1px', width: '100%' }} />
-                    <ExpandableItem label={formatMessage(MESSAGES.RRTReview)}>
-                        {RRT_REVIEW.map(node => {
+                    <ExpandableItem
+                        label={formatMessage(MESSAGES.RRTReview)}
+                        preventCollapse={hasRRTReviewError}
+                    >
+                        {RRT_REVIEW.map((node, index) => {
                             return (
-                                <Field
-                                    key={node}
-                                    label={formatMessage(MESSAGES[node])}
-                                    name={`${node}${WORKFLOW_SUFFIX}`}
-                                    component={DateInput}
-                                    fullWidth
-                                />
+                                <Box mt={index === 0 ? 2 : 0}>
+                                    <Field
+                                        key={node}
+                                        label={formatMessage(MESSAGES[node])}
+                                        name={`${node}${WORKFLOW_SUFFIX}`}
+                                        component={DateInput}
+                                        fullWidth
+                                    />
+                                </Box>
                             );
                         })}
                     </ExpandableItem>
@@ -146,32 +180,42 @@ export const BudgetForm = () => {
                     <Box mt={2}>
                         <Divider style={{ height: '1px', width: '100%' }} />
                     </Box>
-                    <ExpandableItem label={formatMessage(MESSAGES.ORPGReview)}>
-                        {ORPG_REVIEW.map(node => {
+                    <ExpandableItem
+                        label={formatMessage(MESSAGES.ORPGReview)}
+                        preventCollapse={hasORPGReviewError}
+                    >
+                        {ORPG_REVIEW.map((node, index) => {
                             return (
-                                <Field
-                                    key={node}
-                                    label={formatMessage(MESSAGES[node])}
-                                    name={`${node}${WORKFLOW_SUFFIX}`}
-                                    component={DateInput}
-                                    fullWidth
-                                />
+                                <Box mt={index === 0 ? 2 : 0}>
+                                    <Field
+                                        key={node}
+                                        label={formatMessage(MESSAGES[node])}
+                                        name={`${node}${WORKFLOW_SUFFIX}`}
+                                        component={DateInput}
+                                        fullWidth
+                                    />
+                                </Box>
                             );
                         })}
                     </ExpandableItem>
                     <Box>
                         <Divider style={{ height: '1px', width: '100%' }} />
                     </Box>
-                    <ExpandableItem label={formatMessage(MESSAGES.approval)}>
-                        {REVIEW_FOR_APPROVAL.map(node => {
+                    <ExpandableItem
+                        label={formatMessage(MESSAGES.approval)}
+                        preventCollapse={hasApprovalFieldsError}
+                    >
+                        {REVIEW_FOR_APPROVAL.map((node, index) => {
                             return (
-                                <Field
-                                    key={node}
-                                    label={formatMessage(MESSAGES[node])}
-                                    name={`${node}${WORKFLOW_SUFFIX}`}
-                                    component={DateInput}
-                                    fullWidth
-                                />
+                                <Box mt={index === 0 ? 2 : 0}>
+                                    <Field
+                                        key={node}
+                                        label={formatMessage(MESSAGES[node])}
+                                        name={`${node}${WORKFLOW_SUFFIX}`}
+                                        component={DateInput}
+                                        fullWidth
+                                    />
+                                </Box>
                             );
                         })}
                     </ExpandableItem>

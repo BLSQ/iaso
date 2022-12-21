@@ -21,6 +21,10 @@ const MESSAGES = defineMessages({
         id: 'iaso.label.workflow',
         defaultMessage: 'Workflow',
     },
+    workflowVersion: {
+        id: 'iaso.label.workflowVersion',
+        defaultMessage: 'Workflow version',
+    },
     workflows: {
         id: 'iaso.label.workflows',
         defaultMessage: 'Workflows',
@@ -145,6 +149,10 @@ const MESSAGES = defineMessages({
     editFollowUp: {
         id: 'iaso.workflows.editFollowUp',
         defaultMessage: 'Edit follow up',
+    },
+    publishVersion: {
+        id: 'iaso.workflows.publishVersion',
+        defaultMessage: 'Publish version',
     },
 });
 

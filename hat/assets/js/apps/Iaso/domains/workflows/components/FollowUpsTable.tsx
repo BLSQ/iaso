@@ -18,17 +18,17 @@ import { useGetFollowUpsColumns } from '../config';
 
 type Props = {
     params: WorkflowParams;
-    workflow: WorkflowVersionDetail;
+    workflowVersion: WorkflowVersionDetail;
     isLoading: boolean;
 };
 
 export const FollowUpsTable: FunctionComponent<Props> = ({
     params,
-    workflow,
+    workflowVersion,
     isLoading,
 }) => {
     const { formatMessage } = useSafeIntl();
-    const followUpsColumns = useGetFollowUpsColumns(workflow);
+    const followUpsColumns = useGetFollowUpsColumns(workflowVersion);
 
     return (
         <>
@@ -38,7 +38,7 @@ export const FollowUpsTable: FunctionComponent<Props> = ({
                 elevation={0}
                 showPagination={false}
                 baseUrl={baseUrls.workflowDetail}
-                data={workflow?.follow_ups ?? []}
+                data={workflowVersion?.follow_ups ?? []}
                 pages={1}
                 defaultSorted={[
                     {
@@ -47,14 +47,14 @@ export const FollowUpsTable: FunctionComponent<Props> = ({
                     },
                 ]}
                 columns={followUpsColumns}
-                count={workflow?.follow_ups.length}
+                count={workflowVersion?.follow_ups.length}
                 params={params}
                 extraProps={{
                     isLoading,
                 }}
             />
             <Box display="flex" justifyContent="flex-end" pr={2} pb={2} mt={-2}>
-                {`${formatThousand(workflow?.follow_ups.length ?? 0)} `}
+                {`${formatThousand(workflowVersion?.follow_ups.length ?? 0)} `}
                 {formatMessage(MESSAGES.results)}
             </Box>
         </>

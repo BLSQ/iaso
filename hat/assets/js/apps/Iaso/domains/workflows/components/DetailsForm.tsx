@@ -13,7 +13,7 @@ import { useUpdateWorkflowVersion } from '../hooks/requests/useUpdateWorkflowVer
 import MESSAGES from '../messages';
 
 type Props = {
-    workflow: WorkflowVersionDetail;
+    workflowVersion: WorkflowVersionDetail;
 };
 
 const useStyles = makeStyles(theme => ({
@@ -29,18 +29,18 @@ const useStyles = makeStyles(theme => ({
         top: 26,
     },
 }));
-export const DetailsForm: FunctionComponent<Props> = ({ workflow }) => {
+export const DetailsForm: FunctionComponent<Props> = ({ workflowVersion }) => {
     const classes = useStyles();
-    const [name, setName] = useState<string>(workflow.name);
+    const [name, setName] = useState<string>(workflowVersion.name);
     const { formatMessage } = useSafeIntl();
     const { mutate: updateWorkflowVersion } = useUpdateWorkflowVersion(
         'workflowVersion',
-        workflow.version_id,
+        workflowVersion.version_id,
     );
     const handleSave = useCallback(() => {
-        updateWorkflowVersion({ name, versionId: workflow.version_id });
-    }, [name, updateWorkflowVersion, workflow.version_id]);
-    const saveDisabled = name === workflow.name || name === '';
+        updateWorkflowVersion({ name, versionId: workflowVersion.version_id });
+    }, [name, updateWorkflowVersion, workflowVersion.version_id]);
+    const saveDisabled = name === workflowVersion.name || name === '';
     return (
         <Box p={2} className={classes.root}>
             <InputComponent

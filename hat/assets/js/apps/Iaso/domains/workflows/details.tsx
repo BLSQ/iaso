@@ -67,7 +67,7 @@ export const Details: FunctionComponent<Props> = ({ router }) => {
     const dispatch = useDispatch();
 
     const {
-        data: workflow,
+        data: workflowVersion,
         isLoading,
     }: {
         data?: WorkflowVersionDetail;
@@ -75,13 +75,13 @@ export const Details: FunctionComponent<Props> = ({ router }) => {
     } = useGetWorkflowVersion(versionId);
 
     useEffect(() => {
-        if (workflow?.follow_ups) {
-            setFollowUps(workflow.follow_ups);
+        if (workflowVersion?.follow_ups) {
+            setFollowUps(workflowVersion.follow_ups);
         }
-    }, [workflow?.follow_ups]);
+    }, [workflowVersion?.follow_ups]);
 
     const changesColumns = useGetChangesColumns();
-    const followUpsColumns = useGetFollowUpsColumns(workflow);
+    const followUpsColumns = useGetFollowUpsColumns(workflowVersion);
     const handleSortChange = useCallback((items: any) => {
         setFollowUps(
             items.map((item, index) => ({ ...item, order: index + 1 })),
@@ -90,7 +90,9 @@ export const Details: FunctionComponent<Props> = ({ router }) => {
     return (
         <>
             <TopBar
-                title={formatMessage(MESSAGES.workflow)}
+                title={`${formatMessage(MESSAGES.workflowVersion)}${
+                    workflowVersion?.name ? `: ${workflowVersion?.name}` : ''
+                }`}
                 displayBackButton
                 goBack={() => goBack()}
             />
@@ -102,9 +104,13 @@ export const Details: FunctionComponent<Props> = ({ router }) => {
                             title={formatMessage(MESSAGES.infos)}
                         >
                             <Box className={classes.infoPaperBox}>
-                                {!workflow && <LoadingSpinner absolute />}
-                                {workflow && (
-                                    <WorkflowBaseInfo workflow={workflow} />
+                                {!workflowVersion && (
+                                    <LoadingSpinner absolute />
+                                )}
+                                {workflowVersion && (
+                                    <WorkflowBaseInfo
+                                        workflowVersion={workflowVersion}
+                                    />
                                 )}
                             </Box>
                         </WidgetPaper>
@@ -116,19 +122,19 @@ export const Details: FunctionComponent<Props> = ({ router }) => {
                         title={formatMessage(MESSAGES.followUps)}
                     >
                         <>
-                            {workflow && (
+                            {workflowVersion && (
                                 <>
-                                    {workflow.status === 'DRAFT' && (
+                                    {workflowVersion.status === 'DRAFT' && (
                                         <SortableTable
                                             items={followUps}
                                             onChange={handleSortChange}
                                             columns={followUpsColumns}
                                         />
                                     )}
-                                    {workflow.status !== 'DRAFT' && (
+                                    {workflowVersion.status !== 'DRAFT' && (
                                         <FollowUpsTable
                                             params={params}
-                                            workflow={workflow}
+                                            workflowVersion={workflowVersion}
                                             isLoading={isLoading}
                                         />
                                     )}
@@ -148,11 +154,11 @@ export const Details: FunctionComponent<Props> = ({ router }) => {
                             elevation={0}
                             showPagination={false}
                             baseUrl={baseUrls.workflowDetail}
-                            data={workflow?.changes ?? []}
+                            data={workflowVersion?.changes ?? []}
                             pages={1}
                             defaultSorted={[{ id: 'updated_at', desc: false }]}
                             columns={changesColumns}
-                            count={workflow?.changes.length}
+                            count={workflowVersion?.changes.length}
                             params={params}
                             onTableParamsChange={p =>
                                 dispatch(
@@ -174,7 +180,7 @@ export const Details: FunctionComponent<Props> = ({ router }) => {
                             mt={-2}
                         >
                             {`${formatThousand(
-                                workflow?.changes.length ?? 0,
+                                workflowVersion?.changes.length ?? 0,
                             )} `}
                             {formatMessage(MESSAGES.results)}
                         </Box>

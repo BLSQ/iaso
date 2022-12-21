@@ -7,13 +7,19 @@ import {
     ConfirmCancelModal,
     // @ts-ignore
     makeFullModal,
+    // @ts-ignore
+    QueryBuilder,
+    // @ts-ignore
+    QueryBuilderFields,
 } from 'bluesquare-components';
 
+import { Grid } from '@material-ui/core';
 import InputComponent from '../../../components/forms/InputComponent';
 import { EditIconButton } from './ModalButtons';
 import { commaSeparatedIdsToArray } from '../../../utils/forms';
 
 import { useGetForms } from '../hooks/requests/useGetForms';
+import { parseJson, JSONValue } from '../../instances/utils/jsonLogicParse';
 
 import MESSAGES from '../messages';
 
@@ -23,14 +29,25 @@ type Props = {
     isOpen: boolean;
     closeDialog: () => void;
     followUp: FollowUps;
+    fields?: QueryBuilderFields;
+};
+type JsonLogicResult = {
+    logic?: JSONValue;
+    data?: Record<any, any>;
+    errors?: Array<string>;
 };
 
 const FollowUpsModal: FunctionComponent<Props> = ({
     closeDialog,
     isOpen,
     followUp,
+    fields,
 }) => {
     const { formatMessage } = useSafeIntl();
+
+    const [logic, setLogic] = useState<JSONValue | undefined>(
+        followUp.condition,
+    );
     const [formIds, setForms] = useState<number[]>(
         followUp.forms.map(form => form.id),
     );
@@ -47,6 +64,15 @@ const FollowUpsModal: FunctionComponent<Props> = ({
             })) || [],
         [forms],
     );
+    const handleChangeLogic = (result: JsonLogicResult) => {
+        let parsedValue;
+        if (result?.logic)
+            parsedValue = parseJson({
+                value: result.logic,
+                fields,
+            });
+        setLogic(parsedValue);
+    };
     const allowConfirm = formIds.length > 0;
     return (
         <ConfirmCancelModal
@@ -56,7 +82,7 @@ const FollowUpsModal: FunctionComponent<Props> = ({
             onCancel={() => {
                 closeDialog();
             }}
-            maxWidth="xs"
+            maxWidth="md"
             cancelMessage={MESSAGES.cancel}
             confirmMessage={MESSAGES.confirm}
             open={isOpen}
@@ -65,19 +91,29 @@ const FollowUpsModal: FunctionComponent<Props> = ({
             id="add-workflow-version"
             onClose={() => null}
         >
-            <InputComponent
-                type="select"
-                keyValue="forms"
-                onChange={(_, value) =>
-                    setForms(commaSeparatedIdsToArray(value))
-                }
-                value={formIds.join(',')}
-                label={MESSAGES.forms}
-                required
-                multi
-                options={formsList}
-                loading={isLoadingForms}
+            <QueryBuilder
+                logic={logic}
+                fields={fields}
+                onChange={handleChangeLogic}
             />
+            <Grid container spacing={2}>
+                <Grid item xs={12} md={8}>
+                    <InputComponent
+                        type="select"
+                        keyValue="forms"
+                        onChange={(_, value) =>
+                            setForms(commaSeparatedIdsToArray(value))
+                        }
+                        value={formIds.join(',')}
+                        label={MESSAGES.forms}
+                        required
+                        multi
+                        options={formsList}
+                        loading={isLoadingForms}
+                    />
+                </Grid>
+                <Grid item xs={12} md={4} />
+            </Grid>
         </ConfirmCancelModal>
     );
 };

@@ -3,6 +3,8 @@ import React from 'react';
 import {
     // @ts-ignore
     useSafeIntl,
+    // @ts-ignore
+    QueryBuilderFields,
 } from 'bluesquare-components';
 import { Box } from '@material-ui/core';
 
@@ -67,6 +69,7 @@ export const useGetFollowUpsColumns = (
     // eslint-disable-next-line no-unused-vars
     getHumanReadableJsonLogic: (logic: Record<string, string>) => string,
     workflow?: WorkflowVersionDetail,
+    fields?: QueryBuilderFields,
 ): Array<Column> => {
     const { formatMessage }: { formatMessage: IntlFormatMessage } =
         useSafeIntl();
@@ -123,7 +126,9 @@ export const useGetFollowUpsColumns = (
                     fu => fu.id === settings.value,
                 );
                 if (followUp && workflow?.status === 'DRAFT') {
-                    return <FollowUpsModal followUp={followUp} />;
+                    return (
+                        <FollowUpsModal followUp={followUp} fields={fields} />
+                    );
                 }
                 return <></>;
             },

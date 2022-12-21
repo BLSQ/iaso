@@ -105,6 +105,7 @@ export const Details: FunctionComponent<Props> = ({ router }) => {
     const followUpsColumns = useGetFollowUpsColumns(
         getHumanReadableJsonLogic,
         workflowVersion,
+        fields,
     );
     const handleSortChange = useCallback((items: any) => {
         setFollowUps(

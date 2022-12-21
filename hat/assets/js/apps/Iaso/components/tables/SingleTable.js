@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import PropTypes from 'prop-types';
 import { withRouter } from 'react-router';
 import { makeStyles } from '@material-ui/core/styles';
@@ -23,6 +23,13 @@ import DownloadButtonsComponent from '../DownloadButtonsComponent';
 import { redirectToReplace } from '../../routing/actions';
 import { convertObjectToString } from '../../utils/dataManipulation.ts';
 import { useAbortController } from '../../libs/apiHooks.ts';
+
+export const useSingleTableParams = params => {
+    return useMemo(() => {
+        const { accountId, ...paramsToUse } = params;
+        return paramsToUse;
+    }, [params]);
+};
 
 const useStyles = makeStyles(theme => ({
     ...commonStyles(theme),

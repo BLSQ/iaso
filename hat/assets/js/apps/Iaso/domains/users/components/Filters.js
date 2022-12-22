@@ -26,11 +26,19 @@ const useStyles = makeStyles(theme => ({
     ...commonStyles(theme),
 }));
 
+const stringToBoolean = str => {
+    if (str === 'true') return true;
+    if (str === 'false') return false;
+    return undefined;
+};
+
 const Filters = ({ baseUrl, params }) => {
     const [filtersUpdated, setFiltersUpdated] = useState(false);
     const classes = useStyles();
-    const [ouParent, setOuParent] = useState(false);
-    const [ouChildren, setOuChildren] = useState(false);
+    const [ouParent, setOuParent] = useState(stringToBoolean(params.ouParent));
+    const [ouChildren, setOuChildren] = useState(
+        stringToBoolean(params.ouChildren),
+    );
     const { formatMessage } = useSafeIntl();
     const dispatch = useDispatch();
     const [filters, setFilters] = useState({
@@ -147,13 +155,13 @@ const Filters = ({ baseUrl, params }) => {
                         type="checkbox"
                         checked={ouParent}
                         onChange={(key, value) => {
-                            handleChange('ouParent', !ouParent);
+                            handleChange('ouParent', value);
                             setOuParent(value);
                         }}
                         disabled={ouChildren || !initialOrgUnit}
                         value={ouParent}
                         label={MESSAGES.ouParentCheckbox}
-                        onEnterPressed={handleSearchPerms}
+                        // onEnterPressed={handleSearchPerms}
                     />
                 </Grid>
                 <Grid item xs={12} md={3}>
@@ -168,7 +176,7 @@ const Filters = ({ baseUrl, params }) => {
                         disabled={ouParent || !initialOrgUnit}
                         value={ouChildren}
                         label={MESSAGES.ouChildrenCheckbox}
-                        onEnterPressed={handleSearchPerms}
+                        // onEnterPressed={handleSearchPerms}
                     />
                 </Grid>
                 <Grid container item xs={12} justifyContent="flex-end">

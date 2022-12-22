@@ -85,7 +85,12 @@ export const Details: FunctionComponent<Props> = ({ router }) => {
 
     useEffect(() => {
         if (workflowVersion?.follow_ups) {
-            setFollowUps(workflowVersion.follow_ups);
+            setFollowUps(
+                workflowVersion.follow_ups.map(followUp => ({
+                    ...followUp,
+                    accessor: followUp.id,
+                })),
+            );
         }
     }, [workflowVersion?.follow_ups]);
     const { possibleFields } = useGetPossibleFields(

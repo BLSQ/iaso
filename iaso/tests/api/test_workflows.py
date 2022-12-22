@@ -5,6 +5,7 @@ from django.contrib.auth.models import AnonymousUser
 
 from iaso import models as m
 from iaso.models import Workflow, WorkflowVersion
+from iaso.models.workflow import WorkflowVersionsStatus
 from iaso.test import APITestCase
 
 from pprint import pprint
@@ -87,6 +88,7 @@ class WorkflowsAPITestCase(APITestCase):
             workflow=cls.workflow_et_adults_blue,
             name="workflow_version_et_adults_blue V1",
             reference_form=cls.form_adults_blue,
+            status=WorkflowVersionsStatus.PUBLISHED,
         )
 
     def test_user_without_auth(self):

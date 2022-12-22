@@ -44,6 +44,7 @@ export const VersionsActionCell: FunctionComponent<Props> = ({
     const { mutate: updateWorkflowVersion } = useUpdateWorkflowVersion(
         'workflowVersions',
         versionId,
+        false,
     );
     const icon = status === 'DRAFT' ? 'edit' : 'remove-red-eye';
     const tooltipMessage = status === 'DRAFT' ? MESSAGES.edit : MESSAGES.see;

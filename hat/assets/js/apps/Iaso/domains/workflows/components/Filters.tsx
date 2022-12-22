@@ -21,7 +21,7 @@ const baseUrl = baseUrls.workflows;
 export const Filters: FunctionComponent<Props> = ({ params }) => {
     const status = useGetStatus();
     const { filters, handleSearch, handleChange, filtersUpdated } =
-        useFilterState({ baseUrl, params });
+        useFilterState({ baseUrl, params, saveSearchInHistory: false });
 
     const theme = useTheme();
     const isLargeLayout = useMediaQuery(theme.breakpoints.up('md'));
@@ -53,6 +53,7 @@ export const Filters: FunctionComponent<Props> = ({ params }) => {
                     <Box
                         display="flex"
                         justifyContent="flex-end"
+                        alignItems="start"
                         mt={isLargeLayout ? 2 : 0}
                     >
                         <FilterButton

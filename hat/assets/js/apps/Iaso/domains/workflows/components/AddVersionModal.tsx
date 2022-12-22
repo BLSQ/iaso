@@ -7,10 +7,11 @@ import {
     ConfirmCancelModal,
     // @ts-ignore
     makeFullModal,
+    // @ts-ignore
+    AddButton,
 } from 'bluesquare-components';
 import { useCreateWorkflowVersion } from '../hooks/requests/useCreateWorkflowVersion';
 
-import { ModalButton } from './AddButton';
 import InputComponent from '../../../components/forms/InputComponent';
 
 import MESSAGES from '../messages';
@@ -66,6 +67,6 @@ const AddVersionModal: FunctionComponent<Props> = ({
         </ConfirmCancelModal>
     );
 };
-const modalWithButton = makeFullModal(AddVersionModal, ModalButton);
+const modalWithButton = makeFullModal(AddVersionModal, AddButton);
 
 export { modalWithButton as AddVersionModal };

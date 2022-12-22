@@ -271,7 +271,6 @@ const OrgUnitsTypesDialog = ({
                 errors={formState.depth.errors}
                 type="number"
                 label={MESSAGES.depth}
-                required
             />
 
             <InputComponent

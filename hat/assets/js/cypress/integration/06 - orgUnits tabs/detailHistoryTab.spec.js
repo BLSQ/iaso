@@ -78,6 +78,13 @@ const goToPage = () => {
     });
     cy.intercept(
         'GET',
+        `/api/orgunits/?linkedTo=${orgUnit.id}&linkValidated=all&linkSource=69&validation_status=all&withShapes=true`,
+        {
+            body: { orgUnits: [] },
+        },
+    ).as('linkedOrgUnits');
+    cy.intercept(
+        'GET',
         `/api/comments/?object_pk=${orgUnit.id}&content_type=iaso-orgunit&limit=4`,
         {
             fixture: `comments/list.json`,

@@ -1027,7 +1027,7 @@
   pk: 1
   fields:
     slug: base_email
-    subject_template: '{{author_name}} updated the the budget  for campaign {{campaign.obr_name}}'
+    subject_template: 'Budget for campaign {{campaign.obr_name}} updated to {{node.label}}'
     html_template: "{% extends \"base_budget_email.html\" %}\r\n{% block text %}\r\n{{
       block.super }} \r\n{% endblock %}"
     text_template: "{% extends \"base_budget_email.txt\" %}\r\n{% block text %}\r\n{{

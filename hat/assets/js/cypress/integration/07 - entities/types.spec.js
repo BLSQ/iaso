@@ -73,7 +73,7 @@ describe('Entities types', () => {
             cy.wait('@getEntitiesTypes').then(() => {
                 cy.url().should(
                     'eq',
-                    `${baseUrl}/order/name/pageSize/20/page/1`,
+                    `${baseUrl}/accountId/1/order/name/pageSize/20/page/1`,
                 );
             });
         });
@@ -122,11 +122,11 @@ describe('Entities types', () => {
             });
         });
         it('action should deep link search', () => {
-            cy.wait('@getEntitiesTypes').then(() => {
+            cy.wait('@getEntitiesTypes', { timeout: 10000 }).then(() => {
                 cy.get('#search-search').type(search);
 
                 cy.get('[data-test="search-button"]').click();
-                cy.url().should('contain', `${baseUrl}/search/${search}`);
+                cy.url().should('contain', `/search/${search}`);
             });
         });
     });
@@ -155,9 +155,12 @@ describe('Entities types', () => {
                     .eq(rowIndex)
                     .as('row');
                 cy.get('@row').find('td').last().as('actionCol');
-                cy.get('@actionCol').find('button').should('have.length', 3);
+                cy.get('@actionCol').find('button').should('have.length', 4);
                 cy.get('@actionCol')
                     .find(`#form-link-${listFixture.types[rowIndex].id}`)
+                    .should('be.visible');
+                cy.get('@actionCol')
+                    .find(`#workflow-link-${listFixture.types[rowIndex].id}`)
                     .should('be.visible');
                 cy.get('@actionCol')
                     .find(`#edit-button-${listFixture.types[rowIndex].id}`)
@@ -176,10 +179,13 @@ describe('Entities types', () => {
                     .eq(rowIndex)
                     .as('row');
                 cy.get('@row').find('td').last().as('actionCol');
-                cy.get('@actionCol').find('button').should('have.length', 1);
+                cy.get('@actionCol').find('button').should('have.length', 2);
                 cy.get('@actionCol')
                     .find(`#form-link-${listFixture.types[rowIndex].id}`)
                     .should('not.exist');
+                cy.get('@actionCol')
+                    .find(`#workflow-link-${listFixture.types[rowIndex].id}`)
+                    .should('be.visible');
                 cy.get('@actionCol')
                     .find(`#edit-button-${listFixture.types[rowIndex].id}`)
                     .should('be.visible');
@@ -197,9 +203,12 @@ describe('Entities types', () => {
                     .eq(rowIndex)
                     .as('row');
                 cy.get('@row').find('td').last().as('actionCol');
-                cy.get('@actionCol').find('button').should('have.length', 2);
+                cy.get('@actionCol').find('button').should('have.length', 3);
                 cy.get('@actionCol')
                     .find(`#form-link-${listFixture.types[rowIndex].id}`)
+                    .should('be.visible');
+                cy.get('@actionCol')
+                    .find(`#workflow-link-${listFixture.types[rowIndex].id}`)
                     .should('be.visible');
                 cy.get('@actionCol')
                     .find(`#edit-button-${listFixture.types[rowIndex].id}`)
@@ -314,7 +323,7 @@ describe('Entities types', () => {
             table = cy.get('table');
             row = table.find('tbody').find('tr').eq(entityTypeIndex);
             const actionCol = row.find('td').last();
-            const deleteButton = actionCol.find('button').last();
+            const deleteButton = actionCol.find('button').eq(2);
             deleteButton.click();
             cy.get('#delete-dialog-entityType-7').as('deleteDialog');
         });

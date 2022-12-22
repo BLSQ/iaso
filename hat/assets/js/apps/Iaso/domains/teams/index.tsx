@@ -17,6 +17,7 @@ import { redirectTo } from '../../routing/actions';
 import { baseUrls } from '../../constants/urls';
 import MESSAGES from './messages';
 import { teamColumns } from './config';
+import { useSingleTableParams } from '../../components/tables/SingleTable';
 
 const useStyles = makeStyles(theme => ({
     ...commonStyles(theme),
@@ -29,9 +30,10 @@ type Props = {
 const baseUrl = baseUrls.teams;
 export const Teams: FunctionComponent<Props> = ({ params }) => {
     const dispatch = useDispatch();
+    const apiParams = useSingleTableParams(params);
     const classes: Record<string, string> = useStyles();
     const { formatMessage } = useSafeIntl();
-    const { data, isFetching } = useGetTeams(params);
+    const { data, isFetching } = useGetTeams(apiParams);
     const { mutate: deleteTeam } = useDeleteTeam();
     return (
         <>
@@ -40,7 +42,7 @@ export const Teams: FunctionComponent<Props> = ({ params }) => {
                 displayBackButton={false}
             />
             <Box className={classes.containerFullHeightNoTabPadded}>
-                <TeamFilters params={params} />
+                <TeamFilters params={apiParams} />
                 <Box display="flex" justifyContent="flex-end">
                     <CreateEditTeam dialogType="create" />
                 </Box>
@@ -51,7 +53,7 @@ export const Teams: FunctionComponent<Props> = ({ params }) => {
                     defaultSorted={[{ id: 'name', desc: false }]}
                     columns={teamColumns(formatMessage, deleteTeam)}
                     count={data?.count ?? 0}
-                    params={params}
+                    params={apiParams}
                     onTableParamsChange={p => dispatch(redirectTo(baseUrl, p))}
                     extraProps={{ loading: isFetching }}
                 />

@@ -377,7 +377,11 @@ const OrgUnitDetail = ({ params, router }) => {
                             router.goBack();
                         }, 300);
                     } else {
-                        dispatch(redirectTo(baseUrls.orgUnits, {}));
+                        dispatch(
+                            redirectTo(baseUrls.orgUnits, {
+                                accountId: params.accountId,
+                            }),
+                        );
                     }
                 }}
             >

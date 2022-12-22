@@ -91,7 +91,7 @@ const MESSAGES = defineMessages({
     },
     mapping: {
         defaultMessage: 'Mapping',
-        id: 'i,aso.workflows.mapping',
+        id: 'iaso.workflows.mapping',
     },
     addWorkflowVersion: {
         defaultMessage: 'Add workflow version',

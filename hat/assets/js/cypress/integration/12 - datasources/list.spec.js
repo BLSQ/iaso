@@ -214,7 +214,7 @@ describe('Data sources', () => {
                 cy.get('@request').its('force').should('eq', false);
                 cy.url().should(
                     'eq',
-                    `${siteBaseUrl}/dashboard/settings/tasks/order/-created_at`,
+                    `${siteBaseUrl}/dashboard/settings/tasks/accountId/1/order/-created_at`,
                 );
             });
         });

@@ -884,6 +884,8 @@
     "iaso.users.isSuperUser": "User is a super admin and has all rights",
     "iaso.users.label.homePage": "Home page",
     "iaso.users.newPassword": "New password",
+    "iaso.users.ouChildrenCheckbox": "Show org unit children",
+    "iaso.users.ouParentCheckbox": "Show org unit parent",
     "iaso.users.password": "Password",
     "iaso.users.permissions": "Permissions",
     "iaso.users.selectedOrgUnits": "Org units selected",

@@ -47,6 +47,7 @@ const Filters = ({ baseUrl, params }) => {
         location: params.location,
         orgUnitTypes: params.orgUnitTypes,
         ouParent: params.ouParent,
+        ouChildren: params.ouParent,
     });
     const [initialOrgUnitId, setInitialOrgUnitId] = useState(params?.location);
     const { data: dropdown, isFetching } = useGetPermissionsDropDown();
@@ -149,7 +150,7 @@ const Filters = ({ baseUrl, params }) => {
                         clearable
                     />
                 </Grid>
-                <Grid item xs={12} md={2}>
+                <Grid item xs={12} md={3}>
                     <InputComponent
                         keyValue="ouParent"
                         type="checkbox"
@@ -158,10 +159,9 @@ const Filters = ({ baseUrl, params }) => {
                             handleChange('ouParent', value);
                             setOuParent(value);
                         }}
-                        disabled={ouChildren || !initialOrgUnit}
+                        disabled={!initialOrgUnit}
                         value={ouParent}
                         label={MESSAGES.ouParentCheckbox}
-                        // onEnterPressed={handleSearchPerms}
                     />
                 </Grid>
                 <Grid item xs={12} md={3}>
@@ -173,10 +173,9 @@ const Filters = ({ baseUrl, params }) => {
                             handleChange('ouChildren', !ouChildren);
                             setOuChildren(value);
                         }}
-                        disabled={ouParent || !initialOrgUnit}
+                        disabled={!initialOrgUnit}
                         value={ouChildren}
                         label={MESSAGES.ouChildrenCheckbox}
-                        // onEnterPressed={handleSearchPerms}
                     />
                 </Grid>
                 <Grid container item xs={12} justifyContent="flex-end">

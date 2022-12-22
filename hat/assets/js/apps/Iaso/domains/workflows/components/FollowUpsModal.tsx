@@ -19,6 +19,7 @@ import { EditIconButton } from './ModalButtons';
 import { commaSeparatedIdsToArray } from '../../../utils/forms';
 
 import { useGetForms } from '../hooks/requests/useGetForms';
+import { useBulkUpdateWorkflowFollowUp } from '../hooks/requests/useBulkUpdateWorkflowFollowUp';
 import { parseJson, JSONValue } from '../../instances/utils/jsonLogicParse';
 
 import MESSAGES from '../messages';
@@ -51,11 +52,19 @@ const FollowUpsModal: FunctionComponent<Props> = ({
     const [formIds, setForms] = useState<number[]>(
         followUp.forms.map(form => form.id),
     );
-    const handleConfirm = () => {
-        return null;
-    };
+    const { mutate: saveFollowUp } = useBulkUpdateWorkflowFollowUp();
     const { data: forms, isLoading: isLoadingForms } = useGetForms();
 
+    const handleConfirm = () => {
+        saveFollowUp([
+            {
+                id: followUp.id,
+                order: followUp.order,
+                condition: logic,
+                form_ids: formIds,
+            },
+        ]);
+    };
     const formsList = useMemo(
         () =>
             forms?.map(form => ({

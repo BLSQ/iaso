@@ -21,16 +21,11 @@ import { useGetPermissionsDropDown } from '../hooks/useGetPermissionsDropdown.ts
 import { useGetOrgUnitTypes } from '../../orgUnits/hooks/requests/useGetOrgUnitTypes.ts';
 import { OrgUnitTreeviewModal } from '../../orgUnits/components/TreeView/OrgUnitTreeviewModal';
 import { useGetOrgUnit } from '../../orgUnits/components/TreeView/requests';
+import { stringToBoolean } from '../../../utils/dataManipulation.ts';
 
 const useStyles = makeStyles(theme => ({
     ...commonStyles(theme),
 }));
-
-const stringToBoolean = str => {
-    if (str === 'true') return true;
-    if (str === 'false') return false;
-    return undefined;
-};
 
 const Filters = ({ baseUrl, params }) => {
     const [filtersUpdated, setFiltersUpdated] = useState(false);

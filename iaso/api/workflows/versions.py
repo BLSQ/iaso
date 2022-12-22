@@ -69,5 +69,9 @@ class WorkflowVersionViewSet(ModelViewSet):
         return Response(serialized_data)
 
     def get_queryset(self):
+        search = self.request.query_params.get("search", None)
         """Always filter the base queryset by account"""
+        queryset = WorkflowVersion.objects.filter_for_user(self.request.user).order_by("pk")
+        if search:
+            queryset = queryset.filter(Q(name__icontains=search) | Q(id__icontains=search))
         return WorkflowVersion.objects.filter_for_user(self.request.user).order_by("pk")

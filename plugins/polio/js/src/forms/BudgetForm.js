@@ -135,9 +135,8 @@ export const BudgetForm = () => {
                     >
                         {BUDGET_REQUEST.map((node, index) => {
                             return (
-                                <Box mt={index === 0 ? 2 : 0}>
+                                <Box mt={index === 0 ? 2 : 0} key={node}>
                                     <Field
-                                        key={node}
                                         label={formatMessage(MESSAGES[node])}
                                         name={`${node}${WORKFLOW_SUFFIX}`}
                                         component={DateInput}
@@ -154,9 +153,8 @@ export const BudgetForm = () => {
                     >
                         {RRT_REVIEW.map((node, index) => {
                             return (
-                                <Box mt={index === 0 ? 2 : 0}>
+                                <Box mt={index === 0 ? 2 : 0} key={node}>
                                     <Field
-                                        key={node}
                                         label={formatMessage(MESSAGES[node])}
                                         name={`${node}${WORKFLOW_SUFFIX}`}
                                         component={DateInput}
@@ -186,9 +184,8 @@ export const BudgetForm = () => {
                     >
                         {ORPG_REVIEW.map((node, index) => {
                             return (
-                                <Box mt={index === 0 ? 2 : 0}>
+                                <Box mt={index === 0 ? 2 : 0} key={node}>
                                     <Field
-                                        key={node}
                                         label={formatMessage(MESSAGES[node])}
                                         name={`${node}${WORKFLOW_SUFFIX}`}
                                         component={DateInput}
@@ -207,9 +204,8 @@ export const BudgetForm = () => {
                     >
                         {REVIEW_FOR_APPROVAL.map((node, index) => {
                             return (
-                                <Box mt={index === 0 ? 2 : 0}>
+                                <Box mt={index === 0 ? 2 : 0} key={node}>
                                     <Field
-                                        key={node}
                                         label={formatMessage(MESSAGES[node])}
                                         name={`${node}${WORKFLOW_SUFFIX}`}
                                         component={DateInput}

@@ -3,14 +3,12 @@ from django.utils.translation import gettext_lazy as _
 
 MODIFICATIONS = _("Modifications")
 
-TEAMS = _("Teams")
 USERS = _("Users")
 FORMS = _("Formulaires")
 MAPPINGS = _("Correspondances avec DHIS2")
 COMPLETENESS = _("Complétude des données")
 ORG_UNITS = _("Unités d'organisations")
 LINKS = _("Correspondances sources")
-USERS = _("Utilisateurs")  # Duplicated
 PAGES = _("Pages")
 PROJECTS = _("Projets")
 SOURCES = _("Sources")
@@ -24,6 +22,7 @@ PLANNING = _("Planning")
 TEAMS = _("Equipes")
 ASSIGNMENTS = _("Attributions")
 POLIO_BUDGET = _("Budget Polio")
+POLIO_BUDGET_ADMIN = _("Budget Polio Admin")
 ENTITIES = _("Entities")
 BENEFICIARIES = _("Beneficiaries")
 STORAGES = _("Storages")
@@ -83,4 +82,5 @@ class CustomPermissionSupport(models.Model):
             ("iaso_storages", STORAGES),
             ("iaso_completeness_stats", COMPLETENESS_STATS),
             ("iaso_workflows", WORKFLOWS),
+            ("iaso_polio_budget_admin", WORKFLOWS),
         )

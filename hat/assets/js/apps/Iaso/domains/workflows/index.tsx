@@ -53,6 +53,9 @@ export const Workflows: FunctionComponent<Props> = ({ params, router }) => {
             <TopBar title={title} displayBackButton goBack={() => goBack()} />
             <Box className={classes.containerFullHeightNoTabPadded}>
                 <Filters params={params} />
+                <Box mt={2} display="flex" justifyContent="flex-end">
+                    <AddVersionModal entityTypeId={entityTypeId} />
+                </Box>
                 <TableWithDeepLink
                     baseUrl={baseUrl}
                     data={data?.workflow_versions ?? []}
@@ -66,9 +69,6 @@ export const Workflows: FunctionComponent<Props> = ({ params, router }) => {
                     }
                     extraProps={{ loading: isFetching }}
                 />
-                <Box mt={2} display="flex" justifyContent="flex-end">
-                    <AddVersionModal entityTypeId={entityTypeId} />
-                </Box>
             </Box>
         </>
     );

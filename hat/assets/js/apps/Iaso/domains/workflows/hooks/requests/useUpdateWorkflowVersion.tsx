@@ -17,8 +17,10 @@ const updateWorkflowVersion = async (
 export const useUpdateWorkflowVersion = (
     invalidateQueryKey: string,
     versionId: string,
+    showSucessSnackBar = true,
 ): UseMutationResult =>
     useSnackMutation({
         mutationFn: (data: QueryData) => updateWorkflowVersion(data, versionId),
         invalidateQueryKey: [invalidateQueryKey],
+        showSucessSnackBar,
     });

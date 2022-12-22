@@ -7,10 +7,11 @@ import {
     ConfirmCancelModal,
     // @ts-ignore
     makeFullModal,
+    // @ts-ignore
+    AddButton,
 } from 'bluesquare-components';
 import { useCreateWorkflowVersion } from '../hooks/requests/useCreateWorkflowVersion';
 
-import { AddButton } from './ModalButtons';
 import InputComponent from '../../../components/forms/InputComponent';
 
 import MESSAGES from '../messages';

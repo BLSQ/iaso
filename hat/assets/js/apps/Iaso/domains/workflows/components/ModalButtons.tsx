@@ -6,30 +6,13 @@ import {
     IconButton,
 } from 'bluesquare-components';
 
-import { Button, Box } from '@material-ui/core';
-import AddIcon from '@material-ui/icons/Add';
+import { Button } from '@material-ui/core';
 import PublishIcon from '@material-ui/icons/Publish';
 
 import MESSAGES from '../messages';
 
 type Props = {
     onClick: () => void;
-};
-export const AddButton: FunctionComponent<Props> = ({ onClick }) => {
-    const { formatMessage } = useSafeIntl();
-    return (
-        <Button
-            color="primary"
-            data-test="add-button"
-            onClick={onClick}
-            variant="contained"
-        >
-            <Box mr={1} top={3} position="relative">
-                <AddIcon />
-            </Box>
-            {formatMessage(MESSAGES.add)}
-        </Button>
-    );
 };
 
 export const EditIconButton: FunctionComponent<Props> = ({ onClick }) => {

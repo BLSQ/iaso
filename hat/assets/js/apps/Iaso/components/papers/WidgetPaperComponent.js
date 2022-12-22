@@ -115,10 +115,10 @@ const WidgetPaper = ({
                             </div>
                         </Grid>
                     )}
+
+                    <Divider />
                 </div>
             )}
-
-            {showHeader && <Divider />}
 
             <Collapse in={open} timeout="auto" unmountOnExit>
                 <div

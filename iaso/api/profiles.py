@@ -63,7 +63,7 @@ class ProfilesViewSet(viewsets.ViewSet):
         perms = request.GET.get("permissions", None)
         location = request.GET.get("location", None)
         org_unit_type = request.GET.get("orgUnitTypes", None)
-        parent_ou = True if request.GET.get("ouParent", None)  == "true" else False
+        parent_ou = True if request.GET.get("ouParent", None) == "true" else False
         children_ou = True if request.GET.get("ouChildren", None) == "true" else False
 
         queryset = self.get_queryset()
@@ -101,19 +101,15 @@ class ProfilesViewSet(viewsets.ViewSet):
                 queryset = self.get_queryset().filter(user__iaso_profile__org_units__in=[ou.pk for ou in children_ou])
 
             if parent_ou and children_ou:
-                queryset_parent = (
-                    self.get_queryset()
-                        .filter(
-                        user__iaso_profile__org_units__pk=ou.parent.pk,
-                    )
+                queryset_parent = self.get_queryset().filter(
+                    user__iaso_profile__org_units__pk=ou.parent.pk,
                 )
                 children_ou = OrgUnit.objects.filter(parent__pk=location)
-                queryset_children = self.get_queryset().filter(user__iaso_profile__org_units__in=[ou.pk for ou in children_ou])
+                queryset_children = self.get_queryset().filter(
+                    user__iaso_profile__org_units__in=[ou.pk for ou in children_ou]
+                )
 
-                queryset = (queryset_parent | queryset_children)
-
-
-
+                queryset = queryset_parent | queryset_children
 
         if org_unit_type:
             queryset = queryset.filter(user__iaso_profile__org_units__org_unit_type__pk=org_unit_type).distinct()

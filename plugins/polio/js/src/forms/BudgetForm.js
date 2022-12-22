@@ -1,8 +1,7 @@
 import React, { useMemo } from 'react';
-import { Grid, Typography, Box, Divider } from '@material-ui/core';
+import { Grid, Typography, Box } from '@material-ui/core';
 import { Field, useFormikContext } from 'formik';
 import { useSafeIntl } from 'bluesquare-components';
-
 import { useStyles } from '../styles/theme';
 import MESSAGES from '../constants/messages';
 import {
@@ -12,15 +11,6 @@ import {
     TextInput,
     PaymentField,
 } from '../components/Inputs';
-import {
-    BUDGET_REQUEST,
-    RRT_REVIEW,
-    ORPG_REVIEW,
-    REVIEW_FOR_APPROVAL,
-    WORKFLOW_SUFFIX,
-} from '../constants/budget.ts';
-import { ExpandableItem } from '../../../../../hat/assets/js/apps/Iaso/domains/app/components/ExpandableItem.tsx';
-import { hasFormikFieldError } from '../../../../../hat/assets/js/apps/Iaso/utils/forms';
 
 const defaultToZero = value => (value === '' ? 0 : value);
 const getRoundData = round => {
@@ -38,18 +28,9 @@ const getRoundData = round => {
     };
 };
 
-const findErrorInFieldList = (keys, errors, touched) => {
-    return Boolean(
-        keys.find(key =>
-            hasFormikFieldError(`${key}${WORKFLOW_SUFFIX}`, errors, touched),
-        ),
-    );
-};
-
 export const BudgetForm = () => {
     const classes = useStyles();
     const { formatMessage } = useSafeIntl();
-    const { touched, errors } = useFormikContext();
 
     const { values } = useFormikContext();
     const { rounds = [] } = values;
@@ -66,160 +47,26 @@ export const BudgetForm = () => {
         });
         return totalPopulation ? (totalCost / totalPopulation).toFixed(2) : '-';
     }, [rounds]);
-    const hasRequestFieldsError = findErrorInFieldList(
-        BUDGET_REQUEST,
-        errors,
-        touched,
-    );
-    const hasRRTReviewError = findErrorInFieldList(RRT_REVIEW, errors, touched);
-    const hasORPGReviewError = findErrorInFieldList(
-        ORPG_REVIEW,
-        errors,
-        touched,
-    );
-    const hasApprovalFieldsError = findErrorInFieldList(
-        REVIEW_FOR_APPROVAL,
-        errors,
-        touched,
-    );
 
     return (
         <>
             <Grid container spacing={2}>
                 <Grid container direction="row" item spacing={2}>
                     <Grid xs={12} md={6} item>
-                        <Box mb={2}>
-                            <Typography variant="button">
-                                {formatMessage(MESSAGES.budgetApproval)}
-                            </Typography>
-                        </Box>
-                        <Box mb={2}>
-                            <Divider style={{ height: '1px', width: '100%' }} />
-                        </Box>
-                    </Grid>
-                    <Grid xs={12} md={3} item>
-                        <Box mb={2}>
-                            <Typography variant="button">
-                                {formatMessage(MESSAGES.fundsRelease)}
-                            </Typography>
-                        </Box>
-                        <Box mb={2}>
-                            <Divider style={{ height: '1px', width: '100%' }} />
-                        </Box>
-                    </Grid>
-                    <Grid xs={12} md={3} item>
-                        <Box mb={2}>
-                            <Typography variant="button">
-                                {formatMessage(MESSAGES.costPerChild)}
-                            </Typography>
-                        </Box>
-                        <Box mb={2}>
-                            <Divider style={{ height: '1px', width: '100%' }} />
-                        </Box>
-                    </Grid>
-                </Grid>
-
-                <Grid item md={3}>
-                    <Box mb={2}>
                         <Field
                             name="budget_status"
                             component={RABudgetStatusField}
                         />
-                    </Box>
-                    <Box mt={2}>
-                        <Divider style={{ height: '1px', width: '100%' }} />
-                    </Box>
-                    <ExpandableItem
-                        label={formatMessage(MESSAGES.budgetRequest)}
-                        preventCollapse={hasRequestFieldsError}
-                    >
-                        {BUDGET_REQUEST.map((node, index) => {
-                            return (
-                                <Box mt={index === 0 ? 2 : 0} key={node}>
-                                    <Field
-                                        label={formatMessage(MESSAGES[node])}
-                                        name={`${node}${WORKFLOW_SUFFIX}`}
-                                        component={DateInput}
-                                        fullWidth
-                                    />
-                                </Box>
-                            );
-                        })}
-                    </ExpandableItem>
-                    <Divider style={{ height: '1px', width: '100%' }} />
-                    <ExpandableItem
-                        label={formatMessage(MESSAGES.RRTReview)}
-                        preventCollapse={hasRRTReviewError}
-                    >
-                        {RRT_REVIEW.map((node, index) => {
-                            return (
-                                <Box mt={index === 0 ? 2 : 0} key={node}>
-                                    <Field
-                                        label={formatMessage(MESSAGES[node])}
-                                        name={`${node}${WORKFLOW_SUFFIX}`}
-                                        component={DateInput}
-                                        fullWidth
-                                    />
-                                </Box>
-                            );
-                        })}
-                    </ExpandableItem>
-                    <Box mb={2}>
-                        <Divider style={{ height: '1px', width: '100%' }} />
-                    </Box>
-                </Grid>
-                <Grid item md={3}>
-                    <Box mb={2}>
+                    </Grid>
+                    <Grid xs={12} md={6} item>
                         <Field
                             name="budget_responsible"
                             component={ResponsibleField}
                         />
-                    </Box>
-                    <Box mt={2}>
-                        <Divider style={{ height: '1px', width: '100%' }} />
-                    </Box>
-                    <ExpandableItem
-                        label={formatMessage(MESSAGES.ORPGReview)}
-                        preventCollapse={hasORPGReviewError}
-                    >
-                        {ORPG_REVIEW.map((node, index) => {
-                            return (
-                                <Box mt={index === 0 ? 2 : 0} key={node}>
-                                    <Field
-                                        label={formatMessage(MESSAGES[node])}
-                                        name={`${node}${WORKFLOW_SUFFIX}`}
-                                        component={DateInput}
-                                        fullWidth
-                                    />
-                                </Box>
-                            );
-                        })}
-                    </ExpandableItem>
-                    <Box>
-                        <Divider style={{ height: '1px', width: '100%' }} />
-                    </Box>
-                    <ExpandableItem
-                        label={formatMessage(MESSAGES.approval)}
-                        preventCollapse={hasApprovalFieldsError}
-                    >
-                        {REVIEW_FOR_APPROVAL.map((node, index) => {
-                            return (
-                                <Box mt={index === 0 ? 2 : 0} key={node}>
-                                    <Field
-                                        label={formatMessage(MESSAGES[node])}
-                                        name={`${node}${WORKFLOW_SUFFIX}`}
-                                        component={DateInput}
-                                        fullWidth
-                                    />
-                                </Box>
-                            );
-                        })}
-                    </ExpandableItem>
-                    <Box mb={2}>
-                        <Divider style={{ height: '1px', width: '100%' }} />
-                    </Box>
+                    </Grid>
                 </Grid>
-                <Grid item md={3}>
+
+                <Grid xs={12} md={6} item>
                     <Box mb={2}>
                         <Field
                             name="payment_mode"
@@ -251,6 +98,32 @@ export const BudgetForm = () => {
                         component={DateInput}
                         fullWidth
                     />
+                </Grid>
+
+                <Grid item md={6}>
+                    <Field
+                        label={formatMessage(
+                            MESSAGES.budget_rrt_oprtt_approval_at,
+                        )}
+                        name="budget_rrt_oprtt_approval_at"
+                        component={DateInput}
+                        fullWidth
+                    />
+
+                    <Field
+                        label={formatMessage(MESSAGES.eomg)}
+                        name="eomg"
+                        component={DateInput}
+                        fullWidth
+                    />
+
+                    <Field
+                        label={formatMessage(MESSAGES.budget_submitted_at)}
+                        name="budget_submitted_at"
+                        component={DateInput}
+                        fullWidth
+                    />
+
                     <Field
                         label={formatMessage(MESSAGES.district_count)}
                         name="district_count"
@@ -264,8 +137,7 @@ export const BudgetForm = () => {
                         component={TextInput}
                         className={classes.input}
                     />
-                </Grid>
-                <Grid xs={12} md={3} item>
+
                     {rounds.map((round, i) => {
                         const roundData = getRoundData(round);
                         return (

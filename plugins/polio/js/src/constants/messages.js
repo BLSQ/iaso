@@ -424,10 +424,6 @@ const MESSAGES = defineMessages({
         id: 'iaso.polio.form.label.costPerChildRound',
         defaultMessage: 'Cost/Child Round',
     },
-    costPerChild: {
-        id: 'iaso.polio.form.label.costPerChild',
-        defaultMessage: 'Cost per child',
-    },
     costPerChildTotal: {
         id: 'iaso.polio.form.label.costPerChildTotal',
         defaultMessage: 'Cost/Child Total',
@@ -1901,110 +1897,6 @@ const MESSAGES = defineMessages({
     latest: {
         id: 'iaso.polio.form.label.latest',
         defaultMessage: 'Latest',
-    },
-    approved_by_unicef: {
-        id: 'iaso.polio.form.label.approved_by_unicef',
-        defaultMessage: 'Approved by UNICEF',
-    },
-    approved_by_who: {
-        id: 'iaso.polio.form.label.approved_by_who',
-        defaultMessage: 'Approved by WHO',
-    },
-    feedback_sent_to_orpg_operations_who: {
-        id: 'iaso.polio.form.label.feedback_sent_to_orpg_operations_who',
-        defaultMessage: 'Feedback requested by WHO',
-    },
-    feedback_sent_to_orpg_operations_unicef: {
-        id: 'iaso.polio.form.label.feedback_sent_to_orpg_operations_unicef',
-        defaultMessage: 'Feedback requested by UNICEF',
-    },
-    submitted_for_approval: {
-        id: 'iaso.polio.form.label.submitted_for_approval',
-        defaultMessage: 'Submitted for approval',
-    },
-    re_submission_to_orpg_operations_2: {
-        id: 'iaso.polio.form.label.re_submission_to_orpg_operations_2',
-        defaultMessage: 'Resubmitted to ORPG Operations',
-    },
-    feedback_sent_to_rrt3: {
-        id: 'iaso.polio.form.label.feedback_sent_to_rrt3',
-        defaultMessage: 'Feedback sent to RRT(ORPG ops)',
-    },
-    submission_to_orpg_operations_2: {
-        id: 'iaso.polio.form.label.submission_to_orpg_operations_2',
-        defaultMessage: 'Submitted to ORPG ops (2)',
-    },
-    re_submitted_to_orpg: {
-        id: 'iaso.polio.form.label.re_submitted_to_orpg',
-        defaultMessage: 'Resubmitted to ORPG wider group',
-    },
-    feedback_sent_to_rrt2: {
-        id: 'iaso.polio.form.label.feedback_sent_to_rrt2',
-        defaultMessage: 'Feedback sent to RRT (ORPG wider)',
-    },
-    submitted_to_orpg: {
-        id: 'iaso.polio.form.label.submitted_to_orpg',
-        defaultMessage: 'Submitted to ORPG wider',
-    },
-    feedback_sent_to_rrt1: {
-        id: 'iaso.polio.form.label.feedback_sent_to_rrt1',
-        defaultMessage: 'Feedback sent to RRT',
-    },
-    submission_to_orpg_operations_1: {
-        id: 'iaso.polio.form.label.submission_to_orpg_operations_1',
-        defaultMessage: 'Submitted to ORPG Ops (1)',
-    },
-    re_submitted_to_rrt: {
-        id: 'iaso.polio.form.label.re_submitted_to_rrt',
-        defaultMessage: 'Resubmitted to RRT',
-    },
-    feedback_sent_to_gpei: {
-        id: 'iaso.polio.form.label.feedback_sent_to_gpei',
-        defaultMessage: 'Feedback sent to GPEI coordinator',
-    },
-    submitted_to_rrt: {
-        id: 'iaso.polio.form.label.submitted_to_rrt',
-        defaultMessage: 'Submitted to RRT',
-    },
-    gpei_consolidation: {
-        id: 'iaso.polio.form.label.gpei_consolidation',
-        defaultMessage: 'Consolidation by GPEI coordinator',
-    },
-    unicef_sent_budget: {
-        id: 'iaso.polio.form.label.unicef_sent_budget',
-        defaultMessage: 'UNICEF CO sent budget',
-    },
-    who_sent_budget: {
-        id: 'iaso.polio.form.label.who_sent_budget',
-        defaultMessage: 'WHO CO sent budget',
-    },
-    budget_requested: {
-        id: 'iaso.polio.form.label.budget_requested',
-        defaultMessage: 'Budget requested',
-    },
-    fundsRelease: {
-        id: 'iaso.polio.form.label.fundsRelease',
-        defaultMessage: 'Funds release',
-    },
-    budgetApproval: {
-        id: 'iaso.polio.form.label.budgetApproval',
-        defaultMessage: 'Budget Approval',
-    },
-    approval: {
-        id: 'iaso.polio.form.label.approval',
-        defaultMessage: 'Approval',
-    },
-    ORPGReview: {
-        id: 'iaso.polio.form.label.ORPGReview',
-        defaultMessage: 'ORPG review',
-    },
-    RRTReview: {
-        id: 'iaso.polio.form.label.RRTReview',
-        defaultMessage: 'RRT review',
-    },
-    budgetRequest: {
-        id: 'iaso.polio.form.label.budgetRequest',
-        defaultMessage: 'Budget request',
     },
 });
 

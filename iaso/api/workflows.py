@@ -12,6 +12,7 @@ from django_filters.rest_framework import DjangoFilterBackend  # type: ignore
 from drf_yasg.utils import swagger_auto_schema, no_body
 
 from django.shortcuts import get_object_or_404
+from django.db.models import Q
 
 
 class FormNestedSerializer(serializers.ModelSerializer):
@@ -236,4 +237,8 @@ class WorkflowVersionViewSet(ModelViewSet):
 
     def get_queryset(self):
         """Always filter the base queryset by account"""
-        return WorkflowVersion.objects.filter_for_user(self.request.user).order_by("pk")
+        search = self.request.query_params.get("search", None)
+        queryset = WorkflowVersion.objects.filter_for_user(self.request.user).order_by("pk")
+        if search:
+            queryset = queryset.filter(Q(name__icontains=search) | Q(id__icontains=search))
+        return queryset

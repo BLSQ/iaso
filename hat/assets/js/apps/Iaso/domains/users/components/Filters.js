@@ -103,6 +103,32 @@ const Filters = ({ baseUrl, params }) => {
                         label={MESSAGES.search}
                         onEnterPressed={handleSearch}
                     />
+                    <Box id="ou-tree-input" mb={isLargeLayout ? 0 : -2}>
+                        <OrgUnitTreeviewModal
+                            toggleOnLabelClick={false}
+                            titleMessage={MESSAGES.location}
+                            onConfirm={orgUnit =>
+                                handleChange(
+                                    'location',
+                                    orgUnit ? [orgUnit.id] : undefined,
+                                )
+                            }
+                            initialSelection={initialOrgUnit}
+                        />
+                    </Box>
+                </Grid>
+                <Grid item xs={12} md={3}>
+                    <InputComponent
+                        keyValue="permissions"
+                        onChange={handleChange}
+                        value={filters.permissions}
+                        type="select"
+                        multi
+                        options={dropdown ?? []}
+                        label={MESSAGES.permissions}
+                        loading={isFetching}
+                        onEnterPressed={handleSearchPerms}
+                    />
                     <InputComponent
                         keyValue="ouParent"
                         type="checkbox"
@@ -118,15 +144,15 @@ const Filters = ({ baseUrl, params }) => {
                 </Grid>
                 <Grid item xs={12} md={3}>
                     <InputComponent
-                        keyValue="permissions"
+                        keyValue="orgUnitTypes"
                         onChange={handleChange}
-                        value={filters.permissions}
+                        value={filters.orgUnitTypes}
                         type="select"
-                        multi
-                        options={dropdown ?? []}
-                        label={MESSAGES.permissions}
-                        loading={isFetching}
+                        options={orgUnitTypeDropdown}
+                        label={MESSAGES.orgUnitTypesDropdown}
+                        loading={isFetchingOuTypes}
                         onEnterPressed={handleSearchPerms}
+                        clearable
                     />
                     <InputComponent
                         keyValue="ouChildren"
@@ -140,32 +166,6 @@ const Filters = ({ baseUrl, params }) => {
                         value={ouChildren}
                         label={MESSAGES.ouChildrenCheckbox}
                     />
-                </Grid>
-                <Grid item xs={12} md={3}>
-                    <InputComponent
-                        keyValue="orgUnitTypes"
-                        onChange={handleChange}
-                        value={filters.orgUnitTypes}
-                        type="select"
-                        options={orgUnitTypeDropdown}
-                        label={MESSAGES.orgUnitTypesDropdown}
-                        loading={isFetchingOuTypes}
-                        onEnterPressed={handleSearchPerms}
-                        clearable
-                    />
-                    <Box id="ou-tree-input" mb={isLargeLayout ? 0 : -2}>
-                        <OrgUnitTreeviewModal
-                            toggleOnLabelClick={false}
-                            titleMessage={MESSAGES.location}
-                            onConfirm={orgUnit =>
-                                handleChange(
-                                    'location',
-                                    orgUnit ? [orgUnit.id] : undefined,
-                                )
-                            }
-                            initialSelection={initialOrgUnit}
-                        />
-                    </Box>
                 </Grid>
                 <Grid container item xs={12} md={3} justify="flex-end">
                     <Box mt={2}>

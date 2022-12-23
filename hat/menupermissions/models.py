@@ -82,5 +82,5 @@ class CustomPermissionSupport(models.Model):
             ("iaso_storages", STORAGES),
             ("iaso_completeness_stats", COMPLETENESS_STATS),
             ("iaso_workflows", WORKFLOWS),
-            ("iaso_polio_budget_admin", WORKFLOWS),
+            ("iaso_polio_budget_admin", POLIO_BUDGET_ADMIN),
         )

@@ -88,19 +88,29 @@ class ProfilesViewSet(viewsets.ViewSet):
                 raise serializers.ValidationError({"Error": f"Error: {ou.name} has no parent org unit."})
 
             if parent_ou and not children_ou:
+                queryset_current = self.get_queryset().filter(
+                    user__iaso_profile__org_units__pk=location)
                 queryset = (
                     self.get_queryset()
-                    .filter(
+                        .filter(
                         user__iaso_profile__org_units__pk=ou.parent.pk,
                     )
-                    .distinct()
-                )
+                ) | queryset_current 
+
+                queryset = queryset.distinct()
 
             if children_ou and not parent_ou:
+                queryset_current = self.get_queryset().filter(
+                    user__iaso_profile__org_units__pk=location)
                 children_ou = OrgUnit.objects.filter(parent__pk=location)
-                queryset = self.get_queryset().filter(user__iaso_profile__org_units__in=[ou.pk for ou in children_ou])
+                queryset = self.get_queryset().filter(user__iaso_profile__org_units__in=[ou.pk for ou in children_ou]) | queryset_current
 
             if parent_ou and children_ou:
+                queryset_current = self.get_queryset().filter(
+                    user__iaso_profile__org_units__pk=location)
+
+                print(queryset_current)
+
                 queryset_parent = self.get_queryset().filter(
                     user__iaso_profile__org_units__pk=ou.parent.pk,
                 )
@@ -109,7 +119,7 @@ class ProfilesViewSet(viewsets.ViewSet):
                     user__iaso_profile__org_units__in=[ou.pk for ou in children_ou]
                 )
 
-                queryset = queryset_parent | queryset_children
+                queryset = queryset_current | queryset_parent | queryset_children
 
         if org_unit_type:
             queryset = queryset.filter(user__iaso_profile__org_units__org_unit_type__pk=org_unit_type).distinct()

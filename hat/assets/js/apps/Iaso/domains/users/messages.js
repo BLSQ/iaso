@@ -223,7 +223,7 @@ const MESSAGES = defineMessages({
     },
     ouParentCheckbox: {
         defaultMessage: 'Show org unit parent',
-        id: 'iaso.users.ouChildrenCheckbox',
+        id: 'iaso.users.ouParentCheckbox',
     },
 });
 

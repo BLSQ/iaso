@@ -7,13 +7,19 @@ import django.db.models.deletion
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('iaso', '0185_merge_20221213_0910'),
+        ("iaso", "0185_merge_20221213_0910"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='form',
-            name='submission_to_be_validated_by',
-            field=models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.PROTECT, related_name='form_to_be_validated_by', to='iaso.orgunittype'),
+            model_name="form",
+            name="submission_to_be_validated_by",
+            field=models.ForeignKey(
+                blank=True,
+                null=True,
+                on_delete=django.db.models.deletion.PROTECT,
+                related_name="form_to_be_validated_by",
+                to="iaso.orgunittype",
+            ),
         ),
     ]

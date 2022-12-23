@@ -39,7 +39,7 @@ const MESSAGES = defineMessages({
     },
     orgUnitTypesDropdown: {
         defaultMessage: 'Org Unit Types',
-        id: 'iaso.users.orgUnitTypesDropdown',
+        id: 'iaso.datasources.label.orgUnitTypes',
     },
     isSuperUser: {
         defaultMessage: 'User is a super admin and has all rights',

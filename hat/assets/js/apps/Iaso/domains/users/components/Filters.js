@@ -167,8 +167,8 @@ const Filters = ({ baseUrl, params }) => {
                         />
                     </Box>
                 </Grid>
-                <Grid container item xs={12} justifyContent="flex-end">
-                    <Box>
+                <Grid container item xs={12} md={3} justify="flex-end">
+                    <Box mt={2}>
                         <Button
                             data-test="search-button"
                             disabled={!filtersUpdated}

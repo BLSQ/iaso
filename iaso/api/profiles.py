@@ -88,26 +88,25 @@ class ProfilesViewSet(viewsets.ViewSet):
                 raise serializers.ValidationError({"Error": f"Error: {ou.name} has no parent org unit."})
 
             if parent_ou and not children_ou:
-                queryset_current = self.get_queryset().filter(
-                    user__iaso_profile__org_units__pk=location)
+                queryset_current = self.get_queryset().filter(user__iaso_profile__org_units__pk=location)
                 queryset = (
-                    self.get_queryset()
-                        .filter(
+                    self.get_queryset().filter(
                         user__iaso_profile__org_units__pk=ou.parent.pk,
                     )
-                ) | queryset_current 
+                ) | queryset_current
 
                 queryset = queryset.distinct()
 
             if children_ou and not parent_ou:
-                queryset_current = self.get_queryset().filter(
-                    user__iaso_profile__org_units__pk=location)
+                queryset_current = self.get_queryset().filter(user__iaso_profile__org_units__pk=location)
                 children_ou = OrgUnit.objects.filter(parent__pk=location)
-                queryset = self.get_queryset().filter(user__iaso_profile__org_units__in=[ou.pk for ou in children_ou]) | queryset_current
+                queryset = (
+                    self.get_queryset().filter(user__iaso_profile__org_units__in=[ou.pk for ou in children_ou])
+                    | queryset_current
+                )
 
             if parent_ou and children_ou:
-                queryset_current = self.get_queryset().filter(
-                    user__iaso_profile__org_units__pk=location)
+                queryset_current = self.get_queryset().filter(user__iaso_profile__org_units__pk=location)
 
                 print(queryset_current)
 

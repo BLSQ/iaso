@@ -24,7 +24,7 @@ from ..utils.models.soft_deletable import (
 
 
 class FormQuerySet(models.QuerySet):
-    def exists_with_same_version_id_within_projects(self, form: "Form", form_id: str):
+    def exists_with_same_version_id_within_projects(self, form: "Form", form_id: str) -> bool:
         """Checks whether the provided form_id is already in a form that is:
 
         - different from the provided form
@@ -99,6 +99,11 @@ class Form(SoftDeletableModel):
     uuid = models.UUIDField(default=uuid4, unique=True)
     label_keys = ArrayField(CITextField(max_length=255, blank=True), size=100, null=True, blank=True)
 
+    # Instance validation mechanism
+    submission_to_be_validated_by = models.ForeignKey(
+        "OrgUnitType", on_delete=models.PROTECT, null=True, blank=True, related_name="form_to_be_validated_by"
+    )
+
     objects = DefaultSoftDeletableManager.from_queryset(FormQuerySet)()
 
     objects_only_deleted = OnlyDeletedSoftDeletableManager.from_queryset(FormQuerySet)()
@@ -108,6 +113,10 @@ class Form(SoftDeletableModel):
     @property
     def latest_version(self):
         return self.form_versions.order_by("-created_at").first()
+
+    @property
+    def takes_part_validation_mechanism(self) -> bool:
+        return self.submission_to_be_validated_by is not None
 
     def __str__(self):
         return "%s %s " % (self.name, self.form_id)

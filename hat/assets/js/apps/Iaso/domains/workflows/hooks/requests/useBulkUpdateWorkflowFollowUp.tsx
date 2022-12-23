@@ -7,8 +7,11 @@ import { FollowUps } from '../../types/workflows';
 const bulkUpdateWorkflowFollowUp = async (data: FollowUps[]): Promise<any> =>
     postRequest('/api/workflowfollowups/bulkupdate/', data);
 
-export const useBulkUpdateWorkflowFollowUp = (): UseMutationResult =>
+export const useBulkUpdateWorkflowFollowUp = (
+    onSuccess?: () => void,
+): UseMutationResult =>
     useSnackMutation({
         mutationFn: (data: FollowUps[]) => bulkUpdateWorkflowFollowUp(data),
         invalidateQueryKey: ['workflowVersion'],
+        options: { onSuccess },
     });

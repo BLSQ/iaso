@@ -162,6 +162,10 @@ const MESSAGES = defineMessages({
         id: 'iaso.workflows.publishVersion',
         defaultMessage: 'Publish version',
     },
+    saveOrder: {
+        id: 'iaso.workflows.saveOrder',
+        defaultMessage: 'Save order',
+    },
 });
 
 export default MESSAGES;

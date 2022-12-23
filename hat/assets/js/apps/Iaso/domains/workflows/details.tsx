@@ -18,7 +18,7 @@ import {
     // @ts-ignore
     useHumanReadableJsonLogic,
 } from 'bluesquare-components';
-import { Box, Grid, makeStyles } from '@material-ui/core';
+import { Box, Grid, makeStyles, Button } from '@material-ui/core';
 import { useDispatch } from 'react-redux';
 import TopBar from '../../components/nav/TopBarComponent';
 import MESSAGES from './messages';
@@ -34,6 +34,7 @@ import {
 } from './hooks/queryBuilder';
 
 import { useGetFormDescriptor } from './hooks/requests/useGetFormDescriptor';
+import { useBulkUpdateWorkflowFollowUp } from './hooks/requests/useBulkUpdateWorkflowFollowUp';
 
 import {
     WorkflowVersionDetail,
@@ -70,6 +71,12 @@ export const Details: FunctionComponent<Props> = ({ router }) => {
     const { params } = router;
     const classes: Record<string, string> = useStyles();
     const [followUps, setFollowUps] = useState<FollowUps[]>([]);
+
+    const { mutate: saveFollowUpOrder } = useBulkUpdateWorkflowFollowUp(() =>
+        setFollowUpOrderChange(false),
+    );
+    const [followUpOrderChange, setFollowUpOrderChange] =
+        useState<boolean>(false);
     const { entityTypeId, versionId } = params;
     const { formatMessage } = useSafeIntl();
     const goBack = useGoBack(router, baseUrls.workflows, { entityTypeId });
@@ -118,7 +125,17 @@ export const Details: FunctionComponent<Props> = ({ router }) => {
         setFollowUps(
             items.map((item, index) => ({ ...item, order: index + 1 })),
         );
+        setFollowUpOrderChange(true);
     }, []);
+
+    const handleSaveFollowUpsOrder = useCallback(() => {
+        saveFollowUpOrder(
+            followUps.map(fu => ({
+                id: fu.id,
+                order: fu.order - 1,
+            })),
+        );
+    }, [followUps, saveFollowUpOrder]);
     return (
         <>
             <TopBar
@@ -176,6 +193,17 @@ export const Details: FunctionComponent<Props> = ({ router }) => {
                         </>
                         {workflowVersion?.status === 'DRAFT' && (
                             <Box m={2} textAlign="right">
+                                <Box display="inline-block" mr={2}>
+                                    <Button
+                                        color="primary"
+                                        disabled={!followUpOrderChange}
+                                        data-test="save-follow-up-order"
+                                        onClick={handleSaveFollowUpsOrder}
+                                        variant="contained"
+                                    >
+                                        {formatMessage(MESSAGES.saveOrder)}
+                                    </Button>
+                                </Box>
                                 <AddFollowUpsModal
                                     fields={fields}
                                     versionId={versionId}

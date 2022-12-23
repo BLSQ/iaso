@@ -82,20 +82,27 @@ class ProfilesViewSet(viewsets.ViewSet):
                 user__iaso_profile__org_units__pk=location,
             ).distinct()
 
+        no_parent_ou = False
+
         if parent_ou and location or children_ou and location:
             ou = get_object_or_404(OrgUnit, pk=location)
             if parent_ou and ou.parent is None:
-                raise serializers.ValidationError({"Error": f"Error: {ou.name} has no parent org unit."})
+                no_parent_ou = True
 
             if parent_ou and not children_ou:
                 queryset_current = self.get_queryset().filter(user__iaso_profile__org_units__pk=location)
-                queryset = (
-                    self.get_queryset().filter(
-                        user__iaso_profile__org_units__pk=ou.parent.pk,
-                    )
-                ) | queryset_current
 
-                queryset = queryset.distinct()
+                if no_parent_ou:
+                    queryset = queryset_current
+
+                else:
+                    queryset = (
+                        self.get_queryset().filter(
+                            user__iaso_profile__org_units__pk=ou.parent.pk,
+                        )
+                    ) | queryset_current
+
+                    queryset = queryset.distinct()
 
             if children_ou and not parent_ou:
                 queryset_current = self.get_queryset().filter(user__iaso_profile__org_units__pk=location)
@@ -106,13 +113,16 @@ class ProfilesViewSet(viewsets.ViewSet):
                 )
 
             if parent_ou and children_ou:
+
+                if no_parent_ou:
+                    queryset_parent = self.get_queryset().filter(user__iaso_profile__org_units__pk=location)
+                else:
+                    queryset_parent = self.get_queryset().filter(
+                        user__iaso_profile__org_units__pk=ou.parent.pk,
+                    )
+
                 queryset_current = self.get_queryset().filter(user__iaso_profile__org_units__pk=location)
 
-                print(queryset_current)
-
-                queryset_parent = self.get_queryset().filter(
-                    user__iaso_profile__org_units__pk=ou.parent.pk,
-                )
                 children_ou = OrgUnit.objects.filter(parent__pk=location)
                 queryset_children = self.get_queryset().filter(
                     user__iaso_profile__org_units__in=[ou.pk for ou in children_ou]

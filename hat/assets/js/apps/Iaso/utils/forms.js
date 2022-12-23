@@ -1,3 +1,5 @@
+import { get } from 'lodash';
+
 /**
  * Convert a comma-separated list of ids to an array of ids
  * This is a workaround to map the comma-separated string used by InputComponent with type=select
@@ -70,4 +72,9 @@ export const isFormValid = (requiredFields, currentForm) => {
                 requiredFields,
             ),
     );
+};
+
+export const hasFormikFieldError = (key, errors, touched) => {
+    if (!errors) return false;
+    return Boolean(get(errors, key) && get(touched, key));
 };

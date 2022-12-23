@@ -94,6 +94,16 @@ export type StepForm = {
     general: Nullable<string[]>;
     attachments: Nullable<string[]>;
 };
+export type OverrideStepForm = {
+    new_state_key: Optional<string>;
+    campaign: string;
+    comment: Optional<string>;
+    files: Optional<File[]>;
+    links: Optional<LinkWithAlias[]>;
+    amount: Optional<number>;
+    general: Nullable<string[]>;
+    attachments: Nullable<string[]>;
+};
 
 export type Workflow = {
     states: {

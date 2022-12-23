@@ -1,8 +1,12 @@
+/* eslint-disable camelcase */
 import { FETCHING_ABORTED } from './constants';
+import { Nullable } from '../types/utils';
 
 export class ApiError extends Error {
     private status: any;
+
     private details: any;
+
     constructor(
         message: string,
         response?: Response,
@@ -66,7 +70,10 @@ export const iasoFetch = async (
     return response;
 };
 
-export const getRequest = async (url, signal) => {
+export const getRequest = async (
+    url: string,
+    signal?: Nullable<AbortSignal>,
+): Promise<unknown> => {
     return iasoFetch(url, { signal }).then(response => {
         return response.json();
     });
@@ -76,10 +83,10 @@ export const basePostRequest = (
     url: string,
     data: Record<string, any> = {},
     fileData: Record<string, Blob | Blob[]> = {},
-    signal?: AbortSignal | null,
-) => {
+    signal?: Nullable<AbortSignal>,
+): Promise<unknown> => {
     // Send as form if files included else in JSON
-    let init: {};
+    let init: Record<string, unknown> = {};
     if (Object.keys(fileData).length > 0) {
         const formData = new FormData();
         // multipart mode
@@ -126,14 +133,18 @@ export const postRequest = (
     arg2?: Record<string, any>,
     arg3?: Record<string, Blob | Blob[]>,
     arg4?: AbortSignal | null,
-) => {
+): Promise<unknown> => {
     if (typeof arg1 === 'string') {
         return basePostRequest(arg1, arg2, arg3, arg4);
     }
     return basePostRequest(arg1.url, arg1.data, arg1.fileData, arg1.signal);
 };
 
-export const patchRequest = (url: string, data: any, signal?) =>
+export const patchRequest = (
+    url: string,
+    data: unknown,
+    signal?: Nullable<AbortSignal>,
+): Promise<unknown> =>
     iasoFetch(url, {
         method: 'PATCH',
         body: JSON.stringify(data),
@@ -141,7 +152,10 @@ export const patchRequest = (url: string, data: any, signal?) =>
         signal,
     }).then(response => response.json());
 
-export const deleteRequest = (url: string, signal?) =>
+export const deleteRequest = (
+    url: string,
+    signal?: Nullable<AbortSignal>,
+): Promise<boolean> =>
     iasoFetch(url, {
         method: 'DELETE',
         headers: {
@@ -151,7 +165,10 @@ export const deleteRequest = (url: string, signal?) =>
         signal,
     }).then(() => true);
 
-export const restoreRequest = (url: string, signal?) =>
+export const restoreRequest = (
+    url: string,
+    signal?: Nullable<AbortSignal>,
+): Promise<boolean> =>
     iasoFetch(url, {
         method: 'PATCH',
         body: JSON.stringify({
@@ -161,7 +178,11 @@ export const restoreRequest = (url: string, signal?) =>
         signal,
     }).then(() => true);
 
-export const putRequest = (url: string, data: any, signal?) =>
+export const putRequest = (
+    url: string,
+    data: unknown,
+    signal?: Nullable<AbortSignal>,
+): Promise<unknown> =>
     iasoFetch(url, {
         method: 'PUT',
         body: JSON.stringify(data),

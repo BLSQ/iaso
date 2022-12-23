@@ -901,6 +901,7 @@
     "iaso.workflows.changes": "Changes",
     "iaso.workflows.condition": "Condition",
     "iaso.workflows.copy": "Copy version",
+    "iaso.workflows.dialog.deleteFollowUp": "Are you sure you want to delete this follow up?",
     "iaso.workflows.dialog.deleteTitle": "Are you sure you want to delete this workflow version?",
     "iaso.workflows.editFollowUp": "Edit follow up",
     "iaso.workflows.followUps": "Follow ups",

@@ -130,6 +130,10 @@ const MESSAGES = defineMessages({
         defaultMessage:
             'Are you sure you want to delete this workflow version?',
     },
+    deleteFollowUp: {
+        id: 'iaso.workflows.dialog.deleteFollowUp',
+        defaultMessage: 'Are you sure you want to delete this follow up?',
+    },
     deleteText: {
         id: 'iaso.label.deleteText',
         defaultMessage: 'This operation cannot be undone.',

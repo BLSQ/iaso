@@ -18,8 +18,7 @@ import { baseUrls } from '../../constants/urls';
 
 import { StatusCell } from './components/StatusCell';
 import { VersionsActionCell } from './components/VersionsActionCell';
-
-import { FollowUpsModal } from './components/FollowUpsModal';
+import { FollowUpActionCell } from './components/FollowUpActionCell';
 import { WorkflowVersionDetail } from './types/workflows';
 
 export const defaultSorted = [{ id: 'id', desc: true }];
@@ -125,12 +124,17 @@ export const useGetFollowUpsColumns = (
                 const followUp = workflow?.follow_ups.find(
                     fu => fu.id === settings.value,
                 );
-                if (followUp && workflow?.status === 'DRAFT') {
-                    return (
-                        <FollowUpsModal followUp={followUp} fields={fields} />
-                    );
-                }
-                return <></>;
+                return (
+                    <>
+                        {workflow && followUp && fields && (
+                            <FollowUpActionCell
+                                followUp={followUp}
+                                status={workflow.status}
+                                fields={fields}
+                            />
+                        )}
+                    </>
+                );
             },
         });
     }

@@ -76,6 +76,7 @@ class WorkflowFollowupModifySerializer(serializers.Serializer):
                         raise serializers.ValidationError("form_ids must be valid form ids")
 
                     f = Form.objects.get(id=f)
+                    # TODO this is crashing while saving
                     if f.projects.filter(self.context["user"].profile.account).count() == 0:
                         raise serializers.ValidationError(f"form_id {f.id} is not accessible to the user")
 

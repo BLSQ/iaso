@@ -154,6 +154,10 @@ const MESSAGES = defineMessages({
         id: 'iaso.workflows.editFollowUp',
         defaultMessage: 'Edit follow up',
     },
+    createFollowUp: {
+        id: 'iaso.workflows.createFollowUp',
+        defaultMessage: 'Create follow up',
+    },
     publishVersion: {
         id: 'iaso.workflows.publishVersion',
         defaultMessage: 'Publish version',

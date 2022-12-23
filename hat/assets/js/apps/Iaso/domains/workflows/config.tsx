@@ -67,6 +67,7 @@ export const useGetColumns = (entityTypeId: string): Array<Column> => {
 export const useGetFollowUpsColumns = (
     // eslint-disable-next-line no-unused-vars
     getHumanReadableJsonLogic: (logic: Record<string, string>) => string,
+    versionId: string,
     workflow?: WorkflowVersionDetail,
     fields?: QueryBuilderFields,
 ): Array<Column> => {
@@ -129,8 +130,8 @@ export const useGetFollowUpsColumns = (
                         {workflow && followUp && fields && (
                             <FollowUpActionCell
                                 followUp={followUp}
-                                status={workflow.status}
                                 fields={fields}
+                                versionId={versionId}
                             />
                         )}
                     </>

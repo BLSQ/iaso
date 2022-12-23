@@ -17,6 +17,7 @@
     "iaso.algo.addRun": "Add algorithm run",
     "iaso.archived.title": "Archives",
     "iaso.area": "Health area",
+    "iaso.workflows.createFollowUp": "Create follow up",
     "iaso.assignment.alreadyAssigned": "Already assigned",
     "iaso.assignment.alreadyAssignedTo": "Already assigned to",
     "iaso.assignment.assignationsCount": "Assignments count",

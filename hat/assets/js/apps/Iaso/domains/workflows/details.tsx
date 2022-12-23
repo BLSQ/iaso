@@ -43,6 +43,7 @@ import {
 
 import { WorkflowBaseInfo } from './components/WorkflowBaseInfo';
 import { FollowUpsTable } from './components/FollowUpsTable';
+import { AddFollowUpsModal } from './components/FollowUpsModal';
 
 import WidgetPaper from '../../components/papers/WidgetPaperComponent';
 import { TableWithDeepLink } from '../../components/tables/TableWithDeepLink';
@@ -109,6 +110,7 @@ export const Details: FunctionComponent<Props> = ({ router }) => {
     const changesColumns = useGetChangesColumns();
     const followUpsColumns = useGetFollowUpsColumns(
         getHumanReadableJsonLogic,
+        versionId,
         workflowVersion,
         fields,
     );
@@ -117,7 +119,6 @@ export const Details: FunctionComponent<Props> = ({ router }) => {
             items.map((item, index) => ({ ...item, order: index + 1 })),
         );
     }, []);
-
     return (
         <>
             <TopBar
@@ -173,6 +174,14 @@ export const Details: FunctionComponent<Props> = ({ router }) => {
                                 </>
                             )}
                         </>
+                        {workflowVersion?.status === 'DRAFT' && (
+                            <Box m={2} textAlign="right">
+                                <AddFollowUpsModal
+                                    fields={fields}
+                                    versionId={versionId}
+                                />
+                            </Box>
+                        )}
                     </WidgetPaper>
                 </Box>
                 <Box mt={2}>

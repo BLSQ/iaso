@@ -893,6 +893,7 @@
     "iaso.workflows.changes": "Changements",
     "iaso.workflows.condition": "Condition",
     "iaso.workflows.copy": "Copier la version",
+    "iaso.workflows.createFollowUp": "Créer un suivi",
     "iaso.workflows.dialog.deleteFollowUp": "Êtes-vous certain de vouloir effacer ce suivi?",
     "iaso.workflows.dialog.deleteTitle": "Êtes-vous certain de vouloir effacer version du workflow ?",
     "iaso.workflows.editFollowUp": "Editer un suivi",

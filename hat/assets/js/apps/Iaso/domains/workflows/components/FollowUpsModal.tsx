@@ -11,6 +11,8 @@ import {
     QueryBuilder,
     // @ts-ignore
     QueryBuilderFields,
+    // @ts-ignore
+    AddButton,
 } from 'bluesquare-components';
 
 import { Grid } from '@material-ui/core';
@@ -20,6 +22,7 @@ import { commaSeparatedIdsToArray } from '../../../utils/forms';
 
 import { useGetForms } from '../hooks/requests/useGetForms';
 import { useBulkUpdateWorkflowFollowUp } from '../hooks/requests/useBulkUpdateWorkflowFollowUp';
+import { useCreateWorkflowFollowUp } from '../hooks/requests/useCreateWorkflowFollowUp';
 import { parseJson, JSONValue } from '../../instances/utils/jsonLogicParse';
 
 import MESSAGES from '../messages';
@@ -29,8 +32,9 @@ import { FollowUps } from '../types/workflows';
 type Props = {
     isOpen: boolean;
     closeDialog: () => void;
-    followUp: FollowUps;
+    followUp?: FollowUps;
     fields?: QueryBuilderFields;
+    versionId: string;
 };
 type JsonLogicResult = {
     logic?: JSONValue;
@@ -43,27 +47,39 @@ const FollowUpsModal: FunctionComponent<Props> = ({
     isOpen,
     followUp,
     fields,
+    versionId,
 }) => {
     const { formatMessage } = useSafeIntl();
 
     const [logic, setLogic] = useState<JSONValue | undefined>(
-        followUp.condition,
+        followUp?.condition,
     );
     const [formIds, setForms] = useState<number[]>(
-        followUp.forms.map(form => form.id),
+        followUp?.forms.map(form => form.id) || [],
     );
     const { mutate: saveFollowUp } = useBulkUpdateWorkflowFollowUp();
+    const { mutate: creareFollowUp } = useCreateWorkflowFollowUp(
+        closeDialog,
+        versionId,
+    );
     const { data: forms, isLoading: isLoadingForms } = useGetForms();
 
     const handleConfirm = () => {
-        saveFollowUp([
-            {
-                id: followUp.id,
-                order: followUp.order,
+        if (followUp?.id) {
+            saveFollowUp([
+                {
+                    id: followUp.id,
+                    order: followUp.order,
+                    condition: logic,
+                    form_ids: formIds,
+                },
+            ]);
+        } else {
+            creareFollowUp({
                 condition: logic,
                 form_ids: formIds,
-            },
-        ]);
+            });
+        }
     };
     const formsList = useMemo(
         () =>
@@ -86,7 +102,11 @@ const FollowUpsModal: FunctionComponent<Props> = ({
     return (
         <ConfirmCancelModal
             allowConfirm={allowConfirm}
-            titleMessage={formatMessage(MESSAGES.editFollowUp)}
+            titleMessage={
+                followUp?.id
+                    ? formatMessage(MESSAGES.editFollowUp)
+                    : formatMessage(MESSAGES.createFollowUp)
+            }
             onConfirm={handleConfirm}
             onCancel={() => {
                 closeDialog();
@@ -127,5 +147,9 @@ const FollowUpsModal: FunctionComponent<Props> = ({
     );
 };
 const modalWithButton = makeFullModal(FollowUpsModal, EditIconButton);
+const AddModalWithButton = makeFullModal(FollowUpsModal, AddButton);
 
-export { modalWithButton as FollowUpsModal };
+export {
+    modalWithButton as FollowUpsModal,
+    AddModalWithButton as AddFollowUpsModal,
+};

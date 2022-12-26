@@ -3,19 +3,9 @@
 /* eslint-disable react/prop-types */
 import React from 'react';
 
-import {
-    Box,
-    Button,
-    Grid,
-    DialogContentText,
-    Table,
-    TableBody,
-    TableRow,
-    TableCell,
-} from '@material-ui/core';
+import { Box, Button, Grid, DialogContentText } from '@material-ui/core';
 
 import PropTypes from 'prop-types';
-import moment from 'moment';
 
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
@@ -25,14 +15,11 @@ import {
     injectIntl,
     FormControl as FormControlComponent,
     IconButton as IconButtonComponent,
-    LoadingSpinner,
 } from 'bluesquare-components';
 import LinkIcon from '@material-ui/icons/Link';
 import LinkOffIcon from '@material-ui/icons/LinkOff';
 import omit from 'lodash/omit';
 import { FormattedMessage } from 'react-intl';
-import GpsFixedIcon from '@material-ui/icons/GpsFixed';
-import GpsOffIcon from '@material-ui/icons/GpsOff';
 import { useSaveOrgUnit } from '../hooks';
 import { useFormState } from '../../../hooks/form';
 import InputComponent from '../../../components/forms/InputComponent';
@@ -51,6 +38,7 @@ import {
     hasFeatureFlag,
     SHOW_LINK_INSTANCE_REFERENCE,
 } from '../../../utils/featureFlags';
+import { OrgUnitCreationDetails } from './OrgUnitCreationDetails.tsx';
 
 // reformatting orgUnit name so the OU can be passed to the treeview modal
 // and selecting the parent for display
@@ -221,86 +209,6 @@ const Actions = (
             ),
         },
     ];
-};
-
-const Row = ({ label, value }) => {
-    const classes = useStyles();
-    return (
-        <TableRow>
-            <TableCell className={classes.leftCell}>{label}</TableCell>
-            <TableCell>{value}</TableCell>
-        </TableRow>
-    );
-};
-
-const OrgUnitCreationDetails = ({ orgUnit, formatMessage }) => {
-    const latitude = `${formatMessage(MESSAGES.latitude)}: ${
-        orgUnit.latitude
-    },`;
-    const longitude = `${formatMessage(MESSAGES.longitude)}: ${
-        orgUnit.longitude
-    },`;
-
-    const latitudeLongitude =
-        orgUnit.latitude && orgUnit.longitude ? latitude + longitude : false;
-    const orgUnitCreatedAt = moment.unix(orgUnit.created_at).format('LTS');
-    const orgUnitUpdatedAt = moment.unix(orgUnit.updated_at).format('LTS');
-
-    return (
-        <>
-            {!orgUnit && <LoadingSpinner absolute />}
-
-            <WidgetPaper showHeader={false} title="">
-                <Table size="medium">
-                    <TableBody>
-                        <Row
-                            label={formatMessage(MESSAGES.source)}
-                            value={orgUnit.source ?? '-'}
-                        />
-                        <Row
-                            label={formatMessage(MESSAGES.creator)}
-                            value={orgUnit.creator.value ?? '-'}
-                        />
-                        <Row
-                            label={formatMessage(MESSAGES.created_at)}
-                            value={orgUnit.created_at ? orgUnitCreatedAt : '-'}
-                        />
-                        <Row
-                            label={formatMessage(MESSAGES.updated_at)}
-                            value={orgUnit.updated_at ? orgUnitUpdatedAt : '-'}
-                        />
-                        {!orgUnit.has_geo_json && !latitudeLongitude && (
-                            <Row
-                                label={<GpsOffIcon color="primary" />}
-                                value={formatMessage(
-                                    MESSAGES.hasNoGeometryAndGps,
-                                )}
-                            />
-                        )}
-                        {orgUnit.has_geo_json && (
-                            <Row
-                                label={<GpsFixedIcon color="primary" />}
-                                value={formatMessage(MESSAGES.hasGeometry)}
-                            />
-                        )}
-                        {latitudeLongitude && (
-                            <>
-                                <Row
-                                    label={formatMessage(MESSAGES.latitude)}
-                                    value={orgUnit.latitude}
-                                />
-
-                                <Row
-                                    label={formatMessage(MESSAGES.LONGITUDE)}
-                                    value={orgUnit.longitude}
-                                />
-                            </>
-                        )}
-                    </TableBody>
-                </Table>
-            </WidgetPaper>
-        </>
-    );
 };
 
 const OrgUnitInfosComponent = ({

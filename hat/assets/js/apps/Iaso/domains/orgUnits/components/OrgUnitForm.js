@@ -2,7 +2,7 @@ import React, { useState, useCallback, useEffect } from 'react';
 import classnames from 'classnames';
 import mapValues from 'lodash/mapValues';
 import PropTypes from 'prop-types';
-import { withStyles, Grid, Box } from '@material-ui/core';
+import { Grid, Box, makeStyles } from '@material-ui/core';
 
 import { commonStyles } from 'bluesquare-components';
 import { isEqual } from 'lodash';
@@ -26,12 +26,12 @@ const initialFormState = orgUnit => {
     };
 };
 
-const styles = theme => ({
+const useStyles = makeStyles(theme => ({
     ...commonStyles(theme),
-});
-const OrgUnitForm = ({
+}));
+
+export const OrgUnitForm = ({
     orgUnit,
-    classes,
     orgUnitTypes,
     groups,
     saveOrgUnit,
@@ -41,6 +41,7 @@ const OrgUnitForm = ({
     isFetchingOrgUnitTypes,
     isFetchingGroups,
 }) => {
+    const classes = useStyles();
     const [formState, setFieldValue, setFieldErrors, setFormState] =
         useFormState(initialFormState(orgUnit));
     const [orgUnitModified, setOrgUnitModified] = useState(false);
@@ -149,7 +150,6 @@ OrgUnitForm.propTypes = {
     orgUnit: PropTypes.object.isRequired,
     orgUnitTypes: PropTypes.array.isRequired,
     groups: PropTypes.array.isRequired,
-    classes: PropTypes.object.isRequired,
     saveOrgUnit: PropTypes.func.isRequired,
     onResetOrgUnit: PropTypes.func.isRequired,
     params: PropTypes.object.isRequired,
@@ -157,5 +157,3 @@ OrgUnitForm.propTypes = {
     isFetchingOrgUnitTypes: PropTypes.bool.isRequired,
     isFetchingGroups: PropTypes.bool.isRequired,
 };
-
-export default withStyles(styles)(OrgUnitForm);

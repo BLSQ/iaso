@@ -58,7 +58,7 @@ const FollowUpsModal: FunctionComponent<Props> = ({
         followUp?.forms.map(form => form.id) || [],
     );
     const { mutate: saveFollowUp } = useBulkUpdateWorkflowFollowUp();
-    const { mutate: creareFollowUp } = useCreateWorkflowFollowUp(
+    const { mutate: createFollowUp } = useCreateWorkflowFollowUp(
         closeDialog,
         versionId,
     );
@@ -75,9 +75,10 @@ const FollowUpsModal: FunctionComponent<Props> = ({
                 },
             ]);
         } else {
-            creareFollowUp({
+            createFollowUp({
                 condition: logic,
                 form_ids: formIds,
+                order: 0,
             });
         }
     };

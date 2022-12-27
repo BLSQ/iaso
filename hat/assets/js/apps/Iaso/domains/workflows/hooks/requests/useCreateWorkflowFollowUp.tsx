@@ -9,7 +9,7 @@ const createWorkflowFollowUp = async (
     versionId: string,
 ): Promise<any> => {
     return postRequest(
-        `/api/workflowfollowups/?workflow_version_id=${versionId}`,
+        `/api/workflowfollowups/?version_id=${versionId}`,
         data,
     );
 };

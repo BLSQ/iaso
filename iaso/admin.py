@@ -47,6 +47,8 @@ from .models import (
     WorkflowVersion,
     WorkflowChange,
     WorkflowFollowup,
+    Reports,
+    ReportVersion,
 )
 from .models.microplanning import Team, Planning, Assignment
 from .utils.gis import convert_2d_point_to_3d
@@ -517,3 +519,5 @@ admin.site.register(InstanceLock, InstanceLockAdmin)
 admin.site.register(StorageDevice, StorageDeviceAdmin)
 admin.site.register(Workflow, WorkflowAdmin)
 admin.site.register(WorkflowVersion, WorkflowVersionAdmin)
+admin.site.register(Reports)
+admin.site.register(ReportVersion)

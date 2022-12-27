@@ -16,9 +16,7 @@ from iaso.models import Reports
 class ReportSerializer(serializers.ModelSerializer):
     class Meta:
         model = Reports
-        fields = ["name",
-                  "published_version",
-                  "project"]
+        fields = ["name", "published_version", "project"]
 
 
 class ReportsViewSet(ModelViewSet):

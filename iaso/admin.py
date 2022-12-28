@@ -47,7 +47,7 @@ from .models import (
     WorkflowVersion,
     WorkflowChange,
     WorkflowFollowup,
-    Reports,
+    Report,
     ReportVersion,
 )
 from .models.microplanning import Team, Planning, Assignment
@@ -519,5 +519,5 @@ admin.site.register(InstanceLock, InstanceLockAdmin)
 admin.site.register(StorageDevice, StorageDeviceAdmin)
 admin.site.register(Workflow, WorkflowAdmin)
 admin.site.register(WorkflowVersion, WorkflowVersionAdmin)
-admin.site.register(Reports)
+admin.site.register(Report)
 admin.site.register(ReportVersion)

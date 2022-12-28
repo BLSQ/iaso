@@ -9,13 +9,16 @@ from iaso.utils.models.soft_deletable import SoftDeletableModel
 
 
 class ReportVersion(SoftDeletableModel):
+    PUBLISHED = [("published", "Published"), ("unpublished", "Unpublished")]
+
     file = models.FileField()
     name = models.CharField(max_length=255)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+    status = models.CharField(choices=PUBLISHED, max_length=255, default="unpublished")
 
 
-class Reports(SoftDeletableModel):
+class Report(SoftDeletableModel):
     name = models.CharField(max_length=255)
     published_version = models.ForeignKey(ReportVersion, on_delete=models.PROTECT)
     project = models.ForeignKey(Project, on_delete=models.PROTECT)

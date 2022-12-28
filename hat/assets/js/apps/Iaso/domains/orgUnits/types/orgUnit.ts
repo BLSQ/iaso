@@ -21,6 +21,7 @@ export type OrgUnit = {
     parent_name: string;
     parent: OrgUnit;
     org_unit_type_id: number;
+    creator: Record<string, any>;
     created_at: number;
     updated_at: number;
     aliases?: string;

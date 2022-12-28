@@ -77,11 +77,10 @@ class WorkflowFollowupModifySerializer(serializers.Serializer):
 
                     f = Form.objects.get(id=f)
                     # TODO this is crashing while saving
-                    if f.projects.filter(self.context["user"].profile.account).count() == 0:
+                    if f.projects.filter(account=self.context["request"].user.iaso_profile.account).count() == 0:
                         raise serializers.ValidationError(f"form_id {f.id} is not accessible to the user")
-
-        follow_up = get_object_or_404(WorkflowFollowup, pk=data["id"])
-        utils.validate_version_id(follow_up.workflow_version.workflow.id, self.context["request"].user)
+        follow_up = get_object_or_404(WorkflowFollowup, id=data["id"])
+        utils.validate_version_id(follow_up.workflow_version.id, self.context["request"].user)
 
         return data
 

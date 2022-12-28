@@ -69,24 +69,17 @@ class WorkflowFollowupViewSet(ModelViewSet):
     def create(self, request, *args, **kwargs):
         version_id = request.query_params.get("version_id", kwargs.get("version_id", None))
         utils.validate_version_id(version_id, request.user)
-
         serializer = ser.WorkflowFollowupCreateSerializer(
             data=request.data, context={"request": request, "version_id": version_id}
         )
-
         serializer.is_valid(raise_exception=True)
         res = serializer.save()
-
         serialized_data = ser.WorkflowFollowupSerializer(res).data
         return Response(serialized_data)
 
     @swagger_auto_schema(request_body=ser.WorkflowFollowupModifySerializer(many=True))
     @action(detail=False, methods=["post"], url_path="bulkupdate")
     def bulk_update(self, request, *args, **kwargs):
-
-        print("bulk_update", request)
-        print("bulk_update", request.data)
-
         modifs = []
 
         for followup in request.data:
@@ -100,8 +93,6 @@ class WorkflowFollowupViewSet(ModelViewSet):
                 serializer.is_valid(raise_exception=True)
                 res = serializer.update(followup_orig, serializer.validated_data)
                 modifs.append(res)
-
-        print("modifs", modifs)
 
         resp = ser.WorkflowFollowupSerializer(modifs, many=True).data
         return Response(resp)

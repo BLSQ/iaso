@@ -9,7 +9,6 @@ from rest_framework import serializers
 def validate_version_id(version_id, user):
     wfv = get_object_or_404(WorkflowVersion, pk=version_id)
     et = get_object_or_404(EntityType, pk=wfv.workflow.entity_type_id)
-
     if wfv.status != WorkflowVersionsStatus.DRAFT:
         raise serializers.ValidationError(f"WorkflowVersion {version_id} is not in draft status")
 

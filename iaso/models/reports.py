@@ -11,7 +11,7 @@ from iaso.utils.models.soft_deletable import SoftDeletableModel
 class ReportVersion(SoftDeletableModel):
     PUBLISHED = [("published", "Published"), ("unpublished", "Unpublished")]
 
-    file = models.FileField()
+    file = models.FileField(upload_to="reports")
     name = models.CharField(max_length=255)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)

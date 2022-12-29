@@ -1,14 +1,13 @@
 import React, { useState, useCallback, useEffect } from 'react';
+import classnames from 'classnames';
 import mapValues from 'lodash/mapValues';
 import PropTypes from 'prop-types';
-import { withStyles, Button, Grid } from '@material-ui/core';
-import { FormattedMessage } from 'react-intl';
+import { Grid, Box, makeStyles } from '@material-ui/core';
 
 import { commonStyles } from 'bluesquare-components';
 import { isEqual } from 'lodash';
 import { useFormState } from '../../../hooks/form';
 import OrgUnitInfos from './OrgUnitInfosComponent';
-import MESSAGES from '../messages';
 
 const initialFormState = orgUnit => {
     return {
@@ -27,12 +26,12 @@ const initialFormState = orgUnit => {
     };
 };
 
-const styles = theme => ({
+const useStyles = makeStyles(theme => ({
     ...commonStyles(theme),
-});
-const OrgUnitForm = ({
+}));
+
+export const OrgUnitForm = ({
     orgUnit,
-    classes,
     orgUnitTypes,
     groups,
     saveOrgUnit,
@@ -42,6 +41,7 @@ const OrgUnitForm = ({
     isFetchingOrgUnitTypes,
     isFetchingGroups,
 }) => {
+    const classes = useStyles();
     const [formState, setFieldValue, setFieldErrors, setFormState] =
         useFormState(initialFormState(orgUnit));
     const [orgUnitModified, setOrgUnitModified] = useState(false);
@@ -73,7 +73,7 @@ const OrgUnitForm = ({
         [setFieldValue],
     );
 
-    // TODO change compoenent in blsq-comp library to avoid separate handler
+    // TODO change component in blsq-comp library to avoid separate handler
     // This fix assumes we can only add one alias at a time
     const handleChangeAlias = useCallback(
         (key, value) => {
@@ -107,7 +107,7 @@ const OrgUnitForm = ({
         onResetOrgUnit();
     };
 
-    const isNewOrgunit = orgUnit && !orgUnit.id;
+    const isNewOrgunit = params.orgUnitId === '0';
 
     useEffect(() => {
         if (orgUnit.id !== formState.id.value) {
@@ -117,51 +117,32 @@ const OrgUnitForm = ({
     }, [orgUnit.id]);
 
     return (
-        <>
-            <OrgUnitInfos
-                params={params}
-                baseUrl={baseUrl}
-                orgUnit={{
-                    ...orgUnit,
-                    ...formState,
-                }}
-                orgUnitTypes={orgUnitTypes}
-                groups={groups}
-                onChangeInfo={handleChangeInfo}
-                resetTrigger={!orgUnitModified}
-                isFetchingOrgUnitTypes={isFetchingOrgUnitTypes}
-                isFetchingGroups={isFetchingGroups}
-            />
+        <Box pt={isNewOrgunit ? 2 : 0}>
             <Grid
                 container
                 spacing={0}
                 alignItems="center"
-                className={classes.marginTopBig}
+                className={classnames(!isNewOrgunit && classes.marginTopBig)}
             >
-                <Grid xs={12} item className={classes.textAlignRight}>
-                    {!isNewOrgunit && (
-                        <Button
-                            className={classes.marginLeft}
-                            disabled={!orgUnitModified}
-                            variant="contained"
-                            onClick={() => handleReset()}
-                        >
-                            <FormattedMessage {...MESSAGES.cancel} />
-                        </Button>
-                    )}
-                    <Button
-                        id="save-ou"
-                        disabled={!orgUnitModified}
-                        variant="contained"
-                        className={classes.marginLeft}
-                        color="primary"
-                        onClick={() => handleSave()}
-                    >
-                        <FormattedMessage {...MESSAGES.save} />
-                    </Button>
-                </Grid>
+                <OrgUnitInfos
+                    params={params}
+                    baseUrl={baseUrl}
+                    orgUnit={{
+                        ...orgUnit,
+                        ...formState,
+                    }}
+                    orgUnitTypes={orgUnitTypes}
+                    groups={groups}
+                    onChangeInfo={handleChangeInfo}
+                    resetTrigger={!orgUnitModified}
+                    handleSave={handleSave}
+                    handleReset={handleReset}
+                    orgUnitModified={orgUnitModified}
+                    isFetchingOrgUnitTypes={isFetchingOrgUnitTypes}
+                    isFetchingGroups={isFetchingGroups}
+                />
             </Grid>
-        </>
+        </Box>
     );
 };
 
@@ -169,7 +150,6 @@ OrgUnitForm.propTypes = {
     orgUnit: PropTypes.object.isRequired,
     orgUnitTypes: PropTypes.array.isRequired,
     groups: PropTypes.array.isRequired,
-    classes: PropTypes.object.isRequired,
     saveOrgUnit: PropTypes.func.isRequired,
     onResetOrgUnit: PropTypes.func.isRequired,
     params: PropTypes.object.isRequired,
@@ -177,5 +157,3 @@ OrgUnitForm.propTypes = {
     isFetchingOrgUnitTypes: PropTypes.bool.isRequired,
     isFetchingGroups: PropTypes.bool.isRequired,
 };
-
-export default withStyles(styles)(OrgUnitForm);

@@ -17,6 +17,9 @@ class ReportVersion(SoftDeletableModel):
     updated_at = models.DateTimeField(auto_now=True)
     status = models.CharField(choices=PUBLISHED, max_length=255, default="unpublished")
 
+    def __str__(self):
+        return f"{self.name}"
+
 
 class Report(SoftDeletableModel):
     name = models.CharField(max_length=255)
@@ -24,3 +27,6 @@ class Report(SoftDeletableModel):
     project = models.ForeignKey(Project, on_delete=models.PROTECT)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return f"{self.name} {self.project}"

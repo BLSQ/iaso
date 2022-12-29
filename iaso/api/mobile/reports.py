@@ -7,27 +7,36 @@ from rest_framework import serializers
 from iaso.models import Report
 
 
-class ReportSerializer(serializers.ModelSerializer):
+class MobileReportSerializer(serializers.ModelSerializer):
     class Meta:
         model = Report
-        fields = ["id", "name", "published_version", "project", "created_at", "updated_at"]
+        fields = ["name", "url", "version_id", "version_name", "created_at", "updated_at"]
 
-    published_version = serializers.SerializerMethodField()
+    version_name = serializers.SerializerMethodField()
+    version_id = serializers.SerializerMethodField()
+    url = serializers.SerializerMethodField()
 
     @staticmethod
-    def get_published_version(obj: Report):
+    def get_version_name(obj: Report):
         return obj.published_version.name
 
+    @staticmethod
+    def get_url(obj: Report):
+        return obj.published_version.file.url
 
-class ReportsViewSet(ModelViewSet):
+    @staticmethod
+    def get_version_id(obj: Report):
+        return obj.published_version.id
+
+
+class MobileReportsViewSet(ModelViewSet):
     results_key = "result"
     remove_results_key_if_paginated = True
     filter_backends = [filters.OrderingFilter, DjangoFilterBackend]
     permission_classes = [permissions.IsAuthenticated]
-    pagination_class = LimitOffsetPagination
 
     def get_serializer_class(self):
-        return ReportSerializer
+        return MobileReportSerializer
 
     def get_queryset(self):
         search = self.request.query_params.get("search", None)
@@ -35,12 +44,3 @@ class ReportsViewSet(ModelViewSet):
         if search:
             queryset = queryset.filter(name__icontains=search)
         return queryset
-
-    def retrieve(self, request, *args, **kwargs):
-        response = super().retrieve(request, args, kwargs)
-        report_id = kwargs.get("pk")
-        report = Report.objects.get(pk=report_id)
-        response.data["url"] = report.published_version.file.url
-        response.data["status"] = report.published_version.status
-
-        return response

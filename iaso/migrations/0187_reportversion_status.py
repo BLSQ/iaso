@@ -6,13 +6,17 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('iaso', '0186_report_reportversion'),
+        ("iaso", "0186_report_reportversion"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='reportversion',
-            name='status',
-            field=models.CharField(choices=[('published', 'Published'), ('unpublished', 'Unpublished')], default='unpublished', max_length=255),
+            model_name="reportversion",
+            name="status",
+            field=models.CharField(
+                choices=[("published", "Published"), ("unpublished", "Unpublished")],
+                default="unpublished",
+                max_length=255,
+            ),
         ),
     ]

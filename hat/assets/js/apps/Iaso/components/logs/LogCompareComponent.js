@@ -26,7 +26,7 @@ import {
 import { isEqual } from 'lodash';
 import { getPolygonPositionsFromSimplifiedGeom } from '../../domains/orgUnits/utils';
 
-import PolygonMap from '../maps/PolygonMapComponent';
+import { PolygonMap } from '../maps/PolygonMapComponent.tsx';
 import MarkerMap from '../maps/MarkerMapComponent';
 import ConfirmDialog from '../dialogs/ConfirmDialogComponent';
 

@@ -24,7 +24,6 @@ import {
     commonStyles,
 } from 'bluesquare-components';
 import { isEqual } from 'lodash';
-import { getPolygonPositionsFromSimplifiedGeom } from '../../domains/orgUnits/utils';
 
 import { PolygonMap } from '../maps/PolygonMapComponent.tsx';
 import MarkerMap from '../maps/MarkerMapComponent';
@@ -68,11 +67,9 @@ const renderValue = (fieldKey, value, fields, classes) => {
             case 'geom':
             case 'catchment':
             case 'simplified_geom': {
-                const polygonPositions =
-                    getPolygonPositionsFromSimplifiedGeom(value);
                 return (
                     <div className={classes.cellMap}>
-                        <PolygonMap polygonPositions={polygonPositions} />
+                        <PolygonMap polygonPositions={value} />
                     </div>
                 );
             }

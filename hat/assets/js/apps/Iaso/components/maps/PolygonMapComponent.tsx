@@ -1,10 +1,13 @@
-import React, { FunctionComponent, useRef } from 'react';
-import { Map, TileLayer, Polygon, ScaleControl } from 'react-leaflet';
+import React, { FunctionComponent, useRef, useMemo } from 'react';
+import { wktToGeoJSON } from '@terraformer/wkt';
+// @ts-ignore
+import L from 'leaflet';
+import { Map, TileLayer, ScaleControl, GeoJSON } from 'react-leaflet';
 
 import { makeStyles } from '@material-ui/core';
 // @ts-ignore
 import { commonStyles } from 'bluesquare-components';
-import { getLatLngBounds, ZoomControl } from '../../utils/mapUtils';
+import { ZoomControl } from '../../utils/mapUtils';
 
 import tiles from '../../constants/mapTiles';
 
@@ -18,7 +21,7 @@ const useStyles = makeStyles(theme => ({
 }));
 
 type Props = {
-    polygonPositions: Array<any>;
+    polygonPositions: string;
 };
 
 export const PolygonMap: FunctionComponent<Props> = ({ polygonPositions }) => {
@@ -26,12 +29,18 @@ export const PolygonMap: FunctionComponent<Props> = ({ polygonPositions }) => {
 
     const classes: Record<string, string> = useStyles();
 
+    const geoJson = useMemo(() => {
+        return wktToGeoJSON(polygonPositions.replace('SRID=4326;', ''));
+    }, [polygonPositions]);
+    const bounds = useMemo(() => {
+        const shape = L.geoJSON(geoJson);
+        return shape?.getBounds();
+    }, [geoJson]);
+
     const currentTile = tiles.osm;
     const boundsOptions = { padding: [10, 10] };
 
     const fitToBounds = () => {
-        const bounds = getLatLngBounds(polygonPositions);
-
         map.current.leafletElement.fitBounds(bounds, {
             maxZoom: tiles.osm.maxZoom,
             padding: boundsOptions.padding,
@@ -45,7 +54,7 @@ export const PolygonMap: FunctionComponent<Props> = ({ polygonPositions }) => {
                 maxZoom={currentTile.maxZoom}
                 style={{ height: '100%' }}
                 center={[0, 0]}
-                bounds={getLatLngBounds(polygonPositions)}
+                bounds={bounds}
                 boundsOptions={boundsOptions}
                 ref={map}
                 zoomControl={false}
@@ -59,7 +68,12 @@ export const PolygonMap: FunctionComponent<Props> = ({ polygonPositions }) => {
                     }
                     url={currentTile.url}
                 />
-                <Polygon positions={polygonPositions} color="blue" />
+                <GeoJSON
+                    data={geoJson}
+                    style={() => ({
+                        color: 'blue',
+                    })}
+                />
             </Map>
         </div>
     );

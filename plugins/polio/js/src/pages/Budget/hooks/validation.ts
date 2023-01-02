@@ -143,7 +143,7 @@ export const useOverrideStepValidation = (
     const apiValidator = useAPIErrorValidator<Partial<any>>(errors, payload);
     return useMemo(() => {
         return object().shape({
-            new_state_key: string().required(),
+            new_state_key: string().nullable().required(),
             files: makeRequired(
                 mixed().nullable(),
                 requiredFields.includes('files'),

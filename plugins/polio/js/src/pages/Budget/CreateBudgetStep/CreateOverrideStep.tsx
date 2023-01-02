@@ -38,6 +38,7 @@ import { TextArea } from '../../../../../../../hat/assets/js/apps/Iaso/component
 import { useGetRecipientTeams } from '../hooks/api/useGetEmailRecipients';
 import { OverrideStepButton } from './OverrideStepButton';
 import { useSaveOverrideStep } from '../hooks/api/useSaveOverrideStep';
+import { useGetWorkflowStatesForDropdown } from '../hooks/api/useGetBudget';
 
 type Props = {
     campaignId: string;
@@ -83,6 +84,8 @@ const CreateOverrideStep: FunctionComponent<Props> = ({
 
     // TODO update
     const { data: recipientTeams } = useGetRecipientTeams(recipients);
+    const { data: possibleStates, isLoading: possibleStatesIsLoading } =
+        useGetWorkflowStatesForDropdown();
 
     const {
         apiErrors,
@@ -193,12 +196,15 @@ const CreateOverrideStep: FunctionComponent<Props> = ({
                 <>
                     <Box mb={2}>
                         <InputComponent
-                            type="text"
+                            type="select"
+                            multi={false}
                             keyValue="new_state_key"
                             onChange={onChange}
                             value={values.new_state_key}
+                            options={possibleStates}
                             errors={getErrors('new_state_key')}
                             label={MESSAGES.newBudgetState}
+                            isLoading={possibleStatesIsLoading}
                             required
                         />
                     </Box>

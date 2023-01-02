@@ -1,3 +1,4 @@
+from django.shortcuts import get_object_or_404
 from rest_framework.pagination import LimitOffsetPagination
 
 from iaso.api.common import ModelViewSet
@@ -46,7 +47,7 @@ class ReportsViewSet(ModelViewSet):
     def retrieve(self, request, *args, **kwargs):
         response = super().retrieve(request, args, kwargs)
         report_id = kwargs.get("pk")
-        report = Report.objects.get(pk=report_id)
+        report = get_object_or_404(Report, pk=report_id)
         response.data["url"] = report.published_version.file.url
         response.data["status"] = report.published_version.status
 

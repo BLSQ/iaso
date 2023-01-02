@@ -51,7 +51,10 @@ export type User = {
     };
     permissions: string[];
     is_superuser: boolean;
-    org_units: any[];
+    org_units: {
+        name: string;
+        id: string;
+    }[];
     language?: string;
     user_id: number;
     dhis2_id?: string;

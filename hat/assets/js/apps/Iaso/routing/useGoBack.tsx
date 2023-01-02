@@ -1,7 +1,5 @@
 import { useDispatch, useSelector } from 'react-redux';
 
-import { baseUrls } from '../constants/urls';
-
 import { redirectToReplace } from './actions';
 
 type RouterCustom = {
@@ -13,7 +11,11 @@ type Router = {
 type State = {
     routerCustom: RouterCustom;
 };
-export const useGoBack = (router: Router): (() => void) => {
+export const useGoBack = (
+    router: Router,
+    baseUrl: string,
+    params?: Record<string, string>,
+): (() => void) => {
     const prevPathname = useSelector(
         (state: State) => state.routerCustom.prevPathname,
     );
@@ -21,5 +23,5 @@ export const useGoBack = (router: Router): (() => void) => {
     if (prevPathname) {
         return () => router.goBack();
     }
-    return () => dispatch(redirectToReplace(baseUrls.entityTypes, {}));
+    return () => dispatch(redirectToReplace(baseUrl, params || {}));
 };

@@ -3,7 +3,16 @@ import typing
 from django.db import models
 from django.contrib.auth.models import User, AnonymousUser
 from iaso.models.entity import EntityType, Form
-from ..utils.models.soft_deletable import SoftDeletableModel
+from ..utils.models.soft_deletable import (
+    SoftDeletableModel,
+    DefaultSoftDeletableManager,
+    OnlyDeletedSoftDeletableManager,
+    IncludeDeletedSoftDeletableManager,
+)
+
+
+class WorkflowQuerySet(models.QuerySet):
+    pass
 
 
 class Workflow(SoftDeletableModel):
@@ -18,6 +27,12 @@ class Workflow(SoftDeletableModel):
 
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+
+    objects = DefaultSoftDeletableManager.from_queryset(WorkflowQuerySet)()
+
+    objects_only_deleted = OnlyDeletedSoftDeletableManager.from_queryset(WorkflowQuerySet)()
+
+    objects_include_deleted = IncludeDeletedSoftDeletableManager.from_queryset(WorkflowQuerySet)()
 
     @property
     def latest_version(self):
@@ -41,9 +56,10 @@ class WorkflowVersionsStatus(models.TextChoices):
     UNPUBLISHED = "UNPUBLISHED", "Unpublished"
     PUBLISHED = "PUBLISHED", "Published"
 
-    def is_transition_allowed(self, new_status: "WorkflowVersionsStatus"):
-        allowed_set: typing.Set[str] = WorkflowVersionsStatusAllowedTransitions.get(self.value, set())
-        return new_status.value in allowed_set
+
+def is_transition_allowed(self: "WorkflowVersion", new_status: str):
+    allowed_set: typing.Set[str] = WorkflowVersionsStatusAllowedTransitions.get(self.status, set())
+    return new_status in allowed_set
 
 
 class WorkflowVersionQuerySet(models.QuerySet):
@@ -59,7 +75,7 @@ class WorkflowVersionQuerySet(models.QuerySet):
         return queryset
 
 
-class WorkflowVersion(models.Model):
+class WorkflowVersion(SoftDeletableModel):
     """
     WorkflowVersion has 'workflow' foreign key to the Workflow object.
     reverse relations :
@@ -79,7 +95,28 @@ class WorkflowVersion(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
-    objects = WorkflowVersionQuerySet.as_manager()
+    objects = DefaultSoftDeletableManager.from_queryset(WorkflowVersionQuerySet)()
+
+    objects_only_deleted = OnlyDeletedSoftDeletableManager.from_queryset(WorkflowVersionQuerySet)()
+
+    objects_include_deleted = IncludeDeletedSoftDeletableManager.from_queryset(WorkflowVersionQuerySet)()
+
+    def transition_to_status(self, new_status_str: str, do_save=True):
+        old_status_str = self.status
+
+        if is_transition_allowed(self, new_status_str):
+            self.status = new_status_str
+            if do_save:
+                self.save()
+
+            if new_status_str == "PUBLISHED":
+                # We passed all the other PUBLISHED -> UNPUBLISHED
+                WorkflowVersion.objects.filter(workflow=self.workflow, status="PUBLISHED").update(status="UNPUBLISHED")
+
+            return {"success": True}
+
+        else:
+            return {"success": False, "error": f"Transition from {old_status_str} to {new_status_str} is not allowed"}
 
     def __str__(self):
         status_label = self.status

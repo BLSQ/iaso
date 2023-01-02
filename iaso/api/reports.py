@@ -20,6 +20,13 @@ class ReportSerializer(serializers.ModelSerializer):
 
 
 class ReportsViewSet(ModelViewSet):
+    """
+    api/reports
+
+    api/reports/id
+
+    API to download a report. Reports are project linked.
+    """
     results_key = "result"
     remove_results_key_if_paginated = True
     filter_backends = [filters.OrderingFilter, DjangoFilterBackend]

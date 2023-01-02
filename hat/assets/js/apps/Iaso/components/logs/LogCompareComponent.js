@@ -1,7 +1,5 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import { FormattedMessage } from 'react-intl';
-import moment from 'moment';
 
 import {
     makeStyles,
@@ -18,16 +16,12 @@ import {
 import Visibility from '@material-ui/icons/Visibility';
 import VisibilityOff from '@material-ui/icons/VisibilityOff';
 
-import {
-    textPlaceholder,
-    useSafeIntl,
-    commonStyles,
-} from 'bluesquare-components';
+import { useSafeIntl, commonStyles } from 'bluesquare-components';
 import { isEqual } from 'lodash';
 
-import { PolygonMap } from '../maps/PolygonMapComponent.tsx';
-import { MarkerMap } from '../maps/MarkerMapComponent.tsx';
 import ConfirmDialog from '../dialogs/ConfirmDialogComponent';
+
+import ValueWithErrorBoundary from './ValueWithErrorBoundary';
 
 import MESSAGES from '../../domains/forms/messages';
 import { MESSAGES as LOG_MESSAGES } from './messages';
@@ -55,90 +49,7 @@ const useStyles = makeStyles(theme => ({
         marginRight: theme.spacing(2),
         display: 'inline-block',
     },
-    cellMap: {
-        margin: -theme.spacing(2),
-    },
 }));
-
-const renderValue = (fieldKey, value, fields, classes) => {
-    if (!value || value.toString().length === 0) return textPlaceholder;
-    try {
-        switch (fieldKey) {
-            case 'geom':
-            case 'catchment':
-            case 'simplified_geom': {
-                return (
-                    <div className={classes.cellMap}>
-                        <PolygonMap polygonPositions={value} />
-                    </div>
-                );
-            }
-
-            case 'updated_at': {
-                return moment(value).format('LTS');
-            }
-
-            case 'location': {
-                if (!fields.latitude || !fields.longitude) {
-                    return value.toString();
-                }
-                return (
-                    <div className={classes.cellMap}>
-                        <MarkerMap
-                            latitude={fields.latitude}
-                            longitude={fields.longitude}
-                        />
-                    </div>
-                );
-            }
-            default:
-                return value.toString();
-        }
-    } catch (e) {
-        // eslint-disable-next-line no-console
-        console.error('Could not parse', e);
-        return value.toString();
-    }
-};
-
-// Use an errorBoundary so if the value cannot be parsed and crash when rendering
-// we still display the raw value
-class ValueWithErrorBoundary extends React.Component {
-    constructor(props) {
-        super(props);
-        this.state = { hasError: false };
-    }
-
-    static getDerivedStateFromError(error) {
-        // Update state so the next render will show the fallback UI.
-        console.error(error);
-        return { hasError: true, error };
-    }
-
-    render() {
-        if (this.state.hasError) {
-            // You can render any custom fallback UI
-            return (
-                <>
-                    <h1>Error rendering value:</h1>
-                    <div>${this.props.value}</div>
-                </>
-            );
-        }
-        return renderValue(
-            this.props.fieldKey,
-            this.props.value,
-            this.props.fields,
-            this.props.classes,
-        );
-    }
-}
-ValueWithErrorBoundary.propTypes = {
-    value: PropTypes.any,
-    fieldKey: PropTypes.string.isRequired,
-    fields: PropTypes.object.isRequired,
-    classes: PropTypes.object.isRequired,
-};
 
 const getArrayfields = objectItem =>
     Object.keys(objectItem).map(fieldKey => ({
@@ -232,9 +143,8 @@ const LogCompareComponent = ({ log, compareLog, goToRevision, title }) => {
                         </Tooltip>
                     </Grid>
                 </Grid>
-                {showFields.length === 0 && (
-                    <FormattedMessage {...LOG_MESSAGES.noDifference} />
-                )}
+                {showFields.length === 0 &&
+                    formatMessage(LOG_MESSAGES.noDifference)}
                 <Table className={classes.table}>
                     <TableBody>
                         {fields.map(({ fieldKey, value }) => (
@@ -254,8 +164,6 @@ const LogCompareComponent = ({ log, compareLog, goToRevision, title }) => {
                                     <ValueWithErrorBoundary
                                         fieldKey={fieldKey}
                                         value={value}
-                                        fields={l.fields}
-                                        classes={classes}
                                     />
                                 </TableCell>
                             </TableRow>
@@ -271,41 +179,29 @@ const LogCompareComponent = ({ log, compareLog, goToRevision, title }) => {
                 >
                     <Grid xs={6} item>
                         <ConfirmDialog
-                            btnMessage={
-                                <FormattedMessage
-                                    {...LOG_MESSAGES.goToRevision}
-                                />
-                            }
-                            question={
-                                <FormattedMessage
-                                    {...LOG_MESSAGES.goToRevisionQuestion}
-                                />
-                            }
-                            message={
-                                <FormattedMessage
-                                    {...LOG_MESSAGES.goToRevisionText}
-                                />
-                            }
+                            btnMessage={formatMessage(
+                                LOG_MESSAGES.goToRevision,
+                            )}
+                            question={formatMessage(
+                                LOG_MESSAGES.goToRevisionQuestion,
+                            )}
+                            message={formatMessage(
+                                LOG_MESSAGES.goToRevisionText,
+                            )}
                             confirm={() => goToRevision(l)}
                         />
                     </Grid>
                     <Grid xs={6} item>
                         <ConfirmDialog
-                            btnMessage={
-                                <FormattedMessage
-                                    {...LOG_MESSAGES.goToRevisionChanges}
-                                />
-                            }
-                            question={
-                                <FormattedMessage
-                                    {...LOG_MESSAGES.goToRevisionQuestion}
-                                />
-                            }
-                            message={
-                                <FormattedMessage
-                                    {...LOG_MESSAGES.goToRevisionTextChanges}
-                                />
-                            }
+                            btnMessage={formatMessage(
+                                LOG_MESSAGES.goToRevisionChanges,
+                            )}
+                            question={formatMessage(
+                                LOG_MESSAGES.goToRevisionQuestion,
+                            )}
+                            message={formatMessage(
+                                LOG_MESSAGES.goToRevisionTextChanges,
+                            )}
                             confirm={() =>
                                 goToRevision({
                                     fields: differenceArray[i],

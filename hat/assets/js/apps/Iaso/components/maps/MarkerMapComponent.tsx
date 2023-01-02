@@ -1,21 +1,24 @@
 /* eslint-disable react/jsx-props-no-spreading */
-import React, { FunctionComponent, useState, useEffect, useRef } from 'react';
+import React, {
+    FunctionComponent,
+    useState,
+    useEffect,
+    useRef,
+    useCallback,
+} from 'react';
 import { Map, ScaleControl, TileLayer } from 'react-leaflet';
-import { FormattedMessage } from 'react-intl';
+// @ts-ignore
 import L from 'leaflet';
 
-import { Dialog, DialogActions, Button, makeStyles } from '@material-ui/core';
+import { makeStyles } from '@material-ui/core';
 // @ts-ignore
 import { commonStyles } from 'bluesquare-components';
-import Layers from '@material-ui/icons/Layers';
 
 import { ZoomControl } from '../../utils/mapUtils';
 
 import tiles from '../../constants/mapTiles';
 import MarkerComponent from './markers/MarkerComponent';
-import TileSwitch from './tools/TileSwitchComponent';
-
-import MESSAGES from './messages';
+import { TilesSwitchDialog, Tile } from './tools/TilesSwitchDialog';
 
 const useStyles = makeStyles(theme => ({
     mapContainer: {
@@ -24,27 +27,6 @@ const useStyles = makeStyles(theme => ({
         minWidth: 200,
         marginBottom: 0,
         position: 'relative',
-    },
-    legendLayers: {
-        position: 'absolute',
-        right: theme.spacing(1),
-        top: theme.spacing(1),
-        zIndex: 400,
-        borderRadius: 4,
-        border: '2px solid rgba(0,0,0,0.2)',
-    },
-    barButton: {
-        display: 'flex',
-        position: 'relative',
-        backgroundColor: 'white',
-        borderRadius: '4px',
-        padding: '2px',
-        cursor: 'pointer',
-        outline: 'none',
-        boxShadow: 'none',
-    },
-    tileSwitchContainer: {
-        marginBottom: -theme.spacing(4),
     },
 }));
 
@@ -57,10 +39,7 @@ export const MarkerMap: FunctionComponent<Props> = ({
     latitude,
     longitude,
 }) => {
-    const [currentTile, setCurrentTitle] = useState<Record<string, any>>(
-        tiles.osm,
-    );
-    const [tilePopup, setTilePopup] = useState<boolean>(false);
+    const [currentTile, setCurrentTile] = useState<Tile>(tiles.osm);
 
     const map: any = useRef();
 
@@ -68,15 +47,7 @@ export const MarkerMap: FunctionComponent<Props> = ({
 
     const boundsOptions = { padding: [500, 500] };
 
-    const handleChangeTile = tile => {
-        setCurrentTitle(tile);
-    };
-
-    const toggleTilePopup = () => {
-        setTilePopup(!tilePopup);
-    };
-
-    const fitToBounds = () => {
+    const fitToBounds = useCallback(() => {
         const latlng = [L.latLng(latitude, longitude)];
         const markerBounds = L.latLngBounds(latlng);
 
@@ -84,36 +55,21 @@ export const MarkerMap: FunctionComponent<Props> = ({
             maxZoom: 9,
             padding: boundsOptions.padding,
         });
-    };
+    }, [boundsOptions.padding, latitude, longitude]);
 
     useEffect(() => {
         fitToBounds();
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
     if (!latitude || !longitude) return null;
 
     return (
         <div className={classes.mapContainer}>
-            <Dialog
-                open={tilePopup}
-                onClose={(event, reason) => {
-                    if (reason === 'backdropClick') {
-                        toggleTilePopup();
-                    }
-                }}
-            >
-                <div className={classes.tileSwitchContainer}>
-                    <TileSwitch
-                        setCurrentTile={newtile => handleChangeTile(newtile)}
-                        currentTile={currentTile}
-                    />
-                </div>
-                <DialogActions>
-                    <Button onClick={() => toggleTilePopup()} color="primary">
-                        <FormattedMessage {...MESSAGES.close} />
-                    </Button>
-                </DialogActions>
-            </Dialog>
+            <TilesSwitchDialog
+                currentTile={currentTile}
+                setCurrentTile={setCurrentTile}
+            />
             <Map
                 scrollWheelZoom={false}
                 maxZoom={currentTile.maxZoom}
@@ -140,16 +96,6 @@ export const MarkerMap: FunctionComponent<Props> = ({
                     }}
                 />
             </Map>
-            <div className={classes.legendLayers}>
-                <span
-                    className={classes.barButton}
-                    role="button"
-                    tabIndex={0}
-                    onClick={() => toggleTilePopup()}
-                >
-                    <Layers fontSize="small" />
-                </span>
-            </div>
         </div>
     );
 };

@@ -1,5 +1,4 @@
-import React, { FunctionComponent, useRef, useMemo } from 'react';
-import { wktToGeoJSON } from '@terraformer/wkt';
+import React, { FunctionComponent, useRef, useMemo, useState } from 'react';
 // @ts-ignore
 import L from 'leaflet';
 import { Map, TileLayer, ScaleControl, GeoJSON } from 'react-leaflet';
@@ -11,33 +10,33 @@ import { ZoomControl } from '../../utils/mapUtils';
 
 import tiles from '../../constants/mapTiles';
 
+import { GeoJson } from './types';
+import { TilesSwitchDialog, Tile } from './tools/TilesSwitchDialog';
+
 const useStyles = makeStyles(theme => ({
     mapContainer: {
         ...commonStyles(theme).mapContainer,
         height: 400,
         minWidth: 200,
-        marginbottom: 0,
+        marginBottom: 0,
+        position: 'relative',
     },
 }));
 
 type Props = {
-    polygonPositions: string;
+    geoJson: GeoJson;
 };
 
-export const PolygonMap: FunctionComponent<Props> = ({ polygonPositions }) => {
+export const GeoJsonMap: FunctionComponent<Props> = ({ geoJson }) => {
     const map: any = useRef();
 
     const classes: Record<string, string> = useStyles();
 
-    const geoJson = useMemo(() => {
-        return wktToGeoJSON(polygonPositions.replace('SRID=4326;', ''));
-    }, [polygonPositions]);
     const bounds = useMemo(() => {
         const shape = L.geoJSON(geoJson);
         return shape?.getBounds();
     }, [geoJson]);
-
-    const currentTile = tiles.osm;
+    const [currentTile, setCurrentTile] = useState<Tile>(tiles.osm);
     const boundsOptions = { padding: [10, 10] };
 
     const fitToBounds = () => {
@@ -49,6 +48,10 @@ export const PolygonMap: FunctionComponent<Props> = ({ polygonPositions }) => {
 
     return (
         <div className={classes.mapContainer}>
+            <TilesSwitchDialog
+                currentTile={currentTile}
+                setCurrentTile={setCurrentTile}
+            />
             <Map
                 scrollWheelZoom={false}
                 maxZoom={currentTile.maxZoom}
@@ -68,12 +71,8 @@ export const PolygonMap: FunctionComponent<Props> = ({ polygonPositions }) => {
                     }
                     url={currentTile.url}
                 />
-                <GeoJSON
-                    data={geoJson}
-                    style={() => ({
-                        color: 'blue',
-                    })}
-                />
+
+                <GeoJSON className="secondary" data={geoJson} />
             </Map>
         </div>
     );

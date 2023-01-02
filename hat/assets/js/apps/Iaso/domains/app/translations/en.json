@@ -474,6 +474,7 @@
     "iaso.label.reAssignInstance": "Re-assign instance",
     "iaso.label.reAssignInstanceAction": "Re-assign",
     "iaso.label.refresh": "Refresh",
+    "iaso.label.renderError": "Error rendering value",
     "iaso.label.resultsLower": "result(s)",
     "iaso.label.save": "Save",
     "iaso.label.search": "Search",

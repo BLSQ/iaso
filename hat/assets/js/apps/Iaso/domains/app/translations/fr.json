@@ -34,6 +34,7 @@
     "iaso.assignment.parentPicking": "Mode sélection de parent",
     "iaso.assignment.title": "Affectation pour le planning",
     "iaso.CDS": "Centre de Santé",
+    "iaso.label.renderError": "Erreur de rendu de la valeur",
     "iaso.completeness.chooseParent": "Selectionnez un formulaire ou une unité d'org parente pour activer",
     "iaso.completeness.formsFilledDirect": "# Formulaires remplis (direct)",
     "iaso.completeness.formsFilledWithDescendants": "# Formulaires remplis (avec niv. inf.)",

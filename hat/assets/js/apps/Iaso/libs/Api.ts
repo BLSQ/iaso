@@ -1,6 +1,7 @@
 /* eslint-disable camelcase */
 import { FETCHING_ABORTED } from './constants';
-import { Nullable } from '../types/utils';
+import { Nullable, Optional } from '../types/utils';
+import { PostArg } from '../types/general';
 
 export class ApiError extends Error {
     private status: any;
@@ -73,7 +74,7 @@ export const iasoFetch = async (
 export const getRequest = async (
     url: string,
     signal?: Nullable<AbortSignal>,
-): Promise<unknown> => {
+): Promise<any> => {
     return iasoFetch(url, { signal }).then(response => {
         return response.json();
     });
@@ -82,9 +83,9 @@ export const getRequest = async (
 export const basePostRequest = (
     url: string,
     data: Record<string, any> = {},
-    fileData: Record<string, Blob | Blob[]> = {},
+    fileData: Optional<Record<string, Blob | Blob[]>> = {},
     signal?: Nullable<AbortSignal>,
-): Promise<unknown> => {
+): Promise<any> => {
     // Send as form if files included else in JSON
     let init: Record<string, unknown> = {};
     if (Object.keys(fileData).length > 0) {
@@ -122,18 +123,13 @@ export const basePostRequest = (
         return response.json();
     });
 };
-type postArg = {
-    url: string;
-    data: Record<string, any>;
-    fileData: Record<string, Blob | Blob[]>;
-    signal: AbortSignal | null;
-};
+
 export const postRequest = (
-    arg1: string | postArg,
+    arg1: string | PostArg,
     arg2?: Record<string, any>,
     arg3?: Record<string, Blob | Blob[]>,
     arg4?: AbortSignal | null,
-): Promise<unknown> => {
+): Promise<any> => {
     if (typeof arg1 === 'string') {
         return basePostRequest(arg1, arg2, arg3, arg4);
     }
@@ -144,7 +140,7 @@ export const patchRequest = (
     url: string,
     data: unknown,
     signal?: Nullable<AbortSignal>,
-): Promise<unknown> =>
+): Promise<any> =>
     iasoFetch(url, {
         method: 'PATCH',
         body: JSON.stringify(data),
@@ -182,7 +178,7 @@ export const putRequest = (
     url: string,
     data: unknown,
     signal?: Nullable<AbortSignal>,
-): Promise<unknown> =>
+): Promise<any> =>
     iasoFetch(url, {
         method: 'PUT',
         body: JSON.stringify(data),

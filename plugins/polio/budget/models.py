@@ -246,6 +246,8 @@ class WorkflowModel(models.Model):
 @time_cache(60)
 def get_workflow():
     workflow_model = WorkflowModel.objects.last()
+    if workflow_model is None:
+        return None
     transition_defs = workflow_model.definition["transitions"]
     node_defs = workflow_model.definition["nodes"]
     categories_defs = workflow_model.definition["categories"]

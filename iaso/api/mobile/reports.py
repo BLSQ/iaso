@@ -37,6 +37,7 @@ class MobileReportsViewSet(ModelViewSet):
 
     API to download a report. Reports are project linked.
     """
+
     results_key = "result"
     remove_results_key_if_paginated = True
     filter_backends = [filters.OrderingFilter, DjangoFilterBackend]

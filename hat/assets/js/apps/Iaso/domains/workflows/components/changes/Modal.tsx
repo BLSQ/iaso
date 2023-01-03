@@ -14,6 +14,7 @@ import {
 import { Grid } from '@material-ui/core';
 import InputComponent from '../../../../components/forms/InputComponent';
 import { EditIconButton } from '../ModalButtons';
+import { MappingTable } from './MappingTable';
 
 import { useGetForms } from '../../hooks/requests/useGetForms';
 import { useUpdateWorkflowChange } from '../../hooks/requests/useUpdateWorkflowChange';
@@ -101,6 +102,9 @@ const Modal: FunctionComponent<Props> = ({
                     />
                 </Grid>
                 <Grid item xs={12} md={4} />
+                <Grid item xs={12}>
+                    <MappingTable change={change} />
+                </Grid>
             </Grid>
         </ConfirmCancelModal>
     );

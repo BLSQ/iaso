@@ -178,6 +178,14 @@ const MESSAGES = defineMessages({
         id: 'iaso.workflows.dialog.deleteChange',
         defaultMessage: 'Are you sure you want to delete this change?',
     },
+    target: {
+        id: 'iaso.workflows.target',
+        defaultMessage: 'Target',
+    },
+    source: {
+        id: 'iaso.workflows.source',
+        defaultMessage: 'Source',
+    },
 });
 
 export default MESSAGES;

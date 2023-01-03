@@ -15,6 +15,11 @@ export type WorkflowsParams = UrlParams & {
 
 export type Status = 'DRAFT' | 'UNPUBLISHED' | 'PUBLISHED';
 
+export type Mapping = {
+    source: string;
+    target: string;
+};
+
 export type Change = {
     id: number;
     form: Form;

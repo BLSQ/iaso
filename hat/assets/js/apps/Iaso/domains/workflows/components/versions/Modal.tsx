@@ -10,11 +10,11 @@ import {
     // @ts-ignore
     AddButton,
 } from 'bluesquare-components';
-import { useCreateWorkflowVersion } from '../hooks/requests/useCreateWorkflowVersion';
+import { useCreateWorkflowVersion } from '../../hooks/requests/useCreateWorkflowVersion';
 
-import InputComponent from '../../../components/forms/InputComponent';
+import InputComponent from '../../../../components/forms/InputComponent';
 
-import MESSAGES from '../messages';
+import MESSAGES from '../../messages';
 
 type Props = {
     entityTypeId: string;

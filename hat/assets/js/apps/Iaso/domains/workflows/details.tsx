@@ -41,12 +41,12 @@ import {
     WorkflowVersionDetail,
     WorkflowParams,
     FollowUps,
-} from './types/workflows';
+} from './types';
 
 import { WorkflowBaseInfo } from './components/WorkflowBaseInfo';
-import { FollowUpsTable } from './components/FollowUpsTable';
-import { AddFollowUpsModal } from './components/FollowUpsModal';
-import { AddChangeModal } from './components/ChangesModal';
+import { FollowUpsTable } from './components/followUps/Table';
+import { AddFollowUpsModal } from './components/followUps/Modal';
+import { AddChangeModal } from './components/changes/Modal';
 
 import WidgetPaper from '../../components/papers/WidgetPaperComponent';
 import { TableWithDeepLink } from '../../components/tables/TableWithDeepLink';

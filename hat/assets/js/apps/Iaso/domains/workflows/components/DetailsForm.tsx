@@ -6,7 +6,7 @@ import {
 import { Box, Button, makeStyles } from '@material-ui/core';
 
 import InputComponent from '../../../components/forms/InputComponent';
-import { WorkflowVersionDetail } from '../types/workflows';
+import { WorkflowVersionDetail } from '../types';
 
 import { useUpdateWorkflowVersion } from '../hooks/requests/useUpdateWorkflowVersion';
 

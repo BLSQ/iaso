@@ -8,11 +8,11 @@ import {
 import MESSAGES from '../messages';
 import { DateCell } from '../../../components/Cells/DateTimeCell';
 import { LinkToForm } from '../../forms/components/LinkToForm';
-import { ChangesActionCell } from '../components/ChangesActionCell';
+import { ChangesActionCell } from '../components/changes/ActionCell';
 
 import { IntlFormatMessage } from '../../../types/intl';
 import { Column } from '../../../types/table';
-import { WorkflowVersionDetail } from '../types/workflows';
+import { WorkflowVersionDetail } from '../types';
 
 export const useGetChangesColumns = (
     versionId: string,

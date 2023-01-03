@@ -12,7 +12,7 @@ import { Column } from '../../../types/table';
 import { baseUrls } from '../../../constants/urls';
 
 import { StatusCell } from '../components/StatusCell';
-import { VersionsActionCell } from '../components/VersionsActionCell';
+import { VersionsActionCell } from '../components/versions/ActionCell';
 
 export const defaultSorted = [{ id: 'id', desc: true }];
 

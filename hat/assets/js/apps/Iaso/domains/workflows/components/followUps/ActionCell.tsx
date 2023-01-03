@@ -5,13 +5,13 @@ import {
     QueryBuilderFields,
 } from 'bluesquare-components';
 
-import { FollowUps } from '../types/workflows';
+import { FollowUps } from '../../types';
 
-import MESSAGES from '../messages';
-import DeleteDialog from '../../../components/dialogs/DeleteDialogComponent';
-import { FollowUpsModal } from './FollowUpsModal';
+import MESSAGES from '../../messages';
+import DeleteDialog from '../../../../components/dialogs/DeleteDialogComponent';
+import { FollowUpsModal } from './Modal';
 
-import { useDeleteWorkflowFollowUp } from '../hooks/requests/useDeleteWorkflowFollowUp';
+import { useDeleteWorkflowFollowUp } from '../../hooks/requests/useDeleteWorkflowFollowUp';
 
 type Props = {
     followUp: FollowUps;

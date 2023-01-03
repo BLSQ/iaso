@@ -10,10 +10,10 @@ import {
     useSafeIntl,
 } from 'bluesquare-components';
 
-import { WorkflowParams, WorkflowVersionDetail } from '../types/workflows';
-import MESSAGES from '../messages';
-import { baseUrls } from '../../../constants/urls';
-import { Column } from '../../../types/table';
+import { WorkflowParams, WorkflowVersionDetail } from '../../types';
+import MESSAGES from '../../messages';
+import { baseUrls } from '../../../../constants/urls';
+import { Column } from '../../../../types/table';
 
 type Props = {
     params: WorkflowParams;

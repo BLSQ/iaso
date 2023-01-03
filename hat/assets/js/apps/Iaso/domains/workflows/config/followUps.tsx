@@ -15,8 +15,8 @@ import { LinkToForm } from '../../forms/components/LinkToForm';
 import { IntlFormatMessage } from '../../../types/intl';
 import { Column } from '../../../types/table';
 
-import { FollowUpActionCell } from '../components/FollowUpActionCell';
-import { WorkflowVersionDetail } from '../types/workflows';
+import { FollowUpActionCell } from '../components/followUps/ActionCell';
+import { WorkflowVersionDetail } from '../types';
 
 export const useGetFollowUpsColumns = (
     // eslint-disable-next-line no-unused-vars

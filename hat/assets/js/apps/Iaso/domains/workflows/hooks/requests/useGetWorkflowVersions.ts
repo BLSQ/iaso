@@ -7,7 +7,7 @@ import {
     WorkflowVersionsPaginated,
     WorkflowsParams,
     WorkflowVersionDetail,
-} from '../../types/workflows';
+} from '../../types';
 
 const getWorkflowVersions = async (
     options: WorkflowsParams,

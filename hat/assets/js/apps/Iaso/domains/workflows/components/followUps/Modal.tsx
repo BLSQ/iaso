@@ -16,18 +16,18 @@ import {
 } from 'bluesquare-components';
 
 import { Grid } from '@material-ui/core';
-import InputComponent from '../../../components/forms/InputComponent';
-import { EditIconButton } from './ModalButtons';
-import { commaSeparatedIdsToArray } from '../../../utils/forms';
+import InputComponent from '../../../../components/forms/InputComponent';
+import { EditIconButton } from '../ModalButtons';
+import { commaSeparatedIdsToArray } from '../../../../utils/forms';
 
-import { useGetForms } from '../hooks/requests/useGetForms';
-import { useBulkUpdateWorkflowFollowUp } from '../hooks/requests/useBulkUpdateWorkflowFollowUp';
-import { useCreateWorkflowFollowUp } from '../hooks/requests/useCreateWorkflowFollowUp';
-import { parseJson, JSONValue } from '../../instances/utils/jsonLogicParse';
+import { useGetForms } from '../../hooks/requests/useGetForms';
+import { useBulkUpdateWorkflowFollowUp } from '../../hooks/requests/useBulkUpdateWorkflowFollowUp';
+import { useCreateWorkflowFollowUp } from '../../hooks/requests/useCreateWorkflowFollowUp';
+import { parseJson, JSONValue } from '../../../instances/utils/jsonLogicParse';
 
-import MESSAGES from '../messages';
+import MESSAGES from '../../messages';
 
-import { FollowUps } from '../types/workflows';
+import { FollowUps } from '../../types';
 
 type Props = {
     isOpen: boolean;

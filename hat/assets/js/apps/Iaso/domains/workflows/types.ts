@@ -1,6 +1,6 @@
 /* eslint-disable camelcase */
-import { Pagination, UrlParams } from '../../../types/table';
-import { EntityType } from '../../entities/entityTypes/types/entityType';
+import { Pagination, UrlParams } from '../../types/table';
+import { EntityType } from '../entities/entityTypes/types/entityType';
 
 export type WorkflowParams = UrlParams & {
     entityTypeId: string;

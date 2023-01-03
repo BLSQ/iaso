@@ -10,11 +10,11 @@ import { useGoBack } from '../../routing/useGoBack';
 import TopBar from '../../components/nav/TopBarComponent';
 import { TableWithDeepLink } from '../../components/tables/TableWithDeepLink';
 import { Filters } from './components/Filters';
-import { AddVersionModal } from './components/AddVersionModal';
+import { AddVersionModal } from './components/versions/Modal';
 
 import { useGetWorkflowVersions } from './hooks/requests/useGetWorkflowVersions';
 import { useGetType } from '../entities/entityTypes/hooks/requests/entitiyTypes';
-import { WorkflowsParams } from './types/workflows';
+import { WorkflowsParams } from './types';
 
 import { redirectToReplace } from '../../routing/actions';
 

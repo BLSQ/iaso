@@ -1,12 +1,12 @@
 import React, { FunctionComponent } from 'react';
 
-import { Change } from '../types/workflows';
+import { Change } from '../../types';
 
-import MESSAGES from '../messages';
-import DeleteDialog from '../../../components/dialogs/DeleteDialogComponent';
-import { ChangesModal } from './ChangesModal';
+import MESSAGES from '../../messages';
+import DeleteDialog from '../../../../components/dialogs/DeleteDialogComponent';
+import { ChangesModal } from './Modal';
 
-import { useDeleteWorkflowChange } from '../hooks/requests/useDeleteWorkflowChange';
+import { useDeleteWorkflowChange } from '../../hooks/requests/useDeleteWorkflowChange';
 
 type Props = {
     change: Change;

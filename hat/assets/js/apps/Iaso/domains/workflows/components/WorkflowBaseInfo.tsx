@@ -13,13 +13,13 @@ import { useSafeIntl } from 'bluesquare-components';
 
 import MESSAGES from '../messages';
 
-import { WorkflowVersionDetail } from '../types/workflows';
+import { WorkflowVersionDetail } from '../types';
 
 import { StatusCell } from './StatusCell';
 import { DetailsForm } from './DetailsForm';
 import { LinkToForm } from '../../forms/components/LinkToForm';
 
-import { PublishVersionModal } from './PublishVersionModal';
+import { PublishVersionModal } from './versions/PublishVersionModal';
 
 const useStyles = makeStyles(theme => ({
     leftCell: {

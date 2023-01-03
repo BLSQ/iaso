@@ -9,12 +9,12 @@ import {
     makeFullModal,
 } from 'bluesquare-components';
 
-import { PublishButton, PublishIconButton } from './ModalButtons';
+import { PublishButton, PublishIconButton } from '../ModalButtons';
 
-import { WorkflowVersionDetail } from '../types/workflows';
-import { useUpdateWorkflowVersion } from '../hooks/requests/useUpdateWorkflowVersion';
+import { WorkflowVersionDetail } from '../../types';
+import { useUpdateWorkflowVersion } from '../../hooks/requests/useUpdateWorkflowVersion';
 
-import MESSAGES from '../messages';
+import MESSAGES from '../../messages';
 
 type Props = {
     isOpen: boolean;

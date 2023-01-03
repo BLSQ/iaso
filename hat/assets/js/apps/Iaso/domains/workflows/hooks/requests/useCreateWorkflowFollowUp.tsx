@@ -2,7 +2,7 @@ import { UseMutationResult } from 'react-query';
 import { postRequest } from '../../../../libs/Api';
 import { useSnackMutation } from '../../../../libs/apiHooks';
 
-import { FollowUps } from '../../types/workflows';
+import { FollowUps } from '../../types';
 
 const createWorkflowFollowUp = async (
     data: FollowUps,

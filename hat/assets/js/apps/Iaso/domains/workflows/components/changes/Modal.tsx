@@ -12,16 +12,16 @@ import {
 } from 'bluesquare-components';
 
 import { Grid } from '@material-ui/core';
-import InputComponent from '../../../components/forms/InputComponent';
-import { EditIconButton } from './ModalButtons';
+import InputComponent from '../../../../components/forms/InputComponent';
+import { EditIconButton } from '../ModalButtons';
 
-import { useGetForms } from '../hooks/requests/useGetForms';
-import { useUpdateWorkflowChange } from '../hooks/requests/useUpdateWorkflowChange';
-import { useCreateWorkflowChange } from '../hooks/requests/useCreateWorkflowChange';
+import { useGetForms } from '../../hooks/requests/useGetForms';
+import { useUpdateWorkflowChange } from '../../hooks/requests/useUpdateWorkflowChange';
+import { useCreateWorkflowChange } from '../../hooks/requests/useCreateWorkflowChange';
 
-import MESSAGES from '../messages';
+import MESSAGES from '../../messages';
 
-import { Change } from '../types/workflows';
+import { Change } from '../../types';
 
 type Props = {
     isOpen: boolean;
@@ -88,7 +88,7 @@ const Modal: FunctionComponent<Props> = ({
             onClose={() => null}
         >
             <Grid container spacing={2}>
-                <Grid item xs={12} md={4}>
+                <Grid item xs={12} md={6}>
                     <InputComponent
                         type="select"
                         keyValue="forms"

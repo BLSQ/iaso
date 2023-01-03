@@ -4,19 +4,19 @@ import { useSnackMutation } from '../../../../libs/apiHooks';
 
 import { FollowUps } from '../../types/workflows';
 
-const createWorkflowFollowUp = async (
+const createWorkflowChange = async (
     data: FollowUps,
     versionId: string,
 ): Promise<any> => {
-    return postRequest(`/api/workflowfollowups/?version_id=${versionId}`, data);
+    return postRequest(`/api/workflowchanges/?version_id=${versionId}`, data);
 };
 
-export const useCreateWorkflowFollowUp = (
+export const useCreateWorkflowChange = (
     closeDialog: () => void,
     versionId: string,
 ): UseMutationResult =>
     useSnackMutation({
-        mutationFn: data => createWorkflowFollowUp(data, versionId),
+        mutationFn: data => createWorkflowChange(data, versionId),
         invalidateQueryKey: 'workflowVersion',
         options: { onSuccess: () => closeDialog() },
     });

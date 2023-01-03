@@ -14,7 +14,7 @@ import { locationLimitMax } from '../domains/orgUnits/constants/orgUnitConstants
 import Page404 from '../components/errors/Page404';
 
 import { defaultSorted as storageDefaultSort } from '../domains/storages/config.tsx';
-import { defaultSorted as workflowDefaultSort } from '../domains/workflows/config.tsx';
+import { defaultSorted as workflowDefaultSort } from '../domains/workflows/config/index.tsx';
 
 const getRedirections = overrideLanding => {
     const getPaginationParams = (order = 'id', pageSize = 20) =>

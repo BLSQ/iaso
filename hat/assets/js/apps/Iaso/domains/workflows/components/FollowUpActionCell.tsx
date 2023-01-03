@@ -24,7 +24,7 @@ export const FollowUpActionCell: FunctionComponent<Props> = ({
     fields,
     versionId,
 }) => {
-    const { mutate: deleteWorkflowVersion } = useDeleteWorkflowFollowUp();
+    const { mutate: deleteWorkflowFollowUp } = useDeleteWorkflowFollowUp();
     return (
         <>
             <FollowUpsModal
@@ -36,7 +36,7 @@ export const FollowUpActionCell: FunctionComponent<Props> = ({
                 keyName={`delete-workflow-follow-up-${followUp.id}`}
                 titleMessage={MESSAGES.deleteFollowUp}
                 message={MESSAGES.deleteText}
-                onConfirm={() => deleteWorkflowVersion(followUp.id)}
+                onConfirm={() => deleteWorkflowFollowUp(followUp.id)}
             />
         </>
     );

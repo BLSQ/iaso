@@ -16,6 +16,7 @@ export type WorkflowsParams = UrlParams & {
 export type Status = 'DRAFT' | 'UNPUBLISHED' | 'PUBLISHED';
 
 export type Change = {
+    id: number;
     form: Form;
     mapping: Record<string, string>;
     created_at: string;

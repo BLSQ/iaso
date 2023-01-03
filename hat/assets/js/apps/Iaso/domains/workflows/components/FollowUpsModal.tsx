@@ -119,8 +119,8 @@ const FollowUpsModal: FunctionComponent<Props> = ({
             confirmMessage={MESSAGES.confirm}
             open={isOpen}
             closeDialog={closeDialog}
-            dataTestId="add-workflow-version"
-            id="add-workflow-version"
+            dataTestId="workflow-follow-up"
+            id="workflow-follow-up"
             onClose={() => null}
         >
             <QueryBuilder

@@ -46,10 +46,12 @@ import {
 import { WorkflowBaseInfo } from './components/WorkflowBaseInfo';
 import { FollowUpsTable } from './components/FollowUpsTable';
 import { AddFollowUpsModal } from './components/FollowUpsModal';
+import { AddChangeModal } from './components/ChangesModal';
 
 import WidgetPaper from '../../components/papers/WidgetPaperComponent';
 import { TableWithDeepLink } from '../../components/tables/TableWithDeepLink';
-import { useGetChangesColumns, useGetFollowUpsColumns } from './config';
+import { useGetChangesColumns } from './config/changes';
+import { useGetFollowUpsColumns } from './config/followUps';
 import { useGetPossibleFields } from '../forms/hooks/useGetPossibleFields';
 
 type Router = {
@@ -63,9 +65,18 @@ type Props = {
 const useStyles = makeStyles(theme => ({
     ...commonStyles(theme),
     titleRow: { fontWeight: 'bold' },
-    fullWidth: { width: '100%' },
     infoPaper: { width: '100%', position: 'relative' },
     infoPaperBox: { minHeight: '100px' },
+    count: {
+        height: theme.spacing(8),
+        display: 'flex',
+        justifyContent: 'flex-end',
+        position: 'absolute',
+        alignItems: 'center',
+        paddingRight: theme.spacing(2),
+        top: 0,
+        right: 0,
+    },
 }));
 
 export const Details: FunctionComponent<Props> = ({ router }) => {
@@ -120,7 +131,7 @@ export const Details: FunctionComponent<Props> = ({ router }) => {
         fields,
         queryBuilderListToReplace,
     );
-    const changesColumns = useGetChangesColumns();
+    const changesColumns = useGetChangesColumns(versionId, workflowVersion);
     const followUpsColumns = useGetFollowUpsColumns(
         getHumanReadableJsonLogic,
         versionId,
@@ -173,9 +184,15 @@ export const Details: FunctionComponent<Props> = ({ router }) => {
                 </Grid>
                 <Box mt={2}>
                     <WidgetPaper
-                        className={classes.fullWidth}
+                        className={classes.infoPaper}
                         title={formatMessage(MESSAGES.followUps)}
                     >
+                        <Box className={classes.count}>
+                            {`${formatThousand(
+                                workflowVersion?.follow_ups.length ?? 0,
+                            )} `}
+                            {formatMessage(MESSAGES.results)}
+                        </Box>
                         <>
                             {workflowVersion && (
                                 <>
@@ -224,9 +241,15 @@ export const Details: FunctionComponent<Props> = ({ router }) => {
                 </Box>
                 <Box mt={2}>
                     <WidgetPaper
-                        className={classes.fullWidth}
+                        className={classes.infoPaper}
                         title={formatMessage(MESSAGES.changes)}
                     >
+                        <Box className={classes.count}>
+                            {`${formatThousand(
+                                workflowVersion?.changes.length ?? 0,
+                            )} `}
+                            {formatMessage(MESSAGES.results)}
+                        </Box>
                         <TableWithDeepLink
                             marginTop={false}
                             countOnTop={false}
@@ -251,18 +274,11 @@ export const Details: FunctionComponent<Props> = ({ router }) => {
                                 isLoading,
                             }}
                         />
-                        <Box
-                            display="flex"
-                            justifyContent="flex-end"
-                            pr={2}
-                            pb={2}
-                            mt={-2}
-                        >
-                            {`${formatThousand(
-                                workflowVersion?.changes.length ?? 0,
-                            )} `}
-                            {formatMessage(MESSAGES.results)}
-                        </Box>
+                        {workflowVersion?.status === 'DRAFT' && (
+                            <Box m={2} textAlign="right">
+                                <AddChangeModal versionId={versionId} />
+                            </Box>
+                        )}
                     </WidgetPaper>
                 </Box>
             </Box>

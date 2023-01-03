@@ -43,7 +43,7 @@ class WorkflowChangeSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = WorkflowChange
-        fields = ["form", "mapping", "created_at", "updated_at"]
+        fields = ["id", "form", "mapping", "created_at", "updated_at"]
 
 
 class WorkflowFollowupSerializer(serializers.ModelSerializer):

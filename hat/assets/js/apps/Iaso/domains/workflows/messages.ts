@@ -166,6 +166,18 @@ const MESSAGES = defineMessages({
         id: 'iaso.workflows.saveOrder',
         defaultMessage: 'Save order',
     },
+    editChange: {
+        id: 'iaso.workflows.editChange',
+        defaultMessage: 'Edit change',
+    },
+    createChange: {
+        id: 'iaso.workflows.createChange',
+        defaultMessage: 'Create change',
+    },
+    deleteChange: {
+        id: 'iaso.workflows.dialog.deleteChange',
+        defaultMessage: 'Are you sure you want to delete this change?',
+    },
 });
 
 export default MESSAGES;

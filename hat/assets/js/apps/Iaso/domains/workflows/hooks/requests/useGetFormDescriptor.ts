@@ -16,7 +16,7 @@ const getVersion = (formId: number | undefined): Promise<FormVersionsList> => {
 };
 export const useGetFormDescriptor = (
     formId?: number,
-): UseQueryResult<FormDescriptor | undefined, Error> => {
+): UseQueryResult<FormDescriptor[] | undefined, Error> => {
     const queryKey: any[] = ['instanceDescriptor', formId];
     return useSnackQuery({
         queryKey,
@@ -25,9 +25,9 @@ export const useGetFormDescriptor = (
             enabled: Boolean(formId),
             select: (
                 data: FormVersionsList | undefined,
-            ): FormDescriptor | undefined => {
+            ): FormDescriptor[] | undefined => {
                 if (!data) return data;
-                return data.form_versions[0]?.descriptor;
+                return data.form_versions?.map(version => version.descriptor);
             },
         },
     });

@@ -35,6 +35,7 @@ type Props = {
     followUp?: FollowUps;
     fields?: QueryBuilderFields;
     versionId: string;
+    newOrder?: number;
 };
 type JsonLogicResult = {
     logic?: JSONValue;
@@ -48,6 +49,7 @@ const FollowUpsModal: FunctionComponent<Props> = ({
     followUp,
     fields,
     versionId,
+    newOrder,
 }) => {
     const { formatMessage } = useSafeIntl();
 
@@ -78,7 +80,7 @@ const FollowUpsModal: FunctionComponent<Props> = ({
             createFollowUp({
                 condition: logic,
                 form_ids: formIds,
-                order: 0,
+                order: newOrder || 0,
             });
         }
     };

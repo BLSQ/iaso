@@ -21,7 +21,7 @@ const findDescriptorInChildren = (field, descriptor) =>
 
 // you can fields examples here: https://codesandbox.io/s/github/ukrbublik/react-awesome-query-builder/tree/master/sandbox?file=/src/demo/config.tsx:1444-1464
 export const useGetQueryBuildersFields = (
-    formDescriptor?: FormDescriptor,
+    formDescriptors?: FormDescriptor[],
     possibleFields?: PossibleField[],
 ): QueryBuilderFields => {
     if (!possibleFields) return {};
@@ -47,14 +47,19 @@ export const useGetQueryBuildersFields = (
             }
             case 'select_one':
             case 'select one': {
-                const listValues =
-                    findDescriptorInChildren(
+                let listValues = [];
+                formDescriptors?.forEach(formDescriptor => {
+                    const desc = findDescriptorInChildren(
                         field,
                         formDescriptor,
-                    )?.children?.map(child => ({
-                        value: child.name,
-                        title: formatLabel(child),
-                    })) || [];
+                    );
+                    if (desc?.children) {
+                        listValues = desc.children.map(child => ({
+                            value: child.name,
+                            title: formatLabel(child),
+                        }));
+                    }
+                });
                 Fields[field.fieldKey] = {
                     label: formatLabel(field),
                     type: 'select',

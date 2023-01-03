@@ -20,6 +20,7 @@ import {
 } from 'bluesquare-components';
 import { Box, Grid, makeStyles, Button } from '@material-ui/core';
 import { useDispatch } from 'react-redux';
+import orderBy from 'lodash/orderBy';
 import TopBar from '../../components/nav/TopBarComponent';
 import MESSAGES from './messages';
 
@@ -93,8 +94,13 @@ export const Details: FunctionComponent<Props> = ({ router }) => {
 
     useEffect(() => {
         if (workflowVersion?.follow_ups) {
+            const newFollowUps = orderBy(
+                workflowVersion.follow_ups,
+                [f => f.order],
+                ['asc'],
+            );
             setFollowUps(
-                workflowVersion.follow_ups.map(followUp => ({
+                newFollowUps.map(followUp => ({
                     ...followUp,
                     accessor: followUp.id,
                 })),
@@ -104,10 +110,10 @@ export const Details: FunctionComponent<Props> = ({ router }) => {
     const { possibleFields } = useGetPossibleFields(
         workflowVersion?.reference_form.id,
     );
-    const { data: formDescriptor } = useGetFormDescriptor(
+    const { data: formDescriptors } = useGetFormDescriptor(
         workflowVersion?.reference_form.id,
     );
-    const fields = useGetQueryBuildersFields(formDescriptor, possibleFields);
+    const fields = useGetQueryBuildersFields(formDescriptors, possibleFields);
 
     const queryBuilderListToReplace = useGetQueryBuilderListToReplace();
     const getHumanReadableJsonLogic = useHumanReadableJsonLogic(
@@ -207,6 +213,10 @@ export const Details: FunctionComponent<Props> = ({ router }) => {
                                 <AddFollowUpsModal
                                     fields={fields}
                                     versionId={versionId}
+                                    newOrder={
+                                        followUps[followUps.length - 1]?.order +
+                                        1
+                                    }
                                 />
                             </Box>
                         )}

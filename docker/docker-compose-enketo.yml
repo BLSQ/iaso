@@ -1,7 +1,7 @@
 version: "3"
 services:
   enketo:
-    image: enketo/enketo-express:3.0.2
+    image: enketo/enketo-express:5.0.0
 #    entrypoint: pm2 start --no-daemon app.js -n enketo
 #    environment:
       # uncomment for more debug output

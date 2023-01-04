@@ -13,9 +13,11 @@ import { ChangesActionCell } from '../components/changes/ActionCell';
 import { IntlFormatMessage } from '../../../types/intl';
 import { Column } from '../../../types/table';
 import { WorkflowVersionDetail } from '../types';
+import { PossibleField } from '../../forms/types/forms';
 
 export const useGetChangesColumns = (
     versionId: string,
+    possibleFields: PossibleField[],
     workflowVersion?: WorkflowVersionDetail,
 ): Array<Column> => {
     const { formatMessage }: { formatMessage: IntlFormatMessage } =
@@ -78,6 +80,7 @@ export const useGetChangesColumns = (
                             <ChangesActionCell
                                 change={change}
                                 versionId={versionId}
+                                possibleFields={possibleFields}
                             />
                         )}
                     </>

@@ -9,6 +9,8 @@ import {
     makeFullModal,
     // @ts-ignore
     AddButton,
+    // @ts-ignore
+    LoadingSpinner,
 } from 'bluesquare-components';
 
 import { Grid } from '@material-ui/core';
@@ -22,13 +24,16 @@ import { useCreateWorkflowChange } from '../../hooks/requests/useCreateWorkflowC
 
 import MESSAGES from '../../messages';
 
-import { Change } from '../../types';
+import { Change, Mapping } from '../../types';
+import { PossibleField } from '../../../forms/types/forms';
+import { useGetPossibleFields } from '../../../forms/hooks/useGetPossibleFields';
 
 type Props = {
     isOpen: boolean;
     closeDialog: () => void;
     change?: Change;
     versionId: string;
+    possibleFields: PossibleField[];
 };
 
 const Modal: FunctionComponent<Props> = ({
@@ -36,6 +41,7 @@ const Modal: FunctionComponent<Props> = ({
     isOpen,
     versionId,
     change,
+    possibleFields,
 }) => {
     const { formatMessage } = useSafeIntl();
     const [form, setForm] = useState<number | undefined>(change?.form?.id);
@@ -46,15 +52,34 @@ const Modal: FunctionComponent<Props> = ({
     );
     const { data: forms, isLoading: isLoadingForms } = useGetForms();
 
+    const mappedChange = useMemo(
+        () =>
+            change?.mapping
+                ? Object.entries(change.mapping).map(([key, value]) => ({
+                      target: key,
+                      source: value,
+                  }))
+                : [],
+        [change],
+    );
+    const [mappings, setMappings] = useState<Mapping[]>(mappedChange);
     const handleConfirm = () => {
+        const mappingObject = {};
+        mappings.forEach(mapping => {
+            if (mapping.target && mapping.source) {
+                mappingObject[mapping.target] = mapping.source;
+            }
+        });
         if (change?.id) {
             saveChange({
                 id: change.id,
                 form,
+                mapping: mappingObject,
             });
         } else {
             createChange({
                 form,
+                mapping: mappingObject,
             });
         }
     };
@@ -66,7 +91,15 @@ const Modal: FunctionComponent<Props> = ({
             })) || [],
         [forms],
     );
-    const allowConfirm = Boolean(form);
+    const {
+        possibleFields: sourcePossibleFields,
+        isFetchingForm: isFetchingSourcePossibleFields,
+    } = useGetPossibleFields(form);
+
+    const allowConfirm =
+        Boolean(form) &&
+        mappings.length > 0 &&
+        !mappings.find(mapping => !mapping.target || !mapping.source);
     return (
         <ConfirmCancelModal
             allowConfirm={allowConfirm}
@@ -88,6 +121,7 @@ const Modal: FunctionComponent<Props> = ({
             id="workflow-change"
             onClose={() => null}
         >
+            {isFetchingSourcePossibleFields && <LoadingSpinner absolute />}
             <Grid container spacing={2}>
                 <Grid item xs={12} md={6}>
                     <InputComponent
@@ -103,7 +137,16 @@ const Modal: FunctionComponent<Props> = ({
                 </Grid>
                 <Grid item xs={12} md={4} />
                 <Grid item xs={12}>
-                    <MappingTable change={change} />
+                    <MappingTable
+                        mappings={mappings}
+                        setMappings={setMappings}
+                        sourcePossibleFields={sourcePossibleFields}
+                        targetPossibleFields={possibleFields}
+                        isFetchingSourcePossibleFields={
+                            isFetchingSourcePossibleFields
+                        }
+                        form={form}
+                    />
                 </Grid>
             </Grid>
         </ConfirmCancelModal>

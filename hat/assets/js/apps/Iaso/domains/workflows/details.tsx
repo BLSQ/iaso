@@ -37,11 +37,7 @@ import {
 import { useGetFormDescriptor } from './hooks/requests/useGetFormDescriptor';
 import { useBulkUpdateWorkflowFollowUp } from './hooks/requests/useBulkUpdateWorkflowFollowUp';
 
-import {
-    WorkflowVersionDetail,
-    WorkflowParams,
-    FollowUps,
-} from './types';
+import { WorkflowVersionDetail, WorkflowParams, FollowUps } from './types';
 
 import { WorkflowBaseInfo } from './components/WorkflowBaseInfo';
 import { FollowUpsTable } from './components/followUps/Table';
@@ -131,7 +127,11 @@ export const Details: FunctionComponent<Props> = ({ router }) => {
         fields,
         queryBuilderListToReplace,
     );
-    const changesColumns = useGetChangesColumns(versionId, workflowVersion);
+    const changesColumns = useGetChangesColumns(
+        versionId,
+        possibleFields,
+        workflowVersion,
+    );
     const followUpsColumns = useGetFollowUpsColumns(
         getHumanReadableJsonLogic,
         versionId,
@@ -272,11 +272,15 @@ export const Details: FunctionComponent<Props> = ({ router }) => {
                             }
                             extraProps={{
                                 isLoading,
+                                possibleFields,
                             }}
                         />
                         {workflowVersion?.status === 'DRAFT' && (
                             <Box m={2} textAlign="right">
-                                <AddChangeModal versionId={versionId} />
+                                <AddChangeModal
+                                    versionId={versionId}
+                                    possibleFields={possibleFields}
+                                />
                             </Box>
                         )}
                     </WidgetPaper>

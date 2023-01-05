@@ -424,7 +424,7 @@ class OrgUnitViewSet(viewsets.ViewSet):
             groups = request.data["groups"]
             for group_id in groups:
                 temp_group = get_object_or_404(Group, id=group_id)
-                if temp_group.source_version != org_unit.version:
+                if temp_group.source_version and temp_group.source_version != org_unit.version:
                     errors.append({"errorKey": "groups", "errorMessage": _("Group must be in the same source version")})
                     continue
                 new_groups.append(temp_group)

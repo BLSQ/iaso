@@ -67,7 +67,6 @@ const CreateOverrideStep: FunctionComponent<Props> = ({
     const currentUser = useCurrentUser();
     const { data: userHasTeam } = useUserHasTeam(currentUser?.user_id);
     const { formatMessage } = useSafeIntl();
-    // TODO replace
     const { mutateAsync: saveOverrideStep } = useSaveOverrideStep();
     const classes = useStyles();
     const dispatch = useDispatch();
@@ -82,7 +81,6 @@ const CreateOverrideStep: FunctionComponent<Props> = ({
         dispatch(redirectToReplace(BUDGET_DETAILS, trimmedParams));
     }, [dispatch, params]);
 
-    // TODO update
     const { data: recipientTeams } = useGetRecipientTeams(recipients);
     const { data: possibleStates, isLoading: possibleStatesIsLoading } =
         useGetWorkflowStatesForDropdown();
@@ -110,7 +108,7 @@ const CreateOverrideStep: FunctionComponent<Props> = ({
             files: undefined,
             links: undefined,
             amount: undefined,
-            // this value is for handling non-field arrors from api
+            // this value is for handling non-field errors from api
             general: null,
             // This value is to handle error state when either files or links are required
             attachments: null,
@@ -168,11 +166,10 @@ const CreateOverrideStep: FunctionComponent<Props> = ({
         }
     }, [setFieldTouched, touched.amount, touched.links, values]);
 
-    const allowConfirm = isValid;
     return (
         <FormikProvider value={formik}>
             <ConfirmCancelModal
-                allowConfirm={allowConfirm}
+                allowConfirm={isValid}
                 titleMessage="Override"
                 onConfirm={() => {
                     if (userHasTeam) {

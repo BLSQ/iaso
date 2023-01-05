@@ -19,7 +19,6 @@ type PostRequestBody = PostArg;
 const postOverrideStep = (body: Payload): Promise<BudgetStep> => {
     const filteredParams = Object.fromEntries(
         Object.entries(body).filter(
-            // eslint-disable-next-line no-unused-vars
             ([key, value]) => value !== undefined && key !== 'general',
         ),
     );

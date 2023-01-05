@@ -12,8 +12,9 @@ import {
     // @ts-ignore
     LoadingSpinner,
 } from 'bluesquare-components';
+import ArrowRightAltIcon from '@material-ui/icons/ArrowRightAlt';
 
-import { Grid } from '@material-ui/core';
+import { Grid, Box, makeStyles } from '@material-ui/core';
 
 import InputComponent from '../../../../components/forms/InputComponent';
 import { EditIconButton } from '../ModalButtons';
@@ -25,7 +26,7 @@ import { useCreateWorkflowChange } from '../../hooks/requests/useCreateWorkflowC
 
 import MESSAGES from '../../messages';
 
-import { Change, Mapping } from '../../types';
+import { Change, Mapping, ReferenceForm } from '../../types';
 import { PossibleField } from '../../../forms/types/forms';
 import { useGetPossibleFields } from '../../../forms/hooks/useGetPossibleFields';
 
@@ -35,6 +36,7 @@ type Props = {
     change?: Change;
     versionId: string;
     possibleFields: PossibleField[];
+    referenceForm?: ReferenceForm;
 };
 
 const mapChange = (change?: Change): Mapping[] => {
@@ -48,13 +50,30 @@ const mapChange = (change?: Change): Mapping[] => {
     return mapArray;
 };
 
+const useStyles = makeStyles(theme => ({
+    referenceForm: {
+        height: '100%',
+        display: 'flex',
+        alignItems: 'center',
+        marginTop: 5,
+        marginLeft: theme.spacing(2),
+        '& span': {
+            fontWeight: 'bold',
+            paddingLeft: theme.spacing(4),
+            paddingRight: theme.spacing(1),
+        },
+    },
+}));
+
 const Modal: FunctionComponent<Props> = ({
     closeDialog,
     isOpen,
     versionId,
     change,
     possibleFields,
+    referenceForm,
 }) => {
+    const classes: Record<string, string> = useStyles();
     const { formatMessage } = useSafeIntl();
     const [form, setForm] = useState<number | undefined>(change?.form?.id);
     const { mutate: saveChange } = useUpdateWorkflowChange();
@@ -127,7 +146,7 @@ const Modal: FunctionComponent<Props> = ({
             onCancel={() => {
                 closeDialog();
             }}
-            maxWidth="md"
+            maxWidth="lg"
             cancelMessage={MESSAGES.cancel}
             confirmMessage={MESSAGES.confirm}
             open={isOpen}
@@ -138,19 +157,26 @@ const Modal: FunctionComponent<Props> = ({
         >
             {isFetchingSourcePossibleFields && <LoadingSpinner absolute />}
             <Grid container spacing={2}>
-                <Grid item xs={12} md={6}>
+                <Grid item xs={12} md={5}>
                     <InputComponent
                         type="select"
                         keyValue="forms"
                         onChange={(_, value) => setForm(value)}
                         value={form}
-                        label={MESSAGES.form}
+                        label={MESSAGES.sourceForm}
                         required
                         options={formsList}
                         loading={isLoadingForms}
+                        clearable={false}
                     />
                 </Grid>
-                <Grid item xs={12} md={4} />
+                <Grid item xs={12} md={7}>
+                    <Box className={classes.referenceForm}>
+                        <ArrowRightAltIcon color="primary" fontSize="large" />
+                        <span>{formatMessage(MESSAGES.targetForm)}:</span>{' '}
+                        {referenceForm?.name}
+                    </Box>
+                </Grid>
                 <Grid item xs={12}>
                     <MappingTable
                         mappingArray={mappingArray}

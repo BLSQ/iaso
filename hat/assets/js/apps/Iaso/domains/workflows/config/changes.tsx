@@ -81,6 +81,7 @@ export const useGetChangesColumns = (
                                 change={change}
                                 versionId={versionId}
                                 possibleFields={possibleFields}
+                                referenceForm={workflowVersion?.reference_form}
                             />
                         )}
                     </>

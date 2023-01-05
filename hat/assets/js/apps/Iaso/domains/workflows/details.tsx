@@ -280,6 +280,9 @@ export const Details: FunctionComponent<Props> = ({ router }) => {
                                 <AddChangeModal
                                     versionId={versionId}
                                     possibleFields={possibleFields}
+                                    referenceForm={
+                                        workflowVersion?.reference_form
+                                    }
                                 />
                             </Box>
                         )}

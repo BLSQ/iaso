@@ -16,6 +16,8 @@
     "blsq.treeview.search.results.label.resultsLower": "résultat(s)",
     "iaso.algo.addRun": "Exécuter un algorithme",
     "iaso.archived.title": "Archives",
+    "iaso.workflows.sourceForm": "Formulaire source",
+    "iaso.workflows.targetForm": "Formulaire cible",
     "iaso.area": "Aire de santé",
     "iaso.assignment.alreadyAssigned": "Déjà assigné",
     "iaso.assignment.alreadyAssignedTo": "Déjà assigné à",

@@ -22,13 +22,13 @@ export type Mapping = {
 
 export type Change = {
     id: number;
-    form: Form;
+    form: ReferenceForm;
     mapping: Record<string, string>;
     created_at: string;
     updated_at: string;
 };
 
-type Form = {
+export type ReferenceForm = {
     id: number;
     name: string;
 };
@@ -37,7 +37,7 @@ export type FollowUps = {
     id: string;
     order: number;
     condition: Record<string, string>;
-    forms: Form[];
+    forms: ReferenceForm[];
     created_at?: string;
     updated_at?: string;
 };
@@ -47,7 +47,7 @@ export type WorkflowVersionDetail = {
     name: string;
     status: Status;
     entity_type: EntityType;
-    reference_form: Form;
+    reference_form: ReferenceForm;
     created_at: string;
     updated_at: string;
     changes: Change[];

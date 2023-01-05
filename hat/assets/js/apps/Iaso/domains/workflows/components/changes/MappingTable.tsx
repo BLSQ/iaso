@@ -127,11 +127,13 @@ export const MappingTable: FunctionComponent<Props> = ({
             Header: formatMessage(MESSAGES.source),
             sortable: false,
             accessor: 'source',
+            width: 400,
             Cell: settings => {
                 return (
                     <InputComponent
                         withMarginTop={false}
                         type="select"
+                        clearable={false}
                         keyValue="source"
                         onChange={(_, value) =>
                             handleUpdate('source', value, settings.row.index)
@@ -152,11 +154,13 @@ export const MappingTable: FunctionComponent<Props> = ({
             Header: formatMessage(MESSAGES.target),
             sortable: false,
             accessor: 'target',
+            width: 400,
             Cell: settings => {
                 return (
                     <InputComponent
                         withMarginTop={false}
                         type="select"
+                        clearable={false}
                         keyValue="target"
                         onChange={(_, value) =>
                             handleUpdate('target', value, settings.row.index)
@@ -174,10 +178,11 @@ export const MappingTable: FunctionComponent<Props> = ({
             accessor: 'id',
             sortable: false,
             resizable: false,
-            width: 50,
+            width: 90,
             Cell: settings => {
                 return (
                     <IconButton
+                        iconSize="small"
                         onClick={() => handleDelete(settings.row.index)}
                         icon="delete"
                         tooltipMessage={MESSAGES.delete}

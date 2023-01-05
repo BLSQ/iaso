@@ -186,6 +186,14 @@ const MESSAGES = defineMessages({
         id: 'iaso.workflows.source',
         defaultMessage: 'Source',
     },
+    sourceForm: {
+        id: 'iaso.workflows.sourceForm',
+        defaultMessage: 'Source form',
+    },
+    targetForm: {
+        id: 'iaso.workflows.targetForm',
+        defaultMessage: 'Target form',
+    },
 });
 
 export default MESSAGES;

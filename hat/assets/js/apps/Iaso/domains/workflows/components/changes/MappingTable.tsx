@@ -27,8 +27,8 @@ import MESSAGES from '../../messages';
 import { PossibleField } from '../../../forms/types/forms';
 
 type Props = {
-    mappings: Mapping[];
-    setMappings: Dispatch<SetStateAction<Mapping[]>>;
+    mappingArray: Mapping[];
+    setMappingArray: Dispatch<SetStateAction<Mapping[]>>;
     sourcePossibleFields: PossibleField[];
     targetPossibleFields: PossibleField[];
     isFetchingSourcePossibleFields: boolean;
@@ -66,8 +66,8 @@ const useStyles = makeStyles(theme => ({
 }));
 
 export const MappingTable: FunctionComponent<Props> = ({
-    mappings,
-    setMappings,
+    mappingArray,
+    setMappingArray,
     sourcePossibleFields,
     targetPossibleFields,
     isFetchingSourcePossibleFields,
@@ -79,30 +79,30 @@ export const MappingTable: FunctionComponent<Props> = ({
 
     const handleUpdate = useCallback(
         (key: 'target' | 'source', value: string, index: number) => {
-            const newMappings = cloneDeep(mappings);
+            const newMappings = cloneDeep(mappingArray);
             newMappings[index] = {
                 ...newMappings[index],
                 [key]: value,
             };
-            setMappings(newMappings);
+            setMappingArray(newMappings);
         },
-        [mappings, setMappings],
+        [mappingArray, setMappingArray],
     );
     const handleAdd = useCallback(() => {
-        const newMappings = cloneDeep(mappings);
+        const newMappings = cloneDeep(mappingArray);
         newMappings.push({
             target: undefined,
             source: undefined,
         });
-        setMappings(newMappings);
-    }, [mappings, setMappings]);
+        setMappingArray(newMappings);
+    }, [mappingArray, setMappingArray]);
 
     const handleDelete = useCallback(
         (index: number) => {
-            const newMappings = cloneDeep(mappings).splice(index + 1, 1);
-            setMappings(newMappings);
+            const newMappings = cloneDeep(mappingArray).splice(index + 1, 1);
+            setMappingArray(newMappings);
         },
-        [mappings, setMappings],
+        [mappingArray, setMappingArray],
     );
 
     const sourceOptions = useMemo(
@@ -190,14 +190,14 @@ export const MappingTable: FunctionComponent<Props> = ({
         <>
             <Box className={classes.tableContainer}>
                 <Table
-                    data={mappings}
+                    data={mappingArray}
                     showPagination={false}
                     defaultSorted={[{ id: 'name', desc: false }]}
                     marginBottom={false}
                     marginTop={false}
                     columns={columns}
                     countOnTop={false}
-                    count={mappings?.length ?? 0}
+                    count={mappingArray?.length ?? 0}
                     extraProps={{
                         targetPossibleFields,
                         columns,

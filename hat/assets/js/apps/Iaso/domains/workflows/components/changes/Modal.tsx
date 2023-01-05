@@ -14,6 +14,7 @@ import {
 } from 'bluesquare-components';
 
 import { Grid } from '@material-ui/core';
+
 import InputComponent from '../../../../components/forms/InputComponent';
 import { EditIconButton } from '../ModalButtons';
 import { MappingTable } from './MappingTable';
@@ -36,6 +37,17 @@ type Props = {
     possibleFields: PossibleField[];
 };
 
+const mapChange = (change?: Change): Mapping[] => {
+    let mapArray: Mapping[] = [];
+    if (change?.mapping) {
+        mapArray = Object.entries(change.mapping).map(([key, value]) => ({
+            target: key,
+            source: value,
+        }));
+    }
+    return mapArray;
+};
+
 const Modal: FunctionComponent<Props> = ({
     closeDialog,
     isOpen,
@@ -52,20 +64,12 @@ const Modal: FunctionComponent<Props> = ({
     );
     const { data: forms, isLoading: isLoadingForms } = useGetForms();
 
-    const mappedChange = useMemo(
-        () =>
-            change?.mapping
-                ? Object.entries(change.mapping).map(([key, value]) => ({
-                      target: key,
-                      source: value,
-                  }))
-                : [],
-        [change],
+    const [mappingArray, setMappingArray] = useState<Mapping[]>(
+        mapChange(change),
     );
-    const [mappings, setMappings] = useState<Mapping[]>(mappedChange);
     const handleConfirm = () => {
         const mappingObject = {};
-        mappings.forEach(mapping => {
+        mappingArray.forEach(mapping => {
             if (mapping.target && mapping.source) {
                 mappingObject[mapping.target] = mapping.source;
             }
@@ -91,15 +95,26 @@ const Modal: FunctionComponent<Props> = ({
             })) || [],
         [forms],
     );
+
     const {
         possibleFields: sourcePossibleFields,
         isFetchingForm: isFetchingSourcePossibleFields,
     } = useGetPossibleFields(form);
 
+    const isValidMapping: boolean = useMemo(
+        () =>
+            mappingArray.filter(mapping =>
+                sourcePossibleFields.some(
+                    field => field.fieldKey === mapping.source,
+                ),
+            ).length === mappingArray.length,
+        [mappingArray, sourcePossibleFields],
+    );
     const allowConfirm =
+        isValidMapping &&
         Boolean(form) &&
-        mappings.length > 0 &&
-        !mappings.find(mapping => !mapping.target || !mapping.source);
+        mappingArray.length > 0 &&
+        !mappingArray.find(mapping => !mapping.target || !mapping.source);
     return (
         <ConfirmCancelModal
             allowConfirm={allowConfirm}
@@ -138,8 +153,8 @@ const Modal: FunctionComponent<Props> = ({
                 <Grid item xs={12} md={4} />
                 <Grid item xs={12}>
                     <MappingTable
-                        mappings={mappings}
-                        setMappings={setMappings}
+                        mappingArray={mappingArray}
+                        setMappingArray={setMappingArray}
                         sourcePossibleFields={sourcePossibleFields}
                         targetPossibleFields={possibleFields}
                         isFetchingSourcePossibleFields={

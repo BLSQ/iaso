@@ -471,6 +471,7 @@ where polio_campaignscope.campaign_id = polio_campaign.id""",
         url_path="v2/merged_shapes.geojson",
     )
     def shapes_v2(self, request):
+        "Deprecated, should return the same format as shapes v3, kept for comarison"
         # FIXME: The cache ignore all the filter parameter which will return wrong result if used
         key_name = "{0}-geo_shapes_v2".format(request.user.id)
 
@@ -559,6 +560,24 @@ where group_id = polio_roundscope.group_id""",
         res = {"type": "FeatureCollection", "features": features, "cache_creation_date": datetime.utcnow().timestamp()}
 
         cache.set(key_name, json.dumps(res), 3600 * 24, version=CACHE_VERSION)
+        return JsonResponse(res)
+
+    @action(
+        methods=["GET", "HEAD"],  # type: ignore # HEAD is missing in djangorestframework-stubs
+        detail=False,
+        url_path="v3/merged_shapes.geojson",
+    )
+    def shapes_v3(self, request):
+        campaigns = self.filter_queryset(self.get_queryset())
+        # Remove deleted campaigns
+        campaigns = campaigns.filter(deleted_at=None)
+        campaigns = campaigns.only("geojson")
+        features = []
+        for c in campaigns:
+            features.extend(c.geojson)
+
+        res = {"type": "FeatureCollection", "features": features}
+
         return JsonResponse(res)
 
 

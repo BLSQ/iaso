@@ -169,7 +169,7 @@ const CreateOverrideStep: FunctionComponent<Props> = ({
     return (
         <FormikProvider value={formik}>
             <ConfirmCancelModal
-                allowConfirm={isValid}
+                allowConfirm={isValid && userHasTeam}
                 titleMessage="Override"
                 onConfirm={() => {
                     if (userHasTeam) {

@@ -6,7 +6,7 @@ import { PostArg } from '../types/general';
 export class ApiError extends Error {
     private status: any;
 
-    private details: any;
+    public details: any;
 
     constructor(
         message: string,

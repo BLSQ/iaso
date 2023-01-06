@@ -687,6 +687,7 @@
     "iaso.permissions.planning": "Planning",
     "iaso.permissions.polio": "Gestion campagnes vaccination Polio",
     "iaso.permissions.polio_budget": "Validation de budget polio",
+    "iaso.permissions.polio_budget_admin": "Validation de budget polio: Admin",
     "iaso.permissions.polio_config": "Gestion campagnes vaccination Polio - configuration",
     "iaso.permissions.projects": "Projets",
     "iaso.permissions.sources": "Sources",

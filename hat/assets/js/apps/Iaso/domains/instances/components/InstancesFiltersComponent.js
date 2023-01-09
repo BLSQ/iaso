@@ -45,7 +45,7 @@ import { OrgUnitTreeviewModal } from '../../orgUnits/components/TreeView/OrgUnit
 import { useGetOrgUnit } from '../../orgUnits/components/TreeView/requests';
 
 import { LocationLimit } from '../../../utils/map/LocationLimit';
-import { UserOrgUnitRestriction } from './UserOrgUnitRestriction';
+import { UserOrgUnitRestriction } from './UserOrgUnitRestriction.tsx';
 
 export const instanceStatusOptions = INSTANCE_STATUSES.map(status => ({
     value: status,

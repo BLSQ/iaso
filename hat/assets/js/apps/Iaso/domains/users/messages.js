@@ -125,6 +125,10 @@ const MESSAGES = defineMessages({
         id: 'iaso.permissions.polio_budget',
         defaultMessage: 'Polio budget validation',
     },
+    iaso_polio_budget_admin: {
+        id: 'iaso.permissions.polio_budget_admin',
+        defaultMessage: 'Polio budget admin',
+    },
     iaso_polio_config: {
         id: 'iaso.permissions.polio_config',
         defaultMessage: 'Polio campaign admin',

@@ -394,9 +394,9 @@ describe('Submissions', () => {
         };
         cy.wait('@getSubmissions').then(() => {
             // TODO: test new period type day
-            testPeriod(1, '201801', '201901');
-            testPeriod(2, '2018Q1', '2019Q1');
-            testPeriod(3, '2018', '2019');
+            testPeriod(1, '201901', '202001');
+            testPeriod(2, '2019Q1', '2020Q1');
+            testPeriod(3, '2019', '2020');
         });
     });
 

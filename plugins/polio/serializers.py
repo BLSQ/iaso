@@ -689,6 +689,38 @@ class CampaignSerializer(serializers.ModelSerializer):
         read_only_fields = ["last_surge", "preperadness_sync_status", "creation_email_send_at", "group"]
 
 
+class ListCampaignSerializer(CampaignSerializer):
+    "This serializer contains juste enough data for the List view in the web ui"
+
+    class NestedListRoundSerializer(RoundSerializer):
+        class Meta:
+            model = Round
+            fields = [
+                "id",
+                "number",
+                "started_at",
+                "ended_at",
+            ]
+
+    rounds = NestedListRoundSerializer(many=True, required=False)
+
+    class Meta:
+        model = Campaign
+        fields = [
+            "id",
+            "epid",
+            "obr_name",
+            "account",
+            "cvdpv2_notified_at",
+            "top_level_org_unit_name",
+            "top_level_org_unit_id",
+            "rounds",
+            "general_status",
+            "grouped_campaigns",
+        ]
+        read_only_fields = fields
+
+
 class SmallCampaignSerializer(CampaignSerializer):
     class Meta:
         model = Campaign

@@ -40,6 +40,7 @@ from plugins.polio.serializers import (
     CampaignGroupSerializer,
     serialize_campaign,
     log_campaign_modification,
+    ListCampaignSerializer,
 )
 from plugins.polio.serializers import (
     CountryUsersGroupSerializer,
@@ -126,6 +127,9 @@ class CampaignViewSet(ModelViewSet):
 
     def get_serializer_class(self):
         if self.request.user.is_authenticated:
+            if self.request.query_params.get("fieldset") == "list" and self.request.method in permissions.SAFE_METHODS:
+                return ListCampaignSerializer
+
             return CampaignSerializer
         else:
             return AnonymousCampaignSerializer

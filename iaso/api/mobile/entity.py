@@ -23,17 +23,13 @@ class MobileEntityAttributesSerializer(serializers.ModelSerializer):
         model = Instance
         fields = ["id", "form_id", "form_version_id", "created_at", "updated_at", "org_unit_id", "json"]
 
-    form_id = serializers.SerializerMethodField()
+    form_id = serializers.IntegerField(read_only=True, source="id")
     id = serializers.CharField(read_only=True, source="uuid")
     form_version_id = serializers.CharField(read_only=True, source="form.form.id")
     org_unit_id = serializers.CharField(read_only=True, source="org_unit.id")
 
     created_at = TimestampField()
     updated_at = TimestampField()
-
-    @staticmethod
-    def get_form_id(instance):
-        return instance.id
 
 
 class MobileEntitySerializer(serializers.ModelSerializer):

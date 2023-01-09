@@ -10,12 +10,15 @@ import { useGoBack } from '../../routing/useGoBack';
 import TopBar from '../../components/nav/TopBarComponent';
 import { TableWithDeepLink } from '../../components/tables/TableWithDeepLink';
 import { Filters } from './components/Filters';
+import { AddVersionModal } from './components/AddVersionModal';
 
 import { useGetWorkflowVersions } from './hooks/requests/useGetWorkflowVersions';
 import { useGetType } from '../entities/entityTypes/hooks/requests/entitiyTypes';
 import { WorkflowsParams } from './types/workflows';
 
 import { redirectToReplace } from '../../routing/actions';
+
+import { baseUrls } from '../../constants/urls';
 
 import MESSAGES from './messages';
 import { useGetColumns, defaultSorted, baseUrl } from './config';
@@ -34,7 +37,7 @@ type Props = {
 
 export const Workflows: FunctionComponent<Props> = ({ params, router }) => {
     const dispatch = useDispatch();
-    const goBack = useGoBack(router);
+    const goBack = useGoBack(router, baseUrls.entityTypes);
     const classes: Record<string, string> = useStyles();
     const { formatMessage } = useSafeIntl();
     const { data, isFetching } = useGetWorkflowVersions(params);
@@ -50,6 +53,9 @@ export const Workflows: FunctionComponent<Props> = ({ params, router }) => {
             <TopBar title={title} displayBackButton goBack={() => goBack()} />
             <Box className={classes.containerFullHeightNoTabPadded}>
                 <Filters params={params} />
+                <Box mt={2} display="flex" justifyContent="flex-end">
+                    <AddVersionModal entityTypeId={entityTypeId} />
+                </Box>
                 <TableWithDeepLink
                     baseUrl={baseUrl}
                     data={data?.workflow_versions ?? []}

@@ -19,6 +19,7 @@ from plugins.polio.budget.serializers import (
     BudgetStepSerializer,
     UpdateBudgetStepSerializer,
     WorkflowSerializer,
+    TransitionOverrideSerializer,
 )
 from plugins.polio.helpers import CustomFilterBackend
 from plugins.polio.models import Campaign
@@ -88,6 +89,21 @@ class BudgetCampaignViewSet(ModelViewSet):
         # data['links'] = request.data.getlist('links')
         data = request.data
         serializer = TransitionToSerializer(data=data, context={"request": request})
+        serializer.is_valid(raise_exception=True)
+        budget_step = serializer.save()
+
+        return Response({"result": "success", "id": budget_step.id}, status=status.HTTP_201_CREATED)
+
+    @action(
+        detail=False,
+        methods=["POST"],
+        serializer_class=TransitionOverrideSerializer,
+        permission_classes=[HasPermission("iaso_polio_budget_admin")],
+    )
+    def override(self, request):
+        "Transition campaign to next state. Use multipart/form-data to send files"
+        data = request.data
+        serializer = TransitionOverrideSerializer(data=data, context={"request": request})
         serializer.is_valid(raise_exception=True)
         budget_step = serializer.save()
 

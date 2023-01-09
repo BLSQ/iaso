@@ -32,14 +32,16 @@ const useStyles = makeStyles(theme => ({
 type RowProps = {
     label: string | ReactNode;
     value?: string | ReactNode;
+    dataTestId?: string;
 };
 
-const Row: FunctionComponent<RowProps> = ({ label, value }) => {
+const Row: FunctionComponent<RowProps> = ({ label, value, dataTestId }) => {
+    console.log('test', moment.unix(1633954017.188993).format('LTS'));
     const classes: Record<string, string> = useStyles();
     return (
         <TableRow>
             <TableCell className={classes.leftCell}>{label}</TableCell>
-            <TableCell>{value}</TableCell>
+            <TableCell data-test={dataTestId}>{value}</TableCell>
         </TableRow>
     );
 };
@@ -74,18 +76,22 @@ export const OrgUnitCreationDetails: FunctionComponent<Props> = ({
                         <Row
                             label={formatMessage(MESSAGES.source)}
                             value={orgUnit.source ?? '-'}
+                            dataTestId="source"
                         />
                         <Row
                             label={formatMessage(MESSAGES.creator)}
                             value={orgUnit.creator.value ?? '-'}
+                            dataTestId="creator"
                         />
                         <Row
                             label={formatMessage(MESSAGES.created_at)}
                             value={orgUnit.created_at ? orgUnitCreatedAt : '-'}
+                            dataTestId="created_at"
                         />
                         <Row
                             label={formatMessage(MESSAGES.updated_at)}
                             value={orgUnit.updated_at ? orgUnitUpdatedAt : '-'}
+                            dataTestId="updated_at"
                         />
                         {!orgUnit.has_geo_json && !latitudeLongitude && (
                             <Row
@@ -106,11 +112,13 @@ export const OrgUnitCreationDetails: FunctionComponent<Props> = ({
                                 <Row
                                     label={formatMessage(MESSAGES.latitude)}
                                     value={orgUnit.latitude}
+                                    dataTestId="latitude"
                                 />
 
                                 <Row
                                     label={formatMessage(MESSAGES.longitude)}
                                     value={orgUnit.longitude}
+                                    dataTestId="longitude"
                                 />
                             </>
                         )}

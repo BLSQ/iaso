@@ -15,9 +15,6 @@ class ReportSerializer(serializers.ModelSerializer):
 
     published_version = serializers.CharField(read_only=True, source="published_version.name")
 
-    created_at = TimestampField()
-    updated_at = TimestampField()
-
 
 class ReportsViewSet(ModelViewSet):
     """

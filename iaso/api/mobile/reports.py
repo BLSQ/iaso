@@ -1,6 +1,6 @@
 from rest_framework.pagination import LimitOffsetPagination
 
-from iaso.api.common import ModelViewSet
+from iaso.api.common import ModelViewSet, TimestampField
 from django_filters.rest_framework import DjangoFilterBackend  # type: ignore
 from rest_framework import filters, permissions
 from rest_framework import serializers
@@ -12,21 +12,12 @@ class MobileReportSerializer(serializers.ModelSerializer):
         model = Report
         fields = ["name", "url", "version_id", "version_name", "created_at", "updated_at"]
 
-    version_name = serializers.SerializerMethodField()
-    version_id = serializers.SerializerMethodField()
-    url = serializers.SerializerMethodField()
+    created_at = TimestampField()
+    updated_at = TimestampField()
 
-    @staticmethod
-    def get_version_name(obj: Report):
-        return obj.published_version.name
-
-    @staticmethod
-    def get_url(obj: Report):
-        return obj.published_version.file.url
-
-    @staticmethod
-    def get_version_id(obj: Report):
-        return obj.published_version.id
+    version_name = serializers.CharField(read_only=True, source="published_version.name")
+    version_id = serializers.IntegerField(read_only=True, source="published_version.id")
+    url = serializers.CharField(read_only=True, source="published_version.file.url")
 
 
 class MobileReportsViewSet(ModelViewSet):

@@ -46,6 +46,17 @@ class WorkflowChangeSerializer(serializers.ModelSerializer):
         fields = ["id", "form", "mapping", "created_at", "updated_at"]
 
 
+class WorkflowChangeCreateSerializer(serializers.ModelSerializer):
+    form = serializers.PrimaryKeyRelatedField(queryset=Form.objects.all(), many=False)
+    mapping = serializers.JSONField()
+
+    def validate_form(self, form):
+        pass
+
+    def validate_mapping(self, mapping):
+        pass
+
+
 class WorkflowFollowupSerializer(serializers.ModelSerializer):
     forms = FormNestedSerializer(many=True)
 

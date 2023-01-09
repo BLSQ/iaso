@@ -9,6 +9,7 @@ from django_filters.rest_framework import DjangoFilterBackend  # type: ignore
 from drf_yasg.utils import swagger_auto_schema, no_body
 
 from django.shortcuts import get_object_or_404
+from django.db.models import Q
 
 import iaso.api.workflows.serializers as ser
 import iaso.api.workflows.utils as utils
@@ -74,4 +75,5 @@ class WorkflowVersionViewSet(ModelViewSet):
         queryset = WorkflowVersion.objects.filter_for_user(self.request.user).order_by("pk")
         if search:
             queryset = queryset.filter(Q(name__icontains=search) | Q(id__icontains=search))
-        return WorkflowVersion.objects.filter_for_user(self.request.user).order_by("pk")
+
+        return queryset

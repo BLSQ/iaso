@@ -1,7 +1,9 @@
-import React, { FunctionComponent } from 'react';
+import React, { FunctionComponent, useMemo } from 'react';
 import { useTheme } from '@material-ui/core';
 
 import { Status } from '../types/workflows';
+
+import { useGetStatus } from '../hooks/useGetStatus';
 
 type Props = {
     status: Status;
@@ -23,5 +25,10 @@ export const useGetColor = (status: Status): string => {
 
 export const StatusCell: FunctionComponent<Props> = ({ status }) => {
     const color = useGetColor(status);
-    return <span style={{ color }}>{status}</span>;
+    const statusList = useGetStatus();
+    const currentStatus = useMemo(
+        () => statusList.find(stat => stat.value === status),
+        [status, statusList],
+    );
+    return <span style={{ color }}>{currentStatus?.label || status}</span>;
 };

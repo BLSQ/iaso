@@ -189,8 +189,14 @@ class CampaignBudgetSerializer(CampaignSerializer, DynamicFieldsModelSerializer)
             node_remaining = set()
             step: BudgetStep
             for step in steps:
-                transition = workflow.transitions_dict[step.transition_key]
-                to_node_key = transition.to_node
+                to_node_key = step.node_key_to
+                # mitigation for old steps with don't have node_key_to
+                if not step.node_key_to:
+                    if step.transition_key not in workflow.transitions_dict:
+                        continue
+                    transition = workflow.transitions_dict[step.transition_key]
+                    to_node_key = transition.to_node
+
                 if to_node_key in node_dict.keys():
                     # If this is in the category
                     node = node_dict[to_node_key]
@@ -327,6 +333,8 @@ class TransitionToSerializer(serializers.Serializer):
                 campaign=campaign,
                 comment=data.get("comment"),
                 transition_key=transition.key,
+                node_key_from=campaign.budget_current_state_key,
+                node_key_to=transition.to_node,
             )
             for link_data in data.get("links", []):
                 link_serializer = BudgetLinkSerializer(data=link_data)
@@ -342,6 +350,54 @@ class TransitionToSerializer(serializers.Serializer):
             send_budget_mails(step, transition, self.context["request"])
             step.is_email_sent = True
             step.save()
+
+        return step
+
+
+class TransitionOverrideSerializer(serializers.Serializer):
+    new_state_key = serializers.CharField()
+    campaign = serializers.PrimaryKeyRelatedField(queryset=Campaign.objects.all())
+    comment = serializers.CharField(required=False)
+    files = serializers.ListField(child=serializers.FileField(), required=False)
+    links = serializers.JSONField(required=False)
+    amount = serializers.FloatField(required=False)
+
+    def save(self, **kwargs):
+        data = self.validated_data
+        campaign: Campaign = data["campaign"]
+        user = self.context["request"].user
+        node_key = data["new_state_key"]
+        workflow = get_workflow()
+        n_transitions = next_transitions(workflow.transitions, campaign.budget_current_state_key)
+
+        created_by_team = None
+        if not created_by_team:
+            created_by_team = Team.objects.filter(users=user).first()
+        # this will raise if not found, should only happen for invalid workflow.
+        to_node = workflow.get_node_by_key(node_key)
+        with transaction.atomic():
+            step = BudgetStep.objects.create(
+                amount=data.get("amount"),
+                created_by=user,
+                created_by_team=created_by_team,
+                campaign=campaign,
+                comment=data.get("comment"),
+                transition_key="override",
+            )
+            for link_data in data.get("links", []):
+                link_serializer = BudgetLinkSerializer(data=link_data)
+                link_serializer.is_valid(raise_exception=True)
+                link_serializer.save(step=step)
+
+            campaign.budget_current_state_key = node_key
+            for file in data.get("files", []):
+                step.files.create(file=file, filename=file.name)
+            campaign.budget_current_state_label = to_node.label
+            campaign.save()
+
+            # send_budget_mails(step, transition, self.context["request"])
+            # step.is_email_sent = True
+            # step.save()
 
         return step
 

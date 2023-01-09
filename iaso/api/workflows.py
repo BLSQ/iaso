@@ -1,18 +1,18 @@
 from copy import deepcopy
 
-from django.contrib.auth.models import User
 from iaso.models import Workflow, WorkflowVersion, EntityType, WorkflowFollowup, WorkflowChange, Form
 from iaso.models.workflow import WorkflowVersionsStatus
-
+from iaso.api.common import ModelViewSet, HasPermission
 
 from rest_framework import serializers, filters, permissions
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from django_filters.rest_framework import DjangoFilterBackend  # type: ignore
 
-from iaso.api.common import ModelViewSet, HasPermission
-
 from drf_yasg.utils import swagger_auto_schema, no_body
+
+from django.shortcuts import get_object_or_404
+from django.db.models import Q
 
 
 class FormNestedSerializer(serializers.ModelSerializer):
@@ -116,6 +116,12 @@ def make_deep_copy_with_relations(orig_version):
 
 class WorkflowPostSerializer(serializers.Serializer):
     entity_type_id = serializers.IntegerField(required=True)
+    name = serializers.CharField(required=False)
+
+    def validate_name(self, new_name):
+        if len(new_name) <= 1:
+            raise serializers.ValidationError("name '" + new_name + "' is too short")
+        return new_name
 
     def validate_entity_type_id(self, entity_type_id):
         et = EntityType.objects.get(pk=entity_type_id)
@@ -126,8 +132,53 @@ class WorkflowPostSerializer(serializers.Serializer):
         return entity_type_id
 
     def create(self, validated_data):
-        wf, wf_created = Workflow.objects.get_or_create(entity_type_id=validated_data["entity_type_id"])
-        return WorkflowVersion.objects.create(workflow=wf)
+        entity_type_id = validated_data["entity_type_id"]
+        wf, wf_created = Workflow.objects.get_or_create(entity_type_id=entity_type_id)
+
+        wfv = WorkflowVersion.objects.create(workflow=wf)
+        et = EntityType.objects.get(pk=entity_type_id)
+        wfv.reference_form = et.reference_form
+        if "name" in validated_data:
+            wfv.name = validated_data["name"]
+        wfv.save()
+        return wfv
+
+
+class WorkflowPartialUpdateSerializer(serializers.Serializer):
+
+    status = serializers.CharField(required=False)
+    name = serializers.CharField(required=False)
+
+    def validate_status(self, new_status):
+        if hasattr(WorkflowVersionsStatus, new_status):
+            return new_status
+        else:
+            raise serializers.ValidationError(new_status + "is not recognized as proper status value")
+
+    def validate_name(self, new_name):
+        if len(new_name) <= 1:
+            raise serializers.ValidationError("name '" + new_name + "' is too short")
+        return new_name
+
+    def update(self, instance, validated_data):
+        instance_changed = False
+
+        if "name" in validated_data:
+            instance.name = validated_data["name"]
+            instance_changed = True
+
+        if "status" in validated_data:
+            res = instance.transition_to_status(validated_data["status"], do_save=False)
+
+            if not res["success"]:
+                raise serializers.ValidationError(res["error"])
+            else:
+                instance_changed = True
+
+        if instance_changed:
+            instance.save()
+
+        return instance
 
 
 class WorkflowVersionViewSet(ModelViewSet):
@@ -140,14 +191,14 @@ class WorkflowVersionViewSet(ModelViewSet):
 
     permission_classes = [permissions.IsAuthenticated, HasPermission("menupermissions.iaso_workflows")]  # type: ignore
     filter_backends = [filters.OrderingFilter, DjangoFilterBackend]
-    ordering_fields = ["name", "created_at", "updated_at", "id"]
+    ordering_fields = ["name", "created_at", "updated_at", "id", "status"]
     serializer_class = WorkflowVersionDetailSerializer
     results_key = "workflow_versions"
     remove_results_key_if_paginated = False
     model = WorkflowVersion
     lookup_url_kwarg = "version_id"
     filterset_fields = {"workflow__entity_type": ["exact"], "status": ["exact"], "id": ["exact"]}
-    http_method_names = ["get", "post"]
+    http_method_names = ["get", "post", "patch", "delete"]
 
     @swagger_auto_schema(request_body=no_body)
     @action(detail=True, methods=["post"])
@@ -160,6 +211,17 @@ class WorkflowVersionViewSet(ModelViewSet):
         wv_orig = WorkflowVersion.objects.get(pk=version_id)
         new_vw = make_deep_copy_with_relations(wv_orig)
         serialized_data = WorkflowVersionSerializer(new_vw).data
+        return Response(serialized_data)
+
+    @swagger_auto_schema(request_body=WorkflowPartialUpdateSerializer)
+    def partial_update(self, request, *args, **kwargs):
+        version_id = request.query_params.get("version_id", kwargs.get("version_id", None))
+        wv_orig = get_object_or_404(WorkflowVersion, pk=version_id)
+
+        serializer = WorkflowPartialUpdateSerializer(data=request.data, context={"request": request}, partial=True)
+        serializer.is_valid(raise_exception=True)
+        res = serializer.update(wv_orig, serializer.validated_data)
+        serialized_data = WorkflowVersionSerializer(res).data
         return Response(serialized_data)
 
     @swagger_auto_schema(request_body=WorkflowPostSerializer)
@@ -175,4 +237,8 @@ class WorkflowVersionViewSet(ModelViewSet):
 
     def get_queryset(self):
         """Always filter the base queryset by account"""
-        return WorkflowVersion.objects.filter_for_user(self.request.user).order_by("pk")
+        search = self.request.query_params.get("search", None)
+        queryset = WorkflowVersion.objects.filter_for_user(self.request.user).order_by("pk")
+        if search:
+            queryset = queryset.filter(Q(name__icontains=search) | Q(id__icontains=search))
+        return queryset

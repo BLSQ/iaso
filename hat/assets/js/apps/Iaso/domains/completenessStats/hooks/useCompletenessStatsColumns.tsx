@@ -25,16 +25,17 @@ export const useCompletenessStatsColumns = (params: any) => {
     return useMemo(
         () => [
             {
-                Header: formatMessage(MESSAGES.parent),
-                id: 'parent_org_unit__name',
-                accessor: 'parent_org_unit__name',
-                sortable: false,
-                Cell: settings => (
-                    <span>
-                        {settings.row.original.parent_org_unit?.[0].name ??
-                            '--'}
-                    </span>
-                ),
+                Header: formatMessage(MESSAGES.orgUnit),
+                id: 'name',
+                accessor: 'name',
+                sortable: true,
+                Cell: settings => {
+                    return (
+                        <span>
+                            {settings.row.original.org_unit?.name ?? '--'}
+                        </span>
+                    );
+                },
             },
             {
                 Header: formatMessage(MESSAGES.orgUnitType),
@@ -50,17 +51,16 @@ export const useCompletenessStatsColumns = (params: any) => {
                 },
             },
             {
-                Header: formatMessage(MESSAGES.orgUnit),
-                id: 'name',
-                accessor: 'name',
-                sortable: true,
-                Cell: settings => {
-                    return (
-                        <span>
-                            {settings.row.original.org_unit?.name ?? '--'}
-                        </span>
-                    );
-                },
+                Header: formatMessage(MESSAGES.parent),
+                id: 'parent_org_unit__name',
+                accessor: 'parent_org_unit__name',
+                sortable: false,
+                Cell: settings => (
+                    <span>
+                        {settings.row.original.parent_org_unit?.[0].name ??
+                            '--'}
+                    </span>
+                ),
             },
             {
                 Header: formatMessage(MESSAGES.form),

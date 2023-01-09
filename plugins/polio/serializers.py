@@ -714,8 +714,8 @@ class CampaignSerializer(serializers.ModelSerializer):
                     if len(source_version_ids) != 1:
                         raise serializers.ValidationError("All orgunit should be in the same source version")
                     source_version_id = list(source_version_ids)[0]
-                name = f"scope for round {round.number} campaign {instance.obr_name} - {vaccine}"
-                scope, created = round.scopes.get_or_create(vaccine=vaccine)
+                name = f"scope for round {round_instance.number} campaign {instance.obr_name} - {vaccine}"
+                scope, created = round_instance.scopes.get_or_create(vaccine=vaccine)
                 if not scope.group:
                     scope.group = Group.objects.create(name=name)
                 else:

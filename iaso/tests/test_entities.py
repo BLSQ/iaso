@@ -7,7 +7,7 @@ import uuid
 from unittest import mock
 
 from iaso import models as m
-from iaso.models import EntityType, Instance, Entity
+from iaso.models import EntityType, Instance, Entity, OrgUnit, Profile
 from iaso.test import APITestCase
 
 
@@ -30,11 +30,13 @@ class EntityAPITestCase(APITestCase):
             username="yop solo", account=space_balls, permissions=["iaso_submissions"]
         )
 
-        cls.yoda = cls.create_user_with_profile(username="yoda", account=star_wars, permissions=["iaso_submissions"])
-
         cls.jedi_council = m.OrgUnitType.objects.create(name="Jedi Council", short_name="Cnc")
 
         cls.jedi_council_corruscant = m.OrgUnit.objects.create(name="Coruscant Jedi Council")
+
+        cls.yoda = cls.create_user_with_profile(username="yoda", account=star_wars, permissions=["iaso_submissions"])
+
+        cls.yoda.iaso_profile.org_units.set([cls.jedi_council_corruscant.pk])
 
         cls.project = m.Project.objects.create(
             name="Hydroponic gardens", app_id="stars.empire.agriculture.hydroponics", account=star_wars
@@ -490,4 +492,37 @@ class EntityAPITestCase(APITestCase):
         )
 
         response = self.client.get("/api/entity/?xlsx=true/")
+        self.assertEqual(response.status_code, 200)
+
+    def test_entity_mobile(self):
+        self.client.force_authenticate(self.yoda)
+
+        test_ou = OrgUnit.objects.create(name="TEST_OU")
+
+        profile = Profile.objects.get(user=self.yoda)
+
+        profile.org_units.set([self.jedi_council_corruscant.pk])
+
+        profile.save()
+
+        entity_type = EntityType.objects.create(
+            name="Type 1",
+            reference_form=self.form_1,
+        )
+
+        instance = Instance.objects.create(
+            org_unit=test_ou,
+            form=self.form_1,
+            period="202002",
+        )
+
+        Entity.objects.create(
+            name="New Client",
+            entity_type=entity_type,
+            attributes=instance,
+            account=self.yoda.iaso_profile.account,
+        )
+
+        response = self.client.get("/api/mobile/entity/")
+
         self.assertEqual(response.status_code, 200)

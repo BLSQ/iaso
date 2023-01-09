@@ -218,11 +218,11 @@ const MESSAGES = defineMessages({
         id: 'iaso.users.label.homePage',
     },
     ouChildrenCheckbox: {
-        defaultMessage: 'Show org unit children',
+        defaultMessage: 'Users with access to children org unit',
         id: 'iaso.users.ouChildrenCheckbox',
     },
     ouParentCheckbox: {
-        defaultMessage: 'Show org unit parent',
+        defaultMessage: 'Users with access to parent org unit',
         id: 'iaso.users.ouParentCheckbox',
     },
 });

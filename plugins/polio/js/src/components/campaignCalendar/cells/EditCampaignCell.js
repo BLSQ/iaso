@@ -18,7 +18,7 @@ const EditCampaignCell = ({ campaign }) => {
                 size="small"
             />
             <CreateEditDialog
-                selectedCampaign={campaign.original}
+                selectedCampaign={campaign.original.id}
                 isOpen={dialogOpen}
                 onClose={() => setDialogOpen(false)}
             />

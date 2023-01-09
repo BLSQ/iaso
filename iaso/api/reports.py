@@ -1,7 +1,7 @@
 from django.shortcuts import get_object_or_404
 from rest_framework.pagination import LimitOffsetPagination
 
-from iaso.api.common import ModelViewSet
+from iaso.api.common import ModelViewSet, TimestampField
 from django_filters.rest_framework import DjangoFilterBackend  # type: ignore
 from rest_framework import filters, permissions
 from rest_framework import serializers
@@ -13,11 +13,10 @@ class ReportSerializer(serializers.ModelSerializer):
         model = Report
         fields = ["id", "name", "published_version", "project", "created_at", "updated_at"]
 
-    published_version = serializers.SerializerMethodField()
+    published_version = serializers.CharField(read_only=True, source="published_version.name")
 
-    @staticmethod
-    def get_published_version(obj: Report):
-        return obj.published_version.name
+    created_at = TimestampField()
+    updated_at = TimestampField()
 
 
 class ReportsViewSet(ModelViewSet):

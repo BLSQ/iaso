@@ -21,10 +21,12 @@ class LargeResultsSetPagination(PageNumberPagination):
 class MobileEntityAttributesSerializer(serializers.ModelSerializer):
     class Meta:
         model = Instance
-        fields = ["id", "form_id", "created_at", "updated_at", "org_unit", "json"]
+        fields = ["id", "form_id", "form_version_id", "created_at", "updated_at", "org_unit_id", "json"]
 
     form_id = serializers.SerializerMethodField()
     id = serializers.CharField(read_only=True, source="uuid")
+    form_version_id = serializers.CharField(read_only=True, source="form.form.id")
+    org_unit_id = serializers.CharField(read_only=True, source="org_unit.id")
 
     created_at = TimestampField()
     updated_at = TimestampField()
@@ -39,7 +41,6 @@ class MobileEntitySerializer(serializers.ModelSerializer):
         model = Entity
         fields = [
             "id",
-            "name",
             "created_at",
             "updated_at",
             "defining_instance_id",

@@ -5,7 +5,7 @@ import { makeStyles } from '@material-ui/core';
 import moment from 'moment';
 // @ts-ignore
 import { textPlaceholder, useSafeIntl } from 'bluesquare-components';
-import GeoJsonMap from '../../../components/maps/GeoJsonMapComponent';
+import { GeoJsonMap } from '../../../components/maps/GeoJsonMapComponent';
 import { getOrgUnitParentsString } from '../../orgUnits/utils';
 import { MESSAGES } from '../messages';
 

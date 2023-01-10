@@ -1,6 +1,4 @@
-/* eslint-disable import/extensions */
 /* eslint-disable react/jsx-props-no-spreading */
-/* eslint-disable react/prop-types */
 import React from 'react';
 
 import { Box, Button, Grid, DialogContentText } from '@material-ui/core';
@@ -33,7 +31,7 @@ import SpeedDialInstanceActions from '../../instances/components/SpeedDialInstan
 import EnketoIcon from '../../instances/components/EnketoIcon';
 import { userHasPermission } from '../../users/utils';
 import ConfirmCancelDialogComponent from '../../../components/dialogs/ConfirmCancelDialogComponent';
-import { useCurrentUser } from '../../../utils/usersUtils';
+import { useCurrentUser } from '../../../utils/usersUtils.ts';
 import {
     hasFeatureFlag,
     SHOW_LINK_INSTANCE_REFERENCE,

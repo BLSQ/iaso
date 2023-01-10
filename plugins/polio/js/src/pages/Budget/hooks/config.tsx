@@ -113,7 +113,10 @@ export const useBudgetDetailsColumns = (): Column[] => {
                                 Boolean(settings.row.original.deleted_at),
                             )}
                         >
-                            {settings.row.original.transition_label}
+                            {settings.row.original.transition_label !==
+                            'override'
+                                ? settings.row.original.transition_label
+                                : 'Override'}
                         </span>
                     );
                 },

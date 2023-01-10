@@ -48,6 +48,8 @@ class BudgetStep(SoftDeletableModel):
 
     amount = models.DecimalField(blank=True, null=True, decimal_places=2, max_digits=14)
     is_email_sent = models.BooleanField(default=False)
+    node_key_from = models.CharField(max_length=100, blank=True, null=True)
+    node_key_to = models.CharField(max_length=100, blank=True, null=True)
 
     def __str__(self):
         return f"{self.campaign}, {self.transition_key}"
@@ -244,6 +246,8 @@ class WorkflowModel(models.Model):
 @time_cache(60)
 def get_workflow():
     workflow_model = WorkflowModel.objects.last()
+    if workflow_model is None:
+        return None
     transition_defs = workflow_model.definition["transitions"]
     node_defs = workflow_model.definition["nodes"]
     categories_defs = workflow_model.definition["categories"]

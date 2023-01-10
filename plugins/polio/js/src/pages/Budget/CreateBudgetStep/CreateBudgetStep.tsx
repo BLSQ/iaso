@@ -134,7 +134,7 @@ const CreateBudgetStep: FunctionComponent<Props> = ({
             files: undefined,
             links: intialLinks,
             amount: previousStep?.amount,
-            // this value is for handling non-field arrors from api
+            // this value is for handling non-field errors from api
             general: null,
             // This value is to handle error state when either files or links are required
             attachments: null,

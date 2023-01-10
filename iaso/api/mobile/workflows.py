@@ -14,13 +14,18 @@ from drf_yasg import openapi
 class FollowupNestedSerializer(serializers.ModelSerializer):
 
     condition = serializers.SerializerMethodField()
+    form_ids = serializers.SerializerMethodField()
 
     class Meta:
         model = WorkflowFollowup
-        fields = ["order", "condition", "forms", "created_at", "updated_at"]
+        fields = ["order", "condition", "form_ids", "created_at", "updated_at"]
 
     def get_condition(self, obj):
         return json.dumps(obj.condition)
+
+    def get_form_ids(self, obj):
+        # return obj.forms.all()
+        return list(map(lambda x: x.id, obj.forms.all()))
 
 
 class MobileWorkflowVersionSerializer(serializers.ModelSerializer):

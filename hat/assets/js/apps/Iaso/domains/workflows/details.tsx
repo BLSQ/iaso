@@ -19,10 +19,11 @@ import {
     SortableList,
 } from 'bluesquare-components';
 import { Box, Grid, makeStyles } from '@material-ui/core';
-import { useDispatch, useSelector } from 'react-redux';
+import { useDispatch } from 'react-redux';
 import TopBar from '../../components/nav/TopBarComponent';
 import MESSAGES from './messages';
 
+import { useGoBack } from '../../routing/useGoBack';
 import { redirectToReplace } from '../../routing/actions';
 import { baseUrls } from '../../constants/urls';
 
@@ -63,9 +64,8 @@ export const Details: FunctionComponent<Props> = ({ router }) => {
     const [followUps, setFollowUps] = useState<FollowUps[]>([]);
     const { entityTypeId, versionId } = params;
     const { formatMessage } = useSafeIntl();
+    const goBack = useGoBack(router, baseUrls.workflows, { entityTypeId });
 
-    // @ts-ignore
-    const prevPathname = useSelector(state => state.routerCustom.prevPathname);
     const dispatch = useDispatch();
 
     const {
@@ -94,17 +94,7 @@ export const Details: FunctionComponent<Props> = ({ router }) => {
             <TopBar
                 title={formatMessage(MESSAGES.workflow)}
                 displayBackButton
-                goBack={() => {
-                    if (prevPathname) {
-                        router.goBack();
-                    } else {
-                        dispatch(
-                            redirectToReplace(baseUrls.workflows, {
-                                entityTypeId,
-                            }),
-                        );
-                    }
-                }}
+                goBack={() => goBack()}
             />
             <Box className={`${classes.containerFullHeightNoTabPadded}`}>
                 <Grid container spacing={2}>
@@ -115,7 +105,9 @@ export const Details: FunctionComponent<Props> = ({ router }) => {
                         >
                             <Box className={classes.infoPaperBox}>
                                 {!workflow && <LoadingSpinner absolute />}
-                                <WorkflowBaseInfo workflow={workflow} />
+                                {workflow && (
+                                    <WorkflowBaseInfo workflow={workflow} />
+                                )}
                             </Box>
                         </WidgetPaper>
                     </Grid>

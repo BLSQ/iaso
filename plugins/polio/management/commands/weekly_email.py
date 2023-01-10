@@ -72,7 +72,6 @@ If there are missing data or dates; visit {url} to update
 * Vaccine Type                   : {c.vaccines}
 * Target population              : {target_population} 
 * RA Status                      : {c.get_risk_assessment_status_display() or 'Pending'}
-* SIA Budget Status              : {c.get_budget_status_display() or 'Pending'}
 * Date Budget submitted          : {c.budget_submitted_at}
 * OnSet to Notification (Days)   : {onset_days}
 * Round 1 to Notification (Days) : {round1_days}

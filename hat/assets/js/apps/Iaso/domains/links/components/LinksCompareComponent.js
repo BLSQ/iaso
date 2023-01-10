@@ -1,7 +1,5 @@
 import React, { Fragment } from 'react';
 import PropTypes from 'prop-types';
-import { FormattedMessage } from 'react-intl';
-
 import isEqual from 'lodash/isEqual';
 
 import {
@@ -12,7 +10,10 @@ import {
     Grid,
     Typography,
 } from '@material-ui/core';
-import { IconButton as IconButtonComponent } from 'bluesquare-components';
+import {
+    IconButton as IconButtonComponent,
+    useSafeIntl,
+} from 'bluesquare-components';
 import { baseUrls } from '../../../constants/urls';
 import { LinksValue } from './LinksValueComponent.tsx';
 
@@ -33,7 +34,7 @@ const useStyles = makeStyles(theme => ({
 
 export const LinksCompare = ({ link, compareLink, title, validated }) => {
     const classes = useStyles();
-    const differenceArray = [{}];
+    const { formatMessage } = useSafeIntl();
     return (
         <Paper className={classes.paper}>
             {!isEqual(link, compareLink) && (
@@ -58,9 +59,7 @@ export const LinksCompare = ({ link, compareLink, title, validated }) => {
                     </Grid>
                 </Grid>
             )}
-            {isEqual(link, compareLink) && (
-                <FormattedMessage {...MESSAGES.noDifference} />
-            )}
+            {isEqual(link, compareLink) && formatMessage(MESSAGES.noDifference)}
             {!isEqual(link, compareLink) && (
                 <>
                     <Table className={classes.table}>
@@ -71,7 +70,6 @@ export const LinksCompare = ({ link, compareLink, title, validated }) => {
                                     value,
                                     compareLink[key],
                                 );
-                                differenceArray[key] = value;
                                 return (
                                     <LinksValue
                                         key={key}
@@ -97,7 +95,6 @@ LinksCompare.defaultProps = {
 };
 
 LinksCompare.propTypes = {
-    classes: PropTypes.object.isRequired,
     link: PropTypes.object.isRequired,
     compareLink: PropTypes.object.isRequired,
     title: PropTypes.string,

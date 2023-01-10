@@ -14,7 +14,7 @@ import {
 } from '@material-ui/core';
 import { IconButton as IconButtonComponent } from 'bluesquare-components';
 import { baseUrls } from '../../../constants/urls';
-import LinksValue from './LinksValueComponent';
+import { LinksValue } from './LinksValueComponent';
 
 import MESSAGES from '../messages';
 

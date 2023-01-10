@@ -5,7 +5,7 @@ import { FormattedMessage } from 'react-intl';
 import isEqual from 'lodash/isEqual';
 
 import {
-    withStyles,
+    makeStyles,
     Table,
     TableBody,
     Paper,
@@ -18,7 +18,7 @@ import { LinksValue } from './LinksValueComponent';
 
 import MESSAGES from '../messages';
 
-const styles = theme => ({
+const useStyles = makeStyles(theme => ({
     paper: {
         padding: theme.spacing(2),
         textAlign: 'center',
@@ -29,9 +29,10 @@ const styles = theme => ({
     title: {
         marginBottom: theme.spacing(1),
     },
-});
+}));
 
-const LinksCompare = ({ link, compareLink, classes, title, validated }) => {
+export const LinksCompare = ({ link, compareLink, title, validated }) => {
+    const classes = useStyles();
     const differenceArray = [{}];
     return (
         <Paper className={classes.paper}>
@@ -102,5 +103,3 @@ LinksCompare.propTypes = {
     title: PropTypes.string,
     validated: PropTypes.bool,
 };
-
-export default withStyles(styles)(LinksCompare);

@@ -27,9 +27,9 @@ const styles = theme => ({
 
 const useStyles = makeStyles(styles);
 
-export const Value: FunctionComponent<Props> = ({fieldKey, value}) => {
+export const LogValue: FunctionComponent<Props> = ({fieldKey, value}) => {
     const classes = useStyles();
-    if (!value || value.toString().length === 0) return textPlaceholder;
+    if (!value || value === '') return textPlaceholder;
     try {
         switch (fieldKey) {
             case 'geom':

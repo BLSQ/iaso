@@ -3,7 +3,7 @@ import PropTypes from 'prop-types';
 import { injectIntl } from 'bluesquare-components';
 import { Typography, Box, withStyles } from '@material-ui/core';
 
-import { Value } from './Value.tsx';
+import { LogValue } from './LogValue.tsx';
 import MESSAGES from './messages';
 
 const styles = theme => ({
@@ -49,14 +49,14 @@ class ValueWithErrorBoundary extends React.Component {
                 </Box>
             );
         }
-        return <Value fieldKey={fieldKey} value={value} />;
+        return <LogValue fieldKey={fieldKey} value={value} />;
     }
 }
 ValueWithErrorBoundary.defaultProps = {
     value: undefined,
 };
 ValueWithErrorBoundary.propTypes = {
-    value: PropTypes.any,
+    value: PropTypes.oneOfType(PropTypes.string, PropTypes.number),
     fieldKey: PropTypes.string.isRequired,
     intl: PropTypes.object.isRequired,
     classes: PropTypes.object.isRequired,

@@ -26,6 +26,10 @@ class EntityAPITestCase(APITestCase):
         star_wars.save()
         cls.sw_version = sw_version
 
+        cls.project = m.Project.objects.create(
+            name="Hydroponic gardens", app_id="stars.empire.agriculture.hydroponics", account=star_wars
+        )
+
         cls.yop_solo = cls.create_user_with_profile(
             username="yop solo", account=space_balls, permissions=["iaso_submissions"]
         )
@@ -35,12 +39,6 @@ class EntityAPITestCase(APITestCase):
         cls.jedi_council_corruscant = m.OrgUnit.objects.create(name="Coruscant Jedi Council")
 
         cls.yoda = cls.create_user_with_profile(username="yoda", account=star_wars, permissions=["iaso_submissions"])
-
-        cls.yoda.iaso_profile.org_units.set([cls.jedi_council_corruscant.pk])
-
-        cls.project = m.Project.objects.create(
-            name="Hydroponic gardens", app_id="stars.empire.agriculture.hydroponics", account=star_wars
-        )
 
         cls.form_1 = m.Form.objects.create(name="Hydroponics study", period_type=m.MONTH, single_per_period=True)
 
@@ -484,12 +482,15 @@ class EntityAPITestCase(APITestCase):
             period="202002",
         )
 
-        Entity.objects.create(
+        entity = Entity.objects.create(
             name="New Client",
             entity_type=entity_type,
-            attributes=instance,
             account=self.yop_solo.iaso_profile.account,
         )
+
+        entity.attributes = instance
+
+        entity.save()
 
         response = self.client.get("/api/entity/?xlsx=true/")
         self.assertEqual(response.status_code, 200)
@@ -497,13 +498,7 @@ class EntityAPITestCase(APITestCase):
     def test_entity_mobile(self):
         self.client.force_authenticate(self.yoda)
 
-        test_ou = OrgUnit.objects.create(name="TEST_OU")
-
-        profile = Profile.objects.get(user=self.yoda)
-
-        profile.org_units.set([self.jedi_council_corruscant.pk])
-
-        profile.save()
+        self.yoda.iaso_profile.org_units.set([self.jedi_council_corruscant])
 
         entity_type = EntityType.objects.create(
             name="Type 1",
@@ -511,18 +506,34 @@ class EntityAPITestCase(APITestCase):
         )
 
         instance = Instance.objects.create(
-            org_unit=test_ou,
-            form=self.form_1,
-            period="202002",
+            org_unit=self.jedi_council_corruscant, form=self.form_1, period="202002", project=self.project
         )
 
-        Entity.objects.create(
+        self.form_1.instances.set([instance])
+        self.form_1.save()
+
+        entity = Entity.objects.create(
             name="New Client",
             entity_type=entity_type,
             attributes=instance,
             account=self.yoda.iaso_profile.account,
         )
 
+        entity.instances.set([instance])
+
+        instance.entity = entity
+        instance.save()
+
         response = self.client.get("/api/mobile/entity/")
 
+        print(response.json().get("results"))
+
+        data = response.json().get("results")[0]
+
         self.assertEqual(response.status_code, 200)
+        self.assertEqual(data.get("id"), str(entity.uuid))
+
+        response = self.client.get(f"/api/mobile/entity/{entity.pk}/")
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(data.get("id"), str(entity.uuid))

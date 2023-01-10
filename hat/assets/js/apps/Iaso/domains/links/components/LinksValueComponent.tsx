@@ -1,9 +1,9 @@
-import React from 'react';
-import PropTypes from 'prop-types';
-import moment from 'moment';
-
+import React, { FunctionComponent } from 'react';
 import { makeStyles, TableCell, TableRow } from '@material-ui/core';
-
+// ts complaints about the import of moment for some reason
+// @ts-ignore
+import moment from 'moment';
+// @ts-ignore
 import { textPlaceholder, useSafeIntl } from 'bluesquare-components';
 import GeoJsonMap from '../../../components/maps/GeoJsonMapComponent';
 import { getOrgUnitParentsString } from '../../orgUnits/utils';
@@ -72,12 +72,20 @@ const LinkValue = ({ linkKey, link, value, classes }) => {
     }
 };
 
-export const LinksValue = ({
+type Props = {
+    linkKey: string;
+    value?: any;
+    link?: any;
+    isDifferent: boolean;
+    validated?: boolean;
+};
+
+export const LinksValue: FunctionComponent<Props> = ({
     linkKey,
-    value,
-    link,
+    value = null,
+    link = null,
     isDifferent,
-    validated,
+    validated = false,
 }) => {
     const { formatMessage } = useSafeIntl();
     const classes = useStyles();
@@ -86,13 +94,16 @@ export const LinksValue = ({
     const differentClass = validated
         ? classes.isDifferentValidated
         : classes.isDifferent;
+
+    const className = isDifferent ? differentClass : undefined;
+
     return (
         <TableRow>
             <TableCell className={classes.cell}>
                 {MESSAGES[linkKey] && formatMessage(MESSAGES[linkKey])}
                 {!MESSAGES[linkKey] && linkKey}
             </TableCell>
-            <TableCell className={isDifferent ? differentClass : null}>
+            <TableCell className={className}>
                 <LinkValue
                     linkKey={linkKey}
                     value={value}
@@ -102,18 +113,4 @@ export const LinksValue = ({
             </TableCell>
         </TableRow>
     );
-};
-
-LinksValue.defaultProps = {
-    value: null,
-    link: null,
-    validated: false,
-};
-
-LinksValue.propTypes = {
-    linkKey: PropTypes.string.isRequired,
-    value: PropTypes.any,
-    link: PropTypes.any,
-    isDifferent: PropTypes.bool.isRequired,
-    validated: PropTypes.bool,
 };

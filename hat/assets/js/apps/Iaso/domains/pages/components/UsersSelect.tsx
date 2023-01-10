@@ -1,5 +1,5 @@
 /* eslint-disable react/jsx-props-no-spreading */
-import React, { FunctionComponent, useCallback } from 'react';
+import React, { FunctionComponent, useCallback, useMemo } from 'react';
 import { FormikProps, FieldInputProps } from 'formik';
 // @ts-ignore
 import { Select } from 'bluesquare-components';
@@ -24,14 +24,19 @@ export const UsersSelect: FunctionComponent<Props> = ({
     label = '',
     ...props
 } = {}) => {
-    const value = field?.value || [];
     const currentUser = useCurrentUser();
+    const value = useMemo(
+        () => field?.value || [currentUser.user_id],
+        [currentUser.user_id, field?.value],
+    );
     const { data, isFetching: isFetchingProfiles } = useGetProfiles();
-    const profiles = data ? data.profiles : [];
-    const profilesList = profiles.map(p => ({
-        value: p.user_id,
-        label: getDisplayName(p),
-    }));
+    const profilesList = useMemo(() => {
+        if (!data) return [];
+        return data.profiles.map(p => ({
+            value: p.user_id,
+            label: getDisplayName(p),
+        }));
+    }, [data]);
     const handleChange = useCallback(
         (newValue: string): void => {
             const fieldValue: string[] | undefined = newValue

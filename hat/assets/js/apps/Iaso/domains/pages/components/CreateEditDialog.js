@@ -22,6 +22,7 @@ import TextInput from './TextInput';
 import Rte from './Rte';
 import RadioInput from './RadioInput';
 import { UsersSelect } from './UsersSelect.tsx';
+import { useCurrentUser } from '../../../utils/usersUtils.ts';
 
 import { useSavePage } from '../hooks/useSavePage';
 
@@ -44,10 +45,11 @@ const CreateEditDialog = ({ isOpen, onClose, selectedPage }) => {
 
     const classes = useStyles();
     const { formatMessage } = useSafeIntl();
+    const currentUser = useCurrentUser();
 
     const handleSubmit = (values, helpers) => {
         const tempValues = { ...values };
-        const users = values.users || [];
+        const users = values.users || [currentUser.user_id];
         tempValues.users = users;
         savePage(tempValues, {
             onSuccess: () => {

@@ -13,7 +13,7 @@ type FormValues = {
 };
 
 type Props = {
-    field?: FieldInputProps<string>;
+    field?: FieldInputProps<number[]>;
     form?: FormikProps<FormValues>;
     label?: string;
 };
@@ -25,10 +25,16 @@ export const UsersSelect: FunctionComponent<Props> = ({
     ...props
 } = {}) => {
     const currentUser = useCurrentUser();
-    const value = useMemo(
-        () => field?.value || [currentUser.user_id],
-        [currentUser.user_id, field?.value],
-    );
+    const value = useMemo(() => {
+        if (field?.value) {
+            const arrayValue = field.value;
+            if (!arrayValue.includes(currentUser.user_id)) {
+                arrayValue.push(currentUser.user_id);
+            }
+            return arrayValue.join(',');
+        }
+        return [currentUser.user_id];
+    }, [currentUser.user_id, field?.value]);
     const { data, isFetching: isFetchingProfiles } = useGetProfiles();
     const profilesList = useMemo(() => {
         if (!data) return [];
@@ -39,12 +45,12 @@ export const UsersSelect: FunctionComponent<Props> = ({
     }, [data]);
     const handleChange = useCallback(
         (newValue: string): void => {
-            const fieldValue: string[] | undefined = newValue
-                ? newValue.split(',')
+            const fieldValue: number[] | undefined = newValue
+                ? newValue.split(',').map(val => parseInt(val, 10))
                 : undefined;
             if (field && form) {
                 // Disable delete of current user chip
-                if (fieldValue?.includes(`${currentUser.user_id}`)) {
+                if (fieldValue?.includes(currentUser.user_id)) {
                     form.setFieldValue(field.name, fieldValue);
                 }
             }

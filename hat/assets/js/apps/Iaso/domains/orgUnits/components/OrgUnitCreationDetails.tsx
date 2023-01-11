@@ -36,7 +36,6 @@ type RowProps = {
 };
 
 const Row: FunctionComponent<RowProps> = ({ label, value, dataTestId }) => {
-    console.log('test', moment.unix(1633954017.188993).format('LTS'));
     const classes: Record<string, string> = useStyles();
     return (
         <TableRow>

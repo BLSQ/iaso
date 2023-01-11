@@ -1,5 +1,11 @@
 import React from 'react';
-import { textPlaceholder, useSafeIntl } from 'bluesquare-components';
+
+import { textPlaceholder, useSafeIntl, createUrl } from 'bluesquare-components';
+import { getChipColors } from '../../constants/chipColors';
+import { baseUrls } from '../../constants/urls';
+
+import { locationLimitMax } from './constants/orgUnitConstants';
+
 import OrgUnitPopupComponent from './components/OrgUnitPopupComponent';
 import MarkersListComponent from '../../components/maps/markers/MarkersListComponent';
 import {
@@ -278,3 +284,19 @@ export const compareGroupVersions = (a, b) => {
     }
     return comparison;
 };
+
+export const getOrgUnitsUrl = accountId =>
+    `${baseUrls.orgUnits}${createUrl(
+        {
+            accountId,
+            locationLimit: locationLimitMax,
+            order: 'id',
+            pageSize: 50,
+            page: 1,
+            searchTabIndex: 0,
+            searches: `[{"validation_status":"all", "color":"${getChipColors(
+                0,
+            ).replace('#', '')}"}]`,
+        },
+        '',
+    )}`;

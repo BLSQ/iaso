@@ -415,6 +415,7 @@ const OrgUnitInfosComponent = ({
                         orgUnit={orgUnit}
                         formatMessage={formatMessage}
                         classes={classes}
+                        params={params}
                     />
                 </Box>
             </Grid>

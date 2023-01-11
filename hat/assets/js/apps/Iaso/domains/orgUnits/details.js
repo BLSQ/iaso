@@ -404,9 +404,12 @@ const OrgUnitDetail = ({ params, router }) => {
                     </Tabs>
                 )}
             </TopBar>
-            {(isFetchingDetail || isFetchingDatas || savingOu) && (
-                <LoadingSpinner />
-            )}
+
+            {/* there is already a loader on SingleTable for the other tabs */}
+            {(isFetchingDetail || isFetchingDatas || savingOu) &&
+                (tab === 'infos' || tab === 'map' || tab === 'comments') && (
+                    <LoadingSpinner />
+                )}
             {currentOrgUnit && (
                 <section>
                     {tab === 'infos' && (

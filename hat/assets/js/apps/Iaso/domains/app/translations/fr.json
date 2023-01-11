@@ -691,6 +691,7 @@
     "iaso.permissions.polio_budget_admin": "Validation de budget polio: Admin",
     "iaso.permissions.polio_config": "Gestion campagnes vaccination Polio - configuration",
     "iaso.permissions.projects": "Projets",
+    "iaso.permission.reports": "Rapports",
     "iaso.permissions.sources": "Sources",
     "iaso.permissions.submissions": "Soumissions de formulaire",
     "iaso.permissions.teams": "Equipes",

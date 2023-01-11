@@ -693,6 +693,7 @@
     "iaso.permissions.polio_budget_admin": "Polio budget admin",
     "iaso.permissions.polio_config": "Polio campaign admin",
     "iaso.permissions.projects": "Projects",
+    "iaso.permission.reports": "Reports",
     "iaso.permissions.sources": "Sources",
     "iaso.permissions.submissions": "Form submissions",
     "iaso.permissions.teams": "Teams",

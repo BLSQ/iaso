@@ -76,9 +76,10 @@ class CompletenessStatsViewSet(viewsets.ViewSet):
         account = profile.account
         version = account.default_version
 
-        org_units = OrgUnit.objects.filter(version=version).filter(
-            validation_status="VALID"
-        )  # don't forget to think about org unit status
+        # Those filters will apply to all OUs touched by this API (listed, counted, etc.)
+        common_ou_filters = {"version": version, "validation_status": "VALID"}
+
+        org_units = OrgUnit.objects.filter(version=version).filter(**common_ou_filters)
 
         # Filtering per org unit: we drop the rows that don't match the requested org_unit
         if requested_org_unit:
@@ -108,7 +109,7 @@ class CompletenessStatsViewSet(viewsets.ViewSet):
 
                 # Instance counters for the row OU + all descendants
                 ou_to_fill_with_descendants = (
-                    row_ou.descendants().filter(org_unit_type__in=ou_types_of_form).filter(validation_status="VALID")
+                    row_ou.descendants().filter(org_unit_type__in=ou_types_of_form).filter(**common_ou_filters)
                 )  # Apparently .descendants() also includes the row_ou itself
 
                 ou_to_fill_with_descendants_count, ou_filled_with_descendants_count = get_instance_counters(
@@ -119,7 +120,7 @@ class CompletenessStatsViewSet(viewsets.ViewSet):
                 ou_to_fill_direct = (
                     org_units.filter(org_unit_type__in=ou_types_of_form)
                     .filter(pk=row_ou.pk)
-                    .filter(validation_status="VALID")
+                    .filter(**common_ou_filters)
                 )
                 ou_to_fill_direct_count, ou_filled_direct_count = get_instance_counters(ou_to_fill_direct, form)
 

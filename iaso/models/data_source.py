@@ -46,6 +46,11 @@ class SourceVersion(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(fields=["data_source", "number"], name="unique_number_data_source_version")
+        ]
+
     def __str__(self):
         return "%s %d" % (self.data_source, self.number)
 

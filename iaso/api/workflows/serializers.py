@@ -1,4 +1,11 @@
-from iaso.models import Form, EntityType, Workflow, WorkflowVersion, WorkflowChange, WorkflowFollowup
+from iaso.models import (
+    Form,
+    EntityType,
+    Workflow,
+    WorkflowVersion,
+    WorkflowChange,
+    WorkflowFollowup,
+)
 from iaso.models.workflow import WorkflowVersionsStatus
 from rest_framework import serializers
 from django.shortcuts import get_object_or_404
@@ -46,15 +53,44 @@ class WorkflowChangeSerializer(serializers.ModelSerializer):
         fields = ["id", "form", "mapping", "created_at", "updated_at"]
 
 
-class WorkflowChangeCreateSerializer(serializers.ModelSerializer):
-    form = serializers.PrimaryKeyRelatedField(queryset=Form.objects.all(), many=False)
+class WorkflowChangeCreateSerializer(serializers.Serializer):
+    form = serializers.IntegerField()
     mapping = serializers.JSONField()
 
-    def validate_form(self, form):
-        pass
+    def validate_form(self, form_id):
+        user = self.context["request"].user
+
+        if not Form.objects.filter(pk=form_id).exists():
+            raise serializers.ValidationError(f"Form {form_id} does not exist")
+
+        form = Form.objects.get(pk=form_id)
+        for p in form.projects.all():
+            if p.account != user.iaso_profile.account:
+                raise serializers.ValidationError(
+                    f"User doesn't have access to form {form_id}"
+                )
+        return form_id
 
     def validate_mapping(self, mapping):
-        pass
+        # TODO: validate mapping
+        # We should check that the from field and to field have the same type
+
+        return mapping
+
+    def create(self, validated_data):
+        version_id = self.context["version_id"]
+        wfv = get_object_or_404(WorkflowVersion, pk=version_id)
+        form = get_object_or_404(Form, pk=validated_data["form"])
+
+        wc = WorkflowChange.objects.create(
+            workflow_version=wfv,
+            form=form,
+            mapping=validated_data["mapping"],
+        )
+
+        wc.save()
+
+        return wc
 
 
 class WorkflowFollowupSerializer(serializers.ModelSerializer):
@@ -69,7 +105,9 @@ class WorkflowFollowupModifySerializer(serializers.Serializer):
     id = serializers.IntegerField()
     order = serializers.IntegerField(required=False)
     condition = serializers.JSONField(required=False)
-    form_ids = serializers.ListField(child=serializers.IntegerField(), required=False, allow_empty=False)
+    form_ids = serializers.ListField(
+        child=serializers.IntegerField(), required=False, allow_empty=False
+    )
 
     def validate(self, data):
         if "order" not in data and "form_ids" not in data and "condition" not in data:
@@ -84,14 +122,25 @@ class WorkflowFollowupModifySerializer(serializers.Serializer):
             else:
                 for f in data["form_ids"]:
                     if not Form.objects.filter(id=f).exists():
-                        raise serializers.ValidationError("form_ids must be valid form ids")
+                        raise serializers.ValidationError(
+                            "form_ids must be valid form ids"
+                        )
 
                     f = Form.objects.get(id=f)
                     # TODO this is crashing while saving
-                    if f.projects.filter(account=self.context["request"].user.iaso_profile.account).count() == 0:
-                        raise serializers.ValidationError(f"form_id {f.id} is not accessible to the user")
+                    if (
+                        f.projects.filter(
+                            account=self.context["request"].user.iaso_profile.account
+                        ).count()
+                        == 0
+                    ):
+                        raise serializers.ValidationError(
+                            f"form_id {f.id} is not accessible to the user"
+                        )
         follow_up = get_object_or_404(WorkflowFollowup, id=data["id"])
-        utils.validate_version_id(follow_up.workflow_version.id, self.context["request"].user)
+        utils.validate_version_id(
+            follow_up.workflow_version.id, self.context["request"].user
+        )
 
         return data
 
@@ -125,7 +174,9 @@ class WorkflowFollowupCreateSerializer(serializers.Serializer):
             form = Form.objects.get(pk=form_id)
             for p in form.projects.all():
                 if p.account != user.iaso_profile.account:
-                    raise serializers.ValidationError(f"User doesn't have access to form {form_id}")
+                    raise serializers.ValidationError(
+                        f"User doesn't have access to form {form_id}"
+                    )
 
         return form_ids
 
@@ -140,7 +191,9 @@ class WorkflowFollowupCreateSerializer(serializers.Serializer):
 
         wfv = get_object_or_404(WorkflowVersion, pk=version_id)
         wf = WorkflowFollowup.objects.create(
-            order=validated_data["order"], condition=validated_data["condition"], workflow_version=wfv
+            order=validated_data["order"],
+            condition=validated_data["condition"],
+            workflow_version=wfv,
         )
 
         wf.conditions = validated_data["condition"]
@@ -187,7 +240,9 @@ class WorkflowPostSerializer(serializers.Serializer):
         et = EntityType.objects.get(pk=entity_type_id)
 
         if not et.account == self.context["request"].user.iaso_profile.account:
-            raise serializers.ValidationError("User doesn't have access to Entity Type : " + str(entity_type_id))
+            raise serializers.ValidationError(
+                "User doesn't have access to Entity Type : " + str(entity_type_id)
+            )
 
         return entity_type_id
 
@@ -213,7 +268,9 @@ class WorkflowPartialUpdateSerializer(serializers.Serializer):
         if hasattr(WorkflowVersionsStatus, new_status):
             return new_status
         else:
-            raise serializers.ValidationError(new_status + "is not recognized as proper status value")
+            raise serializers.ValidationError(
+                new_status + "is not recognized as proper status value"
+            )
 
     def validate_name(self, new_name):
         if len(new_name) <= 1:

@@ -107,6 +107,7 @@ export const useGetQueryBuildersFields = (
                 };
                 break;
             }
+            // Not working for now
             // case 'range': {
             //     Fields[field.fieldKey] = {
             //         label: formatLabel(field),
@@ -171,7 +172,7 @@ export const useGetQueryBuilderListToReplace =
             },
             {
                 color: blue[700],
-                items: ['=', '!=', 'IS NULL', 'IN NOT NULL'],
+                items: ['=', '!=', 'IS NULL', 'IS NOT NULL'],
             },
         ];
     };

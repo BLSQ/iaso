@@ -1,4 +1,9 @@
-import React, { FunctionComponent, useState, useMemo } from 'react';
+import React, {
+    FunctionComponent,
+    useState,
+    useMemo,
+    useCallback,
+} from 'react';
 
 import {
     // @ts-ignore
@@ -64,9 +69,9 @@ const FollowUpsModal: FunctionComponent<Props> = ({
         closeDialog,
         versionId,
     );
-    const { data: forms, isLoading: isLoadingForms } = useGetForms();
+    const { data: forms, isFetching: isFetchingForms } = useGetForms();
 
-    const handleConfirm = () => {
+    const handleConfirm = useCallback(() => {
         if (followUp?.id) {
             saveFollowUp([
                 {
@@ -83,7 +88,15 @@ const FollowUpsModal: FunctionComponent<Props> = ({
                 order: newOrder || 0,
             });
         }
-    };
+    }, [
+        createFollowUp,
+        followUp?.id,
+        followUp?.order,
+        formIds,
+        logic,
+        newOrder,
+        saveFollowUp,
+    ]);
     const formsList = useMemo(
         () =>
             forms?.map(form => ({
@@ -141,7 +154,7 @@ const FollowUpsModal: FunctionComponent<Props> = ({
                         required
                         multi
                         options={formsList}
-                        loading={isLoadingForms}
+                        loading={isFetchingForms}
                     />
                 </Grid>
                 <Grid item xs={12} md={4} />

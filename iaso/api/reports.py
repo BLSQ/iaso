@@ -28,7 +28,7 @@ class ReportsViewSet(ModelViewSet):
     results_key = "result"
     remove_results_key_if_paginated = True
     filter_backends = [filters.OrderingFilter, DjangoFilterBackend]
-    permission_classes = [permissions.IsAuthenticated, HasPermission("menupermissions.iaso_reports")]
+    permission_classes = [permissions.IsAuthenticated, HasPermission("menupermissions.iaso_reports")]  # type: ignore
     pagination_class = LimitOffsetPagination
 
     def get_serializer_class(self):

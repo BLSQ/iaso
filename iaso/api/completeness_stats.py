@@ -7,15 +7,12 @@ for a given form in a given orgunit.
 This one is planned to become a "default" and be reused, not to be confused with the more specialized preexisting
 completeness API.
 """
-from typing import Tuple
+from typing import Tuple, Optional
 
-from django.db.models import Q, QuerySet
-
-# TODO: clarify permissions: new iaso_completeness_stats permission?
-# TODO: clarify with FE what's needed in terms of pagination
-# TODO: clarify with FE what's needed in terms of sorting
+from django.db.models import QuerySet
 
 from rest_framework import viewsets, permissions
+from rest_framework.request import Request
 from rest_framework.response import Response
 
 from .common import HasPermission
@@ -37,12 +34,20 @@ def get_instance_counters(ous_to_fill: "QuerySet[OrgUnit]", form_type: Form) -> 
     return ous_to_fill.count(), filled.count()
 
 
+def _get_ou_from_request(request: Request, parameter_name: str) -> Optional[OrgUnit]:
+    ou_id = request.query_params.get(parameter_name)
+    if ou_id is None:
+        return None
+
+    return OrgUnit.objects.get(id=ou_id)
+
+
 class CompletenessStatsViewSet(viewsets.ViewSet):
     """Completeness Stats API"""
 
     permission_classes = [permissions.IsAuthenticated, HasPermission("menupermissions.iaso_completeness_stats")]  # type: ignore
 
-    def list(self, request):
+    def list(self, request: Request) -> Response:
         order = request.GET.get("order", "name").split(",")
         requested_org_unit_type_str = request.query_params.get("org_unit_type_id", None)
 
@@ -50,23 +55,14 @@ class CompletenessStatsViewSet(viewsets.ViewSet):
         requested_form_ids = requested_forms_str.split(",") if requested_forms_str is not None else []
 
         if requested_org_unit_type_str is not None:
-            org_unit_types = OrgUnitType.objects.filter(id__in=requested_org_unit_type_str.split(","))
+            requested_org_unit_types = OrgUnitType.objects.filter(id__in=requested_org_unit_type_str.split(","))
         else:
-            org_unit_types = None
+            requested_org_unit_types = None
 
-        requested_org_unit_id_str = request.GET.get("org_unit_id", None)
-        if requested_org_unit_id_str is not None:
-            requested_org_unit = OrgUnit.objects.get(id=requested_org_unit_id_str)
-        else:
-            requested_org_unit = None
+        requested_org_unit = _get_ou_from_request(request, "org_unit_id")
+        requested_parent_org_unit = _get_ou_from_request(request, "parent_org_unit_id")
 
-        requested_parent_org_unit_id_str = request.GET.get("parent_org_unit_id", None)
-        if requested_parent_org_unit_id_str is not None:
-            requested_parent_org_unit = OrgUnit.objects.get(id=requested_parent_org_unit_id_str)
-        else:
-            requested_parent_org_unit = None
-
-        profile = request.user.iaso_profile
+        profile = request.user.iaso_profile  # type: ignore
 
         # Forms to take into account: we take everything for the user's account, then filter by the form_ids if provided
         form_qs = Form.objects.filter_for_user_and_app_id(user=request.user)
@@ -93,14 +89,13 @@ class CompletenessStatsViewSet(viewsets.ViewSet):
         top_ous = org_units.exclude(parent__in=org_units)
 
         # Filtering by org unit type
-        if org_unit_types is not None:
+        if requested_org_unit_types is not None:
             # This needs to be applied on the top_ous, not on the org_units (to act as a real filter, not something that changes the level of OUs in the table)
-            top_ous = top_ous.filter(org_unit_type__id__in=[o.id for o in org_unit_types])
+            top_ous = top_ous.filter(org_unit_type__id__in=[o.id for o in requested_org_unit_types])
 
         top_ous = top_ous.order_by(*order)
 
-        res = []
-
+        results = []
         for row_ou in top_ous:
             for form in form_qs:
                 form = Form.objects.get(id=form.id)
@@ -131,7 +126,7 @@ class CompletenessStatsViewSet(viewsets.ViewSet):
                     parent_data = (row_ou.parent.as_dict_for_completeness_stats(),)
 
                 if ou_to_fill_with_descendants_count > 0:
-                    res.append(
+                    results.append(
                         {
                             "parent_org_unit": parent_data,
                             "org_unit_type": row_ou.org_unit_type.as_dict_for_completeness_stats(),
@@ -153,7 +148,7 @@ class CompletenessStatsViewSet(viewsets.ViewSet):
                     )
         limit = int(request.GET.get("limit", 10))
         page_offset = int(request.GET.get("page", "1"))
-        paginator = Paginator(res, limit)
+        paginator = Paginator(results, limit)
         if page_offset > paginator.num_pages:
             page_offset = paginator.num_pages
         page = paginator.page(page_offset)

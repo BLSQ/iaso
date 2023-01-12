@@ -40,6 +40,8 @@ from plugins.polio.serializers import (
     CampaignGroupSerializer,
     serialize_campaign,
     log_campaign_modification,
+    ListCampaignSerializer,
+    CalendarCampaignSerializer,
 )
 from plugins.polio.serializers import (
     CountryUsersGroupSerializer,
@@ -92,6 +94,14 @@ class PolioOrgunitViewSet(ModelViewSet):
 
 
 class CampaignViewSet(ModelViewSet):
+    """Main endpoint for campaign.
+
+    GET (Anonymously too)
+    POST
+    PATCH
+    See swagger for Parameters
+    """
+
     results_key = "campaigns"
     remove_results_key_if_paginated = True
     filter_backends = [
@@ -126,8 +136,21 @@ class CampaignViewSet(ModelViewSet):
 
     def get_serializer_class(self):
         if self.request.user.is_authenticated:
+            if self.request.query_params.get("fieldset") == "list" and self.request.method in permissions.SAFE_METHODS:
+                return ListCampaignSerializer
+            if (
+                self.request.query_params.get("fieldset") == "calendar"
+                and self.request.method in permissions.SAFE_METHODS
+            ):
+                return CalendarCampaignSerializer
+
             return CampaignSerializer
         else:
+            if (
+                self.request.query_params.get("fieldset") == "calendar"
+                and self.request.method in permissions.SAFE_METHODS
+            ):
+                return CalendarCampaignSerializer
             return AnonymousCampaignSerializer
 
     def filter_queryset(self, queryset):

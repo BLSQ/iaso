@@ -18,14 +18,15 @@ import {
     useSafeIntl,
     QueryBuilderInput,
     useSkipEffectOnMount,
+    useHumanReadableJsonLogic,
 } from 'bluesquare-components';
 import InputComponent from '../../../components/forms/InputComponent';
 
 import { periodTypeOptions } from '../../periods/constants';
 import { isValidPeriod } from '../../periods/utils';
 import DatesRange from '../../../components/filters/DatesRange';
-import PeriodPicker from '../../periods/components/PeriodPicker';
-import { Period } from '../../periods/models';
+import PeriodPicker from '../../periods/components/PeriodPicker.tsx';
+import { Period } from '../../periods/models.ts';
 
 import { INSTANCE_STATUSES } from '../constants';
 import { setInstancesFilterUpdated } from '../actions';
@@ -33,7 +34,10 @@ import { setInstancesFilterUpdated } from '../actions';
 import { useGetFormDescriptor } from '../compare/hooks/useGetInstanceLogs.ts';
 import { useGetForms, useInstancesFiltersData } from '../hooks';
 import { getInstancesFilterValues, useFormState } from '../../../hooks/form';
-import { useGetQueryBuildersFields } from '../hooks/useGetQueryBuildersFields.ts';
+import {
+    useGetQueryBuildersFields,
+    useGetQueryBuilderListToReplace,
+} from '../hooks/queryBuilder.ts';
 import { parseJson } from '../utils/jsonLogicParse.ts';
 
 import MESSAGES from '../messages';
@@ -100,10 +104,13 @@ const InstancesFiltersComponent = ({
         formState.formIds.value?.split(',').length === 1
             ? formState.formIds.value.split(',')[0]
             : undefined;
-
     const { data: formDescriptor } = useGetFormDescriptor(formId);
     const fields = useGetQueryBuildersFields(formDescriptor, possibleFields);
-
+    const queryBuilderListToReplace = useGetQueryBuilderListToReplace();
+    const getHumanReadableJsonLogic = useHumanReadableJsonLogic(
+        fields,
+        queryBuilderListToReplace,
+    );
     useInstancesFiltersData(formIds, setFetchingOrgUnitTypes);
     const handleSearch = useCallback(() => {
         if (isInstancesFilterUpdated) {
@@ -208,7 +215,9 @@ const InstancesFiltersComponent = ({
 
     const theme = useTheme();
     const isLargeLayout = useMediaQuery(theme.breakpoints.up('md'));
-
+    const fieldsSearchJson = formState.fieldsSearch.value
+        ? JSON.parse(formState.fieldsSearch.value)
+        : undefined;
     return (
         <div className={classes.marginBottomBig}>
             <UserOrgUnitRestriction />
@@ -241,15 +250,13 @@ const InstancesFiltersComponent = ({
                         <QueryBuilderInput
                             label={MESSAGES.queryBuilder}
                             onChange={handleChangeQueryBuilder}
-                            initialLogic={
-                                formState.fieldsSearch.value
-                                    ? JSON.parse(formState.fieldsSearch.value)
-                                    : undefined
-                            }
+                            initialLogic={fieldsSearchJson}
                             fields={fields}
                             iconProps={{
                                 label: MESSAGES.queryBuilder,
-                                value: formState.fieldsSearch.value,
+                                value: getHumanReadableJsonLogic(
+                                    fieldsSearchJson,
+                                ),
                                 onClear: () =>
                                     handleFormChange('fieldsSearch', undefined),
                             }}

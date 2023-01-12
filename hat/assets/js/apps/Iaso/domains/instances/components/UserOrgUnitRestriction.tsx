@@ -2,8 +2,8 @@
 import { useSafeIntl } from 'bluesquare-components';
 import React, { useState } from 'react';
 import { Alert } from '@material-ui/lab';
-import { useCurrentUser } from '../../../utils/usersUtils';
 import { Snackbar } from '@material-ui/core';
+import { useCurrentUser } from '../../../utils/usersUtils';
 import MESSAGES from '../messages';
 
 export const UserOrgUnitRestriction: React.FunctionComponent = () => {

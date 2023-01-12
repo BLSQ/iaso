@@ -10,6 +10,14 @@ from iaso.api.common import TimestampField
 from drf_yasg.utils import swagger_auto_schema
 from drf_yasg import openapi
 
+from iaso.models.workflow import WorkflowVersionsStatus, WorkflowChange
+
+
+class ChangeNestedSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = WorkflowChange
+        fields = ["form_id", "mapping"]
+
 
 class FollowupNestedSerializer(serializers.ModelSerializer):
 
@@ -32,7 +40,7 @@ class MobileWorkflowVersionSerializer(serializers.ModelSerializer):
     version_id = serializers.IntegerField(source="pk")
     entity_type_id = serializers.IntegerField(source="workflow.entity_type.pk")
     follow_ups = FollowupNestedSerializer(many=True)
-
+    changes = ChangeNestedSerializer(many=True)
     created_at = TimestampField()
     updated_at = TimestampField()
 
@@ -90,6 +98,7 @@ class MobileWorkflowViewSet(GenericViewSet):
     def get_queryset(self, **kwargs):
         return (
             WorkflowVersion.objects.filter_for_user(self.request.user)
+            .filter(status=WorkflowVersionsStatus.PUBLISHED)
             .order_by("workflow__pk", "-created_at")
             .distinct("workflow__pk")
         )

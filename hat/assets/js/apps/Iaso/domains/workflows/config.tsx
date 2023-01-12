@@ -3,6 +3,8 @@ import React from 'react';
 import {
     // @ts-ignore
     useSafeIntl,
+    // @ts-ignore
+    QueryBuilderFields,
 } from 'bluesquare-components';
 import { Box } from '@material-ui/core';
 
@@ -16,6 +18,8 @@ import { baseUrls } from '../../constants/urls';
 
 import { StatusCell } from './components/StatusCell';
 import { VersionsActionCell } from './components/VersionsActionCell';
+import { FollowUpActionCell } from './components/FollowUpActionCell';
+import { WorkflowVersionDetail } from './types/workflows';
 
 export const defaultSorted = [{ id: 'id', desc: true }];
 
@@ -61,22 +65,32 @@ export const useGetColumns = (entityTypeId: string): Array<Column> => {
 };
 
 export const useGetFollowUpsColumns = (
-    entityTypeId: string,
+    // eslint-disable-next-line no-unused-vars
+    getHumanReadableJsonLogic: (logic: Record<string, string>) => string,
     versionId: string,
+    workflow?: WorkflowVersionDetail,
+    fields?: QueryBuilderFields,
 ): Array<Column> => {
     const { formatMessage }: { formatMessage: IntlFormatMessage } =
         useSafeIntl();
+
     const columns: Array<Column> = [
         {
             Header: formatMessage(MESSAGES.condition),
+            sortable: false,
             accessor: 'condition',
             Cell: settings => {
                 const condition = settings.value;
-                return <>{condition ? JSON.stringify(condition) : '-'}</>;
+                return (
+                    <>
+                        {condition ? getHumanReadableJsonLogic(condition) : '-'}
+                    </>
+                );
             },
         },
         {
             Header: formatMessage(MESSAGES.forms),
+            sortable: false,
             accessor: 'forms',
             Cell: settings => {
                 const forms = settings.value;
@@ -90,37 +104,45 @@ export const useGetFollowUpsColumns = (
         },
         {
             Header: formatMessage(MESSAGES.created_at),
+            sortable: false,
             accessor: 'created_at',
             Cell: DateCell,
         },
         {
             Header: formatMessage(MESSAGES.updated_at),
             accessor: 'updated_at',
+            sortable: false,
             Cell: DateCell,
         },
-        // {
-        //     Header: formatMessage(MESSAGES.actions),
-        //     resizable: false,
-        //     sortable: false,
-        //     accessor: 'actions',
-        //     Cell: settings => {
-        //         return (
-        //             <IconButtonComponent
-        //                 url={`${baseUrls.workflowDetail}/entityTypeId/${entityTypeId}/versionId/${versionId}/followUp/${settings.row.original.id}`}
-        //                 icon="remove-red-eye"
-        //                 tooltipMessage={MESSAGES.see}
-        //             />
-        //         );
-        //     },
-        // },
     ];
+    if (workflow?.status === 'DRAFT') {
+        columns.push({
+            Header: formatMessage(MESSAGES.actions),
+            resizable: false,
+            sortable: false,
+            accessor: 'id',
+            Cell: settings => {
+                const followUp = workflow?.follow_ups.find(
+                    fu => fu.id === settings.value,
+                );
+                return (
+                    <>
+                        {workflow && followUp && fields && (
+                            <FollowUpActionCell
+                                followUp={followUp}
+                                fields={fields}
+                                versionId={versionId}
+                            />
+                        )}
+                    </>
+                );
+            },
+        });
+    }
     return columns;
 };
 
-export const useGetChangesColumns = (
-    entityTypeId: string,
-    versionId: string,
-): Array<Column> => {
+export const useGetChangesColumns = (): Array<Column> => {
     const { formatMessage }: { formatMessage: IntlFormatMessage } =
         useSafeIntl();
     const columns: Array<Column> = [
@@ -164,21 +186,6 @@ export const useGetChangesColumns = (
             id: 'updated_at',
             Cell: DateCell,
         },
-        // {
-        //     Header: formatMessage(MESSAGES.actions),
-        //     resizable: false,
-        //     sortable: false,
-        //     accessor: 'actions',
-        //     Cell: settings => {
-        //         return (
-        //             <IconButtonComponent
-        //                 url={`${baseUrls.workflowDetail}/entityTypeId/${entityTypeId}/versionId/${versionId}/change/${settings.row.original.form_id}`}
-        //                 icon="remove-red-eye"
-        //                 tooltipMessage={MESSAGES.see}
-        //             />
-        //         );
-        //     },
-        // },
     ];
     return columns;
 };

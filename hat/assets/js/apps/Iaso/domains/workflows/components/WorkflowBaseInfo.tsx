@@ -6,7 +6,6 @@ import {
     TableCell,
     Divider,
     Box,
-    Button,
 } from '@material-ui/core';
 import React, { FunctionComponent, ReactNode } from 'react';
 // @ts-ignore
@@ -20,7 +19,7 @@ import { StatusCell } from './StatusCell';
 import { DetailsForm } from './DetailsForm';
 import { LinkToForm } from '../../forms/components/LinkToForm';
 
-import { useUpdateWorkflowVersion } from '../hooks/requests/useUpdateWorkflowVersion';
+import { PublishVersionModal } from './PublishVersionModal';
 
 const useStyles = makeStyles(theme => ({
     leftCell: {
@@ -46,42 +45,42 @@ const Row: FunctionComponent<RowProps> = ({ label, value }) => {
 };
 
 type Props = {
-    workflow: WorkflowVersionDetail;
+    workflowVersion: WorkflowVersionDetail;
 };
-export const WorkflowBaseInfo: FunctionComponent<Props> = ({ workflow }) => {
+export const WorkflowBaseInfo: FunctionComponent<Props> = ({
+    workflowVersion,
+}) => {
     const { formatMessage } = useSafeIntl();
-
-    const { mutate: updateWorkflowVersion } = useUpdateWorkflowVersion(
-        'workflowVersion',
-        workflow.version_id,
-    );
     return (
         <>
-            {workflow?.status === 'DRAFT' && (
+            {workflowVersion?.status === 'DRAFT' && (
                 <>
-                    <DetailsForm workflow={workflow} />
+                    <DetailsForm workflowVersion={workflowVersion} />
                     <Divider />
                 </>
             )}
             <Table size="small">
                 <TableBody>
-                    {workflow?.status && workflow?.status !== 'DRAFT' && (
-                        <Row
-                            label={formatMessage(MESSAGES.name)}
-                            value={workflow?.name}
-                        />
-                    )}
+                    {workflowVersion?.status &&
+                        workflowVersion?.status !== 'DRAFT' && (
+                            <Row
+                                label={formatMessage(MESSAGES.name)}
+                                value={workflowVersion?.name}
+                            />
+                        )}
                     <Row
                         label={formatMessage(MESSAGES.type)}
-                        value={workflow?.entity_type.name}
+                        value={workflowVersion?.entity_type.name}
                     />
                     <Row
                         label={formatMessage(MESSAGES.referenceForm)}
                         value={
-                            workflow ? (
+                            workflowVersion ? (
                                 <LinkToForm
-                                    formId={workflow.reference_form.id}
-                                    formName={workflow.reference_form.name}
+                                    formId={workflowVersion.reference_form.id}
+                                    formName={
+                                        workflowVersion.reference_form.name
+                                    }
                                 />
                             ) : (
                                 ''
@@ -90,13 +89,13 @@ export const WorkflowBaseInfo: FunctionComponent<Props> = ({ workflow }) => {
                     />
                     <Row
                         label={formatMessage(MESSAGES.version)}
-                        value={workflow?.version_id}
+                        value={workflowVersion?.version_id}
                     />
                     <Row
                         label={formatMessage(MESSAGES.status)}
                         value={
-                            workflow ? (
-                                <StatusCell status={workflow.status} />
+                            workflowVersion ? (
+                                <StatusCell status={workflowVersion.status} />
                             ) : (
                                 ''
                             )
@@ -104,20 +103,14 @@ export const WorkflowBaseInfo: FunctionComponent<Props> = ({ workflow }) => {
                     />
                 </TableBody>
             </Table>
-            {workflow?.status === 'DRAFT' && (
+            {workflowVersion?.status === 'DRAFT' && (
                 <>
                     <Divider />
                     <Box p={2} display="flex" justifyContent="flex-end">
-                        <Button
-                            color="primary"
-                            data-test="save-name-button"
-                            onClick={() =>
-                                updateWorkflowVersion({ status: 'PUBLISHED' })
-                            }
-                            variant="contained"
-                        >
-                            {formatMessage(MESSAGES.publish)}
-                        </Button>
+                        <PublishVersionModal
+                            workflowVersion={workflowVersion}
+                            invalidateQueryKey="workflowVersion"
+                        />
                     </Box>
                 </>
             )}

@@ -6,7 +6,6 @@ import {
 } from 'bluesquare-components';
 import { Box, makeStyles } from '@material-ui/core';
 import FileCopyIcon from '@material-ui/icons/FileCopy';
-import PublishIcon from '@material-ui/icons/Publish';
 import BlockIcon from '@material-ui/icons/Block';
 
 import { WorkflowVersion } from '../types/workflows';
@@ -14,6 +13,7 @@ import { WorkflowVersion } from '../types/workflows';
 import MESSAGES from '../messages';
 import { baseUrls } from '../../../constants/urls';
 import DeleteDialog from '../../../components/dialogs/DeleteDialogComponent';
+import { PublishVersionIconModal } from './PublishVersionModal';
 
 import { useCopyWorkflowVersion } from '../hooks/requests/useCopyWorkflowVersion';
 import { useDeleteWorkflowVersion } from '../hooks/requests/useDeleteWorkflowVersion';
@@ -72,13 +72,9 @@ export const VersionsActionCell: FunctionComponent<Props> = ({
             )}
             {status !== 'PUBLISHED' && (
                 <Box className={classes.publishIcon}>
-                    <IconButtonComponent
-                        onClick={() =>
-                            updateWorkflowVersion({ status: 'PUBLISHED' })
-                        }
-                        overrideIcon={PublishIcon}
-                        tooltipMessage={MESSAGES.publish}
-                        color="inherit"
+                    <PublishVersionIconModal
+                        workflowVersion={workflowVersion}
+                        invalidateQueryKey="workflowVersions"
                     />
                 </Box>
             )}

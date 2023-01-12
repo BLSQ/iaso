@@ -19,11 +19,11 @@ type FieldType =
 
 type Props = {
     value: JSONValue;
-    parent: JSONValue;
+    parent?: JSONValue;
     fields: QueryBuilderFields;
 };
 
-type JSONValue = string | number | boolean | JSONObject | JSONArray;
+export type JSONValue = string | number | boolean | JSONObject | JSONArray;
 
 interface JSONObject {
     [x: string]: JSONValue;
@@ -47,14 +47,14 @@ const arrayLoop = (arr: JSONArray, fields: QueryBuilderFields): JSONArray => {
 };
 
 const getFieldType = (
-    parent: JSONValue,
     fields: QueryBuilderFields,
+    parent?: JSONValue,
 ): FieldType => parent && parent[0]?.var && fields[parent[0].var]?.type;
 
 export const parseJson = ({ value, parent, fields }: Props): JSONValue => {
     // @ts-ignore
-    if (!value.var) {
-        const fieldType = getFieldType(parent, fields);
+    if (value && !value.var) {
+        const fieldType = getFieldType(fields, parent);
         if (fieldType === 'date') {
             return moment(value as MomentInput).format(apiDateFormat);
         }

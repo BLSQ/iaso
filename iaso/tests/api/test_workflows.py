@@ -46,14 +46,20 @@ class WorkflowsAPITestCase(APITestCase):
         )
 
         cls.blue_child_1 = cls.create_user_with_profile(
-            username="blue_child_1", account=blue_children, permissions=["iaso_workflows"]
+            username="blue_child_1",
+            account=blue_children,
+            permissions=["iaso_workflows"],
         )
 
         # He doesn't have permissions
-        cls.blue_adult_np = cls.create_user_with_profile(username="blue_adult_np", account=blue_adults)
+        cls.blue_adult_np = cls.create_user_with_profile(
+            username="blue_adult_np", account=blue_adults
+        )
 
         cls.project_blue_adults = m.Project.objects.create(
-            name="Blue Adults Project", app_id="blue.adults.project", account=blue_adults
+            name="Blue Adults Project",
+            app_id="blue.adults.project",
+            account=blue_adults,
         )
 
         cls.form_adults_blue = m.Form.objects.create(
@@ -74,7 +80,9 @@ class WorkflowsAPITestCase(APITestCase):
             reference_form=cls.form_children_blue,
         )
 
-        cls.workflow_et_children_blue = Workflow.objects.create(entity_type=cls.et_children_blue)
+        cls.workflow_et_children_blue = Workflow.objects.create(
+            entity_type=cls.et_children_blue
+        )
 
         cls.et_adults_blue = m.EntityType.objects.create(
             name="Adults of Blue",
@@ -82,44 +90,61 @@ class WorkflowsAPITestCase(APITestCase):
             account=blue_adults,
             reference_form=cls.form_adults_blue,
         )
-        cls.workflow_et_adults_blue = Workflow.objects.create(entity_type=cls.et_adults_blue)
+        cls.workflow_et_adults_blue = Workflow.objects.create(
+            entity_type=cls.et_adults_blue
+        )
 
         cls.workflow_version_et_adults_blue = WorkflowVersion.objects.create(
             workflow=cls.workflow_et_adults_blue,
             name="workflow_version_et_adults_blue V1",
-            reference_form=cls.form_adults_blue,
             status=WorkflowVersionsStatus.PUBLISHED,
         )
 
     def test_user_without_auth(self):
-        response = self.client.get(f"/api/workflowversions/?workflow__entity_type={self.et_adults_blue.pk}/")
+        response = self.client.get(
+            f"/api/workflowversions/?workflow__entity_type={self.et_adults_blue.pk}/"
+        )
 
         self.assertJSONResponse(response, 403)
         self.assertEqual(response.data["detail"].code, "not_authenticated")
-        self.assertEqual(response.data["detail"], "Authentication credentials were not provided.")
+        self.assertEqual(
+            response.data["detail"], "Authentication credentials were not provided."
+        )
 
     def test_user_anonymous(self):
         self.client.force_authenticate(self.anon)
-        response = self.client.get(f"/api/workflowversions/?workflow__entity_type={self.et_adults_blue.pk}/")
+        response = self.client.get(
+            f"/api/workflowversions/?workflow__entity_type={self.et_adults_blue.pk}/"
+        )
 
         self.assertJSONResponse(response, 403)
         self.assertEqual(response.data["detail"].code, "permission_denied")
-        self.assertEqual(response.data["detail"], "You do not have permission to perform this action.")
+        self.assertEqual(
+            response.data["detail"],
+            "You do not have permission to perform this action.",
+        )
 
     def test_user_with_auth_no_permissions(self):
         self.client.force_authenticate(self.blue_adult_np)
 
-        response = self.client.get(f"/api/workflowversions/?workflow__entity_type={self.et_children_blue.pk}/")
+        response = self.client.get(
+            f"/api/workflowversions/?workflow__entity_type={self.et_children_blue.pk}/"
+        )
 
         self.assertJSONResponse(response, 403)
         self.assertEqual(response.data["detail"].code, "permission_denied")
-        self.assertEqual(response.data["detail"], "You do not have permission to perform this action.")
+        self.assertEqual(
+            response.data["detail"],
+            "You do not have permission to perform this action.",
+        )
 
     def test_user_with_auth_no_access_to_entity_type(self):
         self.client.force_authenticate(self.blue_adult_1)
 
         # {"workflow__entity_type": ["Select a valid choice. That choice is not one of the available choices."]}
-        response = self.client.get(f"/api/workflowversions/?workflow__entity_type={self.et_children_blue.pk}/")
+        response = self.client.get(
+            f"/api/workflowversions/?workflow__entity_type={self.et_children_blue.pk}/"
+        )
 
         self.assertJSONResponse(response, 400)
         assert "workflow__entity_type" in response.data
@@ -154,7 +179,15 @@ class WorkflowsAPITestCase(APITestCase):
                     },
                 },
             },
-            "required": ["count", "has_next", "has_previous", "limit", "page", "pages", "workflow_versions"],
+            "required": [
+                "count",
+                "has_next",
+                "has_previous",
+                "limit",
+                "page",
+                "pages",
+                "workflow_versions",
+            ],
         }
 
         response = self.client.get(f"/api/workflowversions/?limit=2")
@@ -179,15 +212,29 @@ class WorkflowsAPITestCase(APITestCase):
                 "reference_form": {"type": "object"},
                 "entity_type": {
                     "type": "object",
-                    "properties": {"account": {"type": "number"}, "id": {"type": "number"}, "name": {"type": "string"}},
+                    "properties": {
+                        "account": {"type": "number"},
+                        "id": {"type": "number"},
+                        "name": {"type": "string"},
+                    },
                 },
                 "follow_ups": {"type": "array"},
                 "version_id": {"type": "number"},
             },
-            "required": ["status", "name", "updated_at", "reference_form", "entity_type", "follow_ups", "version_id"],
+            "required": [
+                "status",
+                "name",
+                "updated_at",
+                "reference_form",
+                "entity_type",
+                "follow_ups",
+                "version_id",
+            ],
         }
 
-        response = self.client.get(f"/api/workflowversions/{self.workflow_version_et_adults_blue.pk}/")
+        response = self.client.get(
+            f"/api/workflowversions/{self.workflow_version_et_adults_blue.pk}/"
+        )
 
         self.assertJSONResponse(response, 200)
 
@@ -225,7 +272,9 @@ class WorkflowsAPITestCase(APITestCase):
     def test_new_version_from_copy(self):
         self.client.force_authenticate(self.blue_adult_1)
 
-        response = self.client.post(f"/api/workflowversions/{self.workflow_version_et_adults_blue.pk}/copy/")
+        response = self.client.post(
+            f"/api/workflowversions/{self.workflow_version_et_adults_blue.pk}/copy/"
+        )
 
         self.assertJSONResponse(response, 200)
 
@@ -238,7 +287,9 @@ class WorkflowsAPITestCase(APITestCase):
             w_version = WorkflowVersion.objects.get(pk=response.data["version_id"])
 
             assert w_version.pk == response.data["version_id"]
-            assert w_version.name == str("Copy of " + self.workflow_version_et_adults_blue.name)
+            assert w_version.name == str(
+                "Copy of " + self.workflow_version_et_adults_blue.name
+            )
 
         except WorkflowVersion.DoesNotExist as ex:
             self.fail(msg=str(ex))
@@ -259,7 +310,10 @@ class WorkflowsAPITestCase(APITestCase):
 
         self.assertJSONResponse(response, 404)
 
-        assert response.data == "User not found in Projects for this app id or project not found"
+        assert (
+            response.data
+            == "User not found in Projects for this app id or project not found"
+        )
 
     def test_mobile_api_with_nonaccessible_app_id(self):
         self.client.force_authenticate(self.blue_adult_1)
@@ -268,7 +322,10 @@ class WorkflowsAPITestCase(APITestCase):
 
         self.assertJSONResponse(response, 404)
 
-        assert response.data == "User not found in Projects for this app id or project not found"
+        assert (
+            response.data
+            == "User not found in Projects for this app id or project not found"
+        )
 
     def test_soft_delete_workflow_version(self):
         self.client.force_authenticate(self.blue_adult_1)
@@ -276,12 +333,13 @@ class WorkflowsAPITestCase(APITestCase):
         temp_version = WorkflowVersion.objects.create(
             workflow=self.workflow_et_adults_blue,
             name="workflow_version_et_adults_blue V2",
-            reference_form=self.form_adults_blue,
         )
 
         response = self.client.delete(f"/api/workflowversions/{temp_version.id}/")
         self.assertJSONResponse(response, 204)
-        loaded_temp_version = WorkflowVersion.objects_include_deleted.get(pk=temp_version.id)
+        loaded_temp_version = WorkflowVersion.objects_include_deleted.get(
+            pk=temp_version.id
+        )
 
         try:
             WorkflowVersion.objects.get(pk=temp_version.id)

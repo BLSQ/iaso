@@ -252,7 +252,6 @@ class WorkflowPostSerializer(serializers.Serializer):
 
         wfv = WorkflowVersion.objects.create(workflow=wf)
         et = EntityType.objects.get(pk=entity_type_id)
-        wfv.reference_form = et.reference_form
         if "name" in validated_data:
             wfv.name = validated_data["name"]
         wfv.save()

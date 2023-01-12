@@ -689,7 +689,7 @@ class CampaignSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Campaign
-        # TODO in the future specicy the fields we actually want
+        # TODO in the future specify the fields that need to be returned so we can remove the deprecated fields
         # fields = "__all__"
         exclude = ["geojson"]
 

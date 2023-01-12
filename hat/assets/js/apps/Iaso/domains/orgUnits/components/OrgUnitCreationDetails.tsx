@@ -19,6 +19,7 @@ import {
 } from 'bluesquare-components';
 import WidgetPaper from '../../../components/papers/WidgetPaperComponent';
 import { OrgUnit } from '../types/orgUnit';
+import { useCurrentUser } from '../../../utils/usersUtils';
 import MESSAGES from '../messages';
 
 const useStyles = makeStyles(theme => ({
@@ -65,6 +66,8 @@ export const OrgUnitCreationDetails: FunctionComponent<Props> = ({
         orgUnit.latitude && orgUnit.longitude ? latitude + longitude : false;
     const orgUnitCreatedAt = moment.unix(orgUnit.created_at).format('LTS');
     const orgUnitUpdatedAt = moment.unix(orgUnit.updated_at).format('LTS');
+    const currentUser = useCurrentUser();
+    const { account } = currentUser;
 
     return (
         <>
@@ -75,7 +78,10 @@ export const OrgUnitCreationDetails: FunctionComponent<Props> = ({
                     <TableBody>
                         <Row
                             label={formatMessage(MESSAGES.source)}
-                            value={orgUnit.source ?? '-'}
+                            value={
+                                orgUnit.source ??
+                                account.default_version?.data_source.name
+                            }
                             dataTestId="source"
                         />
                         <Row

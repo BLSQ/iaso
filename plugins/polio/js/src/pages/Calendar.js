@@ -62,6 +62,7 @@ const Calendar = ({ params }) => {
             search: params.search,
             campaignType: params.campaignType,
             campaignGroups: params.campaignGroups,
+            fieldset: 'calendar',
         };
     }, [
         orders,

@@ -39,7 +39,7 @@ const MESSAGES = defineMessages({
     },
     orgUnitTypesDropdown: {
         defaultMessage: 'Org Unit Types',
-        id: 'iaso.users.orgUnitTypesDropdown',
+        id: 'iaso.datasources.label.orgUnitTypes',
     },
     isSuperUser: {
         defaultMessage: 'User is a super admin and has all rights',
@@ -220,6 +220,14 @@ const MESSAGES = defineMessages({
     homePage: {
         defaultMessage: 'Home page',
         id: 'iaso.users.label.homePage',
+    },
+    ouChildrenCheckbox: {
+        defaultMessage: 'Users with access to children org unit',
+        id: 'iaso.users.ouChildrenCheckbox',
+    },
+    ouParentCheckbox: {
+        defaultMessage: 'Users with access to parent org unit',
+        id: 'iaso.users.ouParentCheckbox',
     },
 });
 

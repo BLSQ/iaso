@@ -5,6 +5,7 @@ from django.contrib.auth.models import AnonymousUser
 
 from iaso import models as m
 from iaso.models import Workflow, WorkflowVersion
+from iaso.models.workflow import WorkflowVersionsStatus
 from iaso.test import APITestCase
 
 from pprint import pprint
@@ -87,6 +88,7 @@ class WorkflowsAPITestCase(APITestCase):
             workflow=cls.workflow_et_adults_blue,
             name="workflow_version_et_adults_blue V1",
             reference_form=cls.form_adults_blue,
+            status=WorkflowVersionsStatus.PUBLISHED,
         )
 
     def test_user_without_auth(self):
@@ -187,8 +189,6 @@ class WorkflowsAPITestCase(APITestCase):
 
         response = self.client.get(f"/api/workflowversions/{self.workflow_version_et_adults_blue.pk}/")
 
-        print(response)
-
         self.assertJSONResponse(response, 200)
 
         try:
@@ -200,7 +200,9 @@ class WorkflowsAPITestCase(APITestCase):
         self.client.force_authenticate(self.blue_adult_1)
 
         response = self.client.post(
-            f"/api/workflowversions/", format="json", data={"entity_type_id": self.et_adults_blue.pk}
+            f"/api/workflowversions/",
+            format="json",
+            data={"entity_type_id": self.et_adults_blue.pk, "name": "New Super Name"},
         )
 
         self.assertJSONResponse(response, 200)
@@ -214,7 +216,8 @@ class WorkflowsAPITestCase(APITestCase):
             w_version = WorkflowVersion.objects.get(pk=response.data["version_id"])
 
             assert w_version.pk == response.data["version_id"]
-            assert w_version.name == response.data["name"]
+            assert w_version.name == "New Super Name"
+            assert w_version.reference_form.pk == self.et_adults_blue.reference_form.pk
 
         except WorkflowVersion.DoesNotExist as ex:
             self.fail(msg=str(ex))
@@ -266,6 +269,27 @@ class WorkflowsAPITestCase(APITestCase):
         self.assertJSONResponse(response, 404)
 
         assert response.data == "User not found in Projects for this app id or project not found"
+
+    def test_soft_delete_workflow_version(self):
+        self.client.force_authenticate(self.blue_adult_1)
+
+        temp_version = WorkflowVersion.objects.create(
+            workflow=self.workflow_et_adults_blue,
+            name="workflow_version_et_adults_blue V2",
+            reference_form=self.form_adults_blue,
+        )
+
+        response = self.client.delete(f"/api/workflowversions/{temp_version.id}/")
+        self.assertJSONResponse(response, 204)
+        loaded_temp_version = WorkflowVersion.objects_include_deleted.get(pk=temp_version.id)
+
+        try:
+            WorkflowVersion.objects.get(pk=temp_version.id)
+            assert True is False  # We should never reach here
+        except WorkflowVersion.DoesNotExist:
+            pass
+
+        assert loaded_temp_version.deleted_at is not None
 
     def test_mobile_api_ok(self):
         self.client.force_authenticate(self.blue_adult_1)

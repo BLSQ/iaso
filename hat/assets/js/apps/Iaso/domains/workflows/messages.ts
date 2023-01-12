@@ -21,6 +21,10 @@ const MESSAGES = defineMessages({
         id: 'iaso.label.workflow',
         defaultMessage: 'Workflow',
     },
+    workflowVersion: {
+        id: 'iaso.label.workflowVersion',
+        defaultMessage: 'Workflow version',
+    },
     workflows: {
         id: 'iaso.label.workflows',
         defaultMessage: 'Workflows',
@@ -92,6 +96,75 @@ const MESSAGES = defineMessages({
     mapping: {
         defaultMessage: 'Mapping',
         id: 'iaso.workflows.mapping',
+    },
+    addWorkflowVersion: {
+        defaultMessage: 'Add workflow version',
+        id: 'iaso.workflows.addWorkflowVersion',
+    },
+    confirm: {
+        defaultMessage: 'Confirm',
+        id: 'iaso.label.confirm',
+    },
+    cancel: {
+        defaultMessage: 'Cancel',
+        id: 'iaso.label.cancel',
+    },
+    add: {
+        id: 'iaso.label.add',
+        defaultMessage: 'Add',
+    },
+    copy: {
+        id: 'iaso.workflows.copy',
+        defaultMessage: 'Copy version',
+    },
+    edit: {
+        id: 'iaso.label.edit',
+        defaultMessage: 'Edit',
+    },
+    delete: {
+        id: 'iaso.label.delete',
+        defaultMessage: 'Delete',
+    },
+    deleteTitle: {
+        id: 'iaso.workflows.dialog.deleteTitle',
+        defaultMessage:
+            'Are you sure you want to delete this workflow version?',
+    },
+    deleteFollowUp: {
+        id: 'iaso.workflows.dialog.deleteFollowUp',
+        defaultMessage: 'Are you sure you want to delete this follow up?',
+    },
+    deleteText: {
+        id: 'iaso.label.deleteText',
+        defaultMessage: 'This operation cannot be undone.',
+    },
+    save: {
+        id: 'iaso.label.save',
+        defaultMessage: 'Save',
+    },
+    publish: {
+        id: 'iaso.workflows.publish',
+        defaultMessage: 'Publish',
+    },
+    unpublish: {
+        id: 'iaso.workflows.unpublish',
+        defaultMessage: 'Unpublish',
+    },
+    editFollowUp: {
+        id: 'iaso.workflows.editFollowUp',
+        defaultMessage: 'Edit follow up',
+    },
+    createFollowUp: {
+        id: 'iaso.workflows.createFollowUp',
+        defaultMessage: 'Create follow up',
+    },
+    publishVersion: {
+        id: 'iaso.workflows.publishVersion',
+        defaultMessage: 'Publish version',
+    },
+    saveOrder: {
+        id: 'iaso.workflows.saveOrder',
+        defaultMessage: 'Save order',
     },
 });
 

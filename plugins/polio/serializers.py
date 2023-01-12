@@ -696,6 +696,104 @@ class CampaignSerializer(serializers.ModelSerializer):
         read_only_fields = ["last_surge", "preperadness_sync_status", "creation_email_send_at", "group"]
 
 
+class ListCampaignSerializer(CampaignSerializer):
+    "This serializer contains juste enough data for the List view in the web ui"
+
+    class NestedListRoundSerializer(RoundSerializer):
+        class Meta:
+            model = Round
+            fields = [
+                "id",
+                "number",
+                "started_at",
+                "ended_at",
+            ]
+
+    rounds = NestedListRoundSerializer(many=True, required=False)
+
+    class Meta:
+        model = Campaign
+        fields = [
+            "id",
+            "epid",
+            "obr_name",
+            "account",
+            "cvdpv2_notified_at",
+            "top_level_org_unit_name",
+            "top_level_org_unit_id",
+            "rounds",
+            "general_status",
+            "grouped_campaigns",
+        ]
+        read_only_fields = fields
+
+
+class CalendarCampaignSerializer(CampaignSerializer):
+    """This serializer contains juste enough data for the Calendar view in the web ui. Read only.
+    Used by both anonymous and non anonymous user"""
+
+    class NestedListRoundSerializer(RoundSerializer):
+        class NestedScopeSerializer(RoundScopeSerializer):
+            class NestedGroupSerializer(GroupSerializer):
+                class Meta:
+                    model = Group
+                    fields = ["id"]
+
+            class Meta:
+                model = RoundScope
+                fields = ["group", "vaccine"]
+
+            group = NestedGroupSerializer()
+
+        class Meta:
+            model = Round
+            fields = [
+                "id",
+                "number",
+                "started_at",
+                "ended_at",
+                "scopes",
+            ]
+
+    class NestedScopeSerializer(CampaignScopeSerializer):
+        class NestedGroupSerializer(GroupSerializer):
+            class Meta:
+                model = Group
+                fields = ["id"]
+
+        class Meta:
+            model = CampaignScope
+            fields = ["group", "vaccine"]
+
+        group = NestedGroupSerializer()
+
+    rounds = NestedListRoundSerializer(many=True, required=False)
+    scopes = NestedScopeSerializer(many=True, required=False)
+
+    class Meta:
+        model = Campaign
+        fields = [
+            "id",
+            "epid",
+            "obr_name",
+            "account",
+            "cvdpv2_notified_at",
+            "top_level_org_unit_name",
+            "top_level_org_unit_id",
+            "rounds",
+            "is_preventive",
+            "general_status",
+            "grouped_campaigns",
+            "separate_scopes_per_round",
+            "scopes",
+            # displayed in RoundPopper
+            "risk_assessment_status",
+            "budget_status",
+            "vaccines",
+        ]
+        read_only_fields = fields
+
+
 class SmallCampaignSerializer(CampaignSerializer):
     class Meta:
         model = Campaign

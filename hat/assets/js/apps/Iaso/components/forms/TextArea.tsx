@@ -9,7 +9,7 @@ import {
     useSkipEffectOnMount,
 } from 'bluesquare-components';
 import classnames from 'classnames';
-import { makeStyles, InputLabel } from '@material-ui/core';
+import { makeStyles, InputLabel, FormHelperText } from '@material-ui/core';
 import { useDebounce } from 'use-debounce';
 import { Optional } from '../../types/utils';
 
@@ -22,6 +22,7 @@ type Props = {
     required?: boolean;
     debounceTime?: number; // debounce time in ms
     disabled?: boolean;
+    helperText?: string;
 };
 
 const useStyles = makeStyles(theme => ({
@@ -85,6 +86,7 @@ export const TextArea: FunctionComponent<Props> = ({
     required = false,
     debounceTime = 0,
     disabled = false,
+    helperText = undefined,
 }) => {
     const classes: Record<string, string> = useStyles();
     const [focus, setFocus] = useState<boolean>(false);
@@ -138,6 +140,7 @@ export const TextArea: FunctionComponent<Props> = ({
                 value={textValue}
                 disabled={disabled}
             />
+            <FormHelperText>{helperText}</FormHelperText>
         </FormControl>
     );
 };

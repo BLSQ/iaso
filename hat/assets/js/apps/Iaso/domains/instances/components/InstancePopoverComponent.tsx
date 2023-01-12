@@ -1,6 +1,5 @@
 import React from 'react';
 import moment from 'moment';
-import PropTypes from 'prop-types';
 
 import { makeStyles } from '@material-ui/core/styles';
 import Popover from '@material-ui/core/Popover';
@@ -8,12 +7,12 @@ import Box from '@material-ui/core/Box';
 import { Button } from '@material-ui/core';
 import Info from '@material-ui/icons/InfoOutlined';
 
-import { injectIntl } from 'bluesquare-components';
+// @ts-ignore
+import { useSafeIntl } from 'bluesquare-components';
 import MESSAGES from '../messages';
 import PopupItemComponent from '../../../components/maps/popups/PopupItemComponent';
 
 import { getOrgUnitsTree } from '../../orgUnits/utils';
-import { getDisplayedDateHourFormat } from '../../../utils/dates';
 
 const useStyles = makeStyles(theme => ({
     popoverPaper: {
@@ -30,14 +29,17 @@ const useStyles = makeStyles(theme => ({
     },
 }));
 
-function InstancePopover(props) {
-    const {
-        instanceDetail,
-        intl: { formatMessage },
-    } = props;
-    if (!instanceDetail) return null;
+type Props = {
+    instanceDetail?: any;
+};
+
+const InstancePopover: React.FunctionComponent<Props> = ({
+    instanceDetail = null,
+}) => {
     const classes = useStyles();
+    const { formatMessage } = useSafeIntl();
     const [anchorEl, setAnchorEl] = React.useState(null);
+    if (!instanceDetail) return null;
 
     const handleClick = event => {
         setAnchorEl(event.currentTarget);
@@ -49,7 +51,7 @@ function InstancePopover(props) {
 
     const open = Boolean(anchorEl);
     const id = open ? 'simple-popover' : undefined;
-    let orgUnitTree = [];
+    let orgUnitTree: any[] = [];
     if (instanceDetail && instanceDetail.org_unit) {
         orgUnitTree = getOrgUnitsTree(instanceDetail.org_unit);
         orgUnitTree = orgUnitTree.reverse();
@@ -121,14 +123,6 @@ function InstancePopover(props) {
             </Popover>
         </div>
     );
-}
-InstancePopover.defaultProps = {
-    instanceDetail: null,
 };
 
-InstancePopover.propTypes = {
-    instanceDetail: PropTypes.object,
-    intl: PropTypes.object.isRequired,
-};
-
-export default injectIntl(InstancePopover);
+export default InstancePopover;

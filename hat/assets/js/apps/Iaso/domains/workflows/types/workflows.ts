@@ -23,7 +23,7 @@ export type Change = {
 };
 
 type Form = {
-    id: string;
+    id: number;
     name: string;
 };
 
@@ -32,8 +32,8 @@ export type FollowUps = {
     order: number;
     condition: Record<string, string>;
     forms: Form[];
-    created_at: string;
-    updated_at: string;
+    created_at?: string;
+    updated_at?: string;
 };
 
 export type WorkflowVersionDetail = {

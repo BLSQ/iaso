@@ -6,12 +6,11 @@ import moment from 'moment';
 import { withStyles, TableCell, TableRow } from '@material-ui/core';
 
 import { textPlaceholder, injectIntl } from 'bluesquare-components';
-import GeoJsonMap from '../../../components/maps/GeoJsonMapComponent';
+import { GeoJsonMap } from '../../../components/maps/GeoJsonMapComponent.tsx';
 import { getOrgUnitParentsString } from '../../orgUnits/utils';
 
 import MESSAGES from '../../forms/messages';
 import { MESSAGES as LINKS_MESSAGES } from '../messages';
-import { getDisplayedDateHourFormat } from '../../../utils/dates';
 
 const styles = theme => ({
     cell: {

@@ -1,7 +1,7 @@
 from django.shortcuts import get_object_or_404
 from rest_framework.pagination import LimitOffsetPagination
 
-from iaso.api.common import ModelViewSet, TimestampField
+from iaso.api.common import ModelViewSet, TimestampField, HasPermission
 from django_filters.rest_framework import DjangoFilterBackend  # type: ignore
 from rest_framework import filters, permissions
 from rest_framework import serializers
@@ -28,7 +28,7 @@ class ReportsViewSet(ModelViewSet):
     results_key = "result"
     remove_results_key_if_paginated = True
     filter_backends = [filters.OrderingFilter, DjangoFilterBackend]
-    permission_classes = [permissions.IsAuthenticated]
+    permission_classes = [permissions.IsAuthenticated, HasPermission("menupermissions.iaso_reports")]
     pagination_class = LimitOffsetPagination
 
     def get_serializer_class(self):

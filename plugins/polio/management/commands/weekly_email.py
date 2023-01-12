@@ -39,11 +39,15 @@ def send_notification_email(campaign):
     emails = [user.email for user in users if user.email]
     if not emails:
         return False
-    day_number = (now().date() - campaign.cvdpv_notified_at).days if campaign.cvdpv_notified_at else ""
+    day_number = (
+        (now().date() - campaign.cvdpv_notified_at).days
+        if campaign.cvdpv_notified_at
+        else "{Error: No cVDPV notification available. Enter a notification date in order to have the days count.}"
+    )
     onset_days = (
         (campaign.cvdpv_notified_at - campaign.onset_at).days
         if campaign.onset_at and campaign.cvdpv_notified_at
-        else ""
+        else "{Error: No cVDPV notification available. Enter a notification date in order to have the days count.}"
     )
     try:
         first_round = campaign.rounds.earliest("number")

@@ -293,6 +293,41 @@ class PolioAPITestCase(APITestCase):
         self.assertEqual(send_notification_email(campaign_deleted), False)
         self.assertEqual(send_notification_email(campaign_active), True)
 
+    def test_sweekly_mail_content(self):
+        campaign_deleted = Campaign(
+            obr_name="deleted_campaign",
+            detection_status="PENDING",
+            virus="ABC",
+            country=self.org_unit,
+            onset_at=now(),
+            account=self.account,
+        )
+
+        campaign_active = Campaign(
+            obr_name="active campaign",
+            detection_status="PENDING",
+            virus="ABC",
+            country=self.org_unit,
+            onset_at=now(),
+            account=self.account,
+        )
+
+        country_user_grp = CountryUsersGroup(country=self.org_unit)
+        country_user_grp.save()
+
+        users = User.objects.all()
+        country_user_grp.users.set(users)
+
+        self.luke.email = "luketest@lukepoliotest.io"
+        self.luke.save()
+
+        campaign_deleted.save()
+        campaign_deleted.delete()
+        campaign_active.save()
+
+        self.assertEqual(send_notification_email(campaign_deleted), False)
+        self.assertEqual(send_notification_email(campaign_active), True)
+
     def create_multiple_campaigns(self, count: int) -> None:
         for n in range(count):
             payload = {

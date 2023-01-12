@@ -68,7 +68,7 @@ const RoundCell = ({ colSpan, campaign, round }) => {
             )}
             {isLogged && (
                 <CreateEditDialog
-                    selectedCampaign={campaign.original}
+                    campaignId={campaign.original.id}
                     isOpen={dialogOpen}
                     onClose={() => setDialogOpen(false)}
                 />

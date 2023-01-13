@@ -68,10 +68,12 @@ class AggregateHandler(BaseHandler):
                 descriptions.append(response["description"])
             if "message" in response:
                 descriptions.append(response["message"])
+
+        # version < 2.38, a normal payload is sent with 200
         if "conflicts" in response:
             descriptions = [m["value"] for m in response["conflicts"]]
 
-        # 2.38 nesting conflicts in response
+        # 2.38 nesting conflicts in response with 409
         if "response" in response and "conflicts" in response["response"]:
             descriptions = [m["value"] for m in response["response"]["conflicts"]]
 

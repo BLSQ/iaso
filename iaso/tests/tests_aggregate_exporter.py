@@ -471,7 +471,7 @@ class DataValueExporterTests(TestCase):
         self.expect_logs(ERRORED)
 
         self.assertEquals(
-            "ERROR while processing page 1/1 : Data element: FC3nR54yGUx must be assigned through data sets to organisation unit: t3kZ5ksd8IR",
+            "ERROR while processing page 1/1 : Value must match data element's `nymNRxmnj4z` type constraints: Data value is not an integer",
             context.exception.message,
         )
         instance.refresh_from_db()

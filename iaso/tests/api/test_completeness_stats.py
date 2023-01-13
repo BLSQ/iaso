@@ -1,3 +1,8 @@
+# Those tests are not very readable in themselves because they use complex data that is set up both in fixtures files
+# and in the setupTestData() methods.
+
+# Please refer to the diagram in ../docs/test_completeness_stats.png to understand the expected results
+
 from iaso.models import Account, Form, OrgUnitType, OrgUnit
 from iaso.test import APITestCase
 from django.contrib.auth.models import User, Permission
@@ -9,6 +14,8 @@ class CompletenessStatsAPITestCase(APITestCase):
 
     @classmethod
     def setUpTestData(cls):
+        # Update test data here? Please also update the diagram in ../docs/test_completeness_stats.png
+        # It is known as "test-completeness-stats-fixtures-illustrated" in Whimsical
         cls.user = User.objects.get(username="test")
         cls.user.user_permissions.add(Permission.objects.get(codename="iaso_completeness_stats"))
         cls.account = Account.objects.get(name="test")

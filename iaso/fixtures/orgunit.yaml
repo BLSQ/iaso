@@ -1,3 +1,5 @@
+# Update test data here? Please also update the diagram in ../docs/test_completeness_stats.png
+# It is known as "test-completeness-stats-fixtures-illustrated" in Whimsical
 - model: iaso.accountfeatureflag
   pk: ALLOW_SHAPE_EDITION
   fields:

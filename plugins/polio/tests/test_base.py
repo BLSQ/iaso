@@ -310,7 +310,6 @@ class PolioAPITestCase(APITestCase):
             country=self.org_unit,
             onset_at=now(),
             account=self.account,
-            cvdpv_notified_at=datetime.date(2022, 9, 12),
         )
 
         country_user_grp = CountryUsersGroup(country=self.org_unit)

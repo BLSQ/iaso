@@ -82,8 +82,6 @@ export const OrgUnitForm = ({
             const actualAliases = value.filter(alias => alias !== '');
             if (newAlias !== '' && !isEqual(actualAliases, orgUnitAliases)) {
                 setOrgUnitModified(true);
-            } else {
-                setOrgUnitModified(false);
             }
             setFieldValue(key, value);
         },

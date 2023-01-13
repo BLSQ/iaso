@@ -38,14 +38,9 @@ class WorkflowChangeViewSet(viewsets.ViewSet):
         request_body=ser.WorkflowChangeCreateSerializer,
     )
     def create(self, request, *args, **kwargs):
-        print(request.__dict__)
-        print(request.data)
-
         version_id = request.query_params.get(
             "version_id", kwargs.get("version_id", None)
         )
-
-        print(version_id)
 
         utils.validate_version_id(version_id, request.user)
 

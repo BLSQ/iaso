@@ -72,8 +72,35 @@ class WorkflowChangeCreateSerializer(serializers.Serializer):
         return form_id
 
     def validate_mapping(self, mapping):
-        # TODO: validate mapping
-        # We should check that the from field and to field have the same type
+        version_id = self.context["version_id"]
+        wfv = get_object_or_404(WorkflowVersion, pk=version_id)
+        reference_form = wfv.reference_form
+        reference_form_latest = reference_form.latest_version
+        source_form = Form.objects.get(pk=self.initial_data["form"])
+        source_form_latest = source_form.latest_version
+
+        s_questions = source_form_latest.questions_by_name()
+        r_questions = reference_form_latest.questions_by_name()
+
+        for key, value in mapping.items():
+            if value in s_questions:
+                s_type = s_questions[value]["type"]
+            else:
+                raise serializers.ValidationError(
+                    f"Question {value} does not exist in source form"
+                )
+
+            if key in r_questions:
+                r_type = r_questions[key]["type"]
+            else:
+                raise serializers.ValidationError(
+                    f"Question {key} does not exist in reference form"
+                )
+
+            if s_type != r_type:
+                raise serializers.ValidationError(
+                    f"Question {key} and {value} do not have the same type"
+                )
 
         return mapping
 

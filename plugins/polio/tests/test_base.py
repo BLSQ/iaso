@@ -293,7 +293,7 @@ class PolioAPITestCase(APITestCase):
         self.assertEqual(send_notification_email(campaign_deleted), False)
         self.assertEqual(send_notification_email(campaign_active), True)
 
-    def test_sweekly_mail_content(self):
+    def test_weekly_mail_content(self):
         campaign_deleted = Campaign(
             obr_name="deleted_campaign",
             detection_status="PENDING",

@@ -70,6 +70,11 @@ class AggregateHandler(BaseHandler):
                 descriptions.append(response["message"])
         if "conflicts" in response:
             descriptions = [m["value"] for m in response["conflicts"]]
+
+        # 2.38 nesting conflicts in response
+        if "response" in response and "conflicts" in response["response"]:
+            descriptions = [m["value"] for m in response["response"]["conflicts"]]
+
         descriptions = uniquify(descriptions)
         if len(descriptions) > 0:
             self.logger.warn(

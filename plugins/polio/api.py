@@ -1077,7 +1077,7 @@ def convert_dicts_to_table(list_of_dicts):
     return values
 
 
-def handle_ona_request_with_key(request, key):
+def handle_ona_request_with_key(request, key, country_id=None):
     as_csv = request.GET.get("format", None) == "csv"
     config = get_object_or_404(Config, slug=key)
     res = []
@@ -1091,6 +1091,9 @@ def handle_ona_request_with_key(request, key):
         "alltime": {"ok": defaultdict(lambda: 0), "failure": defaultdict(lambda: 0)},
     }
     for config in config.content:
+        cid = int(country_id) if (country_id and country_id.isdigit()) else None
+        if country_id is not None and config.get("country_id", None) != cid:
+            continue
         forms = get_url_content(
             url=config["url"], login=config["login"], password=config["password"], minutes=config.get("minutes", 60)
         )
@@ -1190,6 +1193,10 @@ class VaccineStocksViewSet(viewsets.ViewSet):
     @method_decorator(cache_page(60 * 60 * 1))  # cache result for one hour
     def list(self, request):
         return handle_ona_request_with_key(request, "vaccines")
+
+    @method_decorator(cache_page(60 * 60 * 1))  # cache result for one hour
+    def retrieve(self, request, pk=None):
+        return handle_ona_request_with_key(request, "vaccines", country_id=pk)
 
 
 class FormAStocksViewSet(viewsets.ViewSet):

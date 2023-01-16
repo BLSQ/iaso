@@ -718,7 +718,7 @@ class PreparednessDashboardViewSet(viewsets.ViewSet):
     def list(self, request):
 
         r = []
-        qs = Campaign.objects.all()
+        qs = Campaign.objects.all().prefetch("rounds")
         if request.query_params.get("campaign"):
             qs = qs.filter(obr_name=request.query_params.get("campaign"))
 

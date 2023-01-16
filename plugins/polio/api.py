@@ -693,15 +693,14 @@ def _make_prep(c: Campaign, round: Round):
     try:
         spread_id = extract_id_from_url(url)
         ssi_qs = SpreadSheetImport.objects.filter(spread_id=spread_id)
-
-        if not ssi_qs:
+        last_ssi = ssi_qs.last()
+        if not ssi_qs or not last_ssi:
             # No import yet
             campaign_prep["status"] = "not_sync"
             campaign_prep["details"] = "This spreadsheet has not been synchronised yet"
             return campaign_prep
-        # FIXME: what if ssi_qs.last() is None?
-        campaign_prep["date"] = ssi_qs.last().created_at  # type: ignore
-        cs = ssi_qs.last().cached_spreadsheet  # type: ignore
+        campaign_prep["date"] = last_ssi.created_at
+        cs = last_ssi.cached_spreadsheet
         last_p = get_preparedness(cs)
         campaign_prep.update(preparedness_summary(last_p))
         if round.number != last_p["national"]["round"]:

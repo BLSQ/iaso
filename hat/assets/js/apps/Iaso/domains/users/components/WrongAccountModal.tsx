@@ -14,7 +14,9 @@ import {
     DialogActions,
     makeStyles,
     Button,
+    Box,
 } from '@material-ui/core';
+import WarningIcon from '@material-ui/icons/Warning';
 
 import MESSAGES from '../messages';
 
@@ -28,6 +30,11 @@ const useStyles = makeStyles(theme => ({
     },
     title: {
         paddingBottom: 0,
+        '& h2': {
+            display: 'flex',
+            justifyContent: 'center',
+            alignItems: 'center',
+        },
     },
     content: {
         overflow: 'visible',
@@ -61,7 +68,11 @@ const WrongAccountModal: FunctionComponent<Props> = ({ isOpen }) => {
             data-test="wrong-account-dialog"
         >
             <DialogTitle className={classes.title}>
-                {formatMessage(MESSAGES.wrongAccountTitle)}
+                <WarningIcon color="error" />
+                <Box display="inline-block" mr={1} ml={1}>
+                    {formatMessage(MESSAGES.wrongAccountTitle)}
+                </Box>
+                <WarningIcon color="error" />
             </DialogTitle>
             <DialogContent className={classes.content}>
                 {formatMessage(MESSAGES.wrongAccount)}

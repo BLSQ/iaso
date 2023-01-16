@@ -233,6 +233,19 @@ const MESSAGES = defineMessages({
         defaultMessage: 'Users with access to parent org unit',
         id: 'iaso.users.ouParentCheckbox',
     },
+    logout: {
+        defaultMessage: 'Logout',
+        id: 'iaso.logout',
+    },
+    wrongAccount: {
+        defaultMessage:
+            'You are connected to the wrong account, would you like to log out and connect in the correct account to see this link?',
+        id: 'iaso.label.wrongAccount',
+    },
+    wrongAccountTitle: {
+        defaultMessage: 'Wrong account',
+        id: 'iaso.label.wrongAccountTitle',
+    },
 });
 
 export default MESSAGES;

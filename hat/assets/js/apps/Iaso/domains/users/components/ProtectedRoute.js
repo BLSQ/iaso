@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useMemo } from 'react';
 import { useDispatch } from 'react-redux';
 import PropTypes from 'prop-types';
 
@@ -12,6 +12,7 @@ import PageError from '../../../components/errors/PageError';
 import { switchLocale } from '../../app/actions';
 import { hasFeatureFlag } from '../../../utils/featureFlags';
 import { useCurrentUser } from '../../../utils/usersUtils.ts';
+import { WrongAccountModal } from './WrongAccountModal.tsx';
 
 const ProtectedRoute = ({
     routeConfig,
@@ -23,6 +24,15 @@ const ProtectedRoute = ({
     const { featureFlag, permissions, isRootUrl, baseUrl } = routeConfig;
     const currentUser = useCurrentUser();
     const dispatch = useDispatch();
+
+    const isWrongAccount = useMemo(
+        () =>
+            Boolean(
+                params.accountId &&
+                    params.accountId !== `${currentUser.account.id}`,
+            ),
+        [currentUser.account.id, params.accountId],
+    );
 
     useEffect(() => {
         if (!params.accountId && currentUser.account) {
@@ -57,7 +67,7 @@ const ProtectedRoute = ({
                 allRoutes,
             );
             if (newBaseUrl) {
-                dispatch(redirectTo(newBaseUrl, {}));
+                dispatch(redirectToReplace(newBaseUrl, {}));
             }
         }
     }, [
@@ -74,6 +84,7 @@ const ProtectedRoute = ({
     return (
         <>
             <SidebarMenu location={location} />
+            <WrongAccountModal isOpen={isWrongAccount} />
             {isAuthorized && component}
             {!isAuthorized && <PageError errorCode="401" />}
         </>

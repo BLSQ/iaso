@@ -4,6 +4,7 @@ from datetime import timedelta
 import requests
 from django.db.models import Q
 from django.utils.timezone import now
+from requests import HTTPError
 from rest_framework import filters
 
 from iaso.models import OrgUnitType, OrgUnit
@@ -14,15 +15,20 @@ def get_url_content(url, login, password, minutes=60):
     """Get an URL and save the result in prod"""
     cached_response, created = URLCache.objects.get_or_create(url=url)
     delta = now() - cached_response.updated_at
-    if created or delta > timedelta(minutes=minutes) or not cached_response.content:
-        response = requests.get(url, auth=(login, password))
-        response.raise_for_status()
-        cached_response.content = response.text
-        cached_response.save()
-        j = response.json()
-    else:
-        j = json.loads(cached_response.content)
-    return j
+    try:
+        if created or delta > timedelta(minutes=minutes) or not cached_response.content:
+            response = requests.get(url, auth=(login, password))
+            response.raise_for_status()
+            cached_response.content = response.text
+            cached_response.save()
+            j = response.json()
+
+        else:
+            j = json.loads(cached_response.content)
+        return j
+    except HTTPError:
+        # Return false in case the WHO server returns an error.
+        return False
 
 
 class CustomFilterBackend(filters.BaseFilterBackend):

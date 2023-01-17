@@ -656,6 +656,8 @@ class CampaignSerializer(serializers.ModelSerializer):
 
                 scope.group.org_units.set(org_units)
 
+        campaign.update_geojson_field()
+        campaign.save()
         log_campaign_modification(campaign, None, self.context["request"].user)
         return campaign
 
@@ -727,6 +729,8 @@ class CampaignSerializer(serializers.ModelSerializer):
         instance.rounds.set(round_instances)
 
         campaign = super().update(instance, validated_data)
+        campaign.update_geojson_field()
+        campaign.save()
 
         log_campaign_modification(campaign, old_campaign_dump, self.context["request"].user)
         return campaign
@@ -736,7 +740,10 @@ class CampaignSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Campaign
-        fields = "__all__"
+        # TODO in the future specify the fields that need to be returned so we can remove the deprecated fields
+        # fields = "__all__"
+        exclude = ["geojson"]
+
         read_only_fields = ["last_surge", "preperadness_sync_status", "creation_email_send_at", "group"]
 
 

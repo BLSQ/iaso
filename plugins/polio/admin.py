@@ -26,6 +26,20 @@ class CampaignAdmin(admin.ModelAdmin):
     }
     list_filter = ["virus", "detection_status", "risk_assessment_status", "budget_status"]
 
+    def save_model(self, request, obj: Campaign, form, change):
+        obj.update_geojson_field()
+        super().save_model(request, obj, form, change)
+
+    @admin.action(description="Force update of geojson field")
+    def force_update_campaign_shape(self, request, queryset):
+        c: Campaign
+        for c in queryset:
+            c.update_geojson_field()
+            c.save()
+        self.message_user(request, f"GeoJson of {queryset.count()} campaign updated")
+
+    actions = [force_update_campaign_shape]
+
 
 class SpreadSheetImportAdmin(admin.ModelAdmin):
     list_filter = ["spread_id", "created_at"]

@@ -118,9 +118,10 @@ export const CurrentUserInfos: FunctionComponent<Props> = ({
                         </span>
                         <span>
                             {`${
-                                (defaultSourceVersion.version &&
-                                    defaultSourceVersion.version.number) ||
-                                '-'
+                                defaultSourceVersion.version &&
+                                defaultSourceVersion.version.number >= 0
+                                    ? defaultSourceVersion.version.number
+                                    : '-'
                             }`}
                         </span>
                     </div>

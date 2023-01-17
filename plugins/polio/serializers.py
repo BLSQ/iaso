@@ -29,7 +29,7 @@ from .models import (
     RoundScope,
     CampaignScope,
 )
-from .preparedness.calculator import get_preparedness_score, preparedness_summary
+from .preparedness.calculator import get_preparedness_score, preparedness_summary, set_preparedness_cache_for_round
 from .preparedness.parser import (
     InvalidFormatError,
     get_preparedness,
@@ -388,6 +388,8 @@ class RoundSerializer(serializers.ModelSerializer):
         instance.shipments.set(shipment_instances)
         instance.destructions.set(destruction_instances)
         round = super().update(instance, validated_data)
+        # update the preparedness cache in case we touched the spreadsheet url
+        set_preparedness_cache_for_round(round)
         return round
 
 

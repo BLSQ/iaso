@@ -1,8 +1,10 @@
 from datetime import datetime
 from logging import getLogger
 
+from django.core.cache import cache
 from django.core.management.base import BaseCommand
 
+from plugins.polio.api import _make_prep
 from plugins.polio.models import Campaign, SpreadSheetImport, Round
 
 logger = getLogger(__name__)
@@ -16,9 +18,10 @@ class Command(BaseCommand):
 
     def handle(self, campaigns, **options):
         started_at = datetime.now()
-        round_qs = Round.objects.filter(preparedness_spreadsheet_url__isnull=False)
+        round_qs = Round.objects.filter(preparedness_spreadsheet_url__isnull=False).prefetch_related("campaign")
         round_qs.update(preparedness_sync_status="QUEUED")
         logger.info(round_qs)
+        round: Round
         for round in round_qs:
             round.preparedness_sync_status = "ONGOING"
             round.save()
@@ -30,6 +33,11 @@ class Command(BaseCommand):
                 logger.info(f"using spread: {cs.title}")
                 round.preparedness_sync_status = "FINISHED"
                 round.save()
+                cache.set(
+                    f"prepardeness-{round.id}",
+                    value=_make_prep(round.campaign, round),
+                    timeout=60 * 60 * 24,  # 24 hours
+                )
             except Exception as e:
                 logger.error(f"Round {round} refresh failed")
                 logger.exception(e)

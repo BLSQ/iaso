@@ -10,7 +10,7 @@ from logging import getLogger
 from openpyxl.writer.excel import save_virtual_workbook  # type: ignore
 from django.views.decorators.cache import cache_page
 from django.utils.decorators import method_decorator
-from django.core.cache import cache
+from django.core.cache import cache, BaseCache
 from django.core.mail import send_mail
 from django.db.models import Q, Max, Min
 from django.db.models import Value, TextField, UUIDField
@@ -678,6 +678,7 @@ def history_for_campaign(ssi_qs, round: Round):
 
 
 def _make_prep(c: Campaign, round: Round):
+    logger.info(f"Make prep called for round {round} - {c}")
     url = round.preparedness_spreadsheet_url
     if not url:
         return None
@@ -724,7 +725,13 @@ class PreparednessDashboardViewSet(viewsets.ViewSet):
 
         for c in qs:
             for round in c.rounds.all():
-                p = _make_prep(c, round)
+                cache: BaseCache
+                p = cache.get_or_set(
+                    f"prepardness-{round.id}",
+                    default=lambda: _make_prep(c, round),
+                    timeout=60 * 60 * 8,  # eighth hours
+                )
+
                 if p:
                     r.append(p)
         return Response(r)

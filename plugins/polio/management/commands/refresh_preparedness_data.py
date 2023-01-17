@@ -4,7 +4,7 @@ from logging import getLogger
 from django.core.management.base import BaseCommand
 
 from plugins.polio.models import Campaign, SpreadSheetImport, Round
-from plugins.polio.preparedness.calculator import set_preparedness_cache_for_round
+from plugins.polio.preparedness.summary import set_preparedness_cache_for_round
 
 logger = getLogger(__name__)
 

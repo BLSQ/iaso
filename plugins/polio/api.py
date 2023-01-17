@@ -63,7 +63,7 @@ from .models import (
     RoundScope,
 )
 from .models import CountryUsersGroup
-from .preparedness.calculator import get_or_set_preparedness_cache_for_round
+from .preparedness.summary import get_or_set_preparedness_cache_for_round
 from .export_utils import generate_xlsx_campaigns_calendar, xlsx_file_name
 
 logger = getLogger(__name__)
@@ -636,7 +636,7 @@ class PreparednessDashboardViewSet(viewsets.ViewSet):
     def list(self, request):
 
         r = []
-        qs = Campaign.objects.all().prefetch("rounds")
+        qs = Campaign.objects.all().prefetch_related("rounds")
         if request.query_params.get("campaign"):
             qs = qs.filter(obr_name=request.query_params.get("campaign"))
 

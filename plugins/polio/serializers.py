@@ -29,7 +29,8 @@ from .models import (
     RoundScope,
     CampaignScope,
 )
-from .preparedness.calculator import get_preparedness_score, preparedness_summary, set_preparedness_cache_for_round
+from .preparedness.calculator import get_preparedness_score
+from .preparedness.summary import preparedness_summary, set_preparedness_cache_for_round
 from .preparedness.parser import (
     InvalidFormatError,
     get_preparedness,
@@ -690,6 +691,7 @@ class CampaignSerializer(serializers.ModelSerializer):
 
         round_instances = []
         # find existing round either by id or number
+        # Fixme this is not a partial update because of the dfault
         for round_data in rounds:
             round = None
             if round_data.get("id"):

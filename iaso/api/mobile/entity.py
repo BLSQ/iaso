@@ -23,9 +23,9 @@ class MobileEntityAttributesSerializer(serializers.ModelSerializer):
         model = Instance
         fields = ["id", "form_id", "form_version_id", "created_at", "updated_at", "org_unit_id", "json"]
 
-    form_id = serializers.IntegerField(read_only=True, source="id")
+    form_id = serializers.IntegerField(read_only=True, source="form.id")
     id = serializers.CharField(read_only=True, source="uuid")
-    form_version_id = serializers.CharField(read_only=True, source="form.form.id")
+    form_version_id = serializers.CharField(read_only=True, source="form.form_id")
     org_unit_id = serializers.CharField(read_only=True, source="org_unit.id")
 
     created_at = TimestampField()
@@ -68,13 +68,13 @@ class MobileEntitySerializer(serializers.ModelSerializer):
 class MobileEntityViewSet(ModelViewSet):
     """Entity API for mobile
 
-    list: /api/mobile/entity
+    list: /api/mobile/entities
 
     pagination by default: 1000 entities
 
     It's possible to filter out entities with no activity before a certain date with the parameter limit_date
 
-    details = /api/mobile/entity/id
+    details = /api/mobile/entities/uuid
 
     sample usage: /api/mobile/entity/?limit_date=2022-12-29&limit=1&page=1
 
@@ -84,6 +84,7 @@ class MobileEntityViewSet(ModelViewSet):
     remove_results_key_if_paginated = True
     filter_backends = [filters.OrderingFilter, DjangoFilterBackend, DeletionFilterBackend]
     pagination_class = LargeResultsSetPagination
+    lookup_field = "uuid"
 
     def get_serializer_class(self):
         return MobileEntitySerializer

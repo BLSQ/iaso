@@ -524,7 +524,7 @@ class EntityAPITestCase(APITestCase):
         instance.entity = entity
         instance.save()
 
-        response = self.client.get("/api/mobile/entity/")
+        response = self.client.get("/api/mobile/entities/")
 
         print(response.json().get("results"))
 
@@ -533,7 +533,7 @@ class EntityAPITestCase(APITestCase):
         self.assertEqual(response.status_code, 200)
         self.assertEqual(data.get("id"), str(entity.uuid))
 
-        response = self.client.get(f"/api/mobile/entity/{entity.pk}/")
+        response = self.client.get(f"/api/mobile/entities/{entity.uuid}/")
 
         self.assertEqual(response.status_code, 200)
         self.assertEqual(data.get("id"), str(entity.uuid))

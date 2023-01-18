@@ -118,7 +118,7 @@ router.register(r"tasks/create/importgpkg", ImportGPKGViewSet, basename="importg
 router.register(r"tasks", TaskSourceViewSet, basename="tasks")
 router.register(r"comments", CommentViewSet, basename="comments")
 router.register(r"entity", EntityViewSet, basename="entity")
-router.register(r"mobile/entity", MobileEntityViewSet, basename="entity")
+router.register(r"mobile/entities", MobileEntityViewSet, basename="entities")
 router.register(r"entitytype", EntityTypeViewSet, basename="entitytype")
 # At the moment we use the same view set but separate it for the future for when we want to be able to
 # change the format in the future

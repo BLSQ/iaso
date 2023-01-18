@@ -27,7 +27,7 @@ from iaso.test import APITestCase, TestCase
 
 from plugins.polio.management.commands.weekly_email import send_notification_email
 from ..api import CACHE_VERSION
-from ..models import Config
+from ..models import Config, Round
 
 from ..preparedness.calculator import get_preparedness_score
 from ..preparedness.exceptions import InvalidFormatError
@@ -291,6 +291,74 @@ class PolioAPITestCase(APITestCase):
         campaign_active.save()
 
         self.assertEqual(send_notification_email(campaign_deleted), False)
+        self.assertEqual(send_notification_email(campaign_active), True)
+
+    def test_weekly_mail_content(self):
+        campaign_deleted = Campaign(
+            obr_name="deleted_campaign",
+            detection_status="PENDING",
+            virus="ABC",
+            country=self.org_unit,
+            onset_at=now(),
+            account=self.account,
+        )
+
+        campaign_active = Campaign(
+            obr_name="active campaign",
+            detection_status="PENDING",
+            virus="ABC",
+            country=self.org_unit,
+            onset_at=now(),
+            account=self.account,
+        )
+
+        country_user_grp = CountryUsersGroup(country=self.org_unit)
+        country_user_grp.save()
+
+        users = User.objects.all()
+        country_user_grp.users.set(users)
+
+        self.luke.email = "luketest@lukepoliotest.io"
+        self.luke.save()
+
+        campaign_deleted.save()
+        campaign_deleted.delete()
+        campaign_active.save()
+
+        self.assertEqual(send_notification_email(campaign_deleted), False)
+        self.assertEqual(send_notification_email(campaign_active), True)
+
+    def test_weekly_mail_content_active_campaign(self):
+
+        round = Round.objects.create(
+            started_at=datetime.date(2022, 9, 12),
+            number=1,
+        )
+
+        campaign_active = Campaign(
+            obr_name="active campaign",
+            detection_status="PENDING",
+            virus="ABC",
+            country=self.org_unit,
+            onset_at=now().date(),
+            account=self.account,
+            cvdpv_notified_at=datetime.date(2022, 9, 12),
+            vacine="mOPV2",
+        )
+
+        round.campaign = campaign_active
+        campaign_active.rounds.set([round])
+
+        country_user_grp = CountryUsersGroup(country=self.org_unit)
+        country_user_grp.save()
+
+        users = User.objects.all()
+        country_user_grp.users.set(users)
+
+        self.luke.email = "luketest@lukepoliotest.io"
+        self.luke.save()
+        campaign_active.save()
+
         self.assertEqual(send_notification_email(campaign_active), True)
 
     def create_multiple_campaigns(self, count: int) -> None:

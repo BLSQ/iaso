@@ -1,5 +1,10 @@
-// @ts-ignore
-import { QueryBuilderFields } from 'bluesquare-components';
+import {
+    // @ts-ignore
+    QueryBuilderFields,
+    // @ts-ignore
+    QueryBuilderListToReplace,
+} from 'bluesquare-components';
+import { purple, blue } from '@material-ui/core/colors';
 
 import { formatLabel } from '../utils';
 
@@ -97,20 +102,22 @@ export const useGetQueryBuildersFields = (
                 Fields[field.fieldKey] = {
                     label: formatLabel(field),
                     type: 'number',
+                    operators: ['equal', 'not_equal'],
                     preferWidgets: ['number'],
                 };
                 break;
             }
-            case 'range': {
-                Fields[field.fieldKey] = {
-                    label: formatLabel(field),
-                    type: 'number',
-                    preferWidgets: ['number'],
-                    operators: ['between'],
-                    defaultOperator: 'between',
-                };
-                break;
-            }
+            // Not working for now
+            // case 'range': {
+            //     Fields[field.fieldKey] = {
+            //         label: formatLabel(field),
+            //         type: 'number',
+            //         preferWidgets: ['number'],
+            //         operators: ['between'],
+            //         defaultOperator: 'between',
+            //     };
+            //     break;
+            // }
             case 'date': {
                 Fields[field.fieldKey] = {
                     label: formatLabel(field),
@@ -155,3 +162,17 @@ export const useGetQueryBuildersFields = (
     });
     return Fields;
 };
+
+export const useGetQueryBuilderListToReplace =
+    (): QueryBuilderListToReplace[] => {
+        return [
+            {
+                color: purple[700],
+                items: ['AND', 'OR'],
+            },
+            {
+                color: blue[700],
+                items: ['=', '!=', 'IS NULL', 'IS NOT NULL'],
+            },
+        ];
+    };

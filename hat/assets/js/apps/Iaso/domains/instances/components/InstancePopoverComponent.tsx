@@ -36,10 +36,10 @@ type Props = {
 const InstancePopover: React.FunctionComponent<Props> = ({
     instanceDetail = null,
 }) => {
-    if (!instanceDetail) return null;
     const classes = useStyles();
     const { formatMessage } = useSafeIntl();
     const [anchorEl, setAnchorEl] = React.useState(null);
+    if (!instanceDetail) return null;
 
     const handleClick = event => {
         setAnchorEl(event.currentTarget);

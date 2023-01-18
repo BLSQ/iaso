@@ -38,7 +38,7 @@ const InstanceDetailsExportRequests = ({
         {currentInstance.export_statuses &&
             currentInstance.export_statuses.length > 0 && <Divider />}
         {currentInstance.export_statuses.map((exportStatus, index) => (
-            <>
+            <React.Fragment key={index}>
                 <InstanceDetailsField
                     label={formatMessage(MESSAGES.exportStatus)}
                     value={exportStatus.status}
@@ -66,7 +66,7 @@ const InstanceDetailsExportRequests = ({
                 {index !== currentInstance.export_statuses.length - 1 && (
                     <Divider />
                 )}
-            </>
+            </React.Fragment>
         ))}
     </WidgetPaper>
 );

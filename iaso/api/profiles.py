@@ -1,7 +1,7 @@
 from django.contrib.auth import update_session_auth_hash
 from django.contrib.sites.shortcuts import get_current_site
 
-from rest_framework import viewsets, permissions
+from rest_framework import viewsets, permissions, serializers
 from rest_framework.response import Response
 from django.shortcuts import get_object_or_404
 from django.core.paginator import Paginator
@@ -63,6 +63,8 @@ class ProfilesViewSet(viewsets.ViewSet):
         perms = request.GET.get("permissions", None)
         location = request.GET.get("location", None)
         org_unit_type = request.GET.get("orgUnitTypes", None)
+        parent_ou = True if request.GET.get("ouParent", None) == "true" else False
+        children_ou = True if request.GET.get("ouChildren", None) == "true" else False
 
         queryset = self.get_queryset()
         if search:
@@ -79,6 +81,54 @@ class ProfilesViewSet(viewsets.ViewSet):
             queryset = queryset.filter(
                 user__iaso_profile__org_units__pk=location,
             ).distinct()
+
+        no_parent_ou = False
+
+        if parent_ou and location or children_ou and location:
+            ou = get_object_or_404(OrgUnit, pk=location)
+            if parent_ou and ou.parent is None:
+                no_parent_ou = True
+
+            if parent_ou and not children_ou:
+                queryset_current = self.get_queryset().filter(user__iaso_profile__org_units__pk=location)
+
+                if no_parent_ou:
+                    queryset = queryset_current
+
+                else:
+                    queryset = (
+                        self.get_queryset().filter(
+                            user__iaso_profile__org_units__pk=ou.parent.pk,
+                        )
+                    ) | queryset_current
+
+                    queryset = queryset.distinct()
+
+            if children_ou and not parent_ou:
+                queryset_current = self.get_queryset().filter(user__iaso_profile__org_units__pk=location)
+                children_ou = OrgUnit.objects.filter(parent__pk=location)
+                queryset = (
+                    self.get_queryset().filter(user__iaso_profile__org_units__in=[ou.pk for ou in children_ou])
+                    | queryset_current
+                )
+
+            if parent_ou and children_ou:
+
+                if no_parent_ou:
+                    queryset_parent = self.get_queryset().filter(user__iaso_profile__org_units__pk=location)
+                else:
+                    queryset_parent = self.get_queryset().filter(
+                        user__iaso_profile__org_units__pk=ou.parent.pk,
+                    )
+
+                queryset_current = self.get_queryset().filter(user__iaso_profile__org_units__pk=location)
+
+                children_ou = OrgUnit.objects.filter(parent__pk=location)
+                queryset_children = self.get_queryset().filter(
+                    user__iaso_profile__org_units__in=[ou.pk for ou in children_ou]
+                )
+
+                queryset = queryset_current | queryset_parent | queryset_children
 
         if org_unit_type:
             queryset = queryset.filter(user__iaso_profile__org_units__org_unit_type__pk=org_unit_type).distinct()

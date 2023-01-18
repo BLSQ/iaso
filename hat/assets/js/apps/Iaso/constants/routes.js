@@ -588,6 +588,14 @@ export const usersPath = {
             isRequired: false,
             key: 'orgUnitTypes',
         },
+        {
+            isRequired: false,
+            key: 'ouParent',
+        },
+        {
+            isRequired: false,
+            key: 'ouChildren',
+        },
         ...paginationPathParams.map(p => ({
             ...p,
             isRequired: true,

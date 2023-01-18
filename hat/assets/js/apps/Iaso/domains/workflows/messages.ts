@@ -21,6 +21,10 @@ const MESSAGES = defineMessages({
         id: 'iaso.label.workflow',
         defaultMessage: 'Workflow',
     },
+    workflowVersion: {
+        id: 'iaso.label.workflowVersion',
+        defaultMessage: 'Workflow version',
+    },
     workflows: {
         id: 'iaso.label.workflows',
         defaultMessage: 'Workflows',
@@ -126,6 +130,10 @@ const MESSAGES = defineMessages({
         defaultMessage:
             'Are you sure you want to delete this workflow version?',
     },
+    deleteFollowUp: {
+        id: 'iaso.workflows.dialog.deleteFollowUp',
+        defaultMessage: 'Are you sure you want to delete this follow up?',
+    },
     deleteText: {
         id: 'iaso.label.deleteText',
         defaultMessage: 'This operation cannot be undone.',
@@ -141,6 +149,22 @@ const MESSAGES = defineMessages({
     unpublish: {
         id: 'iaso.workflows.unpublish',
         defaultMessage: 'Unpublish',
+    },
+    editFollowUp: {
+        id: 'iaso.workflows.editFollowUp',
+        defaultMessage: 'Edit follow up',
+    },
+    createFollowUp: {
+        id: 'iaso.workflows.createFollowUp',
+        defaultMessage: 'Create follow up',
+    },
+    publishVersion: {
+        id: 'iaso.workflows.publishVersion',
+        defaultMessage: 'Publish version',
+    },
+    saveOrder: {
+        id: 'iaso.workflows.saveOrder',
+        defaultMessage: 'Save order',
     },
 });
 

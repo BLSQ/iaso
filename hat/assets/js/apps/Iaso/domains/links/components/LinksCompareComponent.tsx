@@ -1,24 +1,26 @@
-import React, { Fragment } from 'react';
-import PropTypes from 'prop-types';
-import { FormattedMessage } from 'react-intl';
-
+import React, { FunctionComponent } from 'react';
 import isEqual from 'lodash/isEqual';
 
 import {
-    withStyles,
+    makeStyles,
     Table,
     TableBody,
     Paper,
     Grid,
     Typography,
 } from '@material-ui/core';
-import { IconButton as IconButtonComponent } from 'bluesquare-components';
+import {
+    // @ts-ignore
+    IconButton as IconButtonComponent,
+    // @ts-ignore
+    useSafeIntl,
+} from 'bluesquare-components';
 import { baseUrls } from '../../../constants/urls';
-import LinksValue from './LinksValueComponent';
-
+import { LinksValue } from './LinksValueComponent';
 import MESSAGES from '../messages';
+import { Link } from '../types';
 
-const styles = theme => ({
+const useStyles = makeStyles(theme => ({
     paper: {
         padding: theme.spacing(2),
         textAlign: 'center',
@@ -29,10 +31,23 @@ const styles = theme => ({
     title: {
         marginBottom: theme.spacing(1),
     },
-});
+}));
 
-const LinksCompare = ({ link, compareLink, classes, title, validated }) => {
-    const differenceArray = [{}];
+type Props = {
+    link: Link;
+    compareLink: Link;
+    title?: string;
+    validated?: boolean;
+};
+
+export const LinksCompare: FunctionComponent<Props> = ({
+    link,
+    compareLink,
+    title = '',
+    validated = false,
+}) => {
+    const classes = useStyles();
+    const { formatMessage } = useSafeIntl();
     return (
         <Paper className={classes.paper}>
             {!isEqual(link, compareLink) && (
@@ -57,9 +72,7 @@ const LinksCompare = ({ link, compareLink, classes, title, validated }) => {
                     </Grid>
                 </Grid>
             )}
-            {isEqual(link, compareLink) && (
-                <FormattedMessage {...MESSAGES.noDifference} />
-            )}
+            {isEqual(link, compareLink) && formatMessage(MESSAGES.noDifference)}
             {!isEqual(link, compareLink) && (
                 <>
                     <Table className={classes.table}>
@@ -70,7 +83,6 @@ const LinksCompare = ({ link, compareLink, classes, title, validated }) => {
                                     value,
                                     compareLink[key],
                                 );
-                                differenceArray[key] = value;
                                 return (
                                     <LinksValue
                                         key={key}
@@ -89,18 +101,3 @@ const LinksCompare = ({ link, compareLink, classes, title, validated }) => {
         </Paper>
     );
 };
-
-LinksCompare.defaultProps = {
-    title: '',
-    validated: false,
-};
-
-LinksCompare.propTypes = {
-    classes: PropTypes.object.isRequired,
-    link: PropTypes.object.isRequired,
-    compareLink: PropTypes.object.isRequired,
-    title: PropTypes.string,
-    validated: PropTypes.bool,
-};
-
-export default withStyles(styles)(LinksCompare);

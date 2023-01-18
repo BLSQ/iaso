@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
+import { useDispatch } from 'react-redux';
 import {
     AddButton as AddButtonComponent,
     useSafeIntl,
@@ -12,7 +12,7 @@ import { fetchAllDataSources } from '../../utils/requests';
 import { getDefaultSourceVersion } from './utils';
 
 import SingleTable from '../../components/tables/SingleTable';
-import DataSourceDialogComponent from './components/DataSourceDialogComponent';
+import { DataSourceDialogComponent } from './components/DataSourceDialogComponent';
 
 import { baseUrls } from '../../constants/urls';
 import { toggleSidebarMenu } from '../../redux/sidebarMenuReducer';
@@ -21,7 +21,7 @@ import dataSourcesTableColumns from './config';
 
 import { fetchAllProjects } from '../projects/actions';
 import MESSAGES from './messages';
-import { useCurrentUser } from '../../utils/usersUtils';
+import { useCurrentUser } from '../../utils/usersUtils.ts';
 
 const baseUrl = baseUrls.sources;
 const defaultOrder = 'name';

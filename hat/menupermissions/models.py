@@ -28,6 +28,7 @@ BENEFICIARIES = _("Beneficiaries")
 STORAGES = _("Storages")
 COMPLETENESS_STATS = _("Completeness stats")
 WORKFLOWS = _("Workflows")
+REPORTS = _("Reports")
 
 
 # When adding a new permission, it also needs to be added in
@@ -50,6 +51,7 @@ class CustomPermissionSupport(models.Model):
         "iaso_projects",
         "iaso_sources",
         "iaso_data_tasks",
+        "iaso_reports",
     ]
 
     class Meta:
@@ -75,6 +77,7 @@ class CustomPermissionSupport(models.Model):
             ("iaso_submissions", SUBMISSIONS),
             ("iaso_update_submission", UPDATE_SUBMISSIONS),
             ("iaso_planning", PLANNING),
+            ("iaso_reports", REPORTS),
             ("iaso_teams", TEAMS),
             ("iaso_assignments", ASSIGNMENTS),
             ("iaso_polio_budget", POLIO_BUDGET),

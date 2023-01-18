@@ -1,18 +1,26 @@
-import React, { useState, useEffect } from 'react';
-import PropTypes from 'prop-types';
+import React, { useState, useEffect, FunctionComponent } from 'react';
 import { useDispatch } from 'react-redux';
 
 import { makeStyles, Grid, Tabs, Tab } from '@material-ui/core';
+// @ts-ignore
 import { commonStyles, useSafeIntl } from 'bluesquare-components';
 import TopBar from '../../../components/nav/TopBarComponent';
 
 import { redirectToReplace } from '../../../routing/actions';
-import { getInstancesColumns, getInstancesVisibleColumns } from '../utils';
+
+import {
+    NewColumn,
+    useGetInstancesColumns,
+    useGetInstancesVisibleColumns,
+} from '../utils';
 
 import { ColumnsSelectDrawer } from '../../../components/tables/ColumnSelectDrawer';
 import MESSAGES from '../messages';
 import { INSTANCE_METAS_FIELDS } from '../constants';
-import { useCurrentUser } from '../../../utils/usersUtils.ts';
+
+import { VisibleColumn } from '../types/visibleColumns';
+import { Form, PossibleField } from '../../forms/types/forms';
+import { Column } from '../../../types/table';
 
 const useStyles = makeStyles(theme => ({
     ...commonStyles(theme),
@@ -22,10 +30,31 @@ const useStyles = makeStyles(theme => ({
         top: -theme.spacing(2),
     },
 }));
+type Params = {
+    order?: string;
+    showDeleted?: string;
+    columns?: string;
+};
+type Props = {
+    formName: string;
+    tab: string;
+    // eslint-disable-next-line no-unused-vars
+    handleChangeTab: (newTab: string) => void;
+    params: Params;
+    periodType?: string;
+    // eslint-disable-next-line no-unused-vars
+    setTableColumns: (newTableColumns: Column[]) => void;
+    baseUrl: string;
+    labelKeys: string[];
+    possibleFields?: PossibleField[];
+    formDetails: Form;
+    tableColumns: Column[];
+    formIds: string[];
+};
 
 const defaultOrder = 'updated_at';
 
-const InstancesTopBar = ({
+export const InstancesTopBar: FunctionComponent<Props> = ({
     formName,
     tab,
     handleChangeTab,
@@ -37,30 +66,28 @@ const InstancesTopBar = ({
     possibleFields,
     formDetails,
     tableColumns,
+    formIds,
 }) => {
-    const classes = useStyles();
+    const classes: Record<string, string> = useStyles();
     const dispatch = useDispatch();
-    const currentUser = useCurrentUser();
-    const [visibleColumns, setVisibleColumns] = useState([]);
     const { formatMessage } = useSafeIntl();
-
-    const formIds = params.formIds?.split(',');
-
+    const [visibleColumns, setVisibleColumns] = useState<VisibleColumn[]>([]);
+    const getInstancesVisibleColumns = useGetInstancesVisibleColumns({
+        order: params.order,
+        defaultOrder,
+    });
+    const getInstancesColumns = useGetInstancesColumns(
+        params.showDeleted === 'true',
+    );
     const handleChangeVisibleColmuns = (cols, withRedirect = true) => {
         const columns = cols.filter(c => c.active);
-        const newParams = {
+        const newParams: Params = {
             ...params,
         };
         if (columns.length > 0) {
             newParams.columns = columns.map(c => c.key).join(',');
         }
-        const newTablecols = getInstancesColumns(
-            formatMessage,
-            cols,
-            params.showDeleted === 'true',
-            currentUser,
-            dispatch,
-        );
+        const newTablecols = getInstancesColumns(cols);
         // TODO this part of the code should be refactored, it leads too infinite loop
         if (
             JSON.stringify(newTablecols) !== JSON.stringify(tableColumns) &&
@@ -93,37 +120,28 @@ const InstancesTopBar = ({
                 newColsString = `${newColsString},${labelKeys.join(',')}`;
             }
         }
-        let newCols = [];
+        let newCols: NewColumn[] = [];
         // single form
         if (formIds?.length === 1) {
             // if detail loaded
             if (formDetails) {
-                newCols = getInstancesVisibleColumns({
-                    formatMessage,
-                    columns: newColsString,
-                    order: params.order,
-                    defaultOrder,
-                    possibleFields:
-                        possibleFields.length > 0 ? possibleFields : undefined,
-                });
+                newCols = getInstancesVisibleColumns(
+                    possibleFields,
+                    newColsString,
+                );
             } else if (visibleColumns.length > 0) {
                 // remove columns while reloading
                 handleChangeVisibleColmuns([], false);
             }
             // multi forms
         } else {
-            newCols = getInstancesVisibleColumns({
-                formatMessage,
-                columns: newColsString,
-                order: params.order,
-                defaultOrder,
-            });
+            newCols = getInstancesVisibleColumns(undefined, newColsString);
         }
         if (newCols.length > 0) {
             handleChangeVisibleColmuns(newCols, !params.columns);
         }
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [possibleFields, formDetails]);
+    }, [possibleFields, formDetails, formIds]);
 
     let title = formatMessage(MESSAGES.titleMulti);
     if (formIds?.length === 1) {
@@ -169,27 +187,3 @@ const InstancesTopBar = ({
         </TopBar>
     );
 };
-
-InstancesTopBar.defaultProps = {
-    periodType: null,
-    possibleFields: null,
-    tableColumns: [],
-    labelKeys: [],
-    formDetails: null,
-};
-
-InstancesTopBar.propTypes = {
-    formName: PropTypes.string.isRequired,
-    tab: PropTypes.string.isRequired,
-    handleChangeTab: PropTypes.func.isRequired,
-    tableColumns: PropTypes.array,
-    params: PropTypes.object.isRequired,
-    setTableColumns: PropTypes.func.isRequired,
-    periodType: PropTypes.any,
-    baseUrl: PropTypes.string.isRequired,
-    possibleFields: PropTypes.any,
-    labelKeys: PropTypes.array,
-    formDetails: PropTypes.object,
-};
-
-export { InstancesTopBar };

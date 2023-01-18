@@ -11,6 +11,15 @@ type Lock = {
         name: string;
     };
 };
+export type File = {
+    name?: string;
+    age_type: '0' | '1';
+    birth_date?: string;
+    age?: string;
+    gender?: string;
+    vaccination_number?: string;
+    end?: string;
+};
 
 export type Instance = {
     uuid: string;
@@ -32,7 +41,7 @@ export type Instance = {
     deleted: boolean;
     org_unit: OrgUnit;
     period?: string;
-    file_content: Record<string, string>;
+    file_content: File;
     form_descriptor: unknown;
     last_export_success_at: unknown;
     instance_locks: Lock[];

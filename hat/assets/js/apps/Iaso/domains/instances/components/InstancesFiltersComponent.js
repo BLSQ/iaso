@@ -66,6 +66,7 @@ const InstancesFiltersComponent = ({
     params,
     onSearch,
     possibleFields,
+    setFormIds,
 }) => {
     const dispatch = useDispatch();
     const { formatMessage } = useSafeIntl();
@@ -156,6 +157,7 @@ const InstancesFiltersComponent = ({
             // checking only as value can be null or false
             if (key === 'formIds') {
                 setFormState('fieldsSearch', null);
+                setFormIds(value ? value.split(',') : undefined);
             }
             if (key) {
                 setFormState(key, value);
@@ -170,7 +172,7 @@ const InstancesFiltersComponent = ({
             }
             dispatch(setInstancesFilterUpdated(true));
         },
-        [dispatch, setFormState],
+        [dispatch, setFormState, setFormIds],
     );
 
     const startPeriodError = useMemo(() => {

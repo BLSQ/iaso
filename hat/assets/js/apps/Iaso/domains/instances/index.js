@@ -30,7 +30,7 @@ import {
     getExportUrl,
 } from './utils';
 
-import { InstancesTopBar as TopBar } from './components/InstancesTopBar';
+import { InstancesTopBar as TopBar } from './components/TopBar.tsx';
 import DownloadButtonsComponent from '../../components/DownloadButtonsComponent';
 import InstancesMap from './components/InstancesMapComponent';
 import InstancesFiltersComponent from './components/InstancesFiltersComponent';
@@ -66,8 +66,11 @@ const Instances = ({ params }) => {
     const [tableColumns, setTableColumns] = useState([]);
     const [tab, setTab] = useState(params.tab ?? 'list');
 
-    const formIds = params.formIds?.split(',');
-    const formId = formIds?.length === 1 ? formIds[0] : undefined;
+    const [formIds, setFormIds] = useState(params.formIds?.split(','));
+    const formId = useMemo(
+        () => (formIds?.length === 1 ? formIds[0] : undefined),
+        [formIds],
+    );
 
     const { possibleFields, isLoading: isLoadingPossibleFields } =
         useGetPossibleFields(formId);
@@ -145,6 +148,7 @@ const Instances = ({ params }) => {
         },
         [dispatch],
     );
+
     const CreateReAssignDialog = useMemo(
         () => makeFullModal(CreateReAssignDialogComponent, AddButtonComponent),
         [],
@@ -164,6 +168,7 @@ const Instances = ({ params }) => {
                 possibleFields={possibleFields}
                 formDetails={formDetails}
                 tableColumns={tableColumns}
+                formIds={formIds}
             />
 
             <Box className={classes.containerFullHeightPadded}>
@@ -171,6 +176,7 @@ const Instances = ({ params }) => {
                     params={params}
                     onSearch={onSearch}
                     possibleFields={possibleFields}
+                    setFormIds={setFormIds}
                 />
                 {tab === 'list' && (
                     <Grid

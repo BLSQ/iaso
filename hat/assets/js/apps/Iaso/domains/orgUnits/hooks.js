@@ -28,7 +28,7 @@ export const useOrgUnitDetailData = (
     const groupsUrl = useMemo(() => {
         const basUrl = '/api/groups/';
         if (isNewOrgunit) {
-            return `${basUrl}?&defaultVersion=true'`;
+            return `${basUrl}?&defaultVersion=true`;
         }
         if (originalOrgUnit?.source_id) {
             return `${basUrl}?&dataSource=${originalOrgUnit.source_id}`;
@@ -64,7 +64,6 @@ export const useOrgUnitDetailData = (
             snackErrorMsg: MESSAGES.fetchGroupsError,
             options: {
                 select: data => data.groups,
-                enabled: Boolean(originalOrgUnit),
             },
         },
         {

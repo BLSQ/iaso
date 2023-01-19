@@ -1,10 +1,13 @@
+import json
 from typing import Union
 from uuid import uuid4
 
 from django.contrib.auth.models import User, AnonymousUser
+from django.core.serializers.json import DjangoJSONEncoder
 from django.db import models
 from django.db.models import Count, Manager, Q
 import django.db.models.manager
+from django.db.models.expressions import RawSQL
 
 from django.utils.translation import gettext as _
 from gspread.utils import extract_id_from_url  # type: ignore
@@ -240,6 +243,15 @@ class Campaign(SoftDeletableModel):
         on_delete=models.SET_NULL,
         related_name="campaigns_country",
         help_text="Country for campaign, set automatically from initial_org_unit",
+    )
+    # We use a geojson and not a geom because we have a feature per vaccine x round (if separate scope per round)
+    # It is a feature collection. Basic info about the campaign are in the properties
+    geojson = models.JSONField(
+        null=True,
+        editable=False,
+        blank=True,
+        help_text="GeoJson representing the scope of the campaign",
+        encoder=DjangoJSONEncoder,
     )
 
     creation_email_send_at = models.DateTimeField(
@@ -533,6 +545,68 @@ class Campaign(SoftDeletableModel):
             return round
         except Round.DoesNotExist:
             return None
+
+    def update_geojson_field(self):
+        "Update the geojson field on the campaign DO NOT TRIGGER the save() you have to do it manually"
+        campaign = self
+        features = []
+        if not self.separate_scopes_per_round:
+            campaign_scopes = self.scopes
+
+            # noinspection SqlResolve
+            campaign_scopes = campaign_scopes.annotate(
+                geom=RawSQL(
+                    """SELECT st_asgeojson(st_simplify(st_union(st_buffer(iaso_orgunit.simplified_geom::geometry, 0)), 0.01)::geography)
+    from iaso_orgunit right join iaso_group_org_units ON iaso_group_org_units.orgunit_id = iaso_orgunit.id
+    where group_id = polio_campaignscope.group_id""",
+                    [],
+                )
+            )
+
+            for scope in campaign_scopes:
+                if scope.geom:
+                    feature = {
+                        "type": "Feature",
+                        "geometry": json.loads(scope.geom),
+                        "properties": {
+                            "obr_name": campaign.obr_name,
+                            "id": str(campaign.id),
+                            "vaccine": scope.vaccine,
+                            "scope_key": f"campaignScope-{scope.id}",
+                            "top_level_org_unit_name": scope.campaign.country.name,
+                        },
+                    }
+                    features.append(feature)
+        else:
+            round_scopes = RoundScope.objects.filter(round__campaign=campaign)
+            round_scopes = round_scopes.prefetch_related("round")
+            # noinspection SqlResolve
+            round_scopes = round_scopes.annotate(
+                geom=RawSQL(
+                    """select st_asgeojson(st_simplify(st_union(st_buffer(iaso_orgunit.simplified_geom::geometry, 0)), 0.01)::geography)
+    from iaso_orgunit right join iaso_group_org_units ON iaso_group_org_units.orgunit_id = iaso_orgunit.id
+    where group_id = polio_roundscope.group_id""",
+                    [],
+                )
+            )
+
+            for scope in round_scopes:
+                if scope.geom:
+                    feature = {
+                        "type": "Feature",
+                        "geometry": json.loads(scope.geom),
+                        "properties": {
+                            "obr_name": campaign.obr_name,
+                            "id": str(campaign.id),
+                            "vaccine": scope.vaccine,
+                            "scope_key": f"roundScope-{scope.id}",
+                            "top_level_org_unit_name": campaign.country.name,
+                            "round_number": scope.round.number,
+                        },
+                    }
+                    features.append(feature)
+
+        self.geojson = features
 
 
 # Deprecated

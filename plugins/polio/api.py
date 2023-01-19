@@ -53,6 +53,7 @@ from .forma import (
     find_orgunit_in_cache,
 )
 from .helpers import get_url_content, CustomFilterBackend
+from .management.commands.vaccines_email import send_vaccines_notification_email
 from .models import (
     Campaign,
     Config,
@@ -1098,6 +1099,9 @@ def handle_ona_request_with_key(request, key, country_id=None):
             url=config["url"], login=config["login"], password=config["password"], minutes=config.get("minutes", 60)
         )
         if not forms:
+            emails = Config.objects.filter(slug="vaccines_emails")
+            if emails:
+                send_vaccines_notification_email(config["login"], emails)
             continue
         country = OrgUnit.objects.get(id=config["country_id"])
         facilities = (

@@ -80,7 +80,7 @@ export const ScopeForm: FunctionComponent = () => {
     }, [currentTab, rounds, scopePerRound, sortedRounds, values.scopes]);
 
     const filteredDistricts = useMemo(() => {
-        if (districtShapes) {
+        if (districtShapes && regionShapes) {
             let filtered: FilteredDistricts[] = districtShapes.map(district => {
                 return {
                     ...cloneDeep(district),

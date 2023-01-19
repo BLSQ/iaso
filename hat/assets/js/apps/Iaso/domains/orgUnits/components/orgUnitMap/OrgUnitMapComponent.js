@@ -55,6 +55,7 @@ import {
     EDIT_GEO_JSON_RIGHT,
     EDIT_CATCHMENT_RIGHT,
 } from '../../../../utils/featureFlags';
+import { userHasPermission } from '../../../users/utils';
 
 export const zoom = 5;
 export const padding = [75, 75];
@@ -445,25 +446,27 @@ class OrgUnitMapComponent extends Component {
                                     });
                                 }}
                             />
-                            <FormsFilterComponent
-                                currentOrgUnit={currentOrgUnit}
-                                formsSelected={formsSelected}
-                                setFormsSelected={forms => {
-                                    this.setState({ formsSelected: forms });
-                                    fitToBounds({
-                                        padding,
-                                        currentTile,
-                                        orgUnit: currentOrgUnit,
-                                        orgUnitTypesSelected,
-                                        sourcesSelected,
-                                        formsSelected: forms,
-                                        editLocationEnabled: location.edit,
-                                        locationGroup,
-                                        catchmentGroup,
-                                        map: this.map.leafletElement,
-                                    });
-                                }}
-                            />
+                            {userHasPermission('iaso_submissions') && (
+                                <FormsFilterComponent
+                                    currentOrgUnit={currentOrgUnit}
+                                    formsSelected={formsSelected}
+                                    setFormsSelected={forms => {
+                                        this.setState({ formsSelected: forms });
+                                        fitToBounds({
+                                            padding,
+                                            currentTile,
+                                            orgUnit: currentOrgUnit,
+                                            orgUnitTypesSelected,
+                                            sourcesSelected,
+                                            formsSelected: forms,
+                                            editLocationEnabled: location.edit,
+                                            locationGroup,
+                                            catchmentGroup,
+                                            map: this.map.leafletElement,
+                                        });
+                                    }}
+                                />
+                            )}
                         </>
                     }
                     editOptionComponent={

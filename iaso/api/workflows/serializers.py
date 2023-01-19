@@ -68,9 +68,16 @@ class WorkflowChangeCreateSerializer(serializers.Serializer):
         form = Form.objects.get(pk=form_id)
         for p in form.projects.all():
             if p.account != user.iaso_profile.account:
-                raise serializers.ValidationError(
-                    f"User doesn't have access to form {form_id}"
-                )
+                raise serializers.ValidationError(f"User doesn't have access to form {form_id}")
+
+        # Checking that the form is not the reference form
+        version_id = self.context["version_id"]
+        wfv = get_object_or_404(WorkflowVersion, pk=version_id)
+
+        if form.id == wfv.workflow.entity_type.reference_form.id:
+            raise serializers.ValidationError(
+                f"Cannot create a WorkflowChange where form and reference form are the same"
+            )
 
         return form_id
 
@@ -85,25 +92,28 @@ class WorkflowChangeCreateSerializer(serializers.Serializer):
         s_questions = source_form_latest.questions_by_name()
         r_questions = reference_form_latest.questions_by_name()
 
+        # We cannot have two identical keys mapping to the same value because it's a dictionary
+        # But we can have two different keys mapping to the same value, we need to check for it
+
+        print("mapping.values", mapping.values())
+        print("set(mapping.values())", list(set(mapping.values())))
+        print("same?", len(mapping.values()) == len(list(set(mapping.values()))))
+        if len(mapping.values()) != len(list(set(mapping.values()))):
+            raise serializers.ValidationError(f"Mapping cannot have two identical values")
+
         for key, value in mapping.items():
             if value in s_questions:
                 s_type = s_questions[value]["type"]
             else:
-                raise serializers.ValidationError(
-                    f"Question {value} does not exist in source form"
-                )
+                raise serializers.ValidationError(f"Question {value} does not exist in source form")
 
             if key in r_questions:
                 r_type = r_questions[key]["type"]
             else:
-                raise serializers.ValidationError(
-                    f"Question {key} does not exist in reference form"
-                )
+                raise serializers.ValidationError(f"Question {key} does not exist in reference form")
 
             if s_type != r_type:
-                raise serializers.ValidationError(
-                    f"Question {key} and {value} do not have the same type"
-                )
+                raise serializers.ValidationError(f"Question {key} and {value} do not have the same type")
 
         return mapping
 
@@ -114,9 +124,7 @@ class WorkflowChangeCreateSerializer(serializers.Serializer):
 
         # We must first verify that we don't have a workflow change with the same form
         if WorkflowChange.objects.filter(workflow_version=wfv, form=form).exists():
-            raise serializers.ValidationError(
-                f"WorkflowChange for form {form.id} already exists !"
-            )
+            raise serializers.ValidationError(f"WorkflowChange for form {form.id} already exists !")
 
         # If it does, we return a error
         # If it doesn't, we create the change
@@ -131,6 +139,11 @@ class WorkflowChangeCreateSerializer(serializers.Serializer):
 
         return wc
 
+    def update(self, instance, validated_data):
+        instance.mapping = validated_data["mapping"]
+        instance.save()
+        return instance
+
 
 class WorkflowFollowupSerializer(serializers.ModelSerializer):
     forms = FormNestedSerializer(many=True)
@@ -144,9 +157,7 @@ class WorkflowFollowupModifySerializer(serializers.Serializer):
     id = serializers.IntegerField()
     order = serializers.IntegerField(required=False)
     condition = serializers.JSONField(required=False)
-    form_ids = serializers.ListField(
-        child=serializers.IntegerField(), required=False, allow_empty=False
-    )
+    form_ids = serializers.ListField(child=serializers.IntegerField(), required=False, allow_empty=False)
 
     def validate(self, data):
         if "order" not in data and "form_ids" not in data and "condition" not in data:
@@ -161,25 +172,14 @@ class WorkflowFollowupModifySerializer(serializers.Serializer):
             else:
                 for f in data["form_ids"]:
                     if not Form.objects.filter(id=f).exists():
-                        raise serializers.ValidationError(
-                            "form_ids must be valid form ids"
-                        )
+                        raise serializers.ValidationError("form_ids must be valid form ids")
 
                     f = Form.objects.get(id=f)
                     # TODO this is crashing while saving
-                    if (
-                        f.projects.filter(
-                            account=self.context["request"].user.iaso_profile.account
-                        ).count()
-                        == 0
-                    ):
-                        raise serializers.ValidationError(
-                            f"form_id {f.id} is not accessible to the user"
-                        )
+                    if f.projects.filter(account=self.context["request"].user.iaso_profile.account).count() == 0:
+                        raise serializers.ValidationError(f"form_id {f.id} is not accessible to the user")
         follow_up = get_object_or_404(WorkflowFollowup, id=data["id"])
-        utils.validate_version_id(
-            follow_up.workflow_version.id, self.context["request"].user
-        )
+        utils.validate_version_id(follow_up.workflow_version.id, self.context["request"].user)
 
         return data
 
@@ -213,9 +213,7 @@ class WorkflowFollowupCreateSerializer(serializers.Serializer):
             form = Form.objects.get(pk=form_id)
             for p in form.projects.all():
                 if p.account != user.iaso_profile.account:
-                    raise serializers.ValidationError(
-                        f"User doesn't have access to form {form_id}"
-                    )
+                    raise serializers.ValidationError(f"User doesn't have access to form {form_id}")
 
         return form_ids
 
@@ -279,9 +277,7 @@ class WorkflowPostSerializer(serializers.Serializer):
         et = EntityType.objects.get(pk=entity_type_id)
 
         if not et.account == self.context["request"].user.iaso_profile.account:
-            raise serializers.ValidationError(
-                "User doesn't have access to Entity Type : " + str(entity_type_id)
-            )
+            raise serializers.ValidationError("User doesn't have access to Entity Type : " + str(entity_type_id))
 
         return entity_type_id
 
@@ -306,9 +302,7 @@ class WorkflowPartialUpdateSerializer(serializers.Serializer):
         if hasattr(WorkflowVersionsStatus, new_status):
             return new_status
         else:
-            raise serializers.ValidationError(
-                new_status + "is not recognized as proper status value"
-            )
+            raise serializers.ValidationError(new_status + "is not recognized as proper status value")
 
     def validate_name(self, new_name):
         if len(new_name) <= 1:

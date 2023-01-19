@@ -44,9 +44,7 @@ class WorkflowChangeViewSet(viewsets.ViewSet):
         request_body=ser.WorkflowChangeCreateSerializer,
     )
     def create(self, request, *args, **kwargs):
-        version_id = request.query_params.get(
-            "version_id", kwargs.get("version_id", None)
-        )
+        version_id = request.query_params.get("version_id", kwargs.get("version_id", None))
 
         utils.validate_version_id(version_id, request.user)
 
@@ -59,10 +57,25 @@ class WorkflowChangeViewSet(viewsets.ViewSet):
 
         return_data = ser.WorkflowChangeSerializer(res).data
 
-        return Response(return_data, status=201)
+        return Response(return_data)
 
     def update(self, request, *args, **kwargs):
         print("update")
+        print("request.data", request.data)
+        print("kwargs", kwargs)
+        print("args", args)
+
+        orig_change = WorkflowChange.objects.get(id=kwargs["pk"])
+
+        serializer = ser.WorkflowChangeCreateSerializer(
+            data=request.data, context={"request": request, "version_id": orig_change.workflow_version.id}, partial=True
+        )
+
+        serializer.is_valid(raise_exception=True)
+
+        serializer.update(orig_change, serializer.validated_data)
+
+        return Response(serializer.data, status=200)
 
     @swagger_auto_schema(request_body=no_body)
     def destroy(self, request, *args, **kwargs):

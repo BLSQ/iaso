@@ -11,6 +11,6 @@ export const useDeleteWorkflowChange = (): UseMutationResult =>
         invalidateQueryKey: 'workflowVersion',
         snackSuccessMessage: {
             id: 'iaso.snackBar.workflowChange.delete.success',
-            defaultMessage: 'Workflow change deleted',
+            defaultMessage: 'Workflow change deleted successfully',
         },
     });

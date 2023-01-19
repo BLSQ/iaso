@@ -9,6 +9,7 @@ import { BUDGET } from '../../constants/routes';
 import { UrlParams } from '../../../../../../hat/assets/js/apps/Iaso/types/table';
 import { BudgetStatus } from '../../constants/types';
 import { DropdownOptions } from '../../../../../../hat/assets/js/apps/Iaso/types/utils';
+import { useGetCountries } from '../../hooks/useGetCountries';
 
 type Props = {
     params: UrlParams & {
@@ -35,6 +36,8 @@ export const BudgetFilters: FunctionComponent<Props> = ({
         useFilterState({ baseUrl, params });
     const theme = useTheme();
     const isXSLayout = useMediaQuery(theme.breakpoints.down('xs'));
+    const { data, isFetching: isFetchingCountries } = useGetCountries();
+    const countriesList = (data && data.orgUnits) || [];
     return (
         <Box mb={4}>
             <Grid container spacing={isXSLayout ? 0 : 2}>
@@ -59,7 +62,23 @@ export const BudgetFilters: FunctionComponent<Props> = ({
                         label={MESSAGES.status}
                     />
                 </Grid>
-                <Grid container item xs={12} md={6} justifyContent="flex-end">
+                <Grid item xs={12} sm={6} md={3}>
+                    <InputComponent
+                        loading={isFetchingCountries}
+                        keyValue="countries"
+                        multi
+                        clearable
+                        onChange={handleChange}
+                        value={filters.countries}
+                        type="select"
+                        options={countriesList.map(c => ({
+                            label: c.name,
+                            value: c.id,
+                        }))}
+                        label={MESSAGES.country}
+                    />
+                </Grid>
+                <Grid container item xs={12} md={3} justifyContent="flex-end">
                     <Box mt={2}>
                         <FilterButton
                             disabled={!filtersUpdated}

@@ -22,11 +22,17 @@ version_id_param = openapi.Parameter(
 
 class WorkflowChangeViewSet(viewsets.ViewSet):
     """Workflow Changes API
+
     POST /api/workflowchanges/?version_id=16
     content {"form":36,"mapping":{"string_widget":"string_widget"}}
+    Creates a New Workflow Change for Workflow Version 16 with form 36 and mapping {"string_widget":"string_widget"}
 
-    DELETE /api/workflowchanges/?version_id=16&form_id=36
 
+    PUT /api/workflowchanges/1/
+    Updates the Workflow Change with id 1
+
+    DELETE /api/workflowchanges/1/
+    Deletes the Workflow Change with id 1
 
     """
 
@@ -47,13 +53,31 @@ class WorkflowChangeViewSet(viewsets.ViewSet):
         serializer = ser.WorkflowChangeCreateSerializer(
             data=request.data, context={"request": request, "version_id": version_id}
         )
+
         serializer.is_valid(raise_exception=True)
         res = serializer.save()
-        # serialized_data = ser.WorkflowFollowupSerializer(res).data
-        # return Response(serialized_data)
 
-        return Response("ok")
+        return_data = ser.WorkflowChangeSerializer(res).data
+
+        return Response(return_data, status=201)
+
+    def update(self, request, *args, **kwargs):
+        print("update")
 
     @swagger_auto_schema(request_body=no_body)
     def destroy(self, request, *args, **kwargs):
-        pass
+        id_to_deleted = kwargs.get("pk", None)
+
+        if id_to_deleted is None:
+            return Response(status=400)
+        else:
+            try:
+                change = WorkflowChange.objects.get(id=id_to_deleted)
+
+                utils.validate_version_id(change.workflow_version.id, request.user)
+
+                change.delete()
+                return Response(status=204)
+            except WorkflowChange.DoesNotExist as e:
+                print(e)
+                return Response(status=404)

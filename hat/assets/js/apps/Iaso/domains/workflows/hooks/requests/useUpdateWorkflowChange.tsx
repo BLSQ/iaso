@@ -5,7 +5,7 @@ import { useSnackMutation } from '../../../../libs/apiHooks';
 import { Change } from '../../types';
 
 const updateWorkflowChange = async (data: Change): Promise<any> =>
-    postRequest(`/api/workflowChanges/${data.id}/`, data);
+    postRequest(`/api/workflowchanges/${data.id}/`, data);
 
 export const useUpdateWorkflowChange = (
     onSuccess?: () => void,

@@ -60,15 +60,18 @@ class WorkflowChangeCreateSerializer(serializers.Serializer):
     def validate_form(self, form_id):
         user = self.context["request"].user
 
+        # Checking if the form exists
         if not Form.objects.filter(pk=form_id).exists():
             raise serializers.ValidationError(f"Form {form_id} does not exist")
 
+        # Checking that user has access to the form
         form = Form.objects.get(pk=form_id)
         for p in form.projects.all():
             if p.account != user.iaso_profile.account:
                 raise serializers.ValidationError(
                     f"User doesn't have access to form {form_id}"
                 )
+
         return form_id
 
     def validate_mapping(self, mapping):
@@ -108,6 +111,15 @@ class WorkflowChangeCreateSerializer(serializers.Serializer):
         version_id = self.context["version_id"]
         wfv = get_object_or_404(WorkflowVersion, pk=version_id)
         form = get_object_or_404(Form, pk=validated_data["form"])
+
+        # We must first verify that we don't have a workflow change with the same form
+        if WorkflowChange.objects.filter(workflow_version=wfv, form=form).exists():
+            raise serializers.ValidationError(
+                f"WorkflowChange for form {form.id} already exists !"
+            )
+
+        # If it does, we return a error
+        # If it doesn't, we create the change
 
         wc = WorkflowChange.objects.create(
             workflow_version=wfv,

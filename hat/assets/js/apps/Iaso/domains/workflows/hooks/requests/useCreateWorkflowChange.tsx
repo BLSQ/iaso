@@ -2,10 +2,10 @@ import { UseMutationResult } from 'react-query';
 import { postRequest } from '../../../../libs/Api';
 import { useSnackMutation } from '../../../../libs/apiHooks';
 
-import { FollowUps } from '../../types';
+import { Change } from '../../types';
 
 const createWorkflowChange = async (
-    data: FollowUps,
+    data: Change,
     versionId: string,
 ): Promise<any> => {
     return postRequest(`/api/workflowchanges/?version_id=${versionId}`, data);

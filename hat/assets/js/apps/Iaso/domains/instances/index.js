@@ -28,7 +28,7 @@ import {
     getFilters,
     getSelectionActions,
     getExportUrl,
-} from './utils';
+} from './utils/index.tsx';
 
 import { InstancesTopBar as TopBar } from './components/TopBar.tsx';
 import DownloadButtonsComponent from '../../components/DownloadButtonsComponent';
@@ -44,6 +44,8 @@ import snackMessages from '../../components/snackBars/messages';
 import { TableWithDeepLink } from '../../components/tables/TableWithDeepLink';
 import { PaginatedInstanceFiles } from './components/PaginatedInstancesFiles';
 import { useGetPossibleFields } from '../forms/hooks/useGetPossibleFields.ts';
+
+import { ColumnSelect } from './components/ColumnSelect.tsx';
 
 const baseUrl = baseUrls.instances;
 
@@ -160,14 +162,6 @@ const Instances = ({ params }) => {
                 formName={formName}
                 tab={tab}
                 handleChangeTab={newTab => handleChangeTab(newTab)}
-                params={params}
-                periodType={periodType}
-                setTableColumns={newCols => setTableColumns(newCols)}
-                baseUrl={baseUrl}
-                labelKeys={labelKeys}
-                possibleFields={possibleFields}
-                formDetails={formDetails}
-                tableColumns={tableColumns}
                 formIds={formIds}
             />
 
@@ -232,41 +226,56 @@ const Instances = ({ params }) => {
                     </Grid>
                 )}
                 {tab === 'list' && tableColumns.length > 0 && (
-                    <TableWithDeepLink
-                        data={data?.instances ?? []}
-                        pages={data?.pages}
-                        count={data?.count}
-                        params={params}
-                        columns={tableColumns}
-                        baseUrl={baseUrl}
-                        multiSelect
-                        defaultSorted={[{ id: 'updated_at', desc: true }]}
-                        selectionActions={getSelectionActions(
-                            formatMessage,
-                            getFilters(params),
-                            () => refetchInstances(),
-                            params.showDeleted === 'true',
-                            classes,
-                        )}
-                        selection={selection}
-                        setTableSelection={(
-                            selectionType,
-                            items,
-                            totalCount,
-                        ) => {
-                            setSelection(
-                                setTableSelection(
-                                    selection,
-                                    selectionType,
-                                    items,
-                                    totalCount,
-                                ),
-                            );
-                        }}
-                        extraProps={{
-                            loading: fetchingList,
-                        }}
-                    />
+                    <>
+                        <ColumnSelect
+                            params={params}
+                            periodType={periodType}
+                            setTableColumns={newCols =>
+                                setTableColumns(newCols)
+                            }
+                            baseUrl={baseUrl}
+                            labelKeys={labelKeys}
+                            possibleFields={possibleFields}
+                            formDetails={formDetails}
+                            tableColumns={tableColumns}
+                            formIds={formIds}
+                        />
+                        <TableWithDeepLink
+                            data={data?.instances ?? []}
+                            pages={data?.pages}
+                            count={data?.count}
+                            params={params}
+                            columns={tableColumns}
+                            baseUrl={baseUrl}
+                            multiSelect
+                            defaultSorted={[{ id: 'updated_at', desc: true }]}
+                            selectionActions={getSelectionActions(
+                                formatMessage,
+                                getFilters(params),
+                                () => refetchInstances(),
+                                params.showDeleted === 'true',
+                                classes,
+                            )}
+                            selection={selection}
+                            setTableSelection={(
+                                selectionType,
+                                items,
+                                totalCount,
+                            ) => {
+                                setSelection(
+                                    setTableSelection(
+                                        selection,
+                                        selectionType,
+                                        items,
+                                        totalCount,
+                                    ),
+                                );
+                            }}
+                            extraProps={{
+                                loading: fetchingList,
+                            }}
+                        />
+                    </>
                 )}
                 {tab === 'map' && (
                     <div className={classes.containerMarginNeg}>

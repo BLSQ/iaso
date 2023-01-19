@@ -42,6 +42,10 @@ class CompletenessStatsAPITestCase(APITestCase):
         cls.hopital_aaa_ou = OrgUnit.objects.filter(org_unit_type=cls.org_unit_type_hopital).first()
         cls.create_form_instance(form=cls.form_hs_1, org_unit=cls.hopital_aaa_ou)
 
+        cls.as_abb_ou = OrgUnit.objects.get(pk=10)
+        cls.create_form_instance(form=cls.form_hs_4, org_unit=cls.as_abb_ou)
+        cls.create_form_instance(form=cls.form_hs_4, org_unit=cls.as_abb_ou)
+
     def test_row_listing_anonymous(self):
         """An anonymous user should not be able to access the API"""
         response = self.client.get("/api/completeness_stats/")
@@ -76,6 +80,7 @@ class CompletenessStatsAPITestCase(APITestCase):
                         "forms_filled_direct": 0,
                         "forms_to_fill_direct": 0,
                         "completeness_ratio_direct": "N/A",
+                        "has_multiple_direct_submissions": False,
                     },
                     {
                         "parent_org_unit": None,
@@ -88,18 +93,20 @@ class CompletenessStatsAPITestCase(APITestCase):
                         "forms_filled_direct": 0,
                         "forms_to_fill_direct": 0,
                         "completeness_ratio_direct": "N/A",
+                        "has_multiple_direct_submissions": False,
                     },
                     {
                         "parent_org_unit": None,
                         "org_unit_type": {"name": "Country", "id": 1},
                         "org_unit": {"name": "LaLaland", "id": 1},
                         "form": {"name": "Hydroponics study 4", "id": self.form_hs_4.id},
-                        "forms_filled": 0,
+                        "forms_filled": 1,
                         "forms_to_fill": 3,
-                        "completeness_ratio": "0.0%",
+                        "completeness_ratio": "33.3%",
                         "forms_filled_direct": 0,
                         "forms_to_fill_direct": 1,
                         "completeness_ratio_direct": "0.0%",
+                        "has_multiple_direct_submissions": False,
                     },
                 ],
                 "has_next": False,
@@ -325,7 +332,7 @@ class CompletenessStatsAPITestCase(APITestCase):
         json = response.json()
         results_country = json["results"][0]
         self.assertEqual(results_country["forms_to_fill"], 3)
-        self.assertEqual(results_country["forms_filled"], 0)
+        self.assertEqual(results_country["forms_filled"], 1)
         self.assertEqual(results_country["forms_to_fill_direct"], 1)
         self.assertEqual(results_country["forms_filled_direct"], 0)
 
@@ -337,7 +344,7 @@ class CompletenessStatsAPITestCase(APITestCase):
         json = response.json()
         results_region_b = json["results"][0]
         self.assertEqual(results_region_b["forms_to_fill"], 2)
-        self.assertEqual(results_region_b["forms_filled"], 0)
+        self.assertEqual(results_region_b["forms_filled"], 1)
         self.assertEqual(results_region_b["forms_to_fill_direct"], 0)
         self.assertEqual(results_region_b["forms_filled_direct"], 0)
 
@@ -347,17 +354,44 @@ class CompletenessStatsAPITestCase(APITestCase):
         json = response.json()
         results_district_ab = json["results"][0]
         self.assertEqual(results_district_ab["forms_to_fill"], 2)
-        self.assertEqual(results_district_ab["forms_filled"], 0)
+        self.assertEqual(results_district_ab["forms_filled"], 1)
         self.assertEqual(results_district_ab["forms_to_fill_direct"], 0)
         self.assertEqual(results_district_ab["forms_filled_direct"], 0)
 
         # Finally, we request the two AS at the bottom of the tree
-        # each one is targeted by one form, with no submission
+        # each one is targeted by one form, submissions only on A.B.B
         response = self.client.get(f"/api/completeness_stats/?form_id={self.form_hs_4.id}&parent_org_unit_id=5")
         json = response.json()
         results_as = json["results"]
         for result_as in results_as:
             self.assertEqual(result_as["forms_to_fill"], 1)
-            self.assertEqual(result_as["forms_filled"], 0)
             self.assertEqual(result_as["forms_to_fill_direct"], 1)
-            self.assertEqual(result_as["forms_filled_direct"], 0)
+            if result_as["org_unit"]["id"] == self.as_abb_ou.pk:
+                self.assertEqual(result_as["forms_filled"], 1)
+                self.assertEqual(result_as["forms_filled_direct"], 1)
+            else:
+                self.assertEqual(result_as["forms_filled"], 0)
+                self.assertEqual(result_as["forms_filled_direct"], 0)
+
+    def test_has_multiple_direct_submissions(self):
+        #  see: https://bluesquare.atlassian.net/browse/IA-1826
+
+        self.client.force_authenticate(self.user)
+
+        # Case 1: the OU has no direct submissions => False
+        response = self.client.get(f"/api/completeness_stats/?org_unit_id=1&form_id={self.form_hs_4.id}")
+        json = response.json()
+        result = json["results"][0]
+        self.assertFalse(result["has_multiple_direct_submissions"])
+
+        # Case 2: the OU has one direct submissions => False
+        response = self.client.get(f"/api/completeness_stats/?org_unit_id=7&form_id={self.form_hs_1.id}")
+        json = response.json()
+        result = json["results"][0]
+        self.assertFalse(result["has_multiple_direct_submissions"])
+
+        # Case 3: the OU has one two direct submissions => True
+        response = self.client.get(f"/api/completeness_stats/?org_unit_id=10&form_id={self.form_hs_4.id}")
+        json = response.json()
+        result = json["results"][0]
+        self.assertTrue(result["has_multiple_direct_submissions"])

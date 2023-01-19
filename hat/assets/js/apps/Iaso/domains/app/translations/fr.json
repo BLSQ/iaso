@@ -897,6 +897,7 @@
     "iaso.workflows.copy": "Copier la version",
     "iaso.workflows.createChange": "Créer un changement",
     "iaso.workflows.createFollowUp": "Créer un suivi",
+    "iaso.workflows.dialog.changeDeleted": "Changement effacé avec succès",
     "iaso.workflows.dialog.deleteChange": "Êtes-vous certain de vouloir effacer ce changement?",
     "iaso.workflows.dialog.deleteFollowUp": "Êtes-vous certain de vouloir effacer ce suivi?",
     "iaso.workflows.dialog.deleteTitle": "Êtes-vous certain de vouloir effacer version du workflow ?",

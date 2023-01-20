@@ -3,7 +3,7 @@ import sys
 import re
 
 print("script started")
-print(sys.argv[1], sys.argv[2], sys.argv[3])
+print(sys.argv[1], sys.argv[2])
 
 file_regexp = re.compile("(?<!`)(?<=file:)*([\n])")
 admin_regexp = re.compile("(?<!`)(?<=admin:)*([\n])")

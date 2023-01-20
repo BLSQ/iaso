@@ -6,7 +6,7 @@ print("script started")
 
 file_regexp = re.compile("(?<!`)(?<=file:)*([\n])")
 admin_regexp = re.compile("(?<!`)(?<=admin:)*([\n])")
-print ('defined regexes')
+print("defined regexes")
 file_paths_list = re.findall(file_regexp, sys.argv[1])
 admin_paths_list = re.findall(admin_regexp, sys.argv[1])
 print("ran findall")

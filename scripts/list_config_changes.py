@@ -3,7 +3,7 @@ import sys
 import re
 
 file_regexp = r"(?<!`)(?<=file:)*([\n|\r\n|\r])"
-admin_regexp = r"\(?<!`)(?<=admin:)*([\n|\r\n|\r])"
+admin_regexp = r"(?<!`)(?<=admin:)*([\n|\r\n|\r])"
 
 file_paths_list = re.findall(file_regexp, sys.argv[1])
 admin_paths_list = re.findall(admin_regexp, sys.argv[1])

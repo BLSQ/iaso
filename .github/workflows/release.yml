@@ -1,5 +1,6 @@
 name: List_configs
 on:
+    workflow_dispatch:
     pull_request:
     push:
       branches: 

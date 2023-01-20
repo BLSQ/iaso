@@ -1,9 +1,7 @@
 name: List_configs
 on:
     pull_request:
-    push:
-      branches: 
-        - gh_action_for_config
+
 jobs:
   build:
     runs-on: ubuntu-20.04

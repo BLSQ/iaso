@@ -1,6 +1,6 @@
 name: List configs
 on:
-    pullrequest:
+    pull_request:
     push:
       branches: 
         - gh_action_for_config

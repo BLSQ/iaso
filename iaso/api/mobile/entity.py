@@ -34,7 +34,7 @@ class MobileEntityAttributesSerializer(serializers.ModelSerializer):
     @staticmethod
     def get_form_version_id(obj: Instance):
         form_version_id = FormVersion.objects.get(
-            version_id=obj.json.get("_version"), form__form_id=obj.form.form_id
+            version_id=obj.json.get("_version"), form__form_id=obj.form.form_id  # type: ignore
         ).id
 
         return form_version_id

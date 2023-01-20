@@ -1,6 +1,5 @@
 name: List_configs
 on:
-    workflow_dispatch:
     pull_request:
     push:
       branches: 
@@ -11,4 +10,5 @@ jobs:
     steps:
      - uses: actions/checkout@v2
      - name: "Test printing PR body"
-       run: echo ${{github.event.pull_request.body}}
+       run: | 
+          echo ${{github.event.pull_request.body}}

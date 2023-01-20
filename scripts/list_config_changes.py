@@ -2,8 +2,8 @@
 import sys
 import re
 
-file_regexp = re.compile("(?<!`)(?<=file:)*([\n|\r\n|\r])")
-admin_regexp = re.compile("(?<!`)(?<=admin:)*([\n|\r\n|\r])")
+file_regexp = re.compile("(?<!`)(?<=file:)*([\n])")
+admin_regexp = re.compile("(?<!`)(?<=admin:)*([\n])")
 
 file_paths_list = re.findall(file_regexp, sys.argv[1])
 admin_paths_list = re.findall(admin_regexp, sys.argv[1])

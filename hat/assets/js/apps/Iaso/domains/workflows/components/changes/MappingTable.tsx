@@ -6,13 +6,9 @@ import React, {
     Dispatch,
 } from 'react';
 import {
-    // @ts-ignore
     useSafeIntl,
-    // @ts-ignore
     Table,
-    // @ts-ignore
     AddButton,
-    // @ts-ignore
     IconButton,
 } from 'bluesquare-components';
 import { Box, makeStyles } from '@material-ui/core';

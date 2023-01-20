@@ -1,9 +1,6 @@
 import React, { FunctionComponent } from 'react';
 
-import {
-    // @ts-ignore
-    IconButton as IconButtonComponent,
-} from 'bluesquare-components';
+import { IconButton as IconButtonComponent } from 'bluesquare-components';
 import { Box, makeStyles } from '@material-ui/core';
 import FileCopyIcon from '@material-ui/icons/FileCopy';
 import BlockIcon from '@material-ui/icons/Block';

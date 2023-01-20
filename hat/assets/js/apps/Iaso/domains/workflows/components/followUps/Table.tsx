@@ -2,11 +2,9 @@ import { Box } from '@material-ui/core';
 import React, { FunctionComponent } from 'react';
 
 import {
-    // @ts-ignore
+    // @ts-ignore => all files of utils are exported by default
     formatThousand,
-    // @ts-ignore
     Table,
-    // @ts-ignore
     useSafeIntl,
 } from 'bluesquare-components';
 

@@ -1,11 +1,6 @@
 /* eslint-disable camelcase */
-import React from 'react';
-import {
-    // @ts-ignore
-    useSafeIntl,
-    // @ts-ignore
-    QueryBuilderFields,
-} from 'bluesquare-components';
+import React, { ReactNode } from 'react';
+import { useSafeIntl, QueryBuilderFields } from 'bluesquare-components';
 import { Box } from '@material-ui/core';
 
 import MESSAGES from '../messages';
@@ -18,17 +13,23 @@ import { Column } from '../../../types/table';
 import { FollowUpActionCell } from '../components/followUps/ActionCell';
 import { WorkflowVersionDetail } from '../types';
 
+interface FollowUpsColumns extends Column {
+    accessor: string;
+}
+
 export const useGetFollowUpsColumns = (
-    // eslint-disable-next-line no-unused-vars
-    getHumanReadableJsonLogic: (logic: Record<string, string>) => string,
+    getHumanReadableJsonLogic: (
+        // eslint-disable-next-line no-unused-vars
+        logic: Record<string, string>,
+    ) => string | ReactNode,
     versionId: string,
     workflowVersion?: WorkflowVersionDetail,
     fields?: QueryBuilderFields,
-): Array<Column> => {
+): FollowUpsColumns[] => {
     const { formatMessage }: { formatMessage: IntlFormatMessage } =
         useSafeIntl();
 
-    const columns: Array<Column> = [
+    const columns: FollowUpsColumns[] = [
         {
             Header: formatMessage(MESSAGES.condition),
             sortable: false,

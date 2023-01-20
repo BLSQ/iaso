@@ -1,8 +1,5 @@
 import React, { FunctionComponent, useState, useCallback } from 'react';
-import {
-    // @ts-ignore
-    useSafeIntl,
-} from 'bluesquare-components';
+import { useSafeIntl } from 'bluesquare-components';
 import { Box, Button, makeStyles } from '@material-ui/core';
 
 import InputComponent from '../../../components/forms/InputComponent';

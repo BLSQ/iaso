@@ -1,9 +1,6 @@
 /* eslint-disable camelcase */
 import React from 'react';
-import {
-    // @ts-ignore
-    useSafeIntl,
-} from 'bluesquare-components';
+import { useSafeIntl } from 'bluesquare-components';
 
 import MESSAGES from '../messages';
 

@@ -1,17 +1,14 @@
 import React, { FunctionComponent } from 'react';
 
 import {
-    // @ts-ignore
     useSafeIntl,
-    // @ts-ignore
     ConfirmCancelModal,
-    // @ts-ignore
     makeFullModal,
 } from 'bluesquare-components';
 
 import { PublishButton, PublishIconButton } from '../ModalButtons';
 
-import { WorkflowVersionDetail } from '../../types';
+import { WorkflowVersion } from '../../types';
 import { useUpdateWorkflowVersion } from '../../hooks/requests/useUpdateWorkflowVersion';
 
 import MESSAGES from '../../messages';
@@ -19,7 +16,7 @@ import MESSAGES from '../../messages';
 type Props = {
     isOpen: boolean;
     closeDialog: () => void;
-    workflowVersion: WorkflowVersionDetail;
+    workflowVersion: WorkflowVersion;
     invalidateQueryKey: string;
 };
 

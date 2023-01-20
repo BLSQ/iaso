@@ -1,9 +1,6 @@
 import React, { FunctionComponent } from 'react';
 
-import {
-    // @ts-ignore
-    QueryBuilderFields,
-} from 'bluesquare-components';
+import { QueryBuilderFields } from 'bluesquare-components';
 
 import { FollowUps } from '../../types';
 

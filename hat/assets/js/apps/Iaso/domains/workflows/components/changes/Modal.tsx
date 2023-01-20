@@ -1,15 +1,10 @@
 import React, { FunctionComponent, useState, useMemo } from 'react';
 
 import {
-    // @ts-ignore
     useSafeIntl,
-    // @ts-ignore
     ConfirmCancelModal,
-    // @ts-ignore
     makeFullModal,
-    // @ts-ignore
     AddButton,
-    // @ts-ignore
     LoadingSpinner,
 } from 'bluesquare-components';
 import ArrowRightAltIcon from '@material-ui/icons/ArrowRightAlt';

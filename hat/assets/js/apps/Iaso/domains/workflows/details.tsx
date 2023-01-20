@@ -5,17 +5,12 @@ import React, {
     useEffect,
 } from 'react';
 import {
-    // @ts-ignore
     useSafeIntl,
-    // @ts-ignore
     commonStyles,
-    // @ts-ignore
     LoadingSpinner,
     // @ts-ignore
     formatThousand,
-    // @ts-ignore
     SortableTable,
-    // @ts-ignore
     useHumanReadableJsonLogic,
 } from 'bluesquare-components';
 import { Box, Grid, makeStyles, Button } from '@material-ui/core';

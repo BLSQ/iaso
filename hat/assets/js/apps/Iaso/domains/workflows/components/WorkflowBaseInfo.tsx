@@ -8,7 +8,6 @@ import {
     Box,
 } from '@material-ui/core';
 import React, { FunctionComponent, ReactNode } from 'react';
-// @ts-ignore
 import { useSafeIntl } from 'bluesquare-components';
 
 import MESSAGES from '../messages';

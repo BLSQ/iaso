@@ -13,4 +13,4 @@ with open(sys.argv[2] + ".txt", "w") as output_file:
     for index in range(len(file_paths_list)):
         print(file_paths_list[index])
         print(admin_paths_list[index])
-    # output_file.write("file: " + file_paths_list[index] + "\n" + "admin: " + admin_paths_list[index] + "\n\n")
+    output_file.write("file: " + file_paths_list[index] + "\n" + "admin: " + admin_paths_list[index] + "\n\n")

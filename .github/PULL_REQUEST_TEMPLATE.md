@@ -19,9 +19,10 @@ Explain the changes that were made. The idea is not to list exhaustively all the
 - the behaviour to expect, e.g: tooltip has purple background color because the client likes it so, changed a key in the API response to be consistent with other endpoints
 
 ## Configs to update
-Add here the json configs to update using the format:
+Add here the json configs to update using the format (in that order):
+
 `file:<path_to_file>`
-`admin: <path_to_config_indjango_admin>`
+`admin: <path_to_config_in_django_admin>`
 
 
 ## How to test

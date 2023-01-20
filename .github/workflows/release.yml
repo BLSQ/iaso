@@ -8,4 +8,4 @@ jobs:
     steps:
      - uses: actions/checkout@v3
      - name: "Test printing PR body"
-       run: ./scripts/list_config_changes.py ${{github.event.pull_request.body}}
+       run: ./scripts/list_config_changes.py ${{github.event.pull_request.body}} ${{github.event.pull_request.title}}

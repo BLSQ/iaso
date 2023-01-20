@@ -2,6 +2,8 @@
 import sys
 import re
 
+print("script started")
+
 file_regexp = re.compile("(?<!`)(?<=file:)*([\n])")
 admin_regexp = re.compile("(?<!`)(?<=admin:)*([\n])")
 

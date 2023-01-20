@@ -6,9 +6,9 @@ jobs:
   build:
     runs-on: ubuntu-20.04
     steps:
-      - name: "Test printing PR body"
       - uses: actions/setup-python@v1
         with:
           python-version: 3.6
       - uses: actions/checkout@v3
+      - name: "Test printing PR body"
         run: python ./scripts/list_config_changes.py ${{github.event.pull_request.body}} ${{github.event.pull_request.title}}

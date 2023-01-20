@@ -7,7 +7,7 @@ import {
 } from 'bluesquare-components';
 // @ts-ignore
 import { Box, Divider, Grid, makeStyles } from '@material-ui/core';
-import { useDispatch } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import TopBar from '../../components/nav/TopBarComponent';
 import { Infos } from './components/Infos';
 import { TableWithDeepLink } from '../../components/tables/TableWithDeepLink';
@@ -31,13 +31,23 @@ import { useGetDetailsColumns } from './config';
 
 type Props = {
     params: StorageDetailsParams;
+    router: Router;
+};
+type State = {
+    routerCustom: RouterCustom;
+};
+type RouterCustom = {
+    prevPathname: string | undefined;
 };
 
+type Router = {
+    goBack: () => void;
+};
 const useStyles = makeStyles(theme => ({
     ...commonStyles(theme),
 }));
 
-export const Details: FunctionComponent<Props> = ({ params }) => {
+export const Details: FunctionComponent<Props> = ({ params, router }) => {
     const { formatMessage } = useSafeIntl();
     const { data, isFetching } = useGetStorageLogs(params);
     const { url: apiUrl } = useGetApiParams(params);
@@ -45,13 +55,14 @@ export const Details: FunctionComponent<Props> = ({ params }) => {
     const storageDetail = data?.results;
 
     const classes: Record<string, string> = useStyles();
-
+    const prevPathname: string | undefined = useSelector(
+        (state: State) => state.routerCustom.prevPathname,
+    );
     const dispatch = useDispatch();
 
     const columns = useGetDetailsColumns();
 
     const storageDetailLogs = storageDetail?.logs ?? [];
-
     return (
         <>
             <TopBar
@@ -60,7 +71,11 @@ export const Details: FunctionComponent<Props> = ({ params }) => {
                 }`}
                 displayBackButton
                 goBack={() => {
-                    dispatch(redirectToReplace(baseUrls.storages, {}));
+                    if (prevPathname) {
+                        router.goBack();
+                    } else {
+                        dispatch(redirectToReplace(baseUrls.storages, {}));
+                    }
                 }}
             />
             <Box className={`${classes.containerFullHeightNoTabPadded}`}>

@@ -17,7 +17,10 @@ const getVersion = (formId: number | undefined): Promise<FormVersionsList> => {
 export const useGetFormDescriptor = (
     formId?: number,
 ): UseQueryResult<FormDescriptor[] | undefined, Error> => {
-    const queryKey: any[] = ['instanceDescriptor', formId];
+    const queryKey: [string, number | undefined] = [
+        'instanceDescriptor',
+        formId,
+    ];
     return useSnackQuery({
         queryKey,
         queryFn: () => getVersion(formId),

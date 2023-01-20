@@ -273,9 +273,8 @@ const Dashboard = ({ router }) => {
                 displayBackButton={false}
             />
             <CreateEditDialog
-                selectedCampaign={selectedCampaign}
+                campaignId={selectedCampaign?.id}
                 isOpen={isCreateEditDialogOpen}
-                isFetching={isFetching}
                 onClose={closeCreateEditDialog}
             />
             <ConfirmDialog

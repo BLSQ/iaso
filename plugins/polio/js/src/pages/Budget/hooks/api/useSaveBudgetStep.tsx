@@ -3,6 +3,7 @@ import { BudgetStep, LinkWithAlias } from '../../types';
 import MESSAGES from '../../../../constants/messages';
 import { postRequest } from '../../../../../../../../hat/assets/js/apps/Iaso/libs/Api';
 import { useSnackMutation } from '../../../../../../../../hat/assets/js/apps/Iaso/libs/apiHooks';
+import { PostArg } from '../../../../../../../../hat/assets/js/apps/Iaso/types/general';
 
 type Payload = {
     transition_key: string; // key
@@ -13,11 +14,7 @@ type Payload = {
     campaign_id: string; // uuid
 };
 
-type PostRequestBody = {
-    url: string;
-    data: Record<string, any>;
-    fileData?: Record<string, File[] | File>;
-};
+type PostRequestBody = PostArg;
 
 const postBudgetStep = (body: Payload): Promise<BudgetStep> => {
     const filteredParams = Object.fromEntries(
@@ -42,14 +39,14 @@ const postBudgetStep = (body: Payload): Promise<BudgetStep> => {
         requestBody.data = data;
         requestBody.fileData = fileData;
     }
-    return postRequest(requestBody);
+    return postRequest(requestBody as PostArg);
 };
 
 export const useSaveBudgetStep = () => {
     return useSnackMutation({
         mutationFn: postBudgetStep,
         invalidateQueryKey: 'budget',
-        snackSuccessMessage: MESSAGES.budgetEventCreated,
-        showSucessSnackBar: false,
+        snackSuccessMessage: MESSAGES.budgetUpdated,
+        showSucessSnackBar: true,
     });
 };

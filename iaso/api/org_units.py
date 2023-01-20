@@ -60,7 +60,8 @@ class OrgUnitViewSet(viewsets.ViewSet):
 
     GET /api/orgunits/
     GET /api/orgunits/<id>
-    POST /api/orgunits/
+    POST /api/orgunits/ Create org units, used by mobile app
+    POST /api/orgunits/create_org_unit Create org unit, used by web app
     PATCH /api/orgunits/<id>
     """
 
@@ -422,9 +423,13 @@ class OrgUnitViewSet(viewsets.ViewSet):
         if "groups" in request.data:
             new_groups = []
             groups = request.data["groups"]
+            current_groups_ids = list(org_unit.groups.all().values_list("id", flat=True))
             for group_id in groups:
                 temp_group = get_object_or_404(Group, id=group_id)
-                if temp_group.source_version != org_unit.version:
+                #  fix bug where if an org unit was already in a group it failed
+                if group_id not in current_groups_ids and (
+                    temp_group.source_version and temp_group.source_version != org_unit.version
+                ):
                     errors.append({"errorKey": "groups", "errorMessage": _("Group must be in the same source version")})
                     continue
                 new_groups.append(temp_group)

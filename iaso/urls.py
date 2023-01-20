@@ -14,6 +14,7 @@ from .api.entity import EntityViewSet, EntityTypeViewSet
 from .api.logs import LogsViewSet
 from .api.microplanning import TeamViewSet, PlanningViewSet, AssignmentViewSet, MobilePlanningViewSet
 from .api.mobile.org_units import MobileOrgUnitViewSet
+from .api.mobile.reports import MobileReportsViewSet
 from .api.org_units import OrgUnitViewSet
 from .api.org_unit_types import OrgUnitTypeViewSet
 from .api.apps import AppsViewSet
@@ -27,6 +28,7 @@ from .api.data_sources import DataSourceViewSet
 from iaso.api.tasks.create.org_units_bulk_update import OrgUnitsBulkUpdate
 from iaso.api.tasks.create.copy_version import CopyVersionViewSet
 from iaso.api.tasks.create.dhis2_ou_importer import Dhis2OuImporterViewSet
+from .api.reports import ReportsViewSet
 from .api.setup_account import SetupAccountViewSet
 from .api.source_versions import SourceVersionViewSet
 from .api.forms import FormsViewSet, MobileFormViewSet
@@ -136,6 +138,8 @@ router.register(r"workflowversions", WorkflowVersionViewSet, basename="workflowv
 router.register(r"workflowfollowups", WorkflowFollowupViewSet, basename="workflowfollowups")
 router.register(r"workflowchanges", WorkflowChangeViewSet, basename="workflowchanges")
 router.register(r"mobile/workflows", MobileWorkflowViewSet, basename="mobileworkflows")
+router.register(r"reports", ReportsViewSet, basename="report")
+router.register(r"mobile/reports", MobileReportsViewSet, basename="report")
 
 router.registry.extend(plugins_router.registry)
 

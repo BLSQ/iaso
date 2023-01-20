@@ -19,6 +19,7 @@ import {
 } from 'bluesquare-components';
 import WidgetPaper from '../../../components/papers/WidgetPaperComponent';
 import { OrgUnit } from '../types/orgUnit';
+import { useCurrentUser } from '../../../utils/usersUtils';
 import MESSAGES from '../messages';
 
 const useStyles = makeStyles(theme => ({
@@ -36,7 +37,6 @@ type RowProps = {
 };
 
 const Row: FunctionComponent<RowProps> = ({ label, value, dataTestId }) => {
-    console.log('test', moment.unix(1633954017.188993).format('LTS'));
     const classes: Record<string, string> = useStyles();
     return (
         <TableRow>
@@ -48,10 +48,12 @@ const Row: FunctionComponent<RowProps> = ({ label, value, dataTestId }) => {
 
 type Props = {
     orgUnit: OrgUnit;
+    params: Record<string, any>;
 };
 
 export const OrgUnitCreationDetails: FunctionComponent<Props> = ({
     orgUnit,
+    params,
 }) => {
     const { formatMessage } = useSafeIntl();
     const latitude = `${formatMessage(MESSAGES.latitude)}: ${
@@ -65,6 +67,8 @@ export const OrgUnitCreationDetails: FunctionComponent<Props> = ({
         orgUnit.latitude && orgUnit.longitude ? latitude + longitude : false;
     const orgUnitCreatedAt = moment.unix(orgUnit.created_at).format('LTS');
     const orgUnitUpdatedAt = moment.unix(orgUnit.updated_at).format('LTS');
+    const isNewOrgunit = params.orgUnitId === '0';
+    const { account } = useCurrentUser();
 
     return (
         <>
@@ -75,7 +79,10 @@ export const OrgUnitCreationDetails: FunctionComponent<Props> = ({
                     <TableBody>
                         <Row
                             label={formatMessage(MESSAGES.source)}
-                            value={orgUnit.source ?? '-'}
+                            value={
+                                orgUnit.source ??
+                                account.default_version?.data_source.name
+                            }
                             dataTestId="source"
                         />
                         <Row
@@ -93,14 +100,16 @@ export const OrgUnitCreationDetails: FunctionComponent<Props> = ({
                             value={orgUnit.updated_at ? orgUnitUpdatedAt : '-'}
                             dataTestId="updated_at"
                         />
-                        {!orgUnit.has_geo_json && !latitudeLongitude && (
-                            <Row
-                                label={<GpsOffIcon color="primary" />}
-                                value={formatMessage(
-                                    MESSAGES.hasNoGeometryAndGps,
-                                )}
-                            />
-                        )}
+                        {!isNewOrgunit &&
+                            !orgUnit.has_geo_json &&
+                            !latitudeLongitude && (
+                                <Row
+                                    label={<GpsOffIcon color="primary" />}
+                                    value={formatMessage(
+                                        MESSAGES.hasNoGeometryAndGps,
+                                    )}
+                                />
+                            )}
                         {orgUnit.has_geo_json && (
                             <Row
                                 label={<GpsFixedIcon color="primary" />}

@@ -57,6 +57,7 @@ ProjectSelectorIds.propTypes = {
     onChange: PropTypes.func.isRequired,
     errors: PropTypes.array,
     label: PropTypes.any.isRequired,
+    fieldHasBeenChanged: PropTypes.bool.isRequired,
 };
 
 const initialForm = (defaultSourceVersion, initialData, sourceCredentials) => {
@@ -147,6 +148,11 @@ export const DataSourceDialogComponent = ({
         [fieldHasBeenChanged, setFieldValue],
     );
 
+    const versions = initialData?.versions?.map(v => ({
+        label: v.number.toString(),
+        value: v.id,
+    }));
+
     return (
         <ConfirmCancelDialogComponent
             dataTestId="datasource-modal"
@@ -173,7 +179,7 @@ export const DataSourceDialogComponent = ({
             allowConfirm={allowConfirm}
         >
             {isSaving && <LoadingSpinner fixed={false} />}
-            <Grid container spacing={4} justifyContent="flex-start">
+            <Grid container spacing={2} justifyContent="flex-start">
                 <Grid xs={6} item>
                     <InputComponent
                         keyValue="name"
@@ -213,14 +219,7 @@ export const DataSourceDialogComponent = ({
                             value={form.default_version_id.value}
                             errors={form.default_version_id.errors}
                             type="select"
-                            options={
-                                initialData
-                                    ? initialData.versions.map(v => ({
-                                          label: v.number.toString(),
-                                          value: v.id,
-                                      }))
-                                    : []
-                            }
+                            options={initialData ? versions : []}
                             label={MESSAGES.defaultVersion}
                         />
                     )}

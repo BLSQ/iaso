@@ -27,12 +27,14 @@ export const useGetCampaigns = (
             // Ugly fix to prevent the full list of campaigns showing when waiting for the value of countries
             enabled: options.enabled ?? true,
             last_budget_event__status: options.last_budget_event__status,
+            fieldset: options.fieldset ?? undefined,
         }),
         [
             options.campaignGroups,
             options.campaignType,
             options.countries,
             options.enabled,
+            options.fieldset,
             options.last_budget_event__status,
             options.order,
             options.page,
@@ -109,6 +111,7 @@ export const useCampaignParams = params => {
             campaignGroups: params.campaignGroups,
             show_test: showTest,
             last_budget_event__status: params.last_budget_event__status,
+            fieldset: 'list',
         };
     }, [params]);
 };

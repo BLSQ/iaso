@@ -81,9 +81,9 @@ export const Details: FunctionComponent<Props> = ({ router }) => {
     const [followUps, setFollowUps] = useState<FollowUps[]>([]);
 
     const { mutate: saveFollowUpOrder } = useBulkUpdateWorkflowFollowUp(() =>
-        setFollowUpOrderChange(false),
+        setIsFollowUpOrderChange(false),
     );
-    const [followUpOrderChange, setFollowUpOrderChange] =
+    const [isFollowUpOrderChange, setIsFollowUpOrderChange] =
         useState<boolean>(false);
     const { entityTypeId, versionId } = params;
     const { formatMessage } = useSafeIntl();
@@ -142,7 +142,7 @@ export const Details: FunctionComponent<Props> = ({ router }) => {
         setFollowUps(
             items.map((item, index) => ({ ...item, order: index + 1 })),
         );
-        setFollowUpOrderChange(true);
+        setIsFollowUpOrderChange(true);
     }, []);
 
     const handleSaveFollowUpsOrder = useCallback(() => {
@@ -219,7 +219,7 @@ export const Details: FunctionComponent<Props> = ({ router }) => {
                                 <Box display="inline-block" mr={2}>
                                     <Button
                                         color="primary"
-                                        disabled={!followUpOrderChange}
+                                        disabled={!isFollowUpOrderChange}
                                         data-test="save-follow-up-order"
                                         onClick={handleSaveFollowUpsOrder}
                                         variant="contained"

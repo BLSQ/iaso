@@ -53,6 +53,10 @@ export const MESSAGES = defineMessages({
         id: 'iaso.label.created',
         defaultMessage: 'Creation',
     },
+    renderError: {
+        id: 'iaso.label.renderError',
+        defaultMessage: 'Error rendering value',
+    },
 });
 
 export default MESSAGES;

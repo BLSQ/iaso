@@ -116,7 +116,7 @@ export const useGetQueryBuilderListToReplace =
                     '=',
                     '!=',
                     'IS NULL',
-                    'IN NOT NULL',
+                    'IS NOT NULL',
                     '>',
                     '<',
                     '>=',

@@ -1418,6 +1418,10 @@ const MESSAGES = defineMessages({
         defaultMessage: 'New budget step created',
         id: 'iaso.polio.label.budgetEventCreated',
     },
+    budgetUpdated: {
+        defaultMessage: 'Budget updated',
+        id: 'iaso.polio.label.budgetUpdated',
+    },
     tryUpdateStep: {
         defaultMessage: 'Resend budget data?',
         id: 'iaso.polio.title.tryUpdateStep',
@@ -2005,6 +2009,14 @@ const MESSAGES = defineMessages({
     budgetRequest: {
         id: 'iaso.polio.form.label.budgetRequest',
         defaultMessage: 'Budget request',
+    },
+    override: {
+        id: 'iaso.polio.form.label.override',
+        defaultMessage: 'Override',
+    },
+    newBudgetState: {
+        id: 'iaso.polio.form.label.newBudgetState',
+        defaultMessage: 'New budget state',
     },
 });
 

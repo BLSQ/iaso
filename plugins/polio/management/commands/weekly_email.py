@@ -39,11 +39,15 @@ def send_notification_email(campaign):
     emails = [user.email for user in users if user.email]
     if not emails:
         return False
-    day_number = (now().date() - campaign.cvdpv_notified_at).days if campaign.cvdpv_notified_at else ""
+    day_number = (
+        (now().date() - campaign.cvdpv_notified_at).days
+        if campaign.cvdpv_notified_at
+        else "{Error: No cVDPV notification available. Enter a notification date in order to have the days count.}"
+    )
     onset_days = (
         (campaign.cvdpv_notified_at - campaign.onset_at).days
         if campaign.onset_at and campaign.cvdpv_notified_at
-        else ""
+        else "{Error: No cVDPV notification or campaign on set available. Enter a date in order to have the days count.}"
     )
     try:
         first_round = campaign.rounds.earliest("number")
@@ -72,7 +76,6 @@ If there are missing data or dates; visit {url} to update
 * Vaccine Type                   : {c.vaccines}
 * Target population              : {target_population} 
 * RA Status                      : {c.get_risk_assessment_status_display() or 'Pending'}
-* SIA Budget Status              : {c.get_budget_status_display() or 'Pending'}
 * Date Budget submitted          : {c.budget_submitted_at}
 * OnSet to Notification (Days)   : {onset_days}
 * Round 1 to Notification (Days) : {round1_days}

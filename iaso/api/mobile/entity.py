@@ -9,7 +9,7 @@ from iaso.api.common import (
     DeletionFilterBackend,
     TimestampField,
 )
-from iaso.models import Entity, Instance, OrgUnit
+from iaso.models import Entity, Instance, OrgUnit, FormVersion
 
 
 class LargeResultsSetPagination(PageNumberPagination):
@@ -25,11 +25,19 @@ class MobileEntityAttributesSerializer(serializers.ModelSerializer):
 
     form_id = serializers.IntegerField(read_only=True, source="form.id")
     id = serializers.CharField(read_only=True, source="uuid")
-    form_version_id = serializers.CharField(read_only=True, source="form.form_id")
     org_unit_id = serializers.CharField(read_only=True, source="org_unit.id")
+    form_version_id = serializers.SerializerMethodField()
 
     created_at = TimestampField()
     updated_at = TimestampField()
+
+    @staticmethod
+    def get_form_version_id(obj: Instance):
+        form_version_id = FormVersion.objects.get(
+            version_id=obj.json.get("_version"), form__form_id=obj.form.form_id
+        ).id
+
+        return form_version_id
 
 
 class MobileEntitySerializer(serializers.ModelSerializer):

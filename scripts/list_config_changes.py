@@ -2,7 +2,7 @@
 import sys
 import re
 
-print(sys.argv[1], sys.argv[2])
+print("hello world", sys.argv[1], sys.argv[2])
 
 file_regexp = re.compile("(?<!`file:)(?<=file:).+(?=\n)")
 admin_regexp = re.compile("(?<!`admin:)(?<=admin:).+(?=\n)")

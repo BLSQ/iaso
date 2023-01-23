@@ -1,6 +1,6 @@
 name: List_configs
 on:
-    pull_request:
+    push:
 
 jobs:
   build:

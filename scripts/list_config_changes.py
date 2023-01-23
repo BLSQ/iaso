@@ -15,14 +15,15 @@ if len(file_paths_list) == 0:
 if len(admin_paths_list) == 0:
     admin_paths_list = ["test admin path"]
 print(file_paths_list, admin_paths_list)
-print(len(file_paths_list), len(file_paths_list))
+print(len(file_paths_list), len(admin_paths_list))
 # end test code
 
-if len(file_paths_list) > 0:
-    print("file detected")
-    with open(sys.argv[2] + ".txt", "w") as output_file:
-        print("saving changes")
-        for index in range(len(file_paths_list)):
-            print(file_paths_list[index])
-            print(admin_paths_list[index])
+
+with open("updated_configs.txt", "w") as output_file:
+    print("saving changes")
+    output_file.write(sys.argv[2])
+    for index in range(len(file_paths_list)):
+        print(file_paths_list[index])
+        print(admin_paths_list[index])
+        if file_paths_list[index] and admin_paths_list[index]:
             output_file.write("file: " + file_paths_list[index] + "\n" + "admin: " + admin_paths_list[index] + "\n\n")

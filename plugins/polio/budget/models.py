@@ -159,8 +159,14 @@ class MailTemplate(models.Model):
                 }
             )
         transition = workflow.get_transition_by_key(step.transition_key)
-        node = workflow.get_node_by_key(transition.to_node)
+        if transition.key != "override":
+            node = workflow.get_node_by_key(transition.to_node)
+        else:
+            node_key = request.data["new_state_key"].split(',')[0]
+            node = workflow.get_node_by_key(node_key)
+
         attachments = []
+        override = step.transition_key == "override"
         for f in step.files.all():
             file_url = base_url + f.get_absolute_url()
             attachments.append({"url": file_url, "name": f.filename})
@@ -193,6 +199,7 @@ class MailTemplate(models.Model):
                 "skipped_attachments": skipped_attachements,
                 "files": step.files.all(),
                 "links": step.links.all(),
+                "override": override,
             }
         )
         DEFAULT_HTML_TEMPLATE = '{% extends "base_budget_email.html" %}'

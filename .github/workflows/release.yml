@@ -13,3 +13,7 @@ jobs:
       - name: "Test printing PR body"
         run: |
            python ./scripts/list_config_changes.py "${{github.event.pull_request.body}}" "${{github.event.pull_request.title}}"
+           git add .
+           git commit -m "auto-update config list"
+           git fetch origin main
+           git push

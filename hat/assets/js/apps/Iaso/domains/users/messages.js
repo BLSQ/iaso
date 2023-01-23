@@ -239,7 +239,7 @@ const MESSAGES = defineMessages({
     },
     wrongAccount: {
         defaultMessage:
-            'You are connected to the wrong account, would you like to log out and connect in the correct account to see this link?',
+            'You are connected to the wrong account, would you like to log out and connect with the correct account to see this link?',
         id: 'iaso.label.wrongAccount',
     },
     wrongAccountTitle: {

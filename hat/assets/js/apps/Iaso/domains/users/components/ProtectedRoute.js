@@ -25,13 +25,8 @@ const ProtectedRoute = ({
     const currentUser = useCurrentUser();
     const dispatch = useDispatch();
 
-    const isWrongAccount = useMemo(
-        () =>
-            Boolean(
-                params.accountId &&
-                    params.accountId !== `${currentUser.account.id}`,
-            ),
-        [currentUser.account.id, params.accountId],
+    const isWrongAccount = Boolean(
+        params.accountId && params.accountId !== `${currentUser.account.id}`,
     );
 
     useEffect(() => {

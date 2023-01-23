@@ -547,7 +547,7 @@
     "iaso.label.workflow": "Workflow",
     "iaso.label.workflows": "Workflows",
     "iaso.label.workflowVersion": "Workflow version",
-    "iaso.label.wrongAccount": "You are connected to the wrong account, would you like to log out and connect in the correct account to see this link?",
+    "iaso.label.wrongAccount": "You are connected to the wrong account, would you like to log out and connect with the correct account to see this link?",
     "iaso.label.wrongAccountTitle": "Wrong account",
     "iaso.label.xls_form_file": "XLSForm file",
     "iaso.label.year": "Years",

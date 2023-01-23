@@ -1096,7 +1096,7 @@ def handle_ona_request_with_key(request, key, country_id=None):
         if country_id is not None and config.get("country_id", None) != cid:
             continue
         forms = get_url_content(
-            url=config["url"], login=config["login"], password=config["password"], minutes=config.get("minutes", 60)
+            url=config["url"] + "?date_created__month__lte=24", login=config["login"], password=config["password"], minutes=config.get("minutes", 60)
         )
         if not forms:
             emails = Config.objects.filter(slug="vaccines_emails")

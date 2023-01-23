@@ -235,6 +235,10 @@ const routes = [
                 isRequired: false,
                 key: 'roundStartTo',
             },
+            {
+                isRequired: false,
+                key: 'countries',
+            },
         ],
     },
     {

@@ -52,6 +52,9 @@ const styles = theme => ({
     },
     list: {
         width: SIDEBAR_WIDTH,
+        '& a': {
+            textDecoration: 'none !important',
+        },
     },
     user: {
         marginTop: 'auto',

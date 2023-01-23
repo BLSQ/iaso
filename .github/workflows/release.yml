@@ -1,6 +1,11 @@
 name: List_configs
 on:
+    # delete when putting in prod
     push:
+    # uncomment before putting in prod
+    # pull_request:
+    #   types:
+    #     - closed
 
 jobs:
   build:
@@ -19,7 +24,7 @@ jobs:
            git add .
            git commit -m "auto-update config list"
 
-      - name: Push changes  # push the output folder to your repo
+      - name: Push changes
         uses: ad-m/github-push-action@master
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}

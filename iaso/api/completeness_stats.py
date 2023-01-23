@@ -125,26 +125,27 @@ class CompletenessStatsViewSet(viewsets.ViewSet):
                 if row_ou.parent is not None:
                     parent_data = (row_ou.parent.as_dict_for_completeness_stats(),)
 
-                res.append(
-                    {
-                        "parent_org_unit": parent_data,
-                        "org_unit_type": row_ou.org_unit_type.as_dict_for_completeness_stats(),
-                        "org_unit": row_ou.as_dict_for_completeness_stats(),
-                        "form": form.as_dict_for_completeness_stats(),
-                        # Those counts target the row org unit and all of its descendants
-                        "forms_filled": ou_filled_with_descendants_count,
-                        "forms_to_fill": ou_to_fill_with_descendants_count,
-                        "completeness_ratio": formatted_percentage(
-                            part=ou_filled_with_descendants_count, total=ou_to_fill_with_descendants_count
-                        ),
-                        # Those counts strictly/directly target the row org unit (no descendants included)
-                        "forms_filled_direct": ou_filled_direct_count,
-                        "forms_to_fill_direct": ou_to_fill_direct_count,
-                        "completeness_ratio_direct": formatted_percentage(
-                            part=ou_filled_direct_count, total=ou_to_fill_direct_count
-                        ),
-                    }
-                )
+                if ou_to_fill_with_descendants_count > 0:
+                    res.append(
+                        {
+                            "parent_org_unit": parent_data,
+                            "org_unit_type": row_ou.org_unit_type.as_dict_for_completeness_stats(),
+                            "org_unit": row_ou.as_dict_for_completeness_stats(),
+                            "form": form.as_dict_for_completeness_stats(),
+                            # Those counts target the row org unit and all of its descendants
+                            "forms_filled": ou_filled_with_descendants_count,
+                            "forms_to_fill": ou_to_fill_with_descendants_count,
+                            "completeness_ratio": formatted_percentage(
+                                part=ou_filled_with_descendants_count, total=ou_to_fill_with_descendants_count
+                            ),
+                            # Those counts strictly/directly target the row org unit (no descendants included)
+                            "forms_filled_direct": ou_filled_direct_count,
+                            "forms_to_fill_direct": ou_to_fill_direct_count,
+                            "completeness_ratio_direct": formatted_percentage(
+                                part=ou_filled_direct_count, total=ou_to_fill_direct_count
+                            ),
+                        }
+                    )
         limit = int(request.GET.get("limit", 10))
         page_offset = int(request.GET.get("page", "1"))
         paginator = Paginator(res, limit)

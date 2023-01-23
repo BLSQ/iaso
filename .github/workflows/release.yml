@@ -6,7 +6,7 @@ jobs:
   build:
     runs-on: ubuntu-20.04
     steps:
-      - uses: actions/setup-python@v1
+      - uses: actions/setup-python@v3
         with:
           python-version: 3.6
       - uses: actions/checkout@v3

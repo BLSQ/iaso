@@ -22,9 +22,9 @@ print(len(file_paths_list), len(admin_paths_list))
 # end test code
 
 
-with open("updated_configs.txt", "w") as output_file:
+with open("updated_configs.txt", "a") as output_file:
     print("saving changes")
-    output_file.write(title)
+    output_file.write(title + "\n")
     for index in range(len(file_paths_list)):
         print(file_paths_list[index])
         print(admin_paths_list[index])

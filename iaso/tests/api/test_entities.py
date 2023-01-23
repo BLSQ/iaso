@@ -508,15 +508,17 @@ class EntityAPITestCase(APITestCase):
 
         form_version = FormVersion.objects.create(form=self.form_1, version_id="A_FORM_ID")
 
-
         entity_type = EntityType.objects.create(
             name="Type 1",
             reference_form=self.form_1,
         )
 
         instance = Instance.objects.create(
-            org_unit=self.jedi_council_corruscant, form=self.form_1, period="202002", project=self.project,
-            uuid="9335359a-9f80-422d-997a-68ae7e39d9g3"
+            org_unit=self.jedi_council_corruscant,
+            form=self.form_1,
+            period="202002",
+            project=self.project,
+            uuid="9335359a-9f80-422d-997a-68ae7e39d9g3",
         )
 
         self.form_1.instances.set([instance])

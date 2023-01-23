@@ -1,4 +1,9 @@
-import React, { FunctionComponent, useState, useMemo } from 'react';
+import React, {
+    FunctionComponent,
+    useState,
+    useMemo,
+    useCallback,
+} from 'react';
 
 import {
     useSafeIntl,
@@ -14,6 +19,7 @@ import { Grid, Box, makeStyles } from '@material-ui/core';
 import InputComponent from '../../../../components/forms/InputComponent';
 import { EditIconButton } from '../ModalButtons';
 import { MappingTable } from './MappingTable';
+import { InfoTooltip } from './InfoTooltip';
 
 import { useGetForms } from '../../hooks/requests/useGetForms';
 import { useUpdateWorkflowChange } from '../../hooks/requests/useUpdateWorkflowChange';
@@ -32,6 +38,7 @@ type Props = {
     versionId: string;
     possibleFields: PossibleField[];
     referenceForm?: ReferenceForm;
+    changes?: Change[];
 };
 
 const mapChange = (change?: Change): Mapping[] => {
@@ -58,7 +65,16 @@ const useStyles = makeStyles(theme => ({
             paddingRight: theme.spacing(1),
         },
     },
+    infoTooltip: {
+        position: 'absolute',
+        right: theme.spacing(2),
+        top: theme.spacing(2),
+        cursor: 'pointer',
+    },
 }));
+
+// - Source and target should be of the same type
+// - Cannot have multiple mappings on the same source or target
 
 const Modal: FunctionComponent<Props> = ({
     closeDialog,
@@ -67,11 +83,13 @@ const Modal: FunctionComponent<Props> = ({
     change,
     possibleFields,
     referenceForm,
+    changes,
 }) => {
     const classes: Record<string, string> = useStyles();
     const { formatMessage } = useSafeIntl();
     const [form, setForm] = useState<number | undefined>(change?.form?.id);
-    const { mutate: saveChange } = useUpdateWorkflowChange();
+    const [isTouched, setIsTouched] = useState<boolean>(false);
+    const { mutate: saveChange } = useUpdateWorkflowChange(closeDialog);
     const { mutate: createChange } = useCreateWorkflowChange(
         closeDialog,
         versionId,
@@ -81,7 +99,8 @@ const Modal: FunctionComponent<Props> = ({
     const [mappingArray, setMappingArray] = useState<Mapping[]>(
         mapChange(change),
     );
-    const handleConfirm = () => {
+
+    const handleConfirm = useCallback(() => {
         const mappingObject = {};
         mappingArray.forEach(mapping => {
             if (mapping.target && mapping.source) {
@@ -100,14 +119,33 @@ const Modal: FunctionComponent<Props> = ({
                 mapping: mappingObject,
             });
         }
-    };
+    }, [change?.id, createChange, form, mappingArray, saveChange]);
+
+    const handleChangeForm = useCallback(
+        (_, value) => {
+            const newMappings = mappingArray.map(mapping => ({
+                ...mapping,
+                source: undefined,
+            }));
+            setMappingArray(newMappings);
+            setForm(value);
+        },
+        [mappingArray],
+    );
     const formsList = useMemo(
         () =>
-            forms?.map(f => ({
-                label: f.name,
-                value: f.id,
-            })) || [],
-        [forms],
+            forms
+                // remove already selected forms
+                ?.filter(
+                    f =>
+                        !changes?.find(ch => ch.form.id === f.id) ||
+                        change?.form.id === f.id,
+                )
+                .map(f => ({
+                    label: f.name,
+                    value: f.id,
+                })) || [],
+        [change?.form.id, changes, forms],
     );
 
     const {
@@ -125,6 +163,7 @@ const Modal: FunctionComponent<Props> = ({
         [mappingArray, sourcePossibleFields],
     );
     const allowConfirm =
+        isTouched &&
         isValidMapping &&
         Boolean(form) &&
         mappingArray.length > 0 &&
@@ -145,18 +184,22 @@ const Modal: FunctionComponent<Props> = ({
             cancelMessage={MESSAGES.cancel}
             confirmMessage={MESSAGES.confirm}
             open={isOpen}
-            closeDialog={closeDialog}
+            closeDialog={() => null}
             dataTestId="workflow-change"
             id="workflow-change"
             onClose={() => null}
         >
+            <Box className={classes.infoTooltip}>
+                <InfoTooltip />
+            </Box>
+
             {isFetchingSourcePossibleFields && <LoadingSpinner absolute />}
             <Grid container spacing={2}>
                 <Grid item xs={12} md={5}>
                     <InputComponent
                         type="select"
                         keyValue="forms"
-                        onChange={(_, value) => setForm(value)}
+                        onChange={handleChangeForm}
                         value={form}
                         label={MESSAGES.sourceForm}
                         required
@@ -174,6 +217,7 @@ const Modal: FunctionComponent<Props> = ({
                 </Grid>
                 <Grid item xs={12}>
                     <MappingTable
+                        setIsTouched={setIsTouched}
                         mappingArray={mappingArray}
                         setMappingArray={setMappingArray}
                         sourcePossibleFields={sourcePossibleFields}

@@ -1,6 +1,7 @@
 /* eslint-disable camelcase */
 import { Pagination, UrlParams } from '../../types/table';
 import { EntityType } from '../entities/entityTypes/types/entityType';
+import { FieldType } from '../forms/types/forms';
 
 export type WorkflowParams = UrlParams & {
     entityTypeId: string;
@@ -66,3 +67,8 @@ export type WorkflowVersions = Array<WorkflowVersion>;
 export interface WorkflowVersionsPaginated extends Pagination {
     workflow_versions: WorkflowVersions;
 }
+export type ChangesOption = {
+    label: string;
+    value: string | number;
+    type: FieldType;
+};

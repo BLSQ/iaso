@@ -198,6 +198,15 @@ const MESSAGES = defineMessages({
         id: 'iaso.workflows.targetForm',
         defaultMessage: 'Target form',
     },
+    changesInfo: {
+        id: 'iaso.workflows.changesInfo',
+        defaultMessage: 'Source and target should be of the same type',
+    },
+    changesInfo2: {
+        id: 'iaso.workflows.changesInfo2',
+        defaultMessage:
+            'You cannot have multiple mappings on the same source or target',
+    },
 });
 
 export default MESSAGES;

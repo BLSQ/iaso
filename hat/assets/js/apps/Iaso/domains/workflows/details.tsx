@@ -148,6 +148,7 @@ export const Details: FunctionComponent<Props> = ({ router }) => {
             })),
         );
     }, [followUps, saveFollowUpOrder]);
+
     return (
         <>
             <TopBar
@@ -274,7 +275,8 @@ export const Details: FunctionComponent<Props> = ({ router }) => {
                             <Box m={2} textAlign="right">
                                 <AddChangeModal
                                     versionId={versionId}
-                                    possibleFields={possibleFields}
+                                    changes={workflowVersion?.changes || []}
+                                    possibleFields={possibleFields || []}
                                     referenceForm={
                                         workflowVersion?.reference_form
                                     }

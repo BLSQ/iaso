@@ -8,10 +8,10 @@ const updateWorkflowChange = async (data: Change): Promise<any> =>
     putRequest(`/api/workflowchanges/${data.id}/`, data);
 
 export const useUpdateWorkflowChange = (
-    onSuccess?: () => void,
+    closeDialog: () => void,
 ): UseMutationResult =>
     useSnackMutation({
         mutationFn: (data: Change) => updateWorkflowChange(data),
         invalidateQueryKey: ['workflowVersion'],
-        options: { onSuccess },
+        options: { onSuccess: () => closeDialog() },
     });

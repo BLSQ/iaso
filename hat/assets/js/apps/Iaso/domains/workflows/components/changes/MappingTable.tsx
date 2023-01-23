@@ -5,22 +5,19 @@ import React, {
     SetStateAction,
     Dispatch,
 } from 'react';
-import {
-    useSafeIntl,
-    Table,
-    AddButton,
-    IconButton,
-} from 'bluesquare-components';
+import { useSafeIntl, Table, AddButton } from 'bluesquare-components';
 import { Box, makeStyles } from '@material-ui/core';
 import { cloneDeep } from 'lodash';
 
-import { Mapping } from '../../types';
-import { Column } from '../../../../types/table';
+import { Mapping, ChangesOption } from '../../types';
 import { IntlFormatMessage } from '../../../../types/intl';
-import InputComponent from '../../../../components/forms/InputComponent';
 
 import MESSAGES from '../../messages';
 import { PossibleField } from '../../../forms/types/forms';
+
+import { useGetChangesModalColumns } from '../../config/changes';
+
+import { formatLabel } from '../../../instances/utils';
 
 type Props = {
     mappingArray: Mapping[];
@@ -29,6 +26,7 @@ type Props = {
     targetPossibleFields: PossibleField[];
     isFetchingSourcePossibleFields: boolean;
     form?: number;
+    setIsTouched: Dispatch<SetStateAction<boolean>>;
 };
 const useStyles = makeStyles(theme => ({
     tableContainer: {
@@ -61,6 +59,20 @@ const useStyles = makeStyles(theme => ({
     },
 }));
 
+const useGetOptions = () => {
+    const { formatMessage }: { formatMessage: IntlFormatMessage } =
+        useSafeIntl();
+    const getOptions = (possibleFields: PossibleField[]): ChangesOption[] =>
+        possibleFields.map(field => ({
+            label: `${formatLabel(field)} - ${formatMessage(MESSAGES.type)}: ${
+                field.type
+            }`,
+            value: field.fieldKey,
+            type: field.type,
+        }));
+    return getOptions;
+};
+
 export const MappingTable: FunctionComponent<Props> = ({
     mappingArray,
     setMappingArray,
@@ -68,22 +80,47 @@ export const MappingTable: FunctionComponent<Props> = ({
     targetPossibleFields,
     isFetchingSourcePossibleFields,
     form,
+    setIsTouched,
 }) => {
     const classes = useStyles();
-    const { formatMessage }: { formatMessage: IntlFormatMessage } =
-        useSafeIntl();
+    const getOptions = useGetOptions();
 
     const handleUpdate = useCallback(
-        (key: 'target' | 'source', value: string, index: number) => {
+        (
+            key: 'target' | 'source',
+            value: string | undefined,
+            index: number,
+        ) => {
             const newMappings = cloneDeep(mappingArray);
             newMappings[index] = {
                 ...newMappings[index],
                 [key]: value,
             };
+            // remove target if source is not of the same type
+            if (key === 'source') {
+                const target = targetPossibleFields.find(
+                    possibleField =>
+                        possibleField.fieldKey === mappingArray[index].target,
+                );
+                const source = sourcePossibleFields.find(
+                    possibleField => possibleField.fieldKey === value,
+                );
+                if (target?.type !== source?.type) {
+                    newMappings[index].target = undefined;
+                }
+            }
+            setIsTouched(true);
             setMappingArray(newMappings);
         },
-        [mappingArray, setMappingArray],
+        [
+            mappingArray,
+            setIsTouched,
+            setMappingArray,
+            sourcePossibleFields,
+            targetPossibleFields,
+        ],
     );
+
     const handleAdd = useCallback(() => {
         const newMappings = cloneDeep(mappingArray);
         newMappings.push({
@@ -95,98 +132,32 @@ export const MappingTable: FunctionComponent<Props> = ({
 
     const handleDelete = useCallback(
         (index: number) => {
-            const newMappings = cloneDeep(mappingArray).splice(index + 1, 1);
+            const newMappings = cloneDeep(mappingArray);
+            newMappings.splice(index, 1);
             setMappingArray(newMappings);
         },
         [mappingArray, setMappingArray],
     );
 
     const sourceOptions = useMemo(
-        () =>
-            sourcePossibleFields.map(field => ({
-                label: field.label,
-                value: field.fieldKey,
-            })),
-        [sourcePossibleFields],
-    );
-    const targetOptions = useMemo(
-        () =>
-            targetPossibleFields.map(field => ({
-                label: field.label,
-                value: field.fieldKey,
-            })),
-        [targetPossibleFields],
+        () => getOptions(sourcePossibleFields),
+        [getOptions, sourcePossibleFields],
     );
 
-    const columns: Column[] = [
-        {
-            Header: formatMessage(MESSAGES.source),
-            sortable: false,
-            accessor: 'source',
-            width: 400,
-            Cell: settings => {
-                return (
-                    <InputComponent
-                        withMarginTop={false}
-                        type="select"
-                        clearable={false}
-                        keyValue="source"
-                        onChange={(_, value) =>
-                            handleUpdate('source', value, settings.row.index)
-                        }
-                        value={
-                            !isFetchingSourcePossibleFields
-                                ? settings.value
-                                : undefined
-                        }
-                        labelString=""
-                        required
-                        options={sourceOptions}
-                    />
-                );
-            },
-        },
-        {
-            Header: formatMessage(MESSAGES.target),
-            sortable: false,
-            accessor: 'target',
-            width: 400,
-            Cell: settings => {
-                return (
-                    <InputComponent
-                        withMarginTop={false}
-                        type="select"
-                        clearable={false}
-                        keyValue="target"
-                        onChange={(_, value) =>
-                            handleUpdate('target', value, settings.row.index)
-                        }
-                        value={settings.value}
-                        labelString=""
-                        required
-                        options={targetOptions}
-                    />
-                );
-            },
-        },
-        {
-            Header: formatMessage(MESSAGES.actions),
-            accessor: 'id',
-            sortable: false,
-            resizable: false,
-            width: 90,
-            Cell: settings => {
-                return (
-                    <IconButton
-                        iconSize="small"
-                        onClick={() => handleDelete(settings.row.index)}
-                        icon="delete"
-                        tooltipMessage={MESSAGES.delete}
-                    />
-                );
-            },
-        },
-    ];
+    const targetOptions = useMemo(
+        () => getOptions(targetPossibleFields),
+        [getOptions, targetPossibleFields],
+    );
+
+    const columns = useGetChangesModalColumns({
+        sourceOptions,
+        targetOptions,
+        handleUpdate,
+        handleDelete,
+        mappingArray,
+        isFetchingSourcePossibleFields,
+    });
+
     return (
         <>
             <Box className={classes.tableContainer}>

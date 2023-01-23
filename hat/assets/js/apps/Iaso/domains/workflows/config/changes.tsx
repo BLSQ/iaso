@@ -1,15 +1,17 @@
 /* eslint-disable camelcase */
 import React from 'react';
-import { useSafeIntl } from 'bluesquare-components';
+import { useSafeIntl, IconButton } from 'bluesquare-components';
 
 import MESSAGES from '../messages';
 import { DateCell } from '../../../components/Cells/DateTimeCell';
 import { LinkToForm } from '../../forms/components/LinkToForm';
 import { ChangesActionCell } from '../components/changes/ActionCell';
+import { TargetCell } from '../components/changes/TargetCell';
+import { SourceCell } from '../components/changes/SourceCell';
 
 import { IntlFormatMessage } from '../../../types/intl';
 import { Column } from '../../../types/table';
-import { WorkflowVersionDetail } from '../types';
+import { WorkflowVersionDetail, ChangesOption, Mapping } from '../types';
 import { PossibleField } from '../../forms/types/forms';
 
 export const useGetChangesColumns = (
@@ -79,6 +81,7 @@ export const useGetChangesColumns = (
                                 versionId={versionId}
                                 possibleFields={possibleFields}
                                 referenceForm={workflowVersion?.reference_form}
+                                workflowVersion={workflowVersion}
                             />
                         )}
                     </>
@@ -87,4 +90,92 @@ export const useGetChangesColumns = (
         });
     }
     return columns;
+};
+
+type Props = {
+    sourceOptions: ChangesOption[];
+    targetOptions: ChangesOption[];
+    handleUpdate: (
+        // eslint-disable-next-line no-unused-vars
+        key: 'target' | 'source',
+        // eslint-disable-next-line no-unused-vars
+        value: string,
+        // eslint-disable-next-line no-unused-vars
+        index: number,
+    ) => void;
+    // eslint-disable-next-line no-unused-vars
+    handleDelete: (index: number) => void;
+    mappingArray: Mapping[];
+    isFetchingSourcePossibleFields: boolean;
+};
+
+export const useGetChangesModalColumns = ({
+    sourceOptions,
+    targetOptions,
+    handleUpdate,
+    handleDelete,
+    mappingArray,
+    isFetchingSourcePossibleFields,
+}: Props): Array<Column> => {
+    const { formatMessage }: { formatMessage: IntlFormatMessage } =
+        useSafeIntl();
+    return [
+        {
+            Header: formatMessage(MESSAGES.source),
+            sortable: false,
+            accessor: 'source',
+            width: 400,
+            Cell: settings => {
+                const rowIndex: number = settings.row.index;
+                return (
+                    <SourceCell
+                        sourceOptions={sourceOptions}
+                        handleUpdate={handleUpdate}
+                        rowIndex={rowIndex}
+                        value={settings.value}
+                        isFetchingSourcePossibleFields={
+                            isFetchingSourcePossibleFields
+                        }
+                        mappingArray={mappingArray}
+                    />
+                );
+            },
+        },
+        {
+            Header: formatMessage(MESSAGES.target),
+            sortable: false,
+            accessor: 'target',
+            width: 400,
+            Cell: settings => {
+                const rowIndex: number = settings.row.index;
+                return (
+                    <TargetCell
+                        targetOptions={targetOptions}
+                        sourceOptions={sourceOptions}
+                        handleUpdate={handleUpdate}
+                        rowIndex={rowIndex}
+                        value={settings.value}
+                        mappingArray={mappingArray}
+                    />
+                );
+            },
+        },
+        {
+            Header: formatMessage(MESSAGES.actions),
+            accessor: 'id',
+            sortable: false,
+            resizable: false,
+            width: 90,
+            Cell: settings => {
+                return (
+                    <IconButton
+                        iconSize="small"
+                        onClick={() => handleDelete(settings.row.index)}
+                        icon="delete"
+                        tooltipMessage={MESSAGES.delete}
+                    />
+                );
+            },
+        },
+    ];
 };

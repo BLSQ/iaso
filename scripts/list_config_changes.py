@@ -14,10 +14,11 @@ if len(file_paths_list) == 0:
     file_paths_list = ["test file path"]
 if len(admin_paths_list) == 0:
     file_paths_list = ["test admin path"]
-
+print(file_paths_list, admin_paths_list)
+print(len(file_paths_list), len(file_paths_list))
 # end test code
 
-if len(file_paths_list) > 0 and len(admin_paths_list) > 0:
+if len(file_paths_list) > 0:
     print("file detected")
     with open(sys.argv[2] + ".txt", "w") as output_file:
         print("saving changes")

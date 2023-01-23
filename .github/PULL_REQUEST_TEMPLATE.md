@@ -24,6 +24,10 @@ Add here the json configs to update using the format (in that order):
 `file:<path_to_file>`
 `admin: <path_to_config_in_django_admin>`
 
+### Add configs to staging 
+[ ] staging
+[ ] campaigns staging
+
 
 ## How to test
 

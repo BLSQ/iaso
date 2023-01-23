@@ -8,8 +8,11 @@ file_regexp = re.compile("(?<!`file:)(?<=file:).+(?=\n)")
 admin_regexp = re.compile("(?<!`admin:)(?<=admin:).+(?=\n)")
 file_paths_list = re.findall(file_regexp, sys.argv[1])
 admin_paths_list = re.findall(admin_regexp, sys.argv[1])
+title = sys.argv[2]
 
 # test code
+if not title:
+    title = "title"
 if len(file_paths_list) == 0:
     file_paths_list = ["test file path"]
 if len(admin_paths_list) == 0:
@@ -21,7 +24,7 @@ print(len(file_paths_list), len(admin_paths_list))
 
 with open("updated_configs.txt", "w") as output_file:
     print("saving changes")
-    output_file.write(sys.argv[2])
+    output_file.write()
     for index in range(len(file_paths_list)):
         print(file_paths_list[index])
         print(admin_paths_list[index])

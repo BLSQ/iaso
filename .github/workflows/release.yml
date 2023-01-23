@@ -13,7 +13,15 @@ jobs:
       - name: "Test printing PR body"
         run: |
            python ./scripts/list_config_changes.py "${{github.event.pull_request.body}}" "${{github.event.pull_request.title}}"
+      name: "Commit file"
+      run: |
+           git config --local user.name  ${{ github.actor }}
            git add .
            git commit -m "auto-update config list"
-           git fetch origin main
-           git push
+
+      - name: Push changes  # push the output folder to your repo
+        uses: ad-m/github-push-action@gh_action_for_config
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          force: true
+       

@@ -18,7 +18,9 @@ if len(admin_paths_list) == 0:
 # end test code
 
 if len(file_paths_list) > 0 and len(admin_paths_list) > 0:
+    print("file detected")
     with open(sys.argv[2] + ".txt", "w") as output_file:
+        print("saving changes")
         for index in range(len(file_paths_list)):
             print(file_paths_list[index])
             print(admin_paths_list[index])

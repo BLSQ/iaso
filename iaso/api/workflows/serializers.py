@@ -66,10 +66,14 @@ class WorkflowChangeCreateSerializer(serializers.Serializer):
 
         # Checking that user has access to the form
         form = Form.objects.get(pk=form_id)
+        can_access = False
         for p in form.projects.all():
-            if p.account != user.iaso_profile.account:
-                raise serializers.ValidationError(f"User doesn't have access to form {form_id}")
+            if p.account == user.iaso_profile.account:
+                can_access = True
+                break
 
+        if not can_access:
+            raise serializers.ValidationError(f"User doesn't have access to form {form_id}")
         # Checking that the form is not the reference form
         version_id = self.context["version_id"]
         wfv = get_object_or_404(WorkflowVersion, pk=version_id)
@@ -85,32 +89,39 @@ class WorkflowChangeCreateSerializer(serializers.Serializer):
         version_id = self.context["version_id"]
         wfv = get_object_or_404(WorkflowVersion, pk=version_id)
         reference_form = wfv.reference_form
-        reference_form_latest = reference_form.latest_version
         source_form = Form.objects.get(pk=self.initial_data["form"])
-        source_form_latest = source_form.latest_version
 
-        s_questions = source_form_latest.questions_by_name()
-        r_questions = reference_form_latest.questions_by_name()
+        s_questions = source_form.possible_fields
+        r_questions = reference_form.possible_fields
 
         # We cannot have two identical keys mapping to the same value because it's a dictionary
         # But we can have two different keys mapping to the same value, we need to check for it
 
-        print("mapping.values", mapping.values())
-        print("set(mapping.values())", list(set(mapping.values())))
-        print("same?", len(mapping.values()) == len(list(set(mapping.values()))))
+        def find_question_by_name(name, questions):
+            for q in questions:
+                if q["name"] == name:
+                    return q
+            return None
+
+        print("s_questions", s_questions)
+        print("r_questions", r_questions)
+
         if len(mapping.values()) != len(list(set(mapping.values()))):
             raise serializers.ValidationError(f"Mapping cannot have two identical values")
 
         for key, value in mapping.items():
-            if value in s_questions:
-                s_type = s_questions[value]["type"]
-            else:
-                raise serializers.ValidationError(f"Question {value} does not exist in source form")
 
-            if key in r_questions:
-                r_type = r_questions[key]["type"]
+            q = find_question_by_name(value, s_questions)
+            if q is None:
+                raise serializers.ValidationError(f"Question {value} does not exist in source form")
             else:
-                raise serializers.ValidationError(f"Question {key} does not exist in reference form")
+                s_type = q["type"]
+
+            q = find_question_by_name(key, r_questions)
+            if q is None:
+                raise serializers.ValidationError(f"Question {value} does not exist in reference form")
+            else:
+                r_type = q["type"]
 
             if s_type != r_type:
                 raise serializers.ValidationError(f"Question {key} and {value} do not have the same type")
@@ -141,6 +152,8 @@ class WorkflowChangeCreateSerializer(serializers.Serializer):
 
     def update(self, instance, validated_data):
         instance.mapping = validated_data["mapping"]
+        form = get_object_or_404(Form, pk=validated_data["form"])
+        instance.form = form
         instance.save()
         return instance
 

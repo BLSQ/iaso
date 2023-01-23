@@ -72,7 +72,7 @@ const tasksTableColumns = (formatMessage, killTaskAction) => [
         Header: formatMessage(MESSAGES.launcher),
         sortable: true,
         accessor: 'launcher',
-        Cell: settings => settings.value?.username,
+        Cell: settings => settings.value?.username ?? null,
     },
     {
         Header: formatMessage(MESSAGES.timeCreated),

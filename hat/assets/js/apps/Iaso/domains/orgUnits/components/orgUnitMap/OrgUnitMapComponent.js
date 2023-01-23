@@ -446,7 +446,10 @@ class OrgUnitMapComponent extends Component {
                                     });
                                 }}
                             />
-                            {userHasPermission('iaso_submissions') && (
+                            {userHasPermission(
+                                'iaso_submissions',
+                                this.props.currentUser,
+                            ) && (
                                 <FormsFilterComponent
                                     currentOrgUnit={currentOrgUnit}
                                     formsSelected={formsSelected}

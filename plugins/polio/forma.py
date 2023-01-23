@@ -219,8 +219,12 @@ def handle_country(forms, country, campaign_qs) -> DataFrame:
 
 
 def get_content_for_config(config):
+    print("?????")
     return get_url_content(
-        url=config["url"], login=config["login"], password=config["password"], minutes=config.get("minutes", 120)
+        url=config["url"] + "?date_created__month__lte=24",
+        login=config["login"],
+        password=config["password"],
+        minutes=config.get("minutes", 120),
     )
 
 

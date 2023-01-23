@@ -1096,7 +1096,10 @@ def handle_ona_request_with_key(request, key, country_id=None):
         if country_id is not None and config.get("country_id", None) != cid:
             continue
         forms = get_url_content(
-            url=config["url"] + "?date_created__month__lte=24", login=config["login"], password=config["password"], minutes=config.get("minutes", 60)
+            url=config["url"] + "?date_created__month__lte=24",
+            login=config["login"],
+            password=config["password"],
+            minutes=config.get("minutes", 60),
         )
         if not forms:
             emails = Config.objects.filter(slug="vaccines_emails")
@@ -1194,6 +1197,7 @@ class VaccineStocksViewSet(viewsets.ViewSet):
     """
     Endpoint used to transform Vaccine Stocks data from existing ODK forms stored in ONA.
     sample config: [{"url": "https://afro.who.int/api/v1/data/yyy", "login": "d", "country": "hyrule", "password": "zeldarules", "country_id": 2115781}]
+     A notification email can be automatically send for in case of login error by creating a config into polio under the name vaccines_emails.  The content must be an array of emails.
     """
 
     @method_decorator(cache_page(60 * 60 * 1))  # cache result for one hour

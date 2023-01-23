@@ -57,7 +57,7 @@ const ProtectedRoute = ({
                 allRoutes,
             );
             if (newBaseUrl) {
-                dispatch(redirectTo(newBaseUrl, {}));
+                dispatch(redirectToReplace(newBaseUrl, {}));
             }
         }
     }, [

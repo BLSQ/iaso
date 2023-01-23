@@ -13,7 +13,7 @@ admin_paths_list = re.findall(admin_regexp, sys.argv[1])
 if len(file_paths_list) == 0:
     file_paths_list = ["test file path"]
 if len(admin_paths_list) == 0:
-    file_paths_list = ["test admin path"]
+    admin_paths_list = ["test admin path"]
 print(file_paths_list, admin_paths_list)
 print(len(file_paths_list), len(file_paths_list))
 # end test code

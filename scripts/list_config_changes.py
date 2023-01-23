@@ -24,7 +24,7 @@ print(len(file_paths_list), len(admin_paths_list))
 
 with open("updated_configs.txt", "w") as output_file:
     print("saving changes")
-    output_file.write()
+    output_file.write(title)
     for index in range(len(file_paths_list)):
         print(file_paths_list[index])
         print(admin_paths_list[index])

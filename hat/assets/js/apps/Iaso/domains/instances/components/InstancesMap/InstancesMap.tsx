@@ -23,19 +23,20 @@ import { useShowWarning } from './useShowWarning';
 import { useResetMapReducerOnUnmount } from './useResetMapReducerOnUnmount';
 import { setCurrentInstance } from '../../actions';
 import { fetchInstanceDetail } from '../../../../utils/requests';
+import { Instance } from '../../types/instance';
 
 const boundsOptions = { padding: [50, 50] };
 
 type Props = {
-    instances: any;
-    fetching: any;
+    instances: Instance[];
+    fetching: boolean;
 };
 
 export const InstancesMap: FunctionComponent<Props> = ({
     instances,
     fetching,
 }) => {
-    const map: any = useRef<any>();
+    const map: any = useRef();
     // @ts-ignore
     const isClusterActive = useSelector(state => state.map.isClusterActive);
     // @ts-ignore
@@ -57,7 +58,7 @@ export const InstancesMap: FunctionComponent<Props> = ({
     const fetchAndDispatchDetail = useCallback(
         instance => {
             dispatchInstance(null);
-            fetchInstanceDetail(dispatch, instance.id).then(i =>
+            fetchInstanceDetail(dispatch, instance.id).then((i: Instance) =>
                 dispatchInstance(i),
             );
         },

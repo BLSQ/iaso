@@ -9,6 +9,10 @@ on:
 
 jobs:
   build:
+    # Uncomment when deploying in prod
+    # Run jobs only if pr has been merged
+    # if_merged:
+    #   if: github.event.pull_request.merged == true
     runs-on: ubuntu-20.04
     steps:
       - uses: actions/setup-python@v3

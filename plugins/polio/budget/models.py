@@ -162,7 +162,7 @@ class MailTemplate(models.Model):
         if transition.key != "override":
             node = workflow.get_node_by_key(transition.to_node)
         else:
-            node_key = request.data["new_state_key"].split(',')[0]
+            node_key = request.data["new_state_key"].split(",")[0]
             node = workflow.get_node_by_key(node_key)
 
         attachments = []

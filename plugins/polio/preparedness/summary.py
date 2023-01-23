@@ -3,7 +3,7 @@ from datetime import date, timedelta
 from logging import getLogger
 
 from django.core.cache import cache
-from gspread.utils import extract_id_from_url
+from gspread.utils import extract_id_from_url  # type: ignore
 
 from plugins.polio.models import SpreadSheetImport, Round, Campaign
 from plugins.polio.preparedness.calculator import avg

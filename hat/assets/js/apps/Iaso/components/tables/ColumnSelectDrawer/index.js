@@ -10,15 +10,14 @@ import {
     Divider,
     InputBase,
     Tooltip,
+    Button,
+    Box,
 } from '@material-ui/core';
 import Close from '@material-ui/icons/Close';
 import ArrowBack from '@material-ui/icons/ArrowBack';
+import ViewColumnIcon from '@material-ui/icons/ViewColumn';
 
-import {
-    IconButton as IconButtonComponent,
-    BlockPlaceholder,
-    injectIntl,
-} from 'bluesquare-components';
+import { BlockPlaceholder, injectIntl } from 'bluesquare-components';
 
 import { MESSAGES } from './messages';
 import { styles } from './styles';
@@ -83,13 +82,17 @@ const ColumnsSelectDrawer = ({
     const displayedOptions = filterResults(state.searchString, options);
     return (
         <>
-            <IconButtonComponent
+            <Button
+                variant="contained"
+                color="primary"
                 onClick={toggleDrawer(true)}
                 id="ColumnsSelectDrawer-toggleDrawer"
-                icon="filter-list"
-                color="white"
-                tooltipMessage={MESSAGES.columnSelectTooltip}
-            />
+            >
+                <Box mr={1} display="inline-flex">
+                    <ViewColumnIcon />
+                </Box>
+                {formatMessage(MESSAGES.columnSelect)}
+            </Button>
             <Drawer
                 anchor="right"
                 open={state.open}

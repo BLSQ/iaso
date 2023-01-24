@@ -13,7 +13,7 @@ const MESSAGES = defineMessages({
         id: 'blsq.table.label.resetSearch',
         defaultMessage: 'Empty search',
     },
-    columnSelectTooltip: {
+    columnSelect: {
         id: 'blsq.table.columnSelect.tooltip',
         defaultMessage: 'Select visible columns',
     },

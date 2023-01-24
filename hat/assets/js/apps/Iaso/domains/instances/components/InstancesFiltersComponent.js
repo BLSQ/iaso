@@ -46,6 +46,7 @@ import { useGetOrgUnit } from '../../orgUnits/components/TreeView/requests';
 
 import { LocationLimit } from '../../../utils/map/LocationLimit';
 import { UserOrgUnitRestriction } from './UserOrgUnitRestriction.tsx';
+import { ColumnSelect } from './ColumnSelect.tsx';
 
 export const instanceStatusOptions = INSTANCE_STATUSES.map(status => ({
     value: status,
@@ -67,6 +68,13 @@ const InstancesFiltersComponent = ({
     onSearch,
     possibleFields,
     setFormIds,
+    periodType,
+    setTableColumns,
+    baseUrl,
+    labelKeys,
+    formDetails,
+    tableColumns,
+    tab,
 }) => {
     const dispatch = useDispatch();
     const { formatMessage } = useSafeIntl();
@@ -407,6 +415,23 @@ const InstancesFiltersComponent = ({
                     alignItems="center"
                 >
                     <Box mt={isLargeLayout ? 0 : 2}>
+                        {tab === 'list' && (
+                            <Box mr={2} display="inline-block">
+                                <ColumnSelect
+                                    params={params}
+                                    possibleFields={possibleFields}
+                                    formIds={formIds}
+                                    periodType={periodType}
+                                    setTableColumns={newCols =>
+                                        setTableColumns(newCols)
+                                    }
+                                    baseUrl={baseUrl}
+                                    labelKeys={labelKeys}
+                                    formDetails={formDetails}
+                                    tableColumns={tableColumns}
+                                />
+                            </Box>
+                        )}
                         <Button
                             disabled={
                                 !isInstancesFilterUpdated ||
@@ -433,12 +458,22 @@ const InstancesFiltersComponent = ({
 
 InstancesFiltersComponent.defaultProps = {
     possibleFields: [],
+    periodType: undefined,
+    formDetails: undefined,
 };
 
 InstancesFiltersComponent.propTypes = {
     params: PropTypes.object.isRequired,
     onSearch: PropTypes.func.isRequired,
+    setFormIds: PropTypes.func.isRequired,
+    setTableColumns: PropTypes.func.isRequired,
+    baseUrl: PropTypes.string.isRequired,
+    tab: PropTypes.string.isRequired,
+    tableColumns: PropTypes.array.isRequired,
+    labelKeys: PropTypes.array.isRequired,
+    periodType: PropTypes.string,
     possibleFields: PropTypes.array,
+    formDetails: PropTypes.object,
 };
 
 export default InstancesFiltersComponent;

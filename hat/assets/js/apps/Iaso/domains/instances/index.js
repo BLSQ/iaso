@@ -45,8 +45,6 @@ import { TableWithDeepLink } from '../../components/tables/TableWithDeepLink';
 import { PaginatedInstanceFiles } from './components/PaginatedInstancesFiles';
 import { useGetPossibleFields } from '../forms/hooks/useGetPossibleFields.ts';
 
-import { ColumnSelect } from './components/ColumnSelect.tsx';
-
 const baseUrl = baseUrls.instances;
 
 const useStyles = makeStyles(theme => ({
@@ -155,7 +153,6 @@ const Instances = ({ params }) => {
         () => makeFullModal(CreateReAssignDialogComponent, AddButtonComponent),
         [],
     );
-
     return (
         <section className={classes.relativeContainer}>
             <TopBar
@@ -164,13 +161,19 @@ const Instances = ({ params }) => {
                 handleChangeTab={newTab => handleChangeTab(newTab)}
                 formIds={formIds}
             />
-
             <Box className={classes.containerFullHeightPadded}>
                 <InstancesFiltersComponent
                     params={params}
                     onSearch={onSearch}
                     possibleFields={possibleFields}
                     setFormIds={setFormIds}
+                    periodType={periodType}
+                    setTableColumns={newCols => setTableColumns(newCols)}
+                    baseUrl={baseUrl}
+                    labelKeys={labelKeys}
+                    formDetails={formDetails}
+                    tableColumns={tableColumns}
+                    tab={tab}
                 />
                 {tab === 'list' && (
                     <Grid
@@ -227,19 +230,6 @@ const Instances = ({ params }) => {
                 )}
                 {tab === 'list' && tableColumns.length > 0 && (
                     <>
-                        <ColumnSelect
-                            params={params}
-                            periodType={periodType}
-                            setTableColumns={newCols =>
-                                setTableColumns(newCols)
-                            }
-                            baseUrl={baseUrl}
-                            labelKeys={labelKeys}
-                            possibleFields={possibleFields}
-                            formDetails={formDetails}
-                            tableColumns={tableColumns}
-                            formIds={formIds}
-                        />
                         <TableWithDeepLink
                             data={data?.instances ?? []}
                             pages={data?.pages}

@@ -396,6 +396,22 @@ class CompletenessStatsAPITestCase(APITestCase):
         result = json["results"][0]
         self.assertTrue(result["has_multiple_direct_submissions"])
 
+    def test_non_valid_ous_not_counted(self):
+        """Make sure that non-valid ous are not counted in the counters for OU+children. See IA-1788"""
+        self.client.force_authenticate(self.user)
+        response = self.client.get(f"/api/completeness_stats/?parent_org_unit_id=3&form_id={self.form_hs_4.id}")
+        json = response.json()
+        self.assertEqual(
+            json["results"][0]["forms_to_fill"], 2
+        )  # Because AS A.B.C is not included since its status is new
+
+    def test_non_valid_ous_not_listed(self):
+        """Make sure that non-valid ous are not listed in the results"""
+        self.client.force_authenticate(self.user)
+        response = self.client.get(f"/api/completeness_stats/?parent_org_unit_id=5&form_id={self.form_hs_4.id}")
+        json = response.json()
+        self.assertEqual(len(json["results"]), 2)  # Because AS A.B.C is not included since its status is new
+
     def test_no_rows_if_form_not_for_ou_and_descendants(self):
         """
         The API exclude the rows that qre not relevant because the form is not for the OU and its descendants.

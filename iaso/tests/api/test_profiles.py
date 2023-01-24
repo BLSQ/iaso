@@ -1,5 +1,6 @@
 import typing
 
+from django.contrib.auth.models import User
 from django.contrib.gis.geos import Polygon, Point, MultiPolygon
 from django.contrib.sites.models import Site
 from django.test import tag
@@ -235,12 +236,39 @@ class ProfileAPITestCase(APITestCase):
         self.assertEqual(profile.account, self.ghi)
 
         profile_id = profile.id
-        user_id = user.id
-        response = self.client.delete(f"/api/profiles/{profile_id}/")
 
+        # check delete has worked
+        response = self.client.delete(f"/api/profiles/{profile_id}/")
         self.assertEqual(response.status_code, 200)
-        self.assertQuerysetEqual(m.User.objects.filter(id=user_id), [])
-        self.assertQuerysetEqual(m.Profile.objects.filter(id=profile_id), [])
+
+        # check deleted user is not in the list response
+        response = self.client.get("/api/profiles/")
+        self.assertNotIn(str(response.json()["profiles"]), "unittest_user_name")
+
+        # reload user and profile from db
+        user = User.objects.get(pk=user.pk)
+        profile = Profile.objects.get(pk=profile.pk)
+
+        # check profile/user.is_active are set to False and the actual user is not deleted
+        self.assertEqual(user.is_active, False)
+        self.assertEqual(profile.is_active, False)
+
+        # check that the user can no longer log in / retrieve a token while deactivated
+        response = self.client.post(
+            "/api/token/", data={"username": "unittest_user_name", "password": "unittest_password"}
+        )
+        self.assertEqual(response.status_code, 401)
+
+        # reactivate user and check that user can login again
+        # FIXME: We should probably create an endpoint to reactivate users and profiles
+        user.is_active = True
+        profile.is_active = True
+        user.save()
+        profile.save()
+        response = self.client.post(
+            "/api/token/", data={"username": "unittest_user_name", "password": "unittest_password"}
+        )
+        self.assertEqual(response.status_code, 200)
 
     def test_create_profile_with_org_units_and_perms(self):
         self.client.force_authenticate(self.jim)

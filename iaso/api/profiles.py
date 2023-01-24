@@ -53,7 +53,7 @@ class ProfilesViewSet(viewsets.ViewSet):
 
     def get_queryset(self):
         account = self.request.user.iaso_profile.account
-        return Profile.objects.filter(account=account)
+        return Profile.objects.filter(account=account, is_active=True)
 
     def list(self, request):
         limit = request.GET.get("limit", None)
@@ -309,8 +309,10 @@ class ProfilesViewSet(viewsets.ViewSet):
     def delete(self, request, pk=None):
         profile = get_object_or_404(self.get_queryset(), id=pk)
         user = profile.user
-        user.delete()
-        profile.delete()
+        user.is_active = False
+        profile.is_active = False
+        user.save()
+        profile.save()
         return Response(True)
 
     CREATE_PASSWORD_MESSAGE_EN = """Hello,

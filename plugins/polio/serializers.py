@@ -608,12 +608,25 @@ class CampaignSerializer(serializers.ModelSerializer):
 
         campaign.grouped_campaigns.set(grouped_campaigns)
 
+        # noinspection DuplicatedCode
         for scope in campaign_scopes:
             vaccine = scope.get("vaccine")
             org_units = scope.get("group", {}).get("org_units")
             scope, created = campaign.scopes.get_or_create(vaccine=vaccine)
+            source_version_id = None
+            name = f"scope for campaign {campaign.obr_name} - {vaccine}"
+            if org_units:
+                source_version_ids = set([ou.version_id for ou in org_units])
+                if len(source_version_ids) != 1:
+                    raise serializers.ValidationError("All orgunit should be in the same source version")
+                source_version_id = list(source_version_ids)[0]
             if not scope.group:
-                scope.group = Group.objects.create(name="hidden roundScope")
+                scope.group = Group.objects.create(name=name, source_version_id=source_version_id)
+            else:
+                scope.group.source_version_id = source_version_id
+                scope.group.name = name
+                scope.group.save()
+
             scope.group.org_units.set(org_units)
 
         for round_data in rounds:
@@ -621,14 +634,30 @@ class CampaignSerializer(serializers.ModelSerializer):
             round_serializer = RoundSerializer(data={**round_data, "campaign": campaign.id})
             round_serializer.is_valid(raise_exception=True)
             round = round_serializer.save()
+
             for scope in scopes:
+
                 vaccine = scope.get("vaccine")
                 org_units = scope.get("group", {}).get("org_units")
+                source_version_id = None
+                if org_units:
+                    source_version_ids = set([ou.version_id for ou in org_units])
+                    if len(source_version_ids) != 1:
+                        raise serializers.ValidationError("All orgunit should be in the same source version")
+                    source_version_id = list(source_version_ids)[0]
+                name = f"scope for round {round.number} campaign {campaign.obr_name} - {vaccine}"
                 scope, created = round.scopes.get_or_create(vaccine=vaccine)
                 if not scope.group:
-                    scope.group = Group.objects.create(name="hidden roundScope")
+                    scope.group = Group.objects.create(name=name)
+                else:
+                    scope.group.source_version_id = source_version_id
+                    scope.group.name = name
+                    scope.group.save()
+
                 scope.group.org_units.set(org_units)
 
+        campaign.update_geojson_field()
+        campaign.save()
         log_campaign_modification(campaign, None, self.context["request"].user)
         return campaign
 
@@ -641,8 +670,20 @@ class CampaignSerializer(serializers.ModelSerializer):
             vaccine = scope.get("vaccine")
             org_units = scope.get("group", {}).get("org_units")
             scope, created = instance.scopes.get_or_create(vaccine=vaccine)
+            source_version_id = None
+            name = f"scope for campaign {instance.obr_name} - {vaccine}"
+            if org_units:
+                source_version_ids = set([ou.version_id for ou in org_units])
+                if len(source_version_ids) != 1:
+                    raise serializers.ValidationError("All orgunit should be in the same source version")
+                source_version_id = list(source_version_ids)[0]
             if not scope.group:
-                scope.group = Group.objects.create(name="hidden roundScope")
+                scope.group = Group.objects.create(name=name, source_version_id=source_version_id)
+            else:
+                scope.group.source_version_id = source_version_id
+                scope.group.name = name
+                scope.group.save()
+
             scope.group.org_units.set(org_units)
 
         round_instances = []
@@ -669,13 +710,27 @@ class CampaignSerializer(serializers.ModelSerializer):
             for scope in scopes:
                 vaccine = scope.get("vaccine")
                 org_units = scope.get("group", {}).get("org_units")
+                source_version_id = None
+                if org_units:
+                    source_version_ids = set([ou.version_id for ou in org_units])
+                    if len(source_version_ids) != 1:
+                        raise serializers.ValidationError("All orgunit should be in the same source version")
+                    source_version_id = list(source_version_ids)[0]
+                name = f"scope for round {round_instance.number} campaign {instance.obr_name} - {vaccine}"
                 scope, created = round_instance.scopes.get_or_create(vaccine=vaccine)
                 if not scope.group:
-                    scope.group = Group.objects.create(name="hidden roundScope")
+                    scope.group = Group.objects.create(name=name)
+                else:
+                    scope.group.source_version_id = source_version_id
+                    scope.group.name = name
+                    scope.group.save()
+
                 scope.group.org_units.set(org_units)
         instance.rounds.set(round_instances)
 
         campaign = super().update(instance, validated_data)
+        campaign.update_geojson_field()
+        campaign.save()
 
         log_campaign_modification(campaign, old_campaign_dump, self.context["request"].user)
         return campaign
@@ -685,8 +740,109 @@ class CampaignSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Campaign
-        fields = "__all__"
+        # TODO in the future specify the fields that need to be returned so we can remove the deprecated fields
+        # fields = "__all__"
+        exclude = ["geojson"]
+
         read_only_fields = ["last_surge", "preperadness_sync_status", "creation_email_send_at", "group"]
+
+
+class ListCampaignSerializer(CampaignSerializer):
+    "This serializer contains juste enough data for the List view in the web ui"
+
+    class NestedListRoundSerializer(RoundSerializer):
+        class Meta:
+            model = Round
+            fields = [
+                "id",
+                "number",
+                "started_at",
+                "ended_at",
+            ]
+
+    rounds = NestedListRoundSerializer(many=True, required=False)
+
+    class Meta:
+        model = Campaign
+        fields = [
+            "id",
+            "epid",
+            "obr_name",
+            "account",
+            "cvdpv2_notified_at",
+            "top_level_org_unit_name",
+            "top_level_org_unit_id",
+            "rounds",
+            "general_status",
+            "grouped_campaigns",
+        ]
+        read_only_fields = fields
+
+
+class CalendarCampaignSerializer(CampaignSerializer):
+    """This serializer contains juste enough data for the Calendar view in the web ui. Read only.
+    Used by both anonymous and non anonymous user"""
+
+    class NestedListRoundSerializer(RoundSerializer):
+        class NestedScopeSerializer(RoundScopeSerializer):
+            class NestedGroupSerializer(GroupSerializer):
+                class Meta:
+                    model = Group
+                    fields = ["id"]
+
+            class Meta:
+                model = RoundScope
+                fields = ["group", "vaccine"]
+
+            group = NestedGroupSerializer()
+
+        class Meta:
+            model = Round
+            fields = [
+                "id",
+                "number",
+                "started_at",
+                "ended_at",
+                "scopes",
+            ]
+
+    class NestedScopeSerializer(CampaignScopeSerializer):
+        class NestedGroupSerializer(GroupSerializer):
+            class Meta:
+                model = Group
+                fields = ["id"]
+
+        class Meta:
+            model = CampaignScope
+            fields = ["group", "vaccine"]
+
+        group = NestedGroupSerializer()
+
+    rounds = NestedListRoundSerializer(many=True, required=False)
+    scopes = NestedScopeSerializer(many=True, required=False)
+
+    class Meta:
+        model = Campaign
+        fields = [
+            "id",
+            "epid",
+            "obr_name",
+            "account",
+            "cvdpv2_notified_at",
+            "top_level_org_unit_name",
+            "top_level_org_unit_id",
+            "rounds",
+            "is_preventive",
+            "general_status",
+            "grouped_campaigns",
+            "separate_scopes_per_round",
+            "scopes",
+            # displayed in RoundPopper
+            "risk_assessment_status",
+            "budget_status",
+            "vaccines",
+        ]
+        read_only_fields = fields
 
 
 class SmallCampaignSerializer(CampaignSerializer):

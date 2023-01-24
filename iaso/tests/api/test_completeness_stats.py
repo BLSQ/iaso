@@ -256,12 +256,12 @@ class CompletenessStatsAPITestCase(APITestCase):
         self.client.force_authenticate(self.user)
 
         # We request a form/OU combination that has no forms to fill.
-        response = self.client.get(f"/api/completeness_stats/?org_unit_id=3&form_id={self.form_hs_2.id}")
+        response = self.client.get(f"/api/completeness_stats/?org_unit_id=2&form_id={self.form_hs_2.id}")
         json = response.json()
         # 0 forms to fill: the percentage should be returned as N/A and not as 0% or as a division error :)
         row = json["results"][0]
-        self.assertEqual(row["forms_to_fill"], 0)
-        self.assertEqual(row["completeness_ratio"], "N/A")
+        self.assertEqual(row["forms_to_fill_direct"], 0)
+        self.assertEqual(row["completeness_ratio_direct"], "N/A")
 
     def test_counts_include_current_ou_and_children(self):
         """The forms_to_fill/forms_filled counts include the forms for the OU and all its children"""
@@ -377,3 +377,14 @@ class CompletenessStatsAPITestCase(APITestCase):
         response = self.client.get(f"/api/completeness_stats/?parent_org_unit_id=5&form_id={self.form_hs_4.id}")
         json = response.json()
         self.assertEqual(len(json["results"]), 2)  # Because AS A.B.C is not included since its status is new
+
+    def test_no_rows_if_form_not_for_ou_and_descendants(self):
+        """
+        The API exclude the rows that qre not relevant because the form is not for the OU and its descendants.
+
+        Those lines would have 0/0 in the "count with descendants" column and would pollute the table.
+        """
+        self.client.force_authenticate(self.user)
+        response = self.client.get(f"/api/completeness_stats/?form_id={self.form_hs_4.id}&parent_org_unit_id=2")
+        json = response.json()
+        self.assertEqual(json["results"], [])

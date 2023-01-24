@@ -16,10 +16,11 @@ import {
     // @ts-ignore
     SortableTable,
     // @ts-ignore
-    SortableList,
+    useHumanReadableJsonLogic,
 } from 'bluesquare-components';
-import { Box, Grid, makeStyles } from '@material-ui/core';
+import { Box, Grid, makeStyles, Button } from '@material-ui/core';
 import { useDispatch } from 'react-redux';
+import orderBy from 'lodash/orderBy';
 import TopBar from '../../components/nav/TopBarComponent';
 import MESSAGES from './messages';
 
@@ -28,6 +29,13 @@ import { redirectToReplace } from '../../routing/actions';
 import { baseUrls } from '../../constants/urls';
 
 import { useGetWorkflowVersion } from './hooks/requests/useGetWorkflowVersions';
+import {
+    useGetQueryBuildersFields,
+    useGetQueryBuilderListToReplace,
+} from './hooks/queryBuilder';
+
+import { useGetFormDescriptor } from './hooks/requests/useGetFormDescriptor';
+import { useBulkUpdateWorkflowFollowUp } from './hooks/requests/useBulkUpdateWorkflowFollowUp';
 
 import {
     WorkflowVersionDetail,
@@ -36,11 +44,13 @@ import {
 } from './types/workflows';
 
 import { WorkflowBaseInfo } from './components/WorkflowBaseInfo';
-import { SortableItem } from './components/SortableItem';
+import { FollowUpsTable } from './components/FollowUpsTable';
+import { AddFollowUpsModal } from './components/FollowUpsModal';
 
 import WidgetPaper from '../../components/papers/WidgetPaperComponent';
 import { TableWithDeepLink } from '../../components/tables/TableWithDeepLink';
 import { useGetChangesColumns, useGetFollowUpsColumns } from './config';
+import { useGetPossibleFields } from '../forms/hooks/useGetPossibleFields';
 
 type Router = {
     goBack: () => void;
@@ -62,6 +72,12 @@ export const Details: FunctionComponent<Props> = ({ router }) => {
     const { params } = router;
     const classes: Record<string, string> = useStyles();
     const [followUps, setFollowUps] = useState<FollowUps[]>([]);
+
+    const { mutate: saveFollowUpOrder } = useBulkUpdateWorkflowFollowUp(() =>
+        setIsFollowUpOrderChange(false),
+    );
+    const [isFollowUpOrderChange, setIsFollowUpOrderChange] =
+        useState<boolean>(false);
     const { entityTypeId, versionId } = params;
     const { formatMessage } = useSafeIntl();
     const goBack = useGoBack(router, baseUrls.workflows, { entityTypeId });
@@ -69,7 +85,7 @@ export const Details: FunctionComponent<Props> = ({ router }) => {
     const dispatch = useDispatch();
 
     const {
-        data: workflow,
+        data: workflowVersion,
         isLoading,
     }: {
         data?: WorkflowVersionDetail;
@@ -77,22 +93,61 @@ export const Details: FunctionComponent<Props> = ({ router }) => {
     } = useGetWorkflowVersion(versionId);
 
     useEffect(() => {
-        if (workflow?.follow_ups) {
-            setFollowUps(workflow.follow_ups);
+        if (workflowVersion?.follow_ups) {
+            const newFollowUps = orderBy(
+                workflowVersion.follow_ups,
+                [f => f.order],
+                ['asc'],
+            );
+            setFollowUps(
+                newFollowUps.map(followUp => ({
+                    ...followUp,
+                    accessor: followUp.id,
+                })),
+            );
         }
-    }, [workflow?.follow_ups]);
+    }, [workflowVersion?.follow_ups]);
+    const { possibleFields } = useGetPossibleFields(
+        workflowVersion?.reference_form.id,
+    );
+    const { data: formDescriptors } = useGetFormDescriptor(
+        workflowVersion?.reference_form.id,
+    );
+    const fields = useGetQueryBuildersFields(formDescriptors, possibleFields);
 
-    const changesColumns = useGetChangesColumns(entityTypeId, versionId);
-    const followUpsColumns = useGetFollowUpsColumns(entityTypeId, versionId);
+    const queryBuilderListToReplace = useGetQueryBuilderListToReplace();
+    const getHumanReadableJsonLogic = useHumanReadableJsonLogic(
+        fields,
+        queryBuilderListToReplace,
+    );
+    const changesColumns = useGetChangesColumns();
+    const followUpsColumns = useGetFollowUpsColumns(
+        getHumanReadableJsonLogic,
+        versionId,
+        workflowVersion,
+        fields,
+    );
     const handleSortChange = useCallback((items: any) => {
         setFollowUps(
             items.map((item, index) => ({ ...item, order: index + 1 })),
         );
+        setIsFollowUpOrderChange(true);
     }, []);
+
+    const handleSaveFollowUpsOrder = useCallback(() => {
+        saveFollowUpOrder(
+            followUps.map(fu => ({
+                id: fu.id,
+                order: fu.order - 1,
+            })),
+        );
+    }, [followUps, saveFollowUpOrder]);
     return (
         <>
             <TopBar
-                title={formatMessage(MESSAGES.workflow)}
+                title={`${formatMessage(MESSAGES.workflowVersion)}${
+                    workflowVersion?.name ? `: ${workflowVersion?.name}` : ''
+                }`}
                 displayBackButton
                 goBack={() => goBack()}
             />
@@ -104,36 +159,67 @@ export const Details: FunctionComponent<Props> = ({ router }) => {
                             title={formatMessage(MESSAGES.infos)}
                         >
                             <Box className={classes.infoPaperBox}>
-                                {!workflow && <LoadingSpinner absolute />}
-                                {workflow && (
-                                    <WorkflowBaseInfo workflow={workflow} />
+                                {!workflowVersion && (
+                                    <LoadingSpinner absolute />
+                                )}
+                                {workflowVersion && (
+                                    <WorkflowBaseInfo
+                                        workflowVersion={workflowVersion}
+                                    />
                                 )}
                             </Box>
                         </WidgetPaper>
                     </Grid>
                 </Grid>
-                {/* <Box mt={2} width={200}>
-                    <WidgetPaper
-                        className={classes.fullWidth}
-                        title={formatMessage(MESSAGES.followUps)}
-                    >
-                        <SortableList
-                            items={followUps}
-                            onChange={handleSortChange}
-                            RenderItem={props => <SortableItem {...props} />}
-                        />
-                    </WidgetPaper>
-                </Box> */}
                 <Box mt={2}>
                     <WidgetPaper
                         className={classes.fullWidth}
                         title={formatMessage(MESSAGES.followUps)}
                     >
-                        <SortableTable
-                            items={followUps}
-                            onChange={handleSortChange}
-                            columns={followUpsColumns}
-                        />
+                        <>
+                            {workflowVersion && (
+                                <>
+                                    {workflowVersion.status === 'DRAFT' && (
+                                        <SortableTable
+                                            items={followUps}
+                                            onChange={handleSortChange}
+                                            columns={followUpsColumns}
+                                        />
+                                    )}
+                                    {workflowVersion.status !== 'DRAFT' && (
+                                        <FollowUpsTable
+                                            params={params}
+                                            workflowVersion={workflowVersion}
+                                            isLoading={isLoading}
+                                            followUpsColumns={followUpsColumns}
+                                        />
+                                    )}
+                                </>
+                            )}
+                        </>
+                        {workflowVersion?.status === 'DRAFT' && (
+                            <Box m={2} textAlign="right">
+                                <Box display="inline-block" mr={2}>
+                                    <Button
+                                        color="primary"
+                                        disabled={!isFollowUpOrderChange}
+                                        data-test="save-follow-up-order"
+                                        onClick={handleSaveFollowUpsOrder}
+                                        variant="contained"
+                                    >
+                                        {formatMessage(MESSAGES.saveOrder)}
+                                    </Button>
+                                </Box>
+                                <AddFollowUpsModal
+                                    fields={fields}
+                                    versionId={versionId}
+                                    newOrder={
+                                        followUps[followUps.length - 1]?.order +
+                                        1
+                                    }
+                                />
+                            </Box>
+                        )}
                     </WidgetPaper>
                 </Box>
                 <Box mt={2}>
@@ -147,11 +233,11 @@ export const Details: FunctionComponent<Props> = ({ router }) => {
                             elevation={0}
                             showPagination={false}
                             baseUrl={baseUrls.workflowDetail}
-                            data={workflow?.changes ?? []}
+                            data={workflowVersion?.changes ?? []}
                             pages={1}
                             defaultSorted={[{ id: 'updated_at', desc: false }]}
                             columns={changesColumns}
-                            count={workflow?.changes.length}
+                            count={workflowVersion?.changes.length}
                             params={params}
                             onTableParamsChange={p =>
                                 dispatch(
@@ -173,7 +259,7 @@ export const Details: FunctionComponent<Props> = ({ router }) => {
                             mt={-2}
                         >
                             {`${formatThousand(
-                                workflow?.changes.length ?? 0,
+                                workflowVersion?.changes.length ?? 0,
                             )} `}
                             {formatMessage(MESSAGES.results)}
                         </Box>

@@ -40,6 +40,8 @@ from plugins.polio.serializers import (
     CampaignGroupSerializer,
     serialize_campaign,
     log_campaign_modification,
+    ListCampaignSerializer,
+    CalendarCampaignSerializer,
 )
 from plugins.polio.serializers import (
     CountryUsersGroupSerializer,
@@ -92,6 +94,14 @@ class PolioOrgunitViewSet(ModelViewSet):
 
 
 class CampaignViewSet(ModelViewSet):
+    """Main endpoint for campaign.
+
+    GET (Anonymously too)
+    POST
+    PATCH
+    See swagger for Parameters
+    """
+
     results_key = "campaigns"
     remove_results_key_if_paginated = True
     filter_backends = [
@@ -126,8 +136,21 @@ class CampaignViewSet(ModelViewSet):
 
     def get_serializer_class(self):
         if self.request.user.is_authenticated:
+            if self.request.query_params.get("fieldset") == "list" and self.request.method in permissions.SAFE_METHODS:
+                return ListCampaignSerializer
+            if (
+                self.request.query_params.get("fieldset") == "calendar"
+                and self.request.method in permissions.SAFE_METHODS
+            ):
+                return CalendarCampaignSerializer
+
             return CampaignSerializer
         else:
+            if (
+                self.request.query_params.get("fieldset") == "calendar"
+                and self.request.method in permissions.SAFE_METHODS
+            ):
+                return CalendarCampaignSerializer
             return AnonymousCampaignSerializer
 
     def filter_queryset(self, queryset):
@@ -471,6 +494,7 @@ where polio_campaignscope.campaign_id = polio_campaign.id""",
         url_path="v2/merged_shapes.geojson",
     )
     def shapes_v2(self, request):
+        "Deprecated, should return the same format as shapes v3, kept for comparison"
         # FIXME: The cache ignore all the filter parameter which will return wrong result if used
         key_name = "{0}-geo_shapes_v2".format(request.user.id)
 
@@ -559,6 +583,24 @@ where group_id = polio_roundscope.group_id""",
         res = {"type": "FeatureCollection", "features": features, "cache_creation_date": datetime.utcnow().timestamp()}
 
         cache.set(key_name, json.dumps(res), 3600 * 24, version=CACHE_VERSION)
+        return JsonResponse(res)
+
+    @action(
+        methods=["GET", "HEAD"],  # type: ignore # HEAD is missing in djangorestframework-stubs
+        detail=False,
+        url_path="v3/merged_shapes.geojson",
+    )
+    def shapes_v3(self, request):
+        campaigns = self.filter_queryset(self.get_queryset())
+        # Remove deleted campaigns
+        campaigns = campaigns.filter(deleted_at=None)
+        campaigns = campaigns.only("geojson")
+        features = []
+        for c in campaigns:
+            features.extend(c.geojson)
+
+        res = {"type": "FeatureCollection", "features": features}
+
         return JsonResponse(res)
 
 
@@ -1054,7 +1096,7 @@ def convert_dicts_to_table(list_of_dicts):
     return values
 
 
-def handle_ona_request_with_key(request, key):
+def handle_ona_request_with_key(request, key, country_id=None):
     as_csv = request.GET.get("format", None) == "csv"
     config = get_object_or_404(Config, slug=key)
     res = []
@@ -1068,6 +1110,9 @@ def handle_ona_request_with_key(request, key):
         "alltime": {"ok": defaultdict(lambda: 0), "failure": defaultdict(lambda: 0)},
     }
     for config in config.content:
+        cid = int(country_id) if (country_id and country_id.isdigit()) else None
+        if country_id is not None and config.get("country_id", None) != cid:
+            continue
         forms = get_url_content(
             url=config["url"], login=config["login"], password=config["password"], minutes=config.get("minutes", 60)
         )
@@ -1167,6 +1212,10 @@ class VaccineStocksViewSet(viewsets.ViewSet):
     @method_decorator(cache_page(60 * 60 * 1))  # cache result for one hour
     def list(self, request):
         return handle_ona_request_with_key(request, "vaccines")
+
+    @method_decorator(cache_page(60 * 60 * 1))  # cache result for one hour
+    def retrieve(self, request, pk=None):
+        return handle_ona_request_with_key(request, "vaccines", country_id=pk)
 
 
 class FormAStocksViewSet(viewsets.ViewSet):

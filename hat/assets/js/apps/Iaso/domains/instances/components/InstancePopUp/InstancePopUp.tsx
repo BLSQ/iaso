@@ -2,7 +2,6 @@
 import React, { FunctionComponent, useCallback, useMemo, useRef } from 'react';
 import { useSelector } from 'react-redux';
 import { Popup } from 'react-leaflet';
-import { FormattedMessage } from 'react-intl';
 import { Link } from 'react-router';
 
 import {
@@ -41,6 +40,7 @@ const useStyles = makeStyles(theme => ({
         color: 'inherit',
         textDecoration: 'none',
         display: 'flex',
+        '&:hover': { textDecoration: 'none' },
     },
 }));
 
@@ -50,7 +50,7 @@ type Props = {
     displayUseLocation?: boolean;
 };
 
-export const InstancePopupComponent: FunctionComponent<Props> = ({
+export const InstancePopup: FunctionComponent<Props> = ({
     // eslint-disable-next-line @typescript-eslint/no-empty-function
     replaceLocation = () => {},
     displayUseLocation = false,
@@ -74,7 +74,7 @@ export const InstancePopupComponent: FunctionComponent<Props> = ({
             return getOrgUnitsTree(currentInstance.org_unit).reverse();
         }
         return [];
-    }, [currentInstance.org_unit]);
+    }, [currentInstance?.org_unit]);
 
     return (
         <Popup className={classes.popup} ref={popup}>
@@ -140,20 +140,20 @@ export const InstancePopupComponent: FunctionComponent<Props> = ({
                                         confirm={confirmDialog}
                                     />
                                 )}
-                                <Button
-                                    className={classes.marginLeft}
-                                    variant="outlined"
-                                    color="primary"
-                                    size="small"
+                                <Link
+                                    target="_blank"
+                                    to={`${baseUrls.instanceDetail}/instanceId/${currentInstance.id}`}
+                                    className={classes.linkButton}
                                 >
-                                    <Link
-                                        target="_blank"
-                                        to={`${baseUrls.instanceDetail}/instanceId/${currentInstance.id}`}
-                                        className={classes.linkButton}
+                                    <Button
+                                        className={classes.marginLeft}
+                                        variant="outlined"
+                                        color="primary"
+                                        size="small"
                                     >
-                                        <FormattedMessage {...MESSAGES.see} />
-                                    </Link>
-                                </Button>
+                                        {formatMessage(MESSAGES.see)}
+                                    </Button>
+                                </Link>
                             </Grid>
                         </Box>
                     </CardContent>

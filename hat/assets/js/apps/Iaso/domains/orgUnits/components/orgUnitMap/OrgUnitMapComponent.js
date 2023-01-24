@@ -685,7 +685,7 @@ class OrgUnitMapComponent extends Component {
                                             this.fetchSubOrgUnitDetail(a),
                                         color: ot.color,
                                         keyId: ot.id,
-                                        useOrgUnitLocation:
+                                        updateOrgUnitLocation:
                                             this.useOrgUnitLocation,
                                     })}
                                 </Pane>
@@ -713,7 +713,7 @@ class OrgUnitMapComponent extends Component {
                                             this.fetchSubOrgUnitDetail(a),
                                         color: s.color,
                                         keyId: s.id,
-                                        useOrgUnitLocation:
+                                        updateOrgUnitLocation:
                                             this.useOrgUnitLocation,
                                     })}
                                 </Pane>
@@ -743,7 +743,7 @@ class OrgUnitMapComponent extends Component {
                                         color: f.color,
                                         keyId: f.id,
                                         PopupComponent: InstancePopup,
-                                        useOrgUnitLocation:
+                                        updateOrgUnitLocation:
                                             this.useOrgUnitLocation,
                                     })}
                                 </Pane>

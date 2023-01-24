@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { withRouter } from 'react-router';
+import { Box, makeStyles } from '@material-ui/core';
 
 import PropTypes from 'prop-types';
 
@@ -24,8 +25,16 @@ import MESSAGES from './messages';
 
 const baseUrl = baseUrls.links;
 
+const useStyles = makeStyles(() => ({
+    table: {
+        '& tr:nth-of-type(odd) .bg-star path': {
+            fill: '#f7f7f7 !important',
+        },
+    },
+}));
 export const Links = ({ params, router }) => {
     const intl = useSafeIntl();
+    const classes = useStyles();
     const dispatch = useDispatch();
     const prevPathname = useSelector(state => state.routerCustom.prevPathname);
     const orgUnitTypes = useSelector(state => state.orgUnits.orgUnitTypes);
@@ -81,6 +90,7 @@ export const Links = ({ params, router }) => {
         );
     }
     const apiParams = useSingleTableParams(params);
+
     return (
         <>
             <TopBar
@@ -88,54 +98,57 @@ export const Links = ({ params, router }) => {
                 displayBackButton={displayBackButton}
                 goBack={() => router.goBack()}
             />
-            <SingleTable
-                baseUrl={baseUrl}
-                endPointPath="links"
-                hideGpkg
-                dataKey="links"
-                apiParams={{
-                    ...apiParams,
-                }}
-                forceRefresh={forceRefresh}
-                onForceRefreshDone={() => setForceRefresh(false)}
-                searchActive={params.searchActive === 'true'}
-                fetchItems={fetchLinks}
-                defaultSorted={[{ id: 'similarity_score', desc: true }]}
-                toggleActiveSearch
-                columns={tableColumns}
-                filters={linksFilters({
-                    formatMessage: intl.formatMessage,
-                    algorithmRuns,
-                    orgUnitTypes,
-                    profiles,
-                    algorithms,
-                    sources,
-                    currentOrigin,
-                    currentDestination,
-                    fetchingRuns,
-                    fetchingOrgUnitTypes,
-                    fetchingProfiles,
-                    fetchingAlgorithms,
-                    fetchingSources,
-                })}
-                onDataLoaded={({ list, count, pages }) => {
-                    onDataLoaded(list, count, pages);
-                }}
-                extraProps={{
-                    expanded,
-                    onExpandedChange: newExpanded => setExpanded(newExpanded),
-                }}
-                subComponent={link =>
-                    link ? (
-                        <LinksDetails
-                            linkId={link.id}
-                            validated={link.validated}
-                            validateLink={() => validateLink(link)}
-                        />
-                    ) : null
-                }
-                filtersColumnsCount={4}
-            />
+            <Box className={classes.table}>
+                <SingleTable
+                    baseUrl={baseUrl}
+                    endPointPath="links"
+                    hideGpkg
+                    dataKey="links"
+                    apiParams={{
+                        ...apiParams,
+                    }}
+                    forceRefresh={forceRefresh}
+                    onForceRefreshDone={() => setForceRefresh(false)}
+                    searchActive={params.searchActive === 'true'}
+                    fetchItems={fetchLinks}
+                    defaultSorted={[{ id: 'similarity_score', desc: true }]}
+                    toggleActiveSearch
+                    columns={tableColumns}
+                    filters={linksFilters({
+                        formatMessage: intl.formatMessage,
+                        algorithmRuns,
+                        orgUnitTypes,
+                        profiles,
+                        algorithms,
+                        sources,
+                        currentOrigin,
+                        currentDestination,
+                        fetchingRuns,
+                        fetchingOrgUnitTypes,
+                        fetchingProfiles,
+                        fetchingAlgorithms,
+                        fetchingSources,
+                    })}
+                    onDataLoaded={({ list, count, pages }) => {
+                        onDataLoaded(list, count, pages);
+                    }}
+                    extraProps={{
+                        expanded,
+                        onExpandedChange: newExpanded =>
+                            setExpanded(newExpanded),
+                    }}
+                    subComponent={link =>
+                        link ? (
+                            <LinksDetails
+                                linkId={link.id}
+                                validated={link.validated}
+                                validateLink={() => validateLink(link)}
+                            />
+                        ) : null
+                    }
+                    filtersColumnsCount={4}
+                />
+            </Box>
         </>
     );
 };

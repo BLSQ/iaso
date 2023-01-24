@@ -34,6 +34,7 @@ export const useGetCampaigns = (
             options.campaignType,
             options.countries,
             options.enabled,
+            options.fieldset,
             options.last_budget_event__status,
             options.order,
             options.page,

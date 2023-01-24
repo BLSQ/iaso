@@ -86,6 +86,10 @@ const routes = [
                 key: 'campaignId',
             },
             ...campaignsFilters,
+            {
+                isRequired: false,
+                key: 'fieldset',
+            },
         ],
     },
     {
@@ -234,6 +238,10 @@ const routes = [
             {
                 isRequired: false,
                 key: 'roundStartTo',
+            },
+            {
+                isRequired: false,
+                key: 'countries',
             },
         ],
     },

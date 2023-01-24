@@ -18,6 +18,7 @@ from plugins.polio.models import Campaign
 from plugins.polio.models import Config
 from django.utils.decorators import method_decorator
 from django.views.decorators.cache import cache_page
+from django.core.cache import cache
 
 from logging import getLogger
 
@@ -223,13 +224,16 @@ def get_content_for_config(config):
     )
 
 
-def fetch_and_match_forma_data():
+def fetch_and_match_forma_data(country_id=None):
 
     conf = Config.objects.get(slug="forma")
     campaign_qs = Campaign.objects.filter(deleted_at=None).all().prefetch_related("rounds").prefetch_related("country")
 
     dfs = []
     for config in conf.content:
+        cid = int(country_id) if country_id and country_id.isdigit() else None
+        if country_id is not None and config.get("country_id", None) != cid:
+            continue
         try:
             submissions = get_content_for_config(config)
             country = OrgUnit.objects.get(id=config["country_id"])
@@ -300,16 +304,38 @@ class FormAStocksViewSetV2(viewsets.ViewSet):
     for display in PowerBI
     """
 
-    @method_decorator(cache_page(60 * 60 * 1))  # cache result for one hour
     @action(detail=False)
     def scopes(self, request):
-        campaigns = Campaign.objects.filter(deleted_at=None).all()
-        r = get_forma_scope_df(campaigns).to_json(orient="table")
+        country = request.GET.get("country", "")
+        cache_key = "form_a_scopes%s" % country
+        r = cache.get(cache_key)
+        if not r:
+            campaigns = Campaign.objects.filter(deleted_at=None).all()
+            if country:
+                campaigns = campaigns.filter(country_id=country)
+            if len(campaigns) == 0:
+                r = "{}"
+            else:
+                r = get_forma_scope_df(campaigns).to_json(orient="table")
+            cache.set(cache_key, r, 60 * 60)
+
         return HttpResponse(r, content_type="application/json")
 
     @method_decorator(cache_page(60 * 60 * 1))  # cache result for one hour
     def list(self, request):
         df = fetch_and_match_forma_data()
+        # Need to drop all the Django orm object, since Panda can't serialize them
+        df = df.drop(["ou", "report_org_unit", "country_config", "campaign"], axis=1)
+        if request.GET.get("format", None) == "csv":
+            r = df.to_csv()
+            return HttpResponse(r, content_type=CONTENT_TYPE_CSV)
+        else:
+            r = df.to_json(orient="table")
+            return HttpResponse(r, content_type="application/json")
+
+    @method_decorator(cache_page(60 * 60 * 1))  # cache result for one hour
+    def retrieve(self, request, pk):
+        df = fetch_and_match_forma_data(country_id=pk)
         # Need to drop all the Django orm object, since Panda can't serialize them
         df = df.drop(["ou", "report_org_unit", "country_config", "campaign"], axis=1)
         if request.GET.get("format", None) == "csv":

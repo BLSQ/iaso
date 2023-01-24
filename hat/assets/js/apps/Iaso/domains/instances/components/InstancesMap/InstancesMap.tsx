@@ -17,13 +17,14 @@ import ClusterSwitch from '../../../../components/maps/tools/ClusterSwitchCompon
 import MarkersListComponent from '../../../../components/maps/markers/MarkersListComponent';
 import InnerDrawer from '../../../../components/nav/InnerDrawer';
 
-import InstancePopupComponent from '../InstancePopupComponent';
+// import InstancePopupComponent from '../InstancePopupComponent';
 
 import { useShowWarning } from './useShowWarning';
 import { useResetMapReducerOnUnmount } from './useResetMapReducerOnUnmount';
 import { setCurrentInstance } from '../../actions';
 import { fetchInstanceDetail } from '../../../../utils/requests';
 import { Instance } from '../../types/instance';
+import { InstancePopup } from '../InstancePopUp/InstancePopUp';
 
 const boundsOptions = { padding: [50, 50] };
 
@@ -130,7 +131,7 @@ export const InstancesMap: FunctionComponent<Props> = ({
                             <MarkersListComponent
                                 items={instances}
                                 onMarkerClick={fetchAndDispatchDetail}
-                                PopupComponent={InstancePopupComponent}
+                                PopupComponent={InstancePopup}
                             />
                         </MarkerClusterGroup>
                     )}
@@ -138,7 +139,7 @@ export const InstancesMap: FunctionComponent<Props> = ({
                         <MarkersListComponent
                             items={instances}
                             onMarkerClick={fetchAndDispatchDetail}
-                            PopupComponent={InstancePopupComponent}
+                            PopupComponent={InstancePopup}
                         />
                     )}
                 </Map>

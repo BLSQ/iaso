@@ -45,8 +45,8 @@ import {
 import MESSAGES from '../../messages';
 
 import 'leaflet-draw/dist/leaflet.draw.css';
-import InstancePopupComponent from '../../../instances/components/InstancePopupComponent';
-
+// import InstancePopupComponent from '../../../instances/components/InstancePopupComponent';
+import { InstancePopup } from '../../../instances/components/InstancePopUp/InstancePopUp.tsx';
 import EditableGroup from './EditableGroup';
 import fitToBounds from './fitToBounds';
 
@@ -736,7 +736,7 @@ class OrgUnitMapComponent extends Component {
                                             this.fetchInstanceDetail(a),
                                         color: f.color,
                                         keyId: f.id,
-                                        PopupComponent: InstancePopupComponent,
+                                        PopupComponent: InstancePopup,
                                         useOrgUnitLocation:
                                             this.useOrgUnitLocation,
                                     })}

@@ -50,7 +50,11 @@ export const PreparednessForm = () => {
             },
         );
     };
-    const [currentTab, setCurrentTab] = useState('1');
+    const defaultRoundNumber = Number.isInteger(sortedRounds[0]?.number)
+        ? `${sortedRounds[0]?.number}`
+        : '1';
+
+    const [currentTab, setCurrentTab] = useState(defaultRoundNumber);
 
     const handleChangeTab = (event, newValue) => {
         setCurrentTab(newValue);

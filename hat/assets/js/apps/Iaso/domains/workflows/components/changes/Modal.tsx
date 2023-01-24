@@ -36,7 +36,7 @@ type Props = {
     closeDialog: () => void;
     change?: Change;
     versionId: string;
-    possibleFields: PossibleField[];
+    targetPossibleFields: PossibleField[];
     referenceForm?: ReferenceForm;
     changes?: Change[];
 };
@@ -81,7 +81,7 @@ const Modal: FunctionComponent<Props> = ({
     isOpen,
     versionId,
     change,
-    possibleFields,
+    targetPossibleFields,
     referenceForm,
     changes,
 }) => {
@@ -221,7 +221,7 @@ const Modal: FunctionComponent<Props> = ({
                         mappingArray={mappingArray}
                         setMappingArray={setMappingArray}
                         sourcePossibleFields={sourcePossibleFields}
-                        targetPossibleFields={possibleFields}
+                        targetPossibleFields={targetPossibleFields}
                         isFetchingSourcePossibleFields={
                             isFetchingSourcePossibleFields
                         }

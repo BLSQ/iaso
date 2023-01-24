@@ -12,7 +12,7 @@ import { PossibleField } from '../../../forms/types/forms';
 type Props = {
     change: Change;
     versionId: string;
-    possibleFields: PossibleField[];
+    targetPossibleFields: PossibleField[];
     referenceForm?: ReferenceForm;
     workflowVersion?: WorkflowVersionDetail;
 };
@@ -20,7 +20,7 @@ type Props = {
 export const ChangesActionCell: FunctionComponent<Props> = ({
     change,
     versionId,
-    possibleFields,
+    targetPossibleFields,
     referenceForm,
     workflowVersion,
 }) => {
@@ -30,7 +30,7 @@ export const ChangesActionCell: FunctionComponent<Props> = ({
             <ChangesModal
                 change={change}
                 versionId={versionId}
-                possibleFields={possibleFields}
+                targetPossibleFields={targetPossibleFields}
                 referenceForm={referenceForm}
                 changes={workflowVersion?.changes || []}
             />

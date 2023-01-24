@@ -8,6 +8,7 @@ import { LinkToForm } from '../../forms/components/LinkToForm';
 import { ChangesActionCell } from '../components/changes/ActionCell';
 import { TargetCell } from '../components/changes/TargetCell';
 import { SourceCell } from '../components/changes/SourceCell';
+import { MappingCell } from '../components/changes/MappingCell';
 
 import { IntlFormatMessage } from '../../../types/intl';
 import { Column } from '../../../types/table';
@@ -16,7 +17,7 @@ import { PossibleField } from '../../forms/types/forms';
 
 export const useGetChangesColumns = (
     versionId: string,
-    possibleFields: PossibleField[],
+    targetPossibleFields: PossibleField[],
     workflowVersion?: WorkflowVersionDetail,
 ): Array<Column> => {
     const { formatMessage }: { formatMessage: IntlFormatMessage } =
@@ -40,15 +41,9 @@ export const useGetChangesColumns = (
             id: 'mapping',
             accessor: 'mapping',
             sortable: false,
-            Cell: settings => {
-                return (
-                    <>
-                        {Object.keys(settings.row.original.mapping)
-                            .map(mapKey => mapKey)
-                            .join(', ')}
-                    </>
-                );
-            },
+            Cell: settings => (
+                <MappingCell mapping={settings.row.original.mapping} />
+            ),
         },
         {
             Header: formatMessage(MESSAGES.created_at),
@@ -79,7 +74,7 @@ export const useGetChangesColumns = (
                             <ChangesActionCell
                                 change={change}
                                 versionId={versionId}
-                                possibleFields={possibleFields}
+                                targetPossibleFields={targetPossibleFields}
                                 referenceForm={workflowVersion?.reference_form}
                                 workflowVersion={workflowVersion}
                             />

@@ -109,13 +109,16 @@ export const Details: FunctionComponent<Props> = ({ router }) => {
             );
         }
     }, [workflowVersion?.follow_ups]);
-    const { possibleFields } = useGetPossibleFields(
+    const { possibleFields: targetPossibleFields } = useGetPossibleFields(
         workflowVersion?.reference_form.id,
     );
     const { data: formDescriptors } = useGetFormDescriptor(
         workflowVersion?.reference_form.id,
     );
-    const fields = useGetQueryBuildersFields(formDescriptors, possibleFields);
+    const fields = useGetQueryBuildersFields(
+        formDescriptors,
+        targetPossibleFields,
+    );
 
     const queryBuilderListToReplace = useGetQueryBuilderListToReplace();
     const getHumanReadableJsonLogic = useHumanReadableJsonLogic(
@@ -124,7 +127,7 @@ export const Details: FunctionComponent<Props> = ({ router }) => {
     );
     const changesColumns = useGetChangesColumns(
         versionId,
-        possibleFields,
+        targetPossibleFields,
         workflowVersion,
     );
     const followUpsColumns = useGetFollowUpsColumns(
@@ -268,7 +271,7 @@ export const Details: FunctionComponent<Props> = ({ router }) => {
                             }
                             extraProps={{
                                 isLoading,
-                                possibleFields,
+                                targetPossibleFields,
                             }}
                         />
                         {workflowVersion?.status === 'DRAFT' && (
@@ -276,7 +279,9 @@ export const Details: FunctionComponent<Props> = ({ router }) => {
                                 <AddChangeModal
                                     versionId={versionId}
                                     changes={workflowVersion?.changes || []}
-                                    possibleFields={possibleFields || []}
+                                    targetPossibleFields={
+                                        targetPossibleFields || []
+                                    }
                                     referenceForm={
                                         workflowVersion?.reference_form
                                     }

@@ -52,8 +52,13 @@ class ProfilesViewSet(viewsets.ViewSet):
     permission_classes = [permissions.IsAuthenticated, HasProfilePermission]
 
     def get_queryset(self):
+        deactivated = True if self.request.GET.get("active", None) == "false" else False
         account = self.request.user.iaso_profile.account
-        return Profile.objects.filter(account=account, is_active=True)
+        queryset = Profile.objects.filter(account=account, is_active=True)
+        if deactivated:
+            queryset = Profile.objects.filter(account=account, is_active=False)
+
+        return queryset
 
     def list(self, request):
         limit = request.GET.get("limit", None)

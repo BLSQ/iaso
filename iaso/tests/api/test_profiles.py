@@ -242,7 +242,7 @@ class ProfileAPITestCase(APITestCase):
         self.assertEqual(response.status_code, 200)
 
         # check deleted user is not in the list response
-        response = self.client.get("/api/profiles/")
+        response = self.client.get("/api/profiles/?active=true")
         self.assertNotIn(str(response.json()["profiles"]), "unittest_user_name")
 
         # reload user and profile from db
@@ -258,6 +258,12 @@ class ProfileAPITestCase(APITestCase):
             "/api/token/", data={"username": "unittest_user_name", "password": "unittest_password"}
         )
         self.assertEqual(response.status_code, 401)
+
+        # check user appear in response if ?active=false
+        response = self.client.get("/api/profiles/?active=false")
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.json()["profiles"][0]["user_name"], "unittest_user_name")
+        self.assertEqual(len(response.json()["profiles"]), 1)
 
         # reactivate user and check that user can login again
         # FIXME: We should probably create an endpoint to reactivate users and profiles

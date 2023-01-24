@@ -1,3 +1,12 @@
+# [Iaso : a geospatial data management platform](https://www.bluesquarehub.com/iaso/)
+![Iaso license](https://img.shields.io/github/license/BLSQ/iaso)
+![Python version](https://img.shields.io/badge/python-3.6%2C%203.7%2C%203.8-blue)
+![Commit activity](https://img.shields.io/github/commit-activity/m/BLSQ/iaso)
+![Contributors](https://img.shields.io/github/contributors-anon/BLSQ/iaso)
+![Python tests](https://img.shields.io/github/actions/workflow/status/BLSQ/iaso/main.yml?label=python%20tests)
+![Cypress tests](https://img.shields.io/github/actions/workflow/status/BLSQ/iaso/cypress.yml?label=cypress%20tests)
+
+
 Introduction
 ============
 

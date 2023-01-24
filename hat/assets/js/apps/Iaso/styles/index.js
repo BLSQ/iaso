@@ -49,6 +49,11 @@ export const getOverriddenTheme = (theme, themeConfig) => {
                     sup: {
                         verticalAlign: 'top',
                     },
+                    a: {
+                        color: theme.palette.info.dark,
+                        textDecoration: 'none',
+                        '&:hover': { textDecoration: 'underline' },
+                    },
                 },
             },
         },

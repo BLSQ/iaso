@@ -31,7 +31,12 @@ def get_instance_counters(ous_to_fill: "QuerySet[OrgUnit]", form_type: Form) -> 
     """Returns a dict such as (forms to fill counters, forms filled counters) with the number
     of instances to fill and filled for the given form type"""
     filled = ous_to_fill.filter(instance__form=form_type)
-    return ous_to_fill.count(), filled.count()
+    return ous_to_fill.distinct().count(), filled.distinct().count()
+
+
+def get_number_direct_submissions(ou: OrgUnit, form_type: Form) -> int:
+    """Returns the number of direct submissions for the given form type"""
+    return form_type.instances.filter(org_unit=ou).count()
 
 
 def _get_ou_from_request(request: Request, parameter_name: str) -> Optional[OrgUnit]:
@@ -144,6 +149,7 @@ class CompletenessStatsViewSet(viewsets.ViewSet):
                             "completeness_ratio_direct": formatted_percentage(
                                 part=ou_filled_direct_count, total=ou_to_fill_direct_count
                             ),
+                            "has_multiple_direct_submissions": get_number_direct_submissions(row_ou, form) > 1,
                         }
                     )
         limit = int(request.GET.get("limit", 10))

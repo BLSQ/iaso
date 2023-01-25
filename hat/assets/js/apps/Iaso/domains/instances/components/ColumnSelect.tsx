@@ -1,5 +1,6 @@
 import React, { useEffect, FunctionComponent, useMemo } from 'react';
 import { useDispatch } from 'react-redux';
+import { useSafeIntl } from 'bluesquare-components';
 
 import { redirectToReplace } from '../../../routing/actions';
 
@@ -17,12 +18,15 @@ import { VisibleColumn } from '../types/visibleColumns';
 import { Form } from '../../forms/types/forms';
 import { Column } from '../../../types/table';
 
+import MESSAGES from '../messages';
+
 type Params = {
     order?: string;
     showDeleted?: string;
     columns: string;
     formIds: string;
 };
+
 type Props = {
     params: Params;
     periodType?: string;
@@ -67,6 +71,7 @@ export const ColumnSelect: FunctionComponent<Props> = ({
     tableColumns,
     disabled = false,
 }) => {
+    const { formatMessage } = useSafeIntl();
     const formIds = useMemo(
         () => (params.formIds ? params.formIds.split(',') : []),
         [params.formIds],
@@ -134,6 +139,9 @@ export const ColumnSelect: FunctionComponent<Props> = ({
 
     return (
         <ColumnsSelectDrawer
+            disabledMessage={formatMessage(
+                MESSAGES.disableColumnSelectionMessage,
+            )}
             disabled={disabled}
             options={visibleColumns}
             setOptions={cols => handleChangeVisibleColmuns(cols)}

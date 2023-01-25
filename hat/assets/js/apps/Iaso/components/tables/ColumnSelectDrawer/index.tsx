@@ -1,8 +1,6 @@
-import React from 'react';
-import PropTypes from 'prop-types';
+import React, { FunctionComponent, useState, useCallback } from 'react';
 import { InView } from 'react-intersection-observer';
 import {
-    withStyles,
     Drawer,
     IconButton,
     List,
@@ -17,13 +15,30 @@ import Close from '@material-ui/icons/Close';
 import ArrowBack from '@material-ui/icons/ArrowBack';
 import ViewColumnIcon from '@material-ui/icons/ViewColumn';
 
-import { BlockPlaceholder, injectIntl } from 'bluesquare-components';
+import { BlockPlaceholder, useSafeIntl } from 'bluesquare-components';
 
 import { MESSAGES } from './messages';
-import { styles } from './styles';
 import { ColumnDrawerSwitch } from './ColumnDrawerSwitch';
 
-const filterResults = (searchString, options) => {
+import { useStyles } from './styles';
+
+type Option = {
+    active: boolean;
+    disabled: boolean;
+    key: string;
+    label: string;
+    index?: number;
+};
+
+type Props = {
+    options: Option[];
+    setOptions: React.Dispatch<React.SetStateAction<Option[]>>;
+    minColumns?: number;
+    disabled: boolean;
+    disabledMessage?: string;
+};
+
+const filterResults = (searchString: string, options: Option[]): Option[] => {
     let displayedOptions = [...options];
     displayedOptions = displayedOptions.map((o, i) => ({ ...o, index: i }));
     if (searchString !== '') {
@@ -37,69 +52,78 @@ const filterResults = (searchString, options) => {
     return displayedOptions;
 };
 
-const makeTooltipTitle = option => {
-    if (!option.label) return option.key;
-    return (
-        <div>
-            {option.label} -
-            <br />
-            {option.key}
-        </div>
-    );
-};
-
-const ColumnsSelectDrawer = ({
-    classes,
+export const ColumnsSelectDrawer: FunctionComponent<Props> = ({
     options,
     setOptions,
-    minColumns,
-    intl: { formatMessage },
+    minColumns = 2,
     disabled,
+    disabledMessage,
 }) => {
-    const [state, setState] = React.useState({
-        open: false,
-        searchString: '',
-    });
+    const classes = useStyles();
+    const { formatMessage } = useSafeIntl();
+    const [isOpen, setIsOpen] = useState<boolean>(false);
+    const [searchString, setSearchString] = useState<string>('');
 
     const toggleDrawer = open => () => {
-        setState({ ...state, open });
+        setIsOpen(open);
     };
 
-    const handleSearch = reset => event => {
-        setState({ ...state, searchString: reset ? '' : event.target.value });
-    };
-
-    const handleChangeOptions = index => event => {
-        const newOptions = [...options];
-        newOptions[index] = {
-            ...newOptions[index],
-            active: event.target.checked,
+    const handleSearch =
+        (reset = false) =>
+        event => {
+            setSearchString(reset ? '' : event.target.value);
         };
-        setOptions(newOptions);
-    };
+
+    const handleChangeOptions = useCallback(
+        index => event => {
+            const newOptions = [...options];
+            newOptions[index] = {
+                ...newOptions[index],
+                active: event.target.checked,
+            };
+            setOptions(newOptions);
+        },
+        [options, setOptions],
+    );
 
     const activeOptionsCount = options.filter(o => o.active).length;
 
-    const displayedOptions = filterResults(state.searchString, options);
+    const displayedOptions = filterResults(searchString, options);
     return (
         <>
-            <Button
-                disabled={disabled}
-                variant="contained"
-                color="primary"
-                onClick={toggleDrawer(true)}
-                id="ColumnsSelectDrawer-toggleDrawer"
-            >
-                <Box mr={1} display="inline-flex">
-                    <ViewColumnIcon />
-                </Box>
-                {formatMessage(MESSAGES.columnSelect)}
-            </Button>
-            <Drawer
-                anchor="right"
-                open={state.open}
-                onClose={toggleDrawer(false)}
-            >
+            {disabled && disabledMessage && (
+                <Tooltip arrow title={disabledMessage}>
+                    <Box>
+                        <Button
+                            disabled
+                            variant="contained"
+                            color="primary"
+                            onClick={toggleDrawer(true)}
+                            id="ColumnsSelectDrawer-toggleDrawer"
+                        >
+                            <Box mr={1} display="inline-flex">
+                                <ViewColumnIcon />
+                            </Box>
+                            {formatMessage(MESSAGES.columnSelect)}
+                        </Button>
+                    </Box>
+                </Tooltip>
+            )}
+            {(!disabled || (disabled && !disabledMessage)) && (
+                <Button
+                    disabled={disabled}
+                    variant="contained"
+                    color="primary"
+                    onClick={toggleDrawer(true)}
+                    id="ColumnsSelectDrawer-toggleDrawer"
+                >
+                    <Box mr={1} display="inline-flex">
+                        <ViewColumnIcon />
+                    </Box>
+                    {formatMessage(MESSAGES.columnSelect)}
+                </Button>
+            )}
+            <Drawer anchor="right" open={isOpen} onClose={toggleDrawer(false)}>
                 <div className={classes.root}>
                     <div className={classes.toolbar}>
                         <Tooltip title={formatMessage(MESSAGES.close)}>
@@ -109,7 +133,7 @@ const ColumnsSelectDrawer = ({
                         </Tooltip>
                         <div className={classes.search}>
                             <InputBase
-                                value={state.searchString}
+                                value={searchString}
                                 onChange={handleSearch()}
                                 className={classes.input}
                                 placeholder={formatMessage(MESSAGES.search)}
@@ -122,7 +146,7 @@ const ColumnsSelectDrawer = ({
                                 }}
                             />
                         </div>
-                        {state.searchString !== '' && (
+                        {searchString !== '' && (
                             <Tooltip
                                 title={formatMessage(MESSAGES.resetSearch)}
                             >
@@ -159,9 +183,21 @@ const ColumnsSelectDrawer = ({
                                                         className={
                                                             classes.switch
                                                         }
-                                                        toolTipTitle={makeTooltipTitle(
-                                                            o,
-                                                        )}
+                                                        toolTipTitle={
+                                                            <Box>
+                                                                {o.label ? (
+                                                                    <>
+                                                                        {
+                                                                            o.label
+                                                                        }{' '}
+                                                                        -<br />
+                                                                    </>
+                                                                ) : (
+                                                                    ''
+                                                                )}{' '}
+                                                                -{o.key}
+                                                            </Box>
+                                                        }
                                                         primaryText={
                                                             o.label
                                                                 ? o.label
@@ -188,20 +224,3 @@ const ColumnsSelectDrawer = ({
         </>
     );
 };
-
-ColumnsSelectDrawer.defaultProps = {
-    minColumns: 2,
-};
-
-ColumnsSelectDrawer.propTypes = {
-    classes: PropTypes.object.isRequired,
-    options: PropTypes.array.isRequired,
-    setOptions: PropTypes.func.isRequired,
-    minColumns: PropTypes.number,
-    intl: PropTypes.object.isRequired,
-    disabled: PropTypes.bool.isRequired,
-};
-
-const styledAndTranslated = withStyles(styles)(injectIntl(ColumnsSelectDrawer));
-
-export { styledAndTranslated as ColumnsSelectDrawer };

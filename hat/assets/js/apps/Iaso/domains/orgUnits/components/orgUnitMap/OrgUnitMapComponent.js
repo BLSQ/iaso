@@ -371,6 +371,8 @@ class OrgUnitMapComponent extends Component {
             catchmentGroup,
             ancestorWithGeoJson,
         } = this.state;
+
+        console.log('catchment group', catchmentGroup);
         const hasMarker =
             Boolean(currentOrgUnit.latitude) &&
             Boolean(currentOrgUnit.longitude);

@@ -76,7 +76,7 @@ const OrgUnitTypeFilterComponent = props => {
             setOrgUnitTypesSelected(orgUnitsTypesWithData);
             setIsLoading(false);
             if (fitToBoundsAction) {
-                fitToBounds();
+                // fitToBounds();
             }
         });
     };

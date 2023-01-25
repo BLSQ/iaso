@@ -105,7 +105,8 @@ export const OrgUnitMap: FunctionComponent<Props> = ({
     const theme = useTheme();
     const currentUser = useCurrentUser();
     const map: any = useRef();
-    const loadingSelectedSourcesRef = useRef(loadingSelectedSources);
+    const didLocationInitialize = useRef(false);
+    const didCatchmentInitialize = useRef(false);
     // eslint-disable-next-line no-unused-vars, @typescript-eslint/no-unused-vars
     const [state, setStateField, _, setState] = useFormState(
         initialState(currentUser),
@@ -114,7 +115,6 @@ export const OrgUnitMap: FunctionComponent<Props> = ({
     const currentTile = useSelector(
         (reduxState: any) => reduxState.map.currentTile,
     );
-
     const setCurrentSubOrgUnit = useCallback(
         o => dispatch(setCurrentSubOrgUnitAction(o)),
         [dispatch],
@@ -159,7 +159,6 @@ export const OrgUnitMap: FunctionComponent<Props> = ({
         state.locationGroup.value,
         state.catchmentGroup.value,
     ]);
-
     const fitToBounds = useCallback(() => {
         fitToBoundsFn({
             padding,
@@ -196,7 +195,7 @@ export const OrgUnitMap: FunctionComponent<Props> = ({
                     : state.catchmentGroup.value;
             group.toggleEditShape(leafletMap, !editEnabled);
             setStateField(keyName, {
-                ...state[keyName],
+                ...state[keyName].value,
                 edit: !editEnabled,
             });
         },
@@ -205,17 +204,16 @@ export const OrgUnitMap: FunctionComponent<Props> = ({
 
     const toggleAddShape = useCallback(
         keyName => {
-            const addEnabled = state[keyName].add;
-            const { locationGroup, catchmentGroup } = state;
+            const addEnabled = state[keyName].value.add;
             if (addEnabled) {
                 const group =
                     keyName === 'location'
-                        ? locationGroup.value
-                        : catchmentGroup.value;
+                        ? state.locationGroup.value
+                        : state.catchmentGroup.value;
                 group.shapeAdded.disable();
             }
             setStateField(keyName, {
-                ...state[keyName],
+                ...state[keyName].value,
                 add: !addEnabled,
             });
         },
@@ -225,15 +223,14 @@ export const OrgUnitMap: FunctionComponent<Props> = ({
     const toggleDeleteShape = useCallback(
         keyName => {
             const deleteEnabled = state[keyName].delete;
-            const { locationGroup, catchmentGroup } = state;
             const leafletMap = map.current.leafletElement;
             const group =
                 keyName === 'location'
-                    ? locationGroup.value
-                    : catchmentGroup.value;
+                    ? state.locationGroup.value
+                    : state.catchmentGroup.value;
             group.toggleDeleteShape(leafletMap, !deleteEnabled);
             setStateField(keyName, {
-                ...state[keyName],
+                ...state[keyName].value,
                 delete: !deleteEnabled,
             });
         },
@@ -257,31 +254,8 @@ export const OrgUnitMap: FunctionComponent<Props> = ({
     const handleFormFilter = useCallback(
         forms => {
             setStateField('formsSelected', forms);
-            fitToBoundsFn({
-                padding,
-                currentTile,
-                orgUnit: currentOrgUnit,
-                orgUnitTypesSelected: state.orgUnitTypesSelected.value,
-                sourcesSelected,
-                formsSelected: forms,
-                editLocationEnabled: state.location.value.edit,
-                locationGroup: state.locationGroup.value,
-                catchmentGroup: state.catchmentGroup.value,
-                map: map.current.leafletElement,
-                // if we don't do this the TS compiler gets angry
-                ancestorWithGeoJson: undefined,
-            });
         },
-        [
-            currentOrgUnit,
-            currentTile,
-            setStateField,
-            sourcesSelected,
-            state.catchmentGroup.value,
-            state.location.value.edit,
-            state.locationGroup.value,
-            state.orgUnitTypesSelected.value,
-        ],
+        [setStateField],
     );
 
     const fetchSubOrgUnitDetail = useCallback(
@@ -364,34 +338,43 @@ export const OrgUnitMap: FunctionComponent<Props> = ({
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
-    // Using useSkipEffectOnMount because we need a render to make sure the map ref has a .current value
-    useSkipEffectOnMount(() => {
-        state.locationGroup.initialize({
-            map: map.current.leafletElement,
-            groupKey: 'location',
-            onChangeShape: shape => onChangeShape('geo_json', shape),
-            onChangeLocation,
-            geoJson: getleafletGeoJson(currentOrgUnit.geo_json),
-            classNames: 'primary',
-            onAdd: () => toggleAddShape('location'),
-        });
-        // We only need the effect to run once (cf ComponentDidMount)
-    }, []);
-
-    // Using useSkipEffectOnMount because we need a render to make sure the map ref has a .current value
-    useSkipEffectOnMount(() => {
-        state.catchmentGroup.value.initialize({
-            map: map.current.leafletElement,
-            groupKey: 'catchment',
-            onChangeShape: shape => onChangeShape('catchment', shape),
-            onChangeLocation,
-            geoJson: getleafletGeoJson(currentOrgUnit.catchment),
-            classNames: 'secondary',
-            tooltipMessage: formatMessage(MESSAGES.catchment),
-            onAdd: () => toggleAddShape('catchment'),
-        });
-        // We only need the effect to run once (cf ComponentDidMount)
-    }, []);
+    useEffect(() => {
+        if (
+            !didLocationInitialize.current &&
+            map.current?.leafletElement &&
+            state.locationGroup.value
+        ) {
+            state.locationGroup.value.initialize({
+                map: map.current.leafletElement,
+                groupKey: 'location',
+                onChangeShape: shape => onChangeShape('geo_json', shape),
+                onChangeLocation,
+                geoJson: getleafletGeoJson(currentOrgUnit.geo_json),
+                classNames: 'primary',
+                onAdd: () => toggleAddShape('location'),
+            });
+            didLocationInitialize.current = true;
+        }
+    });
+    useEffect(() => {
+        if (
+            !didCatchmentInitialize.current &&
+            map.current?.leafletElement &&
+            state.catchmentGroup.value
+        ) {
+            state.catchmentGroup.value.initialize({
+                map: map.current.leafletElement,
+                groupKey: 'catchment',
+                onChangeShape: shape => onChangeShape('catchment', shape),
+                onChangeLocation,
+                geoJson: getleafletGeoJson(currentOrgUnit.catchment),
+                classNames: 'secondary',
+                tooltipMessage: formatMessage(MESSAGES.catchment),
+                onAdd: () => toggleAddShape('catchment'),
+            });
+            didCatchmentInitialize.current = true;
+        }
+    });
 
     useSkipEffectOnMount(() => {
         state.catchmentGroup.value.updateShape(
@@ -403,43 +386,36 @@ export const OrgUnitMap: FunctionComponent<Props> = ({
         // We only want this effect to run if there's a change in currentOrgUbnit.catchment
     }, [currentOrgUnit.catchment]);
 
-    useSkipEffectOnMount(() => {
+    // skipping the deps array as we need to check the condition on each render to emulate componentDidUpdate
+    useEffect(() => {
         if (
             getAncestorWithGeojson(currentOrgUnit)?.id !==
             state.ancestorWithGeoJson.value?.id
         ) {
             setAncestor();
         }
-    }, [state.ancestorWithGeoJson.value?.id, currentOrgUnit]);
+    });
 
     useSkipEffectOnMount(() => {
-        // When no linked org unit from other sources
-        if (
-            (loadingSelectedSourcesRef.current === true &&
-                loadingSelectedSources === false) ||
-            (loadingSelectedSources === false && sourcesSelected.length === 0)
-        ) {
-            fitToBounds();
-        }
-    }, [loadingSelectedSources, sourcesSelected.length]);
+        fitToBounds();
+    }, [
+        sourcesSelected,
+        state.orgUnitTypesSelected.value,
+        state.formsSelected.value,
+    ]);
 
     useSkipEffectOnMount(() => {
         // When linked org unit from other sources, fetch shape first
-        if (
-            (loadingSelectedSourcesRef.current === false ||
-                loadingSelectedSources === true) &&
-            (loadingSelectedSources === true || sourcesSelected.length !== 0)
-        )
-            locationGroup.value.updateShape(
+        if (loadingSelectedSources === true || sourcesSelected.length !== 0)
+            state.locationGroup.value.updateShape(
                 getleafletGeoJson(currentOrgUnit.geo_json),
                 'primary',
             );
-    }, [currentOrgUnit.geo_json]);
-
-    // Updating the loadingSourceRef at every render
-    useEffect(() => {
-        loadingSelectedSourcesRef.current = loadingSelectedSources;
-    });
+    }, [
+        currentOrgUnit.geo_json,
+        loadingSelectedSources,
+        state.locationGroup.value,
+    ]);
 
     // ComponentWillUnmount
     useEffect(() => {
@@ -507,8 +483,8 @@ export const OrgUnitMap: FunctionComponent<Props> = ({
                         orgUnit={currentOrgUnit}
                         canEditLocation={canEditLocation.value}
                         canEditCatchment={canEditCatchment.value}
-                        locationState={location.value}
-                        catchmentState={catchment.value}
+                        locationState={state.location.value}
+                        catchmentState={state.catchment.value}
                         toggleEditShape={keyValue => toggleEditShape(keyValue)}
                         toggleDeleteShape={keyValue =>
                             toggleDeleteShape(keyValue)

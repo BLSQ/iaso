@@ -14,6 +14,8 @@ import MESSAGES from '../messages';
 import { VisibleColumn } from '../types/visibleColumns';
 import { Instance } from '../types/instance';
 import { Column, Setting } from '../../../types/table';
+import { IntlFormatMessage } from '../../../types/intl';
+
 import {
     apiDateTimeFormat,
     apiDateFormat,
@@ -29,6 +31,8 @@ import ExportInstancesDialogComponent from '../components/ExportInstancesDialogC
 
 import { fetchLatestOrgUnitLevelId } from '../../orgUnits/utils';
 import { baseUrls } from '../../../constants/urls';
+
+import { Selection } from '../../orgUnits/types/selection';
 
 const NO_VALUE = '/';
 // eslint-disable-next-line no-unused-vars
@@ -67,8 +71,8 @@ const localizeLabel = (field: Field): string => {
     const locale: string = getCookie('django_language') ?? 'en';
     const localeKey = labelLocales[locale] ?? labelLocales.en;
 
-    let localeOptions;
-    if (typeof field !== 'object') {
+    let localeOptions: Field;
+    if (typeof field === 'object') {
         const singleToDoubleQuotes: string = (field.label || '').replaceAll(
             "'",
             '"',
@@ -215,9 +219,15 @@ type Props = {
     defaultOrder: string;
 };
 
-interface PossibleColumn extends Column {
+type PossibleColumn = {
     accessor: string;
-}
+    Header: string;
+    id?: string;
+    sortable?: boolean;
+    // eslint-disable-next-line no-unused-vars
+    Cell?: (s: any) => ReactElement;
+    align?: 'left' | 'center';
+};
 
 export const useGetInstancesVisibleColumns = ({
     order,
@@ -266,8 +276,13 @@ export const useGetInstancesVisibleColumns = ({
     return getInstancesVisibleColumns;
 };
 
-export const getInstancesFilesList = instances => {
-    const filesList = [];
+type ShortFile = {
+    itemId: number;
+    createdAt: number;
+    path: string;
+};
+export const getInstancesFilesList = (instances?: Instance[]): ShortFile[] => {
+    const filesList: ShortFile[] = [];
     instances?.forEach(i => {
         if (i.files?.length > 0) {
             i.files?.forEach(path => {
@@ -283,13 +298,24 @@ export const getInstancesFilesList = instances => {
     return filesList;
 };
 
+type SelectionAction = {
+    icon: (
+        // eslint-disable-next-line no-unused-vars
+        newSelection: Selection<Instance>,
+        // eslint-disable-next-line no-unused-vars
+        resetSelection?: any,
+    ) => ReactElement;
+    label: string;
+    disabled: boolean;
+};
+
 export const getSelectionActions = (
-    formatMessage,
-    filters,
-    setForceRefresh,
+    formatMessage: IntlFormatMessage,
+    filters: Record<string, string>,
+    setForceRefresh: () => void,
     isUnDeleteAction = false,
-    classes,
-) => {
+    classes: Record<string, string>,
+): SelectionAction[] => {
     const label = formatMessage(
         isUnDeleteAction ? MESSAGES.unDeleteInstance : MESSAGES.deleteInstance,
     );
@@ -319,6 +345,7 @@ export const getSelectionActions = (
         {
             icon: newSelection => (
                 <ExportInstancesDialogComponent
+                    // @ts-ignore need to refactor this component to TS
                     selection={newSelection}
                     getFilters={() => filters}
                     renderTrigger={openDialog => {
@@ -330,6 +357,7 @@ export const getSelectionActions = (
                             onClick: !iconDisabled ? openDialog : () => null,
                             disabled: iconDisabled,
                         };
+                        // @ts-ignore
                         return <CallMade {...iconProps} />;
                     }}
                 />
@@ -406,7 +434,7 @@ export const getExportUrl = (
             urlParams.append(k, v);
         }
     });
-    urlParams.append(exportType, true);
+    urlParams.append(exportType, 'true');
     const queryString = urlParams.toString();
     return `${baseUrl}/?${queryString}`;
 };

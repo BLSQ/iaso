@@ -175,42 +175,40 @@ const Instances = ({ params }) => {
                     tableColumns={tableColumns}
                     tab={tab}
                 />
-                {tab === 'list' && (
+                {/* Only display create and export buttons if a single form search has been performed */}
+                {tab === 'list' && params.formIds?.split(',').length === 1 && (
                     <Grid container spacing={0} alignItems="center">
                         <Grid xs={12} item className={classes.textAlignRight}>
-                            {formIds?.length === 1 && (
-                                <Box
-                                    display="flex"
-                                    justifyContent="flex-end"
-                                    mb={2}
-                                >
-                                    <CreateReAssignDialog
-                                        titleMessage={
-                                            MESSAGES.instanceCreationDialogTitle
-                                        }
-                                        confirmMessage={
-                                            MESSAGES.instanceCreateAction
-                                        }
-                                        formType={{
-                                            periodType,
-                                            id: params.formIds,
-                                        }}
-                                        orgUnitTypes={orgUnitTypes}
-                                        onCreateOrReAssign={(
-                                            currentForm,
-                                            payload,
-                                        ) =>
-                                            dispatch(
-                                                createInstance(
-                                                    currentForm,
-                                                    payload,
-                                                ),
-                                            )
-                                        }
-                                    />
-                                </Box>
-                            )}
-
+                            <Box
+                                display="flex"
+                                justifyContent="flex-end"
+                                mb={2}
+                            >
+                                <CreateReAssignDialog
+                                    titleMessage={
+                                        MESSAGES.instanceCreationDialogTitle
+                                    }
+                                    confirmMessage={
+                                        MESSAGES.instanceCreateAction
+                                    }
+                                    formType={{
+                                        periodType,
+                                        id: params.formIds,
+                                    }}
+                                    orgUnitTypes={orgUnitTypes}
+                                    onCreateOrReAssign={(
+                                        currentForm,
+                                        payload,
+                                    ) =>
+                                        dispatch(
+                                            createInstance(
+                                                currentForm,
+                                                payload,
+                                            ),
+                                        )
+                                    }
+                                />
+                            </Box>
                             <Box display="flex" justifyContent="flex-end">
                                 <DownloadButtonsComponent
                                     csvUrl={getExportUrl(params, 'csv')}

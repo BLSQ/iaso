@@ -1,9 +1,4 @@
-import React, {
-    useEffect,
-    FunctionComponent,
-    useMemo,
-    useCallback,
-} from 'react';
+import React, { useEffect, FunctionComponent, useMemo } from 'react';
 import { useDispatch } from 'react-redux';
 
 import { redirectToReplace } from '../../../routing/actions';
@@ -99,35 +94,6 @@ export const ColumnSelect: FunctionComponent<Props> = ({
         dispatch(redirectToReplace(baseUrl, newParams));
     };
 
-    const getVisibleColumns = useCallback(() => {
-        const newColsString: string = params.columns
-            ? params.columns
-            : getDefaultCols(formIds, labelKeys, periodType);
-        let newCols: VisibleColumn[] = [];
-        // single form
-        if (formIds?.length === 1) {
-            // if detail loaded
-            if (formDetails) {
-                newCols = getInstancesVisibleColumns(
-                    newColsString,
-                    possibleFields,
-                );
-            }
-            // multi forms
-        } else {
-            newCols = getInstancesVisibleColumns(newColsString);
-        }
-        return newCols;
-    }, [
-        formDetails,
-        formIds,
-        getInstancesVisibleColumns,
-        labelKeys,
-        params.columns,
-        periodType,
-        possibleFields,
-    ]);
-
     const visibleColumns: VisibleColumn[] = useMemo(() => {
         const newColsString: string = params.columns
             ? params.columns
@@ -158,7 +124,6 @@ export const ColumnSelect: FunctionComponent<Props> = ({
     ]);
     useEffect(() => {
         const newTablecols = getInstancesColumns(visibleColumns);
-        console.log('newTablecols', newTablecols);
         if (
             JSON.stringify(newTablecols) !== JSON.stringify(tableColumns) &&
             newTablecols.length > 1

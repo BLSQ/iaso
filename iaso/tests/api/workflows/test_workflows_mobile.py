@@ -1,12 +1,14 @@
 import jsonschema
 from iaso.tests.api.workflows.base import BaseWorkflowsAPITestCase
 
+BASE_API = "/api/mobile/workflows/"
+
 
 class WorkflowsMobileAPITestCase(BaseWorkflowsAPITestCase):
     def test_mobile_api_without_app_id(self):
         self.client.force_authenticate(self.blue_adult_1)
 
-        response = self.client.get("/api/mobile/workflows/")
+        response = self.client.get(BASE_API)
 
         self.assertJSONResponse(response, 404)
 
@@ -15,26 +17,20 @@ class WorkflowsMobileAPITestCase(BaseWorkflowsAPITestCase):
     def test_mobile_api_with_nonexisting_app_id(self):
         self.client.force_authenticate(self.blue_adult_1)
 
-        response = self.client.get("/api/mobile/workflows/?app_id=wrong_app_id")
+        response = self.client.get(f"{BASE_API}?app_id=wrong_app_id")
 
         self.assertJSONResponse(response, 404)
 
-        assert (
-            response.data
-            == "User not found in Projects for this app id or project not found"
-        )
+        assert response.data == "User not found in Projects for this app id or project not found"
 
     def test_mobile_api_with_nonaccessible_app_id(self):
         self.client.force_authenticate(self.blue_adult_1)
 
-        response = self.client.get("/api/mobile/workflows/?app_id=red.adults.project")
+        response = self.client.get(f"{BASE_API}?app_id=red.adults.project")
 
         self.assertJSONResponse(response, 404)
 
-        assert (
-            response.data
-            == "User not found in Projects for this app id or project not found"
-        )
+        assert response.data == "User not found in Projects for this app id or project not found"
 
     def test_mobile_api_ok(self):
         self.client.force_authenticate(self.blue_adult_1)
@@ -62,7 +58,7 @@ class WorkflowsMobileAPITestCase(BaseWorkflowsAPITestCase):
             "required": ["workflows"],
         }
 
-        response = self.client.get("/api/mobile/workflows/?app_id=blue.adults.project")
+        response = self.client.get(f"{BASE_API}?app_id=blue.adults.project")
 
         self.assertJSONResponse(response, 200)
 

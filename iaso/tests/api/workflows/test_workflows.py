@@ -5,6 +5,8 @@ from iaso.models import Workflow, WorkflowVersion
 from iaso.tests.api.workflows.base import BaseWorkflowsAPITestCase
 
 
+BASE_API = "/api/workflowversions/"
+
 post_answer_schema = {
     "type": "object",
     "properties": {
@@ -20,21 +22,15 @@ post_answer_schema = {
 
 class WorkflowsAPITestCase(BaseWorkflowsAPITestCase):
     def test_user_without_auth(self):
-        response = self.client.get(
-            f"/api/workflowversions/?workflow__entity_type={self.et_adults_blue.pk}/"
-        )
+        response = self.client.get(f"{BASE_API}?workflow__entity_type={self.et_adults_blue.pk}/")
 
         self.assertJSONResponse(response, 403)
         self.assertEqual(response.data["detail"].code, "not_authenticated")
-        self.assertEqual(
-            response.data["detail"], "Authentication credentials were not provided."
-        )
+        self.assertEqual(response.data["detail"], "Authentication credentials were not provided.")
 
     def test_user_anonymous(self):
         self.client.force_authenticate(self.anon)
-        response = self.client.get(
-            f"/api/workflowversions/?workflow__entity_type={self.et_adults_blue.pk}/"
-        )
+        response = self.client.get(f"{BASE_API}?workflow__entity_type={self.et_adults_blue.pk}/")
 
         self.assertJSONResponse(response, 403)
         self.assertEqual(response.data["detail"].code, "permission_denied")
@@ -46,9 +42,7 @@ class WorkflowsAPITestCase(BaseWorkflowsAPITestCase):
     def test_user_with_auth_no_permissions(self):
         self.client.force_authenticate(self.blue_adult_np)
 
-        response = self.client.get(
-            f"/api/workflowversions/?workflow__entity_type={self.et_children_blue.pk}/"
-        )
+        response = self.client.get(f"{BASE_API}?workflow__entity_type={self.et_children_blue.pk}/")
 
         self.assertJSONResponse(response, 403)
         self.assertEqual(response.data["detail"].code, "permission_denied")
@@ -61,9 +55,7 @@ class WorkflowsAPITestCase(BaseWorkflowsAPITestCase):
         self.client.force_authenticate(self.blue_adult_1)
 
         # {"workflow__entity_type": ["Select a valid choice. That choice is not one of the available choices."]}
-        response = self.client.get(
-            f"/api/workflowversions/?workflow__entity_type={self.et_children_blue.pk}/"
-        )
+        response = self.client.get(f"{BASE_API}?workflow__entity_type={self.et_children_blue.pk}/")
 
         self.assertJSONResponse(response, 400)
         assert "workflow__entity_type" in response.data
@@ -109,7 +101,7 @@ class WorkflowsAPITestCase(BaseWorkflowsAPITestCase):
             ],
         }
 
-        response = self.client.get(f"/api/workflowversions/?limit=2")
+        response = self.client.get(f"{BASE_API}?limit=2")
 
         self.assertJSONResponse(response, 200)
         self.assertEqual(response.json()["count"], 1)  # 1 version available
@@ -151,9 +143,7 @@ class WorkflowsAPITestCase(BaseWorkflowsAPITestCase):
             ],
         }
 
-        response = self.client.get(
-            f"/api/workflowversions/{self.workflow_version_et_adults_blue.pk}/"
-        )
+        response = self.client.get(f"{BASE_API}{self.workflow_version_et_adults_blue.pk}/")
 
         self.assertJSONResponse(response, 200)
 
@@ -166,7 +156,7 @@ class WorkflowsAPITestCase(BaseWorkflowsAPITestCase):
         self.client.force_authenticate(self.blue_adult_1)
 
         response = self.client.post(
-            f"/api/workflowversions/",
+            f"{BASE_API}",
             format="json",
             data={"entity_type_id": self.et_adults_blue.pk, "name": "New Super Name"},
         )
@@ -191,9 +181,7 @@ class WorkflowsAPITestCase(BaseWorkflowsAPITestCase):
     def test_new_version_from_copy(self):
         self.client.force_authenticate(self.blue_adult_1)
 
-        response = self.client.post(
-            f"/api/workflowversions/{self.workflow_version_et_adults_blue.pk}/copy/"
-        )
+        response = self.client.post(f"{BASE_API}{self.workflow_version_et_adults_blue.pk}/copy/")
 
         self.assertJSONResponse(response, 200)
 
@@ -206,9 +194,7 @@ class WorkflowsAPITestCase(BaseWorkflowsAPITestCase):
             w_version = WorkflowVersion.objects.get(pk=response.data["version_id"])
 
             assert w_version.pk == response.data["version_id"]
-            assert w_version.name == str(
-                "Copy of " + self.workflow_version_et_adults_blue.name
-            )
+            assert w_version.name == str("Copy of " + self.workflow_version_et_adults_blue.name)
 
         except WorkflowVersion.DoesNotExist as ex:
             self.fail(msg=str(ex))
@@ -221,11 +207,9 @@ class WorkflowsAPITestCase(BaseWorkflowsAPITestCase):
             name="workflow_version_et_adults_blue V2",
         )
 
-        response = self.client.delete(f"/api/workflowversions/{temp_version.id}/")
+        response = self.client.delete(f"{BASE_API}{temp_version.id}/")
         self.assertJSONResponse(response, 204)
-        loaded_temp_version = WorkflowVersion.objects_include_deleted.get(
-            pk=temp_version.id
-        )
+        loaded_temp_version = WorkflowVersion.objects_include_deleted.get(pk=temp_version.id)
 
         try:
             WorkflowVersion.objects.get(pk=temp_version.id)

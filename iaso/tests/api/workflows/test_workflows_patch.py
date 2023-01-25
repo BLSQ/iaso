@@ -2,24 +2,24 @@ import jsonschema
 from iaso.tests.api.workflows.base import BaseWorkflowsAPITestCase
 from iaso.tests.api.workflows.test_workflows import post_answer_schema
 
+BASE_API = "/api/workflowversions/"
+
 
 class WorkflowsPatchAPITestCase(BaseWorkflowsAPITestCase):
     def test_user_without_auth(self):
         response = self.client.patch(
-            f"/api/workflowversions/{self.workflow_version_et_adults_blue.pk}/",
+            f"{BASE_API}{self.workflow_version_et_adults_blue.pk}/",
             data={"status": "PUBLISHED"},
         )
 
         self.assertJSONResponse(response, 403)
         self.assertEqual(response.data["detail"].code, "not_authenticated")
-        self.assertEqual(
-            response.data["detail"], "Authentication credentials were not provided."
-        )
+        self.assertEqual(response.data["detail"], "Authentication credentials were not provided.")
 
     def test_user_anonymous(self):
         self.client.force_authenticate(self.anon)
         response = self.client.patch(
-            f"/api/workflowversions/{self.workflow_version_et_adults_blue.pk}/",
+            f"{BASE_API}{self.workflow_version_et_adults_blue.pk}/",
             data={"status": "PUBLISHED"},
         )
 
@@ -33,9 +33,7 @@ class WorkflowsPatchAPITestCase(BaseWorkflowsAPITestCase):
     def test_patch_nonexisting_fails(self):
         self.client.force_authenticate(self.blue_adult_1)
 
-        response = self.client.patch(
-            f"/api/workflowversions/1000/", data={"status": "PUBLISHED"}
-        )
+        response = self.client.patch(f"{BASE_API}1000/", data={"status": "PUBLISHED"})
 
         self.assertJSONResponse(response, 404)
         assert "detail" in response.data
@@ -45,7 +43,7 @@ class WorkflowsPatchAPITestCase(BaseWorkflowsAPITestCase):
         self.client.force_authenticate(self.blue_adult_1)
 
         response = self.client.patch(
-            f"/api/workflowversions/{self.workflow_version_et_adults_blue.pk}/",
+            f"{BASE_API}{self.workflow_version_et_adults_blue.pk}/",
             data={"status": "PUBLISHED"},
         )
 
@@ -63,7 +61,7 @@ class WorkflowsPatchAPITestCase(BaseWorkflowsAPITestCase):
         self.workflow_version_et_adults_blue.save()
 
         response = self.client.patch(
-            f"/api/workflowversions/{self.workflow_version_et_adults_blue.pk}/",
+            f"{BASE_API}{self.workflow_version_et_adults_blue.pk}/",
             data={"status": "DRAFT"},
         )
 
@@ -80,7 +78,7 @@ class WorkflowsPatchAPITestCase(BaseWorkflowsAPITestCase):
         new_name = "BROL"
 
         response = self.client.patch(
-            f"/api/workflowversions/{self.workflow_version_et_adults_blue.pk}/",
+            f"{BASE_API}{self.workflow_version_et_adults_blue.pk}/",
             data={"name": new_name},
         )
 

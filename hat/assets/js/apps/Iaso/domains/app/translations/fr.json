@@ -38,6 +38,7 @@
     "iaso.completeness.chooseParent": "Selectionnez un formulaire ou une unité d'org parente pour activer",
     "iaso.completeness.formsFilledDirect": "# Formulaires remplis (direct)",
     "iaso.completeness.formsFilledWithDescendants": "# Formulaires remplis (avec niv. inf.)",
+    "iaso.completeness.orgUnitHasMultipleSubmissions": "Cette unité d'org. a plusieurs soumissions directes",
     "iaso.completeness.generateDerivedInstances": "Générer les instances dérivées",
     "iaso.completeness.title": "Complétude des données",
     "iaso.completeness.titleDirect": "Complétude des données (direct)",

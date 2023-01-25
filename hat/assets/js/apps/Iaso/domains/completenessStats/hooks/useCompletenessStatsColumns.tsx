@@ -8,9 +8,11 @@ import {
 import { useDispatch } from 'react-redux';
 import { cloneDeep } from 'lodash';
 import AccountTreeIcon from '@material-ui/icons/AccountTree';
+import AddCircleOutlineIcon from '@material-ui/icons/AddCircleOutline';
+import Tooltip from '@material-ui/core/Tooltip';
 import { redirectTo } from '../../../routing/actions';
 import MESSAGES from '../messages';
-import { baseUrls } from '../../../constants/urls';
+import { baseUrls } from '../../../constants/urls'; 
 
 const baseUrl = `${baseUrls.completenessStats}`;
 
@@ -80,6 +82,8 @@ export const useCompletenessStatsColumns = (params: any) => {
                     <span>
                         {settings.row.original.forms_filled_direct ?? '--'}/
                         {settings.row.original.forms_to_fill_direct ?? '--'}
+
+                        {settings.row.original.has_multiple_direct_submissions ? <Tooltip title={formatMessage(MESSAGES.orgUnitHasMultipleSubmissions)}><AddCircleOutlineIcon fontSize="small" /></Tooltip> : ''}
                     </span>
                 ),
             },

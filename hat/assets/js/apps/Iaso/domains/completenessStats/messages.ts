@@ -25,6 +25,10 @@ const MESSAGES = defineMessages({
         id: 'iaso.completeness.formsFilledWithDescendants',
         defaultMessage: '# Forms filled (with descendants)',
     },
+    orgUnitHasMultipleSubmissions: {
+        id: 'iaso.completeness.orgUnitHasMultipleSubmissions',
+        defaultMessage: 'This org. unit has multiple direct submissions',
+    },
     completenessDirect: {
         id: 'iaso.completeness.titleDirect',
         defaultMessage: 'Completeness (direct)',
